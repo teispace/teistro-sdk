@@ -1941,6 +1941,19 @@ pub struct ChartRequest {
     /// binding calls `sadeSati`, as `sadeSati.to`.
     /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
     pub sade_sati_json: Option<String>,
+    /// Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+    /// every member optional: `number`, the querent's horary number 1 to
+    /// 249, which casts the cusps from it (C156); `clock`, seconds east of
+    /// UT that the civil day lord is the weekday on, this request's own
+    /// when absent (C151); and `anyAyanamsha`, true to read a chart whose
+    /// zodiac is not Krishnamurti's (C157). Each chart's reading — its
+    /// cusps and planets to the sub-sub lord, its significators and the
+    /// ruling planets of its moment — comes back in the `kp` section,
+    /// under the settings' `kp` group. Null for none, which costs nothing
+    /// (`03-design/kp.md`). Refusals are named from the record every
+    /// binding calls `kp`, as `kp.number`.
+    /// Example: {"number":74}. May be null.
+    pub kp_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1963,6 +1976,7 @@ pub struct HeldChartRequest {
     gochar_json: Option<std::ffi::CString>,
     hits_json: Option<std::ffi::CString>,
     sade_sati_json: Option<std::ffi::CString>,
+    kp_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2006,6 +2020,7 @@ impl HeldChartRequest {
                 .sade_sati_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
+            kp_json: self.kp_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2063,6 +2078,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            kp_json: self
+                .kp_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2103,6 +2123,7 @@ impl ChartRequest {
             gochar_json: unsafe { lent_text(raw.gochar_json) },
             hits_json: unsafe { lent_text(raw.hits_json) },
             sade_sati_json: unsafe { lent_text(raw.sade_sati_json) },
+            kp_json: unsafe { lent_text(raw.kp_json) },
         }
     }
 }

@@ -1293,6 +1293,60 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=births[0], sade_sati=bad, **at)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_kp_reading(self) -> None:
+        """KP crosses whole, its keys made members: the lords bracket each
+        planet, a horary number's lagna is the exact start of its sub while
+        the ruling planets stay the moment's, a batch is each chart alone,
+        and a chart in another zodiac is refused by name unless the request
+        takes any (`03-design/kp.md`)."""
+        from teistro import HouseSystem, KpReason, KpRequest
+
+        observer = Observer(latitude_deg=Latitude(13.08), longitude_deg=Longitude(80.27), altitude_m=Altitude(6))
+        births = [2447995.4895833335, 2451545.2]
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 19800}
+        with self.teistro.context(profile="kp-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=births[0], **at).kp)
+            reading = ctx.chart.found(instant=births[0], kp={}, **at).kp
+            assert reading is not None
+            self.assertEqual(reading.chart.system, HouseSystem.PLACIDUS)
+            self.assertEqual(len(reading.chart.cusps), 12)
+            self.assertEqual(len(reading.significators.houses), 12)
+            for planet in reading.chart.planets:
+                self.assertIsInstance(planet.graha, Graha)
+                span = planet.lords.sub_sub.span
+                self.assertTrue(span.start <= planet.longitude < span.end, planet.graha)
+            self.assertEqual(reading.ruling.rules.count, "FIVE")
+            self.assertTrue(all(ruler.reasons for ruler in reading.ruling.rulers))
+            self.assertTrue(all(isinstance(why, KpReason) for ruler in reading.ruling.rulers for why in ruler.reasons))
+            self.assertLessEqual(len(reading.ruling.accepted), len(reading.ruling.rulers))
+
+            asked: KpRequest = {"number": 74}
+            horary = ctx.chart.found(instant=births[0], kp=asked, **at).kp
+            assert horary is not None
+            lagna = horary.chart.cusps[0]
+            self.assertEqual(lagna.longitude, lagna.lords.sub.span.start, "the number opens its sub")
+            self.assertEqual(horary.ruling, reading.ruling)
+
+            batch = ctx.chart.found_many(instants=births, kp=asked, **at)
+            for k, instant in enumerate(births):
+                self.assertEqual(batch.at(k).kp, ctx.chart.found(instant=instant, kp=asked, **at).kp)
+
+            refusals: list[tuple[KpRequest, str]] = [({"number": 250}, "kp.number"), ({"clock": 90000}, "kp.clock")]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=births[0], kp=bad, **at)
+                self.assertEqual(refused.exception.field, field)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=births[0], kp=74, **at)  # type: ignore[arg-type]
+            self.assertEqual(refused.exception.field, "kp")
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as lahiri:
+            with self.assertRaises(TeistroError) as refused:
+                lahiri.chart.found(instant=births[0], kp={}, **at)
+            self.assertEqual(refused.exception.field, "frame.ayanamsha")
+            taken = lahiri.chart.found(instant=births[0], kp={"anyAyanamsha": True}, **at).kp
+            assert taken is not None
+            self.assertEqual(len(taken.chart.cusps), 12)
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict

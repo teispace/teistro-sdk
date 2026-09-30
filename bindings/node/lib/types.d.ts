@@ -872,6 +872,22 @@ export interface ChartRequest {
    * @nullable
    */
   readonly sadeSatiJson?: string;
+  /**
+   * Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+   * every member optional: `number`, the querent's horary number 1 to
+   * 249, which casts the cusps from it (C156); `clock`, seconds east of
+   * UT that the civil day lord is the weekday on, this request's own
+   * when absent (C151); and `anyAyanamsha`, true to read a chart whose
+   * zodiac is not Krishnamurti's (C157). Each chart's reading — its
+   * cusps and planets to the sub-sub lord, its significators and the
+   * ruling planets of its moment — comes back in the `kp` section,
+   * under the settings' `kp` group. Null for none, which costs nothing
+   * (`03-design/kp.md`). Refusals are named from the record every
+   * binding calls `kp`, as `kp.number`.
+   * @example {"number":74}
+   * @nullable
+   */
+  readonly kpJson?: string;
 }
 
 /**

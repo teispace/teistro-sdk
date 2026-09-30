@@ -315,3 +315,46 @@ fn a_horary_chart_is_the_moment_the_lagna_reaches_the_number() {
         }
     }
 }
+
+/// A reading whole is its three parts: the chart the request names, its
+/// significators, and the ruling planets of the moment, which a horary
+/// number does not move.
+#[test]
+fn a_reading_is_the_chart_its_significators_and_the_moment_s_rulers() {
+    use teistro::KpNumber;
+    let sdk = context("kp-default", "{}");
+    let moment = chart_at(&sdk, 27.7172);
+    let plain = sdk.chart().kp_reading(&moment, &KpRequest::new()).unwrap();
+    assert_eq!(
+        plain.chart,
+        sdk.chart().kp(&moment, &KpRequest::new()).unwrap()
+    );
+    assert_eq!(
+        plain.significators,
+        sdk.chart().kp_significators(&plain.chart)
+    );
+    assert_eq!(
+        plain.ruling,
+        sdk.chart().kp_ruling(&moment, &KpRequest::new()).unwrap()
+    );
+
+    let number = KpNumber::new(74).unwrap();
+    let asked = KpRequest::new().for_number(number);
+    let horary = sdk.chart().kp_reading(&moment, &asked).unwrap();
+    assert_eq!(
+        horary.chart,
+        sdk.chart()
+            .kp_horary(&moment, number, &KpRequest::new())
+            .unwrap()
+    );
+    assert_eq!(horary.chart, sdk.chart().kp(&moment, &asked).unwrap());
+    assert_eq!(
+        horary.significators,
+        sdk.chart().kp_significators(&horary.chart)
+    );
+    assert_eq!(horary.ruling, plain.ruling);
+    assert_eq!(
+        sdk.chart().kp_ruling(&moment, &asked).unwrap(),
+        plain.ruling
+    );
+}

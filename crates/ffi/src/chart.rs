@@ -973,6 +973,19 @@ pub struct TsChartRequest {
     /// binding calls `sadeSati`, as `sadeSati.to`.
     /// `api: nullable example={"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}`
     pub sade_sati_json: *const c_char,
+    /// Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+    /// every member optional: `number`, the querent's horary number 1 to
+    /// 249, which casts the cusps from it (C156); `clock`, seconds east of
+    /// UT that the civil day lord is the weekday on, this request's own
+    /// when absent (C151); and `anyAyanamsha`, true to read a chart whose
+    /// zodiac is not Krishnamurti's (C157). Each chart's reading — its
+    /// cusps and planets to the sub-sub lord, its significators and the
+    /// ruling planets of its moment — comes back in the `kp` section,
+    /// under the settings' `kp` group. Null for none, which costs nothing
+    /// (`03-design/kp.md`). Refusals are named from the record every
+    /// binding calls `kp`, as `kp.number`.
+    /// `api: nullable example={"number":74}`
+    pub kp_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3652,9 +3665,9 @@ impl YearDashaColumns {
 
 struct BatchOnce {
     readings: Vec<FixedValue>,
-    frame_bits: u32,
-    ayanamsha_kind: u64,
-    ayanamsha: u64,
+    /// The `zodiac` section's row: the frame's bits, the ayanamsha's kind
+    /// and, when catalogued, its id.
+    zodiac: [FixedValue; 3],
     model: String,
     steps: String,
 }
@@ -3664,9 +3677,7 @@ impl BatchOnce {
         let Some(chart) = first else {
             return BatchOnce {
                 readings: vec![FixedValue::Uint(0); 6],
-                frame_bits: 0,
-                ayanamsha_kind: 0,
-                ayanamsha: 0,
+                zodiac: [FixedValue::Uint(0); 3],
                 model: String::new(),
                 steps: String::from("[]"),
             };
@@ -3689,9 +3700,11 @@ impl BatchOnce {
                 u64::from(chart.chalit.chalit.source.id()).into(),
                 (TsReading::from(chart.chalit.chalit.reading) as u64).into(),
             ],
-            frame_bits: chart.zodiac.request.to_bits(),
-            ayanamsha_kind,
-            ayanamsha,
+            zodiac: [
+                u64::from(chart.zodiac.request.to_bits()).into(),
+                ayanamsha_kind.into(),
+                ayanamsha.into(),
+            ],
             model: chart.day.day.model.clone(),
             steps: serde_json::to_string(&chart.steps).unwrap_or_else(|_| String::from("[]")),
         }
@@ -3731,6 +3744,9 @@ pub struct Composed<'a> {
     /// Every chart's Sade Sati report, in the batch's order
     /// (`sade-sati.md`); empty when none was asked for.
     pub sade_sati: &'a [teistro::sade_sati::Report],
+    /// Every chart's KP reading as canonical JSON (`kp.md`); empty when
+    /// none was asked for.
+    pub kp: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -3772,6 +3788,7 @@ pub fn encode(
         gochar_instants,
         hits,
         sade_sati,
+        kp,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -3818,14 +3835,7 @@ pub fn encode(
         writer.fixed("readings", &once.readings)?;
         write_bhavas(&mut writer, "houses", charts, |c| &c.houses)?;
         write_bhavas(&mut writer, "chalit", charts, |c| &c.chalit)?;
-        writer.fixed(
-            "zodiac",
-            &[
-                u64::from(once.frame_bits).into(),
-                once.ayanamsha_kind.into(),
-                once.ayanamsha.into(),
-            ],
-        )?;
+        writer.fixed("zodiac", &once.zodiac)?;
         writer.rows("day", &day_rows)?;
         writer.rows("timing", &timing_rows)?;
         writer.bytes("model", once.model.as_bytes())?;
@@ -3855,6 +3865,7 @@ pub fn encode(
         by.jaimini.write(&mut writer)?;
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
+        writer.bytes("kp", kp.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -4554,6 +4565,47 @@ fn hits_of(
     }
 }
 
+/// The KP reading a request's `kp_json` asks for, none for null; the
+/// façade reads the record ([`teistro::KpRequest::from_json`]), naming a
+/// refusal from its root, `kp.number`. A record naming no clock takes the
+/// chart request's own, which is the clock the charts were asked on.
+///
+/// # Safety
+///
+/// `kp_json` null or a NUL-terminated string.
+unsafe fn kp_request_of(
+    kp_json: *const c_char,
+    clock: UtcOffset,
+) -> Result<Option<teistro::KpRequest>, Error> {
+    // SAFETY: the caller's contract.
+    let Some(text) = unsafe { optional_text(kp_json, "kp_json") }? else {
+        return Ok(None);
+    };
+    let request = teistro::KpRequest::from_json(text)?;
+    Ok(Some(match request.clock() {
+        Some(_) => request,
+        None => request.on_clock(clock),
+    }))
+}
+
+/// Every chart's KP reading as the canonical JSON the `kp` section carries:
+/// an array with one reading a chart, or nothing at all when none was asked
+/// for, as `drawings` is.
+fn kp_json(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::KpRequest>,
+) -> Result<String, Error> {
+    let Some(asked) = asked else {
+        return Ok(String::new());
+    };
+    let readings = documents
+        .iter()
+        .map(|document| sdk.chart().kp_reading(document, asked))
+        .collect::<Result<Vec<_>, Error>>()?;
+    Ok(teistro_core::envelope::canonical_json(&readings))
+}
+
 /// The Sade Sati a request's `sade_sati_json` asks for, none for null; the
 /// façade reads and checks the record
 /// ([`teistro::SadeSatiRequest::from_json`]), naming a refusal from its
@@ -4735,6 +4787,49 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
         .map_err(|error| error.under(RULES))
 }
 
+/// The JSON records a chart request carries beside its sections, each read
+/// and checked by the façade's own reader before anything is founded, so a
+/// bad record is refused before a chart is paid for, and each refusal is
+/// named from the record's root as every binding writes it.
+struct AskedRecords {
+    theme: Option<Theme>,
+    rules: Option<RuleSet>,
+    plans: PlanRequest,
+    varsha: Option<teistro::VarshaRequest>,
+    gochar: Option<teistro::GocharRequest>,
+    hits: Option<teistro::HitRequest>,
+    sade_sati: Option<teistro::SadeSatiRequest>,
+    kp: Option<teistro::KpRequest>,
+}
+
+impl AskedRecords {
+    /// Every record `asked` carries; `clock` is the request's own, which a
+    /// KP record naming none takes.
+    ///
+    /// # Safety
+    ///
+    /// Each of `asked`'s record fields null or a NUL-terminated string.
+    unsafe fn of(asked: &TsChartRequest, clock: UtcOffset) -> Result<AskedRecords, Error> {
+        // SAFETY: the caller's contract, for every field read below. The
+        // theme names its fields from its own root, `theme.style.ink`,
+        // which is what every binding calls it, so its refusal stands.
+        unsafe {
+            Ok(AskedRecords {
+                theme: optional_text(asked.theme_json, "theme_json")?
+                    .map(Theme::from_json)
+                    .transpose()?,
+                rules: rule_set_of(asked.rules_json)?,
+                plans: plan_request_of(asked.interpret_json)?,
+                varsha: varsha_request_of(asked.varsha_json)?,
+                gochar: gochar_request_of(asked.gochar_json)?,
+                hits: hit_request_of(asked.hits_json)?,
+                sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
+                kp: kp_request_of(asked.kp_json, clock)?,
+            })
+        }
+    }
+}
+
 /// What a chart request asks for beside its charts, as the façade takes it.
 fn plan_inputs<'r>(
     rules: Option<&'r RuleSet>,
@@ -4903,25 +4998,9 @@ pub unsafe extern "C" fn ts_chart_found(
         //
         // It also seals, so there is nothing left for the boundary to do
         // but encode what it was given.
-        // SAFETY: the entry point's contract — null, or a NUL-terminated
-        // string.
-        // The theme names its fields from its own root, `theme.style.ink`,
-        // which is what every binding calls it, so its refusal stands.
-        let theme = unsafe { optional_text(asked.theme_json, "theme_json") }?
-            .map(Theme::from_json)
-            .transpose()?;
-        // SAFETY: the entry point's contract.
-        let rules = unsafe { rule_set_of(asked.rules_json) }?;
-        // SAFETY: the entry point's contract.
-        let plans = unsafe { plan_request_of(asked.interpret_json) }?;
-        // SAFETY: the entry point's contract.
-        let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
-        // SAFETY: the entry point's contract.
-        let gochar = unsafe { gochar_request_of(asked.gochar_json) }?;
-        // SAFETY: the entry point's contract.
-        let hit_request = unsafe { hit_request_of(asked.hits_json) }?;
-        // SAFETY: the entry point's contract.
-        let sade_sati_request = unsafe { sade_sati_request_of(asked.sade_sati_json) }?;
+        // SAFETY: the entry point's contract — each record null, or a
+        // NUL-terminated string.
+        let records = unsafe { AskedRecords::of(&asked, clock) }?;
         let ReadCharts {
             founded,
             hashes,
@@ -4932,16 +5011,22 @@ pub unsafe extern "C" fn ts_chart_found(
             ctx.sdk(),
             &instants,
             &request,
-            plan_inputs(rules.as_ref(), sade_sati_request.as_ref()),
-            plans,
+            plan_inputs(records.rules.as_ref(), records.sade_sati.as_ref()),
+            records.plans,
         )?;
-        let svgs = match &theme {
+        let svgs = match &records.theme {
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
         };
-        let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
-        let transits = gochar_of(ctx.sdk(), &founded.value, gochar.as_ref())?;
-        let hits = hits_of(ctx.sdk(), &founded.value, hit_request.as_ref())?;
+        let praveshas = praveshas_of(
+            ctx.sdk(),
+            &founded.value,
+            request.offset(),
+            records.varsha.as_ref(),
+        )?;
+        let transits = gochar_of(ctx.sdk(), &founded.value, records.gochar.as_ref())?;
+        let hits = hits_of(ctx.sdk(), &founded.value, records.hits.as_ref())?;
+        let kp = kp_json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -4953,11 +5038,13 @@ pub unsafe extern "C" fn ts_chart_found(
                 plans: &plans_json,
                 praveshas: &praveshas,
                 gochar: &transits,
-                gochar_instants: gochar
+                gochar_instants: records
+                    .gochar
                     .as_ref()
                     .map_or(&[], teistro::GocharRequest::instants),
                 hits: &hits,
                 sade_sati: &sade_sati,
+                kp: &kp,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

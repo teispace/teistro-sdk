@@ -10809,6 +10809,21 @@
             "example": "{\"from\":2460676.5,\"to\":2464329.0,\"reckoning\":\"SIGN\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "kp_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart read as KP (Krishnamurti Paddhati), as a JSON object,\nevery member optional: `number`, the querent's horary number 1 to\n249, which casts the cusps from it (C156); `clock`, seconds east of\nUT that the civil day lord is the weekday on, this request's own\nwhen absent (C151); and `anyAyanamsha`, true to read a chart whose\nzodiac is not Krishnamurti's (C157). Each chart's reading — its\ncusps and planets to the sub-sub lord, its significators and the\nruling planets of its moment — comes back in the `kp` section,\nunder the settings' `kp` group. Null for none, which costs nothing\n(`03-design/kp.md`). Refusals are named from the record every\nbinding calls `kp`, as `kp.number`.",
+          "meta": {
+            "example": "{\"number\":74}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -16649,6 +16664,13 @@
               "doc": "When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage."
             }
           ]
+        },
+        {
+          "id": 59,
+          "name": "kp",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },

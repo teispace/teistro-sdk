@@ -405,6 +405,7 @@ void main() {
       reckoning: Reckoning.degree,
       spells: [4, 7, 8],
     ),
+    kp: const KpRequest(number: 74, anyAyanamsha: true),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -745,6 +746,55 @@ void main() {
     ];
     for (final (k, line) in lines.indexed) {
       put('chart-$i-sade-sati-$k', line);
+    }
+    final kp = chart.kp!;
+    String keys(List<KeyOf<Object>> members) =>
+        members.isEmpty ? '-' : members.map((m) => m.fullKey).join(',');
+    String level(KpLevel at) =>
+        '${at.lord.fullKey} ${at.span.start} ${at.span.end}';
+    String lords(KpLords of) =>
+        '${of.sign.fullKey} ${level(of.star)} ${level(of.sub)} ${level(of.subSub)}';
+    String rejection(KpRejection? by) =>
+        by == null ? '-' : '${by.retrograde.fullKey}:${by.byStar}';
+    final rules = kp.ruling.rules;
+    put(
+      'chart-$i-kp',
+      '${kp.chart.system.fullKey} ${rules.count} ${rules.nodeRulers} ${rules.retrogradeRejection}',
+    );
+    for (final cusp in kp.chart.cusps) {
+      put(
+        'chart-$i-kp-cusp-${cusp.house}',
+        '${cusp.longitude} ${lords(cusp.lords)}',
+      );
+    }
+    for (final p in kp.chart.planets) {
+      put(
+        'chart-$i-kp-planet-${p.graha.fullKey}',
+        '${p.longitude} ${p.retrograde} ${p.house} ${lords(p.lords)}',
+      );
+    }
+    for (final h in kp.significators.houses) {
+      put(
+        'chart-$i-kp-house-${h.house}',
+        '${keys(h.inOccupantsStars)} ${keys(h.occupants)} ${keys(h.inLordsStar)} ${h.lord.fullKey} '
+            '${keys(h.conjoined)} ${keys(h.aspected)} ${keys(h.intercepted)}',
+      );
+    }
+    for (final n in kp.significators.nodes) {
+      put(
+        'chart-$i-kp-node-${n.node.fullKey}',
+        '${keys(n.conjoined)} ${n.starLord.fullKey} ${keys(n.aspecting)} ${n.signLord.fullKey}',
+      );
+    }
+    for (final (k, r) in kp.ruling.rulers.indexed) {
+      final reasons = [
+        for (final why in r.reasons)
+          why.of == null ? why.kind : 'AGENT:${why.of!.fullKey}:${why.by}',
+      ].join(',');
+      put(
+        'chart-$i-kp-ruler-$k',
+        '${r.graha.fullKey} $reasons ${r.retrograde} ${rejection(r.rejectedBy)} ${rejection(r.rejectedBySub)}',
+      );
     }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);

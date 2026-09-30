@@ -607,6 +607,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_gochar_sections(53))
         .chain([chart_hits_section(56)])
         .chain(chart_sade_sati_sections(57))
+        .chain([chart_kp_section(59)])
         .collect(),
     }
 }
@@ -708,6 +709,15 @@ fn chart_sade_sati_sections(first: u32) -> [SectionSchema; 2] {
             ],
         ),
     ]
+}
+
+/// Every chart read as KP (`03-design/kp.md`).
+fn chart_kp_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "kp",
+        "UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.",
+    )
 }
 
 /// Every chart's transit hit list, a row a hit.

@@ -2617,6 +2617,7 @@ final class Charts {
     required this.hits,
     required this.sadeSati,
     required this.sadeSatiVisits,
+    required this.kp,
   });
 
   /// What kind of chart these are.
@@ -2837,6 +2838,9 @@ final class Charts {
   /// Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
   final ChartsSadeSatiVisits sadeSatiVisits;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.
+  final String kp;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2902,6 +2906,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atHits = blob.section(56, 'hits');
   final atSadeSati = blob.section(57, 'sade_sati');
   final atSadeSatiVisits = blob.section(58, 'sade_sati_visits');
+  final atKp = blob.section(59, 'kp');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -5040,6 +5045,7 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atSadeSatiVisits.count,
     ),
+    kp: blob.text(atKp),
   );
 }
 

@@ -1992,6 +1992,70 @@ test('a chart carries its Sade Sati, each period whole', () => {
   ctx.dispose();
 });
 
+/**
+ * KP crosses whole: a chart's reading is `{ chart, significators, ruling }`
+ * frozen to its leaves, a horary number's lagna the exact start of its sub,
+ * a batch each chart alone, and a chart in another zodiac refused by name
+ * unless the request takes any (`03-design/kp.md`).
+ */
+test('a chart carries its KP reading', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'kp-default' });
+  const at = { place: { latitude: 13.08, longitude: 80.27, altitude: 6 }, utcOffsetSeconds: 19800 };
+  const births = [2447995.4895833335, 2451545.2];
+  assert.equal(ctx.chart.found({ instant: births[0], ...at }).kp, null);
+
+  const reading = ctx.chart.found({ instant: births[0], ...at, kp: {} }).kp;
+  assert.deepEqual(Object.keys(reading).sort(), ['chart', 'ruling', 'significators']);
+  assert.equal(reading.chart.cusps.length, 12);
+  assert.equal(reading.significators.houses.length, 12);
+  assert.ok(Object.isFrozen(reading.chart.cusps[0].lords.sub.span), 'frozen to its leaves');
+  for (const planet of reading.chart.planets) {
+    const { start, end } = planet.lords.subSub.span;
+    assert.ok(start <= planet.longitude && planet.longitude < end, `${planet.graha} inside its sub-sub`);
+  }
+  assert.equal(reading.ruling.rules.count, 'FIVE');
+  assert.ok(reading.ruling.rulers.every((ruler) => ruler.reasons.length > 0));
+  // Keys in full, as every other accessor gives them.
+  assert.equal(reading.chart.system, 'house_system.PLACIDUS');
+  assert.ok(reading.chart.planets.every((planet) => planet.graha.startsWith('graha.')));
+  assert.ok(reading.chart.cusps.every((cusp) => cusp.lords.subSub.lord.startsWith('graha.')));
+  assert.ok(reading.significators.houses.every((house) => house.lord.startsWith('graha.')));
+  assert.ok(reading.significators.houses.flatMap((house) => house.intercepted).every((sign) => sign.startsWith('rashi.')));
+  assert.ok(reading.ruling.rulers.every((ruler) => ruler.graha.startsWith('graha.')));
+
+  // A horary number casts the cusps; the ruling planets stay the moment's.
+  const horary = ctx.chart.found({ instant: births[0], ...at, kp: { number: 74 } }).kp;
+  const lagna = horary.chart.cusps[0];
+  assert.equal(lagna.longitude, lagna.lords.sub.span.start, 'the number opens its sub');
+  assert.deepEqual(horary.ruling, reading.ruling);
+
+  const batch = ctx.chart.foundMany({ instants: births, ...at, kp: { number: 74 } });
+  births.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).kp, ctx.chart.found({ instant, ...at, kp: { number: 74 } }).kp, 'a batch is each chart alone'),
+  );
+
+  for (const [asked, field] of [
+    [{ number: 250 }, 'kp.number'],
+    [{ clock: 90000 }, 'kp.clock'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: births[0], ...at, kp: asked }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: births[0], ...at, kp: 74 }), TypeError);
+  ctx.dispose();
+
+  const lahiri = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  assert.throws(
+    () => lahiri.chart.found({ instant: births[0], ...at, kp: {} }),
+    (error) => error instanceof TeistroError && error.field === 'frame.ayanamsha',
+  );
+  assert.equal(lahiri.chart.found({ instant: births[0], ...at, kp: { anyAyanamsha: true } }).kp.chart.cusps.length, 12);
+  lahiri.dispose();
+});
+
 test('a chart carries its dasha phala, and the Shadbala its rays', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

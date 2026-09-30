@@ -861,6 +861,155 @@ export interface SadeSatiReport {
   readonly spells: readonly SadeSatiSpell[];
 }
 
+/**
+ * A KP reading to make of every chart of a request (`03-design/kp.md`);
+ * every field is optional, and an absent one is the default.
+ */
+export interface KpRequest {
+  /** The querent's horary number, 1 to 249: the cusps are cast from it, the ruling planets stay the moment's (C156). */
+  readonly number?: number;
+  /** Seconds east of UT that the civil day lord is the weekday on; the request's own `utcOffsetSeconds` by default (C151). */
+  readonly clock?: number;
+  /** Whether to read a chart whose zodiac is not Krishnamurti's; false by default, which refuses it (C157). */
+  readonly anyAyanamsha?: boolean;
+}
+
+/** An arc of the zodiac, half-open, in nanoarcseconds (divide by `3.6e12` for degrees). */
+export interface KpSpan {
+  readonly start: number;
+  readonly end: number;
+}
+
+/** One level of a point's lords below the sign: its lord, and the arc it rules. */
+export interface KpLevel {
+  readonly lord: Graha;
+  readonly span: KpSpan;
+}
+
+/** A point's lords: of its sign, its star, its sub and its sub-sub. */
+export interface KpLords {
+  readonly sign: Graha;
+  readonly star: KpLevel;
+  readonly sub: KpLevel;
+  readonly subSub: KpLevel;
+}
+
+/** A cusp, its longitude in nanoarcseconds of the sidereal zodiac. */
+export interface KpCusp {
+  /** 1 to 12. */
+  readonly house: number;
+  readonly longitude: number;
+  readonly lords: KpLords;
+}
+
+/** A planet, its longitude in nanoarcseconds of the sidereal zodiac. */
+export interface KpPlanet {
+  readonly graha: Graha;
+  readonly longitude: number;
+  readonly retrograde: boolean;
+  /** The house whose cusp arc holds it, 1 to 12. */
+  readonly house: number;
+  readonly lords: KpLords;
+}
+
+/** A chart as KP reads it: its cusps, the horary number's when one was named, and its planets. */
+export interface KpChart {
+  readonly system: HouseSystem;
+  readonly cusps: readonly KpCusp[];
+  readonly planets: readonly KpPlanet[];
+}
+
+/** A house's significators in KP Reader VI's order, strongest first (C154). */
+export interface KpHouseSignificators {
+  readonly house: number;
+  /** (a) Planets in the stars of the house's occupants. */
+  readonly inOccupantsStars: readonly Graha[];
+  /** (b) The occupants. */
+  readonly occupants: readonly Graha[];
+  /** (c) Planets in the star of the house's lord. */
+  readonly inLordsStar: readonly Graha[];
+  /** (d) The house's lord. */
+  readonly lord: Graha;
+  /** (e) Planets joined to a significator above. */
+  readonly conjoined: readonly Graha[];
+  /** (f) Planets aspecting the house under the settings' node aspects. */
+  readonly aspected: readonly Graha[];
+  /** Signs wholly inside the house. */
+  readonly intercepted: readonly Rashi[];
+}
+
+/** What a node stands for, in Reader VI's order (C155). */
+export interface KpNodeAgency {
+  readonly node: Graha;
+  readonly conjoined: readonly Graha[];
+  readonly starLord: Graha;
+  readonly aspecting: readonly Graha[];
+  readonly signLord: Graha;
+}
+
+/** A chart's significators: the twelve houses, and the nodes' agency. */
+export interface KpSignificators {
+  readonly houses: readonly KpHouseSignificators[];
+  readonly nodes: readonly KpNodeAgency[];
+}
+
+/** Why a planet is a ruling planet; an agent is a node standing for a ruler (C152). */
+export type KpReason =
+  | {
+      readonly kind:
+        | 'LAGNA_STAR'
+        | 'LAGNA_SIGN'
+        | 'LAGNA_SUB'
+        | 'MOON_STAR'
+        | 'MOON_SIGN'
+        | 'MOON_SUB'
+        | 'DAY_LORD';
+    }
+  | { readonly kind: 'AGENT'; readonly of: Graha; readonly by: 'IN_ITS_SIGN' | 'CONJOINED' };
+
+/** A retrograde planet rejecting a ruler through its star, or its sub (C153). */
+export interface KpRejection {
+  readonly retrograde: Graha;
+  readonly byStar: boolean;
+}
+
+/** One ruling planet, every reason it rules, and what rejects it. */
+export interface KpRuler {
+  readonly graha: Graha;
+  /** Every reason it rules, the first the strongest. */
+  readonly reasons: readonly KpReason[];
+  /** Itself retrograde, which the Reader reads as delay and not rejection. */
+  readonly retrograde: boolean;
+  /** What rejects it under the settings; `null` when it stands. */
+  readonly rejectedBy: KpRejection | null;
+  /** What would reject it under the other reading of C153. */
+  readonly rejectedBySub: KpRejection | null;
+}
+
+/** The ruling planets of a moment, and the settings they were read under. */
+export interface KpRuling {
+  readonly rulers: readonly KpRuler[];
+  readonly rules: {
+    readonly count: 'FIVE' | 'WITH_SUBS';
+    readonly nodeRulers: 'SIGN_OR_CONJOINED' | 'SIGN';
+    readonly retrogradeRejection: 'STAR' | 'STAR_OR_SUB';
+  };
+}
+
+/**
+ * A chart read as KP: the chart, its significators and the ruling planets
+ * of its moment.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, kp: { number: 74 } });
+ * const standing = chart.kp?.ruling.rulers.filter((ruler) => ruler.rejectedBy === null);
+ */
+export interface KpReading {
+  readonly chart: KpChart;
+  readonly significators: KpSignificators;
+  readonly ruling: KpRuling;
+}
+
 /** The transits to read against every chart of a request. */
 export interface GocharRequest {
   /** The instants, UTC Julian days: at least one. */
@@ -2093,6 +2242,12 @@ export declare class Chart {
    */
   readonly sadeSati: SadeSatiReport | null;
   /**
+   * The chart read as KP — its cusps and planets to the sub-sub lord, its
+   * significators and the ruling planets of its moment; `null` unless
+   * `kp` asked (`03-design/kp.md`).
+   */
+  readonly kp: KpReading | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -2462,6 +2617,11 @@ export interface ChartRequest {
    * default.
    */
   readonly sadeSati?: SadeSatiRequest;
+  /**
+   * A KP reading to make of every chart, read back as each chart's `kp`
+   * (`03-design/kp.md`). None by default.
+   */
+  readonly kp?: KpRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

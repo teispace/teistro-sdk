@@ -1338,6 +1338,24 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; nothing existing reads it.
 
+- **KP crosses to every binding** (`kp.md` §6 step 6).
+  `sdk.chart().kp_reading(&chart, &KpRequest)` answers a chart read as
+  KP whole: the chart (the horary number's cusps when the request names
+  one), its significators and the ruling planets of its moment. A chart
+  request's `kp` record — `{number, clock, anyAyanamsha}`, every member
+  optional, read by `KpRequest::from_json` — asks for it on every chart
+  of a batch. The C ABI gains `kp_json` on `ts_chart_request` and
+  section 59 `kp`, canonical JSON with one reading a chart, its
+  longitudes in exact nanoarcseconds. A record naming no clock takes the
+  chart request's own.
+
+  Node answers `chart.kp` with every key in full, as its other
+  accessors do; Python and Dart build typed values over catalogue
+  members, compared by value. All five parity runners print every cusp,
+  planet, house, node and ruler and agree on each.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an

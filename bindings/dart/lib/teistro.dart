@@ -710,6 +710,7 @@ final class ChartArea extends _Area {
     GocharRequest? gochar,
     HitRequest? hits,
     SadeSatiRequest? sadeSati,
+    KpRequest? kp,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -736,6 +737,7 @@ final class ChartArea extends _Area {
     gochar: gochar,
     hits: hits,
     sadeSati: sadeSati,
+    kp: kp,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -782,6 +784,7 @@ final class ChartArea extends _Area {
     GocharRequest? gochar,
     HitRequest? hits,
     SadeSatiRequest? sadeSati,
+    KpRequest? kp,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -830,6 +833,7 @@ final class ChartArea extends _Area {
             gocharJson: gochar?._json,
             hitsJson: hits?._json,
             sadeSatiJson: sadeSati?._json,
+            kpJson: kp?._json,
           ),
         ),
       ),
@@ -4503,9 +4507,477 @@ final class SadeSatiReport {
 bool _sameList<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i += 1) {
-    if (a[i] != b[i]) return false;
+    final (x, y) = (a[i], b[i]);
+    if (x is List && y is List ? !_sameList(x, y) : x != y) return false;
   }
   return true;
+}
+
+/// A value compared field by field, lists by their members: two are equal
+/// when they are the same type and every field is.
+abstract base class _Value {
+  const _Value();
+
+  /// The fields that make the value, in declaration order.
+  List<Object?> get _fields;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is _Value &&
+          other.runtimeType == runtimeType &&
+          _sameList(other._fields, _fields));
+
+  @override
+  int get hashCode => Object.hashAll(
+    _fields.map((field) => field is List ? Object.hashAll(field) : field),
+  );
+}
+
+/// A KP reading to make of every chart of a request (`03-design/kp.md`),
+/// every field optional. Each chart's reading comes back as its `kp`, under
+/// the settings' `kp` group.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ kp: const KpRequest(number: 74));
+/// final standing = chart.kp?.ruling.accepted;
+/// ```
+final class KpRequest {
+  const KpRequest({this.number, this.clock, this.anyAyanamsha = false});
+
+  /// The querent's horary number, 1 to 249, or the SDK refuses it by
+  /// `kp.number`: the cusps are cast from it, the ruling planets stay the
+  /// moment's (C156).
+  final int? number;
+
+  /// Seconds east of UT that the civil day lord is the weekday on; the
+  /// request's own `utcOffsetSeconds` when absent (C151).
+  final int? clock;
+
+  /// Whether to read a chart whose zodiac is not Krishnamurti's, which is
+  /// refused by `frame.ayanamsha` otherwise (C157).
+  final bool anyAyanamsha;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (number != null) 'number': number,
+    if (clock != null) 'clock': clock,
+    'anyAyanamsha': anyAyanamsha,
+  });
+}
+
+/// An arc of the zodiac, half-open, in nanoarcseconds (divide by `3.6e12`
+/// for degrees).
+final class KpSpan extends _Value {
+  const KpSpan({required this.start, required this.end});
+
+  final int start;
+  final int end;
+
+  @override
+  List<Object?> get _fields => [start, end];
+}
+
+/// One level of a point's lords below the sign: its lord, and the arc it
+/// rules.
+final class KpLevel extends _Value {
+  const KpLevel({required this.lord, required this.span});
+
+  final Graha lord;
+  final KpSpan span;
+
+  @override
+  List<Object?> get _fields => [lord, span];
+}
+
+/// A point's lords: of its sign, its star, its sub and its sub-sub.
+final class KpLords extends _Value {
+  const KpLords({
+    required this.sign,
+    required this.star,
+    required this.sub,
+    required this.subSub,
+  });
+
+  final Graha sign;
+  final KpLevel star;
+  final KpLevel sub;
+  final KpLevel subSub;
+
+  @override
+  List<Object?> get _fields => [sign, star, sub, subSub];
+}
+
+/// A cusp, its longitude in nanoarcseconds of the sidereal zodiac.
+final class KpCusp extends _Value {
+  const KpCusp({
+    required this.house,
+    required this.longitude,
+    required this.lords,
+  });
+
+  /// 1 to 12.
+  final int house;
+  final int longitude;
+  final KpLords lords;
+
+  @override
+  List<Object?> get _fields => [house, longitude, lords];
+}
+
+/// A planet, its longitude in nanoarcseconds of the sidereal zodiac.
+final class KpPlanet extends _Value {
+  const KpPlanet({
+    required this.graha,
+    required this.longitude,
+    required this.retrograde,
+    required this.house,
+    required this.lords,
+  });
+
+  final Graha graha;
+  final int longitude;
+  final bool retrograde;
+
+  /// The house whose cusp arc holds it, 1 to 12.
+  final int house;
+  final KpLords lords;
+
+  @override
+  List<Object?> get _fields => [graha, longitude, retrograde, house, lords];
+}
+
+/// A chart as KP reads it: its cusps, the horary number's when one was
+/// named, and its planets.
+final class KpChart extends _Value {
+  const KpChart({
+    required this.system,
+    required this.cusps,
+    required this.planets,
+  });
+
+  final HouseSystem system;
+  final List<KpCusp> cusps;
+  final List<KpPlanet> planets;
+
+  @override
+  List<Object?> get _fields => [system, cusps, planets];
+}
+
+/// A house's significators in KP Reader VI's order, strongest first (C154).
+final class KpHouseSignificators extends _Value {
+  const KpHouseSignificators({
+    required this.house,
+    required this.inOccupantsStars,
+    required this.occupants,
+    required this.inLordsStar,
+    required this.lord,
+    required this.conjoined,
+    required this.aspected,
+    required this.intercepted,
+  });
+
+  final int house;
+
+  /// (a) Planets in the stars of the house's occupants.
+  final List<Graha> inOccupantsStars;
+
+  /// (b) The occupants.
+  final List<Graha> occupants;
+
+  /// (c) Planets in the star of the house's lord.
+  final List<Graha> inLordsStar;
+
+  /// (d) The house's lord.
+  final Graha lord;
+
+  /// (e) Planets joined to a significator above.
+  final List<Graha> conjoined;
+
+  /// (f) Planets aspecting the house under the settings' node aspects.
+  final List<Graha> aspected;
+
+  /// Signs wholly inside the house.
+  final List<Rashi> intercepted;
+
+  @override
+  List<Object?> get _fields => [
+    house,
+    inOccupantsStars,
+    occupants,
+    inLordsStar,
+    lord,
+    conjoined,
+    aspected,
+    intercepted,
+  ];
+}
+
+/// What a node stands for, in Reader VI's order (C155).
+final class KpNodeAgency extends _Value {
+  const KpNodeAgency({
+    required this.node,
+    required this.conjoined,
+    required this.starLord,
+    required this.aspecting,
+    required this.signLord,
+  });
+
+  final Graha node;
+  final List<Graha> conjoined;
+  final Graha starLord;
+  final List<Graha> aspecting;
+  final Graha signLord;
+
+  @override
+  List<Object?> get _fields => [node, conjoined, starLord, aspecting, signLord];
+}
+
+/// A chart's significators: the twelve houses, and the nodes' agency.
+final class KpSignificators extends _Value {
+  const KpSignificators({required this.houses, required this.nodes});
+
+  final List<KpHouseSignificators> houses;
+  final List<KpNodeAgency> nodes;
+
+  @override
+  List<Object?> get _fields => [houses, nodes];
+}
+
+/// Why a planet is a ruling planet: [kind] is `LAGNA_STAR`, `LAGNA_SIGN`,
+/// `LAGNA_SUB`, `MOON_STAR`, `MOON_SIGN`, `MOON_SUB`, `DAY_LORD` or `AGENT`,
+/// a node standing for the ruler [of], [by] being `IN_ITS_SIGN` or
+/// `CONJOINED` (C152).
+final class KpReason extends _Value {
+  const KpReason({required this.kind, this.of, this.by});
+
+  final String kind;
+  final Graha? of;
+  final String? by;
+
+  @override
+  List<Object?> get _fields => [kind, of, by];
+}
+
+/// A retrograde planet rejecting a ruler through its star, or its sub
+/// (C153).
+final class KpRejection extends _Value {
+  const KpRejection({required this.retrograde, required this.byStar});
+
+  final Graha retrograde;
+  final bool byStar;
+
+  @override
+  List<Object?> get _fields => [retrograde, byStar];
+}
+
+/// One ruling planet, every reason it rules, and what rejects it.
+final class KpRuler extends _Value {
+  const KpRuler({
+    required this.graha,
+    required this.reasons,
+    required this.retrograde,
+    required this.rejectedBy,
+    required this.rejectedBySub,
+  });
+
+  final Graha graha;
+
+  /// Every reason it rules, the first the strongest.
+  final List<KpReason> reasons;
+
+  /// Itself retrograde, which the Reader reads as delay and not rejection.
+  final bool retrograde;
+
+  /// What rejects it under the settings; null when it stands.
+  final KpRejection? rejectedBy;
+
+  /// What would reject it under the other reading of C153.
+  final KpRejection? rejectedBySub;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    reasons,
+    retrograde,
+    rejectedBy,
+    rejectedBySub,
+  ];
+}
+
+/// The settings the ruling planets were read under: [count] (`FIVE` or
+/// `WITH_SUBS`, C150), [nodeRulers] (`SIGN_OR_CONJOINED` or `SIGN`, C152)
+/// and [retrogradeRejection] (`STAR` or `STAR_OR_SUB`, C153).
+final class KpRulingRules extends _Value {
+  const KpRulingRules({
+    required this.count,
+    required this.nodeRulers,
+    required this.retrogradeRejection,
+  });
+
+  final String count;
+  final String nodeRulers;
+  final String retrogradeRejection;
+
+  @override
+  List<Object?> get _fields => [count, nodeRulers, retrogradeRejection];
+}
+
+/// The ruling planets of a moment, and the settings they were read under.
+final class KpRuling extends _Value {
+  const KpRuling({required this.rulers, required this.rules});
+
+  final List<KpRuler> rulers;
+  final KpRulingRules rules;
+
+  /// The rulers that stand, in order.
+  List<Graha> get accepted => [
+    for (final ruler in rulers)
+      if (ruler.rejectedBy == null) ruler.graha,
+  ];
+
+  @override
+  List<Object?> get _fields => [rulers, rules];
+}
+
+/// A chart read as KP: the chart, its significators and the ruling planets
+/// of its moment (`03-design/kp.md`). For a horary number the cusps are
+/// the number's and the ruling planets still the moment's own.
+final class KpReading extends _Value {
+  const KpReading({
+    required this.chart,
+    required this.significators,
+    required this.ruling,
+  });
+
+  final KpChart chart;
+  final KpSignificators significators;
+  final KpRuling ruling;
+
+  @override
+  List<Object?> get _fields => [chart, significators, ruling];
+}
+
+/// Each batch's KP readings, parsed once however many charts read them.
+final Expando<List<KpReading>> _kps = Expando<List<KpReading>>('kp');
+
+List<KpReading> _kpsOf(Charts batch) =>
+    _kps[batch] ??= [for (final raw in _sectionOf(batch.kp)) _kpReading(raw)];
+
+/// A chart's KP reading from the `kp` section's JSON, its keys made members.
+KpReading _kpReading(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  List<Object?> each(Object? value) => value! as List<Object?>;
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  List<Graha> grahas(Object? keys) => [
+    for (final key in each(keys)) graha(key),
+  ];
+  KpLevel level(Object? value) {
+    final level = at(value);
+    final span = at(level['span']);
+    return KpLevel(
+      lord: graha(level['lord']),
+      span: KpSpan(start: span['start']! as int, end: span['end']! as int),
+    );
+  }
+
+  KpLords lords(Object? value) {
+    final lords = at(value);
+    return KpLords(
+      sign: graha(lords['sign']),
+      star: level(lords['star']),
+      sub: level(lords['sub']),
+      subSub: level(lords['subSub']),
+    );
+  }
+
+  KpRejection? rejection(Object? value) =>
+      value == null
+          ? null
+          : KpRejection(
+            retrograde: graha(at(value)['retrograde']),
+            byStar: at(value)['byStar']! as bool,
+          );
+
+  final chart = at(raw['chart']);
+  final significators = at(raw['significators']);
+  final ruling = at(raw['ruling']);
+  final rules = at(ruling['rules']);
+  return KpReading(
+    chart: KpChart(
+      system:
+          HouseSystem.byKey(chart['system']! as String) ?? HouseSystem.unknown,
+      cusps: List<KpCusp>.unmodifiable([
+        for (final cusp in each(chart['cusps']).map(at))
+          KpCusp(
+            house: cusp['house']! as int,
+            longitude: cusp['longitude']! as int,
+            lords: lords(cusp['lords']),
+          ),
+      ]),
+      planets: List<KpPlanet>.unmodifiable([
+        for (final planet in each(chart['planets']).map(at))
+          KpPlanet(
+            graha: graha(planet['graha']),
+            longitude: planet['longitude']! as int,
+            retrograde: planet['retrograde']! as bool,
+            house: planet['house']! as int,
+            lords: lords(planet['lords']),
+          ),
+      ]),
+    ),
+    significators: KpSignificators(
+      houses: List<KpHouseSignificators>.unmodifiable([
+        for (final house in each(significators['houses']).map(at))
+          KpHouseSignificators(
+            house: house['house']! as int,
+            inOccupantsStars: grahas(house['inOccupantsStars']),
+            occupants: grahas(house['occupants']),
+            inLordsStar: grahas(house['inLordsStar']),
+            lord: graha(house['lord']),
+            conjoined: grahas(house['conjoined']),
+            aspected: grahas(house['aspected']),
+            intercepted: [
+              for (final key in each(house['intercepted']))
+                Rashi.byKey(key! as String) ?? Rashi.unknown,
+            ],
+          ),
+      ]),
+      nodes: List<KpNodeAgency>.unmodifiable([
+        for (final node in each(significators['nodes']).map(at))
+          KpNodeAgency(
+            node: graha(node['node']),
+            conjoined: grahas(node['conjoined']),
+            starLord: graha(node['starLord']),
+            aspecting: grahas(node['aspecting']),
+            signLord: graha(node['signLord']),
+          ),
+      ]),
+    ),
+    ruling: KpRuling(
+      rulers: List<KpRuler>.unmodifiable([
+        for (final ruler in each(ruling['rulers']).map(at))
+          KpRuler(
+            graha: graha(ruler['graha']),
+            reasons: List<KpReason>.unmodifiable([
+              for (final why in each(ruler['reasons']).map(at))
+                KpReason(
+                  kind: why['kind']! as String,
+                  of: why['of'] == null ? null : graha(why['of']),
+                  by: why['by'] as String?,
+                ),
+            ]),
+            retrograde: ruler['retrograde']! as bool,
+            rejectedBy: rejection(ruler['rejectedBy']),
+            rejectedBySub: rejection(ruler['rejectedBySub']),
+          ),
+      ]),
+      rules: KpRulingRules(
+        count: rules['count']! as String,
+        nodeRulers: rules['nodeRulers']! as String,
+        retrogradeRejection: rules['retrogradeRejection']! as String,
+      ),
+    ),
+  );
 }
 
 /// The transit hit list to search against every chart of a request
@@ -7066,6 +7538,16 @@ final class Chart {
   /// batch.
   SadeSatiReport? get sadeSati {
     final all = _sadeSatisOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart read as KP — its cusps and planets to the sub-sub lord, its
+  /// significators in Reader VI's order and the ruling planets of its
+  /// moment, under the settings' `kp` group; null unless `kp` asked for it
+  /// (`03-design/kp.md`). A longitude and a lord's span are integers in
+  /// nanoarcseconds, exact.
+  KpReading? get kp {
+    final all = _kpsOf(batch);
     return index < all.length ? all[index] : null;
   }
 
