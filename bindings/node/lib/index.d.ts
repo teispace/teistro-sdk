@@ -41,6 +41,7 @@ import type {
   Point,
   Quadrant,
   Rashi,
+  Samvatsara,
   Shodhana,
   Ekadhipatya,
   Vaiseshikamsa,
@@ -2469,6 +2470,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly muhurta: MuhurtaAnswer | null;
   /** The days the festival rules the request asked for fall on over these days, or `null` when it asked for none. */
   readonly festivals: FestivalAnswer | null;
+  /** The lunar years the days fall in, when the request asked for them with `years: true`, or `null`. */
+  readonly years: LunarYears | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -2550,6 +2553,8 @@ export interface AlmanacRequest {
   readonly muhurta?: MuhurtaRequest;
   /** Festival rules to fall over the same days, answered as `Almanac.festivals`; none by default, which costs nothing. */
   readonly festivals?: FestivalRequest;
+  /** Whether to answer the lunar years the days fall in, as `Almanac.years`; `false` by default, which costs nothing. */
+  readonly years?: boolean;
 }
 
 /**
@@ -2699,6 +2704,52 @@ export interface FestivalObservance {
   readonly decidedBy: { readonly by: 'GUARD'; readonly index: number } | { readonly by: 'OTHERWISE' };
   /** The choice that decided, which `day` resolves. */
   readonly choice: FestivalChoice;
+}
+
+/**
+ * The lunar years an almanac's days fall in
+ * (`03-design/calendar-indian-lunisolar.md` §10), in order and abutting,
+ * frozen to its leaves.
+ */
+export interface LunarYears {
+  /** The years, each from one Chaitra Shukla Pratipada's sunrise to the next. */
+  readonly value: readonly LunarYear[];
+  /** What computed them, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** One lunar year: the name it carries, its numbers and bounds, and the Jovian years that ran in it. */
+export interface LunarYear {
+  /** The name the year carries under `calendars.samvatsara`. */
+  readonly samvatsara: Samvatsara;
+  /** Which count named it. */
+  readonly count: 'BARHASPATYA' | 'BARHASPATYA_RUNNING' | 'CHANDRAMANA';
+  /** The Vikrama year. */
+  readonly vikrama: number;
+  /** The Shaka year, whose number the southern count reads. */
+  readonly shaka: number;
+  /** The new moon that opened the year's first Chaitra, a UTC Julian day. */
+  readonly opened: number;
+  /** The sunrise of Chaitra Shukla Pratipada, where the name is read, a UTC Julian day. */
+  readonly began: number;
+  /** The next year's first sunrise, which ends this one, a UTC Julian day. */
+  readonly ended: number;
+  /** The Jovian years running between `began` and `ended`, in order. */
+  readonly jovian: readonly JovianYear[];
+  /** The Jovian year that began and ended inside this one and so names no year, or `null`. */
+  readonly lupta: Samvatsara | null;
+}
+
+/** One Jovian year of the Surya Siddhanta's count (I.55). */
+export interface JovianYear {
+  /** The year's name. */
+  readonly member: Samvatsara;
+  /** The signs mean Jupiter had crossed since the Kali age began, from 0. */
+  readonly count: number;
+  /** When mean Jupiter entered the sign, a UTC Julian day. */
+  readonly from: number;
+  /** When it entered the next, a UTC Julian day. */
+  readonly to: number;
 }
 
 /** What a set of festival rules gives over an almanac's days (`03-design/festival-rules.md` §7.3), frozen to its leaves. */

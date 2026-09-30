@@ -1500,6 +1500,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none; a new answer and a new knob, whose default is the
   only reading that names every recorded year.
 
+- **The lunar years cross to every binding** (`calendar-indian-lunisolar.md`
+  §10). A panchanga request's reserved tail is now `sections`, a bit set
+  whose `TS_PANCHANGA_YEARS` asks for the years beside the days. A caller
+  compiled against the older header wrote zero there and asks for none.
+  The years come back in the blob's new `years` section as the canonical
+  envelope, members in full. In Node, Python and Dart, `years: true` (or
+  `years=True`) answers `Almanac.years` as `{value, provenance}`, with
+  typed `LunarYear` and `JovianYear` records, and every parity runner
+  prints them. The twelve `TS_CHART_*` section bits are now described
+  constants, so `teistro.h` and every binding generate them, and each
+  binding's hand-kept copy of the numbers is gone.
+
+  **Numbers:** none; a new section, and constants that were already the
+  values every binding sent.
+
 - **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
   C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika

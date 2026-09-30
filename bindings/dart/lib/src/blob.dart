@@ -5644,6 +5644,7 @@ final class Panchanga {
     required this.contentHashes,
     required this.muhurta,
     required this.festivals,
+    required this.years,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -5727,6 +5728,9 @@ final class Panchanga {
   /// UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`: each observance `{rule, day, tithi, case, extents, decidedBy, choice}`, the rule's key, the calendar date it falls on, the tithi's occurrence `{from, to}` in UTC Julian days, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}` or `{by: OTHERWISE}`, and the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), and the choice (`EARLIER` or `LATER`, which `day` resolves); each unjudged occurrence `{rule, tithi, why}`. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none.
   final String festivals;
 
+  /// UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, opened, began, ended, jovian, lupta}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama and Shaka numbers, the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; and the Jovian year expunged in it, in full, or null. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.
+  final String years;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -5756,6 +5760,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atContentHashes = blob.section(20, 'content_hashes');
   final atMuhurta = blob.section(21, 'muhurta');
   final atFestivals = blob.section(22, 'festivals');
+  final atYears = blob.section(23, 'years');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -6376,6 +6381,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
     contentHashes: blob.text(atContentHashes),
     muhurta: blob.text(atMuhurta),
     festivals: blob.text(atFestivals),
+    years: blob.text(atYears),
   );
 }
 

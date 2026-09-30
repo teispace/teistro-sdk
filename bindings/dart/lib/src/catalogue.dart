@@ -29,6 +29,52 @@ const int vtableAbiVersion = 4;
 /// astronomy.
 const int contextTestProvider = 1;
 
+/// A chart request's `sections` bit: the day's almanac.
+const int chartPanchanga = 1;
+
+/// A chart request's `sections` bit: the planetary states.
+const int chartState = 2;
+
+/// A chart request's `sections` bit: the drishti.
+const int chartAspects = 4;
+
+/// A chart request's `sections` bit: the derived points.
+const int chartPoints = 8;
+
+/// A chart request's `sections` bit: the houses service.
+const int chartHouses = 16;
+
+/// A chart request's `sections` bit: the Ashtakavarga.
+const int chartAshtakavarga = 32;
+
+/// A chart request's `sections` bit: the Vimshopaka.
+const int chartVimshopaka = 64;
+
+/// A chart request's `sections` bit: the Shadbala.
+const int chartShadbala = 128;
+
+/// A chart request's `sections` bit: the Bhava bala.
+const int chartBhavaBala = 256;
+
+/// A chart request's `sections` bit: the Vaiseshikamsa.
+const int chartVaiseshikamsa = 512;
+
+/// A chart request's `sections` bit: the dasha phala.
+const int chartDashaPhala = 1024;
+
+/// A chart request's `sections` bit: Jaimini's significators, the
+/// karakamsha and the Brahma graha.
+const int chartJaimini = 2048;
+
+/// `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+/// `sections` for the lunar years its days fall in.
+///
+/// Named in the header, because the bits are the boundary's vocabulary:
+/// a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+/// generated layer writes a named option instead. An unknown bit asks
+/// for nothing, as a chart request's does.
+const int panchangaYears = 1;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

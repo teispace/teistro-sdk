@@ -724,8 +724,9 @@ measured against Nepal before it is called done:
    with a name never naming two years, C184). It is answered as the
    lunar years beside the days rather than on every day, since a day's
    year is the one holding its sunrise and a field would cost every day
-   a few searches (`calendar-indian-lunisolar.md` §10). Left: the
-   boundary and the bindings, then ritu, the flags and ghati-pala.
+   a few searches (`calendar-indian-lunisolar.md` §10). The years
+   cross to every binding by a `sections` bit on the panchanga request.
+   Left: ritu, the flags and ghati-pala.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
    as blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's

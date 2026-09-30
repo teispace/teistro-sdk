@@ -2839,6 +2839,16 @@ pub struct PanchangaRequest {
     /// clock the days' dates are read in.
     /// Unit: s. Range: [-64800,64800]. Example: 20700.
     pub utc_offset_seconds: i32,
+    /// What to answer beside the days, as a bit set:
+    /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+    /// `years` section. Zero for the days alone, which is what every
+    /// caller compiled against an earlier header passes, since this was a
+    /// reserved field it wrote zero to.
+    ///
+    /// A bit set here and a named option in every ergonomic layer, as a
+    /// chart request's `sections` is (`03-design/chart-reading.md` §5).
+    /// Example: 0.
+    pub sections: u32,
     /// A muhurta search over the same days, as a JSON object: `rules`,
     /// the activity's rules spelt out or a shipped set named
     /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
@@ -2885,6 +2895,7 @@ pub struct HeldPanchangaRequest {
     longitude_deg: f64,
     altitude_m: f64,
     utc_offset_seconds: i32,
+    sections: u32,
     muhurta_json: Option<std::ffi::CString>,
     festivals_json: Option<std::ffi::CString>,
 }
@@ -2906,7 +2917,7 @@ impl HeldPanchangaRequest {
             longitude_deg: self.longitude_deg,
             altitude_m: self.altitude_m,
             utc_offset_seconds: self.utc_offset_seconds,
-            reserved_tail: Default::default(),
+            sections: self.sections,
             muhurta_json: self
                 .muhurta_json
                 .as_ref()
@@ -2934,6 +2945,7 @@ impl PanchangaRequest {
             longitude_deg: self.longitude_deg as f64,
             altitude_m: self.altitude_m as f64,
             utc_offset_seconds: self.utc_offset_seconds as i32,
+            sections: self.sections as u32,
             muhurta_json: self
                 .muhurta_json
                 .as_deref()
@@ -2966,6 +2978,7 @@ impl PanchangaRequest {
             longitude_deg: raw.longitude_deg as _,
             altitude_m: raw.altitude_m as _,
             utc_offset_seconds: raw.utc_offset_seconds as _,
+            sections: raw.sections as _,
             muhurta_json: unsafe { lent_text(raw.muhurta_json) },
             festivals_json: unsafe { lent_text(raw.festivals_json) },
         }

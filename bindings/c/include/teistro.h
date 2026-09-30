@@ -39,6 +39,78 @@ extern "C" {
 #define TS_ERROR_OWNED ((uint32_t)1)
 
 /**
+ * A chart request's `sections` bit: the day's almanac.
+ */
+#define TS_CHART_PANCHANGA ((uint32_t)1)
+
+/**
+ * A chart request's `sections` bit: the planetary states.
+ */
+#define TS_CHART_STATE ((uint32_t)2)
+
+/**
+ * A chart request's `sections` bit: the drishti.
+ */
+#define TS_CHART_ASPECTS ((uint32_t)4)
+
+/**
+ * A chart request's `sections` bit: the derived points.
+ */
+#define TS_CHART_POINTS ((uint32_t)8)
+
+/**
+ * A chart request's `sections` bit: the houses service.
+ */
+#define TS_CHART_HOUSES ((uint32_t)16)
+
+/**
+ * A chart request's `sections` bit: the Ashtakavarga.
+ */
+#define TS_CHART_ASHTAKAVARGA ((uint32_t)32)
+
+/**
+ * A chart request's `sections` bit: the Vimshopaka.
+ */
+#define TS_CHART_VIMSHOPAKA ((uint32_t)64)
+
+/**
+ * A chart request's `sections` bit: the Shadbala.
+ */
+#define TS_CHART_SHADBALA ((uint32_t)128)
+
+/**
+ * A chart request's `sections` bit: the Bhava bala.
+ */
+#define TS_CHART_BHAVA_BALA ((uint32_t)256)
+
+/**
+ * A chart request's `sections` bit: the Vaiseshikamsa.
+ */
+#define TS_CHART_VAISESHIKAMSA ((uint32_t)512)
+
+/**
+ * A chart request's `sections` bit: the dasha phala.
+ */
+#define TS_CHART_DASHA_PHALA ((uint32_t)1024)
+
+/**
+ * A chart request's `sections` bit: Jaimini's significators, the
+ * karakamsha and the Brahma graha.
+ */
+#define TS_CHART_JAIMINI ((uint32_t)2048)
+
+/**
+ * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+ * `sections` for the lunar years its days fall in.
+ *
+ * Named in the header, because the bits are the boundary's vocabulary:
+ * a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+ * generated layer writes a named option instead. An unknown bit asks
+ * for nothing, as a chart request's does.
+ */
+#define TS_PANCHANGA_YEARS ((uint32_t)1)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -7268,9 +7340,17 @@ struct ts_panchanga_request {
      */
     int32_t utc_offset_seconds;
     /**
-     * Reserved; write zero.
+     * What to answer beside the days, as a bit set:
+     * `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+     * `years` section. Zero for the days alone, which is what every
+     * caller compiled against an earlier header passes, since this was a
+     * reserved field it wrote zero to.
+     *
+     * A bit set here and a named option in every ergonomic layer, as a
+     * chart request's `sections` is (`03-design/chart-reading.md` §5).
+     * Example: 0.
      */
-    int32_t reserved_tail;
+    uint32_t sections;
     /**
      * A muhurta search over the same days, as a JSON object: `rules`,
      * the activity's rules spelt out or a shipped set named

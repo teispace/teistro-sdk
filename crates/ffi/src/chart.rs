@@ -1012,34 +1012,60 @@ c_struct!(TsChartRequest);
 /// (`03-design/chart-reading.md` §5).
 type SectionBit = (u32, fn(ChartRequest) -> ChartRequest);
 
-/// `TS_CHART_ASPECTS`, the bit a caller sets for the drishti.
+// The bits a caller sets in a chart request's `sections`. Declared here
+// beside the table and described as constants, so the header names them:
+// the bits are the boundary's vocabulary, a consumer of the C ABI writes
+// `TS_CHART_ASPECTS`, and every generated layer writes a named option
+// instead (`03-design/chart-reading.md` §5).
+
+/// A chart request's `sections` bit: the day's almanac.
 ///
-/// Declared here beside the table and named in the header, because the
-/// bits are the boundary's vocabulary: a consumer of the C ABI writes
-/// `TS_CHART_ASPECTS`, and every generated layer writes a named option
-/// instead (`03-design/chart-reading.md` §5).
+/// `api: constant`
 pub const TS_CHART_PANCHANGA: u32 = 1;
-/// The planetary states.
+/// A chart request's `sections` bit: the planetary states.
+///
+/// `api: constant`
 pub const TS_CHART_STATE: u32 = 2;
-/// The drishti.
+/// A chart request's `sections` bit: the drishti.
+///
+/// `api: constant`
 pub const TS_CHART_ASPECTS: u32 = 4;
-/// The derived points.
+/// A chart request's `sections` bit: the derived points.
+///
+/// `api: constant`
 pub const TS_CHART_POINTS: u32 = 8;
-/// The houses service.
+/// A chart request's `sections` bit: the houses service.
+///
+/// `api: constant`
 pub const TS_CHART_HOUSES: u32 = 16;
-/// The Ashtakavarga.
+/// A chart request's `sections` bit: the Ashtakavarga.
+///
+/// `api: constant`
 pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
-/// The Vimshopaka.
+/// A chart request's `sections` bit: the Vimshopaka.
+///
+/// `api: constant`
 pub const TS_CHART_VIMSHOPAKA: u32 = 64;
-/// The Shadbala.
+/// A chart request's `sections` bit: the Shadbala.
+///
+/// `api: constant`
 pub const TS_CHART_SHADBALA: u32 = 128;
-/// The Bhava bala.
+/// A chart request's `sections` bit: the Bhava bala.
+///
+/// `api: constant`
 pub const TS_CHART_BHAVA_BALA: u32 = 256;
-/// The Vaiseshikamsa.
+/// A chart request's `sections` bit: the Vaiseshikamsa.
+///
+/// `api: constant`
 pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
-/// The dasha phala.
+/// A chart request's `sections` bit: the dasha phala.
+///
+/// `api: constant`
 pub const TS_CHART_DASHA_PHALA: u32 = 1024;
-/// Jaimini's significators, the karakamsha and the Brahma graha.
+/// A chart request's `sections` bit: Jaimini's significators, the
+/// karakamsha and the Brahma graha.
+///
+/// `api: constant`
 pub const TS_CHART_JAIMINI: u32 = 2048;
 
 const SECTION_BITS: [SectionBit; 12] = [

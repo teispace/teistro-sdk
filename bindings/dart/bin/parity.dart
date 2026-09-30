@@ -1338,6 +1338,44 @@ void main() {
             .festivals!;
     putFestivals('festivals-$name', festivals);
   }
+
+  // ── The lunar years ─────────────────────────────────────────────────
+  // 2024-03-20..04-20 holds a Chaitra Shukla Pratipada: two years, their
+  // bounds and their Jovian years.
+  final years =
+      geo.almanac
+          .of(
+            from: Calendar.gregorian.date(2024, 3, 20),
+            to: Calendar.gregorian.date(2024, 4, 20),
+            place: place,
+            utcOffsetSeconds: 20700,
+            years: true,
+          )
+          .years!;
+  put('years-count', years.value.length);
+  put('years-hash', years.provenance.contentHash);
+  for (final (k, year) in years.value.indexed) {
+    put(
+      'years-$k',
+      [
+        year.samvatsara.fullKey,
+        year.count,
+        year.vikrama,
+        year.shaka,
+        number(year.opened),
+        number(year.began),
+        number(year.ended),
+        year.lupta?.fullKey ?? '-',
+      ].join(' '),
+    );
+    put(
+      'years-$k-jovian',
+      listed([
+        for (final jovian in year.jovian)
+          '${jovian.member.fullKey}:${jovian.count}:${number(jovian.from)}',
+      ]),
+    );
+  }
   geo.dispose();
 
   // ── The surface's shape ───────────────────────────────────────────

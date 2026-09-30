@@ -630,42 +630,6 @@ final class FrameArea extends _Area {
   Frame unpack(int bits) => _context._teistro.unpackFrame(bits);
 }
 
-/// `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
-///
-/// The bits are the C ABI's vocabulary; a consumer of this binding
-/// writes `aspects: true` (`03-design/chart-reading.md` §5).
-const int _sectionAspects = 4;
-
-/// `TS_CHART_POINTS`, the derived points.
-const int _sectionPoints = 8;
-
-/// `TS_CHART_HOUSES`, the houses service.
-const int _sectionHouses = 16;
-
-/// `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
-const int _sectionAshtakavarga = 32;
-
-/// `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
-const int _sectionVimshopaka = 64;
-
-/// `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
-const int _sectionVaiseshikamsa = 512;
-
-/// `TS_CHART_DASHA_PHALA`, the dasha phala.
-const int _sectionDashaPhala = 1024;
-
-/// `TS_CHART_JAIMINI`, Jaimini's significators.
-const int _sectionJaimini = 2048;
-
-/// `TS_CHART_SHADBALA`, the Shadbala.
-const int _sectionShadbala = 128;
-
-/// `TS_CHART_BHAVA_BALA`, the Bhava bala.
-const int _sectionBhavaBala = 256;
-
-/// `TS_CHART_STATE`, the planetary states.
-const int _sectionState = 2;
-
 /// `sdk.chart` — a chart founded at an instant and a place.
 final class ChartArea extends _Area {
   const ChartArea._(super.context);
@@ -812,17 +776,17 @@ final class ChartArea extends _Area {
             // (`03-design/chart-reading.md` §5): a named argument each,
             // and one more as each crosses.
             sections:
-                (aspects ? _sectionAspects : 0) |
-                (points ? _sectionPoints : 0) |
-                (houses ? _sectionHouses : 0) |
-                (ashtakavarga ? _sectionAshtakavarga : 0) |
-                (vimshopaka ? _sectionVimshopaka : 0) |
-                (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
-                (dashaPhala ? _sectionDashaPhala : 0) |
-                (jaimini ? _sectionJaimini : 0) |
-                (shadbala ? _sectionShadbala : 0) |
-                (bhavaBala ? _sectionBhavaBala : 0) |
-                (state ? _sectionState : 0),
+                (aspects ? chartAspects : 0) |
+                (points ? chartPoints : 0) |
+                (houses ? chartHouses : 0) |
+                (ashtakavarga ? chartAshtakavarga : 0) |
+                (vimshopaka ? chartVimshopaka : 0) |
+                (vaiseshikamsa ? chartVaiseshikamsa : 0) |
+                (dashaPhala ? chartDashaPhala : 0) |
+                (jaimini ? chartJaimini : 0) |
+                (shadbala ? chartShadbala : 0) |
+                (bhavaBala ? chartBhavaBala : 0) |
+                (state ? chartState : 0),
             vargas: vargas,
             dashas: _dashaIds(dashas, _context._registeredDashas),
             drawings: _drawingBits(drawings, _context._registeredLayouts),
@@ -862,6 +826,7 @@ final class AlmanacArea extends _Area {
   /// [muhurta] runs a search over the same days, answered as
   /// [Almanac.muhurta], and [festivals] the rules whose days fall in them,
   /// answered as [Almanac.festivals]; the days are founded once for both.
+  /// [years] answers the lunar years the days fall in, as [Almanac.years].
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
@@ -869,6 +834,7 @@ final class AlmanacArea extends _Area {
     required int utcOffsetSeconds,
     MuhurtaRequest? muhurta,
     FestivalRequest? festivals,
+    bool years = false,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -887,6 +853,7 @@ final class AlmanacArea extends _Area {
             utcOffsetSeconds: utcOffsetSeconds,
             muhurtaJson: muhurta?._json,
             festivalsJson: festivals?._json,
+            sections: years ? panchangaYears : 0,
           ),
         ),
       ),
@@ -6314,6 +6281,145 @@ FestivalAnswer _festivalAnswer(String json) {
   );
 }
 
+/// One Jovian year of the Surya Siddhanta's count (I.55).
+final class JovianYear extends _Value {
+  const JovianYear({
+    required this.member,
+    required this.count,
+    required this.from,
+    required this.to,
+  });
+
+  /// The year's name.
+  final Samvatsara member;
+
+  /// The signs mean Jupiter had crossed since the Kali age began, from 0.
+  final int count;
+
+  /// When mean Jupiter entered the sign, a UTC Julian day.
+  final double from;
+
+  /// When it entered the next, a UTC Julian day.
+  final double to;
+
+  @override
+  List<Object?> get _fields => [member, count, from, to];
+}
+
+/// One lunar year: the name it carries, its numbers and bounds, and the
+/// Jovian years that ran in it (`03-design/calendar-indian-lunisolar.md`
+/// §10).
+final class LunarYear extends _Value {
+  const LunarYear({
+    required this.samvatsara,
+    required this.count,
+    required this.vikrama,
+    required this.shaka,
+    required this.opened,
+    required this.began,
+    required this.ended,
+    required this.jovian,
+    required this.lupta,
+  });
+
+  /// The name the year carries under `calendars.samvatsara`.
+  final Samvatsara samvatsara;
+
+  /// Which count named it: `BARHASPATYA`, `BARHASPATYA_RUNNING` or
+  /// `CHANDRAMANA`.
+  final String count;
+
+  /// The Vikrama year.
+  final int vikrama;
+
+  /// The Shaka year, whose number the southern count reads.
+  final int shaka;
+
+  /// The new moon that opened the year's first Chaitra, a UTC Julian day.
+  final double opened;
+
+  /// The sunrise of Chaitra Shukla Pratipada, where the name is read, a
+  /// UTC Julian day.
+  final double began;
+
+  /// The next year's first sunrise, which ends this one, a UTC Julian day.
+  final double ended;
+
+  /// The Jovian years running between [began] and [ended], in order.
+  final List<JovianYear> jovian;
+
+  /// The Jovian year that began and ended inside this one and so names no
+  /// year, or `null`.
+  final Samvatsara? lupta;
+
+  @override
+  List<Object?> get _fields => [
+    samvatsara,
+    count,
+    vikrama,
+    shaka,
+    opened,
+    began,
+    ended,
+    jovian,
+    lupta,
+  ];
+}
+
+/// The lunar years an almanac's days fall in, in order and abutting.
+///
+/// ```dart
+/// final almanac = sdk.almanac.of(
+///     from: from, to: to, place: place, utcOffsetSeconds: 20700,
+///     years: true);
+/// final name = almanac.years?.value.first.samvatsara;
+/// ```
+final class LunarYears {
+  const LunarYears({required this.value, required this.provenance});
+
+  /// The years, each from one Chaitra Shukla Pratipada's sunrise to the
+  /// next.
+  final List<LunarYear> value;
+
+  /// What computed them, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// The `years` section: the envelope's years as values, with the
+/// provenance beside them.
+LunarYears _lunarYears(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
+  double jd(Object? raw) => (raw! as num).toDouble();
+  Samvatsara named(Object? raw) =>
+      _key(raw, Samvatsara.byKey, Samvatsara.unknown);
+  JovianYear jovian(Map<String, Object?> raw) => JovianYear(
+    member: named(raw['member']),
+    count: raw['count']! as int,
+    from: jd(raw['from']),
+    to: jd(raw['to']),
+  );
+  LunarYear year(Map<String, Object?> raw) => LunarYear(
+    samvatsara: named(raw['samvatsara']),
+    count: raw['count']! as String,
+    vikrama: raw['vikrama']! as int,
+    shaka: raw['shaka']! as int,
+    opened: jd(raw['opened']),
+    began: jd(raw['began']),
+    ended: jd(raw['ended']),
+    jovian: List.unmodifiable([
+      for (final item in raw['jovian']! as List<Object?>) jovian(at(item)),
+    ]),
+    lupta: raw['lupta'] == null ? null : named(raw['lupta']),
+  );
+  return LunarYears(
+    value: List.unmodifiable([
+      for (final item in envelope['value']! as List<Object?>) year(at(item)),
+    ]),
+    provenance: Provenance.fromJson(at(envelope['provenance'])),
+  );
+}
+
 /// A date's fields, for a value that holds one to compare by: the
 /// generated [CalendarDate] is a plain record without equality of its own.
 List<Object?> _dateFields(CalendarDate date) => [
@@ -9416,6 +9522,14 @@ final class Almanac {
   /// that decided. Parsed once.
   late final FestivalAnswer? festivals =
       decoded.festivals.isEmpty ? null : _festivalAnswer(decoded.festivals);
+
+  /// The lunar years these days fall in, or `null` when the request did
+  /// not ask with `years: true` (`03-design/calendar-indian-lunisolar.md`
+  /// §10): each with the samvatsara it carries, its bounds from one
+  /// Chaitra Shukla Pratipada's sunrise to the next, the Jovian years that
+  /// ran in it and the one it expunged. Parsed once.
+  late final LunarYears? years =
+      decoded.years.isEmpty ? null : _lunarYears(decoded.years);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

@@ -1441,6 +1441,45 @@ class AnEngine(WithLibrary):
                 ctx.almanac.of(**days, muhurta="RAMAN_MARRIAGE")  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "muhurta")
 
+    def test_an_almanac_carries_the_lunar_years_it_was_asked_for(self) -> None:
+        """The lunar years cross beside the days they hold
+        (`03-design/calendar-indian-lunisolar.md` §10): members as members,
+        abutting, frozen, and the days the almanac's own."""
+        import dataclasses
+
+        from teistro import LunarYears, date
+        from teistro.catalogue import Calendar, Samvatsara
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        # Across Chaitra Shukla Pratipada of VS 2083, 19 March 2026.
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2026, 3, 10),
+            "to_date": date(Calendar.GREGORIAN, 2026, 4, 10),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.almanac.of(**days)
+            self.assertIsNone(plain.years)
+            almanac = ctx.almanac.of(**days, years=True)
+            answer = almanac.years
+            assert answer is not None
+            self.assertIsInstance(answer, LunarYears)
+            years = answer.value
+            self.assertEqual([y.samvatsara for y in years], [Samvatsara.SIDDHARTHI, Samvatsara.RAUDRA])
+            self.assertEqual([y.vikrama for y in years], [2082, 2083])
+            self.assertEqual([y.count for y in years], ["BARHASPATYA", "BARHASPATYA"])
+            self.assertEqual(years[0].ended, years[1].began)
+            self.assertLess(years[1].opened, years[1].began)
+            self.assertIsInstance(years[1].jovian[0].member, Samvatsara)
+            with self.assertRaises(dataclasses.FrozenInstanceError):
+                years[0].vikrama = 0  # type: ignore[misc]
+            self.assertTrue(answer.provenance.content_hash)
+            for k in range(len(plain)):
+                self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
+
     def test_an_almanac_carries_the_festivals_it_was_asked_for(self) -> None:
         """Festival rules cross beside the days they fall on
         (`03-design/festival-rules.md` §7): dates in this binding's shape,
