@@ -1377,6 +1377,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The clauses of an instant** (`muhurta.md` §6 step 3, its first half).
+  `instant::clauses(&Sky, Option<&Limbs>, Option<Rashi>, window)` reads
+  the lagna and the grahas' houses from it as Raman's Mahadoshas state
+  them: kartari, the Moon in the 6th, 8th or 12th, the Moon joined,
+  Venus in the 6th, Mars in the 8th, the ashtama lagna against a birth
+  lagna, kunavamsa, and the panchaka remainder (crux C159). It adds the
+  marriage chapter's 7th occupied and malefic in the lagna, and four
+  neutralisations: a benefic or an exalted graha in the lagna, a
+  luminary in the 11th, and Jupiter or Venus in a kendra with every
+  malefic in an upachaya. A clause says nothing of when it holds; it is
+  judged over the window the caller passes, which the next half cuts so
+  that none of these changes inside it.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **Muhurta begins: a day's clauses** (`muhurta.md` §6 step 2). A new
   crate, `teistro-muhurta`, reports a day as **clauses** — one named
   condition from a source and the interval it held over — rather than a

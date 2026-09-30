@@ -27,8 +27,10 @@
 
 pub mod clause;
 pub mod day;
+pub mod instant;
 pub mod tara;
 
 pub use clause::{Clause, ClauseKind};
 pub use day::{DayRules, Native, clauses};
+pub use instant::Sky;
 pub use tara::{ChandraBala, Tara, TaraReading};
