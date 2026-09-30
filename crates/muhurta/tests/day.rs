@@ -19,6 +19,7 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, Gregorian};
 use teistro_core::catalogue::{Ayanamsha, Calendar, Nakshatra, Rashi, Vara};
+use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
@@ -187,4 +188,28 @@ fn a_clause_reads_back_from_its_json() {
     assert!(text.contains(r#""clause":"VARA""#), "{text}");
     let back: Vec<Clause> = serde_json::from_str(&text).unwrap();
     assert_eq!(back, found);
+}
+
+#[test]
+fn every_day_clause_and_kaala_holds_whole_windows() {
+    use teistro_muhurta::window::{day_cuts, windows};
+    let within = |outer: Interval, inner: Interval| {
+        inner.from.get() >= outer.from.get() - 1e-9 && inner.to.get() <= outer.to.get() + 1e-9
+    };
+    let apart = |a: Interval, b: Interval| {
+        a.to.get() <= b.from.get() + 1e-9 || b.to.get() <= a.from.get() + 1e-9
+    };
+    for d in 15..=21 {
+        let day = day(2024, 6, d);
+        let pieces = windows(day.window, day_cuts(&day));
+        let held = clauses(&day, Some(&native()), &DayRules::raman())
+            .into_iter()
+            .map(|c| c.at)
+            .chain(day.kaalas.iter().map(|k| k.at));
+        for at in held {
+            for w in &pieces {
+                assert!(within(at, *w) || apart(at, *w), "{d}: {at:?} splits {w:?}");
+            }
+        }
+    }
 }

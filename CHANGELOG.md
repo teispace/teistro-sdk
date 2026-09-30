@@ -1377,6 +1377,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The windows** (`muhurta.md` §6 step 3, its second half).
+  `window::lagna_cuts(within, lagna_at)` finds each instant the lagna
+  enters a navamsa, and so a sign, by sampling once a minute and
+  bisecting to about a millisecond; beyond the polar circle a jump is one
+  cut. `window::tyajya` gives Raman's lagna tyajya — the first, middle or
+  last half ghati of a sign's rising — as a new `LAGNA_TYAJYA` clause for
+  every sign risen whole between two cuts. `window::day_cuts(&Panchanga)`
+  lists every instant an almanac day's clauses can change at, and
+  `window::windows(day, cuts)` splits the day at them, so a judgement
+  read anywhere inside a window holds for all of it.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **The clauses of an instant** (`muhurta.md` §6 step 3, its first half).
   `instant::clauses(&Sky, Option<&Limbs>, Option<Rashi>, window)` reads
   the lagna and the grahas' houses from it as Raman's Mahadoshas state

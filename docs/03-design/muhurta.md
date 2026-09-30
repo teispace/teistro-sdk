@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 and 2 and the first half of step 3 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1, 2 and 3 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -185,6 +185,32 @@ makes the answer **exact rather than sampled**: the baseline judges a
 window by its start, so a choghadiya that crosses a lagna boundary
 reports the first lagna for all of it. A graha that changes sign within
 the day adds its crossing as one more cut.
+
+Built (`window.rs`), three findings from building it:
+
+- **The lagna is the one cut found by search.** It is sampled once a
+  minute and each change of navamsa bisected to about a millisecond; a
+  change of sign is a change of navamsa, so one search gives both. A
+  navamsa rises in no less than about four minutes outside the polar
+  circles, so a minute's step misses none. Beyond them the lagna jumps
+  the arc that never rises, and the bisection closes on the jump as one
+  cut that skips several navamsas, which is what the sky does. The
+  integration test reads the lagna back a tenth of a second inside each
+  window's two ends, through the same `Founder::ascendant_at` a chart's
+  own derived points use, and was proved red by loosening the
+  tolerance to 86 s.
+- **A tyajya needs its sign whole.** Raman's rule places the half ghati
+  at the first, middle or last of the sign's rising, so a sign already
+  rising when the search began, or still rising when it ends, cannot be
+  judged. `window::tyajya` judges only the signs bounded by two cuts, and
+  a search asks the lagna over a margin either side of the day.
+- **Every tithi end is a karana end**, so dropping the tithi's cuts
+  alone left the whole-window test green; dropping both turned it red. The
+  tithi's are kept, since a karana convention that is not a half tithi
+  would otherwise lose them silently. The varjyam and the gandantas are
+  not in an almanac day yet; when they are, they become cuts the same
+  way. The other grahas' ingresses need the provider and are added by
+  the search.
 
 ### 4.4 The search
 

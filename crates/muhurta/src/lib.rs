@@ -29,6 +29,7 @@ pub mod clause;
 pub mod day;
 pub mod instant;
 pub mod tara;
+pub mod window;
 
 pub use clause::{Clause, ClauseKind};
 pub use day::{DayRules, Native, clauses};
