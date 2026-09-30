@@ -385,6 +385,23 @@ __all__ = [
     "SadeSatiSpell",
     "SadeSatiVisit",
     "Reckoning",
+    # KP: a chart read as the KP Readers read it.
+    "KpRequest",
+    "KpReading",
+    "KpChart",
+    "KpCusp",
+    "KpPlanet",
+    "KpLords",
+    "KpLevel",
+    "KpSpan",
+    "KpSignificators",
+    "KpHouseSignificators",
+    "KpNodeAgency",
+    "KpRuling",
+    "KpRuler",
+    "KpReason",
+    "KpRejection",
+    "KpRulingRules",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -1332,6 +1349,7 @@ class ChartArea(_Area):
         gochar: Optional[GocharRequest] = None,
         hits: Optional[HitRequest] = None,
         sade_sati: Optional[SadeSatiRequest] = None,
+        kp: Optional[KpRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1372,6 +1390,7 @@ class ChartArea(_Area):
             gochar=gochar,
             hits=hits,
             sade_sati=sade_sati,
+            kp=kp,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1402,6 +1421,7 @@ class ChartArea(_Area):
         gochar: Optional[GocharRequest] = None,
         hits: Optional[HitRequest] = None,
         sade_sati: Optional[SadeSatiRequest] = None,
+        kp: Optional[KpRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1463,6 +1483,7 @@ class ChartArea(_Area):
             gochar_json=_gochar_json(gochar),
             hits_json=_hits_json(hits),
             sade_sati_json=_sade_sati_json(sade_sati),
+            kp_json=_kp_json(kp),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2393,6 +2414,210 @@ class SadeSatiReport:
 
     spells: Tuple[SadeSatiSpell, ...]
     """The smaller spells asked for, in time order."""
+
+
+class KpRequest(TypedDict, total=False):
+    """A KP reading to make of every chart of a request (`03-design/kp.md`),
+    every field optional: `number`, the querent's horary number 1 to 249,
+    which casts the cusps from it while the ruling planets stay the
+    moment's (C156); `clock`, seconds east of UT that the civil day lord
+    is the weekday on, the request's own `utc_offset_seconds` by default
+    (C151); and `anyAyanamsha`, true to read a chart whose zodiac is not
+    Krishnamurti's, which is refused by default (C157).
+
+    >>> asked: KpRequest = {"number": 74}
+    """
+
+    number: int
+    clock: int
+    anyAyanamsha: bool
+
+
+@dataclass(frozen=True)
+class KpSpan:
+    """An arc of the zodiac, half-open, in nanoarcseconds (divide by
+    `3.6e12` for degrees)."""
+
+    start: int
+    end: int
+
+
+@dataclass(frozen=True)
+class KpLevel:
+    """One level of a point's lords below the sign: its lord, and the arc
+    it rules."""
+
+    lord: Graha
+    span: KpSpan
+
+
+@dataclass(frozen=True)
+class KpLords:
+    """A point's lords: of its sign, its star, its sub and its sub-sub."""
+
+    sign: Graha
+    star: KpLevel
+    sub: KpLevel
+    sub_sub: KpLevel
+
+
+@dataclass(frozen=True)
+class KpCusp:
+    """A cusp, its longitude in nanoarcseconds of the sidereal zodiac."""
+
+    house: int
+    """1 to 12."""
+
+    longitude: int
+    lords: KpLords
+
+
+@dataclass(frozen=True)
+class KpPlanet:
+    """A planet, its longitude in nanoarcseconds of the sidereal zodiac."""
+
+    graha: Graha
+    longitude: int
+    retrograde: bool
+    house: int
+    """The house whose cusp arc holds it, 1 to 12."""
+
+    lords: KpLords
+
+
+@dataclass(frozen=True)
+class KpChart:
+    """A chart as KP reads it: its cusps, the horary number's when one was
+    named, and its planets."""
+
+    system: HouseSystem
+    cusps: Tuple[KpCusp, ...]
+    planets: Tuple[KpPlanet, ...]
+
+
+@dataclass(frozen=True)
+class KpHouseSignificators:
+    """A house's significators in KP Reader VI's order, strongest first
+    (C154)."""
+
+    house: int
+    in_occupants_stars: Tuple[Graha, ...]
+    """(a) Planets in the stars of the house's occupants."""
+
+    occupants: Tuple[Graha, ...]
+    """(b) The occupants."""
+
+    in_lords_star: Tuple[Graha, ...]
+    """(c) Planets in the star of the house's lord."""
+
+    lord: Graha
+    """(d) The house's lord."""
+
+    conjoined: Tuple[Graha, ...]
+    """(e) Planets joined to a significator above."""
+
+    aspected: Tuple[Graha, ...]
+    """(f) Planets aspecting the house under the settings' node aspects."""
+
+    intercepted: Tuple[Rashi, ...]
+    """Signs wholly inside the house."""
+
+
+@dataclass(frozen=True)
+class KpNodeAgency:
+    """What a node stands for, in Reader VI's order (C155)."""
+
+    node: Graha
+    conjoined: Tuple[Graha, ...]
+    star_lord: Graha
+    aspecting: Tuple[Graha, ...]
+    sign_lord: Graha
+
+
+@dataclass(frozen=True)
+class KpSignificators:
+    """A chart's significators: the twelve houses, and the nodes' agency."""
+
+    houses: Tuple[KpHouseSignificators, ...]
+    nodes: Tuple[KpNodeAgency, ...]
+
+
+@dataclass(frozen=True)
+class KpReason:
+    """Why a planet is a ruling planet: `kind` is `LAGNA_STAR`, `LAGNA_SIGN`,
+    `LAGNA_SUB`, `MOON_STAR`, `MOON_SIGN`, `MOON_SUB`, `DAY_LORD` or
+    `AGENT`, a node standing for the ruler `of`, `by` being `IN_ITS_SIGN`
+    or `CONJOINED` (C152)."""
+
+    kind: str
+    of: Optional[Graha] = None
+    by: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class KpRejection:
+    """A retrograde planet rejecting a ruler through its star, or its sub
+    (C153)."""
+
+    retrograde: Graha
+    by_star: bool
+
+
+@dataclass(frozen=True)
+class KpRuler:
+    """One ruling planet, every reason it rules, and what rejects it."""
+
+    graha: Graha
+    reasons: Tuple[KpReason, ...]
+    """Every reason it rules, the first the strongest."""
+
+    retrograde: bool
+    """Itself retrograde, which the Reader reads as delay and not rejection."""
+
+    rejected_by: Optional[KpRejection]
+    """What rejects it under the settings; `None` when it stands."""
+
+    rejected_by_sub: Optional[KpRejection]
+    """What would reject it under the other reading of C153."""
+
+
+@dataclass(frozen=True)
+class KpRulingRules:
+    """The settings the ruling planets were read under: `count` (`FIVE` or
+    `WITH_SUBS`, C150), `node_rulers` (`SIGN_OR_CONJOINED` or `SIGN`, C152)
+    and `retrograde_rejection` (`STAR` or `STAR_OR_SUB`, C153)."""
+
+    count: str
+    node_rulers: str
+    retrograde_rejection: str
+
+
+@dataclass(frozen=True)
+class KpRuling:
+    """The ruling planets of a moment, and the settings they were read
+    under."""
+
+    rulers: Tuple[KpRuler, ...]
+    rules: KpRulingRules
+
+    @property
+    def accepted(self) -> Tuple[Graha, ...]:
+        """The rulers that stand, in order."""
+        return tuple(ruler.graha for ruler in self.rulers if ruler.rejected_by is None)
+
+
+@dataclass(frozen=True)
+class KpReading:
+    """A chart read as KP: the chart, its significators and the ruling
+    planets of its moment (`03-design/kp.md`).
+
+    >>> # chart = ctx.chart.found(..., kp={"number": 74})
+    >>> # standing = chart.kp.ruling.accepted
+    """
+
+    chart: KpChart
+    significators: KpSignificators
+    ruling: KpRuling
 
 
 GocharRequest = TypedDict(
@@ -4106,6 +4331,100 @@ def _sade_sati_json(sade_sati: Optional[SadeSatiRequest]) -> Optional[str]:
     return _record_json(written, "sadeSati", example)
 
 
+def _kp_json(kp: Optional[KpRequest]) -> Optional[str]:
+    """KP as the JSON the boundary reads, or nothing for none; the SDK
+    refuses the rest, naming the field from `kp`."""
+    return _record_json(kp, "kp", "{'number': 74}")
+
+
+def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
+    """A chart's KP reading from the `kp` section's JSON, its keys made
+    members."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    def grahas(keys: Sequence[str]) -> Tuple[Graha, ...]:
+        return tuple(graha(key) for key in keys)
+
+    def level(raw: Mapping[str, Any]) -> KpLevel:
+        return KpLevel(lord=graha(raw["lord"]), span=KpSpan(start=raw["span"]["start"], end=raw["span"]["end"]))
+
+    def lords(raw: Mapping[str, Any]) -> KpLords:
+        return KpLords(sign=graha(raw["sign"]), star=level(raw["star"]), sub=level(raw["sub"]), sub_sub=level(raw["subSub"]))
+
+    def rejection(raw: Optional[Mapping[str, Any]]) -> Optional[KpRejection]:
+        return None if raw is None else KpRejection(retrograde=graha(raw["retrograde"]), by_star=raw["byStar"])
+
+    def reason(raw: Mapping[str, Any]) -> KpReason:
+        if raw["kind"] == "AGENT":
+            return KpReason(kind="AGENT", of=graha(raw["of"]), by=raw["by"])
+        return KpReason(kind=raw["kind"])
+
+    chart, significators, ruling = raw["chart"], raw["significators"], raw["ruling"]
+    return KpReading(
+        chart=KpChart(
+            system=_member(HouseSystem, chart["system"]),
+            cusps=tuple(
+                KpCusp(house=c["house"], longitude=c["longitude"], lords=lords(c["lords"])) for c in chart["cusps"]
+            ),
+            planets=tuple(
+                KpPlanet(
+                    graha=graha(p["graha"]),
+                    longitude=p["longitude"],
+                    retrograde=p["retrograde"],
+                    house=p["house"],
+                    lords=lords(p["lords"]),
+                )
+                for p in chart["planets"]
+            ),
+        ),
+        significators=KpSignificators(
+            houses=tuple(
+                KpHouseSignificators(
+                    house=h["house"],
+                    in_occupants_stars=grahas(h["inOccupantsStars"]),
+                    occupants=grahas(h["occupants"]),
+                    in_lords_star=grahas(h["inLordsStar"]),
+                    lord=graha(h["lord"]),
+                    conjoined=grahas(h["conjoined"]),
+                    aspected=grahas(h["aspected"]),
+                    intercepted=tuple(_member(Rashi, key) for key in h["intercepted"]),
+                )
+                for h in significators["houses"]
+            ),
+            nodes=tuple(
+                KpNodeAgency(
+                    node=graha(n["node"]),
+                    conjoined=grahas(n["conjoined"]),
+                    star_lord=graha(n["starLord"]),
+                    aspecting=grahas(n["aspecting"]),
+                    sign_lord=graha(n["signLord"]),
+                )
+                for n in significators["nodes"]
+            ),
+        ),
+        ruling=KpRuling(
+            rulers=tuple(
+                KpRuler(
+                    graha=graha(r["graha"]),
+                    reasons=tuple(reason(why) for why in r["reasons"]),
+                    retrograde=r["retrograde"],
+                    rejected_by=rejection(r["rejectedBy"]),
+                    rejected_by_sub=rejection(r["rejectedBySub"]),
+                )
+                for r in ruling["rulers"]
+            ),
+            rules=KpRulingRules(
+                count=ruling["rules"]["count"],
+                node_rulers=ruling["rules"]["nodeRulers"],
+                retrograde_rejection=ruling["rules"]["retrogradeRejection"],
+            ),
+        ),
+    )
+
+
 def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
     """The hit list as the JSON the boundary reads, or nothing for none.
     Catalogue members are written as their keys and a `NatalPoint` as the
@@ -5159,6 +5478,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def kp(self) -> Optional[KpReading]:
+        """The chart read as KP — its cusps and planets to the sub-sub lord,
+        its significators in Reader VI's order and the ruling planets of its
+        moment, under the settings' `kp` group; `None` unless `kp=` asked for
+        it (`03-design/kp.md`). A longitude and a lord's span are integers in
+        nanoarcseconds, exact; for a horary `number` the cusps are the
+        number's and the ruling planets still the moment's own."""
+        parsed = self.batch._kps
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -5528,6 +5858,13 @@ class ChartBatch:
             )
 
         return [reading(chart) for chart in range(c.length)]
+
+    @cached_property
+    def _kps(self) -> list[KpReading]:
+        """Every chart's KP reading, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.kp
+        return [_kp_reading(raw) for raw in json.loads(text)] if text else []
 
     @cached_property
     def _sade_satis(self) -> list[SadeSatiReport]:

@@ -1423,6 +1423,97 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its KP reading', () {
+    final ctx = teistro.context(
+      profile: 'kp-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(13.08),
+      longitudeDeg: Longitude(80.27),
+      altitudeM: Altitude(6),
+    );
+    const births = [2447995.4895833335, 2451545.2];
+    KpReading? found(double instant, KpRequest? asked, [Context? under]) =>
+        (under ?? ctx).chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 19800,
+              kp: asked,
+            )
+            .kp;
+    expect(found(births[0], null), isNull);
+
+    final reading = found(births[0], const KpRequest())!;
+    expect(reading.chart.system, HouseSystem.placidus);
+    expect(reading.chart.cusps, hasLength(12));
+    expect(reading.significators.houses, hasLength(12));
+    for (final planet in reading.chart.planets) {
+      final span = planet.lords.subSub.span;
+      expect(
+        span.start <= planet.longitude && planet.longitude < span.end,
+        isTrue,
+        reason: '${planet.graha} inside its sub-sub',
+      );
+    }
+    expect(reading.ruling.rules.count, 'FIVE');
+    expect(reading.ruling.rulers.every((r) => r.reasons.isNotEmpty), isTrue);
+    expect(reading, found(births[0], const KpRequest()), reason: 'a value');
+
+    // A horary number casts the cusps; the ruling planets stay the moment's.
+    const asked = KpRequest(number: 74);
+    final horary = found(births[0], asked)!;
+    final lagna = horary.chart.cusps.first;
+    expect(lagna.longitude, lagna.lords.sub.span.start);
+    expect(horary.ruling, reading.ruling);
+
+    final batch = ctx.chart.foundMany(
+      instants: births,
+      place: place,
+      utcOffsetSeconds: 19800,
+      kp: asked,
+    );
+    for (final (k, instant) in births.indexed) {
+      expect(batch.at(k).kp, found(instant, asked), reason: 'each alone');
+    }
+
+    for (final (bad, field) in [
+      (const KpRequest(number: 250), 'kp.number'),
+      (const KpRequest(clock: 90000), 'kp.clock'),
+    ]) {
+      expect(
+        () => found(births[0], bad),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+
+    final lahiri = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    expect(
+      () => found(births[0], const KpRequest(), lahiri),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'frame.ayanamsha',
+        ),
+      ),
+    );
+    expect(
+      found(
+        births[0],
+        const KpRequest(anyAyanamsha: true),
+        lahiri,
+      )!.chart.cusps,
+      hasLength(12),
+    );
+    lahiri.dispose();
+  });
+
   test(
     'a chart carries its transits, each verdict its own house and vedha',
     () {

@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 to 5 **built** by 2026-09-30. Written
+Status: `draft`, 2026-09-29; §6 steps 1 to 6 **built** by 2026-09-30. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -143,8 +143,9 @@ Jupiter's, the only subs a sign's end falls inside.
 - **The boundary** (step 6). A chart request gains `kp_json`, null for
   no KP, else `{"number": 74, "clock": 19800, "anyAyanamsha": true}`
   with every member optional: `number` makes every chart a horary chart
-  for it, `clock` (seconds east of UT) is the civil day lord's clock, and
-  `anyAyanamsha` lifts C157. Every chart then answers a **`KpReading`**
+  for it, `clock` (seconds east of UT) is the civil day lord's clock —
+  the chart request's own `utc_offset_seconds` when absent, since a
+  binding has already said it once — and `anyAyanamsha` lifts C157. Every chart then answers a **`KpReading`**
   — `{chart, significators, ruling}` — which is also one façade call in
   Rust, `sdk.chart().kp_reading(&chart, &request)`. The ruling planets
   are always the moment's, its own lagna and Moon, since the Reader
@@ -157,10 +158,23 @@ Jupiter's, the only subs a sign's end falls inside.
   — a house's significators are lists of any length, a ruler carries
   every reason it rules — and columns would flatten it into ragged
   counts each binding reassembles, three times over, for a section read
-  once a chart. The JSON is serde's own, so the spelling every binding
-  reads is the one `crates/ffi/tests/keys.rs` holds to the Rust types.
-  Each binding types it (`KpReading` in Node's declarations, Python's
-  `TypedDict`s, Dart's classes) and parity compares the four on it.
+  once a chart. The JSON is serde's own, and the ABI test
+  (`a_chart_request_answers_kp`) holds the section to the façade's
+  reading value for value and to the member names its description
+  lists, one by one: `keys.rs` holds closed enums and has nothing here
+  to hold.
+
+  Building it corrected the typing. Each binding gives the reading in
+  **its own answers' shape**, not the JSON's: Node writes every key in
+  full (`graha.SUN`, `house_system.PLACIDUS`), as every other Node
+  accessor does and as its declarations' `Graha` already said — the
+  first draft handed the bare keys through and every test stayed green,
+  because none compared a spelling. Python builds frozen dataclasses
+  with snake-cased fields and catalogue members, like `SadeSatiReport`,
+  rather than `TypedDict`s over strings. Dart builds `final` classes
+  over one private field-wise value base, so a reading compares by
+  value. Parity prints every cusp, planet, house, node and ruler in
+  all five runners.
 
 ## 6. Order of work
 
@@ -212,7 +226,9 @@ Jupiter's, the only subs a sign's end falls inside.
    that day when the lagna itself reaches the number's start, found by
    founding charts, has the same twelve cusps to under 0.1″. A latitude
    where no meridian raises the start is refused on `place.latitude`.
-6. The boundary and the bindings.
+6. **Built**: the boundary and the bindings, as §5 says, with
+   `sdk.chart().kp_reading` the one façade call, `KpRequest::from_json`
+   the record every binding writes, and section 59 `kp`.
 7. The measured pass: over the recorded births, each sub lord's margin
    in minutes of birth time (how many charts a minute's error changes),
    and how many sub lords the Krishnamurti and VP291 ayanamshas part on.

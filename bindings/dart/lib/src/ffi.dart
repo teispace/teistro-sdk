@@ -1019,6 +1019,20 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
   external ffi.Pointer<ffi.Char> sadeSatiJson;
 
+  /// Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+  /// every member optional: `number`, the querent's horary number 1 to
+  /// 249, which casts the cusps from it (C156); `clock`, seconds east of
+  /// UT that the civil day lord is the weekday on, this request's own
+  /// when absent (C151); and `anyAyanamsha`, true to read a chart whose
+  /// zodiac is not Krishnamurti's (C157). Each chart's reading — its
+  /// cusps and planets to the sub-sub lord, its significators and the
+  /// ruling planets of its moment — comes back in the `kp` section,
+  /// under the settings' `kp` group. Null for none, which costs nothing
+  /// (`03-design/kp.md`). Refusals are named from the record every
+  /// binding calls `kp`, as `kp.number`.
+  /// Example: {"number":74}. May be null.
+  external ffi.Pointer<ffi.Char> kpJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2861,7 +2875,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3026,6 +3040,20 @@ final class ChartRequest {
   /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
   final String? sadeSatiJson;
 
+  /// Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+  /// every member optional: `number`, the querent's horary number 1 to
+  /// 249, which casts the cusps from it (C156); `clock`, seconds east of
+  /// UT that the civil day lord is the weekday on, this request's own
+  /// when absent (C151); and `anyAyanamsha`, true to read a chart whose
+  /// zodiac is not Krishnamurti's (C157). Each chart's reading — its
+  /// cusps and planets to the sub-sub lord, its significators and the
+  /// ruling planets of its moment — comes back in the `kp` section,
+  /// under the settings' `kp` group. Null for none, which costs nothing
+  /// (`03-design/kp.md`). Refusals are named from the record every
+  /// binding calls `kp`, as `kp.number`.
+  /// Example: {"number":74}. May be null.
+  final String? kpJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3086,6 +3114,9 @@ final class ChartRequest {
     raw.sadeSatiJson = sadeSatiJson == null
         ? ffi.nullptr
         : sadeSatiJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.kpJson = kpJson == null
+        ? ffi.nullptr
+        : kpJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3132,6 +3163,9 @@ final class ChartRequest {
         sadeSatiJson: raw.sadeSatiJson == ffi.nullptr
             ? null
             : raw.sadeSatiJson.cast<pkg_ffi.Utf8>().toDartString(),
+        kpJson: raw.kpJson == ffi.nullptr
+            ? null
+            : raw.kpJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

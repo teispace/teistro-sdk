@@ -35,7 +35,9 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
-use teistro_kp::{KpChart, KpNumber, Position, RulingPlanets, RulingRules, Significators};
+use teistro_kp::{
+    KpChart, KpNumber, KpReading, Position, RulingPlanets, RulingRules, Significators,
+};
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
@@ -1222,7 +1224,7 @@ impl<'a> ChartArea<'a> {
     /// provider's; and a house system the polar policy refuses at the
     /// chart's latitude.
     pub fn kp(self, chart: &Document, request: &KpRequest) -> Result<KpChart, Error> {
-        self.kp_cusps(chart, request, None)
+        self.kp_cusps(chart, request, request.number())
     }
 
     /// A KP chart with the chart's own cusps, or those raising a horary
@@ -1302,7 +1304,7 @@ impl<'a> ChartArea<'a> {
         number: KpNumber,
         request: &KpRequest,
     ) -> Result<KpChart, Error> {
-        self.kp_cusps(moment, request, Some(number))
+        self.kp(moment, &request.for_number(number))
     }
 
     /// A KP chart's **significators** (`03-design/kp.md` §1): each house's
@@ -1361,7 +1363,50 @@ impl<'a> ChartArea<'a> {
     /// As [`ChartArea::kp`]; and under `CIVIL` a request without a clock,
     /// named `kp.day_lord_day`.
     pub fn kp_ruling(self, chart: &Document, request: &KpRequest) -> Result<RulingPlanets, Error> {
-        let kp = self.kp(chart, request)?;
+        let moment = self.kp_cusps(chart, request, None)?;
+        self.ruling_of(chart, &moment, request)
+    }
+
+    /// A chart read as KP whole (`03-design/kp.md` §5): the chart — the
+    /// horary one when the request names a number — its significators,
+    /// and the ruling planets at its moment, which are the moment's own
+    /// whatever the number.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, KpNumber, KpRequest, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
+    /// let place = Place::new(Latitude::try_new(13.08)?, Longitude::try_new(80.27)?, Altitude::try_new(6.0)?);
+    /// let now = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_461_000.25), &ChartRequest::at(place, UtcOffset::literal(5, 30, 0)))?
+    ///     .value;
+    /// let reading = sdk.chart().kp_reading(&now, &KpRequest::new().for_number(KpNumber::new(74)?))?;
+    /// println!("{:?} rule", reading.ruling.accepted());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::kp`] and [`ChartArea::kp_ruling`].
+    pub fn kp_reading(self, chart: &Document, request: &KpRequest) -> Result<KpReading, Error> {
+        let moment = self.kp_cusps(chart, request, None)?;
+        let ruling = self.ruling_of(chart, &moment, request)?;
+        let read = match request.number() {
+            None => moment,
+            Some(number) => self.kp_cusps(chart, request, Some(number))?,
+        };
+        let significators = self.kp_significators(&read);
+        Ok(KpReading::new(read, significators, ruling))
+    }
+
+    /// The ruling planets of a moment already read as KP.
+    fn ruling_of(
+        self,
+        chart: &Document,
+        moment: &KpChart,
+        request: &KpRequest,
+    ) -> Result<RulingPlanets, Error> {
         let settings = self.context.settings();
         let foundation = &chart.foundation;
         let day_lord = match settings.kp.day_lord_day {
@@ -1379,7 +1424,11 @@ impl<'a> ChartArea<'a> {
             }
             DayLordDay::Sunrise | _ => foundation.day.day.vara.attributes().lord,
         };
-        Ok(RulingPlanets::of(&kp, day_lord, RulingRules::of(settings)))
+        Ok(RulingPlanets::of(
+            moment,
+            day_lord,
+            RulingRules::of(settings),
+        ))
     }
 
     /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a

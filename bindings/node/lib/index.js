@@ -977,6 +977,21 @@ export class Chart {
   }
 
   /**
+   * The chart read as KP (`kp: { number, clock, anyAyanamsha }`): its
+   * cusps and planets to the sub-sub lord, its significators in Reader
+   * VI's order and the ruling planets of its moment, under the settings'
+   * `kp` group; `null` unless asked for (`03-design/kp.md`).
+   *
+   * It is `{ chart, significators, ruling }`. A longitude and a lord's
+   * span are integers in **nanoarcseconds** of the sidereal zodiac, exact
+   * (divide by `3.6e12` for degrees). For a horary `number` the cusps are
+   * the number's and the ruling planets still the moment's own.
+   */
+  get kp() {
+    return kpsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2044,6 +2059,7 @@ export class ChartArea extends Area {
           'sadeSati',
           'a Sade Sati request record, e.g. { from: 2460676.5, to: 2464329, reckoning: "SIGN" }',
         ),
+        kpJson: recordJson(request.kp, 'kp', 'a KP request record, e.g. { number: 74 }'),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2671,6 +2687,81 @@ const PLANS = new WeakMap();
  */
 function plansOf(batch) {
   return sectionOf(PLANS, batch, 'plans');
+}
+
+/** Each batch's KP readings, parsed once however many charts read them. */
+const KPS = new WeakMap();
+
+/**
+ * Every chart's KP reading in a batch: the `kp` section's JSON, one entry a
+ * chart, in this layer's shape — catalogue keys in full (`graha.SUN`), as
+ * every other accessor gives them — and frozen to its leaves
+ * (`03-design/kp.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function kpsOf(batch) {
+  let parsed = KPS.get(batch);
+  if (parsed === undefined) {
+    const json = batch.decoded.kp;
+    parsed = json ? JSON.parse(json).map((chart) => deepFreeze(kpFrom(chart))) : [];
+    KPS.set(batch, parsed);
+  }
+  return parsed;
+}
+
+/**
+ * A chart's KP reading as the boundary's JSON writes it, its bare keys made
+ * full.
+ */
+function kpFrom({ chart, significators, ruling }) {
+  const graha = (key) => `graha.${key}`;
+  const grahas = (keys) => keys.map(graha);
+  const level = ({ lord, span }) => ({ lord: graha(lord), span });
+  const lords = ({ sign, star, sub, subSub }) => ({
+    sign: graha(sign),
+    star: level(star),
+    sub: level(sub),
+    subSub: level(subSub),
+  });
+  const rejection = (by) => (by === null ? null : { retrograde: graha(by.retrograde), byStar: by.byStar });
+  return {
+    chart: {
+      system: `house_system.${chart.system}`,
+      cusps: chart.cusps.map((cusp) => ({ ...cusp, lords: lords(cusp.lords) })),
+      planets: chart.planets.map((planet) => ({ ...planet, graha: graha(planet.graha), lords: lords(planet.lords) })),
+    },
+    significators: {
+      houses: significators.houses.map((house) => ({
+        house: house.house,
+        inOccupantsStars: grahas(house.inOccupantsStars),
+        occupants: grahas(house.occupants),
+        inLordsStar: grahas(house.inLordsStar),
+        lord: graha(house.lord),
+        conjoined: grahas(house.conjoined),
+        aspected: grahas(house.aspected),
+        intercepted: house.intercepted.map((sign) => `rashi.${sign}`),
+      })),
+      nodes: significators.nodes.map((node) => ({
+        node: graha(node.node),
+        conjoined: grahas(node.conjoined),
+        starLord: graha(node.starLord),
+        aspecting: grahas(node.aspecting),
+        signLord: graha(node.signLord),
+      })),
+    },
+    ruling: {
+      rulers: ruling.rulers.map((ruler) => ({
+        graha: graha(ruler.graha),
+        reasons: ruler.reasons.map((reason) => (reason.kind === 'AGENT' ? { ...reason, of: graha(reason.of) } : reason)),
+        retrograde: ruler.retrograde,
+        rejectedBy: rejection(ruler.rejectedBy),
+        rejectedBySub: rejection(ruler.rejectedBySub),
+      })),
+      rules: ruling.rules,
+    },
+  };
 }
 
 /**

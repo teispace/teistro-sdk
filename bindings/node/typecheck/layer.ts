@@ -19,6 +19,9 @@ import type {
   EphemerisProvider,
   HitRequest,
   SadeSatiRequest,
+  KpLords,
+  KpReading,
+  KpRequest,
   LayoutHolds,
   LayoutKey,
   LayoutRow,
@@ -625,3 +628,37 @@ function theSadeSati(ctx: Context): string {
 }
 
 void theSadeSati;
+
+// KP read all the way down, and a request in every field.
+function theKpReading(ctx: Context): string {
+  const reading: KpReading | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 13.08, longitude: 80.27, altitude: 6 },
+    utcOffsetSeconds: 19800,
+    kp: { number: 74, clock: 19800, anyAyanamsha: false },
+  }).kp;
+  if (reading === null) return 'none';
+  const lords = (l: KpLords): string =>
+    `${l.sign} ${l.star.lord} ${l.sub.lord} ${l.subSub.lord} ${l.subSub.span.end - l.subSub.span.start}`;
+  const cusps = reading.chart.cusps.map((cusp) => `${cusp.house} ${cusp.longitude} ${lords(cusp.lords)}`);
+  const planets = reading.chart.planets.map((p) => `${p.graha} ${p.house} ${p.retrograde} ${lords(p.lords)}`);
+  const houses = reading.significators.houses.map(
+    (h) =>
+      `${h.house} ${h.inOccupantsStars.join()} ${h.occupants.join()} ${h.inLordsStar.join()} ${h.lord} ` +
+      `${h.conjoined.join()} ${h.aspected.join()} ${h.intercepted.join()}`,
+  );
+  const nodes = reading.significators.nodes.map(
+    (n) => `${n.node} ${n.conjoined.join()} ${n.starLord} ${n.aspecting.join()} ${n.signLord}`,
+  );
+  const rulers = reading.ruling.rulers.map((ruler) => {
+    const why = ruler.reasons.map((reason) => (reason.kind === 'AGENT' ? `${reason.of} ${reason.by}` : reason.kind));
+    const rejected = ruler.rejectedBy === null ? '' : `${ruler.rejectedBy.retrograde} ${ruler.rejectedBy.byStar}`;
+    return `${ruler.graha} ${why.join()} ${ruler.retrograde} ${rejected} ${ruler.rejectedBySub?.retrograde ?? ''}`;
+  });
+  const { count, nodeRulers, retrogradeRejection } = reading.ruling.rules;
+  // @ts-expect-error a horary number is a number
+  const named: KpRequest = { number: '74' };
+  return [reading.chart.system, ...cusps, ...planets, ...houses, ...nodes, ...rulers, count, nodeRulers, retrogradeRejection, String(named)].join();
+}
+
+void theKpReading;

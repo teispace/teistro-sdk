@@ -1771,6 +1771,159 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_gochar(report, geo, index, document);
     the_hits(report, geo, index, document);
     the_sade_sati(report, geo, index, document);
+    the_kp(report, geo, index, document);
+}
+
+/// The KP reading every runner asks for: a horary number, in the geo
+/// context's own zodiac.
+const KP_JSON: &str = r#"{"number":74,"anyAyanamsha":true}"#;
+
+/// KP as the other three print it: the rules, then every cusp, planet,
+/// house, node and ruler, a key in full and a longitude or bound in whole
+/// nanoarcseconds.
+fn the_kp(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::KpRequest::from_json(KP_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .kp_reading(document, &asked)
+        .expect("the test provider");
+    let rules = &read.ruling.rules;
+    put(
+        report,
+        &format!("chart-{index}-kp"),
+        format!(
+            "{} {} {} {}",
+            read.chart.system.full_key(),
+            wire_key(&rules.count),
+            wire_key(&rules.node_rulers),
+            wire_key(&rules.retrograde_rejection)
+        ),
+    );
+    kp_chart(report, index, &read.chart);
+    kp_significators(report, index, &read.significators);
+    kp_rulers(report, index, &read.ruling.rulers);
+}
+
+/// Full keys joined by commas, `-` for none.
+fn kp_keys<'k>(keys: impl Iterator<Item = &'k str>) -> String {
+    let keys: Vec<&str> = keys.collect();
+    if keys.is_empty() {
+        "-".to_owned()
+    } else {
+        keys.join(",")
+    }
+}
+
+/// A point's lords, each level below the sign with its span.
+fn kp_lords(lords: &teistro::kp::Lords) -> String {
+    let level = |level: &teistro::kp::Level| {
+        format!(
+            "{} {} {}",
+            level.lord.full_key(),
+            level.span.start.get(),
+            level.span.end.get()
+        )
+    };
+    format!(
+        "{} {} {} {}",
+        lords.sign.full_key(),
+        level(&lords.star),
+        level(&lords.sub),
+        level(&lords.sub_sub)
+    )
+}
+
+/// Every cusp and planet of a KP chart.
+fn kp_chart(report: &mut Report, index: usize, chart: &teistro::KpChart) {
+    for cusp in &chart.cusps {
+        put(
+            report,
+            &format!("chart-{index}-kp-cusp-{}", cusp.house),
+            format!("{} {}", cusp.longitude.get(), kp_lords(&cusp.lords)),
+        );
+    }
+    for planet in &chart.planets {
+        put(
+            report,
+            &format!("chart-{index}-kp-planet-{}", planet.graha.full_key()),
+            format!(
+                "{} {} {} {}",
+                planet.longitude.get(),
+                planet.retrograde,
+                planet.house,
+                kp_lords(&planet.lords)
+            ),
+        );
+    }
+}
+
+/// Every house's significators, and every node's agency.
+fn kp_significators(report: &mut Report, index: usize, read: &teistro::kp::Significators) {
+    let grahas = |grahas: &[Graha]| kp_keys(grahas.iter().map(|graha| graha.full_key()));
+    for house in &read.houses {
+        put(
+            report,
+            &format!("chart-{index}-kp-house-{}", house.house),
+            format!(
+                "{} {} {} {} {} {} {}",
+                grahas(&house.in_occupants_stars),
+                grahas(&house.occupants),
+                grahas(&house.in_lords_star),
+                house.lord.full_key(),
+                grahas(&house.conjoined),
+                grahas(&house.aspected),
+                kp_keys(house.intercepted.iter().map(|sign| sign.full_key()))
+            ),
+        );
+    }
+    for node in &read.nodes {
+        put(
+            report,
+            &format!("chart-{index}-kp-node-{}", node.node.full_key()),
+            format!(
+                "{} {} {} {}",
+                grahas(&node.conjoined),
+                node.star_lord.full_key(),
+                grahas(&node.aspecting),
+                node.sign_lord.full_key()
+            ),
+        );
+    }
+}
+
+/// Every ruling planet, its reasons and what rejects it under either
+/// reading of C153.
+fn kp_rulers(report: &mut Report, index: usize, rulers: &[teistro::kp::Ruler]) {
+    let rejection = |by: Option<teistro::kp::Rejection>| {
+        by.map_or_else(
+            || "-".to_owned(),
+            |by| format!("{}:{}", by.retrograde.full_key(), by.by_star),
+        )
+    };
+    for (k, ruler) in rulers.iter().enumerate() {
+        let reasons: Vec<String> = ruler
+            .reasons
+            .iter()
+            .map(|reason| match reason {
+                teistro::kp::Reason::Agent { of, by } => {
+                    format!("AGENT:{}:{}", of.full_key(), wire_key(by))
+                }
+                other => wire_key(other),
+            })
+            .collect();
+        put(
+            report,
+            &format!("chart-{index}-kp-ruler-{k}"),
+            format!(
+                "{} {} {} {} {}",
+                ruler.graha.full_key(),
+                reasons.join(","),
+                ruler.retrograde,
+                rejection(ruler.rejected_by),
+                rejection(ruler.rejected_by_sub)
+            ),
+        );
+    }
 }
 
 /// The hit list every runner asks for: two months, three grahas, three

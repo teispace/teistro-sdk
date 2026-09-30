@@ -931,6 +931,10 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 59, 'kp');
+    out.kp = text(blob, at);
+  }
   return out;
 }
 

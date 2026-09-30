@@ -167,7 +167,7 @@ pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_kp as kp;
-pub use teistro_kp::{KpChart, KpNumber};
+pub use teistro_kp::{KpChart, KpNumber, KpReading};
 pub use teistro_rules as rules;
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;

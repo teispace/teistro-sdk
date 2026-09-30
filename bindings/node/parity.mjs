@@ -344,6 +344,7 @@ const charts = geo.chart.foundMany({
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
   sadeSati: { from: 2460676.5, to: 2464329, reckoning: 'DEGREE', spells: [4, 7, 8] },
+  kp: { number: 74, anyAyanamsha: true },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -530,6 +531,34 @@ for (const chart of charts) {
   [...ss.sadeSati.map((one) => one.phases), ...ss.spells.map((spell) => [spell])]
     .flatMap((spells, period) => spells.flatMap((spell) => spell.visits.map((v) => `${period} ${spell.house} ${bound(v.from)} ${bound(v.to)}`)))
     .forEach((line, k) => put(`chart-${i}-sade-sati-${k}`, line));
+  const kp = chart.kp;
+  const keys = (list) => (list.length === 0 ? '-' : list.join(','));
+  const level = ({ lord, span }) => `${lord} ${span.start} ${span.end}`;
+  const lords = (l) => `${l.sign} ${level(l.star)} ${level(l.sub)} ${level(l.subSub)}`;
+  const rules = kp.ruling.rules;
+  put(`chart-${i}-kp`, `${kp.chart.system} ${rules.count} ${rules.nodeRulers} ${rules.retrogradeRejection}`);
+  for (const cusp of kp.chart.cusps) put(`chart-${i}-kp-cusp-${cusp.house}`, `${cusp.longitude} ${lords(cusp.lords)}`);
+  for (const p of kp.chart.planets) {
+    put(`chart-${i}-kp-planet-${p.graha}`, `${p.longitude} ${p.retrograde} ${p.house} ${lords(p.lords)}`);
+  }
+  for (const h of kp.significators.houses) {
+    put(
+      `chart-${i}-kp-house-${h.house}`,
+      `${keys(h.inOccupantsStars)} ${keys(h.occupants)} ${keys(h.inLordsStar)} ${h.lord} ` +
+        `${keys(h.conjoined)} ${keys(h.aspected)} ${keys(h.intercepted)}`,
+    );
+  }
+  for (const n of kp.significators.nodes) {
+    put(`chart-${i}-kp-node-${n.node}`, `${keys(n.conjoined)} ${n.starLord} ${keys(n.aspecting)} ${n.signLord}`);
+  }
+  const rejection = (by) => (by === null ? '-' : `${by.retrograde}:${by.byStar}`);
+  kp.ruling.rulers.forEach((r, k) => {
+    const reasons = r.reasons.map((why) => (why.kind === 'AGENT' ? `AGENT:${why.of}:${why.by}` : why.kind));
+    put(
+      `chart-${i}-kp-ruler-${k}`,
+      `${r.graha} ${reasons.join(',')} ${r.retrograde} ${rejection(r.rejectedBy)} ${rejection(r.rejectedBySub)}`,
+    );
+  });
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

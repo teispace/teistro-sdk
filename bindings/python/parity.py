@@ -14,11 +14,14 @@ not that they agree with a literal written here.
 from __future__ import annotations
 
 import sys
-from typing import Any, cast
+from typing import Any, Optional, Sequence, cast
 
 import json
 
 from teistro import (
+    KpLevel,
+    KpLords,
+    KpRejection,
     AspectHit,
     NakshatraIngress,
     SignIngress,
@@ -388,6 +391,7 @@ def main() -> None:
                 "orbDeg": 2,
             },
             sade_sati={"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]},
+            kp={"number": 74, "anyAyanamsha": True},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -676,6 +680,54 @@ def main() -> None:
             ]
             for k, line in enumerate(lines):
                 put(f"chart-{i}-sade-sati-{k}", line)
+            kp = chart.kp
+            assert kp is not None
+
+            def keys(members: Sequence[Any]) -> str:
+                return ",".join(member.full_key for member in members) or "-"
+
+            def level(at: KpLevel) -> str:
+                return f"{at.lord.full_key} {at.span.start} {at.span.end}"
+
+            def lords(of: KpLords) -> str:
+                return f"{of.sign.full_key} {level(of.star)} {level(of.sub)} {level(of.sub_sub)}"
+
+            def rejection(by: Optional[KpRejection]) -> str:
+                return "-" if by is None else f"{by.retrograde.full_key}:{str(by.by_star).lower()}"
+
+            kp_rules = kp.ruling.rules
+            put(
+                f"chart-{i}-kp",
+                f"{kp.chart.system.full_key} {kp_rules.count} {kp_rules.node_rulers} {kp_rules.retrograde_rejection}",
+            )
+            for cusp in kp.chart.cusps:
+                put(f"chart-{i}-kp-cusp-{cusp.house}", f"{cusp.longitude} {lords(cusp.lords)}")
+            for p in kp.chart.planets:
+                put(
+                    f"chart-{i}-kp-planet-{p.graha.full_key}",
+                    f"{p.longitude} {str(p.retrograde).lower()} {p.house} {lords(p.lords)}",
+                )
+            for h in kp.significators.houses:
+                put(
+                    f"chart-{i}-kp-house-{h.house}",
+                    f"{keys(h.in_occupants_stars)} {keys(h.occupants)} {keys(h.in_lords_star)} {h.lord.full_key} "
+                    f"{keys(h.conjoined)} {keys(h.aspected)} {keys(h.intercepted)}",
+                )
+            for agency in kp.significators.nodes:
+                put(
+                    f"chart-{i}-kp-node-{agency.node.full_key}",
+                    f"{keys(agency.conjoined)} {agency.star_lord.full_key} {keys(agency.aspecting)} "
+                    f"{agency.sign_lord.full_key}",
+                )
+            for k, r in enumerate(kp.ruling.rulers):
+                reasons = ",".join(
+                    f"AGENT:{why.of.full_key}:{why.by}" if why.of is not None else why.kind for why in r.reasons
+                )
+                put(
+                    f"chart-{i}-kp-ruler-{k}",
+                    f"{r.graha.full_key} {reasons} {str(r.retrograde).lower()} "
+                    f"{rejection(r.rejected_by)} {rejection(r.rejected_by_sub)}",
+                )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

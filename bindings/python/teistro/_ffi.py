@@ -185,7 +185,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 168,
+    "ts_chart_request": 176,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -618,6 +618,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("gochar_json", ctypes.c_char_p),
         ("hits_json", ctypes.c_char_p),
         ("sade_sati_json", ctypes.c_char_p),
+        ("kp_json", ctypes.c_char_p),
     ]
 
 
@@ -2287,6 +2288,21 @@ class ChartRequest:
     Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
     """
 
+    kp_json: Optional[str] = None
+    """Every chart read as KP (Krishnamurti Paddhati), as a JSON object,
+    every member optional: `number`, the querent's horary number 1 to
+    249, which casts the cusps from it (C156); `clock`, seconds east of
+    UT that the civil day lord is the weekday on, this request's own
+    when absent (C151); and `anyAyanamsha`, true to read a chart whose
+    zodiac is not Krishnamurti's (C157). Each chart's reading — its
+    cusps and planets to the sub-sub lord, its significators and the
+    ruling planets of its moment — comes back in the `kp` section,
+    under the settings' `kp` group. Null for none, which costs nothing
+    (`03-design/kp.md`). Refusals are named from the record every
+    binding calls `kp`, as `kp.number`.
+    Example: {"number":74}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2346,6 +2362,9 @@ class ChartRequest:
         _sade_sati_json = None if self.sade_sati_json is None else self.sade_sati_json.encode("utf-8")
         owned.append(_sade_sati_json)
         raw.sade_sati_json = _sade_sati_json
+        _kp_json = None if self.kp_json is None else self.kp_json.encode("utf-8")
+        owned.append(_kp_json)
+        raw.kp_json = _kp_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2389,6 +2408,7 @@ class ChartRequest:
             gochar_json=_text(raw.gochar_json),
             hits_json=_text(raw.hits_json),
             sade_sati_json=_text(raw.sade_sati_json),
+            kp_json=_text(raw.kp_json),
         )
 
 
