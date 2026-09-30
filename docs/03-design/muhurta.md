@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 4 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 4 and the rules of step 5 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -259,6 +259,24 @@ remainders, placements) and the preferences, each citing its source.
 The SDK ships Raman's per activity and the baseline's as a second set;
 a consumer passes their own, so an activity no one ships is one JSON
 document and not a dead end.
+
+Built first (`activity.rs`, `grade.rs`): the rules without the search.
+The texts **grade** rather than only reject, so a rule is three lists
+and what an unlisted member is (`Graded<T>`), and a clause is reported
+for the best and the rejected; a middling member reports nothing, which
+keeps a clause's verdict two-valued. A rite's chapter is laid over the
+general shuddhi member by member (`Graded::over`): where the chapter
+speaks it wins — Raman's marriage calls Saturday middling though his
+shuddhi rejects it — and where it is silent the shuddhi holds, so
+Vaidhriti stays rejected. `ActivityRules::raman_marriage` carries the
+lunar months (C161), the lagnas, the padas, the blackouts Muhurta
+Chintamani forbids a marriage in (ch. I, vv. 46–47: Jupiter or Venus
+set, an adhika month), the six considerations as **bars** named by
+`ClauseKey`, and what the texts ask that is not judged yet as a list
+(`unjudged`: the Mrityu yoga, C163; the bala and vriddha days either
+side of an asta; the kshaya month) rather than a silence. The
+baseline engine's marriage rules come with the regression (step 6),
+where they are measured.
 
 `Ranking` is a trait with two shipped values (C162). A judgement is
 never collapsed into a number the SDK invents; the ranking a request

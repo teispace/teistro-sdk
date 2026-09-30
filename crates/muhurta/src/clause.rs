@@ -8,10 +8,12 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    Graha, Karana, MuhurtaYoga, Nakshatra, Panchaka, Rashi, Tithi, Vara, Yoga,
+    Graha, Karana, Masa, MuhurtaYoga, Nakshatra, Panchaka, Rashi, Tithi, Vara, Yoga,
 };
 use teistro_core::interval::Interval;
 
+use crate::activity::Pada;
+use crate::grade::Grade;
 use crate::tara::TaraReading;
 
 /// What a clause says.
@@ -20,30 +22,67 @@ use crate::tara::TaraReading;
 #[serde(tag = "clause", rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum ClauseKind {
-    /// A tithi the rules reject (panchanga shuddhi).
+    /// A tithi the rules grade best or reject (panchanga shuddhi).
     Tithi {
         /// Which.
         tithi: Tithi,
+        /// Best or rejected; a middling one is not reported.
+        grade: Grade,
     },
-    /// A nakshatra the rules reject.
+    /// A nakshatra the rules grade best or reject.
     Nakshatra {
         /// Which.
         nakshatra: Nakshatra,
+        /// Best or rejected.
+        grade: Grade,
     },
-    /// A yoga the rules reject.
+    /// A yoga the rules grade best or reject.
     Yoga {
         /// Which.
         yoga: Yoga,
+        /// Best or rejected.
+        grade: Grade,
     },
-    /// A karana the rules reject.
+    /// A karana the rules grade best or reject.
     Karana {
         /// Which.
         karana: Karana,
+        /// Best or rejected.
+        grade: Grade,
     },
-    /// A vara the rules reject (vara dosha).
+    /// A vara the rules grade best or reject (vara dosha).
     Vara {
         /// Which.
         vara: Vara,
+        /// Best or rejected.
+        grade: Grade,
+    },
+    /// The lunar month an activity grades best or rejects (crux C161).
+    Month {
+        /// Which.
+        masa: Masa,
+        /// Best or rejected.
+        grade: Grade,
+    },
+    /// The Sun's sign an activity keyed on the solar month grades best or
+    /// rejects.
+    SolarMonth {
+        /// Which.
+        sign: Rashi,
+        /// Best or rejected.
+        grade: Grade,
+    },
+    /// The lagna an activity grades best or rejects.
+    Lagna {
+        /// Which.
+        sign: Rashi,
+        /// Best or rejected.
+        grade: Grade,
+    },
+    /// The Moon in a quarter of its star the activity rejects.
+    Pada {
+        /// Which.
+        pada: Pada,
     },
     /// A special yoga of vara, tithi and nakshatra (Raman, ch. VI).
     MuhurtaYoga {
@@ -140,16 +179,122 @@ pub enum ClauseKind {
     },
 }
 
+/// Which clause, without what it found: the name a rule uses to point at
+/// a kind of clause, as [`ActivityRules::bars`](crate::activity::ActivityRules)
+/// does. It serialises as the clause's own `clause` tag.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum ClauseKey {
+    /// [`ClauseKind::Tithi`].
+    Tithi,
+    /// [`ClauseKind::Nakshatra`].
+    Nakshatra,
+    /// [`ClauseKind::Yoga`].
+    Yoga,
+    /// [`ClauseKind::Karana`].
+    Karana,
+    /// [`ClauseKind::Vara`].
+    Vara,
+    /// [`ClauseKind::Month`].
+    Month,
+    /// [`ClauseKind::SolarMonth`].
+    SolarMonth,
+    /// [`ClauseKind::Lagna`].
+    Lagna,
+    /// [`ClauseKind::Pada`].
+    Pada,
+    /// [`ClauseKind::MuhurtaYoga`].
+    MuhurtaYoga,
+    /// [`ClauseKind::Tarabala`].
+    Tarabala,
+    /// [`ClauseKind::Chandrabala`].
+    Chandrabala,
+    /// [`ClauseKind::Kartari`].
+    Kartari,
+    /// [`ClauseKind::MoonInDusthana`].
+    MoonInDusthana,
+    /// [`ClauseKind::MoonJoined`].
+    MoonJoined,
+    /// [`ClauseKind::VenusInSixth`].
+    VenusInSixth,
+    /// [`ClauseKind::MarsInEighth`].
+    MarsInEighth,
+    /// [`ClauseKind::AshtamaLagna`].
+    AshtamaLagna,
+    /// [`ClauseKind::Kunavamsa`].
+    Kunavamsa,
+    /// [`ClauseKind::PanchakaRemainder`].
+    PanchakaRemainder,
+    /// [`ClauseKind::LagnaTyajya`].
+    LagnaTyajya,
+    /// [`ClauseKind::SeventhOccupied`].
+    SeventhOccupied,
+    /// [`ClauseKind::MaleficInLagna`].
+    MaleficInLagna,
+    /// [`ClauseKind::BeneficInLagna`].
+    BeneficInLagna,
+    /// [`ClauseKind::ExaltedInLagna`].
+    ExaltedInLagna,
+    /// [`ClauseKind::LuminaryInEleventh`].
+    LuminaryInEleventh,
+    /// [`ClauseKind::KendraBenefics`].
+    KendraBenefics,
+}
+
 impl ClauseKind {
+    /// Which clause this is.
+    #[must_use]
+    pub const fn key(&self) -> ClauseKey {
+        match self {
+            ClauseKind::Tithi { .. } => ClauseKey::Tithi,
+            ClauseKind::Nakshatra { .. } => ClauseKey::Nakshatra,
+            ClauseKind::Yoga { .. } => ClauseKey::Yoga,
+            ClauseKind::Karana { .. } => ClauseKey::Karana,
+            ClauseKind::Vara { .. } => ClauseKey::Vara,
+            ClauseKind::Month { .. } => ClauseKey::Month,
+            ClauseKind::SolarMonth { .. } => ClauseKey::SolarMonth,
+            ClauseKind::Lagna { .. } => ClauseKey::Lagna,
+            ClauseKind::Pada { .. } => ClauseKey::Pada,
+            ClauseKind::MuhurtaYoga { .. } => ClauseKey::MuhurtaYoga,
+            ClauseKind::Tarabala { .. } => ClauseKey::Tarabala,
+            ClauseKind::Chandrabala { .. } => ClauseKey::Chandrabala,
+            ClauseKind::Kartari { .. } => ClauseKey::Kartari,
+            ClauseKind::MoonInDusthana { .. } => ClauseKey::MoonInDusthana,
+            ClauseKind::MoonJoined { .. } => ClauseKey::MoonJoined,
+            ClauseKind::VenusInSixth { .. } => ClauseKey::VenusInSixth,
+            ClauseKind::MarsInEighth { .. } => ClauseKey::MarsInEighth,
+            ClauseKind::AshtamaLagna { .. } => ClauseKey::AshtamaLagna,
+            ClauseKind::Kunavamsa { .. } => ClauseKey::Kunavamsa,
+            ClauseKind::PanchakaRemainder { .. } => ClauseKey::PanchakaRemainder,
+            ClauseKind::LagnaTyajya { .. } => ClauseKey::LagnaTyajya,
+            ClauseKind::SeventhOccupied { .. } => ClauseKey::SeventhOccupied,
+            ClauseKind::MaleficInLagna { .. } => ClauseKey::MaleficInLagna,
+            ClauseKind::BeneficInLagna { .. } => ClauseKey::BeneficInLagna,
+            ClauseKind::ExaltedInLagna { .. } => ClauseKey::ExaltedInLagna,
+            ClauseKind::LuminaryInEleventh { .. } => ClauseKey::LuminaryInEleventh,
+            ClauseKind::KendraBenefics { .. } => ClauseKey::KendraBenefics,
+        }
+    }
+
     /// Whether the clause counts for the time rather than against it.
     ///
-    /// A rejected limb is against it; a special yoga is for it when the
+    /// A graded limb is for it when best and against it when rejected; a special yoga is for it when the
     /// catalogue marks the yoga auspicious (the two pushkara yogas
     /// multiply whatever the day brings and are not); a tara and a
     /// Chandrabala say which way they went.
     #[must_use]
     pub fn favourable(&self) -> bool {
         match self {
+            ClauseKind::Tithi { grade, .. }
+            | ClauseKind::Nakshatra { grade, .. }
+            | ClauseKind::Yoga { grade, .. }
+            | ClauseKind::Karana { grade, .. }
+            | ClauseKind::Vara { grade, .. }
+            | ClauseKind::Month { grade, .. }
+            | ClauseKind::SolarMonth { grade, .. }
+            | ClauseKind::Lagna { grade, .. } => *grade == Grade::Best,
             ClauseKind::MuhurtaYoga { yoga } => yoga.attributes().auspicious,
             ClauseKind::Tarabala { reading } => reading.tara.favourable(),
             ClauseKind::Chandrabala { holds, .. } => *holds,
@@ -178,5 +323,52 @@ impl Clause {
     #[must_use]
     pub fn favourable(&self) -> bool {
         self.kind.favourable()
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests fail by panicking"
+)]
+mod tests {
+    use super::{ClauseKey, ClauseKind};
+    use crate::activity::Pada;
+    use crate::grade::Grade;
+    use teistro_core::catalogue::{Graha, Nakshatra, Tithi};
+
+    /// A key names a clause the way the clause's own tag does, so a rule
+    /// written in JSON can point at a clause by the name it reads on one.
+    /// The two share a variant list (`key` matches every one) and a serde
+    /// case, and this holds a sample of shapes — fielded, empty, nested —
+    /// to it.
+    #[test]
+    fn a_key_serialises_as_its_clauses_tag() {
+        for kind in [
+            ClauseKind::Tithi {
+                tithi: Tithi::ShuklaPratipada,
+                grade: Grade::Rejected,
+            },
+            ClauseKind::VenusInSixth {},
+            ClauseKind::Pada {
+                pada: Pada {
+                    nakshatra: Nakshatra::Mula,
+                    pada: 1,
+                },
+            },
+            ClauseKind::MoonJoined {
+                with: vec![Graha::Mars],
+            },
+            ClauseKind::LuminaryInEleventh {
+                grahas: vec![Graha::Sun],
+            },
+        ] {
+            let tag = serde_json::to_value(&kind).expect("a clause serialises")["clause"].clone();
+            let key = serde_json::to_value(kind.key()).expect("a key serialises");
+            assert_eq!(tag, key, "{kind:?}");
+            let back: ClauseKey = serde_json::from_value(tag).expect("a tag reads as a key");
+            assert_eq!(back, kind.key());
+        }
     }
 }

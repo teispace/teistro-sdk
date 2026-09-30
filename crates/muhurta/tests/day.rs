@@ -96,25 +96,25 @@ fn a_rejected_limb_is_one_the_rules_name_and_the_day_ran() {
             .limbs
             .tithi
             .iter()
-            .filter(|s| rules.tithis.contains(&s.member))
+            .filter(|s| rules.tithis.rejected.contains(&s.member))
             .count()
             + day
                 .limbs
                 .nakshatra
                 .iter()
-                .filter(|s| rules.nakshatras.contains(&s.member))
+                .filter(|s| rules.nakshatras.rejected.contains(&s.member))
                 .count()
             + day
                 .limbs
                 .yoga
                 .iter()
-                .filter(|s| rules.yogas.contains(&s.member))
+                .filter(|s| rules.yogas.rejected.contains(&s.member))
                 .count()
             + day
                 .limbs
                 .karana
                 .iter()
-                .filter(|s| rules.karanas.contains(&s.member))
+                .filter(|s| rules.karanas.rejected.contains(&s.member))
                 .count();
         let limbs = found
             .iter()
@@ -212,4 +212,71 @@ fn every_day_clause_and_kaala_holds_whole_windows() {
             }
         }
     }
+}
+
+#[test]
+fn the_month_clause_grades_the_days_month_over_the_whole_window() {
+    use teistro_calendar::lunisolar::MonthKind;
+    use teistro_muhurta::activity::{MonthRule, MonthWithSun};
+    use teistro_muhurta::{ActivityRules, Grade};
+
+    let mut rules = ActivityRules::raman_marriage();
+    for d in 15..=21 {
+        let day = day(2024, 6, d);
+        let found = rules.month_clauses(&day);
+        let MonthRule::Lunar { months, .. } = &rules.months else {
+            panic!("Raman keys marriage on the lunar month")
+        };
+        let grade = months.grade(&day.month.amanta);
+        if day.month.kind == MonthKind::Adhika || grade == Grade::Middling {
+            assert!(found.is_empty(), "{d}: {found:?}");
+            continue;
+        }
+        // One clause per Sun sign the day holds, covering the window
+        // end to end.
+        let covered: f64 = found.iter().map(|c| c.at.days()).sum();
+        assert!((covered - day.window.days()).abs() < 1e-9, "{d}: {found:?}");
+        for clause in &found {
+            assert_eq!(
+                clause.kind,
+                ClauseKind::Month {
+                    masa: day.month.amanta,
+                    grade
+                }
+            );
+        }
+    }
+    // A month the rule rejects, allowed while the Sun is in the sign it
+    // stands in, is middling there and reports nothing.
+    let day = day(2024, 6, 18);
+    let sun = day.sun.signs[0].member;
+    // The loop above reached a graded month, and not only middling ones.
+    assert_eq!(day.month.amanta, teistro_core::catalogue::Masa::Jyeshtha);
+    assert!(!rules.month_clauses(&day).is_empty());
+    if let MonthRule::Lunar { months, with_sun } = &mut rules.months {
+        months.best.clear();
+        months.middling.clear();
+        with_sun.push(MonthWithSun {
+            masa: day.month.amanta,
+            sun,
+        });
+    }
+    let found = rules.month_clauses(&day);
+    let allowed = day.sun.signs[0].inside;
+    assert!(found.iter().all(|c| !c.at.overlaps(allowed)), "{found:?}");
+    // Keyed on the Sun instead, the clause follows the Sun's sign.
+    rules.months = MonthRule::Solar {
+        signs: teistro_muhurta::Graded {
+            best: vec![sun],
+            middling: Vec::new(),
+            rejected: Vec::new(),
+            otherwise: Grade::Rejected,
+        },
+    };
+    let found = rules.month_clauses(&day);
+    assert!(found.iter().any(|c| c.kind
+        == ClauseKind::SolarMonth {
+            sign: sun,
+            grade: Grade::Best
+        }));
 }
