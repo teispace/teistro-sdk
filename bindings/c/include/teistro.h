@@ -147,7 +147,7 @@ typedef enum ts_kind {
      */
     TS_KIND_MASA = 8,
     /**
-     * The six seasons, two lunar months each.
+     * The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
      */
     TS_KIND_RITU = 9,
     /**
@@ -981,7 +981,7 @@ typedef enum ts_masa {
 } ts_masa;
 
 /**
- * The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
+ * The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178). Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
  */
 typedef enum ts_ritu {
     /**

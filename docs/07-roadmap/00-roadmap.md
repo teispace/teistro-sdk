@@ -726,7 +726,13 @@ measured against Nepal before it is called done:
    year is the one holding its sunrise and a field would cost every day
    a few searches (`calendar-indian-lunisolar.md` §10). The years
    cross to every binding by a `sections` bit on the panchanga request.
-   Left: ritu, the flags and ghati-pala.
+   **Ritu measured 2026-10-01** (`ritu-measured.md`): the season is the
+   solar month's, and Nepal's daily panchanga changes it on the Bikram
+   Sambat month's first day on all 341 recorded days, which the Sun's
+   sign at sunrise does not (C178, C186). It is a day column in every
+   binding, with `panchanga.ritu` choosing solar, lunar or tropical
+   months and `panchanga.solar_month_start` the day a solar month
+   begins on. Left: the flags and ghati-pala.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
    as blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's

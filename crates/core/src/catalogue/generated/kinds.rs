@@ -24,7 +24,7 @@ pub enum Kind {
     Vara = 7,
     /// The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name.
     Masa = 8,
-    /// The six seasons, two lunar months each.
+    /// The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
     Ritu = 9,
     /// The two halves of the solar year.
     Ayana = 10,

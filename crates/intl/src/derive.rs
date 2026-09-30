@@ -334,8 +334,8 @@ mod tests {
         .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
         assert_eq!(
-            derived.entities, 426,
-            "408 until the 18 dasha systems were named"
+            derived.entities, 432,
+            "408 until the 18 dasha systems were named, 426 until the six ritus"
         );
         assert!(derived.stale.is_empty());
 
@@ -356,9 +356,11 @@ mod tests {
         // three ayanamshas), so the transliterator matched each vetted
         // IAST form it was given; 326 with 17 of the 18 dasha systems.
         // The eighteenth is Vimshottari, whose source writes the anusvara
-        // `ṁ` where IAST writes `ṃ`.
+        // `ṁ` where IAST writes `ṃ`. 331 with five of the six ritus: the
+        // source writes शरद without the virama the Sanskrit stem śarad
+        // takes, which the shipped overrides restore.
         assert_eq!(
-            derived.agreeing, 326,
+            derived.agreeing, 331,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

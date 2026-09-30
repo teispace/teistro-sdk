@@ -202,7 +202,7 @@
         {
           "name": "Ritu",
           "value": 9,
-          "doc": "The six seasons, two lunar months each.",
+          "doc": "The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).",
           "key": "ritu"
         },
         {
@@ -1428,7 +1428,7 @@
     },
     {
       "name": "Ritu",
-      "doc": "The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.",
+      "doc": "The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178). Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.",
       "repr": "u16",
       "kind": "ritu",
       "values": [
@@ -16893,6 +16893,12 @@
               "scalar": "u16",
               "doc": "Which half of the year the day falls in.",
               "enum": "Ayana"
+            },
+            {
+              "name": "ritu",
+              "scalar": "u16",
+              "doc": "Which season the day falls in, under `panchanga.ritu`: by default the season of the sidereal solar month the day belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10), its first day placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).",
+              "enum": "Ritu"
             },
             {
               "name": "disha_shool",

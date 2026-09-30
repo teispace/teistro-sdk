@@ -493,6 +493,19 @@ enum RelationshipKey {
   final String key;
 }
 
+enum RituKey {
+  vasanta('ritu.VASANTA'),
+  grishma('ritu.GRISHMA'),
+  varsha('ritu.VARSHA'),
+  sharad('ritu.SHARAD'),
+  hemanta('ritu.HEMANTA'),
+  shishira('ritu.SHISHIRA');
+
+  const RituKey(this.key);
+
+  final String key;
+}
+
 enum SamvatsaraKey {
   prabhava('samvatsara.PRABHAVA'),
   vibhava('samvatsara.VIBHAVA'),
@@ -1517,6 +1530,19 @@ final class MessagesSdkEntityRelationship {
   EntityForms get neutral => _r.entity('relationship.NEUTRAL');
 }
 
+final class MessagesSdkEntityRitu {
+  const MessagesSdkEntityRitu(this._r);
+
+  final Renderer _r;
+
+  EntityForms get grishma => _r.entity('ritu.GRISHMA');
+  EntityForms get hemanta => _r.entity('ritu.HEMANTA');
+  EntityForms get sharad => _r.entity('ritu.SHARAD');
+  EntityForms get shishira => _r.entity('ritu.SHISHIRA');
+  EntityForms get varsha => _r.entity('ritu.VARSHA');
+  EntityForms get vasanta => _r.entity('ritu.VASANTA');
+}
+
 final class MessagesSdkEntitySamvatsara {
   const MessagesSdkEntitySamvatsara(this._r);
 
@@ -1746,6 +1772,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityPoint get point => MessagesSdkEntityPoint(_r);
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
+  MessagesSdkEntityRitu get ritu => MessagesSdkEntityRitu(_r);
   MessagesSdkEntitySamvatsara get samvatsara => MessagesSdkEntitySamvatsara(_r);
   MessagesSdkEntityTatwa get tatwa => MessagesSdkEntityTatwa(_r);
   MessagesSdkEntityTithi get tithi => MessagesSdkEntityTithi(_r);

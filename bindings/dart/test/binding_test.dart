@@ -1596,6 +1596,46 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  // A day's season is its solar month's, and a month begins on the day
+  // Nepal's calendar begins it (`03-design/ritu-measured.md`).
+  test('a day\'s season turns on the first of its solar month', () {
+    List<Ritu> seasons([Map<String, Object?>? settings]) {
+      final ctx = teistro.context(
+        profile: 'nepali-default',
+        settings: settings,
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
+      final days = ctx.almanac.of(
+        from: gregorian(2026, 3, 13),
+        to: gregorian(2026, 3, 16),
+        place: Observer(
+          latitudeDeg: Latitude(27.7172),
+          longitudeDeg: Longitude(85.324),
+          altitudeM: Altitude(1400),
+        ),
+        utcOffsetSeconds: 20700,
+      );
+      final named = [for (var k = 0; k < days.length; k++) days.at(k).ritu];
+      ctx.dispose();
+      return named;
+    }
+
+    // 15 March 2026 is 1 Chaitra 2082: Vasanta from that day.
+    expect(seasons(), [
+      Ritu.shishira,
+      Ritu.shishira,
+      Ritu.vasanta,
+      Ritu.vasanta,
+    ]);
+    // Amanta Phalguna runs to the new moon of 19 March: Shishira.
+    expect(
+      seasons({
+        'panchanga': {'ritu': 'LUNAR'},
+      }),
+      List.filled(4, Ritu.shishira),
+    );
+  });
+
   test('an almanac carries the festivals it was asked for', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

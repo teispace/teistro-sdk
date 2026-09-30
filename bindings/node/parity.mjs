@@ -777,6 +777,7 @@ for (const day of week) {
   put(`day-${i}-convention`, day.month.convention);
   put(`day-${i}-month-kind`, day.month.kind);
   put(`day-${i}-ayana`, day.ayana);
+  put(`day-${i}-ritu`, day.ritu);
   put(`day-${i}-disha-shool`, day.dishaShool);
   // An absent value must be absent in all three, not nought in one.
   put(`day-${i}-sankranti`, day.sankranti === null ? 'none' : number(day.sankranti));

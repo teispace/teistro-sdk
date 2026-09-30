@@ -2560,6 +2560,7 @@ fn panchanga_days_section(id: u32) -> SectionSchema {
         ColumnDef::new("paksha", Scalar::U16, "The fortnight the day opens in.").of_enum("Paksha"),
         ColumnDef::new("month_kind", Scalar::U8, "Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it.").of_enum("TsMonthKind"),
         ColumnDef::new("ayana", Scalar::U16, "Which half of the year the day falls in.").of_enum("Ayana"),
+        ColumnDef::new("ritu", Scalar::U16, "Which season the day falls in, under `panchanga.ritu`: by default the season of the sidereal solar month the day belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10), its first day placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).").of_enum("Ritu"),
         ColumnDef::new("disha_shool", Scalar::U16, "The direction not to travel in, which is the vara's.").of_enum("Direction"),
         ColumnDef::new("has_sankranti", Scalar::U8, "1 when the Sun entered a new sign inside the day, 0 otherwise."),
         ColumnDef::new("sankranti", Scalar::F64, "When it did, as a Julian day (UTC); zero when it did not, which `has_sankranti` is what distinguishes from midnight."),

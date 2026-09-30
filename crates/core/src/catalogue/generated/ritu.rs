@@ -6,7 +6,7 @@ use crate::catalogue::{Catalogued, Mark, Source, UnknownKey};
 use crate::key::{Kind, KeyId};
 use super::{Masa};
 
-/// The six seasons, two lunar months each.
+/// The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
 ///
 /// Members are appended only; the discriminants are the catalogue ids.
 #[repr(u16)]

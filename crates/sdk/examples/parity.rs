@@ -2828,6 +2828,11 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
     );
     put(
         report,
+        &format!("day-{index}-ritu"),
+        day.sun.ritu.full_key().to_owned(),
+    );
+    put(
+        report,
         &format!("day-{index}-disha-shool"),
         day.omens.disha_shool.full_key().to_owned(),
     );

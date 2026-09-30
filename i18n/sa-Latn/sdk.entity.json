@@ -38,6 +38,38 @@
       "iast": "Dakṣiṇāyana"
     }
   },
+  "ritu": {
+    "VASANTA": {
+      "name": "Vasanta",
+      "prose": "Vasanta",
+      "iast": "Vasanta"
+    },
+    "GRISHMA": {
+      "name": "Grīṣma",
+      "prose": "Grīṣma",
+      "iast": "Grīṣma"
+    },
+    "VARSHA": {
+      "name": "Varṣā",
+      "prose": "Varṣā",
+      "iast": "Varṣā"
+    },
+    "SHARAD": {
+      "name": "Śarad",
+      "prose": "Śarad",
+      "iast": "Śarad"
+    },
+    "HEMANTA": {
+      "name": "Hemanta",
+      "prose": "Hemanta",
+      "iast": "Hemanta"
+    },
+    "SHISHIRA": {
+      "name": "Śiśira",
+      "prose": "Śiśira",
+      "iast": "Śiśira"
+    }
+  },
   "chara_karaka": {
     "ATMAKARAKA": {
       "name": "Ātmakāraka",

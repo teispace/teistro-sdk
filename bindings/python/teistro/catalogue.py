@@ -103,7 +103,7 @@ class Kind(Member):
     """The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name."""
 
     ritu = 9
-    """The six seasons, two lunar months each."""
+    """The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178)."""
 
     ayana = 10
     """The two halves of the solar year."""
@@ -752,7 +752,7 @@ class Masa(Catalogued):
 
 
 class Ritu(Catalogued):
-    """The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`."""
+    """The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178). Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`."""
 
     VASANTA = 0
     """Vasanta"""

@@ -1515,6 +1515,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none; a new section, and constants that were already the
   values every binding sent.
 
+- **Each day names its season** (`ritu-measured.md`, C178, C186).
+  `Panchanga::sun.ritu` is the day's ritu, and a `ritu` day column
+  carries it to Node, Python and Dart (`day.ritu`) and every parity
+  runner. The season is the sidereal solar month's, two signs each from
+  Makara sankranti (Surya Siddhanta XIV.10), and the month is the one the
+  civil day belongs to. Two knobs make that a choice.
+  `panchanga.ritu` is `SOLAR` by default, or `LUNAR` (the amanta month's)
+  or `TROPICAL`. `panchanga.solar_month_start` places a sankranti on a
+  day: `PUNYAKALA` by default, the Dharmasindhu's rule, with the five
+  regional rules beside it and `BIKRAM_SAMBAT`, the month the shipped
+  calendar gives. `nepali-default` (now version 3) reads `BIKRAM_SAMBAT`.
+  `cargo xtask ritu` (gated in fast-check) holds it to 341 days of
+  Nepal's daily panchanga with no miss. Five of the six rules over the
+  modern Sun miss a recorded day, and so does the Sun's sign at sunrise;
+  the sixth misses 25 of the calendar's 156 season changes in BS
+  2070–2095. The ayana agrees on every recorded day. The entity names
+  come from the baseline engine's table in all five locales; `sa-Latn`
+  keeps the Sanskrit stem Śarad through its overrides.
+
+  **Numbers:** none moved. Each day gains a field, so a stored day's
+  content hash differs, and `nepali-default`'s version is 3.
+
 - **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
   C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika

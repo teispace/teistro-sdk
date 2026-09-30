@@ -1200,6 +1200,7 @@ void main() {
     put('day-$i-convention', day.month.convention.key);
     put('day-$i-month-kind', day.month.kind.key);
     put('day-$i-ayana', day.ayana.fullKey);
+    put('day-$i-ritu', day.ritu.fullKey);
     put('day-$i-disha-shool', day.dishaShool.fullKey);
     // An absent value must be absent in all three, not nought in one.
     final sankranti = day.sankranti;

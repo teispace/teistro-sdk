@@ -224,7 +224,7 @@ export declare const Kind: {
    */
   readonly Masa: 'masa';
   /**
-   * The six seasons, two lunar months each.
+   * The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
    */
   readonly Ritu: 'ritu';
   /**
@@ -1266,7 +1266,7 @@ export declare const Masa: {
 export declare const MasaById: ReadonlyMap<number, Masa>;
 
 /**
- * The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
+ * The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178). Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
  */
 export type Ritu =
   | 'ritu.VASANTA'

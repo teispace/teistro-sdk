@@ -5787,6 +5787,37 @@
         }
       ]
     },
+    "Ritu": {
+      "anyOf": [
+        {
+          "description": "A key of the `ritu` catalogue, as a document writes it.",
+          "enum": [
+            "VASANTA",
+            "GRISHMA",
+            "VARSHA",
+            "SHARAD",
+            "HEMANTA",
+            "SHISHIRA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `ritu` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "ritu.VASANTA",
+            "ritu.GRISHMA",
+            "ritu.VARSHA",
+            "ritu.SHARAD",
+            "ritu.HEMANTA",
+            "ritu.SHISHIRA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `ritu` catalogue, bare or full.",
+      "x-teistro-kind": "ritu"
+    },
     "Rules": {
       "description": "The choices a dasha is computed under, which the settings' `dasha` group holds.",
       "properties": {
@@ -6352,6 +6383,10 @@
           "$ref": "#/$defs/Ayana",
           "description": "Which half of the year the day falls in."
         },
+        "ritu": {
+          "$ref": "#/$defs/Ritu",
+          "description": "Which season the day falls in, under `panchanga.ritu`."
+        },
         "sankranti": {
           "anyOf": [
             {
@@ -6373,7 +6408,8 @@
       },
       "required": [
         "signs",
-        "ayana"
+        "ayana",
+        "ritu"
       ],
       "type": "object"
     },

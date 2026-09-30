@@ -41,6 +41,7 @@ import type {
   Point,
   Quadrant,
   Rashi,
+  Ritu,
   Samvatsara,
   Shodhana,
   Ekadhipatya,
@@ -2501,6 +2502,12 @@ export declare class AlmanacDay {
   readonly month: Month;
   /** Which half of the year the day falls in. */
   readonly ayana: Ayana | 'unknown';
+  /**
+   * Which season the day falls in, under `panchanga.ritu`: by default the
+   * season of the sidereal solar month the day belongs to, its first day
+   * placed by `panchanga.solar_month_start`.
+   */
+  readonly ritu: Ritu | 'unknown';
   /** The direction not to travel in. */
   readonly dishaShool: Direction | 'unknown';
   /** When the Sun entered a new sign inside the day, or `null`. */

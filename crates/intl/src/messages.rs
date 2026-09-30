@@ -1179,6 +1179,10 @@ pub mod sdk {
         pub mod relationship {
         }
 
+        /// The `ritu` group.
+        pub mod ritu {
+        }
+
         /// The `samvatsara` group.
         pub mod samvatsara {
         }

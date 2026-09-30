@@ -120,7 +120,7 @@ enum Kind {
   vara(7, 'vara'),
   /// The twelve lunar months, each named for the nakshatra of its full moon, with the solar month that shares its name.
   masa(8, 'masa'),
-  /// The six seasons, two lunar months each.
+  /// The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178).
   ritu(9, 'ritu'),
   /// The two halves of the solar year.
   ayana(10, 'ayana'),
@@ -828,7 +828,7 @@ enum Masa implements KeyOf<Masa> {
   }
 }
 
-/// The six seasons, two lunar months each. Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
+/// The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178). Members are the catalogue's ids; the full key id is `(TS_KIND_RITU << 16) | member`.
 enum Ritu implements KeyOf<Ritu> {
   /// Vasanta
   vasanta(0, 'VASANTA'),
