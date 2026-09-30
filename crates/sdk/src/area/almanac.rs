@@ -13,14 +13,16 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
-use teistro_panchanga::almanac::{Almanac, MOST_DAYS, Panchanga, days_in};
+use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{FestivalDay, FestivalRule, Observances, observances};
+
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::local_day::local_midnight;
 
 use crate::area::{drik_sun, system_of};
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
+use crate::festival_request::FestivalRequest;
 use crate::muhurta_request::MuhurtaRequest;
 
 /// `sdk.almanac`: what a Nepali or Indian almanac prints — each day's
@@ -190,10 +192,16 @@ impl<'a> AlmanacArea<'a> {
         offset: UtcOffset,
         request: &MuhurtaRequest,
     ) -> Result<MuhurtaDays, Error> {
-        let (answer, days) = self.searching(from, to, place, offset, request, |almanac| {
-            almanac.between(from, to, place)
+        let asked = AlmanacRequest::new().with_muhurta(request.clone());
+        let AlmanacAnswer {
+            days,
+            day_hashes,
+            muhurta,
+            ..
+        } = self.asked(from, to, place, offset, &asked)?;
+        let answer = muhurta.ok_or_else(|| {
+            Error::internal("a request with a muhurta search answered none, which cannot happen")
         })?;
-        let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
         Ok(MuhurtaDays {
             days,
             day_hashes,
@@ -288,9 +296,8 @@ impl<'a> AlmanacArea<'a> {
     /// `applied_conventions`.
     ///
     /// ```no_run
-    /// use teistro::{CalendarDate, Context};
+    /// use teistro::{CalendarDate, Context, FestivalPack, FestivalRequest};
     /// use teistro::catalogue::Calendar;
-    /// use teistro::festival::FestivalRule;
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     /// use teistro::UtcOffset;
     ///
@@ -301,7 +308,7 @@ impl<'a> AlmanacArea<'a> {
     ///     CalendarDate::defined(Calendar::Gregorian, 2026, 12, 31),
     /// );
     /// let found = sdk.almanac().festivals(&from, &to, &delhi, UtcOffset::literal(5, 30, 0),
-    ///     &FestivalRule::dharmasindhu())?;
+    ///     &FestivalRequest::from(FestivalPack::Dharmasindhu))?;
     /// for observance in &found.value.observances {
     ///     println!("{} on {} ({:?})", observance.rule, observance.day, observance.case);
     /// }
@@ -310,52 +317,89 @@ impl<'a> AlmanacArea<'a> {
     ///
     /// # Errors
     ///
-    /// A rule [`FestivalRule::check`] refuses, naming its field under
-    /// `rules`; a context with no ephemeris; a calendar the SDK does not
-    /// ship; or a range the almanac refuses.
+    /// A request [`FestivalRequest::check`] refuses, naming its field
+    /// under `rules`; a context with no ephemeris; a calendar the SDK does
+    /// not ship; or a range the almanac refuses.
     pub fn festivals(
         self,
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
         offset: UtcOffset,
-        rules: &[FestivalRule],
+        request: &FestivalRequest,
     ) -> Result<Envelope<Observances>, Error> {
-        for (index, rule) in rules.iter().enumerate() {
-            rule.check().map_err(|error| {
-                let field = error
-                    .field()
-                    .map_or_else(String::new, |field| format!(".{field}"));
-                error.with_field(format!("rules[{index}]{field}"))
-            })?;
-        }
+        request.check()?;
+        let days = self.unsealed(from, to, place, offset)?;
+        self.reckoning(from, to, place, offset, request, &days)
+    }
+
+    /// As [`AlmanacArea::festivals`], with the range's days beside the
+    /// answer, founded once and sealed as [`AlmanacArea::of_each`] seals
+    /// them: what a consumer shows the observances on.
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::festivals`].
+    pub fn festivals_with_days(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+        request: &FestivalRequest,
+    ) -> Result<FestivalDays, Error> {
+        let asked = AlmanacRequest::new().with_festivals(request.clone());
+        let AlmanacAnswer {
+            days,
+            day_hashes,
+            festivals,
+            ..
+        } = self.asked(from, to, place, offset, &asked)?;
+        let answer = festivals.ok_or_else(|| {
+            Error::internal("a request with festivals answered none, which cannot happen")
+        })?;
+        Ok(FestivalDays {
+            days,
+            day_hashes,
+            answer,
+        })
+    }
+
+    /// The observances over the range's own `days`, stamped with their
+    /// provenance. The widening is founded as runs of its own on each
+    /// side, so the range's run is exactly the one [`AlmanacArea::of_each`]
+    /// founds and seals, and nothing is founded twice.
+    fn reckoning(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+        request: &FestivalRequest,
+        days: &Envelope<Vec<Panchanga>>,
+    ) -> Result<Envelope<Observances>, Error> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
-        days_in(first, last, from, to)?;
         let (before, after) = (
             calendar.date_of(first.plus_days(-1))?,
-            calendar.date_of(last.plus_days(2))?,
+            (
+                calendar.date_of(last.plus_days(1))?,
+                calendar.date_of(last.plus_days(2))?,
+            ),
         );
-        // The widening is the SDK's, not the caller's, so it does not count
-        // against the almanac's limit: the days are founded in runs within it.
-        let days = self.with_almanac(from, offset, |almanac| {
-            let mut runs = Vec::new();
-            let mut start = first.plus_days(-1);
-            let end = last.plus_days(2);
-            while start.days_until(end) >= 0 {
-                let stop = start.plus_days(i64::try_from(MOST_DAYS - 1).unwrap_or(0));
-                let stop = if stop.days_until(end) < 0 { end } else { stop };
-                runs.push(almanac.between(
-                    &calendar.date_of(start)?,
-                    &calendar.date_of(stop)?,
-                    place,
-                )?);
-                start = stop.plus_days(1);
-            }
-            joined(runs)
+        let (earlier, later) = self.with_almanac(from, offset, |almanac| {
+            Ok((
+                almanac.between(&before, &before, place)?.value,
+                almanac.between(&after.0, &after.1, place)?.value,
+            ))
         })?;
-        let viewed: Vec<FestivalDay> = days.value.iter().map(FestivalDay::from).collect();
-        let mut found = observances(rules, &viewed)?;
+        let viewed: Vec<FestivalDay> = earlier
+            .iter()
+            .chain(&days.value)
+            .chain(&later)
+            .map(FestivalDay::from)
+            .collect();
+        let mut found = observances(request.rules(), &viewed)?;
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)
@@ -365,29 +409,71 @@ impl<'a> AlmanacArea<'a> {
             .observances
             .retain(|observance| inside(&observance.day));
         let (start, end) = (
-            viewed.get(1).map(|day| day.sunrise.get()),
-            viewed.iter().rev().nth(2).map(|day| day.next_sunrise.get()),
+            days.value.first().map(|day| day.day.sunrise.get()),
+            days.value.last().map(|day| day.day.next_sunrise.get()),
         );
         found.unjudged.retain(|unjudged| {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)
         });
-        let mut provenance = days.provenance;
+        let mut provenance = days.provenance.clone();
         provenance.input_hash = content_hash(&FestivalInput {
             from: from.to_string(),
             to: to.to_string(),
             place: *place,
             utc_offset_seconds: offset.seconds(),
-            rules,
+            rules: request.rules(),
         });
         provenance.applied_conventions.push(Convention {
             knob: String::from("festival.days"),
-            value: format!("{before}..{after}"),
+            value: format!("{before}..{}", after.1),
             reason: String::from(
                 "a tithi beginning the day before the range can fall in it, and one at its end is judged against the day after, or two when it holds two sunrises",
             ),
         });
         Ok(Envelope::sealing(found, provenance))
+    }
+
+    /// Every day of a range with whatever `request` asks beside it — a
+    /// muhurta search, festivals, or both — over the days **founded
+    /// once**, sealed as [`AlmanacArea::of_each`] seals them. What the C
+    /// boundary answers a panchanga request with.
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of_each`], and whatever each thing asked refuses.
+    pub fn asked(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+        request: &AlmanacRequest,
+    ) -> Result<AlmanacAnswer, Error> {
+        if let Some(festivals) = &request.festivals {
+            festivals.check()?;
+        }
+        let (muhurta, days) = match &request.muhurta {
+            Some(asked) => {
+                let (answer, days) = self.searching(from, to, place, offset, asked, |almanac| {
+                    almanac.between(from, to, place)
+                })?;
+                (Some(answer), days)
+            }
+            None => (None, self.unsealed(from, to, place, offset)?),
+        };
+        let festivals = request
+            .festivals
+            .as_ref()
+            .map(|asked| self.reckoning(from, to, place, offset, asked, &days))
+            .transpose()?;
+        let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
+        Ok(AlmanacAnswer {
+            days,
+            day_hashes,
+            muhurta,
+            festivals,
+        })
     }
 
     /// One day: the run of one, unwrapped.
@@ -414,6 +500,85 @@ impl<'a> AlmanacArea<'a> {
     }
 }
 
+/// What an almanac is asked beside its days
+/// ([`AlmanacArea::asked`]): each is optional, and asking for none is
+/// [`AlmanacArea::of_each`].
+///
+/// ```
+/// use teistro::{AlmanacRequest, FestivalPack, FestivalRequest, MuhurtaRequest};
+/// use teistro::muhurta::ActivityRules;
+///
+/// let asked = AlmanacRequest::new()
+///     .with_muhurta(MuhurtaRequest::new(ActivityRules::raman_marriage()))
+///     .with_festivals(FestivalRequest::from(FestivalPack::Dharmasindhu));
+/// assert!(asked.muhurta().is_some() && asked.festivals().is_some());
+/// ```
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct AlmanacRequest {
+    muhurta: Option<MuhurtaRequest>,
+    festivals: Option<FestivalRequest>,
+}
+
+impl AlmanacRequest {
+    /// Nothing beside the days.
+    #[must_use]
+    pub fn new() -> AlmanacRequest {
+        AlmanacRequest::default()
+    }
+
+    /// With a muhurta search over the days.
+    #[must_use]
+    pub fn with_muhurta(mut self, request: MuhurtaRequest) -> AlmanacRequest {
+        self.muhurta = Some(request);
+        self
+    }
+
+    /// With the days festival rules fall on.
+    #[must_use]
+    pub fn with_festivals(mut self, request: FestivalRequest) -> AlmanacRequest {
+        self.festivals = Some(request);
+        self
+    }
+
+    /// The muhurta search asked, if any.
+    #[must_use]
+    pub fn muhurta(&self) -> Option<&MuhurtaRequest> {
+        self.muhurta.as_ref()
+    }
+
+    /// The festival rules asked, if any.
+    #[must_use]
+    pub fn festivals(&self) -> Option<&FestivalRequest> {
+        self.festivals.as_ref()
+    }
+}
+
+/// The days of a range and what was asked beside them: what
+/// [`AlmanacArea::asked`] gives.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AlmanacAnswer {
+    /// Every day of the range, sealed as [`AlmanacArea::of_each`] seals it.
+    pub days: Envelope<Vec<Panchanga>>,
+    /// Each day's own content hash, in the range's order.
+    pub day_hashes: Vec<Hash>,
+    /// The muhurta search's answer, when one was asked.
+    pub muhurta: Option<Envelope<Answer>>,
+    /// The observances, when festivals were asked.
+    pub festivals: Option<Envelope<Observances>>,
+}
+
+/// A festival reckoning's answer beside the range's days: what
+/// [`AlmanacArea::festivals_with_days`] gives.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FestivalDays {
+    /// Every day of the range, sealed as [`AlmanacArea::of_each`] seals it.
+    pub days: Envelope<Vec<Panchanga>>,
+    /// Each day's own content hash, in the range's order.
+    pub day_hashes: Vec<Hash>,
+    /// The observances.
+    pub answer: Envelope<Observances>,
+}
+
 /// A muhurta search's answer beside the days it searched: what
 /// [`AlmanacArea::muhurta_with_days`] gives.
 #[derive(Clone, Debug, PartialEq)]
@@ -436,21 +601,6 @@ struct MuhurtaInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r MuhurtaRequest,
-}
-
-/// Consecutive runs of days as one: the first run's provenance, which
-/// every run shares but for the days it holds.
-fn joined(runs: Vec<Envelope<Vec<Panchanga>>>) -> Result<Envelope<Vec<Panchanga>>, Error> {
-    let mut runs = runs.into_iter();
-    let Some(mut all) = runs.next() else {
-        return Err(Error::internal(
-            "a range of days answered no run, which cannot happen",
-        ));
-    };
-    for run in runs {
-        all.value.extend(run.value);
-    }
-    Ok(all)
 }
 
 /// What a festival answer is a function of, beside the settings.

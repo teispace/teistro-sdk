@@ -52,13 +52,16 @@ class Sizes(unittest.TestCase):
         expected = _ffi._SIZES_64 if pointer == 8 else _ffi._SIZES_32
         self.assertEqual(_ffi.SIZES, expected)
         # And the two tables really differ, so choosing between them is
-        # not a distinction without a difference: thirteen of the structs
+        # not a distinction without a difference: fourteen of the structs
         # hold a pointer, a callback or a `size_t`. `ts_chart_request`
-        # joined them when it took a grid of instants rather than one.
+        # joined them when it took a grid of instants rather than one, and
+        # `ts_panchanga_request` when its second record pointer,
+        # `festivals_json`, left no padding for one pointer's width to hide
+        # in.
         differ = [
             name for name in _ffi._SIZES_64 if _ffi._SIZES_64[name] != _ffi._SIZES_32[name]
         ]
-        self.assertEqual(len(differ), 13, differ)
+        self.assertEqual(len(differ), 14, differ)
 
     def test_no_scalar_is_declared_at_the_platforms_width(self) -> None:
         # `c_long` is 8 bytes on Linux and 4 on Windows; every scalar the

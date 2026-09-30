@@ -21,7 +21,7 @@ use std::path::Path;
 
 use teistro::festival::{Decided, FestivalRule, Observance};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro::{CalendarDate, Context, Ephemeris, UtcOffset};
+use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 use teistro_core::catalogue::Calendar;
 
 use crate::generated::{Output, check, write};
@@ -172,7 +172,7 @@ fn date(year: i32, (month, day): (u8, u8)) -> CalendarDate {
 /// Each rule's observances over a year's seasons.
 fn year_of(
     context: &Context,
-    rules: &[FestivalRule],
+    request: &FestivalRequest,
     year: i32,
 ) -> Result<Vec<Observance>, String> {
     let mut all = Vec::new();
@@ -184,7 +184,7 @@ fn year_of(
                 &date(year, to),
                 &place(),
                 UtcOffset::literal(5, 30, 0),
-                rules,
+                request,
             )
             .map_err(|e| format!("{year}: {e}"))?;
         if !found.value.unjudged.is_empty() {
@@ -211,18 +211,52 @@ impl Row {
     }
 }
 
-fn page() -> Result<String, String> {
-    let context = Context::builder()
-        .ephemeris([Ephemeris::Builtin])
-        .build()
-        .map_err(|e| e.to_string())?;
-    let rules = FestivalRule::dharmasindhu();
-    let mut years: BTreeMap<i32, Vec<Observance>> = BTreeMap::new();
-    for year in PUBLISHED.iter().map(|row| row.0).chain(REACH) {
-        if let std::collections::btree_map::Entry::Vacant(entry) = years.entry(year) {
-            entry.insert(year_of(&context, &rules, year)?);
+/// Every year's observances, found by as many workers as the machine has
+/// cores, each with its own context, over consecutive runs of the years.
+/// A year's answer does not depend on which worker found it, so the map
+/// is the one a single thread would build; the refusal reported is the
+/// first worker's, in the years' order.
+fn years_of(request: &FestivalRequest) -> Result<BTreeMap<i32, Vec<Observance>>, String> {
+    let wanted: Vec<i32> = PUBLISHED
+        .iter()
+        .map(|row| row.0)
+        .chain(REACH)
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    let workers = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
+    let run = wanted.len().div_ceil(workers).max(1);
+    std::thread::scope(|scope| {
+        let found: Vec<_> = wanted
+            .chunks(run)
+            .map(|part| {
+                scope.spawn(move || {
+                    let context = Context::builder()
+                        .ephemeris([Ephemeris::Builtin])
+                        .build()
+                        .map_err(|e| e.to_string())?;
+                    part.iter()
+                        .map(|&year| Ok((year, year_of(&context, request, year)?)))
+                        .collect::<Result<Vec<_>, String>>()
+                })
+            })
+            .collect();
+        let mut years = BTreeMap::new();
+        for worker in found {
+            years.extend(
+                worker
+                    .join()
+                    .map_err(|_| String::from("a worker finding the festivals panicked"))??,
+            );
         }
-    }
+        Ok(years)
+    })
+}
+
+fn page() -> Result<String, String> {
+    let request = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    let rules = request.rules();
+    let years = years_of(&request)?;
 
     let mut rows: Vec<Row> = PUBLISHED
         .iter()
@@ -265,11 +299,11 @@ fn page() -> Result<String, String> {
         }
     }
 
-    let (cases, decided) = reach(&rules, &years, &mut problems);
+    let (cases, decided) = reach(rules, &years, &mut problems);
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
-    Ok(render(&rules, &rows, &cases, &decided))
+    Ok(render(rules, &rows, &cases, &decided))
 }
 
 /// How many years met each (rule, case).

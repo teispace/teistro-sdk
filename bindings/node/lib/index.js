@@ -1227,6 +1227,7 @@ export class Chart {
 export class Almanac extends Stamped {
   #starts = null;
   #muhurta = undefined;
+  #festivals = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1266,6 +1267,20 @@ export class Almanac extends Stamped {
   get muhurta() {
     if (this.#muhurta === undefined) this.#muhurta = muhurtaFrom(this.decoded.muhurta);
     return this.#muhurta;
+  }
+
+  /**
+   * The days the festival rules the request asked for fall on over these
+   * days (`03-design/festival-rules.md` §7), or `null` when it asked for
+   * none: each observance with the case between its tithi's two days and
+   * the guard that decided, the occurrences no day could be given to,
+   * and what computed it. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get festivals() {
+    if (this.#festivals === undefined) this.#festivals = festivalsFrom(this.decoded.festivals);
+    return this.#festivals;
   }
 
 
@@ -2819,6 +2834,28 @@ function muhurtaFrom(json) {
 }
 
 /**
+ * The `festivals` section as this layer hands it out: the envelope's
+ * value with its provenance beside it, and every date, the observance's
+ * and each extent's, in the shape every other date here has.
+ *
+ * @param {string} json the section, empty when none was asked for
+ * @returns {object|null}
+ */
+function festivalsFrom(json) {
+  if (!json) return null;
+  const { value, provenance } = JSON.parse(json);
+  return deepFreeze({
+    observances: value.observances.map((observance) => ({
+      ...observance,
+      day: dateFrom(observance.day),
+      extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
+    })),
+    unjudged: value.unjudged,
+    provenance: decodeProvenance(provenance),
+  });
+}
+
+/**
  * A date as the Rust types serialise it, in the shape `date(...)` builds
  * and `calendar.convert` answers: the era flattened beside its year, and
  * the resolution by name with a divergent one's computed day.
@@ -3578,6 +3615,7 @@ export class AlmanacArea extends Area {
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
+        festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
       }),
     );
     return new Almanac(bytes);

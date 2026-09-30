@@ -1434,6 +1434,66 @@ class AnEngine(WithLibrary):
                 ctx.almanac.of(**days, muhurta="RAMAN_MARRIAGE")  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "muhurta")
 
+    def test_an_almanac_carries_the_festivals_it_was_asked_for(self) -> None:
+        """Festival rules cross beside the days they fall on
+        (`03-design/festival-rules.md` §7): dates in this binding's shape,
+        the days the almanac's own, a shipped rule replaced by its key with
+        members given as members, and a refusal named by the item and field
+        that was wrong."""
+        from teistro import FestivalAnswer, FestivalRequest, date
+        from teistro.catalogue import Calendar, Masa, Tithi
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2026, 10, 15),
+            "to_date": date(Calendar.GREGORIAN, 2026, 11, 10),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.almanac.of(**days)
+            self.assertIsNone(plain.festivals)
+            almanac = ctx.almanac.of(**days, festivals={"rules": "DHARMASINDHU"})
+            answer = almanac.festivals
+            assert answer is not None
+            self.assertIsInstance(answer, FestivalAnswer)
+            self.assertEqual([o.rule for o in answer.observances], ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"])
+            dashami = answer.observances[0]
+            self.assertEqual((dashami.day.calendar, dashami.day.month), (Calendar.GREGORIAN, 10))
+            self.assertEqual(dashami.extents[0].day.calendar, Calendar.GREGORIAN)
+            self.assertIn(dashami.decided_by.by, ("GUARD", "OTHERWISE"))
+            self.assertEqual(answer.unjudged, ())
+            for k in range(len(plain)):
+                self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
+            self.assertIn("festival.days", {c.knob for c in answer.provenance.applied_conventions})
+
+            sunrise = {
+                "key": "LAKSHMI_PUJA",
+                "source": "the tithi at sunrise",
+                "month": Masa.ASHWINA,
+                "tithi": Tithi.AMAVASYA,
+                "at": {"window": "SUNRISE"},
+                "decide": [],
+                "otherwise": "LATER",
+            }
+            moved = ctx.almanac.of(**days, festivals={"rules": ["DHARMASINDHU", sunrise]}).festivals
+            assert moved is not None
+            self.assertEqual(moved.observances[1].decided_by.by, "OTHERWISE")
+            self.assertIsNone(moved.observances[1].decided_by.index)
+            self.assertNotEqual(moved.provenance.input_hash, answer.provenance.input_hash)
+
+            refusals: list[tuple[FestivalRequest, str]] = [
+                ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
+                ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
+                ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.almanac.of(**days, festivals=bad)
+                self.assertEqual(refused.exception.field, field)
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict

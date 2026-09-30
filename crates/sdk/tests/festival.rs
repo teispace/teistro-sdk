@@ -11,8 +11,12 @@
 
 use teistro::catalogue::Calendar;
 use teistro::festival::{Edge, FestivalRule, Guard, Predicate, Which};
+use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro::{CalendarDate, Context, Ephemeris, UtcOffset};
+use teistro::{
+    AlmanacRequest, CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest,
+    MuhurtaRequest, UtcOffset,
+};
 
 fn context() -> Context {
     Context::builder()
@@ -46,7 +50,7 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
             &to,
             &delhi(),
             UtcOffset::literal(5, 30, 0),
-            &FestivalRule::dharmasindhu(),
+            &FestivalRequest::from(FestivalPack::Dharmasindhu),
         )
         .unwrap();
     assert!(
@@ -99,7 +103,100 @@ fn a_rule_is_refused_by_its_place_in_the_request() {
     ));
     let error = context()
         .almanac()
-        .festivals(&from, &to, &delhi(), UtcOffset::literal(5, 30, 0), &rules)
+        .festivals(
+            &from,
+            &to,
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &FestivalRequest::new(rules),
+        )
         .unwrap_err();
     assert_eq!(error.field(), Some("rules[2].decide.when.ghatis"));
+}
+
+#[test]
+fn the_answer_alone_and_beside_its_days_agree_and_the_days_are_the_almanacs() {
+    let sdk = context();
+    let (from, to) = (
+        CalendarDate::defined(Calendar::Gregorian, 2026, 10, 15),
+        CalendarDate::defined(Calendar::Gregorian, 2026, 11, 10),
+    );
+    let clock = UtcOffset::literal(5, 30, 0);
+    let asked = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    let alone = sdk
+        .almanac()
+        .festivals(&from, &to, &delhi(), clock, &asked)
+        .unwrap();
+    let beside = sdk
+        .almanac()
+        .festivals_with_days(&from, &to, &delhi(), clock, &asked)
+        .unwrap();
+    assert_eq!(beside.answer, alone);
+    let rules: Vec<&str> = alone
+        .value
+        .observances
+        .iter()
+        .map(|o| o.rule.as_str())
+        .collect();
+    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"]);
+    let (days, each) = sdk.almanac().of_each(&from, &to, &delhi(), clock).unwrap();
+    assert_eq!(beside.days, days);
+    assert_eq!(beside.day_hashes, each);
+
+    // The input hash covers the rules: another rule is another input.
+    let mut earlier = FestivalRule::dharmasindhu().remove(3);
+    earlier.decide.clear();
+    let other = sdk
+        .almanac()
+        .festivals(&from, &to, &delhi(), clock, &asked.with_rule(earlier))
+        .unwrap();
+    assert_ne!(other.provenance.input_hash, alone.provenance.input_hash);
+}
+
+#[test]
+fn muhurta_and_festivals_asked_together_answer_as_each_alone_over_one_run_of_days() {
+    let sdk = context();
+    let (from, to) = (
+        CalendarDate::defined(Calendar::Gregorian, 2026, 10, 15),
+        CalendarDate::defined(Calendar::Gregorian, 2026, 11, 10),
+    );
+    let clock = UtcOffset::literal(5, 30, 0);
+    let muhurta = MuhurtaRequest::new(ActivityRules::raman_marriage()).with_windows_on(2);
+    let festivals = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    let asked = AlmanacRequest::new()
+        .with_muhurta(muhurta.clone())
+        .with_festivals(festivals.clone());
+    let both = sdk
+        .almanac()
+        .asked(&from, &to, &delhi(), clock, &asked)
+        .unwrap();
+    let (days, each) = sdk.almanac().of_each(&from, &to, &delhi(), clock).unwrap();
+    assert_eq!(both.days, days);
+    assert_eq!(both.day_hashes, each);
+    assert_eq!(
+        both.muhurta,
+        Some(
+            sdk.almanac()
+                .muhurta(&from, &to, &delhi(), clock, &muhurta)
+                .unwrap()
+        )
+    );
+    assert_eq!(
+        both.festivals,
+        Some(
+            sdk.almanac()
+                .festivals(&from, &to, &delhi(), clock, &festivals)
+                .unwrap()
+        )
+    );
+
+    // Asked for neither, it is the days alone.
+    let neither = sdk
+        .almanac()
+        .asked(&from, &to, &delhi(), clock, &AlmanacRequest::new())
+        .unwrap();
+    assert_eq!(
+        (neither.days, neither.muhurta, neither.festivals),
+        (days, None, None)
+    );
 }

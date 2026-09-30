@@ -193,7 +193,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 32,
-    "ts_panchanga_request": 64,
+    "ts_panchanga_request": 72,
 }
 
 _SIZES_32: Final[dict[str, int]] = {
@@ -776,6 +776,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
         ("utc_offset_seconds", ctypes.c_int32),
         ("reserved_tail", ctypes.c_int32),
         ("muhurta_json", ctypes.c_char_p),
+        ("festivals_json", ctypes.c_char_p),
     ]
 
 
@@ -3015,6 +3016,20 @@ class PanchangaRequest:
     Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
     """
 
+    festivals_json: Optional[str] = None
+    """The days festival rules fall on over the same days, as a JSON
+    object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+    whose items name a pack or spell a rule out, a later rule
+    replacing an earlier one with its key. A catalogue member may be
+    written bare or in full. The answer comes back in the `festivals`
+    section, over this blob's own days founded once, with the day
+    before and the two after founded beside them
+    (`03-design/festival-rules.md` §7). Null for none, which costs
+    nothing. Refusals are named from the record every binding calls
+    `festivals`, down to a rule's own field under `festivals.rules`.
+    Example: {"rules":"DHARMASINDHU"}. May be null.
+    """
+
     def _into(self, raw: _PanchangaRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -3037,6 +3052,9 @@ class PanchangaRequest:
         _muhurta_json = None if self.muhurta_json is None else self.muhurta_json.encode("utf-8")
         owned.append(_muhurta_json)
         raw.muhurta_json = _muhurta_json
+        _festivals_json = None if self.festivals_json is None else self.festivals_json.encode("utf-8")
+        owned.append(_festivals_json)
+        raw.festivals_json = _festivals_json
 
     def _to_c(self, owned: list[Any]) -> _PanchangaRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3065,6 +3083,7 @@ class PanchangaRequest:
             altitude_m=float(raw.altitude_m),
             utc_offset_seconds=raw.utc_offset_seconds,
             muhurta_json=_text(raw.muhurta_json),
+            festivals_json=_text(raw.festivals_json),
         )
 
 

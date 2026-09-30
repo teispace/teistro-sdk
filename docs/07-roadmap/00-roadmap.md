@@ -700,6 +700,24 @@ none of them, and the Jaimini sutras in hand are not legible for them.
 `jaimini`, `kp`, `tajika`, `gochar` with hit lists and Sade Sati, `muhurta`
 search with blackouts and event rules, festival rule-pack hooks.
 
+**Nepali panchanga particulars** (recorded 2026-09-30,
+`08-panchanga-calendar-muhurta.md` "Nepali panchanga particulars", forks
+C177 to C180). They follow the festival step, in this order, each
+measured against Nepal before it is called done:
+
+1. Malmas: hold the computed adhika months to the committee's announced
+   spans, and name it the Nepali way (C177).
+2. The year limbs nothing computes: samvatsara and ritu (C178, C180),
+   answered per day in every binding. Beside them, tithi vriddhi and
+   kshaya as flags, and ghati-pala from sunrise.
+3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
+   as blackouts.
+4. A Nepal festival pack, measured against the Government of Nepal's
+   holiday list the way `festival-measured.md` holds the Delhi one,
+   with region-scoped days (Holi in the hills and the Terai).
+5. Nepal Sambat as a calendar, and saait packs beyond marriage:
+   bratabandha, pasni, nwaran and griha pravesh.
+
 Then the two traditions ADR-0025 moved into v1, which are profiles over
 the same machinery rather than new mechanisms:
 

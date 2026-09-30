@@ -181,7 +181,7 @@ struct RangeInput {
 ///
 /// `INVALID_ARG` for a range the wrong way round, `OUT_OF_RANGE` for one
 /// too long.
-pub fn days_in(
+fn days_in(
     first: FixedDay,
     last: FixedDay,
     from: &CalendarDate,

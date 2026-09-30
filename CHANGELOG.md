@@ -1437,6 +1437,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   sunset, and `Stands` asks for a nakshatra in a window. Forks C175
   and C176 are registered.
 
+  Every binding asks for festivals (step 4, `festival-rules.md` §7).
+  `FestivalRequest` names a pack or amends it rule by rule, a later
+  rule replacing the one with its key in place, and refuses a key given
+  twice. A binding writes it as `festivals` beside `muhurta` on an
+  almanac request (`festivals_json` on `ts_panchanga_request`), and
+  reads `almanac.festivals` back: an observance's day, case, guard and
+  choice, and both days' extents. A refusal names its path, down to a
+  rule's own field (`festivals.rules[1].at.window`). The answer's
+  catalogue members are written in full, as muhurta's are, through one
+  writer in `teistro_core::catalogue`. `sdk.almanac().asked` founds the
+  days once when both are asked.
+
+  **Numbers:** none. The festival page is unchanged, and now found by as
+  many workers as the machine has cores.
+
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
   in the 3rd, 6th or 11th. The clause read that as every natural malefic,

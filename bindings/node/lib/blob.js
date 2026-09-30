@@ -1179,6 +1179,10 @@ export function decodePanchanga(bytes) {
     const at = section(blob, 21, 'muhurta');
     out.muhurta = text(blob, at);
   }
+  {
+    const at = section(blob, 22, 'festivals');
+    out.festivals = text(blob, at);
+  }
   return out;
 }
 

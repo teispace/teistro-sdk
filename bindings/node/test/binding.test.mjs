@@ -2130,6 +2130,70 @@ test('an almanac carries the muhurta search it was asked for', () => {
   ctx.dispose();
 });
 
+/**
+ * Festival rules cross beside the days they fall on
+ * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
+ * shape, the days the almanac's own, a shipped rule replaced by its key,
+ * and a refusal named by the item and field that was wrong.
+ */
+test('an almanac carries the festivals it was asked for', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const days = {
+    from: date(Calendar.Gregorian, 2026, 10, 15),
+    to: date(Calendar.Gregorian, 2026, 11, 10),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const plain = ctx.almanac.of(days);
+  assert.equal(plain.festivals, null);
+
+  const almanac = ctx.almanac.of({ ...days, festivals: { rules: 'DHARMASINDHU' } });
+  const answer = almanac.festivals;
+  assert.deepEqual(answer.observances.map((o) => o.rule), ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA']);
+  assert.ok(Object.isFrozen(answer.observances[0].extents[0].window), 'frozen to its leaves');
+  const [dashami] = answer.observances;
+  assert.equal(dashami.day.calendar, 'calendar.GREGORIAN');
+  assert.equal(dashami.day.month, 10);
+  assert.equal(dashami.extents[0].day.calendar, 'calendar.GREGORIAN');
+  assert.ok(['GUARD', 'OTHERWISE'].includes(dashami.decidedBy.by));
+  assert.deepEqual(answer.unjudged, []);
+  for (let k = 0; k < plain.length; k += 1) {
+    assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);
+  }
+  const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
+  assert.ok(knobs.includes('festival.days'), knobs.join());
+
+  // Lakshmi puja moved to whichever day holds its tithi at sunrise: a
+  // rule of the consumer's own, replacing the shipped one by its key.
+  const sunrise = {
+    key: 'LAKSHMI_PUJA',
+    source: 'the tithi at sunrise',
+    month: 'masa.ASHWINA',
+    tithi: 'tithi.AMAVASYA',
+    at: { window: 'SUNRISE' },
+    decide: [],
+    otherwise: 'LATER',
+  };
+  const moved = ctx.almanac.of({ ...days, festivals: { rules: ['DHARMASINDHU', sunrise] } }).festivals;
+  assert.equal(moved.observances.length, 2);
+  assert.equal(moved.observances[1].decidedBy.by, 'OTHERWISE');
+  assert.notEqual(moved.provenance.inputHash, answer.provenance.inputHash);
+
+  for (const [festivals, field] of [
+    [{ rules: 'DHARMA' }, 'festivals.rules'],
+    [{ rules: ['DHARMASINDHU', { ...sunrise, key: '' }] }, 'festivals.rules[1].key'],
+    [{ rules: [{ ...sunrise, at: { window: 'DUSK' } }] }, 'festivals.rules[0].at.window'],
+  ]) {
+    assert.throws(
+      () => ctx.almanac.of({ ...days, festivals }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.almanac.of({ ...days, festivals: 'DHARMASINDHU' }), TypeError);
+  ctx.dispose();
+});
+
 test('a chart carries its dasha phala, and the Shadbala its rays', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

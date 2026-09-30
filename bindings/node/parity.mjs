@@ -894,6 +894,53 @@ for (const [name, rules, ranking] of [
     put(key(`-closed-${j}`), `${day.date.month}-${day.date.day} ${listed(day.by)}`);
   });
 }
+
+// ── Festivals ──────────────────────────────────────────────────────────
+// The shipped pack, and the pack amended by a rule of the consumer's own
+// (Lakshmi puja on whichever day holds the new moon at sunrise), over
+// 2024-10-10..11-03.
+const ownRule = {
+  key: 'LAKSHMI_PUJA',
+  source: 'the tithi at sunrise',
+  month: 'masa.ASHWINA',
+  tithi: 'tithi.AMAVASYA',
+  at: { window: 'SUNRISE' },
+  decide: [],
+  otherwise: 'LATER',
+};
+for (const [name, rules] of [
+  ['shipped', 'DHARMASINDHU'],
+  ['amended', ['DHARMASINDHU', ownRule]],
+]) {
+  const { festivals } = geo.almanac.of({
+    from: gregorian(2024, 10, 10),
+    to: gregorian(2024, 11, 3),
+    place,
+    utcOffsetSeconds: 20700,
+    festivals: { rules },
+  });
+  const key = (what) => `festivals-${name}${what}`;
+  put(key('-counts'), `${festivals.observances.length} ${festivals.unjudged.length}`);
+  put(key('-hash'), festivals.provenance.contentHash);
+  festivals.observances.forEach((observance, k) => {
+    const by =
+      observance.decidedBy.by === 'GUARD' ? `guard:${observance.decidedBy.index}` : 'otherwise';
+    const [earlier, later] = observance.extents;
+    put(
+      key(`-${k}`),
+      [
+        observance.rule,
+        `${observance.day.month}-${observance.day.day}`,
+        observance.case,
+        by,
+        observance.choice,
+        number(observance.tithi.from),
+        number(earlier.held),
+        number(later.held),
+      ].join(' '),
+    );
+  });
+}
 geo.dispose();
 
 // ── The surface's shape ─────────────────────────────────────────────

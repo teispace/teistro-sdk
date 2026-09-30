@@ -27,6 +27,8 @@ from teistro import (
     SignIngress,
     Station,
     LocalDay,
+    FestivalAnswer,
+    FestivalRequest,
     MuhurtaAnswer,
     MuhurtaNative,
     MuhurtaRequest,
@@ -137,6 +139,32 @@ def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
         )
     for j, day in enumerate(answer.closed):
         put(f"{prefix}-closed-{j}", f"{day.date.month}-{day.date.day} {listed(day.by)}")
+
+
+def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
+    """A festival answer's counts, hash and every observance, as every
+    runner prints them."""
+    put(f"{prefix}-counts", f"{len(answer.observances)} {len(answer.unjudged)}")
+    put(f"{prefix}-hash", answer.provenance.content_hash)
+    for k, observance in enumerate(answer.observances):
+        decided = observance.decided_by
+        by = f"guard:{decided.index}" if decided.by == "GUARD" else "otherwise"
+        earlier, later = observance.extents
+        put(
+            f"{prefix}-{k}",
+            " ".join(
+                (
+                    observance.rule,
+                    f"{observance.day.month}-{observance.day.day}",
+                    observance.case,
+                    by,
+                    observance.choice,
+                    number(observance.tithi.from_jd),
+                    number(earlier.held),
+                    number(later.held),
+                )
+            ),
+        )
 
 
 def put_day(prefix: str, day: LocalDay) -> None:
@@ -1139,6 +1167,34 @@ def main() -> None:
             ).muhurta
             assert muhurta is not None
             put_muhurta(f"muhurta-{name}", muhurta)
+
+        # ── Festivals ─────────────────────────────────────────────────
+        # The shipped pack, and the pack amended by a rule of the
+        # consumer's own (Lakshmi puja on whichever day holds the new
+        # moon at sunrise), over 2024-10-10..11-03.
+        own_rule = {
+            "key": "LAKSHMI_PUJA",
+            "source": "the tithi at sunrise",
+            "month": "masa.ASHWINA",
+            "tithi": "tithi.AMAVASYA",
+            "at": {"window": "SUNRISE"},
+            "decide": [],
+            "otherwise": "LATER",
+        }
+        packs: tuple[tuple[str, FestivalRequest], ...] = (
+            ("shipped", {"rules": "DHARMASINDHU"}),
+            ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
+        )
+        for name, pack in packs:
+            festivals = geo.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2024, 10, 10),
+                to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
+                place=place,
+                utc_offset_seconds=20700,
+                festivals=pack,
+            ).festivals
+            assert festivals is not None
+            put_festivals(f"festivals-{name}", festivals)
 
     # ── The surface's shape ───────────────────────────────────────────
     #

@@ -1262,6 +1262,21 @@ export interface PanchangaRequest {
    * @nullable
    */
   readonly muhurtaJson?: string;
+  /**
+   * The days festival rules fall on over the same days, as a JSON
+   * object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+   * whose items name a pack or spell a rule out, a later rule
+   * replacing an earlier one with its key. A catalogue member may be
+   * written bare or in full. The answer comes back in the `festivals`
+   * section, over this blob's own days founded once, with the day
+   * before and the two after founded beside them
+   * (`03-design/festival-rules.md` §7). Null for none, which costs
+   * nothing. Refusals are named from the record every binding calls
+   * `festivals`, down to a rule's own field under `festivals.rules`.
+   * @example {"rules":"DHARMASINDHU"}
+   * @nullable
+   */
+  readonly festivalsJson?: string;
 }
 
 /**

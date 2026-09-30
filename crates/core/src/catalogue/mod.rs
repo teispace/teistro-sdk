@@ -24,6 +24,9 @@ mod generated;
 
 pub use generated::*;
 
+mod spelling;
+pub use spelling::write_in_full;
+
 /// The catalogue's schema version (`teistro-catalogue/1` in
 /// `catalogue/catalogue.json`), stamped as `catalogue_version` in every
 /// result's provenance; a kind's own version lives in its source file.

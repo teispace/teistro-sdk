@@ -401,6 +401,12 @@ __all__ = [
     "MuhurtaFactor",
     "MuhurtaUnjudged",
     "MuhurtaPada",
+    "FestivalRequest",
+    "FestivalAnswer",
+    "FestivalObservance",
+    "FestivalExtent",
+    "FestivalDecided",
+    "FestivalUnjudged",
     "TaraReading",
     "ClosedDay",
     "TithiClause",
@@ -1553,6 +1559,7 @@ class AlmanacArea(_Area):
         place: Observer,
         utc_offset_seconds: int,
         muhurta: Optional[MuhurtaRequest] = None,
+        festivals: Optional[FestivalRequest] = None,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -1561,7 +1568,9 @@ class AlmanacArea(_Area):
         — so a month of days costs much less than thirty days computed
         separately. A range holding more than a year and a day is refused
         by name. `muhurta` runs a search over the same days, answered as
-        `Almanac.muhurta`.
+        `Almanac.muhurta`, and `festivals` the rules whose days fall in
+        them, answered as `Almanac.festivals`; the days are founded once
+        for both.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -1576,6 +1585,7 @@ class AlmanacArea(_Area):
             altitude_m=place.altitude_m,
             utc_offset_seconds=utc_offset_seconds,
             muhurta_json=_muhurta_json(muhurta),
+            festivals_json=_festivals_json(festivals),
         )
         return Almanac(
             decode_panchanga(
@@ -3076,6 +3086,89 @@ class MuhurtaAnswer:
     provenance: Provenance
     """What computed it and under what: the asta criterion and the zodiac's
     instant among the applied conventions, and the hash of the value."""
+
+
+class FestivalRequest(TypedDict):
+    """Festival rules to reckon over an almanac's days
+    (`03-design/festival-rules.md` §7): `rules`, `"DHARMASINDHU"`, a pack the
+    SDK ships, or a list whose items each name a pack or spell a rule out as
+    a mapping in its record's spelling, a later rule replacing an earlier
+    one with its key. A catalogue member may be a member, a full key or a
+    bare one.
+
+    >>> asked: FestivalRequest = {"rules": ["DHARMASINDHU"]}
+    """
+
+    rules: Union[Literal["DHARMASINDHU"], Sequence[Union[Literal["DHARMASINDHU"], Mapping[str, Any]]]]
+
+
+@dataclass(frozen=True)
+class FestivalExtent:
+    """One of an observance's two days: its window for the rite, and the
+    fraction of it the tithi held (0 to 1; an instant's is 0 or 1)."""
+
+    day: CalendarDate
+    window: Interval
+    held: float
+
+
+@dataclass(frozen=True)
+class FestivalDecided:
+    """What decided an observance's day: a guard, by its index in the
+    rule's list, or the rule's `otherwise`."""
+
+    by: Literal["GUARD", "OTHERWISE"]
+    index: Optional[int]
+    """The guard's index; `None` when the rule's `otherwise` decided."""
+
+
+@dataclass(frozen=True)
+class FestivalObservance:
+    """The day a rule falls on, and why."""
+
+    rule: str
+    """The rule's key."""
+
+    day: CalendarDate
+    tithi: Interval
+    """The tithi's occurrence judged."""
+
+    case: str
+    """How the tithi held the rite's time on its two days: `EARLIER_ONLY`,
+    `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS` or `UNEQUAL_PARTS`."""
+
+    extents: Tuple[FestivalExtent, FestivalExtent]
+    """The earlier day's extent and the later's."""
+
+    decided_by: FestivalDecided
+    choice: str
+    """The choice that decided, `EARLIER`, `LATER` or `BY_YUGMA`, which
+    `day` resolves."""
+
+
+@dataclass(frozen=True)
+class FestivalUnjudged:
+    """An occurrence no day could be given to, and why."""
+
+    rule: str
+    tithi: Interval
+    why: str
+
+
+@dataclass(frozen=True)
+class FestivalAnswer:
+    """What a set of festival rules gives over an almanac's days
+    (`03-design/festival-rules.md` §7.3).
+
+    >>> # almanac = ctx.almanac.of(..., festivals={"rules": "DHARMASINDHU"})
+    >>> # first = almanac.festivals.observances[0]
+    """
+
+    observances: Tuple[FestivalObservance, ...]
+    unjudged: Tuple[FestivalUnjudged, ...]
+    provenance: Provenance
+    """What computed it: the widened days among the applied conventions as
+    `festival.days`, and the hash of the value."""
 
 
 GocharRequest = TypedDict(
@@ -4953,8 +5046,9 @@ def _interval(raw: Mapping[str, Any]) -> Interval:
     return Interval(from_jd=raw["from"], to_jd=raw["to"])
 
 
-def _closed_date(raw: Mapping[str, Any]) -> CalendarDate:
-    """A date as the Rust types serialise it, in this binding's own shape:
+def _serde_date(raw: Mapping[str, Any]) -> CalendarDate:
+    """A date as the Rust types serialise it inside a JSON section (a muhurta
+    answer's closed day, a festival's day), in this binding's own shape:
     the era beside its year, the resolution by name with a divergent one's
     computed day."""
     resolution = raw["resolution"]
@@ -5003,12 +5097,54 @@ def _muhurta_answer(text: str) -> MuhurtaAnswer:
 
     return MuhurtaAnswer(
         windows=tuple(window(w) for w in value["windows"]),
-        closed=tuple(ClosedDay(date=_closed_date(d["date"]), by=tuple(d["by"])) for d in value["closed"]),
+        closed=tuple(ClosedDay(date=_serde_date(d["date"]), by=tuple(d["by"])) for d in value["closed"]),
         days_judged=value["daysJudged"],
         days_cut=value["daysCut"],
         windows_blacked_out=value["windowsBlackedOut"],
         ranking=value["ranking"],
         unjudged=tuple(MuhurtaUnjudged(what=u["what"], why=u["why"]) for u in value["unjudged"]),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _festivals_json(festivals: Optional[FestivalRequest]) -> Optional[str]:
+    """The festival rules as the JSON the boundary reads, or nothing for
+    none; a member is written as its full key, and the rest is refused by
+    the SDK, naming the field from `festivals`."""
+    example = "{'rules': 'DHARMASINDHU'}"
+    if not isinstance(festivals, Mapping):
+        return _record_json(festivals, "festivals", example)
+    written: Mapping[str, Any] = _written(festivals)
+    return _record_json(written, "festivals", example)
+
+
+def _festivals_answer(text: str) -> FestivalAnswer:
+    """The `festivals` section: the envelope's value, its dates in this
+    binding's shape, with the provenance beside it."""
+    envelope = json.loads(text)
+    value = envelope["value"]
+
+    def extent(raw: Mapping[str, Any]) -> FestivalExtent:
+        return FestivalExtent(day=_serde_date(raw["day"]), window=_interval(raw["window"]), held=raw["held"])
+
+    def observance(raw: Mapping[str, Any]) -> FestivalObservance:
+        earlier, later = raw["extents"]
+        decided = raw["decidedBy"]
+        return FestivalObservance(
+            rule=raw["rule"],
+            day=_serde_date(raw["day"]),
+            tithi=_interval(raw["tithi"]),
+            case=raw["case"],
+            extents=(extent(earlier), extent(later)),
+            decided_by=FestivalDecided(by=decided["by"], index=decided.get("index")),
+            choice=raw["choice"],
+        )
+
+    return FestivalAnswer(
+        observances=tuple(observance(o) for o in value["observances"]),
+        unjudged=tuple(
+            FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 
@@ -7194,6 +7330,15 @@ class Almanac:
         what computed it. Parsed once."""
         text = self.decoded.muhurta
         return _muhurta_answer(text) if text else None
+
+    @cached_property
+    def festivals(self) -> Optional[FestivalAnswer]:
+        """The days the rules `festivals=` asked for fall on over these days,
+        or `None` when it asked for none (`03-design/festival-rules.md` §7):
+        each observance with the case between its tithi's two days and the
+        guard that decided. Parsed once."""
+        text = self.decoded.festivals
+        return _festivals_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:
