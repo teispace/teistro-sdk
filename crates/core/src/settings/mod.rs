@@ -40,9 +40,10 @@ pub use knobs::{
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, SamvatsaraCount, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
-    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount,
+    Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SolarMonthStart, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
+    Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -373,8 +374,9 @@ group!(
 group!(
     /// The daily panchanga.
     ///
-    /// Three knobs, each one a difference the conformance corpus
-    /// measured (`03-design/panchanga-day.md` §2). The window the day's
+    /// Each knob is a difference a record measured: the conformance
+    /// corpus (`03-design/panchanga-day.md` §2), a text, or Nepal's
+    /// daily panchanga (`03-design/ritu-measured.md`). The window the day's
     /// limbs run over is `day.day_boundary`, and the arcs its periods
     /// divide are the `day.sunrise` ones, so neither is repeated here.
     Panchanga, PanchangaPatch {
@@ -389,6 +391,12 @@ group!(
         /// Where panchaka begins: Dhanishtha's third quarter or the
         /// whole of it (crux C158).
         panchaka_start: PanchakaStart,
+        /// Which season a day falls in: the sidereal solar months', the
+        /// lunar month's or the tropical Sun's (crux C178).
+        ritu: RituReckoning,
+        /// Which civil day a sidereal solar month begins on, which the
+        /// solar season reads (crux C186).
+        solar_month_start: SolarMonthStart,
     }
 );
 

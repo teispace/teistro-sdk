@@ -9621,6 +9621,11 @@ final class AlmanacDay {
   /// Which half of the year the day falls in.
   Ayana get ayana => Ayana.byId(batch.decoded.days.ayana[index]);
 
+  /// Which season the day falls in, under `panchanga.ritu`: by default the
+  /// season of the sidereal solar month the day belongs to, its first day
+  /// placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
+  Ritu get ritu => Ritu.byId(batch.decoded.days.ritu[index]);
+
   /// The direction not to travel in, which is the vara's.
   Direction get dishaShool =>
       Direction.byId(batch.decoded.days.dishaShool[index]);

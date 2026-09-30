@@ -81,6 +81,7 @@ from teistro.catalogue import (
     MonthKind,
     PolarDayPolicy,
     PolarKind,
+    Ritu,
     Sunrise,
     Vara,
 )
@@ -2428,6 +2429,41 @@ class AnEngine(WithLibrary):
         self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]
 
 
+class ADaysSeason(WithLibrary):
+    """A day's season is its solar month's, and a month begins on the day
+    Nepal's calendar begins it (`03-design/ritu-measured.md`)."""
+
+    def seasons(self, settings: Optional[dict[str, object]] = None) -> list[Ritu]:
+        with self.teistro.context(
+            profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings=settings
+        ) as ctx:
+            days = ctx.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2026, 3, 13),
+                to_date=date(Calendar.GREGORIAN, 2026, 3, 16),
+                place=Observer(
+                    latitude_deg=Latitude(27.7172),
+                    longitude_deg=Longitude(85.324),
+                    altitude_m=Altitude(1400),
+                ),
+                utc_offset_seconds=20_700,
+            )
+            return [day.ritu for day in days]
+
+    def test_the_season_turns_on_the_first_of_chaitra(self) -> None:
+        # 15 March 2026 is 1 Chaitra 2082: Vasanta from that day.
+        self.assertEqual(
+            self.seasons(),
+            [Ritu.SHISHIRA, Ritu.SHISHIRA, Ritu.VASANTA, Ritu.VASANTA],
+        )
+
+    def test_the_lunar_month_names_its_own_season(self) -> None:
+        # Amanta Phalguna runs to the new moon of 19 March: Shishira.
+        self.assertEqual(
+            self.seasons({"panchanga": {"ritu": "LUNAR"}}),
+            [Ritu.SHISHIRA] * 4,
+        )
+
+
 class AnAlmanacDay(WithLibrary):
     """The day's own columns, read through the accessors that decode them.
 
@@ -2470,6 +2506,8 @@ class AnAlmanacDay(WithLibrary):
         for day in self.week:
             # Which half of the year, and where not to travel.
             self.assertTrue(day.ayana.full_key.startswith("ayana."))
+            # Mid-June: the Sun in Gemini, Grishma by every reading.
+            self.assertEqual(day.ritu, Ritu.GRISHMA)
             self.assertTrue(day.disha_shool.full_key.startswith("direction."))
             # The signs the luminaries stood in: two only on a sankranti.
             self.assertGreaterEqual(len(day.moon_signs), 1)

@@ -192,6 +192,37 @@ knob!(
         Dhanishtha = "DHANISHTHA" }
 );
 knob!(
+    /// Which season a day falls in (crux C178).
+    ///
+    /// The Surya Siddhanta (XIV.10) counts the six seasons from the Sun's
+    /// entry into Capricorn, two signs each, and Nepal's daily panchanga
+    /// changes its season on the solar months that reading gives
+    /// (`03-design/ritu-measured.md`). Many Indian almanacs name the
+    /// season of the lunar month instead, and some the tropical Sun's.
+    RituReckoning { /// Two sidereal solar months each from Makara sankranti: the season of the solar month the day belongs to, its first day placed by `panchanga.solar_month_start`.
+        Solar = "SOLAR", /// The season of the day's lunar month, an adhika month taking its name's.
+        Lunar = "LUNAR", /// Two tropical signs each from the winter solstice: the season of the sign the tropical Sun holds as the day opens.
+        Tropical = "TROPICAL" }
+);
+knob!(
+    /// Which civil day a sidereal solar month begins on (crux C186).
+    ///
+    /// A sankranti falls at an instant and a month begins on a day, and
+    /// each regional solar calendar places it by its own rule (Sewell and
+    /// Dikshit, *The Indian Calendar*, 1896, §28). Nepal's official
+    /// calendar places the Surya Siddhanta's sankrantis by the
+    /// Dharmasindhu's punya-kala, and its daily panchanga changes season on
+    /// that calendar's months (`03-design/ritu-measured.md`).
+    SolarMonthStart { /// The civil day, except that a Karka sankranti before dawn belongs to the day before and a Makara sankranti after sunset to the day after (the Dharmasindhu's; Nepal's).
+        Punyakala = "PUNYAKALA", /// The civil day the sankranti falls in (Orissa's).
+        SankrantiDay = "SANKRANTI_DAY", /// The civil day after it (Bengal's).
+        FollowingDay = "FOLLOWING_DAY", /// The day from whose sunrise to the next the sankranti falls, the almanac day.
+        SunriseToSunrise = "SUNRISE_TO_SUNRISE", /// The sankranti's day when it falls before sunset, the next day after (Tamil Nadu's).
+        BeforeSunset = "BEFORE_SUNSET", /// The sankranti's day when it falls before three fifths of the daylight, the next day after (Malabar's).
+        BeforeAparahna = "BEFORE_APARAHNA", /// The month the shipped Bikram Sambat calendar gives the day: the official table where it is published, the Surya Siddhanta under punya-kala beyond it (Nepal's).
+        BikramSambat = "BIKRAM_SAMBAT" }
+);
+knob!(
     /// How the planetary hours (horas) are counted.
     HoraReckoning { /// Twelve over the daylight and twelve over the night.
         Proportional = "PROPORTIONAL", /// Twenty-four of sixty minutes from sunrise.

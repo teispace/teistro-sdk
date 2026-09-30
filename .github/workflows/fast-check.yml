@@ -117,6 +117,8 @@ jobs:
         run: cargo xtask check-nepal-month
       - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
         run: cargo xtask check-samvatsara
+      - name: Ritu page (the season Nepal's daily panchanga printed against the shipped reading and every rival, and the ayana on the same days)
+        run: cargo xtask check-ritu
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

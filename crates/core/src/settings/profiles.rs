@@ -17,9 +17,10 @@ use super::knobs::{
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, SamvatsaraCount, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
-    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount,
+    Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SolarMonthStart, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
+    Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -167,6 +168,8 @@ pub fn root() -> Settings {
             moon_events: MoonEvents::Window,
             muhurta_tables: String::from("CLASSICAL"),
             panchaka_start: PanchakaStart::Aquarius,
+            ritu: RituReckoning::Solar,
+            solar_month_start: SolarMonthStart::Punyakala,
         },
         time: Time {
             dst_gap: DstGap::Error,
@@ -297,6 +300,7 @@ fn nepali_default() -> Profile {
     patch.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
     patch.calendars.lunar_month = Some(LunarMonth::Purnimanta);
+    patch.panchanga.solar_month_start = Some(SolarMonthStart::BikramSambat);
     patch.calendars.eras = Some(
         [Era::Vikrama, Era::Shaka, Era::Kali, Era::NepalSambat]
             .into_iter()
@@ -305,7 +309,8 @@ fn nepali_default() -> Profile {
     Profile {
         id: ProfileId::new("nepali-default"),
         // 2: the lunar month leads purnimanta, as Nepal names it.
-        version: 2,
+        // 3: the season follows the civil calendar's solar months.
+        version: 3,
         base: None,
         patch,
         sources: vec![
@@ -330,6 +335,13 @@ fn nepali_default() -> Profile {
                 Source::new(
                     "Nepal Panchanga Nirnayak Vikas Samiti",
                     "a month from full moon to full moon: Gai Jatra, the day after Shravana's full moon, is Bhadra Krishna Pratipada; docs/03-design/nepal-month-measured.md",
+                ),
+            ),
+            Citation::new(
+                "panchanga.solar_month_start",
+                Source::new(
+                    "Nepal's daily panchanga",
+                    "the season changes on the Bikram Sambat month's first day on all 341 recorded days; docs/03-design/ritu-measured.md",
                 ),
             ),
         ],

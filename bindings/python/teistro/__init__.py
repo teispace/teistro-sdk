@@ -7215,6 +7215,14 @@ class AlmanacDay:
         return Ayana(self.batch.decoded.days.ayana[self.index])
 
     @property
+    def ritu(self) -> Ritu:
+        """Which season the day falls in, under `panchanga.ritu`: by default
+        the season of the sidereal solar month the day belongs to, its first
+        day placed by `panchanga.solar_month_start`
+        (`03-design/ritu-measured.md`)."""
+        return Ritu(self.batch.decoded.days.ritu[self.index])
+
+    @property
     def disha_shool(self) -> Direction:
         """The direction not to travel in, which is the vara's."""
         return Direction(self.batch.decoded.days.disha_shool[self.index])

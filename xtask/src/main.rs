@@ -132,6 +132,9 @@
 //! - `samvatsara` and `check-samvatsara`: the sixty-year cycle, the text's
 //!   worked example, the years Nepal's committee named against the shipped
 //!   count and its rivals, and six centuries of years at Kathmandu.
+//! - `ritu` and `check-ritu`: the season, the shipped reading and every
+//!   rival against the seasons Nepal's daily panchanga printed, and the
+//!   ayana against the same days.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -262,6 +265,7 @@ mod python_binding;
 mod rashi_dashas;
 mod release;
 mod render;
+mod ritu;
 mod rule_doc;
 mod rules_corpus;
 mod rust_binding;
@@ -331,6 +335,7 @@ const PASSES: &[Pass] = &[
         samvatsara::generate,
         samvatsara::check_generated,
     ),
+    ("ritu", ritu::generate, ritu::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

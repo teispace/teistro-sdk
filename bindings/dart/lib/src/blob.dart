@@ -5063,6 +5063,7 @@ final class PanchangaDays {
     required this.paksha,
     required this.monthKind,
     required this.ayana,
+    required this.ritu,
     required this.dishaShool,
     required this.hasSankranti,
     required this.sankranti,
@@ -5101,6 +5102,9 @@ final class PanchangaDays {
 
   /// Which half of the year the day falls in.
   final Uint16List ayana;
+
+  /// Which season the day falls in, under `panchanga.ritu`: by default the season of the sidereal solar month the day belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10), its first day placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
+  final Uint16List ritu;
 
   /// The direction not to travel in, which is the vara's.
   final Uint16List dishaShool;
@@ -5809,65 +5813,70 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atDays, 7),
         blob.columnOffset(atDays, 7) + atDays.count * 2,
       ),
-      dishaShool: Uint16List.sublistView(
+      ritu: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 8),
         blob.columnOffset(atDays, 8) + atDays.count * 2,
       ),
-      hasSankranti: Uint8List.sublistView(
+      dishaShool: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 9),
-        blob.columnOffset(atDays, 9) + atDays.count * 1,
+        blob.columnOffset(atDays, 9) + atDays.count * 2,
+      ),
+      hasSankranti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 10),
+        blob.columnOffset(atDays, 10) + atDays.count * 1,
       ),
       sankranti: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDays, 10),
-        blob.columnOffset(atDays, 10) + atDays.count * 8,
+        blob.columnOffset(atDays, 11),
+        blob.columnOffset(atDays, 11) + atDays.count * 8,
       ),
       hasAbhijit: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atDays, 11),
-        blob.columnOffset(atDays, 11) + atDays.count * 1,
+        blob.columnOffset(atDays, 12),
+        blob.columnOffset(atDays, 12) + atDays.count * 1,
       ),
       abhijitFrom: Float64List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atDays, 12),
-        blob.columnOffset(atDays, 12) + atDays.count * 8,
-      ),
-      abhijitTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 13),
         blob.columnOffset(atDays, 13) + atDays.count * 8,
       ),
-      abhijitEffective: Uint8List.sublistView(
+      abhijitTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 14),
-        blob.columnOffset(atDays, 14) + atDays.count * 1,
+        blob.columnOffset(atDays, 14) + atDays.count * 8,
       ),
-      hasBrahma: Uint8List.sublistView(
+      abhijitEffective: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 15),
         blob.columnOffset(atDays, 15) + atDays.count * 1,
       ),
-      brahmaFrom: Float64List.sublistView(
+      hasBrahma: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 16),
-        blob.columnOffset(atDays, 16) + atDays.count * 8,
+        blob.columnOffset(atDays, 16) + atDays.count * 1,
       ),
-      brahmaTo: Float64List.sublistView(
+      brahmaFrom: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 17),
         blob.columnOffset(atDays, 17) + atDays.count * 8,
       ),
-      moonWindowFrom: Float64List.sublistView(
+      brahmaTo: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 18),
         blob.columnOffset(atDays, 18) + atDays.count * 8,
       ),
-      moonWindowTo: Float64List.sublistView(
+      moonWindowFrom: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atDays, 19),
         blob.columnOffset(atDays, 19) + atDays.count * 8,
+      ),
+      moonWindowTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDays, 20),
+        blob.columnOffset(atDays, 20) + atDays.count * 8,
       ),
       length: atDays.count,
     ),

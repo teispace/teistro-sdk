@@ -440,6 +440,14 @@ export function messages(r) {
           greatFriend: () => r.entity('relationship.GREAT_FRIEND'),
           neutral: () => r.entity('relationship.NEUTRAL'),
         },
+        ritu: {
+          grishma: () => r.entity('ritu.GRISHMA'),
+          hemanta: () => r.entity('ritu.HEMANTA'),
+          sharad: () => r.entity('ritu.SHARAD'),
+          shishira: () => r.entity('ritu.SHISHIRA'),
+          varsha: () => r.entity('ritu.VARSHA'),
+          vasanta: () => r.entity('ritu.VASANTA'),
+        },
         samvatsara: {
           akshaya: () => r.entity('samvatsara.AKSHAYA'),
           ananda: () => r.entity('samvatsara.ANANDA'),

@@ -284,6 +284,12 @@ new moon belongs to.
   state, and the difference stays an open item rather than a silent one.
 - **The ayana** is uttarayana while the sidereal Sun is in Capricorn to
   Gemini: measured on all 55.
+- **The ritu** is the season of the sidereal solar month the civil day
+  belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10). A
+  month's first day is placed by `panchanga.solar_month_start`, and
+  `panchanga.ritu` can read lunar or tropical months instead (C178,
+  C186). The corpus records no season, so it is measured against Nepal's
+  daily panchanga (`ritu-measured.md`).
 - **The disha shool** is the vara's, one direction each, and is a
   catalogue attribute rather than code.
 

@@ -22,6 +22,7 @@ import { native, named as wasNamed, platformPackage } from '#native';
 import {
   ABI_VERSION,
   AyanaById,
+  RituById,
   AyanamshaById,
   BodyById,
   CHART_ASHTAKAVARGA,
@@ -1417,6 +1418,15 @@ export class AlmanacDay {
   /** Which half of the year the day falls in. */
   get ayana() {
     return AyanaById.get(this.#batch.decoded.days.ayana[this.#index]) ?? 'unknown';
+  }
+
+  /**
+   * Which season the day falls in, under `panchanga.ritu`: by default the
+   * season of the sidereal solar month the day belongs to, its first day
+   * placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
+   */
+  get ritu() {
+    return RituById.get(this.#batch.decoded.days.ritu[this.#index]) ?? 'unknown';
   }
 
   /** The direction not to travel in, which is the vara's. */

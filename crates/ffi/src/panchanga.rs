@@ -259,6 +259,7 @@ fn day_row(day: &Panchanga) -> Vec<FixedValue> {
         u64::from(day.month.paksha.id()).into(),
         (TsMonthKind::from(day.month.kind) as u64).into(),
         u64::from(day.sun.ayana.id()).into(),
+        u64::from(day.sun.ritu.id()).into(),
         u64::from(day.omens.disha_shool.id()).into(),
         flag(day.sun.sankranti.is_some()),
         day.sun

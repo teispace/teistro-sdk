@@ -2164,6 +2164,29 @@ test('an almanac carries the lunar years it was asked for', () => {
 });
 
 /**
+ * A day's season is its solar month's, and a month begins on the day
+ * Nepal's calendar begins it (`03-design/ritu-measured.md`).
+ */
+test('a day\'s season turns on the first of its solar month', () => {
+  const seasons = (settings) => {
+    const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', settings });
+    const days = ctx.almanac.of({
+      from: date(Calendar.Gregorian, 2026, 3, 13),
+      to: date(Calendar.Gregorian, 2026, 3, 16),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+    });
+    const named = Array.from({ length: days.length }, (_, k) => days.at(k).ritu);
+    ctx.dispose();
+    return named;
+  };
+  // 15 March 2026 is 1 Chaitra 2082: Vasanta from that day.
+  assert.deepEqual(seasons(), [catalogue.Ritu.Shishira, catalogue.Ritu.Shishira, catalogue.Ritu.Vasanta, catalogue.Ritu.Vasanta]);
+  // Amanta Phalguna runs to the new moon of 19 March: Shishira.
+  assert.deepEqual(seasons({ panchanga: { ritu: 'LUNAR' } }), Array(4).fill(catalogue.Ritu.Shishira));
+});
+
+/**
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,

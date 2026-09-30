@@ -3504,6 +3504,9 @@ class PanchangaDays:
     ayana: memoryview[int]
     """Which half of the year the day falls in."""
 
+    ritu: memoryview[int]
+    """Which season the day falls in, under `panchanga.ritu`: by default the season of the sidereal solar month the day belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10), its first day placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`)."""
+
     disha_shool: memoryview[int]
     """The direction not to travel in, which is the vara's."""
 
@@ -4067,23 +4070,24 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             paksha=blob.column(at_days, 5, 2, at_days.count).cast("H"),
             month_kind=blob.column(at_days, 6, 1, at_days.count).cast("B"),
             ayana=blob.column(at_days, 7, 2, at_days.count).cast("H"),
-            disha_shool=blob.column(at_days, 8, 2, at_days.count).cast("H"),
-            has_sankranti=blob.column(at_days, 9, 1, at_days.count).cast("B"),
-            sankranti=blob.column(at_days, 10, 8, at_days.count).cast("d"),
-            has_abhijit=blob.column(at_days, 11, 1, at_days.count).cast("B"),
-            abhijit_from=blob.column(at_days, 12, 8, at_days.count).cast("d"),
-            abhijit_to=blob.column(at_days, 13, 8, at_days.count).cast("d"),
+            ritu=blob.column(at_days, 8, 2, at_days.count).cast("H"),
+            disha_shool=blob.column(at_days, 9, 2, at_days.count).cast("H"),
+            has_sankranti=blob.column(at_days, 10, 1, at_days.count).cast("B"),
+            sankranti=blob.column(at_days, 11, 8, at_days.count).cast("d"),
+            has_abhijit=blob.column(at_days, 12, 1, at_days.count).cast("B"),
+            abhijit_from=blob.column(at_days, 13, 8, at_days.count).cast("d"),
+            abhijit_to=blob.column(at_days, 14, 8, at_days.count).cast("d"),
             abhijit_effective=blob.column(
-                at_days, 14, 1, at_days.count
+                at_days, 15, 1, at_days.count
             ).cast("B"),
-            has_brahma=blob.column(at_days, 15, 1, at_days.count).cast("B"),
-            brahma_from=blob.column(at_days, 16, 8, at_days.count).cast("d"),
-            brahma_to=blob.column(at_days, 17, 8, at_days.count).cast("d"),
+            has_brahma=blob.column(at_days, 16, 1, at_days.count).cast("B"),
+            brahma_from=blob.column(at_days, 17, 8, at_days.count).cast("d"),
+            brahma_to=blob.column(at_days, 18, 8, at_days.count).cast("d"),
             moon_window_from=blob.column(
-                at_days, 18, 8, at_days.count
+                at_days, 19, 8, at_days.count
             ).cast("d"),
             moon_window_to=blob.column(
-                at_days, 19, 8, at_days.count
+                at_days, 20, 8, at_days.count
             ).cast("d"),
             length=at_days.count,
         ),

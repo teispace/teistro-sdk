@@ -2736,6 +2736,11 @@ export interface PanchangaDays {
    */
   readonly ayana: Uint16Array;
   /**
+   * Which season the day falls in, under `panchanga.ritu`: by default the season of the sidereal solar month the day belongs to, two signs each from Capricorn (Surya Siddhanta XIV.10), its first day placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
+   * The values are `Ritu` ids.
+   */
+  readonly ritu: Uint16Array;
+  /**
    * The direction not to travel in, which is the vara's.
    * The values are `Direction` ids.
    */

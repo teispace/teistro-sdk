@@ -441,6 +441,17 @@ class RelationshipKey(enum.StrEnum):
     GREAT_ENEMY = "relationship.GREAT_ENEMY"
 
 
+class RituKey(enum.StrEnum):
+    """A `ritu` as a message names it: the full catalogue key."""
+
+    VASANTA = "ritu.VASANTA"
+    GRISHMA = "ritu.GRISHMA"
+    VARSHA = "ritu.VARSHA"
+    SHARAD = "ritu.SHARAD"
+    HEMANTA = "ritu.HEMANTA"
+    SHISHIRA = "ritu.SHISHIRA"
+
+
 class SamvatsaraKey(enum.StrEnum):
     """A `samvatsara` as a message names it: the full catalogue key."""
 
@@ -1453,6 +1464,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityRelationship(self._r)
 
     @property
+    def ritu(self) -> MessagesSdkEntityRitu:
+        """The messages under `ritu`."""
+        return MessagesSdkEntityRitu(self._r)
+
+    @property
     def samvatsara(self) -> MessagesSdkEntitySamvatsara:
         """The messages under `samvatsara`."""
         return MessagesSdkEntitySamvatsara(self._r)
@@ -2282,6 +2298,44 @@ class MessagesSdkEntitySamvatsara:
     def yuva(self) -> EntityForms:
         """The forms of `samvatsara.YUVA` in the current locale."""
         return self._r.entity("samvatsara.YUVA")
+
+
+class MessagesSdkEntityRitu:
+    """The messages under `MessagesSdkEntityRitu`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def grishma(self) -> EntityForms:
+        """The forms of `ritu.GRISHMA` in the current locale."""
+        return self._r.entity("ritu.GRISHMA")
+
+    @property
+    def hemanta(self) -> EntityForms:
+        """The forms of `ritu.HEMANTA` in the current locale."""
+        return self._r.entity("ritu.HEMANTA")
+
+    @property
+    def sharad(self) -> EntityForms:
+        """The forms of `ritu.SHARAD` in the current locale."""
+        return self._r.entity("ritu.SHARAD")
+
+    @property
+    def shishira(self) -> EntityForms:
+        """The forms of `ritu.SHISHIRA` in the current locale."""
+        return self._r.entity("ritu.SHISHIRA")
+
+    @property
+    def varsha(self) -> EntityForms:
+        """The forms of `ritu.VARSHA` in the current locale."""
+        return self._r.entity("ritu.VARSHA")
+
+    @property
+    def vasanta(self) -> EntityForms:
+        """The forms of `ritu.VASANTA` in the current locale."""
+        return self._r.entity("ritu.VASANTA")
 
 
 class MessagesSdkEntityRelationship:

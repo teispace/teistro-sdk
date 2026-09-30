@@ -1,7 +1,7 @@
 kind: ritu
 number: 9
 version: 1
-doc: "The six seasons, two lunar months each."
+doc: "The six seasons, two sidereal solar months each from Makara sankranti (Surya Siddhanta XIV.10); `masas` names each month by the masa whose solar sign it is, and `panchanga.ritu` chooses whether a day reads them as solar or lunar months (crux C178)."
 attributes: { masas: list<key:masa> }
 members:
   - key: VASANTA

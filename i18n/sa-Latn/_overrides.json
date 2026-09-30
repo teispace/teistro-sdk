@@ -138,5 +138,9 @@
   "ayanamsha.VALENS_MOON": {
     "name": "Vettius Valens (Moon)",
     "prose": "Vettius Valens (Moon)"
+  },
+  "ritu.SHARAD": {
+    "name": "Śarad",
+    "prose": "Śarad"
   }
 }

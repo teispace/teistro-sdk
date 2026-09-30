@@ -19,12 +19,12 @@ use teistro_astro::rise_set::Solver;
 use teistro_calendar::solar::SolarModel;
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{Direction, Rashi, Vara};
+use teistro_core::catalogue::{Direction, Rashi, Ritu, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
-use teistro_core::settings::{Centre, MoonEvents, Resolved, Settings};
+use teistro_core::settings::{Centre, MoonEvents, Resolved, RituReckoning, Settings};
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
 use teistro_time::hora::{self, Hora};
@@ -527,7 +527,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
         let month = self.month(&longitudes, window, &limbs, zodiac)?;
         let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
-        let sun = sky::sun_day(Self::signs(&longitudes, Body::Sun, window, zodiac)?);
+        let sun_signs = Self::signs(&longitudes, Body::Sun, window, zodiac)?;
+        let ritu = self.ritu(
+            (&date, place),
+            &sun_signs,
+            &month,
+            (&longitudes, window, zodiac),
+        )?;
+        let sun = sky::sun_day(sun_signs, ritu);
         let omens = Omens {
             panchaka: omen::panchaka(
                 &limbs.nakshatra,
@@ -728,6 +735,57 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             sets,
             signs: Self::signs(&longitudes, Body::Moon, window, zodiac)?,
             window: search,
+        })
+    }
+
+    /// The day's season under `panchanga.ritu`.
+    ///
+    /// The solar season is the solar month's, and a month begins on the
+    /// civil day `panchanga.solar_month_start` places its sankranti on:
+    /// the Sun's sign at sunrise names the next month for a day whose
+    /// sankranti falls after dawn, which Nepal's daily panchanga refutes
+    /// (`03-design/ritu-measured.md`). The lunar season is the amanta
+    /// month's, an adhika month taking its name's; the tropical has no
+    /// civil rule to follow and is read as the day opens, the one reading
+    /// that searches again, and only when asked.
+    fn ritu<S: teistro_astro::events::Longitudes + ?Sized>(
+        &self,
+        (date, place): (&CalendarDate, &Place),
+        sun: &[Span<Rashi>],
+        month: &LunarMonth,
+        (longitudes, window, zodiac): (&S, Interval, Zodiac),
+    ) -> Result<Ritu, Error> {
+        let settings = self.settings();
+        let opening = |signs: &[Span<Rashi>]| {
+            signs
+                .first()
+                .map_or(Ritu::Vasanta, |span| sky::ritu_of(span.member))
+        };
+        Ok(match settings.panchanga.ritu {
+            RituReckoning::Solar => {
+                let fixed = self.calendar.fixed_of(date)?;
+                sky::solar_month(
+                    settings.panchanga.solar_month_start,
+                    fixed,
+                    sun,
+                    (place, self.clock, self.model),
+                )?
+                .map_or_else(|| opening(sun), sky::ritu_of)
+            }
+            RituReckoning::Lunar => month.amanta.attributes().ritu,
+            RituReckoning::Tropical => {
+                let tropical = Zodiac {
+                    ayanamsha: None,
+                    ..zodiac
+                };
+                opening(&Self::signs(longitudes, Body::Sun, window, tropical)?)
+            }
+            other => {
+                return Err(Error::unsupported(format!(
+                    "the panchanga does not know the panchanga.ritu value {other:?} yet"
+                ))
+                .with_field("panchanga.ritu"));
+            }
         })
     }
 

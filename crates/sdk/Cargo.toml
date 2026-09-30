@@ -101,6 +101,10 @@ name = "samvatsara"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "ritu"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]
 
