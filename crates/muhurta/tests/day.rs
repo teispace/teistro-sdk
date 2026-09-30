@@ -69,6 +69,7 @@ fn native() -> Native {
     Native {
         star: Nakshatra::Pushya,
         moon_sign: Rashi::Cancer,
+        lagna: None,
     }
 }
 
@@ -129,11 +130,15 @@ fn a_rejected_limb_is_one_the_rules_name_and_the_day_ran() {
             })
             .count();
         assert_eq!(limbs, expected, "2024-06-{d}");
-        assert!(
-            found
-                .iter()
-                .all(|c| !c.favourable() || matches!(c.kind, ClauseKind::MuhurtaYoga { .. }))
-        );
+        // The general shuddhi only rejects, so what counts for the time
+        // without a native is the day's periods and its special yogas.
+        assert!(found.iter().all(|c| !c.favourable()
+            || matches!(
+                c.kind,
+                ClauseKind::MuhurtaYoga { .. }
+                    | ClauseKind::Choghadiya { .. }
+                    | ClauseKind::Abhijit { .. }
+            )));
     }
 }
 

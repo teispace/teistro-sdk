@@ -1819,6 +1819,7 @@ dependencies = [
  "teistro-ephemeris-builtin",
  "teistro-panchanga",
  "teistro-port-ephemeris",
+ "teistro-time",
 ]
 
 [[package]]

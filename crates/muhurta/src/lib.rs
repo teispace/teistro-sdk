@@ -30,7 +30,10 @@ pub mod clause;
 pub mod day;
 pub mod grade;
 pub mod instant;
+pub mod judge;
+pub mod search;
 pub mod season;
+pub mod sources;
 pub mod tara;
 pub mod window;
 
@@ -39,4 +42,7 @@ pub use clause::{Clause, ClauseKey, ClauseKind};
 pub use day::{DayRules, Native, clauses};
 pub use grade::{Grade, Graded};
 pub use instant::Sky;
+pub use judge::{Judgement, Ranking};
+pub use search::{Answer, Request, Sources, search};
+pub use sources::ProviderSources;
 pub use tara::{ChandraBala, Tara, TaraReading};

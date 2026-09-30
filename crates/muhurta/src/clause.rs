@@ -8,7 +8,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    Graha, Karana, Masa, MuhurtaYoga, Nakshatra, Panchaka, Rashi, Tithi, Vara, Yoga,
+    Choghadiya, Graha, Kaala, Karana, Masa, MuhurtaYoga, Nakshatra, Panchaka, Rashi, Tithi, Vara,
+    Yoga,
 };
 use teistro_core::interval::Interval;
 
@@ -84,6 +85,22 @@ pub enum ClauseKind {
         /// Which.
         pada: Pada,
     },
+    /// One of the inauspicious eighths of the daylight: Rahu kaala,
+    /// Yamaghanda or Gulika.
+    Kaala {
+        /// Which.
+        kaala: Kaala,
+    },
+    /// A choghadiya, for the time when the catalogue marks it auspicious
+    /// and against it otherwise.
+    Choghadiya {
+        /// Which.
+        choghadiya: Choghadiya,
+    },
+    /// Abhijit, the eighth muhurta of the daylight, on a day it is
+    /// effective. For the time; a rite a tradition does not hold in it
+    /// names it among its bars.
+    Abhijit {},
     /// A special yoga of vara, tithi and nakshatra (Raman, ch. VI).
     MuhurtaYoga {
         /// Which.
@@ -205,6 +222,12 @@ pub enum ClauseKey {
     Lagna,
     /// [`ClauseKind::Pada`].
     Pada,
+    /// [`ClauseKind::Kaala`].
+    Kaala,
+    /// [`ClauseKind::Choghadiya`].
+    Choghadiya,
+    /// [`ClauseKind::Abhijit`].
+    Abhijit,
     /// [`ClauseKind::MuhurtaYoga`].
     MuhurtaYoga,
     /// [`ClauseKind::Tarabala`].
@@ -257,6 +280,9 @@ impl ClauseKind {
             ClauseKind::SolarMonth { .. } => ClauseKey::SolarMonth,
             ClauseKind::Lagna { .. } => ClauseKey::Lagna,
             ClauseKind::Pada { .. } => ClauseKey::Pada,
+            ClauseKind::Kaala { .. } => ClauseKey::Kaala,
+            ClauseKind::Choghadiya { .. } => ClauseKey::Choghadiya,
+            ClauseKind::Abhijit { .. } => ClauseKey::Abhijit,
             ClauseKind::MuhurtaYoga { .. } => ClauseKey::MuhurtaYoga,
             ClauseKind::Tarabala { .. } => ClauseKey::Tarabala,
             ClauseKind::Chandrabala { .. } => ClauseKey::Chandrabala,
@@ -296,12 +322,14 @@ impl ClauseKind {
             | ClauseKind::SolarMonth { grade, .. }
             | ClauseKind::Lagna { grade, .. } => *grade == Grade::Best,
             ClauseKind::MuhurtaYoga { yoga } => yoga.attributes().auspicious,
+            ClauseKind::Choghadiya { choghadiya } => choghadiya.attributes().auspicious,
             ClauseKind::Tarabala { reading } => reading.tara.favourable(),
             ClauseKind::Chandrabala { holds, .. } => *holds,
             ClauseKind::BeneficInLagna { .. }
             | ClauseKind::ExaltedInLagna { .. }
             | ClauseKind::LuminaryInEleventh { .. }
-            | ClauseKind::KendraBenefics { .. } => true,
+            | ClauseKind::KendraBenefics { .. }
+            | ClauseKind::Abhijit { .. } => true,
             _ => false,
         }
     }
@@ -351,6 +379,7 @@ mod tests {
                 grade: Grade::Rejected,
             },
             ClauseKind::VenusInSixth {},
+            ClauseKind::Abhijit {},
             ClauseKind::Pada {
                 pada: Pada {
                     nakshatra: Nakshatra::Mula,

@@ -22,4 +22,8 @@ heliacal events — as instants. An activity's rules are data: the day
 graded best, middling or rejected with the rite's chapter over the
 general shuddhi, the months, lagnas and padas, the blackouts heeded, the
 clauses that bar it, and what is not yet judged, said. Raman's marriage
-is the first; the search and its rankings follow (`muhurta.md` §6).
+is the first. The search runs them over a range: the season closes whole
+days and names what closed each, the remaining days are judged and
+ordered, and the best are cut into windows, each judged once and ranked
+(`Ranking::Texts`). The baseline engine's ranking and the measured pass
+follow (`muhurta.md` §6).
