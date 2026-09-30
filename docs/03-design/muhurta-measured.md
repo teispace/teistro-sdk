@@ -80,7 +80,7 @@ matter is the rules' to say.
 | every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2062 disagree |
 | every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10106 disagree |
 | every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13411 disagree |
-| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 120825 disagree |
+| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 121027 disagree |
 
 ## 4. Where the engine's sampling parts from the SDK
 

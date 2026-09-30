@@ -35,6 +35,7 @@ pub mod judge;
 pub mod search;
 pub mod season;
 pub mod sources;
+pub mod spelling;
 pub mod tara;
 pub mod window;
 

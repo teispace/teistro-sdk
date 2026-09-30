@@ -129,6 +129,7 @@ the answer (C162).
 | C163 | the marriage yogas to reject | Raman's list as printed (p. 102, read off the page image): Vyatipata, Dhruva, Ganda, Vajra, Shula, Vishkambha, Atiganda, Vyaghata, Parigha | — ; the printed list also names **Mrityu**, which is not one of the 27 yogas but one of the 28 Anandadi yogas the SDK does not compute, so it is reported as unjudged rather than dropped; *Dhruva* is printed, though other lists count it auspicious |
 | C165 | where each nakshatra's tyajya kala (varjyam) begins | a table the caller names, as `panchanga.muhurta_tables` is; none shipped as the default until a rank-1 table is read | Raman p. 15 as printed differs from the commonly published table in five stars (Bharani 4 against 24, Uttara Phalguni 1 against 18, Mula 20 against 56, Purva Ashadha 20 against 24, Uttara Bhadrapada 30 against 24); some look like dropped digits, which is a guess and not a reading |
 | C164 | where a graha's asta is seen | **the place of the search**, by the caller's visibility criterion | a fixed observer the caller names (the baseline's Kathmandu: one window for a country, as its almanac prints) |
+| C167 | the malefics neutralisation 11 places in the 3rd, 6th or 11th | **the Sun, Mars and Saturn**: counted with both nodes, which always stand opposite, it could never hold | Rahu counted as well, Ketu not |
 
 C158 corrects `panchanga-day-conventions.md` §7, which said the SDK ships
 "the nakshatra rule, which is the one the texts state": both texts in

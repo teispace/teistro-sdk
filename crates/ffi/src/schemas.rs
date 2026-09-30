@@ -2780,6 +2780,11 @@ pub fn panchanga() -> BlobSchema {
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
             content_hashes_section(20, "day", "its panchanga"),
+            SectionSchema::bytes(
+                21,
+                "muhurta",
+                "UTF-8 JSON, canonical: the muhurta search `muhurta_json` asked for over these days, as its envelope `{value, provenance}` (`03-design/muhurta-at-the-boundary.md`). `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`: each window `{at, clauses, barredBy, score}`, an interval `{from, to}` in UTC Julian days, every clause `{clause, at, ...}` tagged by its kind with that kind's fields beside the tag, `barredBy` the bars that struck it (a clause's key or a clause), and `score` the baseline's `{value, factors, cappedAt}` under the `BASELINE` ranking, else null; each closed day `{date, by}`, the blackouts that closed it. Every catalogue member is written as its full key (`nakshatra.ROHINI`), and the envelope is sealed over exactly this value. Empty when `muhurta_json` asked for none.",
+            ),
         ],
     }
 }

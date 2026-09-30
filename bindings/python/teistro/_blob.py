@@ -4010,6 +4010,9 @@ class Panchanga:
     content_hashes: str
     """UTF-8 text: each day's own content hash — its panchanga, canonical — as sixty-four lowercase hex digits, a day after the other in the batch's order with nothing between them, so day `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a day handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3)."""
 
+    muhurta: str
+    """UTF-8 JSON, canonical: the muhurta search `muhurta_json` asked for over these days, as its envelope `{value, provenance}` (`03-design/muhurta-at-the-boundary.md`). `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`: each window `{at, clauses, barredBy, score}`, an interval `{from, to}` in UTC Julian days, every clause `{clause, at, ...}` tagged by its kind with that kind's fields beside the tag, `barredBy` the bars that struck it (a clause's key or a clause), and `score` the baseline's `{value, factors, cappedAt}` under the `BASELINE` ranking, else null; each closed day `{date, by}`, the blackouts that closed it. Every catalogue member is written as its full key (`nakshatra.ROHINI`), and the envelope is sealed over exactly this value. Empty when `muhurta_json` asked for none."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -4039,6 +4042,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_model = blob.section(18, "model")
     at_provenance_json = blob.section(19, "provenance_json")
     at_content_hashes = blob.section(20, "content_hashes")
+    at_muhurta = blob.section(21, "muhurta")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -4297,6 +4301,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
         model=blob.text(at_model),
         provenance_json=blob.text(at_provenance_json),
         content_hashes=blob.text(at_content_hashes),
+        muhurta=blob.text(at_muhurta),
     )
 
 

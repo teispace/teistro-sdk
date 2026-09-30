@@ -5642,6 +5642,7 @@ final class Panchanga {
     required this.model,
     required this.provenanceJson,
     required this.contentHashes,
+    required this.muhurta,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -5719,6 +5720,9 @@ final class Panchanga {
   /// UTF-8 text: each day's own content hash — its panchanga, canonical — as sixty-four lowercase hex digits, a day after the other in the batch's order with nothing between them, so day `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a day handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).
   final String contentHashes;
 
+  /// UTF-8 JSON, canonical: the muhurta search `muhurta_json` asked for over these days, as its envelope `{value, provenance}` (`03-design/muhurta-at-the-boundary.md`). `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`: each window `{at, clauses, barredBy, score}`, an interval `{from, to}` in UTC Julian days, every clause `{clause, at, ...}` tagged by its kind with that kind's fields beside the tag, `barredBy` the bars that struck it (a clause's key or a clause), and `score` the baseline's `{value, factors, cappedAt}` under the `BASELINE` ranking, else null; each closed day `{date, by}`, the blackouts that closed it. Every catalogue member is written as its full key (`nakshatra.ROHINI`), and the envelope is sealed over exactly this value. Empty when `muhurta_json` asked for none.
+  final String muhurta;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -5746,6 +5750,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atModel = blob.section(18, 'model');
   final atProvenanceJson = blob.section(19, 'provenance_json');
   final atContentHashes = blob.section(20, 'content_hashes');
+  final atMuhurta = blob.section(21, 'muhurta');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -6364,6 +6369,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
     model: blob.text(atModel),
     provenanceJson: blob.text(atProvenanceJson),
     contentHashes: blob.text(atContentHashes),
+    muhurta: blob.text(atMuhurta),
   );
 }
 

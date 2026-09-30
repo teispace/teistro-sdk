@@ -1,6 +1,6 @@
 # Muhurta at the boundary: a search for a time in every binding
 
-Status: `building`, 2026-09-30: §8 steps 1 and 2 built. It is step 7 of [`muhurta.md`](muhurta.md)
+Status: `building`, 2026-09-30: §8 steps 1 to 3 built. It is step 7 of [`muhurta.md`](muhurta.md)
 §6, and after it the search is reachable outside Rust. Built on
 [`panchanga-at-the-boundary-measured.md`](panchanga-at-the-boundary-measured.md)
 (the almanac's blob), [`rules-at-the-boundary.md`](rules-at-the-boundary.md)

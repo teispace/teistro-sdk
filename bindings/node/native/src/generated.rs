@@ -2772,6 +2772,21 @@ pub struct PanchangaRequest {
     /// clock the days' dates are read in.
     /// Unit: s. Range: [-64800,64800]. Example: 20700.
     pub utc_offset_seconds: i32,
+    /// A muhurta search over the same days, as a JSON object: `rules`,
+    /// the activity's rules spelt out or a shipped set named
+    /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+    /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+    /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+    /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
+    /// combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+    /// `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+    /// in full. The answer comes back in the `muhurta` section, and the
+    /// days it was judged on are this blob's own, founded once
+    /// (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+    /// costs nothing. Refusals are named from the record every binding
+    /// calls `muhurta`, as `muhurta.rules`.
+    /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+    pub muhurta_json: Option<String>,
 }
 
 /// What a `PanchangaRequest` lends the C struct built from it: the buffers its
@@ -2788,6 +2803,7 @@ pub struct HeldPanchangaRequest {
     longitude_deg: f64,
     altitude_m: f64,
     utc_offset_seconds: i32,
+    muhurta_json: Option<std::ffi::CString>,
 }
 
 impl HeldPanchangaRequest {
@@ -2808,6 +2824,10 @@ impl HeldPanchangaRequest {
             altitude_m: self.altitude_m,
             utc_offset_seconds: self.utc_offset_seconds,
             reserved_tail: Default::default(),
+            muhurta_json: self
+                .muhurta_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2827,6 +2847,11 @@ impl PanchangaRequest {
             longitude_deg: self.longitude_deg as f64,
             altitude_m: self.altitude_m as f64,
             utc_offset_seconds: self.utc_offset_seconds as i32,
+            muhurta_json: self
+                .muhurta_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2849,6 +2874,7 @@ impl PanchangaRequest {
             longitude_deg: raw.longitude_deg as _,
             altitude_m: raw.altitude_m as _,
             utc_offset_seconds: raw.utc_offset_seconds as _,
+            muhurta_json: unsafe { lent_text(raw.muhurta_json) },
         }
     }
 }

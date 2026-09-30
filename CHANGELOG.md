@@ -1377,6 +1377,32 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The muhurta search at the C boundary**
+  (`muhurta-at-the-boundary.md` §4, §8 step 3). `ts_panchanga_request`
+  gains a nullable `muhurta_json`, the record the façade reads as
+  `MuhurtaRequest`. The panchanga blob gains a `muhurta` section: the
+  search's envelope as canonical JSON, judged over the blob's own days,
+  which are founded once. Every catalogue member in it is written as its
+  full key (`nakshatra.ROHINI`) from one table,
+  `ClauseKey::members`, an exhaustive match. The envelope is sealed over
+  the value as written, so its content hash is the hash of what a binding
+  holds. A refusal names the key under `muhurta`. The request struct grew,
+  so a caller built against the older header is refused with
+  `SCHEMA_VERSION` until it rebuilds. `ClauseKey::ALL` lists every clause
+  kind. The ABI test counts the kinds its search reaches and declares the
+  other four with the reason each cannot appear in that range.
+
+- **Neutralisation 11 can hold** (crux C167). Raman's eleventh
+  neutralisation asks for Jupiter or Venus in a kendra with the malefics
+  in the 3rd, 6th or 11th. The clause read that as every natural malefic,
+  both nodes included. The nodes always stand opposite, and no two of
+  those houses are, so it never held on a real sky. Its own test had put
+  both nodes in one sign. The clause now asks the Sun, Mars and Saturn.
+
+  **Numbers:** `KENDRA_BENEFICS` is now reported where it holds, so a
+  window it neutralises may move up under the `TEXTS` ranking. Nothing
+  else moves.
+
 - **The muhurta search through the façade**
   (`muhurta-at-the-boundary.md` §3, §8 step 2).
   `sdk.almanac().muhurta(&from, &to, &place, clock, &MuhurtaRequest)`

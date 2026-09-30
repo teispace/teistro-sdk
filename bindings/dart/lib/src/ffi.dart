@@ -1387,6 +1387,22 @@ final class PanchangaRequestStruct extends ffi.Struct {
   @ffi.Int32()
   external int reservedTail;
 
+  /// A muhurta search over the same days, as a JSON object: `rules`,
+  /// the activity's rules spelt out or a shipped set named
+  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+  /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+  /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+  /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
+  /// combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+  /// `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+  /// in full. The answer comes back in the `muhurta` section, and the
+  /// days it was judged on are this blob's own, founded once
+  /// (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+  /// costs nothing. Refusals are named from the record every binding
+  /// calls `muhurta`, as `muhurta.rules`.
+  /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+  external ffi.Pointer<ffi.Char> muhurtaJson;
+
 }
 
 typedef TsAbiVersionNative = ffi.Uint32 Function();
@@ -3619,7 +3635,7 @@ final class IntlLoaded {
 /// one day passes a range of one.
 final class PanchangaRequest {
   /// A PanchangaRequest with every field named.
-  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds});
+  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, this.muhurtaJson});
 
   /// The calendar the range's dates are written in.
   /// Enum: Calendar. Example: 0.
@@ -3666,6 +3682,22 @@ final class PanchangaRequest {
   /// Unit: s. Range: [-64800,64800]. Example: 20700.
   final int utcOffsetSeconds;
 
+  /// A muhurta search over the same days, as a JSON object: `rules`,
+  /// the activity's rules spelt out or a shipped set named
+  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+  /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+  /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+  /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
+  /// combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+  /// `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+  /// in full. The answer comes back in the `muhurta` section, and the
+  /// days it was judged on are this blob's own, founded once
+  /// (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+  /// costs nothing. Refusals are named from the record every binding
+  /// calls `muhurta`, as `muhurta.rules`.
+  /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+  final String? muhurtaJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3686,6 +3718,9 @@ final class PanchangaRequest {
     raw.longitudeDeg = longitudeDeg;
     raw.altitudeM = altitudeM;
     raw.utcOffsetSeconds = utcOffsetSeconds;
+    raw.muhurtaJson = muhurtaJson == null
+        ? ffi.nullptr
+        : muhurtaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3704,6 +3739,9 @@ final class PanchangaRequest {
         longitudeDeg: raw.longitudeDeg,
         altitudeM: raw.altitudeM,
         utcOffsetSeconds: raw.utcOffsetSeconds,
+        muhurtaJson: raw.muhurtaJson == ffi.nullptr
+            ? null
+            : raw.muhurtaJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

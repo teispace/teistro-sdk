@@ -193,7 +193,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 32,
-    "ts_panchanga_request": 56,
+    "ts_panchanga_request": 64,
 }
 
 _SIZES_32: Final[dict[str, int]] = {
@@ -223,7 +223,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 24,
-    "ts_panchanga_request": 56,
+    "ts_panchanga_request": 64,
 }
 
 # The size the C compiler gives every boundary struct on this target, as
@@ -775,6 +775,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
         ("altitude_m", ctypes.c_double),
         ("utc_offset_seconds", ctypes.c_int32),
         ("reserved_tail", ctypes.c_int32),
+        ("muhurta_json", ctypes.c_char_p),
     ]
 
 
@@ -2997,6 +2998,23 @@ class PanchangaRequest:
     Unit: s. Range: [-64800,64800]. Example: 20700.
     """
 
+    muhurta_json: Optional[str] = None
+    """A muhurta search over the same days, as a JSON object: `rules`,
+    the activity's rules spelt out or a shipped set named
+    (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+    `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+    read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+    `most` (50) and `asta`, the criterion Venus's and Jupiter's
+    combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+    `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+    in full. The answer comes back in the `muhurta` section, and the
+    days it was judged on are this blob's own, founded once
+    (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+    costs nothing. Refusals are named from the record every binding
+    calls `muhurta`, as `muhurta.rules`.
+    Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+    """
+
     def _into(self, raw: _PanchangaRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -3016,6 +3034,9 @@ class PanchangaRequest:
         raw.longitude_deg = _c_value(self.longitude_deg)
         raw.altitude_m = _c_value(self.altitude_m)
         raw.utc_offset_seconds = _c_value(self.utc_offset_seconds)
+        _muhurta_json = None if self.muhurta_json is None else self.muhurta_json.encode("utf-8")
+        owned.append(_muhurta_json)
+        raw.muhurta_json = _muhurta_json
 
     def _to_c(self, owned: list[Any]) -> _PanchangaRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3043,6 +3064,7 @@ class PanchangaRequest:
             longitude_deg=float(raw.longitude_deg),
             altitude_m=float(raw.altitude_m),
             utc_offset_seconds=raw.utc_offset_seconds,
+            muhurta_json=_text(raw.muhurta_json),
         )
 
 

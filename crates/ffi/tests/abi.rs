@@ -44,6 +44,7 @@ use teistro_ffi::context::{
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
+use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
     TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
@@ -4162,5 +4163,180 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
             }
             _ => {}
         }
+    }
+}
+
+/// Asks `ts_panchanga_days` for Kathmandu's days from 2026-11-25 to
+/// 12-03, with `muhurta_json` beside them when given, and answers the
+/// blob's bytes or the context's record.
+fn panchanga_days(ctx: &Ctx, muhurta: Option<&str>) -> Result<Vec<u8>, Record> {
+    let muhurta = muhurta.map(|text| CString::new(text).unwrap());
+    let request = sized(
+        TsPanchangaRequest {
+            struct_size: 0,
+            calendar: Calendar::Gregorian.id(),
+            reserved: 0,
+            from_year: 2026,
+            from_month: 11,
+            from_day: 25,
+            to_month: 12,
+            to_day: 3,
+            to_year: 2026,
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            muhurta_json: muhurta.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    let status = unsafe { ts_panchanga_days(ctx.handle, &raw const request, &raw mut blob) };
+    if status != Status::Ok {
+        return Err(ctx.last_error());
+    }
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    Ok(bytes)
+}
+
+/// The clause kinds the search below never reaches, each with why:
+/// refused both ways, so a kind it starts reaching, or one it stops
+/// reaching, is seen rather than assumed (`muhurta-at-the-boundary.md`
+/// §4).
+const UNREACHED: [(&str, &str); 4] = [
+    (
+        "MONTH",
+        "every day is in Margashirsha, which Raman grades ordinary, and a middling grade is not reported",
+    ),
+    (
+        "SOLAR_MONTH",
+        "Raman keys a marriage's month lunar (C161); the Sun's sign is the baseline's rules",
+    ),
+    (
+        "KARTARI",
+        "the malefics stand in Scorpio, Leo, Pisces and Aquarius, no two of them two signs apart, so no lagna has one either side; Rahu enters Capricorn late on 12-03, after the range",
+    ),
+    (
+        "KENDRA_BENEFICS",
+        "the Sun in Scorpio, Mars in Leo and Saturn in Pisces fit no lagna's 3rd, 6th and 11th (C167)",
+    ),
+];
+
+#[test]
+fn a_panchanga_request_answers_a_muhurta_over_its_own_days() {
+    use teistro::muhurta::Answer;
+    use teistro::muhurta::clause::ClauseKey;
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let text = r#"{"rules":"RAMAN_MARRIAGE","native":{"star":"ROHINI","moonSign":"rashi.TAURUS","lagna":"LEO"},"daysWithWindows":11,"most":1000}"#;
+    let with = panchanga_days(&ctx, Some(text)).unwrap();
+    let without = panchanga_days(&ctx, None).unwrap();
+    let schema = schemas::panchanga();
+    let (with, without) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+    );
+
+    // The days are the ones asked without a search: founded once, and
+    // the same.
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("muhurta").unwrap(), "");
+
+    // The section is the façade's answer, its members written in full,
+    // and the envelope is sealed over what it holds.
+    let envelope: serde_json::Value = serde_json::from_str(with.text("muhurta").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    let answer: Answer = serde_json::from_value(envelope["value"].clone()).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |month, day| teistro::CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    let expected = sdk
+        .almanac()
+        .muhurta(
+            &date(11, 25),
+            &date(12, 3),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            &teistro::MuhurtaRequest::from_json(text).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(answer, expected.value);
+    assert_eq!(provenance.input_hash, expected.provenance.input_hash);
+    let star = envelope["value"]["windows"][0]["clauses"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|clause| clause["clause"] == "NAKSHATRA")
+        .expect("every window names its day's star");
+    assert!(
+        star["nakshatra"]
+            .as_str()
+            .unwrap()
+            .starts_with("nakshatra."),
+        "{star}"
+    );
+
+    // Which kinds the search reached, against every kind there is.
+    let reached: std::collections::BTreeSet<String> = answer
+        .windows
+        .iter()
+        .flat_map(|window| &window.clauses)
+        .map(|clause| {
+            serde_json::to_value(clause.kind.key())
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_owned()
+        })
+        .collect();
+    let unreached: Vec<String> = ClauseKey::ALL
+        .iter()
+        .map(|key| {
+            serde_json::to_value(key)
+                .unwrap()
+                .as_str()
+                .unwrap()
+                .to_owned()
+        })
+        .filter(|key| !reached.contains(key))
+        .collect();
+    let declared: Vec<&str> = UNREACHED.iter().map(|(key, _)| *key).collect();
+    assert_eq!(unreached, declared, "reached: {reached:?}");
+}
+
+#[test]
+fn a_muhurta_record_is_refused_by_the_key_that_is_wrong() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    for (text, field) in [
+        (r#"{"rules":"RAMAN"}"#, "muhurta.rules"),
+        (r#"{"rules":"RAMAN_MARRIAGE","most":0}"#, "muhurta.most"),
+        (
+            r#"{"rules":"RAMAN_MARRIAGE","ranking":"BASELINE"}"#,
+            "muhurta.rules.baseline",
+        ),
+        (
+            r#"{"rules":"RAMAN_MARRIAGE","asta":"SURYA"}"#,
+            "muhurta.asta",
+        ),
+        ("[]", "muhurta"),
+    ] {
+        let (status, message, named, ..) = panchanga_days(&ctx, Some(text)).unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}: {message}");
+        assert_eq!(named.as_deref(), Some(field), "{text}: {message}");
     }
 }
