@@ -101,6 +101,20 @@ The measurement checked this rather than assuming it: the naming
 reproduces fifty-four of the fifty-five recorded days, and the one
 exception is the nineteen-minute boundary of §3, not a naming rule.
 
+**The purnimanta reading does need one rule, and lacked it until
+2026-09-30.** A purnimanta month runs full moon to full moon, so through
+a dark fortnight its name is the next amanta month's, and `month::of`
+advanced it for every dark fortnight. An adhika month is the exception:
+a purnimanta almanac sets it whole, new moon to new moon, between the
+nija month's dark and bright fortnights, so its own dark fortnight keeps
+its name. Drik Panchang's purnimanta Ekadashi list for 2023 names Parama
+Ekadashi (12 August, adhika Shravana's dark 11th) "Shravana, Krishna"
+and Aja Ekadashi a month later, a nija dark 11th, "Bhadrapada, Krishna";
+the code had named the first Bhadrapada. Nepal writes the same whole
+month: its committee announces malmas from one new moon to the next
+(§9). `malmas-measured.md` counts every adhika day's purnimanta month
+against its amanta one, and was red before the rule.
+
 ## 5. The API
 
 ```rust
@@ -222,3 +236,34 @@ can be made on it.
   settings do not have, and the answer is probably the same one
   `panchanga.moon_events` already takes: the profile's, with the text as
   the default a classical profile keeps.
+
+## 9. Nepal's malmas, measured
+
+Nepal calls the adhika month *malmas* (मलमास), where north Indian usage
+often gives that word to Kharmas, the Sun in Sagittarius or Pisces
+(C177). The Nepal Panchanga Nirnayak Vikas Samiti announces each one's
+span, and [`malmas-measured.md`](malmas-measured.md) holds the almanac
+at Kathmandu to five announcements, BS 2072 to 2083, one of them given
+as instants.
+
+Both shipped readings mark exactly the announced days: `nepali-default`
+over the built-in ephemeris, and `surya-siddhanta` over the text's own
+sky and zodiac. So the drik-against-text question of §8 does not arise
+for the month's span in these years, and a Nepali consumer gets the
+committee's malmas from either. What the measurement does show is that
+the zodiac must match the sky: the text's Sun read in Lahiri's zodiac
+puts its sankrantis a day or two late and marks the month before in
+most of the recorded years, which the page counts. That is a consumer's own mix (an ephemeris and a
+profile chosen apart), and the page keeps it as a rival that must stay
+falsified.
+
+The one announcement with instants (BS 2072) closes nearer the text's
+new moon than the modern one, and opens hours from both, which reads as
+a misprint or a different event. So the instants are set beside the new
+moons on the page, in minutes, and decide nothing.
+
+The day rule the announcements follow is the almanac's own: an adhika
+day is one whose sunrise falls inside the adhika month. Naming it in
+Nepali is a separate step: no locale names a month kind or a muhurta
+blackout yet (roadmap, Nepali particulars).
+
