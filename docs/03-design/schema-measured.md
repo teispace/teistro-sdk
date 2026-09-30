@@ -175,6 +175,11 @@ crate holds the value — 584 words are written:
 spelling of a member everywhere, the spelling a request takes and every
 binding reads back.
 
+The schema says the reader takes 459 more, which no document writes and
+which it marks `writeOnly`: **every one is a catalogue member's full
+key** (`graha.SUN`), the spelling every binding reads a member back as,
+so a request may hand back what it was given.
+
 ## 9. The grammar is a fixed point, and the parser had to be told
 
 The content hash rests on one invariant: a consumer that reads a stored

@@ -229,28 +229,55 @@ fn collect_rust(directory: &Path, into: &mut Vec<std::path::PathBuf>) {
 /// sources, so the measurement reaches every crate the document holds a
 /// value from, which a list of crates did not: `teistro-dasha` and
 /// `teistro-geometry` spelt theirs lowercase beside it until 2i.
-fn words(schema: &serde_json::Value, into: &mut BTreeSet<String>) {
+///
+/// A `writeOnly` branch is a spelling the reader takes and no document
+/// writes — a catalogue member's full key — so its words go to `sent`
+/// rather than being counted as written.
+fn words(schema: &serde_json::Value, written: &mut BTreeSet<String>, sent: &mut BTreeSet<String>) {
     match schema {
         serde_json::Value::Object(fields) => {
-            for (field, value) in fields {
-                match (field.as_str(), value) {
-                    ("enum", serde_json::Value::Array(members)) => {
-                        into.extend(members.iter().filter_map(|m| m.as_str().map(String::from)));
-                    }
-                    ("const", serde_json::Value::String(word)) => {
-                        into.insert(word.clone());
-                    }
-                    _ => words(value, into),
-                }
+            if fields.get("writeOnly") == Some(&serde_json::Value::Bool(true)) {
+                let mut inside = BTreeSet::new();
+                words_of(fields, &mut inside, sent);
+                sent.extend(inside);
+            } else {
+                words_of(fields, written, sent);
             }
         }
         serde_json::Value::Array(items) => {
             for item in items {
-                words(item, into);
+                words(item, written, sent);
             }
         }
         _ => {}
     }
+}
+
+/// [`words`] over one object's fields.
+fn words_of(
+    fields: &serde_json::Map<String, serde_json::Value>,
+    into: &mut BTreeSet<String>,
+    sent: &mut BTreeSet<String>,
+) {
+    for (field, value) in fields {
+        match (field.as_str(), value) {
+            ("enum", serde_json::Value::Array(members)) => {
+                into.extend(members.iter().filter_map(|m| m.as_str().map(String::from)));
+            }
+            ("const", serde_json::Value::String(word)) => {
+                into.insert(word.clone());
+            }
+            _ => words(value, into, sent),
+        }
+    }
+}
+
+/// Whether a word is a catalogue member's full key: a kind's name, a
+/// dot, and a key.
+fn is_full_key(word: &str) -> bool {
+    word.split_once('.').is_some_and(|(kind, key)| {
+        teistro_core::catalogue::Kind::from_name(kind).is_some() && is_key(key)
+    })
 }
 
 /// Whether a word is spelt as a key: `[A-Z][A-Z0-9_]*`.
@@ -262,14 +289,31 @@ fn is_key(word: &str) -> bool {
         && letters.all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
 }
 
-/// The document's words, split into those spelt as keys and the rest.
-fn spellings() -> Result<(usize, Vec<String>), String> {
+/// The words a document writes, split into those spelt as keys and the
+/// rest, and the words only a request sends, split into full keys and
+/// the rest.
+struct Spellings {
+    keys: usize,
+    others: Vec<String>,
+    full_keys: usize,
+    sent_others: Vec<String>,
+}
+
+/// The document schema's words (see [`words`]).
+fn spellings() -> Result<Spellings, String> {
     let schema: serde_json::Value = serde_json::from_str(&teistro_serial::schema::generate()?)
         .map_err(|err| format!("the document schema is not JSON: {err}"))?;
-    let mut found = BTreeSet::new();
-    words(&schema, &mut found);
-    let (keys, others): (Vec<String>, Vec<String>) = found.into_iter().partition(|w| is_key(w));
-    Ok((keys.len(), others))
+    let (mut written, mut sent) = (BTreeSet::new(), BTreeSet::new());
+    words(&schema, &mut written, &mut sent);
+    let (keys, others): (Vec<String>, Vec<String>) = written.into_iter().partition(|w| is_key(w));
+    let (full, sent_others): (Vec<String>, Vec<String>) =
+        sent.into_iter().partition(|w| is_full_key(w));
+    Ok(Spellings {
+        keys: keys.len(),
+        others,
+        full_keys: full.len(),
+        sent_others,
+    })
 }
 
 // ── the page ───────────────────────────────────────────────────────────────
@@ -297,7 +341,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 fn page(root: &Path) -> Result<String, String> {
     let docs = documents(root)?;
     let all = merged(&docs);
-    let (keys, others) = spellings()?;
+    let spelt = spellings()?;
     let sections = [
         header(&docs, &all),
         shape(&docs, &all),
@@ -306,9 +350,9 @@ fn page(root: &Path) -> Result<String, String> {
         optional(&docs),
         nullable(&all),
         round_trip(root),
-        spelling(keys, &others),
+        spelling(&spelt),
         fixed_point(&docs),
-        decides(root, &all, &docs, others.len()),
+        decides(root, &all, &docs, spelt.others.len()),
     ];
     Ok(fill(&sections.concat()))
 }
@@ -721,8 +765,21 @@ fn round_trip(root: &Path) -> String {
     )
 }
 
-fn spelling(keys: usize, others: &[String]) -> String {
+fn spelling(spelt: &Spellings) -> String {
+    let Spellings {
+        keys,
+        others,
+        full_keys,
+        sent_others,
+    } = spelt;
     let total = keys + others.len();
+    let listed = |words: &[String]| {
+        words
+            .iter()
+            .map(|word| format!("`{word}`"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
     let verdict = if others.is_empty() {
         String::from(
             "**Every one is a key**, so a consumer reading a document meets one\n\
@@ -734,11 +791,21 @@ fn spelling(keys: usize, others: &[String]) -> String {
             "The rest, by name: {}. A consumer reading a document that holds\n\
              one meets two conventions, and a request naming it must be told\n\
              which.\n\n",
-            others
-                .iter()
-                .map(|word| format!("`{word}`"))
-                .collect::<Vec<_>>()
-                .join(", ")
+            listed(others)
+        )
+    };
+    let sent = if sent_others.is_empty() {
+        format!(
+            "The schema says the reader takes {full_keys} more, which no document\n\
+             writes and which it marks `writeOnly`: **every one is a catalogue\n\
+             member's full key** (`graha.SUN`), the spelling every binding reads\n\
+             a member back as, so a request may hand back what it was given.\n\n"
+        )
+    } else {
+        format!(
+            "The schema's `writeOnly` words should all be catalogue members'\n\
+             full keys, and these are not: {}.\n\n",
+            listed(sent_others)
         )
     };
     format!(
@@ -750,7 +817,7 @@ fn spelling(keys: usize, others: &[String]) -> String {
          are written:\n\n\
          | spelt | words |\n|---|---|\n\
          | as a key, `[A-Z][A-Z0-9_]*` | {keys} |\n\
-         | otherwise | {} |\n\n{verdict}",
+         | otherwise | {} |\n\n{verdict}{sent}",
         others.len()
     )
 }

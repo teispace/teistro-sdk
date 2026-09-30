@@ -111,6 +111,24 @@ pub trait Catalogued:
     /// The member with an id.
     fn from_id(id: u16) -> Option<Self>;
 
+    /// The member a request names: by its key or a former key (`SUN`), or
+    /// by its own **full** key (`graha.SUN`), which is how every binding
+    /// reads a member back — so a caller can hand back what it was given.
+    ///
+    /// The prefix must be this kind's: `yoga.SIDDHI` is not a
+    /// `muhurta_yoga`, whatever the key after it.
+    ///
+    /// # Errors
+    ///
+    /// The key, bare, and the nearest member's key, when there is none.
+    fn from_either_key(key: &str) -> Result<Self, UnknownKey> {
+        let bare = key
+            .strip_prefix(Self::KIND.name())
+            .and_then(|rest| rest.strip_prefix('.'))
+            .unwrap_or(key);
+        Self::from_key(bare).ok_or_else(|| UnknownKey::in_kind::<Self>(bare))
+    }
+
     /// The full key (`graha.SUN`).
     fn full_key(self) -> String {
         format!("{}.{}", Self::KIND.name(), self.key())
@@ -205,19 +223,39 @@ impl std::error::Error for UnknownKey {}
 /// (`docs/03-design/document-schema.md` §3).
 #[cfg(feature = "schema")]
 ///
+/// Two branches, because the reader takes more than a document writes:
+/// the bare keys, which a document writes, and each of them in full
+/// (`graha.SUN`), which `from_either_key` also reads and which is marked
+/// `writeOnly` — sent to the SDK, never returned by it — so a validator
+/// accepts what the reader does while a tool measuring what documents
+/// say can skip the branch no document holds.
+///
 /// The schema also names its kind as `x-teistro-kind`, so a tool reading a
 /// document can map a string back to the catalogue it is drawn from — and
 /// the SDK's own gates read the kinds a document carries from it rather
 /// than keeping a second list.
 pub(crate) fn key_schema<T: Catalogued>(aliases: &[(&str, T)]) -> schemars::Schema {
-    let mut schema = names_schema(
-        &format!("A key of the `{}` catalogue.", T::KIND.name()),
-        T::all()
-            .iter()
-            .map(|member| member.key())
-            .chain(aliases.iter().map(|(former, _)| *former)),
+    let kind = T::KIND.name();
+    let bare: Vec<&str> = T::all()
+        .iter()
+        .map(|member| member.key())
+        .chain(aliases.iter().map(|(former, _)| *former))
+        .collect();
+    let full: Vec<String> = bare.iter().map(|key| format!("{kind}.{key}")).collect();
+    let written = names_schema(
+        &format!("A key of the `{kind}` catalogue, as a document writes it."),
+        bare.into_iter(),
     );
-    schema.insert(KIND_KEYWORD.to_owned(), T::KIND.name().into());
+    let mut read = names_schema(
+        &format!("A `{kind}` member's full key, which a request may send and no document writes."),
+        full.iter().map(String::as_str),
+    );
+    read.insert("writeOnly".to_owned(), true.into());
+    let mut schema = schemars::json_schema!({
+        "description": format!("A key of the `{kind}` catalogue, bare or full."),
+        "anyOf": [written, read],
+    });
+    schema.insert(KIND_KEYWORD.to_owned(), kind.into());
     schema
 }
 
@@ -393,6 +431,60 @@ mod tests {
                 Ok(_) => panic!("{key} parsed"),
                 Err(e) => e,
             }
+        }
+    }
+
+    #[test]
+    fn a_member_is_read_bare_former_or_by_its_own_full_key() {
+        use serde::Deserialize as _;
+        use serde::de::IntoDeserializer as _;
+        let read = |key: &str| -> Result<Nakshatra, serde::de::value::Error> {
+            Nakshatra::deserialize(key.into_deserializer())
+        };
+        assert_eq!(read("JYESHTHA"), Ok(Nakshatra::Jyeshtha));
+        assert_eq!(read("nakshatra.JYESHTHA"), Ok(Nakshatra::Jyeshtha));
+        assert_eq!("nakshatra.ROHINI".parse(), Ok(Nakshatra::Rohini));
+        assert_eq!(
+            Yoga::from_either_key("yoga.VISHKAMBA"),
+            Ok(Yoga::Vishkambha)
+        );
+        // `JYESHTHA` is a masa as well: the prefix must be the field's own
+        // kind, or a masa would be read as the star of the same name.
+        assert!(read("masa.JYESHTHA").is_err());
+        assert!(read("nakshatra.").is_err());
+        assert!(read("nakshatraJYESHTHA").is_err());
+        let wrong = Nakshatra::from_either_key("nakshatra.ROHNI").unwrap_err();
+        assert_eq!(wrong.suggestion, Some("ROHINI"));
+    }
+
+    #[cfg(feature = "schema")]
+    #[test]
+    fn the_key_schema_lists_every_key_the_reader_takes() {
+        let schema = key_schema::<Yoga>(&[("VISHKAMBA", Yoga::Vishkambha)]);
+        assert_eq!(schema.get(KIND_KEYWORD), Some(&"yoga".into()));
+        let branches = schema.get("anyOf").and_then(|b| b.as_array()).unwrap();
+        let names = |branch: &serde_json::Value| -> Vec<String> {
+            let names = branch.get("enum").and_then(|e| e.as_array()).unwrap();
+            names
+                .iter()
+                .map(|n| n.as_str().unwrap().to_owned())
+                .collect()
+        };
+        let (written, read) = (names(&branches[0]), names(&branches[1]));
+        // What a document writes, and only that, is outside `writeOnly`.
+        assert_eq!(branches[0].get("writeOnly"), None);
+        assert_eq!(branches[1].get("writeOnly"), Some(&true.into()));
+        assert!(written.iter().all(|w| !w.contains('.')));
+        assert_eq!(
+            (written.len(), read.len()),
+            (Yoga::ALL.len() + 1, Yoga::ALL.len() + 1)
+        );
+        for key in ["SIDDHI", "VISHKAMBA"] {
+            assert!(written.iter().any(|n| n == key), "{key} missing");
+            assert!(read.contains(&format!("yoga.{key}")), "yoga.{key} missing");
+        }
+        for key in written.iter().chain(&read) {
+            assert!(Yoga::from_either_key(key).is_ok(), "{key} refused");
         }
     }
 

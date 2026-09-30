@@ -1377,6 +1377,22 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **A catalogue member reads from its full key**
+  (`muhurta-at-the-boundary.md` §2.5). Every catalogue enum's reader
+  (`Deserialize`, `FromStr`) now accepts a member's own full key
+  (`nakshatra.ROHINI`) as well as its key and former keys, through one
+  method, `Catalogued::from_either_key`. Every binding reads a member
+  back in full, so a caller can now return what it was given anywhere
+  in a request, not only at the two places that stripped the prefix by
+  hand (the hit list's grahas and the annual dashas), which now use the
+  same method. The prefix must be the member's own kind: `JYESHTHA` is
+  both a masa and a star, and `masa.JYESHTHA` is refused where a star is
+  read. The document schema lists both spellings of every key, so it is
+  no stricter than the reader.
+
+  **Numbers:** none; a reader accepts more, and nothing is written
+  differently.
+
 - **Muhurta, measured** (`muhurta-measured.md`, `muhurta.md` §5, §6
   step 6). `cargo xtask muhurta`, gated by `check-muhurta`, measures over
   the built-in ephemeris at Kathmandu:
