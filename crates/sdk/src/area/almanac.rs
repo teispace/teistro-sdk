@@ -14,7 +14,7 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
-use teistro_panchanga::festival::{FestivalDay, FestivalRule, Observances, observances};
+use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, observances};
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::local_day::local_midnight;
@@ -381,7 +381,7 @@ impl<'a> AlmanacArea<'a> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
         let (before, after) = (
-            calendar.date_of(first.plus_days(-1))?,
+            calendar.date_of(first.plus_days(-2))?,
             (
                 calendar.date_of(last.plus_days(1))?,
                 calendar.date_of(last.plus_days(2))?,
@@ -389,7 +389,9 @@ impl<'a> AlmanacArea<'a> {
         );
         let (earlier, later) = self.with_almanac(from, offset, |almanac| {
             Ok((
-                almanac.between(&before, &before, place)?.value,
+                almanac
+                    .between(&before, &calendar.date_of(first.plus_days(-1))?, place)?
+                    .value,
                 almanac.between(&after.0, &after.1, place)?.value,
             ))
         })?;
@@ -399,7 +401,8 @@ impl<'a> AlmanacArea<'a> {
             .chain(&later)
             .map(FestivalDay::from)
             .collect();
-        let mut found = observances(request.rules(), &viewed)?;
+        let mut found =
+            observances(request.rules(), &viewed)?.merged(ekadashis(request.ekadashis(), &viewed)?);
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)
@@ -408,6 +411,7 @@ impl<'a> AlmanacArea<'a> {
         found
             .observances
             .retain(|observance| inside(&observance.day));
+        found.ekadashis.retain(|fast| inside(&fast.day));
         let (start, end) = (
             days.value.first().map(|day| day.day.sunrise.get()),
             days.value.last().map(|day| day.day.next_sunrise.get()),
@@ -422,13 +426,13 @@ impl<'a> AlmanacArea<'a> {
             to: to.to_string(),
             place: *place,
             utc_offset_seconds: offset.seconds(),
-            rules: request.rules(),
+            request,
         });
         provenance.applied_conventions.push(Convention {
             knob: String::from("festival.days"),
             value: format!("{before}..{}", after.1),
             reason: String::from(
-                "a tithi beginning the day before the range can fall in it, and one at its end is judged against the day after, or two when it holds two sunrises",
+                "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises",
             ),
         });
         Ok(Envelope::sealing(found, provenance))
@@ -611,7 +615,7 @@ struct FestivalInput<'r> {
     to: String,
     place: Place,
     utc_offset_seconds: i32,
-    rules: &'r [FestivalRule],
+    request: &'r FestivalRequest,
 }
 
 /// The middle of a range of civil days, from the first's local midnight

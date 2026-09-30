@@ -1452,6 +1452,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. The festival page is unchanged, and now found by as
   many workers as the machine has cores.
 
+  Ekadashi, both schools (step 5, `festival-rules.md` §8).
+  `EkadashiRule` decides the fast by a vedha (arunodaya for the
+  Vaishnavas, sunrise for the Smartas) and a table over the text's
+  four kinds of excess, pure and pierced. `EkadashiRule::dharmasindhu()`
+  ships the Vaishnava, the Smarta householder and the renunciant, each
+  held to *Dharmasindhu*'s twelve worked examples, and `ekadashis()`
+  answers an `EkadashiFast` per rule with the vedha and excess it found.
+  The `DHARMASINDHU` pack names all three beside the karmakala rules; in
+  a request an item with a `vedha` is an Ekadashi rule, and a key is one
+  rule's across both kinds. Every binding reads `festivals.ekadashis`.
+  `cargo xtask festival` holds the rules against Drik Panchang's New
+  Delhi lists for 2023 to 2026: the Smarta and renunciant rules fall on
+  every published day, and the Vaishnava rule parts on three, each
+  ISKCON's Paksha Vardhini Mahadvadashi, which the pass checks holds.
+  Measuring corrected two readings of the text (C181, C182).
+
+  **Numbers:** the festival answer's days are founded from two days
+  before the range rather than one, so its `festival.days` convention
+  and hash change; no observance's day moves.
+
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
   in the 3rd, 6th or 11th. The clause read that as every natural malefic,

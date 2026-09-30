@@ -7,10 +7,13 @@
 //!   as holidays for its offices in Delhi, each disagreement named with
 //!   its cause, which the pass checks both ways;
 //! - a decade of each rule, counting the case each year met and the guard
-//!   that decided, with every guard no year reached given its reason.
+//!   that decided, with every guard no year reached given its reason;
+//! - the three Ekadashi observers against a published almanac's Smarta,
+//!   Gauna and Vaishnava days ([`ekadashi`]).
 //!
-//! Only the seasons the rules live in are founded, March to May and
-//! August to November, since a year of almanac is what the pass costs.
+//! Only the seasons the karmakala rules live in are founded, March to May
+//! and August to November, since a year of almanac is what the pass costs;
+//! a year the Ekadashi record covers is founded whole.
 //!
 //! `cargo xtask festival` writes the page; `check-festival` regenerates it
 //! in memory and fails on any difference.
@@ -19,13 +22,15 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro::festival::{Decided, FestivalRule, Observance};
+use teistro::festival::{Decided, FestivalRule, Observance, Observances};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 use teistro_core::catalogue::Calendar;
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, table};
+
+mod ekadashi;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
 
@@ -34,8 +39,14 @@ const LATITUDE: f64 = 28.6139;
 const LONGITUDE: f64 = 77.209;
 const ALTITUDE: f64 = 216.0;
 
-/// The seasons founded each year: `(from, to)` as (month, day).
-const SEASONS: [((u8, u8), (u8, u8)); 2] = [((3, 1), (5, 5)), ((8, 1), (11, 20))];
+/// A day of a Gregorian year, as (month, day).
+pub(super) type MonthDay = (u8, u8);
+
+/// The days founded together, `(from, to)`.
+type Span = (MonthDay, MonthDay);
+
+/// The seasons founded each year.
+const SEASONS: [Span; 2] = [((3, 1), (5, 5)), ((8, 1), (11, 20))];
 
 /// The decade the reach is counted over.
 const REACH: std::ops::RangeInclusive<i32> = 2021..=2030;
@@ -72,7 +83,7 @@ impl Listed {
 /// F.No.12/2/2023-JCA (CSIR). The compulsory Janmashtami is the Vaishnava
 /// day; the restricted list gives a Smarta day beside it in 2021, 2023 and
 /// 2025, and *Dharmasindhu* is a Smarta text, so both are listed.
-const PUBLISHED: [(i32, &str, Listed, (u8, u8)); 22] = [
+const PUBLISHED: [(i32, &str, Listed, MonthDay); 22] = [
     (2021, "RAMA_NAVAMI", Listed::Compulsory, (4, 21)),
     (2021, "JANMASHTAMI", Listed::Vaishnava, (8, 30)),
     (2021, "JANMASHTAMI", Listed::Smarta, (8, 30)),
@@ -165,18 +176,61 @@ fn place() -> Place {
     )
 }
 
-fn date(year: i32, (month, day): (u8, u8)) -> CalendarDate {
+/// Each month's length in a Gregorian year.
+fn month_lengths(year: i32) -> [i32; 12] {
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    [
+        31,
+        if leap { 29 } else { 28 },
+        31,
+        30,
+        31,
+        30,
+        31,
+        31,
+        30,
+        31,
+        30,
+        31,
+    ]
+}
+
+/// The day of the year, 1 for 1 January.
+fn ordinal(year: i32, (month, day): MonthDay) -> i32 {
+    let before: i32 = month_lengths(year)
+        .iter()
+        .take(usize::from(month).saturating_sub(1))
+        .sum();
+    before + i32::from(day)
+}
+
+/// The (month, day) of a year's `ordinal`th day, 1 for 1 January.
+fn date_of_year(year: i32, ordinal: i32) -> MonthDay {
+    let mut left = ordinal;
+    for (month, length) in (1..=12u8).zip(month_lengths(year)) {
+        if left <= length {
+            return (month, u8::try_from(left).unwrap_or(1));
+        }
+        left -= length;
+    }
+    (12, 31)
+}
+
+fn date(year: i32, (month, day): MonthDay) -> CalendarDate {
     CalendarDate::defined(Calendar::Gregorian, year, month, day)
 }
 
-/// Each rule's observances over a year's seasons.
-fn year_of(
-    context: &Context,
-    request: &FestivalRequest,
-    year: i32,
-) -> Result<Vec<Observance>, String> {
-    let mut all = Vec::new();
-    for (from, to) in SEASONS {
+/// Each rule's answer over a year: the whole year where the Ekadashi
+/// record covers it, else the karmakala rules' seasons.
+fn year_of(context: &Context, request: &FestivalRequest, year: i32) -> Result<Observances, String> {
+    let whole = [((1, 1), (12, 31))];
+    let spans: &[Span] = if ekadashi::covers(year) {
+        &whole
+    } else {
+        &SEASONS
+    };
+    let mut all = Observances::default();
+    for &(from, to) in spans {
         let found = context
             .almanac()
             .festivals(
@@ -190,7 +244,7 @@ fn year_of(
         if !found.value.unjudged.is_empty() {
             return Err(format!("{year}: unjudged {:?}", found.value.unjudged));
         }
-        all.extend(found.value.observances);
+        all = all.merged(found.value);
     }
     Ok(all)
 }
@@ -199,7 +253,7 @@ struct Row {
     year: i32,
     rule: &'static str,
     listed: Listed,
-    published: (u8, u8),
+    published: MonthDay,
     found: Option<Observance>,
 }
 
@@ -216,11 +270,12 @@ impl Row {
 /// A year's answer does not depend on which worker found it, so the map
 /// is the one a single thread would build; the refusal reported is the
 /// first worker's, in the years' order.
-fn years_of(request: &FestivalRequest) -> Result<BTreeMap<i32, Vec<Observance>>, String> {
+fn years_of(request: &FestivalRequest) -> Result<BTreeMap<i32, Observances>, String> {
     let wanted: Vec<i32> = PUBLISHED
         .iter()
         .map(|row| row.0)
         .chain(REACH)
+        .chain(ekadashi::YEARS)
         .collect::<std::collections::BTreeSet<_>>()
         .into_iter()
         .collect();
@@ -267,7 +322,7 @@ fn page() -> Result<String, String> {
             published,
             found: years
                 .get(&year)
-                .and_then(|found| found.iter().find(|o| o.rule == rule).cloned()),
+                .and_then(|found| found.observances.iter().find(|o| o.rule == rule).cloned()),
         })
         .collect();
     rows.sort_by_key(|row| (row.year, row.rule, row.listed.spelled()));
@@ -300,10 +355,17 @@ fn page() -> Result<String, String> {
     }
 
     let (cases, decided) = reach(rules, &years, &mut problems);
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .map_err(|e| e.to_string())?;
+    let fasts = ekadashi::compare(&context, request.ekadashis(), &years, &mut problems);
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
-    Ok(render(rules, &rows, &cases, &decided))
+    let mut out = render(rules, &rows, &cases, &decided);
+    ekadashi::render(&mut out, &fasts);
+    Ok(out)
 }
 
 /// How many years met each (rule, case).
@@ -317,13 +379,13 @@ type Deciders = BTreeMap<(String, Option<usize>), usize>;
 /// every guard reached and listed, or neither.
 fn reach<'r>(
     rules: &'r [FestivalRule],
-    years: &BTreeMap<i32, Vec<Observance>>,
+    years: &BTreeMap<i32, Observances>,
     problems: &mut Vec<String>,
 ) -> (Cases<'r>, Deciders) {
     let mut cases = Cases::new();
     let mut decided = Deciders::new();
     for year in REACH {
-        for observance in years.get(&year).into_iter().flatten() {
+        for observance in years.get(&year).into_iter().flat_map(|y| &y.observances) {
             *cases
                 .entry((
                     rule_key(rules, &observance.rule),
@@ -376,7 +438,7 @@ fn rule_key<'r>(rules: &'r [FestivalRule], key: &str) -> &'r str {
         .map_or("", |rule| rule.key.as_str())
 }
 
-fn spell((month, day): (u8, u8)) -> String {
+pub(super) fn spell((month, day): MonthDay) -> String {
     const MONTHS: [&str; 12] = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     ];

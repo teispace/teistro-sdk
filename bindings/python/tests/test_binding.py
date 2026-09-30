@@ -1440,7 +1440,7 @@ class AnEngine(WithLibrary):
         the days the almanac's own, a shipped rule replaced by its key with
         members given as members, and a refusal named by the item and field
         that was wrong."""
-        from teistro import FestivalAnswer, FestivalRequest, date
+        from teistro import EkadashiFast, FestivalAnswer, FestivalRequest, date
         from teistro.catalogue import Calendar, Masa, Tithi
 
         observer = Observer(
@@ -1465,6 +1465,14 @@ class AnEngine(WithLibrary):
             self.assertEqual(dashami.extents[0].day.calendar, Calendar.GREGORIAN)
             self.assertIn(dashami.decided_by.by, ("GUARD", "OTHERWISE"))
             self.assertEqual(answer.unjudged, ())
+            observers = ["EKADASHI_VAISHNAVA", "EKADASHI_SMARTA", "EKADASHI_SMARTA_RENUNCIANT"]
+            self.assertEqual([f.rule for f in answer.ekadashis], observers * 2)
+            fast = answer.ekadashis[0]
+            self.assertIsInstance(fast, EkadashiFast)
+            self.assertEqual((fast.tithi, fast.month), (Tithi.SHUKLA_EKADASHI, Masa.ASHWINA))
+            self.assertEqual(fast.days[0].calendar, Calendar.GREGORIAN)
+            self.assertIn(fast.choice, ("EARLIER", "LATER"))
+            self.assertEqual(fast.day, fast.days[0 if fast.choice == "EARLIER" else 1])
             for k in range(len(plain)):
                 self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
             self.assertIn("festival.days", {c.knob for c in answer.provenance.applied_conventions})
@@ -1488,6 +1496,10 @@ class AnEngine(WithLibrary):
                 ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
                 ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),
+                (
+                    {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "vedha": "DUSK", "table": {}}]},
+                    "festivals.rules[1].vedha",
+                ),
             ]
             for bad, field in refusals:
                 with self.assertRaises(TeistroError) as refused:

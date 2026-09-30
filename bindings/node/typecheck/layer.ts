@@ -17,6 +17,9 @@ import type {
   Context,
   DashaPeriod,
   EphemerisProvider,
+  EkadashiKinds,
+  EkadashiRule,
+  EkadashiVedha,
   FestivalAnswer,
   FestivalRequest,
   FestivalRule,
@@ -680,7 +683,24 @@ function theFestivals(almanac: Almanac): string {
     const [earlier, later] = o.extents;
     return `${o.rule} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
   });
+  const fasts = answer.ekadashis.map((fast) => {
+    const [first, second] = fast.days;
+    const [, eleventh] = fast.tithis;
+    const at: EkadashiVedha | null = fast.piercedAt;
+    return `${fast.rule} ${fast.tithi} ${fast.month} ${fast.adhika} ${eleventh.from} ${first.day} ${second.day} ${at} ${fast.pierced} ${fast.excess} ${fast.choice} ${fast.day.day}`;
+  });
   const unjudged = answer.unjudged.map((u) => `${u.rule} ${u.tithi.from} ${u.why}`);
+  const madhava: EkadashiRule = {
+    key: 'EKADASHI_SMARTA_HEMADRI',
+    source: 'Dharmasindhu p. 12, Hemadri',
+    vedha: 'SUNRISE',
+    table: {
+      pure: { eleventh: 'EARLIER', twelfth: 'LATER', both: 'LATER', neither: 'EARLIER' },
+      pierced: { eleventh: 'EARLIER', twelfth: 'LATER', both: 'LATER', neither: 'EARLIER' },
+    },
+  };
+  // @ts-expect-error a table's day is the earlier or the later, not a yugma
+  const yugma: EkadashiKinds = { eleventh: 'BY_YUGMA', twelfth: 'LATER', both: 'LATER', neither: 'EARLIER' };
   const rule: FestivalRule = {
     key: 'LAKSHMI_PUJA',
     source: 'Dharmasindhu p. 77',
@@ -690,12 +710,12 @@ function theFestivals(almanac: Almanac): string {
     decide: [{ when: [{ is: 'LASTS', day: 'LATER', from: 'SUNSET', ghatis: 1 }], choose: 'LATER' }],
     otherwise: 'EARLIER',
   };
-  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule] };
+  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule, madhava] };
   // @ts-expect-error a predicate asks what its kind asks, not another's
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...unjudged, String(asked.rules.length), String(wrong), String(unshipped), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

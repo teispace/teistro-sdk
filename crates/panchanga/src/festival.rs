@@ -30,6 +30,12 @@ use crate::Panchanga;
 use crate::month::{self, LunarMonth};
 use crate::span::Span;
 
+mod ekadashi;
+
+pub use ekadashi::{
+    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Vedha, ekadashis,
+};
+
 /// A fifth of the daylight (*Dharmasindhu*, p. 6).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -442,6 +448,8 @@ pub struct Unjudged {
 pub struct Observances {
     /// Each rule's days, in the order of the tithis.
     pub observances: Vec<Observance>,
+    /// Each Ekadashi rule's fasts, in the order of the tithis.
+    pub ekadashis: Vec<EkadashiFast>,
     /// The occurrences no day could be given to.
     pub unjudged: Vec<Unjudged>,
 }
@@ -451,12 +459,31 @@ impl Observances {
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
     /// serde, both ways.
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 4] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 10] = [
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
         ("observances", "extents.day.calendar", Kind::Calendar),
         ("observances", "extents.day.era.era", Kind::Era),
+        ("ekadashis", "tithi", Kind::Tithi),
+        ("ekadashis", "month", Kind::Masa),
+        ("ekadashis", "days.calendar", Kind::Calendar),
+        ("ekadashis", "days.era.era", Kind::Era),
+        ("ekadashis", "day.calendar", Kind::Calendar),
+        ("ekadashis", "day.era.era", Kind::Era),
     ];
+
+    /// Both answers as one, the occurrences no day was given to in the
+    /// order of their tithis: how the karmakala rules' answer and the
+    /// Ekadashi rules' are handed back together.
+    #[must_use]
+    pub fn merged(mut self, other: Observances) -> Observances {
+        self.observances.extend(other.observances);
+        self.ekadashis.extend(other.ekadashis);
+        self.unjudged.extend(other.unjudged);
+        self.unjudged
+            .sort_by(|a, b| a.tithi.from.get().total_cmp(&b.tithi.from.get()));
+        self
+    }
 
     /// The answer as JSON, every catalogue member written as its full key
     /// where [`Observances::MEMBERS`] says: what a boundary section carries

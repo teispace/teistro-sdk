@@ -51,8 +51,8 @@ String listed(Iterable<String> items) {
   return joined.isEmpty ? 'none' : joined;
 }
 
-/// A festival answer's counts, hash and every observance, as every runner
-/// prints them.
+/// A festival answer's counts, hash, every observance and every Ekadashi
+/// fast, as every runner prints them.
 void putFestivals(String prefix, FestivalAnswer answer) {
   put(
     '$prefix-counts',
@@ -74,6 +74,23 @@ void putFestivals(String prefix, FestivalAnswer answer) {
         number(observance.tithi.from),
         number(earlier.held),
         number(later.held),
+      ].join(' '),
+    );
+  }
+  for (final (k, fast) in answer.ekadashis.indexed) {
+    put(
+      '$prefix-ekadashi-$k',
+      [
+        fast.rule,
+        fast.tithi.fullKey,
+        fast.month.fullKey,
+        fast.adhika,
+        '${fast.day.month}-${fast.day.day}',
+        fast.piercedAt ?? '-',
+        fast.pierced,
+        fast.excess,
+        fast.choice,
+        number(fast.tithis.$2.from),
       ].join(' '),
     );
   }

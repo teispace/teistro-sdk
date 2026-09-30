@@ -6147,16 +6147,85 @@ final class FestivalUnjudged extends _Value {
   List<Object?> get _fields => [rule, tithi.from, tithi.to, why];
 }
 
+/// An Ekadashi fast: the day a rule gives the 11th, by its vedha and the
+/// excess the 11th and the 12th hold (`03-design/festival-rules.md` §8).
+final class EkadashiFast extends _Value {
+  const EkadashiFast({
+    required this.rule,
+    required this.tithi,
+    required this.month,
+    required this.adhika,
+    required this.tithis,
+    required this.days,
+    required this.piercedAt,
+    required this.pierced,
+    required this.excess,
+    required this.choice,
+    required this.day,
+  });
+
+  /// The rule's key.
+  final String rule;
+
+  /// `Tithi.shuklaEkadashi` or `Tithi.krishnaEkadashi`.
+  final Tithi tithi;
+
+  /// The lunar month the 11th falls in, and whether it is the adhika one.
+  final Masa month;
+  final bool adhika;
+
+  /// The 10th, the 11th and the 12th.
+  final (Interval, Interval, Interval) tithis;
+
+  /// The 11th's own day and the day after, the two the rule chooses from.
+  final (CalendarDate, CalendarDate) days;
+
+  /// Where the 10th reached into the 11th's day, `SUNRISE` or
+  /// `ARUNODAYA`, whatever the rule's vedha; null when it did not.
+  final String? piercedAt;
+
+  /// Whether that piercing counts under the rule's vedha.
+  final bool pierced;
+
+  /// Which of the 11th and the 12th holds the next sunrise: `ELEVENTH`,
+  /// `TWELFTH`, `BOTH` or `NEITHER`.
+  final String excess;
+
+  /// `EARLIER` or `LATER`, which [day] resolves.
+  final String choice;
+  final CalendarDate day;
+
+  @override
+  List<Object?> get _fields => [
+    rule,
+    tithi,
+    month,
+    adhika,
+    for (final t in [tithis.$1, tithis.$2, tithis.$3]) ...[t.from, t.to],
+    ..._dateFields(days.$1),
+    ..._dateFields(days.$2),
+    piercedAt,
+    pierced,
+    excess,
+    choice,
+    ..._dateFields(day),
+  ];
+}
+
 /// What a set of festival rules gives over an almanac's days
 /// (`03-design/festival-rules.md` §7.3).
 final class FestivalAnswer {
   const FestivalAnswer({
     required this.observances,
+    required this.ekadashis,
     required this.unjudged,
     required this.provenance,
   });
 
   final List<FestivalObservance> observances;
+
+  /// The Ekadashi fasts, each under each Ekadashi rule asked for.
+  final List<EkadashiFast> ekadashis;
   final List<FestivalUnjudged> unjudged;
 
   /// What computed it: the widened days among the applied conventions as
@@ -6203,6 +6272,34 @@ FestivalAnswer _festivalAnswer(String json) {
             index: at(raw['decidedBy'])['index'] as int?,
           ),
           choice: raw['choice']! as String,
+        ),
+    ]),
+    ekadashis: List.unmodifiable([
+      for (final raw in each(value['ekadashis']))
+        EkadashiFast(
+          rule: raw['rule']! as String,
+          tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+          month: _key(raw['month'], Masa.byKey, Masa.unknown),
+          adhika: raw['adhika']! as bool,
+          tithis: switch (raw['tithis']! as List<Object?>) {
+            [final tenth, final eleventh, final twelfth] => (
+              interval(tenth),
+              interval(eleventh),
+              interval(twelfth),
+            ),
+            final other =>
+              throw StateError('a fast has three tithis, not ${other.length}'),
+          },
+          days: switch (each(raw['days'])) {
+            [final own, final after] => (_serdeDate(own), _serdeDate(after)),
+            final other =>
+              throw StateError('a fast has two days, not ${other.length}'),
+          },
+          piercedAt: raw['piercedAt'] as String?,
+          pierced: raw['pierced']! as bool,
+          excess: raw['excess']! as String,
+          choice: raw['choice']! as String,
+          day: _serdeDate(at(raw['day'])),
         ),
     ]),
     unjudged: List.unmodifiable([
