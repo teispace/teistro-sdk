@@ -28,6 +28,7 @@
 pub mod clause;
 pub mod day;
 pub mod instant;
+pub mod season;
 pub mod tara;
 pub mod window;
 

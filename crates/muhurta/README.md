@@ -15,5 +15,8 @@ lagna and the grahas' houses from it: the Mahadoshas that turn on them
 and the neutralisations. The windows cut a day wherever any clause can
 change — the lagna's navamsa and sign, found by search, the limbs, the
 kaalas, the choghadiya, the horas and the muhurtas — and the lagna
-tyajya is judged on the signs that rise whole. The season's blackouts
-and the search follow (`muhurta.md` §6).
+tyajya is judged on the signs that rise whole. The season gives the
+stretches no rite is held in — the adhika month, Chaturmas, Pitru
+paksha, Kharmas, the sankrantis, and Guru and Shukra asta from the
+heliacal events — as instants. The activities' rules and the search
+follow (`muhurta.md` §6).
