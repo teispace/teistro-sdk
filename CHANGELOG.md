@@ -1409,6 +1409,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   and the answer's section. Its size budget was measured again
   (`bindings/wasm/size.json`).
 
+- **Festival rules** (`festival-rules.md` §6 step 1).
+  `teistro_panchanga::festival` decides the day of an observance.
+  A rule gives:
+  - its lunar date;
+  - the time of its rite: sunrise, a fifth of the daylight, pradosha or
+    niśītha;
+  - an ordered list of guards. Each guard is built from the six cases
+    between the tithi's two days, a nakshatra joined, and a minimum
+    length, and the first guard that holds decides.
+
+  The answer names the case and the guard. `FestivalRule::dharmasindhu()`
+  ships four rules from *Dharmasindhu*, each citing its page: Rama
+  Navami, Janmashtami, Vijaya Dashami and Lakshmi puja. They are held to
+  the book's own worked examples. Forks C168 to C174 are registered.
+
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
   in the 3rd, 6th or 11th. The clause read that as every natural malefic,

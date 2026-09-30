@@ -39,6 +39,7 @@
 //! ```
 
 pub mod almanac;
+pub mod festival;
 pub mod limb;
 pub mod month;
 pub mod omen;
