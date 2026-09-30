@@ -3105,6 +3105,135 @@ fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffs
     );
 }
 
+/// The muhurta search a panchanga request carries, under both rankings,
+/// as the report prints it.
+///
+/// 2024-11-25..27 at the test provider: the texts bar all of the day's
+/// windows for different reasons, and the baseline scores them, so both
+/// the bars and the scores cross every layer.
+fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 25);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 27);
+    for (name, rules, ranking) in [
+        ("raman", "RAMAN_MARRIAGE", "TEXTS"),
+        ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
+    ] {
+        let asked = teistro::MuhurtaRequest::from_json(&format!(
+            r#"{{"rules":"{rules}","ranking":"{ranking}","native":{{"star":"ROHINI","moonSign":"TAURUS","lagna":"LEO"}},"daysWithWindows":3,"most":12}}"#
+        ))
+        .expect("a muhurta request");
+        let answer = geo
+            .almanac()
+            .muhurta(&from, &to, place, offset, &asked)
+            .expect("the test provider")
+            .value;
+        let key = |what: &str| format!("muhurta-{name}{what}");
+        put(
+            report,
+            &key("-counts"),
+            format!(
+                "{} {} {} {} {} {}",
+                answer.windows.len(),
+                answer.closed.len(),
+                answer.days_judged,
+                answer.days_cut,
+                answer.windows_blacked_out,
+                tag(&answer.ranking),
+            ),
+        );
+        // The boundary seals the full-keyed value, so the hash every
+        // binding reads is of that.
+        let written = teistro::muhurta::spelling::in_full(&answer).expect("a written answer");
+        put(
+            report,
+            &key("-hash"),
+            teistro_core::envelope::content_hash(&written).to_string(),
+        );
+        for (k, window) in answer.windows.iter().enumerate() {
+            let at = format!("-{k}");
+            put(
+                report,
+                &key(&at),
+                format!(
+                    "{} {}",
+                    number(window.at.from.get()),
+                    number(window.at.to.get())
+                ),
+            );
+            put(
+                report,
+                &key(&format!("{at}-clauses")),
+                window
+                    .clauses
+                    .iter()
+                    .map(|clause| tag(&clause.kind.key()))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            );
+            put(
+                report,
+                &key(&format!("{at}-bars")),
+                listed(window.barred_by.iter().map(|bar| match bar {
+                    teistro::muhurta::Bar::Key(key) => tag(key),
+                    teistro::muhurta::Bar::Clause(kind) => tag(&kind.key()),
+                })),
+            );
+            put(
+                report,
+                &key(&format!("{at}-score")),
+                window.score.as_ref().map_or_else(
+                    || "none".to_owned(),
+                    |score| {
+                        format!(
+                            "{} {} {}",
+                            score.value,
+                            score
+                                .capped_at
+                                .map_or_else(|| "none".to_owned(), |cap| cap.to_string()),
+                            listed(score.factors.iter().map(|factor| format!(
+                                "{}:{}:{}",
+                                tag(&factor.dimension),
+                                factor.weight,
+                                factor.graha.map_or("none", |graha| graha.full_key()),
+                            ))),
+                        )
+                    },
+                ),
+            );
+        }
+        for (j, day) in answer.closed.iter().enumerate() {
+            put(
+                report,
+                &key(&format!("-closed-{j}")),
+                format!(
+                    "{}-{} {}",
+                    day.date.month,
+                    day.date.day,
+                    listed(day.by.iter().map(tag)),
+                ),
+            );
+        }
+    }
+}
+
+/// A unit enum's key, as serde writes it and every binding reads it.
+fn tag<T: serde::Serialize>(value: &T) -> String {
+    match serde_json::to_value(value) {
+        Ok(serde_json::Value::String(key)) => key,
+        other => panic!("a unit enum writes a string, not {other:?}"),
+    }
+}
+
+/// The items joined by spaces, or `none`.
+fn listed(items: impl Iterator<Item = String>) -> String {
+    let joined = items.collect::<Vec<_>>().join(" ");
+    if joined.is_empty() {
+        "none".to_owned()
+    } else {
+        joined
+    }
+}
+
 fn main() {
     let mut report = Report::new();
     // The **test** provider, as the other three runners use: the
@@ -3135,6 +3264,7 @@ fn main() {
     a_classical_chart(&mut report, &place, offset);
     let (geo, place, offset) = charts(&mut report);
     an_almanac(&mut report, &geo, &place, offset);
+    a_muhurta(&mut report, &geo, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

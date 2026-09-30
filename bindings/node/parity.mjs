@@ -835,6 +835,65 @@ for (const day of week) {
 // `almanacDay` is the range of one unwrapped, and must agree.
 const oneDay = geo.almanac.day({ date: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700 });
 put('almanac-single-agrees', oneDay.day.sunrise === week.at(0).day.sunrise);
+
+// ── A muhurta search ───────────────────────────────────────────────────
+// Both rankings over 2024-11-25..27: the texts bar the windows for
+// different reasons and the baseline scores them.
+const listed = (items) => (items.length === 0 ? 'none' : items.join(' '));
+for (const [name, rules, ranking] of [
+  ['raman', 'RAMAN_MARRIAGE', 'TEXTS'],
+  ['baseline', 'BASELINE_MARRIAGE', 'BASELINE'],
+]) {
+  const { muhurta } = geo.almanac.of({
+    from: gregorian(2024, 11, 25),
+    to: gregorian(2024, 11, 27),
+    place,
+    utcOffsetSeconds: 20700,
+    muhurta: {
+      rules,
+      ranking,
+      native: { star: 'ROHINI', moonSign: 'TAURUS', lagna: 'LEO' },
+      daysWithWindows: 3,
+      most: 12,
+    },
+  });
+  const key = (what) => `muhurta-${name}${what}`;
+  put(
+    key('-counts'),
+    [
+      muhurta.windows.length,
+      muhurta.closed.length,
+      muhurta.daysJudged,
+      muhurta.daysCut,
+      muhurta.windowsBlackedOut,
+      muhurta.ranking,
+    ].join(' '),
+  );
+  put(key('-hash'), muhurta.provenance.contentHash);
+  muhurta.windows.forEach((window, k) => {
+    put(key(`-${k}`), `${number(window.at.from)} ${number(window.at.to)}`);
+    put(key(`-${k}-clauses`), window.clauses.map((clause) => clause.clause).join(' '));
+    put(
+      key(`-${k}-bars`),
+      listed(window.barredBy.map((bar) => (typeof bar === 'string' ? bar : bar.clause))),
+    );
+    put(
+      key(`-${k}-score`),
+      window.score === null
+        ? 'none'
+        : [
+            window.score.value,
+            window.score.cappedAt ?? 'none',
+            listed(
+              window.score.factors.map((f) => `${f.dimension}:${f.weight}:${f.graha ?? 'none'}`),
+            ),
+          ].join(' '),
+    );
+  });
+  muhurta.closed.forEach((day, j) => {
+    put(key(`-closed-${j}`), `${day.date.month}-${day.date.day} ${listed(day.by)}`);
+  });
+}
 geo.dispose();
 
 // ── The surface's shape ─────────────────────────────────────────────

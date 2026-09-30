@@ -1423,6 +1423,133 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac carries the muhurta search it was asked for', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final from = gregorian(2026, 11, 25);
+    Almanac days({CalendarDate? to, MuhurtaRequest? muhurta}) => ctx.almanac.of(
+      from: from,
+      to: to ?? gregorian(2026, 12, 3),
+      place: place,
+      utcOffsetSeconds: 20700,
+      muhurta: muhurta,
+    );
+    final plain = days();
+    expect(plain.muhurta, isNull);
+
+    final almanac = days(
+      muhurta: const MuhurtaRequest(
+        rules: MuhurtaActivity.ramanMarriage,
+        native: MuhurtaNative(
+          star: Nakshatra.rohini,
+          moonSign: Rashi.taurus,
+          lagna: Rashi.leo,
+        ),
+        daysWithWindows: 9,
+        most: 1000,
+      ),
+    );
+    final answer = almanac.muhurta!;
+    expect(answer.windows, isNotEmpty);
+    expect(answer.ranking, MuhurtaRanking.texts);
+    // The days are the ones asked without a search.
+    for (var k = 0; k < plain.length; k += 1) {
+      expect(
+        almanac.at(k).provenance.contentHash,
+        plain.at(k).provenance.contentHash,
+      );
+    }
+    final kinds = [
+      for (final window in answer.windows)
+        for (final clause in window.clauses) clause.kind,
+    ];
+    expect(
+      kinds.whereType<TarabalaClause>(),
+      isNotEmpty,
+      reason: 'the native is read',
+    );
+    expect(
+      kinds.whereType<NakshatraClause>().every(
+        (clause) => clause.nakshatra != Nakshatra.unknown,
+      ),
+      isTrue,
+    );
+    final knobs = {
+      for (final convention in answer.provenance.appliedConventions)
+        convention.knob,
+    };
+    expect(knobs, containsAll(['muhurta.asta', 'muhurta.zodiacAt']));
+
+    // A clause answered is a bar a request may name, as it was read.
+    final amrit = kinds.whereType<ChoghadiyaClause>().firstWhere(
+      (clause) => clause.choghadiya == Choghadiya.amrit,
+    );
+    const graded = {
+      'best': <Object?>[],
+      'middling': <Object?>[],
+      'rejected': <Object?>[],
+      'otherwise': 'MIDDLING',
+    };
+    final rules = <String, Object?>{
+      'day': {
+        'tithis': graded,
+        'nakshatras': graded,
+        'yogas': graded,
+        'karanas': graded,
+        'varas': graded,
+        'chandrabala': {'avoid': <Object?>[]},
+      },
+      'months': {'reckoning': 'ANY'},
+      'lagnas': graded,
+      'padas': <Object?>[],
+      'heeds': <Object?>[],
+      'bars': [amrit],
+      'unjudged': <Object?>[],
+      'baseline': null,
+    };
+    final barred =
+        days(
+          to: from,
+          muhurta: MuhurtaRequest(
+            rules: rules,
+            daysWithWindows: 1,
+            most: 100000,
+          ),
+        ).muhurta!;
+    final struck = barred.windows.where((window) => window.barredBy.isNotEmpty);
+    expect(
+      struck,
+      isNotEmpty,
+      reason: 'the bar read back strikes the windows it names',
+    );
+    expect(struck.every((window) => window.barredBy.single == amrit), isTrue);
+
+    for (final (asked, field) in [
+      (
+        const MuhurtaRequest(rules: MuhurtaActivity.ramanMarriage, most: 0),
+        'muhurta.most',
+      ),
+      (const MuhurtaRequest(rules: 'RAMAN_MARRIAGE'), 'muhurta.rules'),
+      (
+        const MuhurtaRequest(rules: <String, Object?>{'day': 1}),
+        'muhurta.rules.day',
+      ),
+    ]) {
+      expect(
+        () => days(muhurta: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+        reason: field,
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

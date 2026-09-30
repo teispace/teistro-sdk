@@ -2056,6 +2056,80 @@ test('a chart carries its KP reading', () => {
   lahiri.dispose();
 });
 
+/**
+ * A muhurta search crosses beside the days it judged
+ * (`03-design/muhurta-at-the-boundary.md`): frozen to its leaves, its members
+ * in full, its days the almanac's own, and a clause it answers read straight
+ * back into a request's rules (§2.5).
+ */
+test('an almanac carries the muhurta search it was asked for', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const days = {
+    from: date(Calendar.Gregorian, 2026, 11, 25),
+    to: date(Calendar.Gregorian, 2026, 12, 3),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const plain = ctx.almanac.of(days);
+  assert.equal(plain.muhurta, null);
+
+  const asked = {
+    rules: 'RAMAN_MARRIAGE',
+    native: { star: 'ROHINI', moonSign: 'rashi.TAURUS', lagna: 'LEO' },
+    daysWithWindows: 9,
+    most: 1000,
+  };
+  const almanac = ctx.almanac.of({ ...days, muhurta: asked });
+  const answer = almanac.muhurta;
+  assert.ok(answer.windows.length > 0);
+  assert.equal(answer.ranking, 'TEXTS');
+  assert.ok(Object.isFrozen(answer.windows[0].clauses[0].at), 'frozen to its leaves');
+  // The days are the ones asked without a search.
+  for (let k = 0; k < plain.length; k += 1) {
+    assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);
+  }
+  // Members in full, as every other accessor gives them.
+  const clauses = answer.windows.flatMap((window) => window.clauses);
+  assert.ok(clauses.filter((c) => c.clause === 'NAKSHATRA').every((c) => c.nakshatra.startsWith('nakshatra.')));
+  assert.ok(clauses.filter((c) => c.clause === 'LAGNA').every((c) => c.sign.startsWith('rashi.')));
+  assert.ok(clauses.some((c) => c.clause === 'TARABALA'), 'the native is read');
+  const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
+  assert.ok(knobs.includes('muhurta.asta') && knobs.includes('muhurta.zodiacAt'), knobs.join());
+
+  // A clause answered is a bar a request may name, as it was read.
+  const { at: _, ...amrit } = clauses.find((c) => c.clause === 'CHOGHADIYA' && c.choghadiya === 'choghadiya.AMRIT');
+  const graded = { best: [], middling: [], rejected: [], otherwise: 'MIDDLING' };
+  const rules = {
+    day: { tithis: graded, nakshatras: graded, yogas: graded, karanas: graded, varas: graded, chandrabala: { avoid: [] } },
+    months: { reckoning: 'ANY' },
+    lagnas: graded,
+    padas: [],
+    heeds: [],
+    bars: [amrit],
+    unjudged: [],
+    baseline: null,
+  };
+  // One day and every window of it, since a barred window ranks last.
+  const barred = ctx.almanac.of({ ...days, to: days.from, muhurta: { rules, daysWithWindows: 1, most: 100000 } }).muhurta;
+  const struck = barred.windows.filter((window) => window.barredBy.length > 0);
+  assert.ok(struck.length > 0, 'the bar read back strikes the windows it names');
+  assert.ok(struck.every((window) => window.barredBy[0].choghadiya === 'choghadiya.AMRIT'));
+
+  for (const [muhurta, field] of [
+    [{ rules: 'RAMAN' }, 'muhurta.rules'],
+    [{ rules: 'RAMAN_MARRIAGE', most: 0 }, 'muhurta.most'],
+    [{ rules: 'RAMAN_MARRIAGE', native: { star: 'ROHINI', moonSign: 'TAURUS', lagnaa: 'LEO' } }, 'muhurta.native.lagnaa'],
+  ]) {
+    assert.throws(
+      () => ctx.almanac.of({ ...days, muhurta }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.almanac.of({ ...days, muhurta: 'RAMAN_MARRIAGE' }), TypeError);
+  ctx.dispose();
+});
+
 test('a chart carries its dasha phala, and the Shadbala its rays', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

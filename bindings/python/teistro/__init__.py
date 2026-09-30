@@ -27,10 +27,11 @@ import math
 import os
 import sys
 from dataclasses import dataclass, field, replace
+from dataclasses import fields as dataclass_fields
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
-from typing import Any, Callable, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Required, Sequence, Tuple, TypedDict, TypeVar, Union
+from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Required, Sequence, Tuple, TypedDict, TypeVar, Union, get_type_hints
 
 from . import messages as intl
 from ._blob import (
@@ -101,6 +102,7 @@ from . import _records
 from ._records import *  # noqa: F403 - the records' own __all__ names them
 from ._records import Provenance, Step, decode_provenance, decode_step
 from .catalogue import (
+    Catalogued,
     AvasthaCheshta,
     Member,
     AvasthaSayanadi,
@@ -388,6 +390,49 @@ __all__ = [
     # KP: a chart read as the KP Readers read it.
     "KpRequest",
     "KpReading",
+    "MuhurtaRequest",
+    "MuhurtaNative",
+    "MuhurtaAnswer",
+    "MuhurtaWindow",
+    "MuhurtaClause",
+    "MuhurtaClauseKind",
+    "MUHURTA_CLAUSES",
+    "MuhurtaScore",
+    "MuhurtaFactor",
+    "MuhurtaUnjudged",
+    "MuhurtaPada",
+    "TaraReading",
+    "ClosedDay",
+    "TithiClause",
+    "NakshatraClause",
+    "YogaClause",
+    "KaranaClause",
+    "VaraClause",
+    "MonthClause",
+    "SolarMonthClause",
+    "LagnaClause",
+    "PadaClause",
+    "KaalaClause",
+    "ChoghadiyaClause",
+    "AbhijitClause",
+    "MuhurtaYogaClause",
+    "TarabalaClause",
+    "ChandrabalaClause",
+    "KartariClause",
+    "MoonInDusthanaClause",
+    "MoonJoinedClause",
+    "VenusInSixthClause",
+    "MarsInEighthClause",
+    "AshtamaLagnaClause",
+    "KunavamsaClause",
+    "PanchakaRemainderClause",
+    "LagnaTyajyaClause",
+    "SeventhOccupiedClause",
+    "MaleficInLagnaClause",
+    "BeneficInLagnaClause",
+    "ExaltedInLagnaClause",
+    "LuminaryInEleventhClause",
+    "KendraBeneficsClause",
     "KpChart",
     "KpCusp",
     "KpPlanet",
@@ -1507,6 +1552,7 @@ class AlmanacArea(_Area):
         to_date: CalendarDate,
         place: Observer,
         utc_offset_seconds: int,
+        muhurta: Optional[MuhurtaRequest] = None,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -1514,7 +1560,8 @@ class AlmanacArea(_Area):
         share a boundary — day *n*'s next sunrise is day *n+1*'s sunrise
         — so a month of days costs much less than thirty days computed
         separately. A range holding more than a year and a day is refused
-        by name.
+        by name. `muhurta` runs a search over the same days, answered as
+        `Almanac.muhurta`.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -1528,6 +1575,7 @@ class AlmanacArea(_Area):
             longitude_deg=place.longitude_deg,
             altitude_m=place.altitude_m,
             utc_offset_seconds=utc_offset_seconds,
+            muhurta_json=_muhurta_json(muhurta),
         )
         return Almanac(
             decode_panchanga(
@@ -2618,6 +2666,416 @@ class KpReading:
     chart: KpChart
     significators: KpSignificators
     ruling: KpRuling
+
+
+class MuhurtaNative(TypedDict, total=False):
+    """Whose day a muhurta search reads: the birth star and Moon sign, and
+    the birth lagna when the time is known, whose eighth the search avoids.
+
+    >>> native: MuhurtaNative = {"star": Nakshatra.ROHINI, "moonSign": Rashi.TAURUS}
+    """
+
+    star: Required[Union[Nakshatra, str]]
+    moonSign: Required[Union[Rashi, str]]
+    lagna: Optional[Union[Rashi, str]]
+
+
+class MuhurtaRequest(TypedDict, total=False):
+    """A muhurta search to run over an almanac's days
+    (`03-design/muhurta-at-the-boundary.md`), only `rules` required:
+    `"RAMAN_MARRIAGE"` or `"BASELINE_MARRIAGE"`, a set the SDK ships, or rules
+    spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
+    C162) or `"BASELINE"`; `daysWithWindows` (7) and `most` (50); and `asta`,
+    `"SURYA_SIDDHANTA"` (the default), `"COMBUSTION_ORB"`, `"PTOLEMY"` or a
+    criterion spelt out. A catalogue member may be a member, a full key or a
+    bare one, and a clause an answer gave may be handed back as a bar.
+
+    >>> asked: MuhurtaRequest = {"rules": "RAMAN_MARRIAGE", "daysWithWindows": 3}
+    """
+
+    rules: Required[Union[Literal["RAMAN_MARRIAGE", "BASELINE_MARRIAGE"], Mapping[str, Any]]]
+    native: MuhurtaNative
+    ranking: Literal["TEXTS", "BASELINE"]
+    daysWithWindows: int
+    most: int
+    asta: Union[Literal["SURYA_SIDDHANTA", "COMBUSTION_ORB", "PTOLEMY"], Mapping[str, Any]]
+
+
+@dataclass(frozen=True)
+class MuhurtaPada:
+    """A nakshatra's quarter."""
+
+    nakshatra: Nakshatra
+    pada: int
+    """1 to 4."""
+
+
+@dataclass(frozen=True)
+class TaraReading:
+    """The birth star's count to the day's, and the tara it gives: one of
+    `JANMA`, `SAMPAT`, `VIPAT`, `KSHEMA`, `PRATYAK`, `SADHANA`, `NAIDHANA`,
+    `MITRA` and `PARAMA_MITRA`."""
+
+    count: int
+    tara: str
+    cycle: int
+
+
+@dataclass(frozen=True)
+class MuhurtaClauseKind:
+    """One named condition from a source, without when it held. Each kind is
+    a subclass named for its tag (`CLAUSE`), holding that kind's fields; a
+    `match` on the subclass reads it, and one handed back in a request's
+    `bars` bars exactly that clause. A `grade` is `BEST`, `MIDDLING` or
+    `REJECTED`."""
+
+    CLAUSE: ClassVar[str] = ""
+
+
+@dataclass(frozen=True)
+class TithiClause(MuhurtaClauseKind):
+    """The day's tithi, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "TITHI"
+    tithi: Tithi
+    grade: str
+
+
+@dataclass(frozen=True)
+class NakshatraClause(MuhurtaClauseKind):
+    """The Moon's nakshatra, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "NAKSHATRA"
+    nakshatra: Nakshatra
+    grade: str
+
+
+@dataclass(frozen=True)
+class YogaClause(MuhurtaClauseKind):
+    """The nitya yoga, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "YOGA"
+    yoga: Yoga
+    grade: str
+
+
+@dataclass(frozen=True)
+class KaranaClause(MuhurtaClauseKind):
+    """The karana, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "KARANA"
+    karana: Karana
+    grade: str
+
+
+@dataclass(frozen=True)
+class VaraClause(MuhurtaClauseKind):
+    """The weekday, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "VARA"
+    vara: Vara
+    grade: str
+
+
+@dataclass(frozen=True)
+class MonthClause(MuhurtaClauseKind):
+    """The lunar month, as the rules grade it (C161)."""
+
+    CLAUSE: ClassVar[str] = "MONTH"
+    masa: Masa
+    grade: str
+
+
+@dataclass(frozen=True)
+class SolarMonthClause(MuhurtaClauseKind):
+    """The Sun's sign, as the rules grade it (C161)."""
+
+    CLAUSE: ClassVar[str] = "SOLAR_MONTH"
+    sign: Rashi
+    grade: str
+
+
+@dataclass(frozen=True)
+class LagnaClause(MuhurtaClauseKind):
+    """The rising sign, as the rules grade it."""
+
+    CLAUSE: ClassVar[str] = "LAGNA"
+    sign: Rashi
+    grade: str
+
+
+@dataclass(frozen=True)
+class PadaClause(MuhurtaClauseKind):
+    """A quarter of the Moon's star the rules reject."""
+
+    CLAUSE: ClassVar[str] = "PADA"
+    pada: MuhurtaPada
+
+
+@dataclass(frozen=True)
+class KaalaClause(MuhurtaClauseKind):
+    """Rahu kaala, Yamaghanda or Gulika kaala."""
+
+    CLAUSE: ClassVar[str] = "KAALA"
+    kaala: Kaala
+
+
+@dataclass(frozen=True)
+class ChoghadiyaClause(MuhurtaClauseKind):
+    """The choghadiya."""
+
+    CLAUSE: ClassVar[str] = "CHOGHADIYA"
+    choghadiya: Choghadiya
+
+
+@dataclass(frozen=True)
+class AbhijitClause(MuhurtaClauseKind):
+    """Abhijit muhurta."""
+
+    CLAUSE: ClassVar[str] = "ABHIJIT"
+
+
+@dataclass(frozen=True)
+class MuhurtaYogaClause(MuhurtaClauseKind):
+    """A special yoga of vara, tithi and nakshatra (Raman ch. VI)."""
+
+    CLAUSE: ClassVar[str] = "MUHURTA_YOGA"
+    yoga: MuhurtaYoga
+
+
+@dataclass(frozen=True)
+class TarabalaClause(MuhurtaClauseKind):
+    """The native's tarabala."""
+
+    CLAUSE: ClassVar[str] = "TARABALA"
+    reading: TaraReading
+
+
+@dataclass(frozen=True)
+class ChandrabalaClause(MuhurtaClauseKind):
+    """The native's chandrabala: the Moon's house from the birth sign."""
+
+    CLAUSE: ClassVar[str] = "CHANDRABALA"
+    house: int
+    holds: bool
+
+
+@dataclass(frozen=True)
+class KartariClause(MuhurtaClauseKind):
+    """Malefics either side of the lagna."""
+
+    CLAUSE: ClassVar[str] = "KARTARI"
+    second: Tuple[Graha, ...]
+    twelfth: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class MoonInDusthanaClause(MuhurtaClauseKind):
+    """The Moon in the 6th, 8th or 12th from the lagna."""
+
+    CLAUSE: ClassVar[str] = "MOON_IN_DUSTHANA"
+    house: int
+
+
+@dataclass(frozen=True)
+class MoonJoinedClause(MuhurtaClauseKind):
+    """The Moon with another graha."""
+
+    CLAUSE: ClassVar[str] = "MOON_JOINED"
+    with_: Tuple[Graha, ...]
+    """Who, which JSON writes as `with`."""
+
+
+@dataclass(frozen=True)
+class VenusInSixthClause(MuhurtaClauseKind):
+    """Venus in the 6th (Bhrigu shatka)."""
+
+    CLAUSE: ClassVar[str] = "VENUS_IN_SIXTH"
+
+
+@dataclass(frozen=True)
+class MarsInEighthClause(MuhurtaClauseKind):
+    """Mars in the 8th (Kujashtama)."""
+
+    CLAUSE: ClassVar[str] = "MARS_IN_EIGHTH"
+
+
+@dataclass(frozen=True)
+class AshtamaLagnaClause(MuhurtaClauseKind):
+    """The lagna eighth from the native's birth lagna."""
+
+    CLAUSE: ClassVar[str] = "ASHTAMA_LAGNA"
+
+
+@dataclass(frozen=True)
+class KunavamsaClause(MuhurtaClauseKind):
+    """The lagna in a malefic's navamsa."""
+
+    CLAUSE: ClassVar[str] = "KUNAVAMSA"
+    navamsa: Rashi
+    lord: Graha
+
+
+@dataclass(frozen=True)
+class PanchakaRemainderClause(MuhurtaClauseKind):
+    """The panchaka the remainder by nine names (C159)."""
+
+    CLAUSE: ClassVar[str] = "PANCHAKA_REMAINDER"
+    panchaka: Panchaka
+
+
+@dataclass(frozen=True)
+class LagnaTyajyaClause(MuhurtaClauseKind):
+    """The lagna in its rasi visha ghatika."""
+
+    CLAUSE: ClassVar[str] = "LAGNA_TYAJYA"
+    sign: Rashi
+
+
+@dataclass(frozen=True)
+class SeventhOccupiedClause(MuhurtaClauseKind):
+    """A graha in the 7th."""
+
+    CLAUSE: ClassVar[str] = "SEVENTH_OCCUPIED"
+    by: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class MaleficInLagnaClause(MuhurtaClauseKind):
+    """A malefic in the lagna."""
+
+    CLAUSE: ClassVar[str] = "MALEFIC_IN_LAGNA"
+    grahas: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class BeneficInLagnaClause(MuhurtaClauseKind):
+    """Venus, Mercury or Jupiter in the lagna (neutralisation 6)."""
+
+    CLAUSE: ClassVar[str] = "BENEFIC_IN_LAGNA"
+    grahas: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class ExaltedInLagnaClause(MuhurtaClauseKind):
+    """An exalted graha in the lagna (neutralisation 10)."""
+
+    CLAUSE: ClassVar[str] = "EXALTED_IN_LAGNA"
+    grahas: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class LuminaryInEleventhClause(MuhurtaClauseKind):
+    """The Sun or the Moon in the 11th (neutralisation 8)."""
+
+    CLAUSE: ClassVar[str] = "LUMINARY_IN_ELEVENTH"
+    grahas: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class KendraBeneficsClause(MuhurtaClauseKind):
+    """Jupiter or Venus in a kendra with the Sun, Mars and Saturn in the
+    3rd, 6th or 11th (neutralisation 11, C167)."""
+
+    CLAUSE: ClassVar[str] = "KENDRA_BENEFICS"
+    grahas: Tuple[Graha, ...]
+
+
+MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(
+    {kind.CLAUSE: kind for kind in MuhurtaClauseKind.__subclasses__()}
+)
+"""Every clause kind by its tag, so a tag an answer or a caller names reads
+as its class."""
+
+
+@dataclass(frozen=True)
+class MuhurtaClause:
+    """A clause and the interval it held over."""
+
+    kind: MuhurtaClauseKind
+    at: Interval
+
+
+@dataclass(frozen=True)
+class MuhurtaFactor:
+    """One of the baseline engine's weights: what it measured (a dimension
+    such as `TARA_BALA`), by how much, and the graha it read, if one."""
+
+    dimension: str
+    weight: int
+    graha: Optional[Graha]
+
+
+@dataclass(frozen=True)
+class MuhurtaScore:
+    """The baseline engine's score for a window, under its ranking."""
+
+    value: int
+    factors: Tuple[MuhurtaFactor, ...]
+    capped_at: Optional[int]
+    """The cap a Mahadosha put on it, if one did."""
+
+
+@dataclass(frozen=True)
+class MuhurtaWindow:
+    """A window judged: when, by which clauses, what barred it, and the
+    baseline's score under that ranking."""
+
+    at: Interval
+    clauses: Tuple[MuhurtaClause, ...]
+    barred_by: Tuple[Union[str, MuhurtaClauseKind], ...]
+    """The bars that struck it — a clause's tag, which bars every clause of
+    that kind, or one clause — empty when the rite may be held in it."""
+
+    score: Optional[MuhurtaScore]
+    """`None` under the texts' ranking."""
+
+
+@dataclass(frozen=True)
+class ClosedDay:
+    """A day the season closed, and the blackouts that closed it
+    (`CHATURMAS`, `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`,
+    `GURU_ASTA`, `SHUKRA_ASTA`)."""
+
+    date: CalendarDate
+    by: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class MuhurtaUnjudged:
+    """Something the rules ask that the SDK does not judge yet, and why."""
+
+    what: str
+    why: str
+
+
+@dataclass(frozen=True)
+class MuhurtaAnswer:
+    """A muhurta search's answer (`03-design/muhurta-at-the-boundary.md`
+    §4): the windows judged, best first under the ranking, the days the
+    season closed, and what computed it.
+
+    >>> # almanac = ctx.almanac.of(..., muhurta={"rules": "RAMAN_MARRIAGE"})
+    >>> # best = almanac.muhurta.windows[0]
+    """
+
+    windows: Tuple[MuhurtaWindow, ...]
+    closed: Tuple[ClosedDay, ...]
+    days_judged: int
+    days_cut: int
+    """How many of the days judged were cut into windows."""
+
+    windows_blacked_out: int
+    """How many windows fell in a blackout that did not cover their whole
+    day, and were left out."""
+
+    ranking: str
+    """`TEXTS` or `BASELINE`."""
+
+    unjudged: Tuple[MuhurtaUnjudged, ...]
+    provenance: Provenance
+    """What computed it and under what: the asta criterion and the zodiac's
+    instant among the applied conventions, and the hash of the value."""
 
 
 GocharRequest = TypedDict(
@@ -4422,6 +4880,136 @@ def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
                 retrograde_rejection=ruling["rules"]["retrogradeRejection"],
             ),
         ),
+    )
+
+
+def _muhurta_json(muhurta: Optional[MuhurtaRequest]) -> Optional[str]:
+    """The muhurta search as the JSON the boundary reads, or nothing for
+    none. A member is written as its full key and a clause an answer gave
+    as its tag and fields, so a caller can hand back what it was given; the
+    rest is refused by the SDK, naming the field from `muhurta`."""
+    example = "{'rules': 'RAMAN_MARRIAGE'}"
+    if not isinstance(muhurta, Mapping):
+        return _record_json(muhurta, "muhurta", example)
+    written: Mapping[str, Any] = _written(muhurta)
+    return _record_json(written, "muhurta", example)
+
+
+def _camel(name: str) -> str:
+    """A field's name as JSON spells it: `capped_at` as `cappedAt`, and
+    `with_`, a keyword's escape, as `with`."""
+    head, *rest = name.rstrip("_").split("_")
+    return head + "".join(part.title() for part in rest)
+
+
+def _written(value: Any) -> Any:
+    """A request value as JSON writes it: a member as its full key, a clause
+    as its tag and fields, a record's fields camel-cased."""
+    if isinstance(value, Catalogued):
+        return value.full_key
+    if isinstance(value, Member):
+        return value.key
+    if isinstance(value, MuhurtaClauseKind):
+        return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
+    if isinstance(value, (MuhurtaPada, TaraReading)):
+        return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
+    if isinstance(value, Mapping):
+        return {key: _written(inner) for key, inner in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_written(inner) for inner in value]
+    return value
+
+
+def _read_as(hint: Any, raw: Any) -> Any:
+    """A clause field from the `muhurta` section's JSON, by the field's own
+    type: a member from its full key, a tuple of them, or a record. One
+    reader for thirty kinds, so a kind added is a class and nothing else."""
+    if isinstance(hint, type) and issubclass(hint, Member):
+        return _member(hint, raw)
+    if getattr(hint, "__origin__", None) is tuple:
+        return tuple(_read_as(hint.__args__[0], inner) for inner in raw)
+    if hint is MuhurtaPada or hint is TaraReading:
+        return _read_record(hint, raw)
+    return raw
+
+
+def _read_record(cls: Any, raw: Mapping[str, Any]) -> Any:
+    """A record's fields read by their types, JSON's camel-cased names
+    matched to the class's."""
+    hints = get_type_hints(cls)
+    return cls(**{f.name: _read_as(hints[f.name], raw[_camel(f.name)]) for f in dataclass_fields(cls)})
+
+
+def _clause_kind(raw: Mapping[str, Any]) -> MuhurtaClauseKind:
+    """A clause kind from its tagged JSON."""
+    kind = MUHURTA_CLAUSES.get(raw["clause"])
+    if kind is None:
+        raise TeistroError(Status.INTERNAL, f"the library drew a clause this build does not know: {raw['clause']}")
+    found: MuhurtaClauseKind = _read_record(kind, raw)
+    return found
+
+
+def _interval(raw: Mapping[str, Any]) -> Interval:
+    return Interval(from_jd=raw["from"], to_jd=raw["to"])
+
+
+def _closed_date(raw: Mapping[str, Any]) -> CalendarDate:
+    """A date as the Rust types serialise it, in this binding's own shape:
+    the era beside its year, the resolution by name with a divergent one's
+    computed day."""
+    resolution = raw["resolution"]
+    divergent = resolution["kind"] == "DIVERGENT"
+    era = raw.get("era")
+    return CalendarDate(
+        calendar=_member(Calendar, raw["calendar"]),
+        year=raw["year"],
+        era_year=0 if era is None else era["year"],
+        month=raw["month"],
+        day=raw["day"],
+        resolution=_member(Resolution, resolution["kind"]),
+        computed_month=resolution["computed"]["month"] if divergent else 0,
+        computed_day=resolution["computed"]["day"] if divergent else 0,
+        era=None if era is None else _member(Era, era["era"]),
+    )
+
+
+def _muhurta_answer(text: str) -> MuhurtaAnswer:
+    """The `muhurta` section: the envelope's value, its members resolved,
+    with the provenance beside it."""
+    envelope = json.loads(text)
+    value = envelope["value"]
+
+    def window(raw: Mapping[str, Any]) -> MuhurtaWindow:
+        score = raw["score"]
+        return MuhurtaWindow(
+            at=_interval(raw["at"]),
+            clauses=tuple(MuhurtaClause(kind=_clause_kind(c), at=_interval(c["at"])) for c in raw["clauses"]),
+            barred_by=tuple(bar if isinstance(bar, str) else _clause_kind(bar) for bar in raw["barredBy"]),
+            score=None
+            if score is None
+            else MuhurtaScore(
+                value=score["value"],
+                factors=tuple(
+                    MuhurtaFactor(
+                        dimension=f["dimension"],
+                        weight=f["weight"],
+                        graha=None if f["graha"] is None else _member(Graha, f["graha"]),
+                    )
+                    for f in score["factors"]
+                ),
+                capped_at=score["cappedAt"],
+            ),
+        )
+
+    return MuhurtaAnswer(
+        windows=tuple(window(w) for w in value["windows"]),
+        closed=tuple(ClosedDay(date=_closed_date(d["date"]), by=tuple(d["by"])) for d in value["closed"]),
+        days_judged=value["daysJudged"],
+        days_cut=value["daysCut"],
+        windows_blacked_out=value["windowsBlackedOut"],
+        ranking=value["ranking"],
+        unjudged=tuple(MuhurtaUnjudged(what=u["what"], why=u["why"]) for u in value["unjudged"]),
+        provenance=decode_provenance(envelope["provenance"]),
     )
 
 
@@ -6597,6 +7185,15 @@ class Almanac:
         """What computed these, and under what; its `content_hash` is the
         whole batch's."""
         return decode_provenance(json.loads(self.decoded.provenance_json))
+
+    @cached_property
+    def muhurta(self) -> Optional[MuhurtaAnswer]:
+        """The muhurta search `muhurta=` asked for over these days, or `None`
+        when it asked for none (`03-design/muhurta-at-the-boundary.md`): the
+        windows judged clause by clause, the days the season closed, and
+        what computed it. Parsed once."""
+        text = self.decoded.muhurta
+        return _muhurta_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:
