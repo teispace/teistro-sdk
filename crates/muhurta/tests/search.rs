@@ -25,7 +25,7 @@ use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::{Ayanamsha, Calendar, Choghadiya, Kaala};
 use teistro_core::error::Status;
 use teistro_core::interval::Interval;
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
 use teistro_ephemeris_builtin::provider::Builtin;
@@ -36,15 +36,33 @@ use teistro_muhurta::{
     ActivityRules, Answer, ClauseKind, ProviderSources, Ranking, Request, Sources, search,
 };
 use teistro_panchanga::Almanac;
-use teistro_port_ephemeris::Horizon;
+use teistro_port_ephemeris::{CountingProvider, Horizon};
 
 fn date(month: u8, day: u8) -> CalendarDate {
     CalendarDate::defined(Calendar::Gregorian, 2026, month, day)
 }
 
-/// Runs `f` over sources at Kathmandu.
-fn with_sources<R>(f: impl FnOnce(&dyn Sources) -> R) -> R {
-    let provider = Builtin::new();
+/// Kathmandu.
+fn place() -> Place {
+    Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    )
+}
+
+/// The instant the sources take the chart zodiac at: 2026-09-01 00:00 UTC.
+fn reference() -> JulianDay<Utc> {
+    JulianDay::literal(2_461_284.5)
+}
+
+/// The built-in provider, counted.
+type Counted = CountingProvider<Builtin>;
+
+/// Runs `f` over the search's collaborators at Kathmandu, and the provider
+/// they ask, so a test can count what they asked it.
+fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
+    let provider = CountingProvider::new(Builtin::new());
     let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
         .unwrap()
         .resolve(&SettingsPatch::default())
@@ -66,14 +84,9 @@ fn with_sources<R>(f: impl FnOnce(&dyn Sources) -> R) -> R {
         &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
     );
     let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
-    let place = Place::new(
-        Latitude::literal(27.7172),
-        Longitude::literal(85.324),
-        Altitude::literal(1400.0),
-    );
     let heliacal = Heliacal::new(
         &completion,
-        place,
+        place(),
         Criterion::SURYA_SIDDHANTA,
         Horizon::CENTRE_NO_REFRACTION,
         delta_t,
@@ -89,9 +102,12 @@ fn with_sources<R>(f: impl FnOnce(&dyn Sources) -> R) -> R {
         precession,
         delta_t,
     };
-    // 2026-09-01 00:00 UTC.
-    let sources = ProviderSources::new(&over, place, JulianDay::literal(2_461_284.5)).unwrap();
-    f(&sources)
+    f(&over, &provider)
+}
+
+/// Runs `f` over sources at Kathmandu.
+fn with_sources<R>(f: impl FnOnce(&dyn Sources) -> R) -> R {
+    with_over(|over, _| f(&ProviderSources::new(over, place(), reference()).unwrap()))
 }
 
 fn request(rules: ActivityRules, ranking: Ranking) -> Request {
@@ -261,5 +277,35 @@ fn under_ramans_rules_the_windows_hold_their_promises() {
         assert_eq!(answer.days_judged + answer.closed.len(), 91);
         assert!(answer.windows.iter().all(|w| w.score.is_none()));
         holds_its_promises(sources, &rules, &answer);
+    });
+}
+
+#[test]
+fn days_the_caller_founded_answer_the_same_and_are_not_founded_again() {
+    with_over(|over, provider| {
+        let asked = request(ActivityRules::raman_marriage(), Ranking::Texts);
+        let sources = || ProviderSources::new(over, place(), reference()).unwrap();
+        provider.reset();
+        let alone = search(&sources(), &asked).unwrap();
+        let founding = provider.calls().total();
+
+        let days = over
+            .almanac
+            .between(&asked.from, &asked.to, &place())
+            .unwrap()
+            .value;
+        provider.reset();
+        let shared = search(&sources().with_days(&days), &asked).unwrap();
+        let reading = provider.calls().total();
+        assert_eq!(shared, alone);
+        assert!(
+            reading < founding,
+            "served from the days, the search asked the provider {reading} times against {founding}"
+        );
+
+        // A range the days cover only in part: the rest is founded as before.
+        let (first_half, _) = days.split_at(days.len() / 2);
+        let partly = search(&sources().with_days(first_half), &asked).unwrap();
+        assert_eq!(partly, alone);
     });
 }

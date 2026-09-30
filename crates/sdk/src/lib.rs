@@ -50,11 +50,12 @@ mod scale;
 
 pub use area::{
     AlmanacArea, Answers, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea,
-    Interpreted, IntlArea, KeysArea, Plans, TimeArea,
+    Interpreted, IntlArea, KeysArea, MuhurtaDays, Plans, TimeArea,
 };
 mod gochar_request;
 mod hit_request;
 mod kp_request;
+mod muhurta_request;
 mod plan_request;
 mod rule_request;
 mod rules_bridge;
@@ -147,16 +148,23 @@ pub use crate::varsha::{
     VarshaYear,
 };
 pub use teistro_dasha as dasha;
+// The Jaimini reading a chart answers, named without its module path.
+pub use teistro_dasha::jaimini::JaiminiReading;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
 pub use crate::gochar_request::GocharRequest;
 pub use crate::hit_request::{HitKind, HitRequest};
 pub use crate::sade_sati_request::SadeSatiRequest;
+// Muhurta: an activity's windows over a range, judged clause by clause
+// (`03-design/muhurta.md`), and how asta is seen.
+pub use crate::muhurta_request::{Activity, MuhurtaRequest};
+pub use teistro_astro::visibility::Criterion;
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,
 };
 pub use teistro_gochar as gochar;
 pub use teistro_gochar::GocharFrom;
+pub use teistro_muhurta as muhurta;
 // A hit list answers `Hit`s and is asked about `NatalPoint`s, so a consumer
 // names both without reaching into the module.
 pub use teistro_gochar::hits::{Hit, NatalPoint};

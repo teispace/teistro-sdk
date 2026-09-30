@@ -45,6 +45,7 @@ const MALEFICS: [Graha; 5] = [
 /// The sky at an instant, in the chart's zodiac.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Sky {
     /// The lagna's longitude, degrees.
     pub lagna_deg: f64,

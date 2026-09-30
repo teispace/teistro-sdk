@@ -372,10 +372,17 @@ principle:
   module's imports finds the types it uses only in its *body* — the
   founder, the solar model, the tzdb — which are implementation and not
   surface. A type that is both imported from an SDK crate and named in a
-  `pub fn` signature is exactly one a consumer must be able to name. 35
-  of them, all reachable; the reader's own first bug was calling `Frame`
-  and `PositionRequest` unreachable because it read only the first line
-  of a braced re-export.
+  `pub fn` signature is exactly one a consumer must be able to name, and
+  [the page](rust-consumer-surface-measured.md) counts them. The
+  reader's own first bug was calling `Frame` and `PositionRequest`
+  unreachable because it read only the first line of a braced
+  re-export. Its second was calling a crate re-exported whole under a
+  module's name (`pub use teistro_kp as kp`) a dead end, when
+  `teistro::kp::RulingPlanets` is a path a consumer writes: fourteen
+  types were listed unreachable that were not. It reads that crate's
+  root now, and only its root, so a name one of its modules keeps to
+  itself still counts as unreachable. That is how `JaiminiReading` was
+  found, and it is re-exported now.
 - **`check-rust`, the fifth binding gate**, which runs the examples. What
   it adds over the fast check is the thing a compiler cannot say: that
   each program *runs*. `cargo clippy --workspace --all-targets` already

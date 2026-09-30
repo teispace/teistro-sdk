@@ -17,6 +17,7 @@ use crate::tara::{ChandraBala, chandra_house, tara};
 /// The native a day is read against.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Native {
     /// The birth nakshatra: the Moon's at birth, or the name's when the
     /// birth is not known (Raman, ch. II).

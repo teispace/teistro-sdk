@@ -1377,6 +1377,34 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The muhurta search through the façade**
+  (`muhurta-at-the-boundary.md` §3, §8 step 2).
+  `sdk.almanac().muhurta(&from, &to, &place, clock, &MuhurtaRequest)`
+  wires the search from a context. `muhurta_with_days` does the same and
+  also returns every day of the range, founded once, with the search
+  served its days rather than founding them again. `MuhurtaRequest`
+  carries:
+  - the activity's rules;
+  - a native, when there is one;
+  - the ranking;
+  - how many days are cut into windows (7 by default);
+  - how many windows are kept (50 by default);
+  - the asta criterion, now a knob that the search had fixed at the
+    Surya Siddhanta's.
+
+  `MuhurtaRequest::from_json` reads the record a binding writes, naming
+  `RAMAN_MARRIAGE` or `BASELINE_MARRIAGE` or spelling the rules out, and
+  names the field of every refusal. The provenance's
+  `applied_conventions` name the criterion and the instant the chart
+  zodiac is taken at, which is now the range's middle. The measured
+  page holds the façade to the crate wired by hand, and counts the
+  provider calls of the search and the almanac apart and together. The
+  muhurta crate's field names are now camel-cased, as KP's and
+  Tajika's are.
+
+  **Numbers:** a window's edge moves by a fraction of a second where
+  the zodiac's instant moved; no clause or judgement moves.
+
 - **A catalogue member reads from its full key**
   (`muhurta-at-the-boundary.md` §2.5). Every catalogue enum's reader
   (`Deserialize`, `FromStr`) now accepts a member's own full key

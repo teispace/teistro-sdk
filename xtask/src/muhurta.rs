@@ -20,6 +20,7 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
+use teistro::MuhurtaRequest;
 use teistro_astro::Completion;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
@@ -42,7 +43,7 @@ use teistro_muhurta::{
 };
 use teistro_panchanga::Almanac;
 use teistro_panchanga::span::at as span_at;
-use teistro_port_ephemeris::{Body, Horizon};
+use teistro_port_ephemeris::{Body, CountingProvider, Horizon};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, table};
@@ -55,11 +56,9 @@ const LONGITUDE: f64 = 85.324;
 const ALTITUDE: f64 = 1400.0;
 const OFFSET_DAYS: f64 = 5.75 / 24.0;
 
-/// The regression's range, 2026-09-01 to 2026-11-30, and the instant the
-/// chart zodiac is taken at (its first UTC midnight).
+/// The regression's range, 2026-09-01 to 2026-11-30.
 const FROM: (u8, u8) = (9, 1);
 const TO: (u8, u8) = (11, 30);
-const REFERENCE_JD: f64 = 2_461_284.5;
 
 /// Every open day of the range is cut, so every window is measured.
 const DAYS: usize = 91;
@@ -125,6 +124,11 @@ fn spell((month, day): (u8, u8)) -> String {
     format!("2026-{month:02}-{day:02}")
 }
 
+/// Kathmandu's clock.
+fn clock() -> UtcOffset {
+    UtcOffset::literal(5, 45, 0)
+}
+
 fn place() -> Place {
     Place::new(
         Latitude::literal(LATITUDE),
@@ -140,9 +144,16 @@ struct Measured {
     constancy: Vec<Constancy>,
     partings: Partings,
     remainder: Remainder,
+    shipping: Shipping,
 }
 
 fn page() -> Result<String, String> {
+    // What ships first: the façade's answers, what they cost the provider,
+    // and the instant the façade takes the chart zodiac at, which the
+    // hand-wired sources below take too so the two are the same search.
+    let (shipping, baseline_shipped, raman) = shipping()?;
+    let zodiac_at = zodiac_at(&baseline_shipped.provenance)?;
+
     let provider = Builtin::new();
     let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
         .ok_or("the default profile is not shipped")?
@@ -157,7 +168,7 @@ fn page() -> Result<String, String> {
         OverridePolicy::PreferNative,
         delta_t,
     );
-    let clock = UtcOffset::literal(5, 45, 0);
+    let clock = clock();
     let almanac = Almanac::new(
         &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
     );
@@ -186,8 +197,7 @@ fn page() -> Result<String, String> {
         precession,
         delta_t,
     };
-    let sources = ProviderSources::new(&over, place(), JulianDay::literal(REFERENCE_JD))
-        .map_err(|e| e.to_string())?;
+    let sources = ProviderSources::new(&over, place(), zodiac_at).map_err(|e| e.to_string())?;
 
     let request = |rules: ActivityRules, ranking| Request {
         rules,
@@ -205,8 +215,10 @@ fn page() -> Result<String, String> {
     )
     .map_err(|e| format!("the baseline search: {e}"))?;
     let raman_rules = ActivityRules::raman_marriage();
-    let raman = search(&sources, &request(raman_rules.clone(), Ranking::Texts))
-        .map_err(|e| format!("Raman's search: {e}"))?;
+    let shipping = Shipping {
+        baseline_agrees: baseline_shipped.value == baseline,
+        ..shipping
+    };
 
     let mut asta = Vec::new();
     for (name, criterion) in [
@@ -225,8 +237,105 @@ fn page() -> Result<String, String> {
         ],
         partings: partings(&sources, &baseline)?,
         remainder: remainder(&sources, &raman)?,
+        shipping,
     };
     Ok(render(&measured))
+}
+
+/// A search through the façade over the page's range, asked as the page
+/// asks the crate.
+fn asked(rules: ActivityRules, ranking: Ranking) -> MuhurtaRequest {
+    MuhurtaRequest::new(rules)
+        .ranked(ranking)
+        .with_windows_on(DAYS)
+        .at_most(usize::MAX)
+}
+
+/// The façade's two searches, and what the search and the almanac cost
+/// the provider asked apart and together — each counted on a fresh
+/// context, behind its cache, since that is what the provider is asked.
+/// The baseline's agreement with the crate is the page's to fill.
+fn shipping() -> Result<(Shipping, teistro::Envelope<Answer>, Answer), String> {
+    // A context owns its provider, and the count is read after it is
+    // dropped, so the counter lives as long as the process: this is a
+    // generator run once.
+    let counted: &'static CountingProvider<Builtin> =
+        Box::leak(Box::new(CountingProvider::new(Builtin::new())));
+    let context = || {
+        teistro::Context::builder()
+            .ephemeris([teistro::Ephemeris::Provider(Box::new(counted))])
+            .build()
+            .map_err(|e| e.to_string())
+    };
+    let (from, to) = (date(FROM.0, FROM.1), date(TO.0, TO.1));
+    let raman = asked(ActivityRules::raman_marriage(), Ranking::Texts);
+    let failed = |what: &'static str| move |e: teistro::Error| format!("{what}: {e}");
+
+    counted.reset();
+    let alone = context()?
+        .almanac()
+        .muhurta(&from, &to, &place(), clock(), &raman)
+        .map_err(failed("the façade's search"))?;
+    let search_alone = counted.calls().total();
+    counted.reset();
+    context()?
+        .almanac()
+        .of_each(&from, &to, &place(), clock())
+        .map_err(failed("the façade's almanac"))?;
+    let almanac_alone = counted.calls().total();
+    counted.reset();
+    let together = context()?
+        .almanac()
+        .muhurta_with_days(&from, &to, &place(), clock(), &raman)
+        .map_err(failed("the façade's search with its days"))?;
+    let both = counted.calls().total();
+
+    let baseline = context()?
+        .almanac()
+        .muhurta(
+            &from,
+            &to,
+            &place(),
+            clock(),
+            &asked(ActivityRules::baseline_marriage(), Ranking::Baseline),
+        )
+        .map_err(failed("the façade's baseline search"))?;
+    let shipping = Shipping {
+        baseline_agrees: false,
+        together_agrees: together.answer == alone,
+        search_alone,
+        almanac_alone,
+        both,
+    };
+    Ok((shipping, baseline, alone.value))
+}
+
+/// The instant the façade took the chart zodiac at, from the convention
+/// its provenance names it by.
+fn zodiac_at(provenance: &teistro::Provenance) -> Result<JulianDay<Utc>, String> {
+    let applied = provenance
+        .applied_conventions
+        .iter()
+        .find(|c| c.knob == "muhurta.zodiacAt")
+        .ok_or("the façade's answer names no muhurta.zodiacAt")?;
+    let jd: f64 = applied
+        .value
+        .parse()
+        .map_err(|e| format!("muhurta.zodiacAt: {e}"))?;
+    JulianDay::try_new(jd).map_err(|e| e.to_string())
+}
+
+/// What ships against the crate wired by hand, and what the provider is
+/// asked for the search and the almanac apart and together.
+struct Shipping {
+    baseline_agrees: bool,
+    together_agrees: bool,
+    /// Provider calls of Raman's search asked alone.
+    search_alone: u64,
+    /// Provider calls of the almanac of the range asked alone.
+    almanac_alone: u64,
+    /// Provider calls of the two asked together.
+    both: u64,
 }
 
 /// The regression through the search.
@@ -534,6 +643,7 @@ fn render(m: &Measured) -> String {
     constancy_section(&mut out, &m.constancy);
     partings_section(&mut out, &m.partings);
     remainder_section(&mut out, &m.remainder);
+    shipping_section(&mut out, &m.shipping);
     out
 }
 
@@ -746,6 +856,64 @@ fn remainder_section(out: &mut String, q: &Remainder) {
         count(q.named),
         count(q.same)
     );
+}
+
+fn shipping_section(out: &mut String, s: &Shipping) {
+    let claims = vec![
+        Claim::counted(
+            "the façade answers the baseline's search as the crate wired by hand does",
+            usize::from(!s.baseline_agrees),
+            1,
+        ),
+        Claim::counted(
+            "asked beside its days, Raman's search answers as it does alone",
+            usize::from(!s.together_agrees),
+            1,
+        ),
+    ];
+    let apart = s.search_alone + s.almanac_alone;
+    let spared = apart.saturating_sub(s.both);
+    let share = |part: u64, of: u64| {
+        let as_f64 = |n: u64| f64::from(u32::try_from(n).unwrap_or(u32::MAX));
+        if of == 0 {
+            0.0
+        } else {
+            100.0 * as_f64(part) / as_f64(of)
+        }
+    };
+    let _ = writeln!(
+        *out,
+        "\n## 6. What ships\n\n\
+         The searches above are the façade's (`sdk.almanac().muhurta`),\n\
+         read back through the muhurta crate wired by hand, because the\n\
+         re-reads need its sources. The façade takes the chart zodiac at the\n\
+         range's middle and names that instant in its provenance, and the\n\
+         hand-wired sources take the instant it names, so the two are one\n\
+         search and are held to one answer.\n\n\
+         A consumer electing a time shows the almanac beside the windows.\n\
+         `muhurta_with_days` founds the range once and serves the search\n\
+         its days. Counted in calls that reach the provider behind a fresh\n\
+         context's cache, over Raman's search:\n\n\
+         | asked | provider calls |\n|---|---:|\n\
+         | the search alone | {} |\n\
+         | the almanac alone | {} |\n\
+         | the two apart | {} |\n\
+         | the two together | {} |\n\n\
+         Together they are spared {} calls, {:.1}% of the two apart: the\n\
+         almanac beside the search adds {:.1}% to the search's own.\n\n{}",
+        count_u64(s.search_alone),
+        count_u64(s.almanac_alone),
+        count_u64(apart),
+        count_u64(s.both),
+        count_u64(spared),
+        share(spared, apart),
+        share(s.both.saturating_sub(s.search_alone), s.search_alone),
+        table(&claims)
+    );
+}
+
+fn count_u64(n: u64) -> String {
+    count(usize::try_from(n).unwrap_or(usize::MAX))
 }
 
 fn spelled_days(n: usize) -> String {
