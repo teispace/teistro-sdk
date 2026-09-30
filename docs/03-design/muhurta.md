@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 and 2 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 and 2 and the first half of step 3 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`

@@ -10,5 +10,7 @@ clauses: the limbs its rules reject (tithi, nakshatra, yoga, karana,
 vara), the special yogas the almanac found, and, against a native,
 Tarabala and Chandrabala. The rules are data (`DayRules`), Raman's one
 such value, and the Chandrabala table is the caller's to name because
-the sources disagree on it (crux C160). The instant's clauses, the
+the sources disagree on it (crux C160). An instant's clauses read the
+lagna and the grahas' houses from it: the Mahadoshas that turn on them
+and the neutralisations. The cuts that make a window constant, the
 season's blackouts and the search follow (`muhurta.md` §6).
