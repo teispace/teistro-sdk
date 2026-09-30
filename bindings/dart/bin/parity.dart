@@ -68,7 +68,10 @@ void putMuhurta(String prefix, MuhurtaAnswer answer) {
   put('$prefix-hash', answer.provenance.contentHash);
   for (final (k, window) in answer.windows.indexed) {
     put('$prefix-$k', '${number(window.at.from)} ${number(window.at.to)}');
-    put('$prefix-$k-clauses', window.clauses.map((c) => c.kind.clause).join(' '));
+    put(
+      '$prefix-$k-clauses',
+      window.clauses.map((c) => c.kind.clause).join(' '),
+    );
     put('$prefix-$k-bars', listed(window.barredBy.map((bar) => bar.clause)));
     final score = window.score;
     put(
@@ -76,16 +79,22 @@ void putMuhurta(String prefix, MuhurtaAnswer answer) {
       score == null
           ? 'none'
           : [
-              score.value,
-              score.cappedAt ?? 'none',
-              listed(score.factors.map(
-                (f) => '${f.dimension}:${f.weight}:${f.graha?.fullKey ?? 'none'}',
-              )),
-            ].join(' '),
+            score.value,
+            score.cappedAt ?? 'none',
+            listed(
+              score.factors.map(
+                (f) =>
+                    '${f.dimension}:${f.weight}:${f.graha?.fullKey ?? 'none'}',
+              ),
+            ),
+          ].join(' '),
     );
   }
   for (final (j, day) in answer.closed.indexed) {
-    put('$prefix-closed-$j', '${day.date.month}-${day.date.day} ${listed(day.by)}');
+    put(
+      '$prefix-closed-$j',
+      '${day.date.month}-${day.date.day} ${listed(day.by)}',
+    );
   }
 }
 
@@ -1232,25 +1241,26 @@ void main() {
     ('raman', MuhurtaActivity.ramanMarriage, MuhurtaRanking.texts),
     ('baseline', MuhurtaActivity.baselineMarriage, MuhurtaRanking.baseline),
   ]) {
-    final muhurta = geo.almanac
-        .of(
-          from: Calendar.gregorian.date(2024, 11, 25),
-          to: Calendar.gregorian.date(2024, 11, 27),
-          place: place,
-          utcOffsetSeconds: 20700,
-          muhurta: MuhurtaRequest(
-            rules: rules,
-            ranking: ranking,
-            native: const MuhurtaNative(
-              star: Nakshatra.rohini,
-              moonSign: Rashi.taurus,
-              lagna: Rashi.leo,
-            ),
-            daysWithWindows: 3,
-            most: 12,
-          ),
-        )
-        .muhurta!;
+    final muhurta =
+        geo.almanac
+            .of(
+              from: Calendar.gregorian.date(2024, 11, 25),
+              to: Calendar.gregorian.date(2024, 11, 27),
+              place: place,
+              utcOffsetSeconds: 20700,
+              muhurta: MuhurtaRequest(
+                rules: rules,
+                ranking: ranking,
+                native: const MuhurtaNative(
+                  star: Nakshatra.rohini,
+                  moonSign: Rashi.taurus,
+                  lagna: Rashi.leo,
+                ),
+                daysWithWindows: 3,
+                most: 12,
+              ),
+            )
+            .muhurta!;
     putMuhurta('muhurta-$name', muhurta);
   }
   geo.dispose();
