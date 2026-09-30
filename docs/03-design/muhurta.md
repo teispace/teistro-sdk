@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1, 2 and 3 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 4 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -159,6 +159,36 @@ longitudes and the astronomers' arcus visionis; Venus has two episodes a
 synodic cycle and both are windows. The windows are **instants**, not
 whole days: a day-level gate reads "any blackout overlaps the day", and
 a caller who wants the almanac's whole days asks for them.
+
+Built (`season.rs`) as two calls rather than one type: `blackouts` over
+a longitude source for everything the Sun and the Moon decide, and
+`asta_over` over a visibility reckoner for Guru and Shukra asta, because
+the second needs a place and a criterion and the first needs neither.
+The months are found from the new moons; each is named by the Sun's sign
+at its opening and marked by the sankrantis inside it, and Chaturmas and
+Pitru paksha are read off the **nija** Ashadha, Kartika and Bhadrapada.
+Four findings:
+
+- **The baseline's Chaturmas is a month late in 2025** (crux C166). It
+  anchors each end on the Sun's sign at the bright eleventh, which is
+  the named month's eleventh only when that falls after the sankranti.
+  The month-name reading matches the published 2025 dates and the
+  baseline's agrees with it in 2026, the regression's year; a test pins
+  both.
+- **The visibility reckoner read Jupiter unseen about its opposition.**
+  The body's own rising was searched half a day either side of the
+  sunrise, which near opposition holds two risings about twelve hours
+  off, and the one after the sunrise was taken; two criteria of three
+  then read a body up all night as hidden for about four weeks. The
+  search now leans the way the side does (`astro::visibility`), held by
+  a test over the built-in ephemeris proved red on the old window. The
+  first asta test here is what found it: a Guru asta in January 2026.
+- **An asta already running when the range opens starts at the range**,
+  not at the first dawn it is read at: unseen on the first day, it was
+  unseen before.
+- **`ECLIPSE_STAR` is not built**: the grahana nakshatra needs the
+  eclipses, which the SDK does not yet find. It is the one kind this
+  section named that the season lacks.
 
 ### 4.2 The clauses
 

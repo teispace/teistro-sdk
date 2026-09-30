@@ -1377,6 +1377,33 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The season** (`muhurta.md` §6 step 4). `season::blackouts(source,
+  zodiac, range)` gives the stretches no rite is held in, as instants:
+  the adhika month, Chaturmas from the bright eleventh of the nija
+  Ashadha to that of the nija Kartika, Pitru paksha from Bhadrapada's
+  Purnima to its new moon, Kharmas while the Sun is in Sagittarius or
+  Pisces, and Raman's sixteen ghatis either side of each sankranti.
+  `season::asta_over(heliacal, body, range)` gives Guru and Shukra asta
+  from the heliacal events, last sighting to next first, both of Venus's
+  episodes. `season::months` names and marks the lunar months of a span.
+  Held against published almanac instants for 2025 and 2026. Crux C166:
+  the baseline engine's Sun-sign anchor for Chaturmas runs a month late
+  in 2025.
+
+  **Numbers:** none; nothing existing reads it.
+
+- **Fixed: a superior planet read unseen about its opposition.**
+  `Heliacal::state` searched the body's own rising or setting half a day
+  either side of the sunrise or sunset, which near opposition holds two
+  and took the wrong one, so the degrees of time and the arcus visionis
+  read Jupiter hidden for about four weeks while it was up all night.
+  The search now runs from three quarters of a day before a sunrise to a
+  quarter after it, and the mirror for a sunset.
+
+  **Numbers:** `state` near a superior planet's opposition, and the
+  heliacal events a scan reports there: a spurious last and first
+  sighting around each opposition are gone.
+
 - **The windows** (`muhurta.md` §6 step 3, its second half).
   `window::lagna_cuts(within, lagna_at)` finds each instant the lagna
   enters a navamsa, and so a sign, by sampling once a minute and

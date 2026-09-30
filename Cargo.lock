@@ -1816,6 +1816,7 @@ dependencies = [
  "teistro-calendar",
  "teistro-chart",
  "teistro-core",
+ "teistro-ephemeris-builtin",
  "teistro-panchanga",
  "teistro-port-ephemeris",
 ]
