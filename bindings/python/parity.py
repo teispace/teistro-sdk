@@ -28,6 +28,8 @@ from teistro import (
     Station,
     LocalDay,
     MuhurtaAnswer,
+    MuhurtaNative,
+    MuhurtaRequest,
     VarshaRequest,
     DashaDefinition,
     Altitude,
@@ -1122,22 +1124,18 @@ def main() -> None:
         # ── A muhurta search ──────────────────────────────────────────
         # Both rankings over 2024-11-25..27: the texts bar the windows
         # for different reasons and the baseline scores them.
-        for name, rules, ranking in (
-            ("raman", "RAMAN_MARRIAGE", "TEXTS"),
-            ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
-        ):
+        native: MuhurtaNative = {"star": "ROHINI", "moonSign": "TAURUS", "lagna": "LEO"}
+        searches: tuple[tuple[str, MuhurtaRequest], ...] = (
+            ("raman", {"rules": "RAMAN_MARRIAGE", "ranking": "TEXTS"}),
+            ("baseline", {"rules": "BASELINE_MARRIAGE", "ranking": "BASELINE"}),
+        )
+        for name, search in searches:
             muhurta = geo.almanac.of(
                 from_date=date(Calendar.GREGORIAN, 2024, 11, 25),
                 to_date=date(Calendar.GREGORIAN, 2024, 11, 27),
                 place=place,
                 utc_offset_seconds=20700,
-                muhurta={
-                    "rules": rules,
-                    "ranking": ranking,
-                    "native": {"star": "ROHINI", "moonSign": "TAURUS", "lagna": "LEO"},
-                    "daysWithWindows": 3,
-                    "most": 12,
-                },
+                muhurta={**search, "native": native, "daysWithWindows": 3, "most": 12},
             ).muhurta
             assert muhurta is not None
             put_muhurta(f"muhurta-{name}", muhurta)
