@@ -17,7 +17,7 @@ use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
 use teistro_calendar::solar::SolarModel;
-use teistro_calendar::{CalendarDate, CalendarSystem};
+use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::catalogue::{Direction, Rashi, Vara};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
@@ -173,6 +173,38 @@ struct RangeInput {
     altitude_m: f64,
 }
 
+/// How many days the range from `first` to `last` holds, inclusive,
+/// refused as every range is: one that ends before it begins, or holds
+/// more than [`MOST_DAYS`], named by `to`.
+///
+/// # Errors
+///
+/// `INVALID_ARG` for a range the wrong way round, `OUT_OF_RANGE` for one
+/// too long.
+pub fn days_in(
+    first: FixedDay,
+    last: FixedDay,
+    from: &CalendarDate,
+    to: &CalendarDate,
+) -> Result<usize, Error> {
+    let days = first.days_until(last);
+    if days < 0 {
+        return Err(Error::invalid_arg(format!(
+            "a range of days ends before it begins: {from} to {to}"
+        ))
+        .with_field("to"));
+    }
+    let count = usize::try_from(days).unwrap_or(0) + 1;
+    if count > MOST_DAYS {
+        return Err(Error::new(
+            Status::OutOfRange,
+            format!("a range holds at most {MOST_DAYS} days, not {count}"),
+        )
+        .with_field("to"));
+    }
+    Ok(count)
+}
+
 /// The most days one range may hold.
 ///
 /// A year and a day: an application asking for more is asking for a
@@ -284,21 +316,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<Panchanga>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
-        let days = first.days_until(last);
-        if days < 0 {
-            return Err(Error::invalid_arg(format!(
-                "a range of days ends before it begins: {from} to {to}"
-            ))
-            .with_field("to"));
-        }
-        let count = usize::try_from(days).unwrap_or(0) + 1;
-        if count > MOST_DAYS {
-            return Err(Error::new(
-                Status::OutOfRange,
-                format!("a range holds at most {MOST_DAYS} days, not {count}"),
-            )
-            .with_field("to"));
-        }
+        let count = days_in(first, last, from, to)?;
         let mut values = Vec::with_capacity(count);
         // The frame is the first day's: the batch asks the provider for
         // one frame, so one is what the stamp names -- and it comes back

@@ -13,7 +13,8 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
-use teistro_panchanga::almanac::{Almanac, Panchanga};
+use teistro_panchanga::almanac::{Almanac, MOST_DAYS, Panchanga, days_in};
+use teistro_panchanga::festival::{FestivalDay, FestivalRule, Observances, observances};
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::local_day::local_midnight;
 
@@ -276,6 +277,119 @@ impl<'a> AlmanacArea<'a> {
         Ok((Envelope::sealing(answer, provenance), days))
     }
 
+    /// The days a set of festival rules falls on between two dates,
+    /// inclusive, at a place (`03-design/festival-rules.md`): each with
+    /// the case between the tithi's two days and the guard that decided.
+    ///
+    /// A tithi beginning the day before `from` can fall on it, and one on
+    /// `to` is judged against the day after (two, when it holds two
+    /// sunrises). So the days are founded from the day before `from` to
+    /// two after `to`, once, and the provenance says so in its
+    /// `applied_conventions`.
+    ///
+    /// ```no_run
+    /// use teistro::{CalendarDate, Context};
+    /// use teistro::catalogue::Calendar;
+    /// use teistro::festival::FestivalRule;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::UtcOffset;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let delhi = Place::new(Latitude::try_new(28.6139)?, Longitude::try_new(77.209)?, Altitude::try_new(216.0)?);
+    /// let (from, to) = (
+    ///     CalendarDate::defined(Calendar::Gregorian, 2026, 1, 1),
+    ///     CalendarDate::defined(Calendar::Gregorian, 2026, 12, 31),
+    /// );
+    /// let found = sdk.almanac().festivals(&from, &to, &delhi, UtcOffset::literal(5, 30, 0),
+    ///     &FestivalRule::dharmasindhu())?;
+    /// for observance in &found.value.observances {
+    ///     println!("{} on {} ({:?})", observance.rule, observance.day, observance.case);
+    /// }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A rule [`FestivalRule::check`] refuses, naming its field under
+    /// `rules`; a context with no ephemeris; a calendar the SDK does not
+    /// ship; or a range the almanac refuses.
+    pub fn festivals(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+        rules: &[FestivalRule],
+    ) -> Result<Envelope<Observances>, Error> {
+        for (index, rule) in rules.iter().enumerate() {
+            rule.check().map_err(|error| {
+                let field = error
+                    .field()
+                    .map_or_else(String::new, |field| format!(".{field}"));
+                error.with_field(format!("rules[{index}]{field}"))
+            })?;
+        }
+        let calendar = system_of(from.calendar)?;
+        let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
+        days_in(first, last, from, to)?;
+        let (before, after) = (
+            calendar.date_of(first.plus_days(-1))?,
+            calendar.date_of(last.plus_days(2))?,
+        );
+        // The widening is the SDK's, not the caller's, so it does not count
+        // against the almanac's limit: the days are founded in runs within it.
+        let days = self.with_almanac(from, offset, |almanac| {
+            let mut runs = Vec::new();
+            let mut start = first.plus_days(-1);
+            let end = last.plus_days(2);
+            while start.days_until(end) >= 0 {
+                let stop = start.plus_days(i64::try_from(MOST_DAYS - 1).unwrap_or(0));
+                let stop = if stop.days_until(end) < 0 { end } else { stop };
+                runs.push(almanac.between(
+                    &calendar.date_of(start)?,
+                    &calendar.date_of(stop)?,
+                    place,
+                )?);
+                start = stop.plus_days(1);
+            }
+            joined(runs)
+        })?;
+        let viewed: Vec<FestivalDay> = days.value.iter().map(FestivalDay::from).collect();
+        let mut found = observances(rules, &viewed)?;
+        let inside = |date: &CalendarDate| {
+            calendar
+                .fixed_of(date)
+                .is_ok_and(|day| first.days_until(day) >= 0 && day.days_until(last) >= 0)
+        };
+        found
+            .observances
+            .retain(|observance| inside(&observance.day));
+        let (start, end) = (
+            viewed.get(1).map(|day| day.sunrise.get()),
+            viewed.iter().rev().nth(2).map(|day| day.next_sunrise.get()),
+        );
+        found.unjudged.retain(|unjudged| {
+            start.is_some_and(|start| unjudged.tithi.to.get() > start)
+                && end.is_some_and(|end| unjudged.tithi.from.get() < end)
+        });
+        let mut provenance = days.provenance;
+        provenance.input_hash = content_hash(&FestivalInput {
+            from: from.to_string(),
+            to: to.to_string(),
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            rules,
+        });
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("festival.days"),
+            value: format!("{before}..{after}"),
+            reason: String::from(
+                "a tithi beginning the day before the range can fall in it, and one at its end is judged against the day after, or two when it holds two sunrises",
+            ),
+        });
+        Ok(Envelope::sealing(found, provenance))
+    }
+
     /// One day: the run of one, unwrapped.
     ///
     /// # Errors
@@ -322,6 +436,32 @@ struct MuhurtaInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r MuhurtaRequest,
+}
+
+/// Consecutive runs of days as one: the first run's provenance, which
+/// every run shares but for the days it holds.
+fn joined(runs: Vec<Envelope<Vec<Panchanga>>>) -> Result<Envelope<Vec<Panchanga>>, Error> {
+    let mut runs = runs.into_iter();
+    let Some(mut all) = runs.next() else {
+        return Err(Error::internal(
+            "a range of days answered no run, which cannot happen",
+        ));
+    };
+    for run in runs {
+        all.value.extend(run.value);
+    }
+    Ok(all)
+}
+
+/// What a festival answer is a function of, beside the settings.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FestivalInput<'r> {
+    from: String,
+    to: String,
+    place: Place,
+    utc_offset_seconds: i32,
+    rules: &'r [FestivalRule],
 }
 
 /// The middle of a range of civil days, from the first's local midnight

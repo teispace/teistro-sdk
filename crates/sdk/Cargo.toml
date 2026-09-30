@@ -93,6 +93,10 @@ name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "festival"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]
 
