@@ -107,6 +107,8 @@ jobs:
         run: cargo xtask check-hits
       - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
         run: cargo xtask check-sade-sati
+      - name: KP page (each sub lord's margin in minutes of birth time read back through the founder, over the recorded births)
+        run: cargo xtask check-kp
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
