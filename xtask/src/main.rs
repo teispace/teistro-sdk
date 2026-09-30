@@ -123,6 +123,9 @@
 //!   own rules and ranking, Guru and Shukra asta against the published BS
 //!   2083 windows per criterion, every window held constant, and where the
 //!   engine's sunrise sampling parts from the SDK's windows.
+//! - `festival` and `check-festival`: the shipped festival rules at Delhi
+//!   against the days the Government of India published for its offices
+//!   there, and what a decade of each rule reaches, guard by guard.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -222,6 +225,7 @@ mod ephemgen;
 mod examples;
 mod exercised;
 mod facade;
+mod festival;
 mod ffi;
 mod generated;
 mod gochar;
@@ -308,6 +312,7 @@ const PASSES: &[Pass] = &[
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
     ("kp", kp::generate, kp::check_generated),
     ("muhurta", muhurta::generate, muhurta::check_generated),
+    ("festival", festival::generate, festival::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

@@ -1428,6 +1428,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   need (a day before the range, two after) is founded apart from the
   caller's limit and declared as `festival.days`.
 
+  `cargo xtask festival` (step 3, gated in fast-check) holds the shipped
+  rules to the Government of India's published holidays at Delhi. Its
+  page is `festival-measured.md`. It corrected Lakshmi puja, which now
+  takes the later day only when the new moon lasts more than a ghati
+  past sunset (p. 77). It also corrected Vijaya Dashami's Shravana
+  exception (p. 71). A guard's `Lasts` counts ghatis from sunrise or
+  sunset, and `Stands` asks for a nakshatra in a window. Forks C175
+  and C176 are registered.
+
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
   in the 3rd, 6th or 11th. The clause read that as every natural malefic,

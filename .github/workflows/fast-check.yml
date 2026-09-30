@@ -111,6 +111,8 @@ jobs:
         run: cargo xtask check-kp
       - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)
         run: cargo xtask check-muhurta
+      - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
+        run: cargo xtask check-festival
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
