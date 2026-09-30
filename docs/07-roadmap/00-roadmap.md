@@ -710,9 +710,12 @@ measured against Nepal before it is called done:
    (`nepal-month-measured.md`: both shipped readings mark the five announced
    spans exactly, and the purnimanta name of an adhika dark fortnight
    was corrected; and Nepal's months measured purnimanta, C183, which
-   `nepali-default` now leads with). Left: the name, since no locale names a month kind
-   or a muhurta blackout yet, which wants the catalogue decision Q38
-   describes before any message is written.
+   `nepali-default` now leads with). The name followed on
+   2026-10-01: `sdk.calendar.lunarMonth` says the month with its kind
+   (अधिक ज्येष्ठ), matching on the kind's key rather than making it a
+   catalogue kind (Q38: nothing must name a month kind apart from its
+   month). Naming the muhurta blackouts moves to step 3, with the
+   blackouts it adds.
 2. The year limbs nothing computes: samvatsara and ritu (C178, C180),
    answered per day in every binding. Beside them, tithi vriddhi and
    kshaya as flags, and ghati-pala from sunrise.

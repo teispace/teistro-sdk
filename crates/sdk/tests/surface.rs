@@ -348,6 +348,42 @@ fn the_locale_renders_a_message_by_its_typed_accessor() {
     assert!(sdk.intl().has("sdk.reason.grahaInBhava"));
 }
 
+/// A day's lunar month is said with its kind: an adhika month the way a
+/// Nepali patro prints it, and a nija month by its name alone
+/// (`03-design/calendar-indian-lunisolar.md` §9).
+#[test]
+fn an_adhika_month_is_said_the_nepali_way() {
+    let sdk = context();
+    // 25 May 2026 falls in the adhika Jyeshtha Nepal's committee announced.
+    let day = teistro::CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 2026, 5, 25);
+    let days = sdk
+        .almanac()
+        .of(
+            &day,
+            &day,
+            &teistro::quantity::Place::new(
+                teistro::quantity::Latitude::literal(27.7172),
+                teistro::quantity::Longitude::literal(85.324),
+                teistro::quantity::Altitude::literal(1400.0),
+            ),
+            teistro::UtcOffset::literal(5, 45, 0),
+        )
+        .expect("a day at Kathmandu");
+    let month = days.value[0].month;
+    assert_eq!(month.kind, teistro::MonthKind::Adhika);
+    let said = |kind: teistro::MonthKind| {
+        sdk.intl()
+            .render_typed(&teistro::messages::sdk::calendar::LunarMonth {
+                kind: kind.key().to_owned(),
+                masa: month.month,
+            })
+    };
+    let adhika = said(month.kind);
+    assert!(adhika.warnings.is_empty(), "{:?}", adhika.warnings);
+    assert_eq!(adhika.text, "अधिक ज्येष्ठ");
+    assert_eq!(said(teistro::MonthKind::Nija).text, "ज्येष्ठ");
+}
+
 /// An instant is read in a zone through the context's own zone database,
 /// the one its birth-time resolutions use: `sdk.calendar.datetime.inZone`
 /// in every binding, typed as an instant and a zone.

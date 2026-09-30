@@ -1472,6 +1472,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   before the range rather than one, so its `festival.days` convention
   and hash change; no observance's day moves.
 
+- **A lunar month said with its kind.** `sdk.calendar.lunarMonth` takes
+  a month and its kind's key and says अधिक ज्येष्ठ in Nepali, "Adhika
+  Jyeshtha" in English, and the bare month for a nija one. Every binding
+  has the accessor, typed (`lunarMonth`, `lunar_month`), and the SDK
+  re-exports `MonthKind`.
+
+  **Numbers:** none; a new message.
+
 - **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
   C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika

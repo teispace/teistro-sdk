@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { Context } from '../lib/index.js';
+import { Context, MonthKind } from '../lib/index.js';
 import { entityForms, messages } from '../lib/messages.js';
 
 const context = () =>
@@ -42,6 +42,13 @@ test('an instant reads in the zone a message is given, through the context', () 
   assert.equal(ctx.intl.messages.sdk.calendar.datetime.inZone({ at: 2460000, zone: '-03:00' }), '2023-02-24, 09:00');
   const unknown = ctx.intl.render('sdk.calendar.datetime.inZone', { at: { $instant: 2460000 }, zone: 'Asia/Kathmandoo' });
   assert.ok(unknown.warnings.some((w) => w.includes('Asia/Kathmandu')), 'the nearest zone is named');
+});
+
+test('a lunar month is said with its kind, an adhika one the Nepali way', () => {
+  const ctx = context();
+  const said = ctx.intl.messages.sdk.calendar.lunarMonth;
+  assert.equal(said({ kind: MonthKind.Adhika, masa: 'masa.JYESHTHA' }), 'अधिक ज्येष्ठ');
+  assert.equal(said({ kind: MonthKind.Nija, masa: 'masa.JYESHTHA' }), 'ज्येष्ठ');
 });
 
 test("an entity's forms come from the locale, not from the caller", () => {

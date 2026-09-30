@@ -99,6 +99,20 @@ void main() {
     expect(ctx.intl.entity('rashi.ARIES').name, 'Aries');
   });
 
+  test('a lunar month is said with its kind, an adhika one the Nepali way', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final said = ctx.intl.messages.sdk.calendar.lunarMonth;
+    expect(
+      said(kind: MonthKind.adhika.key, masa: intl.MasaKey.jyeshtha),
+      'अधिक ज्येष्ठ',
+    );
+    expect(
+      said(kind: MonthKind.nija.key, masa: intl.MasaKey.jyeshtha),
+      'ज्येष्ठ',
+    );
+  });
+
   test('an entity the locale does not carry is refused by name', () {
     final ctx = context();
     addTearDown(ctx.dispose);

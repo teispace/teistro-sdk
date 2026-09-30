@@ -4072,6 +4072,13 @@ class MessagesSdkCalendar:
         """The messages under `ghati`."""
         return MessagesSdkCalendarGhati(self._r)
 
+    def lunar_month(self, *, kind: str, masa: MasaKey) -> str:
+        """`sdk.calendar.lunarMonth`"""
+        return self._r.render(
+            "sdk.calendar.lunarMonth",
+            {"kind": kind, "masa": {"$entity": masa.value}},
+        )
+
     @property
     def time(self) -> MessagesSdkCalendarTime:
         """The messages under `time`."""
