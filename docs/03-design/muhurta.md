@@ -294,7 +294,10 @@ the day's own spans and the lagna's navamsa (§4.3), at every slow
 graha's sign ingress and the Moon's navamsa, because the instant clauses
 read a graha's house and the rejected padas the Moon's quarter; and at a
 blackout's edge, so a window a partial blackout touches lies inside it
-whole and is **counted** and left out (`windows_blacked_out`). One chart
+whole and is **counted** and left out (`windows_blacked_out`). And at
+every held clause's own edges, by construction rather than by list: a
+lagna tyajya's half ghati ends inside a navamsa, and the first list of
+cut sources missed it. One chart
 zodiac serves the search, taken at the instant the caller names: the
 ayanamsha moves 0.14″ a day, 13″ over three months, about a second of a
 window's edge. Over the built-in ephemeris at Kathmandu the baseline's
@@ -302,7 +305,9 @@ six heeds close 1 September to 19 November 2026 through the search
 itself, every day by Chaturmas, and judge the eleven from Devuthani on
 (`tests/search.rs`, which also holds, on every window of the days cut,
 that the grahas' signs and the lagna's and the Moon's navamsas read the
-same a second inside either end — red with the ingress cuts removed).
+same a second inside either end — red with the ingress cuts removed —
+and that every clause a window holds covers it whole, red on a Cancer
+tyajya before the clause edges were cut).
 
 ## 5. What is measured
 
