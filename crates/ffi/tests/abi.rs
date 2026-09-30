@@ -44,7 +44,7 @@ use teistro_ffi::context::{
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
-use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+use teistro_ffi::panchanga::{TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days};
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
     TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
@@ -4178,9 +4178,21 @@ fn panchanga_days(ctx: &Ctx, muhurta: Option<&str>) -> Result<Vec<u8>, Record> {
 /// them when given.
 fn panchanga_between(
     ctx: &Ctx,
-    ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
+    range: ((u8, u8), (u8, u8)),
     muhurta: Option<&str>,
     festivals: Option<&str>,
+) -> Result<Vec<u8>, Record> {
+    panchanga_asked(ctx, range, (muhurta, festivals), 0)
+}
+
+/// Asks `ts_panchanga_days` for Kathmandu's days of 2026 between two
+/// (month, day) dates, with `muhurta_json` and `festivals_json` beside
+/// them when given and the `sections` bits set.
+fn panchanga_asked(
+    ctx: &Ctx,
+    ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
+    (muhurta, festivals): (Option<&str>, Option<&str>),
+    sections: u32,
 ) -> Result<Vec<u8>, Record> {
     let muhurta = muhurta.map(|text| CString::new(text).unwrap());
     let festivals = festivals.map(|text| CString::new(text).unwrap());
@@ -4199,7 +4211,7 @@ fn panchanga_between(
             longitude_deg: 85.324,
             altitude_m: 1400.0,
             utc_offset_seconds: 20_700,
-            reserved_tail: 0,
+            sections,
             muhurta_json: muhurta.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
             festivals_json: festivals.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
         },
@@ -4404,6 +4416,67 @@ fn a_panchanga_request_answers_festivals_over_its_own_days() {
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
     let rules: Vec<&str> = answer.observances.iter().map(|o| o.rule.as_str()).collect();
     assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"]);
+}
+
+/// The lunar years beside a panchanga request's days
+/// (`calendar-indian-lunisolar.md` §10): asked by a bit, the days the
+/// ones asked without it, the section the façade's years with their
+/// members in full and sealed over what it holds; an unknown bit asks
+/// for nothing.
+#[test]
+fn a_panchanga_request_answers_the_years_its_days_fall_in() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    // Across Chaitra Shukla Pratipada of VS 2083, 19 March 2026.
+    let range = ((3, 10), (4, 10));
+    let asked = |sections| panchanga_asked(&ctx, range, (None, None), sections).unwrap();
+    let (with, without, unknown) = (asked(TS_PANCHANGA_YEARS), asked(0), asked(1 << 31));
+    let schema = schemas::panchanga();
+    let (with, without, unknown) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+        Reader::parse(&unknown, &schema).unwrap(),
+    );
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("years").unwrap(), "");
+    assert_eq!(unknown.text("years").unwrap(), "");
+
+    let envelope: serde_json::Value = serde_json::from_str(with.text("years").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    let named: Vec<&str> = envelope["value"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|year| year["samvatsara"].as_str().unwrap())
+        .collect();
+    assert_eq!(named, ["samvatsara.SIDDHARTHI", "samvatsara.RAUDRA"]);
+
+    let years: Vec<teistro::LunarYear> = serde_json::from_value(envelope["value"].clone()).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |month, day| teistro::CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    let expected = sdk
+        .almanac()
+        .years(
+            &date(3, 10),
+            &date(4, 10),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(years, expected.value);
+    assert_eq!(provenance.input_hash, expected.provenance.input_hash);
+    let vikrama: Vec<i32> = years.iter().map(|year| year.vikrama).collect();
+    assert_eq!(vikrama, [2082, 2083]);
 }
 
 #[test]

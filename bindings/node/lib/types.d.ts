@@ -1245,6 +1245,18 @@ export interface PanchangaRequest {
    */
   readonly utcOffsetSeconds: number;
   /**
+   * What to answer beside the days, as a bit set:
+   * `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+   * `years` section. Zero for the days alone, which is what every
+   * caller compiled against an earlier header passes, since this was a
+   * reserved field it wrote zero to.
+   *
+   * A bit set here and a named option in every ergonomic layer, as a
+   * chart request's `sections` is (`03-design/chart-reading.md` §5).
+   * @example 0
+   */
+  readonly sections: number;
+  /**
    * A muhurta search over the same days, as a JSON object: `rules`,
    * the activity's rules spelt out or a shipped set named
    * (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,

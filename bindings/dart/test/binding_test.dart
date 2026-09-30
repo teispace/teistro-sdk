@@ -1550,6 +1550,52 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac carries the lunar years it was asked for', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    // Across Chaitra Shukla Pratipada of VS 2083, 19 March 2026.
+    Almanac days({bool years = false}) => ctx.almanac.of(
+      from: gregorian(2026, 3, 10),
+      to: gregorian(2026, 4, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      years: years,
+    );
+    final plain = days();
+    expect(plain.years, isNull);
+
+    final almanac = days(years: true);
+    final answer = almanac.years!;
+    final years = answer.value;
+    expect(
+      [for (final year in years) year.samvatsara],
+      [Samvatsara.siddharthi, Samvatsara.raudra],
+    );
+    expect([for (final year in years) year.vikrama], [2082, 2083]);
+    expect(
+      [for (final year in years) year.count],
+      ['BARHASPATYA', 'BARHASPATYA'],
+    );
+    expect(years.first.ended, years.last.began);
+    expect(years.last.opened, lessThan(years.last.began));
+    expect(years.last.jovian.first.member, isNot(Samvatsara.unknown));
+    expect(() => years.add(years.first), throwsUnsupportedError);
+    expect(answer.provenance.contentHash, isNotEmpty);
+    for (var k = 0; k < plain.length; k++) {
+      expect(
+        almanac.at(k).provenance.contentHash,
+        plain.at(k).provenance.contentHash,
+      );
+    }
+    ctx.dispose();
+  });
+
   test('an almanac carries the festivals it was asked for', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

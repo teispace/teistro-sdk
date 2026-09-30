@@ -24,7 +24,19 @@ import {
   AyanaById,
   AyanamshaById,
   BodyById,
+  CHART_ASHTAKAVARGA,
+  CHART_ASPECTS,
+  CHART_BHAVA_BALA,
+  CHART_DASHA_PHALA,
+  CHART_HOUSES,
+  CHART_JAIMINI,
+  CHART_POINTS,
+  CHART_SHADBALA,
+  CHART_STATE,
+  CHART_VAISESHIKAMSA,
+  CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
+  PANCHANGA_YEARS,
   CalendarById,
   DayStateById,
   MoonEventById,
@@ -1228,6 +1240,7 @@ export class Almanac extends Stamped {
   #starts = null;
   #muhurta = undefined;
   #festivals = undefined;
+  #years = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1281,6 +1294,22 @@ export class Almanac extends Stamped {
   get festivals() {
     if (this.#festivals === undefined) this.#festivals = festivalsFrom(this.decoded.festivals);
     return this.#festivals;
+  }
+
+  /**
+   * The lunar years these days fall in
+   * (`03-design/calendar-indian-lunisolar.md` §10), or `null` when the
+   * request did not ask with `years: true`: `{ value, provenance }`, each
+   * year with the samvatsara it carries, its Vikrama and Shaka numbers,
+   * its bounds from one Chaitra Shukla Pratipada's sunrise to the next,
+   * the Jovian years that ran in it and the one it expunged. Parsed once,
+   * and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get years() {
+    if (this.#years === undefined) this.#years = yearsFrom(this.decoded.years);
+    return this.#years;
   }
 
 
@@ -2061,17 +2090,17 @@ export class ChartArea extends Area {
         // (`03-design/chart-reading.md` §5): a named option each, and
         // one more as each crosses.
         sections:
-          (request.aspects === true ? SECTION_ASPECTS : 0) |
-          (request.points === true ? SECTION_POINTS : 0) |
-          (request.houses === true ? SECTION_HOUSES : 0) |
-          (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
-          (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
-          (request.vaiseshikamsa === true ? SECTION_VAISESHIKAMSA : 0) |
-          (request.shadbala === true ? SECTION_SHADBALA : 0) |
-          (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
-          (request.dashaPhala === true ? SECTION_DASHA_PHALA : 0) |
-          (request.jaimini === true ? SECTION_JAIMINI : 0) |
-          (request.state === true ? SECTION_STATE : 0),
+          (request.aspects === true ? CHART_ASPECTS : 0) |
+          (request.points === true ? CHART_POINTS : 0) |
+          (request.houses === true ? CHART_HOUSES : 0) |
+          (request.ashtakavarga === true ? CHART_ASHTAKAVARGA : 0) |
+          (request.vimshopaka === true ? CHART_VIMSHOPAKA : 0) |
+          (request.vaiseshikamsa === true ? CHART_VAISESHIKAMSA : 0) |
+          (request.shadbala === true ? CHART_SHADBALA : 0) |
+          (request.bhavaBala === true ? CHART_BHAVA_BALA : 0) |
+          (request.dashaPhala === true ? CHART_DASHA_PHALA : 0) |
+          (request.jaimini === true ? CHART_JAIMINI : 0) |
+          (request.state === true ? CHART_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: dashaIds(request.dashas, this.#dashas),
         drawings: drawingBits(request.drawings, this.#registered),
@@ -2834,6 +2863,19 @@ function muhurtaFrom(json) {
 }
 
 /**
+ * The `years` section as this layer hands it out: the envelope, its
+ * provenance decoded as every other one is.
+ *
+ * @param {string} json the section, empty when none was asked for
+ * @returns {object|null}
+ */
+function yearsFrom(json) {
+  if (!json) return null;
+  const { value, provenance } = JSON.parse(json);
+  return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+}
+
+/**
  * The `festivals` section as this layer hands it out: the envelope's
  * value with its provenance beside it, and every date, the observance's
  * and each extent's, in the shape every other date here has.
@@ -3518,42 +3560,6 @@ function drawingBits(asked, registered) {
 }
 
 /**
- * `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
- *
- * The bits are the C ABI's vocabulary; a consumer of this binding writes
- * `aspects: true` (`03-design/chart-reading.md` §5).
- */
-const SECTION_ASPECTS = 4;
-
-/** `TS_CHART_POINTS`, the derived points. */
-const SECTION_POINTS = 8;
-
-/** `TS_CHART_HOUSES`, the houses service. */
-const SECTION_HOUSES = 16;
-
-/** `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga. */
-const SECTION_ASHTAKAVARGA = 32;
-
-/** `TS_CHART_VIMSHOPAKA`, the Vimshopaka. */
-const SECTION_VIMSHOPAKA = 64;
-
-/** `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa. */
-const SECTION_VAISESHIKAMSA = 512;
-/** `TS_CHART_DASHA_PHALA`, the dasha phala. */
-const SECTION_DASHA_PHALA = 1024;
-/** `TS_CHART_JAIMINI`, Jaimini's significators. */
-const SECTION_JAIMINI = 2048;
-
-/** `TS_CHART_SHADBALA`, the Shadbala. */
-const SECTION_SHADBALA = 128;
-
-/** `TS_CHART_BHAVA_BALA`, the Bhava bala. */
-const SECTION_BHAVA_BALA = 256;
-
-/** `TS_CHART_STATE`, the planetary states. */
-const SECTION_STATE = 2;
-
-/**
  * The divisional charts a request asked for, checked.
  *
  * An absent list is none, which is the default: the sections are
@@ -3600,6 +3606,8 @@ export class AlmanacArea extends Area {
    * @param {object} request.place `{ latitude, longitude, altitude }`
    * @param {number} request.utcOffsetSeconds the local clock's offset
    *   from UTC, east positive
+   * @param {boolean} [request.years] whether to answer the lunar years
+   *   the days fall in, as `Almanac.years`
    * @returns {Almanac}
    */
   of(request) {
@@ -3621,6 +3629,7 @@ export class AlmanacArea extends Area {
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
+        sections: request.years === true ? PANCHANGA_YEARS : 0,
       }),
     );
     return new Almanac(bytes);

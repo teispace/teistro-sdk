@@ -185,8 +185,16 @@ pub struct TsPanchangaRequest {
     /// clock the days' dates are read in.
     /// `api: unit=s range=[-64800,64800] example=20700`
     pub utc_offset_seconds: i32,
-    /// Reserved; write zero.
-    pub reserved_tail: i32,
+    /// What to answer beside the days, as a bit set:
+    /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+    /// `years` section. Zero for the days alone, which is what every
+    /// caller compiled against an earlier header passes, since this was a
+    /// reserved field it wrote zero to.
+    ///
+    /// A bit set here and a named option in every ergonomic layer, as a
+    /// chart request's `sections` is (`03-design/chart-reading.md` §5).
+    /// `api: example=0`
+    pub sections: u32,
     /// A muhurta search over the same days, as a JSON object: `rules`,
     /// the activity's rules spelt out or a shipped set named
     /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
@@ -228,6 +236,17 @@ pub struct TsPanchangaRequest {
 // biggest requests. `check-lints`' `handshake-is-checked` holds the
 // class now.
 c_struct!(TsPanchangaRequest);
+
+/// `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+/// `sections` for the lunar years its days fall in.
+///
+/// Named in the header, because the bits are the boundary's vocabulary:
+/// a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+/// generated layer writes a named option instead. An unknown bit asks
+/// for nothing, as a chart request's does.
+///
+/// `api: constant`
+pub const TS_PANCHANGA_YEARS: u32 = 1;
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
@@ -503,6 +522,18 @@ impl RaggedRows {
     }
 }
 
+/// The JSON sections answered beside the days, each the canonical
+/// envelope a section carries and empty when it was not asked for.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Beside<'a> {
+    /// The `muhurta` section.
+    pub muhurta: &'a str,
+    /// The `festivals` section.
+    pub festivals: &'a str,
+    /// The `years` section.
+    pub years: &'a str,
+}
+
 /// A batch of almanacs as the blob its schema describes.
 ///
 /// Every per-day list runs days outermost and is concatenated across the
@@ -521,8 +552,7 @@ pub fn encode(
     calendar: Calendar,
     provenance: &Provenance,
     hashes: &[teistro::Hash],
-    muhurta: &str,
-    festivals: &str,
+    beside: &Beside<'_>,
 ) -> Result<Vec<u8>, Error> {
     let hashes = crate::support::hashes_text(hashes, days.len())?;
     let schema = crate::schemas::panchanga();
@@ -576,8 +606,9 @@ pub fn encode(
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
         writer.bytes("content_hashes", hashes.as_bytes())?;
-        writer.bytes("muhurta", muhurta.as_bytes())?;
-        writer.bytes("festivals", festivals.as_bytes())?;
+        writer.bytes("muhurta", beside.muhurta.as_bytes())?;
+        writer.bytes("festivals", beside.festivals.as_bytes())?;
+        writer.bytes("years", beside.years.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -667,6 +698,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if let Some(festivals) = festivals {
             beside = beside.with_festivals(festivals);
         }
+        if asked.sections & TS_PANCHANGA_YEARS == TS_PANCHANGA_YEARS {
+            beside = beside.with_years();
+        }
         // The façade founds the days once for everything asked beside them.
         let answered = ctx
             .sdk()
@@ -685,14 +719,25 @@ pub unsafe extern "C" fn ts_panchanga_days(
             .map(|answer| Ok::<_, Error>(section(answer.value.in_full()?, answer.provenance)))
             .transpose()?
             .unwrap_or_default();
+        let years = answered
+            .years
+            .map(|answer| {
+                let value = teistro::LunarYear::in_full(&answer.value)?;
+                Ok::<_, Error>(section(value, answer.provenance))
+            })
+            .transpose()?
+            .unwrap_or_default();
         let encoded = encode(
             &answered.days.value,
             &place,
             asked_calendar,
             &answered.days.provenance,
             &answered.day_hashes,
-            &muhurta,
-            &festivals,
+            &Beside {
+                muhurta: &muhurta,
+                festivals: &festivals,
+                years: &years,
+            },
         )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
@@ -805,8 +850,7 @@ mod tests {
             Calendar::Gregorian,
             &provenance,
             &teistro_core::envelope::content_hashes(&days).1,
-            "",
-            "",
+            &super::Beside::default(),
         )
         .expect("it encodes");
         let schema = crate::schemas::panchanga();
@@ -894,8 +938,7 @@ mod tests {
             Calendar::Gregorian,
             &provenance,
             &teistro_core::envelope::content_hashes(one).1,
-            "",
-            "",
+            &super::Beside::default(),
         )
         .expect("it encodes");
         let schema = crate::schemas::panchanga();

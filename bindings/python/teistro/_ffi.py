@@ -157,6 +157,52 @@ VTABLE_ABI_VERSION: Final = 4
 # astronomy.
 CONTEXT_TEST_PROVIDER: Final = 1
 
+# A chart request's `sections` bit: the day's almanac.
+CHART_PANCHANGA: Final = 1
+
+# A chart request's `sections` bit: the planetary states.
+CHART_STATE: Final = 2
+
+# A chart request's `sections` bit: the drishti.
+CHART_ASPECTS: Final = 4
+
+# A chart request's `sections` bit: the derived points.
+CHART_POINTS: Final = 8
+
+# A chart request's `sections` bit: the houses service.
+CHART_HOUSES: Final = 16
+
+# A chart request's `sections` bit: the Ashtakavarga.
+CHART_ASHTAKAVARGA: Final = 32
+
+# A chart request's `sections` bit: the Vimshopaka.
+CHART_VIMSHOPAKA: Final = 64
+
+# A chart request's `sections` bit: the Shadbala.
+CHART_SHADBALA: Final = 128
+
+# A chart request's `sections` bit: the Bhava bala.
+CHART_BHAVA_BALA: Final = 256
+
+# A chart request's `sections` bit: the Vaiseshikamsa.
+CHART_VAISESHIKAMSA: Final = 512
+
+# A chart request's `sections` bit: the dasha phala.
+CHART_DASHA_PHALA: Final = 1024
+
+# A chart request's `sections` bit: Jaimini's significators, the
+# karakamsha and the Brahma graha.
+CHART_JAIMINI: Final = 2048
+
+# `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+# `sections` for the lunar years its days fall in.
+#
+# Named in the header, because the bits are the boundary's vocabulary:
+# a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+# generated layer writes a named option instead. An unknown bit asks
+# for nothing, as a chart request's does.
+PANCHANGA_YEARS: Final = 1
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -774,7 +820,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
         ("longitude_deg", ctypes.c_double),
         ("altitude_m", ctypes.c_double),
         ("utc_offset_seconds", ctypes.c_int32),
-        ("reserved_tail", ctypes.c_int32),
+        ("sections", ctypes.c_uint32),
         ("muhurta_json", ctypes.c_char_p),
         ("festivals_json", ctypes.c_char_p),
     ]
@@ -2999,6 +3045,18 @@ class PanchangaRequest:
     Unit: s. Range: [-64800,64800]. Example: 20700.
     """
 
+    sections: int
+    """What to answer beside the days, as a bit set:
+    `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+    `years` section. Zero for the days alone, which is what every
+    caller compiled against an earlier header passes, since this was a
+    reserved field it wrote zero to.
+
+    A bit set here and a named option in every ergonomic layer, as a
+    chart request's `sections` is (`03-design/chart-reading.md` §5).
+    Example: 0.
+    """
+
     muhurta_json: Optional[str] = None
     """A muhurta search over the same days, as a JSON object: `rules`,
     the activity's rules spelt out or a shipped set named
@@ -3050,6 +3108,7 @@ class PanchangaRequest:
         raw.longitude_deg = _c_value(self.longitude_deg)
         raw.altitude_m = _c_value(self.altitude_m)
         raw.utc_offset_seconds = _c_value(self.utc_offset_seconds)
+        raw.sections = _c_value(self.sections)
         _muhurta_json = None if self.muhurta_json is None else self.muhurta_json.encode("utf-8")
         owned.append(_muhurta_json)
         raw.muhurta_json = _muhurta_json
@@ -3083,6 +3142,7 @@ class PanchangaRequest:
             longitude_deg=float(raw.longitude_deg),
             altitude_m=float(raw.altitude_m),
             utc_offset_seconds=raw.utc_offset_seconds,
+            sections=raw.sections,
             muhurta_json=_text(raw.muhurta_json),
             festivals_json=_text(raw.festivals_json),
         )

@@ -330,3 +330,20 @@ of years beside the days carries the same answer, since a day's year is
 the one holding its sunrise, and costs nothing when it is not asked. A
 field on every day would have cost every day a few new-moon searches,
 which the instruction-count gate refuses at three percent.
+
+**At the boundary.** A panchanga request asks for the years with a bit,
+`TS_PANCHANGA_YEARS`, in its `sections`, the field that was reserved and
+written zero before, so a caller compiled against an older header asks
+for none. The years come back in the blob's `years` section as the
+canonical envelope, sealed over the value with every member written in
+full (`samvatsara.PRAMADICHA`), which `LunarYear::MEMBERS` lists and a
+test holds to serde both ways. Every binding names the bit as an option
+(`years: true`, `years=True`) and hands back `{value, provenance}`, as
+the façade's `Envelope<Vec<LunarYear>>` has it. Every parity runner
+prints the years across a pratipada.
+
+Writing the bit found that a chart request's twelve `sections` bits were
+never described as constants. The code said they were "named in the
+header", but the header did not carry them, and each binding kept its
+own copy of the numbers. They are described now, so the header and
+every binding generate them, and the copies are gone.

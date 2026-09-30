@@ -52,6 +52,97 @@
       "ty": "u32",
       "value": 1,
       "source": "crates/ffi/src/lib.rs"
+    },
+    {
+      "name": "TS_CHART_PANCHANGA",
+      "doc": "A chart request's `sections` bit: the day's almanac.",
+      "ty": "u32",
+      "value": 1,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_STATE",
+      "doc": "A chart request's `sections` bit: the planetary states.",
+      "ty": "u32",
+      "value": 2,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_ASPECTS",
+      "doc": "A chart request's `sections` bit: the drishti.",
+      "ty": "u32",
+      "value": 4,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_POINTS",
+      "doc": "A chart request's `sections` bit: the derived points.",
+      "ty": "u32",
+      "value": 8,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_HOUSES",
+      "doc": "A chart request's `sections` bit: the houses service.",
+      "ty": "u32",
+      "value": 16,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_ASHTAKAVARGA",
+      "doc": "A chart request's `sections` bit: the Ashtakavarga.",
+      "ty": "u32",
+      "value": 32,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_VIMSHOPAKA",
+      "doc": "A chart request's `sections` bit: the Vimshopaka.",
+      "ty": "u32",
+      "value": 64,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_SHADBALA",
+      "doc": "A chart request's `sections` bit: the Shadbala.",
+      "ty": "u32",
+      "value": 128,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_BHAVA_BALA",
+      "doc": "A chart request's `sections` bit: the Bhava bala.",
+      "ty": "u32",
+      "value": 256,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_VAISESHIKAMSA",
+      "doc": "A chart request's `sections` bit: the Vaiseshikamsa.",
+      "ty": "u32",
+      "value": 512,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_DASHA_PHALA",
+      "doc": "A chart request's `sections` bit: the dasha phala.",
+      "ty": "u32",
+      "value": 1024,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_CHART_JAIMINI",
+      "doc": "A chart request's `sections` bit: Jaimini's significators, the\nkarakamsha and the Brahma graha.",
+      "ty": "u32",
+      "value": 2048,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_YEARS",
+      "doc": "`TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's\n`sections` for the lunar years its days fall in.\n\nNamed in the header, because the bits are the boundary's vocabulary:\na consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every\ngenerated layer writes a named option instead. An unknown bit asks\nfor nothing, as a chart request's does.",
+      "ty": "u32",
+      "value": 1,
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "enums": [
@@ -11664,13 +11755,15 @@
           }
         },
         {
-          "name": "reserved_tail",
+          "name": "sections",
           "ty": {
             "kind": "scalar",
-            "scalar": "i32"
+            "scalar": "u32"
           },
-          "doc": "Reserved; write zero.",
-          "meta": {}
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section. Zero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "meta": {
+            "example": "0"
+          }
         },
         {
           "name": "muhurta_json",
@@ -17502,6 +17595,13 @@
           "id": 22,
           "name": "festivals",
           "doc": "UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`: each observance `{rule, day, tithi, case, extents, decidedBy, choice}`, the rule's key, the calendar date it falls on, the tithi's occurrence `{from, to}` in UTC Julian days, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}` or `{by: OTHERWISE}`, and the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), and the choice (`EARLIER` or `LATER`, which `day` resolves); each unjudged occurrence `{rule, tithi, why}`. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 23,
+          "name": "years",
+          "doc": "UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, opened, began, ended, jovian, lupta}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama and Shaka numbers, the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; and the Jovian year expunged in it, in full, or null. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.",
           "kind": "bytes",
           "fields": []
         }

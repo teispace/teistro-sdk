@@ -2131,6 +2131,39 @@ test('an almanac carries the muhurta search it was asked for', () => {
 });
 
 /**
+ * The lunar years cross beside the days they hold
+ * (`03-design/calendar-indian-lunisolar.md` §10): asked by name, frozen,
+ * their members full keys, abutting, and the days the almanac's own.
+ */
+test('an almanac carries the lunar years it was asked for', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  // Across Chaitra Shukla Pratipada of VS 2083, 19 March 2026.
+  const days = {
+    from: date(Calendar.Gregorian, 2026, 3, 10),
+    to: date(Calendar.Gregorian, 2026, 4, 10),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const plain = ctx.almanac.of(days);
+  assert.equal(plain.years, null);
+
+  const almanac = ctx.almanac.of({ ...days, years: true });
+  const { value, provenance } = almanac.years;
+  assert.deepEqual(value.map((year) => year.samvatsara), ['samvatsara.SIDDHARTHI', 'samvatsara.RAUDRA']);
+  assert.deepEqual(value.map((year) => year.vikrama), [2082, 2083]);
+  assert.deepEqual(value.map((year) => year.count), ['BARHASPATYA', 'BARHASPATYA']);
+  assert.equal(value[0].ended, value[1].began);
+  assert.ok(value[1].opened < value[1].began);
+  assert.equal(value[1].jovian[0].member.split('.')[0], 'samvatsara');
+  assert.ok(Object.isFrozen(value[1].jovian[0]), 'frozen to its leaves');
+  assert.equal(typeof provenance.contentHash, 'string');
+  for (let k = 0; k < plain.length; k += 1) {
+    assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);
+  }
+  ctx.dispose();
+});
+
+/**
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,

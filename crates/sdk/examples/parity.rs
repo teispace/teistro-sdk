@@ -3189,6 +3189,59 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
     }
 }
 
+/// The lunar years a panchanga request carries, as the report prints them.
+///
+/// 2024-03-20..04-20 at the test provider holds a Chaitra Shukla
+/// Pratipada, so two years, their bounds and their Jovian years cross
+/// every layer.
+fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 3, 20);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 4, 20);
+    let years = geo
+        .almanac()
+        .years(&from, &to, place, offset)
+        .expect("the test provider")
+        .value;
+    put(report, "years-count", years.len().to_string());
+    // The boundary seals the full-keyed value, so the hash every binding
+    // reads is of that.
+    let written = teistro::LunarYear::in_full(&years).expect("written years");
+    put(
+        report,
+        "years-hash",
+        teistro_core::envelope::content_hash(&written).to_string(),
+    );
+    for (k, year) in years.iter().enumerate() {
+        put(
+            report,
+            &format!("years-{k}"),
+            format!(
+                "{} {} {} {} {} {} {} {}",
+                year.samvatsara.full_key(),
+                tag(&year.count),
+                year.vikrama,
+                year.shaka,
+                number(year.opened.get()),
+                number(year.began.get()),
+                number(year.ended.get()),
+                year.lupta.map_or("-", |lupta| lupta.full_key()),
+            ),
+        );
+        put(
+            report,
+            &format!("years-{k}-jovian"),
+            listed(year.jovian.iter().map(|jovian| {
+                format!(
+                    "{}:{}:{}",
+                    jovian.member.full_key(),
+                    jovian.count,
+                    number(jovian.from.get())
+                )
+            })),
+        );
+    }
+}
+
 /// The muhurta search a panchanga request carries, under both rankings,
 /// as the report prints it.
 ///
@@ -3350,6 +3403,7 @@ fn main() {
     an_almanac(&mut report, &geo, &place, offset);
     a_muhurta(&mut report, &geo, &place, offset);
     festivals(&mut report, &geo, &place, offset);
+    lunar_years(&mut report, &geo, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

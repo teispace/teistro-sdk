@@ -1214,6 +1214,39 @@ def main() -> None:
             assert festivals is not None
             put_festivals(f"festivals-{name}", festivals)
 
+        # The lunar years over 2024-03-20..04-20, which holds a Chaitra
+        # Shukla Pratipada: two years, their bounds and their Jovian years.
+        lunar = geo.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2024, 3, 20),
+            to_date=date(Calendar.GREGORIAN, 2024, 4, 20),
+            place=place,
+            utc_offset_seconds=20700,
+            years=True,
+        ).years
+        assert lunar is not None
+        put("years-count", len(lunar.value))
+        put("years-hash", lunar.provenance.content_hash)
+        for k, year in enumerate(lunar.value):
+            put(
+                f"years-{k}",
+                " ".join(
+                    (
+                        year.samvatsara.full_key,
+                        year.count,
+                        str(year.vikrama),
+                        str(year.shaka),
+                        number(year.opened),
+                        number(year.began),
+                        number(year.ended),
+                        "-" if year.lupta is None else year.lupta.full_key,
+                    )
+                ),
+            )
+            put(
+                f"years-{k}-jovian",
+                listed(f"{j.member.full_key}:{j.count}:{number(j.from_)}" for j in year.jovian),
+            )
+
     # ── The surface's shape ───────────────────────────────────────────
     #
     # The lines above compare what the bindings ANSWER. These compare

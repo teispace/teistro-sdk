@@ -18,6 +18,78 @@ export const VTABLE_ABI_VERSION = 4;
  */
 export const CONTEXT_TEST_PROVIDER = 1;
 
+/**
+ * A chart request's `sections` bit: the day's almanac.
+ */
+export const CHART_PANCHANGA = 1;
+
+/**
+ * A chart request's `sections` bit: the planetary states.
+ */
+export const CHART_STATE = 2;
+
+/**
+ * A chart request's `sections` bit: the drishti.
+ */
+export const CHART_ASPECTS = 4;
+
+/**
+ * A chart request's `sections` bit: the derived points.
+ */
+export const CHART_POINTS = 8;
+
+/**
+ * A chart request's `sections` bit: the houses service.
+ */
+export const CHART_HOUSES = 16;
+
+/**
+ * A chart request's `sections` bit: the Ashtakavarga.
+ */
+export const CHART_ASHTAKAVARGA = 32;
+
+/**
+ * A chart request's `sections` bit: the Vimshopaka.
+ */
+export const CHART_VIMSHOPAKA = 64;
+
+/**
+ * A chart request's `sections` bit: the Shadbala.
+ */
+export const CHART_SHADBALA = 128;
+
+/**
+ * A chart request's `sections` bit: the Bhava bala.
+ */
+export const CHART_BHAVA_BALA = 256;
+
+/**
+ * A chart request's `sections` bit: the Vaiseshikamsa.
+ */
+export const CHART_VAISESHIKAMSA = 512;
+
+/**
+ * A chart request's `sections` bit: the dasha phala.
+ */
+export const CHART_DASHA_PHALA = 1024;
+
+/**
+ * A chart request's `sections` bit: Jaimini's significators, the
+ * karakamsha and the Brahma graha.
+ */
+export const CHART_JAIMINI = 2048;
+
+/**
+ * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+ * `sections` for the lunar years its days fall in.
+ *
+ * Named in the header, because the bits are the boundary's vocabulary:
+ * a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+ * generated layer writes a named option instead. An unknown bit asks
+ * for nothing, as a chart request's does.
+ */
+export const PANCHANGA_YEARS = 1;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

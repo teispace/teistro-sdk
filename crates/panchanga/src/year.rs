@@ -18,7 +18,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Longitudes, Search};
 use teistro_calendar::samvatsara::{JovianYear, Parameters};
-use teistro_core::catalogue::{Masa, Samvatsara};
+use teistro_core::catalogue::{Kind, Masa, Samvatsara, write_in_full};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
 use teistro_core::settings::SamvatsaraCount;
@@ -128,6 +128,33 @@ impl LunarYear {
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.began.get() <= instant.get() && instant.get() < self.ended.get()
+    }
+
+    /// Where a year names catalogue members, and of which kind: a dotted
+    /// path through each year. What a boundary section writes in full;
+    /// the crate's tests hold it to serde, both ways.
+    pub const MEMBERS: [(&'static str, Kind); 3] = [
+        ("samvatsara", Kind::Samvatsara),
+        ("lupta", Kind::Samvatsara),
+        ("jovian.member", Kind::Samvatsara),
+    ];
+
+    /// Years as JSON, every catalogue member written as its full key
+    /// where [`LunarYear::MEMBERS`] says: what a boundary section carries
+    /// and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if the years do not serialise, which a value this crate
+    /// built cannot do.
+    pub fn in_full(years: &[LunarYear]) -> Result<serde_json::Value, Error> {
+        let mut value = serde_json::to_value(years).map_err(|error| {
+            Error::internal(format!("the lunar years did not serialise: {error}"))
+        })?;
+        for (path, kind) in LunarYear::MEMBERS {
+            write_in_full(&mut value, path, kind);
+        }
+        Ok(value)
     }
 }
 
@@ -244,4 +271,97 @@ fn new_moon_near<S: Longitudes + ?Sized>(
             )
         })?;
     JulianDay::try_new(nearest).map_err(Error::from)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "a test fails by panicking on what it built itself, and indexes it"
+    )]
+
+    use std::collections::BTreeSet;
+
+    use serde_json::Value;
+
+    use super::*;
+
+    /// Every dotted path to a string in a JSON value, a list's items
+    /// sharing their list's path.
+    fn string_paths(value: &Value, path: &str, into: &mut BTreeSet<String>) {
+        match value {
+            Value::String(_) => {
+                into.insert(path.to_owned());
+            }
+            Value::Array(items) => {
+                for item in items {
+                    string_paths(item, path, into);
+                }
+            }
+            Value::Object(fields) => {
+                for (key, inner) in fields {
+                    let path = if path.is_empty() {
+                        key.clone()
+                    } else {
+                        format!("{path}.{key}")
+                    };
+                    string_paths(inner, &path, into);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// VS 2077 by the text's count: Ananda ran inside it and was expunged,
+    /// so every member field is written.
+    fn expunging() -> LunarYear {
+        let jd = |day: f64| JulianDay::<Utc>::try_new(day).unwrap();
+        let began = jd(2_458_935.5);
+        let this = JovianYear::at(&Parameters::TEXT, began).unwrap().count;
+        LunarYear::of(
+            SamvatsaraCount::Barhaspatya,
+            jd(2_458_934.0),
+            began,
+            jd(2_459_319.5),
+            (this, this + 2),
+        )
+        .unwrap()
+    }
+
+    /// `LunarYear::MEMBERS` names every catalogue member a year holds and
+    /// nothing else: each string in its JSON is listed there or here as
+    /// not a member, and each listed path is present.
+    #[test]
+    fn a_year_names_its_catalogue_members_where_its_table_says() {
+        // The knob that named the year, which is a setting's value.
+        const NOT_MEMBERS: [&str; 1] = ["count"];
+        let year = expunging();
+        assert!(year.lupta.is_some());
+        let mut found = BTreeSet::new();
+        string_paths(&serde_json::to_value(&year).unwrap(), "", &mut found);
+        let members: BTreeSet<String> = LunarYear::MEMBERS
+            .iter()
+            .map(|(path, _)| (*path).to_owned())
+            .collect();
+        let plain: BTreeSet<String> = NOT_MEMBERS.iter().map(|path| (*path).to_owned()).collect();
+        assert!(members.is_disjoint(&plain));
+        let listed: BTreeSet<String> = members.union(&plain).cloned().collect();
+        assert_eq!(
+            found, listed,
+            "a string path is unlisted, or a listed one is gone"
+        );
+    }
+
+    /// The full keys read back into the years they were written from.
+    #[test]
+    fn years_written_in_full_read_back() {
+        let years = vec![expunging()];
+        let full = LunarYear::in_full(&years).unwrap();
+        assert_eq!(full[0]["samvatsara"], "samvatsara.PRAMADICHA");
+        assert_eq!(full[0]["lupta"], "samvatsara.ANANDA");
+        assert_eq!(full[0]["jovian"][0]["member"], "samvatsara.PRAMADICHA");
+        let back: Vec<LunarYear> = serde_json::from_value(full).unwrap();
+        assert_eq!(back, years);
+    }
 }

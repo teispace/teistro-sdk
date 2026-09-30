@@ -47,7 +47,19 @@ from ._blob import (
 )
 from ._ffi import (
     NO_MEMBER,
+    CHART_ASHTAKAVARGA,
+    CHART_ASPECTS,
+    CHART_BHAVA_BALA,
+    CHART_DASHA_PHALA,
+    CHART_HOUSES,
+    CHART_JAIMINI,
+    CHART_POINTS,
+    CHART_SHADBALA,
+    CHART_STATE,
+    CHART_VAISESHIKAMSA,
+    CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
+    PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
     Altitude,
@@ -408,6 +420,9 @@ __all__ = [
     "FestivalDecided",
     "FestivalUnjudged",
     "EkadashiFast",
+    "LunarYears",
+    "LunarYear",
+    "JovianYear",
     "TaraReading",
     "ClosedDay",
     "TithiClause",
@@ -1514,17 +1529,17 @@ class ChartArea(_Area):
             # a bit set and nothing here writes as one
             # (`03-design/chart-reading.md` §5): a named argument each,
             # and one more as each crosses.
-            sections=(_SECTION_ASPECTS if aspects else 0)
-            | (_SECTION_POINTS if points else 0)
-            | (_SECTION_HOUSES if houses else 0)
-            | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
-            | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
-            | (_SECTION_VAISESHIKAMSA if vaiseshikamsa else 0)
-            | (_SECTION_DASHA_PHALA if dasha_phala else 0)
-            | (_SECTION_JAIMINI if jaimini else 0)
-            | (_SECTION_SHADBALA if shadbala else 0)
-            | (_SECTION_BHAVA_BALA if bhava_bala else 0)
-            | (_SECTION_STATE if state else 0),
+            sections=(CHART_ASPECTS if aspects else 0)
+            | (CHART_POINTS if points else 0)
+            | (CHART_HOUSES if houses else 0)
+            | (CHART_ASHTAKAVARGA if ashtakavarga else 0)
+            | (CHART_VIMSHOPAKA if vimshopaka else 0)
+            | (CHART_VAISESHIKAMSA if vaiseshikamsa else 0)
+            | (CHART_DASHA_PHALA if dasha_phala else 0)
+            | (CHART_JAIMINI if jaimini else 0)
+            | (CHART_SHADBALA if shadbala else 0)
+            | (CHART_BHAVA_BALA if bhava_bala else 0)
+            | (CHART_STATE if state else 0),
             vargas=list(vargas),
             dashas=_dasha_ids(dashas, self._context._registered_dashas),
             drawings=_drawing_bits(drawings, self._context._registered_layouts),
@@ -1561,6 +1576,7 @@ class AlmanacArea(_Area):
         utc_offset_seconds: int,
         muhurta: Optional[MuhurtaRequest] = None,
         festivals: Optional[FestivalRequest] = None,
+        years: bool = False,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -1571,7 +1587,8 @@ class AlmanacArea(_Area):
         by name. `muhurta` runs a search over the same days, answered as
         `Almanac.muhurta`, and `festivals` the rules whose days fall in
         them, answered as `Almanac.festivals`; the days are founded once
-        for both.
+        for both. `years=True` answers the lunar years the days fall in, as
+        `Almanac.years`.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -1587,6 +1604,7 @@ class AlmanacArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             muhurta_json=_muhurta_json(muhurta),
             festivals_json=_festivals_json(festivals),
+            sections=PANCHANGA_YEARS if years else 0,
         )
         return Almanac(
             decode_panchanga(
@@ -1830,41 +1848,6 @@ class Placement:
 
     from_madhya_deg: float
     """Its distance from the bhava's centre, degrees."""
-
-
-#: `TS_CHART_ASPECTS`, the one section bit this layer offers so far.
-#:
-#: The bits are the C ABI's vocabulary; a consumer of this binding passes
-#: `aspects=True` (`03-design/chart-reading.md` §5).
-_SECTION_ASPECTS = 4
-
-#: `TS_CHART_POINTS`, the derived points.
-_SECTION_POINTS = 8
-
-#: `TS_CHART_HOUSES`, the houses service.
-_SECTION_HOUSES = 16
-
-#: `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga.
-_SECTION_ASHTAKAVARGA = 32
-
-#: `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
-_SECTION_VIMSHOPAKA = 64
-
-#: `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
-_SECTION_VAISESHIKAMSA = 512
-#: `TS_CHART_DASHA_PHALA`, the dasha phala.
-_SECTION_DASHA_PHALA = 1024
-# `TS_CHART_JAIMINI`, Jaimini's significators.
-_SECTION_JAIMINI = 2048
-
-#: `TS_CHART_SHADBALA`, the Shadbala.
-_SECTION_SHADBALA = 128
-
-#: `TS_CHART_BHAVA_BALA`, the Bhava bala.
-_SECTION_BHAVA_BALA = 256
-
-#: `TS_CHART_STATE`, the planetary states.
-_SECTION_STATE = 2
 
 
 @dataclass(frozen=True)
@@ -3212,6 +3195,73 @@ class FestivalAnswer:
     provenance: Provenance
     """What computed it: the widened days among the applied conventions as
     `festival.days`, and the hash of the value."""
+
+
+@dataclass(frozen=True)
+class JovianYear:
+    """One Jovian year of the Surya Siddhanta's count (I.55)."""
+
+    member: Samvatsara
+    """The year's name."""
+
+    count: int
+    """The signs mean Jupiter had crossed since the Kali age began, from 0."""
+
+    from_: float
+    """When mean Jupiter entered the sign, a UTC Julian day; `from_`
+    because `from` is a keyword."""
+
+    to: float
+    """When it entered the next, a UTC Julian day."""
+
+
+@dataclass(frozen=True)
+class LunarYear:
+    """One lunar year: the name it carries, its numbers and bounds, and the
+    Jovian years that ran in it (`03-design/calendar-indian-lunisolar.md`
+    §10)."""
+
+    samvatsara: Samvatsara
+    """The name the year carries under `calendars.samvatsara`."""
+
+    count: Literal["BARHASPATYA", "BARHASPATYA_RUNNING", "CHANDRAMANA"]
+    """Which count named it."""
+
+    vikrama: int
+    """The Vikrama year."""
+
+    shaka: int
+    """The Shaka year, whose number the southern count reads."""
+
+    opened: float
+    """The new moon that opened the year's first Chaitra, a UTC Julian day."""
+
+    began: float
+    """The sunrise of Chaitra Shukla Pratipada, where the name is read, a
+    UTC Julian day."""
+
+    ended: float
+    """The next year's first sunrise, which ends this one, a UTC Julian day."""
+
+    jovian: Tuple[JovianYear, ...]
+    """The Jovian years running between `began` and `ended`, in order."""
+
+    lupta: Optional[Samvatsara]
+    """The Jovian year that began and ended inside this one and so names no
+    year, or `None`."""
+
+
+@dataclass(frozen=True)
+class LunarYears:
+    """The lunar years an almanac's days fall in, in order and abutting.
+
+    >>> # almanac = ctx.almanac.of(..., years=True)
+    >>> # name = almanac.years.value[0].samvatsara
+    """
+
+    value: Tuple[LunarYear, ...]
+    provenance: Provenance
+    """What computed them, and the hash of `value`."""
 
 
 GocharRequest = TypedDict(
@@ -5206,6 +5256,36 @@ def _festivals_answer(text: str) -> FestivalAnswer:
         unjudged=tuple(
             FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
         ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _years_answer(text: str) -> LunarYears:
+    """The `years` section: the envelope's years as frozen records, with
+    the provenance beside them."""
+    envelope = json.loads(text)
+
+    def jovian(raw: Mapping[str, Any]) -> JovianYear:
+        return JovianYear(
+            member=_member(Samvatsara, raw["member"]), count=raw["count"], from_=raw["from"], to=raw["to"]
+        )
+
+    def year(raw: Mapping[str, Any]) -> LunarYear:
+        lupta = raw["lupta"]
+        return LunarYear(
+            samvatsara=_member(Samvatsara, raw["samvatsara"]),
+            count=raw["count"],
+            vikrama=raw["vikrama"],
+            shaka=raw["shaka"],
+            opened=raw["opened"],
+            began=raw["began"],
+            ended=raw["ended"],
+            jovian=tuple(jovian(j) for j in raw["jovian"]),
+            lupta=None if lupta is None else _member(Samvatsara, lupta),
+        )
+
+    return LunarYears(
+        value=tuple(year(y) for y in envelope["value"]),
         provenance=decode_provenance(envelope["provenance"]),
     )
 
@@ -7400,6 +7480,16 @@ class Almanac:
         guard that decided. Parsed once."""
         text = self.decoded.festivals
         return _festivals_answer(text) if text else None
+
+    @cached_property
+    def years(self) -> Optional[LunarYears]:
+        """The lunar years these days fall in, or `None` when `years=True`
+        was not asked (`03-design/calendar-indian-lunisolar.md` §10): each
+        with the samvatsara it carries, its bounds from one Chaitra Shukla
+        Pratipada's sunrise to the next, the Jovian years that ran in it
+        and the one it expunged. Parsed once."""
+        text = self.decoded.years
+        return _years_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:

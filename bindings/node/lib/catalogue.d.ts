@@ -51,6 +51,78 @@ export declare const VTABLE_ABI_VERSION: 4;
 export declare const CONTEXT_TEST_PROVIDER: 1;
 
 /**
+ * A chart request's `sections` bit: the day's almanac.
+ */
+export declare const CHART_PANCHANGA: 1;
+
+/**
+ * A chart request's `sections` bit: the planetary states.
+ */
+export declare const CHART_STATE: 2;
+
+/**
+ * A chart request's `sections` bit: the drishti.
+ */
+export declare const CHART_ASPECTS: 4;
+
+/**
+ * A chart request's `sections` bit: the derived points.
+ */
+export declare const CHART_POINTS: 8;
+
+/**
+ * A chart request's `sections` bit: the houses service.
+ */
+export declare const CHART_HOUSES: 16;
+
+/**
+ * A chart request's `sections` bit: the Ashtakavarga.
+ */
+export declare const CHART_ASHTAKAVARGA: 32;
+
+/**
+ * A chart request's `sections` bit: the Vimshopaka.
+ */
+export declare const CHART_VIMSHOPAKA: 64;
+
+/**
+ * A chart request's `sections` bit: the Shadbala.
+ */
+export declare const CHART_SHADBALA: 128;
+
+/**
+ * A chart request's `sections` bit: the Bhava bala.
+ */
+export declare const CHART_BHAVA_BALA: 256;
+
+/**
+ * A chart request's `sections` bit: the Vaiseshikamsa.
+ */
+export declare const CHART_VAISESHIKAMSA: 512;
+
+/**
+ * A chart request's `sections` bit: the dasha phala.
+ */
+export declare const CHART_DASHA_PHALA: 1024;
+
+/**
+ * A chart request's `sections` bit: Jaimini's significators, the
+ * karakamsha and the Brahma graha.
+ */
+export declare const CHART_JAIMINI: 2048;
+
+/**
+ * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
+ * `sections` for the lunar years its days fall in.
+ *
+ * Named in the header, because the bits are the boundary's vocabulary:
+ * a consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every
+ * generated layer writes a named option instead. An unknown bit asks
+ * for nothing, as a chart request's does.
+ */
+export declare const PANCHANGA_YEARS: 1;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =

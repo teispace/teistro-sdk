@@ -1383,9 +1383,17 @@ final class PanchangaRequestStruct extends ffi.Struct {
   @ffi.Int32()
   external int utcOffsetSeconds;
 
-  /// Reserved; write zero.
-  @ffi.Int32()
-  external int reservedTail;
+  /// What to answer beside the days, as a bit set:
+  /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+  /// `years` section. Zero for the days alone, which is what every
+  /// caller compiled against an earlier header passes, since this was a
+  /// reserved field it wrote zero to.
+  ///
+  /// A bit set here and a named option in every ergonomic layer, as a
+  /// chart request's `sections` is (`03-design/chart-reading.md` §5).
+  /// Example: 0.
+  @ffi.Uint32()
+  external int sections;
 
   /// A muhurta search over the same days, as a JSON object: `rules`,
   /// the activity's rules spelt out or a shipped set named
@@ -3649,7 +3657,7 @@ final class IntlLoaded {
 /// one day passes a range of one.
 final class PanchangaRequest {
   /// A PanchangaRequest with every field named.
-  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, this.muhurtaJson, this.festivalsJson});
+  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, this.muhurtaJson, this.festivalsJson});
 
   /// The calendar the range's dates are written in.
   /// Enum: Calendar. Example: 0.
@@ -3695,6 +3703,17 @@ final class PanchangaRequest {
   /// clock the days' dates are read in.
   /// Unit: s. Range: [-64800,64800]. Example: 20700.
   final int utcOffsetSeconds;
+
+  /// What to answer beside the days, as a bit set:
+  /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
+  /// `years` section. Zero for the days alone, which is what every
+  /// caller compiled against an earlier header passes, since this was a
+  /// reserved field it wrote zero to.
+  ///
+  /// A bit set here and a named option in every ergonomic layer, as a
+  /// chart request's `sections` is (`03-design/chart-reading.md` §5).
+  /// Example: 0.
+  final int sections;
 
   /// A muhurta search over the same days, as a JSON object: `rules`,
   /// the activity's rules spelt out or a shipped set named
@@ -3746,6 +3765,7 @@ final class PanchangaRequest {
     raw.longitudeDeg = longitudeDeg;
     raw.altitudeM = altitudeM;
     raw.utcOffsetSeconds = utcOffsetSeconds;
+    raw.sections = sections;
     raw.muhurtaJson = muhurtaJson == null
         ? ffi.nullptr
         : muhurtaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
@@ -3770,6 +3790,7 @@ final class PanchangaRequest {
         longitudeDeg: raw.longitudeDeg,
         altitudeM: raw.altitudeM,
         utcOffsetSeconds: raw.utcOffsetSeconds,
+        sections: raw.sections,
         muhurtaJson: raw.muhurtaJson == ffi.nullptr
             ? null
             : raw.muhurtaJson.cast<pkg_ffi.Utf8>().toDartString(),
