@@ -271,7 +271,7 @@ typedef enum ts_kind {
      */
     TS_KIND_KAALA = 59,
     /**
-     * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+     * The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
      */
     TS_KIND_PANCHAKA = 60,
     /**
@@ -3837,7 +3837,7 @@ typedef enum ts_kaala {
 } ts_kaala;
 
 /**
- * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+ * The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
  */
 typedef enum ts_panchaka {
     /**

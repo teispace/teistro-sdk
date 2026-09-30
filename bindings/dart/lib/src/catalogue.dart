@@ -172,7 +172,7 @@ enum Kind {
   choghadiya(58, 'choghadiya'),
   /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
   kaala(59, 'kaala'),
-  /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+  /// The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
   panchaka(60, 'panchaka'),
   /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
   muhurtaYoga(61, 'muhurta_yoga'),
@@ -3863,7 +3863,7 @@ enum Kaala implements KeyOf<Kaala> {
   }
 }
 
-/// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+/// The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
 enum Panchaka implements KeyOf<Panchaka> {
   /// Mrityu panchaka, the Moon in Dhanishtha
   mrityu(0, 'MRITYU'),

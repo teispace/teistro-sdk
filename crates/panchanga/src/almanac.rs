@@ -374,7 +374,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let moon = self.moon(&completion, place, &day, window, frame, zodiac)?;
         let sun = sky::sun_day(Self::signs(&longitudes, Body::Sun, window, zodiac)?);
         let omens = Omens {
-            panchaka: omen::panchaka(&limbs.nakshatra),
+            panchaka: omen::panchaka(
+                &limbs.nakshatra,
+                settings.panchanga.panchaka_start,
+                |within| limb::signs(&longitudes, Body::Moon, within, zodiac),
+            )?,
             yogas: omen::yogas(
                 &settings.panchanga.muhurta_tables,
                 day.vara,

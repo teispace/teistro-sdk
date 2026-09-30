@@ -29,7 +29,8 @@ use teistro_calendar::{CalendarDate, Gregorian};
 use teistro_core::catalogue::{Ayanamsha, Calendar};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::settings::{
-    DayBoundary, MoonEvents, OverridePolicy, Profile, Resolved, SettingsPatch, Sunrise,
+    DayBoundary, MoonEvents, OverridePolicy, PanchakaStart, Profile, Resolved, SettingsPatch,
+    Sunrise,
 };
 use teistro_core::time::UtcOffset;
 use teistro_panchanga::{Almanac, Panchanga};
@@ -248,6 +249,95 @@ fn the_moon_events_knob_moves_the_window_they_are_found_in() {
     // Everything else is untouched: the knob is about two fields.
     assert_eq!(civil.limbs, day.limbs);
     assert_eq!(civil.choghadiya, day.choghadiya);
+}
+
+/// Panchaka begins where the Moon enters Aquarius, or with Dhanishtha
+/// itself under the recording engine's reading (crux C158); nothing else
+/// moves.
+///
+/// The day is found rather than named: the first of a lunar month's
+/// days at Kathmandu with Dhanishtha running across the Moon's entry
+/// into Aquarius.
+#[test]
+fn panchaka_begins_where_the_start_knob_says() {
+    use teistro_core::catalogue::{Nakshatra, Panchaka as Kind, Rashi};
+
+    let mut engine = SettingsPatch::default();
+    engine.panchanga.panchaka_start = Some(PanchakaStart::Dhanishtha);
+    let days: Vec<(Panchanga, Panchanga)> = (1..=30)
+        .map(|d| {
+            let on = date(2024, 6, d);
+            let ours = with_almanac(&SettingsPatch::default(), |a| {
+                a.day(&on, &place()).unwrap().value
+            });
+            let theirs = with_almanac(&engine, |a| a.day(&on, &place()).unwrap().value);
+            (ours, theirs)
+        })
+        .collect();
+    let (ours, theirs) = days
+        .iter()
+        .find(|(ours, _)| {
+            ours.moon
+                .signs
+                .iter()
+                .any(|s| s.member == Rashi::Aquarius && ours.window.contains(s.whole.from))
+                && ours
+                    .limbs
+                    .nakshatra
+                    .iter()
+                    .any(|n| n.member == Nakshatra::Dhanishtha)
+        })
+        .expect("a month has a day with the Moon entering Aquarius in Dhanishtha");
+
+    let entry = ours
+        .moon
+        .signs
+        .iter()
+        .find(|s| s.member == Rashi::Aquarius)
+        .unwrap()
+        .whole
+        .from;
+    let dhanishtha = ours
+        .limbs
+        .nakshatra
+        .iter()
+        .find(|n| n.member == Nakshatra::Dhanishtha)
+        .unwrap();
+    let mrityu = |day: &Panchanga| {
+        *day.omens
+            .panchaka
+            .iter()
+            .find(|p| p.member == Kind::Mrityu)
+            .expect("Dhanishtha's second half is in the day")
+    };
+    assert_eq!(
+        mrityu(theirs).inside,
+        dhanishtha.inside,
+        "the engine's: the whole nakshatra"
+    );
+    assert!(
+        (mrityu(ours).inside.from.get() - entry.get()).abs() < 1e-9,
+        "Raman's: from the Moon's entry into Aquarius, {} against {}",
+        mrityu(ours).inside.from.get(),
+        entry.get()
+    );
+    assert!(mrityu(ours).inside.from.get() > dhanishtha.inside.from.get());
+    assert_eq!(mrityu(ours).inside.to, dhanishtha.inside.to);
+    // The knob is about one span.
+    assert_eq!(ours.limbs, theirs.limbs);
+    assert_eq!(
+        ours.omens
+            .panchaka
+            .iter()
+            .filter(|p| p.member != Kind::Mrityu)
+            .collect::<Vec<_>>(),
+        theirs
+            .omens
+            .panchaka
+            .iter()
+            .filter(|p| p.member != Kind::Mrityu)
+            .collect::<Vec<_>>()
+    );
 }
 
 #[test]

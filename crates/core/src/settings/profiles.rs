@@ -16,10 +16,10 @@ use super::knobs::{
     KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis,
+    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
+    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -154,6 +154,7 @@ pub fn root() -> Settings {
             centre: Centre::Geocentric,
             moon_events: MoonEvents::Window,
             muhurta_tables: String::from("CLASSICAL"),
+            panchaka_start: PanchakaStart::Aquarius,
         },
         time: Time {
             dst_gap: DstGap::Error,
@@ -483,6 +484,9 @@ fn conformance_baseline() -> Profile {
     // local civil midnight, inside a section every other field of which
     // is bounded by sunrise (entry 18).
     patch.panchanga.moon_events = Some(MoonEvents::CivilDay);
+    // The engine's panchaka begins with Dhanishtha rather than at its
+    // third quarter (crux C158).
+    patch.panchanga.panchaka_start = Some(PanchakaStart::Dhanishtha);
     // The engine's Ashtakavarga reductions and pindas (cruxes C59, C60).
     patch.strength.ekadhipatya = Some(Ekadhipatya::EmptyToZero);
     // The recording engine's Ashtottari: three nakshatras each, the three

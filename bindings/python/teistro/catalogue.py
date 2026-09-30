@@ -250,7 +250,7 @@ class Kind(Member):
     """The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week."""
 
     panchaka = 60
-    """The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's."""
+    """The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159)."""
 
     muhurta_yoga = 61
     """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8)."""
@@ -3095,7 +3095,7 @@ class Kaala(Catalogued):
 
 
 class Panchaka(Catalogued):
-    """The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`."""
+    """The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`."""
 
     MRITYU = 0
     """Mrityu panchaka, the Moon in Dhanishtha"""

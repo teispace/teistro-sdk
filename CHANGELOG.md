@@ -1377,6 +1377,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **Panchaka begins where the texts begin it** (`muhurta.md` §6 step 1,
+  cruxes C158 and C159). Muhurta Chintamani (*Nakshatra Prakarana* v. 48)
+  and Raman's *Muhurtha* both begin panchaka with the Moon in Aquarius,
+  which is Dhanishtha's third quarter. The SDK had begun it with the whole
+  of Dhanishtha, the recording engine's reading, and had said that
+  was "the one the texts state". `panchanga.panchaka_start` names both:
+  `AQUARIUS` in the root profile, and `DHANISHTHA` in
+  `conformance-baseline`. The kind of a panchaka had been measured as
+  "not the classical remainder of tithi, vara and nakshatra". The
+  classical remainder has a fourth term, the **lagna**, which is why no
+  numbering of three reproduced it. It is now
+  `omen::panchaka_remainder`, a clause of an instant, which reproduces
+  Raman's worked example. The catalogue's five kinds carry both
+  readings (`remainder` beside `nakshatra`, catalogue version 2).
+
+  **Numbers:** under every profile but `conformance-baseline`, a day with
+  the Moon in Dhanishtha's first half no longer reports Mrityu panchaka
+  for that part, about eleven hours a month. The corpus has no such day,
+  and nothing it records moves. An almanac day asks its ephemeris about
+  1% more (255.5 calls against 252.9, `batch-and-parallelism-measured.md`)
+  for the Moon's entry into Aquarius, asked only on a day Dhanishtha runs.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an

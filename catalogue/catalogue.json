@@ -19249,11 +19249,12 @@
     {
       "kind": "panchaka",
       "number": 60,
-      "version": 1,
-      "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.",
+      "version": 2,
+      "doc": "The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).",
       "types": {},
       "attributes": {
-        "nakshatra": "key:nakshatra"
+        "nakshatra": "key:nakshatra",
+        "remainder": "u8"
       },
       "members": [
         {
@@ -19264,12 +19265,17 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "nakshatra": "DHANISHTHA"
+            "nakshatra": "DHANISHTHA",
+            "remainder": 1
           },
           "sources": [
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            },
+            {
+              "text": "Raman, Muhurtha or Electional Astrology (1948)",
+              "ref": "ch. III, p. 20: the remainder by nine of tithi, vara, nakshatra and lagna"
             }
           ],
           "mark": "V",
@@ -19283,12 +19289,17 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "nakshatra": "SHATABHISHA"
+            "nakshatra": "SHATABHISHA",
+            "remainder": 2
           },
           "sources": [
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            },
+            {
+              "text": "Raman, Muhurtha or Electional Astrology (1948)",
+              "ref": "ch. III, p. 20: the remainder by nine of tithi, vara, nakshatra and lagna"
             }
           ],
           "mark": "V",
@@ -19302,12 +19313,17 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "nakshatra": "PURVA_BHADRAPADA"
+            "nakshatra": "PURVA_BHADRAPADA",
+            "remainder": 4
           },
           "sources": [
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            },
+            {
+              "text": "Raman, Muhurtha or Electional Astrology (1948)",
+              "ref": "ch. III, p. 20: the remainder by nine of tithi, vara, nakshatra and lagna"
             }
           ],
           "mark": "V",
@@ -19321,12 +19337,17 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "nakshatra": "UTTARA_BHADRAPADA"
+            "nakshatra": "UTTARA_BHADRAPADA",
+            "remainder": 6
           },
           "sources": [
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            },
+            {
+              "text": "Raman, Muhurtha or Electional Astrology (1948)",
+              "ref": "ch. III, p. 20: the remainder by nine of tithi, vara, nakshatra and lagna"
             }
           ],
           "mark": "V",
@@ -19340,12 +19361,17 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "nakshatra": "REVATI"
+            "nakshatra": "REVATI",
+            "remainder": 8
           },
           "sources": [
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.panchaka, measured on all nine days that carry one"
+            },
+            {
+              "text": "Raman, Muhurtha or Electional Astrology (1948)",
+              "ref": "ch. III, p. 20: the remainder by nine of tithi, vara, nakshatra and lagna"
             }
           ],
           "mark": "V",

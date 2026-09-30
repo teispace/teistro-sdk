@@ -68,7 +68,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_STAR_CLASS` | 57 | What kind of object a star-table member is. |
 | `TS_KIND_CHOGHADIYA` | 58 | The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. |
 | `TS_KIND_KAALA` | 59 | The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. |
-| `TS_KIND_PANCHAKA` | 60 | The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. |
+| `TS_KIND_PANCHAKA` | 60 | The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). |
 | `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
 | `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
 | `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
@@ -1247,7 +1247,7 @@ The three inauspicious eighths of the daylight, each taking a different eighth o
 
 ## ts_panchaka
 
-The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|
