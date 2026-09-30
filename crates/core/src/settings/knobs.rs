@@ -180,6 +180,18 @@ knob!(
         CivilDay = "CIVIL_DAY" }
 );
 knob!(
+    /// Where panchaka begins (crux C158).
+    ///
+    /// Raman's *Muhurtha* (ch. IV, p. 26) begins it "from the third
+    /// quarter of Dhanishta", which is the Moon entering Aquarius; the
+    /// recording engine begins it with Dhanishtha itself. The two part
+    /// only while the Moon crosses Dhanishtha's first half, about eleven
+    /// hours a month, and the corpus records no day with it there.
+    PanchakaStart { /// Dhanishtha's third quarter: the Moon in Aquarius or Pisces.
+        Aquarius = "AQUARIUS", /// The whole of Dhanishtha, the recording engine's.
+        Dhanishtha = "DHANISHTHA" }
+);
+knob!(
     /// How the planetary hours (horas) are counted.
     HoraReckoning { /// Twelve over the daylight and twelve over the night.
         Proportional = "PROPORTIONAL", /// Twenty-four of sixty minutes from sunrise.

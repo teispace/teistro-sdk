@@ -27,10 +27,11 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Tithi, TithiClass, Vara,
+    Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, TithiClass, Vara,
 };
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
+use teistro_core::settings::PanchakaStart;
 
 use crate::span::Span;
 
@@ -111,17 +112,76 @@ pub fn panchaka_of(nakshatra: Nakshatra) -> Option<Panchaka> {
 
 /// The panchaka spans of a day, from its nakshatra spans.
 ///
-/// The window a panchaka runs in is the nakshatra's own, so this is a
-/// filter and not a second search. The corpus cannot separate this rule
-/// from "the Moon is in Aquarius or Pisces" — they differ only in the
-/// first half of Dhanishtha, and no recorded day has the Moon there — so
-/// the SDK ships the nakshatra rule, which is the one the texts state.
+/// The window a panchaka runs in is the nakshatra's own, cut at the
+/// Moon's entry into Aquarius where `start` says it begins there (crux
+/// C158): only Dhanishtha straddles that entry, so `moon_signs` is asked
+/// for the signs over a Dhanishtha span and nothing else. The corpus
+/// cannot separate the two readings — they differ only in the first half
+/// of Dhanishtha, and no recorded day has the Moon there — so the SDK
+/// follows Raman's *Muhurtha* (ch. IV), the one text in hand, and names
+/// the recording engine's whole nakshatra as the other.
+///
+/// # Errors
+///
+/// Whatever `moon_signs` returns.
+pub fn panchaka<F>(
+    nakshatras: &[Span<Nakshatra>],
+    start: PanchakaStart,
+    mut moon_signs: F,
+) -> Result<Vec<Span<Panchaka>>, Error>
+where
+    F: FnMut(Interval) -> Result<Vec<Span<Rashi>>, Error>,
+{
+    let mut found = Vec::new();
+    for span in nakshatras {
+        let Some(kind) = panchaka_of(span.member) else {
+            continue;
+        };
+        if span.member != Nakshatra::Dhanishtha || start == PanchakaStart::Dhanishtha {
+            found.push(span.map(|_| kind));
+            continue;
+        }
+        for sign in moon_signs(span.inside)? {
+            if sign.member != Rashi::Aquarius {
+                continue;
+            }
+            let Some(whole) = span.whole.clipped_to(sign.whole) else {
+                continue;
+            };
+            found.extend(Span::new(kind, whole, span.inside));
+        }
+    }
+    Ok(found)
+}
+
+/// The panchaka an instant's four numbers leave, or `None` when the
+/// remainder is a good one (crux C159).
+///
+/// Raman's *Muhurtha* (ch. III, p. 20) sums the tithi's number (from
+/// Shukla Pratipada, 1 to 30), the vara's (Sunday 1), the nakshatra's
+/// (from Ashwini) and the lagna's (from Aries) and divides by nine: 1
+/// leaves mrityu, 2 agni, 4 raja, 6 chora and 8 roga, each member's
+/// `remainder`; 3, 5, 7 and 0 are good. It is a clause of an **instant**,
+/// since the lagna is one, and not the almanac's panchaka, which is the
+/// Moon's run through the last nakshatras and carries the recording
+/// engine's kind for each.
 #[must_use]
-pub fn panchaka(nakshatras: &[Span<Nakshatra>]) -> Vec<Span<Panchaka>> {
-    nakshatras
+pub fn panchaka_remainder(
+    tithi: Tithi,
+    vara: Vara,
+    nakshatra: Nakshatra,
+    lagna: Rashi,
+) -> Option<Panchaka> {
+    let sum = u32::from(tithi.id())
+        + u32::from(vara.attributes().weekday)
+        + u32::from(nakshatra.id())
+        + u32::from(lagna.id())
+        + 4;
+    let remainder = sum % 9;
+    Panchaka::ALL
         .iter()
-        .filter_map(|span| panchaka_of(span.member).map(|kind| span.map(|_| kind)))
-        .collect()
+        .copied()
+        .find(|panchaka| u32::from(panchaka.attributes().remainder) == remainder)
 }
 
 /// One row of a muhurta yoga table.
@@ -313,11 +373,13 @@ mod tests {
         reason = "tests fail by panicking and index their own fixtures"
     )]
 
-    use super::{CLASSICAL, disha_shool, panchaka, panchaka_of, yogas};
+    use super::{CLASSICAL, disha_shool, panchaka, panchaka_of, panchaka_remainder, yogas};
     use teistro_core::catalogue::{
-        Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Tithi, Vara,
+        Direction, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi, Tithi, Vara,
     };
+    use teistro_core::error::Error;
     use teistro_core::interval::Interval;
+    use teistro_core::settings::PanchakaStart;
 
     use crate::span::Span;
 
@@ -353,14 +415,135 @@ mod tests {
         );
     }
 
+    /// A Moon that is never asked about: every span it is given is not
+    /// Dhanishtha, or the start is the whole nakshatra.
+    fn unasked(_: Interval) -> Result<Vec<Span<Rashi>>, Error> {
+        Err(Error::internal("the Moon's signs were asked for"))
+    }
+
     #[test]
     fn a_panchaka_span_is_the_nakshatras_own() {
         let spans = [span(Nakshatra::Revati), span(Nakshatra::Ashwini)];
-        let found = panchaka(&spans);
+        let found = panchaka(&spans, PanchakaStart::Aquarius, unasked).unwrap();
         assert_eq!(found.len(), 1, "only Revati of the two");
         assert_eq!(found[0].member, Panchaka::Roga);
         assert_eq!(found[0].inside, spans[0].inside);
-        assert!(panchaka(&[span(Nakshatra::Ashwini)]).is_empty());
+        assert!(
+            panchaka(
+                &[span(Nakshatra::Ashwini)],
+                PanchakaStart::Aquarius,
+                unasked
+            )
+            .unwrap()
+            .is_empty()
+        );
+    }
+
+    /// Dhanishtha over the whole test day, the Moon entering Aquarius
+    /// half way through it.
+    fn dhanishtha_across_the_entry() -> (Span<Nakshatra>, Vec<Span<Rashi>>) {
+        let entry = 100.5;
+        let signs = vec![
+            Span::new(Rashi::Capricorn, Interval::literal(98.0, entry), window()).unwrap(),
+            Span::new(Rashi::Aquarius, Interval::literal(entry, 102.5), window()).unwrap(),
+        ];
+        (span(Nakshatra::Dhanishtha), signs)
+    }
+
+    #[test]
+    fn under_raman_panchaka_begins_where_the_moon_enters_aquarius() {
+        let (dhanishtha, signs) = dhanishtha_across_the_entry();
+        let found = panchaka(&[dhanishtha], PanchakaStart::Aquarius, |within| {
+            assert_eq!(within, dhanishtha.inside, "asked over the nakshatra's day");
+            Ok(signs.clone())
+        })
+        .unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].member, Panchaka::Mrityu);
+        assert_eq!(found[0].inside, Interval::literal(100.5, 101.0));
+        assert_eq!(found[0].whole, Interval::literal(100.5, 101.0));
+        assert!(!found[0].began_before(), "it began inside the day");
+    }
+
+    #[test]
+    fn under_the_recording_engine_panchaka_is_the_whole_of_dhanishtha() {
+        let (dhanishtha, _) = dhanishtha_across_the_entry();
+        let found = panchaka(&[dhanishtha], PanchakaStart::Dhanishtha, unasked).unwrap();
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].inside, dhanishtha.inside);
+    }
+
+    #[test]
+    fn a_dhanishtha_wholly_in_capricorn_carries_no_panchaka_under_raman() {
+        let (dhanishtha, signs) = dhanishtha_across_the_entry();
+        let found = panchaka(&[dhanishtha], PanchakaStart::Aquarius, |_| {
+            Ok(signs[..1].to_vec())
+        })
+        .unwrap();
+        assert!(found.is_empty());
+    }
+
+    #[test]
+    fn the_remainder_reproduces_ramans_worked_example() {
+        // Ch. III, p. 20: Aslesha (9), the 13th tithi, Virgo rising (6),
+        // a Sunday (1) make 29, which leaves 2: agni, "not favourable".
+        assert_eq!(
+            panchaka_remainder(
+                Tithi::ShuklaTrayodashi,
+                Vara::Ravivara,
+                Nakshatra::Ashlesha,
+                Rashi::Virgo
+            ),
+            Some(Panchaka::Agni)
+        );
+    }
+
+    #[test]
+    fn every_remainder_names_its_kind_or_none() {
+        // Walk the lagna through all twelve signs from a sum of 1+1+1+1 = 4:
+        // the remainders run 4, 5, ... 15 by nine.
+        let expected = [
+            Some(Panchaka::Raja),   // 4
+            None,                   // 5
+            Some(Panchaka::Chora),  // 6
+            None,                   // 7
+            Some(Panchaka::Roga),   // 8
+            None,                   // 0
+            Some(Panchaka::Mrityu), // 1
+            Some(Panchaka::Agni),   // 2
+            None,                   // 3
+            Some(Panchaka::Raja),   // 4
+            None,                   // 5
+            Some(Panchaka::Chora),  // 6
+        ];
+        for (lagna, kind) in Rashi::ALL.iter().zip(expected) {
+            assert_eq!(
+                panchaka_remainder(
+                    Tithi::ShuklaPratipada,
+                    Vara::Ravivara,
+                    Nakshatra::Ashwini,
+                    *lagna
+                ),
+                kind,
+                "{lagna:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_thirtieth_tithi_counts_as_thirty() {
+        // Amavasya is 30, not 15 of the dark half: 30 + 1 + 1 + 1 = 33,
+        // which leaves 6, chora; counted as 15 it would be 18, which
+        // leaves 0 and is good.
+        assert_eq!(
+            panchaka_remainder(
+                Tithi::Amavasya,
+                Vara::Ravivara,
+                Nakshatra::Ashwini,
+                Rashi::Aries
+            ),
+            Some(Panchaka::Chora)
+        );
     }
 
     #[test]

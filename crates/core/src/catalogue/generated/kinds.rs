@@ -124,7 +124,7 @@ pub enum Kind {
     Choghadiya = 58,
     /// The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week.
     Kaala = 59,
-    /// The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+    /// The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
     Panchaka = 60,
     /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
     MuhurtaYoga = 61,

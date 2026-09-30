@@ -214,9 +214,13 @@ Dhanishtha, which is in Capricorn, and no recorded day has it there.
 | panchaka runs while the Moon is in Aquarius or Pisces | **holds** | 0 of 55 disagree |
 | a day separates the two: the Moon in Dhanishtha's first half | untested | 0 of 55 days |
 
-Its kind is a function of the nakshatra alone — not of the classical
-remainder of tithi, vara and nakshatra, which no numbering of the three
-reproduces over the 9 days that carry one:
+The recording engine's kind is a function of the nakshatra alone, over
+the 9 days that carry one. Raman's classical remainder (*Muhurtha*, ch.
+III) has a fourth term besides the tithi, the vara and the nakshatra:
+the **lagna**, which a day does not have. So the two are different
+things with one name (crux C159): the almanac carries the engine's
+table, and the remainder is a clause of an elected instant
+(`omen::panchaka_remainder`).
 
 | nakshatra | panchaka |
 |---|---|
@@ -226,9 +230,11 @@ reproduces over the 9 days that carry one:
 | Uttara Bhadrapada | Chora Panchaka |
 | Revati | Roga Panchaka |
 
-The SDK ships the nakshatra rule, which is the one the texts state, and
-the design page records that the corpus does not test the half nakshatra
-where the two part.
+The SDK begins panchaka where Raman does, "from the third quarter of
+Dhanishta" (ch. IV), which is the Moon entering Aquarius; the recording
+engine's whole nakshatra is `panchanga.panchaka_start = DHANISHTHA`,
+which `conformance-baseline` sets (crux C158). The corpus does not test
+the half nakshatra where the two part.
 
 ## 8. The muhurta yogas are the one limb the corpus cannot settle
 

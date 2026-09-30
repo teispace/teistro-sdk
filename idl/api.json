@@ -405,7 +405,7 @@
         {
           "name": "Panchaka",
           "value": 60,
-          "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.",
+          "doc": "The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).",
           "key": "panchaka"
         },
         {
@@ -5582,7 +5582,7 @@
     },
     {
       "name": "Panchaka",
-      "doc": "The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.",
+      "doc": "The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.",
       "repr": "u16",
       "kind": "panchaka",
       "values": [

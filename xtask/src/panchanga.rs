@@ -1311,9 +1311,13 @@ fn panchaka(days: &[Day]) -> String {
          tell them apart: they differ only while the Moon is in the first half\n\
          of Dhanishtha, which is in Capricorn, and no recorded day has it\n\
          there.\n\n{}\n\
-         Its kind is a function of the nakshatra alone — not of the classical\n\
-         remainder of tithi, vara and nakshatra, which no numbering of the three\n\
-         reproduces over the {running} days that carry one:\n\n\
+         The recording engine's kind is a function of the nakshatra alone,\n\
+         over the {running} days that carry one. Raman's classical remainder\n\
+         (*Muhurtha*, ch. III) has a fourth term besides the tithi, the vara\n\
+         and the nakshatra: the **lagna**, which a day does not have. So the\n\
+         two are different things with one name (crux C159): the almanac\n\
+         carries the engine's table, and the remainder is a clause of an\n\
+         elected instant (`omen::panchaka_remainder`).\n\n\
          | nakshatra | panchaka |\n|---|---|\n",
         table(&claims),
     );
@@ -1323,9 +1327,11 @@ fn panchaka(days: &[Day]) -> String {
         let _ = writeln!(out, "| {name} | {kind} |");
     }
     out.push_str(
-        "\nThe SDK ships the nakshatra rule, which is the one the texts state,\n\
-         and the design page records that the corpus does not test the half\n\
-         nakshatra where the two part.\n\n",
+        "\nThe SDK begins panchaka where Raman does, \"from the third quarter\n\
+         of Dhanishta\" (ch. IV), which is the Moon entering Aquarius; the\n\
+         recording engine's whole nakshatra is `panchanga.panchaka_start =\n\
+         DHANISHTHA`, which `conformance-baseline` sets (crux C158). The\n\
+         corpus does not test the half nakshatra where the two part.\n\n",
     );
     out
 }

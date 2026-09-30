@@ -348,7 +348,7 @@ export declare const Kind: {
    */
   readonly Kaala: 'kaala';
   /**
-   * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's.
+   * The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
    */
   readonly Panchaka: 'panchaka';
   /**
@@ -5050,7 +5050,7 @@ export declare const Kaala: {
 export declare const KaalaById: ReadonlyMap<number, Kaala>;
 
 /**
- * The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
+ * The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). Members are the catalogue's ids; the full key id is `(TS_KIND_PANCHAKA << 16) | member`.
  */
 export type Panchaka = 'panchaka.MRITYU' | 'panchaka.AGNI' | 'panchaka.RAJA' | 'panchaka.CHORA' | 'panchaka.ROGA' | 'unknown';
 

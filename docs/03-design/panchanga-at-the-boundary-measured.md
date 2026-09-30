@@ -68,8 +68,8 @@ the widest day and every other day:
 
 | batch | ragged rows | rectangular rows | wasted |
 |---|---|---|---|
-| the 408 ordinary days | 35 477 | 39 576 | 10.4% |
-| all 450 days | 49 777 | 227 700 | **78.1%** |
+| the 408 ordinary days | 35 472 | 39 576 | 10.4% |
+| all 450 days | 49 772 | 227 700 | **78.1%** |
 
 Ten per cent is arguable. Seventy-eight is not, and the second
 row is what a real caller gets: **one** polar day in a batch sets

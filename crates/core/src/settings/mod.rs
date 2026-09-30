@@ -39,10 +39,10 @@ pub use knobs::{
     KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
+    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis,
+    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
+    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -386,6 +386,9 @@ group!(
         moon_events: MoonEvents,
         /// The muhurta yoga tables' key, as `aspect.drishti_table` is.
         muhurta_tables: String,
+        /// Where panchaka begins: Dhanishtha's third quarter or the
+        /// whole of it (crux C158).
+        panchaka_start: PanchakaStart,
     }
 );
 
