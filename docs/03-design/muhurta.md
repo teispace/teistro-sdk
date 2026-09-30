@@ -289,7 +289,10 @@ used is reported with the answer.
 - **The regression the baseline engine was rebuilt for.** A marriage
   search over 2026-09-01 to 2026-11-30 vetoes 2026-09-21, 2026-10-19 and
   2026-11-05, leaves nothing open before Devuthani Ekadashi, and keeps
-  2026-11-25; under `BASELINE` the ranking is the engine's.
+  2026-11-25; under `BASELINE` the ranking is the engine's. The
+  engine's own test of it reads the **season alone** — six heeded
+  blackouts over UTC days — and that half holds already over the built-in
+  ephemeris (`tests/season.rs`, red with Chaturmas left out).
 - **The season against the published almanac** where the baseline engine
   recorded it (Shukra and Guru asta for BS 2083), per criterion.
 - **A window is constant**: the judgement at a window's first and last

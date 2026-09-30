@@ -393,3 +393,71 @@ fn the_sun_sign_anchor_moves_2025s_chaturmas_a_month_and_leaves_2026s() {
         );
     });
 }
+
+/// The regression the baseline engine's muhurta rebuild exists for: a
+/// marriage search over 2026-09-01 to 2026-11-30 once ranked three dates
+/// inside Chaturmas first. Under the blackouts it heeds — Chaturmas,
+/// adhika, Kharmas, Pitru paksha, Guru and Shukra asta — those three are
+/// vetoed, nothing is clear before Devuthani Ekadashi (2026-11-20), more
+/// than five days after it are, and 2026-11-25 is one of them. Days are
+/// UTC dates, as the engine's own test counts them, and a day is blocked
+/// when any heeded blackout overlaps it.
+#[test]
+fn the_chaturmas_regression_holds_on_the_season() {
+    use teistro_astro::visibility::{Criterion, Heliacal};
+    use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    use teistro_muhurta::season::asta_over;
+    use teistro_port_ephemeris::{Body, Horizon};
+
+    const SEP_1: f64 = 2_461_284.5;
+    const DEC_1: f64 = 2_461_375.5;
+    let range = Interval::literal(SEP_1, DEC_1);
+    let provider = Builtin::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let heliacal = Heliacal::new(
+        &completion,
+        Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        ),
+        Criterion::SURYA_SIDDHANTA,
+        Horizon::CENTRE_NO_REFRACTION,
+        DeltaTModel::TableThenModel,
+    );
+    let mut found = blackouts(&longitudes, zodiac(), range).unwrap();
+    found.extend(asta_over(&heliacal, Body::Jupiter, range).unwrap());
+    found.extend(asta_over(&heliacal, Body::Venus, range).unwrap());
+    let heeded = [
+        BlackoutKind::Chaturmas,
+        BlackoutKind::AdhikaMasa,
+        BlackoutKind::Kharmas,
+        BlackoutKind::PitruPaksha,
+        BlackoutKind::GuruAsta,
+        BlackoutKind::ShukraAsta,
+    ];
+    let blocked = |day: f64| {
+        let whole = Interval::literal(day, day + 1.0);
+        found
+            .iter()
+            .any(|b| heeded.contains(&b.kind) && b.at.overlaps(whole))
+    };
+    // 2026-09-21, 2026-10-19, 2026-11-05.
+    for day in [2_461_304.5, 2_461_332.5, 2_461_349.5] {
+        assert!(blocked(day), "{day} is open");
+    }
+    let clear: Vec<f64> = (0..91)
+        .map(|d| SEP_1 + f64::from(d))
+        .filter(|day| !blocked(*day))
+        .collect();
+    // 2026-11-20 and after.
+    assert!(clear.iter().all(|day| *day >= 2_461_364.5), "{clear:?}");
+    assert!(clear.len() > 5, "{clear:?}");
+    // 2026-11-25.
+    assert!(clear.contains(&2_461_369.5), "{clear:?}");
+}
