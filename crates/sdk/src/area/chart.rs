@@ -5,15 +5,13 @@ use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
 use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
-use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
     ChartAngles, ChartFoundation, Founder, angles_of, cusps_of, cusps_raising,
 };
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
-    Ayanamsha, CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Vara,
-    Varga,
+    CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Vara, Varga,
 };
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
@@ -23,7 +21,7 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::settings::{AyanamshaChoice, CharaKarakas, DayLordDay};
+use teistro_core::settings::{CharaKarakas, DayLordDay};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
@@ -60,8 +58,8 @@ use teistro_tajika::{
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
-use crate::area::system_of;
 use crate::area::{Answers, Plans};
+use crate::area::{drik_sun, system_of};
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
 use crate::kp_request::KpRequest;
@@ -275,22 +273,8 @@ impl<'a> ChartArea<'a> {
     ) -> Result<T, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let resolved = self.context.resolved();
-        let settings = &resolved.settings;
-        let calendar = system_of(settings.calendars.civil_calendar)?;
-        // A custom ayanamsha is a value rather than a catalogue member,
-        // and the solar model wants a member; Lahiri is what the
-        // boundary substitutes, so this substitutes the same.
-        let ayanamsha = match settings.frame.ayanamsha {
-            AyanamshaChoice::Catalogued { id } => id,
-            AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
-        };
-        let model = DrikSun::new(
-            provider,
-            ayanamsha,
-            settings.day.sunrise,
-            settings.provider.overrides,
-            self.context.delta_t(),
-        );
+        let calendar = system_of(resolved.settings.calendars.civil_calendar)?;
+        let model = drik_sun(self.context, provider);
         work(&Founder::new(
             provider,
             resolved,

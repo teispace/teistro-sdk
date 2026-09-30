@@ -26,6 +26,7 @@ use crate::instant::Sky;
 /// What the engine's weights take for one activity.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct BaselineEvent {
     /// The stars the activity is matched to (+25 when the Moon stands in
     /// one at sunrise).
@@ -166,6 +167,7 @@ pub struct Factor {
 /// A score under the engine's weights.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Score {
     /// The score, 0 to 100.
     pub value: u8,
@@ -269,6 +271,7 @@ impl Tally {
 /// facts of the whole day.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct DayReading {
     /// The tithi at sunrise.
     pub tithi: Tithi,

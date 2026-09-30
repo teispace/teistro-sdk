@@ -1017,6 +1017,16 @@ fn reachable(root: &Path) -> Result<BTreeSet<String>, String> {
         };
         let path = rest.replace('\n', " ").trim().to_owned();
         let path = path.as_str();
+        // A whole crate re-exported under a module's name
+        // (`pub use teistro_muhurta as muhurta`): its root's own names are
+        // reachable as `teistro::muhurta::<Name>`, and only those -- a
+        // name in one of its modules the root does not re-export is not.
+        if let Some((krate, _)) = path.split_once(" as ") {
+            if !krate.contains("::") {
+                names.extend(crate_root_items(root, krate.trim())?);
+                continue;
+            }
+        }
         for item in items_of(path) {
             if item.starts_with(|letter: char| letter.is_ascii_uppercase()) {
                 names.insert(item);
@@ -1031,6 +1041,61 @@ fn reachable(root: &Path) -> Result<BTreeSet<String>, String> {
         }
     }
     Ok(names)
+}
+
+/// The names a crate's root makes public: what its `lib.rs` declares
+/// and what it re-exports by name.
+fn crate_root_items(root: &Path, krate: &str) -> Result<BTreeSet<String>, String> {
+    let lib = root
+        .join(CRATES)
+        .join(krate.trim_start_matches("teistro_").replace('_', "-"))
+        .join("src")
+        .join("lib.rs");
+    let text = std::fs::read_to_string(&lib)
+        .map_err(|error| format!("{} is not readable: {error}", lib.display()))?;
+    let mut names = declared(&text);
+    for statement in text.split(';') {
+        let Some(rest) = statement
+            .split("\npub use ")
+            .nth(1)
+            .or_else(|| statement.strip_prefix("pub use "))
+        else {
+            continue;
+        };
+        let rest = rest.replace('\n', " ");
+        names.extend(
+            items_of(rest.trim())
+                .into_iter()
+                .filter(|item| item.starts_with(|letter: char| letter.is_ascii_uppercase())),
+        );
+    }
+    Ok(names)
+}
+
+/// The public item names a source declares at the start of a line.
+fn declared(text: &str) -> BTreeSet<String> {
+    let mut names = BTreeSet::new();
+    for line in text.lines() {
+        let trimmed = line.trim();
+        for shape in [
+            "pub struct ",
+            "pub enum ",
+            "pub trait ",
+            "pub type ",
+            "pub const ",
+        ] {
+            if let Some(rest) = trimmed.strip_prefix(shape) {
+                let name: String = rest
+                    .chars()
+                    .take_while(|letter| letter.is_alphanumeric() || *letter == '_')
+                    .collect();
+                if !name.is_empty() {
+                    names.insert(name);
+                }
+            }
+        }
+    }
+    names
 }
 
 /// The public item names of a module a `pub use` re-exports whole.
@@ -1062,26 +1127,7 @@ fn module_items(root: &Path, path: &str, module: &str) -> BTreeSet<String> {
         }
     }
     for text in &texts {
-        for line in text.lines() {
-            let trimmed = line.trim();
-            for shape in [
-                "pub struct ",
-                "pub enum ",
-                "pub trait ",
-                "pub type ",
-                "pub const ",
-            ] {
-                if let Some(rest) = trimmed.strip_prefix(shape) {
-                    let name: String = rest
-                        .chars()
-                        .take_while(|letter| letter.is_alphanumeric() || *letter == '_')
-                        .collect();
-                    if !name.is_empty() {
-                        names.insert(name);
-                    }
-                }
-            }
-        }
+        names.extend(declared(text));
     }
     names
 }

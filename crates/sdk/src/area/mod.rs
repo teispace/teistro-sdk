@@ -27,9 +27,14 @@ mod intl;
 mod keys;
 mod time;
 
+use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarSystem, shipped};
-use teistro_core::catalogue::Calendar;
+use teistro_core::catalogue::{Ayanamsha, Calendar};
 use teistro_core::error::Error;
+use teistro_core::settings::AyanamshaChoice;
+use teistro_port_ephemeris::EphemerisProvider;
+
+use crate::context::Context;
 
 /// The calendar the SDK ships for an id, or the refusal that says why it
 /// does not.
@@ -44,7 +49,32 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
     })
 }
 
-pub use almanac::AlmanacArea;
+/// The solar model a context reckons its days with: its ayanamsha, sunrise
+/// convention, override policy and Delta T model.
+///
+/// One construction, because the chart founder, the almanac and the
+/// muhurta search each need it and must agree on it. A custom ayanamsha is
+/// a value rather than a catalogue member, and the model wants a member;
+/// Lahiri is what the boundary substitutes, so this substitutes the same.
+pub(crate) fn drik_sun<'p>(
+    context: &Context,
+    provider: &'p (dyn EphemerisProvider + 'p),
+) -> DrikSun<'p, dyn EphemerisProvider + 'p> {
+    let settings = context.settings();
+    let ayanamsha = match settings.frame.ayanamsha {
+        AyanamshaChoice::Catalogued { id } => id,
+        AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
+    };
+    DrikSun::new(
+        provider,
+        ayanamsha,
+        settings.day.sunrise,
+        settings.provider.overrides,
+        context.delta_t(),
+    )
+}
+
+pub use almanac::{AlmanacArea, MuhurtaDays};
 pub use calendar::CalendarArea;
 pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;

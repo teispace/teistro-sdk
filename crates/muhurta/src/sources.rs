@@ -29,7 +29,7 @@ use teistro_port_ephemeris::{Body, Centre, EphemerisProvider, Frame, Lattice, Qu
 use teistro_time::local_day::local_midnight;
 
 use crate::instant::Sky;
-use crate::search::Sources;
+use crate::search::{Sources, same_day};
 use crate::season::{Blackout, BlackoutKind, asta_over, blackouts};
 
 /// The slow grahas whose ingresses a day may hold, beside the Sun's and
@@ -52,6 +52,7 @@ pub struct ProviderSources<'a, P: EphemerisProvider + ?Sized> {
     bodies: Vec<Body>,
     chart: ChartZodiac,
     zodiac: Zodiac,
+    days: &'a [Panchanga],
 }
 
 impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for ProviderSources<'_, P> {
@@ -124,7 +125,36 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             bodies: bodies_of(over.settings),
             chart,
             zodiac,
+            days: &[],
         })
+    }
+
+    /// The same sources, answering a day from `days` when it is there —
+    /// consecutive days, as `Almanac::between` founds a range — and from
+    /// the almanac otherwise: so a caller that founded the range for its
+    /// own use does not have the search found each day a second time.
+    ///
+    /// The days must be founded with the same almanac at the same place;
+    /// a day of `days` is taken as the one the almanac would give.
+    #[must_use]
+    pub const fn with_days(mut self, days: &'a [Panchanga]) -> ProviderSources<'a, P> {
+        self.days = days;
+        self
+    }
+
+    /// The day of `days` on `date`, when `days` holds it.
+    fn founded(&self, date: &CalendarDate) -> Result<Option<&Panchanga>, Error> {
+        let Some(first) = self.days.first() else {
+            return Ok(None);
+        };
+        let offset = self
+            .calendar
+            .fixed_of(&first.day.date)?
+            .days_until(self.calendar.fixed_of(date)?);
+        Ok(usize::try_from(offset)
+            .ok()
+            .and_then(|index| self.days.get(index))
+            .filter(|day| same_day(&day.day.date, date)))
     }
 
     /// The grahas' source: the chart's own frame, at the place.
@@ -150,7 +180,10 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
     }
 
     fn day(&self, date: &CalendarDate) -> Result<Panchanga, Error> {
-        Ok(self.almanac.day(date, &self.place)?.value)
+        match self.founded(date)? {
+            Some(day) => Ok(day.clone()),
+            None => Ok(self.almanac.day(date, &self.place)?.value),
+        }
     }
 
     fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Vec<Blackout>, Error> {

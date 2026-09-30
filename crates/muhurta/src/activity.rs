@@ -31,7 +31,11 @@ use crate::window::navamsa_of;
 /// Which month a rite is keyed on (crux C161).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "reckoning", rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(
+    tag = "reckoning",
+    rename_all = "SCREAMING_SNAKE_CASE",
+    rename_all_fields = "camelCase"
+)]
 pub enum MonthRule {
     /// No month is graded.
     Any,

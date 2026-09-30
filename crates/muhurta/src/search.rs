@@ -101,6 +101,7 @@ const LAGNA_MARGIN_DAYS: f64 = 0.125;
 /// What to search for.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The activity's rules.
     pub rules: ActivityRules,
@@ -131,6 +132,7 @@ pub struct ClosedDay {
 /// The answer.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Answer {
     /// The windows judged, best first under the ranking, at most `most`.
     pub windows: Vec<Judgement>,
@@ -247,7 +249,7 @@ fn dates<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Vec<Cale
 /// Whether two dates name the same day. The whole dates may differ where
 /// the day does not: a calendar's own `date_of` attaches the era view and
 /// its resolution, which a caller's date need not carry.
-fn same_day(a: &CalendarDate, b: &CalendarDate) -> bool {
+pub(crate) fn same_day(a: &CalendarDate, b: &CalendarDate) -> bool {
     (a.calendar, a.year, a.month, a.day) == (b.calendar, b.year, b.month, b.day)
 }
 

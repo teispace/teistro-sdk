@@ -38,6 +38,7 @@ const HALF_GHATI_DAYS: f64 = 12.0 / 1440.0;
 /// An instant the lagna enters a navamsa.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct LagnaCut {
     /// When.
     pub at: JulianDay<Utc>,

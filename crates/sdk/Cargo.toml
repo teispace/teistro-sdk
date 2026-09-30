@@ -33,6 +33,7 @@ teistro-strength = { path = "../strength" }
 teistro-tajika = { path = "../tajika" }
 teistro-gochar = { path = "../gochar" }
 teistro-kp = { path = "../kp" }
+teistro-muhurta = { path = "../muhurta" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
 teistro-siddhanta = { path = "../siddhanta" }
@@ -85,6 +86,10 @@ workspace = true
 
 [[test]]
 name = "sealing"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

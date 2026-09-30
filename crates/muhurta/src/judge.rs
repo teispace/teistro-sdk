@@ -19,6 +19,7 @@ use crate::clause::Clause;
 /// Every clause that held over one window.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Judgement {
     /// The window.
     pub at: Interval,
@@ -95,8 +96,8 @@ fn covers(outer: Interval, inner: Interval) -> bool {
     outer.from.get() <= inner.from.get() && outer.to.get() >= inner.to.get()
 }
 
-/// How windows are ordered (crux C162).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// How windows are ordered (crux C162); the texts' order by default.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
@@ -107,6 +108,7 @@ pub enum Ranking {
     /// neutralisations are reported as clauses for the time and weigh as
     /// that — because which neutralisation lifts which dosha the texts
     /// give case by case, and a table of it is not yet sourced.
+    #[default]
     Texts,
     /// The baseline engine's weights (`muhurta.md` §4.5), which the
     /// roadmap's regression is stated in: open windows first, then those

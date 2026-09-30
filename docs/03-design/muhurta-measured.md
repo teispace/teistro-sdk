@@ -72,8 +72,8 @@ matter is the rules' to say.
 
 | search | windows | unsteady | clauses over part of a window | neighbours judged alike | shortest | under six minutes |
 |---|---:|---:|---:|---:|---:|---:|
-| the baseline's | 2062 | 0 | 0 | 706 | 0.70 s | 847 |
-| Raman's | 13 411 | 0 | 0 | 4516 | 0.15 s | 5470 |
+| the baseline's | 2062 | 0 | 0 | 706 | 0.23 s | 846 |
+| Raman's | 13 411 | 0 | 0 | 4516 | 0.07 s | 5469 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
@@ -106,3 +106,33 @@ C158, where panchaka begins, is not counted: it is closed at rank 1
 (Dhanishtha's latter half), and the rival start parts from it at
 every panchaka by construction, so a count would be the number of
 lunar months.
+
+## 6. What ships
+
+The searches above are the façade's (`sdk.almanac().muhurta`),
+read back through the muhurta crate wired by hand, because the
+re-reads need its sources. The façade takes the chart zodiac at the
+range's middle and names that instant in its provenance, and the
+hand-wired sources take the instant it names, so the two are one
+search and are held to one answer.
+
+A consumer electing a time shows the almanac beside the windows.
+`muhurta_with_days` founds the range once and serves the search
+its days. Counted in calls that reach the provider behind a fresh
+context's cache, over Raman's search:
+
+| asked | provider calls |
+|---|---:|
+| the search alone | 115 340 |
+| the almanac alone | 5715 |
+| the two apart | 121 055 |
+| the two together | 116 379 |
+
+Together they are spared 4676 calls, 3.9% of the two apart: the
+almanac beside the search adds 0.9% to the search's own.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the façade answers the baseline's search as the crate wired by hand does | **holds** | 0 of 1 disagree |
+| asked beside its days, Raman's search answers as it does alone | **holds** | 0 of 1 disagree |
+

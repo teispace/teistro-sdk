@@ -1,6 +1,6 @@
 # Muhurta at the boundary: a search for a time in every binding
 
-Status: `design`, 2026-09-30. It is step 7 of [`muhurta.md`](muhurta.md)
+Status: `building`, 2026-09-30: §8 steps 1 and 2 built. It is step 7 of [`muhurta.md`](muhurta.md)
 §6, and after it the search is reachable outside Rust. Built on
 [`panchanga-at-the-boundary-measured.md`](panchanga-at-the-boundary-measured.md)
 (the almanac's blob), [`rules-at-the-boundary.md`](rules-at-the-boundary.md)
@@ -47,8 +47,10 @@ once for the blob and again for the search. **The sources are served
 from the days the request founded** (`ProviderSources::with_days`), and
 fall back to the almanac for a date outside them. The fallback is there
 so the Rust call that asks for no blob still works unchanged. The
-measured page counts the days each path founds, so the saving is
-reported and not merely claimed.
+measured page counts the provider calls each path makes, so the saving
+is reported and not merely claimed. As measured, it is small: the
+almanac of a range is a few per cent of what a search over the range
+asks (§6).
 
 ### 2.3 Two choices the search made silently
 
@@ -181,18 +183,29 @@ already have.
 
 ## 3. The request
 
-**Rust.** The façade gains `sdk.muhurta()`:
+**Rust.** The search is an operation of the almanac area, not an area
+of its own. `check-areas` defines an area as a boundary module that a
+context member reaches, and the search rides on the panchanga module,
+as KP and the rules ride on the chart's:
 
 ```rust
-let found = sdk.muhurta().search(&MuhurtaRequest::new(
-    ActivityRules::raman_marriage(), from, to, place, clock,
-).with_native(native).ranked(Ranking::Texts))?;
-// Envelope<Found>: the answer, the criterion and the zodiac instant applied.
-let (days, hashes, found) = sdk.muhurta().search_with_days(&request)?;
+let asked = MuhurtaRequest::new(ActivityRules::raman_marriage()).with_native(native);
+let found = sdk.almanac().muhurta(&from, &to, &place, clock, &asked)?;
+// And the days a consumer shows beside the windows, founded once:
+let MuhurtaDays { days, day_hashes, answer } =
+    sdk.almanac().muhurta_with_days(&from, &to, &place, clock, &asked)?;
 ```
 
-`search_with_days` is the shared path of §2.2. It founds the range once
-and hands the days to the search, and the C boundary calls it.
+`muhurta_with_days` is the shared path of §2.2, and the C boundary calls
+it. `muhurta` founds only the days the season leaves open. It stamps the
+answer with the first day's provenance, then hands that day on to the
+search so it is not founded twice.
+
+**What was applied** goes where the envelope already says it:
+`provenance.applied_conventions`. It carries `muhurta.asta` (the
+criterion's canonical JSON) and `muhurta.zodiacAt` (the instant). The
+input hash covers the range, the place, the clock and the request, so
+another criterion is another input.
 
 **The record** a binding writes as `muhurta` (`muhurta_json` in C) is
 read by `MuhurtaRequest::from_json` with `deny_unknown_fields`. Its keys
@@ -213,10 +226,15 @@ disagree.
 
 ## 4. The answer
 
-The `muhurta` section holds canonical JSON:
-`{answer, applied: {asta, zodiacAt}}`, where `answer` is `Answer`'s
-serde with catalogue members written in full (§2.6). An instant is a UTC
-Julian day, as everywhere else at the boundary.
+The `muhurta` section holds canonical JSON: the answer's envelope,
+`{value, provenance}`. `value` is `Answer`'s serde with catalogue members
+written in full (§2.6). The envelope is sealed over exactly that value,
+so its content hash is the hash of the bytes a binding holds. The Rust
+façade's envelope is sealed over bare keys, so the two hashes differ for
+one answer; each belongs to the value beside it. Every binding already
+decodes a provenance. An instant is a UTC Julian day, as everywhere else
+at the boundary. The muhurta crate's fields are camel-cased, as KP's and
+Tajika's are, so the request and the answer spell a field one way.
 
 - **Node** hands it through deep-frozen as `panchanga.muhurta`, typed by
   a discriminated union over `clause` in `index.d.ts`. A typecheck
@@ -249,13 +267,15 @@ Julian day, as everywhere else at the boundary.
 
 ## 6. Cost
 
-The search's cost is cutting its best days into windows, which is
-lagna crossings and a sky at each window. The measured page takes about
-42 s locally for two searches over three months together with its
-re-reads, and nothing yet splits that between the search and the
-re-reads. With §2.2 the almanac's cost is paid once per crossing, not
-twice. The measured page gains a row for founded days per
-path, and CI's fast-check step duration is read before the PR merges.
+The search's cost is cutting its best days into windows: lagna crossings
+and a sky read at each window. Sharing the days (§2.2) was designed as
+the saving, and the measured page (§6) shows it is the smaller one. The
+almanac is a few per cent of the provider calls the search makes. What
+remains is the search's own reading of the sky, window by window, and
+that is where the next saving lies: reading a day's windows as one grid,
+as the port asks a caller to (`ephemeris-port-and-adapters.md` §3). The
+page takes about 80 s locally, and CI's fast-check step duration is read
+before the PR merges.
 
 ## 7. What this design does not settle
 
@@ -275,10 +295,12 @@ path, and CI's fast-check step duration is read before the PR merges.
 1. **Catalogue full keys** (§2.5): the generated reader, the schema,
    `from_either_key`, and the two hand copies deleted. Tested both ways,
    including the wrong kind's prefix being refused.
-2. **The façade** (§3): `sdk.muhurta()`, `MuhurtaRequest` and its JSON
-   record, `ProviderSources::with_days`, and the applied criterion and
-   instant. The xtask pass moves onto the façade so the page measures
-   what ships.
+2. **The façade** (§3): `sdk.almanac().muhurta` and `muhurta_with_days`,
+   `MuhurtaRequest` and its JSON record, `ProviderSources::with_days`, and
+   the applied criterion and instant. The measured page now searches
+   through the façade. It holds the façade to the crate wired by hand,
+   and counts what the provider is asked for the search and the almanac
+   apart and together (`muhurta-measured.md` §6).
 3. **The C ABI**: `muhurta_json` on `ts_panchanga_request`, the
    `muhurta` section with the full-key table (§2.6), the ABI test, and
    the keys test.
