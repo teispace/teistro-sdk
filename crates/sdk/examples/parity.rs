@@ -3105,6 +3105,69 @@ fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffs
     );
 }
 
+/// A rule of a consumer's own the runners hand in beside the shipped pack:
+/// Lakshmi puja on whichever day holds the new moon at sunrise.
+const OWN_RULE: &str = r#"{"key":"LAKSHMI_PUJA","source":"the tithi at sunrise","month":"masa.ASHWINA","tithi":"tithi.AMAVASYA","at":{"window":"SUNRISE"},"decide":[],"otherwise":"LATER"}"#;
+
+/// The festivals a panchanga request carries, the shipped pack and the
+/// pack amended by a rule of the consumer's own, as the report prints them.
+///
+/// 2024-10-10..11-03 at the test provider holds Vijaya Dashami and
+/// Lakshmi puja, so an observance's case, guard and dates cross every
+/// layer, and the amended pack proves a rule is replaced by its key.
+fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 10);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
+    for (name, rules) in [
+        ("shipped", r#""DHARMASINDHU""#.to_owned()),
+        ("amended", format!(r#"["DHARMASINDHU",{OWN_RULE}]"#)),
+    ] {
+        let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
+            .expect("a festival request");
+        let answer = geo
+            .almanac()
+            .festivals(&from, &to, place, offset, &asked)
+            .expect("the test provider")
+            .value;
+        let key = |what: &str| format!("festivals-{name}{what}");
+        put(
+            report,
+            &key("-counts"),
+            format!("{} {}", answer.observances.len(), answer.unjudged.len()),
+        );
+        // The boundary seals the full-keyed value, so the hash every
+        // binding reads is of that.
+        let written = answer.in_full().expect("a written answer");
+        put(
+            report,
+            &key("-hash"),
+            teistro_core::envelope::content_hash(&written).to_string(),
+        );
+        for (k, observance) in answer.observances.iter().enumerate() {
+            let by = match observance.decided_by {
+                teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
+                teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
+            };
+            let [earlier, later] = &observance.extents;
+            put(
+                report,
+                &key(&format!("-{k}")),
+                format!(
+                    "{} {}-{} {} {by} {} {} {} {}",
+                    observance.rule,
+                    observance.day.month,
+                    observance.day.day,
+                    tag(&observance.case),
+                    tag(&observance.choice),
+                    number(observance.tithi.from.get()),
+                    number(earlier.held),
+                    number(later.held),
+                ),
+            );
+        }
+    }
+}
+
 /// The muhurta search a panchanga request carries, under both rankings,
 /// as the report prints it.
 ///
@@ -3265,6 +3328,7 @@ fn main() {
     let (geo, place, offset) = charts(&mut report);
     an_almanac(&mut report, &geo, &place, offset);
     a_muhurta(&mut report, &geo, &place, offset);
+    festivals(&mut report, &geo, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

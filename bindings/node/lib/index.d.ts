@@ -2467,6 +2467,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly model: string;
   /** The muhurta search the request asked for over these days, or `null` when it asked for none. */
   readonly muhurta: MuhurtaAnswer | null;
+  /** The days the festival rules the request asked for fall on over these days, or `null` when it asked for none. */
+  readonly festivals: FestivalAnswer | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -2546,6 +2548,115 @@ export interface AlmanacRequest {
   readonly utcOffsetSeconds: number;
   /** A muhurta search over the same days, answered as `Almanac.muhurta`; none by default, which costs nothing. */
   readonly muhurta?: MuhurtaRequest;
+  /** Festival rules to fall over the same days, answered as `Almanac.festivals`; none by default, which costs nothing. */
+  readonly festivals?: FestivalRequest;
+}
+
+/**
+ * Festival rules to reckon over an almanac's days
+ * (`03-design/festival-rules.md` §7). A catalogue member may be written
+ * bare (`'ASHWINA'`) or in full (`'masa.ASHWINA'`).
+ */
+export interface FestivalRequest {
+  /**
+   * A pack the SDK ships, by name; or a list whose items each name a pack
+   * or spell a rule out, in order, a later rule replacing an earlier one
+   * with its key.
+   */
+  readonly rules: FestivalPack | readonly (FestivalPack | FestivalRule)[];
+}
+
+/** A pack of festival rules the SDK ships. */
+export type FestivalPack = 'DHARMASINDHU';
+
+/** A fifth of the daylight (*Dharmasindhu*, p. 6). */
+export type FestivalDayPart = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
+
+/** The time of a rite. */
+export type FestivalWindow =
+  | { readonly window: 'SUNRISE' }
+  | { readonly window: 'PART'; readonly part: FestivalDayPart }
+  | { readonly window: 'PRADOSHA' }
+  | { readonly window: 'NISHITHA' };
+
+/** One of the tithi's two days. */
+export type FestivalWhich = 'EARLIER' | 'LATER';
+
+/** How a tithi held the rite's time on its two days. */
+export type FestivalCase =
+  | 'EARLIER_ONLY'
+  | 'LATER_ONLY'
+  | 'BOTH'
+  | 'NEITHER'
+  | 'EQUAL_PARTS'
+  | 'UNEQUAL_PARTS';
+
+/** Something a guard asks of the two days. */
+export type FestivalPredicate =
+  | { readonly is: 'CASE'; readonly case: FestivalCase }
+  | { readonly is: 'JOINED'; readonly day: FestivalWhich; readonly nakshatra: Nakshatra; readonly at?: FestivalWindow }
+  | { readonly is: 'STANDS'; readonly day: FestivalWhich; readonly nakshatra: Nakshatra; readonly at: FestivalWindow }
+  | { readonly is: 'LASTS'; readonly day: FestivalWhich; readonly from: 'SUNRISE' | 'SUNSET'; readonly ghatis: number };
+
+/** What a guard, or a rule's `otherwise`, decides. */
+export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA';
+
+/** A rule: when an observance falls, and how its day is decided (`03-design/festival-rules.md` §4.1). */
+export interface FestivalRule {
+  /** Its key in its pack, `'JANMASHTAMI'`; an observance is named by it. */
+  readonly key: string;
+  /** Where the rule is stated. */
+  readonly source: string;
+  /** The month, under `convention`. */
+  readonly month: Masa;
+  /** The convention the month is named in; `'AMANTA'` by default. */
+  readonly convention?: LunarMonth;
+  /** The tithi; its paksha is the tithi's. */
+  readonly tithi: Tithi;
+  /** Whether an adhika month holds it too; only the nija month by default (C171). */
+  readonly inAdhika?: boolean;
+  /** The time of the rite. */
+  readonly at: FestivalWindow;
+  /** The guards, in order; the first whose predicates all hold decides. */
+  readonly decide: readonly { readonly when: readonly FestivalPredicate[]; readonly choose: FestivalChoice }[];
+  /** What decides when no guard holds. */
+  readonly otherwise: FestivalChoice;
+}
+
+/** A day's window for the rite, and the fraction of it the tithi held. */
+export interface FestivalExtent {
+  readonly day: CalendarDate;
+  /** The window; an instant's has no length. */
+  readonly window: Interval;
+  /** 0 to 1; an instant's is 0 or 1. */
+  readonly held: number;
+}
+
+/** An observance: the day a rule falls on, and why. */
+export interface FestivalObservance {
+  /** The rule's key. */
+  readonly rule: string;
+  /** The day. */
+  readonly day: CalendarDate;
+  /** The tithi's occurrence judged. */
+  readonly tithi: Interval;
+  readonly case: FestivalCase;
+  /** The earlier day's extent and the later's. */
+  readonly extents: readonly [FestivalExtent, FestivalExtent];
+  /** The guard, by its index in the rule's list, or the rule's `otherwise`. */
+  readonly decidedBy: { readonly by: 'GUARD'; readonly index: number } | { readonly by: 'OTHERWISE' };
+  /** The choice that decided, which `day` resolves. */
+  readonly choice: FestivalChoice;
+}
+
+/** What a set of festival rules gives over an almanac's days (`03-design/festival-rules.md` §7.3), frozen to its leaves. */
+export interface FestivalAnswer {
+  /** Each rule's days, in the order of the tithis. */
+  readonly observances: readonly FestivalObservance[];
+  /** The occurrences no day could be given to, and why. */
+  readonly unjudged: readonly { readonly rule: string; readonly tithi: Interval; readonly why: string }[];
+  /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */
+  readonly provenance: Provenance;
 }
 
 /**

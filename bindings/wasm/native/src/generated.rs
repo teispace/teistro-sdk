@@ -2855,6 +2855,19 @@ pub struct PanchangaRequest {
     /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub muhurta_json: Option<String>,
+    /// The days festival rules fall on over the same days, as a JSON
+    /// object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+    /// whose items name a pack or spell a rule out, a later rule
+    /// replacing an earlier one with its key. A catalogue member may be
+    /// written bare or in full. The answer comes back in the `festivals`
+    /// section, over this blob's own days founded once, with the day
+    /// before and the two after founded beside them
+    /// (`03-design/festival-rules.md` §7). Null for none, which costs
+    /// nothing. Refusals are named from the record every binding calls
+    /// `festivals`, down to a rule's own field under `festivals.rules`.
+    /// Example: {"rules":"DHARMASINDHU"}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub festivals_json: Option<String>,
 }
 
 /// What a `PanchangaRequest` lends the C struct built from it: the buffers its
@@ -2872,6 +2885,7 @@ pub struct HeldPanchangaRequest {
     altitude_m: f64,
     utc_offset_seconds: i32,
     muhurta_json: Option<std::ffi::CString>,
+    festivals_json: Option<std::ffi::CString>,
 }
 
 impl HeldPanchangaRequest {
@@ -2894,6 +2908,10 @@ impl HeldPanchangaRequest {
             reserved_tail: Default::default(),
             muhurta_json: self
                 .muhurta_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            festivals_json: self
+                .festivals_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2920,6 +2938,11 @@ impl PanchangaRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            festivals_json: self
+                .festivals_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2943,6 +2966,7 @@ impl PanchangaRequest {
             altitude_m: raw.altitude_m as _,
             utc_offset_seconds: raw.utc_offset_seconds as _,
             muhurta_json: unsafe { lent_text(raw.muhurta_json) },
+            festivals_json: unsafe { lent_text(raw.festivals_json) },
         }
     }
 }

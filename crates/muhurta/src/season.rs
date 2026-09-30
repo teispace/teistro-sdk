@@ -41,9 +41,12 @@ pub enum BlackoutKind {
     /// (nija) Ashadha to the start of the bright eleventh of (nija)
     /// Kartika, the four months Vishnu sleeps.
     Chaturmas,
-    /// An intercalary month, which holds no sankranti.
+    /// An intercalary month, which holds no sankranti: Nepal's Malmas,
+    /// also called Purushottam masa (C177).
     AdhikaMasa,
-    /// The Sun in Sagittarius or Pisces (Kharmas, Malmas).
+    /// The Sun in Sagittarius or Pisces. Some north Indian calendars call
+    /// it Malmas, a word that in Nepal names the adhika month instead
+    /// (C177).
     Kharmas,
     /// The dark fortnight of (nija, amanta) Bhadrapada, from the start of
     /// the Purnima it is counted from to the Mahalaya new moon.

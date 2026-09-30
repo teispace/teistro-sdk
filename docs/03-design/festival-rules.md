@@ -262,13 +262,12 @@ reports that it did.
 1. **Built**: the types, the evaluator (`teistro_panchanga::festival`)
    and the synthetic-day tests (§5.1), proved red by breaking a rule
    and the verse.
-2. **Built**: `sdk.almanac().festivals(from, to, place, clock, &rules)`
-   over days founded once, widened by one day before and two after in
-   runs within the almanac's limit, so that a whole year can be asked
-   for. The range the caller asks for is still held to that limit, by
-   the same refusal (`almanac::days_in`). A rule is refused by its place in the
-   request (`rules[2].decide.when.muhurtas`). Over 2026 at Delhi each
-   shipped rule falls once, in its season, with nothing unjudged.
+2. **Built**: `sdk.almanac().festivals(from, to, place, clock, &request)`
+   over days founded once, widened by one day before and two after, so
+   that a whole year can be asked for. A rule is refused by its place in
+   the request (`rules[2].decide.when.ghatis`). Over 2026 at Delhi each
+   shipped rule falls once, in its season, with nothing unjudged. The
+   widening is founded as runs of its own (§7.1, step 4).
 3. **Built**: the measured pass (`cargo xtask festival`, gated in
    fast-check) and `festival-measured.md`. It corrected two rules
    (§4.1). What remains apart from the published days is the Vaishnava
@@ -276,5 +275,82 @@ reports that it did.
    gives the later day beyond doubt, and the list takes the earlier.
    The two guards no year of the decade reached each cite the crate test
    that reaches them, and the pass checks that the test exists.
-4. The boundary and the bindings, as muhurta step 7 did.
+4. **Built**: the boundary and the bindings (§7). `FestivalRequest`
+   amends a pack rule by rule, `festivals_json` on the panchanga request
+   carries it, and the `festivals` section answers it in every binding.
+   `sdk.almanac().asked` founds the days once when muhurta and festivals
+   are asked together. The parity runners ask the shipped pack and the
+   pack amended by a rule of the runner's own, and all five agree.
 5. Ekadashi, both schools, held to pp. 11–12's examples.
+
+## 7. At the boundary
+
+Derived from how the muhurta search crossed
+(`muhurta-at-the-boundary.md`) and from reading the façade as built.
+
+### 7.1 What reading the façade found
+
+- **The days would be sealed twice over, differently.** A C request's
+  `days` section is the caller's range, sealed as `of_each` seals it.
+  The rules need a day before it and two after (§4.3). Slicing the
+  widened run would carry its provenance, whose input hash names the
+  wider range, so a binding would get days whose hash differs from
+  `of_each`'s for the same range. **The widening is founded as three
+  runs instead**: the day before, the caller's range, and the two days
+  after. The middle run is exactly `of_each`'s, and nothing is founded
+  twice. This also removes the chunking loop, because the caller's range
+  is already held to the almanac's limit.
+- **A pack cannot yet be amended, though §4.3 promises it.** In Rust a
+  consumer edits the `Vec`. A binding sends a record, and spelling out
+  four rules to change one is a dead end. The record takes a list whose
+  items are either a pack's name or a rule. A later rule replaces an
+  earlier one with the same key, in its place.
+- **Two rules with one key are accepted today.** The answer names an
+  observance by its rule's key, so two such rules would give two
+  answers a reader cannot tell apart. The request refuses the second,
+  naming `rules[i].key`.
+
+### 7.2 The request
+
+```rust
+let asked = FestivalRequest::from(FestivalPack::Dharmasindhu).with_rule(my_lakshmi_puja);
+let found = sdk.almanac().festivals(&from, &to, &place, clock, &asked)?;
+let FestivalDays { days, day_hashes, answer } =
+    sdk.almanac().festivals_with_days(&from, &to, &place, clock, &asked)?;
+```
+
+The record a binding writes as `festivals` (`festivals_json` in C) is
+read by `FestivalRequest::from_json`:
+
+| Key | Type | Default |
+| --- | --- | --- |
+| `rules` | `"DHARMASINDHU"`, or a list whose items are `"DHARMASINDHU"` or a `FestivalRule` in its serde spelling; a later rule replaces an earlier one with its key | required |
+
+A catalogue member may be written bare or in full, as for every
+request. A refusal names its path: `festivals.rules[2].decide`.
+
+### 7.3 The answer
+
+The `festivals` section holds canonical JSON, the envelope
+`{value, provenance}` of `Observances`. Its catalogue members are
+written in full: the day's calendar and era, the only ones the answer
+names. The envelope is sealed over exactly those bytes, as muhurta's
+is. The provenance carries `festival.days`, the widened range.
+
+- **Node and wasm** hand it through deep-frozen as `almanac.festivals`,
+  typed in `index.d.ts`. A typecheck fixture reads an observance's rule
+  key and `decidedBy` back.
+- **Python** builds frozen dataclasses, and **Dart** sealed final
+  classes, as for muhurta.
+- **The parity runners** print every observance (rule, day, case,
+  guard, choice, the tithi's start and both extents) and the content
+  hash, for the shipped pack and for the pack with one rule replaced,
+  and all five must agree.
+
+### 7.4 Errors
+
+| Case | Error |
+| --- | --- |
+| Malformed `festivals_json`, an unknown pack or field | `INVALID_ARG` naming the key under `festivals` |
+| A rule `check` refuses, or a key given twice | `INVALID_ARG` on `festivals.rules[i].<field>` |
+| The range | the almanac's own refusal, which comes first |

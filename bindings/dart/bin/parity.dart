@@ -51,6 +51,34 @@ String listed(Iterable<String> items) {
   return joined.isEmpty ? 'none' : joined;
 }
 
+/// A festival answer's counts, hash and every observance, as every runner
+/// prints them.
+void putFestivals(String prefix, FestivalAnswer answer) {
+  put(
+    '$prefix-counts',
+    '${answer.observances.length} ${answer.unjudged.length}',
+  );
+  put('$prefix-hash', answer.provenance.contentHash);
+  for (final (k, observance) in answer.observances.indexed) {
+    final decided = observance.decidedBy;
+    final by = decided.by == 'GUARD' ? 'guard:${decided.index}' : 'otherwise';
+    final (earlier, later) = observance.extents;
+    put(
+      '$prefix-$k',
+      [
+        observance.rule,
+        '${observance.day.month}-${observance.day.day}',
+        observance.case_,
+        by,
+        observance.choice,
+        number(observance.tithi.from),
+        number(earlier.held),
+        number(later.held),
+      ].join(' '),
+    );
+  }
+}
+
 /// A muhurta answer's counts, hash and every window, as every runner
 /// prints them.
 void putMuhurta(String prefix, MuhurtaAnswer answer) {
@@ -1262,6 +1290,36 @@ void main() {
             )
             .muhurta!;
     putMuhurta('muhurta-$name', muhurta);
+  }
+
+  // ── Festivals ────────────────────────────────────────────────────────
+  // The shipped pack, and the pack amended by a rule of the consumer's
+  // own (Lakshmi puja on whichever day holds the new moon at sunrise),
+  // over 2024-10-10..11-03.
+  const ownRule = <String, Object?>{
+    'key': 'LAKSHMI_PUJA',
+    'source': 'the tithi at sunrise',
+    'month': 'masa.ASHWINA',
+    'tithi': 'tithi.AMAVASYA',
+    'at': {'window': 'SUNRISE'},
+    'decide': <Object?>[],
+    'otherwise': 'LATER',
+  };
+  for (final (name, rules) in <(String, Object)>[
+    ('shipped', FestivalPack.dharmasindhu),
+    ('amended', [FestivalPack.dharmasindhu, ownRule]),
+  ]) {
+    final festivals =
+        geo.almanac
+            .of(
+              from: Calendar.gregorian.date(2024, 10, 10),
+              to: Calendar.gregorian.date(2024, 11, 3),
+              place: place,
+              utcOffsetSeconds: 20700,
+              festivals: FestivalRequest(rules: rules),
+            )
+            .festivals!;
+    putFestivals('festivals-$name', festivals);
   }
   geo.dispose();
 

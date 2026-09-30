@@ -4013,6 +4013,9 @@ class Panchanga:
     muhurta: str
     """UTF-8 JSON, canonical: the muhurta search `muhurta_json` asked for over these days, as its envelope `{value, provenance}` (`03-design/muhurta-at-the-boundary.md`). `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`: each window `{at, clauses, barredBy, score}`, an interval `{from, to}` in UTC Julian days, every clause `{clause, at, ...}` tagged by its kind with that kind's fields beside the tag, `barredBy` the bars that struck it (a clause's key or a clause), and `score` the baseline's `{value, factors, cappedAt}` under the `BASELINE` ranking, else null; each closed day `{date, by}`, the blackouts that closed it. Every catalogue member is written as its full key (`nakshatra.ROHINI`), and the envelope is sealed over exactly this value. Empty when `muhurta_json` asked for none."""
 
+    festivals: str
+    """UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, unjudged}`: each observance `{rule, day, tithi, case, extents, decidedBy, choice}`, the rule's key, the calendar date it falls on, the tithi's occurrence `{from, to}` in UTC Julian days, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}` or `{by: OTHERWISE}`, and the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves); each unjudged occurrence `{rule, tithi, why}`. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -4043,6 +4046,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_provenance_json = blob.section(19, "provenance_json")
     at_content_hashes = blob.section(20, "content_hashes")
     at_muhurta = blob.section(21, "muhurta")
+    at_festivals = blob.section(22, "festivals")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -4302,6 +4306,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
         provenance_json=blob.text(at_provenance_json),
         content_hashes=blob.text(at_content_hashes),
         muhurta=blob.text(at_muhurta),
+        festivals=blob.text(at_festivals),
     )
 
 

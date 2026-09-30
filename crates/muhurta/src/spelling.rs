@@ -15,7 +15,7 @@
 //! same [`Answer`] it was written from.
 
 use serde_json::Value;
-use teistro_core::catalogue::Kind;
+use teistro_core::catalogue::{Kind, write_in_full};
 use teistro_core::error::{Error, Status};
 
 use crate::clause::ClauseKey;
@@ -127,43 +127,6 @@ fn items<'v>(value: &'v mut Value, field: &str) -> impl Iterator<Item = &'v mut 
         .and_then(Value::as_array_mut)
         .into_iter()
         .flatten()
-}
-
-/// Writes the member at a dotted path in full, each of a list's members,
-/// and nothing for an absent or null one. A path through a list
-/// (`score.factors.graha`) reaches every element.
-fn write_in_full(value: &mut Value, path: &str, kind: Kind) {
-    match value {
-        Value::Array(list) => {
-            for item in list {
-                write_in_full(item, path, kind);
-            }
-        }
-        Value::Object(fields) => {
-            let (field, rest) = path.split_once('.').unwrap_or((path, ""));
-            if let Some(inner) = fields.get_mut(field) {
-                if rest.is_empty() {
-                    member_in_full(inner, kind);
-                } else {
-                    write_in_full(inner, rest, kind);
-                }
-            }
-        }
-        _ => {}
-    }
-}
-
-/// A bare member key, or a list of them, as full keys.
-fn member_in_full(value: &mut Value, kind: Kind) {
-    match value {
-        Value::String(key) => *key = format!("{}.{key}", kind.name()),
-        Value::Array(list) => {
-            for item in list {
-                member_in_full(item, kind);
-            }
-        }
-        _ => {}
-    }
 }
 
 #[cfg(test)]

@@ -1403,6 +1403,19 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
   external ffi.Pointer<ffi.Char> muhurtaJson;
 
+  /// The days festival rules fall on over the same days, as a JSON
+  /// object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+  /// whose items name a pack or spell a rule out, a later rule
+  /// replacing an earlier one with its key. A catalogue member may be
+  /// written bare or in full. The answer comes back in the `festivals`
+  /// section, over this blob's own days founded once, with the day
+  /// before and the two after founded beside them
+  /// (`03-design/festival-rules.md` §7). Null for none, which costs
+  /// nothing. Refusals are named from the record every binding calls
+  /// `festivals`, down to a rule's own field under `festivals.rules`.
+  /// Example: {"rules":"DHARMASINDHU"}. May be null.
+  external ffi.Pointer<ffi.Char> festivalsJson;
+
 }
 
 typedef TsAbiVersionNative = ffi.Uint32 Function();
@@ -3635,7 +3648,7 @@ final class IntlLoaded {
 /// one day passes a range of one.
 final class PanchangaRequest {
   /// A PanchangaRequest with every field named.
-  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, this.muhurtaJson});
+  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, this.muhurtaJson, this.festivalsJson});
 
   /// The calendar the range's dates are written in.
   /// Enum: Calendar. Example: 0.
@@ -3698,6 +3711,19 @@ final class PanchangaRequest {
   /// Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
   final String? muhurtaJson;
 
+  /// The days festival rules fall on over the same days, as a JSON
+  /// object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+  /// whose items name a pack or spell a rule out, a later rule
+  /// replacing an earlier one with its key. A catalogue member may be
+  /// written bare or in full. The answer comes back in the `festivals`
+  /// section, over this blob's own days founded once, with the day
+  /// before and the two after founded beside them
+  /// (`03-design/festival-rules.md` §7). Null for none, which costs
+  /// nothing. Refusals are named from the record every binding calls
+  /// `festivals`, down to a rule's own field under `festivals.rules`.
+  /// Example: {"rules":"DHARMASINDHU"}. May be null.
+  final String? festivalsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3721,6 +3747,9 @@ final class PanchangaRequest {
     raw.muhurtaJson = muhurtaJson == null
         ? ffi.nullptr
         : muhurtaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.festivalsJson = festivalsJson == null
+        ? ffi.nullptr
+        : festivalsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3742,6 +3771,9 @@ final class PanchangaRequest {
         muhurtaJson: raw.muhurtaJson == ffi.nullptr
             ? null
             : raw.muhurtaJson.cast<pkg_ffi.Utf8>().toDartString(),
+        festivalsJson: raw.festivalsJson == ffi.nullptr
+            ? null
+            : raw.festivalsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

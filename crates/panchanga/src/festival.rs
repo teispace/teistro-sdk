@@ -19,7 +19,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Masa, Nakshatra, Tithi};
+use teistro_core::catalogue::{Kind, Masa, Nakshatra, Tithi, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -444,6 +444,39 @@ pub struct Observances {
     pub observances: Vec<Observance>,
     /// The occurrences no day could be given to.
     pub unjudged: Vec<Unjudged>,
+}
+
+impl Observances {
+    /// Where an answer names catalogue members, and of which kind: a list
+    /// of [`Observances`], then a dotted path through each item. What a
+    /// boundary section writes in full; the crate's tests hold it to
+    /// serde, both ways.
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 4] = [
+        ("observances", "day.calendar", Kind::Calendar),
+        ("observances", "day.era.era", Kind::Era),
+        ("observances", "extents.day.calendar", Kind::Calendar),
+        ("observances", "extents.day.era.era", Kind::Era),
+    ];
+
+    /// The answer as JSON, every catalogue member written as its full key
+    /// where [`Observances::MEMBERS`] says: what a boundary section carries
+    /// and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if the answer does not serialise, which a value this
+    /// crate built cannot do.
+    pub fn in_full(&self) -> Result<serde_json::Value, Error> {
+        let mut value = serde_json::to_value(self).map_err(|error| {
+            Error::internal(format!("the observances did not serialise: {error}"))
+        })?;
+        for (list, path, kind) in Observances::MEMBERS {
+            if let Some(items) = value.get_mut(list) {
+                write_in_full(items, path, kind);
+            }
+        }
+        Ok(value)
+    }
 }
 
 /// The days each rule falls on over consecutive sunrise days.

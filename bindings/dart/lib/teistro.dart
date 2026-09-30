@@ -860,13 +860,15 @@ final class AlmanacArea extends _Area {
   /// by name.
   ///
   /// [muhurta] runs a search over the same days, answered as
-  /// [Almanac.muhurta].
+  /// [Almanac.muhurta], and [festivals] the rules whose days fall in them,
+  /// answered as [Almanac.festivals]; the days are founded once for both.
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
     required Observer place,
     required int utcOffsetSeconds,
     MuhurtaRequest? muhurta,
+    FestivalRequest? festivals,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -884,6 +886,7 @@ final class AlmanacArea extends _Area {
             altitudeM: place.altitudeM,
             utcOffsetSeconds: utcOffsetSeconds,
             muhurtaJson: muhurta?._json,
+            festivalsJson: festivals?._json,
           ),
         ),
       ),
@@ -5946,7 +5949,7 @@ MuhurtaAnswer _muhurtaAnswer(String json) {
     closed: List.unmodifiable([
       for (final day in each(value['closed']))
         ClosedDay(
-          date: _closedDate(at(day['date'])),
+          date: _serdeDate(at(day['date'])),
           by: List.unmodifiable((day['by']! as List<Object?>).cast<String>()),
         ),
     ]),
@@ -5967,10 +5970,11 @@ MuhurtaAnswer _muhurtaAnswer(String json) {
   );
 }
 
-/// A date as the Rust types serialise it, in this binding's own shape: the
+/// A date as the Rust types serialise it inside a JSON section (a muhurta
+/// answer's closed day, a festival's day), in this binding's own shape: the
 /// era beside its year, the resolution by name with a divergent one's
 /// computed day.
-CalendarDate _closedDate(Map<String, Object?> raw) {
+CalendarDate _serdeDate(Map<String, Object?> raw) {
   final resolution = raw['resolution']! as Map<String, Object?>;
   final era = raw['era'] as Map<String, Object?>?;
   final computed =
@@ -5990,6 +5994,242 @@ CalendarDate _closedDate(Map<String, Object?> raw) {
     computedDay: computed == null ? 0 : computed['day']! as int,
   );
 }
+
+/// A pack of festival rules the SDK ships, which a [FestivalRequest] may
+/// name.
+enum FestivalPack {
+  /// *Dharmasindhu*'s rules (`03-design/festival-rules.md` §1).
+  dharmasindhu('DHARMASINDHU');
+
+  const FestivalPack(this.key);
+
+  /// Its key, as the record names it.
+  final String key;
+}
+
+/// Festival rules to reckon over an almanac's days
+/// (`03-design/festival-rules.md` §7), answered as [Almanac.festivals].
+///
+/// `rules` is a [FestivalPack], or a list whose items are each a
+/// [FestivalPack] or a rule spelt out as the JSON record reads it, in which
+/// a catalogue member may stand as itself; a later rule replaces an earlier
+/// one with its key. Anything else is refused by name.
+///
+/// ```dart
+/// final almanac = ctx.almanac.of(/* … */
+///     festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu));
+/// final first = almanac.festivals?.observances.first;
+/// ```
+final class FestivalRequest {
+  const FestivalRequest({required this.rules});
+
+  /// A [FestivalPack], or a list of packs and rules spelt out.
+  final Object rules;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'rules': switch (rules) {
+      List<Object?> items => [
+        for (final (index, item) in items.indexed)
+          _item(item, 'festivals.rules[$index]'),
+      ],
+      final one => _item(one, 'festivals.rules'),
+    },
+  });
+
+  static Object? _item(Object? item, String field) => switch (item) {
+    FestivalPack pack => pack.key,
+    Map<String, Object?> spelt when field != 'festivals.rules' => _written(
+      spelt,
+    ),
+    _ =>
+      throw TeistroException(
+        Status.invalidArg,
+        '$field is a pack, or a list of packs and rules spelt out, not ${item.runtimeType}',
+        field: field,
+      ),
+  };
+}
+
+/// One of an observance's two days: its window for the rite, and the
+/// fraction of it the tithi held (0 to 1; an instant's is 0 or 1).
+final class FestivalExtent extends _Value {
+  const FestivalExtent({
+    required this.day,
+    required this.window,
+    required this.held,
+  });
+
+  final CalendarDate day;
+  final Interval window;
+  final double held;
+
+  @override
+  List<Object?> get _fields => [
+    ..._dateFields(day),
+    window.from,
+    window.to,
+    held,
+  ];
+}
+
+/// What decided an observance's day: a guard, by its index in the rule's
+/// list, or the rule's `otherwise`, whose [index] is `null`.
+final class FestivalDecided extends _Value {
+  const FestivalDecided({required this.by, this.index});
+
+  /// `GUARD` or `OTHERWISE`.
+  final String by;
+  final int? index;
+
+  @override
+  List<Object?> get _fields => [by, index];
+}
+
+/// The day a rule falls on, and why.
+final class FestivalObservance extends _Value {
+  const FestivalObservance({
+    required this.rule,
+    required this.day,
+    required this.tithi,
+    required this.case_,
+    required this.extents,
+    required this.decidedBy,
+    required this.choice,
+  });
+
+  /// The rule's key.
+  final String rule;
+  final CalendarDate day;
+
+  /// The tithi's occurrence judged.
+  final Interval tithi;
+
+  /// How the tithi held the rite's time on its two days: `EARLIER_ONLY`,
+  /// `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS` or `UNEQUAL_PARTS`;
+  /// `case_` because `case` is a keyword.
+  final String case_;
+
+  /// The earlier day's extent and the later's.
+  final (FestivalExtent, FestivalExtent) extents;
+  final FestivalDecided decidedBy;
+
+  /// The choice that decided, `EARLIER`, `LATER` or `BY_YUGMA`, which [day]
+  /// resolves.
+  final String choice;
+
+  @override
+  List<Object?> get _fields => [
+    rule,
+    ..._dateFields(day),
+    tithi.from,
+    tithi.to,
+    case_,
+    extents.$1,
+    extents.$2,
+    decidedBy,
+    choice,
+  ];
+}
+
+/// An occurrence no day could be given to, and why.
+final class FestivalUnjudged extends _Value {
+  const FestivalUnjudged({
+    required this.rule,
+    required this.tithi,
+    required this.why,
+  });
+
+  final String rule;
+  final Interval tithi;
+  final String why;
+
+  @override
+  List<Object?> get _fields => [rule, tithi.from, tithi.to, why];
+}
+
+/// What a set of festival rules gives over an almanac's days
+/// (`03-design/festival-rules.md` §7.3).
+final class FestivalAnswer {
+  const FestivalAnswer({
+    required this.observances,
+    required this.unjudged,
+    required this.provenance,
+  });
+
+  final List<FestivalObservance> observances;
+  final List<FestivalUnjudged> unjudged;
+
+  /// What computed it: the widened days among the applied conventions as
+  /// `festival.days`, and the hash of the value.
+  final Provenance provenance;
+}
+
+/// The `festivals` section: the envelope's value, its dates in this
+/// binding's shape, with the provenance beside it.
+FestivalAnswer _festivalAnswer(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final value = envelope['value']! as Map<String, Object?>;
+  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
+  List<Map<String, Object?>> each(Object? raw) => [
+    for (final item in raw! as List<Object?>) at(item),
+  ];
+  Interval interval(Object? raw) => Interval(
+    from: (at(raw)['from']! as num).toDouble(),
+    to: (at(raw)['to']! as num).toDouble(),
+  );
+  FestivalExtent extent(Map<String, Object?> raw) => FestivalExtent(
+    day: _serdeDate(at(raw['day'])),
+    window: interval(raw['window']),
+    held: (raw['held']! as num).toDouble(),
+  );
+
+  return FestivalAnswer(
+    observances: List.unmodifiable([
+      for (final raw in each(value['observances']))
+        FestivalObservance(
+          rule: raw['rule']! as String,
+          day: _serdeDate(at(raw['day'])),
+          tithi: interval(raw['tithi']),
+          case_: raw['case']! as String,
+          extents: switch (each(raw['extents'])) {
+            [final earlier, final later] => (extent(earlier), extent(later)),
+            final other =>
+              throw StateError(
+                'an observance has two extents, not ${other.length}',
+              ),
+          },
+          decidedBy: FestivalDecided(
+            by: at(raw['decidedBy'])['by']! as String,
+            index: at(raw['decidedBy'])['index'] as int?,
+          ),
+          choice: raw['choice']! as String,
+        ),
+    ]),
+    unjudged: List.unmodifiable([
+      for (final raw in each(value['unjudged']))
+        FestivalUnjudged(
+          rule: raw['rule']! as String,
+          tithi: interval(raw['tithi']),
+          why: raw['why']! as String,
+        ),
+    ]),
+    provenance: Provenance.fromJson(at(envelope['provenance'])),
+  );
+}
+
+/// A date's fields, for a value that holds one to compare by: the
+/// generated [CalendarDate] is a plain record without equality of its own.
+List<Object?> _dateFields(CalendarDate date) => [
+  date.calendar,
+  date.era,
+  date.year,
+  date.eraYear,
+  date.month,
+  date.day,
+  date.resolution,
+  date.computedMonth,
+  date.computedDay,
+];
 
 /// Each batch's KP readings, parsed once however many charts read them.
 final Expando<List<KpReading>> _kps = Expando<List<KpReading>>('kp');
@@ -9072,6 +9312,13 @@ final class Almanac {
   /// computed it. Parsed once.
   late final MuhurtaAnswer? muhurta =
       decoded.muhurta.isEmpty ? null : _muhurtaAnswer(decoded.muhurta);
+
+  /// The days the rules the request asked for fall on over these days, or
+  /// `null` when it asked for none (`03-design/festival-rules.md` §7): each
+  /// observance with the case between its tithi's two days and the guard
+  /// that decided. Parsed once.
+  late final FestivalAnswer? festivals =
+      decoded.festivals.isEmpty ? null : _festivalAnswer(decoded.festivals);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

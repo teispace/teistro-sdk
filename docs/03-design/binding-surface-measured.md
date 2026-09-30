@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1540 | 1 | 0 | 0 | 0 |
-| TypeScript | 375 | 0 | 0 | 1 | 0 |
-| Python | 1540 | 0 | 1 | 2 | 0 |
+| Dart | 1541 | 1 | 0 | 0 | 0 |
+| TypeScript | 376 | 0 | 0 | 1 | 0 |
+| Python | 1541 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1540 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 375 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1540 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1540 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 375 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1540 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1541 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 376 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1541 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1541 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 376 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1541 disagree |
 
 What Dart renames:
 
@@ -147,15 +147,15 @@ against them on the machine the library was actually built for.
 | `ts_time_conversion` | 56 | 8 | same | yes |
 | `ts_delta_t` | 32 | 8 | same | yes |
 | `ts_intl_loaded` | 32 | 8 | 24 | yes |
-| `ts_panchanga_request` | 64 | 8 | same | yes |
+| `ts_panchanga_request` | 72 | 8 | 64 | yes |
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | a struct with no pointer is the same size on every target | **holds** | 0 of 10 disagree |
-| every struct is the same size on every target | falsified | 13 of 27 disagree |
+| every struct is the same size on every target | falsified | 14 of 27 disagree |
 | every struct's layout is computable from the description alone | **holds** | 27 of 27 computed |
 
-Of the 27 structs, 13 change size between a 64-bit and a 32-bit target,
+Of the 27 structs, 14 change size between a 64-bit and a 32-bit target,
 and every one of those holds a pointer, a callback or a `size_t`. So a
 binding may assert a **fixed** size for the 10 that hold none, and must
 ask the interpreter for the rest — which is what a table of two
@@ -196,7 +196,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 204 of 204 visible struct fields
+much of that there is to reach for: 205 of 205 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -204,18 +204,18 @@ carry a doc comment.
 | `bitset` | 1 |
 | `brand` | 4 |
 | `enum` | 25 |
-| `example` | 98 |
+| `example` | 99 |
 | `flag` | 15 |
 | `len` | 17 |
-| `nullable` | 22 |
+| `nullable` | 23 |
 | `present_if` | 1 |
 | `range` | 35 |
 | `unit` | 48 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 204 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 204 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 205 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 205 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

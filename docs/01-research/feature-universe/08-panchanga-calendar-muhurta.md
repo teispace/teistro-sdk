@@ -64,6 +64,37 @@ outside the published span.
 | Kala's "Muhurta Module", SJS "Election tools", PL Muhurta: same shape | | | | | |
 | Western electional: void-of-course Moon, planetary hours, Moon phase, dignity searches (Solar Fire's electional searches) | | | no | Solar Fire | P1 |
 
+## Nepali panchanga particulars (2026-09-30)
+
+A Nepali *patro* is published under the Nepal Panchanga Nirnayak Vikas
+Samiti's decisions. It prints things the tables above list only in
+general terms, and some that no table lists. Each row says what the
+patro or the committee does, what the SDK does today (read from the code
+on this date, not assumed), and what is missing. **Status** is one of
+*built*, *partial* (computed, but not answered or not measured against
+Nepal) or *missing*.
+
+| particular | Nepal's practice | SDK today | status |
+|---|---|---|---|
+| **Malmas** (मलमास) | In Nepal it is the **adhika month**, also called *adhikamas* or *purushottam mas*: a lunar month with no sankranti. The committee announces its span; 2026's ran Jestha 3 to Ashar 1, 2083 (17 May to 15 June). No marriage, bratabandha, griha pravesh or other shubha karma is held in it. | `MonthKind::Adhika` is computed and closes muhurta days (`BlackoutKind::AdhikaMasa`). The word itself is a trap: north Indian usage often gives "Malmas" to **Kharmas**, the Sun in Sagittarius or Pisces, and `BlackoutKind::Kharmas`'s doc said so (C177). | partial: not yet measured against the committee's announced spans |
+| **Kshaya masa** | A lunar month holding two sankrantis, whose name is skipped. It is rare, and the texts treat it and the adhika months around it as unfit for rites. | `MonthKind::Kshaya` is computed. No blackout reads it, and the months around it are not named (C179). | partial |
+| **Udaya tithi at Kathmandu's sunrise** | The day's tithi is the one running at local sunrise, and festivals are fixed on it. | Every limb is a span over the sunrise day, so the sunrise member is `spans[0]`; festivals take the karmakala rule instead (`festival-rules.md`). | built |
+| **Tithi vriddhi and kshaya** | The patro marks a tithi that holds two sunrises (vriddhi) or none (kshaya). | Derivable from the spans; not answered as a flag. | missing |
+| **Ghati-pala** | The patro prints a limb's end, the dinaman and the ratriman in ghati-pala from sunrise. | The intl layer formats a `ghati` parameter (`GhatiValue`). No day answer carries ghati-pala. | partial |
+| **Samvatsara** | The patro names the year of the 60-year cycle. | Catalogued (`samvatsara.yaml`); **computed nowhere** (C180). | missing |
+| **Ritu** | The six seasons, printed by month. | Catalogued (`ritu.yaml`); **computed nowhere** (C178). Ayana is computed. | missing |
+| **Bikram Sambat months** | Official month lengths, 29 to 32 days, fixed by the committee. | Built and measured against the official table for BS 1970 to 2095 (`calendar-bikram-sambat.md`). | built |
+| **Nepal Sambat** | A lunar year from Kartika's bright first (Mha puja), in official use beside Bikram Sambat. | An era only (`Era::NepalSambat`), not a calendar a date can be written in. | missing |
+| **Nepal's festivals** | The committee fixes Dashain (Ghatasthapana to Kojagrat Purnima), Tihar, Teej, Chhath, Janai Purnima, Shivaratri and the rest, including the tika's time. Holi falls a day apart in the hills and the Terai. | Four Dharmasindhu rules; measured against India's Delhi list only (`festival-rules.md` §5.3). | partial |
+| **Muhurta (saait) beyond marriage** | Bratabandha, pasni (annaprashan), nwaran, griha pravesh and more. | Marriage only (Raman's and the baseline's rules). | missing |
+| **Holashtaka and eclipses** | Both close days for rites. | Listed as blackouts in this page's muhurta table; neither is built. | missing |
+
+What reading the code found: two catalogue kinds, samvatsara and ritu,
+are named in every locale and computed by nothing. A reader of the
+catalogue would take them as answered. That is the
+`catalogued-is-not-computed` shape, and it gets the same treatment: count
+the gap, then build it.
+
 ## Closing checklist
 
 - Replace the baseline engine's day-level Chandrabalam heuristic (Sun sign as the

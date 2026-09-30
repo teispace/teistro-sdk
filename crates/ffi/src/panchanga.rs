@@ -202,6 +202,18 @@ pub struct TsPanchangaRequest {
     /// calls `muhurta`, as `muhurta.rules`.
     /// `api: nullable example={"rules":"RAMAN_MARRIAGE"}`
     pub muhurta_json: *const c_char,
+    /// The days festival rules fall on over the same days, as a JSON
+    /// object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+    /// whose items name a pack or spell a rule out, a later rule
+    /// replacing an earlier one with its key. A catalogue member may be
+    /// written bare or in full. The answer comes back in the `festivals`
+    /// section, over this blob's own days founded once, with the day
+    /// before and the two after founded beside them
+    /// (`03-design/festival-rules.md` §7). Null for none, which costs
+    /// nothing. Refusals are named from the record every binding calls
+    /// `festivals`, down to a rule's own field under `festivals.rules`.
+    /// `api: nullable example={"rules":"DHARMASINDHU"}`
+    pub festivals_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -509,6 +521,7 @@ pub fn encode(
     provenance: &Provenance,
     hashes: &[teistro::Hash],
     muhurta: &str,
+    festivals: &str,
 ) -> Result<Vec<u8>, Error> {
     let hashes = crate::support::hashes_text(hashes, days.len())?;
     let schema = crate::schemas::panchanga();
@@ -563,6 +576,7 @@ pub fn encode(
         )?;
         writer.bytes("content_hashes", hashes.as_bytes())?;
         writer.bytes("muhurta", muhurta.as_bytes())?;
+        writer.bytes("festivals", festivals.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -641,42 +655,56 @@ pub unsafe extern "C" fn ts_panchanga_days(
         let muhurta = unsafe { optional_text(asked.muhurta_json, "muhurta_json") }?
             .map(teistro::MuhurtaRequest::from_json)
             .transpose()?;
-        let almanac = ctx.sdk().almanac();
-        // A search founds the days it judges, so asking for one hands
-        // back those days rather than founding them a second time.
-        let (founded, hashes, muhurta) = match &muhurta {
-            None => {
-                let (founded, hashes) = almanac.of_each(&from, &to, &place, clock)?;
-                (founded, hashes, String::new())
-            }
-            Some(asked) => {
-                let searched = almanac.muhurta_with_days(&from, &to, &place, clock, asked)?;
-                let section = muhurta_section(searched.answer)?;
-                (searched.days, searched.day_hashes, section)
-            }
-        };
+        // SAFETY: as above.
+        let festivals = unsafe { optional_text(asked.festivals_json, "festivals_json") }?
+            .map(teistro::FestivalRequest::from_json)
+            .transpose()?;
+        let mut beside = teistro::AlmanacRequest::new();
+        if let Some(muhurta) = muhurta {
+            beside = beside.with_muhurta(muhurta);
+        }
+        if let Some(festivals) = festivals {
+            beside = beside.with_festivals(festivals);
+        }
+        // The façade founds the days once for everything asked beside them.
+        let answered = ctx
+            .sdk()
+            .almanac()
+            .asked(&from, &to, &place, clock, &beside)?;
+        let muhurta = answered
+            .muhurta
+            .map(|answer| {
+                let value = teistro::muhurta::spelling::in_full(&answer.value)?;
+                Ok::<_, Error>(section(value, answer.provenance))
+            })
+            .transpose()?
+            .unwrap_or_default();
+        let festivals = answered
+            .festivals
+            .map(|answer| Ok::<_, Error>(section(answer.value.in_full()?, answer.provenance)))
+            .transpose()?
+            .unwrap_or_default();
         let encoded = encode(
-            &founded.value,
+            &answered.days.value,
             &place,
             asked_calendar,
-            &founded.provenance,
-            &hashes,
+            &answered.days.provenance,
+            &answered.day_hashes,
             &muhurta,
+            &festivals,
         )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
 }
 
-/// A search's answer as the canonical JSON the `muhurta` section carries:
-/// the envelope `{value, provenance}`, the value's catalogue members
-/// written in full and the envelope **sealed over that value**, so its
-/// content hash is the hash of what a binding holds
+/// An answer as the canonical JSON a section carries: the envelope
+/// `{value, provenance}`, the value's catalogue members already written
+/// in full and the envelope **sealed over that value**, so its content
+/// hash is the hash of what a binding holds
 /// (`03-design/muhurta-at-the-boundary.md` §4).
-fn muhurta_section(answer: teistro::Envelope<teistro::muhurta::Answer>) -> Result<String, Error> {
-    let value = teistro::muhurta::spelling::in_full(&answer.value)?;
-    let sealed = teistro::Envelope::sealing(value, answer.provenance);
-    Ok(teistro_core::envelope::canonical_json(&sealed))
+fn section(value: serde_json::Value, provenance: Provenance) -> String {
+    teistro_core::envelope::canonical_json(&teistro::Envelope::sealing(value, provenance))
 }
 
 #[cfg(test)]
@@ -777,6 +805,7 @@ mod tests {
             &provenance,
             &teistro_core::envelope::content_hashes(&days).1,
             "",
+            "",
         )
         .expect("it encodes");
         let schema = crate::schemas::panchanga();
@@ -864,6 +893,7 @@ mod tests {
             Calendar::Gregorian,
             &provenance,
             &teistro_core::envelope::content_hashes(one).1,
+            "",
             "",
         )
         .expect("it encodes");

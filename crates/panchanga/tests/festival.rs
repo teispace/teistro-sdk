@@ -15,15 +15,15 @@
     reason = "tests fail by panicking and index fixed lists"
 )]
 
-use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Tithi};
+use teistro_calendar::{CalendarDate, EraNumber};
+use teistro_core::catalogue::{Calendar, Era, Masa, Nakshatra, Tithi};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, Predicate, Which,
-    Window, observances, yugma,
+    Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, Observances, Predicate,
+    Unjudged, Which, Window, observances, yugma,
 };
 use teistro_panchanga::month;
 use teistro_panchanga::span::Span;
@@ -499,4 +499,88 @@ fn the_shipped_rules_round_trip_through_their_json_record() {
     assert_eq!(back, rules);
     assert!(text.contains(r#""window":"NISHITHA""#), "{text}");
     assert!(text.contains(r#""is":"JOINED""#), "{text}");
+}
+
+/// Every string an answer's JSON holds, by its path with list indices
+/// dropped.
+fn string_paths(
+    value: &serde_json::Value,
+    at: &str,
+    into: &mut std::collections::BTreeSet<String>,
+) {
+    match value {
+        serde_json::Value::String(_) => {
+            into.insert(at.to_owned());
+        }
+        serde_json::Value::Array(list) => {
+            for item in list {
+                string_paths(item, at, into);
+            }
+        }
+        serde_json::Value::Object(fields) => {
+            for (field, inner) in fields {
+                let path = if at.is_empty() {
+                    field.clone()
+                } else {
+                    format!("{at}.{field}")
+                };
+                string_paths(inner, &path, into);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// `Observances::MEMBERS` names every catalogue member an answer holds,
+/// and nothing else: each string in its JSON is either listed there or
+/// listed here as not a member, and each of both lists is present.
+#[test]
+fn an_answer_names_its_catalogue_members_where_its_table_says() {
+    // Every string an answer holds that is not a catalogue member.
+    const NOT_MEMBERS: [&str; 8] = [
+        "observances.rule",
+        "observances.day.resolution.kind",
+        "observances.extents.day.resolution.kind",
+        "observances.case",
+        "observances.decidedBy.by",
+        "observances.choice",
+        "unjudged.rule",
+        "unjudged.why",
+    ];
+    let tithis = [
+        (Tithi::KrishnaShashthi, ghati(0, 30.0)),
+        (Tithi::KrishnaSaptami, ghati(1, 40.0)),
+        (Tithi::KrishnaAshtami, ghati(2, 42.0)),
+        (Tithi::KrishnaNavami, ghati(3, 50.0)),
+        (Tithi::KrishnaDashami, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &[], Masa::Shravana, MonthKind::Nija);
+    let mut answer: Observances = observances(&[janmashtami()], &days).unwrap();
+    let era = Some(EraNumber {
+        era: Era::Vikrama,
+        year: 2081,
+    });
+    answer.observances[0].day.era = era;
+    for extent in &mut answer.observances[0].extents {
+        extent.day.era = era;
+    }
+    answer.unjudged.push(Unjudged {
+        rule: "JANMASHTAMI".to_owned(),
+        tithi: Interval::literal(0.0, 1.0),
+        why: "a reason".to_owned(),
+    });
+    let mut found = std::collections::BTreeSet::new();
+    string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
+    let members: std::collections::BTreeSet<String> = Observances::MEMBERS
+        .iter()
+        .map(|(list, path, _)| format!("{list}.{path}"))
+        .collect();
+    let plain: std::collections::BTreeSet<String> =
+        NOT_MEMBERS.iter().map(|path| (*path).to_owned()).collect();
+    assert!(members.is_disjoint(&plain));
+    let listed: std::collections::BTreeSet<String> = members.union(&plain).cloned().collect();
+    assert_eq!(
+        found, listed,
+        "a string path is unlisted, or a listed one is gone"
+    );
 }

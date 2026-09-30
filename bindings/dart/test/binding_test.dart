@@ -1550,6 +1550,112 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac carries the festivals it was asked for', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    Almanac days({FestivalRequest? festivals}) => ctx.almanac.of(
+      from: gregorian(2026, 10, 15),
+      to: gregorian(2026, 11, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: festivals,
+    );
+    final plain = days();
+    expect(plain.festivals, isNull);
+
+    final almanac = days(
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    );
+    final answer = almanac.festivals!;
+    expect(
+      [for (final observance in answer.observances) observance.rule],
+      ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA'],
+    );
+    final dashami = answer.observances.first;
+    expect(dashami.day.calendar, Calendar.gregorian);
+    expect(dashami.day.month, 10);
+    expect(dashami.extents.$1.day.calendar, Calendar.gregorian);
+    expect(['GUARD', 'OTHERWISE'], contains(dashami.decidedBy.by));
+    expect(answer.unjudged, isEmpty);
+    for (var k = 0; k < plain.length; k += 1) {
+      expect(
+        almanac.at(k).provenance.contentHash,
+        plain.at(k).provenance.contentHash,
+      );
+    }
+    expect({
+      for (final c in answer.provenance.appliedConventions) c.knob,
+    }, contains('festival.days'));
+    // Parsed twice, an observance is the same value.
+    expect(
+      days(
+        festivals: const FestivalRequest(rules: [FestivalPack.dharmasindhu]),
+      ).festivals!.observances,
+      answer.observances,
+    );
+
+    // Lakshmi puja on whichever day holds its tithi at sunrise: a rule of
+    // the consumer's own, its members as members, replacing the shipped one.
+    final sunrise = <String, Object?>{
+      'key': 'LAKSHMI_PUJA',
+      'source': 'the tithi at sunrise',
+      'month': Masa.ashwina,
+      'tithi': Tithi.amavasya,
+      'at': {'window': 'SUNRISE'},
+      'decide': <Object?>[],
+      'otherwise': 'LATER',
+    };
+    final moved =
+        days(
+          festivals: FestivalRequest(
+            rules: [FestivalPack.dharmasindhu, sunrise],
+          ),
+        ).festivals!;
+    expect(
+      moved.observances[1].decidedBy,
+      const FestivalDecided(by: 'OTHERWISE'),
+    );
+    expect(moved.provenance.inputHash, isNot(answer.provenance.inputHash));
+
+    for (final (asked, field) in [
+      (const FestivalRequest(rules: 'DHARMASINDHU'), 'festivals.rules'),
+      (
+        FestivalRequest(
+          rules: [
+            FestivalPack.dharmasindhu,
+            {...sunrise, 'key': ''},
+          ],
+        ),
+        'festivals.rules[1].key',
+      ),
+      (
+        FestivalRequest(
+          rules: [
+            {
+              ...sunrise,
+              'at': {'window': 'DUSK'},
+            },
+          ],
+        ),
+        'festivals.rules[0].at.window',
+      ),
+      (const FestivalRequest(rules: [1]), 'festivals.rules[0]'),
+    ]) {
+      expect(
+        () => days(festivals: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+        reason: field,
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

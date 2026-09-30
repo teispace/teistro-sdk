@@ -7288,6 +7288,20 @@ struct ts_panchanga_request {
      * Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
      */
     const char * muhurta_json;
+    /**
+     * The days festival rules fall on over the same days, as a JSON
+     * object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
+     * whose items name a pack or spell a rule out, a later rule
+     * replacing an earlier one with its key. A catalogue member may be
+     * written bare or in full. The answer comes back in the `festivals`
+     * section, over this blob's own days founded once, with the day
+     * before and the two after founded beside them
+     * (`03-design/festival-rules.md` §7). Null for none, which costs
+     * nothing. Refusals are named from the record every binding calls
+     * `festivals`, down to a rule's own field under `festivals.rules`.
+     * Example: {"rules":"DHARMASINDHU"}. May be null.
+     */
+    const char * festivals_json;
 };
 
 /**
@@ -7794,7 +7808,7 @@ _Static_assert(sizeof(ts_zone_resolution) == 48, "ts_zone_resolution is 48 bytes
 _Static_assert(sizeof(ts_time_conversion) == 56, "ts_time_conversion is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_delta_t) == 32, "ts_delta_t is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_intl_loaded) == 32, "ts_intl_loaded is 32 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_panchanga_request) == 64, "ts_panchanga_request is 64 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_panchanga_request) == 72, "ts_panchanga_request is 72 bytes on 64-bit targets");
 #endif
 
 #ifdef __cplusplus

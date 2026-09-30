@@ -17,6 +17,9 @@ import type {
   Context,
   DashaPeriod,
   EphemerisProvider,
+  FestivalAnswer,
+  FestivalRequest,
+  FestivalRule,
   HitRequest,
   SadeSatiRequest,
   KpLords,
@@ -665,6 +668,37 @@ function theKpReading(ctx: Context): string {
 }
 
 void theKpReading;
+
+// A festival answer read all the way down, and a rule written the way the
+// shipped pack is, its catalogue members in full as answers give them
+// (`03-design/festival-rules.md` §7).
+function theFestivals(almanac: Almanac): string {
+  const answer: FestivalAnswer | null = almanac.festivals;
+  if (answer === null) return '';
+  const said = answer.observances.map((o) => {
+    const by = o.decidedBy.by === 'GUARD' ? `guard ${o.decidedBy.index}` : 'otherwise';
+    const [earlier, later] = o.extents;
+    return `${o.rule} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
+  });
+  const unjudged = answer.unjudged.map((u) => `${u.rule} ${u.tithi.from} ${u.why}`);
+  const rule: FestivalRule = {
+    key: 'LAKSHMI_PUJA',
+    source: 'Dharmasindhu p. 77',
+    month: 'masa.ASHWINA',
+    tithi: 'tithi.AMAVASYA',
+    at: { window: 'PRADOSHA' },
+    decide: [{ when: [{ is: 'LASTS', day: 'LATER', from: 'SUNSET', ghatis: 1 }], choose: 'LATER' }],
+    otherwise: 'EARLIER',
+  };
+  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule] };
+  // @ts-expect-error a predicate asks what its kind asks, not another's
+  const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
+  // @ts-expect-error an unshipped pack is not one
+  const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
+  return [...said, ...unjudged, String(asked.rules.length), String(wrong), String(unshipped), answer.provenance.contentHash].join();
+}
+
+void theFestivals;
 
 // A muhurta answer read all the way down, and a clause it gives handed back
 // as a bar (`03-design/muhurta-at-the-boundary.md` §2.5): the request and

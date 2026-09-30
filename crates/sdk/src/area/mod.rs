@@ -74,7 +74,7 @@ pub(crate) fn drik_sun<'p>(
     )
 }
 
-pub use almanac::{AlmanacArea, MuhurtaDays};
+pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays, MuhurtaDays};
 pub use calendar::CalendarArea;
 pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;

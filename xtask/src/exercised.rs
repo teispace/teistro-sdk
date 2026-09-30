@@ -281,7 +281,9 @@ fn callers(root: &Path, layer: &Layer) -> String {
 }
 
 /// Whether the text names the member, as a member and not inside a longer
-/// word: `.tithi` is the tithi and `.tithiClass` is not.
+/// word: `.tithi` is the tithi and `.tithiClass` is not. A path names one
+/// too, `AlmanacRequest::new`, which is how Rust calls an associated
+/// function.
 fn names(text: &str, member: &str) -> bool {
     let mut from = 0;
     while let Some(at) = text.get(from..).and_then(|rest| rest.find(member)) {
@@ -291,7 +293,8 @@ fn names(text: &str, member: &str) -> bool {
         let after = text.get(end..).and_then(|tail| tail.chars().next());
         let joined =
             |letter: Option<char>| letter.is_some_and(|l| l.is_ascii_alphanumeric() || l == '_');
-        if !joined(after) && before == Some('.') {
+        let pathed = text.get(..start).is_some_and(|head| head.ends_with("::"));
+        if !joined(after) && (before == Some('.') || pathed) {
             return true;
         }
         from = end;
@@ -403,5 +406,19 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
             eprintln!("{why}");
             1
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::names;
+
+    #[test]
+    fn a_member_is_named_after_a_dot_or_a_path_and_not_inside_a_word() {
+        assert!(names("day.tithi", "tithi"));
+        assert!(names("AlmanacRequest::new()", "new"));
+        assert!(!names("day.tithiClass", "tithi"));
+        assert!(!names("a tithi", "tithi"));
+        assert!(!names("renew()", "new"));
     }
 }

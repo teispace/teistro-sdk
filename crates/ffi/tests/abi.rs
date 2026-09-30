@@ -4170,17 +4170,30 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
 /// 12-03, with `muhurta_json` beside them when given, and answers the
 /// blob's bytes or the context's record.
 fn panchanga_days(ctx: &Ctx, muhurta: Option<&str>) -> Result<Vec<u8>, Record> {
+    panchanga_between(ctx, ((11, 25), (12, 3)), muhurta, None)
+}
+
+/// Asks `ts_panchanga_days` for Kathmandu's days of 2026 between two
+/// (month, day) dates, with `muhurta_json` and `festivals_json` beside
+/// them when given.
+fn panchanga_between(
+    ctx: &Ctx,
+    ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
+    muhurta: Option<&str>,
+    festivals: Option<&str>,
+) -> Result<Vec<u8>, Record> {
     let muhurta = muhurta.map(|text| CString::new(text).unwrap());
+    let festivals = festivals.map(|text| CString::new(text).unwrap());
     let request = sized(
         TsPanchangaRequest {
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
             reserved: 0,
             from_year: 2026,
-            from_month: 11,
-            from_day: 25,
-            to_month: 12,
-            to_day: 3,
+            from_month,
+            from_day,
+            to_month,
+            to_day,
             to_year: 2026,
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
@@ -4188,6 +4201,7 @@ fn panchanga_days(ctx: &Ctx, muhurta: Option<&str>) -> Result<Vec<u8>, Record> {
             utc_offset_seconds: 20_700,
             reserved_tail: 0,
             muhurta_json: muhurta.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
+            festivals_json: festivals.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
         },
         |r, s| r.struct_size = s,
     );
@@ -4317,6 +4331,98 @@ fn a_panchanga_request_answers_a_muhurta_over_its_own_days() {
         .collect();
     let declared: Vec<&str> = UNREACHED.iter().map(|(key, _)| *key).collect();
     assert_eq!(unreached, declared, "reached: {reached:?}");
+}
+
+/// Festivals beside a panchanga request's days (`festival-rules.md` §7):
+/// the days are the ones asked without them, the section is the façade's
+/// answer with its dates' calendar written in full and sealed over what
+/// it holds, and a muhurta search asked beside it finds the same days.
+#[test]
+fn a_panchanga_request_answers_festivals_over_its_own_days() {
+    use teistro::festival::Observances;
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let range = ((10, 15), (11, 10));
+    let text = r#"{"rules":"DHARMASINDHU"}"#;
+    let with = panchanga_between(&ctx, range, None, Some(text)).unwrap();
+    let without = panchanga_between(&ctx, range, None, None).unwrap();
+    let both = panchanga_between(
+        &ctx,
+        range,
+        Some(r#"{"rules":"RAMAN_MARRIAGE"}"#),
+        Some(text),
+    )
+    .unwrap();
+    let schema = schemas::panchanga();
+    let (with, without, both) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+        Reader::parse(&both, &schema).unwrap(),
+    );
+    for asked in [&with, &both] {
+        assert_eq!(
+            asked.text("content_hashes").unwrap(),
+            without.text("content_hashes").unwrap()
+        );
+    }
+    assert_eq!(without.text("festivals").unwrap(), "");
+    assert_eq!(
+        both.text("festivals").unwrap(),
+        with.text("festivals").unwrap()
+    );
+    assert_ne!(both.text("muhurta").unwrap(), "");
+
+    let envelope: serde_json::Value =
+        serde_json::from_str(with.text("festivals").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    assert_eq!(
+        envelope["value"]["observances"][0]["day"]["calendar"],
+        "calendar.GREGORIAN"
+    );
+    let answer: Observances = serde_json::from_value(envelope["value"].clone()).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |month, day| teistro::CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    let expected = sdk
+        .almanac()
+        .festivals(
+            &date(10, 15),
+            &date(11, 10),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            &teistro::FestivalRequest::from_json(text).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(answer, expected.value);
+    assert_eq!(provenance.input_hash, expected.provenance.input_hash);
+    let rules: Vec<&str> = answer.observances.iter().map(|o| o.rule.as_str()).collect();
+    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"]);
+}
+
+#[test]
+fn a_festivals_record_is_refused_by_the_key_that_is_wrong() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    for (text, field) in [
+        (r#"{"rules":"DHARMA"}"#, "festivals.rules"),
+        (
+            r#"{"rules":["DHARMASINDHU","DHARMA"]}"#,
+            "festivals.rules[1]",
+        ),
+        (r#"{"rules":["DHARMASINDHU"],"most":1}"#, "festivals.most"),
+        ("[]", "festivals"),
+    ] {
+        let (status, message, named, ..) =
+            panchanga_between(&ctx, ((10, 15), (10, 16)), None, Some(text)).unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}: {message}");
+        assert_eq!(named.as_deref(), Some(field), "{text}: {message}");
+    }
 }
 
 #[test]
