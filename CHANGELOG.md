@@ -1377,6 +1377,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **Muhurta, measured** (`muhurta-measured.md`, `muhurta.md` §5, §6
+  step 6). `cargo xtask muhurta`, gated by `check-muhurta`, measures over
+  the built-in ephemeris at Kathmandu:
+  - the baseline engine's regression through the search under its own
+    rules and ranking;
+  - Guru and Shukra asta against the windows published for BS 2083, per
+    visibility criterion;
+  - every window of two searches held constant, and every clause
+    covering its window whole;
+  - where the engine's sunrise sampling parts from the SDK's windows;
+  - how often Raman's panchaka remainder names the star's kind (C159).
+
+  **Numbers:** none; nothing existing reads it.
+
 - **The baseline engine's ranking** (`muhurta.md` §4.5, §6 step 6).
   `Ranking::Baseline` orders windows by the engine's weights, which the
   roadmap's regression is stated in. The weights are five scorers

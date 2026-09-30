@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 5 and the ranking of step 6 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 6 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -186,6 +186,13 @@ Four findings:
 - **An asta already running when the range opens starts at the range**,
   not at the first dawn it is read at: unseen on the first day, it was
   unseen before.
+- **The combustion orbs are too narrow for the published Shukra asta.**
+  Against the windows published for BS 2083 (`muhurta-measured.md`
+  §2), the Surya Siddhanta's criterion and Ptolemy's hold both
+  published windows whole, a day to eleven wider. The combustion orbs
+  open Shukra asta 4 days after the almanac, and so would offer 14 to
+  17 October, days the country treats as closed. The search's default
+  stays the Surya Siddhanta's.
 - **`ECLIPSE_STAR` is not built**: the grahana nakshatra needs the
   eclipses, which the SDK does not yet find. It is the one kind this
   section named that the season lacks.
@@ -420,23 +427,31 @@ rank after the scored.
 
 ## 5. What is measured
 
-`cargo xtask muhurta` (`muhurta-measured.md`, gated by `check-muhurta`):
+`cargo xtask muhurta` (`muhurta-measured.md`, gated by `check-muhurta`),
+over the built-in ephemeris at Kathmandu:
 
-- **The regression the baseline engine was rebuilt for.** A marriage
-  search over 2026-09-01 to 2026-11-30 vetoes 2026-09-21, 2026-10-19 and
-  2026-11-05, leaves nothing open before Devuthani Ekadashi, and keeps
-  2026-11-25; under `BASELINE` the ranking is the engine's. The
-  engine's own test of it reads the **season alone** — six heeded
-  blackouts over UTC days — and that half holds already over the built-in
-  ephemeris (`tests/season.rs`, red with Chaturmas left out).
-- **The season against the published almanac** where the baseline engine
-  recorded it (Shukra and Guru asta for BS 2083), per criterion.
-- **A window is constant**: the judgement at a window's first and last
-  instant agree, for every window of the search, and at the midpoint of
-  two adjacent windows they differ.
-- **C158 and C159 counted**: the days over a century where the two
-  panchaka starts part, and how often the remainder and the per-star kind
-  agree.
+- **The regression the baseline engine was rebuilt for**, through the
+  search under `ActivityRules::baseline_marriage` and
+  `Ranking::Baseline`: 2026-09-21, 2026-10-19 and 2026-11-05 vetoed,
+  nothing open before Devuthani Ekadashi, every closed day closed by
+  Chaturmas, 2026-11-25 kept. It also holds that an open window is
+  scored exactly when the engine would offer it.
+- **The season against the published almanac**: Guru and Shukra asta
+  against the BS 2083 windows, per criterion, claimed as holding the
+  published window whole (a veto's safe direction).
+- **A window is constant**: every window of two searches read a moment
+  inside either end, and every clause held to covering its window. The
+  design's first claim, that adjacent windows always differ, is
+  **false** and is counted instead. About a third of neighbours are
+  judged alike, meeting at a cut no clause the rules read changed at,
+  such as a hora's edge.
+- **Where the engine's sampling parts from the SDK**: the days the
+  engine drops by the star at sunrise that the SDK keeps for a star
+  later in the day (one way only, since the sunrise star runs in the
+  day), and the scored windows shorter than the engine's six minutes.
+- **C159 counted**: how often Raman's remainder names the kind the star
+  does. C158 is not counted, being closed at rank 1, and its rival
+  parts from it at every panchaka by construction.
 
 ## 6. Order of work
 

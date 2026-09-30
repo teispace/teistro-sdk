@@ -2443,6 +2443,8 @@ dependencies = [
  "teistro-idl",
  "teistro-interpret",
  "teistro-intl",
+ "teistro-muhurta",
+ "teistro-panchanga",
  "teistro-port-ephemeris",
  "teistro-rules",
  "teistro-scenario",

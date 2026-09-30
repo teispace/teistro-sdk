@@ -118,6 +118,11 @@
 //!   births — each sub lord's margin in minutes of birth time, read back
 //!   through the founder, the lords Krishnamurti's and VP291's ayanamshas
 //!   part on, and the horary numbers each place can raise.
+//! - `muhurta` and `check-muhurta`: the muhurta search over the built-in
+//!   ephemeris at Kathmandu — the baseline engine's regression through its
+//!   own rules and ranking, Guru and Shukra asta against the published BS
+//!   2083 windows per criterion, every window held constant, and where the
+//!   engine's sunrise sampling parts from the SDK's windows.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -233,6 +238,7 @@ mod lints;
 mod lunisolar;
 mod measure;
 mod moon;
+mod muhurta;
 mod muntha;
 mod node_binding;
 mod package;
@@ -301,6 +307,7 @@ const PASSES: &[Pass] = &[
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
     ("kp", kp::generate, kp::check_generated),
+    ("muhurta", muhurta::generate, muhurta::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
