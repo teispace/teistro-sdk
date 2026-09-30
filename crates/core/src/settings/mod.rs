@@ -40,9 +40,9 @@ pub use knobs::{
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis,
-    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, SamvatsaraCount, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -584,6 +584,8 @@ group!(
         civil_calendar: Calendar,
         /// The lunar month system.
         lunar_month: LunarMonth,
+        /// How the sixty-year cycle names a lunar year.
+        samvatsara: SamvatsaraCount,
         /// The era numbers a date carries.
         /// lint: knob-has-a-reader — as `civil_calendar` above — `crates/calendar` renders the eras a
         /// caller asks for rather than the ones the settings name.

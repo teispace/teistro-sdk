@@ -281,3 +281,52 @@ Nepali, "Adhika Jyeshtha" in English, and the bare month for a nija one.
 The kind stays out of the catalogue, since a catalogue kind is open to
 additions and the FFI's month kind relies on matching every member.
 
+
+## 10. The year's name, measured
+
+A lunar year opens at the new moon that begins its first Chaitra, an
+adhika Chaitra when there is one, and its first day is the one whose
+sunrise follows that new moon. The sixty-year cycle names it, and
+`samvatsara-measured.md` measures how.
+
+**The count is the text's.** The Surya Siddhanta counts the signs its
+mean Jupiter has crossed since the Kali age and reads the count from
+Vijaya (I.55); `teistro_calendar::samvatsara::JovianYear` is that count
+in integers, with each Jovian year's bounds. Burgess's own worked example
+is a test: the year begun in February 1859 is the 5019th, Prajapati. His
+note adds the bija, eight revolutions of Jupiter fewer an age, which puts
+the same year's start forty days later. The Nepali and Indian press date
+Jovian years by the text without it, and the bija misnames five of the
+seven years on the page. The count is independent of the almanac's sky,
+because it is a definition the text makes and not a measurement: a
+modern mean Jupiter changes sign two months later.
+
+**The name is read at Chaitra Shukla Pratipada.** The committee's chair
+put the rule in terms when Ananda was expunged in 2078: the samvatsara
+that meets the day of Chaitra Shukla Pratipada is the one said in the
+year's rites. A Jovian year is 361 days, so now and then one begins after
+a pratipada and ends before the next, and names no year (`lupta`). The
+day is read at its sunrise, as a panchanga day is (C185).
+
+**No name names two years.** The same Jovian year can meet two
+pratipadas a 354-day year apart. VS 2080 is the case on record: Nala met
+its pratipada, having named 2079, and Pingala began two days later. The
+rule as written names 2080 Nala, and some north Indian panchangs printed
+that; the committee named it Pingala (C184). `BARHASPATYA` takes the
+committee's reading, a year named one ahead when its running name has
+been used, and the lead lasting until a year whose count rises by two,
+which is where the expunged name falls. A short walk back computes it.
+The page holds the walk to the full recursion it stands for over six
+centuries. `BARHASPATYA_RUNNING` is the literal reading, and
+`CHANDRAMANA` is the south's, which reads the Shaka year and skips
+nothing.
+
+**What it costs, and where it is.** `sdk.almanac().years` answers the
+lunar years a range falls in, each with its name, its Vikrama and Shaka
+numbers, its bounds, the Jovian years that ran in it and the one it
+expunges; `AlmanacRequest::with_years` asks for them beside the days in
+one crossing. The roadmap asked for the samvatsara on every day. A list
+of years beside the days carries the same answer, since a day's year is
+the one holding its sunrise, and costs nothing when it is not asked. A
+field on every day would have cost every day a few new-moon searches,
+which the instruction-count gate refuses at three percent.

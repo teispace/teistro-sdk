@@ -17,9 +17,9 @@ use super::knobs::{
     LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
     Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis,
-    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    RashiStart, RequiredRupas, RetrogradeRejection, RulingCount, SamvatsaraCount, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -113,6 +113,18 @@ fn kp_readers() -> Kp {
         day_lord_day: DayLordDay::Sunrise,
         node_rulers: NodeRulers::SignOrConjoined,
         retrograde_rejection: RetrogradeRejection::Star,
+    }
+}
+
+/// The civil calendar, the lunar month and the year's names: the
+/// Surya Siddhanta's Jovian count (I.55), read as Nepal's committee reads
+/// it (C180, C184; `03-design/samvatsara-measured.md`).
+fn calendars() -> Calendars {
+    Calendars {
+        civil_calendar: Calendar::Gregorian,
+        lunar_month: LunarMonth::Amanta,
+        samvatsara: SamvatsaraCount::Barhaspatya,
+        eras: [Era::Vikrama, Era::Shaka, Era::Kali].into_iter().collect(),
     }
 }
 
@@ -224,11 +236,7 @@ pub fn root() -> Settings {
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
         },
-        calendars: Calendars {
-            civil_calendar: Calendar::Gregorian,
-            lunar_month: LunarMonth::Amanta,
-            eras: [Era::Vikrama, Era::Shaka, Era::Kali].into_iter().collect(),
-        },
+        calendars: calendars(),
         provider: Provider {
             overrides: OverridePolicy::PreferNative,
             tier: Tier::Standard,

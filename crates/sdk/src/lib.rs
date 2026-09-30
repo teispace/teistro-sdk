@@ -113,6 +113,10 @@ pub use teistro_panchanga::almanac::Panchanga;
 // `sdk.calendar.lunarMonth` says it (`03-design/calendar-indian-lunisolar.md` §9).
 pub use teistro_calendar::lunisolar::MonthKind;
 pub use teistro_panchanga::festival;
+// A lunar year, the name the sixty-year cycle gives it and the Jovian
+// years that ran in it: what `sdk.almanac().years` answers with.
+pub use teistro_calendar::samvatsara::JovianYear;
+pub use teistro_panchanga::year::LunarYear;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

@@ -116,6 +116,7 @@ every shipped profile. The v1 inventory:
 | varga | `unattested_dn` | enum | `CYCLIC`, or a named scheme |
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |
+| calendar | `samvatsara` | enum | `BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA` |
 | calendar | `eras` | set of `EraKey` | which era numbers a date carries |
 | provider | `overrides` | enum | `PREFER_NATIVE`, `SDK_ONLY`, `NATIVE_ONLY` (ADR-0013) |
 | provider | `tier` | enum | `COMPACT`, `STANDARD`, `FULL`, `REFERENCE` for the built-in ephemeris |

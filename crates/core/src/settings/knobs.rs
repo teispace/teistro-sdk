@@ -649,6 +649,22 @@ knob!(
         Purnimanta = "PURNIMANTA" }
 );
 knob!(
+    /// How the sixty-year cycle names a lunar year (crux C180,
+    /// `03-design/samvatsara-measured.md`).
+    SamvatsaraCount { /// By Jupiter's mean sign, the Surya Siddhanta's count from Vijaya
+        /// (I.55): the Jovian year that meets Chaitra Shukla Pratipada names
+        /// the year, and the next one when that one named the year before,
+        /// so no name names two years and one is expunged only when a
+        /// Jovian year runs wholly inside a lunar year. Nepal's committee
+        /// (VS 2080 Pingala).
+        Barhaspatya = "BARHASPATYA", /// As `BARHASPATYA`, but the Jovian year that meets the pratipada
+        /// names the year even when it named the one before: the rule as
+        /// written, which some north Indian panchangs read (VS 2080 Nala).
+        BarhaspatyaRunning = "BARHASPATYA_RUNNING", /// By the lunar years in order, the Shaka year's number modulo
+        /// sixty, nothing expunged: the south's.
+        Chandramana = "CHANDRAMANA" }
+);
+knob!(
     /// The provider override policy (ADR-0013).
     OverridePolicy { /// A declared native implementation is used.
         PreferNative = "PREFER_NATIVE", /// The SDK's own everywhere.

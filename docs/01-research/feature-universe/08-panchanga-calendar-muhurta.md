@@ -82,7 +82,7 @@ Nepal) or *missing*.
 | **Udaya tithi at Kathmandu's sunrise** | The day's tithi is the one running at local sunrise, and festivals are fixed on it. | Every limb is a span over the sunrise day, so the sunrise member is `spans[0]`; festivals take the karmakala rule instead (`festival-rules.md`). | built |
 | **Tithi vriddhi and kshaya** | The patro marks a tithi that holds two sunrises (vriddhi) or none (kshaya). | Derivable from the spans; not answered as a flag. | missing |
 | **Ghati-pala** | The patro prints a limb's end, the dinaman and the ratriman in ghati-pala from sunrise. | The intl layer formats a `ghati` parameter (`GhatiValue`). No day answer carries ghati-pala. | partial |
-| **Samvatsara** | The patro names the year of the 60-year cycle. | Catalogued (`samvatsara.yaml`); **computed nowhere** (C180). | missing |
+| **Samvatsara** | The patro names the year of the 60-year cycle. | `sdk.almanac().years`: each lunar year's name under `calendars.samvatsara` (the text's Jovian count read at Chaitra Shukla Pratipada, a name never naming two years), the Jovian years in it and the one it expunges (C180, C184, C185). | built: all seven years the committee named, VS 2076 to 2082 (`03-design/samvatsara-measured.md`) |
 | **Ritu** | The six seasons, printed by month. | Catalogued (`ritu.yaml`); **computed nowhere** (C178). Ayana is computed. | missing |
 | **Bikram Sambat months** | Official month lengths, 29 to 32 days, fixed by the committee. | Built and measured against the official table for BS 1970 to 2095 (`calendar-bikram-sambat.md`). | built |
 | **Nepal Sambat** | A lunar year from Kartika's bright first (Mha puja), in official use beside Bikram Sambat. | An era only (`Era::NepalSambat`), not a calendar a date can be written in. | missing |

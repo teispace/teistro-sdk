@@ -1480,6 +1480,26 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; a new message.
 
+- **The sixty-year cycle names each lunar year** (`calendar-indian-lunisolar.md`
+  §10, C180, C184, C185). `sdk.almanac().years` answers the lunar years a
+  range falls in, each with its samvatsara, its Vikrama and Shaka
+  numbers, its bounds from one Chaitra Shukla Pratipada's sunrise to the
+  next, the Jovian years that ran in it and the one it expunged;
+  `AlmanacRequest::with_years` asks for them beside the days.
+  `teistro_calendar::samvatsara::JovianYear` is the Surya Siddhanta's
+  count (I.55) in integers. The new knob `calendars.samvatsara` is
+  `BARHASPATYA` by default, as Nepal's committee reads it: the Jovian
+  year that meets the pratipada, with no name naming two years. It can
+  also be `BARHASPATYA_RUNNING`, the rule as written, or
+  `CHANDRAMANA`, the south's count. `cargo xtask samvatsara` (gated in
+  fast-check) holds the count to seven years the committee named, VS
+  2076 to 2082, and to Burgess's worked example. Every rival is
+  falsified, and over six centuries the page holds the naming's short
+  walk back to the full recursion it stands for.
+
+  **Numbers:** none; a new answer and a new knob, whose default is the
+  only reading that names every recorded year.
+
 - **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
   C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika

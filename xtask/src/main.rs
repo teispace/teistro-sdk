@@ -129,6 +129,9 @@
 //! - `nepal-month` and `check-nepal-month`: Nepal's lunar month at
 //!   Kathmandu, the adhika days against the malmas the panchanga
 //!   committee announced and the month named against Nepali designations.
+//! - `samvatsara` and `check-samvatsara`: the sixty-year cycle, the text's
+//!   worked example, the years Nepal's committee named against the shipped
+//!   count and its rivals, and six centuries of years at Kathmandu.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -264,6 +267,7 @@ mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
 mod sade_sati;
+mod samvatsara;
 mod schema;
 mod serial;
 mod shadbala;
@@ -321,6 +325,11 @@ const PASSES: &[Pass] = &[
         "nepal-month",
         nepal_month::generate,
         nepal_month::check_generated,
+    ),
+    (
+        "samvatsara",
+        samvatsara::generate,
+        samvatsara::check_generated,
     ),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
