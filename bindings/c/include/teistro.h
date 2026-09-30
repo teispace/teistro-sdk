@@ -7271,6 +7271,23 @@ struct ts_panchanga_request {
      * Reserved; write zero.
      */
     int32_t reserved_tail;
+    /**
+     * A muhurta search over the same days, as a JSON object: `rules`,
+     * the activity's rules spelt out or a shipped set named
+     * (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+     * `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+     * read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+     * `most` (50) and `asta`, the criterion Venus's and Jupiter's
+     * combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+     * `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+     * in full. The answer comes back in the `muhurta` section, and the
+     * days it was judged on are this blob's own, founded once
+     * (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+     * costs nothing. Refusals are named from the record every binding
+     * calls `muhurta`, as `muhurta.rules`.
+     * Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
+     */
+    const char * muhurta_json;
 };
 
 /**
@@ -7777,7 +7794,7 @@ _Static_assert(sizeof(ts_zone_resolution) == 48, "ts_zone_resolution is 48 bytes
 _Static_assert(sizeof(ts_time_conversion) == 56, "ts_time_conversion is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_delta_t) == 32, "ts_delta_t is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_intl_loaded) == 32, "ts_intl_loaded is 32 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_panchanga_request) == 56, "ts_panchanga_request is 56 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_panchanga_request) == 64, "ts_panchanga_request is 64 bytes on 64-bit targets");
 #endif
 
 #ifdef __cplusplus

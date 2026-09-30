@@ -26,6 +26,8 @@
 //! lists a merged section's row came from, the second is the kind half of
 //! a tagged enum whose payload fields sit beside it.
 
+use core::ffi::c_char;
+
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::Calendar;
@@ -42,7 +44,7 @@ use teistro_panchanga::span::Span;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{c_struct, read_in, with_context, write_plain};
+use crate::support::{c_struct, optional_text, read_in, with_context, write_plain};
 
 /// Which lunar-month convention a day's month leads with.
 #[repr(u8)]
@@ -185,6 +187,21 @@ pub struct TsPanchangaRequest {
     pub utc_offset_seconds: i32,
     /// Reserved; write zero.
     pub reserved_tail: i32,
+    /// A muhurta search over the same days, as a JSON object: `rules`,
+    /// the activity's rules spelt out or a shipped set named
+    /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+    /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+    /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+    /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
+    /// combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+    /// `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+    /// in full. The answer comes back in the `muhurta` section, and the
+    /// days it was judged on are this blob's own, founded once
+    /// (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+    /// costs nothing. Refusals are named from the record every binding
+    /// calls `muhurta`, as `muhurta.rules`.
+    /// `api: nullable example={"rules":"RAMAN_MARRIAGE"}`
+    pub muhurta_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -491,6 +508,7 @@ pub fn encode(
     calendar: Calendar,
     provenance: &Provenance,
     hashes: &[teistro::Hash],
+    muhurta: &str,
 ) -> Result<Vec<u8>, Error> {
     let hashes = crate::support::hashes_text(hashes, days.len())?;
     let schema = crate::schemas::panchanga();
@@ -544,6 +562,7 @@ pub fn encode(
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
         writer.bytes("content_hashes", hashes.as_bytes())?;
+        writer.bytes("muhurta", muhurta.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -618,17 +637,46 @@ pub unsafe extern "C" fn ts_panchanga_days(
         // takes from the range's own `from.calendar` — which is
         // `asked_calendar`, so the two agreed by construction and by
         // nothing enforcing it.
-        let (founded, hashes) = ctx.sdk().almanac().of_each(&from, &to, &place, clock)?;
+        // SAFETY: the caller promises null or a NUL-terminated string.
+        let muhurta = unsafe { optional_text(asked.muhurta_json, "muhurta_json") }?
+            .map(teistro::MuhurtaRequest::from_json)
+            .transpose()?;
+        let almanac = ctx.sdk().almanac();
+        // A search founds the days it judges, so asking for one hands
+        // back those days rather than founding them a second time.
+        let (founded, hashes, muhurta) = match &muhurta {
+            None => {
+                let (founded, hashes) = almanac.of_each(&from, &to, &place, clock)?;
+                (founded, hashes, String::new())
+            }
+            Some(asked) => {
+                let searched = almanac.muhurta_with_days(&from, &to, &place, clock, asked)?;
+                let section = muhurta_section(searched.answer)?;
+                (searched.days, searched.day_hashes, section)
+            }
+        };
         let encoded = encode(
             &founded.value,
             &place,
             asked_calendar,
             &founded.provenance,
             &hashes,
+            &muhurta,
         )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
+}
+
+/// A search's answer as the canonical JSON the `muhurta` section carries:
+/// the envelope `{value, provenance}`, the value's catalogue members
+/// written in full and the envelope **sealed over that value**, so its
+/// content hash is the hash of what a binding holds
+/// (`03-design/muhurta-at-the-boundary.md` §4).
+fn muhurta_section(answer: teistro::Envelope<teistro::muhurta::Answer>) -> Result<String, Error> {
+    let value = teistro::muhurta::spelling::in_full(&answer.value)?;
+    let sealed = teistro::Envelope::sealing(value, answer.provenance);
+    Ok(teistro_core::envelope::canonical_json(&sealed))
 }
 
 #[cfg(test)]
@@ -728,6 +776,7 @@ mod tests {
             Calendar::Gregorian,
             &provenance,
             &teistro_core::envelope::content_hashes(&days).1,
+            "",
         )
         .expect("it encodes");
         let schema = crate::schemas::panchanga();
@@ -815,6 +864,7 @@ mod tests {
             Calendar::Gregorian,
             &provenance,
             &teistro_core::envelope::content_hashes(one).1,
+            "",
         )
         .expect("it encodes");
         let schema = crate::schemas::panchanga();

@@ -42,6 +42,12 @@ const MALEFICS: [Graha; 5] = [
     Graha::Ketu,
 ];
 
+/// The malefics neutralisation 11 asks to stand in the 3rd, 6th or 11th:
+/// the natural malefics without the nodes, which always stand opposite
+/// each other where no two of those houses are, so a reading that counted
+/// them could never hold (C167).
+const UPACHAYA_MALEFICS: [Graha; 3] = [Graha::Sun, Graha::Mars, Graha::Saturn];
+
 /// The sky at an instant, in the chart's zodiac.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -231,7 +237,7 @@ fn neutralisers(sky: &Sky, kinds: &mut Vec<ClauseKind>) {
         .into_iter()
         .filter(|g| matches!(sky.house_of(*g), 1 | 4 | 7 | 10))
         .collect();
-    let malefics_placed = MALEFICS
+    let malefics_placed = UPACHAYA_MALEFICS
         .iter()
         .all(|g| matches!(sky.house_of(*g), 3 | 6 | 11));
     if !grahas.is_empty() && malefics_placed {
@@ -385,21 +391,26 @@ mod tests {
     }
 
     #[test]
-    fn kendra_benefics_need_every_malefic_in_an_upachaya() {
+    fn kendra_benefics_need_the_sun_mars_and_saturn_in_an_upachaya() {
         // Aries rising; Jupiter in Cancer (4th); the Sun, Mars and Saturn
-        // in Gemini (3rd), the nodes in Virgo (6th).
+        // in Gemini (3rd); Rahu in Virgo (6th) and Ketu opposite it in
+        // Pisces (12th), where the nodes always are. The first version of
+        // this test put both nodes in Virgo, a sky that cannot happen, and
+        // so hid that the clause asked every malefic, the nodes included,
+        // to stand in the 3rd, 6th or 11th: no two of those are opposite,
+        // so on a real sky it never held (C167).
         let mut s = sky(5.0, 65.0);
         s.grahas[4] = 95.0;
         s.grahas[1] = 215.0;
         s.grahas[3] = 215.0;
         s.grahas[5] = 215.0;
         s.grahas[7] = 155.0;
-        s.grahas[8] = 155.0;
+        s.grahas[8] = 335.0;
         assert!(kinds(&s).contains(&ClauseKind::KendraBenefics {
             grahas: vec![Graha::Jupiter]
         }));
-        // Ketu moved to the 7th breaks it.
-        s.grahas[8] = 185.0;
+        // Saturn moved to the 7th breaks it.
+        s.grahas[6] = 185.0;
         assert!(
             !kinds(&s)
                 .iter()

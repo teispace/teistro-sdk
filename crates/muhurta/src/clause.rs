@@ -188,8 +188,9 @@ pub enum ClauseKind {
         /// Who.
         grahas: Vec<Graha>,
     },
-    /// Jupiter or Venus in a kendra with every malefic in the 3rd, 6th
-    /// or 11th (neutralisation 11).
+    /// Jupiter or Venus in a kendra with the Sun, Mars and Saturn each in
+    /// the 3rd, 6th or 11th (neutralisation 11). The nodes are not asked:
+    /// they always stand opposite, and no two of those houses are (C167).
     KendraBenefics {
         /// The benefics in a kendra.
         grahas: Vec<Graha>,
@@ -264,6 +265,44 @@ pub enum ClauseKey {
     LuminaryInEleventh,
     /// [`ClauseKind::KendraBenefics`].
     KendraBenefics,
+}
+
+impl ClauseKey {
+    /// Every key, in declaration order, so a caller can say which kinds a
+    /// search reached and which it did not. A key added is appended here
+    /// too: the test below holds each entry to its declared position.
+    pub const ALL: [ClauseKey; 30] = [
+        ClauseKey::Tithi,
+        ClauseKey::Nakshatra,
+        ClauseKey::Yoga,
+        ClauseKey::Karana,
+        ClauseKey::Vara,
+        ClauseKey::Month,
+        ClauseKey::SolarMonth,
+        ClauseKey::Lagna,
+        ClauseKey::Pada,
+        ClauseKey::Kaala,
+        ClauseKey::Choghadiya,
+        ClauseKey::Abhijit,
+        ClauseKey::MuhurtaYoga,
+        ClauseKey::Tarabala,
+        ClauseKey::Chandrabala,
+        ClauseKey::Kartari,
+        ClauseKey::MoonInDusthana,
+        ClauseKey::MoonJoined,
+        ClauseKey::VenusInSixth,
+        ClauseKey::MarsInEighth,
+        ClauseKey::AshtamaLagna,
+        ClauseKey::Kunavamsa,
+        ClauseKey::PanchakaRemainder,
+        ClauseKey::LagnaTyajya,
+        ClauseKey::SeventhOccupied,
+        ClauseKey::MaleficInLagna,
+        ClauseKey::BeneficInLagna,
+        ClauseKey::ExaltedInLagna,
+        ClauseKey::LuminaryInEleventh,
+        ClauseKey::KendraBenefics,
+    ];
 }
 
 impl ClauseKind {
@@ -371,6 +410,13 @@ mod tests {
     /// The two share a variant list (`key` matches every one) and a serde
     /// case, and this holds a sample of shapes — fielded, empty, nested —
     /// to it.
+    #[test]
+    fn every_key_is_listed_once_in_its_declared_place() {
+        for (place, key) in ClauseKey::ALL.iter().enumerate() {
+            assert_eq!(*key as usize, place, "{key:?}");
+        }
+    }
+
     #[test]
     fn a_key_serialises_as_its_clauses_tag() {
         for kind in [

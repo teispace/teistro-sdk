@@ -1244,6 +1244,24 @@ export interface PanchangaRequest {
    * @example 20700
    */
   readonly utcOffsetSeconds: number;
+  /**
+   * A muhurta search over the same days, as a JSON object: `rules`,
+   * the activity's rules spelt out or a shipped set named
+   * (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+   * `native` (`{star, moonSign}`, whose tarabala and chandrabala are
+   * read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
+   * `most` (50) and `asta`, the criterion Venus's and Jupiter's
+   * combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`,
+   * `PTOLEMY`) or spelt out. A catalogue member may be written bare or
+   * in full. The answer comes back in the `muhurta` section, and the
+   * days it was judged on are this blob's own, founded once
+   * (`03-design/muhurta-at-the-boundary.md`). Null for none, which
+   * costs nothing. Refusals are named from the record every binding
+   * calls `muhurta`, as `muhurta.rules`.
+   * @example {"rules":"RAMAN_MARRIAGE"}
+   * @nullable
+   */
+  readonly muhurtaJson?: string;
 }
 
 /**
