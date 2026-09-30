@@ -106,6 +106,7 @@ pub use teistro_core::angle::Nas;
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
 pub use teistro_panchanga::almanac::Panchanga;
+pub use teistro_panchanga::festival;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

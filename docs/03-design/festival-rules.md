@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-09-30: §6 step 1 built. Written from the source
+Status: `building`, 2026-09-30: §6 steps 1 and 2 built. Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -237,7 +237,13 @@ reports that it did.
 1. **Built**: the types, the evaluator (`teistro_panchanga::festival`)
    and the synthetic-day tests (§5.1), proved red by breaking a rule
    and the verse.
-2. The façade over founded days, and the shipped rules through it.
+2. **Built**: `sdk.almanac().festivals(from, to, place, clock, &rules)`
+   over days founded once, widened by one day before and two after in
+   runs within the almanac's limit, so that a whole year can be asked
+   for. The range the caller asks for is still held to that limit, by
+   the same refusal (`almanac::days_in`). A rule is refused by its place in the
+   request (`rules[2].decide.when.muhurtas`). Over 2026 at Delhi each
+   shipped rule falls once, in its season, with nothing unjudged.
 3. The measured pass (§5.2, §5.3) and its page.
 4. The boundary and the bindings, as muhurta step 7 did.
 5. Ekadashi, both schools, held to pp. 11–12's examples.

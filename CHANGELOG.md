@@ -1423,6 +1423,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   ships four rules from *Dharmasindhu*, each citing its page: Rama
   Navami, Janmashtami, Vijaya Dashami and Lakshmi puja. They are held to
   the book's own worked examples. Forks C168 to C174 are registered.
+  `sdk.almanac().festivals(from, to, place, clock, &rules)` answers a
+  range of up to a year over days founded once. The widening the rules
+  need (a day before the range, two after) is founded apart from the
+  caller's limit and declared as `festival.days`.
 
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
