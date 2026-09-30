@@ -184,14 +184,17 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
         let sidereal = Sidereal::over(&source, self.zodiac);
         let t = JulianDay::<Ut1>::literal(at.get());
         let mut grahas = [0.0; 9];
-        for (slot, body) in grahas.iter_mut().zip(&self.bodies) {
-            *slot = sidereal.longitude_and_speed(*body, t)?.0;
+        let mut speeds = [0.0; 9];
+        for ((slot, speed), body) in grahas.iter_mut().zip(&mut speeds).zip(&self.bodies) {
+            (*slot, *speed) = sidereal.longitude_and_speed(*body, t)?;
         }
-        let rahu = grahas[7];
-        grahas[8] = (rahu + 180.0).rem_euclid(360.0);
+        // Ketu is Rahu's opposite, and moves with it.
+        grahas[8] = (grahas[7] + 180.0).rem_euclid(360.0);
+        speeds[8] = speeds[7];
         Ok(Sky {
             lagna_deg: self.lagna_at(at)?,
             grahas,
+            speeds,
         })
     }
 

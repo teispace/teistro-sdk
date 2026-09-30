@@ -15,10 +15,11 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Graha, Karana, Masa, Nakshatra, Rashi, Tithi, Vara, Yoga};
+use teistro_core::catalogue::{Graha, Kaala, Karana, Masa, Nakshatra, Rashi, Tithi, Vara, Yoga};
 use teistro_core::interval::Interval;
 use teistro_panchanga::Panchanga;
 
+use crate::baseline::BaselineEvent;
 use crate::clause::{Clause, ClauseKey, ClauseKind};
 use crate::day::{DayRules, reported};
 use crate::grade::{Grade, Graded};
@@ -72,6 +73,45 @@ pub struct Pada {
     pub pada: u8,
 }
 
+/// A clause that bars a rite outright: every clause of a kind, or one
+/// clause exactly.
+///
+/// In JSON a bar is either a clause's key, `"KAALA"`, which bars all
+/// three kaalas, or a clause, `{"clause": "KAALA", "kaala": "RAHU_KAALA"}`,
+/// which bars Rahu kaala alone.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(untagged)]
+pub enum Bar {
+    /// Every clause of a kind.
+    Key(ClauseKey),
+    /// One clause, matched whole.
+    Clause(ClauseKind),
+}
+
+impl Bar {
+    /// Whether a clause is one this bar names.
+    #[must_use]
+    pub fn names(&self, kind: &ClauseKind) -> bool {
+        match self {
+            Bar::Key(key) => kind.key() == *key,
+            Bar::Clause(clause) => clause == kind,
+        }
+    }
+}
+
+impl From<ClauseKey> for Bar {
+    fn from(key: ClauseKey) -> Bar {
+        Bar::Key(key)
+    }
+}
+
+impl From<ClauseKind> for Bar {
+    fn from(kind: ClauseKind) -> Bar {
+        Bar::Clause(kind)
+    }
+}
+
 /// Something the source asks of the time that the SDK does not judge yet.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -98,9 +138,12 @@ pub struct ActivityRules {
     pub heeds: Vec<BlackoutKind>,
     /// The clauses that bar the rite outright rather than weigh against
     /// it.
-    pub bars: Vec<ClauseKey>,
+    pub bars: Vec<Bar>,
     /// What the source asks that is not judged, said rather than dropped.
     pub unjudged: Vec<Unjudged>,
+    /// The inputs the baseline engine's weights take for the rite, which
+    /// [`crate::Ranking::Baseline`] needs and no other ranking reads.
+    pub baseline: Option<BaselineEvent>,
 }
 
 impl ActivityRules {
@@ -168,14 +211,16 @@ impl ActivityRules {
                 BlackoutKind::GuruAsta,
                 BlackoutKind::ShukraAsta,
             ],
-            bars: vec![
+            bars: [
                 ClauseKey::SeventhOccupied,
                 ClauseKey::MarsInEighth,
                 ClauseKey::VenusInSixth,
                 ClauseKey::Kartari,
                 ClauseKey::MaleficInLagna,
                 ClauseKey::MoonJoined,
-            ],
+            ]
+            .map(Bar::from)
+            .into(),
             unjudged: vec![
                 Unjudged {
                     what: "the Mrityu yoga".into(),
@@ -190,6 +235,64 @@ impl ActivityRules {
                     why: "the season does not yet mark it (Muhurta Chintamani ch. I, vv. 46–47)".into(),
                 },
             ],
+            baseline: None,
+        }
+    }
+
+    /// The baseline engine's marriage: its gates as rules, and the inputs
+    /// its weights take (`muhurta.md` §4.5). Meant for
+    /// [`crate::Ranking::Baseline`], under which the roadmap's regression
+    /// is stated.
+    ///
+    /// - **Gates**, as bars: the Sun in Aries, Taurus, Gemini, Scorpio,
+    ///   Capricorn or Aquarius (the solar month, crux C161); the Moon in
+    ///   one of the eleven stars; Rahu kaala, the one kaala the engine
+    ///   avoids by default.
+    /// - **Heeds**: Chaturmas, the adhika month, Kharmas, Pitru paksha and
+    ///   Guru and Shukra asta.
+    /// - Nothing else is graded: the engine weighs the rest, and a
+    ///   weight is the ranking's.
+    #[must_use]
+    pub fn baseline_marriage() -> ActivityRules {
+        let event = BaselineEvent::marriage();
+        ActivityRules {
+            day: DayRules {
+                tithis: Graded::none(),
+                nakshatras: Graded::admitting(event.stars.clone()),
+                yogas: Graded::none(),
+                karanas: Graded::none(),
+                varas: Graded::none(),
+                chandrabala: ChandraBala::raman(),
+            },
+            months: MonthRule::Solar {
+                signs: Graded::admitting(vec![
+                    Rashi::Aries,
+                    Rashi::Taurus,
+                    Rashi::Gemini,
+                    Rashi::Scorpio,
+                    Rashi::Capricorn,
+                    Rashi::Aquarius,
+                ]),
+            },
+            lagnas: Graded::none(),
+            padas: Vec::new(),
+            heeds: vec![
+                BlackoutKind::Chaturmas,
+                BlackoutKind::AdhikaMasa,
+                BlackoutKind::Kharmas,
+                BlackoutKind::PitruPaksha,
+                BlackoutKind::GuruAsta,
+                BlackoutKind::ShukraAsta,
+            ],
+            bars: vec![
+                Bar::Key(ClauseKey::SolarMonth),
+                Bar::Key(ClauseKey::Nakshatra),
+                Bar::Clause(ClauseKind::Kaala {
+                    kaala: Kaala::RahuKaala,
+                }),
+            ],
+            unjudged: Vec::new(),
+            baseline: Some(event),
         }
     }
 
@@ -267,7 +370,7 @@ impl ActivityRules {
     /// Whether a clause bars the rite outright.
     #[must_use]
     pub fn bars(&self, clause: &Clause) -> bool {
-        self.bars.contains(&clause.kind.key())
+        self.bars.iter().any(|bar| bar.names(&clause.kind))
     }
 }
 
@@ -348,7 +451,7 @@ fn raman_marriage_day() -> DayRules {
 #[cfg(test)]
 #[allow(clippy::expect_used, reason = "tests fail by panicking")]
 mod tests {
-    use super::{ActivityRules, Pada};
+    use super::{ActivityRules, Bar, Pada};
     use crate::clause::{ClauseKey, ClauseKind};
     use crate::grade::Grade;
     use crate::instant::Sky;
@@ -393,6 +496,7 @@ mod tests {
         let sky = Sky {
             lagna_deg: 65.0,
             grahas,
+            speeds: [1.0; 9],
         };
         let found = rules.instant_clauses(&sky, at);
         let kinds: Vec<&ClauseKind> = found.iter().map(|c| &c.kind).collect();
@@ -418,6 +522,7 @@ mod tests {
             &Sky {
                 lagna_deg: 5.0,
                 grahas,
+                speeds: [1.0; 9],
             },
             at,
         );
@@ -428,12 +533,65 @@ mod tests {
                 .instant_clauses(
                     &Sky {
                         lagna_deg: 95.0,
-                        grahas
+                        grahas,
+                        speeds: [1.0; 9],
                     },
                     at
                 )
                 .is_empty()
         );
+    }
+
+    #[test]
+    fn a_bar_names_a_kind_or_one_clause_and_reads_either_spelling() {
+        use teistro_core::catalogue::Kaala;
+        let rahu = ClauseKind::Kaala {
+            kaala: Kaala::RahuKaala,
+        };
+        let gulika = ClauseKind::Kaala {
+            kaala: Kaala::GulikaKaala,
+        };
+        let every: Bar = serde_json::from_str(r#""KAALA""#).expect("a key");
+        let one: Bar =
+            serde_json::from_str(r#"{"clause":"KAALA","kaala":"RAHU_KAALA"}"#).expect("a clause");
+        assert_eq!(every, Bar::Key(ClauseKey::Kaala));
+        assert_eq!(one, Bar::Clause(rahu.clone()));
+        assert!(every.names(&rahu) && every.names(&gulika));
+        assert!(one.names(&rahu) && !one.names(&gulika));
+        // Each writes back as it was read.
+        assert_eq!(serde_json::to_string(&every).expect("json"), r#""KAALA""#);
+        assert_eq!(
+            serde_json::to_string(&one).expect("json"),
+            r#"{"clause":"KAALA","kaala":"RAHU_KAALA"}"#
+        );
+    }
+
+    #[test]
+    fn the_baseline_marriage_gates_by_bars_and_grades_nothing_else() {
+        use teistro_core::catalogue::Kaala;
+        let rules = ActivityRules::baseline_marriage();
+        let at = Interval::literal(2_460_000.5, 2_460_000.6);
+        let clause = |kind| crate::clause::Clause { kind, at };
+        // Rahu kaala bars, Gulika does not; the solar month and the star
+        // bar wherever the rules reject them.
+        assert!(rules.bars(&clause(ClauseKind::Kaala {
+            kaala: Kaala::RahuKaala
+        })));
+        assert!(!rules.bars(&clause(ClauseKind::Kaala {
+            kaala: Kaala::GulikaKaala
+        })));
+        assert_eq!(
+            rules.day.nakshatras.grade(&Nakshatra::Ashwini),
+            Grade::Rejected
+        );
+        assert_eq!(
+            rules.day.nakshatras.grade(&Nakshatra::Rohini),
+            Grade::Middling
+        );
+        assert_eq!(rules.day.varas.grade(&Vara::Mangalavara), Grade::Middling);
+        assert_eq!(rules.heeds.len(), 6);
+        assert!(rules.baseline.is_some());
+        assert!(ActivityRules::raman_marriage().baseline.is_none());
     }
 
     #[test]
@@ -444,7 +602,7 @@ mod tests {
         assert!(rules.bars(&clause(ClauseKind::MarsInEighth {})));
         assert!(!rules.bars(&clause(ClauseKind::AshtamaLagna {})));
         assert_eq!(rules.bars.len(), 6);
-        assert!(rules.bars.contains(&ClauseKey::MoonJoined));
+        assert!(rules.bars.contains(&Bar::Key(ClauseKey::MoonJoined)));
     }
 
     #[test]

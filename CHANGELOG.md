@@ -1377,6 +1377,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The baseline engine's ranking** (`muhurta.md` §4.5, §6 step 6).
+  `Ranking::Baseline` orders windows by the engine's weights, which the
+  roadmap's regression is stated in. The weights are five scorers
+  stacked and clamped as the engine clamps them: the day at sunrise; its
+  shuddhi, the event and the native; the window's choghadiya or Abhijit;
+  the lagna; the karakas. Then the Mahadosha cap: 55 for one uncancelled,
+  30 for two, and a combust karaka is never cancelled. Each window's
+  `score` carries its factors, one per dimension with its signed weight.
+  `ActivityRules::baseline_marriage` states the engine's gates as bars:
+  the solar month, the eleven stars and Rahu kaala. The inputs its
+  weights take are the rules' `BaselineEvent`; a request for `BASELINE`
+  without one is refused, naming `rules.baseline`. A bar may now name one
+  clause exactly as well as a kind (`Bar`), and bars a judgement only
+  where its clause covers it whole. `Sky` carries the grahas' speeds.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **The search** (`muhurta.md` §6 step 5, its second half).
   `search(&sources, &Request)` gives an activity's windows over a range
   of dates, in three passes whose work tracks the answer rather than the

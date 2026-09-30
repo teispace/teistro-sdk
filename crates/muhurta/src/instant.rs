@@ -50,6 +50,9 @@ pub struct Sky {
     pub lagna_deg: f64,
     /// The nine grahas' longitudes, degrees, in the catalogue's order.
     pub grahas: [f64; 9],
+    /// Their speeds in longitude, degrees a day, in the same order: a
+    /// negative speed is a graha retrograde.
+    pub speeds: [f64; 9],
 }
 
 /// The limbs running at the instant, which the panchaka remainder reads.
@@ -87,12 +90,27 @@ impl Sky {
             .unwrap_or(self.lagna_deg)
     }
 
+    /// A graha's speed in longitude, degrees a day; negative while it is
+    /// retrograde.
+    #[must_use]
+    pub fn speed(&self, graha: Graha) -> f64 {
+        self.speeds
+            .get(usize::from(graha.id()))
+            .copied()
+            .unwrap_or(0.0)
+    }
+
+    /// The sign a graha stands in.
+    #[must_use]
+    pub fn sign(&self, graha: Graha) -> Rashi {
+        sign_of(self.longitude(graha))
+    }
+
     /// The house a graha stands in, counted by sign from the lagna's, 1
     /// to 12.
     #[must_use]
     pub fn house_of(&self, graha: Graha) -> u8 {
-        let at = self.longitude(graha);
-        let steps = (sign_of(at).id() + 12 - self.lagna().id()) % 12;
+        let steps = (self.sign(graha).id() + 12 - self.lagna().id()) % 12;
         u8::try_from(steps + 1).unwrap_or(1)
     }
 
@@ -123,7 +141,7 @@ impl Sky {
 /// grahas[2] = 45.0; // Mars
 /// grahas[5] = 345.0; // Venus
 /// grahas[4] = 190.0; // Jupiter
-/// let sky = Sky { lagna_deg: 185.0, grahas };
+/// let sky = Sky { lagna_deg: 185.0, grahas, speeds: [1.0; 9] };
 /// let found = clauses(&sky, None, None, Interval::literal(0.0, 1.0));
 /// assert!(found.iter().any(|c| c.kind == ClauseKind::MarsInEighth {}));
 /// assert!(found.iter().any(|c| c.kind == ClauseKind::VenusInSixth {}));
@@ -248,6 +266,7 @@ mod tests {
         Sky {
             lagna_deg,
             grahas: [all; 9],
+            speeds: [1.0; 9],
         }
     }
 

@@ -26,6 +26,7 @@
 #![doc(html_no_source)]
 
 pub mod activity;
+pub mod baseline;
 pub mod clause;
 pub mod day;
 pub mod grade;
@@ -37,7 +38,8 @@ pub mod sources;
 pub mod tara;
 pub mod window;
 
-pub use activity::{ActivityRules, MonthRule};
+pub use activity::{ActivityRules, Bar, MonthRule};
+pub use baseline::{BaselineEvent, Score};
 pub use clause::{Clause, ClauseKey, ClauseKind};
 pub use day::{DayRules, Native, clauses};
 pub use grade::{Grade, Graded};
