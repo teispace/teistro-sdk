@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 5 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 5 and the ranking of step 6 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -283,7 +283,7 @@ stay data (C162). A judgement is never collapsed into a number the SDK
 invents; the ranking a request used is reported with the answer.
 `Ranking::Texts` is Raman's excess of good and deficiency of evil: open
 windows first, then the fewest clauses against, the most for, the
-earliest. `BASELINE` joins it with the regression (step 6).
+earliest. `Ranking::Baseline` joins it with the regression (§4.5).
 
 Built (`search.rs`, `judge.rs`, `sources.rs`): the three passes, over a
 `Sources` trait so the orchestration is the same over any sky, and
@@ -308,6 +308,115 @@ that the grahas' signs and the lagna's and the Moon's navamsas read the
 same a second inside either end — red with the ingress cuts removed —
 and that every clause a window holds covers it whole, red on a Cancer
 tyajya before the clause edges were cut).
+
+### 4.5 The baseline's ranking
+
+`Ranking::Baseline` is the engine's weights (C162), which the
+regression is stated in. Read in full, they are five scorers stacked,
+each clamped to 0–100 as it is added:
+
+1. **The day**, read at sunrise: a Nanda tithi +20, a Rikta −10, any
+   other +10; the activity's star +25, else a harsh star −15; Monday,
+   Wednesday, Thursday or Friday +15, Saturday −10; solar noon inside
+   Rahu kaala −30.
+2. **The day's shuddhi and the event**: the sunrise yoga −25 when
+   highly inauspicious, −12 when inauspicious, +8 when auspicious (the
+   catalogue's `Auspiciousness`, which agrees member for member); a
+   Vishti anywhere in the day −18; panchaka −10; the special yogas +6
+   each to 15; the Moon's brightness from the sunrise tithi +8 at 0.7 or
+   more and −10 at 0.25 or less; the event's weekday −12 or +8 and its
+   tithi +6; and against a native, the tara +12, or −10, −7 or −3 by
+   the cycle for the 3rd, 5th and 7th, and the Moon's house from the
+   birth Moon +10, −14 on the 8th, −6 when draining.
+3. **The window's period**: Amrita +18, Shubha +14, Labha +12, and
+   Abhijit +16 over the choghadiya it falls in. A window in no good
+   choghadiya and not Abhijit is **not a candidate**, since the engine
+   never builds it.
+4. **The lagna** at the window: the lord exalted or in its own sign +12,
+   debilitated −12, else in a kendra or trikona +6. The placements are
+   summed and clamped to ±12: a benefic in a kendra or trikona +3, a
+   malefic in an upachaya +2, a malefic in a kendra or trikona −3. Any
+   graha in the 8th −8. For a marriage, the 7th empty +4, else −12.
+   Malefics hemming the lagna −8. A cancelling benefic in the lagna:
+   Jupiter +16, Venus +10, Mercury +7. **Only the first found counts**,
+   in the engine's ephemeris order, so Mercury is taken before Jupiter.
+   This is a reading of its loop, recorded, not corrected.
+5. **The karakas** at the window (Venus and Jupiter for a marriage):
+   exalted or in its own sign +8, debilitated −12; within 10° of the
+   Sun (Venus) or 11° (Jupiter) −12; retrograde −6.
+
+Then **the Mahadosha cap**. The Mahadoshas are:
+
+- a highly inauspicious or inauspicious sunrise yoga;
+- a Vishti in the day;
+- a debilitated karaka;
+- a combust karaka.
+
+One cancelling benefic lifts one Mahadosha, except a combust karaka, which
+no benefic lifts. What is left caps the score at 55, or at 30 when two or
+more remain.
+
+The SDK reads each quantity **where the engine does**: the day's at its
+sunrise, taking the first span of each limb, and the window's at its
+start. Its day, its sunrise and its window are the SDK's own. The
+score is reported **with its factors**, one per dimension with its
+signed weight, so a reader sees why a window scored 55 and not 92. The
+engine's acceptance values are its own tests': a Saturday on the
+bright eleventh with an auspicious yoga scores 92 as a day; the same
+day scores 59 with Vyatipata, 74 with Vishti, 82 with panchaka and 100
+with two special yogas; and it scores 68 on the dark fourteenth.
+
+What the engine's rules decide is **rules**, not ranking.
+`ActivityRules::baseline_marriage` gates by:
+
+- the Sun's sign: Aries, Taurus, Gemini, Scorpio, Capricorn and
+  Aquarius;
+- the eleven stars;
+- the six heeded blackouts;
+- Rahu kaala.
+
+Each gate is a clause the rules **bar**. Abhijit is not one of them. The
+engine drops Abhijit's own candidate for a marriage but keeps the
+choghadiya windows over the same minutes, so its prohibition takes away
+Abhijit's bonus and does not remove the time. That is a flag on the
+event, not a bar. A bar names a clause key, or one
+clause exactly: `KAALA` bars all three kaalas, while
+`{"clause": "KAALA", "kaala": "RAHU_KAALA"}` bars only the one the engine
+avoids by default. The inputs the weights take per activity (the star
+set, the favoured and avoided weekdays, the favoured tithis, the
+karakas, whether the 7th must be empty, whether Abhijit is forbidden)
+are data on the rules
+(`BaselineEvent`). A request for `BASELINE` over rules without them is
+refused, naming the field.
+
+Where the SDK is exact and the engine samples, the two can part:
+
+- The engine gates a **whole day** by its sunrise star and solar month,
+  and vetoes a day any blackout touches. The SDK bars the **windows**
+  inside a rejected star's span or a blackout, and closes only a day a
+  blackout covers whole.
+- The engine's windows are a choghadiya less the avoided kaala, scored
+  at their start. The SDK's are cut wherever a clause changes.
+
+The measured pass counts every such parting rather than hiding it (§5).
+
+Built (`baseline.rs`): each scorer is split into what the engine
+**reads** (`DayReading`, `Period`, the `Sky` at the window's start,
+which now carries the grahas' speeds) and a pure score over that
+reading, so the engine's own arithmetic is testable without a day. Its
+tests' values cannot be taken whole: they fix the day part at 70, and
+the day part the engine computes reaches **60 at most** (a Nanda 20,
+the star 25, the weekday 15). So the unit tests assert the engine's
+stated moves over a day the scorer does compute: Vyatipata −33 where
+Siddhi was, Vishti −18, panchaka −10, and two special yogas clamped at
+100. The search judges a **day** as well as its windows. A bar bars a
+judgement only when its clause covers the judgement whole, so a day is
+not barred by the Rahu kaala inside it and its windows in Rahu kaala
+are. Over the built-in ephemeris the search under `Ranking::Baseline`
+keeps the regression (1 September to 19 November closed), and scores an
+open window **exactly** when the engine would have offered it. Of the
+open windows, those in Char, Kaala, Udvega or Roga carry no score and
+rank after the scored.
 
 ## 5. What is measured
 

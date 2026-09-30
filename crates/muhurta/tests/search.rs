@@ -4,7 +4,7 @@
 //! are named with what closed them, no window returned lies in a heeded
 //! blackout, the windows are in the ranking's order, and a window is
 //! constant — its instant clauses read the same a second inside either
-//! end. Under the baseline engine's heeds the season reproduces its
+//! end, or a quarter of the way in for a window shorter than four. Under the baseline engine's heeds the season reproduces its
 //! regression: nothing open before Devuthani.
 
 #![allow(
@@ -22,7 +22,8 @@ use teistro_astro::visibility::{Criterion, Heliacal};
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarDate, Gregorian};
 use teistro_chart::foundation::Founder;
-use teistro_core::catalogue::{Ayanamsha, Calendar};
+use teistro_core::catalogue::{Ayanamsha, Calendar, Choghadiya, Kaala};
+use teistro_core::error::Status;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 use teistro_core::settings::{OverridePolicy, Profile, SettingsPatch, Sunrise};
@@ -31,7 +32,9 @@ use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_muhurta::instant::clauses as instant_clauses;
 use teistro_muhurta::season::BlackoutKind;
 use teistro_muhurta::sources::Over;
-use teistro_muhurta::{ActivityRules, Answer, ProviderSources, Ranking, Request, Sources, search};
+use teistro_muhurta::{
+    ActivityRules, Answer, ClauseKind, ProviderSources, Ranking, Request, Sources, search,
+};
 use teistro_panchanga::Almanac;
 use teistro_port_ephemeris::Horizon;
 
@@ -91,31 +94,17 @@ fn with_sources<R>(f: impl FnOnce(&dyn Sources) -> R) -> R {
     f(&sources)
 }
 
-fn request(rules: ActivityRules) -> Request {
+fn request(rules: ActivityRules, ranking: Ranking) -> Request {
     Request {
         rules,
         from: date(9, 1),
         to: date(11, 30),
         native: None,
-        ranking: Ranking::Texts,
+        ranking,
         days_with_windows: 3,
         // Every window of the days cut, so the promises are held on all.
         most: usize::MAX,
     }
-}
-
-/// The baseline engine's marriage heeds, on Raman's day rules.
-fn baseline_heeds() -> ActivityRules {
-    let mut rules = ActivityRules::raman_marriage();
-    rules.heeds = vec![
-        BlackoutKind::Chaturmas,
-        BlackoutKind::AdhikaMasa,
-        BlackoutKind::Kharmas,
-        BlackoutKind::PitruPaksha,
-        BlackoutKind::GuruAsta,
-        BlackoutKind::ShukraAsta,
-    ];
-    rules
 }
 
 fn closed_dates(answer: &Answer) -> Vec<(u8, u8)> {
@@ -131,11 +120,10 @@ fn closed_dates(answer: &Answer) -> Vec<(u8, u8)> {
 /// its instant clauses read reads the same a second inside either end.
 fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Answer) {
     assert!(!answer.windows.is_empty());
-    assert_eq!(answer.ranking, Ranking::Texts);
     assert_eq!(answer.unjudged, rules.unjudged);
     for pair in answer.windows.windows(2) {
         assert_ne!(
-            Ranking::Texts.compare(&pair[0], &pair[1]),
+            answer.ranking.compare(&pair[0], &pair[1]),
             core::cmp::Ordering::Greater
         );
     }
@@ -143,9 +131,12 @@ fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Ans
     let season = sources
         .season(Interval::literal(2_461_283.5, 2_461_376.5), &rules.heeds)
         .unwrap();
-    let second = 1.0 / 86_400.0;
+    let second: f64 = 1.0 / 86_400.0;
     for w in &answer.windows {
         assert!(!season.iter().any(|b| b.at.overlaps(w.at)), "{w:?}");
+        // A second inside either end, or a quarter of a window shorter
+        // than four seconds: a cut a second after another is real.
+        let inset = second.min(w.at.days() / 4.0);
         // A window was cut at every clause's edge, so each clause it holds
         // holds over all of it.
         for c in &w.clauses {
@@ -171,18 +162,24 @@ fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Ans
             (signs, navamsa(sky.lagna_deg), navamsa(sky.grahas[1]), kinds)
         };
         assert_eq!(
-            read(w.at.from.get() + second),
-            read(w.at.to.get() - second),
+            read(w.at.from.get() + inset),
+            read(w.at.to.get() - inset),
             "{w:?}"
         );
     }
 }
 
 #[test]
-fn under_the_baseline_heeds_the_season_closes_everything_before_devuthani() {
+fn under_the_baseline_the_season_closes_everything_before_devuthani() {
     with_sources(|sources| {
-        let rules = baseline_heeds();
-        let answer = search(sources, &request(rules.clone())).unwrap();
+        let rules = ActivityRules::baseline_marriage();
+        // Every open day cut, so the windows a partial blackout touches
+        // are among them whichever days score best.
+        let every_day = Request {
+            days_with_windows: 11,
+            ..request(rules.clone(), Ranking::Baseline)
+        };
+        let answer = search(sources, &every_day).unwrap();
         let closed = closed_dates(&answer);
         for day in [(9, 21), (10, 19), (11, 5)] {
             assert!(closed.contains(&day), "{day:?} is open");
@@ -198,11 +195,61 @@ fn under_the_baseline_heeds_the_season_closes_everything_before_devuthani() {
                 .all(|c| c.by.contains(&BlackoutKind::Chaturmas))
         );
         assert_eq!(answer.days_judged, 11);
-        assert_eq!(answer.days_cut, 3);
+        assert_eq!(answer.days_cut, 11);
         // Asta and Kharmas run into the open days, so some windows fall
         // inside a blackout and are left out.
         assert!(answer.windows_blacked_out > 0);
         holds_its_promises(sources, &rules, &answer);
+        // An open window is scored exactly when the engine would offer
+        // it — in Amrita, Shubha or Labha, since a marriage forbids
+        // Abhijit — and none lies in Rahu kaala, a star the rite does not
+        // take or a month it is not held in.
+        let open: Vec<_> = answer.windows.iter().filter(|w| w.open()).collect();
+        assert!(open.iter().any(|w| w.score.is_some()));
+        assert!(open.iter().any(|w| w.score.is_none()));
+        // Read without the ranking's own comparison: the open windows come
+        // first, the scored ahead of the rest, highest score first.
+        let first_barred = answer.windows.iter().position(|w| !w.open());
+        assert!(first_barred.is_none_or(|i| answer.windows[i..].iter().all(|w| !w.open())));
+        let values: Vec<Option<u8>> = open
+            .iter()
+            .map(|w| w.score.as_ref().map(|s| s.value))
+            .collect();
+        assert!(values.windows(2).all(|p| p[0] >= p[1]), "{values:?}");
+        for w in &open {
+            let offered = w.clauses.iter().any(|c| {
+                matches!(
+                    c.kind,
+                    ClauseKind::Choghadiya {
+                        choghadiya: Choghadiya::Amrit | Choghadiya::Shubha | Choghadiya::Laabh
+                    }
+                )
+            });
+            assert_eq!(w.score.is_some(), offered, "{w:?}");
+            assert!(
+                w.clauses.iter().all(|c| !matches!(
+                    c.kind,
+                    ClauseKind::Kaala {
+                        kaala: Kaala::RahuKaala
+                    } | ClauseKind::Nakshatra { .. }
+                        | ClauseKind::SolarMonth { .. }
+                )),
+                "{w:?}"
+            );
+        }
+    });
+}
+
+#[test]
+fn the_baseline_ranking_is_refused_without_its_event() {
+    with_sources(|sources| {
+        let err = search(
+            sources,
+            &request(ActivityRules::raman_marriage(), Ranking::Baseline),
+        )
+        .unwrap_err();
+        assert_eq!(err.status, Status::InvalidArg);
+        assert_eq!(err.field(), Some("rules.baseline"));
     });
 }
 
@@ -210,8 +257,9 @@ fn under_the_baseline_heeds_the_season_closes_everything_before_devuthani() {
 fn under_ramans_rules_the_windows_hold_their_promises() {
     with_sources(|sources| {
         let rules = ActivityRules::raman_marriage();
-        let answer = search(sources, &request(rules.clone())).unwrap();
+        let answer = search(sources, &request(rules.clone(), Ranking::Texts)).unwrap();
         assert_eq!(answer.days_judged + answer.closed.len(), 91);
+        assert!(answer.windows.iter().all(|w| w.score.is_none()));
         holds_its_promises(sources, &rules, &answer);
     });
 }

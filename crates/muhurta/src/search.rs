@@ -27,6 +27,7 @@ use teistro_core::quantity::{JulianDay, Utc};
 use teistro_panchanga::Panchanga;
 
 use crate::activity::{ActivityRules, Unjudged};
+use crate::baseline::{self, BaselineEvent, DayReading, Period, Score};
 use crate::clause::Clause;
 use crate::day::{Native, clauses as day_clauses};
 use crate::instant::{Limbs, Sky, clauses as instant_clauses};
@@ -156,6 +157,16 @@ pub struct Answer {
 /// days (`INVALID_ARG`), and whatever the sources refuse.
 pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Answer, Error> {
     let rules = &request.rules;
+    let event = match (request.ranking, &rules.baseline) {
+        (Ranking::Baseline, None) => {
+            return Err(Error::invalid_arg(
+                "the BASELINE ranking reads the rules' baseline event, and these rules have none; ActivityRules::baseline_marriage carries one",
+            )
+            .with_field("rules.baseline"));
+        }
+        (Ranking::Baseline, Some(event)) => Some(event),
+        (Ranking::Texts, _) => None,
+    };
     let dates = dates(sources, request)?;
     let civil: Vec<Interval> = dates
         .iter()
@@ -182,7 +193,10 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
         let day = sources.day(date)?;
         let mut held = day_clauses(&day, request.native.as_ref(), &rules.day);
         held.extend(rules.month_clauses(&day));
-        let judged = Judgement::of(day.window, &held, rules);
+        let mut judged = Judgement::of(day.window, &held, rules);
+        judged.score = event
+            .zip(DayReading::of(&day))
+            .map(|(e, reading)| baseline::day(&reading, request.native.as_ref(), e));
         days.push((day, held, judged));
     }
     let days_judged = days.len();
@@ -191,8 +205,9 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
     let mut judged = Vec::new();
     let mut windows_blacked_out = 0;
     let days_cut = days.len().min(request.days_with_windows);
-    for (day, held, _) in days.iter().take(days_cut) {
-        let cut = cut_day(sources, request, day, held, &season)?;
+    for (day, held, judged_day) in days.iter().take(days_cut) {
+        let scoring = event.zip(judged_day.score.as_ref());
+        let cut = cut_day(sources, request, day, held, &season, scoring)?;
         windows_blacked_out += cut.blacked_out;
         judged.extend(cut.judged);
     }
@@ -249,6 +264,7 @@ fn cut_day<S: Sources + ?Sized>(
     day: &Panchanga,
     held: &[Clause],
     season: &[Blackout],
+    scoring: Option<(&BaselineEvent, &Score)>,
 ) -> Result<Cut, Error> {
     let rules = &request.rules;
     let span = day.window;
@@ -291,11 +307,14 @@ fn cut_day<S: Sources + ?Sized>(
         let native_lagna = request.native.and_then(|n| n.lagna);
         let mut instant = instant_clauses(&sky, limbs.as_ref(), native_lagna, piece);
         instant.extend(rules.instant_clauses(&sky, piece));
-        judged.push(Judgement::of(
-            piece,
-            held.iter().chain(&tyajya).chain(&instant),
-            rules,
-        ));
+        let mut judgement = Judgement::of(piece, held.iter().chain(&tyajya).chain(&instant), rules);
+        if let Some((event, day_score)) = scoring {
+            // The engine reads the lagna and the karakas at a window's
+            // start.
+            let start = sources.sky_at(piece.from)?;
+            judgement.score = baseline::window(day_score, Period::of(day, piece), &start, event);
+        }
+        judged.push(judgement);
     }
     Ok(Cut {
         judged,

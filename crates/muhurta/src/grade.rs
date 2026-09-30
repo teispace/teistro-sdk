@@ -54,6 +54,29 @@ impl<T: PartialEq + Clone> Graded<T> {
         }
     }
 
+    /// A rule that grades nothing: every member middling.
+    #[must_use]
+    pub const fn none() -> Graded<T> {
+        Graded {
+            best: Vec::new(),
+            middling: Vec::new(),
+            rejected: Vec::new(),
+            otherwise: Grade::Middling,
+        }
+    }
+
+    /// A rule that only admits: the members named middling, the rest
+    /// rejected — a gate, which weighs nothing either way.
+    #[must_use]
+    pub const fn admitting(admitted: Vec<T>) -> Graded<T> {
+        Graded {
+            best: Vec::new(),
+            middling: admitted,
+            rejected: Vec::new(),
+            otherwise: Grade::Rejected,
+        }
+    }
+
     /// The grade of a member.
     #[must_use]
     pub fn grade(&self, member: &T) -> Grade {

@@ -25,5 +25,7 @@ clauses that bar it, and what is not yet judged, said. Raman's marriage
 is the first. The search runs them over a range: the season closes whole
 days and names what closed each, the remaining days are judged and
 ordered, and the best are cut into windows, each judged once and ranked
-(`Ranking::Texts`). The baseline engine's ranking and the measured pass
-follow (`muhurta.md` §6).
+(`Ranking::Texts`), or by the baseline engine's weights
+(`Ranking::Baseline` over `ActivityRules::baseline_marriage`), each
+window's score carrying the factors it was made of. The measured pass
+follows (`muhurta.md` §6).
