@@ -14,7 +14,7 @@ not that they agree with a literal written here.
 from __future__ import annotations
 
 import sys
-from typing import Any, Optional, Sequence, cast
+from typing import Any, Iterable, Optional, Sequence, cast
 
 import json
 
@@ -27,6 +27,7 @@ from teistro import (
     SignIngress,
     Station,
     LocalDay,
+    MuhurtaAnswer,
     VarshaRequest,
     DashaDefinition,
     Altitude,
@@ -84,6 +85,56 @@ def put(key: str, value: Any) -> None:
         report[key] = "null"
     else:
         report[key] = str(value)
+
+
+def listed(items: Iterable[str]) -> str:
+    """The items joined by spaces, or `none`."""
+    return " ".join(items) or "none"
+
+
+def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
+    """A muhurta answer's counts, hash and every window, as every runner
+    prints them."""
+    put(
+        f"{prefix}-counts",
+        " ".join(
+            str(n)
+            for n in (
+                len(answer.windows),
+                len(answer.closed),
+                answer.days_judged,
+                answer.days_cut,
+                answer.windows_blacked_out,
+                answer.ranking,
+            )
+        ),
+    )
+    put(f"{prefix}-hash", answer.provenance.content_hash)
+    for k, window in enumerate(answer.windows):
+        put(f"{prefix}-{k}", f"{number(window.at.from_jd)} {number(window.at.to_jd)}")
+        put(f"{prefix}-{k}-clauses", " ".join(clause.kind.CLAUSE for clause in window.clauses))
+        put(
+            f"{prefix}-{k}-bars",
+            listed(bar if isinstance(bar, str) else bar.CLAUSE for bar in window.barred_by),
+        )
+        score = window.score
+        put(
+            f"{prefix}-{k}-score",
+            "none"
+            if score is None
+            else " ".join(
+                (
+                    str(score.value),
+                    "none" if score.capped_at is None else str(score.capped_at),
+                    listed(
+                        f"{f.dimension}:{f.weight}:{'none' if f.graha is None else f.graha.full_key}"
+                        for f in score.factors
+                    ),
+                )
+            ),
+        )
+    for j, day in enumerate(answer.closed):
+        put(f"{prefix}-closed-{j}", f"{day.date.month}-{day.date.day} {listed(day.by)}")
 
 
 def put_day(prefix: str, day: LocalDay) -> None:
@@ -1067,6 +1118,29 @@ def main() -> None:
             utc_offset_seconds=20700,
         )
         put("almanac-single-agrees", one_day.day.sunrise == week.at(0).day.sunrise)
+
+        # ── A muhurta search ──────────────────────────────────────────
+        # Both rankings over 2024-11-25..27: the texts bar the windows
+        # for different reasons and the baseline scores them.
+        for name, rules, ranking in (
+            ("raman", "RAMAN_MARRIAGE", "TEXTS"),
+            ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
+        ):
+            muhurta = geo.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2024, 11, 25),
+                to_date=date(Calendar.GREGORIAN, 2024, 11, 27),
+                place=place,
+                utc_offset_seconds=20700,
+                muhurta={
+                    "rules": rules,
+                    "ranking": ranking,
+                    "native": {"star": "ROHINI", "moonSign": "TAURUS", "lagna": "LEO"},
+                    "daysWithWindows": 3,
+                    "most": 12,
+                },
+            ).muhurta
+            assert muhurta is not None
+            put_muhurta(f"muhurta-{name}", muhurta)
 
     # ── The surface's shape ───────────────────────────────────────────
     #

@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 6 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 7 **built** 2026-09-30, step 5 for marriage alone. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`

@@ -858,11 +858,15 @@ final class AlmanacArea extends _Area {
   /// so a month of days costs much less than thirty days computed
   /// separately. A range holding more than a year and a day is refused
   /// by name.
+  ///
+  /// [muhurta] runs a search over the same days, answered as
+  /// [Almanac.muhurta].
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
     required Observer place,
     required int utcOffsetSeconds,
+    MuhurtaRequest? muhurta,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -879,6 +883,7 @@ final class AlmanacArea extends _Area {
             longitudeDeg: place.longitudeDeg,
             altitudeM: place.altitudeM,
             utcOffsetSeconds: utcOffsetSeconds,
+            muhurtaJson: muhurta?._json,
           ),
         ),
       ),
@@ -4857,6 +4862,1135 @@ final class KpReading extends _Value {
   List<Object?> get _fields => [chart, significators, ruling];
 }
 
+/// A set of rules the SDK ships, which a [MuhurtaRequest] may name.
+enum MuhurtaActivity {
+  /// A marriage by Raman's *Muhurtha*.
+  ramanMarriage('RAMAN_MARRIAGE'),
+
+  /// A marriage by the baseline engine's gates and weights, which the
+  /// [MuhurtaRanking.baseline] ranking reads.
+  baselineMarriage('BASELINE_MARRIAGE');
+
+  const MuhurtaActivity(this.key);
+
+  /// The name a request writes.
+  final String key;
+}
+
+/// How a search orders its windows (C162).
+enum MuhurtaRanking {
+  /// By the texts' clauses: fewest uncancelled doshas, then most favourable.
+  texts('TEXTS'),
+
+  /// By the baseline engine's weights.
+  baseline('BASELINE');
+
+  const MuhurtaRanking(this.key);
+
+  /// The name a request writes and an answer reads back.
+  final String key;
+}
+
+/// A visibility criterion the SDK names, for how Venus's and Jupiter's
+/// combustion is seen (C164).
+enum AstaCriterion {
+  /// The Surya Siddhanta's degrees of time; the default.
+  suryaSiddhanta('SURYA_SIDDHANTA'),
+
+  /// The tradition's combustion orbs.
+  combustionOrb('COMBUSTION_ORB'),
+
+  /// Ptolemy's arcus visionis.
+  ptolemy('PTOLEMY');
+
+  const AstaCriterion(this.key);
+
+  /// The name a request writes.
+  final String key;
+}
+
+/// Whose day a search reads: the birth star and Moon sign, and the birth
+/// lagna when the time is known, whose eighth the search avoids.
+final class MuhurtaNative {
+  const MuhurtaNative({required this.star, required this.moonSign, this.lagna});
+
+  final Nakshatra star;
+  final Rashi moonSign;
+  final Rashi? lagna;
+
+  Map<String, Object?> get _json => {
+    'star': star.fullKey,
+    'moonSign': moonSign.fullKey,
+    if (lagna != null) 'lagna': lagna!.fullKey,
+  };
+}
+
+/// A muhurta search to run over an almanac's days
+/// (`03-design/muhurta-at-the-boundary.md`), answered as [Almanac.muhurta].
+///
+/// `rules` is a [MuhurtaActivity], a set the SDK ships, or the rules spelt
+/// out as the JSON record reads them, in which a catalogue member may stand
+/// as itself and a clause an answer gave may stand as a bar; `asta` is an
+/// [AstaCriterion] or a criterion spelt out. Anything else is refused by
+/// name.
+///
+/// ```dart
+/// final almanac = ctx.almanac.of(/* … */
+///     muhurta: const MuhurtaRequest(rules: MuhurtaActivity.ramanMarriage));
+/// final best = almanac.muhurta?.windows.first;
+/// ```
+final class MuhurtaRequest {
+  const MuhurtaRequest({
+    required this.rules,
+    this.native,
+    this.ranking = MuhurtaRanking.texts,
+    this.daysWithWindows = 7,
+    this.most = 50,
+    this.asta,
+  });
+
+  /// A [MuhurtaActivity], or the rules spelt out.
+  final Object rules;
+
+  /// The native whose tarabala, chandrabala and ashtama lagna are read.
+  final MuhurtaNative? native;
+
+  /// How the windows are ordered.
+  final MuhurtaRanking ranking;
+
+  /// How many of the best days are cut into windows.
+  final int daysWithWindows;
+
+  /// How many windows are answered at most.
+  final int most;
+
+  /// An [AstaCriterion], or a criterion spelt out; the Surya Siddhanta's
+  /// when absent.
+  final Object? asta;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'rules': _named(rules, 'rules', (MuhurtaActivity a) => a.key),
+    if (native != null) 'native': native!._json,
+    'ranking': ranking.key,
+    'daysWithWindows': daysWithWindows,
+    'most': most,
+    if (asta != null) 'asta': _named(asta!, 'asta', (AstaCriterion a) => a.key),
+  });
+
+  /// A field that is a name or a record spelt out, written down; anything
+  /// else refused by the field's name, as the SDK names its own refusals.
+  static Object? _named<N>(
+    Object value,
+    String field,
+    String Function(N) key,
+  ) => switch (value) {
+    N named => key(named),
+    Map<String, Object?> spelt => _written(spelt),
+    _ =>
+      throw TeistroException(
+        Status.invalidArg,
+        'muhurta.$field is a name or a record spelt out, not ${value.runtimeType}',
+        field: 'muhurta.$field',
+      ),
+  };
+}
+
+/// A request value as JSON writes it: a member as its full key, a clause as
+/// its tag and fields, a record's values written in turn.
+Object? _written(Object? value) => switch (value) {
+  KeyOf<Object> member => member.fullKey,
+  MuhurtaBar bar => bar._json,
+  Map<String, Object?> record => {
+    for (final MapEntry(:key, value: inner) in record.entries)
+      key: _written(inner),
+  },
+  List<Object?> list => [for (final inner in list) _written(inner)],
+  _ => value,
+};
+
+T _key<T>(Object? raw, T? Function(String) byKey, T unknown) =>
+    byKey(raw! as String) ?? unknown;
+
+List<T> _keys<T>(Object? raw, T? Function(String) byKey, T unknown) =>
+    List<T>.unmodifiable([
+      for (final key in raw! as List<Object?>) _key(key, byKey, unknown),
+    ]);
+
+/// A nakshatra's quarter.
+final class MuhurtaPada extends _Value {
+  const MuhurtaPada({required this.nakshatra, required this.pada});
+
+  factory MuhurtaPada._read(Map<String, Object?> raw) => MuhurtaPada(
+    nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    pada: raw['pada']! as int,
+  );
+
+  final Nakshatra nakshatra;
+
+  /// 1 to 4.
+  final int pada;
+
+  Map<String, Object?> get _json => {
+    'nakshatra': nakshatra.fullKey,
+    'pada': pada,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada];
+}
+
+/// The birth star's count to the day's, and the tara it gives: `JANMA`,
+/// `SAMPAT`, `VIPAT`, `KSHEMA`, `PRATYAK`, `SADHANA`, `NAIDHANA`, `MITRA` or
+/// `PARAMA_MITRA`.
+final class TaraReading extends _Value {
+  const TaraReading({
+    required this.count,
+    required this.tara,
+    required this.cycle,
+  });
+
+  factory TaraReading._read(Map<String, Object?> raw) => TaraReading(
+    count: raw['count']! as int,
+    tara: raw['tara']! as String,
+    cycle: raw['cycle']! as int,
+  );
+
+  final int count;
+  final String tara;
+  final int cycle;
+
+  Map<String, Object?> get _json => {
+    'count': count,
+    'tara': tara,
+    'cycle': cycle,
+  };
+
+  @override
+  List<Object?> get _fields => [count, tara, cycle];
+}
+
+/// What bars a time outright: every clause of a kind ([BarAllOf]), or one
+/// clause exactly (a [MuhurtaClauseKind]). A window's `barredBy` holds them,
+/// and a request's rules take them back.
+sealed class MuhurtaBar extends _Value {
+  const MuhurtaBar();
+
+  /// The tag of the clauses it bars.
+  String get clause;
+
+  Object get _json;
+}
+
+/// A bar on every clause of a kind, by its tag (`KAALA` bars all three
+/// kaalas).
+final class BarAllOf extends MuhurtaBar {
+  const BarAllOf(this.clause);
+
+  @override
+  final String clause;
+
+  @override
+  Object get _json => clause;
+
+  @override
+  List<Object?> get _fields => [clause];
+}
+
+/// One named condition from a source, without when it held: a subclass a
+/// kind, named for its tag, so a `switch` reads it; handed back as a bar it
+/// bars exactly that clause. A `grade` is `BEST`, `MIDDLING` or `REJECTED`.
+sealed class MuhurtaClauseKind extends MuhurtaBar {
+  const MuhurtaClauseKind();
+
+  @override
+  Map<String, Object?> get _json;
+}
+
+/// The day's tithi, as the rules grade it.
+final class TithiClause extends MuhurtaClauseKind {
+  const TithiClause({required this.tithi, required this.grade});
+
+  final Tithi tithi;
+  final String grade;
+
+  @override
+  String get clause => 'TITHI';
+
+  @override
+  List<Object?> get _fields => [tithi, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'tithi': tithi.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The Moon's nakshatra, as the rules grade it.
+final class NakshatraClause extends MuhurtaClauseKind {
+  const NakshatraClause({required this.nakshatra, required this.grade});
+
+  final Nakshatra nakshatra;
+  final String grade;
+
+  @override
+  String get clause => 'NAKSHATRA';
+
+  @override
+  List<Object?> get _fields => [nakshatra, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'nakshatra': nakshatra.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The nitya yoga, as the rules grade it.
+final class YogaClause extends MuhurtaClauseKind {
+  const YogaClause({required this.yoga, required this.grade});
+
+  final Yoga yoga;
+  final String grade;
+
+  @override
+  String get clause => 'YOGA';
+
+  @override
+  List<Object?> get _fields => [yoga, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'yoga': yoga.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The karana, as the rules grade it.
+final class KaranaClause extends MuhurtaClauseKind {
+  const KaranaClause({required this.karana, required this.grade});
+
+  final Karana karana;
+  final String grade;
+
+  @override
+  String get clause => 'KARANA';
+
+  @override
+  List<Object?> get _fields => [karana, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'karana': karana.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The weekday, as the rules grade it.
+final class VaraClause extends MuhurtaClauseKind {
+  const VaraClause({required this.vara, required this.grade});
+
+  final Vara vara;
+  final String grade;
+
+  @override
+  String get clause => 'VARA';
+
+  @override
+  List<Object?> get _fields => [vara, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'vara': vara.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The lunar month, as the rules grade it (C161).
+final class MonthClause extends MuhurtaClauseKind {
+  const MonthClause({required this.masa, required this.grade});
+
+  final Masa masa;
+  final String grade;
+
+  @override
+  String get clause => 'MONTH';
+
+  @override
+  List<Object?> get _fields => [masa, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'masa': masa.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The Sun's sign, as the rules grade it (C161).
+final class SolarMonthClause extends MuhurtaClauseKind {
+  const SolarMonthClause({required this.sign, required this.grade});
+
+  final Rashi sign;
+  final String grade;
+
+  @override
+  String get clause => 'SOLAR_MONTH';
+
+  @override
+  List<Object?> get _fields => [sign, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'sign': sign.fullKey,
+    'grade': grade,
+  };
+}
+
+/// The rising sign, as the rules grade it.
+final class LagnaClause extends MuhurtaClauseKind {
+  const LagnaClause({required this.sign, required this.grade});
+
+  final Rashi sign;
+  final String grade;
+
+  @override
+  String get clause => 'LAGNA';
+
+  @override
+  List<Object?> get _fields => [sign, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'sign': sign.fullKey,
+    'grade': grade,
+  };
+}
+
+/// A quarter of the Moon's star the rules reject.
+final class PadaClause extends MuhurtaClauseKind {
+  const PadaClause({required this.pada});
+
+  final MuhurtaPada pada;
+
+  @override
+  String get clause => 'PADA';
+
+  @override
+  List<Object?> get _fields => [pada];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'pada': pada._json};
+}
+
+/// Rahu kaala, Yamaghanda or Gulika kaala.
+final class KaalaClause extends MuhurtaClauseKind {
+  const KaalaClause({required this.kaala});
+
+  final Kaala kaala;
+
+  @override
+  String get clause => 'KAALA';
+
+  @override
+  List<Object?> get _fields => [kaala];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'kaala': kaala.fullKey};
+}
+
+/// The choghadiya.
+final class ChoghadiyaClause extends MuhurtaClauseKind {
+  const ChoghadiyaClause({required this.choghadiya});
+
+  final Choghadiya choghadiya;
+
+  @override
+  String get clause => 'CHOGHADIYA';
+
+  @override
+  List<Object?> get _fields => [choghadiya];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'choghadiya': choghadiya.fullKey,
+  };
+}
+
+/// Abhijit muhurta.
+final class AbhijitClause extends MuhurtaClauseKind {
+  const AbhijitClause();
+
+  @override
+  String get clause => 'ABHIJIT';
+
+  @override
+  List<Object?> get _fields => [];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause};
+}
+
+/// A special yoga of vara, tithi and nakshatra (Raman ch. VI).
+final class MuhurtaYogaClause extends MuhurtaClauseKind {
+  const MuhurtaYogaClause({required this.yoga});
+
+  final MuhurtaYoga yoga;
+
+  @override
+  String get clause => 'MUHURTA_YOGA';
+
+  @override
+  List<Object?> get _fields => [yoga];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'yoga': yoga.fullKey};
+}
+
+/// The native's tarabala.
+final class TarabalaClause extends MuhurtaClauseKind {
+  const TarabalaClause({required this.reading});
+
+  final TaraReading reading;
+
+  @override
+  String get clause => 'TARABALA';
+
+  @override
+  List<Object?> get _fields => [reading];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'reading': reading._json,
+  };
+}
+
+/// The native's chandrabala: the Moon's house from the birth sign.
+final class ChandrabalaClause extends MuhurtaClauseKind {
+  const ChandrabalaClause({required this.house, required this.holds});
+
+  final int house;
+  final bool holds;
+
+  @override
+  String get clause => 'CHANDRABALA';
+
+  @override
+  List<Object?> get _fields => [house, holds];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'house': house,
+    'holds': holds,
+  };
+}
+
+/// Malefics either side of the lagna.
+final class KartariClause extends MuhurtaClauseKind {
+  const KartariClause({required this.second, required this.twelfth});
+
+  final List<Graha> second;
+  final List<Graha> twelfth;
+
+  @override
+  String get clause => 'KARTARI';
+
+  @override
+  List<Object?> get _fields => [second, twelfth];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'second': [for (final member in second) member.fullKey],
+    'twelfth': [for (final member in twelfth) member.fullKey],
+  };
+}
+
+/// The Moon in the 6th, 8th or 12th from the lagna.
+final class MoonInDusthanaClause extends MuhurtaClauseKind {
+  const MoonInDusthanaClause({required this.house});
+
+  final int house;
+
+  @override
+  String get clause => 'MOON_IN_DUSTHANA';
+
+  @override
+  List<Object?> get _fields => [house];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'house': house};
+}
+
+/// The Moon with another graha.
+final class MoonJoinedClause extends MuhurtaClauseKind {
+  const MoonJoinedClause({required this.joined});
+
+  /// Which JSON writes as `with`.
+  final List<Graha> joined;
+
+  @override
+  String get clause => 'MOON_JOINED';
+
+  @override
+  List<Object?> get _fields => [joined];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'with': [for (final member in joined) member.fullKey],
+  };
+}
+
+/// Venus in the 6th (Bhrigu shatka).
+final class VenusInSixthClause extends MuhurtaClauseKind {
+  const VenusInSixthClause();
+
+  @override
+  String get clause => 'VENUS_IN_SIXTH';
+
+  @override
+  List<Object?> get _fields => [];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause};
+}
+
+/// Mars in the 8th (Kujashtama).
+final class MarsInEighthClause extends MuhurtaClauseKind {
+  const MarsInEighthClause();
+
+  @override
+  String get clause => 'MARS_IN_EIGHTH';
+
+  @override
+  List<Object?> get _fields => [];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause};
+}
+
+/// The lagna eighth from the native's birth lagna.
+final class AshtamaLagnaClause extends MuhurtaClauseKind {
+  const AshtamaLagnaClause();
+
+  @override
+  String get clause => 'ASHTAMA_LAGNA';
+
+  @override
+  List<Object?> get _fields => [];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause};
+}
+
+/// The lagna in a malefic's navamsa.
+final class KunavamsaClause extends MuhurtaClauseKind {
+  const KunavamsaClause({required this.navamsa, required this.lord});
+
+  final Rashi navamsa;
+  final Graha lord;
+
+  @override
+  String get clause => 'KUNAVAMSA';
+
+  @override
+  List<Object?> get _fields => [navamsa, lord];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'navamsa': navamsa.fullKey,
+    'lord': lord.fullKey,
+  };
+}
+
+/// The panchaka the remainder by nine names (C159).
+final class PanchakaRemainderClause extends MuhurtaClauseKind {
+  const PanchakaRemainderClause({required this.panchaka});
+
+  final Panchaka panchaka;
+
+  @override
+  String get clause => 'PANCHAKA_REMAINDER';
+
+  @override
+  List<Object?> get _fields => [panchaka];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'panchaka': panchaka.fullKey,
+  };
+}
+
+/// The lagna in its rasi visha ghatika.
+final class LagnaTyajyaClause extends MuhurtaClauseKind {
+  const LagnaTyajyaClause({required this.sign});
+
+  final Rashi sign;
+
+  @override
+  String get clause => 'LAGNA_TYAJYA';
+
+  @override
+  List<Object?> get _fields => [sign];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'sign': sign.fullKey};
+}
+
+/// A graha in the 7th.
+final class SeventhOccupiedClause extends MuhurtaClauseKind {
+  const SeventhOccupiedClause({required this.by});
+
+  final List<Graha> by;
+
+  @override
+  String get clause => 'SEVENTH_OCCUPIED';
+
+  @override
+  List<Object?> get _fields => [by];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'by': [for (final member in by) member.fullKey],
+  };
+}
+
+/// A malefic in the lagna.
+final class MaleficInLagnaClause extends MuhurtaClauseKind {
+  const MaleficInLagnaClause({required this.grahas});
+
+  final List<Graha> grahas;
+
+  @override
+  String get clause => 'MALEFIC_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => [grahas];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'grahas': [for (final member in grahas) member.fullKey],
+  };
+}
+
+/// Venus, Mercury or Jupiter in the lagna (neutralisation 6).
+final class BeneficInLagnaClause extends MuhurtaClauseKind {
+  const BeneficInLagnaClause({required this.grahas});
+
+  final List<Graha> grahas;
+
+  @override
+  String get clause => 'BENEFIC_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => [grahas];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'grahas': [for (final member in grahas) member.fullKey],
+  };
+}
+
+/// An exalted graha in the lagna (neutralisation 10).
+final class ExaltedInLagnaClause extends MuhurtaClauseKind {
+  const ExaltedInLagnaClause({required this.grahas});
+
+  final List<Graha> grahas;
+
+  @override
+  String get clause => 'EXALTED_IN_LAGNA';
+
+  @override
+  List<Object?> get _fields => [grahas];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'grahas': [for (final member in grahas) member.fullKey],
+  };
+}
+
+/// The Sun or the Moon in the 11th (neutralisation 8).
+final class LuminaryInEleventhClause extends MuhurtaClauseKind {
+  const LuminaryInEleventhClause({required this.grahas});
+
+  final List<Graha> grahas;
+
+  @override
+  String get clause => 'LUMINARY_IN_ELEVENTH';
+
+  @override
+  List<Object?> get _fields => [grahas];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'grahas': [for (final member in grahas) member.fullKey],
+  };
+}
+
+/// Jupiter or Venus in a kendra with the Sun, Mars and Saturn in the 3rd, 6th or 11th (neutralisation 11, C167).
+final class KendraBeneficsClause extends MuhurtaClauseKind {
+  const KendraBeneficsClause({required this.grahas});
+
+  final List<Graha> grahas;
+
+  @override
+  String get clause => 'KENDRA_BENEFICS';
+
+  @override
+  List<Object?> get _fields => [grahas];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'grahas': [for (final member in grahas) member.fullKey],
+  };
+}
+
+/// A clause kind from its tagged JSON: a switch over every tag, so a tag
+/// this build does not know is refused by name rather than guessed.
+MuhurtaClauseKind _clauseKind(
+  Map<String, Object?> raw,
+) => switch (raw['clause']) {
+  'TITHI' => TithiClause(
+    tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'NAKSHATRA' => NakshatraClause(
+    nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'YOGA' => YogaClause(
+    yoga: _key(raw['yoga'], Yoga.byKey, Yoga.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'KARANA' => KaranaClause(
+    karana: _key(raw['karana'], Karana.byKey, Karana.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'VARA' => VaraClause(
+    vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'MONTH' => MonthClause(
+    masa: _key(raw['masa'], Masa.byKey, Masa.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'SOLAR_MONTH' => SolarMonthClause(
+    sign: _key(raw['sign'], Rashi.byKey, Rashi.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'LAGNA' => LagnaClause(
+    sign: _key(raw['sign'], Rashi.byKey, Rashi.unknown),
+    grade: raw['grade']! as String,
+  ),
+  'PADA' => PadaClause(
+    pada: MuhurtaPada._read(raw['pada']! as Map<String, Object?>),
+  ),
+  'KAALA' => KaalaClause(kaala: _key(raw['kaala'], Kaala.byKey, Kaala.unknown)),
+  'CHOGHADIYA' => ChoghadiyaClause(
+    choghadiya: _key(raw['choghadiya'], Choghadiya.byKey, Choghadiya.unknown),
+  ),
+  'ABHIJIT' => AbhijitClause(),
+  'MUHURTA_YOGA' => MuhurtaYogaClause(
+    yoga: _key(raw['yoga'], MuhurtaYoga.byKey, MuhurtaYoga.unknown),
+  ),
+  'TARABALA' => TarabalaClause(
+    reading: TaraReading._read(raw['reading']! as Map<String, Object?>),
+  ),
+  'CHANDRABALA' => ChandrabalaClause(
+    house: raw['house']! as int,
+    holds: raw['holds']! as bool,
+  ),
+  'KARTARI' => KartariClause(
+    second: _keys(raw['second'], Graha.byKey, Graha.unknown),
+    twelfth: _keys(raw['twelfth'], Graha.byKey, Graha.unknown),
+  ),
+  'MOON_IN_DUSTHANA' => MoonInDusthanaClause(house: raw['house']! as int),
+  'MOON_JOINED' => MoonJoinedClause(
+    joined: _keys(raw['with'], Graha.byKey, Graha.unknown),
+  ),
+  'VENUS_IN_SIXTH' => VenusInSixthClause(),
+  'MARS_IN_EIGHTH' => MarsInEighthClause(),
+  'ASHTAMA_LAGNA' => AshtamaLagnaClause(),
+  'KUNAVAMSA' => KunavamsaClause(
+    navamsa: _key(raw['navamsa'], Rashi.byKey, Rashi.unknown),
+    lord: _key(raw['lord'], Graha.byKey, Graha.unknown),
+  ),
+  'PANCHAKA_REMAINDER' => PanchakaRemainderClause(
+    panchaka: _key(raw['panchaka'], Panchaka.byKey, Panchaka.unknown),
+  ),
+  'LAGNA_TYAJYA' => LagnaTyajyaClause(
+    sign: _key(raw['sign'], Rashi.byKey, Rashi.unknown),
+  ),
+  'SEVENTH_OCCUPIED' => SeventhOccupiedClause(
+    by: _keys(raw['by'], Graha.byKey, Graha.unknown),
+  ),
+  'MALEFIC_IN_LAGNA' => MaleficInLagnaClause(
+    grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  'BENEFIC_IN_LAGNA' => BeneficInLagnaClause(
+    grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  'EXALTED_IN_LAGNA' => ExaltedInLagnaClause(
+    grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  'LUMINARY_IN_ELEVENTH' => LuminaryInEleventhClause(
+    grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  'KENDRA_BENEFICS' => KendraBeneficsClause(
+    grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  final tag =>
+    throw StateError(
+      'the library drew a clause this build does not know: $tag',
+    ),
+};
+
+/// A clause and the interval it held over.
+final class MuhurtaClause extends _Value {
+  const MuhurtaClause({required this.kind, required this.at});
+
+  final MuhurtaClauseKind kind;
+  final Interval at;
+
+  @override
+  List<Object?> get _fields => [kind, at.from, at.to];
+}
+
+/// One of the baseline engine's weights: what it measured (a dimension such
+/// as `TARA_BALA`), by how much, and the graha it read, if one.
+final class MuhurtaFactor extends _Value {
+  const MuhurtaFactor({
+    required this.dimension,
+    required this.weight,
+    this.graha,
+  });
+
+  final String dimension;
+  final int weight;
+  final Graha? graha;
+
+  @override
+  List<Object?> get _fields => [dimension, weight, graha];
+}
+
+/// The baseline engine's score for a window, under its ranking.
+final class MuhurtaScore extends _Value {
+  const MuhurtaScore({
+    required this.value,
+    required this.factors,
+    this.cappedAt,
+  });
+
+  final int value;
+  final List<MuhurtaFactor> factors;
+
+  /// The cap a Mahadosha put on it, if one did.
+  final int? cappedAt;
+
+  @override
+  List<Object?> get _fields => [value, factors, cappedAt];
+}
+
+/// A window judged: when, by which clauses, what barred it, and the
+/// baseline's score under that ranking.
+final class MuhurtaWindow extends _Value {
+  const MuhurtaWindow({
+    required this.at,
+    required this.clauses,
+    required this.barredBy,
+    this.score,
+  });
+
+  final Interval at;
+  final List<MuhurtaClause> clauses;
+
+  /// The bars that struck it; empty when the rite may be held in it.
+  final List<MuhurtaBar> barredBy;
+
+  /// `null` under the texts' ranking.
+  final MuhurtaScore? score;
+
+  @override
+  List<Object?> get _fields => [at.from, at.to, clauses, barredBy, score];
+}
+
+/// A day the season closed, and the blackouts that closed it (`CHATURMAS`,
+/// `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`, `GURU_ASTA`,
+/// `SHUKRA_ASTA`).
+final class ClosedDay {
+  const ClosedDay({required this.date, required this.by});
+
+  final CalendarDate date;
+  final List<String> by;
+}
+
+/// Something the rules ask that the SDK does not judge yet, and why.
+final class MuhurtaUnjudged extends _Value {
+  const MuhurtaUnjudged({required this.what, required this.why});
+
+  final String what;
+  final String why;
+
+  @override
+  List<Object?> get _fields => [what, why];
+}
+
+/// A muhurta search's answer (`03-design/muhurta-at-the-boundary.md` §4):
+/// the windows judged, best first under the ranking, the days the season
+/// closed, and what computed it.
+final class MuhurtaAnswer {
+  const MuhurtaAnswer({
+    required this.windows,
+    required this.closed,
+    required this.daysJudged,
+    required this.daysCut,
+    required this.windowsBlackedOut,
+    required this.ranking,
+    required this.unjudged,
+    required this.provenance,
+  });
+
+  final List<MuhurtaWindow> windows;
+  final List<ClosedDay> closed;
+  final int daysJudged;
+
+  /// How many of the days judged were cut into windows.
+  final int daysCut;
+
+  /// How many windows fell in a blackout that did not cover their whole
+  /// day, and were left out.
+  final int windowsBlackedOut;
+  final MuhurtaRanking ranking;
+  final List<MuhurtaUnjudged> unjudged;
+
+  /// What computed it and under what: the asta criterion and the zodiac's
+  /// instant among the applied conventions, and the hash of the value.
+  final Provenance provenance;
+}
+
+/// The `muhurta` section: the envelope's value, its members resolved, with
+/// the provenance beside it.
+MuhurtaAnswer _muhurtaAnswer(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final value = envelope['value']! as Map<String, Object?>;
+  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
+  List<Map<String, Object?>> each(Object? raw) => [
+    for (final item in raw! as List<Object?>) at(item),
+  ];
+  Interval interval(Object? raw) => Interval(
+    from: (at(raw)['from']! as num).toDouble(),
+    to: (at(raw)['to']! as num).toDouble(),
+  );
+  MuhurtaBar bar(Object? raw) =>
+      raw is String ? BarAllOf(raw) : _clauseKind(at(raw));
+
+  MuhurtaWindow window(Map<String, Object?> raw) {
+    final score = raw['score'] as Map<String, Object?>?;
+    return MuhurtaWindow(
+      at: interval(raw['at']),
+      clauses: List.unmodifiable([
+        for (final clause in each(raw['clauses']))
+          MuhurtaClause(kind: _clauseKind(clause), at: interval(clause['at'])),
+      ]),
+      barredBy: List.unmodifiable([
+        for (final raw in raw['barredBy']! as List<Object?>) bar(raw),
+      ]),
+      score:
+          score == null
+              ? null
+              : MuhurtaScore(
+                value: score['value']! as int,
+                factors: List.unmodifiable([
+                  for (final factor in each(score['factors']))
+                    MuhurtaFactor(
+                      dimension: factor['dimension']! as String,
+                      weight: factor['weight']! as int,
+                      graha:
+                          factor['graha'] == null
+                              ? null
+                              : _key(
+                                factor['graha'],
+                                Graha.byKey,
+                                Graha.unknown,
+                              ),
+                    ),
+                ]),
+                cappedAt: score['cappedAt'] as int?,
+              ),
+    );
+  }
+
+  return MuhurtaAnswer(
+    windows: List.unmodifiable([
+      for (final raw in each(value['windows'])) window(raw),
+    ]),
+    closed: List.unmodifiable([
+      for (final day in each(value['closed']))
+        ClosedDay(
+          date: _closedDate(at(day['date'])),
+          by: List.unmodifiable((day['by']! as List<Object?>).cast<String>()),
+        ),
+    ]),
+    daysJudged: value['daysJudged']! as int,
+    daysCut: value['daysCut']! as int,
+    windowsBlackedOut: value['windowsBlackedOut']! as int,
+    ranking: MuhurtaRanking.values.firstWhere(
+      (ranking) => ranking.key == value['ranking'],
+    ),
+    unjudged: List.unmodifiable([
+      for (final raw in each(value['unjudged']))
+        MuhurtaUnjudged(
+          what: raw['what']! as String,
+          why: raw['why']! as String,
+        ),
+    ]),
+    provenance: Provenance.fromJson(at(envelope['provenance'])),
+  );
+}
+
+/// A date as the Rust types serialise it, in this binding's own shape: the
+/// era beside its year, the resolution by name with a divergent one's
+/// computed day.
+CalendarDate _closedDate(Map<String, Object?> raw) {
+  final resolution = raw['resolution']! as Map<String, Object?>;
+  final era = raw['era'] as Map<String, Object?>?;
+  final computed =
+      resolution['kind'] == 'DIVERGENT'
+          ? resolution['computed']! as Map<String, Object?>
+          : null;
+  return CalendarDate(
+    calendar: _key(raw['calendar'], Calendar.byKey, Calendar.unknown),
+    era: era == null ? null : _key(era['era'], Era.byKey, Era.unknown),
+    year: raw['year']! as int,
+    eraYear: era == null ? 0 : era['year']! as int,
+    month: raw['month']! as int,
+    day: raw['day']! as int,
+    resolution:
+        Resolution.byKey(resolution['kind']! as String) ?? Resolution.defined,
+    computedMonth: computed == null ? 0 : computed['month']! as int,
+    computedDay: computed == null ? 0 : computed['day']! as int,
+  );
+}
+
 /// Each batch's KP readings, parsed once however many charts read them.
 final Expando<List<KpReading>> _kps = Expando<List<KpReading>>('kp');
 
@@ -7931,6 +9065,13 @@ final class Almanac {
 
   /// The solar model that reckoned the days, as it describes itself.
   String get model => decoded.model;
+
+  /// The muhurta search the request asked for over these days, or `null`
+  /// when it asked for none (`03-design/muhurta-at-the-boundary.md`): the
+  /// windows judged clause by clause, the days the season closed, and what
+  /// computed it. Parsed once.
+  late final MuhurtaAnswer? muhurta =
+      decoded.muhurta.isEmpty ? null : _muhurtaAnswer(decoded.muhurta);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

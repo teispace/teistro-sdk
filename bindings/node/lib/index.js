@@ -1226,6 +1226,7 @@ export class Chart {
  */
 export class Almanac extends Stamped {
   #starts = null;
+  #muhurta = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1250,6 +1251,21 @@ export class Almanac extends Stamped {
   /** The solar model that reckoned the days, as it describes itself. */
   get model() {
     return this.decoded.model;
+  }
+
+  /**
+   * The muhurta search the request asked for over these days
+   * (`03-design/muhurta-at-the-boundary.md`), or `null` when it asked for
+   * none: the windows judged clause by clause, the days the season closed,
+   * and what computed it. Catalogue members are full keys, as every other
+   * accessor gives them, so a clause reads straight back into a request's
+   * rules. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get muhurta() {
+    if (this.#muhurta === undefined) this.#muhurta = muhurtaFrom(this.decoded.muhurta);
+    return this.#muhurta;
   }
 
 
@@ -2785,6 +2801,48 @@ function sectionOf(cache, batch, name) {
 }
 
 /**
+ * The `muhurta` section as this layer hands it out: the envelope's value
+ * with its provenance beside it, as every stamped result carries one, and
+ * each closed day's date in the shape every other date here has.
+ *
+ * @param {string} json the section, empty when none was asked for
+ * @returns {object|null}
+ */
+function muhurtaFrom(json) {
+  if (!json) return null;
+  const { value, provenance } = JSON.parse(json);
+  return deepFreeze({
+    ...value,
+    closed: value.closed.map(({ date, by }) => ({ date: dateFrom(date), by })),
+    provenance: decodeProvenance(provenance),
+  });
+}
+
+/**
+ * A date as the Rust types serialise it, in the shape `date(...)` builds
+ * and `calendar.convert` answers: the era flattened beside its year, and
+ * the resolution by name with a divergent one's computed day.
+ *
+ * @param {object} json
+ * @returns {object}
+ */
+function dateFrom(json) {
+  const { resolution } = json;
+  const divergent = resolution.kind === 'DIVERGENT';
+  return {
+    calendar: json.calendar,
+    ...(json.era == null ? {} : { era: json.era.era }),
+    year: json.year,
+    eraYear: json.era == null ? 0 : json.era.year,
+    month: json.month,
+    day: json.day,
+    resolution: resolution.kind,
+    computedMonth: divergent ? resolution.computed.month : 0,
+    computedDay: divergent ? resolution.computed.day : 0,
+  };
+}
+
+/**
  * A value frozen to its leaves, so a reading handed out is a reading kept.
  *
  * @template T
@@ -3519,6 +3577,7 @@ export class AlmanacArea extends Area {
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+        muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
       }),
     );
     return new Almanac(bytes);

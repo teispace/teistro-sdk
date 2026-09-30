@@ -45,6 +45,50 @@ void put(String key, Object? value) {
   };
 }
 
+/// The items joined by spaces, or `none`.
+String listed(Iterable<String> items) {
+  final joined = items.join(' ');
+  return joined.isEmpty ? 'none' : joined;
+}
+
+/// A muhurta answer's counts, hash and every window, as every runner
+/// prints them.
+void putMuhurta(String prefix, MuhurtaAnswer answer) {
+  put(
+    '$prefix-counts',
+    [
+      answer.windows.length,
+      answer.closed.length,
+      answer.daysJudged,
+      answer.daysCut,
+      answer.windowsBlackedOut,
+      answer.ranking.key,
+    ].join(' '),
+  );
+  put('$prefix-hash', answer.provenance.contentHash);
+  for (final (k, window) in answer.windows.indexed) {
+    put('$prefix-$k', '${number(window.at.from)} ${number(window.at.to)}');
+    put('$prefix-$k-clauses', window.clauses.map((c) => c.kind.clause).join(' '));
+    put('$prefix-$k-bars', listed(window.barredBy.map((bar) => bar.clause)));
+    final score = window.score;
+    put(
+      '$prefix-$k-score',
+      score == null
+          ? 'none'
+          : [
+              score.value,
+              score.cappedAt ?? 'none',
+              listed(score.factors.map(
+                (f) => '${f.dimension}:${f.weight}:${f.graha?.fullKey ?? 'none'}',
+              )),
+            ].join(' '),
+    );
+  }
+  for (final (j, day) in answer.closed.indexed) {
+    put('$prefix-closed-$j', '${day.date.month}-${day.date.day} ${listed(day.by)}');
+  }
+}
+
 /// A local day's every field, under the same keys for a chart's day and
 /// an almanac's, because the two layers hand back one record.
 void putDay(String prefix, LocalDay day) {
@@ -1180,6 +1224,35 @@ void main() {
     utcOffsetSeconds: 20700,
   );
   put('almanac-single-agrees', oneDay.day.sunrise == week.at(0).day.sunrise);
+
+  // ── A muhurta search ─────────────────────────────────────────────────
+  // Both rankings over 2024-11-25..27: the texts bar the windows for
+  // different reasons and the baseline scores them.
+  for (final (name, rules, ranking) in [
+    ('raman', MuhurtaActivity.ramanMarriage, MuhurtaRanking.texts),
+    ('baseline', MuhurtaActivity.baselineMarriage, MuhurtaRanking.baseline),
+  ]) {
+    final muhurta = geo.almanac
+        .of(
+          from: Calendar.gregorian.date(2024, 11, 25),
+          to: Calendar.gregorian.date(2024, 11, 27),
+          place: place,
+          utcOffsetSeconds: 20700,
+          muhurta: MuhurtaRequest(
+            rules: rules,
+            ranking: ranking,
+            native: const MuhurtaNative(
+              star: Nakshatra.rohini,
+              moonSign: Rashi.taurus,
+              lagna: Rashi.leo,
+            ),
+            daysWithWindows: 3,
+            most: 12,
+          ),
+        )
+        .muhurta!;
+    putMuhurta('muhurta-$name', muhurta);
+  }
   geo.dispose();
 
   // ── The surface's shape ───────────────────────────────────────────

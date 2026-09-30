@@ -25,6 +25,9 @@ import type {
   LayoutHolds,
   LayoutKey,
   LayoutRow,
+  MuhurtaAnswer,
+  MuhurtaBar,
+  MuhurtaRequest,
   PositionsRequest,
   RashiDashaDefinition,
   RuleRequest,
@@ -662,3 +665,53 @@ function theKpReading(ctx: Context): string {
 }
 
 void theKpReading;
+
+// A muhurta answer read all the way down, and a clause it gives handed back
+// as a bar (`03-design/muhurta-at-the-boundary.md` §2.5): the request and
+// the answer share one union, so what one gives the other takes.
+function theMuhurta(almanac: Almanac): string {
+  const answer: MuhurtaAnswer | null = almanac.muhurta;
+  if (answer === null) return '';
+  const windows = answer.windows.map((window) => {
+    const clauses = window.clauses.map((clause) => {
+      switch (clause.clause) {
+        case 'NAKSHATRA':
+          return `${clause.nakshatra} ${clause.grade} ${clause.at.from}`;
+        case 'MUHURTA_YOGA':
+          return clause.yoga;
+        case 'PADA':
+          return `${clause.pada.nakshatra} ${clause.pada.pada}`;
+        case 'TARABALA':
+          return `${clause.reading.tara} ${clause.reading.count}`;
+        case 'KUNAVAMSA':
+          return `${clause.navamsa} ${clause.lord}`;
+        case 'KENDRA_BENEFICS':
+          return clause.grahas.join();
+        default:
+          return clause.clause;
+      }
+    });
+    const bars = window.barredBy.map((bar) => (typeof bar === 'string' ? bar : bar.clause));
+    const factors = window.score?.factors.map((f) => `${f.dimension} ${f.weight} ${f.graha ?? ''}`) ?? [];
+    return [...clauses, ...bars, ...factors, String(window.score?.cappedAt)].join();
+  });
+  const closed = answer.closed.map((day) => `${day.date.calendar} ${day.date.month} ${day.by.join()}`);
+  const found = answer.windows[0]?.clauses[0];
+  if (found === undefined) return '';
+  const { at: _, ...first } = found;
+  const bar: MuhurtaBar = first;
+  const asked: MuhurtaRequest = {
+    rules: 'RAMAN_MARRIAGE',
+    native: { star: 'nakshatra.ROHINI', moonSign: 'rashi.TAURUS', lagna: null },
+    ranking: answer.ranking,
+    asta: { kind: 'TIME_DEGREES', thresholds: { kind: 'CUSTOM', venus: { direct: 10, retrograde: 8 } } },
+  };
+  // @ts-expect-error a clause's member is its kind's, not another's
+  const wrong: MuhurtaBar = { clause: 'MUHURTA_YOGA', yoga: 'yoga.SIDDHI' };
+  // @ts-expect-error a shipped set is named, not guessed
+  const guessed: MuhurtaRequest = { rules: 'RAMAN' };
+  const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
+  return [...windows, ...closed, JSON.stringify(bar), JSON.stringify(asked), String(wrong), String(guessed), ...knobs, answer.daysJudged, answer.unjudged.map((u) => u.what)].join();
+}
+
+void theMuhurta;

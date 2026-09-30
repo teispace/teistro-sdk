@@ -1392,6 +1392,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   kind. The ABI test counts the kinds its search reaches and declares the
   other four with the reason each cannot appear in that range.
 
+- **A muhurta search in every binding** (`muhurta-at-the-boundary.md`
+  §8 step 4). An almanac request takes a `muhurta` record: Node's
+  `almanac.of({ ..., muhurta: { rules: 'RAMAN_MARRIAGE' } })`, Python's
+  `muhurta={...}`, Dart's `muhurta: MuhurtaRequest(...)`, and wasm through
+  Node's own code. The almanac answers it as `muhurta`, `null` when not
+  asked. Node hands back the value frozen, with every member as its full
+  key and the closed days' dates in Node's date shape, and types each
+  clause as one arm of a union over `clause`. Python has a frozen
+  dataclass per clause kind, and Dart a sealed class per kind. A clause
+  kind handed back in a request's `bars` bars exactly that clause. The
+  parity runners search under both rankings and all five bindings agree
+  on every window, clause, bar and score, and on the content hash.
+
+  **Numbers:** the wasm module grew by the deserialisers for the request
+  and the answer's section. Its size budget was measured again
+  (`bindings/wasm/size.json`).
+
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
   in the 3rd, 6th or 11th. The clause read that as every natural malefic,

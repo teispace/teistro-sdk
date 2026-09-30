@@ -2465,6 +2465,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly calendar: Calendar | 'unknown';
   /** The solar model that reckoned the days, as it describes itself. */
   readonly model: string;
+  /** The muhurta search the request asked for over these days, or `null` when it asked for none. */
+  readonly muhurta: MuhurtaAnswer | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -2542,6 +2544,253 @@ export interface AlmanacRequest {
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
   /** The local clock's offset from UTC in seconds, east positive. */
   readonly utcOffsetSeconds: number;
+  /** A muhurta search over the same days, answered as `Almanac.muhurta`; none by default, which costs nothing. */
+  readonly muhurta?: MuhurtaRequest;
+}
+
+/**
+ * A muhurta search to run over an almanac's days
+ * (`03-design/muhurta-at-the-boundary.md`); only `rules` is required. A
+ * catalogue member may be written bare (`'ROHINI'`) or in full
+ * (`'nakshatra.ROHINI'`), so a clause read back from an answer can be
+ * handed straight into rules.
+ */
+export interface MuhurtaRequest {
+  /** The activity's rules: a set the SDK ships, by name, or rules spelt out. */
+  readonly rules: MuhurtaActivity | ActivityRules;
+  /** The native whose tarabala, chandrabala and ashtama lagna are read. */
+  readonly native?: MuhurtaNative;
+  /** How the windows are ordered; `'TEXTS'` by default (C162). */
+  readonly ranking?: MuhurtaRanking;
+  /** How many of the best days are cut into windows; 7 by default. */
+  readonly daysWithWindows?: number;
+  /** How many windows are answered at most; 50 by default. */
+  readonly most?: number;
+  /** How Venus's and Jupiter's combustion is seen: named, or spelt out; the Surya Siddhanta's by default (C164). */
+  readonly asta?: AstaName | AstaCriterion;
+}
+
+/** A set of rules the SDK ships. */
+export type MuhurtaActivity = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE';
+
+/** A visibility criterion the SDK names. */
+export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';
+
+/** A visibility criterion spelt out: what it measures, against which thresholds. */
+export interface AstaCriterion {
+  readonly kind: 'TIME_DEGREES' | 'LONGITUDE' | 'ARCUS_VISIONIS';
+  readonly thresholds:
+    | { readonly kind: 'SURYA_SIDDHANTA' | 'PTOLEMY' }
+    | ({ readonly kind: 'CUSTOM' } & {
+        readonly [body in 'moon' | 'mercury' | 'venus' | 'mars' | 'jupiter' | 'saturn' | 'uranus' | 'neptune' | 'pluto']?: {
+          readonly direct: number;
+          readonly retrograde: number;
+        } | null;
+      });
+}
+
+/** Whose day a search reads: the birth star and Moon sign, and the birth lagna when the time is known. */
+export interface MuhurtaNative {
+  readonly star: Nakshatra;
+  readonly moonSign: Rashi;
+  readonly lagna?: Rashi | null;
+}
+
+/** How a search orders its windows: by the texts' clauses, or by the baseline engine's weights. */
+export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
+
+/** How a member is graded. */
+export type MuhurtaGrade = 'BEST' | 'MIDDLING' | 'REJECTED';
+
+/** A list's members by grade, and the grade of any it does not name. */
+export interface Graded<T> {
+  readonly best: readonly T[];
+  readonly middling: readonly T[];
+  readonly rejected: readonly T[];
+  readonly otherwise: MuhurtaGrade;
+}
+
+/** An activity's rules: what a search judges a time by (`03-design/muhurta.md`). */
+export interface ActivityRules {
+  /** How the day's limbs and vara are graded, and the houses Chandrabala avoids. */
+  readonly day: {
+    readonly tithis: Graded<Tithi>;
+    readonly nakshatras: Graded<Nakshatra>;
+    readonly yogas: Graded<Yoga>;
+    readonly karanas: Graded<Karana>;
+    readonly varas: Graded<Vara>;
+    readonly chandrabala: { readonly avoid: readonly number[] };
+  };
+  /** Which months the rite is permitted in, by the lunar month or the Sun's sign (C161). */
+  readonly months:
+    | { readonly reckoning: 'ANY' }
+    | {
+        readonly reckoning: 'LUNAR';
+        readonly months: Graded<Masa>;
+        readonly withSun: readonly { readonly masa: Masa; readonly sun: Rashi }[];
+      }
+    | { readonly reckoning: 'SOLAR'; readonly signs: Graded<Rashi> };
+  /** The lagnas, graded. */
+  readonly lagnas: Graded<Rashi>;
+  /** The nakshatra quarters to reject. */
+  readonly padas: readonly { readonly nakshatra: Nakshatra; readonly pada: number }[];
+  /** The seasons that close a day. */
+  readonly heeds: readonly BlackoutKind[];
+  /** What bars a time outright: every clause of a kind, or one clause. */
+  readonly bars: readonly MuhurtaBar[];
+  /** What the source asks that the SDK does not judge. */
+  readonly unjudged: readonly MuhurtaUnjudged[];
+  /** The baseline engine's event, which the `'BASELINE'` ranking reads. */
+  readonly baseline: MuhurtaBaselineEvent | null;
+}
+
+/** The baseline engine's marriage event: what its weights read. */
+export interface MuhurtaBaselineEvent {
+  readonly stars: readonly Nakshatra[];
+  readonly favouredVaras: readonly Vara[];
+  readonly avoidedVaras: readonly Vara[];
+  readonly favouredTithis: readonly Tithi[];
+  readonly karakas: readonly Graha[];
+  readonly seventhEmpty: boolean;
+  readonly abhijitForbidden: boolean;
+}
+
+/** A season that closes the days it covers. */
+export type BlackoutKind =
+  | 'CHATURMAS'
+  | 'ADHIKA_MASA'
+  | 'KHARMAS'
+  | 'PITRU_PAKSHA'
+  | 'SANKRANTI'
+  | 'GURU_ASTA'
+  | 'SHUKRA_ASTA';
+
+/** What bars a time: every clause of a kind, by its key, or one clause exactly. */
+export type MuhurtaBar = MuhurtaClauseKey | MuhurtaClauseKind;
+
+/** Something the source asks that the SDK does not judge yet. */
+export interface MuhurtaUnjudged {
+  readonly what: string;
+  readonly why: string;
+}
+
+/** A tara: the birth star's count to the day's, by nine. */
+export type Tara =
+  | 'JANMA'
+  | 'SAMPAT'
+  | 'VIPAT'
+  | 'KSHEMA'
+  | 'PRATYAK'
+  | 'SADHANA'
+  | 'NAIDHANA'
+  | 'MITRA'
+  | 'PARAMA_MITRA';
+
+/** A kind of clause: the `clause` tag of each. */
+export type MuhurtaClauseKey = MuhurtaClauseKind['clause'];
+
+/** One named condition from a source, without when it held: a discriminated union over `clause`. */
+export type MuhurtaClauseKind =
+  | { readonly clause: 'TITHI'; readonly tithi: Tithi; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'NAKSHATRA'; readonly nakshatra: Nakshatra; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'YOGA'; readonly yoga: Yoga; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'KARANA'; readonly karana: Karana; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'VARA'; readonly vara: Vara; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'MONTH'; readonly masa: Masa; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'SOLAR_MONTH'; readonly sign: Rashi; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'LAGNA'; readonly sign: Rashi; readonly grade: MuhurtaGrade }
+  | { readonly clause: 'PADA'; readonly pada: { readonly nakshatra: Nakshatra; readonly pada: number } }
+  | { readonly clause: 'KAALA'; readonly kaala: Kaala }
+  | { readonly clause: 'CHOGHADIYA'; readonly choghadiya: Choghadiya }
+  | { readonly clause: 'ABHIJIT' }
+  | { readonly clause: 'MUHURTA_YOGA'; readonly yoga: MuhurtaYoga }
+  | {
+      readonly clause: 'TARABALA';
+      readonly reading: { readonly count: number; readonly tara: Tara; readonly cycle: number };
+    }
+  | { readonly clause: 'CHANDRABALA'; readonly house: number; readonly holds: boolean }
+  | { readonly clause: 'KARTARI'; readonly second: readonly Graha[]; readonly twelfth: readonly Graha[] }
+  | { readonly clause: 'MOON_IN_DUSTHANA'; readonly house: number }
+  | { readonly clause: 'MOON_JOINED'; readonly with: readonly Graha[] }
+  | { readonly clause: 'VENUS_IN_SIXTH' }
+  | { readonly clause: 'MARS_IN_EIGHTH' }
+  | { readonly clause: 'ASHTAMA_LAGNA' }
+  | { readonly clause: 'KUNAVAMSA'; readonly navamsa: Rashi; readonly lord: Graha }
+  | { readonly clause: 'PANCHAKA_REMAINDER'; readonly panchaka: Panchaka }
+  | { readonly clause: 'LAGNA_TYAJYA'; readonly sign: Rashi }
+  | { readonly clause: 'SEVENTH_OCCUPIED'; readonly by: readonly Graha[] }
+  | { readonly clause: 'MALEFIC_IN_LAGNA'; readonly grahas: readonly Graha[] }
+  | { readonly clause: 'BENEFIC_IN_LAGNA'; readonly grahas: readonly Graha[] }
+  | { readonly clause: 'EXALTED_IN_LAGNA'; readonly grahas: readonly Graha[] }
+  | { readonly clause: 'LUMINARY_IN_ELEVENTH'; readonly grahas: readonly Graha[] }
+  | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] };
+
+/** A clause and the interval it held over. */
+export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };
+
+/** What one of the baseline engine's weights measured. */
+export type BaselineDimension =
+  | 'TITHI_QUALITY'
+  | 'NAKSHATRA_SUITABILITY'
+  | 'WEEKDAY_SUITABILITY'
+  | 'RAHU_KAAL'
+  | 'YOGA_SHUDDHI'
+  | 'KARANA_SHUDDHI'
+  | 'PANCHAKA'
+  | 'MUHURTA_YOGA'
+  | 'PAKSHA_BALA'
+  | 'VARA_EVENT'
+  | 'TITHI_EVENT'
+  | 'TARA_BALA'
+  | 'CHANDRA_BALA'
+  | 'CHOGHADIYA'
+  | 'ABHIJIT'
+  | 'LAGNA_LORD'
+  | 'LAGNA_PLACEMENT'
+  | 'EIGHTH_HOUSE'
+  | 'UDAYASTA_SHUDDHI'
+  | 'KARTARI'
+  | 'DOSHA_BHANGA'
+  | 'KARAKA_STRENGTH'
+  | 'KARAKA_COMBUST'
+  | 'KARAKA_RETROGRADE';
+
+/** A window judged: when, by which clauses, what barred it, and the baseline's score under that ranking. */
+export interface MuhurtaWindow {
+  readonly at: Interval;
+  readonly clauses: readonly MuhurtaClause[];
+  /** The bars that struck it; empty when the rite may be held in it. */
+  readonly barredBy: readonly MuhurtaBar[];
+  /** The baseline engine's score, under the `'BASELINE'` ranking; `null` under the texts'. */
+  readonly score: {
+    readonly value: number;
+    readonly factors: readonly {
+      readonly dimension: BaselineDimension;
+      readonly weight: number;
+      readonly graha: Graha | null;
+    }[];
+    readonly cappedAt: number | null;
+  } | null;
+}
+
+/** A muhurta search's answer (`03-design/muhurta-at-the-boundary.md` §4), frozen to its leaves. */
+export interface MuhurtaAnswer {
+  /** The windows judged, best first under the ranking, at most `most`. */
+  readonly windows: readonly MuhurtaWindow[];
+  /** The days the season closed, with the blackouts that closed each. */
+  readonly closed: readonly { readonly date: CalendarDate; readonly by: readonly BlackoutKind[] }[];
+  /** How many days were judged whole. */
+  readonly daysJudged: number;
+  /** How many of those were cut into windows. */
+  readonly daysCut: number;
+  /** How many windows fell inside a blackout that did not cover their whole day, and were left out. */
+  readonly windowsBlackedOut: number;
+  /** The ranking the windows are in. */
+  readonly ranking: MuhurtaRanking;
+  /** What the rules ask that was not judged. */
+  readonly unjudged: readonly MuhurtaUnjudged[];
+  /** What computed it and under what: the asta criterion and the zodiac's instant among the applied conventions, and the hash of this value. */
+  readonly provenance: Provenance;
 }
 
 /** What `Context.almanacDay` needs: one day at one place. */

@@ -1347,6 +1347,93 @@ class AnEngine(WithLibrary):
             assert taken is not None
             self.assertEqual(len(taken.chart.cusps), 12)
 
+    def test_an_almanac_carries_the_muhurta_search_it_was_asked_for(self) -> None:
+        """A muhurta search crosses beside the days it judged
+        (`03-design/muhurta-at-the-boundary.md`): its clauses a class a kind,
+        members resolved, its days the almanac's own, and a clause it gives
+        handed straight back as a bar (§2.5)."""
+        from teistro import (
+            ChoghadiyaClause,
+            MuhurtaAnswer,
+            MuhurtaRequest,
+            NakshatraClause,
+            TarabalaClause,
+            date,
+        )
+        from teistro.catalogue import Calendar, Choghadiya, Nakshatra, Rashi
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2026, 11, 25),
+            "to_date": date(Calendar.GREGORIAN, 2026, 12, 3),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.almanac.of(**days)
+            self.assertIsNone(plain.muhurta)
+            asked: MuhurtaRequest = {
+                "rules": "RAMAN_MARRIAGE",
+                "native": {"star": Nakshatra.ROHINI, "moonSign": "rashi.TAURUS", "lagna": Rashi.LEO},
+                "daysWithWindows": 9,
+                "most": 1000,
+            }
+            almanac = ctx.almanac.of(**days, muhurta=asked)
+            answer = almanac.muhurta
+            assert answer is not None
+            self.assertIsInstance(answer, MuhurtaAnswer)
+            self.assertTrue(answer.windows)
+            self.assertEqual(answer.ranking, "TEXTS")
+            # The days are the ones asked without a search.
+            for k in range(len(plain)):
+                self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
+            kinds = [clause.kind for window in answer.windows for clause in window.clauses]
+            self.assertTrue(all(isinstance(k.nakshatra, Nakshatra) for k in kinds if isinstance(k, NakshatraClause)))
+            self.assertTrue(any(isinstance(k, TarabalaClause) for k in kinds), "the native is read")
+            knobs = {c.knob for c in answer.provenance.applied_conventions}
+            self.assertLessEqual({"muhurta.asta", "muhurta.zodiacAt"}, knobs)
+
+            # A clause answered is a bar a request may name, as it was read.
+            amrit = next(k for k in kinds if isinstance(k, ChoghadiyaClause) and k.choghadiya == Choghadiya.AMRIT)
+            graded = {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"}
+            rules = {
+                "day": {
+                    "tithis": graded,
+                    "nakshatras": graded,
+                    "yogas": graded,
+                    "karanas": graded,
+                    "varas": graded,
+                    "chandrabala": {"avoid": []},
+                },
+                "months": {"reckoning": "ANY"},
+                "lagnas": graded,
+                "padas": [],
+                "heeds": [],
+                "bars": [amrit],
+                "unjudged": [],
+                "baseline": None,
+            }
+            one_day = {**days, "to_date": days["from_date"]}
+            barred = ctx.almanac.of(**one_day, muhurta={"rules": rules, "daysWithWindows": 1, "most": 100000}).muhurta
+            assert barred is not None
+            struck = [window for window in barred.windows if window.barred_by]
+            self.assertTrue(struck, "the bar read back strikes the windows it names")
+            self.assertTrue(all(window.barred_by == (amrit,) for window in struck))
+
+            refusals: list[tuple[MuhurtaRequest, str]] = [
+                ({"rules": "RAMAN"}, "muhurta.rules"),  # type: ignore[typeddict-item]
+                ({"rules": "RAMAN_MARRIAGE", "most": 0}, "muhurta.most"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.almanac.of(**days, muhurta=bad)
+                self.assertEqual(refused.exception.field, field)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.of(**days, muhurta="RAMAN_MARRIAGE")  # type: ignore[arg-type]
+            self.assertEqual(refused.exception.field, "muhurta")
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict
