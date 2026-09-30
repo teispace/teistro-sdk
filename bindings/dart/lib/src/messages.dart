@@ -1003,6 +1003,8 @@ final class MessagesSdkCalendar {
   MessagesSdkCalendarDayPeriod get dayPeriod => MessagesSdkCalendarDayPeriod(_r);
   MessagesSdkCalendarDuration get duration => MessagesSdkCalendarDuration(_r);
   MessagesSdkCalendarGhati get ghati => MessagesSdkCalendarGhati(_r);
+  String lunarMonth({required String kind, required MasaKey masa}) =>
+      _r.render('sdk.calendar.lunarMonth', {'kind': kind, 'masa': {r'$entity': masa.key}});
   MessagesSdkCalendarTime get time => MessagesSdkCalendarTime(_r);
   String weekdayName({required int weekday}) =>
       _r.render('sdk.calendar.weekdayName', {'weekday': weekday});

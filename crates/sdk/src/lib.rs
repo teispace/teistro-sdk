@@ -108,6 +108,10 @@ pub use teistro_core::angle::Nas;
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
 pub use teistro_panchanga::almanac::Panchanga;
+// Whether a day's lunar month is nija, adhika (Nepal's malmas) or kshaya:
+// every almanac day carries it, a consumer matches on it, and
+// `sdk.calendar.lunarMonth` says it (`03-design/calendar-indian-lunisolar.md` §9).
+pub use teistro_calendar::lunisolar::MonthKind;
 pub use teistro_panchanga::festival;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a

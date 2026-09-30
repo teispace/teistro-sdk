@@ -274,7 +274,10 @@ leads with, and one of them, a worked example written against the solar
 month, rules out reading the names as Bikram Sambat months. So
 `nepali-default` leads with the purnimanta month from its version 2.
 Only the lead moves: every rule that decides a festival or a muhurta
-reads the amanta month by name, and both are carried on every day. Naming it in
-Nepali is a separate step: no locale names a month kind or a muhurta
-blackout yet (roadmap, Nepali particulars).
+reads the amanta month by name, and both are carried on every day. The month is said
+with its kind by one message, `sdk.calendar.lunarMonth`, which matches on
+the kind's key the way `lifeClass` matches a class: अधिक ज्येष्ठ in
+Nepali, "Adhika Jyeshtha" in English, and the bare month for a nija one.
+The kind stays out of the catalogue, since a catalogue kind is open to
+additions and the FFI's month kind relies on matching every member.
 

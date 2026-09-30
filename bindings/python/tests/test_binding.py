@@ -78,6 +78,7 @@ from teistro.catalogue import (
     Ephemeris,
     Era,
     Graha,
+    MonthKind,
     PolarDayPolicy,
     PolarKind,
     Sunrise,
@@ -355,6 +356,12 @@ class TheLocaleEngine(WithLibrary):
             {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
         ).text
         self.assertEqual(typed, loose)
+
+    def test_a_lunar_month_is_said_with_its_kind_an_adhika_one_the_nepali_way(self) -> None:
+        self.ctx.intl.locale = "ne-Deva-NP"
+        said = self.ctx.intl.messages.sdk.calendar.lunar_month
+        self.assertEqual(said(kind=MonthKind.ADHIKA.key, masa=intl.MasaKey.JYESHTHA), "अधिक ज्येष्ठ")
+        self.assertEqual(said(kind=MonthKind.NIJA.key, masa=intl.MasaKey.JYESHTHA), "ज्येष्ठ")
 
     def test_an_instant_reads_in_the_zone_a_message_is_given(self) -> None:
         self.ctx.intl.locale = "en-Latn"

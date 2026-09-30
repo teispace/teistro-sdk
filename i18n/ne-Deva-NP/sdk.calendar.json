@@ -1,6 +1,7 @@
 {
  "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{आइतबार}} 1 {{सोमबार}} 2 {{मङ्गलबार}} 3 {{बुधबार}} 4 {{बिहीबार}} 5 {{शुक्रबार}} 6 {{शनिबार}} * {{{$weekday}}}",
  "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{आइत}} 1 {{सोम}} 2 {{मङ्गल}} 3 {{बुध}} 4 {{बिही}} 5 {{शुक्र}} 6 {{शनि}} * {{{$weekday}}}",
+ "lunarMonth": ".input {$masa :entity kind=masa} .input {$kind :string} .match $kind ADHIKA {{अधिक {$masa}}} KSHAYA {{क्षय {$masa}}} * {{{$masa}}}",
  "GREGORIAN": {
   "monthName": ".input {$month :integer} .match $month 1 {{जनवरी}} 2 {{फेब्रुअरी}} 3 {{मार्च}} 4 {{अप्रिल}} 5 {{मे}} 6 {{जुन}} 7 {{जुलाई}} 8 {{अगस्ट}} 9 {{सेप्टेम्बर}} 10 {{अक्टोबर}} 11 {{नोभेम्बर}} 12 {{डिसेम्बर}} * {{{$month}}}",
   "monthShort": "{sdk.calendar.GREGORIAN.monthName :msg}",

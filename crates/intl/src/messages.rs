@@ -708,6 +708,25 @@ pub mod sdk {
 
         }
 
+        /// The message `sdk.calendar.lunarMonth`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct LunarMonth {
+            /// The `kind` parameter.
+            pub kind: String,
+            /// The `masa` parameter.
+            pub masa: teistro_core::catalogue::Masa,
+        }
+
+        impl crate::TypedMessage for LunarMonth {
+            const KEY: &'static str = "sdk.calendar.lunarMonth";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                    ("masa", crate::Value::catalogued(self.masa)),
+                ])
+            }
+        }
+
         /// The `time` group.
         pub mod time {
             /// The message `sdk.calendar.time.long`.
