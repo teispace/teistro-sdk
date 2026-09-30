@@ -835,8 +835,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
         }
     }
 
-    /// The body's own rising (the east) or setting (the west) nearest the
-    /// reference instant, within half a day either way.
+    /// The body's own rising (the east) or setting (the west) that goes
+    /// with the reference instant: in the east the rising from three
+    /// quarters of a day before the sunrise to a quarter after it, in the
+    /// west the setting from a quarter of a day before the sunset to three
+    /// quarters after it.
+    ///
+    /// The window leans the way the side does. A morning body rises
+    /// before the Sun — up to half a day before it at opposition — or just
+    /// after it near conjunction, and never six hours after, which would
+    /// make it an evening body. A window of half a day either way, which
+    /// this was, holds two risings near opposition, both about twelve
+    /// hours off, and took the one **after** the sunrise: the degrees of
+    /// time came out near −166° and the arcus visionis never reached its
+    /// midnight, so a superior planet was read unseen for about four weeks
+    /// about its opposition, when it is up all night (found by the muhurta
+    /// season's asta, which read a Guru asta for January 2026).
     fn nearest(
         &self,
         solver: &Solver<'_>,
@@ -844,7 +858,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
         reference: JulianDay<Ut1>,
         evaluations: &mut u32,
     ) -> Result<JulianDay<Ut1>, Error> {
-        let from = reference.plus_days(-0.5)?;
+        let from = match side {
+            Side::East => reference.plus_days(-0.75)?,
+            Side::West => reference.plus_days(-0.25)?,
+        };
         match solver.event(side.event_kind(), from, 1.0)? {
             Some(HorizonEvent {
                 instant,
@@ -855,7 +872,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Heliacal<'a, P> {
                 Ok(instant)
             }
             None => Err(Error::limit(format!(
-                "{} has no {} within half a day of JD {} at latitude {}",
+                "{} has no {} within the day about JD {} at latitude {}",
                 solver.describe(),
                 side.event_kind().key().to_lowercase(),
                 reference.get(),
