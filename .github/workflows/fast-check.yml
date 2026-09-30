@@ -113,6 +113,8 @@ jobs:
         run: cargo xtask check-muhurta
       - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
         run: cargo xtask check-festival
+      - name: Malmas page (the adhika days at Kathmandu against the months Nepal's panchanga committee announced)
+        run: cargo xtask check-malmas
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

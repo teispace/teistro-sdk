@@ -126,6 +126,9 @@
 //! - `festival` and `check-festival`: the shipped festival rules at Delhi
 //!   against the days the Government of India published for its offices
 //!   there, and what a decade of each rule reaches, guard by guard.
+//! - `malmas` and `check-malmas`: the adhika days the almanac marks at
+//!   Kathmandu under the shipped readings, against the adhika months
+//!   Nepal's panchanga committee announced.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -240,6 +243,7 @@ mod kalachakra;
 mod kp;
 mod lints;
 mod lunisolar;
+mod malmas;
 mod measure;
 mod moon;
 mod muhurta;
@@ -313,6 +317,7 @@ const PASSES: &[Pass] = &[
     ("kp", kp::generate, kp::check_generated),
     ("muhurta", muhurta::generate, muhurta::check_generated),
     ("festival", festival::generate, festival::check_generated),
+    ("malmas", malmas::generate, malmas::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

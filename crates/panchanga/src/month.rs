@@ -63,10 +63,18 @@ impl LunarMonth {
 /// The amanta month is the solar month the new moon that began it fell
 /// in, which the lunisolar calendar decides; this turns it into both
 /// readings and the paksha.
+///
+/// An adhika month is new moon to new moon under **both** conventions:
+/// a purnimanta almanac sets it whole between the nija month's dark and
+/// bright fortnights, so its dark fortnight keeps its own name rather
+/// than running ahead to the next month's. Drik Panchang's purnimanta list
+/// names Parama Ekadashi, the adhika dark 11th of 12 August 2023,
+/// "Shravana, Krishna", and Aja Ekadashi a month later, a nija dark 11th,
+/// "Bhadrapada, Krishna" (`03-design/calendar-indian-lunisolar.md` §4).
 #[must_use]
 pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKind) -> LunarMonth {
     let paksha = at_sunrise.attributes().paksha;
-    let purnimanta = if matches!(paksha, Paksha::Krishna) {
+    let purnimanta = if matches!(paksha, Paksha::Krishna) && kind != MonthKind::Adhika {
         next(amanta)
     } else {
         amanta
@@ -124,6 +132,31 @@ mod tests {
         assert_eq!(dark.paksha, Paksha::Krishna);
         assert_eq!(dark.month, Masa::Chaitra, "the profile asked for amanta");
         assert_eq!(dark.under(Convention::Purnimanta), Masa::Vaishakha);
+    }
+
+    #[test]
+    fn an_adhika_month_keeps_its_name_through_its_dark_fortnight() {
+        // Parama Ekadashi, 12 August 2023: adhika Shravana's dark 11th.
+        let parama = of(
+            Masa::Shravana,
+            Tithi::KrishnaEkadashi,
+            Convention::Purnimanta,
+            MonthKind::Adhika,
+        );
+        assert_eq!(
+            (parama.month, parama.kind),
+            (Masa::Shravana, MonthKind::Adhika)
+        );
+        assert_eq!(parama.amanta, Masa::Shravana);
+        // Kamika Ekadashi, 13 July 2023, the nija dark fortnight before
+        // it, runs ahead as every nija one does.
+        let kamika = of(
+            Masa::Ashadha,
+            Tithi::KrishnaEkadashi,
+            Convention::Purnimanta,
+            MonthKind::Nija,
+        );
+        assert_eq!(kamika.month, Masa::Shravana);
     }
 
     #[test]
