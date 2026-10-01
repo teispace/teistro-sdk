@@ -19,7 +19,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Kind, Masa, Nakshatra, Tithi, write_in_full};
+use teistro_core::catalogue::{Kind, Masa, Nakshatra, Paksha, Tithi, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -291,8 +291,10 @@ pub struct FestivalRule {
     /// The convention the month is named in; amanta by default.
     #[serde(default = "amanta")]
     pub convention: Convention,
-    /// The tithi.
-    pub tithi: Tithi,
+    /// What the rite is kept on: a tithi, or a nakshatra in a paksha,
+    /// written flat as `tithi`, or as `nakshatra` with `paksha`.
+    #[serde(flatten)]
+    pub occurs: Occurs,
     /// Whether an adhika month holds it too (C171); only the nija month
     /// by default.
     #[serde(default)]
@@ -307,6 +309,115 @@ pub struct FestivalRule {
 
 const fn amanta() -> Convention {
     Convention::Amanta
+}
+
+/// What a rule is kept on: a tithi, the usual way, or a nakshatra in a
+/// paksha of the month, as the Samavedis' upakarma is kept on Hasta in
+/// Bhadrapada's bright half (*Dharmasindhu* p. 47, `festival-rules.md`
+/// §9.7). A nakshatra's occurrence is judged between its two days as a
+/// tithi's is, by the share of the rite's window it holds; it falls in the
+/// month and paksha of the tithi running at its middle.
+///
+/// ```
+/// use teistro_panchanga::festival::Occurs;
+/// use teistro_core::catalogue::{Nakshatra, Paksha, Tithi};
+///
+/// let tithi: Occurs = Tithi::Purnima.into();
+/// assert_eq!(serde_json::to_value(tithi)?, serde_json::json!({"tithi": "PURNIMA"}));
+/// let hasta = Occurs::Nakshatra { nakshatra: Nakshatra::Hasta, paksha: Paksha::Shukla };
+/// assert_eq!(serde_json::to_value(hasta)?, serde_json::json!({"nakshatra": "HASTA", "paksha": "SHUKLA"}));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(with = "OccursSchema"))]
+#[serde(untagged, try_from = "OccursFields")]
+#[non_exhaustive]
+pub enum Occurs {
+    /// A tithi; its paksha is the tithi's.
+    Tithi {
+        /// The tithi.
+        tithi: Tithi,
+    },
+    /// A nakshatra, in one paksha of the month.
+    Nakshatra {
+        /// The nakshatra.
+        nakshatra: Nakshatra,
+        /// The half of the month it must fall in.
+        paksha: Paksha,
+    },
+}
+
+impl From<Tithi> for Occurs {
+    fn from(tithi: Tithi) -> Occurs {
+        Occurs::Tithi { tithi }
+    }
+}
+
+impl Occurs {
+    /// The tithi, for a rule kept on one.
+    #[must_use]
+    pub const fn tithi(self) -> Option<Tithi> {
+        match self {
+            Occurs::Tithi { tithi } => Some(tithi),
+            Occurs::Nakshatra { .. } => None,
+        }
+    }
+}
+
+/// The shape [`Occurs`] is read in, for its schema: the reader refuses
+/// every other combination of the three fields by name.
+#[cfg(feature = "schema")]
+#[derive(schemars::JsonSchema)]
+#[schemars(untagged)]
+#[allow(dead_code, reason = "a schema's shape, never built")]
+enum OccursSchema {
+    /// A tithi; its paksha is the tithi's.
+    Tithi {
+        /// The tithi.
+        tithi: Tithi,
+    },
+    /// A nakshatra, in one paksha of the month.
+    Nakshatra {
+        /// The nakshatra.
+        nakshatra: Nakshatra,
+        /// The half of the month it must fall in.
+        paksha: Paksha,
+    },
+}
+
+/// The fields [`Occurs`] is read from, so that a rule naming both a tithi
+/// and a nakshatra, or neither, or a paksha without its nakshatra, is
+/// refused by name rather than read as one of them.
+#[derive(Deserialize)]
+struct OccursFields {
+    #[serde(default)]
+    tithi: Option<Tithi>,
+    #[serde(default)]
+    nakshatra: Option<Nakshatra>,
+    #[serde(default)]
+    paksha: Option<Paksha>,
+}
+
+impl TryFrom<OccursFields> for Occurs {
+    type Error = String;
+
+    fn try_from(fields: OccursFields) -> Result<Occurs, String> {
+        match (fields.tithi, fields.nakshatra, fields.paksha) {
+            (Some(tithi), None, None) => Ok(Occurs::Tithi { tithi }),
+            (None, Some(nakshatra), Some(paksha)) => Ok(Occurs::Nakshatra { nakshatra, paksha }),
+            (None, Some(_), None) => Err(
+                "a rule kept on a `nakshatra` names the `paksha` it falls in, `SHUKLA` or `KRISHNA`"
+                    .to_owned(),
+            ),
+            (Some(_), _, _) => Err(
+                "a rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`, not both".to_owned(),
+            ),
+            (None, None, _) => Err(
+                "a rule is kept on a `tithi`, or on a `nakshatra` in a `paksha`".to_owned(),
+            ),
+        }
+    }
 }
 
 /// The yugma verse's reading of a tithi (p. 6): 2 with 3, 4 with 5,
@@ -329,8 +440,9 @@ pub fn yugma(tithi: Tithi) -> Option<Which> {
 impl FestivalRule {
     /// Refuses a rule that could not be judged: an empty key, a ghati
     /// count outside a daylight's or a night's thirty, a night muhurta
-    /// outside its fifteen, or the yugma verse asked of a tithi it pairs
-    /// with nothing.
+    /// outside its fifteen, the yugma verse asked of a tithi it pairs
+    /// with nothing or of a nakshatra, or a tithi joined to a nakshatra
+    /// asked of a rule kept on a nakshatra.
     ///
     /// # Errors
     ///
@@ -345,11 +457,11 @@ impl FestivalRule {
             .map(|guard| guard.choose)
             .chain(std::iter::once(self.otherwise));
         if choices.into_iter().any(|choice| choice == Choice::ByYugma)
-            && yugma(self.tithi).is_none()
+            && self.occurs.tithi().and_then(yugma).is_none()
         {
             return Err(Error::invalid_arg(format!(
-                "{}: the yugma verse pairs {:?} with nothing (it pairs 2-3, 4-5, 6-7, 8-9, 11-12, the bright 14th with the full moon, and the new moon with the bright 1st); choose EARLIER or LATER",
-                self.key, self.tithi
+                "{}: the yugma verse pairs {:?} with nothing (it pairs 2-3, 4-5, 6-7, 8-9, 11-12, the bright 14th with the full moon, and the new moon with the bright 1st, and no nakshatra); choose EARLIER or LATER",
+                self.key, self.occurs
             ))
             .with_field("decide"));
         }
@@ -363,6 +475,13 @@ impl FestivalRule {
                             self.key
                         ))
                         .with_field("decide.when.ghatis"));
+                    }
+                    Predicate::Joined { .. } if self.occurs.tithi().is_none() => {
+                        return Err(Error::invalid_arg(format!(
+                            "{}: JOINED asks a tithi and a nakshatra to stand together, and this rule is kept on a nakshatra; ask STANDS of another nakshatra",
+                            self.key
+                        ))
+                        .with_field("decide.when.is"));
                     }
                     Predicate::Joined { at: Some(at), .. } | Predicate::Stands { at, .. } => {
                         self.check_window(at, "decide.when.at.muhurta")?;
@@ -504,7 +623,8 @@ pub struct Observance {
     pub rule: String,
     /// The day.
     pub day: CalendarDate,
-    /// The tithi's occurrence judged.
+    /// The occurrence judged: the tithi's, or the nakshatra's for a rule
+    /// kept on one ([`Occurs::Nakshatra`]).
     pub tithi: Interval,
     /// Its amanta month, as an Ekadashi fast's is: which month's
     /// occurrence a rule kept every month decided.
@@ -528,7 +648,8 @@ pub struct Observance {
 pub struct Unjudged {
     /// The rule's key.
     pub rule: String,
-    /// The tithi's occurrence.
+    /// The occurrence: the tithi's, or the nakshatra's for a rule kept on
+    /// one.
     pub tithi: Interval,
     /// Why.
     pub why: String,
@@ -601,9 +722,10 @@ impl Observances {
 
 /// The days each rule falls on over consecutive sunrise days.
 ///
-/// An occurrence is judged when its tithi begins on one of the days and
-/// the days hold both it and the one after (C172); the caller widens the
-/// run by a day on each side for a range's edges.
+/// An occurrence is judged when its tithi, or the nakshatra a rule is kept
+/// on, begins on one of the days and the days hold both it and the one
+/// after (C172); the caller widens the run by a day on each side for a
+/// range's edges. The answer is in the order the occurrences begin.
 ///
 /// # Errors
 ///
@@ -612,20 +734,43 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
     for rule in rules {
         rule.check()?;
     }
-    let mut answer = Observances::default();
-    for occurrence in occurrences(days) {
-        for rule in rules.iter().filter(|rule| rule.tithi == occurrence.member) {
-            let Some(month) = month_of(rule, &occurrence, days) else {
-                continue;
-            };
-            match judge(rule, occurrence.whole, month, days)? {
-                Ok(observance) => answer.observances.push(observance),
-                Err(why) => answer.unjudged.push(Unjudged {
-                    rule: rule.key.clone(),
-                    tithi: occurrence.whole,
-                    why,
-                }),
+    let tithis = occurrences(days);
+    let nakshatras = distinct(days.iter().flat_map(|day| day.nakshatra.iter()));
+    let mut kept: Vec<(&FestivalRule, Interval, LunarMonth)> = Vec::new();
+    for rule in rules {
+        match rule.occurs {
+            Occurs::Tithi { tithi } => {
+                for occurrence in tithis.iter().filter(|held| held.member == tithi) {
+                    if let Some(month) = month_of(rule, occurrence, days) {
+                        kept.push((rule, occurrence.whole, month));
+                    }
+                }
             }
+            Occurs::Nakshatra { nakshatra, paksha } => {
+                for occurrence in nakshatras.iter().filter(|held| held.member == nakshatra) {
+                    let Some(tithi) = running_at_middle(occurrence.whole, &tithis) else {
+                        continue;
+                    };
+                    if tithi.member.attributes().paksha != paksha {
+                        continue;
+                    }
+                    if let Some(month) = month_of(rule, tithi, days) {
+                        kept.push((rule, occurrence.whole, month));
+                    }
+                }
+            }
+        }
+    }
+    kept.sort_by(|a, b| a.1.from.get().total_cmp(&b.1.from.get()));
+    let mut answer = Observances::default();
+    for (rule, whole, month) in kept {
+        match judge(rule, whole, month, days)? {
+            Ok(observance) => answer.observances.push(observance),
+            Err(why) => answer.unjudged.push(Unjudged {
+                rule: rule.key.clone(),
+                tithi: whole,
+                why,
+            }),
         }
     }
     Ok(answer)
@@ -633,8 +778,13 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
 
 /// Every tithi the days hold, once each, in order.
 fn occurrences(days: &[FestivalDay]) -> Vec<Span<Tithi>> {
-    let mut seen: Vec<Span<Tithi>> = Vec::new();
-    for span in days.iter().flat_map(|day| day.tithi.iter()) {
+    distinct(days.iter().flat_map(|day| day.tithi.iter()))
+}
+
+/// Every member the spans hold, once each, in order.
+fn distinct<'a, T: Copy + 'a>(spans: impl Iterator<Item = &'a Span<T>>) -> Vec<Span<T>> {
+    let mut seen: Vec<Span<T>> = Vec::new();
+    for span in spans {
         if seen
             .last()
             .is_none_or(|last| last.whole.from.get() < span.whole.from.get())
@@ -643,6 +793,13 @@ fn occurrences(days: &[FestivalDay]) -> Vec<Span<Tithi>> {
         }
     }
     seen
+}
+
+/// The tithi running at the middle of a span: what names a nakshatra's
+/// month and paksha.
+fn running_at_middle(span: Interval, tithis: &[Span<Tithi>]) -> Option<&Span<Tithi>> {
+    let middle = span.at_fraction(0.5).ok()?;
+    tithis.iter().find(|tithi| tithi.whole.contains(middle))
 }
 
 /// The month the occurrence falls in, when it is one the rule keeps.
@@ -765,7 +922,11 @@ fn judge(
     let which = match choice {
         Choice::Earlier => Which::Earlier,
         Choice::Later => Which::Later,
-        Choice::ByYugma => yugma(rule.tithi).unwrap_or(Which::Earlier),
+        Choice::ByYugma => rule
+            .occurs
+            .tithi()
+            .and_then(yugma)
+            .unwrap_or(Which::Earlier),
     };
     let day = match which {
         Which::Earlier => earlier.date.clone(),
@@ -877,7 +1038,7 @@ impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
     /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
-    /// (§9), then two schools' upakarma (§9.5).
+    /// (§9), then three schools' upakarma (§9.5, §9.7).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::first_four();
@@ -936,7 +1097,7 @@ impl FestivalRule {
             source: "the Nepal Panchanga Nirnayak Samiti's national panchanga, VS 2082 and 2083 (24 printed rows): the day whose sunset the full moon holds, the later when both or neither do; Dharmasindhu p. 20 gives the later day (C200)".to_owned(),
             month: None,
             convention: Convention::Amanta,
-            tithi: Tithi::Purnima,
+            occurs: Tithi::Purnima.into(),
             in_adhika: true,
             at: Window::Sunset,
             decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
@@ -944,15 +1105,16 @@ impl FestivalRule {
         }
     }
 
-    /// The same rule read as the day whose sunrise holds its tithi: the
-    /// later day when only its sunrise does, else the earlier (both
-    /// sunrises, or the day a tithi holding none falls in). Its source
-    /// says so, and names C197.
+    /// The same rule read as the day whose sunrise holds its tithi, or its
+    /// nakshatra for a rule kept on one: the later day when only its
+    /// sunrise does, else the earlier (both sunrises, or the day an
+    /// occurrence holding none falls in). Its source says so, and names
+    /// C197.
     #[must_use]
     pub fn udaya(self) -> FestivalRule {
         FestivalRule {
             source: format!(
-                "{}; read as the day whose sunrise holds the tithi, as Nepal's national panchanga keeps a rite of the daylight (C197)",
+                "{}; read as the day whose sunrise holds the tithi or the nakshatra, as Nepal's national panchanga keeps a rite of the daylight (C197)",
                 self.source
             ),
             at: Window::Sunrise,
@@ -974,7 +1136,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 33: madhyahna; the earlier day only if it alone holds it, since the 9th pierced by the 8th is forbidden".to_owned(),
                 month: Some(Masa::Chaitra),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaNavami,
+                occurs: Tithi::ShuklaNavami.into(),
                 in_adhika: false,
                 at: MADHYAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
@@ -985,7 +1147,7 @@ impl FestivalRule {
                 source: "Dharmasindhu pp. 49-50: nishitha; Rohini joined there outranks the tithi alone; both or neither, the later".to_owned(),
                 month: Some(Masa::Shravana),
                 convention: Convention::Amanta,
-                tithi: Tithi::KrishnaAshtami,
+                occurs: Tithi::KrishnaAshtami.into(),
                 in_adhika: false,
                 at: Window::Nishitha,
                 decide: vec![
@@ -1000,7 +1162,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 71: aparahna; both days or neither, the earlier, unless Shravana joins one day only; the earlier day alone holding it yields to a later day the dashami holds three muhurtas and Shravana joins alone, standing in its aparahna (the Nirnaya-sindhu's condition, endorsed); the later alone yields to Shravana joined only on the earlier (the author's own view)".to_owned(),
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaDashami,
+                occurs: Tithi::ShuklaDashami.into(),
                 in_adhika: false,
                 at: APARAHNA,
                 decide: vec![
@@ -1035,7 +1197,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 77: the new moon at pradosha; the later day when it lasts more than a ghati into that night, which puts the matter beyond doubt, else the earlier, and so when neither day holds it".to_owned(),
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
-                tithi: Tithi::Amavasya,
+                occurs: Tithi::Amavasya.into(),
                 in_adhika: false,
                 at: Window::Pradosha,
                 decide: vec![Guard::new(
@@ -1061,7 +1223,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 55: the 3rd at sunrise; the later day whenever its sunrise holds it, though for less than a muhurta and the earlier day for all sixty ghatis, for the 4th joined to it; the earlier, joined to the 2nd, only when the 3rd is kshaya and no sunrise holds it".to_owned(),
                 month: Some(Masa::Bhadrapada),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaTritiya,
+                occurs: Tithi::ShuklaTritiya.into(),
                 in_adhika: false,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([case(Case::Neither)], Earlier)],
@@ -1072,7 +1234,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 65: the 1st at sunrise and after it, three muhurtas ideally, two failing that, one by some; never on the day the new moon joins it unless the later day holds it less than a muhurta or not at its sunrise; the earlier when it holds the whole earlier day and grows into the later (C196)".to_owned(),
                 month: Some(Masa::Ashwina),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaPratipada,
+                occurs: Tithi::ShuklaPratipada.into(),
                 in_adhika: false,
                 at: Window::Sunrise,
                 decide: vec![
@@ -1093,7 +1255,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 79: aparahna; the earlier day only when it alone holds it, the later in every other case".to_owned(),
                 month: Some(Masa::Kartika),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaDvitiya,
+                occurs: Tithi::ShuklaDvitiya.into(),
                 in_adhika: false,
                 at: APARAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
@@ -1104,7 +1266,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 90: nishitha, the night's eighth muhurta; the earlier day when it alone holds it, or holds it whole where the later holds part; the later when the later alone holds it, when neither does, and when both do, with Madhava, the Nirnayasindhu and the Purusharthachintamani, where the Kaustubha takes the earlier (C195)".to_owned(),
                 month: Some(Masa::Magha),
                 convention: Convention::Amanta,
-                tithi: Tithi::KrishnaChaturdashi,
+                occurs: Tithi::KrishnaChaturdashi.into(),
                 in_adhika: false,
                 at: Window::NightMuhurta { muhurta: 8 },
                 decide: vec![
@@ -1135,7 +1297,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 49: on the full moon holding the sunrise more than three muhurtas, at aparahna or a pradosha free of bhadra; less than three there, the earlier day at a pradosha free of bhadra".to_owned(),
                 month: Some(Masa::Shravana),
                 convention: Convention::Amanta,
-                tithi: Tithi::Purnima,
+                occurs: Tithi::Purnima.into(),
                 in_adhika: false,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(6)], Later)],
@@ -1146,7 +1308,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 78: Bali puja, the cows' play, Govardhan puja and Margapali on the later day when its 1st holds nine muhurtas past sunrise, since the Moon is not seen then; less, on the 1st the new moon pierces (C198)".to_owned(),
                 month: Some(Masa::Kartika),
                 convention: Convention::Amanta,
-                tithi: Tithi::ShuklaPratipada,
+                occurs: Tithi::ShuklaPratipada.into(),
                 in_adhika: false,
                 at: Window::Sunrise,
                 decide: vec![Guard::new([lasts(18)], Later)],
@@ -1157,7 +1319,7 @@ impl FestivalRule {
                 source: "Dharmasindhu p. 94: pradosha, free of bhadra; the later day when both days hold it or the later holds part of it, the earlier's bhadra standing against it; the earlier when the later's pradosha has none of it; the later day's pratipada when the full moon lasts three and a half yamas there and the pratipada grows is not encoded (C199)".to_owned(),
                 month: Some(Masa::Phalguna),
                 convention: Convention::Amanta,
-                tithi: Tithi::Purnima,
+                occurs: Tithi::Purnima.into(),
                 in_adhika: false,
                 at: Window::Pradosha,
                 decide: vec![
@@ -1181,7 +1343,7 @@ impl FestivalRule {
             source: source.to_owned(),
             month: Some(Masa::Shravana),
             convention: Convention::Amanta,
-            tithi: Tithi::Purnima,
+            occurs: Tithi::Purnima.into(),
             in_adhika: false,
             at: Window::Sunrise,
             decide: vec![
@@ -1208,6 +1370,35 @@ impl FestivalRule {
                 "Dharmasindhu p. 47: for the Taittiriya, Shravana's full moon; the later day when it holds two muhurtas or more past the later sunrise, though fewer than six, where the other Yajurvedis take the earlier; and for every Yajurvedi the earlier when it holds both sunrises, or fewer than two muhurtas of the later",
                 4,
             ),
+            FestivalRule::upakarma_samavedi(),
         ]
+    }
+
+    /// The Samavedis' upakarma (§9.7): Hasta in Bhadrapada's bright half,
+    /// at aparahna. *Dharmasindhu* p. 47 gives the earlier day only when
+    /// Hasta pervades that day's aparahna wholly and the later's not at
+    /// all; both pervaded, the later touched in part, the earlier only
+    /// touched, or neither, the later.
+    fn upakarma_samavedi() -> FestivalRule {
+        FestivalRule {
+            key: "UPAKARMA_SAMAVEDI".to_owned(),
+            source: "Dharmasindhu p. 47: for the Samavedis, Hasta in Bhadrapada's bright half; split over two days, the earlier when it pervades the earlier aparahna wholly and the later's not at all, else the later, whether both are pervaded, the later is touched in part, the earlier only touched or neither; Shravana's Hasta where a sankranti or the like bars Bhadrapada's is not encoded (C207)".to_owned(),
+            month: Some(Masa::Bhadrapada),
+            convention: Convention::Amanta,
+            occurs: Occurs::Nakshatra {
+                nakshatra: Nakshatra::Hasta,
+                paksha: Paksha::Shukla,
+            },
+            in_adhika: false,
+            at: APARAHNA,
+            decide: vec![Guard::new(
+                [
+                    case(Case::EarlierOnly),
+                    Predicate::Wholly { day: Which::Earlier },
+                ],
+                Choice::Earlier,
+            )],
+            otherwise: Choice::Later,
+        }
     }
 }

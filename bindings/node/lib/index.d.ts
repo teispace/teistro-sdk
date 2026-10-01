@@ -2681,8 +2681,27 @@ export type FestivalPredicate =
 /** What a guard, or a rule's `otherwise`, decides. */
 export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA';
 
+/** What a rule is kept on: a tithi, or a nakshatra in a paksha of the month (the Samavedis' upakarma is Hasta in Bhadrapada's bright half). */
+export type FestivalOccurs =
+  | {
+      /** The tithi; its paksha is the tithi's. */
+      readonly tithi: Tithi;
+      readonly nakshatra?: never;
+      readonly paksha?: never;
+    }
+  | {
+      readonly tithi?: never;
+      /** The nakshatra; judged between its two days as a tithi is, in the month and paksha of the tithi running at its middle. */
+      readonly nakshatra: Nakshatra;
+      /** The half of the month it must fall in. */
+      readonly paksha: Paksha;
+    };
+
 /** A rule: when an observance falls, and how its day is decided (`03-design/festival-rules.md` §4.1). */
-export interface FestivalRule {
+export type FestivalRule = FestivalRuleFields & FestivalOccurs;
+
+/** A festival rule's fields beside what it is kept on. */
+export interface FestivalRuleFields {
   /** Its key in its pack, `'JANMASHTAMI'`; an observance is named by it. */
   readonly key: string;
   /** Where the rule is stated. */
@@ -2691,8 +2710,6 @@ export interface FestivalRule {
   readonly month?: Masa;
   /** The convention the month is named in; `'AMANTA'` by default. */
   readonly convention?: LunarMonth;
-  /** The tithi; its paksha is the tithi's. */
-  readonly tithi: Tithi;
   /** Whether an adhika month holds it too; only the nija month by default (C171). */
   readonly inAdhika?: boolean;
   /** The time of the rite. */

@@ -2424,10 +2424,21 @@ test('an almanac carries the festivals it was asked for', () => {
     [['EVERY_FULL_MOON', 'masa.ASHWINA']],
   );
 
+  // A rule kept on a nakshatra in a paksha, every month: Hasta in the dark
+  // half falls once in the range, its occurrence the nakshatra's own.
+  const hasta = { ...everyMonth, key: 'DARK_HASTA', nakshatra: 'nakshatra.HASTA', paksha: 'paksha.KRISHNA' };
+  delete hasta.tithi;
+  const kept = ctx.almanac.of({ ...days, festivals: { rules: [hasta] } }).festivals;
+  assert.deepEqual(
+    kept.observances.map((o) => [o.rule, o.month]),
+    [['DARK_HASTA', 'masa.ASHWINA']],
+  );
+
   for (const [festivals, field] of [
     [{ rules: 'DHARMA' }, 'festivals.rules'],
     [{ rules: ['DHARMASINDHU', { ...sunrise, key: '' }] }, 'festivals.rules[1].key'],
     [{ rules: [{ ...sunrise, at: { window: 'DUSK' } }] }, 'festivals.rules[0].at.window'],
+    [{ rules: [{ ...sunrise, nakshatra: 'nakshatra.HASTA', paksha: 'paksha.SHUKLA' }] }, 'festivals.rules[0]'],
     [{ rules: [{ ...sunrise, at: { window: 'NIGHT_MUHURTA', muhurta: 16 } }] }, 'festivals.rules[0].at.muhurta'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', vedha: 'DUSK', table: {} }] }, 'festivals.rules[1].vedha'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', after: 'HOLIKA', days: 16 }] }, 'festivals.rules[1].days'],

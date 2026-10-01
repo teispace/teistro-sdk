@@ -38,7 +38,7 @@ const SPANS: [(Day, Day); 4] = [
 /// What the committee printed: the Vikram year, the rule, the Gregorian
 /// day (the row's own column), and the page and the words it prints. VS
 /// 2083 ends at Chaitra's bright 7th, before Rama Navami.
-const PRINTED: [(i32, &str, Day, &str); 27] = [
+const PRINTED: [(i32, &str, Day, &str); 29] = [
     (
         2082,
         "RAKSHABANDHAN",
@@ -57,6 +57,12 @@ const PRINTED: [(i32, &str, Day, &str); 27] = [
         "HARITALIKA",
         (2025, 8, 26),
         "p. 11: हरितालिकाव्रत (तीज)",
+    ),
+    (
+        2082,
+        "UPAKARMA_SAMAVEDI",
+        (2025, 8, 26),
+        "p. 11: सामवेदीहरूको उपाकर्म",
     ),
     (
         2082,
@@ -120,6 +126,12 @@ const PRINTED: [(i32, &str, Day, &str); 27] = [
         "JANMASHTAMI",
         (2026, 9, 4),
         "p. 12: श्रीकृष्णजन्माष्टमीव्रत",
+    ),
+    (
+        2083,
+        "UPAKARMA_SAMAVEDI",
+        (2026, 9, 13),
+        "p. 13: सामवेदीहरूको उपाकर्म",
     ),
     (
         2083,

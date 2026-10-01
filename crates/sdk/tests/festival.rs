@@ -74,6 +74,7 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         ("HOLIKA", 2..=3),
         ("UPAKARMA_MADHYANDINA", 7..=8),
         ("UPAKARMA_TAITTIRIYA", 7..=8),
+        ("UPAKARMA_SAMAVEDI", 8..=9),
         ("HOLI_HILLS", 2..=3),
         ("HOLI_TERAI", 2..=3),
     ];

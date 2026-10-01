@@ -799,7 +799,11 @@ measured against Nepal before it is called done:
    page images fit one reading, the evening the full moon holds, the later
    first, and none of the text's; `PURNIMA_VRATA` joins the `NEPAL` pack
    on a new sunset window, with the month optional and every observance
-   saying its own.
+   saying its own. **The Samavedis' upakarma is built 2026-10-01**
+   (`festival-rules.md` §9.7, C207): a rule may be kept on a nakshatra in
+   a paksha (`Occurs::Nakshatra`), and `UPAKARMA_SAMAVEDI`, Hasta in
+   Bhadrapada's bright half, holds both of the committee's printed days.
+   The Rigvedis' fall-back rule waits for a printed record.
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
    **Nepal Sambat built 2026-10-01** (`calendar-indian-lunisolar.md`

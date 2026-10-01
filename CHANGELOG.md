@@ -1656,6 +1656,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   each observance now carries its month, so its hash does; the days found
   are the same.
 
+- **A festival rule kept on a nakshatra, and the Samavedis' upakarma**
+  (`festival-rules.md` §9.7, C207 closed for the Samavedis).
+  - `FestivalRule.occurs` replaces `tithi`: `Occurs::Tithi`, or
+    `Occurs::Nakshatra` with the paksha it falls in. The JSON stays flat,
+    so every rule spelt before reads as it did. A rule naming both,
+    neither, or a nakshatra without its paksha is refused by name, and
+    the yugma verse and `JOINED` are refused for a nakshatra rule.
+  - A nakshatra's occurrence is judged between its two days as a
+    tithi's is, in the month and paksha of the tithi running at its
+    middle. Observances come back in the order their occurrences begin.
+  - `UPAKARMA_SAMAVEDI` (p. 47) joins `DHARMASINDHU`: Hasta in
+    Bhadrapada's bright half at aparahna, the earlier day only when
+    Hasta holds that day's aparahna wholly and none of the later's.
+    `NEPAL` reads it by the sunrise Hasta holds, and both readings give
+    the committee's two printed days.
+  - Node types a rule as `FestivalRuleFields & FestivalOccurs`, a union
+    that refuses both keys or a nakshatra without its paksha.
+
+  **Numbers:** none moved. Both packs gain an observance where Hasta
+  falls in Bhadrapada's bright half, so a festival section over that
+  season changes.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).
