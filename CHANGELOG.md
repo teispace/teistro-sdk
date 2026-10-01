@@ -1537,6 +1537,43 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none moved. Each day gains a field, so a stored day's
   content hash differs, and `nepali-default`'s version is 3.
 
+- **Eclipses** (`eclipses.md`, `eclipses-measured.md`, C188).
+  `teistro_astro::eclipse` finds the lunar and solar eclipses of any
+  window or the next of each, over any modern sky. A lunar eclipse gives
+  its kind, gamma, umbral and penumbral magnitudes and its six contacts,
+  with the shadow enlarged by Danjon's rule (the default) or
+  Chauvenet's (`ShadowRule`). A solar eclipse gives its kind (partial,
+  annular, total or hybrid, read at greatest eclipse), gamma, magnitude
+  and the point of greatest eclipse on the flattened Earth. `cargo xtask
+  eclipses` (gated in fast-check) holds the search to NASA's five
+  millennium canon from 1900 to 2100: all 459 lunar and 454 solar
+  eclipses found and no others, every kind agreeing, the greatest moment
+  within 2.9 s, gamma within 0.00014, magnitudes within 0.0003, lunar
+  phase durations within 0.61 min and the point of greatest eclipse
+  within 0.31°. A solar eclipse reads both bodies as light left them
+  (astrometric); a lunar one reads both apparent, since the shadow is
+  where the Earth was when the light that casts it passed: the page
+  measures the rejected placings at 38 s and 77 s off. A classical
+  profile's eclipse is refused as unsupported (C188). `solve::minimum`
+  narrows a minimum by golden sections, and every search's failure now
+  says what was sought through one `SolveError::into_error`.
+
+- **A modern sky's apparent place is of date and corrected for light
+  time.** The completion turned a provider's mean J2000 places into
+  apparent ones in the provider's native frame rather than the true
+  equator and equinox of date, and its precession dropped the speeds
+  that light time needs, so light time was silently skipped whenever
+  speeds were not asked. Both are fixed (`Completion::apparent_frame`).
+
+  **Numbers:** every rise, set and apparent place over the built-in
+  ephemeris moves. The Sun at the 2024 March equinox now stands within
+  0.001° of right ascension zero. Sunrise at Kathmandu moves later by about
+  1.5 minutes, so the readings decided at sunrise move with it: the
+  muhurta pass's open windows (820 to 821), the Tajika pass's charts
+  (2159 to 2155, four more polar years cannot be founded), and the ritu pass's rival rule (25 to 23 of
+  156 days). Nepal's daily print is now nearest the disc's centre with
+  standard refraction (below).
+
 - **The committee's sky: the text's limbs at a modern sunrise**
   (`nepal-day-measured.md`, C39). `Siddhanta::Surya` gains `sunrise`.
   `TEXT`, the default, is the text's own sunrise. `MODERN` begins the day
@@ -1544,9 +1581,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   places, angles and zodiac (`teistro_siddhanta::ModernSunrise`). The
   modern ephemeris is the first modern entry after `SURYA_SIDDHANTA` in
   the chain, or else the built-in one, and the stamp names it.
-  `day.sunrise` gains `UPPER_LIMB_NO_REFRACTION`, the upper limb on the
-  geometric horizon, which is within 1.4 minutes of all 333 of Nepal's
-  printed sunrises. `nepali-committee` version 2 reads both, and every
+  `day.sunrise` gains `CENTRE_REFRACTION`, the disc's centre with
+  standard refraction, which is within 1.5 minutes of 320 of Nepal's 333
+  printed sunrises and 1.7 of every one. `nepali-committee` version 3
+  reads both, and every
   printed vriddhi and kshaya agrees except where the source names Shukla
   as Shubha. A new settings warning, `siddhanta-text-sunrise-convention`,
   flags the text's sunrise asked for under a convention the text does
