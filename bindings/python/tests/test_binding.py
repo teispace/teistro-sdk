@@ -1622,6 +1622,10 @@ class AnEngine(WithLibrary):
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
                 ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),
                 (
+                    {"rules": [{**sunrise, "at": {"window": "NIGHT_MUHURTA", "muhurta": 16}}]},
+                    "festivals.rules[0].at.muhurta",
+                ),
+                (
                     {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "vedha": "DUSK", "table": {}}]},
                     "festivals.rules[1].vedha",
                 ),

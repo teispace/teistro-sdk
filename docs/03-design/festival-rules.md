@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-09-30: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac. Written from the source
+Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's first four rules (§9) held to the committee's printed days. Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -509,3 +509,83 @@ from the page image and the record together; neither was absorbed.
 The façade now founds two days before a range, not one: an 11th
 beginning the day before is judged at an arunodaya in the night
 before that.
+
+## 9. Nepal
+
+Roadmap Phase 7, step 4: the observances Nepal's national panchanga
+prints, measured against the days the Nepal Panchanga Decision
+Committee printed. Derived from the page images before any code; §9.2
+is as built.
+
+### 9.1 What the sources say
+
+*Dharmasindhu* gives the rule for each observance below, and the
+committee's national panchanga for VS 2082 and 2083 (npns.gov.np, the
+only two years it hosts, with no text layer) prints the day each fell
+on. Every clause was read off the page image (the PDF's page is the
+printed page plus 23).
+
+| rule | tithi | the text | window |
+|---|---|---|---|
+| `HARITALIKA` | Bhadrapada bright 3rd | p. 55: the later day whenever its sunrise holds the 3rd, "even less" than a muhurta of it, and even when the earlier day held all sixty ghatis, for the 4th joined to it (Ganesha's yoga); the earlier, joined to the 2nd, only when kshaya leaves the later day without it | sunrise |
+| `NAVARATRA_ARAMBHA` | Ashwina bright 1st | p. 65: the 1st at sunrise and after it, three muhurtas ideally, two failing that, one "in some" texts; never on the day the new moon joins it, unless the later day holds it less than a muhurta or not at sunrise; the earlier when the 1st holds all sixty ghatis of it and grows two muhurtas into the next | sunrise |
+| `YAMA_DWITIYA` | Kartika bright 2nd | p. 79: aparahna; the earlier day when it alone holds it, "in every other case" the later | aparahna |
+| `SHIVARATRI` | Magha dark 14th (amanta) | p. 90: niśītha, which the page defines as "the night's eighth muhurta"; the later day when it alone holds it, the earlier when it alone does; neither, the later; both, wholly or in part, the earlier by the *Kaustubha* and the later by Madhava, the *Nirnayasindhu* and the *Purusharthachintamani*, "many"; the earlier holding it whole and the later in part, the earlier; the reverse, the later | the night's 8th muhurta |
+
+Shivaratri is the first rule whose window is a stretch of the night
+rather than an instant, and the first to weigh a whole holding against
+a part. Janmashtami's niśītha stays the night's middle (C169), because
+p. 49 counts "even a kala" there; p. 90 reasons in wholes and parts,
+which an instant cannot.
+
+### 9.2 The design
+
+Two members, each closed:
+
+- `Window::NightMuhurta { muhurta }`: the muhurta-th fifteenth of the
+  night counted from sunset, 1 to 15, as C168 takes a muhurta.
+  `FestivalRule::check` refuses one outside the fifteen wherever it
+  stands (`at.muhurta`, `decide.when.at.muhurta`).
+- `Predicate::Wholly { day }`: the tithi holds that day's window whole,
+  or its instant. It is read off the extents the answer already
+  reports, so nothing is computed twice.
+
+The four rules join `FestivalRule::dharmasindhu()`, so the
+`DHARMASINDHU` pack carries eight karmakala rules. Each is held to its
+page's clauses on synthetic sixty-ghati days
+(`crates/panchanga/tests/festival.rs`, proved red by breaking the
+predicate and the window). The forks:
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C195 | Shivaratri when both nights hold niśītha | **the later**, with Madhava, the *Nirnayasindhu* and the *Purusharthachintamani*, whom p. 90 calls "many" | the *Kaustubha*'s earlier: one guard a consumer adds |
+| C196 | how long the later day's 1st must last for Navaratra | **a muhurta** (two ghatis of the daylight), the least p. 65 allows before it gives the new moon's day | three muhurtas, the text's ideal: a ghati count a consumer changes |
+| C197 | Nepal's Vijaya Dashami | **the aparahna rule of p. 71**, shipped since §6 step 3 | the day whose sunrise holds the 10th, which the committee printed in VS 2083 (§9.3); one year is not a rule |
+
+### 9.3 What is measured
+
+`festival-measured.md` §4 holds every shipped rule at Kathmandu, on
+Nepal's clock, against the fifteen days the committee printed for VS
+2082 and 2083. Each is found over the committee's own sky
+(`nepali-committee`, the Surya Siddhanta with its bija, C187), which
+the pass holds to the print, and over the modern sky
+(`nepali-default`), which it counts beside it. A parting under the
+committee's sky must carry its cause, and the cause is checked against
+the case and guard found.
+
+**What the measuring found.** The sky decides the day: the modern sky
+parts from the print on four rows, and the committee's on one. Lakshmi
+puja in VS 2082 is printed on the day of the 14th, 2025-10-20, because
+the text's new moon ends before the next sunset. The modern one lasts
+past it by more than a ghati, which p. 77 makes the later day.
+Janmashtami (2025) and Rama Navami (2026) part the same way. The one
+parting under the committee's sky is Vijaya Dashami in VS 2083. The
+committee keeps the day whose sunrise the 10th holds (until 10:51 by its
+print), where p. 71
+gives the earlier day, which alone holds aparahna, with Shravana
+joining the 10th that day only. It is named with its cause (C197) and
+not absorbed: one year in two is not a rule, and a consumer who
+follows the committee replaces the rule by its key.
+
+The Delhi pass founds February too now, so that the decade's reach
+counts Shivaratri.

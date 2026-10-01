@@ -58,15 +58,27 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         "{:?}",
         found.value.unjudged
     );
-    // Rama Navami in March or April, Janmashtami in August or September,
-    // Vijaya Dashami in September or October, Lakshmi puja in October or
-    // November: the lunar months' Gregorian reach.
-    for (rule, months) in [
+    // Each in the Gregorian months its lunar month reaches.
+    let shipped = FestivalRule::dharmasindhu();
+    let seasons = [
         ("RAMA_NAVAMI", 3..=4),
         ("JANMASHTAMI", 8..=9),
         ("VIJAYA_DASHAMI", 9..=10),
         ("LAKSHMI_PUJA", 10..=11),
-    ] {
+        ("HARITALIKA", 8..=9),
+        ("NAVARATRA_ARAMBHA", 9..=10),
+        ("YAMA_DWITIYA", 10..=11),
+        ("SHIVARATRI", 2..=3),
+    ];
+    assert_eq!(
+        seasons.iter().map(|(rule, _)| *rule).collect::<Vec<_>>(),
+        shipped
+            .iter()
+            .map(|rule| rule.key.as_str())
+            .collect::<Vec<_>>(),
+        "every shipped rule has its season here"
+    );
+    for (rule, months) in seasons {
         let days: Vec<_> = found
             .value
             .observances

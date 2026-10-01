@@ -85,6 +85,23 @@ pub enum Window {
     /// present there if "even a kala" of it stands at the end of the
     /// night's first half).
     Nishitha,
+    /// A muhurta of the night, a fifteenth of it counted from sunset, 1
+    /// to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a
+    /// tithi holding it wholly against one holding part of it.
+    NightMuhurta {
+        /// Which muhurta, 1 for the first after sunset.
+        muhurta: u8,
+    },
+}
+
+impl Window {
+    /// The muhurta a [`Window::NightMuhurta`] names, if this is one.
+    const fn muhurta(self) -> Option<u8> {
+        match self {
+            Window::NightMuhurta { muhurta } => Some(muhurta),
+            Window::Sunrise | Window::Part { .. } | Window::Pradosha | Window::Nishitha => None,
+        }
+    }
 }
 
 /// One of the two days a tithi is judged between.
@@ -162,6 +179,13 @@ pub enum Predicate {
         from: Edge,
         /// How many ghatis, 1 to 30.
         ghatis: u8,
+    },
+    /// The tithi holds the whole of a day's window, or its instant: p. 90
+    /// gives Shivaratri to the day holding niśītha wholly when the other
+    /// holds it in part.
+    Wholly {
+        /// Which day.
+        day: Which,
     },
 }
 
@@ -270,9 +294,10 @@ pub fn yugma(tithi: Tithi) -> Option<Which> {
 }
 
 impl FestivalRule {
-    /// Refuses a rule that could not be judged: an empty key, a muhurta
-    /// count outside a day's fifteen, or the yugma verse asked of a tithi
-    /// it pairs with nothing.
+    /// Refuses a rule that could not be judged: an empty key, a ghati
+    /// count outside a daylight's or a night's thirty, a night muhurta
+    /// outside its fifteen, or the yugma verse asked of a tithi it pairs
+    /// with nothing.
     ///
     /// # Errors
     ///
@@ -295,20 +320,37 @@ impl FestivalRule {
             ))
             .with_field("decide"));
         }
+        self.check_window(self.at, "at.muhurta")?;
         for guard in &self.decide {
             for predicate in &guard.when {
-                if let Predicate::Lasts { ghatis, .. } = predicate {
-                    if !(1..=30).contains(ghatis) {
+                match *predicate {
+                    Predicate::Lasts { ghatis, .. } if !(1..=30).contains(&ghatis) => {
                         return Err(Error::invalid_arg(format!(
                             "{}: a daylight or a night has thirty ghatis, not {ghatis}",
                             self.key
                         ))
                         .with_field("decide.when.ghatis"));
                     }
+                    Predicate::Joined { at: Some(at), .. } | Predicate::Stands { at, .. } => {
+                        self.check_window(at, "decide.when.at.muhurta")?;
+                    }
+                    _ => {}
                 }
             }
         }
         Ok(())
+    }
+
+    /// Refuses a night muhurta outside the night's fifteen.
+    fn check_window(&self, window: Window, field: &str) -> Result<(), Error> {
+        match window.muhurta() {
+            Some(muhurta) if !(1..=15).contains(&muhurta) => Err(Error::invalid_arg(format!(
+                "{}: a night has fifteen muhurtas, counted from 1 after sunset, not {muhurta}",
+                self.key
+            ))
+            .with_field(field)),
+            _ => Ok(()),
+        }
     }
 }
 
@@ -377,6 +419,9 @@ impl FestivalDay {
             Window::Nishitha => {
                 let middle = self.night().at_fraction(0.5)?;
                 Ok(Interval::literal(middle.get(), middle.get()))
+            }
+            Window::NightMuhurta { muhurta } => {
+                self.night().part(u16::from(muhurta).saturating_sub(1), 15)
             }
         }
     }
@@ -645,6 +690,7 @@ fn judge(rule: &FestivalRule, tithi: Interval, days: &[FestivalDay]) -> Result<J
     let facts = Facts {
         tithi,
         case,
+        held: [extents[0].held, extents[1].held],
         earlier,
         later,
     };
@@ -682,6 +728,8 @@ fn judge(rule: &FestivalRule, tithi: Interval, days: &[FestivalDay]) -> Result<J
 struct Facts<'a> {
     tithi: Interval,
     case: Case,
+    /// The fraction of each day's window the tithi held, earlier first.
+    held: [f64; 2],
     earlier: &'a FestivalDay,
     later: &'a FestivalDay,
 }
@@ -725,6 +773,13 @@ impl Facts<'_> {
                 let until = span.at_fraction(f64::from(ghatis) / 30.0)?;
                 self.tithi.contains(edge) && self.tithi.to.get() >= until.get()
             }
+            Predicate::Wholly { day } => {
+                let held = match day {
+                    Which::Earlier => self.held[0],
+                    Which::Later => self.held[1],
+                };
+                held >= 1.0
+            }
         })
     }
 }
@@ -744,21 +799,38 @@ fn meet(spans: &[Interval], window: Interval) -> bool {
     from < to
 }
 
+/// A guard's predicate: the case is this one.
+const fn case(case: Case) -> Predicate {
+    Predicate::Case { case }
+}
+
+/// The third fifth of the daylight.
+const MADHYAHNA: Window = Window::Part {
+    part: DayPart::Madhyahna,
+};
+
+/// The fourth fifth of the daylight.
+const APARAHNA: Window = Window::Part {
+    part: DayPart::Aparahna,
+};
+
 impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
-    /// each citing its page in the 1888 Nirnaya-sagara edition.
+    /// each citing its page in the 1888 Nirnaya-sagara edition: the four
+    /// of `festival-rules.md` §1, then the four Nepal's panchanga prints
+    /// (§9).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
+        let mut rules = FestivalRule::first_four();
+        rules.extend(FestivalRule::nepal_four());
+        rules
+    }
+
+    /// Rama Navami, Janmashtami, Vijaya Dashami and Lakshmi puja (§1).
+    fn first_four() -> Vec<FestivalRule> {
         use Choice::{Earlier, Later};
         use Which::{Earlier as E, Later as L};
-        let case = |case| Predicate::Case { case };
         let joined = |day, nakshatra, at| Predicate::Joined { day, nakshatra, at };
-        let madhyahna = Window::Part {
-            part: DayPart::Madhyahna,
-        };
-        let aparahna = Window::Part {
-            part: DayPart::Aparahna,
-        };
         let shravana = |day| joined(day, Nakshatra::Shravana, None);
         vec![
             FestivalRule {
@@ -768,7 +840,7 @@ impl FestivalRule {
                 convention: Convention::Amanta,
                 tithi: Tithi::ShuklaNavami,
                 in_adhika: false,
-                at: madhyahna,
+                at: MADHYAHNA,
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
             },
@@ -794,7 +866,7 @@ impl FestivalRule {
                 convention: Convention::Amanta,
                 tithi: Tithi::ShuklaDashami,
                 in_adhika: false,
-                at: aparahna,
+                at: APARAHNA,
                 decide: vec![
                     Guard::new([case(Case::LaterOnly), shravana(L)], Later),
                     Guard::new([case(Case::LaterOnly), shravana(E)], Earlier),
@@ -812,7 +884,7 @@ impl FestivalRule {
                             Predicate::Stands {
                                 day: L,
                                 nakshatra: Nakshatra::Shravana,
-                                at: aparahna,
+                                at: APARAHNA,
                             },
                         ],
                         Later,
@@ -839,6 +911,74 @@ impl FestivalRule {
                     Later,
                 )],
                 otherwise: Earlier,
+            },
+        ]
+    }
+
+    /// Haritalika, Navaratra arambha, Yama dwitiya and Shivaratri (§9).
+    fn nepal_four() -> Vec<FestivalRule> {
+        use Choice::{Earlier, Later};
+        use Which::{Earlier as E, Later as L};
+        vec![
+            FestivalRule {
+                key: "HARITALIKA".to_owned(),
+                source: "Dharmasindhu p. 55: the 3rd at sunrise; the later day whenever its sunrise holds it, though for less than a muhurta and the earlier day for all sixty ghatis, for the 4th joined to it; the earlier, joined to the 2nd, only when the 3rd is kshaya and no sunrise holds it".to_owned(),
+                month: Masa::Bhadrapada,
+                convention: Convention::Amanta,
+                tithi: Tithi::ShuklaTritiya,
+                in_adhika: false,
+                at: Window::Sunrise,
+                decide: vec![Guard::new([case(Case::Neither)], Earlier)],
+                otherwise: Later,
+            },
+            FestivalRule {
+                key: "NAVARATRA_ARAMBHA".to_owned(),
+                source: "Dharmasindhu p. 65: the 1st at sunrise and after it, three muhurtas ideally, two failing that, one by some; never on the day the new moon joins it unless the later day holds it less than a muhurta or not at its sunrise; the earlier when it holds the whole earlier day and grows into the later (C196)".to_owned(),
+                month: Masa::Ashwina,
+                convention: Convention::Amanta,
+                tithi: Tithi::ShuklaPratipada,
+                in_adhika: false,
+                at: Window::Sunrise,
+                decide: vec![
+                    Guard::new([case(Case::Both)], Earlier),
+                    Guard::new(
+                        [Predicate::Lasts {
+                            day: L,
+                            from: Edge::Sunrise,
+                            ghatis: 2,
+                        }],
+                        Later,
+                    ),
+                ],
+                otherwise: Earlier,
+            },
+            FestivalRule {
+                key: "YAMA_DWITIYA".to_owned(),
+                source: "Dharmasindhu p. 79: aparahna; the earlier day only when it alone holds it, the later in every other case".to_owned(),
+                month: Masa::Kartika,
+                convention: Convention::Amanta,
+                tithi: Tithi::ShuklaDvitiya,
+                in_adhika: false,
+                at: APARAHNA,
+                decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
+                otherwise: Later,
+            },
+            FestivalRule {
+                key: "SHIVARATRI".to_owned(),
+                source: "Dharmasindhu p. 90: nishitha, the night's eighth muhurta; the earlier day when it alone holds it, or holds it whole where the later holds part; the later when the later alone holds it, when neither does, and when both do, with Madhava, the Nirnayasindhu and the Purusharthachintamani, where the Kaustubha takes the earlier (C195)".to_owned(),
+                month: Masa::Magha,
+                convention: Convention::Amanta,
+                tithi: Tithi::KrishnaChaturdashi,
+                in_adhika: false,
+                at: Window::NightMuhurta { muhurta: 8 },
+                decide: vec![
+                    Guard::new([case(Case::EarlierOnly)], Earlier),
+                    Guard::new(
+                        [case(Case::UnequalParts), Predicate::Wholly { day: E }],
+                        Earlier,
+                    ),
+                ],
+                otherwise: Later,
             },
         ]
     }
