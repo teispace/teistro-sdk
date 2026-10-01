@@ -4815,6 +4815,10 @@
           "$ref": "#/$defs/LocalDay",
           "description": "The day, with its arc, its vara, its polar state and the sunrise convention it was reckoned under."
         },
+        "ghati_reckoning": {
+          "$ref": "#/$defs/GhatiReckoning",
+          "description": "How the day's ghatis are counted, `day.ghati_reckoning` as applied: what `Panchanga::ghati_pala` reads."
+        },
         "horas": {
           "description": "Twenty-four horas, from `time::hora`.",
           "items": {
@@ -4869,7 +4873,8 @@
         "month",
         "moon",
         "sun",
-        "omens"
+        "omens",
+        "ghati_reckoning"
       ],
       "type": "object"
     },

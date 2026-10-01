@@ -238,18 +238,122 @@ pub struct Air {
     pub temperature_c: f64,
 }
 
-/// Which Surya Siddhanta model, when the siddhanta knob is classical.
+/// Which astronomy: modern, or the Surya Siddhanta under a bija.
+///
+/// The settings **ask** and the ephemeris chain **supplies** (ADR-0029):
+/// `SURYA` needs a context opened over `SURYA_SIDDHANTA`, and the model
+/// that entry opens is the text with this bija applied.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Siddhanta {
     /// Modern astronomy.
     Drik,
-    /// Surya Siddhanta, with or without the bija corrections.
+    /// The Surya Siddhanta, with the revolution counts a bija gives.
     Surya {
-        /// Whether the bija corrections apply.
-        bija: bool,
+        /// Which bija the text's revolution counts take.
+        bija: SuryaBija,
     },
+}
+
+/// Which bija (seed) corrections the Surya Siddhanta's revolution counts
+/// take.
+///
+/// The later commentators correct the text's counts and their sets
+/// differ; none is cited here yet (C28), so what ships is the text
+/// without one, the set **measured** from Nepal's national panchanga
+/// committee, and a consumer's own.
+///
+/// ```
+/// use teistro_core::settings::{Bija, SuryaBija};
+///
+/// assert_eq!(SuryaBija::None.revolutions(), Bija::default());
+/// assert_eq!(SuryaBija::NepalCommittee.revolutions().moon_apsis, -4);
+/// let own = Bija { jupiter: -8, ..Bija::default() };
+/// assert_eq!(SuryaBija::Custom { revolutions: own }.revolutions(), own);
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum SuryaBija {
+    /// The text as Burgess (1860) prints it.
+    #[default]
+    None,
+    /// The set Nepal's national panchanga committee computes with,
+    /// **measured** rather than cited: the Moon's apsis makes four
+    /// revolutions fewer in an age, and nothing else moves
+    /// ([`Bija::NEPAL_COMMITTEE`]).
+    NepalCommittee,
+    /// A consumer's own set.
+    Custom {
+        /// The revolutions per age it adds to or takes from the text's.
+        revolutions: Bija,
+    },
+}
+
+impl SuryaBija {
+    /// The revolutions this bija adds to or takes from the text's counts.
+    #[must_use]
+    pub const fn revolutions(self) -> Bija {
+        match self {
+            SuryaBija::None => Bija::NONE,
+            SuryaBija::NepalCommittee => Bija::NEPAL_COMMITTEE,
+            SuryaBija::Custom { revolutions } => revolutions,
+        }
+    }
+}
+
+/// A bija (seed) correction: the whole revolutions per age a tradition
+/// adds to or takes from the Surya Siddhanta's counts.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default, deny_unknown_fields)]
+pub struct Bija {
+    /// The Moon's revolutions.
+    pub moon: i64,
+    /// The Moon's apsis.
+    pub moon_apsis: i64,
+    /// The Moon's node.
+    pub moon_node: i64,
+    /// Mars.
+    pub mars: i64,
+    /// Mercury's conjunction.
+    pub mercury: i64,
+    /// Jupiter.
+    pub jupiter: i64,
+    /// Venus's conjunction.
+    pub venus: i64,
+    /// Saturn.
+    pub saturn: i64,
+}
+
+impl Bija {
+    /// No correction: the text's own counts.
+    pub const NONE: Bija = Bija {
+        moon: 0,
+        moon_apsis: 0,
+        moon_node: 0,
+        mars: 0,
+        mercury: 0,
+        jupiter: 0,
+        venus: 0,
+        saturn: 0,
+    };
+
+    /// Nepal's national panchanga committee's set, **measured**: the
+    /// Moon's apsis makes 488 199 revolutions in an age against the
+    /// text's 488 203. It puts the committee's printed Moon within 0.3′
+    /// at two sunrises and its eight printed tithi ends within 0.5′
+    /// (`docs/calendars/bikram-sambat.md`, R2), and 1 039 of 1 138
+    /// daily tithi, nakshatra and yoga ends printed from it within a
+    /// minute and a half (`03-design/nepal-day-measured.md`), where the
+    /// text without it leaves them a quarter of an hour either way. The
+    /// committee has not named the set (C28).
+    pub const NEPAL_COMMITTEE: Bija = Bija {
+        moon_apsis: -4,
+        ..Bija::NONE
+    };
 }
 
 /// The rounding contract of serialised output.
@@ -971,7 +1075,9 @@ impl Resolved {
     ///
     /// let mut patch = SettingsPatch::default();
     /// patch.frame.centre = Some(teistro_core::settings::Centre::Topocentric);
-    /// patch.frame.siddhanta = Some(teistro_core::settings::Siddhanta::Surya { bija: false });
+    /// patch.frame.siddhanta = Some(teistro_core::settings::Siddhanta::Surya {
+    ///     bija: teistro_core::settings::SuryaBija::None,
+    /// });
     /// let resolved = Profile::shipped("parashari-classical").unwrap().resolve(&patch).unwrap();
     /// let stamp = resolved.provenance(Version::new(0, 1, 0), Hash::of(b"input"));
     /// assert_eq!(stamp.profile, "parashari-classical");
@@ -1358,12 +1464,53 @@ mod tests {
                 .into_iter()
                 .collect(),
         );
-        warned.frame.siddhanta = Some(Siddhanta::Surya { bija: true });
+        warned.frame.siddhanta = Some(Siddhanta::Surya {
+            bija: SuryaBija::NepalCommittee,
+        });
         let resolved = shipped("nepali-default")
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = resolved.warnings.iter().map(|d| d.rule).collect();
         assert_eq!(rules, ["siddhanta-topocentric", "year-length-convention"]);
+    }
+
+    #[test]
+    fn a_bija_is_named_or_counted_and_never_a_bare_switch() {
+        let read = |json: &str| serde_json::from_str::<Siddhanta>(json);
+        let named = read(r#"{"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}}"#)
+            .unwrap_or_else(|e| panic!("{e}"));
+        let counted = read(
+            r#"{"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"moon_apsis": -4}}}"#,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+        let revolutions = |siddhanta: Siddhanta| match siddhanta {
+            Siddhanta::Surya { bija } => bija.revolutions(),
+            Siddhanta::Drik => panic!("not the text"),
+        };
+        assert_eq!(revolutions(named), revolutions(counted));
+        assert_eq!(revolutions(named), Bija::NEPAL_COMMITTEE);
+        // The switch the knob replaced said "a bija" without saying which,
+        // and nothing read it.
+        assert!(read(r#"{"kind": "SURYA", "bija": true}"#).is_err());
+        assert!(
+            read(r#"{"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"sun": 1}}}"#)
+                .is_err()
+        );
+        // The committee's profile names the set, and the text's zodiac.
+        let settings = shipped("nepali-committee")
+            .resolve(&SettingsPatch::default())
+            .unwrap_or_else(|e| panic!("{e}"))
+            .settings;
+        assert_eq!(
+            settings.frame.siddhanta,
+            Siddhanta::Surya {
+                bija: SuryaBija::NepalCommittee
+            }
+        );
+        assert_eq!(
+            settings.frame.ayanamsha,
+            AyanamshaChoice::from(crate::catalogue::Ayanamsha::Suryasiddhanta)
+        );
     }
 
     #[test]

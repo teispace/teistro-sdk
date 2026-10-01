@@ -23,8 +23,9 @@ use teistro_port_ephemeris::{
 };
 
 use crate::model::{SuryaSiddhanta, Trace};
-use crate::params::Planet;
+use crate::params::{Bija, Parameters, Planet};
 use crate::trig::RADIUS;
+use crate::trig::Trig;
 
 /// The last Julian day the provider answers for: a few thousand years
 /// on, well inside the text's own age.
@@ -47,6 +48,9 @@ const LAST_JD: f64 = 3_000_000.0;
 #[derive(Clone, Debug)]
 pub struct SiddhantaProvider {
     model: SuryaSiddhanta,
+    /// The bija the model was built with, where this provider built it,
+    /// so the stamp can name it; `None` for a model handed in whole.
+    bija: Option<Bija>,
 }
 
 impl SiddhantaProvider {
@@ -55,13 +59,34 @@ impl SiddhantaProvider {
     pub const fn text() -> SiddhantaProvider {
         SiddhantaProvider {
             model: SuryaSiddhanta::text(),
+            bija: Some(Bija::NONE),
+        }
+    }
+
+    /// The text with a bija applied to its revolution counts, and the
+    /// text's table: what a profile naming a bija asks for, stamped with
+    /// the set so two sets never share a stamp.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    /// use teistro_siddhanta::{Bija, SiddhantaProvider};
+    ///
+    /// let committee = SiddhantaProvider::with_bija(Bija::NEPAL_COMMITTEE);
+    /// let stamp = committee.capabilities().identity.data_version;
+    /// assert!(stamp.contains("moon_apsis -4"), "{stamp}");
+    /// ```
+    #[must_use]
+    pub fn with_bija(bija: Bija) -> SiddhantaProvider {
+        SiddhantaProvider {
+            model: SuryaSiddhanta::new(Parameters::TEXT.with_bija(&bija), Trig::Table),
+            bija: Some(bija),
         }
     }
 
     /// Any model (a bija applied, exact trigonometry) as the provider.
     #[must_use]
     pub const fn new(model: SuryaSiddhanta) -> SiddhantaProvider {
-        SiddhantaProvider { model }
+        SiddhantaProvider { model, bija: None }
     }
 
     /// The model.
@@ -174,11 +199,36 @@ impl SiddhantaProvider {
         Identity {
             name: String::from("surya-siddhanta"),
             version: String::from(env!("CARGO_PKG_VERSION")),
-            data_version: self.model.describe(),
+            data_version: match self.bija {
+                Some(bija) if bija != Bija::NONE => {
+                    format!("{}, bija {}", self.model.describe(), described(&bija))
+                }
+                _ => self.model.describe(),
+            },
             tier: None,
             data_hashes: Vec::new(),
         }
     }
+}
+
+/// A bija's nonzero counts, named: `moon_apsis -4`.
+fn described(bija: &Bija) -> String {
+    let counts = [
+        ("moon", bija.moon),
+        ("moon_apsis", bija.moon_apsis),
+        ("moon_node", bija.moon_node),
+        ("mars", bija.mars),
+        ("mercury", bija.mercury),
+        ("jupiter", bija.jupiter),
+        ("venus", bija.venus),
+        ("saturn", bija.saturn),
+    ];
+    counts
+        .iter()
+        .filter(|(_, count)| *count != 0)
+        .map(|(name, count)| format!("{name} {count:+}"))
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 impl EphemerisProvider for SiddhantaProvider {

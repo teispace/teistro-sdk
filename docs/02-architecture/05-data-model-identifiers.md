@@ -33,7 +33,7 @@ superset of the baseline engine's):
 | ayanamsha | catalogue id or custom (epoch, value, rate); mean or nutated |
 | node type | mean, true |
 | topocentric | on, off |
-| siddhanta | drik, surya (with bija on/off) |
+| siddhanta | drik, surya with a bija: none, nepal-committee (measured), custom |
 | house system for placements | one of the registered systems |
 | house system for bhava bala and chalit | Sripati, Vehlow, Porphyry, KP |
 | house system policy overrides per module (KP forces Placidus) | |

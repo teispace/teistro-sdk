@@ -6,6 +6,10 @@ use core::fmt;
 use crate::equation::Epicycle;
 use crate::mean::{Cycle, Motion};
 
+/// A bija set: defined beside the settings that name one
+/// (`frame.siddhanta`), so a profile can carry a consumer's own.
+pub use teistro_core::settings::Bija;
+
 /// The bodies the text gives a motion of their own, in the text's order
 /// (I.29 to 34). Rahu and Ketu are the Moon's node and its opposite.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -338,33 +342,6 @@ impl Parameters {
         adjust(&mut params.moon_node, bija.moon_node);
         params
     }
-}
-
-/// A bija (seed) correction: the whole revolutions per age a tradition
-/// adds to or takes from the text's counts. The text has none; the later
-/// commentators supply sets that differ, so no set ships until it is
-/// cited (`docs/calendars/bikram-sambat.md`), and a consumer with its
-/// tradition's set applies it through [`Parameters::with_bija`].
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(default, deny_unknown_fields)]
-pub struct Bija {
-    /// The Moon's revolutions.
-    pub moon: i64,
-    /// The Moon's apsis.
-    pub moon_apsis: i64,
-    /// The Moon's node.
-    pub moon_node: i64,
-    /// Mars.
-    pub mars: i64,
-    /// Mercury's conjunction.
-    pub mercury: i64,
-    /// Jupiter.
-    pub jupiter: i64,
-    /// Venus's conjunction.
-    pub venus: i64,
-    /// Saturn.
-    pub saturn: i64,
 }
 
 #[cfg(test)]
