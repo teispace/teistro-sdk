@@ -3147,19 +3147,27 @@ fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffs
 /// Lakshmi puja on whichever day holds the new moon at sunrise.
 const OWN_RULE: &str = r#"{"key":"LAKSHMI_PUJA","source":"the tithi at sunrise","month":"masa.ASHWINA","tithi":"tithi.AMAVASYA","at":{"window":"SUNRISE"},"decide":[],"otherwise":"LATER"}"#;
 
-/// The festivals a panchanga request carries, the shipped pack and the
-/// pack amended by a rule of the consumer's own, as the report prints them.
+/// A following rule of a consumer's own the runners hand in beside the
+/// Nepal pack: an observance two days after Lakshmi puja's.
+const OWN_FOLLOWING: &str =
+    r#"{"key":"TWO_AFTER","source":"two days after Lakshmi puja","after":"LAKSHMI_PUJA","days":2}"#;
+
+/// The festivals a panchanga request carries, the shipped pack, the pack
+/// amended by a rule of the consumer's own and the Nepal pack with a
+/// following rule of the consumer's own, as the report prints them.
 ///
 /// 2024-10-10..11-03 at the test provider holds Vijaya Dashami, Lakshmi
 /// puja and two Ekadashis, so an observance's case, guard and dates and a
 /// fast's vedha and excess cross every layer, and the amended pack proves
-/// a rule is replaced by its key.
+/// a rule is replaced by its key; the Nepal pack's counted day proves a
+/// following rule's `after` and `days` cross too.
 fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 10);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
     for (name, rules) in [
         ("shipped", r#""DHARMASINDHU""#.to_owned()),
         ("amended", format!(r#"["DHARMASINDHU",{OWN_RULE}]"#)),
+        ("nepal", format!(r#"["NEPAL",{OWN_FOLLOWING}]"#)),
     ] {
         let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
             .expect("a festival request");
@@ -3183,9 +3191,10 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
             teistro_core::envelope::content_hash(&written).to_string(),
         );
         for (k, observance) in answer.observances.iter().enumerate() {
-            let by = match observance.decided_by {
+            let by = match &observance.decided_by {
                 teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
                 teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
+                teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
             };
             let [earlier, later] = &observance.extents;
             put(

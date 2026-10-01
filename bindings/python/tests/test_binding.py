@@ -1563,9 +1563,9 @@ class AnEngine(WithLibrary):
         """Festival rules cross beside the days they fall on
         (`03-design/festival-rules.md` §7): dates in this binding's shape,
         the days the almanac's own, a shipped rule replaced by its key with
-        members given as members, and a refusal named by the item and field
-        that was wrong."""
-        from teistro import EkadashiFast, FestivalAnswer, FestivalRequest, date
+        members given as members, a day counted from another rule's, and a
+        refusal named by the item and field that was wrong."""
+        from teistro import EkadashiFast, FestivalAnswer, FestivalDecided, FestivalRequest, date
         from teistro.catalogue import Calendar, Masa, Tithi
 
         observer = Observer(
@@ -1584,7 +1584,9 @@ class AnEngine(WithLibrary):
             answer = almanac.festivals
             assert answer is not None
             self.assertIsInstance(answer, FestivalAnswer)
-            self.assertEqual([o.rule for o in answer.observances], ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"])
+            self.assertEqual(
+                [o.rule for o in answer.observances], ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]
+            )
             dashami = answer.observances[0]
             self.assertEqual((dashami.day.calendar, dashami.day.month), (Calendar.GREGORIAN, 10))
             self.assertEqual(dashami.extents[0].day.calendar, Calendar.GREGORIAN)
@@ -1617,6 +1619,17 @@ class AnEngine(WithLibrary):
             self.assertIsNone(moved.observances[1].decided_by.index)
             self.assertNotEqual(moved.provenance.input_hash, answer.provenance.input_hash)
 
+            # Nepal's pack, and a day of the consumer's own counted two days
+            # from Lakshmi puja's: it names the rule it counts from and the count.
+            following = {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}
+            counted = ctx.almanac.of(**days, festivals={"rules": ["NEPAL", following]}).festivals
+            assert counted is not None
+            by_rule = {o.rule: o for o in counted.observances}
+            two, lakshmi = by_rule["TWO_AFTER"], by_rule["LAKSHMI_PUJA"]
+            self.assertEqual(two.decided_by, FestivalDecided(by="AFTER", index=None, rule="LAKSHMI_PUJA", days=2))
+            self.assertEqual(two.day.day, lakshmi.day.day + 2)
+            self.assertEqual(two.tithi, lakshmi.tithi)
+
             refusals: list[tuple[FestivalRequest, str]] = [
                 ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
@@ -1628,6 +1641,14 @@ class AnEngine(WithLibrary):
                 (
                     {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "vedha": "DUSK", "table": {}}]},
                     "festivals.rules[1].vedha",
+                ),
+                (
+                    {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "after": "HOLIKA", "days": 16}]},
+                    "festivals.rules[1].days",
+                ),
+                (
+                    {"rules": ["DHARMASINDHU", {"key": "MINE", "source": "", "after": "NOBODY", "days": 1}]},
+                    "festivals.following[0].after",
                 ),
             ]
             for bad, field in refusals:

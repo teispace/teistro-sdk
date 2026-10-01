@@ -15,7 +15,7 @@ use teistro_core::time::UtcOffset;
 use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
-use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, observances};
+use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, following, observances};
 use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
@@ -382,11 +382,17 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<Envelope<Observances>, Error> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
+        // Two days each side, which the rules' own pairs need, and as many
+        // again as a rule counts from another's day: before, so a day
+        // counted into the range finds the observance it counts from;
+        // after, so an observance in the range always reaches its count
+        // rather than leaving the counted one unjudged.
+        let widen = 2 + i64::from(request.reach());
         let (before, after) = (
-            calendar.date_of(first.plus_days(-2))?,
+            calendar.date_of(first.plus_days(-widen))?,
             (
                 calendar.date_of(last.plus_days(1))?,
-                calendar.date_of(last.plus_days(2))?,
+                calendar.date_of(last.plus_days(widen))?,
             ),
         );
         let (earlier, later) = self.with_almanac(from, offset, |almanac| {
@@ -403,8 +409,11 @@ impl<'a> AlmanacArea<'a> {
             .chain(&later)
             .map(FestivalDay::from)
             .collect();
-        let mut found =
-            observances(request.rules(), &viewed)?.merged(ekadashis(request.ekadashis(), &viewed)?);
+        let karmakala = observances(request.rules(), &viewed)?;
+        let counted = following(request.following(), &karmakala.observances, &viewed)?;
+        let mut found = karmakala
+            .merged(counted)
+            .merged(ekadashis(request.ekadashis(), &viewed)?);
         let inside = |date: &CalendarDate| {
             calendar
                 .fixed_of(date)
@@ -434,7 +443,7 @@ impl<'a> AlmanacArea<'a> {
             knob: String::from("festival.days"),
             value: format!("{before}..{}", after.1),
             reason: String::from(
-                "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises",
+                "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
             ),
         });
         Ok(Envelope::sealing(found, provenance))

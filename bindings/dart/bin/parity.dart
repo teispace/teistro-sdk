@@ -61,7 +61,11 @@ void putFestivals(String prefix, FestivalAnswer answer) {
   put('$prefix-hash', answer.provenance.contentHash);
   for (final (k, observance) in answer.observances.indexed) {
     final decided = observance.decidedBy;
-    final by = decided.by == 'GUARD' ? 'guard:${decided.index}' : 'otherwise';
+    final by = switch (decided.by) {
+      'GUARD' => 'guard:${decided.index}',
+      'AFTER' => 'after:${decided.rule}:${decided.days}',
+      _ => 'otherwise',
+    };
     final (earlier, later) = observance.extents;
     put(
       '$prefix-$k',
@@ -1316,9 +1320,10 @@ void main() {
   }
 
   // ── Festivals ────────────────────────────────────────────────────────
-  // The shipped pack, and the pack amended by a rule of the consumer's
-  // own (Lakshmi puja on whichever day holds the new moon at sunrise),
-  // over 2024-10-10..11-03.
+  // The shipped pack, the pack amended by a rule of the consumer's own
+  // (Lakshmi puja on whichever day holds the new moon at sunrise), and the
+  // Nepal pack with a following rule of the consumer's own (two days after
+  // Lakshmi puja), over 2024-10-10..11-03.
   const ownRule = <String, Object?>{
     'key': 'LAKSHMI_PUJA',
     'source': 'the tithi at sunrise',
@@ -1328,9 +1333,16 @@ void main() {
     'decide': <Object?>[],
     'otherwise': 'LATER',
   };
+  const ownFollowing = <String, Object?>{
+    'key': 'TWO_AFTER',
+    'source': 'two days after Lakshmi puja',
+    'after': 'LAKSHMI_PUJA',
+    'days': 2,
+  };
   for (final (name, rules) in <(String, Object)>[
     ('shipped', FestivalPack.dharmasindhu),
     ('amended', [FestivalPack.dharmasindhu, ownRule]),
+    ('nepal', [FestivalPack.nepal, ownFollowing]),
   ]) {
     final festivals =
         geo.almanac

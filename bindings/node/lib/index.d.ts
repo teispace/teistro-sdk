@@ -2607,14 +2607,36 @@ export interface FestivalRequest {
   /**
    * A pack the SDK ships, by name; or a list whose items each name a pack
    * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
-   * else a festival rule. A later rule replaces an earlier one with its
-   * key.
+   * a following rule when it has an `after`, else a festival rule. A later
+   * rule replaces an earlier one with its key.
    */
-  readonly rules: FestivalPack | readonly (FestivalPack | FestivalRule | EkadashiRule)[];
+  readonly rules:
+    | FestivalPack
+    | readonly (FestivalPack | FestivalRule | EkadashiRule | FollowingRule)[];
 }
 
-/** A pack of festival rules the SDK ships. */
-export type FestivalPack = 'DHARMASINDHU';
+/**
+ * A pack of festival rules the SDK ships: *Dharmasindhu*'s, or those and
+ * the days Nepal's national panchanga counts from them
+ * (`03-design/festival-rules.md` §9.4).
+ */
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL';
+
+/**
+ * An observance on the day a number of civil days after another rule's
+ * (`03-design/festival-rules.md` §9.4): the Terai's Holi, the day after
+ * the Holika fire.
+ */
+export interface FollowingRule {
+  /** Its key in its pack, `'HOLI_TERAI'`; an observance is named by it. */
+  readonly key: string;
+  /** Where the rule is stated. */
+  readonly source: string;
+  /** The key of the festival rule whose day it counts from; never another following rule. */
+  readonly after: string;
+  /** How many civil days after that day, 0 for the same day; at most 15. */
+  readonly days: number;
+}
 
 /** A fifth of the daylight (*Dharmasindhu*, p. 6). */
 export type FestivalDayPart = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
@@ -2745,9 +2767,15 @@ export interface FestivalObservance {
   readonly case: FestivalCase;
   /** The earlier day's extent and the later's. */
   readonly extents: readonly [FestivalExtent, FestivalExtent];
-  /** The guard, by its index in the rule's list, or the rule's `otherwise`. */
-  readonly decidedBy: { readonly by: 'GUARD'; readonly index: number } | { readonly by: 'OTHERWISE' };
-  /** The choice that decided, which `day` resolves. */
+  /**
+   * The guard, by its index in the rule's list, or the rule's `otherwise`;
+   * or, for a following rule, the rule it counts from and how many days.
+   */
+  readonly decidedBy:
+    | { readonly by: 'GUARD'; readonly index: number }
+    | { readonly by: 'OTHERWISE' }
+    | { readonly by: 'AFTER'; readonly rule: string; readonly days: number };
+  /** The choice that decided, which `day` resolves; a following rule's is its leader's. */
   readonly choice: FestivalChoice;
 }
 

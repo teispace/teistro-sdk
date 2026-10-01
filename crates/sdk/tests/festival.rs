@@ -10,7 +10,7 @@
 )]
 
 use teistro::catalogue::Calendar;
-use teistro::festival::{Edge, FestivalRule, Guard, Predicate, Which};
+use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
@@ -50,7 +50,7 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
             &to,
             &delhi(),
             UtcOffset::literal(5, 30, 0),
-            &FestivalRequest::from(FestivalPack::Dharmasindhu),
+            &FestivalRequest::from(FestivalPack::Nepal),
         )
         .unwrap();
     assert!(
@@ -59,7 +59,7 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         found.value.unjudged
     );
     // Each in the Gregorian months its lunar month reaches.
-    let shipped = FestivalRule::dharmasindhu();
+    let (shipped, counted) = (FestivalRule::dharmasindhu(), FollowingRule::nepal());
     let seasons = [
         ("RAMA_NAVAMI", 3..=4),
         ("JANMASHTAMI", 8..=9),
@@ -69,12 +69,18 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         ("NAVARATRA_ARAMBHA", 9..=10),
         ("YAMA_DWITIYA", 10..=11),
         ("SHIVARATRI", 2..=3),
+        ("RAKSHABANDHAN", 7..=8),
+        ("BALI_PRATIPADA", 10..=11),
+        ("HOLIKA", 2..=3),
+        ("HOLI_HILLS", 2..=3),
+        ("HOLI_TERAI", 2..=3),
     ];
     assert_eq!(
         seasons.iter().map(|(rule, _)| *rule).collect::<Vec<_>>(),
         shipped
             .iter()
             .map(|rule| rule.key.as_str())
+            .chain(counted.iter().map(|rule| rule.key.as_str()))
             .collect::<Vec<_>>(),
         "every shipped rule has its season here"
     );
@@ -107,13 +113,25 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
             .count();
         assert!((24..=26).contains(&fasts), "{rule}: {fasts}");
     }
+    // The hills keep Holi on the fire's day, the Terai on the day after.
+    let day = |rule: &str| {
+        found
+            .value
+            .observances
+            .iter()
+            .find(|observance| observance.rule == rule)
+            .map(|observance| observance.day.clone())
+            .unwrap()
+    };
+    assert_eq!(day("HOLI_HILLS"), day("HOLIKA"));
+    assert_eq!(day("HOLI_TERAI").day, day("HOLIKA").day + 1);
     let widened = found
         .provenance
         .applied_conventions
         .iter()
         .find(|convention| convention.knob == "festival.days")
         .unwrap();
-    assert_eq!(widened.value, "GREGORIAN 2025-12-30..GREGORIAN 2027-01-02");
+    assert_eq!(widened.value, "GREGORIAN 2025-12-29..GREGORIAN 2027-01-03");
 }
 
 #[test]
@@ -165,7 +183,7 @@ fn the_answer_alone_and_beside_its_days_agree_and_the_days_are_the_almanacs() {
         .iter()
         .map(|o| o.rule.as_str())
         .collect();
-    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"]);
+    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]);
     let (days, each) = sdk.almanac().of_each(&from, &to, &delhi(), clock).unwrap();
     assert_eq!(beside.days, days);
     assert_eq!(beside.day_hashes, each);

@@ -782,10 +782,15 @@ measured against Nepal before it is called done:
    arambha, Yama dwitiya and Shivaratri join the `DHARMASINDHU` pack, and
    every shipped rule is held at Kathmandu to the 15 days the national
    panchanga printed for VS 2082 and 2083. Over the committee's sky 14
-   agree, and Vijaya Dashami 2083 parts with its cause named (C197). Left:
-   the bhadra predicate for Holika (with Nepal's chir-daha and the hills'
-   and Terai's Holi) and Rakshabandhan, then Bali pratipada and Janai
-   purnima.
+   agree, and Vijaya Dashami 2083 parts with its cause named (C197).
+   **Batch B** (§9.4): Holika, Rakshabandhan and Bali pratipada join the
+   pack, and a rule counted from another's day gives the `NEPAL` pack the
+   hills' and the Terai's Holi; 23 of 25 printed days agree over the
+   committee's sky, and Bali pratipada 2083 is the second udaya parting
+   (C197). Bhadra decides the hour, not the day, so its predicate waits
+   for the rite's hour. Left: the monthly purnima vrata the committee
+   prints the day before the full moon's sunrise day, and Janai purnima
+   (the upakarma by shakha, pp. 46–48).
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
 

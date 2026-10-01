@@ -2278,7 +2278,8 @@ test('a span says which sunrises it held and when it ended in ghatis', () => {
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,
- * and a refusal named by the item and field that was wrong.
+ * a day counted from another rule's, and a refusal named by the item and
+ * field that was wrong.
  */
 test('an almanac carries the festivals it was asked for', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
@@ -2293,7 +2294,10 @@ test('an almanac carries the festivals it was asked for', () => {
 
   const almanac = ctx.almanac.of({ ...days, festivals: { rules: 'DHARMASINDHU' } });
   const answer = almanac.festivals;
-  assert.deepEqual(answer.observances.map((o) => o.rule), ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA']);
+  assert.deepEqual(
+    answer.observances.map((o) => o.rule),
+    ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
+  );
   assert.ok(Object.isFrozen(answer.observances[0].extents[0].window), 'frozen to its leaves');
   const [dashami] = answer.observances;
   assert.equal(dashami.day.calendar, 'calendar.GREGORIAN');
@@ -2332,9 +2336,19 @@ test('an almanac carries the festivals it was asked for', () => {
     otherwise: 'LATER',
   };
   const moved = ctx.almanac.of({ ...days, festivals: { rules: ['DHARMASINDHU', sunrise] } }).festivals;
-  assert.equal(moved.observances.length, 2);
+  assert.equal(moved.observances.length, 3);
   assert.equal(moved.observances[1].decidedBy.by, 'OTHERWISE');
   assert.notEqual(moved.provenance.inputHash, answer.provenance.inputHash);
+
+  // Nepal's pack, and a day of the consumer's own counted two days from
+  // Lakshmi puja's: it names the rule it counts from and the count.
+  const following = { key: 'TWO_AFTER', source: 'mine', after: 'LAKSHMI_PUJA', days: 2 };
+  const counted = ctx.almanac.of({ ...days, festivals: { rules: ['NEPAL', following] } }).festivals;
+  const lakshmi = counted.observances.find((o) => o.rule === 'LAKSHMI_PUJA');
+  const two = counted.observances.find((o) => o.rule === 'TWO_AFTER');
+  assert.deepEqual(two.decidedBy, { by: 'AFTER', rule: 'LAKSHMI_PUJA', days: 2 });
+  assert.equal(two.day.day, lakshmi.day.day + 2);
+  assert.deepEqual(two.tithi, lakshmi.tithi);
 
   for (const [festivals, field] of [
     [{ rules: 'DHARMA' }, 'festivals.rules'],
@@ -2342,6 +2356,8 @@ test('an almanac carries the festivals it was asked for', () => {
     [{ rules: [{ ...sunrise, at: { window: 'DUSK' } }] }, 'festivals.rules[0].at.window'],
     [{ rules: [{ ...sunrise, at: { window: 'NIGHT_MUHURTA', muhurta: 16 } }] }, 'festivals.rules[0].at.muhurta'],
     [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', vedha: 'DUSK', table: {} }] }, 'festivals.rules[1].vedha'],
+    [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', after: 'HOLIKA', days: 16 }] }, 'festivals.rules[1].days'],
+    [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', after: 'NOBODY', days: 1 }] }, 'festivals.following[0].after'],
   ]) {
     assert.throws(
       () => ctx.almanac.of({ ...days, festivals }),

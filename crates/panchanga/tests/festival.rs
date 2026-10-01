@@ -21,8 +21,9 @@ use teistro_core::catalogue::{Era, Masa, Nakshatra, Tithi};
 use teistro_core::interval::Interval;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, Guard,
-    Observances, Predicate, Unjudged, Which, Window, ekadashis, observances, yugma,
+    Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule,
+    Guard, Observances, Predicate, Unjudged, Which, Window, ekadashis, following, observances,
+    yugma,
 };
 use teistro_panchanga::month;
 
@@ -258,7 +259,7 @@ fn decided(rule: &FestivalRule, days: &[FestivalDay]) -> (Case, u8, Decided) {
     (
         observance.case,
         observance.day.day - 1,
-        observance.decided_by,
+        observance.decided_by.clone(),
     )
 }
 
@@ -442,11 +443,12 @@ fn a_new_moon_is_read_in_the_month_it_ends() {
 /// The case, the day and the deciding guard when `tithi` runs from
 /// `from` to `to`, in `amanta`, between neighbours of its own fortnight.
 fn one(rule: &str, tithi: Tithi, from: f64, to: f64, amanta: Masa) -> (Case, u8, Decided) {
+    // Neighbours no shipped rule keeps, so the rule judges one occurrence.
     let tithis = [
-        (Tithi::Amavasya, ghati(0, 20.0)),
-        (Tithi::Purnima, from),
+        (Tithi::KrishnaNavami, ghati(0, 20.0)),
+        (Tithi::KrishnaDashami, from),
         (tithi, to),
-        (Tithi::Amavasya, ghati(5, 0.0)),
+        (Tithi::KrishnaNavami, ghati(5, 0.0)),
     ];
     let days = days_of(&tithis, &[], amanta, MonthKind::Nija);
     decided(&shipped(rule), &days)
@@ -595,6 +597,153 @@ fn shivaratri_takes_the_book_s_day_in_each_of_its_clauses() {
     );
 }
 
+/// Rakshabandhan (p. 49): the later day when the full moon holds its
+/// sunrise more than three muhurtas, six ghatis; else the earlier.
+#[test]
+fn rakshabandhan_takes_the_later_day_past_three_muhurtas_of_its_sunrise() {
+    let full = |to| {
+        one(
+            "RAKSHABANDHAN",
+            Tithi::Purnima,
+            ghati(1, 30.0),
+            to,
+            Masa::Shravana,
+        )
+    };
+    assert_eq!(
+        full(ghati(2, 7.0)),
+        (Case::LaterOnly, 2, Decided::Guard { index: 0 })
+    );
+    assert_eq!(
+        full(ghati(2, 5.0)),
+        (Case::LaterOnly, 1, Decided::Otherwise)
+    );
+}
+
+/// Bali pratipada (p. 78): the later day when its 1st holds nine
+/// muhurtas, eighteen ghatis, past sunrise; else the day the new moon
+/// pierces.
+#[test]
+fn bali_pratipada_needs_nine_muhurtas_past_the_later_sunrise() {
+    let first = |to| {
+        one(
+            "BALI_PRATIPADA",
+            Tithi::ShuklaPratipada,
+            ghati(1, 30.0),
+            to,
+            Masa::Kartika,
+        )
+    };
+    assert_eq!(
+        first(ghati(2, 19.0)),
+        (Case::LaterOnly, 2, Decided::Guard { index: 0 })
+    );
+    assert_eq!(
+        first(ghati(2, 17.0)),
+        (Case::LaterOnly, 1, Decided::Otherwise)
+    );
+}
+
+/// Holika (p. 94): pradosha is ghatis 30 to 36 of the synthetic day; the
+/// later day whenever its pradosha holds any of the full moon.
+#[test]
+fn holika_takes_the_later_day_whenever_its_pradosha_holds_the_full_moon() {
+    let full = |from, to| one("HOLIKA", Tithi::Purnima, from, to, Masa::Phalguna);
+    assert_eq!(
+        full(ghati(1, 29.0), ghati(2, 37.0)),
+        (Case::Both, 2, Decided::Otherwise)
+    );
+    assert_eq!(
+        full(ghati(1, 32.0), ghati(2, 40.0)),
+        (Case::UnequalParts, 2, Decided::Otherwise)
+    );
+    assert_eq!(
+        full(ghati(1, 25.0), ghati(2, 28.0)),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 0 })
+    );
+    assert_eq!(
+        full(ghati(1, 37.0), ghati(2, 29.0)),
+        (Case::Neither, 1, Decided::Guard { index: 1 })
+    );
+}
+
+/// Holi in the hills keeps the Holika day and the Terai the day after,
+/// each carrying the facts of the Holika it counts from.
+#[test]
+fn a_following_rule_counts_days_from_the_observance_it_follows() {
+    let tithis = [
+        (Tithi::ShuklaChaturdashi, ghati(1, 25.0)),
+        (Tithi::Purnima, ghati(2, 28.0)),
+        (Tithi::KrishnaDvitiya, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &[], Masa::Phalguna, MonthKind::Nija);
+    let found = observances(&[shipped("HOLIKA")], &days).unwrap();
+    let holika = &found.observances[0];
+    assert_eq!(holika.day.day - 1, 1);
+    let counted = following(&FollowingRule::nepal(), &found.observances, &days).unwrap();
+    let days_of_each: Vec<(&str, u8)> = counted
+        .observances
+        .iter()
+        .map(|o| (o.rule.as_str(), o.day.day - 1))
+        .collect();
+    assert_eq!(days_of_each, [("HOLI_HILLS", 1), ("HOLI_TERAI", 2)]);
+    let terai = &counted.observances[1];
+    assert_eq!(
+        terai.decided_by,
+        Decided::After {
+            rule: "HOLIKA".to_owned(),
+            days: 1
+        }
+    );
+    assert_eq!((terai.tithi, terai.case), (holika.tithi, holika.case));
+    // Past the days given: unjudged, naming why.
+    let mut far = FollowingRule::nepal().remove(1);
+    far.days = 9;
+    let counted = following(&[far], &found.observances, &days).unwrap();
+    assert!(counted.observances.is_empty());
+    assert_eq!(counted.unjudged[0].rule, "HOLI_TERAI");
+}
+
+#[test]
+fn a_following_rule_that_cannot_be_judged_is_refused_by_its_field() {
+    let terai = FollowingRule::nepal().remove(1);
+    for (rule, field) in [
+        (
+            FollowingRule {
+                key: " ".to_owned(),
+                ..terai.clone()
+            },
+            "key",
+        ),
+        (
+            FollowingRule {
+                after: "HOLI_TERAI".to_owned(),
+                ..terai.clone()
+            },
+            "after",
+        ),
+        (
+            FollowingRule {
+                after: String::new(),
+                ..terai.clone()
+            },
+            "after",
+        ),
+        (
+            FollowingRule {
+                days: FollowingRule::MOST_DAYS + 1,
+                ..terai.clone()
+            },
+            "days",
+        ),
+    ] {
+        assert_eq!(rule.check().unwrap_err().field(), Some(field), "{rule:?}");
+    }
+    for rule in FollowingRule::nepal() {
+        rule.check().unwrap();
+    }
+}
+
 #[test]
 fn a_night_muhurta_outside_the_night_s_fifteen_is_refused() {
     for muhurta in [0, 16] {
@@ -668,8 +817,9 @@ fn string_paths(
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 14] = [
+    const NOT_MEMBERS: [&str; 15] = [
         "observances.rule",
+        "observances.decidedBy.rule",
         "observances.day.resolution.kind",
         "observances.extents.day.resolution.kind",
         "observances.case",
@@ -701,6 +851,13 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     for extent in &mut answer.observances[0].extents {
         extent.day.era = era;
     }
+    // A following rule's observance, so `decidedBy` is written whole.
+    let mut counted = answer.observances[0].clone();
+    counted.decided_by = Decided::After {
+        rule: "JANMASHTAMI".to_owned(),
+        days: 1,
+    };
+    answer.observances.push(counted);
     answer.unjudged.push(Unjudged {
         rule: "JANMASHTAMI".to_owned(),
         tithi: Interval::literal(0.0, 1.0),

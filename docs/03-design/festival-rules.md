@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's first four rules (§9) held to the committee's printed days. Written from the source
+Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's seven rules and two counted days (§9) held to the committee's printed days. Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -551,7 +551,7 @@ Two members, each closed:
   reports, so nothing is computed twice.
 
 The four rules join `FestivalRule::dharmasindhu()`, so the
-`DHARMASINDHU` pack carries eight karmakala rules. Each is held to its
+`DHARMASINDHU` pack carried eight karmakala rules (eleven since §9.4). Each is held to its
 page's clauses on synthetic sixty-ghati days
 (`crates/panchanga/tests/festival.rs`, proved red by breaking the
 predicate and the window). The forks:
@@ -589,3 +589,71 @@ follows the committee replaces the rule by its key.
 
 The Delhi pass founds February too now, so that the decade's reach
 counts Shivaratri.
+
+### 9.4 Holika, Rakshabandhan, Bali pratipada and the counted days
+
+Step 4's second batch: three more rules of the text, and the days the
+committee prints counted from another's. Read off the page images
+before any code.
+
+| rule | tithi | the text | window |
+|---|---|---|---|
+| `RAKSHABANDHAN` | Shravana full moon | p. 49: the full moon free of bhadra and holding sunrise for "more than three muhurtas" | sunrise |
+| `BALI_PRATIPADA` | Kartika bright 1st | p. 78: "all rites" on the later day when the 1st lasts ten muhurtas past sunrise; Bali's puja, the cows' play and Govardhan's puja on the earlier day, which the new moon pierces, when it does not last nine | sunrise |
+| `HOLIKA` | Phalguna full moon | p. 94: pradosha, free of bhadra; the later day whenever its pradosha holds any of the full moon, the earlier when the later's holds none | pradosha |
+
+Bhadra (the vishti karana) decides the hour of each rite, not its day:
+p. 94 lights the fire in pradosha free of bhadra, or, when bhadra runs
+past niśītha, within it but outside its mouth (mukha), and the
+committee prints the fire "at bhadra's end" (राति भद्रान्तमा चिरदाह). The hour is a later step; the
+almanac's karana spans already give vishti.
+
+**A day counted from another's.** The committee prints Holi in the hills
+on the Holika day and in the Terai on the day after (VS 2082 p. 23, VS
+2083 p. 25). The Terai's is not a tithi rule: the full moon still holds
+that day's sunrise, so a rule of the 1st would give the day after it.
+p. 95 says why the day after: the fire is lit at night and the ash
+honoured "the morning after", on the 1st. So:
+
+- `FollowingRule { key, source, after, days }`: an observance `days`
+  civil days (0 to 15) after the day of the karmakala rule `after`
+  names, whatever tithi runs then. A request reads one by its `after`,
+  as it reads an Ekadashi rule by its `vedha`.
+- It counts from a karmakala rule of the same request only: not from an
+  Ekadashi fast, nor from another counted day, so nothing chains and
+  nothing cycles. One counted from anything else is refused by its path
+  (`following[i].after`).
+- Its observance carries the tithi, case and extents of the one it
+  counts from, and `decidedBy` names that rule and the count
+  (`{by: AFTER, rule, days}`).
+- A request widens the days it founds beside the range by the most any
+  of its rules counts: before, so a day counted into the range finds
+  the observance it counts from; after, so an observance in the range
+  reaches its count.
+- The `NEPAL` pack is `DHARMASINDHU` with `HOLI_HILLS` (after `HOLIKA`,
+  0) and `HOLI_TERAI` (after `HOLIKA`, 1).
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C197 | Nepal keeping the tithi at sunrise where the text gives the earlier day | **the text's rules** | the udaya day, which the committee printed for Vijaya Dashami and Bali pratipada in VS 2083: a sunrise rule a consumer puts in place by its key |
+| C198 | how long Bali pratipada's 1st must last | **nine muhurtas** (18 ghatis), the clause naming the puja | ten (20 ghatis): a ghati count a consumer changes |
+| C199 | Holika when the full moon lasts three and a half yamas into the later day and the 1st grows | **not encoded**: no predicate measures the 1st's growth | a guard a consumer adds once one does |
+
+Rakshabandhan's "more than" three muhurtas is held as `Lasts`, which is
+"at least": the two part only on a full moon lasting exactly six ghatis
+past sunrise.
+
+**What the measuring found.** `festival-measured.md` §4 asks the `NEPAL`
+pack, and holds 25 printed days. Over the committee's sky 23 agree, and
+over the modern sky 21. Both Holis fall where the committee prints them
+in both years. The new parting under the committee's sky is Bali
+pratipada in VS 2083. The committee prints Govardhan puja on
+2026-11-10, though by its own print the 1st lasts only 15 ghatis 49
+palas past that sunrise, where p. 78 gives the earlier day. It is the
+second parting in VS 2083, and like Vijaya Dashami's it keeps the tithi
+at sunrise (C197). The modern sky gives the printed day there.
+
+The Delhi decade reached every new guard but one: Holika's second
+(the full moon touching neither pradosha), which a Phalguna meets only
+when the full moon is shorter than the day between them. The crate test
+reaches it.

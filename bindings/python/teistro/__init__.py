@@ -419,6 +419,7 @@ __all__ = [
     "MuhurtaFactor",
     "MuhurtaUnjudged",
     "MuhurtaPada",
+    "FestivalPack",
     "FestivalRequest",
     "FestivalAnswer",
     "FestivalObservance",
@@ -3095,18 +3096,26 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
+FestivalPack = Literal["DHARMASINDHU", "NEPAL"]
+"""A pack of festival rules the SDK ships: *Dharmasindhu*'s, or those and
+the days Nepal's national panchanga counts from them
+(`03-design/festival-rules.md` §9.4)."""
+
+
 class FestivalRequest(TypedDict):
     """Festival rules to reckon over an almanac's days
-    (`03-design/festival-rules.md` §7): `rules`, `"DHARMASINDHU"`, a pack the
+    (`03-design/festival-rules.md` §7): `rules`, a :data:`FestivalPack` the
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
-    `vedha`), a later rule replacing an earlier one with its key. A catalogue member may be a member, a full key or a
-    bare one.
+    `vedha`, a following rule when it has an `after`, which counts `days`
+    civil days from that festival rule's day), a later rule replacing an
+    earlier one with its key. A catalogue member may be a member, a full key
+    or a bare one.
 
-    >>> asked: FestivalRequest = {"rules": ["DHARMASINDHU"]}
+    >>> asked: FestivalRequest = {"rules": ["NEPAL", {"key": "TWO_AFTER", "source": "mine", "after": "LAKSHMI_PUJA", "days": 2}]}
     """
 
-    rules: Union[Literal["DHARMASINDHU"], Sequence[Union[Literal["DHARMASINDHU"], Mapping[str, Any]]]]
+    rules: Union[FestivalPack, Sequence[Union[FestivalPack, Mapping[str, Any]]]]
 
 
 @dataclass(frozen=True)
@@ -3122,11 +3131,18 @@ class FestivalExtent:
 @dataclass(frozen=True)
 class FestivalDecided:
     """What decided an observance's day: a guard, by its index in the
-    rule's list, or the rule's `otherwise`."""
+    rule's list, or the rule's `otherwise`; or, for a following rule, the
+    rule it counts from and how many days."""
 
-    by: Literal["GUARD", "OTHERWISE"]
+    by: Literal["GUARD", "OTHERWISE", "AFTER"]
     index: Optional[int]
-    """The guard's index; `None` when the rule's `otherwise` decided."""
+    """The guard's index; `None` unless a guard decided."""
+
+    rule: Optional[str] = None
+    """The rule counted from; `None` unless `by` is `AFTER`."""
+
+    days: Optional[int] = None
+    """The days counted; `None` unless `by` is `AFTER`."""
 
 
 @dataclass(frozen=True)
@@ -5415,7 +5431,12 @@ def _festivals_answer(text: str) -> FestivalAnswer:
             tithi=_interval(raw["tithi"]),
             case=raw["case"],
             extents=(extent(earlier), extent(later)),
-            decided_by=FestivalDecided(by=decided["by"], index=decided.get("index")),
+            decided_by=FestivalDecided(
+                by=decided["by"],
+                index=decided.get("index"),
+                rule=decided.get("rule"),
+                days=decided.get("days"),
+            ),
             choice=raw["choice"],
         )
 

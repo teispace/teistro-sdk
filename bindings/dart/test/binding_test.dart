@@ -1803,7 +1803,7 @@ void _engineTests() {
     final answer = almanac.festivals!;
     expect(
       [for (final observance in answer.observances) observance.rule],
-      ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA'],
+      ['VIJAYA_DASHAMI', 'LAKSHMI_PUJA', 'BALI_PRATIPADA'],
     );
     final dashami = answer.observances.first;
     expect(dashami.day.calendar, Calendar.gregorian);
@@ -1866,6 +1866,32 @@ void _engineTests() {
     );
     expect(moved.provenance.inputHash, isNot(answer.provenance.inputHash));
 
+    // Nepal's pack, and a day of the consumer's own counted two days from
+    // Lakshmi puja's: it names the rule it counts from and the count.
+    const following = <String, Object?>{
+      'key': 'TWO_AFTER',
+      'source': 'mine',
+      'after': 'LAKSHMI_PUJA',
+      'days': 2,
+    };
+    final counted =
+        days(
+          festivals: const FestivalRequest(
+            rules: [FestivalPack.nepal, following],
+          ),
+        ).festivals!;
+    final byRule = {for (final o in counted.observances) o.rule: o};
+    final (two, lakshmi) = (byRule['TWO_AFTER']!, byRule['LAKSHMI_PUJA']!);
+    expect(
+      two.decidedBy,
+      const FestivalDecided(by: 'AFTER', rule: 'LAKSHMI_PUJA', days: 2),
+    );
+    expect(two.day.day, lakshmi.day.day + 2);
+    expect(
+      (two.tithi.from, two.tithi.to),
+      (lakshmi.tithi.from, lakshmi.tithi.to),
+    );
+
     for (final (asked, field) in [
       (const FestivalRequest(rules: 'DHARMASINDHU'), 'festivals.rules'),
       (
@@ -1912,6 +1938,24 @@ void _engineTests() {
           ],
         ),
         'festivals.rules[1].vedha',
+      ),
+      (
+        const FestivalRequest(
+          rules: [
+            FestivalPack.dharmasindhu,
+            {'key': 'MINE', 'source': '', 'after': 'HOLIKA', 'days': 16},
+          ],
+        ),
+        'festivals.rules[1].days',
+      ),
+      (
+        const FestivalRequest(
+          rules: [
+            FestivalPack.dharmasindhu,
+            {'key': 'MINE', 'source': '', 'after': 'NOBODY', 'days': 1},
+          ],
+        ),
+        'festivals.following[0].after',
       ),
       (const FestivalRequest(rules: [1]), 'festivals.rules[0]'),
     ]) {
