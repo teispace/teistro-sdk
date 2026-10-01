@@ -3201,8 +3201,10 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                 report,
                 &key(&format!("-{k}")),
                 format!(
-                    "{} {}-{} {} {by} {} {} {} {}",
+                    "{} {} {} {}-{} {} {by} {} {} {} {}",
                     observance.rule,
+                    observance.month.full_key(),
+                    observance.adhika,
                     observance.day.month,
                     observance.day.day,
                     tag(&observance.case),

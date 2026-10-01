@@ -2649,6 +2649,8 @@ export type FestivalDayPart = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 
 /** The time of a rite. */
 export type FestivalWindow =
   | { readonly window: 'SUNRISE' }
+  /** The instant of sunset, which begins the evening; Nepal's monthly full-moon fast is judged there (C200). */
+  | { readonly window: 'SUNSET' }
   | { readonly window: 'PART'; readonly part: FestivalDayPart }
   | { readonly window: 'PRADOSHA' }
   | { readonly window: 'NISHITHA' }
@@ -2685,8 +2687,8 @@ export interface FestivalRule {
   readonly key: string;
   /** Where the rule is stated. */
   readonly source: string;
-  /** The month, under `convention`. */
-  readonly month: Masa;
+  /** The month, under `convention`; every month when left out, for a rite kept on the same tithi of each. */
+  readonly month?: Masa;
   /** The convention the month is named in; `'AMANTA'` by default. */
   readonly convention?: LunarMonth;
   /** The tithi; its paksha is the tithi's. */
@@ -2769,6 +2771,10 @@ export interface FestivalObservance {
   readonly day: CalendarDate;
   /** The tithi's occurrence judged. */
   readonly tithi: Interval;
+  /** Its amanta month, as an Ekadashi fast's is: which month's occurrence a rule kept every month decided. */
+  readonly month: Masa;
+  /** Whether that month is adhika. */
+  readonly adhika: boolean;
   readonly case: FestivalCase;
   /** The earlier day's extent and the later's. */
   readonly extents: readonly [FestivalExtent, FestivalExtent];

@@ -6116,6 +6116,8 @@ final class FestivalObservance extends _Value {
     required this.rule,
     required this.day,
     required this.tithi,
+    required this.month,
+    required this.adhika,
     required this.case_,
     required this.extents,
     required this.decidedBy,
@@ -6128,6 +6130,11 @@ final class FestivalObservance extends _Value {
 
   /// The tithi's occurrence judged.
   final Interval tithi;
+
+  /// Its amanta month, as an Ekadashi fast's is: which month's occurrence a
+  /// rule kept every month decided, and whether it is the adhika one.
+  final Masa month;
+  final bool adhika;
 
   /// How the tithi held the rite's time on its two days: `EARLIER_ONLY`,
   /// `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS` or `UNEQUAL_PARTS`;
@@ -6148,6 +6155,8 @@ final class FestivalObservance extends _Value {
     ..._dateFields(day),
     tithi.from,
     tithi.to,
+    month,
+    adhika,
     case_,
     extents.$1,
     extents.$2,
@@ -6284,6 +6293,8 @@ FestivalAnswer _festivalAnswer(String json) {
           rule: raw['rule']! as String,
           day: _serdeDate(at(raw['day'])),
           tithi: interval(raw['tithi']),
+          month: _key(raw['month'], Masa.byKey, Masa.unknown),
+          adhika: raw['adhika']! as bool,
           case_: raw['case']! as String,
           extents: switch (each(raw['extents'])) {
             [final earlier, final later] => (extent(earlier), extent(later)),

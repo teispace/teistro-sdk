@@ -2010,6 +2010,31 @@ void _engineTests() {
       (lakshmi.tithi.from, lakshmi.tithi.to),
     );
 
+    // Every observance says its month; Nepal's monthly full-moon fast is
+    // judged at the instant of sunset, and a rule of one's own kept every
+    // month leaves its month out.
+    expect((dashami.month, dashami.adhika), (Masa.ashwina, false));
+    final vrata = byRule['PURNIMA_VRATA']!;
+    expect(vrata.month, Masa.ashwina);
+    expect(vrata.extents.$1.window.from, vrata.extents.$1.window.to);
+    const everyMonth = <String, Object?>{
+      'key': 'EVERY_FULL_MOON',
+      'source': 'mine',
+      'tithi': 'tithi.PURNIMA',
+      'inAdhika': true,
+      'at': {'window': 'SUNSET'},
+      'decide': <Object?>[],
+      'otherwise': 'LATER',
+    };
+    final mine =
+        days(
+          festivals: const FestivalRequest(rules: [everyMonth]),
+        ).festivals!;
+    expect(
+      [for (final o in mine.observances) (o.rule, o.month)],
+      [('EVERY_FULL_MOON', Masa.ashwina)],
+    );
+
     for (final (asked, field) in [
       (const FestivalRequest(rules: 'DHARMASINDHU'), 'festivals.rules'),
       (

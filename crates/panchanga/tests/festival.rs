@@ -112,7 +112,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
     FestivalRule {
         key: "TEST".to_owned(),
         source: "a test".to_owned(),
-        month: Masa::Shravana,
+        month: Some(Masa::Shravana),
         convention: Convention::Amanta,
         tithi,
         in_adhika: false,
@@ -242,7 +242,7 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
         .unwrap()
         .observances
     );
-    purnimanta.month = Masa::Bhadrapada;
+    purnimanta.month = Some(Masa::Bhadrapada);
     assert_eq!(
         observances(
             &[purnimanta],
@@ -483,7 +483,9 @@ fn one_of(
 #[test]
 fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
     let (text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
-    assert_eq!(text.len(), nepal.len());
+    // The text's rules, then the monthly full-moon fast no text states.
+    assert_eq!(text.len() + 1, nepal.len());
+    assert_eq!(nepal.last().map(|rule| rule.key.as_str()), Some("PURNIMA_VRATA"));
     for (text, nepal) in text.iter().zip(&nepal) {
         if text.at.in_daylight() {
             assert_eq!(*nepal, text.clone().udaya(), "{}", text.key);
@@ -516,6 +518,108 @@ fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
         janai(&find(&nepal)),
         (Case::LaterOnly, 2, Decided::Guard { index: 0 })
     );
+}
+
+fn purnima_vrata() -> FestivalRule {
+    FestivalRule::nepal()
+        .into_iter()
+        .find(|rule| rule.key == "PURNIMA_VRATA")
+        .unwrap()
+}
+
+/// The full moon from `from` to `to` in a month named `amanta` of `kind`,
+/// judged by Nepal's monthly fast: the case, the day (1-based) and the
+/// month the observance reports.
+fn full_moon(from: f64, to: f64, amanta: Masa, kind: MonthKind) -> (Case, u8, Masa, bool) {
+    let tithis = [
+        (Tithi::ShuklaTrayodashi, ghati(0, 20.0)),
+        (Tithi::ShuklaChaturdashi, from),
+        (Tithi::Purnima, to),
+        (Tithi::KrishnaPratipada, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &[], amanta, kind);
+    let answer = observances(&[purnima_vrata()], &days).unwrap();
+    let [observance] = answer.observances.as_slice() else {
+        panic!("one full moon, not {:?}", answer.observances);
+    };
+    (
+        observance.case,
+        observance.day.day - 1,
+        observance.month,
+        observance.adhika,
+    )
+}
+
+/// Nepal's monthly full-moon fast (§9.6, C200), on each shape the
+/// committee's 24 printed rows take: a sunset is ghati 30 of its day.
+#[test]
+fn the_full_moon_fast_keeps_the_evening_the_full_moon_holds_the_later_first() {
+    let shravana = |from, to| full_moon(from, to, Masa::Shravana, MonthKind::Nija);
+    // Shravana 2082: begun before the earlier sunset, ended before the later.
+    assert_eq!(
+        shravana(ghati(1, 20.0), ghati(2, 18.0)),
+        (Case::EarlierOnly, 1, Masa::Shravana, false)
+    );
+    // Vaishakha 2082: begun after the earlier sunset, past the later.
+    assert_eq!(
+        shravana(ghati(1, 33.0), ghati(2, 35.0)),
+        (Case::LaterOnly, 2, Masa::Shravana, false)
+    );
+    // Ashadha 2083: both sunsets, the later.
+    assert_eq!(
+        shravana(ghati(1, 28.0), ghati(2, 33.0)),
+        (Case::Both, 2, Masa::Shravana, false)
+    );
+    // Pausha 2082: begun after the earlier sunset, ended before the later;
+    // neither, so the later, though it touched the earlier's pradosha.
+    assert_eq!(
+        shravana(ghati(1, 33.0), ghati(2, 28.0)),
+        (Case::Neither, 2, Masa::Shravana, false)
+    );
+    // Margashirsha 2082: kshaya, inside the earlier day, which it keeps.
+    assert_eq!(
+        shravana(ghati(1, 3.0), ghati(1, 58.0)),
+        (Case::EarlierOnly, 1, Masa::Shravana, false)
+    );
+}
+
+/// The fast is kept every month, the adhika month too, as the committee
+/// prints it in VS 2083's adhika Jyeshtha, and the observance says which.
+#[test]
+fn the_full_moon_fast_is_kept_every_month_and_says_which() {
+    assert_eq!(
+        full_moon(ghati(1, 20.0), ghati(2, 18.0), Masa::Kartika, MonthKind::Nija),
+        (Case::EarlierOnly, 1, Masa::Kartika, false)
+    );
+    assert_eq!(
+        full_moon(ghati(1, 20.0), ghati(2, 18.0), Masa::Jyeshtha, MonthKind::Adhika),
+        (Case::EarlierOnly, 1, Masa::Jyeshtha, true)
+    );
+    // The window is an instant of the evening, so Nepal keeps the rule as
+    // it stands rather than reading it at sunrise.
+    assert!(!Window::Sunset.in_daylight());
+    // A rule naming its month still keeps only that one.
+    let mut kartika_only = purnima_vrata();
+    kartika_only.month = Some(Masa::Kartika);
+    let tithis = [
+        (Tithi::ShuklaChaturdashi, ghati(1, 20.0)),
+        (Tithi::Purnima, ghati(2, 18.0)),
+        (Tithi::KrishnaPratipada, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &[], Masa::Shravana, MonthKind::Nija);
+    assert!(observances(&[kartika_only], &days).unwrap().observances.is_empty());
+}
+
+/// A rule spelt out without a month is kept every month, and one written
+/// back out leaves the month out rather than writing a null.
+#[test]
+fn a_rule_without_a_month_reads_and_writes_without_one() {
+    let rule = purnima_vrata();
+    let written = serde_json::to_value(&rule).unwrap();
+    assert!(written.get("month").is_none(), "{written}");
+    assert_eq!(serde_json::from_value::<FestivalRule>(written).unwrap(), rule);
+    let sunset = serde_json::to_value(Window::Sunset).unwrap();
+    assert_eq!(sunset, serde_json::json!({ "window": "SUNSET" }));
 }
 
 /// Haritalika (p. 55): the later day whenever its sunrise holds the 3rd,

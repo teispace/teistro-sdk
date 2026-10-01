@@ -3188,6 +3188,13 @@ class FestivalObservance:
     tithi: Interval
     """The tithi's occurrence judged."""
 
+    month: Masa
+    """Its amanta month, as an Ekadashi fast's is: which month's
+    occurrence a rule kept every month decided."""
+
+    adhika: bool
+    """Whether that month is adhika."""
+
     case: str
     """How the tithi held the rite's time on its two days: `EARLIER_ONLY`,
     `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS` or `UNEQUAL_PARTS`."""
@@ -5499,6 +5506,8 @@ def _festivals_answer(text: str) -> FestivalAnswer:
             rule=raw["rule"],
             day=_serde_date(raw["day"]),
             tithi=_interval(raw["tithi"]),
+            month=_member(Masa, raw["month"]),
+            adhika=raw["adhika"],
             case=raw["case"],
             extents=(extent(earlier), extent(later)),
             decided_by=FestivalDecided(

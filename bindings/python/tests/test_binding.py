@@ -1696,6 +1696,26 @@ class AnEngine(WithLibrary):
             self.assertEqual(two.day.day, lakshmi.day.day + 2)
             self.assertEqual(two.tithi, lakshmi.tithi)
 
+            # Every observance says its month; Nepal's monthly full-moon fast
+            # is judged at the instant of sunset, and a rule of one's own kept
+            # every month leaves its month out.
+            self.assertEqual((dashami.month, dashami.adhika), (Masa.ASHWINA, False))
+            vrata = by_rule["PURNIMA_VRATA"]
+            self.assertEqual(vrata.month, Masa.ASHWINA)
+            self.assertEqual(vrata.extents[0].window.from_jd, vrata.extents[0].window.to_jd)
+            every_month = {
+                "key": "EVERY_FULL_MOON",
+                "source": "mine",
+                "tithi": "tithi.PURNIMA",
+                "inAdhika": True,
+                "at": {"window": "SUNSET"},
+                "decide": [],
+                "otherwise": "LATER",
+            }
+            mine = ctx.almanac.of(**days, festivals={"rules": [every_month]}).festivals
+            assert mine is not None
+            self.assertEqual([(o.rule, o.month) for o in mine.observances], [("EVERY_FULL_MOON", Masa.ASHWINA)])
+
             refusals: list[tuple[FestivalRequest, str]] = [
                 ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),

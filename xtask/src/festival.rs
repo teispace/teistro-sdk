@@ -34,6 +34,7 @@ use crate::measure::{Claim, table};
 
 mod ekadashi;
 mod nepal;
+mod purnima;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
 
@@ -397,12 +398,14 @@ fn page() -> Result<String, String> {
         .map_err(|e| e.to_string())?;
     let fasts = ekadashi::compare(&context, request.ekadashis(), &years, &mut problems);
     let nepal = nepal::compare(&mut problems)?;
+    let full_moons = purnima::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
     let mut out = render(rules, &rows, &cases, &decided);
     ekadashi::render(&mut out, &fasts);
     nepal::render(&mut out, &nepal);
+    purnima::render(&mut out, &full_moons);
     Ok(out)
 }
 

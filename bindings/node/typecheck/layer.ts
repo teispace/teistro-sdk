@@ -53,7 +53,7 @@ import type {
   Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Ayanamsha, Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
+import type { Ayanamsha, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance } from '../lib/index.js';
 
@@ -741,7 +741,9 @@ function theFestivals(almanac: Almanac): string {
           ? `${decided.days} after ${decided.rule}`
           : 'otherwise';
     const [earlier, later] = o.extents;
-    return `${o.rule} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
+    const month: Masa = o.month;
+    const adhika: boolean = o.adhika;
+    return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
   });
   const fasts = answer.ekadashis.map((fast) => {
     const [first, second] = fast.days;
@@ -784,9 +786,22 @@ function theFestivals(almanac: Almanac): string {
     ],
     otherwise: 'LATER',
   };
+  // A full moon kept every month, judged at the instant of sunset: a rule
+  // that names no month is kept in each.
+  const everyMonth: FestivalRule = {
+    key: 'EVERY_FULL_MOON',
+    source: 'mine',
+    tithi: 'tithi.PURNIMA',
+    inAdhika: true,
+    at: { window: 'SUNSET' },
+    decide: [{ when: [{ is: 'CASE', case: 'EARLIER_ONLY' }], choose: 'EARLIER' }],
+    otherwise: 'LATER',
+  };
+  // @ts-expect-error a month is a member, not a number
+  const numbered: FestivalRule = { ...everyMonth, month: 5 };
   // The Terai's Holi, a day after the Holika fire.
   const terai: FollowingRule = { key: 'HOLI_TERAI', source: 'the committee', after: 'HOLIKA', days: 1 };
-  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, terai] };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, everyMonth, terai] };
   const pack: FestivalPack = 'NEPAL';
   // @ts-expect-error a following rule counts days, a number
   const spelt: FollowingRule = { ...terai, days: 'one' };
@@ -796,7 +811,7 @@ function theFestivals(almanac: Almanac): string {
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), pack, String(spelt), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), String(numbered), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;
