@@ -806,8 +806,14 @@ measured against Nepal before it is called done:
    almanac day (`Panchanga::nepal_sambat`), answered beside the days in
    every binding and said by `sdk.calendar` messages. All 51 headers of
    VS 2082 and 2083 agree over the committee's sky
-   (`nepal-sambat-measured.md`). C201 and C202 wait on a print. Next:
-   the saait packs.
+   (`nepal-sambat-measured.md`). C201 and C202 wait on a print.
+   **Saait packs built 2026-10-01** (`muhurta.md` §4.6): Raman's naming,
+   first feeding, thread ceremony and house entry, with unwanted
+   placements where a "must" bars and a "should" weighs (C205). Against
+   the committee's VS 2083 sheet (`saait-measured.md`), every readable
+   bratabandha and griha pravesh day is clean and 24 of 35 pasni days
+   are; Raman's marriage keeps 5 of 39 vivaha days, so Nepal's marriage
+   waits on *Muhurta Chintamani* (C206). **Step 5 is done.**
 
 Then the two traditions ADR-0025 moved into v1, which are profiles over
 the same machinery rather than new mechanisms:

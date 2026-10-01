@@ -21,7 +21,7 @@ use crate::window::navamsa_of;
 
 /// The nine grahas, in the catalogue's order, which is the order of
 /// [`Sky::grahas`].
-const GRAHAS: [Graha; 9] = [
+pub(crate) const GRAHAS: [Graha; 9] = [
     Graha::Sun,
     Graha::Moon,
     Graha::Mars,
@@ -34,7 +34,7 @@ const GRAHAS: [Graha; 9] = [
 ];
 
 /// The natural malefics.
-const MALEFICS: [Graha; 5] = [
+pub(crate) const MALEFICS: [Graha; 5] = [
     Graha::Sun,
     Graha::Mars,
     Graha::Saturn,
@@ -122,7 +122,7 @@ impl Sky {
     }
 
     /// The grahas of a list that stand in a house.
-    fn in_house(&self, house: u8, among: &[Graha]) -> Vec<Graha> {
+    pub(crate) fn in_house(&self, house: u8, among: &[Graha]) -> Vec<Graha> {
         among
             .iter()
             .copied()

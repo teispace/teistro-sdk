@@ -111,6 +111,8 @@ jobs:
         run: cargo xtask check-kp
       - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)
         run: cargo xtask check-muhurta
+      - name: Saait page (the committee's VS 2083 muhurta sheet, row by row, against the four rites' rules under its sky and the modern one, and the days of the year each rite leaves open)
+        run: cargo xtask check-saait
       - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
         run: cargo xtask check-festival
       - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)

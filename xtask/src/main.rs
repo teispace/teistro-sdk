@@ -132,6 +132,9 @@
 //! - `nepal-sambat` and `check-nepal-sambat`: the committee's 51 page
 //!   headers against each page's first day said in Nepali, and the year's
 //!   count against the almanac's own lunar years over six centuries.
+//! - `saait` and `check-saait`: the rites beyond marriage, and Raman's
+//!   marriage, against the days the panchanga committee's VS 2083 muhurta
+//!   sheet printed for them, over its sky and the modern one.
 //! - `samvatsara` and `check-samvatsara`: the sixty-year cycle, the text's
 //!   worked example, the years Nepal's committee named against the shipped
 //!   count and its rivals, and six centuries of years at Kathmandu.
@@ -283,6 +286,7 @@ mod rule_doc;
 mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
+mod saait;
 mod sade_sati;
 mod samvatsara;
 mod schema;
@@ -348,6 +352,7 @@ const PASSES: &[Pass] = &[
         nepal_sambat::generate,
         nepal_sambat::check_generated,
     ),
+    ("saait", saait::generate, saait::check_generated),
     (
         "samvatsara",
         samvatsara::generate,

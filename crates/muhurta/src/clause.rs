@@ -195,6 +195,16 @@ pub enum ClauseKind {
         /// The benefics in a kendra.
         grahas: Vec<Graha>,
     },
+    /// Grahas standing in a house the rite wants them out of, as its
+    /// rules' `unwanted` list names them: an 8th that should be
+    /// unoccupied, Mars and Saturn out of the 5th. One clause a house,
+    /// whichever entries of the list named it.
+    UnwantedPlacement {
+        /// The house, 1 to 12.
+        house: u8,
+        /// The grahas in it the rules name, in the catalogue's order.
+        by: Vec<Graha>,
+    },
 }
 
 /// Which clause, without what it found: the name a rule uses to point at
@@ -265,13 +275,15 @@ pub enum ClauseKey {
     LuminaryInEleventh,
     /// [`ClauseKind::KendraBenefics`].
     KendraBenefics,
+    /// [`ClauseKind::UnwantedPlacement`].
+    UnwantedPlacement,
 }
 
 impl ClauseKey {
     /// Every key, in declaration order, so a caller can say which kinds a
     /// search reached and which it did not. A key added is appended here
     /// too: the test below holds each entry to its declared position.
-    pub const ALL: [ClauseKey; 30] = [
+    pub const ALL: [ClauseKey; 31] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -302,6 +314,7 @@ impl ClauseKey {
         ClauseKey::ExaltedInLagna,
         ClauseKey::LuminaryInEleventh,
         ClauseKey::KendraBenefics,
+        ClauseKey::UnwantedPlacement,
     ];
 }
 
@@ -340,6 +353,7 @@ impl ClauseKind {
             ClauseKind::ExaltedInLagna { .. } => ClauseKey::ExaltedInLagna,
             ClauseKind::LuminaryInEleventh { .. } => ClauseKey::LuminaryInEleventh,
             ClauseKind::KendraBenefics { .. } => ClauseKey::KendraBenefics,
+            ClauseKind::UnwantedPlacement { .. } => ClauseKey::UnwantedPlacement,
         }
     }
 

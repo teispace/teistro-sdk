@@ -477,6 +477,8 @@ __all__ = [
     "ExaltedInLagnaClause",
     "LuminaryInEleventhClause",
     "KendraBeneficsClause",
+    "UnwantedPlacementClause",
+    "MuhurtaActivity",
     "KpChart",
     "KpCusp",
     "KpPlanet",
@@ -2707,11 +2709,23 @@ class MuhurtaNative(TypedDict, total=False):
     lagna: Optional[Union[Rashi, str]]
 
 
+MuhurtaActivity = Literal[
+    "RAMAN_MARRIAGE",
+    "BASELINE_MARRIAGE",
+    "RAMAN_NAMAKARANA",
+    "RAMAN_ANNAPRASANA",
+    "RAMAN_UPANAYANA",
+    "RAMAN_GRIHA_PRAVESHA",
+]
+"""A set of rules the SDK ships, which a muhurta request names as `rules`."""
+
+
 class MuhurtaRequest(TypedDict, total=False):
     """A muhurta search to run over an almanac's days
     (`03-design/muhurta-at-the-boundary.md`), only `rules` required:
-    `"RAMAN_MARRIAGE"` or `"BASELINE_MARRIAGE"`, a set the SDK ships, or rules
-    spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
+    a set the SDK ships by name (`"RAMAN_MARRIAGE"`, `"BASELINE_MARRIAGE"`,
+    `"RAMAN_NAMAKARANA"`, `"RAMAN_ANNAPRASANA"`, `"RAMAN_UPANAYANA"`,
+    `"RAMAN_GRIHA_PRAVESHA"`), or rules spelt out as a mapping; `native`; `ranking`, `"TEXTS"` (the default,
     C162) or `"BASELINE"`; `daysWithWindows` (7) and `most` (50); and `asta`,
     `"SURYA_SIDDHANTA"` (the default), `"COMBUSTION_ORB"`, `"PTOLEMY"` or a
     criterion spelt out. A catalogue member may be a member, a full key or a
@@ -2720,7 +2734,7 @@ class MuhurtaRequest(TypedDict, total=False):
     >>> asked: MuhurtaRequest = {"rules": "RAMAN_MARRIAGE", "daysWithWindows": 3}
     """
 
-    rules: Required[Union[Literal["RAMAN_MARRIAGE", "BASELINE_MARRIAGE"], Mapping[str, Any]]]
+    rules: Required[Union[MuhurtaActivity, Mapping[str, Any]]]
     native: MuhurtaNative
     ranking: Literal["TEXTS", "BASELINE"]
     daysWithWindows: int
@@ -3006,6 +3020,16 @@ class KendraBeneficsClause(MuhurtaClauseKind):
 
     CLAUSE: ClassVar[str] = "KENDRA_BENEFICS"
     grahas: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class UnwantedPlacementClause(MuhurtaClauseKind):
+    """Grahas standing in a house the rite's rules want them out of, as
+    their `unwanted` list names them: one clause a house."""
+
+    CLAUSE: ClassVar[str] = "UNWANTED_PLACEMENT"
+    house: int
+    by: Tuple[Graha, ...]
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(

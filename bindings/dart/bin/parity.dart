@@ -122,6 +122,14 @@ void putMuhurta(String prefix, MuhurtaAnswer answer) {
       window.clauses.map((c) => c.kind.clause).join(' '),
     );
     put('$prefix-$k-bars', listed(window.barredBy.map((bar) => bar.clause)));
+    put(
+      '$prefix-$k-placed',
+      listed([
+        for (final c in window.clauses)
+          if (c.kind case UnwantedPlacementClause(:final house, :final by))
+            '$house:${by.map((g) => g.fullKey).join(',')}',
+      ]),
+    );
     final score = window.score;
     put(
       '$prefix-$k-score',
@@ -1291,10 +1299,12 @@ void main() {
 
   // ── A muhurta search ─────────────────────────────────────────────────
   // Both rankings over 2024-11-25..27: the texts bar the windows for
-  // different reasons and the baseline scores them.
+  // different reasons and the baseline scores them; and a thread ceremony,
+  // whose rules want grahas out of houses.
   for (final (name, rules, ranking) in [
     ('raman', MuhurtaActivity.ramanMarriage, MuhurtaRanking.texts),
     ('baseline', MuhurtaActivity.baselineMarriage, MuhurtaRanking.baseline),
+    ('upanayana', MuhurtaActivity.ramanUpanayana, MuhurtaRanking.texts),
   ]) {
     final muhurta =
         geo.almanac

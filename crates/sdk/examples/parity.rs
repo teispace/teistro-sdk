@@ -3464,18 +3464,61 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
     }
 }
 
+/// A muhurta window's unwanted placements, as the report prints them.
+fn placed(window: &teistro::muhurta::Judgement) -> String {
+    listed(
+        window
+            .clauses
+            .iter()
+            .filter_map(|clause| match &clause.kind {
+                teistro::muhurta::ClauseKind::UnwantedPlacement { house, by } => Some(format!(
+                    "{house}:{}",
+                    by.iter()
+                        .map(|g| g.full_key())
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )),
+                _ => None,
+            }),
+    )
+}
+
+/// A muhurta window's score, as the report prints it.
+fn scored(window: &teistro::muhurta::Judgement) -> String {
+    window.score.as_ref().map_or_else(
+        || "none".to_owned(),
+        |score| {
+            format!(
+                "{} {} {}",
+                score.value,
+                score
+                    .capped_at
+                    .map_or_else(|| "none".to_owned(), |cap| cap.to_string()),
+                listed(score.factors.iter().map(|factor| format!(
+                    "{}:{}:{}",
+                    tag(&factor.dimension),
+                    factor.weight,
+                    factor.graha.map_or("none", |graha| graha.full_key()),
+                ))),
+            )
+        },
+    )
+}
+
 /// The muhurta search a panchanga request carries, under both rankings,
 /// as the report prints it.
 ///
 /// 2024-11-25..27 at the test provider: the texts bar all of the day's
 /// windows for different reasons, and the baseline scores them, so both
-/// the bars and the scores cross every layer.
+/// the bars and the scores cross every layer; and a thread ceremony,
+/// whose unwanted placements cross with their houses and grahas.
 fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 25);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 27);
     for (name, rules, ranking) in [
         ("raman", "RAMAN_MARRIAGE", "TEXTS"),
         ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
+        ("upanayana", "RAMAN_UPANAYANA", "TEXTS"),
     ] {
         let asked = teistro::MuhurtaRequest::from_json(&format!(
             r#"{{"rules":"{rules}","ranking":"{ranking}","native":{{"star":"ROHINI","moonSign":"TAURUS","lagna":"LEO"}},"daysWithWindows":3,"most":12}}"#
@@ -3537,28 +3580,8 @@ fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                     teistro::muhurta::Bar::Clause(kind) => tag(&kind.key()),
                 })),
             );
-            put(
-                report,
-                &key(&format!("{at}-score")),
-                window.score.as_ref().map_or_else(
-                    || "none".to_owned(),
-                    |score| {
-                        format!(
-                            "{} {} {}",
-                            score.value,
-                            score
-                                .capped_at
-                                .map_or_else(|| "none".to_owned(), |cap| cap.to_string()),
-                            listed(score.factors.iter().map(|factor| format!(
-                                "{}:{}:{}",
-                                tag(&factor.dimension),
-                                factor.weight,
-                                factor.graha.map_or("none", |graha| graha.full_key()),
-                            ))),
-                        )
-                    },
-                ),
-            );
+            put(report, &key(&format!("{at}-placed")), placed(window));
+            put(report, &key(&format!("{at}-score")), scored(window));
         }
         for (j, day) in answer.closed.iter().enumerate() {
             put(

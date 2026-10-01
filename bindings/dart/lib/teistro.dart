@@ -4847,7 +4847,19 @@ enum MuhurtaActivity {
 
   /// A marriage by the baseline engine's gates and weights, which the
   /// [MuhurtaRanking.baseline] ranking reads.
-  baselineMarriage('BASELINE_MARRIAGE');
+  baselineMarriage('BASELINE_MARRIAGE'),
+
+  /// Naming the child, Nepal's nwaran, by Raman.
+  ramanNamakarana('RAMAN_NAMAKARANA'),
+
+  /// The first feeding on rice, Nepal's pasni, by Raman.
+  ramanAnnaprasana('RAMAN_ANNAPRASANA'),
+
+  /// The thread ceremony, Nepal's bratabandha, by Raman.
+  ramanUpanayana('RAMAN_UPANAYANA'),
+
+  /// Entering a new house, Nepal's griha pravesh, by Raman.
+  ramanGrihaPravesha('RAMAN_GRIHA_PRAVESHA');
 
   const MuhurtaActivity(this.key);
 
@@ -5642,6 +5654,29 @@ final class KendraBeneficsClause extends MuhurtaClauseKind {
   };
 }
 
+/// Grahas standing in a house the rite's rules want them out of, as their
+/// `unwanted` list names them: one clause a house.
+final class UnwantedPlacementClause extends MuhurtaClauseKind {
+  const UnwantedPlacementClause({required this.house, required this.by});
+
+  /// The house, 1 to 12 from the lagna.
+  final int house;
+  final List<Graha> by;
+
+  @override
+  String get clause => 'UNWANTED_PLACEMENT';
+
+  @override
+  List<Object?> get _fields => [house, by];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'house': house,
+    'by': [for (final member in by) member.fullKey],
+  };
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -5735,6 +5770,10 @@ MuhurtaClauseKind _clauseKind(
   ),
   'KENDRA_BENEFICS' => KendraBeneficsClause(
     grahas: _keys(raw['grahas'], Graha.byKey, Graha.unknown),
+  ),
+  'UNWANTED_PLACEMENT' => UnwantedPlacementClause(
+    house: raw['house']! as int,
+    by: _keys(raw['by'], Graha.byKey, Graha.unknown),
   ),
   final tag =>
     throw StateError(

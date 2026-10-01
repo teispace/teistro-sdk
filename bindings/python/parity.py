@@ -34,6 +34,7 @@ from teistro import (
     MuhurtaAnswer,
     MuhurtaNative,
     MuhurtaRequest,
+    UnwantedPlacementClause,
     VarshaRequest,
     DashaDefinition,
     Altitude,
@@ -122,6 +123,14 @@ def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
         put(
             f"{prefix}-{k}-bars",
             listed(bar if isinstance(bar, str) else bar.CLAUSE for bar in window.barred_by),
+        )
+        put(
+            f"{prefix}-{k}-placed",
+            listed(
+                f"{c.kind.house}:{','.join(g.full_key for g in c.kind.by)}"
+                for c in window.clauses
+                if isinstance(c.kind, UnwantedPlacementClause)
+            ),
         )
         score = window.score
         put(
@@ -1182,11 +1191,13 @@ def main() -> None:
 
         # ── A muhurta search ──────────────────────────────────────────
         # Both rankings over 2024-11-25..27: the texts bar the windows
-        # for different reasons and the baseline scores them.
+        # for different reasons and the baseline scores them; and a
+        # thread ceremony, whose rules want grahas out of houses.
         native: MuhurtaNative = {"star": "ROHINI", "moonSign": "TAURUS", "lagna": "LEO"}
         searches: tuple[tuple[str, MuhurtaRequest], ...] = (
             ("raman", {"rules": "RAMAN_MARRIAGE", "ranking": "TEXTS"}),
             ("baseline", {"rules": "BASELINE_MARRIAGE", "ranking": "BASELINE"}),
+            ("upanayana", {"rules": "RAMAN_UPANAYANA", "ranking": "TEXTS"}),
         )
         for name, search in searches:
             muhurta = geo.almanac.of(

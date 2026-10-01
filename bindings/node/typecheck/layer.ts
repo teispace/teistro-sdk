@@ -42,6 +42,7 @@ import type {
   MuhurtaAnswer,
   MuhurtaBar,
   MuhurtaRequest,
+  MuhurtaUnwanted,
   PositionsRequest,
   RashiDashaDefinition,
   RuleRequest,
@@ -821,6 +822,8 @@ function theMuhurta(almanac: Almanac): string {
           return `${clause.navamsa} ${clause.lord}`;
         case 'KENDRA_BENEFICS':
           return clause.grahas.join();
+        case 'UNWANTED_PLACEMENT':
+          return `${clause.house} ${clause.by.join()}`;
         default:
           return clause.clause;
       }
@@ -845,8 +848,12 @@ function theMuhurta(almanac: Almanac): string {
   const wrong: MuhurtaBar = { clause: 'MUHURTA_YOGA', yoga: 'yoga.SIDDHI' };
   // @ts-expect-error a shipped set is named, not guessed
   const guessed: MuhurtaRequest = { rules: 'RAMAN' };
+  const thread: MuhurtaRequest = { rules: 'RAMAN_UPANAYANA' };
+  const unwanted: MuhurtaUnwanted = { grahas: ['graha.MARS', 'graha.SATURN'], houses: [2, 5, 12], bars: true };
+  // @ts-expect-error a house is a number, not a sign
+  const misplaced: MuhurtaUnwanted = { grahas: ['graha.MARS'], houses: ['ARIES'] };
   const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
-  return [...windows, ...closed, ...closedBy, JSON.stringify(bar), JSON.stringify(asked), String(wrong), String(guessed), ...knobs, answer.daysJudged, answer.unjudged.map((u) => u.what)].join();
+  return [...windows, ...closed, ...closedBy, JSON.stringify(bar), JSON.stringify(asked), String(wrong), String(guessed), JSON.stringify(thread), JSON.stringify(unwanted), String(misplaced), ...knobs, answer.daysJudged, answer.unjudged.map((u) => u.what)].join();
 }
 
 void theMuhurta;

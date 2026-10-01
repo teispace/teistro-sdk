@@ -2140,6 +2140,22 @@ test('an almanac carries the muhurta search it was asked for', () => {
     );
   }
   assert.throws(() => ctx.almanac.of({ ...days, muhurta: 'RAMAN_MARRIAGE' }), TypeError);
+
+  // A rite beyond marriage, by name: its unwanted placements come back
+  // with their house and their grahas in full, and an 8th the thread
+  // ceremony says must be empty bars the window as its own clause.
+  const thread = ctx.almanac.of({ ...days, muhurta: { rules: 'RAMAN_UPANAYANA', daysWithWindows: 9, most: 1000 } }).muhurta;
+  const placed = thread.windows.flatMap((w) => w.clauses).filter((c) => c.clause === 'UNWANTED_PLACEMENT');
+  assert.ok(placed.length > 0);
+  assert.ok(placed.every((c) => c.house >= 1 && c.house <= 12 && c.by.every((g) => g.startsWith('graha.'))));
+  const eighth = thread.windows.flatMap((w) => w.barredBy).filter((b) => typeof b !== 'string' && b.clause === 'UNWANTED_PLACEMENT');
+  assert.ok(eighth.every((b) => b.house === 8), JSON.stringify(eighth));
+  // A house that does not exist is refused at its field.
+  const nowhere = { ...rules, unwanted: [{ grahas: ['MARS'], houses: [13] }] };
+  assert.throws(
+    () => ctx.almanac.of({ ...days, muhurta: { rules: nowhere } }),
+    (error) => error instanceof TeistroError && error.field === 'muhurta.rules.unwanted[0].houses',
+  );
   ctx.dispose();
 });
 

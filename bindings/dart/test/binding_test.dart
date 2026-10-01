@@ -1575,6 +1575,57 @@ void _engineTests() {
         reason: field,
       );
     }
+
+    // A rite beyond marriage, by name: its unwanted placements come back
+    // typed, and the 8th the thread ceremony says must be empty bars as
+    // itself.
+    final thread =
+        days(
+          muhurta: const MuhurtaRequest(
+            rules: MuhurtaActivity.ramanUpanayana,
+            daysWithWindows: 9,
+            most: 1000,
+          ),
+        ).muhurta!;
+    final placed = [
+      for (final window in thread.windows)
+        for (final clause in window.clauses)
+          if (clause.kind case final UnwantedPlacementClause placement)
+            placement,
+    ];
+    expect(placed, isNotEmpty);
+    expect(
+      placed.every((p) => p.house >= 1 && p.house <= 12 && p.by.isNotEmpty),
+      isTrue,
+    );
+    final barring = [
+      for (final window in thread.windows)
+        for (final bar in window.barredBy)
+          if (bar case final UnwantedPlacementClause placement) placement,
+    ];
+    expect(barring.every((b) => b.house == 8), isTrue);
+    expect(
+      () => days(
+        muhurta: MuhurtaRequest(
+          rules: {
+            ...rules,
+            'unwanted': [
+              {
+                'grahas': ['MARS'],
+                'houses': [13],
+              },
+            ],
+          },
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'muhurta.rules.unwanted[0].houses',
+        ),
+      ),
+    );
     ctx.dispose();
   });
 

@@ -1401,7 +1401,9 @@ final class PanchangaRequestStruct extends ffi.Struct {
 
   /// A muhurta search over the same days, as a JSON object: `rules`,
   /// the activity's rules spelt out or a shipped set named
-  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`, `RAMAN_NAMAKARANA`,
+  /// `RAMAN_ANNAPRASANA`, `RAMAN_UPANAYANA`, `RAMAN_GRIHA_PRAVESHA`); and,
+  /// each optional,
   /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
   /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
   /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
@@ -3727,7 +3729,9 @@ final class PanchangaRequest {
 
   /// A muhurta search over the same days, as a JSON object: `rules`,
   /// the activity's rules spelt out or a shipped set named
-  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`); and, each optional,
+  /// (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`, `RAMAN_NAMAKARANA`,
+  /// `RAMAN_ANNAPRASANA`, `RAMAN_UPANAYANA`, `RAMAN_GRIHA_PRAVESHA`); and,
+  /// each optional,
   /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
   /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),
   /// `most` (50) and `asta`, the criterion Venus's and Jupiter's
