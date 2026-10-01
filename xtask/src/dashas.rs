@@ -234,18 +234,18 @@ fn records(root: &Path) -> Result<Vec<Record>, String> {
                 .as_object()
                 .ok_or_else(|| at(String::from("methods is not an object")))?
                 .iter()
-                .map(|(method_name, value)| method(method_name, value).map_err(&at))
+                .map(|(method_name, value)| method(method_name, value).map_err(at))
                 .collect::<Result<Vec<_>, String>>()?;
             found.push(Record {
-                birth: number(&json["input"]["resolved"]["jd_ut"], "jd_ut").map_err(&at)?,
+                birth: number(&json["input"]["resolved"]["jd_ut"], "jd_ut").map_err(at)?,
                 longitude: number(&dasha["moon_sidereal_longitude_deg"], "longitude")
-                    .map_err(&at)?,
-                index: whole(&dasha["moon_nakshatra_index"], "index").map_err(&at)?,
+                    .map_err(at)?,
+                index: whole(&dasha["moon_nakshatra_index"], "index").map_err(at)?,
                 elapsed: number(&dasha["moon_nakshatra_elapsed_fraction"], "elapsed")
-                    .map_err(&at)?,
-                start: text(&dasha["starting_lord"], "starting_lord").map_err(&at)?,
-                year_length: number(&dasha["year_length_days"], "year_length_days").map_err(&at)?,
-                total_years: whole(&dasha["total_years"], "total_years").map_err(&at)?,
+                    .map_err(at)?,
+                start: text(&dasha["starting_lord"], "starting_lord").map_err(at)?,
+                year_length: number(&dasha["year_length_days"], "year_length_days").map_err(at)?,
+                total_years: whole(&dasha["total_years"], "total_years").map_err(at)?,
                 methods,
             });
         }

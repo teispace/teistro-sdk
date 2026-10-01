@@ -421,7 +421,7 @@ mod tests {
     #[test]
     fn every_clause_carries_the_window_it_was_judged_over() {
         let found = clauses(&sky(1.0, 1.0), None, None, at());
-        assert!(!found.is_empty());
+        assert!(!found.is_empty(), "`found` is empty");
         assert!(found.iter().all(|c| c.at == at()));
     }
 }

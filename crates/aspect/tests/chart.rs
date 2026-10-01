@@ -363,7 +363,7 @@ fn a_chart_with_one_body_has_no_relations_and_is_not_an_error() {
     assert_eq!(aspects.strongest_on(Graha::Sun), None);
     foundation.grahas.clear();
     let empty = Aspects::of(&foundation, &settings).expect("and none is too");
-    assert!(empty.all().is_empty());
+    assert_eq!(empty.all(), []);
     assert_eq!(empty.sign(Graha::Sun), None);
     assert!(!empty.rashi_aspects(Graha::Sun, Graha::Moon));
     assert_eq!(Strength::None.quarters(), 0);

@@ -177,7 +177,7 @@ fn the_two_strategies_agree_where_both_apply() {
         // The Sun crosses a sign in a month, so it makes a handful of
         // trimshamsha changes and each is found once.
         println!("the Sun changes trimshamsha {} times", trimshamsha.len());
-        assert!(!trimshamsha.is_empty());
+        assert!(!trimshamsha.is_empty(), "`trimshamsha` is empty");
         holds_together(source, Body::Sun, &Scheme::of(Varga::D30), &trimshamsha);
         // And every one of them is at a five-degree boundary of a sign,
         // which is what the trimshamsha's spans are made of.
@@ -205,6 +205,6 @@ fn a_window_that_ends_before_it_begins_is_refused() {
         // An empty window is not an error; it simply holds nothing.
         let none = changes(source, Body::Moon, &Scheme::of(Varga::D9), from, from)
             .expect("an empty window is a window");
-        assert!(none.is_empty());
+        assert!(none.is_empty(), "{none:?}");
     });
 }

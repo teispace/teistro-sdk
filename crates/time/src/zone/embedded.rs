@@ -263,7 +263,7 @@ mod tests {
             db.suggest("Europe/Londn")
                 .contains(&String::from("Europe/London"))
         );
-        assert!(db.suggest("zzzz").is_empty());
+        assert!(db.suggest("zzzz").is_empty(), "{:?}", db.suggest("zzzz"));
     }
 
     #[test]

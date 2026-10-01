@@ -1288,6 +1288,10 @@ fn several_annual_dashas_answer_as_each_alone() {
         sdk.chart()
             .annual_dashas(&natal, &annual, 30, &[], rules)
             .unwrap()
-            .is_empty()
+            .is_empty(),
+        "{:?}",
+        sdk.chart()
+            .annual_dashas(&natal, &annual, 30, &[], rules)
+            .unwrap()
     );
 }

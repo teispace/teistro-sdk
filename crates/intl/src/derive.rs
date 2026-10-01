@@ -337,7 +337,7 @@ mod tests {
             derived.entities, 432,
             "408 until the 18 dasha systems were named, 426 until the six ritus"
         );
-        assert!(derived.stale.is_empty());
+        assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
         let entities = &derived.files[1].1;
         assert!(entities.contains("\"name\": \"Sūrya\""), "the Sun's name");

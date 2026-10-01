@@ -491,7 +491,11 @@ mod tests {
     fn a_node_takes_the_general_table_and_the_specials_the_settings_give_it() {
         for node in NODES {
             // The root's reading: no specials, so the general table.
-            assert!(special_under(node, NodeAspects::None).is_empty());
+            assert!(
+                special_under(node, NodeAspects::None).is_empty(),
+                "{:?}",
+                special_under(node, NodeAspects::None)
+            );
             assert_eq!(
                 quarters_under(node, 7, NodeAspects::None),
                 Strength::Full,

@@ -191,7 +191,7 @@ fn the_eclipses_name_their_kinds_where_their_table_says() {
         .unwrap()
         .value;
     assert!(found.solar.iter().any(|e| e.here.is_some()));
-    assert!(!found.lunar.is_empty());
+    assert!(!found.lunar.is_empty(), "`found.lunar` is empty");
 
     let mut found_paths = BTreeSet::new();
     string_paths(&serde_json::to_value(&found).unwrap(), "", &mut found_paths);

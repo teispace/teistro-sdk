@@ -378,7 +378,9 @@ mod tests {
         assert!(
             judge(&before, &after, &[accept("astro", 10.0)])
                 .failures
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            judge(&before, &after, &[accept("astro", 10.0)]).failures
         );
         assert_eq!(
             judge(&before, &after, &[accept("astro", 9.5)])

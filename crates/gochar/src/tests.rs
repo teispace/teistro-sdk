@@ -92,7 +92,7 @@ fn every_vedha_pair_obstructs_and_every_exemption_does_not() {
                 assert_eq!(read.vedha_house, Some(vedha), "{graha:?} in {good}");
                 if SPARED.contains(&(graha, other)) {
                     assert_eq!(read.verdict, Verdict::Good, "{other:?} spares {graha:?}");
-                    assert!(read.obstructed_by.is_empty());
+                    assert!(read.obstructed_by.is_empty(), "{:?}", read.obstructed_by);
                 } else {
                     assert_eq!(read.verdict, Verdict::Obstructed, "{other:?} for {graha:?}");
                     assert_eq!(read.obstructed_by, vec![other]);

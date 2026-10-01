@@ -284,7 +284,7 @@ fn systems(root: &Path) -> Result<Vec<System>, String> {
                 .as_object()
                 .ok_or_else(|| at("no systems".into()))?
             {
-                let stated = rules(value).map_err(&at)?;
+                let stated = rules(value).map_err(at)?;
                 let index = if let Some(index) = found.iter().position(|system| &system.key == key)
                 {
                     index
@@ -306,7 +306,7 @@ fn systems(root: &Path) -> Result<Vec<System>, String> {
                 {
                     system
                         .answers
-                        .push(answer(&fixture, method, recorded).map_err(&at)?);
+                        .push(answer(&fixture, method, recorded).map_err(at)?);
                 }
             }
         }

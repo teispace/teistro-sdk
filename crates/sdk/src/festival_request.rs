@@ -512,7 +512,7 @@ mod tests {
         assert_eq!(nepal.following(), FollowingRule::nepal().as_slice());
         assert_eq!(nepal.reach(), 1);
         let shipped = FestivalRequest::from(FestivalPack::Dharmasindhu);
-        assert!(shipped.following().is_empty());
+        assert_eq!(shipped.following(), []);
         assert_eq!(shipped.reach(), 0);
     }
 

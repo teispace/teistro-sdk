@@ -257,7 +257,10 @@ fn the_month_clause_grades_the_days_month_over_the_whole_window() {
     let sun = day.sun.signs[0].member;
     // The loop above reached a graded month, and not only middling ones.
     assert_eq!(day.month.amanta, teistro_core::catalogue::Masa::Jyeshtha);
-    assert!(!rules.month_clauses(&day).is_empty());
+    assert!(
+        !rules.month_clauses(&day).is_empty(),
+        "`rules.month_clauses(&day)` is empty"
+    );
     if let MonthRule::Lunar { months, with_sun } = &mut rules.months {
         months.best.clear();
         months.middling.clear();

@@ -376,7 +376,7 @@ fn a_house_is_signified_level_by_level_as_the_reader_orders_it() {
     assert_eq!(first.in_occupants_stars, [Ketu]);
     // (d) Mars owns Aries; (c) nothing stands in Mars's stars.
     assert_eq!(first.lord, Mars);
-    assert!(first.in_lords_star.is_empty());
+    assert!(first.in_lords_star.is_empty(), "{:?}", first.in_lords_star);
     assert_eq!(first.in_order(), [Ketu, Sun, Rahu, Mars]);
     // (e) Saturn shares Libra with Ketu; (f) Mars's 7th reaches Venus in
     // Capricorn, and Saturn, already conjoined, is not counted twice.
@@ -395,7 +395,11 @@ fn a_house_is_signified_level_by_level_as_the_reader_orders_it() {
     // Mars owns the 1st and the 8th, and the Sun's and Rahu's stars are
     // not Mars's, so nothing reaches him through (c) of another house.
     assert_eq!(significators.signified_by(Mars).owns, [1, 8]);
-    assert!(significators.signified_by(Rahu).by_lords_star.is_empty());
+    assert!(
+        significators.signified_by(Rahu).by_lords_star.is_empty(),
+        "{:?}",
+        significators.signified_by(Rahu).by_lords_star
+    );
 }
 
 /// Reader VI: a node gives the results of the planets it is conjoined

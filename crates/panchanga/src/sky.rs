@@ -515,6 +515,6 @@ mod tests {
             window: window(),
         };
         assert!(still.changed_sign_at().is_none());
-        assert!(still.rises.is_empty());
+        assert!(still.rises.is_empty(), "{:?}", still.rises);
     }
 }

@@ -662,7 +662,16 @@ mod tests {
                     },
                     at
                 )
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            rules.instant_clauses(
+                &Sky {
+                    lagna_deg: 95.0,
+                    grahas,
+                    speeds: [1.0; 9],
+                },
+                at
+            )
         );
     }
 

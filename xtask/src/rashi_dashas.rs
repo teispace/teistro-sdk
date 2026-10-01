@@ -143,18 +143,18 @@ fn corpus(root: &Path) -> Result<Corpus, String> {
             let mut signs = [0; 9];
             let mut dignities: [String; 9] = Default::default();
             for (graha, name) in GRAHAS.iter().enumerate() {
-                signs[graha] = index(&inputs["graha_sign_index"][name], name).map_err(&at)?;
-                dignities[graha] = text(&inputs["graha_dignity"][name], name).map_err(&at)?;
+                signs[graha] = index(&inputs["graha_sign_index"][name], name).map_err(at)?;
+                dignities[graha] = text(&inputs["graha_dignity"][name], name).map_err(at)?;
             }
             corpus.charts.push(Chart {
-                lagna: index(&inputs["lagna_sign_index"], "lagna").map_err(&at)?,
-                arudha: index(&inputs["arudha_lagna_sign_index"], "arudha").map_err(&at)?,
-                navamsha: index(&inputs["navamsha_lagna_sign_index"], "navamsha").map_err(&at)?,
+                lagna: index(&inputs["lagna_sign_index"], "lagna").map_err(at)?,
+                arudha: index(&inputs["arudha_lagna_sign_index"], "arudha").map_err(at)?,
+                navamsha: index(&inputs["navamsha_lagna_sign_index"], "navamsha").map_err(at)?,
                 signs,
                 dignities,
             });
             let chart = corpus.charts.len() - 1;
-            let birth = number(&inputs["jd_ut"], "jd_ut").map_err(&at)?;
+            let birth = number(&inputs["jd_ut"], "jd_ut").map_err(at)?;
             for (key, system) in file["systems"]
                 .as_object()
                 .ok_or_else(|| at("no systems".into()))?
@@ -165,7 +165,7 @@ fn corpus(root: &Path) -> Result<Corpus, String> {
                     .iter()
                     .map(|cells| row(cells, text(&cells[0], "path")?, 1, "period"))
                     .collect::<Result<Vec<_>, String>>()
-                    .map_err(&at)?;
+                    .map_err(at)?;
                 let active = system["active_at"]
                     .as_array()
                     .ok_or_else(|| at("no active_at".into()))?
@@ -182,7 +182,7 @@ fn corpus(root: &Path) -> Result<Corpus, String> {
                         Ok((number(&instant["jd"], "jd")?, chain))
                     })
                     .collect::<Result<Vec<_>, String>>()
-                    .map_err(&at)?;
+                    .map_err(at)?;
                 let answer = Answer {
                     birth,
                     chart,

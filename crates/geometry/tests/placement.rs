@@ -394,7 +394,9 @@ fn the_wheel_marks_each_body_at_its_degree() {
         place(&rows::north_indian(), &chart)
             .unwrap()
             .marks
-            .is_empty()
+            .is_empty(),
+        "{:?}",
+        place(&rows::north_indian(), &chart).unwrap().marks
     );
 }
 

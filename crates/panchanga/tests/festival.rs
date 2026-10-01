@@ -201,14 +201,18 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
         observances(&[janmashtami()], &other)
             .unwrap()
             .observances
-            .is_empty()
+            .is_empty(),
+        "{:?}",
+        observances(&[janmashtami()], &other).unwrap().observances
     );
     let adhika = days_of(&tithis, &none, Masa::Shravana, MonthKind::Adhika);
     assert!(
         observances(&[janmashtami()], &adhika)
             .unwrap()
             .observances
-            .is_empty()
+            .is_empty(),
+        "{:?}",
+        observances(&[janmashtami()], &adhika).unwrap().observances
     );
     let mut in_adhika = janmashtami();
     in_adhika.in_adhika = true;
@@ -229,7 +233,14 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
         )
         .unwrap()
         .observances
-        .is_empty()
+        .is_empty(),
+        "{:?}",
+        observances(
+            &[purnimanta.clone()],
+            &days_of(&tithis, &none, Masa::Shravana, MonthKind::Nija)
+        )
+        .unwrap()
+        .observances
     );
     purnimanta.month = Masa::Bhadrapada;
     assert_eq!(
@@ -788,7 +799,7 @@ fn a_following_rule_counts_days_from_the_observance_it_follows() {
     let mut far = FollowingRule::nepal().remove(1);
     far.days = 9;
     let counted = following(&[far], &found.observances, &days).unwrap();
-    assert!(counted.observances.is_empty());
+    assert!(counted.observances.is_empty(), "{:?}", counted.observances);
     assert_eq!(counted.unjudged[0].rule, "HOLI_TERAI");
 }
 

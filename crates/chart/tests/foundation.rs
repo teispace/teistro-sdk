@@ -267,7 +267,7 @@ fn founding_the_same_moment_twice_gives_the_same_value() {
         resolved.settings.hash(),
         "a change of settings is a change of hash"
     );
-    assert!(!stamped.provenance.provider.name.is_empty());
+    assert_ne!(stamped.provenance.provider.name, "");
     for (one, instant) in batch.iter().zip(INSTANTS) {
         assert_eq!(*one, found(instant));
     }
@@ -405,8 +405,8 @@ fn a_foundation_is_stamped_with_what_produced_it() {
         "the ephemeris that answered"
     );
     assert!(!stamp.provider.frame.is_empty(), "the frame it answered in");
-    assert!(!stamp.time.delta_t_model.is_empty());
-    assert!(!stamp.time.leap_table.is_empty());
+    assert_ne!(stamp.time.delta_t_model, "");
+    assert_ne!(stamp.time.leap_table, "");
 
     // The input hash tells two questions apart and two askings of one
     // question together.

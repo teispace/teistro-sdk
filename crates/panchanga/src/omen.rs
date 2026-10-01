@@ -435,7 +435,14 @@ mod tests {
                 unasked
             )
             .unwrap()
-            .is_empty()
+            .is_empty(),
+            "{:?}",
+            panchaka(
+                &[span(Nakshatra::Ashwini)],
+                PanchakaStart::Aquarius,
+                unasked
+            )
+            .unwrap()
         );
     }
 
@@ -480,7 +487,7 @@ mod tests {
             Ok(signs[..1].to_vec())
         })
         .unwrap();
-        assert!(found.is_empty());
+        assert!(found.is_empty(), "{found:?}");
     }
 
     #[test]
@@ -579,7 +586,7 @@ mod tests {
             &[],
         )
         .expect("a table the SDK ships");
-        assert!(later.is_empty());
+        assert!(later.is_empty(), "{later:?}");
     }
 
     #[test]
@@ -643,7 +650,9 @@ mod tests {
         assert!(
             yogas(CLASSICAL, Vara::Somavara, &[], &[])
                 .expect("a table")
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            yogas(CLASSICAL, Vara::Somavara, &[], &[]).expect("a table")
         );
     }
 }

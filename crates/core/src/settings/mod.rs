@@ -15,7 +15,7 @@
 //! let resolved = profile.resolve(&patch).expect("coherent");
 //! assert_eq!(resolved.settings.frame.node, Node::True);
 //! assert_eq!(resolved.settings.hash().to_string().len(), 64);
-//! assert!(resolved.warnings.is_empty());
+//! assert!(resolved.warnings.is_empty(), "{:?}", resolved.warnings);
 //! ```
 
 pub mod knobs;
@@ -1395,13 +1395,22 @@ mod tests {
     #[test]
     fn the_settings_refuse_an_air_that_cannot_be_applied() {
         let air = |which, air| SunriseConvention::Atmospheric { which, air };
-        assert!(sunrise_rules(air(Sunrise::UpperLimbRefraction, Atmosphere::STANDARD)).is_empty());
+        assert!(
+            sunrise_rules(air(Sunrise::UpperLimbRefraction, Atmosphere::STANDARD)).is_empty(),
+            "{:?}",
+            sunrise_rules(air(Sunrise::UpperLimbRefraction, Atmosphere::STANDARD))
+        );
         assert!(
             sunrise_rules(air(
                 Sunrise::LowerLimbRefraction,
                 Atmosphere::given(1100.0, -90.0)
             ))
-            .is_empty()
+            .is_empty(),
+            "{:?}",
+            sunrise_rules(air(
+                Sunrise::LowerLimbRefraction,
+                Atmosphere::given(1100.0, -90.0)
+            ))
         );
         assert_eq!(
             sunrise_rules(air(Sunrise::CentreNoRefraction, Atmosphere::STANDARD)),
@@ -1470,8 +1479,12 @@ mod tests {
         assert_eq!(patched.settings.frame.zodiac, base.settings.frame.zodiac);
         let again = patched.settings.clone().patched(&SettingsPatch::default());
         assert_eq!(again, patched.settings);
-        assert!(SettingsPatch::default().is_empty());
-        assert!(!patch.is_empty());
+        assert!(
+            SettingsPatch::default().is_empty(),
+            "{:?}",
+            SettingsPatch::default()
+        );
+        assert!(!patch.is_empty(), "`patch` is empty");
     }
 
     /// A patch that sets one knob of any one group is not empty. The

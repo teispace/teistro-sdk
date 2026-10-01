@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn an_empty_set_answers_nothing_rather_than_guessing() {
         let none = Points { found: Vec::new() };
-        assert!(none.all().is_empty());
+        assert_eq!(none.all(), []);
         assert_eq!(none.at(Point::Dhuma), None);
         assert_eq!(none.family(PointFamily::UpagrahaSolar).count(), 0);
     }

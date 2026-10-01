@@ -266,7 +266,11 @@ fn a_report_is_said_in_the_corpus_words_once_a_pack_is_loaded() {
     let sdk = context(None);
     let natal = natal(&sdk);
     let report = sdk.chart().sade_sati(&natal, &life()).unwrap().value;
-    assert!(sdk.interpret().sade_sati(&report).is_empty());
+    assert!(
+        sdk.interpret().sade_sati(&report).is_empty(),
+        "{:?}",
+        sdk.interpret().sade_sati(&report)
+    );
 
     let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
     let tree = teistro::Tree::load(&states).unwrap();
@@ -319,7 +323,11 @@ fn a_report_is_said_in_the_corpus_words_once_a_pack_is_loaded() {
         .sade_sati(&natal, &circuit().counted_from(GocharFrom::Lagna))
         .unwrap()
         .value;
-    assert!(sdk.interpret().sade_sati(&from_lagna).is_empty());
+    assert!(
+        sdk.interpret().sade_sati(&from_lagna).is_empty(),
+        "{:?}",
+        sdk.interpret().sade_sati(&from_lagna)
+    );
 }
 
 /// The plan asked for beside the charts: `interpreted` searches once for
@@ -396,5 +404,5 @@ fn a_reading_asked_to_say_its_periods_searches_once_and_says_them() {
             asked,
         )
         .unwrap();
-    assert!(none.value.is_empty());
+    assert!(none.value.is_empty(), "{:?}", none.value);
 }

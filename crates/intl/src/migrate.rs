@@ -582,7 +582,7 @@ mod tests {
             // Twenty mapped types, 274 entities each in every language.
             assert!(records.len() >= 270, "{tag}: {}", records.len());
             let sun = record(records, "graha.SUN").unwrap();
-            assert!(!sun.name().is_empty());
+            assert_ne!(sun.name(), "");
             assert_eq!(sun.gender.as_deref(), Some("m"));
             assert!(sun.glyph.is_some());
             for key in [

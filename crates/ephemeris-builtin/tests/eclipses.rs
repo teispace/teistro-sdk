@@ -143,8 +143,16 @@ fn a_month_without_an_eclipse_is_empty_and_a_backward_window_is_refused() {
     let eclipses = Eclipses::new(&sky, DELTA_T);
     // October 2025 falls between September's pair and February's.
     let (from, to) = (day(2_460_949.5), day(2_460_980.5));
-    assert!(eclipses.lunar_between(from, to).unwrap().is_empty());
-    assert!(eclipses.solar_between(from, to).unwrap().is_empty());
+    assert!(
+        eclipses.lunar_between(from, to).unwrap().is_empty(),
+        "{:?}",
+        eclipses.lunar_between(from, to).unwrap()
+    );
+    assert!(
+        eclipses.solar_between(from, to).unwrap().is_empty(),
+        "{:?}",
+        eclipses.solar_between(from, to).unwrap()
+    );
     let backward = eclipses.lunar_between(to, from).unwrap_err();
     assert_eq!(backward.status, Status::InvalidArg);
 }

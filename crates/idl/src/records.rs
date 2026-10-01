@@ -461,7 +461,7 @@ mod tests {
             panic!("a tagged union")
         };
         assert_eq!(tag, "kind");
-        assert!(variants[0].fields.is_empty());
+        assert!(variants[0].fields.is_empty(), "{:?}", variants[0].fields);
         assert_eq!(variants[1].fields[0].name, "edition");
         assert!(matches!(&records[3].shape, RecordShape::Keys { values } if values.len() == 2));
     }

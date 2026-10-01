@@ -321,7 +321,7 @@ fn many_charts_are_answered_what_each_is_answered_alone() {
     assert_eq!(many.len(), 2);
     for (natal, batch) in [&first, &second].into_iter().zip(&many) {
         let alone = sdk.chart().hits(natal, &asked).unwrap().value;
-        assert!(!alone.is_empty());
+        assert!(!alone.is_empty(), "`alone` is empty");
         assert_eq!(batch, &alone);
     }
     assert_ne!(many[0], many[1], "two charts, two lists of aspects");
