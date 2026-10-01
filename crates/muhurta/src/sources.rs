@@ -11,26 +11,38 @@
 
 use teistro_astro::Completion;
 use teistro_astro::delta_t::DeltaTModel;
+use teistro_astro::eclipse::{Eclipses, ShadowRule};
 use teistro_astro::events::{Longitudes, Search};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_astro::visibility::Heliacal;
-use teistro_calendar::{CalendarDate, CalendarSystem};
+use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::foundation::{Founder, bodies_of};
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::error::Error;
+use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
-use teistro_core::settings::Settings;
+use teistro_core::settings::{EclipseVedha, Settings};
 use teistro_core::time::LocalClock;
 use teistro_panchanga::limb::{Sidereal, Zodiac, signs_within};
 use teistro_panchanga::{Almanac, Panchanga};
-use teistro_port_ephemeris::{Body, Centre, EphemerisProvider, Frame, Lattice, Quantity};
+use teistro_port_ephemeris::{
+    Astronomy, Body, Centre, EphemerisProvider, Frame, Horizon, Lattice, Quantity,
+};
 use teistro_time::local_day::local_midnight;
 
+use crate::activity::Unjudged;
 use crate::instant::Sky;
-use crate::search::{Sources, same_day};
-use crate::season::{Blackout, BlackoutKind, asta_over, blackouts};
+use crate::search::{Season, Sources, same_day};
+use crate::season::{
+    Blackout, BlackoutKind, ECLIPSE_STAR_REACH_DAYS, SeenEclipse, SeenKind, asta_over, blackouts,
+    eclipse_stars, eclipse_vedha,
+};
+
+/// How far beyond a range an eclipse's vedha can reach into it, days: it
+/// opens at most four praharas before the prahara holding the eclipse,
+/// under two days, and closes at most at the body's next rising.
+const VEDHA_REACH_DAYS: f64 = 2.0;
 
 /// The slow grahas whose ingresses a day may hold, beside the Sun's and
 /// the Moon's, which the almanac day already has: Mars to Saturn, and the
@@ -57,6 +69,13 @@ pub struct ProviderSources<'a, P: EphemerisProvider + ?Sized> {
     frame: Frame,
     zodiac: Zodiac,
     days: &'a [Panchanga],
+    delta_t: DeltaTModel,
+    /// The shadow an eclipse is found under (`panchanga.eclipse_shadow`).
+    shadow: ShadowRule,
+    /// How far before an eclipse its vedha opens (`panchanga.eclipse_vedha`).
+    vedha: EclipseVedha,
+    /// The horizon a body is seen above, the almanac's sunrise convention.
+    horizon: Horizon,
 }
 
 impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for ProviderSources<'_, P> {
@@ -103,8 +122,8 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     ///
     /// # Errors
     ///
-    /// An instant outside the Delta T model, or an ayanamsha the catalogue
-    /// cannot evaluate there.
+    /// An instant outside the Delta T model, an ayanamsha the catalogue
+    /// cannot evaluate there, or an eclipse shadow the build does not know.
     pub fn new(
         over: &Over<'a, P>,
         place: Place,
@@ -130,6 +149,10 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             frame: searched.frame,
             zodiac: searched.zodiac,
             days: &[],
+            delta_t: over.delta_t,
+            shadow: ShadowRule::of_setting(over.settings.panchanga.eclipse_shadow)?,
+            vedha: over.settings.panchanga.eclipse_vedha,
+            horizon: Horizon::from_convention(over.settings.day.sunrise),
         })
     }
 
@@ -161,6 +184,120 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             .filter(|day| same_day(&day.day.date, date)))
     }
 
+    /// Whether the sky is a classical text's, whose eclipse is its own
+    /// method (C188).
+    fn classical(&self) -> bool {
+        self.completion.capabilities().astronomy == Astronomy::Classical
+    }
+
+    /// The eclipse blackouts of the kinds asked for over a range
+    /// (`muhurta.md` §4.1.1): none over a classical sky, which
+    /// [`Sources::unjudged`] reports instead.
+    /// The eclipse blackouts of the kinds asked for, or, when this sky
+    /// cannot see an eclipse, those kinds as unjudged: a classical sky's
+    /// eclipse is its own method (C188), and a provider whose frame the
+    /// SDK cannot complete to an apparent topocentric Sun and Moon cannot
+    /// say what a place saw. Any other refusal is the search's.
+    fn eclipse_season<L: Longitudes + ?Sized>(
+        &self,
+        range: Interval,
+        kinds: &[BlackoutKind],
+        geocentric: &L,
+    ) -> Result<Season, Error> {
+        let star = kinds.contains(&BlackoutKind::EclipseStar);
+        let vedha = kinds.contains(&BlackoutKind::EclipseVedha);
+        if !(star || vedha) {
+            return Ok(Season::default());
+        }
+        if self.classical() {
+            return Ok(unseen(
+                kinds,
+                "a classical sky's eclipse is its own method, which the SDK does not compute (crux C188)",
+            ));
+        }
+        // An eclipse six months back still bars its star inside the range.
+        let back = if star {
+            ECLIPSE_STAR_REACH_DAYS
+        } else {
+            VEDHA_REACH_DAYS
+        };
+        let found = match Eclipses::new(self.completion, self.delta_t)
+            .with_shadow(self.shadow)
+            .here_between(
+                JulianDay::<Ut1>::literal(range.from.get() - back),
+                JulianDay::<Ut1>::literal(range.to.get() + VEDHA_REACH_DAYS),
+                self.place,
+                &self.horizon,
+            ) {
+            Ok(found) => found,
+            Err(error) if matches!(error.status, Status::Unsupported | Status::Capability) => {
+                return Ok(unseen(
+                    kinds,
+                    &format!(
+                        "seeing an eclipse from a place needs the apparent Sun and Moon, and this provider refused them: {}",
+                        error.message
+                    ),
+                ));
+            }
+            Err(error) => return Err(error),
+        };
+        let seen = SeenEclipse::all_of(&found)?;
+        let mut out = Vec::new();
+        if star {
+            out.extend(eclipse_stars(geocentric, self.zodiac, &seen, range)?);
+        }
+        if vedha {
+            for eclipse in &seen {
+                let near = eclipse.seen.to.get() + VEDHA_REACH_DAYS > range.from.get()
+                    && eclipse.seen.from.get() - VEDHA_REACH_DAYS < range.to.get();
+                if !near {
+                    continue;
+                }
+                let found = self.vedha_of(eclipse)?;
+                if let Some(at) = found.at.clipped_to(range).filter(|at| !at.is_empty()) {
+                    out.push(Blackout { at, ..found });
+                }
+            }
+        }
+        Ok(Season {
+            blackouts: out,
+            unjudged: Vec::new(),
+        })
+    }
+    fn vedha_of(&self, eclipse: &SeenEclipse) -> Result<Blackout, Error> {
+        let first = JulianDay::<Utc>::literal(eclipse.seen.from.get());
+        let (fixed, _) = FixedDay::from_local_jd(self.clock.local_jd(first));
+        let days = (-2..=2)
+            .map(|n| self.day(&self.calendar.date_of(fixed.plus_days(n))?))
+            .collect::<Result<Vec<Panchanga>, Error>>()?;
+        let mut turns: Vec<f64> = days
+            .iter()
+            .flat_map(|p| [p.day.sunrise.get(), p.day.sunset.get()])
+            .collect();
+        turns.extend(days.last().map(|p| p.day.next_sunrise.get()));
+        let after = eclipse.seen.to.get();
+        let rising = if eclipse.kind == SeenKind::Solar {
+            days.iter()
+                .map(|p| p.day.next_sunrise.get())
+                .find(|t| *t > after)
+        } else {
+            days.iter()
+                .flat_map(|p| p.moon.rises.iter().map(|r| r.get()))
+                .find(|t| *t > after)
+        };
+        // Asked only when the body set eclipsed; otherwise the end is seen.
+        let next_rising = match rising {
+            Some(at) => at,
+            None if !eclipse.set_eclipsed => after,
+            None => {
+                return Err(Error::internal(format!(
+                    "no rising in the two days after the eclipse that set at {after}"
+                )));
+            }
+        };
+        eclipse_vedha(eclipse, &turns, next_rising, self.vedha)
+    }
+
     /// The grahas' source: the chart's own frame, at the place.
     fn chart_sky(&self) -> impl Longitudes + '_ {
         self.completion
@@ -190,7 +327,7 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
         }
     }
 
-    fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Vec<Blackout>, Error> {
+    fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Season, Error> {
         // An almanac's season is geocentric wherever it is read.
         let geocentric = self.completion.longitudes(Frame {
             centre: Centre::Geocentric,
@@ -208,8 +345,13 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
                 found.extend(asta_over(self.heliacal, body, range)?);
             }
         }
+        let eclipses = self.eclipse_season(range, kinds, &geocentric)?;
+        found.extend(eclipses.blackouts);
         found.sort_by(|a, b| a.at.from.get().total_cmp(&b.at.from.get()));
-        Ok(found)
+        Ok(Season {
+            blackouts: found,
+            unjudged: eclipses.unjudged,
+        })
     }
 
     fn lagna_at(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
@@ -254,5 +396,24 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
         )?;
         cuts.extend(moon.iter().map(|e| JulianDay::literal(e.instant.get())));
         Ok(cuts)
+    }
+}
+
+/// The eclipse kinds of those asked for, each unjudged for one reason.
+fn unseen(kinds: &[BlackoutKind], why: &str) -> Season {
+    Season {
+        blackouts: Vec::new(),
+        unjudged: kinds
+            .iter()
+            .filter_map(|kind| match kind {
+                BlackoutKind::EclipseStar => Some("the eclipse's star (grahanotpatha)"),
+                BlackoutKind::EclipseVedha => Some("the eclipse's vedha (sutak)"),
+                _ => None,
+            })
+            .map(|what| Unjudged {
+                what: what.into(),
+                why: why.into(),
+            })
+            .collect(),
     }
 }

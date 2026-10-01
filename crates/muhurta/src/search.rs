@@ -58,12 +58,13 @@ pub trait Sources {
     /// As `Almanac::day`.
     fn day(&self, date: &CalendarDate) -> Result<Panchanga, Error>;
 
-    /// The blackouts of the kinds asked for over a range.
+    /// The blackouts of the kinds asked for over a range, and the kinds
+    /// these sources cannot judge.
     ///
     /// # Errors
     ///
     /// The provider's or the visibility reckoner's refusal.
-    fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Vec<Blackout>, Error>;
+    fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Season, Error>;
 
     /// The lagna's longitude at an instant, degrees.
     ///
@@ -129,6 +130,17 @@ pub struct ClosedDay {
     pub by: Vec<BlackoutKind>,
 }
 
+/// What a season asked of the sources gives: the blackouts over the
+/// range, in order of their start, and the kinds asked for that the
+/// sources cannot judge, with why.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Season {
+    /// The blackouts.
+    pub blackouts: Vec<Blackout>,
+    /// The kinds the sources cannot judge.
+    pub unjudged: Vec<Unjudged>,
+}
+
 /// The answer.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -180,7 +192,10 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
     // A day's almanac runs sunrise to sunrise, past its civil day; a day
     // either side holds it.
     let range = Interval::new(first.from.plus_days(-1.0)?, last.to.plus_days(1.0)?)?;
-    let season = sources.season(range, &rules.heeds)?;
+    let Season {
+        blackouts: season,
+        unjudged,
+    } = sources.season(range, &rules.heeds)?;
 
     let mut closed = Vec::new();
     let mut days = Vec::new();
@@ -222,7 +237,7 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
         days_cut,
         windows_blacked_out,
         ranking: request.ranking,
-        unjudged: rules.unjudged.clone(),
+        unjudged: rules.unjudged.iter().cloned().chain(unjudged).collect(),
     })
 }
 
