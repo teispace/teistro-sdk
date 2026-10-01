@@ -733,3 +733,46 @@ fn the_time_scale_is_honoured_and_not_assumed() {
         "the shift must scale with each body's own speed; the ratio is {ratio}"
     );
 }
+
+/// An apparent place is the same asked with speeds or without, and on
+/// the equator of date. Two defects lived here at once: the horizon's
+/// apparent place took the built-in's native frame, the J2000 equator
+/// without light time or aberration, and a request without speeds
+/// reached the light time with every rate zeroed, which put the Sun
+/// 20.7 arcseconds ahead of itself.
+#[test]
+fn an_apparent_place_needs_no_speeds_and_is_of_date() {
+    use teistro_astro::sky::ApparentPositions;
+    use teistro_core::quantity::{JulianDay, Ut1};
+
+    let provider = Builtin::new();
+    let sky = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let jds = [2_460_000.5];
+    let frame = Frame::CANONICAL.with_coordinates(Coordinates::Equatorial);
+    for body in [Body::Sun, Body::Moon] {
+        let bodies = [body];
+        let asked = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame);
+        let with = sky.positions(&asked).unwrap().columns.at(0, 0).unwrap();
+        let without = sky
+            .positions(&asked.without_speeds())
+            .unwrap()
+            .columns
+            .at(0, 0)
+            .unwrap();
+        assert!((with.lon - without.lon).abs() * 3600.0 < 1e-6, "{body:?}");
+        assert!((with.lat - without.lat).abs() * 3600.0 < 1e-6, "{body:?}");
+    }
+    // The March equinox of 2024, 20 March 03:06 UT: the apparent Sun on
+    // the equator of date at 0h, within the minute the instant is
+    // rounded to. The J2000 equator put it 0.31° east, the zeroed rates
+    // 0.0057°.
+    let equinox = JulianDay::<Ut1>::literal(2_460_389.5 + 3.1 / 24.0);
+    let sun = sky.apparent(Body::Sun, equinox).unwrap();
+    let ra = (sun.ra_deg + 180.0).rem_euclid(360.0) - 180.0;
+    assert!(ra.abs() < 0.001, "{ra}");
+    assert!(sun.dec_deg.abs() < 0.0005, "{}", sun.dec_deg);
+}
