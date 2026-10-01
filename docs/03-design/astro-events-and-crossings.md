@@ -35,7 +35,7 @@ with an observer for a topocentric one, or a classical model), the
 quantity searched, the lattice of boundaries and a tolerance. The
 settings knobs read are `day.sunrise` (the convention:
 `CENTRE_NO_REFRACTION`, `UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION`,
-`UPPER_LIMB_NO_REFRACTION` or a custom altitude of the centre without refraction), `time.delta_t`,
+`CENTRE_REFRACTION` or a custom altitude of the centre without refraction), `time.delta_t`,
 `provider.overrides` (a provider's own rise and set search is used under
 `PREFER_NATIVE` when it declares the `RISE_SET` override), and, through
 the frame a search runs in, the zodiac and the ayanamsha (a nakshatra

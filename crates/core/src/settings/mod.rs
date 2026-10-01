@@ -1570,7 +1570,7 @@ mod tests {
             }
         );
         // The committee's sky: the text's limbs at a modern sunrise, the
-        // upper limb on the geometric horizon, and no warning for it.
+        // disc's centre with standard refraction, and no warning for it.
         let committee = shipped("nepali-committee")
             .resolve(&SettingsPatch::default())
             .unwrap_or_else(|e| panic!("{e}"));
@@ -1583,7 +1583,7 @@ mod tests {
         );
         assert_eq!(
             committee.settings.day.sunrise,
-            SunriseConvention::from(Sunrise::UpperLimbNoRefraction)
+            SunriseConvention::from(Sunrise::CentreRefraction)
         );
         assert!(committee.warnings.is_empty(), "{:?}", committee.warnings);
         // The same sky at the text's sunrise under that convention is

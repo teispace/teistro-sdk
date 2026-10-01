@@ -5593,8 +5593,8 @@ enum Sunrise {
   upperLimbRefraction(1, 'UPPER_LIMB_REFRACTION'),
   /// The lower limb with refraction.
   lowerLimbRefraction(2, 'LOWER_LIMB_REFRACTION'),
-  /// The upper limb on the geometric horizon, without refraction.
-  upperLimbNoRefraction(3, 'UPPER_LIMB_NO_REFRACTION');
+  /// The centre of the disc with standard refraction.
+  centreRefraction(3, 'CENTRE_REFRACTION');
 
   const Sunrise(this.id, this.key);
 

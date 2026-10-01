@@ -7072,10 +7072,10 @@
           "key": "LOWER_LIMB_REFRACTION"
         },
         {
-          "name": "UpperLimbNoRefraction",
+          "name": "CentreRefraction",
           "value": 3,
-          "doc": "The upper limb on the geometric horizon, without refraction.",
-          "key": "UPPER_LIMB_NO_REFRACTION"
+          "doc": "The centre of the disc with standard refraction.",
+          "key": "CENTRE_REFRACTION"
         }
       ],
       "source": "crates/ffi/src/chart.rs"

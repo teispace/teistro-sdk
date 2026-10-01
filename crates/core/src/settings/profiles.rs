@@ -366,7 +366,7 @@ fn nepali_default() -> Profile {
 /// (ADR-0029): open the context over `SURYA_SIDDHANTA`.
 ///
 /// The day begins at a **modern** sunrise beside the text's sky, the
-/// upper limb on the geometric horizon: the text's own sunrise has no
+/// disc's centre with standard refraction: the text's own sunrise has no
 /// equation of time and stands up to twenty minutes from the print's,
 /// and with this one every printed vriddhi and kshaya agrees (C39). The
 /// modern sunrise comes from the chain's next modern entry, or the
@@ -379,12 +379,12 @@ fn nepali_committee() -> Profile {
         bija: SuryaBija::NepalCommittee,
         sunrise: SuryaSunrise::Modern,
     });
-    patch.day.sunrise = Some(Sunrise::UpperLimbNoRefraction.into());
+    patch.day.sunrise = Some(Sunrise::CentreRefraction.into());
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
-        version: 2,
+        version: 3,
         base: Some(ProfileId::new("nepali-default")),
         patch,
         sources: vec![
@@ -410,7 +410,7 @@ fn nepali_committee() -> Profile {
             Citation::new(
                 "day.sunrise",
                 committee(
-                    "measured: Nepal's daily sunrise is a modern upper limb on the geometric horizon, within 1.4 minutes on 333 days; docs/03-design/nepal-day-measured.md, C39",
+                    "measured: Nepal's daily sunrise is a modern sunrise of the disc's centre with standard refraction, within 1.5 minutes on 320 of 333 days and 1.7 on every one; docs/03-design/nepal-day-measured.md, C39",
                 ),
             ),
         ],

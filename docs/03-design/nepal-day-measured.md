@@ -28,10 +28,11 @@ the modern sky would print instead (C187).
 | the modern sky under Lahiri (`nepali-default`): every printed tithi end within 1.5 minutes | falsified | 333 of 333 disagree; median +41.4 min |
 | the modern sky under Lahiri (`nepali-default`): every printed nakshatra end within 1.5 minutes | falsified | 323 of 326 disagree; median -12.5 min |
 | the modern sky under Lahiri (`nepali-default`): every printed yoga end within 1.5 minutes | falsified | 326 of 331 disagree; median -53.9 min |
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median -0.3 min |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median -0.4 min |
 | the same text at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
 | the text without a bija, at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
-| the modern sky under Lahiri (`nepali-default`): every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median +1.0 min |
+| the modern sky under Lahiri (`nepali-default`): every printed sunrise within 3 minutes | falsified | 109 of 333 disagree; median +2.5 min |
+| the print's sunrise is `CENTRE_REFRACTION`, the nearest of the named conventions | **holds** | nearest CENTRE_REFRACTION |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed tithi flag, or a reason the pass checks | **holds** | 331 of 331 agree; the 0 others each for a reason in §5 |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed nakshatra flag, or a reason the pass checks | **holds** | 333 of 333 agree; the 0 others each for a reason in §5 |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed yoga flag, or a reason the pass checks | **holds** | 312 of 317 agree; the 5 others each for a reason in §5 |
@@ -80,10 +81,26 @@ less the print's.
 
 | reading | days | median | least | most |
 |---|---|---|---|---|
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | 333 | -0.3 | -1.3 | +1.2 |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | 333 | -0.4 | -1.6 | +1.4 |
 | the same text at its own sunrise | 333 | +0.3 | -11.0 | +19.6 |
 | the text without a bija, at its own sunrise | 333 | +0.3 | -11.0 | +19.6 |
-| the modern sky under Lahiri (`nepali-default`) | 333 | +1.0 | -0.1 | +2.4 |
+| the modern sky under Lahiri (`nepali-default`) | 333 | +2.5 | +1.0 | +4.0 |
+
+Under the committee's sky, each named convention's modern sunrise
+against the print's, the reading's less the print's, and how many days
+stand within 1.5 minutes:
+
+| convention | median | least | most | within 1.5 min |
+|---|---|---|---|---|
+| `CENTRE_NO_REFRACTION` | +2.5 | +1.0 | +4.0 | 59 of 333 |
+| `UPPER_LIMB_REFRACTION` | -1.7 | -2.8 | +0.2 | 151 of 333 |
+| `LOWER_LIMB_REFRACTION` | +0.9 | -0.4 | +2.6 | 217 of 333 |
+| `CENTRE_REFRACTION` (shipped) | -0.4 | -1.6 | +1.4 | 320 of 333 |
+
+The disc's centre with the almanac's 34 arcminutes of refraction stands
+nearest; what remains is seasonal, the modern sunrise about a minute
+early from February to May and one late from August to October, and no
+named convention or altitude of the disc removes it (C39).
 
 ## 5. The flags
 
@@ -164,11 +181,11 @@ tropical ones by the catalogue member of the same name, which stands
 1.6° from the text today.
 
 The print's sunrise is not the text's: the text's carries no equation of
-time (C37), and the print's is a modern one, the upper limb on the
-geometric horizon (C39). A flag decided within minutes of sunrise
+time (C37), and the print's is a modern one, the disc's centre with
+standard refraction (C39). A flag decided within minutes of sunrise
 differs for that alone, so the committee's sky takes its sunrise from a
 modern ephemeris beside the text's limbs (`SuryaSunrise::Modern`,
-`UPPER_LIMB_NO_REFRACTION`), and then every printed flag agrees but
-where the source names Shukla as Shubha. The committee's five star
-planets, modern positions under Lahiri (C38), are not read here: a day's
-limbs need only the Sun and the Moon.
+`CENTRE_REFRACTION`), and then every printed flag agrees but where the
+source names Shukla as Shubha. The committee's five star planets, modern
+positions under Lahiri (C38), are not read here: a day's limbs need only
+the Sun and the Moon.

@@ -25,6 +25,7 @@ use std::path::Path;
 use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, Panchanga, Span, Sunrises, UtcOffset};
+use teistro_core::settings::Sunrise;
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, fill, median, plural, table};
@@ -232,7 +233,10 @@ const READINGS: [Reading; 4] = [
         ephemeris: || Ephemeris::Builtin,
         shipped: false,
         ends_agree: false,
-        sunrise_agrees: true,
+        // The baseline's convention, the centre on the geometric horizon,
+        // which the conformance corpus records: two and a half minutes
+        // after the print's.
+        sunrise_agrees: false,
     },
 ];
 
@@ -440,7 +444,11 @@ fn context(reading: &Reading) -> Result<Context, String> {
 /// Each record's founded day under a reading, a month at a time: a range
 /// holds at most a year, and a month's is what a caller asks for.
 fn days(reading: &Reading, records: &[Record]) -> Result<Vec<Panchanga>, String> {
-    let context = context(reading)?;
+    days_in(&context(reading)?, records)
+}
+
+/// Each record's founded day under a context.
+fn days_in(context: &Context, records: &[Record]) -> Result<Vec<Panchanga>, String> {
     let (place, offset) = kathmandu();
     let calendar = context.calendar();
     let mut out = Vec::with_capacity(records.len());
@@ -675,6 +683,107 @@ fn sunrises(
             reading.sunrise_agrees,
         );
     }
+    out.push_str(&conventions(records, found)?);
+    Ok(out)
+}
+
+/// How near the print each named sunrise convention stands under the
+/// committee's sky: the convention the profile ships must stand nearest.
+fn conventions(records: &[Record], found: &mut Findings) -> Result<String, String> {
+    let shipped = Sunrise::CentreRefraction;
+    let measured: Vec<(Sunrise, Vec<f64>)> = std::thread::scope(|scope| {
+        let handles: Vec<_> = Sunrise::ALL
+            .iter()
+            .map(|which| {
+                scope.spawn(move || -> Result<(Sunrise, Vec<f64>), String> {
+                    let context = Context::builder()
+                        .profile("nepali-committee")
+                        .ephemeris([Ephemeris::SuryaSiddhanta])
+                        .settings_json(format!(
+                            r#"{{"day": {{"sunrise": {{"kind": "NAMED", "which": "{}"}}}}}}"#,
+                            which.key()
+                        ))
+                        .build()
+                        .map_err(|e| e.to_string())?;
+                    let days = days_in(&context, records)?;
+                    let differences = records
+                        .iter()
+                        .zip(&days)
+                        .map(|(record, day)| {
+                            Ok(
+                                (day.day.sunrise.get() - jd_of(record.date, record.sunrise)?)
+                                    * DAY_MINUTES,
+                            )
+                        })
+                        .collect::<Result<Vec<f64>, String>>()?;
+                    Ok((*which, differences))
+                })
+            })
+            .collect();
+        handles
+            .into_iter()
+            .map(|h| {
+                h.join()
+                    .map_err(|_| String::from("a founding thread panicked"))?
+            })
+            .collect::<Result<Vec<_>, String>>()
+    })?;
+    let within = |differences: &[f64]| {
+        differences
+            .iter()
+            .filter(|m| m.abs() <= END_BOUND_MINUTES)
+            .count()
+    };
+    let mut out = format!(
+        "\nUnder the committee's sky, each named convention's modern sunrise\n\
+         against the print's, the reading's less the print's, and how many\n\
+         days stand within {END_BOUND_MINUTES} minutes:\n\n\
+         | convention | median | least | most | within {END_BOUND_MINUTES} min |\n|---|---|---|---|---|\n"
+    );
+    for (which, differences) in &measured {
+        let _ = writeln!(
+            out,
+            "| `{}`{} | {} | {} | {} | {} of {} |",
+            which.key(),
+            if *which == shipped { " (shipped)" } else { "" },
+            signed(median(differences.iter().copied())),
+            signed(differences.iter().copied().fold(f64::INFINITY, f64::min)),
+            signed(
+                differences
+                    .iter()
+                    .copied()
+                    .fold(f64::NEG_INFINITY, f64::max)
+            ),
+            within(differences),
+            differences.len()
+        );
+    }
+    let best = measured
+        .iter()
+        .max_by_key(|(_, differences)| within(differences))
+        .map(|(which, _)| *which);
+    found.expect(
+        Claim::stated(
+            format!(
+                "the print's sunrise is `{}`, the nearest of the named conventions",
+                shipped.key()
+            ),
+            if best == Some(shipped) {
+                Verdict::Holds
+            } else {
+                Verdict::Falsified
+            },
+            format!("nearest {}", best.map_or("none", Sunrise::key)),
+        ),
+        true,
+    );
+    out.push_str(
+        "\nThe disc's centre with the almanac's 34 arcminutes of refraction\n\
+         stands nearest; what remains is seasonal, the modern sunrise about a\n\
+         minute early from February to May and one late from August to\n\
+         October, and no named convention or altitude of the disc removes it\n\
+         (C39).\n",
+    );
     Ok(out)
 }
 
@@ -1011,10 +1120,10 @@ fn page() -> Result<String, String> {
          1.6° from the text today.\n\n\
          The print's sunrise is not the text's: the text's carries no\n\
          equation of time (C37), and the print's is a modern one, the\n\
-         upper limb on the geometric horizon (C39). A flag decided within\n\
+         disc's centre with standard refraction (C39). A flag decided within\n\
          minutes of sunrise differs for that alone, so the committee's sky\n\
          takes its sunrise from a modern ephemeris beside the text's limbs\n\
-         (`SuryaSunrise::Modern`, `UPPER_LIMB_NO_REFRACTION`), and then\n\
+         (`SuryaSunrise::Modern`, `CENTRE_REFRACTION`), and then\n\
          every printed flag agrees but where the source names Shukla as\n\
          Shubha. The committee's five star planets, modern positions under\n\
          Lahiri (C38), are not read here: a day's limbs need only the Sun\n\

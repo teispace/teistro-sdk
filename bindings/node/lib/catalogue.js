@@ -3233,7 +3233,7 @@ export const Sunrise = Object.freeze({
   CentreNoRefraction: 'CENTRE_NO_REFRACTION',
   UpperLimbRefraction: 'UPPER_LIMB_REFRACTION',
   LowerLimbRefraction: 'LOWER_LIMB_REFRACTION',
-  UpperLimbNoRefraction: 'UPPER_LIMB_NO_REFRACTION',
+  CentreRefraction: 'CENTRE_REFRACTION',
 });
 
 /**
@@ -3244,7 +3244,7 @@ export const SunriseById = new Map([
   [0, 'CENTRE_NO_REFRACTION'],
   [1, 'UPPER_LIMB_REFRACTION'],
   [2, 'LOWER_LIMB_REFRACTION'],
-  [3, 'UPPER_LIMB_NO_REFRACTION'],
+  [3, 'CENTRE_REFRACTION'],
 ]);
 
 /** Every GhatiReckoning by name. */
