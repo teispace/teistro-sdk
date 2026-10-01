@@ -793,10 +793,13 @@ measured against Nepal before it is called done:
    udaya parting. Measuring the rival settled C197 for the `NEPAL` pack:
    the text for a rite of the night, the tithi at sunrise for one of the
    daylight, which holds all 27 printed days. **Step 4 is done.** Left
-   for a later pass: the monthly purnima vrata the committee prints the
-   day before the full moon's sunrise day, against *Dharmasindhu*'s "the
-   later" (a source first, C200), and the Rigvedis' and Samavedis'
-   upakarma, keyed by a nakshatra.
+   for a later pass: the Rigvedis' and Samavedis' upakarma, keyed by a
+   nakshatra. **The monthly purnima vrata is built 2026-10-01**
+   (`festival-rules.md` §9.6, C200): the committee's 24 rows read off the
+   page images fit one reading, the evening the full moon holds, the later
+   first, and none of the text's; `PURNIMA_VRATA` joins the `NEPAL` pack
+   on a new sunset window, with the month optional and every observance
+   saying its own.
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
    **Nepal Sambat built 2026-10-01** (`calendar-indian-lunisolar.md`

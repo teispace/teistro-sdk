@@ -705,3 +705,60 @@ prints tests it again.
 |---|---|---|---|
 | C197 | how Nepal keeps a rite of the daylight | **the tithi at sunrise** in the `NEPAL` pack, which holds 27 of 27 printed days; the text in `DHARMASINDHU` | the text's window for every rite, which parts on three daylight rites in VS 2083 |
 
+### 9.6 The monthly full-moon fast (C200)
+
+The committee prints पूर्णिमाव्रत every month, the adhika month too, and
+no text in hand states its rule. *Dharmasindhu* p. 20 (§21 of its first
+part, read off the page image) gives the full and the new moon the later
+day, but for the Savitri vrata, and records that "some" take the earlier
+for family rites. It then allows the earlier only where the 14th piercing
+it lasts under eighteen nadis. The committee's rows part from both.
+
+**The rows.** All 24 bright-half pages of VS 2082 and 2083 were read off
+the page images: the tithi-end column of the 14th's row and the full
+moon's, and the day the vrata is printed on, from the row's own Gregorian
+column. One reading fits every row: **the day whose sunset the full moon
+holds; the later when both sunsets do; the later when neither does.**
+Three rows decide what the rivals cannot:
+
+- VS 2082 Shravana: the 14th lasts 20 ghatis 31 palas past the earlier
+  sunrise, past p. 20's eighteen nadis, and the vrata is still printed on
+  that day, whose sunset the full moon holds.
+- VS 2083 Ashadha: the full moon holds both sunsets (from 17:56 before an
+  18:54 sunset, until 19:29 after the next), and the vrata is printed on
+  the later day.
+- VS 2082 Pausha: the full moon begins 64 minutes after the earlier
+  sunset, inside its pradosha, and ends before the later sunset; the
+  vrata is printed on the later day, so the evening is the instant of
+  sunset rather than any part of pradosha.
+
+**The design.** Two small additions to §4.1, each closed:
+
+- `Window::Sunset`, the instant of sunset. It is not in the daylight, so
+  the `NEPAL` pack keeps a rule at sunset as it stands (§9.5).
+- `FestivalRule.month` is optional: `None` keeps the rule every month,
+  for a rite kept on the same tithi of each. A rule spelt out without a
+  month reads, and one written back out leaves it out.
+
+Every observance now carries its amanta `month` and whether it is
+`adhika`, as an Ekadashi fast does, since a rule kept every month is no
+use without the month it decided. `PURNIMA_VRATA` joins the `NEPAL` pack
+only: at sunset, the earlier day when only its sunset holds the full
+moon, otherwise the later; every month, `in_adhika` set. `DHARMASINDHU`
+does not carry it, because the text gives another day.
+
+**What is measured** (`festival-measured.md` §5). Over the committee's
+sky the rule holds all 24 printed days; the pass holds it to every one,
+and its refusal names this section to reopen. The modern sky parts on
+the two Phalgunas, where the full moon begins minutes before sunset. Five
+rivals are counted on the same rows, each falsified: the full moon's
+sunrise day, p. 20's "the later" (10 of 24 part); p. 20's eighteen nadis
+(3); moonrise, the later first (2, the Phalgunas again, where the full
+moon begins after the 14th's moonrise and before sunset); the earlier
+evening first (1, Ashadha 2083); and any part of pradosha (1, Pausha
+2082).
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C200 | the day of the monthly full-moon fast | **the evening the full moon holds, the later first** in the `NEPAL` pack, holding 24 of 24 printed days, with the committee as its only source | *Dharmasindhu* p. 20's later day, which parts on 10; a consumer replaces the rule by its key |
+

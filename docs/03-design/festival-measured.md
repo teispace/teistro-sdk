@@ -158,3 +158,52 @@ Where the text's rules over the committee's sky part from the print, and why:
 - VS 2083 VIJAYA_DASHAMI: the committee keeps the day whose sunrise the 10th holds, until 10:51 by its print, with Shravana joining the 10th on the earlier day only; p. 71 gives the earlier day, which alone holds aparahna, and moves to the later only with Shravana joined there alone (C197)
 - VS 2083 BALI_PRATIPADA: the committee keeps the day whose sunrise the 1st holds, though by its print the 1st lasts only 15 ghatis 49 palas past it, until 12:41; p. 78 keeps that day only when the 1st lasts nine muhurtas (18 ghatis) past sunrise, and otherwise the earlier day the new moon pierces (C197)
 - VS 2083 UPAKARMA_MADHYANDINA: the committee prints Janai purnima on the day whose sunrise the full moon holds, until 9:16 by its print after a 5:41 sunrise, about nine ghatis; p. 47 gives the Madhyandina the later day only past six muhurtas (12 ghatis), and the earlier when less (C197)
+
+## 5. Nepal's monthly full-moon fast
+
+The committee prints पूर्णिमाव्रत every month of VS 2082 and 2083, the
+adhika Jyeshtha too; the 24 days were read off the page images, each
+from its row's own Gregorian column. No text in hand states the rule:
+*Dharmasindhu* p. 20 gives the full moon the later day. The `NEPAL`
+pack's `PURNIMA_VRATA` takes the day whose sunset the full moon holds,
+the later when both or neither do (§9.6, C200). It is found at
+Kathmandu on Nepal's clock over the committee's own sky, which the pass
+holds to every printed day, and beside it the modern sky and five rival
+readings. The case is the shipped rule's, at the two sunsets.
+
+| VS | page | printed | month | case | `NEPAL` | modern sky | sunrise day | evening, earlier first | pradosha | 18 nadis | moonrise |
+|---:|---:|---|---|---|---|---|---|---|---|---|---|
+| 2082 | 3 | 12 May | VAISHAKHA | LaterOnly | 12 May | 12 May | 12 May | 12 May | 12 May | 12 May | 12 May |
+| 2082 | 5 | 10 Jun | JYESHTHA | EarlierOnly | 10 Jun | 10 Jun | 11 Jun ✗ | 10 Jun | 10 Jun | 10 Jun | 10 Jun |
+| 2082 | 7 | 10 Jul | ASHADHA | LaterOnly | 10 Jul | 10 Jul | 10 Jul | 10 Jul | 10 Jul | 10 Jul | 10 Jul |
+| 2082 | 9 | 8 Aug | SHRAVANA | EarlierOnly | 8 Aug | 8 Aug | 9 Aug ✗ | 8 Aug | 8 Aug | 9 Aug ✗ | 8 Aug |
+| 2082 | 11 | 7 Sep | BHADRAPADA | LaterOnly | 7 Sep | 7 Sep | 7 Sep | 7 Sep | 7 Sep | 7 Sep | 7 Sep |
+| 2082 | 13 | 6 Oct | ASHWINA | EarlierOnly | 6 Oct | 6 Oct | 7 Oct ✗ | 6 Oct | 6 Oct | 6 Oct | 6 Oct |
+| 2082 | 15 | 5 Nov | KARTIKA | LaterOnly | 5 Nov | 5 Nov | 5 Nov | 5 Nov | 5 Nov | 5 Nov | 5 Nov |
+| 2082 | 17 | 4 Dec | MARGASHIRSHA | EarlierOnly | 4 Dec | 4 Dec | 4 Dec | 4 Dec | 4 Dec | 4 Dec | 4 Dec |
+| 2082 | 19 | 3 Jan | PAUSHA | Neither | 3 Jan | 3 Jan | 3 Jan | 3 Jan | 2 Jan ✗ | 3 Jan | 3 Jan |
+| 2082 | 21 | 1 Feb | MAGHA | LaterOnly | 1 Feb | 1 Feb | 1 Feb | 1 Feb | 1 Feb | 1 Feb | 1 Feb |
+| 2082 | 23 | 2 Mar | PHALGUNA | EarlierOnly | 2 Mar | 3 Mar ✗ | 3 Mar ✗ | 2 Mar | 2 Mar | 3 Mar ✗ | 3 Mar ✗ |
+| 2082 | 25 | 1 Apr | CHAITRA | EarlierOnly | 1 Apr | 1 Apr | 2 Apr ✗ | 1 Apr | 1 Apr | 1 Apr | 1 Apr |
+| 2083 | 3 | 1 May | VAISHAKHA | LaterOnly | 1 May | 1 May | 1 May | 1 May | 1 May | 1 May | 1 May |
+| 2083 | 5 | 30 May | JYESHTHA (adhika) | EarlierOnly | 30 May | 30 May | 31 May ✗ | 30 May | 30 May | 30 May | 30 May |
+| 2083 | 7 | 29 Jun | JYESHTHA | LaterOnly | 29 Jun | 29 Jun | 29 Jun | 29 Jun | 29 Jun | 29 Jun | 29 Jun |
+| 2083 | 9 | 29 Jul | ASHADHA | Both | 29 Jul | 29 Jul | 29 Jul | 28 Jul ✗ | 29 Jul | 29 Jul | 29 Jul |
+| 2083 | 11 | 27 Aug | SHRAVANA | EarlierOnly | 27 Aug | 27 Aug | 28 Aug ✗ | 27 Aug | 27 Aug | 27 Aug | 27 Aug |
+| 2083 | 13 | 26 Sep | BHADRAPADA | LaterOnly | 26 Sep | 26 Sep | 26 Sep | 26 Sep | 26 Sep | 26 Sep | 26 Sep |
+| 2083 | 15 | 25 Oct | ASHWINA | EarlierOnly | 25 Oct | 25 Oct | 26 Oct ✗ | 25 Oct | 25 Oct | 25 Oct | 25 Oct |
+| 2083 | 17 | 24 Nov | KARTIKA | LaterOnly | 24 Nov | 24 Nov | 24 Nov | 24 Nov | 24 Nov | 24 Nov | 24 Nov |
+| 2083 | 19 | 23 Dec | MARGASHIRSHA | EarlierOnly | 23 Dec | 23 Dec | 24 Dec ✗ | 23 Dec | 23 Dec | 23 Dec | 23 Dec |
+| 2083 | 21 | 22 Jan | PAUSHA | LaterOnly | 22 Jan | 22 Jan | 22 Jan | 22 Jan | 22 Jan | 22 Jan | 22 Jan |
+| 2083 | 23 | 20 Feb | MAGHA | EarlierOnly | 20 Feb | 20 Feb | 20 Feb | 20 Feb | 20 Feb | 20 Feb | 20 Feb |
+| 2083 | 25 | 21 Mar | PHALGUNA | EarlierOnly | 21 Mar | 22 Mar ✗ | 22 Mar ✗ | 21 Mar | 21 Mar | 22 Mar ✗ | 22 Mar ✗ |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| the `NEPAL` pack's PURNIMA_VRATA over the committee's sky falls on the printed day | **holds** | 0 of 24 disagree |
+| the same over the modern sky falls on the printed day | falsified | 2 of 24 disagree |
+| the full moon's sunrise day (Dharmasindhu p. 20's "the later") is the printed day | falsified | 10 of 24 disagree |
+| the evening the full moon holds, the earlier when both do, is the printed day | falsified | 1 of 24 disagree |
+| the pradosha the full moon touches, the later when both do, is the printed day | falsified | 1 of 24 disagree |
+| the earlier day when the 14th lasts under eighteen nadis past its sunrise (p. 20's allowance for family rites) is the printed day | falsified | 3 of 24 disagree |
+| the moonrise the full moon holds, the later when both do, is the printed day | falsified | 2 of 24 disagree |

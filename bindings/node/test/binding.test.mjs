@@ -2401,6 +2401,29 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.equal(two.day.day, lakshmi.day.day + 2);
   assert.deepEqual(two.tithi, lakshmi.tithi);
 
+  // Every observance says its month; Nepal's monthly full-moon fast is
+  // judged at the instant of sunset, and a consumer's own rule kept every
+  // month leaves its month out.
+  assert.equal(dashami.month, 'masa.ASHWINA');
+  assert.equal(dashami.adhika, false);
+  const vrata = counted.observances.find((o) => o.rule === 'PURNIMA_VRATA');
+  assert.equal(vrata.month, 'masa.ASHWINA');
+  assert.equal(vrata.extents[0].window.from, vrata.extents[0].window.to, 'an instant');
+  const everyMonth = {
+    key: 'EVERY_FULL_MOON',
+    source: 'mine',
+    tithi: 'tithi.PURNIMA',
+    inAdhika: true,
+    at: { window: 'SUNSET' },
+    decide: [],
+    otherwise: 'LATER',
+  };
+  const mine = ctx.almanac.of({ ...days, festivals: { rules: [everyMonth] } }).festivals;
+  assert.deepEqual(
+    mine.observances.map((o) => [o.rule, o.month]),
+    [['EVERY_FULL_MOON', 'masa.ASHWINA']],
+  );
+
   for (const [festivals, field] of [
     [{ rules: 'DHARMA' }, 'festivals.rules'],
     [{ rules: ['DHARMASINDHU', { ...sunrise, key: '' }] }, 'festivals.rules[1].key'],

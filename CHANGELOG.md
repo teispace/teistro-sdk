@@ -1637,6 +1637,25 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none moved. The marriage rules carry an empty
   `unwanted`, so their windows, scores and hashes are unchanged.
 
+- **Nepal's monthly full-moon fast, and an observance says its month**
+  (`festival-rules.md` §9.6, C200 closed for the `NEPAL` pack).
+  - `Window::Sunset`, the instant of sunset; a rule at sunset is a rite
+    of the evening, which the `NEPAL` pack keeps as it stands.
+  - `FestivalRule.month` is optional: a rule without one is kept every
+    month. Rules spelt out with a month read as before.
+  - Every `Observance` carries its amanta `month` and whether it is
+    `adhika`, as an `EkadashiFast` does; Node, Python and Dart read both,
+    typed, and every parity runner prints them.
+  - The `NEPAL` pack gains `PURNIMA_VRATA`: the day whose sunset the full
+    moon holds, the later when both or neither do, every month and the
+    adhika one. `festival-measured.md` §5 holds it to all 24 rows the
+    committee printed for VS 2082 and 2083, beside five rivals, each
+    falsified.
+
+  **Numbers:** none moved. Every festival section's content changes, as
+  each observance now carries its month, so its hash does; the days found
+  are the same.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).

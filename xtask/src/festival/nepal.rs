@@ -24,7 +24,7 @@ use crate::measure::{Claim, table};
 use super::{decided_by, ordinal, spell};
 
 /// A Gregorian day, as (year, month, day).
-type Day = (i32, u8, u8);
+pub(super) type Day = (i32, u8, u8);
 
 /// The days founded together, `(from, to)`: the seasons the rules of the
 /// two printed years fall in.
@@ -196,7 +196,7 @@ const PARTS: [(i32, &str, Case, Decided, &str); 3] = [
     ),
 ];
 
-fn kathmandu() -> (Place, UtcOffset) {
+pub(super) fn kathmandu() -> (Place, UtcOffset) {
     (
         Place::new(
             Latitude::literal(27.7172),
@@ -207,13 +207,13 @@ fn kathmandu() -> (Place, UtcOffset) {
     )
 }
 
-fn gregorian((year, month, day): Day) -> CalendarDate {
+pub(super) fn gregorian((year, month, day): Day) -> CalendarDate {
     CalendarDate::defined(Calendar::Gregorian, year, month, day)
 }
 
 /// A sky the rules are found over.
 #[derive(Clone, Copy)]
-enum Sky {
+pub(super) enum Sky {
     /// `nepali-committee`, the committee's own.
     Committee,
     /// `nepali-default`, the modern sky under Lahiri.
@@ -221,7 +221,7 @@ enum Sky {
 }
 
 impl Sky {
-    fn context(self) -> Result<Context, String> {
+    pub(super) fn context(self) -> Result<Context, String> {
         let (profile, ephemeris) = match self {
             Sky::Committee => ("nepali-committee", Ephemeris::SuryaSiddhanta),
             Sky::Modern => ("nepali-default", Ephemeris::Builtin),

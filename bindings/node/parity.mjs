@@ -956,6 +956,8 @@ for (const [name, rules] of [
       key(`-${k}`),
       [
         observance.rule,
+        observance.month,
+        observance.adhika,
         `${observance.day.month}-${observance.day.day}`,
         observance.case,
         by,

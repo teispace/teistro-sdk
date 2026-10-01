@@ -171,6 +171,8 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
             " ".join(
                 (
                     observance.rule,
+                    observance.month.full_key,
+                    str(observance.adhika).lower(),
                     f"{observance.day.month}-{observance.day.day}",
                     observance.case,
                     by,

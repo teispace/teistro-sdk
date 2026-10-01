@@ -71,6 +71,8 @@ void putFestivals(String prefix, FestivalAnswer answer) {
       '$prefix-$k',
       [
         observance.rule,
+        observance.month.fullKey,
+        observance.adhika,
         '${observance.day.month}-${observance.day.day}',
         observance.case_,
         by,
