@@ -46,13 +46,13 @@ every shipped profile. The v1 inventory:
 | frame | `node` | enum | `MEAN`, `TRUE` |
 | frame | `centre` | enum | `GEOCENTRIC`, `TOPOCENTRIC` |
 | frame | `positions` | enum | `APPARENT`, `TRUE` (no light time, aberration or deflection) |
-| frame | `siddhanta` | enum | `DRIK`, `SURYA { bija: bool }` |
+| frame | `siddhanta` | enum | `DRIK`, `SURYA { bija, sunrise }`: `bija` is `NONE`, `NEPAL_COMMITTEE` or `CUSTOM { revolutions }` (C28); `sunrise` is `TEXT` (the default, the text's own) or `MODERN` (a modern ephemeris's under `day.sunrise`, from the chain's next modern entry or the built-in one; C39) |
 | frame | `nakshatra_scheme` | enum | `TWENTY_SEVEN`, `TWENTY_EIGHT` |
 | houses | `placement_system` | `HouseSystemKey` | any registered system |
 | houses | `chalit_system` | `HouseSystemKey` | `SRIPATI`, `VEHLOW`, `PORPHYRY`, `KP` |
 | houses | `module_overrides` | map module to system | `kp: PLACIDUS` |
 | houses | `polar_policy` | enum | `ERROR`, `FALLBACK_WHOLE_SIGN`, `FALLBACK_PORPHYRY`, `CLAMP`: what a system undefined inside the polar circle does (`astro-house-systems.md` §4) |
-| day | `sunrise` | enum | `CENTRE_NO_REFRACTION`, `UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION`, `CUSTOM { altitude_deg }`, `ATMOSPHERIC { which, air: { pressure_hpa?, temperature_c? } }` (a refracted convention through a named air; `horizon-atmosphere.md`) |
+| day | `sunrise` | enum | `CENTRE_NO_REFRACTION`, `UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION`, `UPPER_LIMB_NO_REFRACTION` (Nepal's daily print, C39), `CUSTOM { altitude_deg }`, `ATMOSPHERIC { which, air: { pressure_hpa?, temperature_c? } }` (a refracted convention through a named air; `horizon-atmosphere.md`) |
 | day | `day_boundary` | enum | `MIDNIGHT`, `SUNRISE`, `SUNSET`, `NOON` |
 | day | `polar_day_policy` | enum | `UNDEFINED`, `NEAREST_EVENT`, `CIVIL_MIDNIGHT` |
 | day | `ghati_reckoning` | enum | `CIVIL`, `PROPORTIONAL` |
@@ -159,7 +159,7 @@ Shipped in v1, each with its sources in the profile file:
 |---|---|---|
 | `nepali-default` | the product's charts | sidereal, `LAHIRI`, mean node, topocentric, `WHOLE_SIGN` placements, the chalit system the baseline engine measures as (`VEHLOW`; documented as Sripati, measured otherwise, so the profile says what it does), `CENTRE_NO_REFRACTION` sunrise, `SUNRISE` day boundary, `SPATIAL` balance, seven chara karakas, node aspects `NONE`, `AMANTA` months, eras Vikrama, Shaka, Kali, Nepal Sambat |
 | `parashari-classical` **(the default)** | the texts as read | the root with `SRIPATI` chalit (BPHS), `PROPORTIONAL` ghatis, eight chara karakas (Jaimini 1.1.10–18) and `SURYA_SIDDHANTA` orbs where the text gives them; everything else the root's, so geocentric, the Gregorian civil calendar, the three pan-Indic eras and an undefined polar day. It patches the root and not `nepali-default`, which is what makes "nothing of one country's practice" true rather than stated (ADR-0024) |
-| `nepali-committee` | Nepal's national panchanga | `nepali-default` over the Surya Siddhanta with the committee's bija (`frame.siddhanta: SURYA`, `bija: NEPAL_COMMITTEE`, the Moon's apsis four revolutions an age fewer, measured and not cited, C28), the text's own ayanamsha `SURYASIDDHANTA` and a geocentric chart; open the context over `SURYA_SIDDHANTA`. Nepal's daily print of tithi, nakshatra and yoga ends is this reading's within 1.5 minutes on every recorded day (`nepal-day-measured.md`); its sunrise is a modern one and its five star planets modern Lahiri places, which the text's provider does not give (C38, C39) |
+| `nepali-committee` | Nepal's national panchanga | `nepali-default` over the Surya Siddhanta with the committee's bija (`frame.siddhanta: SURYA`, `bija: NEPAL_COMMITTEE`, the Moon's apsis four revolutions an age fewer, measured and not cited, C28), the text's own ayanamsha `SURYASIDDHANTA` and a geocentric chart; open the context over `SURYA_SIDDHANTA`. Version 2 begins the day at a modern sunrise beside the text's sky (`sunrise: MODERN`), the upper limb on the geometric horizon (`day.sunrise: UPPER_LIMB_NO_REFRACTION`), from the chain's next modern entry or the built-in ephemeris. Nepal's daily print of tithi, nakshatra and yoga ends is this reading's within 1.5 minutes on every recorded day, its sunrise within 1.4, and every printed vriddhi and kshaya agrees but where the source names Shukla as Shubha (`nepal-day-measured.md`, C39); the committee's five star planets are modern Lahiri places this profile does not give (C38) |
 | `surya-siddhanta` | the classical panchangas' astronomy | `parashari-classical` with `frame.siddhanta: SURYA` and the text's own ayanamsha, `SURYASIDDHANTA` (III.9 to 12); open the context over `SURYA_SIDDHANTA`, which the profile asks for and never chooses (ADR-0029), and every part of the chart is the text's (`classical-chart.md`) |
 | `kp-default` | Krishnamurti Paddhati | sidereal, `KRISHNAMURTI`, true node, `PLACIDUS` placements with the cusp as the house start, `kp: PLACIDUS` module override, node aspects `NONE`, Vimshottari at 365.25 |
 | `western-tropical-default` | Western and Hellenistic modules | tropical, `PLACIDUS`, true node, `MIDNIGHT` day boundary, geocentric apparent positions |
@@ -184,6 +184,7 @@ never the first:
 | `CLAMP` polar policy with `WHOLE_SIGN` placements | warning: the policy never applies |
 | a house system the provider declares it cannot compute natively under `NATIVE_ONLY` | error `CAPABILITY` |
 | `SURYA` siddhanta with `TOPOCENTRIC` | warning: the model is geocentric; the correction is applied on top and stamped |
+| `SURYA` siddhanta at the `TEXT` sunrise with a `day.sunrise` other than `CENTRE_NO_REFRACTION` | warning (`siddhanta-text-sunrise-convention`): the text's sunrise is the centre on the geometric horizon, so another convention is solved over the text's Sun and is neither the text's nor a modern one |
 | a year length that is not the system's classical one | warning, recorded in `applied_conventions` |
 | `REFUSE` unknown time with a request lacking a time | error, with the fallbacks that would have applied |
 

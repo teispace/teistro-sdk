@@ -743,12 +743,15 @@ measured against Nepal before it is called done:
    nothing read (now `SuryaBija`, C28), and every search over a provider
    that defines its zodiac shifted by the catalogue's member of the same
    name, 1.6° off (now `ChartZodiac::searched`). `nepali-committee` is
-   the profile. Left in this line: **the committee's mixed sky** (C38,
-   C39) — the text's Sun and Moon for the limbs beside a modern horizon
-   for the sunrise and modern places for the five star planets, as one
-   composed provider — which moves the days §5 of that page names, where
-   an end within minutes of sunrise meets the text's sunrise rather than
-   the print's.
+   the profile. **The committee's sky built 2026-10-01** (C39): the
+   print's sunrise is a modern one, the upper limb on the geometric
+   horizon, so `SuryaSunrise::Modern` begins a day under the text at a
+   modern sunrise beside the text's limbs (`ModernSunrise`, the modern
+   ephemeris the chain's next modern entry or the built-in one), and
+   `nepali-committee` version 2 reads it: every printed vriddhi and
+   kshaya agrees but where the source names Shukla as Shubha. The five
+   star planets (C38) are not composed: four printed rows cannot settle
+   their method, and a day's limbs need only the Sun and the Moon.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
    as blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's

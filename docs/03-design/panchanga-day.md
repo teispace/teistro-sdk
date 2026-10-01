@@ -154,12 +154,13 @@ the civil one. Every binding carries both on each span as `sunrises` and
 
 Which member a sunrise names turns on minutes near a boundary, so the
 flags inherit the sunrise's convention. Against Nepal's daily panchanga
-the committee's reading (`nepali-committee`) gives every printed flag
-but those an end within minutes of sunrise decides, where the text's
-sunrise, without the equation of time, is not the print's modern one;
-each such day is named on
-[the measured page](nepal-day-measured.md) with the check that explains
-it.
+the text at its own sunrise, which has no equation of time, misses
+every flag an end within minutes of sunrise decides; the committee's
+sky (`nepali-committee`) begins the day at a modern sunrise beside the
+text's limbs (`SuryaSunrise::Modern`), and then every printed flag
+agrees but where the source names Shukla as Shubha. Both are on
+[the measured page](nepal-day-measured.md), each disagreement with the
+check that explains it.
 
 ### The kernel
 

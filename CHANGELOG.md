@@ -1537,6 +1537,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none moved. Each day gains a field, so a stored day's
   content hash differs, and `nepali-default`'s version is 3.
 
+- **The committee's sky: the text's limbs at a modern sunrise**
+  (`nepal-day-measured.md`, C39). `Siddhanta::Surya` gains `sunrise`.
+  `TEXT`, the default, is the text's own sunrise. `MODERN` begins the day
+  at a modern ephemeris's sunrise under `day.sunrise`, beside the text's
+  places, angles and zodiac (`teistro_siddhanta::ModernSunrise`). The
+  modern ephemeris is the first modern entry after `SURYA_SIDDHANTA` in
+  the chain, or else the built-in one, and the stamp names it.
+  `day.sunrise` gains `UPPER_LIMB_NO_REFRACTION`, the upper limb on the
+  geometric horizon, which is within 1.4 minutes of all 333 of Nepal's
+  printed sunrises. `nepali-committee` version 2 reads both, and every
+  printed vriddhi and kshaya agrees except where the source names Shukla
+  as Shubha. A new settings warning, `siddhanta-text-sunrise-convention`,
+  flags the text's sunrise asked for under a convention the text does
+  not give: such a sunrise is neither the text's nor a modern one.
+
+  **Numbers:** under `nepali-committee`, every sunrise and every reading
+  that depends on one moves to the modern sunrise: the day's arc, which
+  spans a day names (vriddhi, kshaya), ghati ends and muhurta windows.
+  Sunrise moves by up to about 20 minutes, and the limbs' ends do not
+  move. Nothing outside that profile moves unless `sunrise: MODERN` is
+  set.
+
 - **Nepal's daily panchanga, reproduced** (`nepal-day-measured.md`, C28,
   C187). The new `nepali-committee` profile reads the Surya Siddhanta
   with the national committee's bija in the text's own zodiac, and
