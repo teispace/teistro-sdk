@@ -899,9 +899,10 @@ for (const [name, rules, ranking] of [
 }
 
 // ── Festivals ──────────────────────────────────────────────────────────
-// The shipped pack, and the pack amended by a rule of the consumer's own
-// (Lakshmi puja on whichever day holds the new moon at sunrise), over
-// 2024-10-10..11-03.
+// The shipped pack, the pack amended by a rule of the consumer's own
+// (Lakshmi puja on whichever day holds the new moon at sunrise), and the
+// Nepal pack with a following rule of the consumer's own (two days after
+// Lakshmi puja), over 2024-10-10..11-03.
 const ownRule = {
   key: 'LAKSHMI_PUJA',
   source: 'the tithi at sunrise',
@@ -911,9 +912,16 @@ const ownRule = {
   decide: [],
   otherwise: 'LATER',
 };
+const ownFollowing = {
+  key: 'TWO_AFTER',
+  source: 'two days after Lakshmi puja',
+  after: 'LAKSHMI_PUJA',
+  days: 2,
+};
 for (const [name, rules] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
+  ['nepal', ['NEPAL', ownFollowing]],
 ]) {
   const { festivals } = geo.almanac.of({
     from: gregorian(2024, 10, 10),
@@ -926,8 +934,13 @@ for (const [name, rules] of [
   put(key('-counts'), `${festivals.observances.length} ${festivals.unjudged.length}`);
   put(key('-hash'), festivals.provenance.contentHash);
   festivals.observances.forEach((observance, k) => {
+    const decided = observance.decidedBy;
     const by =
-      observance.decidedBy.by === 'GUARD' ? `guard:${observance.decidedBy.index}` : 'otherwise';
+      decided.by === 'GUARD'
+        ? `guard:${decided.index}`
+        : decided.by === 'AFTER'
+          ? `after:${decided.rule}:${decided.days}`
+          : 'otherwise';
     const [earlier, later] = observance.extents;
     put(
       key(`-${k}`),

@@ -31,10 +31,12 @@ use crate::month::{self, LunarMonth};
 use crate::span::Span;
 
 mod ekadashi;
+mod following;
 
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, Vedha, ekadashis,
 };
+pub use following::{FollowingRule, following};
 
 /// A fifth of the daylight (*Dharmasindhu*, p. 6).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -440,7 +442,7 @@ pub struct Extent {
 }
 
 /// What decided an observance's day.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "by", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Decided {
@@ -451,6 +453,14 @@ pub enum Decided {
     },
     /// No guard held.
     Otherwise,
+    /// A [`FollowingRule`]: this many civil days after the day of the rule
+    /// named, whose facts the observance carries.
+    After {
+        /// The key of the rule counted from.
+        rule: String,
+        /// How many days after its day.
+        days: u8,
+    },
 }
 
 /// An observance: the day a rule falls on, and why.
@@ -817,12 +827,13 @@ const APARAHNA: Window = Window::Part {
 impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
-    /// of `festival-rules.md` §1, then the four Nepal's panchanga prints
+    /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
     /// (§9).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::first_four();
         rules.extend(FestivalRule::nepal_four());
+        rules.extend(FestivalRule::nepal_three());
         rules
     }
 
@@ -977,6 +988,56 @@ impl FestivalRule {
                         [case(Case::UnequalParts), Predicate::Wholly { day: E }],
                         Earlier,
                     ),
+                ],
+                otherwise: Later,
+            },
+        ]
+    }
+
+    /// Rakshabandhan, Bali pratipada and Holika (§9.4): bhadra settles
+    /// the hour of the first and the last, not their day.
+    fn nepal_three() -> Vec<FestivalRule> {
+        use Choice::{Earlier, Later};
+        use Which::Later as L;
+        let lasts = |ghatis| Predicate::Lasts {
+            day: L,
+            from: Edge::Sunrise,
+            ghatis,
+        };
+        vec![
+            FestivalRule {
+                key: "RAKSHABANDHAN".to_owned(),
+                source: "Dharmasindhu p. 49: on the full moon holding the sunrise more than three muhurtas, at aparahna or a pradosha free of bhadra; less than three there, the earlier day at a pradosha free of bhadra".to_owned(),
+                month: Masa::Shravana,
+                convention: Convention::Amanta,
+                tithi: Tithi::Purnima,
+                in_adhika: false,
+                at: Window::Sunrise,
+                decide: vec![Guard::new([lasts(6)], Later)],
+                otherwise: Earlier,
+            },
+            FestivalRule {
+                key: "BALI_PRATIPADA".to_owned(),
+                source: "Dharmasindhu p. 78: Bali puja, the cows' play, Govardhan puja and Margapali on the later day when its 1st holds nine muhurtas past sunrise, since the Moon is not seen then; less, on the 1st the new moon pierces (C198)".to_owned(),
+                month: Masa::Kartika,
+                convention: Convention::Amanta,
+                tithi: Tithi::ShuklaPratipada,
+                in_adhika: false,
+                at: Window::Sunrise,
+                decide: vec![Guard::new([lasts(18)], Later)],
+                otherwise: Earlier,
+            },
+            FestivalRule {
+                key: "HOLIKA".to_owned(),
+                source: "Dharmasindhu p. 94: pradosha, free of bhadra; the later day when both days hold it or the later holds part of it, the earlier's bhadra standing against it; the earlier when the later's pradosha has none of it; the later day's pratipada when the full moon lasts three and a half yamas there and the pratipada grows is not encoded (C199)".to_owned(),
+                month: Masa::Phalguna,
+                convention: Convention::Amanta,
+                tithi: Tithi::Purnima,
+                in_adhika: false,
+                at: Window::Pradosha,
+                decide: vec![
+                    Guard::new([case(Case::EarlierOnly)], Earlier),
+                    Guard::new([case(Case::Neither)], Earlier),
                 ],
                 otherwise: Later,
             },

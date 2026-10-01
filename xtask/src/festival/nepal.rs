@@ -1,10 +1,11 @@
 //! The shipped rules against Nepal's national panchanga
-//! (`03-design/festival-rules.md` §9.3).
+//! (`03-design/festival-rules.md` §9.3 and §9.4).
 //!
 //! The Nepal Panchanga Decision Committee's national panchanga for VS 2082
 //! and 2083 (npns.gov.np, the only two it hosts) prints each observance in
 //! its "vrataparva vivarana" column beside the day's row; the days below
-//! were read off its page images. Each rule is found at Kathmandu on Nepal's
+//! were read off its page images. Each rule of the `NEPAL` pack, the
+//! days it counts from another's among them, is found at Kathmandu on Nepal's
 //! clock twice: over the committee's own sky (`nepali-committee`, the Surya
 //! Siddhanta with its bija, C187), which the pass holds to the print, and
 //! over the modern sky (`nepali-default`), which it counts beside it. Every
@@ -15,12 +16,12 @@ use std::fmt::Write as _;
 
 use teistro::festival::{Case, Decided, Observance, Observances};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro::{CalendarDate, Context, Ephemeris, FestivalRequest, UtcOffset};
+use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 use teistro_core::catalogue::Calendar;
 
 use crate::measure::{Claim, table};
 
-use super::{ordinal, spell};
+use super::{decided_by, ordinal, spell};
 
 /// A Gregorian day, as (year, month, day).
 type Day = (i32, u8, u8);
@@ -37,7 +38,13 @@ const SPANS: [(Day, Day); 4] = [
 /// What the committee printed: the Vikram year, the rule, the Gregorian
 /// day (the row's own column), and the page and the words it prints. VS
 /// 2083 ends at Chaitra's bright 7th, before Rama Navami.
-const PRINTED: [(i32, &str, Day, &str); 15] = [
+const PRINTED: [(i32, &str, Day, &str); 25] = [
+    (
+        2082,
+        "RAKSHABANDHAN",
+        (2025, 8, 9),
+        "p. 9: रक्षाबन्धन, जनैपूर्णिमा",
+    ),
     (
         2082,
         "JANMASHTAMI",
@@ -70,16 +77,36 @@ const PRINTED: [(i32, &str, Day, &str); 15] = [
     ),
     (
         2082,
+        "BALI_PRATIPADA",
+        (2025, 10, 22),
+        "p. 15: गोवर्धनपूजा, म्हपूजा, बलिपूजा",
+    ),
+    (
+        2082,
         "YAMA_DWITIYA",
         (2025, 10, 23),
         "p. 15: यमद्वितीया, भाइटीका",
     ),
     (2082, "SHIVARATRI", (2026, 2, 15), "p. 22: महाशिवरात्रिव्रत"),
+    (2082, "HOLIKA", (2026, 3, 2), "p. 23: राति भद्रान्तमा चिरदाह"),
+    (
+        2082,
+        "HOLI_HILLS",
+        (2026, 3, 2),
+        "p. 23: पहाडी जिल्लामा होली",
+    ),
+    (2082, "HOLI_TERAI", (2026, 3, 3), "p. 23: तराईमा होली"),
     (
         2082,
         "RAMA_NAVAMI",
         (2026, 3, 27),
         "p. 25: रामनवमीव्रत, श्रीरामजयन्ती",
+    ),
+    (
+        2083,
+        "RAKSHABANDHAN",
+        (2026, 8, 28),
+        "p. 11: रक्षाबन्धन, जनैपूर्णिमा",
     ),
     (
         2083,
@@ -113,24 +140,47 @@ const PRINTED: [(i32, &str, Day, &str); 15] = [
     ),
     (
         2083,
+        "BALI_PRATIPADA",
+        (2026, 11, 10),
+        "p. 17: गोवर्धनपूजा, म्हपूजा, बलिपूजा",
+    ),
+    (
+        2083,
         "YAMA_DWITIYA",
         (2026, 11, 11),
         "p. 17: यमद्वितीया (किजापूजा)",
     ),
     (2083, "SHIVARATRI", (2027, 3, 6), "p. 24: महाशिवरात्रिव्रत"),
+    (2083, "HOLIKA", (2027, 3, 21), "p. 25: राति भद्रान्तमा चिरदाह"),
+    (
+        2083,
+        "HOLI_HILLS",
+        (2027, 3, 21),
+        "p. 25: पहाडी जिल्लामा होली",
+    ),
+    (2083, "HOLI_TERAI", (2027, 3, 22), "p. 25: तराईमा होली"),
 ];
 
 /// Why a rule over the committee's sky parts from the print, per (year,
 /// rule), with the case and the deciding guard the cause asserts. The pass
 /// fails on a parting with no entry, on an entry whose row agrees, and on
 /// an entry the observance found does not bear out.
-const PARTS: [(i32, &str, Case, Decided, &str); 1] = [(
-    2083,
-    "VIJAYA_DASHAMI",
-    Case::EarlierOnly,
-    Decided::Guard { index: 5 },
-    "the committee keeps the day whose sunrise the 10th holds, until 10:51 by its print, with Shravana joining the 10th on the earlier day only; p. 71 gives the earlier day, which alone holds aparahna, and moves to the later only with Shravana joined there alone (C197)",
-)];
+const PARTS: [(i32, &str, Case, Decided, &str); 2] = [
+    (
+        2083,
+        "VIJAYA_DASHAMI",
+        Case::EarlierOnly,
+        Decided::Guard { index: 5 },
+        "the committee keeps the day whose sunrise the 10th holds, until 10:51 by its print, with Shravana joining the 10th on the earlier day only; p. 71 gives the earlier day, which alone holds aparahna, and moves to the later only with Shravana joined there alone (C197)",
+    ),
+    (
+        2083,
+        "BALI_PRATIPADA",
+        Case::LaterOnly,
+        Decided::Otherwise,
+        "the committee keeps the day whose sunrise the 1st holds, though by its print the 1st lasts only 15 ghatis 49 palas past it, until 12:41; p. 78 keeps that day only when the 1st lasts nine muhurtas (18 ghatis) past sunrise, and otherwise the earlier day the new moon pierces (C197)",
+    ),
+];
 
 fn kathmandu() -> (Place, UtcOffset) {
     (
@@ -237,12 +287,10 @@ fn near(observances: &Observances, rule: &str, printed: Day) -> Option<Observanc
 /// Each printed row beside the day each sky gives, with a problem for every
 /// parting under the committee's sky without its cause, and every cause
 /// without its parting or not borne out.
-pub(super) fn compare(
-    request: &FestivalRequest,
-    problems: &mut Vec<String>,
-) -> Result<Vec<Row>, String> {
-    let committee = found(Sky::Committee, request)?;
-    let modern = found(Sky::Modern, request)?;
+pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
+    let request = FestivalRequest::from(FestivalPack::Nepal);
+    let committee = found(Sky::Committee, &request)?;
+    let modern = found(Sky::Modern, &request)?;
     let rows: Vec<Row> = PRINTED
         .iter()
         .map(|&(year, rule, printed, page)| Row {
@@ -263,15 +311,17 @@ pub(super) fn compare(
                 row.year,
                 row.rule,
                 row.printed,
-                row.committee.as_ref().map(|o| (o.day.month, o.day.day, o.case, o.decided_by))
+                row.committee
+                    .as_ref()
+                    .map(|o| (o.day.month, o.day.day, o.case, decided_by(&o.decided_by)))
             )),
             (true, Some(_)) => problems.push(format!(
                 "VS {} {} agrees and is excused in nepal::PARTS: remove the entry",
                 row.year, row.rule
             )),
-            (false, Some(&(_, _, case, decided, _))) => {
-                let found = row.committee.as_ref().map(|o| (o.case, o.decided_by));
-                if found != Some((case, decided)) {
+            (false, Some((_, _, case, decided, _))) => {
+                let found = row.committee.as_ref().map(|o| (o.case, &o.decided_by));
+                if found != Some((*case, decided)) {
                     problems.push(format!(
                         "VS {} {} is excused as {case:?} decided by {decided:?}, and the observance found is {found:?}",
                         row.year, row.rule
@@ -302,8 +352,10 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
     out.push_str(
         "\n## 4. Against Nepal's national panchanga\n\n\
          The days the Nepal Panchanga Decision Committee printed in its national\n\
-         panchanga for VS 2082 and 2083, read off the page images, beside each\n\
-         shipped rule's day at Kathmandu on Nepal's clock: over the committee's\n\
+         panchanga for VS 2082 and 2083, read off the page images, beside the day\n\
+         each rule of the `NEPAL` pack gives at Kathmandu on Nepal's clock (Holi\n\
+         in the hills and the Terai counted from the Holika day, §9.4): over the\n\
+         committee's\n\
          own sky (`nepali-committee`, the Surya Siddhanta with its bija, C187),\n\
          which the pass holds to the print, and over the modern sky\n\
          (`nepali-default`), counted beside it.\n\n",
@@ -315,15 +367,7 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
     for row in rows {
         let (case, by) = row.committee.as_ref().map_or_else(
             || (String::new(), String::new()),
-            |o| {
-                (
-                    format!("{:?}", o.case),
-                    match o.decided_by {
-                        Decided::Guard { index } => format!("guard {index}"),
-                        Decided::Otherwise => "otherwise".to_owned(),
-                    },
-                )
-            },
+            |o| (format!("{:?}", o.case), decided_by(&o.decided_by)),
         );
         let _ = writeln!(
             out,

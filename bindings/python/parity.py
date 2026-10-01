@@ -150,7 +150,12 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
     put(f"{prefix}-hash", answer.provenance.content_hash)
     for k, observance in enumerate(answer.observances):
         decided = observance.decided_by
-        by = f"guard:{decided.index}" if decided.by == "GUARD" else "otherwise"
+        if decided.by == "GUARD":
+            by = f"guard:{decided.index}"
+        elif decided.by == "AFTER":
+            by = f"after:{decided.rule}:{decided.days}"
+        else:
+            by = "otherwise"
         earlier, later = observance.extents
         put(
             f"{prefix}-{k}",
@@ -1195,9 +1200,11 @@ def main() -> None:
             put_muhurta(f"muhurta-{name}", muhurta)
 
         # ── Festivals ─────────────────────────────────────────────────
-        # The shipped pack, and the pack amended by a rule of the
-        # consumer's own (Lakshmi puja on whichever day holds the new
-        # moon at sunrise), over 2024-10-10..11-03.
+        # The shipped pack, the pack amended by a rule of the consumer's
+        # own (Lakshmi puja on whichever day holds the new moon at
+        # sunrise), and the Nepal pack with a following rule of the
+        # consumer's own (two days after Lakshmi puja), over
+        # 2024-10-10..11-03.
         own_rule = {
             "key": "LAKSHMI_PUJA",
             "source": "the tithi at sunrise",
@@ -1207,9 +1214,16 @@ def main() -> None:
             "decide": [],
             "otherwise": "LATER",
         }
+        own_following = {
+            "key": "TWO_AFTER",
+            "source": "two days after Lakshmi puja",
+            "after": "LAKSHMI_PUJA",
+            "days": 2,
+        }
         packs: tuple[tuple[str, FestivalRequest], ...] = (
             ("shipped", {"rules": "DHARMASINDHU"}),
             ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
+            ("nepal", {"rules": ["NEPAL", own_following]}),
         )
         for name, pack in packs:
             festivals = geo.almanac.of(

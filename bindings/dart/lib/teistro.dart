@@ -5969,7 +5969,11 @@ CalendarDate _serdeDate(Map<String, Object?> raw) {
 /// name.
 enum FestivalPack {
   /// *Dharmasindhu*'s rules (`03-design/festival-rules.md` §1).
-  dharmasindhu('DHARMASINDHU');
+  dharmasindhu('DHARMASINDHU'),
+
+  /// *Dharmasindhu*'s rules and the days Nepal's national panchanga
+  /// counts from them (`03-design/festival-rules.md` §9.4).
+  nepal('NEPAL');
 
   const FestivalPack(this.key);
 
@@ -6045,14 +6049,22 @@ final class FestivalExtent extends _Value {
 /// What decided an observance's day: a guard, by its index in the rule's
 /// list, or the rule's `otherwise`, whose [index] is `null`.
 final class FestivalDecided extends _Value {
-  const FestivalDecided({required this.by, this.index});
+  const FestivalDecided({required this.by, this.index, this.rule, this.days});
 
-  /// `GUARD` or `OTHERWISE`.
+  /// `GUARD`, `OTHERWISE`, or `AFTER` for a following rule.
   final String by;
+
+  /// The guard's index; `null` unless a guard decided.
   final int? index;
 
+  /// The rule a following rule counts from; `null` unless [by] is `AFTER`.
+  final String? rule;
+
+  /// The days a following rule counts; `null` unless [by] is `AFTER`.
+  final int? days;
+
   @override
-  List<Object?> get _fields => [by, index];
+  List<Object?> get _fields => [by, index, rule, days];
 }
 
 /// The day a rule falls on, and why.
@@ -6240,6 +6252,8 @@ FestivalAnswer _festivalAnswer(String json) {
           decidedBy: FestivalDecided(
             by: at(raw['decidedBy'])['by']! as String,
             index: at(raw['decidedBy'])['index'] as int?,
+            rule: at(raw['decidedBy'])['rule'] as String?,
+            days: at(raw['decidedBy'])['days'] as int?,
           ),
           choice: raw['choice']! as String,
         ),

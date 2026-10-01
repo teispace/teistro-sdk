@@ -24,8 +24,10 @@ import type {
   EkadashiRule,
   EkadashiVedha,
   FestivalAnswer,
+  FestivalPack,
   FestivalRequest,
   FestivalRule,
+  FollowingRule,
   HitRequest,
   SadeSatiRequest,
   KpLords,
@@ -711,7 +713,13 @@ function theFestivals(almanac: Almanac): string {
   const answer: FestivalAnswer | null = almanac.festivals;
   if (answer === null) return '';
   const said = answer.observances.map((o) => {
-    const by = o.decidedBy.by === 'GUARD' ? `guard ${o.decidedBy.index}` : 'otherwise';
+    const decided = o.decidedBy;
+    const by =
+      decided.by === 'GUARD'
+        ? `guard ${decided.index}`
+        : decided.by === 'AFTER'
+          ? `${decided.days} after ${decided.rule}`
+          : 'otherwise';
     const [earlier, later] = o.extents;
     return `${o.rule} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
   });
@@ -756,14 +764,19 @@ function theFestivals(almanac: Almanac): string {
     ],
     otherwise: 'LATER',
   };
-  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule, madhava, kaustubha] };
+  // The Terai's Holi, a day after the Holika fire.
+  const terai: FollowingRule = { key: 'HOLI_TERAI', source: 'the committee', after: 'HOLIKA', days: 1 };
+  const asked: FestivalRequest = { rules: ['NEPAL', rule, madhava, kaustubha, terai] };
+  const pack: FestivalPack = 'NEPAL';
+  // @ts-expect-error a following rule counts days, a number
+  const spelt: FollowingRule = { ...terai, days: 'one' };
   // @ts-expect-error a night muhurta names which one
   const unnumbered: FestivalRule = { ...kaustubha, at: { window: 'NIGHT_MUHURTA' } };
   // @ts-expect-error a predicate asks what its kind asks, not another's
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), pack, String(spelt), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

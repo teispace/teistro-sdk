@@ -133,7 +133,7 @@ const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 4] = [
+const UNREACHED: [(&str, usize, &str, &str); 5] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -157,6 +157,12 @@ const UNREACHED: [(&str, usize, &str, &str); 4] = [
         1,
         "shivaratri_takes_the_book_s_day_in_each_of_its_clauses",
         "the 14th holding the earlier night's eighth muhurta whole and the later's in part, which no year of the decade had",
+    ),
+    (
+        "HOLIKA",
+        1,
+        "holika_takes_the_later_day_whenever_its_pradosha_holds_the_full_moon",
+        "the full moon beginning after the earlier day's pradosha and ending before the later's, a tithi shorter than the day between them, which no Phalguna of the decade had",
     ),
 ];
 
@@ -354,9 +360,12 @@ fn page() -> Result<String, String> {
                 row.rule,
                 row.listed.spelled(),
                 row.published,
-                row.found
-                    .as_ref()
-                    .map(|o| (o.day.month, o.day.day, o.case, o.decided_by))
+                row.found.as_ref().map(|o| (
+                    o.day.month,
+                    o.day.day,
+                    o.case,
+                    decided_by(&o.decided_by)
+                ))
             ));
         }
         if row.agrees() && excused {
@@ -375,7 +384,7 @@ fn page() -> Result<String, String> {
         .build()
         .map_err(|e| e.to_string())?;
     let fasts = ekadashi::compare(&context, request.ekadashis(), &years, &mut problems);
-    let nepal = nepal::compare(&request, &mut problems)?;
+    let nepal = nepal::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -412,6 +421,8 @@ fn reach<'r>(
             let guard = match observance.decided_by {
                 Decided::Guard { index } => Some(index),
                 Decided::Otherwise => None,
+                // A day counted from another's has no guard of its own.
+                Decided::After { .. } => continue,
             };
             *decided.entry((observance.rule.clone(), guard)).or_default() += 1;
         }
@@ -455,6 +466,15 @@ fn rule_key<'r>(rules: &'r [FestivalRule], key: &str) -> &'r str {
         .map_or("", |rule| rule.key.as_str())
 }
 
+/// What decided an observance, as the page's tables write it.
+pub(super) fn decided_by(decided: &Decided) -> String {
+    match decided {
+        Decided::Guard { index } => format!("guard {index}"),
+        Decided::Otherwise => "otherwise".to_owned(),
+        Decided::After { rule, days } => format!("{days} after {rule}"),
+    }
+}
+
 pub(super) fn spell((month, day): MonthDay) -> String {
     const MONTHS: [&str; 12] = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -483,10 +503,7 @@ fn published(out: &mut String, rows: &[Row]) {
                 (
                     spell((o.day.month, o.day.day)),
                     format!("{:?}", o.case),
-                    match o.decided_by {
-                        Decided::Guard { index } => format!("guard {index}"),
-                        Decided::Otherwise => "otherwise".to_owned(),
-                    },
+                    decided_by(&o.decided_by),
                 )
             },
         );

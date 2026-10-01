@@ -7520,13 +7520,15 @@ struct ts_panchanga_request {
     const char * muhurta_json;
     /**
      * The days festival rules fall on over the same days, as a JSON
-     * object: `rules`, a shipped pack named (`DHARMASINDHU`) or a list
-     * whose items name a pack or spell a rule out, a later rule
+     * object: `rules`, a shipped pack named (`DHARMASINDHU`, `NEPAL`) or
+     * a list whose items name a pack or spell a rule out, a later rule
      * replacing an earlier one with its key; an item with a `vedha` is
-     * an Ekadashi rule, the rest tithi rules. A catalogue member may be
-     * written bare or in full. The answer comes back in the `festivals`
-     * section, over this blob's own days founded once, with the two days
-     * before and the two after founded beside them
+     * an Ekadashi rule, one with an `after` a rule counting `days` civil
+     * days from that tithi rule's day (§9.4), the rest tithi rules. A
+     * catalogue member may be written bare or in full. The answer comes
+     * back in the `festivals` section, over this blob's own days founded
+     * once, with the two days before and the two after, and as many more
+     * as a following rule counts, founded beside them
      * (`03-design/festival-rules.md` §7). Null for none, which costs
      * nothing. Refusals are named from the record every binding calls
      * `festivals`, down to a rule's own field under `festivals.rules`.

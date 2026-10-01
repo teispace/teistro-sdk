@@ -1584,6 +1584,37 @@ the astronomical numbers do not move. Nothing else computes yet.
   because it is sealed over the value as it is now spelt; the muhurta
   section's changes only where a day was closed.
 
+- **Holika, Rakshabandhan, Bali pratipada, and a day counted from
+  another's** (`festival-rules.md` §9.4, C197 to C199).
+  - The `DHARMASINDHU` pack carries eleven karmakala rules:
+    `RAKSHABANDHAN` (p. 49), `BALI_PRATIPADA` (p. 78) and `HOLIKA`
+    (p. 94) join the eight. Each is held to its page's clauses on
+    synthetic days.
+  - `FollowingRule { key, source, after, days }`: an observance a
+    number of civil days (0 to 15) after a karmakala rule's day,
+    whatever tithi runs then. A request reads one by its `after`, as it
+    reads an Ekadashi rule by its `vedha`. One counted from a rule the
+    request does not hold, from an Ekadashi rule or from another counted
+    day is refused by its path (`festivals.following[0].after`). Its
+    observance carries the tithi, case and extents of the one it counts
+    from, and `decidedBy` `{by: AFTER, rule, days}`. Every binding reads
+    it, and Node's declarations type it.
+  - A new pack, `NEPAL`: `DHARMASINDHU` with the committee's two Holis,
+    the hills' on the Holika day (`HOLI_HILLS`) and the Terai's the day
+    after (`HOLI_TERAI`). The Terai's is not a tithi rule: the full moon
+    still holds its sunrise, and *Dharmasindhu* p. 95 honours the ash
+    "the morning after".
+  - `festival-measured.md` §4 asks the `NEPAL` pack and holds 25 printed
+    days. Over the committee's sky 23 agree, and over the modern sky 21.
+    The new parting under the committee's sky is Bali pratipada in VS
+    2083: the committee again keeps the day the tithi holds at sunrise
+    (C197).
+
+  **Numbers:** none moved for the eight rules already shipped. An answer
+  over the shipped pack now carries the three new observances where its
+  range holds them, and the days it founds beside the range widen by as
+  many as a following rule counts.
+
 - **Four of Nepal's observances, and Nepal's printed days measured**
   (`festival-rules.md` §9, C195 to C197).
   - The `DHARMASINDHU` pack carries eight karmakala rules:
