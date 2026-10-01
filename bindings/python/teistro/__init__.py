@@ -3047,8 +3047,9 @@ class MuhurtaWindow:
 @dataclass(frozen=True)
 class ClosedDay:
     """A day the season closed, and the blackouts that closed it
-    (`CHATURMAS`, `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`,
-    `GURU_ASTA`, `SHUKRA_ASTA`, `ECLIPSE_STAR`, `ECLIPSE_VEDHA`)."""
+    (`CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`,
+    `PITRU_PAKSHA`, `SANKRANTI`, `GURU_ASTA`, `SHUKRA_ASTA`, `ECLIPSE_STAR`,
+    `ECLIPSE_VEDHA`)."""
 
     date: CalendarDate
     by: Tuple[str, ...]

@@ -20,6 +20,7 @@
 //! rule and the reason; the gate prints those, so an allowance is an
 //! inventory rather than a silence.
 
+use std::collections::BTreeSet;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
@@ -744,6 +745,89 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
                     rule: RULE,
                 });
             }
+        }
+    }
+}
+
+/// Where each binding spells the muhurta's blackout kinds by hand: the
+/// text from the first anchor to the next occurrence of the second.
+///
+/// A blackout kind crosses inside the muhurta answer's JSON, so no
+/// binding generates it. TypeScript declares a union a checker reads.
+/// Dart and Python only document it, but a reader takes a documented
+/// list as the whole list.
+const BLACKOUT_SURFACES: [(&str, &str, &str); 3] = [
+    (
+        "bindings/node/lib/index.d.ts",
+        "export type BlackoutKind =",
+        ";",
+    ),
+    (
+        "bindings/dart/lib/teistro.dart",
+        "/// A day the season closed",
+        "final class ClosedDay",
+    ),
+    (
+        "bindings/python/teistro/__init__.py",
+        "\"\"\"A day the season closed",
+        "\"\"\"",
+    ),
+];
+
+/// That every binding spells exactly the blackout kinds serde spells
+/// [`teistro_muhurta::season::BlackoutKind::ALL`], each way round: a kind
+/// missing from a binding is one its readers are told cannot happen, and
+/// a kind only a binding names is one that no longer exists.
+fn blackout_kinds_reach_every_binding(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "blackout-kind-reaches-every-binding";
+    let Ok(quoted) = regex::Regex::new(r"['`]([A-Z][A-Z_]*)['`]") else {
+        return;
+    };
+    let wanted: BTreeSet<String> = teistro_muhurta::season::BlackoutKind::ALL
+        .iter()
+        .filter_map(|kind| serde_json::to_value(kind).ok())
+        .filter_map(|value| value.as_str().map(str::to_owned))
+        .collect();
+    for (surface, start, end) in BLACKOUT_SURFACES {
+        let mut fail = |line: usize, text: String| {
+            outcome.failures.push(Finding {
+                file: surface.to_owned(),
+                line,
+                text,
+                rule: RULE,
+            });
+        };
+        let Ok(text) = std::fs::read_to_string(root.join(surface)) else {
+            fail(
+                1,
+                String::from("spells the blackout kinds and could not be read"),
+            );
+            continue;
+        };
+        let block = text.find(start).and_then(|at| {
+            let after = text.get(at + start.len()..)?;
+            after.find(end).and_then(|stop| after.get(..stop))
+        });
+        let Some(block) = block else {
+            fail(1, format!("`{start}` is not in this binding any more"));
+            continue;
+        };
+        let line = line_of(&text, start);
+        let named: BTreeSet<String> = quoted
+            .captures_iter(block)
+            .filter_map(|c| c.get(1).map(|m| m.as_str().to_owned()))
+            .collect();
+        for missing in wanted.difference(&named) {
+            fail(
+                line,
+                format!("`BlackoutKind` has `{missing}` and this binding does not name it"),
+            );
+        }
+        for extra in named.difference(&wanted) {
+            fail(
+                line,
+                format!("this binding names `{extra}`, which `BlackoutKind` does not have"),
+            );
         }
     }
 }
@@ -2128,6 +2212,33 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Every rule [`check`] reports, in the order it reports them.
+const RULES: [&str; 23] = [
+    "deterministic-iteration",
+    "ambient-input",
+    "unsafe-inventory",
+    "exact-classification",
+    "knob-has-a-reader",
+    "boundary-is-described",
+    "workflow-parses",
+    "gate-has-a-runner",
+    "entry-point-is-reachable",
+    "python-runs-in-utf8-mode",
+    "runner-matches-the-platform-table",
+    "node-is-tested-at-its-floor",
+    "target-declares-the-feature-it-needs",
+    "a-tier-turns-on-its-base",
+    "serialised-type-describes-itself",
+    "a-word-is-spelt-as-a-key",
+    "every-predicate-is-listed",
+    "composer-reaches-every-binding",
+    "blackout-kind-reaches-every-binding",
+    "layer-does-not-shadow-a-kind",
+    "crate-is-listed",
+    "open-question-is-named",
+    "generated-page-is-gated",
+];
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -2179,36 +2290,14 @@ pub(crate) fn check(root: &Path) -> i32 {
     words_are_spelt_as_keys(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
+    blackout_kinds_reach_every_binding(root, &mut outcome);
     layers_do_not_shadow_a_kind(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
 
     let mut report = String::new();
-    for rule in [
-        "deterministic-iteration",
-        "ambient-input",
-        "unsafe-inventory",
-        "exact-classification",
-        "knob-has-a-reader",
-        "boundary-is-described",
-        "workflow-parses",
-        "gate-has-a-runner",
-        "entry-point-is-reachable",
-        "python-runs-in-utf8-mode",
-        "runner-matches-the-platform-table",
-        "node-is-tested-at-its-floor",
-        "target-declares-the-feature-it-needs",
-        "a-tier-turns-on-its-base",
-        "serialised-type-describes-itself",
-        "a-word-is-spelt-as-a-key",
-        "every-predicate-is-listed",
-        "composer-reaches-every-binding",
-        "layer-does-not-shadow-a-kind",
-        "crate-is-listed",
-        "open-question-is-named",
-        "generated-page-is-gated",
-    ] {
+    for rule in RULES {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
         if failures == 0 {

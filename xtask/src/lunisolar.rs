@@ -29,6 +29,7 @@ use serde_json::Value;
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, table};
+use teistro_muhurta::season::SAMSARPA_REACH_MONTHS;
 
 const PAGE: &str = "docs/03-design/calendar-indian-lunisolar-measured.md";
 const CHARTS: &str = "fixtures/baseline/charts";
@@ -39,6 +40,26 @@ const CHARTS: &str = "fixtures/baseline/charts";
 /// is a number and not a rate.
 const FROM_JD: f64 = 2_268_932.5;
 const TO_JD: f64 = 2_634_166.5;
+
+/// The months *Dharmasindhu* says a kshaya month falls in, as indexes
+/// in the year's twelve: Kartika, Margashirsha and Pausha.
+const KSHAYA_MONTHS: [usize; 3] = [7, 8, 9];
+
+/// The months' names in the year's order, for the page.
+const MONTH_NAMES: [&str; 12] = [
+    "Chaitra",
+    "Vaishakha",
+    "Jyeshtha",
+    "Ashadha",
+    "Shravana",
+    "Bhadrapada",
+    "Ashwina",
+    "Kartika",
+    "Margashirsha",
+    "Pausha",
+    "Magha",
+    "Phalguna",
+];
 
 /// The months in the order the **corpus** spells them, which is not quite
 /// the SDK's: the recording engine writes `ASHVIN` where the catalogue
@@ -120,6 +141,21 @@ fn page(root: &Path) -> Result<String, String> {
     let recorded = recorded(root)?;
     if months.is_empty() {
         return Err(String::from("the sample measured no lunar months"));
+    }
+    let short: Vec<f64> = kshaya_years(&months)
+        .iter()
+        .filter(|k| {
+            k.before
+                .and_then(|gap| u32::try_from(gap).ok())
+                .is_none_or(|gap| f64::from(gap) > SAMSARPA_REACH_MONTHS)
+        })
+        .map(|k| k.year)
+        .collect();
+    if !short.is_empty() {
+        return Err(format!(
+            "the season's SAMSARPA_REACH_MONTHS ({SAMSARPA_REACH_MONTHS}) does not reach back from \
+             the kshaya months of {short:?} to an adhika month before them"
+        ));
     }
     let sections = [
         header(&months),
@@ -234,6 +270,44 @@ fn month_of(months: &[Month], jd: f64) -> Option<&Month> {
 /// The counts here are months in a millennium — thousands at most — so
 /// the cast is exact, and a count of nought would divide by zero rather
 /// than report an infinite interval.
+/// A kshaya month, and how many months lie between it and the nearest
+/// adhika month on either side.
+struct KshayaYear {
+    /// The year its opening new moon falls in, CE.
+    year: f64,
+    /// The month's index in the year's twelve, 0 for Chaitra.
+    named: usize,
+    /// Months back from it to the adhika month before it, or none when
+    /// the nearest marked month before it is not adhika.
+    before: Option<usize>,
+    /// Months on from it to the adhika month after it, likewise.
+    after: Option<usize>,
+}
+
+fn kshaya_years(months: &[Month]) -> Vec<KshayaYear> {
+    let marked = |m: &Month| m.sankrantis.len() != 1;
+    let adhika = |m: &Month| m.sankrantis.is_empty();
+    months
+        .iter()
+        .enumerate()
+        .filter(|(_, m)| m.sankrantis.len() == 2)
+        .map(|(i, month)| KshayaYear {
+            year: 2000.0 + (month.start - 2_451_545.0) / 365.25,
+            named: month.named(),
+            before: months
+                .get(..i)
+                .and_then(|earlier| earlier.iter().rposition(marked))
+                .filter(|j| months.get(*j).is_some_and(adhika))
+                .map(|j| i - j),
+            after: months
+                .get(i + 1..)
+                .and_then(|later| later.iter().position(marked))
+                .filter(|j| months.get(i + 1 + j).is_some_and(adhika))
+                .map(|j| j + 1),
+        })
+        .collect()
+}
+
 fn rate(count: usize) -> f64 {
     #[expect(
         clippy::cast_precision_loss,
@@ -466,6 +540,24 @@ fn season(months: &[Month]) -> String {
         "Kumbha",
         "Meena",
     ];
+    let years = kshaya_years(months);
+    let mut by_name: BTreeMap<usize, usize> = BTreeMap::new();
+    for year in &years {
+        *by_name.entry(year.named).or_default() += 1;
+    }
+    let by_month: Vec<String> = by_name
+        .iter()
+        .map(|(index, times)| {
+            format!(
+                "{} ({times})",
+                MONTH_NAMES.get(*index).copied().unwrap_or("?")
+            )
+        })
+        .collect();
+    let before: Vec<usize> = years.iter().filter_map(|k| k.before).collect();
+    let after: Vec<usize> = years.iter().filter_map(|k| k.after).collect();
+    let lo = |gaps: &[usize]| gaps.iter().min().copied().unwrap_or(0);
+    let hi = |gaps: &[usize]| gaps.iter().max().copied().unwrap_or(0);
     let listed: Vec<String> = signs
         .iter()
         .map(|(sign, times)| {
@@ -486,9 +578,30 @@ fn season(months: &[Month]) -> String {
          cross two sign boundaries inside one lunar month. A rule that\n\
          produced a kshaya month in, say, Karka would be wrong on\n\
          astronomy the calendar never states, and this is the check that\n\
-         would catch it.\n\n",
+         would catch it. Named by the Sun's sign at the opening new moon,\n\
+         they are {}: *Dharmasindhu* (p. 3) says a kshaya month falls only\n\
+         in Kartika, Margashirsha or Pausha.\n\n\
+         **A kshaya year has two adhika months.** {} of the {} kshaya\n\
+         months have an adhika month before them, {} to {} months back,\n\
+         and {} have one after them, {} to {} months on. *Dharmasindhu*\n\
+         calls the one before *samsarpa*, fit for every rite, and the\n\
+         kshaya month and the one after it are avoided in all of them\n\
+         (C179). So the muhurta season has to look past the range it is\n\
+         asked for to know whether an adhika month inside it is the\n\
+         samsarpa. It looks {} synodic months on\n\
+         (`SAMSARPA_REACH_MONTHS`), and this pass refuses to write the\n\
+         page if any gap above is longer.\n\n",
         count(kshaya),
         listed.join(", "),
+        by_month.join(", "),
+        count(years.iter().filter(|k| k.before.is_some()).count()),
+        count(years.len()),
+        lo(&before),
+        hi(&before),
+        count(years.iter().filter(|k| k.after.is_some()).count()),
+        lo(&after),
+        hi(&after),
+        SAMSARPA_REACH_MONTHS,
     )
 }
 
@@ -512,6 +625,7 @@ fn decides(months: &[Month], recorded: &[Recorded]) -> String {
         }
     }
     let kshaya = tally.get(&2).copied().unwrap_or(0);
+    let years = kshaya_years(months);
     let claims = [
         Claim::counted(
             "every lunar month holds exactly one sankranti",
@@ -547,10 +661,22 @@ fn decides(months: &[Month], recorded: &[Recorded]) -> String {
             over_two,
             months.len(),
         ),
-        Claim::stated(
-            "kshaya falls only where the Sun moves fastest",
-            Verdict::Holds,
-            "every one of them between Vrishchika and Kumbha",
+        Claim::counted(
+            "a kshaya month falls only in Kartika, Margashirsha or Pausha (Dharmasindhu p. 3)",
+            years
+                .iter()
+                .filter(|k| !KSHAYA_MONTHS.contains(&k.named))
+                .count(),
+            years.len(),
+        )
+        .with_note("where the Sun moves fastest"),
+        Claim::counted(
+            "a kshaya year has an adhika month before and after its kshaya month",
+            years
+                .iter()
+                .filter(|k| k.before.is_none() || k.after.is_none())
+                .count(),
+            years.len(),
         ),
     ];
     format!(

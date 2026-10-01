@@ -47,8 +47,17 @@ pub enum BlackoutKind {
     /// Kartika, the four months Vishnu sleeps.
     Chaturmas,
     /// An intercalary month, which holds no sankranti: Nepal's Malmas,
-    /// also called Purushottam masa (C177).
+    /// also called Purushottam masa (C177). The adhika month before a
+    /// kshaya month is not one of these; it is [`BlackoutKind::Samsarpa`].
     AdhikaMasa,
+    /// The adhika month before a kshaya month, which *Dharmasindhu* calls
+    /// samsarpa and holds fit for every rite (p. 3, C179). It is its own
+    /// kind so that a rule which closes every adhika month heeds this one
+    /// and [`BlackoutKind::AdhikaMasa`] together.
+    Samsarpa,
+    /// A month holding two sankrantis, whose second name the year skips:
+    /// *Dharmasindhu*'s amhaspati, avoided in every rite (p. 3, C179).
+    KshayaMasa,
     /// The Sun in Sagittarius or Pisces. Some north Indian calendars call
     /// it Malmas, a word that in Nepal names the adhika month instead
     /// (C177).
@@ -72,6 +81,43 @@ pub enum BlackoutKind {
     /// *Dharmasindhu* counts back from the eclipse to its end as seen, or
     /// to the body's next rising when it set eclipsed (C192).
     EclipseVedha,
+}
+
+impl BlackoutKind {
+    /// Every kind, in declaration order. [`BlackoutKind::position`] is
+    /// an exhaustive match, so a kind added to the enum and not here fails
+    /// to compile there or fails the test that reads this back.
+    pub const ALL: [BlackoutKind; 11] = [
+        BlackoutKind::Chaturmas,
+        BlackoutKind::AdhikaMasa,
+        BlackoutKind::Samsarpa,
+        BlackoutKind::KshayaMasa,
+        BlackoutKind::Kharmas,
+        BlackoutKind::PitruPaksha,
+        BlackoutKind::Sankranti,
+        BlackoutKind::GuruAsta,
+        BlackoutKind::ShukraAsta,
+        BlackoutKind::EclipseStar,
+        BlackoutKind::EclipseVedha,
+    ];
+
+    /// The kind's place in [`BlackoutKind::ALL`].
+    #[must_use]
+    pub const fn position(self) -> usize {
+        match self {
+            BlackoutKind::Chaturmas => 0,
+            BlackoutKind::AdhikaMasa => 1,
+            BlackoutKind::Samsarpa => 2,
+            BlackoutKind::KshayaMasa => 3,
+            BlackoutKind::Kharmas => 4,
+            BlackoutKind::PitruPaksha => 5,
+            BlackoutKind::Sankranti => 6,
+            BlackoutKind::GuruAsta => 7,
+            BlackoutKind::ShukraAsta => 8,
+            BlackoutKind::EclipseStar => 9,
+            BlackoutKind::EclipseVedha => 10,
+        }
+    }
 }
 
 /// A blackout and the interval it holds over, clipped to the range asked.
@@ -103,11 +149,22 @@ const SIXTEEN_GHATIS_DAYS: f64 = 16.0 / 60.0;
 /// longest blackout the months bound, about 118 days from its start to
 /// its end, and a range that opens inside it must see the Ashadha that
 /// began it: five synodic months reach it with a month to spare.
-const MONTHS_BEFORE_DAYS: f64 = 5.0 * 29.530_588_9;
+const MONTHS_BEFORE_DAYS: f64 = 5.0 * SYNODIC_MONTH_DAYS;
 
 /// How far after a range the months are found, days: one month, so the
 /// last month the range touches is closed.
 const MONTHS_AFTER_DAYS: f64 = 31.0;
+
+/// How many synodic months past a range the season looks for a kshaya
+/// month, so that an adhika month inside the range is known to be or not
+/// to be the samsarpa before one. The lunisolar pass measures the gap
+/// from a kshaya month back to the adhika before it over a millennium
+/// (at most five months) and fails if this does not cover it
+/// (`calendar-indian-lunisolar-measured.md` §5).
+pub const SAMSARPA_REACH_MONTHS: f64 = 6.0;
+
+/// A synodic month, days.
+const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
 
 /// The lunar months that open inside a window, each closed by the next
 /// new moon.
@@ -190,13 +247,28 @@ pub fn blackouts<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
     range: Interval,
 ) -> Result<Vec<Blackout>, Error> {
-    let lead = interval(range.from.get() - MONTHS_BEFORE_DAYS, range.to.get())?;
+    let lead = interval(
+        range.from.get() - MONTHS_BEFORE_DAYS,
+        range.to.get() + SAMSARPA_REACH_MONTHS * SYNODIC_MONTH_DAYS,
+    )?;
     let months = months(tropical, zodiac, lead)?;
     let source = Sidereal::over(tropical, zodiac);
     let mut found = Vec::new();
     for (i, month) in months.iter().enumerate() {
         match (month.masa, month.kind) {
-            (_, MonthKind::Adhika) => found.push(blackout(BlackoutKind::AdhikaMasa, month.at)),
+            (_, MonthKind::Adhika) => {
+                let next = months
+                    .iter()
+                    .skip(i + 1)
+                    .find(|m| m.kind != MonthKind::Nija);
+                let kind = if next.is_some_and(|m| m.kind == MonthKind::Kshaya) {
+                    BlackoutKind::Samsarpa
+                } else {
+                    BlackoutKind::AdhikaMasa
+                };
+                found.push(blackout(kind, month.at));
+            }
+            (_, MonthKind::Kshaya) => found.push(blackout(BlackoutKind::KshayaMasa, month.at)),
             (Masa::Ashadha, MonthKind::Nija) => {
                 let kartika = months
                     .iter()
@@ -411,9 +483,6 @@ impl SeenEclipse {
 /// six for a marriage (crux C191).
 pub const ECLIPSE_STAR_MONTHS: f64 = 6.0;
 
-/// A synodic month, days.
-const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
-
 /// How far before a range an eclipse can still bar a star inside it, days.
 pub const ECLIPSE_STAR_REACH_DAYS: f64 = ECLIPSE_STAR_MONTHS * SYNODIC_MONTH_DAYS;
 
@@ -562,6 +631,13 @@ mod tests {
         clippy::float_cmp,
         reason = "tests fail by panicking, and compare quarters of exact halves"
     )]
+
+    #[test]
+    fn every_blackout_kind_is_listed_once_in_its_place() {
+        for (at, kind) in BlackoutKind::ALL.iter().enumerate() {
+            assert_eq!(kind.position(), at, "{kind:?}");
+        }
+    }
 
     use super::{BlackoutKind, EclipseVedha, SeenEclipse, SeenKind, eclipse_vedha, vedha_praharas};
     use teistro_core::interval::Interval;

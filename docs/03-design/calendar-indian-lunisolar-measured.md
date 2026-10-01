@@ -121,7 +121,19 @@ is the Earth's orbit: perihelion is in early January, the Sun's apparent
 motion is fastest there, and only there can it cross two sign boundaries
 inside one lunar month. A rule that produced a kshaya month in, say,
 Karka would be wrong on astronomy the calendar never states, and this is
-the check that would catch it.
+the check that would catch it. Named by the Sun's sign at the opening
+new moon, they are Kartika (4), Margashirsha (12), Pausha (3):
+*Dharmasindhu* (p. 3) says a kshaya month falls only in Kartika,
+Margashirsha or Pausha.
+
+**A kshaya year has two adhika months.** 19 of the 19 kshaya months have
+an adhika month before them, 1 to 5 months back, and 19 have one after
+them, 1 to 5 months on. *Dharmasindhu* calls the one before *samsarpa*,
+fit for every rite, and the kshaya month and the one after it are
+avoided in all of them (C179). So the muhurta season has to look past
+the range it is asked for to know whether an adhika month inside it is
+the samsarpa. It looks 6 synodic months on (`SAMSARPA_REACH_MONTHS`),
+and this pass refuses to write the page if any gap above is longer.
 
 ## 6. What this decides
 
@@ -132,7 +144,8 @@ the check that would catch it.
 | the month's name is the sign the Sun stands in at its opening new moon | falsified | 1 of 55 disagree; the one is an instant nineteen minutes from a new moon, where the text's conjunction and the recording's are on either side of it — a boundary and not a rule. An adhika month needs no naming rule of its own |
 | a month with two sankrantis is kshaya | untested | 19 in the sample and none in the corpus, so the rule is measured and not tested |
 | no month holds more than two sankrantis | **holds** | 0 of 12368 disagree |
-| kshaya falls only where the Sun moves fastest | **holds** | every one of them between Vrishchika and Kumbha |
+| a kshaya month falls only in Kartika, Margashirsha or Pausha (Dharmasindhu p. 3) | **holds** | 0 of 19 disagree; where the Sun moves fastest |
+| a kshaya year has an adhika month before and after its kshaya month | **holds** | 0 of 19 disagree |
 
 **The rule is the count of sankrantis in the lunar month**: none is
 adhika, one is ordinary, two is kshaya. It reproduces every recorded day

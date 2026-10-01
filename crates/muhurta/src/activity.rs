@@ -157,6 +157,10 @@ impl ActivityRules {
     /// Venus set, and an adhika month; the sankranti, the second of the
     /// twenty-one Mahadoshas; and the sixteenth, grahanotpatha, the star of
     /// an eclipse the place saw, which a marriage avoids for six months.
+    /// The months a kshaya year closes are *Dharmasindhu*'s (p. 3, crux
+    /// C179): the kshaya month and the adhika after it, while the samsarpa
+    /// adhika before it is fit. A caller who closes that one too adds
+    /// [`BlackoutKind::Samsarpa`] to `heeds`.
     ///
     /// - **Months** (lunar, crux C161): Magha, Phalguna, Vaishakha and
     ///   Jyeshtha good; Kartika and Margashirsha ordinary; the rest
@@ -212,6 +216,7 @@ impl ActivityRules {
             ],
             heeds: vec![
                 BlackoutKind::AdhikaMasa,
+                BlackoutKind::KshayaMasa,
                 BlackoutKind::Sankranti,
                 BlackoutKind::GuruAsta,
                 BlackoutKind::ShukraAsta,
@@ -236,10 +241,6 @@ impl ActivityRules {
                     what: "Jupiter's and Venus's infancy and old age (bala, vriddha)".into(),
                     why: "the days either side of an asta the texts count differ by body and side, and are not yet sourced (Muhurta Chintamani ch. I, vv. 46–47)".into(),
                 },
-                Unjudged {
-                    what: "the kshaya month".into(),
-                    why: "the season does not yet mark it (Muhurta Chintamani ch. I, vv. 46–47)".into(),
-                },
             ],
             baseline: None,
         }
@@ -254,8 +255,8 @@ impl ActivityRules {
     ///   Capricorn or Aquarius (the solar month, crux C161); the Moon in
     ///   one of the eleven stars; Rahu kaala, the one kaala the engine
     ///   avoids by default.
-    /// - **Heeds**: Chaturmas, the adhika month, Kharmas, Pitru paksha and
-    ///   Guru and Shukra asta.
+    /// - **Heeds**: Chaturmas, every adhika month (the samsarpa too),
+    ///   Kharmas, Pitru paksha and Guru and Shukra asta.
     /// - Nothing else is graded: the engine weighs the rest, and a
     ///   weight is the ranking's.
     #[must_use]
@@ -285,6 +286,7 @@ impl ActivityRules {
             heeds: vec![
                 BlackoutKind::Chaturmas,
                 BlackoutKind::AdhikaMasa,
+                BlackoutKind::Samsarpa,
                 BlackoutKind::Kharmas,
                 BlackoutKind::PitruPaksha,
                 BlackoutKind::GuruAsta,
@@ -457,7 +459,7 @@ fn raman_marriage_day() -> DayRules {
 #[cfg(test)]
 #[allow(clippy::expect_used, reason = "tests fail by panicking")]
 mod tests {
-    use super::{ActivityRules, Bar, Pada};
+    use super::{ActivityRules, Bar, BlackoutKind, Pada};
     use crate::clause::{ClauseKey, ClauseKind};
     use crate::grade::Grade;
     use crate::instant::Sky;
@@ -595,7 +597,10 @@ mod tests {
             Grade::Middling
         );
         assert_eq!(rules.day.varas.grade(&Vara::Mangalavara), Grade::Middling);
-        assert_eq!(rules.heeds.len(), 6);
+        assert_eq!(rules.heeds.len(), 7);
+        // The engine closes every adhika month, the samsarpa too.
+        assert!(rules.heeds.contains(&BlackoutKind::AdhikaMasa));
+        assert!(rules.heeds.contains(&BlackoutKind::Samsarpa));
         assert!(rules.baseline.is_some());
         assert!(ActivityRules::raman_marriage().baseline.is_none());
     }
