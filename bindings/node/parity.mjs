@@ -841,11 +841,13 @@ put('almanac-single-agrees', oneDay.day.sunrise === week.at(0).day.sunrise);
 
 // ── A muhurta search ───────────────────────────────────────────────────
 // Both rankings over 2024-11-25..27: the texts bar the windows for
-// different reasons and the baseline scores them.
+// different reasons and the baseline scores them; and a thread ceremony,
+// whose rules want grahas out of houses.
 const listed = (items) => (items.length === 0 ? 'none' : items.join(' '));
 for (const [name, rules, ranking] of [
   ['raman', 'RAMAN_MARRIAGE', 'TEXTS'],
   ['baseline', 'BASELINE_MARRIAGE', 'BASELINE'],
+  ['upanayana', 'RAMAN_UPANAYANA', 'TEXTS'],
 ]) {
   const { muhurta } = geo.almanac.of({
     from: gregorian(2024, 11, 25),
@@ -879,6 +881,14 @@ for (const [name, rules, ranking] of [
     put(
       key(`-${k}-bars`),
       listed(window.barredBy.map((bar) => (typeof bar === 'string' ? bar : bar.clause))),
+    );
+    put(
+      key(`-${k}-placed`),
+      listed(
+        window.clauses
+          .filter((clause) => clause.clause === 'UNWANTED_PLACEMENT')
+          .map((clause) => `${clause.house}:${clause.by.join(',')}`),
+      ),
     );
     put(
       key(`-${k}-score`),

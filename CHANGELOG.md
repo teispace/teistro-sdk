@@ -1609,6 +1609,34 @@ the astronomical numbers do not move. Nothing else computes yet.
   section are unchanged, and the new section costs nothing unless it is
   asked for.
 
+- **The saait packs: four of Raman's rites beyond marriage**
+  (`muhurta.md` §4.6, C203 to C206 registered).
+  - `ActivityRules::raman_namakarana`, `raman_annaprasana`,
+    `raman_upanayana` and `raman_griha_pravesha` (nwaran, pasni,
+    bratabandha and griha pravesh), read off the page images of
+    *Muhurtha* chs. VIII and XII and laid over his general shuddhi.
+    `Activity` names them `RAMAN_NAMAKARANA`, `RAMAN_ANNAPRASANA`,
+    `RAMAN_UPANAYANA` and `RAMAN_GRIHA_PRAVESHA` in every binding, and
+    the `activity-reaches-every-binding` lint holds the four bindings'
+    lists to `Activity::ALL` both ways.
+  - `ActivityRules.unwanted` lists the houses a graha should not stand
+    in, or that should stand empty. A window gets one
+    `UNWANTED_PLACEMENT { house, by }` clause per such house, and an
+    entry marked `bars` (the chapter's "must") bars the window as its
+    own clause, where the rest (its "should") only weigh. Rules spelt
+    out without the field still read, and a house outside 1–12 is
+    refused at `rules.unwanted[i].houses`.
+  - Node, Python and Dart read the new clause typed
+    (`UnwantedPlacementClause`), and every parity runner prints a
+    thread ceremony's placements.
+  - `saait-measured.md` holds the four rites, and Raman's marriage, to
+    the committee's VS 2083 muhurta sheet: every readable bratabandha
+    and griha pravesh day is clean, 24 of 35 pasni days and 5 of 39
+    vivaha days are, and what parts the rest is counted.
+
+  **Numbers:** none moved. The marriage rules carry an empty
+  `unwanted`, so their windows, scores and hashes are unchanged.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).

@@ -559,6 +559,63 @@ open window **exactly** when the engine would have offered it. Of the
 open windows, those in Char, Kaala, Udvega or Roga carry no score and
 rank after the scored.
 
+### 4.6 The rites beyond marriage (saait)
+
+Nepal elects a saait for more than a marriage, and its national
+panchanga committee prints the days for each. Four of Raman's chapters
+are shipped as `ActivityRules` values beside his marriage
+(`crates/muhurta/src/rites.rs`), each named by its key in every binding:
+
+| key | Raman, *Muhurtha* | Nepal |
+|---|---|---|
+| `RAMAN_NAMAKARANA` | naming, ch. VIII pp. 58–59 | nwaran |
+| `RAMAN_ANNAPRASANA` | first feeding, ch. VIII pp. 59–60 | pasni |
+| `RAMAN_UPANAYANA` | thread ceremony, ch. VIII pp. 64–65 | bratabandha |
+| `RAMAN_GRIHA_PRAVESHA` | house entry, ch. XII pp. 134–136 | griha pravesh |
+
+Each was read off the page images, and each is laid over Raman's
+general shuddhi as the marriage is: where a chapter names a member its
+grade wins, and where it is silent the shuddhi's does. A chapter that
+lists the good and is silent on the rest leaves the rest middling; one
+that says the others "should be avoided" rejects them. The scan lacks
+pp. 62–63 and 66–67, where the thread ceremony's opening and its
+malefic yogas are; those are listed in `unjudged` rather than guessed.
+
+**Unwanted placements.** The chapters name houses a graha should not
+stand in, and houses that should stand empty, which no clause of the
+marriage expressed. `ActivityRules.unwanted` is a list of
+`Unwanted { grahas, houses, bars }`, and a window gets one
+`UNWANTED_PLACEMENT { house, by }` clause per house where a named graha
+stands, naming every one of them. `Unwanted::vacant(houses)` names all
+nine grahas. A house outside 1–12 is refused at
+`rules.unwanted[i].houses`.
+
+**"Must" bars, "should" weighs** (crux C205). Raman writes some
+placements "must" not be (the 10th for the first feeding, the 8th for
+the thread ceremony) and others "should" not (Mercury in the 7th, a
+benefic in the 6th). An entry marked `bars` bars a window it covers
+whole, as its own `Bar::Clause` in `barredBy`; the rest are reported
+and count against the time without closing it. Every placement barring
+was built first, and closed nearly every thread-ceremony window.
+
+**What a chapter asks and the SDK does not judge** — most often the
+child's age, which a muhurta request does not carry — is listed in
+`unjudged`. Two readings are recorded as cruxes: "Uttara" in the first
+feeding is Uttara Phalguni (C203), and the house entry's months are
+graded as printed, though two of them fall outside the northern course
+the same chapter asks (C204).
+
+**Measured** (`saait-measured.md`, gated by `check-saait`): the
+committee's VS 2083 muhurta sheet, 94 rows read off its page images,
+each printed day founded at Kathmandu over the committee's sky and the
+modern one and searched with the rite's rules. Six rows print a weekday
+their own date contradicts, and are read neither way. Every readable
+bratabandha and griha pravesh day has a clean window; 24 of 35 pasni
+days do, most of the rest parting at the 10th that must be empty; and
+5 of 39 vivaha days do under Raman's marriage, which parts from the
+committee by Tuesday, Pausha, dark-half tithis and yogas (C206). The
+page also counts the days of the year each rite leaves open.
+
 ## 5. What is measured
 
 `cargo xtask muhurta` (`muhurta-measured.md`, gated by `check-muhurta`),
@@ -587,6 +644,9 @@ over the built-in ephemeris at Kathmandu:
   does. C158 is not counted, being closed at rank 1, and its rival
   parts from it at every panchaka by construction.
 
+`cargo xtask saait` (`saait-measured.md`, gated by `check-saait`) holds
+the rites of §4.6 to the committee's printed days.
+
 ## 6. Order of work
 
 1. The corrections first: C158 and C159 in `panchanga`, with a test per
@@ -600,3 +660,5 @@ over the built-in ephemeris at Kathmandu:
 6. The measured pass and the regression.
 7. The boundary: `muhurta_json` on a request, a blob section, every
    binding.
+8. The rites beyond marriage (§4.6), the unwanted placements, and the
+   saait pass.

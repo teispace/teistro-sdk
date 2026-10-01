@@ -748,6 +748,82 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Where a binding names the activities a muhurta request may name: the
+/// file, where the list starts and the text that ends it.
+///
+/// A muhurta request crosses as JSON, so like a `PlanRequest` each
+/// surface spells the names itself, and the FFI's own description of the
+/// field, which every generated binding's documentation copies, is a
+/// fourth list.
+const ACTIVITY_SURFACES: [(&str, &str, &str); 4] = [
+    (
+        "bindings/node/lib/index.d.ts",
+        "export type MuhurtaActivity =",
+        ";",
+    ),
+    (
+        "bindings/dart/lib/teistro.dart",
+        "enum MuhurtaActivity {",
+        "const MuhurtaActivity(",
+    ),
+    (
+        "bindings/python/teistro/__init__.py",
+        "MuhurtaActivity = Literal[",
+        "\n]",
+    ),
+    (
+        "crates/ffi/src/panchanga.rs",
+        "or a shipped set named",
+        "); and",
+    ),
+];
+
+/// That every binding names exactly the activities the SDK ships, both
+/// ways: one it lacks cannot be asked for in that language's types, and
+/// one it keeps after the SDK drops it type-checks and is refused.
+fn activities_reach_every_binding(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "activity-reaches-every-binding";
+    let Ok(screaming) = regex::Regex::new(r"\b[A-Z]+(?:_[A-Z]+)+\b") else {
+        return;
+    };
+    let shipped: std::collections::BTreeSet<&str> =
+        teistro::Activity::ALL.iter().map(|a| a.key()).collect();
+    for (surface, start, end) in ACTIVITY_SURFACES {
+        let text = std::fs::read_to_string(root.join(surface)).unwrap_or_default();
+        let listed = text.find(start).and_then(|at| {
+            let rest = text.get(at..)?;
+            rest.get(..rest.find(end)?)
+        });
+        let Some(listed) = listed else {
+            outcome.failures.push(Finding {
+                file: surface.to_owned(),
+                line: 1,
+                text: format!("`{start}` … `{end}` is not in this file any more"),
+                rule: RULE,
+            });
+            continue;
+        };
+        let named: std::collections::BTreeSet<&str> =
+            screaming.find_iter(listed).map(|m| m.as_str()).collect();
+        for missing in shipped.difference(&named) {
+            outcome.failures.push(Finding {
+                file: surface.to_owned(),
+                line: line_of(&text, start),
+                text: format!("`Activity::ALL` has `{missing}` and this list does not name it"),
+                rule: RULE,
+            });
+        }
+        for extra in named.difference(&shipped) {
+            outcome.failures.push(Finding {
+                file: surface.to_owned(),
+                line: line_of(&text, start),
+                text: format!("names `{extra}`, which `Activity::ALL` does not ship"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// The API description every binding's catalogue is generated from.
 const DESCRIPTION: &str = "idl/api.json";
 
@@ -2129,7 +2205,7 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
 }
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 22] = [
+const RULES: [&str; 23] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2148,6 +2224,7 @@ const RULES: [&str; 22] = [
     "a-word-is-spelt-as-a-key",
     "every-predicate-is-listed",
     "composer-reaches-every-binding",
+    "activity-reaches-every-binding",
     "layer-does-not-shadow-a-kind",
     "crate-is-listed",
     "open-question-is-named",
@@ -2205,6 +2282,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     words_are_spelt_as_keys(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
+    activities_reach_every_binding(root, &mut outcome);
     layers_do_not_shadow_a_kind(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);

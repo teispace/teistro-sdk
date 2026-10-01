@@ -25,11 +25,30 @@ pub enum Activity {
     /// ([`ActivityRules::baseline_marriage`]), which the `BASELINE`
     /// ranking reads.
     BaselineMarriage,
+    /// Naming the child, Nepal's nwaran, by Raman
+    /// ([`ActivityRules::raman_namakarana`]).
+    RamanNamakarana,
+    /// The first feeding on rice, Nepal's pasni, by Raman
+    /// ([`ActivityRules::raman_annaprasana`]).
+    RamanAnnaprasana,
+    /// The thread ceremony, Nepal's bratabandha, by Raman
+    /// ([`ActivityRules::raman_upanayana`]).
+    RamanUpanayana,
+    /// Entering a new house, Nepal's griha pravesh, by Raman
+    /// ([`ActivityRules::raman_griha_pravesha`]).
+    RamanGrihaPravesha,
 }
 
 impl Activity {
     /// Every activity the SDK ships.
-    pub const ALL: [Activity; 2] = [Activity::RamanMarriage, Activity::BaselineMarriage];
+    pub const ALL: [Activity; 6] = [
+        Activity::RamanMarriage,
+        Activity::BaselineMarriage,
+        Activity::RamanNamakarana,
+        Activity::RamanAnnaprasana,
+        Activity::RamanUpanayana,
+        Activity::RamanGrihaPravesha,
+    ];
 
     /// Its key, as serde writes it and a request names it.
     #[must_use]
@@ -37,6 +56,10 @@ impl Activity {
         match self {
             Activity::RamanMarriage => "RAMAN_MARRIAGE",
             Activity::BaselineMarriage => "BASELINE_MARRIAGE",
+            Activity::RamanNamakarana => "RAMAN_NAMAKARANA",
+            Activity::RamanAnnaprasana => "RAMAN_ANNAPRASANA",
+            Activity::RamanUpanayana => "RAMAN_UPANAYANA",
+            Activity::RamanGrihaPravesha => "RAMAN_GRIHA_PRAVESHA",
         }
     }
 
@@ -46,6 +69,10 @@ impl Activity {
         match self {
             Activity::RamanMarriage => ActivityRules::raman_marriage(),
             Activity::BaselineMarriage => ActivityRules::baseline_marriage(),
+            Activity::RamanNamakarana => ActivityRules::raman_namakarana(),
+            Activity::RamanAnnaprasana => ActivityRules::raman_annaprasana(),
+            Activity::RamanUpanayana => ActivityRules::raman_upanayana(),
+            Activity::RamanGrihaPravesha => ActivityRules::raman_griha_pravesha(),
         }
     }
 }
@@ -182,14 +209,17 @@ impl MuhurtaRequest {
         &self.asta
     }
 
-    /// Refuses a search for nothing — no day cut, or no window kept — and
-    /// the `BASELINE` ranking over rules that carry no baseline event; a
-    /// refusal names the field.
+    /// Refuses a search for nothing — no day cut, or no window kept —,
+    /// the `BASELINE` ranking over rules that carry no baseline event, and
+    /// rules naming a house or a quarter that does not exist
+    /// ([`ActivityRules::check`]); a refusal names the field.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` naming `daysWithWindows`, `most` or `rules.baseline`.
+    /// `INVALID_ARG` naming `daysWithWindows`, `most`, `rules.baseline`,
+    /// or the field of `rules` that is wrong.
     pub fn check(&self) -> Result<(), Error> {
+        self.rules.check().map_err(|why| why.under("rules"))?;
         if self.days_with_windows == 0 {
             return Err(Error::invalid_arg(
                 "a search that cuts no day into windows answers nothing; ask for one day or more",
@@ -394,5 +424,25 @@ mod tests {
             r#"{"rules": "RAMAN_MARRIAGE", "native": {"star": "masa.JYESHTHA", "moonSign": "TAURUS"}}"#,
         );
         assert_eq!(masa.field(), Some("muhurta.native.star"));
+        // Rules spelt out with a house that does not exist would judge
+        // nothing; they are refused at the house.
+        let mut nowhere = ActivityRules::raman_namakarana();
+        nowhere.unwanted = vec![teistro_muhurta::Unwanted::vacant(vec![8, 13])];
+        let rules = serde_json::to_value(nowhere).unwrap();
+        let house = refused(&serde_json::json!({ "rules": rules }).to_string());
+        assert_eq!(house.field(), Some("muhurta.rules.unwanted[0].houses"));
+    }
+
+    #[test]
+    fn every_activity_is_named_by_its_key_and_its_rules_check() {
+        for activity in Activity::ALL {
+            let text = format!(r#"{{"rules": "{}"}}"#, activity.key());
+            let asked = MuhurtaRequest::from_json(&text).unwrap();
+            assert_eq!(asked.rules(), &activity.rules(), "{text}");
+            assert_eq!(
+                serde_json::to_value(activity).unwrap(),
+                serde_json::json!(activity.key())
+            );
+        }
     }
 }

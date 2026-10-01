@@ -3003,7 +3003,13 @@ export interface MuhurtaRequest {
 }
 
 /** A set of rules the SDK ships. */
-export type MuhurtaActivity = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE';
+export type MuhurtaActivity =
+  | 'RAMAN_MARRIAGE'
+  | 'BASELINE_MARRIAGE'
+  | 'RAMAN_NAMAKARANA'
+  | 'RAMAN_ANNAPRASANA'
+  | 'RAMAN_UPANAYANA'
+  | 'RAMAN_GRIHA_PRAVESHA';
 
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';
@@ -3068,6 +3074,8 @@ export interface ActivityRules {
   readonly padas: readonly { readonly nakshatra: Nakshatra; readonly pada: number }[];
   /** The seasons that close a day. */
   readonly heeds: readonly BlackoutKind[];
+  /** The grahas the rite wants out of houses; none when left out. */
+  readonly unwanted?: readonly MuhurtaUnwanted[];
   /** What bars a time outright: every clause of a kind, or one clause. */
   readonly bars: readonly MuhurtaBar[];
   /** What the source asks that the SDK does not judge. */
@@ -3085,6 +3093,14 @@ export interface MuhurtaBaselineEvent {
   readonly karakas: readonly Graha[];
   readonly seventhEmpty: boolean;
   readonly abhijitForbidden: boolean;
+}
+
+/** Grahas a rite wants out of houses, counted 1 to 12 by sign from the lagna; every graha for a house that should be unoccupied. */
+export interface MuhurtaUnwanted {
+  readonly grahas: readonly Graha[];
+  readonly houses: readonly number[];
+  /** Whether a graha there bars the rite (the texts' "must") rather than weighs against it ("should"); `false` when left out (C205). */
+  readonly bars?: boolean;
 }
 
 /** What bars a time: every clause of a kind, by its key, or one clause exactly. */
@@ -3145,7 +3161,8 @@ export type MuhurtaClauseKind =
   | { readonly clause: 'BENEFIC_IN_LAGNA'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'EXALTED_IN_LAGNA'; readonly grahas: readonly Graha[] }
   | { readonly clause: 'LUMINARY_IN_ELEVENTH'; readonly grahas: readonly Graha[] }
-  | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] };
+  | { readonly clause: 'KENDRA_BENEFICS'; readonly grahas: readonly Graha[] }
+  | { readonly clause: 'UNWANTED_PLACEMENT'; readonly house: number; readonly by: readonly Graha[] };
 
 /** A clause and the interval it held over. */
 export type MuhurtaClause = MuhurtaClauseKind & { readonly at: Interval };

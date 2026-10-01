@@ -32,6 +32,7 @@ pub mod day;
 pub mod grade;
 pub mod instant;
 pub mod judge;
+pub mod rites;
 pub mod search;
 pub mod season;
 pub mod sources;
@@ -39,7 +40,7 @@ pub mod spelling;
 pub mod tara;
 pub mod window;
 
-pub use activity::{ActivityRules, Bar, MonthRule};
+pub use activity::{ActivityRules, Bar, MonthRule, Unwanted};
 pub use baseline::{BaselineEvent, Score};
 pub use clause::{Clause, ClauseKey, ClauseKind};
 pub use day::{DayRules, Native, clauses};

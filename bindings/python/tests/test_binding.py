@@ -1461,6 +1461,26 @@ class AnEngine(WithLibrary):
                 ctx.almanac.of(**days, muhurta="RAMAN_MARRIAGE")  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "muhurta")
 
+            # A rite beyond marriage, by name: its unwanted placements come
+            # back typed, with their house and grahas as members, and the
+            # 8th the thread ceremony says must be empty bars as itself.
+            from teistro import UnwantedPlacementClause
+            from teistro.catalogue import Graha
+
+            thread = ctx.almanac.of(
+                **days, muhurta={"rules": "RAMAN_UPANAYANA", "daysWithWindows": 9, "most": 1000}
+            ).muhurta
+            assert thread is not None
+            placed = [c.kind for w in thread.windows for c in w.clauses if isinstance(c.kind, UnwantedPlacementClause)]
+            self.assertTrue(placed)
+            self.assertTrue(all(1 <= p.house <= 12 and all(isinstance(g, Graha) for g in p.by) for p in placed))
+            barring = [b for w in thread.windows for b in w.barred_by if isinstance(b, UnwantedPlacementClause)]
+            self.assertTrue(all(b.house == 8 for b in barring))
+            nowhere = {**rules, "unwanted": [{"grahas": ["MARS"], "houses": [13]}]}
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.of(**days, muhurta={"rules": nowhere})
+            self.assertEqual(refused.exception.field, "muhurta.rules.unwanted[0].houses")
+
     def test_an_almanac_carries_the_lunar_years_it_was_asked_for(self) -> None:
         """The lunar years cross beside the days they hold
         (`03-design/calendar-indian-lunisolar.md` §10): members as members,

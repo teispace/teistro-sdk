@@ -27,7 +27,8 @@ pub struct Judgement {
     /// clause keeps the span it held over, so a reader sees where it began.
     pub clauses: Vec<Clause>,
     /// The rules' bars that held over the whole of it, in the order the
-    /// rules list them.
+    /// rules list them, then each unwanted placement the rules say must
+    /// not be, as its clause.
     pub barred_by: Vec<Bar>,
     /// Its score under [`Ranking::Baseline`], and nothing under a ranking
     /// that does not score; nothing either for a window the baseline
@@ -54,7 +55,7 @@ impl Judgement {
             .filter(|c| c.at.overlaps(at))
             .cloned()
             .collect();
-        let barred_by = rules
+        let mut barred_by: Vec<Bar> = rules
             .bars
             .iter()
             .filter(|bar| {
@@ -64,6 +65,14 @@ impl Judgement {
             })
             .cloned()
             .collect();
+        // A placement the rules say must not be bars as itself, after the
+        // listed bars, unless a listed bar already names it.
+        for clause in &clauses {
+            let named = barred_by.iter().any(|bar| bar.names(&clause.kind));
+            if !named && rules.placement_bars(&clause.kind) && covers(clause.at, at) {
+                barred_by.push(Bar::Clause(clause.kind.clone()));
+            }
+        }
         Judgement {
             at,
             clauses,

@@ -45,7 +45,7 @@ impl ClauseKey {
             ClauseKey::MoonJoined => &[("with", Kind::Graha)],
             ClauseKey::Kunavamsa => &[("navamsa", Kind::Rashi), ("lord", Kind::Graha)],
             ClauseKey::PanchakaRemainder => &[("panchaka", Kind::Panchaka)],
-            ClauseKey::SeventhOccupied => &[("by", Kind::Graha)],
+            ClauseKey::SeventhOccupied | ClauseKey::UnwantedPlacement => &[("by", Kind::Graha)],
             ClauseKey::MaleficInLagna
             | ClauseKey::BeneficInLagna
             | ClauseKey::ExaltedInLagna
@@ -243,6 +243,10 @@ mod tests {
             ClauseKey::ExaltedInLagna => ClauseKind::ExaltedInLagna { grahas: two() },
             ClauseKey::LuminaryInEleventh => ClauseKind::LuminaryInEleventh { grahas: two() },
             ClauseKey::KendraBenefics => ClauseKind::KendraBenefics { grahas: two() },
+            ClauseKey::UnwantedPlacement => ClauseKind::UnwantedPlacement {
+                house: 8,
+                by: two(),
+            },
         }
     }
 

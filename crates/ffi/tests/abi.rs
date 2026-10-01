@@ -4248,7 +4248,7 @@ fn panchanga_asked_in(
 /// refused both ways, so a kind it starts reaching, or one it stops
 /// reaching, is seen rather than assumed (`muhurta-at-the-boundary.md`
 /// §4).
-const UNREACHED: [(&str, &str); 4] = [
+const UNREACHED: [(&str, &str); 5] = [
     (
         "MONTH",
         "every day is in Margashirsha, which Raman grades ordinary, and a middling grade is not reported",
@@ -4264,6 +4264,10 @@ const UNREACHED: [(&str, &str); 4] = [
     (
         "KENDRA_BENEFICS",
         "the Sun in Scorpio, Mars in Leo and Saturn in Pisces fit no lagna's 3rd, 6th and 11th (C167)",
+    ),
+    (
+        "UNWANTED_PLACEMENT",
+        "Raman's marriage lists no graha out of a house; the thread ceremony's search below reaches it",
     ),
 ];
 
@@ -4357,6 +4361,81 @@ fn a_panchanga_request_answers_a_muhurta_over_its_own_days() {
         .collect();
     let declared: Vec<&str> = UNREACHED.iter().map(|(key, _)| *key).collect();
     assert_eq!(unreached, declared, "reached: {reached:?}");
+}
+
+/// A rite beyond marriage crosses by name, and its unwanted placements
+/// come back as the façade's, their grahas written in full.
+#[test]
+fn a_panchanga_request_answers_a_thread_ceremony_with_its_unwanted_placements() {
+    use teistro::muhurta::Answer;
+    use teistro::muhurta::clause::ClauseKind;
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let text = r#"{"rules":"RAMAN_UPANAYANA","daysWithWindows":11,"most":1000}"#;
+    let blob = panchanga_days(&ctx, Some(text)).unwrap();
+    let schema = schemas::panchanga();
+    let reader = Reader::parse(&blob, &schema).unwrap();
+    let envelope: serde_json::Value =
+        serde_json::from_str(reader.text("muhurta").unwrap()).unwrap();
+    let answer: Answer = serde_json::from_value(envelope["value"].clone()).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |month, day| teistro::CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    let expected = sdk
+        .almanac()
+        .muhurta(
+            &date(11, 25),
+            &date(12, 3),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            &teistro::MuhurtaRequest::from_json(text).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(answer, expected.value);
+    let placed: Vec<&serde_json::Value> = envelope["value"]["windows"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|window| window["clauses"].as_array().unwrap())
+        .filter(|clause| clause["clause"] == "UNWANTED_PLACEMENT")
+        .collect();
+    assert!(
+        !placed.is_empty(),
+        "a week of lagnas puts a graha somewhere unwanted"
+    );
+    for clause in &placed {
+        let house = clause["house"].as_u64().unwrap();
+        assert!((1..=12).contains(&house), "{clause}");
+        assert!(
+            clause["by"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|g| g.as_str().unwrap().starts_with("graha.")),
+            "{clause}"
+        );
+    }
+    // The 8th the rite says must be empty bars the window as its own
+    // clause; the houses it only says should be empty weigh, never bar.
+    let eighth = |kind: &ClauseKind| matches!(kind, ClauseKind::UnwantedPlacement { house: 8, .. });
+    for window in &answer.windows {
+        for bar in &window.barred_by {
+            if let teistro::muhurta::Bar::Clause(kind @ ClauseKind::UnwantedPlacement { .. }) = bar
+            {
+                assert!(eighth(kind), "{kind:?}");
+            }
+        }
+        if let Some(clause) = window.clauses.iter().find(|c| eighth(&c.kind)) {
+            assert!(
+                window
+                    .barred_by
+                    .contains(&teistro::muhurta::Bar::Clause(clause.kind.clone())),
+                "an occupied 8th bars"
+            );
+        }
+    }
 }
 
 /// Festivals beside a panchanga request's days (`festival-rules.md` §7):

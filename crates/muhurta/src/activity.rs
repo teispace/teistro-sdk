@@ -16,6 +16,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Graha, Kaala, Karana, Masa, Nakshatra, Rashi, Tithi, Vara, Yoga};
+use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_panchanga::Panchanga;
 
@@ -23,7 +24,7 @@ use crate::baseline::BaselineEvent;
 use crate::clause::{Clause, ClauseKey, ClauseKind};
 use crate::day::{DayRules, reported};
 use crate::grade::{Grade, Graded};
-use crate::instant::Sky;
+use crate::instant::{GRAHAS, Sky};
 use crate::season::BlackoutKind;
 use crate::tara::ChandraBala;
 use crate::window::navamsa_of;
@@ -116,6 +117,57 @@ impl From<ClauseKind> for Bar {
     }
 }
 
+/// Grahas a rite wants out of houses: "the 8th house should be
+/// unoccupied" is every graha out of the 8th, "Mars and Saturn should be
+/// avoided in the 5th" is two grahas out of one house.
+///
+/// Houses are counted by sign from the lagna's, 1 to 12, as the texts
+/// count them. A graha standing in a listed house is reported as
+/// [`ClauseKind::UnwantedPlacement`], one clause a house, and counts
+/// against the time; an entry that `bars` bars the rite outright (crux
+/// C205: the texts' "must be unoccupied" against their "should").
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Unwanted {
+    /// The grahas.
+    pub grahas: Vec<Graha>,
+    /// The houses they are wanted out of, 1 to 12.
+    pub houses: Vec<u8>,
+    /// Whether a graha standing there bars the rite rather than weighs
+    /// against it. Unbarring where the rules spelt out leave it out.
+    #[serde(default)]
+    pub bars: bool,
+}
+
+impl Unwanted {
+    /// Grahas out of houses, weighing against the time.
+    #[must_use]
+    pub fn of(grahas: Vec<Graha>, houses: Vec<u8>) -> Unwanted {
+        Unwanted {
+            grahas,
+            houses,
+            bars: false,
+        }
+    }
+
+    /// Every graha out of the houses: the houses should be unoccupied.
+    #[must_use]
+    pub fn vacant(houses: Vec<u8>) -> Unwanted {
+        Unwanted::of(GRAHAS.into(), houses)
+    }
+
+    /// The same, barring the rite rather than weighing against it.
+    #[must_use]
+    pub fn barring(self) -> Unwanted {
+        Unwanted { bars: true, ..self }
+    }
+
+    /// Whether the entry names a graha of `by` in `house`.
+    fn names(&self, house: u8, by: &[Graha]) -> bool {
+        self.houses.contains(&house) && by.iter().any(|g| self.grahas.contains(g))
+    }
+}
+
 /// Something the source asks of the time that the SDK does not judge yet.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -140,6 +192,10 @@ pub struct ActivityRules {
     pub padas: Vec<Pada>,
     /// The season's blackouts the rite is not held in.
     pub heeds: Vec<BlackoutKind>,
+    /// The grahas the rite wants out of houses. Empty where the rules
+    /// spelt out leave it out.
+    #[serde(default)]
+    pub unwanted: Vec<Unwanted>,
     /// The clauses that bar the rite outright rather than weigh against
     /// it.
     pub bars: Vec<Bar>,
@@ -222,6 +278,7 @@ impl ActivityRules {
                 BlackoutKind::ShukraAsta,
                 BlackoutKind::EclipseStar,
             ],
+            unwanted: Vec::new(),
             bars: [
                 ClauseKey::SeventhOccupied,
                 ClauseKey::MarsInEighth,
@@ -292,6 +349,7 @@ impl ActivityRules {
                 BlackoutKind::GuruAsta,
                 BlackoutKind::ShukraAsta,
             ],
+            unwanted: Vec::new(),
             bars: vec![
                 Bar::Key(ClauseKey::SolarMonth),
                 Bar::Key(ClauseKey::Nakshatra),
@@ -349,8 +407,9 @@ impl ActivityRules {
         }
     }
 
-    /// The instant's clauses the rite's own grades give: the lagna's grade
-    /// and a rejected pada of the Moon's star.
+    /// The instant's clauses the rite's own rules give: the lagna's
+    /// grade, a rejected pada of the Moon's star, and the grahas standing
+    /// where the rite does not want them.
     #[must_use]
     pub fn instant_clauses(&self, sky: &Sky, at: Interval) -> Vec<Clause> {
         let mut found = Vec::new();
@@ -372,13 +431,70 @@ impl ActivityRules {
                 at,
             });
         }
+        for house in 1..=12 {
+            let named: Vec<Graha> = GRAHAS
+                .into_iter()
+                .filter(|graha| {
+                    self.unwanted
+                        .iter()
+                        .any(|u| u.houses.contains(&house) && u.grahas.contains(graha))
+                })
+                .collect();
+            let by = sky.in_house(house, &named);
+            if !by.is_empty() {
+                found.push(Clause {
+                    kind: ClauseKind::UnwantedPlacement { house, by },
+                    at,
+                });
+            }
+        }
         found
+    }
+
+    /// Refuses rules that name a house or a quarter that does not exist,
+    /// which would otherwise never match and so judge nothing, silently.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `unwanted[i].houses` (a house outside 1 to 12)
+    /// or `padas[i].pada` (a quarter outside 1 to 4).
+    pub fn check(&self) -> Result<(), Error> {
+        for (i, unwanted) in self.unwanted.iter().enumerate() {
+            if let Some(house) = unwanted.houses.iter().find(|h| !(1..=12).contains(*h)) {
+                return Err(Error::invalid_arg(format!(
+                    "house {house} does not exist; houses are counted 1 to 12 from the lagna"
+                ))
+                .with_field(format!("unwanted[{i}].houses")));
+            }
+        }
+        for (i, pada) in self.padas.iter().enumerate() {
+            if !(1..=4).contains(&pada.pada) {
+                return Err(Error::invalid_arg(format!(
+                    "quarter {} does not exist; a star's quarters are 1 to 4",
+                    pada.pada
+                ))
+                .with_field(format!("padas[{i}].pada")));
+            }
+        }
+        Ok(())
     }
 
     /// Whether a clause bars the rite outright.
     #[must_use]
     pub fn bars(&self, clause: &Clause) -> bool {
-        self.bars.iter().any(|bar| bar.names(&clause.kind))
+        self.bars.iter().any(|bar| bar.names(&clause.kind)) || self.placement_bars(&clause.kind)
+    }
+
+    /// Whether a clause is an unwanted placement an entry that `bars`
+    /// names: a graha standing where the rules say it must not.
+    #[must_use]
+    pub fn placement_bars(&self, kind: &ClauseKind) -> bool {
+        match kind {
+            ClauseKind::UnwantedPlacement { house, by } => {
+                self.unwanted.iter().any(|u| u.bars && u.names(*house, by))
+            }
+            _ => false,
+        }
     }
 }
 
