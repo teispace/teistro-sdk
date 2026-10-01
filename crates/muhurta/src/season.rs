@@ -12,21 +12,26 @@
 //! when the Purnima begins, not at a midnight. A day-level gate reads
 //! "any blackout overlaps the day".
 //!
-//! Everything but asta is the Sun and the Moon: the lunar months from the
-//! new moons, their names from the Sun's sign at the opening new moon,
-//! their kinds from the sankrantis inside them (the calendar's own rule,
-//! `calendar-indian-lunisolar.md` §2), and the tithis that bound Chaturmas
-//! and Pitru paksha. Asta is the heliacal events of Jupiter and Venus
-//! (`astro::visibility`), paired last-seen to first-seen.
+//! Everything but asta and the eclipses is the Sun and the Moon: the lunar
+//! months from the new moons, their names from the Sun's sign at the
+//! opening new moon, their kinds from the sankrantis inside them (the
+//! calendar's own rule, `calendar-indian-lunisolar.md` §2), and the tithis
+//! that bound Chaturmas and Pitru paksha. Asta is the heliacal events of
+//! Jupiter and Venus (`astro::visibility`), paired last-seen to
+//! first-seen. The eclipse blackouts read the eclipses the place sees
+//! (`muhurta.md` §4.1.1): the eclipse's star for six months after it, and
+//! the vedha before it.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::events::{Longitudes, Search};
+use teistro_astro::eclipse::{EclipsesHere, LunarKind};
+use teistro_astro::events::{Longitudes, Search, value_of};
 use teistro_astro::visibility::{Heliacal, HeliacalEvent, Visibility};
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Masa, Rashi};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_core::settings::EclipseVedha;
 use teistro_panchanga::limb::{Sidereal, Zodiac, signs_within};
 use teistro_panchanga::span::Span;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Lattice, Quantity};
@@ -59,6 +64,14 @@ pub enum BlackoutKind {
     /// Venus unseen: twice a synodic cycle, about its inferior and its
     /// superior conjunction, and both are windows.
     ShukraAsta,
+    /// The Moon in the star an eclipse the place saw fell in, for six
+    /// synodic months after it (Raman, ch. V, Mahadosha 16: grahanotpatha;
+    /// cruxes C189 to C191).
+    EclipseStar,
+    /// An eclipse's vedha, the almanacs' sutak: from the prahara
+    /// *Dharmasindhu* counts back from the eclipse to its end as seen, or
+    /// to the body's next rising when it set eclipsed (C192).
+    EclipseVedha,
 }
 
 /// A blackout and the interval it holds over, clipped to the range asked.
@@ -319,6 +332,209 @@ pub fn asta_over<P: EphemerisProvider + ?Sized>(
     Ok(asta(kind, &start, &events, range))
 }
 
+/// Which eclipse the season reads, as far as the vedha's count asks.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SeenKind {
+    /// A solar eclipse.
+    Solar,
+    /// A lunar eclipse the umbra covers in part.
+    Lunar,
+    /// A lunar eclipse the umbra covers whole.
+    TotalLunar,
+}
+
+/// An eclipse as the season reads it: one the place sees, a lunar one by
+/// its umbral phase (`muhurta.md` §4.1.1, crux C190).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SeenEclipse {
+    /// Which.
+    pub kind: SeenKind,
+    /// The greatest eclipse, a UT1 Julian day read as UTC.
+    pub greatest: f64,
+    /// From the first moment the place sees to the last.
+    pub seen: Interval,
+    /// Whether the eclipse had begun when the body rose.
+    pub rose_eclipsed: bool,
+    /// Whether it had not ended when the body set.
+    pub set_eclipsed: bool,
+}
+
+/// How much later than a contact a first or last seen moment must be to be
+/// a rising or a setting rather than the contact itself, days: a second.
+const SAME_MOMENT_DAYS: f64 = 1.0 / 86_400.0;
+
+impl SeenEclipse {
+    /// The eclipses of a window that the place sees, in order of their
+    /// greatest moment; a penumbral eclipse, which the eye does not see,
+    /// is none of them.
+    ///
+    /// # Errors
+    ///
+    /// None in practice: an interval from two finite instants.
+    pub fn all_of(found: &EclipsesHere) -> Result<Vec<SeenEclipse>, Error> {
+        let mut seen = Vec::new();
+        for lunar in &found.lunar {
+            let (Some(v), Some(u1), Some(u4)) =
+                (lunar.here.umbral_seen, lunar.here.u1, lunar.here.u4)
+            else {
+                continue;
+            };
+            seen.push(SeenEclipse {
+                kind: if lunar.eclipse.kind == LunarKind::Total {
+                    SeenKind::TotalLunar
+                } else {
+                    SeenKind::Lunar
+                },
+                greatest: lunar.eclipse.greatest.get(),
+                seen: interval(v.from.get(), v.to.get())?,
+                rose_eclipsed: v.from.get() > u1.at.get() + SAME_MOMENT_DAYS,
+                set_eclipsed: v.to.get() < u4.at.get() - SAME_MOMENT_DAYS,
+            });
+        }
+        for solar in &found.solar {
+            let Some(here) = solar.here else { continue };
+            let Some(v) = here.seen else { continue };
+            seen.push(SeenEclipse {
+                kind: SeenKind::Solar,
+                greatest: solar.eclipse.greatest.get(),
+                seen: interval(v.from.get(), v.to.get())?,
+                rose_eclipsed: v.from.get() > here.first.at.get() + SAME_MOMENT_DAYS,
+                set_eclipsed: v.to.get() < here.fourth.at.get() - SAME_MOMENT_DAYS,
+            });
+        }
+        seen.sort_by(|a, b| a.greatest.total_cmp(&b.greatest));
+        Ok(seen)
+    }
+}
+
+/// How long an eclipse's star stays barred, in synodic months: Raman's
+/// six for a marriage (crux C191).
+pub const ECLIPSE_STAR_MONTHS: f64 = 6.0;
+
+/// A synodic month, days.
+const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
+
+/// How far before a range an eclipse can still bar a star inside it, days.
+pub const ECLIPSE_STAR_REACH_DAYS: f64 = ECLIPSE_STAR_MONTHS * SYNODIC_MONTH_DAYS;
+
+/// A nakshatra's width, degrees.
+const NAKSHATRA_DEG: f64 = 360.0 / 27.0;
+
+/// The stretches the Moon stands in each seen eclipse's star, from the
+/// greatest eclipse to [`ECLIPSE_STAR_MONTHS`] after it, clipped to the
+/// range (Raman, ch. V, Mahadosha 16; cruxes C189 to C191).
+///
+/// The star is the Moon's sidereal nakshatra at the greatest eclipse. The
+/// passage the eclipse falls in is barred from the eclipse on, and every
+/// later passage whole.
+///
+/// # Errors
+///
+/// The source's own refusal.
+pub fn eclipse_stars<S: Longitudes + ?Sized>(
+    tropical: &S,
+    zodiac: Zodiac,
+    eclipses: &[SeenEclipse],
+    range: Interval,
+) -> Result<Vec<Blackout>, Error> {
+    let source = Sidereal::over(tropical, zodiac);
+    let moon = Quantity::Longitude(Body::Moon);
+    let mut found = Vec::new();
+    for eclipse in eclipses {
+        let (from, to) = (eclipse.greatest, eclipse.greatest + ECLIPSE_STAR_REACH_DAYS);
+        if to <= range.from.get() || from >= range.to.get() {
+            continue;
+        }
+        let at = value_of(moon, &source, JulianDay::<Ut1>::literal(from))?;
+        let star = (at.rem_euclid(360.0) / NAKSHATRA_DEG).floor();
+        let crossings = |deg: f64| -> Result<Vec<f64>, Error> {
+            Ok(Search::new(&source, moon, Lattice::single(deg))
+                .between(
+                    JulianDay::<Ut1>::literal(from),
+                    JulianDay::<Ut1>::literal(to),
+                )?
+                .iter()
+                .map(|event| event.instant.get())
+                .collect())
+        };
+        let entries = crossings(star * NAKSHATRA_DEG)?;
+        let exits = crossings(((star + 1.0) * NAKSHATRA_DEG).rem_euclid(360.0))?;
+        for start in core::iter::once(from).chain(entries) {
+            let end = exits
+                .iter()
+                .copied()
+                .find(|exit| *exit > start)
+                .unwrap_or(to);
+            found.push(blackout(BlackoutKind::EclipseStar, interval(start, end)?));
+        }
+    }
+    Ok(clip_and_order(found, range))
+}
+
+/// The praharas an eclipse's vedha opens before, under a rule
+/// (`panchanga.eclipse_vedha`): four for a solar eclipse and for a Moon
+/// that rises eclipsed, three for any other lunar eclipse, or four for a
+/// total one under `FULL_LUNAR_FOUR`.
+#[must_use]
+pub fn vedha_praharas(eclipse: &SeenEclipse, rule: EclipseVedha) -> usize {
+    let four = eclipse.kind == SeenKind::Solar
+        || eclipse.rose_eclipsed
+        || (rule == EclipseVedha::FullLunarFour && eclipse.kind == SeenKind::TotalLunar);
+    if four { 4 } else { 3 }
+}
+
+/// An eclipse's vedha (*Dharmasindhu* p. 28; `muhurta.md` §4.1.1).
+///
+/// `turns` are the sunrises and sunsets around the eclipse in order,
+/// alternating, each pair cut into its four praharas, and must reach far
+/// enough back that the praharas counted exist. The vedha opens at the
+/// start of the prahara [`vedha_praharas`] before the one holding the
+/// first moment seen, and closes when the eclipse ends as seen, or at
+/// `next_rising` when the body set eclipsed.
+///
+/// # Errors
+///
+/// `INTERNAL` for turns that do not hold the first moment seen, or that
+/// begin too late to count back from it.
+pub fn eclipse_vedha(
+    eclipse: &SeenEclipse,
+    turns: &[f64],
+    next_rising: f64,
+    rule: EclipseVedha,
+) -> Result<Blackout, Error> {
+    let mut edges = Vec::with_capacity(turns.len() * 4);
+    for pair in turns.windows(2) {
+        if let [a, b] = pair {
+            edges.extend((0..4).map(|q| a + (b - a) * f64::from(q) / 4.0));
+        }
+    }
+    edges.extend(turns.last());
+    let first = eclipse.seen.from.get();
+    let holding = edges
+        .windows(2)
+        .position(|pair| matches!(pair, [a, b] if *a <= first && first < *b))
+        .ok_or_else(|| {
+            Error::internal(format!("no prahara around the eclipse seen from {first}"))
+        })?;
+    let opens = holding
+        .checked_sub(vedha_praharas(eclipse, rule))
+        .and_then(|k| edges.get(k).copied())
+        .ok_or_else(|| {
+            Error::internal(format!(
+                "too few praharas before the eclipse seen from {first}"
+            ))
+        })?;
+    let closes = if eclipse.set_eclipsed {
+        next_rising
+    } else {
+        eclipse.seen.to.get()
+    };
+    Ok(blackout(
+        BlackoutKind::EclipseVedha,
+        interval(opens, closes)?,
+    ))
+}
+
 const fn blackout(kind: BlackoutKind, at: Interval) -> Blackout {
     Blackout { kind, at }
 }
@@ -337,4 +553,116 @@ fn clip_and_order(found: Vec<Blackout>, range: Interval) -> Vec<Blackout> {
 /// An interval from two raw instants.
 fn interval(from: f64, to: f64) -> Result<Interval, Error> {
     Interval::new(JulianDay::try_new(from)?, JulianDay::try_new(to)?)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests fail by panicking, and compare quarters of exact halves"
+    )]
+
+    use super::{BlackoutKind, EclipseVedha, SeenEclipse, SeenKind, eclipse_vedha, vedha_praharas};
+    use teistro_core::interval::Interval;
+
+    /// Sunrise at 0.25 and sunset at 0.75 of every day from two days
+    /// before day 0 to two after: twelve-hour days, three-hour praharas.
+    fn turns() -> Vec<f64> {
+        (-2..=2)
+            .flat_map(|d| [f64::from(d) + 0.25, f64::from(d) + 0.75])
+            .chain([3.25])
+            .collect()
+    }
+
+    fn eclipse(solar: bool, from: f64) -> SeenEclipse {
+        SeenEclipse {
+            kind: if solar {
+                SeenKind::Solar
+            } else {
+                SeenKind::Lunar
+            },
+            greatest: from + 0.05,
+            seen: Interval::literal(from, from + 0.1),
+            rose_eclipsed: false,
+            set_eclipsed: false,
+        }
+    }
+
+    fn opens(eclipse: &SeenEclipse, rule: EclipseVedha) -> f64 {
+        eclipse_vedha(eclipse, &turns(), 9.0, rule)
+            .unwrap()
+            .at
+            .from
+            .get()
+    }
+
+    /// *Dharmasindhu* p. 28's own examples, each counted back from the
+    /// prahara that holds the eclipse.
+    #[test]
+    fn the_vedha_opens_where_the_texts_examples_open_it() {
+        let rule = EclipseVedha::Dharmasindhu;
+        // A solar eclipse in the day's first prahara: the night before.
+        assert_eq!(opens(&eclipse(true, 0.30), rule), -0.25);
+        // In its second: from the night's second prahara.
+        assert_eq!(opens(&eclipse(true, 0.40), rule), -0.125);
+        // A lunar eclipse in the night's first prahara: from the day's
+        // second; in the night's second, from the day's third.
+        assert_eq!(opens(&eclipse(false, 0.80), rule), 0.375);
+        assert_eq!(opens(&eclipse(false, 0.90), rule), 0.5);
+        // A Moon that rises eclipsed: four praharas, the whole day before.
+        let risen = SeenEclipse {
+            rose_eclipsed: true,
+            ..eclipse(false, 0.76)
+        };
+        assert_eq!(opens(&risen, rule), 0.25);
+    }
+
+    #[test]
+    fn some_count_four_for_a_total_lunar_eclipse() {
+        let total = SeenEclipse {
+            kind: SeenKind::TotalLunar,
+            ..eclipse(false, 0.80)
+        };
+        assert_eq!(vedha_praharas(&total, EclipseVedha::Dharmasindhu), 3);
+        assert_eq!(vedha_praharas(&total, EclipseVedha::FullLunarFour), 4);
+        assert_eq!(opens(&total, EclipseVedha::FullLunarFour), 0.25);
+        // A partial one stays at three under either rule.
+        assert_eq!(
+            opens(&eclipse(false, 0.80), EclipseVedha::FullLunarFour),
+            0.375
+        );
+    }
+
+    #[test]
+    fn the_vedha_closes_as_seen_or_at_the_next_rising() {
+        let seen = eclipse(false, 0.80);
+        let closed = eclipse_vedha(&seen, &turns(), 9.0, EclipseVedha::Dharmasindhu).unwrap();
+        assert_eq!(closed.kind, BlackoutKind::EclipseVedha);
+        assert_eq!(closed.at.to.get(), seen.seen.to.get());
+        let set = SeenEclipse {
+            set_eclipsed: true,
+            ..seen
+        };
+        let held = eclipse_vedha(&set, &turns(), 1.8, EclipseVedha::Dharmasindhu).unwrap();
+        assert_eq!(held.at.to.get(), 1.8);
+    }
+
+    #[test]
+    fn turns_that_cannot_count_back_are_refused() {
+        // The days begin at the eclipse's own day: no night before it.
+        let late: Vec<f64> = turns().into_iter().skip(4).collect();
+        assert!(
+            eclipse_vedha(&eclipse(true, 0.30), &late, 9.0, EclipseVedha::Dharmasindhu).is_err()
+        );
+        assert!(
+            eclipse_vedha(
+                &eclipse(true, 5.0),
+                &turns(),
+                9.0,
+                EclipseVedha::Dharmasindhu
+            )
+            .is_err()
+        );
+    }
 }

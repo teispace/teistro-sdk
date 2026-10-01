@@ -154,8 +154,9 @@ impl ActivityRules {
     /// Raman's marriage (*Muhurtha*, ch. IX), over his general shuddhi
     /// ([`DayRules::raman`]), heeding what Muhurta Chintamani forbids a
     /// marriage in (ch. I, vv. 46–47, with its commentary): Jupiter or
-    /// Venus set, and an adhika month; and the sankranti, the second of
-    /// the twenty-one Mahadoshas.
+    /// Venus set, and an adhika month; the sankranti, the second of the
+    /// twenty-one Mahadoshas; and the sixteenth, grahanotpatha, the star of
+    /// an eclipse the place saw, which a marriage avoids for six months.
     ///
     /// - **Months** (lunar, crux C161): Magha, Phalguna, Vaishakha and
     ///   Jyeshtha good; Kartika and Margashirsha ordinary; the rest
@@ -214,6 +215,7 @@ impl ActivityRules {
                 BlackoutKind::Sankranti,
                 BlackoutKind::GuruAsta,
                 BlackoutKind::ShukraAsta,
+                BlackoutKind::EclipseStar,
             ],
             bars: [
                 ClauseKey::SeventhOccupied,

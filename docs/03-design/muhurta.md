@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 7 **built** 2026-09-30, step 5 for marriage alone. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 7 **built** 2026-09-30, step 5 for marriage alone; the eclipse blackouts (§4.1.1) built 2026-10-01. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -129,6 +129,10 @@ the answer (C162).
 | C163 | the marriage yogas to reject | Raman's list as printed (p. 102, read off the page image): Vyatipata, Dhruva, Ganda, Vajra, Shula, Vishkambha, Atiganda, Vyaghata, Parigha | — ; the printed list also names **Mrityu**, which is not one of the 27 yogas but one of the 28 Anandadi yogas the SDK does not compute, so it is reported as unjudged rather than dropped; *Dhruva* is printed, though other lists count it auspicious |
 | C165 | where each nakshatra's tyajya kala (varjyam) begins | a table the caller names, as `panchanga.muhurta_tables` is; none shipped as the default until a rank-1 table is read | Raman p. 15 as printed differs from the commonly published table in five stars (Bharani 4 against 24, Uttara Phalguni 1 against 18, Mula 20 against 56, Purva Ashadha 20 against 24, Uttara Bhadrapada 30 against 24); some look like dropped digits, which is a guess and not a reading |
 | C164 | where a graha's asta is seen | **the place of the search**, by the caller's visibility criterion | a fixed observer the caller names (the baseline's Kathmandu: one window for a country, as its almanac prints) |
+| C189 | the eclipse's star | **the Moon's sidereal nakshatra at the greatest eclipse**, the *grahana nakshatra* | the Sun's, which at a solar eclipse is the Moon's but for an eclipse at a star's edge |
+| C190 | which eclipses bar | **those the place sees**, a lunar one by its umbral phase (*Dharmasindhu*: an eclipse's time lasts while it can be seen) | every eclipse anywhere on the Earth |
+| C191 | Raman's "six months" | **six synodic months** from the greatest eclipse, the months a muhurta counts | six solar months, about five days longer, which can add one passage of the Moon through the star |
+| C192 | the vedha as a blackout | **a kind no shipped activity heeds**: *Dharmasindhu*'s vedha is a rule about eating, and holding rites off in it is the almanacs' practice | heeded by a marriage, which no source in hand says |
 | C167 | the malefics neutralisation 11 places in the 3rd, 6th or 11th | **the Sun, Mars and Saturn**: counted with both nodes, which always stand opposite, it could never hold | Rahu counted as well, Ketu not |
 
 C158 corrects `panchanga-day-conventions.md` §7, which said the SDK ships
@@ -194,9 +198,63 @@ Four findings:
   open Shukra asta 4 days after the almanac, and so would offer 14 to
   17 October, days the country treats as closed. The search's default
   stays the Surya Siddhanta's.
-- **`ECLIPSE_STAR` is not built**: the grahana nakshatra needs the
-  eclipses, which the SDK does not yet find. It is the one kind this
-  section named that the season lacks.
+- **`ECLIPSE_STAR` waited for the eclipses**, which the SDK did not yet
+  find; §4.1.1 builds it, and the vedha beside it.
+
+#### 4.1.1 The eclipse blackouts
+
+Two blackouts read an eclipse, and both read only the eclipses the place
+**sees** (`eclipses.md` §4.5): *Dharmasindhu*'s eclipse chapter holds an
+eclipse's time to last only while it can be seen with the eye
+("चाक्षुषदर्शनयोग्य"), and after it sets eclipsed there is none, though
+it goes on elsewhere (C190). A lunar eclipse is seen by its **umbral**
+phase (`LunarView::umbral_seen`), so a penumbral one, which the eye
+cannot see, makes neither.
+
+- **`ECLIPSE_STAR`**, Raman's Mahadosha 16, *grahanotpatha*: the stars
+  in which eclipses appear are avoided, and for a marriage "for six
+  months" (ch. V). The star is the Moon's sidereal nakshatra at the
+  greatest eclipse (C189). The blackout is every stretch the Moon stands
+  in that star from the greatest eclipse to six synodic months after it
+  (C191); an eclipse up to six months before a range still bars stars
+  inside it, so the eclipses are found from that far back. Raman gives no
+  span for other rites, so only `raman_marriage` heeds it.
+- **`ECLIPSE_VEDHA`**, the almanacs' *sutak*: *Dharmasindhu* (p. 28, read
+  off the page image) puts the vedha **four praharas** before a solar
+  eclipse and **three** before a lunar one, counted in the day's
+  praharas: the prahara holding the eclipse's first seen moment is found
+  among the eight quarters of the day (sunrise to sunset) and the night
+  (sunset to the next sunrise), and the vedha opens at the start of the
+  prahara four (three) before it. Its own examples hold that reading: a
+  solar eclipse in the day's first prahara bars the whole night before,
+  a lunar one in the night's first bars from the day's second. A Moon
+  that **rises eclipsed** takes four, which bars the day before its
+  rising. The vedha closes when the eclipse ends as seen, or, when the
+  body sets eclipsed, at its next rising, when the text has the
+  observer bathe and eat. The knob `panchanga.eclipse_vedha` chooses
+  `DHARMASINDHU` (the above) or `FULL_LUNAR_FOUR`, the view the text
+  gives as "some say": four praharas for a lunar eclipse the umbra covers
+  whole. The text's shorter vedha for the young, the old and the sick
+  (one and a half praharas, or three muhurtas) is declared and not
+  built. The vedha is a rule about **food**; holding rites off in it is
+  the almanacs' practice, so no shipped activity heeds it, and a
+  consumer's rules name it (C192).
+
+The praharas are read off the almanac's own days, so they move with
+`panchanga.sunrise` as every other part of the day does.
+
+A sky that cannot see an eclipse does not fail the search. Both kinds
+are then reported among the answer's `unjudged`, each with why, and the
+rest of the search goes on. That happens in two cases. A classical sky's
+eclipse is its own method (C188). And some providers return a frame the
+SDK cannot complete to an apparent topocentric Sun and Moon (the test
+provider is one); their refusal is quoted in the reason. The search
+learns which kinds were left unjudged from the season itself
+(`Sources::season` returns a `Season` of blackouts and unjudged kinds).
+That keeps the decision and its reason with the computation that
+reached it. The parity runners found the second case. Before it was
+handled, Raman's marriage over such a provider failed outright, in
+every binding.
 
 ### 4.2 The clauses
 

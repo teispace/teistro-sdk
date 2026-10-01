@@ -36,7 +36,7 @@ use teistro_muhurta::{
     ActivityRules, Answer, ClauseKind, ProviderSources, Ranking, Request, Sources, search,
 };
 use teistro_panchanga::Almanac;
-use teistro_port_ephemeris::{CountingProvider, Horizon};
+use teistro_port_ephemeris::{CountingProvider, EphemerisProvider, Horizon, TestProvider};
 
 fn date(month: u8, day: u8) -> CalendarDate {
     CalendarDate::defined(Calendar::Gregorian, 2026, month, day)
@@ -63,6 +63,12 @@ type Counted = CountingProvider<Builtin>;
 /// they ask, so a test can count what they asked it.
 fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
     let provider = CountingProvider::new(Builtin::new());
+    over_on(&provider, |over| f(over, &provider))
+}
+
+/// Runs `f` over the search's collaborators at Kathmandu, asking
+/// `provider`.
+fn over_on<P: EphemerisProvider, R>(provider: &P, f: impl FnOnce(&Over<'_, P>) -> R) -> R {
     let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
         .unwrap()
         .resolve(&SettingsPatch::default())
@@ -70,7 +76,7 @@ fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
     let delta_t = DeltaTModel::TableThenModel;
     let precession = PrecessionModel::Vondrak2011;
     let model = DrikSun::new(
-        &provider,
+        provider,
         Ayanamsha::Lahiri,
         Sunrise::CentreNoRefraction.into(),
         OverridePolicy::PreferNative,
@@ -78,12 +84,12 @@ fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
     );
     let clock = UtcOffset::literal(5, 45, 0);
     let almanac = Almanac::new(
-        &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
+        provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
     );
     let founder = Founder::new(
-        &provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
+        provider, &resolved, &model, &Gregorian, &clock, precession, delta_t,
     );
-    let completion = Completion::new(&provider, resolved.settings.provider.overrides, delta_t);
+    let completion = Completion::new(provider, resolved.settings.provider.overrides, delta_t);
     let heliacal = Heliacal::new(
         &completion,
         place(),
@@ -102,7 +108,7 @@ fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
         precession,
         delta_t,
     };
-    f(&over, &provider)
+    f(&over)
 }
 
 /// Runs `f` over sources at Kathmandu.
@@ -146,7 +152,8 @@ fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Ans
     // 2026-08-31 to 2026-12-02, UTC: the search's own reach.
     let season = sources
         .season(Interval::literal(2_461_283.5, 2_461_376.5), &rules.heeds)
-        .unwrap();
+        .unwrap()
+        .blackouts;
     let second: f64 = 1.0 / 86_400.0;
     for w in &answer.windows {
         assert!(!season.iter().any(|b| b.at.overlaps(w.at)), "{w:?}");
@@ -307,5 +314,132 @@ fn days_the_caller_founded_answer_the_same_and_are_not_founded_again() {
         let (first_half, _) = days.split_at(days.len() / 2);
         let partly = search(&sources().with_days(first_half), &asked).unwrap();
         assert_eq!(partly, alone);
+    });
+}
+
+/// The eclipse blackouts at Kathmandu over September and October 2025
+/// (`muhurta.md` §4.1.1): the total lunar eclipse of 7 September, seen
+/// whole near midnight, gives a vedha and bars its star; the partial solar
+/// eclipse of the 21st, not seen in Nepal, gives neither.
+#[test]
+fn a_seen_eclipse_bars_its_star_and_its_vedha_and_an_unseen_one_nothing() {
+    use teistro_astro::eclipse::Eclipses;
+    use teistro_core::quantity::Ut1;
+    with_over(|over, _| {
+        let sources = ProviderSources::new(over, place(), reference()).unwrap();
+        let range = Interval::literal(2_460_919.5, 2_460_979.5);
+        let kinds = [BlackoutKind::EclipseStar, BlackoutKind::EclipseVedha];
+        let season = sources.season(range, &kinds).unwrap();
+        assert_eq!(season.unjudged, Vec::new());
+        let season = season.blackouts;
+        let found = Eclipses::new(over.completion, over.delta_t)
+            .here_between(
+                JulianDay::<Ut1>::literal(range.from.get()),
+                JulianDay::<Ut1>::literal(range.to.get()),
+                place(),
+                &Horizon::from_convention(over.settings.day.sunrise),
+            )
+            .unwrap();
+        let lunar = &found.lunar[0];
+        let umbral = lunar.here.umbral_seen.expect("seen from Kathmandu");
+        assert!(
+            found
+                .solar
+                .iter()
+                .all(|e| e.here.is_none_or(|h| h.seen.is_none()))
+        );
+
+        // One vedha, closing as the umbra leaves the Moon, which is still
+        // up, and opening on a prahara of the eclipse's day: a quarter of
+        // its daylight or of its night.
+        let vedhas: Vec<Interval> = season
+            .iter()
+            .filter(|b| b.kind == BlackoutKind::EclipseVedha)
+            .map(|b| b.at)
+            .collect();
+        let [vedha] = vedhas.as_slice() else {
+            panic!("one vedha, found {vedhas:?}");
+        };
+        // Exactly: the vedha closes at the instant the stretch seen does.
+        assert_eq!(vedha.to.get().to_bits(), umbral.to.get().to_bits());
+        let day = sources
+            .day(&CalendarDate::defined(Calendar::Gregorian, 2025, 9, 7))
+            .unwrap();
+        let (rise, set, next) = (
+            day.day.sunrise.get(),
+            day.day.sunset.get(),
+            day.day.next_sunrise.get(),
+        );
+        let edges: Vec<f64> = (0..4)
+            .map(|q| rise + (set - rise) * f64::from(q) / 4.0)
+            .chain((0..4).map(|q| set + (next - set) * f64::from(q) / 4.0))
+            .collect();
+        let at = edges
+            .iter()
+            .position(|edge| (edge - vedha.from.get()).abs() < 1e-9)
+            .expect("the vedha opens on a prahara");
+        let holding = edges
+            .iter()
+            .rposition(|edge| *edge <= umbral.from.get())
+            .unwrap();
+        assert_eq!(holding - at, 3, "three praharas before a lunar eclipse");
+
+        // The star: the passage the eclipse falls in from the eclipse on,
+        // then one a sidereal month later, each about a day long.
+        let stars: Vec<Interval> = season
+            .iter()
+            .filter(|b| b.kind == BlackoutKind::EclipseStar)
+            .map(|b| b.at)
+            .collect();
+        assert_eq!(
+            stars[0].from.get().to_bits(),
+            lunar.eclipse.greatest.get().to_bits()
+        );
+        assert!(stars.len() >= 2, "{stars:?}");
+        for pair in stars.windows(2) {
+            let apart = pair[1].from.get() - pair[0].from.get();
+            assert!((26.0..29.0).contains(&apart), "{apart} days apart");
+        }
+        for passage in &stars[1..] {
+            let days = passage.to.get() - passage.from.get();
+            assert!(
+                (0.8..1.3).contains(&days) || passage.to == range.to,
+                "{days}"
+            );
+        }
+    });
+}
+
+/// A provider whose frame the SDK cannot complete to an apparent Sun and
+/// Moon cannot say what a place saw: the eclipse kinds are reported as
+/// unjudged, with the provider's refusal, rather than failing the search
+/// for every activity that heeds them.
+#[test]
+fn a_sky_that_cannot_see_an_eclipse_leaves_its_kinds_unjudged() {
+    over_on(&TestProvider::new(), |over| {
+        let sources = ProviderSources::new(over, place(), reference()).unwrap();
+        // 2024-11-24 to 2024-11-28, UTC.
+        let range = Interval::literal(2_460_638.5, 2_460_642.5);
+        let kinds = [
+            BlackoutKind::AdhikaMasa,
+            BlackoutKind::EclipseStar,
+            BlackoutKind::EclipseVedha,
+        ];
+        let season = sources.season(range, &kinds).unwrap();
+        assert!(season.blackouts.iter().all(|b| !matches!(
+            b.kind,
+            BlackoutKind::EclipseStar | BlackoutKind::EclipseVedha
+        )));
+        let what: Vec<&str> = season.unjudged.iter().map(|u| u.what.as_str()).collect();
+        assert_eq!(
+            what,
+            [
+                "the eclipse's star (grahanotpatha)",
+                "the eclipse's vedha (sutak)"
+            ]
+        );
+        for unjudged in &season.unjudged {
+            assert!(unjudged.why.contains("refused them"), "{}", unjudged.why);
+        }
     });
 }

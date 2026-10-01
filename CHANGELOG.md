@@ -1558,6 +1558,58 @@ the astronomical numbers do not move. Nothing else computes yet.
   narrows a minimum by golden sections, and every search's failure now
   says what was sought through one `SolveError::into_error`.
 
+- **The eclipse blackouts in the muhurta season** (`muhurta.md` §4.1.1,
+  cruxes C189 to C192). `ECLIPSE_STAR` is Raman's grahanotpatha: the
+  Moon's star at the greatest eclipse is barred for six synodic months
+  after an eclipse the place saw, every stretch the Moon stands in it.
+  Raman's marriage now heeds it. `ECLIPSE_VEDHA`, the almanacs' sutak,
+  runs from the prahara *Dharmasindhu* counts back to the eclipse's end
+  as seen: four praharas before a solar eclipse, three before a lunar
+  one, four before a Moon that rises eclipsed. If the body sets eclipsed,
+  it runs to the body's next rising. The praharas are the almanac's own
+  quarters of the day and the night. The new setting
+  `panchanga.eclipse_vedha` chooses `DHARMASINDHU` or
+  `FULL_LUNAR_FOUR`. No shipped activity heeds the vedha, because the
+  text's vedha is a rule about eating; a consumer's rules name it. Only
+  eclipses the place sees count, a lunar one by its umbral phase, so a
+  penumbral eclipse bars nothing. Under a classical sky both are
+  reported as unjudged, naming C188, rather than failing. The same
+  happens over a provider whose frame cannot be completed to an apparent
+  Sun and Moon, and the reason quotes the provider's refusal.
+  `Sources::season` now returns a `Season`, which holds both the
+  blackouts and the kinds left unjudged, so a `Sources` implementation
+  reports what it cannot judge where it decides that.
+
+  **Numbers:** Raman's marriage closes more of the year, those stretches
+  in which an eclipse's star stands; the muhurta page's counts move
+  accordingly. The new setting enters every settings hash.
+
+- **An eclipse as a place sees it, and an almanac's eclipses in every
+  binding** (`eclipses.md` §4.5 and §5). `Eclipses::solar_seen` reads a
+  solar eclipse from a place: its own kind and magnitude, the
+  obscuration, the four contacts, the maximum, and the stretch the place
+  sees above its horizon. `lunar_seen` gives a lunar eclipse's contacts
+  with the Moon's altitude at each, the stretch seen, and the stretch of
+  the umbral phase seen, which is the part the eye sees. `cargo xtask eclipses` holds the
+  local circumstances to NASA's bulletins for the eclipses of 2009 July
+  22 and 2010 January 15, 214 cities in all, Kathmandu among them. Every
+  contact the bulletins print is found and every other is below the
+  horizon. The contacts agree within 2.54 s, the maximum within 6.84 s
+  and the magnitude within 0.0009.
+
+  `sdk.almanac().eclipses(from, to, place, offset)` answers the eclipses
+  whose greatest moment falls in a run of days, each with how the place
+  sees it. Node and Dart ask for them with `eclipses: true`, Python
+  with `eclipses=True`. Across the boundary the request bit is
+  `TS_PANCHANGA_ECLIPSES`, and section 24 of the panchanga blob carries
+  the envelope. The new setting `panchanga.eclipse_shadow` (`DANJON` or
+  `CHAUVENET`) chooses the shadow's rule. The parity gate holds the wasm
+  runner's eclipse lines to their shape, because that build carries the
+  built-in sky's compact tier.
+
+  **Numbers:** none moved. The new setting enters every settings hash,
+  so a stored hash differs.
+
 - **A modern sky's apparent place is of date and corrected for light
   time.** The completion turned a provider's mean J2000 places into
   apparent ones in the provider's native frame rather than the true

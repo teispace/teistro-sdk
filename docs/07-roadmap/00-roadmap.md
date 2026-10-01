@@ -758,9 +758,15 @@ measured against Nepal before it is called done:
    `eclipses-measured.md`): lunar and solar eclipses over any modern sky,
    every one of NASA's 913 from 1900 to 2100 found and no other, the
    greatest moment within 2.9 s; the classical profile's eclipse is C188.
-   Next in this step: eclipses through the façade and the bindings, the
-   muhurta `ECLIPSE_STAR` and sutak blackouts, kshaya masa, Holashtaka,
-   and naming the blackouts.
+   **Local circumstances and the façade built the same day**: a place's
+   contacts, maximum, magnitude and stretch seen, held to NASA's bulletins
+   for 214 cities (contacts within 2.54 s), and `almanac().eclipses` in
+   every binding with the shadow knob `panchanga.eclipse_shadow`.
+   **The eclipse blackouts built the same day** (`muhurta.md` §4.1.1):
+   `ECLIPSE_STAR` (Raman's grahanotpatha, heeded by his marriage) and
+   `ECLIPSE_VEDHA` (the sutak, by *Dharmasindhu*'s praharas, under
+   `panchanga.eclipse_vedha`), each over the eclipses the place sees.
+   Next in this step: kshaya masa, Holashtaka, and naming the blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's
    holiday list the way `festival-measured.md` holds the Delhi one,
    with region-scoped days (Holi in the hills and the Terai).
