@@ -1733,6 +1733,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-hellenistic"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-houses"
 version = "0.0.0"
 dependencies = [
@@ -2440,6 +2450,7 @@ dependencies = [
  "teistro-core",
  "teistro-ephemeris-builtin",
  "teistro-ffi",
+ "teistro-hellenistic",
  "teistro-houses",
  "teistro-idl",
  "teistro-interpret",

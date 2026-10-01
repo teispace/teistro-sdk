@@ -25,6 +25,7 @@ mod generated;
 pub use generated::*;
 
 mod spelling;
+mod zodiac;
 pub use spelling::write_in_full;
 
 /// The catalogue's schema version (`teistro-catalogue/1` in
