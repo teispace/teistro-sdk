@@ -1746,7 +1746,9 @@ mod tests {
         assert!(
             stations(&longitudes, Body::Sun, J2000, year, TOLERANCE_DAYS)
                 .unwrap()
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            stations(&longitudes, Body::Sun, J2000, year, TOLERANCE_DAYS).unwrap()
         );
     }
 

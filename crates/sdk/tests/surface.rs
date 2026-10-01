@@ -96,7 +96,7 @@ fn a_calendar_the_sdk_does_not_ship_yet_is_refused_by_name() {
 #[test]
 fn the_default_profile_needs_no_naming() {
     let sdk = Context::builder().build().expect("every default");
-    assert!(!sdk.profile().is_empty());
+    assert_ne!(sdk.profile(), "");
     // No ephemeris named is no ephemeris, which is a decision and not a
     // default: ADR-0029 refuses a context quietly given one.
     assert!(sdk.ephemeris().is_none());
@@ -258,7 +258,7 @@ fn a_nepali_birth_time_resolves() {
         "{:?}",
         resolved.zone.warnings
     );
-    assert!(!resolved.zone.tzdb_version.is_empty());
+    assert_ne!(resolved.zone.tzdb_version, "");
 
     // And back: the instant read as the civil clock in that zone.
     let (back, _) = sdk
@@ -325,7 +325,7 @@ fn delta_t_carries_its_source_and_its_model() {
         .delta_t(teistro::quantity::JulianDay::try_new(2_451_545.0).expect("a Julian day"))
         .expect("inside the model's range");
     assert!((60.0..70.0).contains(&value.seconds), "{}", value.seconds);
-    assert!(!value.model.key().is_empty());
+    assert_ne!(value.model.key(), "");
 }
 
 #[test]
@@ -545,7 +545,7 @@ fn positions_answer_in_the_frame_asked_for() {
         sun.lon
     );
     // And what was applied to get there, which is half the answer.
-    assert!(!sky.steps.is_empty());
+    assert!(!sky.steps.is_empty(), "`sky.steps` is empty");
     assert!(
         sky.step_keys()
             .iter()

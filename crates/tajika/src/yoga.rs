@@ -1790,7 +1790,7 @@ mod tests {
         assert_eq!(self_.karyesha, Graha::Mars);
         assert!(self_.same_lord);
         assert_eq!(self_.between, None, "a planet makes no yoga with itself");
-        assert!(self_.held.is_empty());
+        assert!(self_.held.is_empty(), "{:?}", self_.held);
         // Mars rules Scorpio and Aries too, and Aries is the sixth from
         // Scorpio -- so two of the twelve are like that under this lagna.
         let same = asked(6);
@@ -2233,7 +2233,11 @@ mod tests {
             under(SubDegree::Ishrafa).held[0].between.unwrap().yoga,
             Some(Yoga::Ishrafa)
         );
-        assert!(under(SubDegree::None).held.is_empty());
+        assert!(
+            under(SubDegree::None).held.is_empty(),
+            "{:?}",
+            under(SubDegree::None).held
+        );
     }
 
     /// Rules with both floors at `units`.
@@ -2417,7 +2421,7 @@ mod tests {
             .iter()
             .filter(|one| one.yoga == YearYoga::DutthotthaDavira)
             .collect();
-        assert!(!held.is_empty());
+        assert!(!held.is_empty(), "`held` is empty");
         for one in held {
             let third = one.through.unwrap();
             assert_ne!(third, found.lagnesha);
@@ -2986,7 +2990,9 @@ mod tests {
         assert!(
             year_yogas_many(5.0, &[], &TAMBIRA, None, knob)
                 .unwrap()
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            year_yogas_many(5.0, &[], &TAMBIRA, None, knob).unwrap()
         );
         // The chart-wide checks refuse before any matter, even for none.
         let crossed = YogaRules {
@@ -3265,7 +3271,11 @@ mod tests {
             lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Moon),
             ["under no malefic's aspect"]
         );
-        assert!(lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Mars).is_empty());
+        assert!(
+            lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Mars).is_empty(),
+            "{:?}",
+            lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Mars)
+        );
         assert_eq!(
             year_yogas(KUTTHA_LAGNA_DEG, house(4), &harmed)
                 .unwrap()

@@ -222,7 +222,7 @@ fn an_eleventh_without_its_neighbours_is_unjudged_by_each_rule() {
     ];
     let days = days_over(6, &tithis, &[], Masa::Kartika, MonthKind::Nija);
     let answer = ekadashis(&EkadashiRule::dharmasindhu(), &days).unwrap();
-    assert!(answer.ekadashis.is_empty());
+    assert!(answer.ekadashis.is_empty(), "{:?}", answer.ekadashis);
     let keys: Vec<&str> = answer.unjudged.iter().map(|u| u.rule.as_str()).collect();
     assert_eq!(keys, KEYS);
 }

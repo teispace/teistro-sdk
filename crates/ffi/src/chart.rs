@@ -5500,8 +5500,16 @@ mod tests {
             reader.column("vargas", "varga").expect("empty").is_empty(),
             "a section nobody asked for is written and empty"
         );
-        assert!(reader.column("cast", "instant").expect("empty").is_empty());
-        assert!(reader.column("day", "sunrise").expect("empty").is_empty());
+        assert!(
+            reader.column("cast", "instant").expect("empty").is_empty(),
+            "{:?}",
+            reader.column("cast", "instant").expect("empty")
+        );
+        assert!(
+            reader.column("day", "sunrise").expect("empty").is_empty(),
+            "{:?}",
+            reader.column("day", "sunrise").expect("empty")
+        );
         assert_eq!(reader.bytes("model").expect("the model"), b"");
         assert!(
             !reader

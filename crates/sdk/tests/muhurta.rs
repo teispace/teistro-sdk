@@ -147,7 +147,7 @@ fn the_asta_a_request_names_is_the_one_the_season_closes_by() {
         under(Criterion::COMBUSTION_ORB),
     );
     assert_eq!(texts, (11..=20).map(|day| (10, day)).collect::<Vec<_>>());
-    assert!(!orbs.is_empty());
+    assert!(!orbs.is_empty(), "`orbs` is empty");
     assert!(
         orbs.iter().all(|&(_, day)| day >= 18),
         "the orbs open it on the 18th: {orbs:?}"

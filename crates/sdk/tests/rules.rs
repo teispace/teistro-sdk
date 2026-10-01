@@ -141,7 +141,7 @@ fn a_consumer_can_evaluate_the_shipped_rules_and_read_a_house() {
         .iter()
         .filter(|rule| evaluator.evaluate(rule).present)
         .collect();
-    assert!(!held.is_empty());
+    assert!(!held.is_empty(), "`held` is empty");
 
     // A house gathers only what stands in it, and the twelve account for the
     // nine grahas between them.
@@ -504,7 +504,10 @@ fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
             age(window.interval.to.get()) > from
                 && to.is_none_or(|to| age(window.interval.from.get()) < to)
         );
-        assert!(!marakas.of(window.major).is_empty());
+        assert!(
+            !marakas.of(window.major).is_empty(),
+            "`marakas.of(window.major)` is empty"
+        );
         assert_eq!(
             window.vulnerability.presentation,
             Presentation::Vulnerability

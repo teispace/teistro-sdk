@@ -152,7 +152,11 @@ fn every_shipped_layout_draws_well_formed_svg_in_two_scripts_and_both_styles() {
             }
 
             // No stylesheet, and no attribute a renderer may ignore.
-            assert!(all(&document, "style").is_empty());
+            assert!(
+                all(&document, "style").is_empty(),
+                "{:?}",
+                all(&document, "style")
+            );
             assert!(!svg.contains("dominant-baseline"));
         }
     }

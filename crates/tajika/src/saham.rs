@@ -1291,7 +1291,11 @@ mod tests {
         let twice = sahams(&chart, &[Saham::Raja, Saham::Punya, Saham::Raja], rules).unwrap();
         assert_eq!(twice.points[0], twice.points[2]);
         assert_eq!(twice.points[1].saham, Saham::Punya);
-        assert!(sahams(&chart, &[], rules).unwrap().points.is_empty());
+        assert!(
+            sahams(&chart, &[], rules).unwrap().points.is_empty(),
+            "{:?}",
+            sahams(&chart, &[], rules).unwrap().points
+        );
     }
 
     #[test]

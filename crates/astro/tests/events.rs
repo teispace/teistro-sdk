@@ -161,7 +161,7 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     )
     .between(from, to)
     .unwrap();
-    assert!(!crossings.is_empty());
+    assert!(!crossings.is_empty(), "`crossings` is empty");
     // The narrowing places an event in a handful of evaluations, the
     // bracket's ends being the scan's own samples with their speeds: the
     // cubic through them, a Newton step, and one evaluation closing the
@@ -457,7 +457,7 @@ fn the_same_crossing_answers_the_same_from_any_window() {
                 JulianDay::<Ut1>::literal(J2000 + 400.0),
             )
             .unwrap();
-        assert!(!wide.is_empty());
+        assert!(!wide.is_empty(), "`wide` is empty");
         let mut compared = 0usize;
         // Windows that begin and end at every kind of awkward place: on a
         // sample, a fraction of a step past one, and just short of the
@@ -517,7 +517,7 @@ fn a_window_reports_only_the_crossings_inside_it() {
     let events = Search::new(&longitudes, quantity, Lattice::SIGNS)
         .between(from, to)
         .unwrap();
-    assert!(!events.is_empty());
+    assert!(!events.is_empty(), "`events` is empty");
     for event in &events {
         assert!(
             event.instant.get() >= from.get() && event.instant.get() <= to.get(),

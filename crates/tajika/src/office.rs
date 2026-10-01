@@ -351,7 +351,11 @@ mod tests {
             year.portfolios(Graha::Mars),
             [Office::VarshaLagna, Office::TriRashi]
         );
-        assert!(year.portfolios(Graha::Venus).is_empty());
+        assert!(
+            year.portfolios(Graha::Venus).is_empty(),
+            "{:?}",
+            year.portfolios(Graha::Venus)
+        );
         assert_eq!(year.claimants(), [Graha::Jupiter, Graha::Sun, Graha::Mars]);
     }
 

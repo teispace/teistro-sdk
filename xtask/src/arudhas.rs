@@ -79,7 +79,7 @@ fn charts(root: &Path) -> Result<Vec<Chart>, String> {
                     .map(|sign| (*graha, sign))
                 })
                 .collect::<Result<Vec<_>, String>>()
-                .map_err(&at)?;
+                .map_err(at)?;
             let padas = padas
                 .iter()
                 .map(|pada| {
@@ -92,17 +92,16 @@ fn charts(root: &Path) -> Result<Vec<Chart>, String> {
                     ))
                 })
                 .collect::<Result<Vec<_>, String>>()
-                .map_err(&at)?;
+                .map_err(at)?;
             out.push(Chart {
-                lagna: whole(&fixture["foundation"]["lagna"]["sign_index"], "lagna")
-                    .map_err(&at)?,
+                lagna: whole(&fixture["foundation"]["lagna"]["sign_index"], "lagna").map_err(at)?,
                 signs,
                 padas,
                 arudha_lagna: whole(
                     &fixture["foundation"]["arudha_lagna_sign_index"],
                     "arudha_lagna",
                 )
-                .map_err(&at)?,
+                .map_err(at)?,
             });
         }
     }

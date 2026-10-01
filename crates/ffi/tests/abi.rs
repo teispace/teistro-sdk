@@ -1296,7 +1296,7 @@ fn a_rich_message_carries_its_parts_across_and_a_plain_one_carries_none() {
         Some(r#"{"graha": {"$entity": "graha.JUPITER"}, "bhava": 7}"#),
     );
     assert_eq!(plain.parts, "[]");
-    assert!(!plain.text.is_empty());
+    assert!(!plain.text.is_empty(), "`plain.text` is empty");
 }
 
 #[test]
@@ -1314,7 +1314,8 @@ fn the_locale_engine_renders_typed_parameters_in_nepali() {
     assert!(
         !render(&ctx, "sdk.reason.grahaInBhava", None)
             .warnings
-            .is_empty()
+            .is_empty(),
+        "`render(&ctx, \"sdk.reason.grahaInBhava\", None).warnings` is empty"
     );
     let said = render(&ctx, "sdk.nope.missing", None);
     assert!(
@@ -2653,7 +2654,11 @@ fn a_chart_request_answers_the_annual_charts_instants() {
     // SAFETY: a descriptor the library wrote.
     unsafe { ts_blob_free(&raw mut bare) };
     let reader = Reader::parse(&empty, &schema).unwrap();
-    assert!(reader.column("praveshas", "year").unwrap().is_empty());
+    assert!(
+        reader.column("praveshas", "year").unwrap().is_empty(),
+        "{:?}",
+        reader.column("praveshas", "year").unwrap()
+    );
     assert!(
         reader
             .column("cast", "pravesha_count")
@@ -2755,7 +2760,11 @@ fn a_chart_request_founds_each_years_chart_where_it_is_told() {
 
     // Not asked for, none founded: the instants and nothing else.
     let unasked = ask(r#"{"through":6}"#).unwrap();
-    assert!(column(&unasked, "lagna_deg").is_empty());
+    assert!(
+        column(&unasked, "lagna_deg").is_empty(),
+        "{:?}",
+        column(&unasked, "lagna_deg")
+    );
 
     // At the birthplace: one row per return, every one a real chart.
     let birth = ask(r#"{"through":6,"place":"birth"}"#).unwrap();
@@ -2938,7 +2947,11 @@ fn a_years_chart_carries_the_lord_of_that_year() {
     // SAFETY: a descriptor the library wrote.
     unsafe { ts_blob_free(&raw mut bare) };
     let reader = Reader::parse(&empty, &schema).unwrap();
-    assert!(reader.column("year_claims", "graha").unwrap().is_empty());
+    assert!(
+        reader.column("year_claims", "graha").unwrap().is_empty(),
+        "{:?}",
+        reader.column("year_claims", "graha").unwrap()
+    );
 }
 
 /// A year's chart answers the sixteen Tajika yogas for the **matters** the
@@ -3056,7 +3069,11 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
 
     // Not asked, nothing answered: no rows, and every count nought.
     let unasked = ask(r#"{"through":2,"place":"birth"}"#).unwrap();
-    assert!(ints(&unasked, "year_matters", "house").is_empty());
+    assert!(
+        ints(&unasked, "year_matters", "house").is_empty(),
+        "{:?}",
+        ints(&unasked, "year_matters", "house")
+    );
     assert!(
         ints(&unasked, "annual_charts", "matter_count")
             .iter()
@@ -3064,7 +3081,11 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
     );
     // An empty list asks for nothing and is answered with nothing.
     let empty = ask(r#"{"through":2,"place":"birth","matters":[]}"#).unwrap();
-    assert!(ints(&empty, "year_matters", "house").is_empty());
+    assert!(
+        ints(&empty, "year_matters", "house").is_empty(),
+        "{:?}",
+        ints(&empty, "year_matters", "house")
+    );
 
     // Both rule records read the boundary's one casing.
     ask(r#"{"through":2,"place":"birth","varshesha":{"noneAspects":"ANNUAL_LAGNA_LORD"}}"#)
@@ -3291,7 +3312,11 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
     let births = ask(r#"{"through":2,"sahams":["PUNYA"]}"#).unwrap();
     assert_eq!(ints(&births, "cast", "natal_saham_count"), vec![1, 1]);
     assert_eq!(ints(&births, "natal_saham_seven", "graha").len(), 14);
-    assert!(ints(&births, "year_sahams", "saham").is_empty());
+    assert!(
+        ints(&births, "year_sahams", "saham").is_empty(),
+        "{:?}",
+        ints(&births, "year_sahams", "saham")
+    );
     // A birth has no year lord.
     let with_year_lord = 1 << TsSahamStrong::WithYearLord as usize;
     assert!(
@@ -3720,7 +3745,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     assert_eq!(per_chart.len(), 2, "one entry a chart");
     for chart in per_chart {
         let present = chart["present"].as_array().unwrap();
-        assert!(!present.is_empty());
+        assert!(!present.is_empty(), "`present` is empty");
         for held in present {
             // A rule by its key, never the whole rule again.
             assert!(held["rule"].is_string(), "{held}");
@@ -3792,7 +3817,11 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     // SAFETY: as above.
     unsafe { ts_blob_free(&raw mut none) };
     let plain_reader = Reader::parse(&plain_bytes, &schema).unwrap();
-    assert!(plain_reader.bytes("rules").unwrap().is_empty());
+    assert!(
+        plain_reader.bytes("rules").unwrap().is_empty(),
+        "{:?}",
+        plain_reader.bytes("rules").unwrap()
+    );
 
     // A rule that does not read is refused from the request's root.
     let broken = CString::new(r#"{"rules": [{"key": "X", "category": "raja"}]}"#).unwrap();
@@ -3994,7 +4023,12 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             .unwrap()
             .bytes("plans")
             .unwrap()
-            .is_empty()
+            .is_empty(),
+        "{:?}",
+        Reader::parse(&plain_bytes, &schema)
+            .unwrap()
+            .bytes("plans")
+            .unwrap()
     );
 
     // A reading needs rules to say what they answered.

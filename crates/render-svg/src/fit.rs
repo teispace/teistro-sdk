@@ -269,7 +269,9 @@ mod tests {
         assert!(
             stack(&square(0.2), Point::new(0.5, 0.5), None, 0, 0, METRICS)
                 .lines
-                .is_empty()
+                .is_empty(),
+            "{:?}",
+            stack(&square(0.2), Point::new(0.5, 0.5), None, 0, 0, METRICS).lines
         );
     }
 }

@@ -148,7 +148,7 @@ fn the_compositions_are_what_the_texts_say_and_one_of_them_is_a_refusal() {
         let source = composition.source();
         assert_eq!(source.rank.map(teistro_rules::EvidenceRank::get), Some(1));
         assert!(source.chapter.is_some() && source.verse.is_some());
-        assert!(!composition.says.is_empty());
+        assert_ne!(composition.says, "");
         assert!(
             composition
                 .houses

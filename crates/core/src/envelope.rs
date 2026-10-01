@@ -742,7 +742,7 @@ mod tests {
         let empty: [serde_json::Value; 0] = [];
         let (list, each) = content_hashes(&empty);
         assert_eq!(list, content_hash(&empty[..]));
-        assert!(each.is_empty());
+        assert!(each.is_empty(), "{each:?}");
 
         let records = [
             serde_json::json!({"b": 1e-7, "a": [1.0, -0.0], "c": "é\n"}),

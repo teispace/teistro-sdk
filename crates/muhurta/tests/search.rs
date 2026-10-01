@@ -151,7 +151,7 @@ fn closed_dates(answer: &Answer) -> Vec<(u8, u8)> {
 /// order, none overlaps a heeded blackout, and each is constant: the sky
 /// its instant clauses read reads the same a second inside either end.
 fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Answer) {
-    assert!(!answer.windows.is_empty());
+    assert!(!answer.windows.is_empty(), "`answer.windows` is empty");
     assert_eq!(answer.unjudged, rules.unjudged);
     for pair in answer.windows.windows(2) {
         assert_ne!(

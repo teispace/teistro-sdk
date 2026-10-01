@@ -135,12 +135,15 @@ fn a_day_is_assembled_whole() {
     assert_eq!(day.muhurtas.daylight.len(), 15);
     assert_eq!(day.muhurtas.night.len(), 15);
     assert!(day.muhurtas.abhijit.is_some());
-    assert!(!day.limbs.tithi.is_empty());
-    assert!(!day.limbs.nakshatra.is_empty());
-    assert!(!day.limbs.yoga.is_empty());
-    assert!(!day.limbs.karana.is_empty());
-    assert!(!day.sun.signs.is_empty());
-    assert!(!day.moon.signs.is_empty());
+    assert!(!day.limbs.tithi.is_empty(), "`day.limbs.tithi` is empty");
+    assert!(
+        !day.limbs.nakshatra.is_empty(),
+        "`day.limbs.nakshatra` is empty"
+    );
+    assert!(!day.limbs.yoga.is_empty(), "`day.limbs.yoga` is empty");
+    assert!(!day.limbs.karana.is_empty(), "`day.limbs.karana` is empty");
+    assert!(!day.sun.signs.is_empty(), "`day.sun.signs` is empty");
+    assert!(!day.moon.signs.is_empty(), "`day.moon.signs` is empty");
 }
 
 #[test]

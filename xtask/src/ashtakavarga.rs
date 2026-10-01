@@ -186,7 +186,7 @@ fn records(root: &Path) -> Result<Vec<Record>, String> {
             let mut bav = [[0; 12]; 7];
             let mut signs = [0; 7];
             for (i, graha) in GRAHAS.iter().enumerate() {
-                bav[i] = twelve(&file["bav"][graha]).map_err(&at)?;
+                bav[i] = twelve(&file["bav"][graha]).map_err(at)?;
                 signs[i] = file["inputs"]["graha_sign_index"][graha]
                     .as_u64()
                     .and_then(|n| usize::try_from(n).ok())
@@ -206,7 +206,7 @@ fn records(root: &Path) -> Result<Vec<Record>, String> {
                     ))
                 })
                 .collect::<Result<Vec<_>, String>>()
-                .map_err(&at)?;
+                .map_err(at)?;
             out.push(Record {
                 lagna: file["inputs"]["lagna_sign_index"]
                     .as_u64()
@@ -214,8 +214,8 @@ fn records(root: &Path) -> Result<Vec<Record>, String> {
                     .ok_or_else(|| at(String::from("lagna")))?,
                 signs,
                 bav,
-                sav: twelve(&file["sav"]).map_err(&at)?,
-                trikona: twelve(&file["sav_trikona"]).map_err(&at)?,
+                sav: twelve(&file["sav"]).map_err(at)?,
+                trikona: twelve(&file["sav_trikona"]).map_err(at)?,
                 methods,
             });
         }

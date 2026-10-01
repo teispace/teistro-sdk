@@ -385,7 +385,7 @@ mod tests {
         assert_eq!(imported.locale, "ne-Deva-NP");
         assert_eq!(imported.translated, exported.units - exported.untranslated);
         assert_eq!(imported.empty, exported.untranslated);
-        assert!(imported.unknown.is_empty());
+        assert!(imported.unknown.is_empty(), "{:?}", imported.unknown);
 
         let locale = tree
             .locales

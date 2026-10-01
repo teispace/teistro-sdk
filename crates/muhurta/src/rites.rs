@@ -542,7 +542,11 @@ mod tests {
                 by: vec![Graha::Mars, Graha::Jupiter],
             }]
         );
-        assert!(unwanted(&rules, &sky(&[])).is_empty());
+        assert!(
+            unwanted(&rules, &sky(&[])).is_empty(),
+            "{:?}",
+            unwanted(&rules, &sky(&[]))
+        );
     }
 
     #[test]
@@ -561,7 +565,11 @@ mod tests {
                 by: vec![Graha::Mercury],
             }]
         );
-        assert!(unwanted(&rules, &sky(&[(Graha::Venus, 185.0)])).is_empty());
+        assert!(
+            unwanted(&rules, &sky(&[(Graha::Venus, 185.0)])).is_empty(),
+            "{:?}",
+            unwanted(&rules, &sky(&[(Graha::Venus, 185.0)]))
+        );
         // Venus in Sagittarius (the 9th) is; so the default sky, with
         // every graha there, names Venus alone.
         assert_eq!(
@@ -690,6 +698,6 @@ mod tests {
         let mut json = serde_json::to_value(ActivityRules::raman_marriage()).expect("json");
         json.as_object_mut().expect("an object").remove("unwanted");
         let back: ActivityRules = serde_json::from_value(json).expect("reads");
-        assert!(back.unwanted.is_empty());
+        assert!(back.unwanted.is_empty(), "{:?}", back.unwanted);
     }
 }

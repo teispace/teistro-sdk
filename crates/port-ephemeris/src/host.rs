@@ -465,7 +465,7 @@ mod tests {
             native_frame_bits: Some(u32::MAX),
             ..Declared::named("host", vec!["SUN".into()])
         };
-        assert!(!refused(bad_frame).is_empty());
+        assert_ne!(refused(bad_frame), "");
     }
 
     #[test]
