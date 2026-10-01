@@ -699,8 +699,9 @@ test('every catalogue enum has a complete id table', () => {
   // Ashtakavarga's `TsAshtakavargaGoodFrom`, two, `TsKakshyaLord`, eight,
   // and `TsSarvaStanding`, three; 1163 since the hit list's `TsHitKind`,
   // four, `TsMotion`, two, and `TsAspectPhase`, three; 1165 since Sade
-  // Sati's `TsReckoning`, two; 1169 since a span's `TsSunrises`, four.
-  assert.equal(entries, 1169, 'every member of every enum is in a table');
+  // Sati's `TsReckoning`, two; 1169 since a span's `TsSunrises`, four;
+  // 1170 since `TsSunrise` named the upper limb unrefracted.
+  assert.equal(entries, 1170, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

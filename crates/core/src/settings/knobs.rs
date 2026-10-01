@@ -99,7 +99,10 @@ knob!(
     Sunrise { /// The centre of the disc on the geometric horizon.
         CentreNoRefraction = "CENTRE_NO_REFRACTION", /// The upper limb with refraction.
         UpperLimbRefraction = "UPPER_LIMB_REFRACTION", /// The lower limb with refraction.
-        LowerLimbRefraction = "LOWER_LIMB_REFRACTION" }
+        LowerLimbRefraction = "LOWER_LIMB_REFRACTION", /// The upper limb on the
+        /// geometric horizon, without refraction: Nepal's daily print
+        /// (`03-design/nepal-day-measured.md`, C39).
+        UpperLimbNoRefraction = "UPPER_LIMB_NO_REFRACTION" }
 );
 knob!(
     /// When the day begins.
@@ -694,6 +697,21 @@ knob!(
         BarhaspatyaRunning = "BARHASPATYA_RUNNING", /// By the lunar years in order, the Shaka year's number modulo
         /// sixty, nothing expunged: the south's.
         Chandramana = "CHANDRAMANA" }
+);
+knob!(
+    /// Whose sunrise a day under the Surya Siddhanta begins at.
+    ///
+    /// The text's own carries no equation of time (III.34 to 35, C37), so
+    /// it stands up to a quarter of an hour from the Sun's rising; Nepal's
+    /// daily panchanga prints the text's limbs beside a modern sunrise
+    /// (C39, `03-design/nepal-day-measured.md`).
+    #[derive(Default)]
+    SuryaSunrise { /// The text's: six hours less the ascensional difference,
+        /// in local mean time.
+        #[default]
+        Text = "TEXT", /// A modern ephemeris's, under `day.sunrise`: the next
+        /// entry of the chain that opens, else the SDK's built-in one.
+        Modern = "MODERN" }
 );
 knob!(
     /// The provider override policy (ADR-0013).

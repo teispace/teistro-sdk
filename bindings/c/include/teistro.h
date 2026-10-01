@@ -4939,6 +4939,10 @@ typedef enum ts_sunrise {
      * The lower limb with refraction.
      */
     TS_SUNRISE_LOWER_LIMB_REFRACTION = 2,
+    /**
+     * The upper limb on the geometric horizon, without refraction.
+     */
+    TS_SUNRISE_UPPER_LIMB_NO_REFRACTION = 3,
 } ts_sunrise;
 
 /**
