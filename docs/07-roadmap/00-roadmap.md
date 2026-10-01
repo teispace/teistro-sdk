@@ -744,16 +744,23 @@ measured against Nepal before it is called done:
    that defines its zodiac shifted by the catalogue's member of the same
    name, 1.6° off (now `ChartZodiac::searched`). `nepali-committee` is
    the profile. **The committee's sky built 2026-10-01** (C39): the
-   print's sunrise is a modern one, the upper limb on the geometric
-   horizon, so `SuryaSunrise::Modern` begins a day under the text at a
+   print's sunrise is a modern one, the disc's centre with standard
+   refraction (re-measured once the completion's apparent Sun was
+   corrected; `CENTRE_REFRACTION`), so `SuryaSunrise::Modern` begins a day under the text at a
    modern sunrise beside the text's limbs (`ModernSunrise`, the modern
    ephemeris the chain's next modern entry or the built-in one), and
-   `nepali-committee` version 2 reads it: every printed vriddhi and
+   `nepali-committee` version 3 reads it: every printed vriddhi and
    kshaya agrees but where the source names Shukla as Shubha. The five
    star planets (C38) are not composed: four printed rows cannot settle
    their method, and a day's limbs need only the Sun and the Moon.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
-   as blackouts.
+   as blackouts. **Eclipses built 2026-10-01** (`eclipses.md`,
+   `eclipses-measured.md`): lunar and solar eclipses over any modern sky,
+   every one of NASA's 913 from 1900 to 2100 found and no other, the
+   greatest moment within 2.9 s; the classical profile's eclipse is C188.
+   Next in this step: eclipses through the façade and the bindings, the
+   muhurta `ECLIPSE_STAR` and sutak blackouts, kshaya masa, Holashtaka,
+   and naming the blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's
    holiday list the way `festival-measured.md` holds the Delhi one,
    with region-scoped days (Holi in the hills and the Terai).
