@@ -1678,6 +1678,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   falls in Bhadrapada's bright half, so a festival section over that
   season changes.
 
+- **Essential dignities, the first Hellenistic step**
+  (`essential-dignities.md`, `terms-measured.md`, `sect-measured.md`;
+  C46 step 1, C208 recorded, C209 decided).
+  - A new crate, `teistro-hellenistic`, re-exported as
+    `teistro::hellenistic`. The terms are `TermsTable::EGYPTIAN`,
+    `PTOLEMAIC_LILLY` and `PTOLEMAIC_ASHMAND`, plus
+    `TermsTable::chaldean(sect)` as a rule; `TermsTable::new` takes a
+    consumer's own table and refuses a malformed one by sign. Ptolemy's
+    and Lilly's triplicities, Lilly's faces, exaltation degrees and
+    scores ship too, and `essential_dignity` returns the seven flags.
+  - `ChartArea::dignities(&chart, &DignityRequest)` gives the seven
+    planets' dignities and scores. It reports the sect, the sect rule,
+    the rules and the scores it used. The sect is the Sun's geometric
+    altitude by default (`SectRule::Horizon`, Valens's hemisphere), or
+    the chart's own daylight, or a sect the caller states.
+  - `teistro_astro::sky::altitude_by_midheaven_deg`: a body's altitude
+    from a chart's own Midheaven, obliquity and latitude.
+  - `Rashi::of_longitude` and `Rashi::opposite` in the catalogue.
+
+  **Numbers:** none moved; everything here is new. The pass finds the
+  Tajika decanate lord equal to Lilly's face on all 36 decans.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).

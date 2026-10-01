@@ -162,6 +162,10 @@ name = "sade_sati"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "dignities"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "kp"
 required-features = ["builtin-ephemeris"]
 
