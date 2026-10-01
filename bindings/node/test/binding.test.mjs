@@ -2221,6 +2221,41 @@ test('an almanac carries the eclipses it was asked for', () => {
 });
 
 /**
+ * Each day's Nepal Sambat date crosses beside the days
+ * (`03-design/calendar-indian-lunisolar.md` §11): asked by name, one a
+ * day, the year turning at Kachhala's first day, and said as the
+ * committee's page header prints it straight from the answer.
+ */
+test('an almanac carries each day\'s Nepal Sambat date', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const days = {
+    from: date(Calendar.Gregorian, 2025, 10, 20),
+    to: date(Calendar.Gregorian, 2025, 10, 23),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  assert.equal(ctx.almanac.of(days).nepalSambat, null);
+  const almanac = ctx.almanac.of({ ...days, nepalSambat: true });
+  const { value, provenance } = almanac.nepalSambat;
+  assert.equal(value.length, almanac.length);
+  assert.deepEqual(
+    value.map(({ year, month, paksha }) => [year, month, paksha]),
+    [
+      [1145, 12, 'paksha.KRISHNA'],
+      [1145, 12, 'paksha.KRISHNA'],
+      [1146, 1, 'paksha.SHUKLA'],
+      [1146, 1, 'paksha.SHUKLA'],
+    ],
+  );
+  assert.ok(Object.isFrozen(value[0]), 'frozen to its leaves');
+  assert.equal(provenance.inputHash, almanac.provenance.inputHash);
+  const said = ctx.intl.render('sdk.calendar.nepalSambatDate', value[2]);
+  assert.deepEqual(said.warnings, []);
+  assert.equal(said.text, 'ने.सं. ११४६ कछलाथ्व');
+  ctx.dispose();
+});
+
+/**
  * A day's season is its solar month's, and a month begins on the day
  * Nepal's calendar begins it (`03-design/ritu-measured.md`).
  */

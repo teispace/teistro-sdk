@@ -45,7 +45,8 @@ use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
-    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_YEARS, TsPanchangaRequest,
+    ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -4192,6 +4193,17 @@ fn panchanga_between(
 /// them when given and the `sections` bits set.
 fn panchanga_asked(
     ctx: &Ctx,
+    range: ((u8, u8), (u8, u8)),
+    beside: (Option<&str>, Option<&str>),
+    sections: u32,
+) -> Result<Vec<u8>, Record> {
+    panchanga_asked_in(ctx, 2026, range, beside, sections)
+}
+
+/// [`panchanga_asked`] over a range in another year.
+fn panchanga_asked_in(
+    ctx: &Ctx,
+    year: i32,
     ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
     (muhurta, festivals): (Option<&str>, Option<&str>),
     sections: u32,
@@ -4203,12 +4215,12 @@ fn panchanga_asked(
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
             reserved: 0,
-            from_year: 2026,
+            from_year: year,
             from_month,
             from_day,
             to_month,
             to_day,
-            to_year: 2026,
+            to_year: year,
             latitude_deg: 27.7172,
             longitude_deg: 85.324,
             altitude_m: 1400.0,
@@ -4549,6 +4561,84 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
         .unwrap();
     assert_eq!(envelope["value"], expected.value.in_full().unwrap());
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
+}
+
+/// Each day's Nepal Sambat date beside a panchanga request's days
+/// (`calendar-indian-lunisolar.md` §11): asked by its own bit, one per
+/// day in the days' order, its paksha written in full, sealed over what
+/// it holds, and the year turning at Kachhala's first day.
+#[test]
+fn a_panchanga_request_answers_each_days_nepal_sambat_date() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    // Kartika's new moon of 2025 and the 1st after it, which opened 1146.
+    let range = ((10, 20), (10, 23));
+    let asked = |sections| panchanga_asked_in(&ctx, 2025, range, (None, None), sections).unwrap();
+    let schema = schemas::panchanga();
+    let (with, without) = (asked(TS_PANCHANGA_NEPAL_SAMBAT), asked(0));
+    let (with, without) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+    );
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("nepal_sambat").unwrap(), "");
+    assert_eq!(with.text("years").unwrap(), "");
+
+    let envelope: serde_json::Value =
+        serde_json::from_str(with.text("nepal_sambat").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    let read: Vec<(i64, i64, &str)> = envelope["value"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|date| {
+            (
+                date["year"].as_i64().unwrap(),
+                date["month"].as_i64().unwrap(),
+                date["paksha"].as_str().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        read,
+        [
+            (1145, 12, "paksha.KRISHNA"),
+            (1145, 12, "paksha.KRISHNA"),
+            (1146, 1, "paksha.SHUKLA"),
+            (1146, 1, "paksha.SHUKLA"),
+        ]
+    );
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |day| teistro::CalendarDate::defined(Calendar::Gregorian, 2025, 10, day);
+    let (days, _) = sdk
+        .almanac()
+        .of_each(
+            &date(20),
+            &date(23),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+        )
+        .unwrap();
+    let expected: Vec<teistro::NepalSambatDate> = days
+        .value
+        .iter()
+        .map(teistro::Panchanga::nepal_sambat)
+        .collect();
+    assert_eq!(
+        envelope["value"],
+        teistro::NepalSambatDate::in_full(&expected).unwrap()
+    );
 }
 
 #[test]

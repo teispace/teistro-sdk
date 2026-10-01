@@ -1394,6 +1394,27 @@ void main() {
       ]),
     );
   }
+
+  // ── The Nepal Sambat dates ─────────────────────────────────────────
+  // 2024-10-30..11-03 holds Kartika's new moon, where the year turns.
+  final nepalSambat =
+      geo.almanac
+          .of(
+            from: Calendar.gregorian.date(2024, 10, 30),
+            to: Calendar.gregorian.date(2024, 11, 3),
+            place: place,
+            utcOffsetSeconds: 20700,
+            nepalSambat: true,
+          )
+          .nepalSambat!;
+  put('nepal-sambat-hash', nepalSambat.provenance.contentHash);
+  put(
+    'nepal-sambat',
+    listed([
+      for (final d in nepalSambat.value)
+        '${d.year}:${d.month}:${d.kind.key}:${d.paksha.fullKey}',
+    ]),
+  );
   geo.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────

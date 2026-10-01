@@ -212,6 +212,11 @@ PANCHANGA_YEARS: Final = 1
 # of each (`03-design/eclipses.md`).
 PANCHANGA_ECLIPSES: Final = 2
 
+# `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
+# request's `sections` for each day's Nepal Sambat date
+# (`03-design/calendar-indian-lunisolar.md` §11).
+PANCHANGA_NEPAL_SAMBAT: Final = 4
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -3058,7 +3063,9 @@ class PanchangaRequest:
     """What to answer beside the days, as a bit set:
     `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
     `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
-    days with the place's view of each, in the `eclipses` section.
+    days with the place's view of each, in the `eclipses` section;
+    `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
+    the `nepal_sambat` section.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.

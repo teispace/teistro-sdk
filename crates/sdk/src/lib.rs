@@ -122,6 +122,9 @@ pub use teistro_time::ghati::GhatiPala;
 // years that ran in it: what `sdk.almanac().years` answers with.
 pub use teistro_calendar::samvatsara::JovianYear;
 pub use teistro_panchanga::year::LunarYear;
+// A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
+// `AlmanacRequest::with_nepal_sambat` answers beside the days.
+pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

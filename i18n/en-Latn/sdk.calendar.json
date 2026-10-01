@@ -2,6 +2,9 @@
  "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{Sunday}} 1 {{Monday}} 2 {{Tuesday}} 3 {{Wednesday}} 4 {{Thursday}} 5 {{Friday}} 6 {{Saturday}} * {{{$weekday}}}",
  "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{Sun}} 1 {{Mon}} 2 {{Tue}} 3 {{Wed}} 4 {{Thu}} 5 {{Fri}} 6 {{Sat}} * {{{$weekday}}}",
  "lunarMonth": ".input {$masa :entity kind=masa} .input {$kind :string} .match $kind ADHIKA {{Adhika {$masa}}} KSHAYA {{Kshaya {$masa}}} * {{{$masa}}}",
+ "nepalSambatMonth": ".input {$month :integer} .input {$kind :string} .match $kind $month ADHIKA * {{Anala}} * 1 {{Kachhala}} * 2 {{Thinla}} * 3 {{Pwanhela}} * 4 {{Sila}} * 5 {{Chila}} * 6 {{Chaula}} * 7 {{Bachhala}} * 8 {{Tachhala}} * 9 {{Dila}} * 10 {{Gunla}} * 11 {{Yanla}} * 12 {{Kaula}} * * {{{$month}}}",
+ "nepalSambatHalf": ".input {$paksha :string} .match $paksha SHUKLA {{Thwa}} paksha.SHUKLA {{Thwa}} KRISHNA {{Ga}} paksha.KRISHNA {{Ga}} * {{{$paksha}}}",
+ "nepalSambatDate": ".input {$year :integer} .input {$month :integer} .input {$kind :string} .input {$paksha :string} {{NS {$year :integer useGrouping=false} {sdk.calendar.nepalSambatMonth :msg} {sdk.calendar.nepalSambatHalf :msg}}}",
  "GREGORIAN": {
   "monthName": ".input {$month :integer} .match $month 1 {{January}} 2 {{February}} 3 {{March}} 4 {{April}} 5 {{May}} 6 {{June}} 7 {{July}} 8 {{August}} 9 {{September}} 10 {{October}} 11 {{November}} 12 {{December}} * {{{$month}}}",
   "monthShort": ".input {$month :integer} .match $month 1 {{Jan}} 2 {{Feb}} 3 {{Mar}} 4 {{Apr}} 5 {{May}} 6 {{Jun}} 7 {{Jul}} 8 {{Aug}} 9 {{Sep}} 10 {{Oct}} 11 {{Nov}} 12 {{Dec}} * {{{$month}}}",

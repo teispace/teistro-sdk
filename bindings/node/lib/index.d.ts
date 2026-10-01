@@ -2505,6 +2505,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly years: LunarYears | null;
   /** The eclipses of the days with the place's view of each, when the request asked for them with `eclipses: true`, or `null`. */
   readonly eclipses: Eclipses | null;
+  /** Each day's Nepal Sambat date, when the request asked for them with `nepalSambat: true`, or `null`. */
+  readonly nepalSambat: NepalSambatDates | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -2596,6 +2598,8 @@ export interface AlmanacRequest {
   readonly years?: boolean;
   /** Whether to answer the eclipses of the days and the place's view of each, as `Almanac.eclipses`; `false` by default, which costs nothing. */
   readonly eclipses?: boolean;
+  /** Whether to answer each day's Nepal Sambat date, as `Almanac.nepalSambat`; `false` by default, which costs nothing. */
+  readonly nepalSambat?: boolean;
 }
 
 /**
@@ -2781,11 +2785,6 @@ export interface FestivalObservance {
 }
 
 /**
- * The lunar years an almanac's days fall in
- * (`03-design/calendar-indian-lunisolar.md` §10), in order and abutting,
- * frozen to its leaves.
- */
-/**
  * The eclipses whose greatest moment falls in an almanac's days
  * (`03-design/eclipses.md`), each with how the almanac's place sees it,
  * frozen to its leaves. Every instant is a UT1 Julian day, UTC to within
@@ -2899,6 +2898,11 @@ export interface SolarEclipseView {
   readonly seen: EclipseSeen | null;
 }
 
+/**
+ * The lunar years an almanac's days fall in
+ * (`03-design/calendar-indian-lunisolar.md` §10), in order and abutting,
+ * frozen to its leaves.
+ */
 export interface LunarYears {
   /** The years, each from one Chaitra Shukla Pratipada's sunrise to the next. */
   readonly value: readonly LunarYear[];
@@ -2926,6 +2930,30 @@ export interface LunarYear {
   readonly jovian: readonly JovianYear[];
   /** The Jovian year that began and ended inside this one and so names no year, or `null`. */
   readonly lupta: Samvatsara | null;
+}
+
+/**
+ * Each day of an almanac's Nepal Sambat date
+ * (`03-design/calendar-indian-lunisolar.md` §11), in the days' order,
+ * frozen to its leaves. `sdk.calendar.nepalSambatDate` says one.
+ */
+export interface NepalSambatDates {
+  /** One date a day, in the days' order. */
+  readonly value: readonly NepalSambatDate[];
+  /** The days' own provenance, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)". */
+export interface NepalSambatDate {
+  /** The year, which opens at Kachhala's first day: 1146 from 2025-10-22. */
+  readonly year: number;
+  /** The month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina); an adhika month keeps the number of the month it repeats. */
+  readonly month: number;
+  /** Whether the month is ordinary, intercalary (Anala) or omitted. */
+  readonly kind: MonthKind;
+  /** The half: `'paksha.SHUKLA'` is thwa and `'paksha.KRISHNA'` ga. */
+  readonly paksha: Paksha;
 }
 
 /** One Jovian year of the Surya Siddhanta's count (I.55). */

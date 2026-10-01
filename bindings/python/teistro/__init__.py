@@ -60,6 +60,7 @@ from ._ffi import (
     CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
+    PANCHANGA_NEPAL_SAMBAT,
     PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
@@ -442,6 +443,8 @@ __all__ = [
     "SolarEclipseView",
     "LunarYear",
     "JovianYear",
+    "NepalSambatDates",
+    "NepalSambatDate",
     "TaraReading",
     "ClosedDay",
     "TithiClause",
@@ -1601,6 +1604,7 @@ class AlmanacArea(_Area):
         festivals: Optional[FestivalRequest] = None,
         years: bool = False,
         eclipses: bool = False,
+        nepal_sambat: bool = False,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -1614,7 +1618,8 @@ class AlmanacArea(_Area):
         for both. `years=True` answers the lunar years the days fall in, as
         `Almanac.years`, and `eclipses=True` the eclipses whose greatest
         moment falls in them with how the place sees each, as
-        `Almanac.eclipses`.
+        `Almanac.eclipses`, and `nepal_sambat=True` each day's Nepal Sambat
+        date, as `Almanac.nepal_sambat`.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -1630,7 +1635,9 @@ class AlmanacArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             muhurta_json=_muhurta_json(muhurta),
             festivals_json=_festivals_json(festivals),
-            sections=(PANCHANGA_YEARS if years else 0) | (PANCHANGA_ECLIPSES if eclipses else 0),
+            sections=(PANCHANGA_YEARS if years else 0)
+            | (PANCHANGA_ECLIPSES if eclipses else 0)
+            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0),
         )
         return Almanac(
             decode_panchanga(
@@ -3302,6 +3309,44 @@ class LunarYears:
     value: Tuple[LunarYear, ...]
     provenance: Provenance
     """What computed them, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class NepalSambatDate:
+    """A day's Nepal Sambat date, the committee's "ने.सं. ११४६ (कछलाथ्व)"
+    (`03-design/calendar-indian-lunisolar.md` §11).
+
+    `sdk.calendar.nepalSambatDate` says one:
+
+    >>> # ctx.intl.render("sdk.calendar.nepalSambatDate", {"year": date.year,
+    >>> #     "month": date.month, "kind": date.kind.key, "paksha": date.paksha.key})
+    """
+
+    year: int
+    """The year, which opens at Kachhala's first day: 1146 from 2025-10-22."""
+
+    month: int
+    """The month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta
+    Ashwina); an adhika month keeps the number of the month it repeats."""
+
+    kind: MonthKind
+    """Whether the month is ordinary, intercalary (Anala) or omitted."""
+
+    paksha: Paksha
+    """The half: Shukla is thwa and Krishna ga."""
+
+
+@dataclass(frozen=True)
+class NepalSambatDates:
+    """Each day of an almanac's Nepal Sambat date, in the days' order.
+
+    >>> # almanac = ctx.almanac.of(..., nepal_sambat=True)
+    >>> # year = almanac.nepal_sambat.value[0].year
+    """
+
+    value: Tuple[NepalSambatDate, ...]
+    provenance: Provenance
+    """The days' own provenance, and the hash of `value`."""
 
 
 @dataclass(frozen=True)
@@ -5494,6 +5539,24 @@ def _years_answer(text: str) -> LunarYears:
 
     return LunarYears(
         value=tuple(year(y) for y in envelope["value"]),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _nepal_sambat_answer(text: str) -> NepalSambatDates:
+    """The `nepal_sambat` section: one frozen date a day, with the
+    provenance beside them."""
+    envelope = json.loads(text)
+    return NepalSambatDates(
+        value=tuple(
+            NepalSambatDate(
+                year=raw["year"],
+                month=raw["month"],
+                kind=_member(MonthKind, raw["kind"]),
+                paksha=_member(Paksha, raw["paksha"]),
+            )
+            for raw in envelope["value"]
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 
@@ -7820,6 +7883,16 @@ class Almanac:
         it, the stretch above its horizon or `None`. Parsed once."""
         text = self.decoded.eclipses
         return _eclipses_answer(text) if text else None
+
+    @cached_property
+    def nepal_sambat(self) -> Optional[NepalSambatDates]:
+        """Each day's Nepal Sambat date, or `None` when `nepal_sambat=True`
+        was not asked (`03-design/calendar-indian-lunisolar.md` §11): one a
+        day in the days' order, with its year, its month counted from
+        Kachhala, the month's kind (adhika is Anala) and its half. Parsed
+        once."""
+        text = self.decoded.nepal_sambat
+        return _nepal_sambat_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:

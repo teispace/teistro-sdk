@@ -3289,6 +3289,45 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
     }
 }
 
+/// The Nepal Sambat dates a panchanga request carries, as the report
+/// prints them.
+///
+/// 2024-10-30..11-03 at the test provider holds Kartika's new moon, where
+/// the year turns.
+fn nepal_sambat(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 30);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
+    let dates: Vec<teistro::NepalSambatDate> = geo
+        .almanac()
+        .of(&from, &to, place, offset)
+        .expect("the test provider")
+        .value
+        .iter()
+        .map(teistro::Panchanga::nepal_sambat)
+        .collect();
+    // The boundary seals the full-keyed value, so the hash every binding
+    // reads is of that.
+    let written = teistro::NepalSambatDate::in_full(&dates).expect("written dates");
+    put(
+        report,
+        "nepal-sambat-hash",
+        teistro_core::envelope::content_hash(&written).to_string(),
+    );
+    put(
+        report,
+        "nepal-sambat",
+        listed(dates.iter().map(|date| {
+            format!(
+                "{}:{}:{}:{}",
+                date.year,
+                date.month,
+                tag(&date.kind),
+                date.paksha.full_key()
+            )
+        })),
+    );
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -3587,6 +3626,7 @@ fn main() {
     a_muhurta(&mut report, &geo, &place, offset);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
+    nepal_sambat(&mut report, &geo, &place, offset);
     eclipses(&mut report, &place, offset);
 
     for (key, value) in &report {

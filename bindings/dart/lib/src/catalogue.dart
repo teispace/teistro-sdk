@@ -80,6 +80,11 @@ const int panchangaYears = 1;
 /// of each (`03-design/eclipses.md`).
 const int panchangaEclipses = 2;
 
+/// `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's Nepal Sambat date
+/// (`03-design/calendar-indian-lunisolar.md` §11).
+const int panchangaNepalSambat = 4;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

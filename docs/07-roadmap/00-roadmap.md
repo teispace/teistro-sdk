@@ -799,6 +799,15 @@ measured against Nepal before it is called done:
    upakarma, keyed by a nakshatra.
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
+   **Nepal Sambat built 2026-10-01** (`calendar-indian-lunisolar.md`
+   §11), and it was not a calendar: the committee's page headers name
+   the amanta months under Newar names, Anala for any adhika month, with
+   the year turning at Kachhala's first day. So it is a reading of every
+   almanac day (`Panchanga::nepal_sambat`), answered beside the days in
+   every binding and said by `sdk.calendar` messages. All 51 headers of
+   VS 2082 and 2083 agree over the committee's sky
+   (`nepal-sambat-measured.md`). C201 and C202 wait on a print. Next:
+   the saait packs.
 
 Then the two traditions ADR-0025 moved into v1, which are profiles over
 the same machinery rather than new mechanisms:

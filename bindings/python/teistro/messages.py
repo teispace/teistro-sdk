@@ -4265,6 +4265,27 @@ class MessagesSdkCalendar:
             {"kind": kind, "masa": {"$entity": masa.value}},
         )
 
+    def nepal_sambat_date(self, *, kind: str, month: int, paksha: str, year: int) -> str:
+        """`sdk.calendar.nepalSambatDate`"""
+        return self._r.render(
+            "sdk.calendar.nepalSambatDate",
+            {"kind": kind, "month": month, "paksha": paksha, "year": year},
+        )
+
+    def nepal_sambat_half(self, *, paksha: str) -> str:
+        """`sdk.calendar.nepalSambatHalf`"""
+        return self._r.render(
+            "sdk.calendar.nepalSambatHalf",
+            {"paksha": paksha},
+        )
+
+    def nepal_sambat_month(self, *, kind: str, month: int) -> str:
+        """`sdk.calendar.nepalSambatMonth`"""
+        return self._r.render(
+            "sdk.calendar.nepalSambatMonth",
+            {"kind": kind, "month": month},
+        )
+
     @property
     def time(self) -> MessagesSdkCalendarTime:
         """The messages under `time`."""

@@ -4109,6 +4109,9 @@ class Panchanga:
     eclipses: str
     """UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here}`. A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, and `umbralSeen` the stretch of the umbral phase seen, or null. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them."""
 
+    nepal_sambat: str
+    """UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -4142,6 +4145,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_festivals = blob.section(22, "festivals")
     at_years = blob.section(23, "years")
     at_eclipses = blob.section(24, "eclipses")
+    at_nepal_sambat = blob.section(25, "nepal_sambat")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -4467,6 +4471,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
         festivals=blob.text(at_festivals),
         years=blob.text(at_years),
         eclipses=blob.text(at_eclipses),
+        nepal_sambat=blob.text(at_nepal_sambat),
     )
 
 

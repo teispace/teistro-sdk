@@ -20,6 +20,8 @@ import type {
   DashaPeriod,
   EphemerisProvider,
   Eclipses,
+  NepalSambatDate,
+  NepalSambatDates,
   EkadashiKinds,
   EkadashiRule,
   EkadashiVedha,
@@ -340,6 +342,23 @@ function eclipses(): string {
 }
 
 void eclipses;
+
+/** Each day's Nepal Sambat date beside an almanac's days, typed all the way down and said. */
+function nepalSambat(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: Almanac = ctx.almanac.of({ from: someDate, to: someDate, place, utcOffsetSeconds: 20700, nepalSambat: true });
+  const found: NepalSambatDates | null = asked.nepalSambat;
+  const date: NepalSambatDate | undefined = found?.value[0];
+  const year: number | undefined = date?.year;
+  const anala: boolean = date?.kind === 'ADHIKA';
+  // @ts-expect-error a half is its catalogue member, never the bare key
+  const bare: 'SHUKLA' | undefined = date?.paksha;
+  // @ts-expect-error dates not asked for are null, so they need a check
+  const unchecked: number = asked.nepalSambat.value.length;
+  return `${year} ${anala} ${bare} ${unchecked}`;
+}
+
+void nepalSambat;
 
 /** A layout of the consumer's own, typed: copied, renamed, registered and drawn. */
 function ownLayout(): string {

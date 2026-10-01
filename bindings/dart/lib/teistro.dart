@@ -827,8 +827,9 @@ final class AlmanacArea extends _Area {
   /// [Almanac.muhurta], and [festivals] the rules whose days fall in them,
   /// answered as [Almanac.festivals]; the days are founded once for both.
   /// [years] answers the lunar years the days fall in, as [Almanac.years],
-  /// and [eclipses] the eclipses whose greatest moment falls in them with
-  /// how the place sees each, as [Almanac.eclipses].
+  /// [eclipses] the eclipses whose greatest moment falls in them with how
+  /// the place sees each, as [Almanac.eclipses], and [nepalSambat] each
+  /// day's Nepal Sambat date, as [Almanac.nepalSambat].
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
@@ -838,6 +839,7 @@ final class AlmanacArea extends _Area {
     FestivalRequest? festivals,
     bool years = false,
     bool eclipses = false,
+    bool nepalSambat = false,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -858,7 +860,8 @@ final class AlmanacArea extends _Area {
             festivalsJson: festivals?._json,
             sections:
                 (years ? panchangaYears : 0) |
-                (eclipses ? panchangaEclipses : 0),
+                (eclipses ? panchangaEclipses : 0) |
+                (nepalSambat ? panchangaNepalSambat : 0),
           ),
         ),
       ),
@@ -6403,6 +6406,88 @@ final class LunarYears {
   final Provenance provenance;
 }
 
+/// A day's Nepal Sambat date, the committee's "ने.सं. ११४६ (कछलाथ्व)"
+/// (`03-design/calendar-indian-lunisolar.md` §11).
+///
+/// `sdk.calendar.nepalSambatDate` says one.
+final class NepalSambatDate {
+  const NepalSambatDate({
+    required this.year,
+    required this.month,
+    required this.kind,
+    required this.paksha,
+  });
+
+  /// The year, which opens at Kachhala's first day: 1146 from 2025-10-22.
+  final int year;
+
+  /// The month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta
+  /// Ashwina); an adhika month keeps the number of the month it repeats.
+  final int month;
+
+  /// Whether the month is ordinary, intercalary (Anala) or omitted.
+  final MonthKind kind;
+
+  /// The half: [Paksha.shukla] is thwa and [Paksha.krishna] ga.
+  final Paksha paksha;
+
+  @override
+  bool operator ==(Object other) =>
+      other is NepalSambatDate &&
+      other.year == year &&
+      other.month == month &&
+      other.kind == kind &&
+      other.paksha == paksha;
+
+  @override
+  int get hashCode => Object.hash(year, month, kind, paksha);
+}
+
+/// Each day of an almanac's Nepal Sambat date, in the days' order.
+///
+/// ```dart
+/// final almanac = sdk.almanac.of(
+///     from: from, to: to, place: place, utcOffsetSeconds: 20700,
+///     nepalSambat: true);
+/// final year = almanac.nepalSambat?.value.first.year;
+/// ```
+final class NepalSambatDates {
+  const NepalSambatDates({required this.value, required this.provenance});
+
+  /// One date a day, in the days' order.
+  final List<NepalSambatDate> value;
+
+  /// The days' own provenance, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// The `nepal_sambat` section: one date a day, with the provenance beside
+/// them.
+NepalSambatDates _nepalSambat(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  NepalSambatDate date(Map<String, Object?> raw) {
+    final kind = raw['kind']! as String;
+    return NepalSambatDate(
+      year: raw['year']! as int,
+      month: raw['month']! as int,
+      kind:
+          MonthKind.byKey(kind) ??
+          (throw ArgumentError.value(kind, 'kind', 'not a MonthKind')),
+      paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
+    );
+  }
+
+  return NepalSambatDates(
+    value: List.unmodifiable([
+      for (final item in envelope['value']! as List<Object?>)
+        date(item! as Map<String, Object?>),
+    ]),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
 /// The `years` section: the envelope's years as values, with the
 /// provenance beside them.
 LunarYears _lunarYears(String json) {
@@ -9994,6 +10079,14 @@ final class Almanac {
   /// `null`. Parsed once.
   late final Eclipses? eclipses =
       decoded.eclipses.isEmpty ? null : _eclipses(decoded.eclipses);
+
+  /// Each day's Nepal Sambat date, or `null` when the request did not ask
+  /// with `nepalSambat: true` (`03-design/calendar-indian-lunisolar.md`
+  /// §11): one a day in the days' order, with its year, its month counted
+  /// from Kachhala, the month's kind (adhika is Anala) and its half.
+  /// Parsed once.
+  late final NepalSambatDates? nepalSambat =
+      decoded.nepalSambat.isEmpty ? null : _nepalSambat(decoded.nepalSambat);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

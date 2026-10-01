@@ -1695,6 +1695,73 @@ void _engineTests() {
     );
   });
 
+  // Each day's Nepal Sambat date beside the days
+  // (`03-design/calendar-indian-lunisolar.md` §11): one a day, the year
+  // turning at Kachhala's first day, said as the committee's page header
+  // prints it.
+  test('an almanac carries each day\'s Nepal Sambat date', () {
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      locale: 'ne-Deva-NP',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    Almanac days({bool nepalSambat = false}) => ctx.almanac.of(
+      from: gregorian(2025, 10, 20),
+      to: gregorian(2025, 10, 23),
+      place: place,
+      utcOffsetSeconds: 20700,
+      nepalSambat: nepalSambat,
+    );
+    expect(days().nepalSambat, isNull);
+    final almanac = days(nepalSambat: true);
+    final answer = almanac.nepalSambat!;
+    expect(answer.value, hasLength(almanac.length));
+    expect(answer.value, const [
+      NepalSambatDate(
+        year: 1145,
+        month: 12,
+        kind: MonthKind.nija,
+        paksha: Paksha.krishna,
+      ),
+      NepalSambatDate(
+        year: 1145,
+        month: 12,
+        kind: MonthKind.nija,
+        paksha: Paksha.krishna,
+      ),
+      NepalSambatDate(
+        year: 1146,
+        month: 1,
+        kind: MonthKind.nija,
+        paksha: Paksha.shukla,
+      ),
+      NepalSambatDate(
+        year: 1146,
+        month: 1,
+        kind: MonthKind.nija,
+        paksha: Paksha.shukla,
+      ),
+    ]);
+    expect(() => answer.value.add(answer.value.first), throwsUnsupportedError);
+    expect(answer.provenance.inputHash, almanac.provenance.inputHash);
+    final first = answer.value[2];
+    expect(
+      ctx.intl.messages.sdk.calendar.nepalSambatDate(
+        year: first.year,
+        month: first.month,
+        kind: first.kind.key,
+        paksha: first.paksha.key,
+      ),
+      'ने.सं. ११४६ कछलाथ्व',
+    );
+    ctx.dispose();
+  });
+
   // A limb's member naming two days or none, and its end in ghatis
   // (`03-design/nepal-day-measured.md`): Nepal's print, under the
   // committee's Surya Siddhanta.
