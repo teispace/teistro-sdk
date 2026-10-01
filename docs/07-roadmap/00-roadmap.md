@@ -835,6 +835,13 @@ the same machinery rather than new mechanisms:
   horary considerations. Its time lords register in the same time-lord
   registry as the dashas, which is what proves that registry is
   tradition-neutral rather than nakshatra-shaped.
+  **Its first step began 2026-10-01** (`essential-dignities.md`): the
+  terms, triplicities, faces, exaltation degrees and scores ship in
+  `crates/hellenistic`, each held to its printing in `terms-measured.md`;
+  the sect is read from the Sun's altitude, Valens's horizon (C209,
+  `sect-measured.md`); and `ChartArea::dignities` answers them in Rust.
+  The boundary and the bindings are next, then mutual reception, the
+  almuten and Lilly's accidental fortitudes.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the
