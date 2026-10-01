@@ -1052,6 +1052,39 @@ provider's DUT1).
 
 ## How to resume
 
+0. **Checkpoint, 2026-10-01 (session handover).** Roadmap Phase 7, step
+   4's remainder. PR #242 (the saait packs and the Rust 1.99 lint fix)
+   is merged. Branch `feat/purnima-vrata` (worked in the git worktree
+   `../teistro-sdk-c200`, its `fixtures/` submodule initialised) holds two
+   commits on `main`: C200, the monthly full-moon fast (`festival-rules.md`
+   §9.6), and C207, a rule kept on a nakshatra with the Samavedis'
+   upakarma (§9.7). Verified: the crate's festival tests (31, the new ones
+   proved red), clippy on both targets, `check-lints`, fmt, and
+   `cargo xtask festival` (29 of 29 printed days, 24 of 24 for the
+   fast). **Not yet verified:** the full fast-check sweep (the last one was
+   stopped after the façade's `crates/sdk/tests/festival.rs` failed; the
+   fix, adding `UPAKARMA_SAMAVEDI` to its season list, is committed but
+   unrun) and the binding gates (`check-node`, `check-python`,
+   `check-dart`, `check-parity`), which this branch's new binding tests
+   need. Two binding-test expectations are written but unmeasured: the
+   refusal field `festivals.rules[0]` for a rule naming both a tithi and
+   a nakshatra, and `DARK_HASTA` falling once in Ashwina between 15
+   October and 10 November 2026; correct them to what the gates print if
+   they differ. **Next, in order:** run the sweep and the four binding
+   gates in the worktree; push; open the PR; dispatch
+   `gh workflow run verify.yml --ref feat/purnima-vrata`; merge when
+   green; `git worktree remove ../teistro-sdk-c200`. Then `western`
+   step 1 (C46's first step): derive the terms, sect and dignities from
+   *Tetrabiblos* (Gutenberg #70850) and Lilly's 1647 table (Internet
+   Archive `b30338724`, leaf n137, printed p. 104) in a gated pass. Its
+   findings so far: the Chaldean terms are a rule that reproduces every
+   total Ptolemy states; Lilly matches Ashmand's Ptolemaic terms in five
+   signs and one of Ashmand's printed variants in six, and parts in Gemini;
+   Ptolemy's "face" (I.XXVI) is a configuration to the luminaries, not
+   Lilly's 10° decans; the above-the-horizon sect rule is Whalley's note,
+   not Ptolemy's. The Rigvedis' upakarma waits for a printed record
+   (C207).
+
 1. Read this file, then [`QUESTIONS.md`](QUESTIONS.md), which is the
    authority on what is open — this step names the open questions and
    never counts them, because the count was wrong twice in one day and
