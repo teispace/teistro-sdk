@@ -22,10 +22,10 @@ use teistro_astro::eclipse::{
 use teistro_astro::sky::Apparent;
 use teistro_astro::{Completion, DeltaTModel, tt_of};
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_ephemeris_builtin::provider::Builtin;
-use teistro_port_ephemeris::Body;
+use teistro_port_ephemeris::{Body, Horizon};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, median, table, verdict_of};
@@ -45,6 +45,20 @@ const LUNAR: &str = include_str!("eclipses/lunar.txt");
 /// eclipse. Read from NASA's `5MCSEcatalog.txt` on 1 October 2026.
 const SOLAR: &str = include_str!("eclipses/solar.txt");
 
+/// Local circumstances, a city a line: the date of the eclipse, the
+/// city (spaces as underscores), its latitude and longitude in degrees
+/// east and north, its elevation in metres (0 where the bulletin prints
+/// none), the four contacts' and the maximum's UT, `-` for a contact the
+/// bulletin does not print, and the magnitude at the maximum. Transcribed
+/// on 1 October 2026 from NASA's eclipse bulletins, in the public
+/// domain (`eclipse.gsfc.nasa.gov/SEmono/`): the total solar eclipse of
+/// 2009 July 22 (`TSE2009`, tables 9, 10 and 12: India, China and Asia)
+/// and the annular solar eclipse of 2010 January 15 (`ASE2010`, tables
+/// 2.9 and 2.13: Europe and South Asia). Cities whose maximum or a
+/// contact falls at sunrise or sunset, which the bulletin prints to the
+/// minute as `Rise` or `Set`, are left out.
+const LOCAL: &str = include_str!("eclipses/local.txt");
+
 /// The window both catalogues are read over, as Gregorian years.
 const FIRST_YEAR: i32 = 1900;
 const LAST_YEAR: i32 = 2100;
@@ -59,6 +73,11 @@ const GAMMA_BOUND: f64 = 0.0005;
 const MAGNITUDE_BOUND: f64 = 0.001;
 const DURATION_BOUND_MINUTES: f64 = 1.0;
 const POINT_BOUND_DEG: f64 = 0.5;
+const LOCAL_BOUND_SECONDS: f64 = 5.0;
+/// The maximum's own bound: a shallow eclipse's magnitude is flat for
+/// seconds either side of it, where a contact is a sharp crossing.
+const LOCAL_MAXIMUM_BOUND_SECONDS: f64 = 10.0;
+const LOCAL_MAGNITUDE_BOUND: f64 = 0.002;
 
 /// The Delta T model the search runs under. The catalogue speaks TT and
 /// the search UT1; an answer is taken back to TT under the same model,
@@ -84,6 +103,47 @@ struct SolarRecord {
     magnitude: f64,
     latitude: f64,
     longitude: f64,
+}
+
+struct LocalRecord {
+    date: String,
+    city: String,
+    place: Place,
+    /// The four contacts and the maximum, seconds past the date's UT
+    /// midnight, as printed: a contact before midnight is a day early.
+    moments: [Option<f64>; 5],
+    magnitude: f64,
+}
+
+fn local_records() -> Result<Vec<LocalRecord>, String> {
+    LOCAL
+        .lines()
+        .map(|line| {
+            let f: Vec<&str> = line.split_whitespace().collect();
+            let [date, city, lat, lon, elev, c1, c2, c3, c4, max, magnitude] = f.as_slice() else {
+                return Err(format!("'{line}' is no local record"));
+            };
+            let place = Place::try_from_degrees(number(lat)?, number(lon)?, number(elev)?)
+                .map_err(|e| format!("{city}: {e}"))?;
+            let clock = |text: &str| -> Result<Option<f64>, String> {
+                if text == "-" {
+                    return Ok(None);
+                }
+                let parts: Vec<f64> = text.split(':').map(number).collect::<Result<_, _>>()?;
+                let [h, m, s] = parts.as_slice() else {
+                    return Err(format!("{city}: '{text}' is no time"));
+                };
+                Ok(Some(h * 3600.0 + m * 60.0 + s))
+            };
+            Ok(LocalRecord {
+                date: (*date).to_string(),
+                city: city.replace('_', " "),
+                place,
+                moments: [clock(c1)?, clock(c2)?, clock(c3)?, clock(c4)?, clock(max)?],
+                magnitude: number(magnitude)?,
+            })
+        })
+        .collect()
 }
 
 fn number(text: &str) -> Result<f64, String> {
@@ -326,6 +386,175 @@ fn lunar_near<S: ShadowSource>(
     Ok(found)
 }
 
+/// The difference of two Julian days, seconds.
+fn seconds_of(ours: f64, theirs: f64) -> f64 {
+    (ours - theirs) * 86_400.0
+}
+
+/// What the bulletins' cities measure: the claims, and the section's
+/// table.
+struct Local {
+    claims: Vec<Claim>,
+    rows: String,
+    disagree: Vec<String>,
+}
+
+/// The moments a bulletin prints for a city, in its order.
+const LOCAL_MOMENTS: [&str; 5] = [
+    "first contact",
+    "second contact",
+    "third contact",
+    "fourth contact",
+    "maximum",
+];
+
+/// What the bulletin cities measure, before it is judged.
+struct LocalOffsets {
+    /// Ours less the bulletin's, seconds, per moment of [`LOCAL_MOMENTS`].
+    offsets: [Vec<f64>; 5],
+    /// Ours less the bulletin's magnitude at the maximum.
+    magnitudes: Vec<f64>,
+    /// Each moment one side has and the other does not, but for a
+    /// contact below the horizon, which the bulletin leaves out.
+    disagree: Vec<String>,
+    /// The contacts that happened below the horizon.
+    below: usize,
+}
+
+/// Every bulletin city's eclipse as the SDK sees it from there, less the
+/// bulletin's.
+fn local_offsets<S: ShadowSource>(
+    eclipses: &Eclipses<'_, S>,
+    solar: &[SolarEclipse],
+    records: &[LocalRecord],
+) -> Result<LocalOffsets, String> {
+    let mut offsets: [Vec<f64>; 5] = Default::default();
+    let mut magnitudes = Vec::new();
+    let mut disagree = Vec::new();
+    let mut below = 0;
+    for record in records {
+        let midnight = instant(&record.date, "0:0:0")?;
+        let Some(eclipse) = solar
+            .iter()
+            .find(|e| (e.greatest.get() - midnight - 0.5).abs() < 1.0)
+        else {
+            return Err(format!("{}: no solar eclipse found that day", record.date));
+        };
+        let greatest = eclipse.greatest.get();
+        let view = eclipses
+            .solar_seen(eclipse, record.place, &Horizon::UPPER_LIMB_REFRACTION)
+            .map_err(|e| format!("{} {}: {e}", record.date, record.city))?;
+        let Some(view) = view else {
+            disagree.push(format!("{} {}: not eclipsed", record.date, record.city));
+            continue;
+        };
+        let ours = [
+            Some(view.first),
+            view.second,
+            view.third,
+            Some(view.fourth),
+            Some(view.maximum),
+        ];
+        for (n, (printed, found)) in record.moments.iter().zip(ours).enumerate() {
+            match (printed, found) {
+                (Some(seconds), Some(found)) => {
+                    let mut at = midnight + seconds / 86_400.0;
+                    if at - greatest > 0.5 {
+                        at -= 1.0;
+                    } else if greatest - at > 0.5 {
+                        at += 1.0;
+                    }
+                    offsets[n].push(seconds_of(found.at.get(), at));
+                }
+                (None, Some(found)) if found.altitude_deg < 0.0 => below += 1,
+                (None, None) => {}
+                (printed, found) => disagree.push(format!(
+                    "{} {}: the {} is {} in the bulletin and {} here",
+                    record.date,
+                    record.city,
+                    LOCAL_MOMENTS[n],
+                    if printed.is_some() {
+                        "printed"
+                    } else {
+                        "absent"
+                    },
+                    found.map_or(String::from("absent"), |f| format!(
+                        "at altitude {:.2}°",
+                        f.altitude_deg
+                    )),
+                )),
+            }
+        }
+        magnitudes.push(view.magnitude - record.magnitude);
+    }
+    Ok(LocalOffsets {
+        offsets,
+        magnitudes,
+        disagree,
+        below,
+    })
+}
+
+/// Every bulletin city's eclipse as the SDK sees it from there, against
+/// the bulletin.
+fn local<S: ShadowSource>(
+    eclipses: &Eclipses<'_, S>,
+    solar: &[SolarEclipse],
+) -> Result<Local, String> {
+    let records = local_records()?;
+    let LocalOffsets {
+        offsets,
+        magnitudes,
+        disagree,
+        below,
+    } = local_offsets(eclipses, solar, &records)?;
+    let spreads: Vec<Spread> = offsets.iter().map(|o| Spread::of(o)).collect();
+    let magnitude = Spread::of(&magnitudes);
+    let worst = spreads.iter().take(4).map(|s| s.worst).fold(0.0, f64::max);
+    let maximum = spreads.get(4).map_or(f64::NAN, |s| s.worst);
+    let claims = vec![
+        Claim::counted(
+            "every bulletin city sees the contacts the bulletin prints, and any other only below the horizon",
+            disagree.len(),
+            records.len(),
+        )
+        .with_note(format!("{below} contacts below the horizon")),
+        Claim::stated(
+            "every local contact is the bulletin's to the seconds it prints",
+            verdict_of(worst.is_finite() && worst <= LOCAL_BOUND_SECONDS),
+            format!("worst {worst:.2} s, bound {LOCAL_BOUND_SECONDS} s"),
+        ),
+        Claim::stated(
+            "every local maximum is the bulletin's, as flat as a shallow eclipse's is",
+            verdict_of(maximum.is_finite() && maximum <= LOCAL_MAXIMUM_BOUND_SECONDS),
+            format!("worst {maximum:.2} s, bound {LOCAL_MAXIMUM_BOUND_SECONDS} s"),
+        ),
+        Claim::stated(
+            "every local magnitude is the bulletin's",
+            verdict_of(magnitude.worst <= LOCAL_MAGNITUDE_BOUND),
+            format!("worst {:.4}, bound {LOCAL_MAGNITUDE_BOUND}", magnitude.worst),
+        ),
+    ];
+    let mut rows = String::from(
+        "| moment, ours less the bulletin's | cities | least | median | greatest | bound |\n\
+         |---|---|---|---|---|---|\n",
+    );
+    for (n, (spread, name)) in spreads.iter().zip(LOCAL_MOMENTS).enumerate() {
+        let bound = if n == 4 {
+            LOCAL_MAXIMUM_BOUND_SECONDS
+        } else {
+            LOCAL_BOUND_SECONDS
+        };
+        rows.push_str(&spread.row(name, "s", 2, bound));
+    }
+    rows.push_str(&magnitude.row("magnitude", "", 4, LOCAL_MAGNITUDE_BOUND));
+    Ok(Local {
+        claims,
+        rows,
+        disagree,
+    })
+}
+
 fn named<T>(items: &[&T], date: impl Fn(&T) -> String) -> String {
     if items.is_empty() {
         String::from("none")
@@ -398,6 +627,7 @@ fn page() -> Result<String, String> {
 
     let mut claims = Vec::new();
     let mut problems = Vec::new();
+    let local = local(&eclipses, &solar)?;
     let both_ways = |kind: &str, found: usize, missed: usize, extra: usize, of: usize| {
         Claim::counted(
             format!("every catalogued {kind} eclipse of {FIRST_YEAR} to {LAST_YEAR} is found, and no other"),
@@ -422,7 +652,6 @@ fn page() -> Result<String, String> {
     ));
 
     // The lunar comparisons.
-    let seconds_of = |ours: f64, theirs: f64| (ours - theirs) * 86_400.0;
     let mut l_greatest = Vec::new();
     let mut l_gamma = Vec::new();
     let mut l_umbral = Vec::new();
@@ -610,6 +839,7 @@ fn page() -> Result<String, String> {
          between the years it reads, both ways, and measures the placings\n\
          and the shadow rule the design chose between.\n",
     );
+    claims.extend(local.claims);
     out.push_str("\n## 1. The claims\n\n");
     out.push_str(&table(&claims));
     let _ = write!(
@@ -684,8 +914,36 @@ fn page() -> Result<String, String> {
         du = l_umbral_spread.median,
         dp = l_penumbral_spread.median,
     );
+    let _ = write!(
+        out,
+        "\n## 6. Local circumstances\n\n\
+         `Eclipses::solar_seen` reads a solar eclipse from a place: the\n\
+         eclipse's own Sun and Moon less the station's geocentric position,\n\
+         the maximum where the magnitude is greatest and the contacts where\n\
+         the discs touch, outside for the first and fourth and inside for\n\
+         the second and third (`eclipses.md` §4.5). It is held to the {cities}\n\
+         cities of NASA's bulletins for the total eclipse of 2009 July 22\n\
+         and the annular one of 2010 January 15, Kathmandu among them,\n\
+         each at the latitude, longitude and elevation the bulletin prints.\n\
+         A contact the bulletin leaves out happened below the horizon; the\n\
+         SDK reports it with the Sun's altitude, and the claim holds it\n\
+         there. The bulletins print UT to a tenth of a second.\n\n{rows}\n\
+         The contacts are crossings and agree to a few seconds. The maximum\n\
+         is the top of a curve, and the greatest differences are the\n\
+         shallowest eclipses, Europe's in 2010 at magnitudes under 0.2 and\n\
+         the Sun near the horizon, where the curve is flattest; the\n\
+         magnitudes themselves agree.\n\n\
+         Disagreements: {disagree}.\n",
+        cities = count(LOCAL.lines().count()),
+        rows = local.rows,
+        disagree = if local.disagree.is_empty() {
+            String::from("none")
+        } else {
+            local.disagree.join("; ")
+        },
+    );
     out.push_str(
-        "\n## 6. What the records decide\n\n\
+        "\n## 7. What the records decide\n\n\
          The search finds the canon's eclipses and no others over two\n\
          centuries, of every kind, and agrees with each to the precision\n\
          the canon prints. So `astro::eclipse` is the SDK's eclipse,\n\

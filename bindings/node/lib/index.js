@@ -37,6 +37,7 @@ import {
   CHART_VAISESHIKAMSA,
   CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
+  PANCHANGA_ECLIPSES,
   PANCHANGA_YEARS,
   CalendarById,
   DayStateById,
@@ -1243,6 +1244,7 @@ export class Almanac extends Stamped {
   #muhurta = undefined;
   #festivals = undefined;
   #years = undefined;
+  #eclipses = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1310,8 +1312,22 @@ export class Almanac extends Stamped {
    * @returns {object|null}
    */
   get years() {
-    if (this.#years === undefined) this.#years = yearsFrom(this.decoded.years);
+    if (this.#years === undefined) this.#years = envelopeFrom(this.decoded.years);
     return this.#years;
+  }
+
+  /**
+   * The eclipses of these days (`03-design/eclipses.md`), or `null` when
+   * the request did not ask with `eclipses: true`: `{ value, provenance }`,
+   * `value` holding `lunar` and `solar`, each eclipse with `here`, how
+   * the almanac's place sees it, whose `seen` is `null` where the place
+   * does not. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get eclipses() {
+    if (this.#eclipses === undefined) this.#eclipses = envelopeFrom(this.decoded.eclipses);
+    return this.#eclipses;
   }
 
 
@@ -2876,13 +2892,14 @@ function muhurtaFrom(json) {
 }
 
 /**
- * The `years` section as this layer hands it out: the envelope, its
- * provenance decoded as every other one is.
+ * A JSON section whose value needs no reshaping (the years, the
+ * eclipses) as this layer hands it out: the envelope, its provenance
+ * decoded as every other one is.
  *
  * @param {string} json the section, empty when none was asked for
  * @returns {object|null}
  */
-function yearsFrom(json) {
+function envelopeFrom(json) {
   if (!json) return null;
   const { value, provenance } = JSON.parse(json);
   return deepFreeze({ value, provenance: decodeProvenance(provenance) });
@@ -3619,6 +3636,8 @@ export class AlmanacArea extends Area {
    * @param {object} request.place `{ latitude, longitude, altitude }`
    * @param {number} request.utcOffsetSeconds the local clock's offset
    *   from UTC, east positive
+   * @param {boolean} [request.eclipses] whether to answer the eclipses of
+   *   the days and the place's view of each, as `Almanac.eclipses`
    * @param {boolean} [request.years] whether to answer the lunar years
    *   the days fall in, as `Almanac.years`
    * @returns {Almanac}
@@ -3642,7 +3661,9 @@ export class AlmanacArea extends Area {
         utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
-        sections: request.years === true ? PANCHANGA_YEARS : 0,
+        sections:
+          (request.years === true ? PANCHANGA_YEARS : 0) |
+          (request.eclipses === true ? PANCHANGA_ECLIPSES : 0),
       }),
     );
     return new Almanac(bytes);

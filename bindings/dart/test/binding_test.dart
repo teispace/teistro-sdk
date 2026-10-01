@@ -1596,6 +1596,77 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac carries the eclipses it was asked for', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    // September 2025 at Kathmandu: the total lunar eclipse of the 7th, seen
+    // whole near midnight, and the partial solar eclipse of the 21st over
+    // the South Pacific, which Nepal does not see.
+    (Eclipses, Eclipses?) asked([Map<String, Object?>? settings]) {
+      final ctx = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+        settings: settings,
+      );
+      Almanac days({bool eclipses = false}) => ctx.almanac.of(
+        from: gregorian(2025, 9, 1),
+        to: gregorian(2025, 9, 30),
+        place: place,
+        utcOffsetSeconds: 20700,
+        eclipses: eclipses,
+      );
+      final found = (days(eclipses: true).eclipses!, days().eclipses);
+      ctx.dispose();
+      return found;
+    }
+
+    final (answer, plain) = asked();
+    expect(plain, isNull);
+    expect(
+      [for (final e in answer.value.lunar) e.eclipse.kind],
+      [LunarEclipseKind.total],
+    );
+    expect(
+      [for (final e in answer.value.solar) e.eclipse.kind],
+      [SolarEclipseKind.partial],
+    );
+    final lunar = answer.value.lunar.single;
+    expect(lunar.eclipse.shadow, EclipseShadowRule.danjon);
+    expect(lunar.eclipse.contacts.u2!, lessThan(lunar.eclipse.greatest));
+    expect(lunar.here.greatest.altitudeDeg, greaterThan(40));
+    expect(
+      lunar.here.seen,
+      EclipseSeen(from: lunar.here.p1.at, to: lunar.here.p4.at),
+    );
+    expect(
+      lunar.here.umbralSeen,
+      EclipseSeen(from: lunar.here.u1!.at, to: lunar.here.u4!.at),
+    );
+    expect(() => answer.value.lunar.add(lunar), throwsUnsupportedError);
+    final solar = answer.value.solar.single;
+    expect(solar.here == null || solar.here!.seen == null, isTrue);
+    expect(
+      answer.provenance.appliedConventions.map((c) => c.knob),
+      contains('eclipse.window'),
+    );
+
+    final (chauvenet, _) = asked({
+      'panchanga': {'eclipse_shadow': 'CHAUVENET'},
+    });
+    final shadowed = chauvenet.value.lunar.single.eclipse;
+    expect(shadowed.shadow, EclipseShadowRule.chauvenet);
+    expect(
+      shadowed.umbralMagnitude,
+      greaterThan(lunar.eclipse.umbralMagnitude),
+    );
+    expect(
+      chauvenet.provenance.settingsHash,
+      isNot(answer.provenance.settingsHash),
+    );
+  });
+
   // A limb's member naming two days or none, and its end in ghatis
   // (`03-design/nepal-day-measured.md`): Nepal's print, under the
   // committee's Surya Siddhanta.

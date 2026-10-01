@@ -1483,6 +1483,65 @@ class AnEngine(WithLibrary):
             for k in range(len(plain)):
                 self.assertEqual(almanac.at(k).provenance.content_hash, plain.at(k).provenance.content_hash)
 
+    def test_an_almanac_carries_the_eclipses_it_was_asked_for(self) -> None:
+        """The eclipses cross beside the days they fall in
+        (`03-design/eclipses.md` §5): frozen, their kinds bare keys, each
+        with how the almanac's place sees it, and the shadow knob moving
+        the umbra."""
+        import dataclasses
+
+        from teistro import Eclipses, date
+        from teistro.catalogue import Calendar
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        # September 2025 at Kathmandu: the total lunar eclipse of the 7th,
+        # seen whole near midnight, and the partial solar eclipse of the
+        # 21st over the South Pacific, which Nepal does not see.
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2025, 9, 1),
+            "to_date": date(Calendar.GREGORIAN, 2025, 9, 30),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+
+        def asked(settings: Optional[dict[str, Any]] = None) -> tuple[Eclipses, Optional[Eclipses]]:
+            with self.teistro.context(ephemeris=Ephemeris.BUILTIN, settings=settings) as ctx:
+                found = ctx.almanac.of(**days, eclipses=True).eclipses
+                assert found is not None
+                return found, ctx.almanac.of(**days).eclipses
+
+        answer, plain = asked()
+        self.assertIsNone(plain)
+        self.assertIsInstance(answer, Eclipses)
+        self.assertEqual([e.eclipse.kind for e in answer.value.lunar], ["TOTAL"])
+        self.assertEqual([e.eclipse.kind for e in answer.value.solar], ["PARTIAL"])
+        lunar = answer.value.lunar[0]
+        self.assertEqual(lunar.eclipse.shadow, "DANJON")
+        u2 = lunar.eclipse.contacts.u2
+        assert u2 is not None
+        self.assertLess(u2, lunar.eclipse.greatest)
+        self.assertGreater(lunar.here.greatest.altitude_deg, 40)
+        seen = lunar.here.seen
+        assert seen is not None
+        self.assertEqual((seen.from_, seen.to), (lunar.here.p1.at, lunar.here.p4.at))
+        umbral, u1, u4 = lunar.here.umbral_seen, lunar.here.u1, lunar.here.u4
+        assert umbral is not None and u1 is not None and u4 is not None
+        self.assertEqual((umbral.from_, umbral.to), (u1.at, u4.at))
+        with self.assertRaises(dataclasses.FrozenInstanceError):
+            seen.to = 0  # type: ignore[misc]
+        solar = answer.value.solar[0]
+        self.assertTrue(solar.here is None or solar.here.seen is None)
+        self.assertIn("eclipse.window", [c.knob for c in answer.provenance.applied_conventions])
+
+        chauvenet, _ = asked({"panchanga": {"eclipse_shadow": "CHAUVENET"}})
+        self.assertEqual(chauvenet.value.lunar[0].eclipse.shadow, "CHAUVENET")
+        self.assertGreater(
+            chauvenet.value.lunar[0].eclipse.umbral_magnitude, lunar.eclipse.umbral_magnitude
+        )
+        self.assertNotEqual(chauvenet.provenance.settings_hash, answer.provenance.settings_hash)
+
     def test_an_almanac_carries_the_festivals_it_was_asked_for(self) -> None:
         """Festival rules cross beside the days they fall on
         (`03-design/festival-rules.md` §7): dates in this binding's shape,

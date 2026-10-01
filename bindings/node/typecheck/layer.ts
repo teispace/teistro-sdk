@@ -17,6 +17,7 @@ import type {
   Context,
   DashaPeriod,
   EphemerisProvider,
+  Eclipses,
   EkadashiKinds,
   EkadashiRule,
   EkadashiVedha,
@@ -31,6 +32,7 @@ import type {
   LayoutHolds,
   LayoutKey,
   LayoutRow,
+  LunarEclipseHere,
   MuhurtaAnswer,
   MuhurtaBar,
   MuhurtaRequest,
@@ -38,6 +40,8 @@ import type {
   RashiDashaDefinition,
   RuleRequest,
   Scale,
+  SolarEclipseHere,
+  SolarEclipseView,
   ShippedTheme,
   Theme,
 } from '../lib/index.js';
@@ -306,6 +310,30 @@ function almanac(): string {
 }
 
 void almanac;
+
+/** The eclipses beside an almanac's days, typed all the way down. */
+function eclipses(): string {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const asked: Almanac = ctx.almanac.of({ from: someDate, to: someDate, place, utcOffsetSeconds: 20700, eclipses: true });
+  const found: Eclipses | null = asked.eclipses;
+  const lunar: LunarEclipseHere | undefined = found?.value.lunar[0];
+  const kind: 'PENUMBRAL' | 'PARTIAL' | 'TOTAL' | undefined = lunar?.eclipse.kind;
+  const totality: number | null | undefined = lunar?.eclipse.contacts.u2;
+  const altitude: number | undefined = lunar?.here.greatest.altitudeDeg;
+  const seenFrom: number | undefined = lunar?.here.seen?.from;
+  const umbralTo: number | undefined = lunar?.here.umbralSeen?.to;
+  const solar: SolarEclipseHere | undefined = found?.value.solar[0];
+  const local: SolarEclipseView | null | undefined = solar?.here;
+  const obscured: number | undefined = local?.obscuration;
+  const where: number | undefined = solar?.eclipse.point.latitude;
+  // @ts-expect-error a place's view of a solar eclipse is never hybrid
+  const hybrid: SolarEclipseView['kind'] = 'HYBRID';
+  // @ts-expect-error an eclipse not asked for is null, so it needs a check
+  const unchecked: number = asked.eclipses.value.lunar.length;
+  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked}`;
+}
+
+void eclipses;
 
 /** A layout of the consumer's own, typed: copied, renamed, registered and drawn. */
 function ownLayout(): string {

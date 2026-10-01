@@ -19,6 +19,8 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    EclipseMoment,
+    EclipseSeen,
     KpLevel,
     KpLords,
     KpRejection,
@@ -1252,6 +1254,78 @@ def main() -> None:
                 f"years-{k}-jovian",
                 listed(f"{j.member.full_key}:{j.count}:{number(j.from_)}" for j in year.jovian),
             )
+
+    # ── The eclipses ──────────────────────────────────────────────────
+    # September 2025 at Kathmandu over the built-in sky, which the test
+    # provider cannot complete: a total lunar eclipse seen whole and a
+    # partial solar one the place does not see (`03-design/eclipses.md`).
+    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as builtin:
+        eclipses = builtin.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2025, 9, 1),
+            to_date=date(Calendar.GREGORIAN, 2025, 9, 30),
+            place=place,
+            utc_offset_seconds=20700,
+            eclipses=True,
+        ).eclipses
+    assert eclipses is not None
+
+    def eclipse_number(value: Optional[float]) -> str:
+        return "-" if value is None else number(value)
+
+    def eclipse_moment(m: Optional[EclipseMoment]) -> str:
+        return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
+
+    def eclipse_seen(stretch: Optional[EclipseSeen]) -> str:
+        return "-" if stretch is None else f"{number(stretch.from_)}..{number(stretch.to)}"
+
+    put("eclipses-hash", eclipses.provenance.content_hash)
+    put("eclipses-count", f"{len(eclipses.value.lunar)} {len(eclipses.value.solar)}")
+    for k, lunar_eclipse in enumerate(eclipses.value.lunar):
+        lunar_found, lunar_view = lunar_eclipse.eclipse, lunar_eclipse.here
+        contacts = lunar_found.contacts
+        put(
+            f"eclipses-lunar-{k}",
+            " ".join(
+                (
+                    lunar_found.kind,
+                    lunar_found.shadow,
+                    number(lunar_found.greatest),
+                    number(lunar_found.gamma),
+                    number(lunar_found.umbral_magnitude),
+                    number(lunar_found.penumbral_magnitude),
+                )
+            ),
+        )
+        put(f"eclipses-lunar-{k}-contacts", " ".join(eclipse_number(at) for at in (contacts.p1, contacts.u1, contacts.u2, contacts.u3, contacts.u4, contacts.p4)))
+        put(
+            f"eclipses-lunar-{k}-here",
+            " ".join([eclipse_moment(m) for m in (lunar_view.p1, lunar_view.u1, lunar_view.u2, lunar_view.greatest, lunar_view.u3, lunar_view.u4, lunar_view.p4)] + [eclipse_seen(lunar_view.seen), eclipse_seen(lunar_view.umbral_seen)]),
+        )
+    for k, solar_eclipse in enumerate(eclipses.value.solar):
+        solar_found, solar_view = solar_eclipse.eclipse, solar_eclipse.here
+        put(
+            f"eclipses-solar-{k}",
+            " ".join(
+                (
+                    solar_found.kind,
+                    number(solar_found.greatest),
+                    number(solar_found.gamma),
+                    number(solar_found.magnitude),
+                    number(solar_found.point.latitude),
+                    number(solar_found.point.longitude),
+                )
+            ),
+        )
+        put(
+            f"eclipses-solar-{k}-here",
+            "-"
+            if solar_view is None
+            else " ".join(
+                [solar_view.kind, number(solar_view.magnitude), number(solar_view.obscuration)]
+                + [eclipse_moment(m) for m in (solar_view.first, solar_view.second, solar_view.third, solar_view.fourth, solar_view.maximum)]
+                + [eclipse_seen(solar_view.seen)]
+            ),
+        )
 
     # ── The surface's shape ───────────────────────────────────────────
     #

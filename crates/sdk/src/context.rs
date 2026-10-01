@@ -16,7 +16,9 @@ use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
-use teistro_port_ephemeris::{Astronomy, CachingProvider, EphemerisProvider, PositionRequest};
+use teistro_port_ephemeris::{
+    Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
+};
 use teistro_time::EmbeddedTzdb;
 
 use crate::BUNDLES;
@@ -238,20 +240,31 @@ impl Context {
         request: &PositionRequest<'_>,
         completed: &Completed,
     ) -> Provenance {
+        let mut provenance = self.stamped(
+            content_hash(&RequestRecord::of(request)),
+            completed.columns.frame,
+            completed.step_keys(),
+        );
+        provenance.content_hash = content_hash(&completed.columns);
+        provenance
+    }
+
+    /// The provenance an answer of this context is stamped with before
+    /// its value is sealed: the settings and profile, the input's hash,
+    /// the provider's identity with the frame it answered in and the steps
+    /// applied, and the time scales' tables. One place, so that every
+    /// answer names its sources the same way.
+    pub(crate) fn stamped(&self, input_hash: Hash, frame: Frame, steps: Vec<String>) -> Provenance {
         let mut provenance = self.settings.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-            content_hash(&RequestRecord::of(request)),
+            input_hash,
         );
         if let Some(provider) = self.provider.as_deref() {
-            provenance.provider = provider
-                .capabilities()
-                .identity
-                .stamp(completed.columns.frame, completed.step_keys());
+            provenance.provider = provider.capabilities().identity.stamp(frame, steps);
         }
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
-        provenance.content_hash = content_hash(&completed.columns);
         provenance
     }
 

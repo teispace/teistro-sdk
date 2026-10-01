@@ -17,9 +17,10 @@
 use teistro_astro::eclipse::{Eclipses, LunarKind, ShadowRule, SolarKind};
 use teistro_astro::{Completion, DeltaTModel, tt_of};
 use teistro_core::error::Status;
-use teistro_core::quantity::{JulianDay, Ut1};
+use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_ephemeris_builtin::provider::Builtin;
+use teistro_port_ephemeris::Horizon;
 
 const DELTA_T: DeltaTModel = DeltaTModel::TableThenModel;
 
@@ -163,4 +164,105 @@ fn the_next_lunar_eclipse_after_september_2025_is_march_2026s() {
         off.abs() < BOUNDS.seconds,
         "greatest eclipse {off:+.1} s from NASA's"
     );
+}
+
+/// Kathmandu as NASA's bulletin for 2009 July 22 places it.
+fn kathmandu() -> Place {
+    Place::try_from_degrees(27.0 + 43.0 / 60.0, 85.0 + 19.0 / 60.0, 1348.0).unwrap()
+}
+
+#[test]
+fn kathmandu_saw_the_2009_eclipse_partial_as_the_bulletin_prints_it() {
+    let provider = Builtin::new();
+    let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DELTA_T);
+    let eclipses = Eclipses::new(&sky, DELTA_T);
+    let found = eclipses
+        .solar_between(day(2_455_034.0), day(2_455_035.0))
+        .unwrap();
+    let [eclipse] = found.as_slice() else {
+        panic!("one solar eclipse that day, found {}", found.len());
+    };
+    assert_eq!(eclipse.kind, SolarKind::Total);
+    let view = eclipses
+        .solar_seen(eclipse, kathmandu(), &Horizon::UPPER_LIMB_REFRACTION)
+        .unwrap()
+        .expect("Kathmandu is in the penumbra");
+    // The bulletin: partial, magnitude 0.962; first contact 00:01:10.9,
+    // the maximum 00:57:43.9 and the last contact 02:00:31.5, UT.
+    assert_eq!(view.kind, SolarKind::Partial);
+    assert!(view.second.is_none() && view.third.is_none());
+    assert!(
+        (view.magnitude - 0.962).abs() < BOUNDS.magnitude,
+        "{}",
+        view.magnitude
+    );
+    for (ours, printed) in [
+        (view.first.at, 2_455_034.500_820_602),
+        (view.maximum.at, 2_455_034.540_091_435),
+        (view.fourth.at, 2_455_034.583_697_917),
+    ] {
+        let off = (ours.get() - printed) * 86_400.0;
+        assert!(off.abs() < BOUNDS.seconds, "{off:+.1} s from the bulletin");
+    }
+    // Just after sunrise, so seen from the first contact to the last.
+    assert!(view.first.altitude_deg > 0.0 && view.first.altitude_deg < 6.0);
+    let seen = view.seen.expect("the Sun was up");
+    assert_eq!((seen.from, seen.to), (view.first.at, view.fourth.at));
+}
+
+#[test]
+fn kathmandu_saw_the_whole_of_the_2025_lunar_eclipse() {
+    let provider = Builtin::new();
+    let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DELTA_T);
+    let eclipses = Eclipses::new(&sky, DELTA_T);
+    let found = eclipses
+        .lunar_between(day(LUNAR_2025_TT - 1.0), day(LUNAR_2025_TT + 1.0))
+        .unwrap();
+    let [eclipse] = found.as_slice() else {
+        panic!("one lunar eclipse, found {}", found.len());
+    };
+    let view = eclipses
+        .lunar_seen(eclipse, kathmandu(), &Horizon::UPPER_LIMB_REFRACTION)
+        .unwrap();
+    // The Moon rose before the penumbra touched it and set after it left,
+    // and stood high at the greatest eclipse, near local midnight.
+    assert!(view.p1.altitude_deg > 0.0 && view.p4.altitude_deg > 0.0);
+    assert!(view.greatest.altitude_deg > 40.0);
+    assert!(view.u2.is_some() && view.u3.is_some());
+    let seen = view.seen.expect("the Moon was up");
+    assert_eq!((seen.from, seen.to), (view.p1.at, view.p4.at));
+    // And through the umbral phase, the part the eye sees.
+    let umbral = view.umbral_seen.expect("the Moon was up");
+    let (u1, u4) = (view.u1.unwrap().at, view.u4.unwrap().at);
+    assert_eq!((umbral.from, umbral.to), (u1, u4));
+}
+
+#[test]
+fn a_city_on_the_night_side_has_its_contacts_and_sees_none_of_them() {
+    let provider = Builtin::new();
+    let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DELTA_T);
+    let eclipses = Eclipses::new(&sky, DELTA_T);
+    let found = eclipses
+        .solar_between(day(SOLAR_2024_TT - 1.0), day(SOLAR_2024_TT + 1.0))
+        .unwrap();
+    let [eclipse] = found.as_slice() else {
+        panic!("one solar eclipse, found {}", found.len());
+    };
+    // 2024 April's eclipse was North America's and Kathmandu was on the
+    // night side, where the penumbra reaches only through the Earth: the
+    // contacts are there, every one below the horizon, and none is seen.
+    let view = eclipses
+        .solar_seen(eclipse, kathmandu(), &Horizon::UPPER_LIMB_REFRACTION)
+        .unwrap()
+        .expect("the geometry reaches through the Earth");
+    assert!(view.first.altitude_deg < 0.0 && view.maximum.altitude_deg < 0.0);
+    assert!(view.fourth.altitude_deg < 0.0);
+    assert!(view.seen.is_none());
+    // Tokyo, nearer the shadow's side of the Earth, sees none of it
+    // either, whether or not its geometry reaches.
+    let tokyo = Place::try_from_degrees(35.68, 139.69, 40.0).unwrap();
+    let far = eclipses
+        .solar_seen(eclipse, tokyo, &Horizon::UPPER_LIMB_REFRACTION)
+        .unwrap();
+    assert!(far.is_none_or(|view| view.seen.is_none()));
 }

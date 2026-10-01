@@ -44,7 +44,9 @@ use teistro_ffi::context::{
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
-use teistro_ffi::panchanga::{TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days};
+use teistro_ffi::panchanga::{
+    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+};
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
     TsProvider, ts_context_new_with_provider, ts_provider_free, ts_provider_load,
@@ -4477,6 +4479,73 @@ fn a_panchanga_request_answers_the_years_its_days_fall_in() {
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
     let vikrama: Vec<i32> = years.iter().map(|year| year.vikrama).collect();
     assert_eq!(vikrama, [2082, 2083]);
+}
+
+/// The eclipses beside a panchanga request's days (`eclipses.md` §5):
+/// asked by a bit beside the years', the days the ones asked without it,
+/// the section the façade's envelope with bare kinds in camelCase and
+/// sealed over what it holds.
+#[test]
+fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    // The annular solar eclipse of 17 February 2026 and the total lunar
+    // eclipse of 3 March.
+    let range = ((2, 15), (3, 5));
+    let asked = |sections| panchanga_asked(&ctx, range, (None, None), sections).unwrap();
+    let schema = schemas::panchanga();
+    let (with, without, both) = (
+        asked(TS_PANCHANGA_ECLIPSES),
+        asked(0),
+        asked(TS_PANCHANGA_ECLIPSES | TS_PANCHANGA_YEARS),
+    );
+    let (with, without, both) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+        Reader::parse(&both, &schema).unwrap(),
+    );
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("eclipses").unwrap(), "");
+    assert_eq!(with.text("years").unwrap(), "");
+    assert_eq!(
+        both.text("eclipses").unwrap(),
+        with.text("eclipses").unwrap()
+    );
+    assert_ne!(both.text("years").unwrap(), "");
+
+    let envelope: serde_json::Value = serde_json::from_str(with.text("eclipses").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    assert_eq!(envelope["value"]["lunar"][0]["eclipse"]["kind"], "TOTAL");
+    assert_eq!(envelope["value"]["solar"][0]["eclipse"]["kind"], "ANNULAR");
+    assert!(envelope["value"]["lunar"][0]["eclipse"]["umbralMagnitude"].is_number());
+    assert!(envelope["value"]["lunar"][0]["here"]["p1"]["altitudeDeg"].is_number());
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let date = |month, day| teistro::CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    let expected = sdk
+        .almanac()
+        .eclipses(
+            &date(2, 15),
+            &date(3, 5),
+            &teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap(),
+            teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+        )
+        .unwrap();
+    assert_eq!(
+        envelope["value"],
+        serde_json::to_value(&expected.value).unwrap()
+    );
+    assert_eq!(provenance.input_hash, expected.provenance.input_hash);
 }
 
 #[test]

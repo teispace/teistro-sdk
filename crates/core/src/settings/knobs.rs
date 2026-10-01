@@ -208,6 +208,34 @@ knob!(
         Tropical = "TROPICAL" }
 );
 knob!(
+    /// How much the Earth's shadow is enlarged beyond the geometric cone
+    /// at the Moon's distance, which sets a lunar eclipse's magnitudes and
+    /// contacts (`03-design/eclipses.md` §4.2).
+    ///
+    /// The atmosphere widens the shadow. Danjon's rule adds 1% of the
+    /// Moon's parallax to both radii, which NASA's canon and the French
+    /// almanac use and which `eclipses-measured.md` finds the canon's;
+    /// Chauvenet's enlarges both by 1/50, the Astronomical Almanac's until
+    /// 2015.
+    EclipseShadow { /// Both radii grown by 1% of the Moon's horizontal parallax (Danjon, 1951).
+        Danjon = "DANJON", /// Both radii multiplied by 1.02 (Chauvenet, 1891).
+        Chauvenet = "CHAUVENET" }
+);
+knob!(
+    /// How far before an eclipse its vedha opens, the almanacs' *sutak*
+    /// (`03-design/muhurta.md` §4.1.1, crux C192).
+    ///
+    /// *Dharmasindhu* (p. 28) counts it in praharas, the quarters of the
+    /// day and of the night, back from the one holding the eclipse's first
+    /// seen moment: four before a solar eclipse, three before a lunar one,
+    /// and four before a Moon that rises eclipsed. It gives a second view
+    /// as some authorities': four for a lunar eclipse the umbra covers
+    /// whole.
+    EclipseVedha { /// Four praharas solar, three lunar, four for a Moon rising eclipsed.
+        Dharmasindhu = "DHARMASINDHU", /// As `DHARMASINDHU`, and four for a total lunar eclipse too.
+        FullLunarFour = "FULL_LUNAR_FOUR" }
+);
+knob!(
     /// Which civil day a sidereal solar month begins on (crux C186).
     ///
     /// A sankranti falls at an instant and a month begins on a day, and

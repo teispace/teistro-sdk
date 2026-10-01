@@ -215,7 +215,9 @@ pub struct TsPanchangaRequest {
     pub utc_offset_seconds: i32,
     /// What to answer beside the days, as a bit set:
     /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
-    /// `years` section. Zero for the days alone, which is what every
+    /// `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
+    /// days with the place's view of each, in the `eclipses` section.
+    /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
     ///
@@ -275,6 +277,13 @@ c_struct!(TsPanchangaRequest);
 ///
 /// `api: constant`
 pub const TS_PANCHANGA_YEARS: u32 = 1;
+
+/// `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
+/// request's `sections` for the eclipses of its days and the place's view
+/// of each (`03-design/eclipses.md`).
+///
+/// `api: constant`
+pub const TS_PANCHANGA_ECLIPSES: u32 = 2;
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
@@ -566,6 +575,8 @@ pub struct Beside<'a> {
     pub festivals: &'a str,
     /// The `years` section.
     pub years: &'a str,
+    /// The `eclipses` section.
+    pub eclipses: &'a str,
 }
 
 /// A batch of almanacs as the blob its schema describes.
@@ -643,6 +654,7 @@ pub fn encode(
         writer.bytes("muhurta", beside.muhurta.as_bytes())?;
         writer.bytes("festivals", beside.festivals.as_bytes())?;
         writer.bytes("years", beside.years.as_bytes())?;
+        writer.bytes("eclipses", beside.eclipses.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -735,6 +747,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if asked.sections & TS_PANCHANGA_YEARS == TS_PANCHANGA_YEARS {
             beside = beside.with_years();
         }
+        if asked.sections & TS_PANCHANGA_ECLIPSES == TS_PANCHANGA_ECLIPSES {
+            beside = beside.with_eclipses();
+        }
         // The façade founds the days once for everything asked beside them.
         let answered = ctx
             .sdk()
@@ -761,6 +776,17 @@ pub unsafe extern "C" fn ts_panchanga_days(
             })
             .transpose()?
             .unwrap_or_default();
+        // No catalogue member is in an eclipse: its kinds and its shadow
+        // rule are keys of their own, written as they are.
+        let eclipses = answered
+            .eclipses
+            .map(|answer| {
+                let value = serde_json::to_value(&answer.value)
+                    .map_err(|e| Error::internal(format!("an eclipse did not serialise: {e}")))?;
+                Ok::<_, Error>(section(value, answer.provenance))
+            })
+            .transpose()?
+            .unwrap_or_default();
         let encoded = encode(
             &answered.days.value,
             &place,
@@ -771,6 +797,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
                 muhurta: &muhurta,
                 festivals: &festivals,
                 years: &years,
+                eclipses: &eclipses,
             },
         )?;
         // SAFETY: the entry point's contract.
