@@ -73,6 +73,9 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
 | `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
 | `TS_KIND_AVASTHA_CHESHTA` | 64 | The three sub-states of a Sayanadi state, a remainder of three. |
+| `TS_KIND_BLACKOUT_KIND` | 67 | The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. |
+| `TS_KIND_LUNAR_ECLIPSE_KIND` | 68 | How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). |
+| `TS_KIND_SOLAR_ECLIPSE_KIND` | 69 | How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). |
 
 ## ts_graha
 
@@ -1328,6 +1331,46 @@ The three sub-states of a Sayanadi state, a remainder of three. Members are the 
 | `TS_AVASTHA_CHESHTA_DRISHTI` | 0 | Drishti, a remainder of one: the state's effects middling |
 | `TS_AVASTHA_CHESHTA_CHESHTA` | 1 | Cheshta, a remainder of two: its effects in full |
 | `TS_AVASTHA_CHESHTA_VICHESHTA` | 2 | Vicheshta, a remainder of nothing: its effects slight |
+
+## ts_blackout_kind
+
+The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BLACKOUT_KIND_CHATURMAS` | 0 | Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps |
+| `TS_BLACKOUT_KIND_ADHIKA_MASA` | 1 | An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177) |
+| `TS_BLACKOUT_KIND_SAMSARPA` | 2 | The adhika month before a kshaya month, fit for every rite (crux C179) |
+| `TS_BLACKOUT_KIND_KSHAYA_MASA` | 3 | A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179) |
+| `TS_BLACKOUT_KIND_KHARMAS` | 4 | The Sun in Sagittarius or Pisces (crux C177) |
+| `TS_BLACKOUT_KIND_PITRU_PAKSHA` | 5 | The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya |
+| `TS_BLACKOUT_KIND_SANKRANTI` | 6 | Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2 |
+| `TS_BLACKOUT_KIND_HOLASHTAKA` | 7 | The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193) |
+| `TS_BLACKOUT_KIND_GURU_ASTA` | 8 | Jupiter unseen, from its last sighting to its next |
+| `TS_BLACKOUT_KIND_SHUKRA_ASTA` | 9 | Venus unseen, about either conjunction |
+| `TS_BLACKOUT_KIND_ECLIPSE_STAR` | 10 | The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191) |
+| `TS_BLACKOUT_KIND_ECLIPSE_VEDHA` | 11 | An eclipse's vedha, the almanacs' sutak (crux C192) |
+
+## ts_lunar_eclipse_kind
+
+How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_LUNAR_ECLIPSE_KIND_PENUMBRAL` | 0 | The penumbra only |
+| `TS_LUNAR_ECLIPSE_KIND_PARTIAL` | 1 | Part of the Moon in the umbra |
+| `TS_LUNAR_ECLIPSE_KIND_TOTAL` | 2 | The whole Moon in the umbra |
+
+## ts_solar_eclipse_kind
+
+How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SOLAR_ECLIPSE_KIND_PARTIAL` | 0 | The umbra and the antumbra miss the Earth |
+| `TS_SOLAR_ECLIPSE_KIND_ANNULAR` | 1 | The Moon's disc inside the Sun's: the antumbra reaches the Earth |
+| `TS_SOLAR_ECLIPSE_KIND_TOTAL` | 2 | The Sun wholly hidden: the umbra reaches the Earth |
+| `TS_SOLAR_ECLIPSE_KIND_HYBRID` | 3 | Annular at the path's ends and total at its middle, read at the greatest eclipse |
 
 ## ts_status
 

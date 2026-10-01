@@ -355,11 +355,17 @@ bit `TS_PANCHANGA_ECLIPSES` across the boundary, and the panchanga
 blob's section 24 carrying the envelope as JSON. The JSON is camelCase,
 and every instant in it is a UT1 Julian day.
 
-The kinds and the shadow rule cross as **bare keys** (`TOTAL`,
-`ANNULAR`, `DANJON`), as a lunar year's `count` does, and each binding
-types them: a literal union in TypeScript and Python, an enum in Dart.
-They are not catalogue members yet. A consumer who must *name* a kind
-in a language is the case for one (§9).
+The kinds are catalogue members, `lunar_eclipse_kind` (68) and
+`solar_eclipse_kind` (69), with Espenak and Meeus's types. The section
+writes them as full keys (`lunar_eclipse_kind.TOTAL`) from one table,
+`EclipsesHere::MEMBERS`, as the lunar years write theirs. A test holds
+the table to serde both ways: every string leaf of a month with a view
+of each kind is a listed member or the shadow rule, and every listed
+path is reached. So each binding reads a kind as it reads any member: a
+union of full keys in TypeScript, the generated enums in Python and
+Dart. A place's view of a solar eclipse is never `HYBRID`, which
+TypeScript says by excluding it. The shadow rule is a setting's value
+and crosses bare (`DANJON`), as a lunar year's `count` does.
 
 ## 6. Errors and degenerate states
 
@@ -433,10 +439,14 @@ answer, byte for byte.
 
 ## 9. Localisation
 
-The kinds cross as bare keys today (§5). Naming them, *grahan*,
-*khagras*, *khandagras* and *kankanakriti* in Nepali and Hindi, needs
-them to be catalogue members. That is the step that names the muhurta's
-eclipse blackouts, so the two are decided together.
+The kinds are catalogue members (§5), so `sdk.entity` names them. A
+strict locale names every member the base locale names, so a member is
+named in English only when its Nepali is vetted too
+(`entity-names.md` §4b). The Nepal Panchanga Decision Committee prints
+an eclipse seen in Nepal as खग्रास or खण्डग्रास, so `PARTIAL` and `TOTAL`
+are named in both kinds. Its 2083 almanac prints no eclipse Nepal does
+not see, so it gives no word for `PENUMBRAL`, `ANNULAR` or `HYBRID`,
+and those three stay unnamed until a source does.
 
 ## 10. Open questions
 

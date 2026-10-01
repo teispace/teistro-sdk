@@ -2398,5 +2398,63 @@
       "prose": "कालचक्र दशा",
       "iast": "Kālacakra Daśā"
     }
+  },
+  "blackout_kind": {
+    "CHATURMAS": {
+      "name": "चतुर्मास",
+      "prose": "चतुर्मास"
+    },
+    "ADHIKA_MASA": {
+      "name": "मलमास",
+      "prose": "मलमास"
+    },
+    "SAMSARPA": {
+      "name": "संसर्प",
+      "prose": "संसर्प"
+    },
+    "KSHAYA_MASA": {
+      "name": "क्षयमास",
+      "prose": "क्षयमास"
+    },
+    "PITRU_PAKSHA": {
+      "name": "पितृपक्ष",
+      "prose": "पितृपक्ष"
+    },
+    "SANKRANTI": {
+      "name": "सङ्क्रान्ति",
+      "prose": "सङ्क्रान्ति"
+    },
+    "HOLASHTAKA": {
+      "name": "होलाष्टक",
+      "prose": "होलाष्टक"
+    },
+    "GURU_ASTA": {
+      "name": "गुरु अस्त",
+      "prose": "गुरु अस्त"
+    },
+    "SHUKRA_ASTA": {
+      "name": "शुक्र अस्त",
+      "prose": "शुक्र अस्त"
+    }
+  },
+  "lunar_eclipse_kind": {
+    "PARTIAL": {
+      "name": "खण्डग्रास",
+      "prose": "खण्डग्रास"
+    },
+    "TOTAL": {
+      "name": "खग्रास",
+      "prose": "खग्रास"
+    }
+  },
+  "solar_eclipse_kind": {
+    "PARTIAL": {
+      "name": "खण्डग्रास",
+      "prose": "खण्डग्रास"
+    },
+    "TOTAL": {
+      "name": "खग्रास",
+      "prose": "खग्रास"
+    }
   }
 }

@@ -1,0 +1,33 @@
+kind: solar_eclipse_kind
+number: 69
+version: 1
+doc: "How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3)."
+members:
+  - key: PARTIAL
+    id: 0
+    doc: "The umbra and the antumbra miss the Earth"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Solar Eclipses"
+        ref: "NASA/TP-2006-214141, eclipse types"
+    mark: V
+  - key: ANNULAR
+    id: 1
+    doc: "The Moon's disc inside the Sun's: the antumbra reaches the Earth"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Solar Eclipses"
+        ref: "NASA/TP-2006-214141, eclipse types"
+    mark: V
+  - key: TOTAL
+    id: 2
+    doc: "The Sun wholly hidden: the umbra reaches the Earth"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Solar Eclipses"
+        ref: "NASA/TP-2006-214141, eclipse types"
+    mark: V
+  - key: HYBRID
+    id: 3
+    doc: "Annular at the path's ends and total at its middle, read at the greatest eclipse"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Solar Eclipses"
+        ref: "NASA/TP-2006-214141, eclipse types"
+    mark: V

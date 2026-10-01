@@ -700,8 +700,11 @@ test('every catalogue enum has a complete id table', () => {
   // and `TsSarvaStanding`, three; 1163 since the hit list's `TsHitKind`,
   // four, `TsMotion`, two, and `TsAspectPhase`, three; 1165 since Sade
   // Sati's `TsReckoning`, two; 1169 since a span's `TsSunrises`, four;
-  // 1170 since `TsSunrise` named the upper limb unrefracted.
-  assert.equal(entries, 1170, 'every member of every enum is in a table');
+  // 1170 since `TsSunrise` named the upper limb unrefracted; 1192 since
+  // the blackouts and the eclipses were named: `blackout_kind`'s twelve,
+  // `lunar_eclipse_kind`'s three and `solar_eclipse_kind`'s four, each
+  // with its UNKNOWN.
+  assert.equal(entries, 1192, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2116,6 +2119,15 @@ test('an almanac carries the muhurta search it was asked for', () => {
   assert.ok(struck.length > 0, 'the bar read back strikes the windows it names');
   assert.ok(struck.every((window) => window.barredBy[0].choghadiya === 'choghadiya.AMRIT'));
 
+  // A closed day names its blackouts in full, and a request takes a
+  // blackout in either spelling: 1 June 2026 is in Jyeshtha's adhika month.
+  const june = date(Calendar.Gregorian, 2026, 6, 1);
+  const closedBy = (muhurta) => ctx.almanac.of({ ...days, from: june, to: june, muhurta }).muhurta.closed[0].by;
+  assert.ok(closedBy({ rules: 'RAMAN_MARRIAGE' }).includes(catalogue.BlackoutKind.AdhikaMasa));
+  for (const heed of [catalogue.BlackoutKind.AdhikaMasa, 'ADHIKA_MASA']) {
+    assert.deepEqual(closedBy({ rules: { ...rules, bars: [], heeds: [heed] } }), ['blackout_kind.ADHIKA_MASA']);
+  }
+
   for (const [muhurta, field] of [
     [{ rules: 'RAMAN' }, 'muhurta.rules'],
     [{ rules: 'RAMAN_MARRIAGE', most: 0 }, 'muhurta.most'],
@@ -2189,8 +2201,8 @@ test('an almanac carries the eclipses it was asked for', () => {
   const { almanac, plain } = asked();
   assert.equal(plain.eclipses, null);
   const { value, provenance } = almanac.eclipses;
-  assert.deepEqual(value.lunar.map((e) => e.eclipse.kind), ['TOTAL']);
-  assert.deepEqual(value.solar.map((e) => e.eclipse.kind), ['PARTIAL']);
+  assert.deepEqual(value.lunar.map((e) => e.eclipse.kind), ['lunar_eclipse_kind.TOTAL']);
+  assert.deepEqual(value.solar.map((e) => e.eclipse.kind), ['solar_eclipse_kind.PARTIAL']);
   const [lunar] = value.lunar;
   assert.equal(lunar.eclipse.shadow, 'DANJON');
   assert.ok(lunar.eclipse.contacts.u2 < lunar.eclipse.greatest);

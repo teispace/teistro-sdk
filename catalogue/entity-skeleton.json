@@ -1012,5 +1012,30 @@
     "DRISHTI": {},
     "CHESHTA": {},
     "VICHESHTA": {}
+  },
+  "blackout_kind": {
+    "CHATURMAS": {},
+    "ADHIKA_MASA": {},
+    "SAMSARPA": {},
+    "KSHAYA_MASA": {},
+    "KHARMAS": {},
+    "PITRU_PAKSHA": {},
+    "SANKRANTI": {},
+    "HOLASHTAKA": {},
+    "GURU_ASTA": {},
+    "SHUKRA_ASTA": {},
+    "ECLIPSE_STAR": {},
+    "ECLIPSE_VEDHA": {}
+  },
+  "lunar_eclipse_kind": {
+    "PENUMBRAL": {},
+    "PARTIAL": {},
+    "TOTAL": {}
+  },
+  "solar_eclipse_kind": {
+    "PARTIAL": {},
+    "ANNULAR": {},
+    "TOTAL": {},
+    "HYBRID": {}
   }
 }

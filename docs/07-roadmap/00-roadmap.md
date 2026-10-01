@@ -771,7 +771,10 @@ measured against Nepal before it is called done:
    the adhika after it closed, by *Dharmasindhu* p. 3.
    **Holashtaka built the same day** (`muhurta.md` §4.1.3, C193), by
    *Shighrabodha* I.137–138, whose bar is regional and which no shipped
-   activity heeds. Next in this step: naming the blackouts.
+   activity heeds. **The blackouts and the eclipse kinds named the same
+   day** (`entity-names.md` §4b): catalogue kinds 67 to 69, read as the
+   generated types in every binding, and named in English and Nepali
+   where the Nepali is vetted. Step 3 is done.
 4. A Nepal festival pack, measured against the Government of Nepal's
    holiday list the way `festival-measured.md` holds the Delhi one,
    with region-scoped days (Holi in the hills and the Terai).

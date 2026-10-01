@@ -78,10 +78,12 @@ from teistro.catalogue import (
     Ephemeris,
     Era,
     Graha,
+    LunarEclipseKind,
     MonthKind,
     PolarDayPolicy,
     PolarKind,
     Ritu,
+    SolarEclipseKind,
     Sunrise,
     Sunrises,
     Tithi,
@@ -1370,7 +1372,7 @@ class AnEngine(WithLibrary):
             TarabalaClause,
             date,
         )
-        from teistro.catalogue import Calendar, Choghadiya, Nakshatra, Rashi
+        from teistro.catalogue import BlackoutKind, Calendar, Choghadiya, Nakshatra, Rashi
 
         observer = Observer(
             latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
@@ -1431,6 +1433,21 @@ class AnEngine(WithLibrary):
             struck = [window for window in barred.windows if window.barred_by]
             self.assertTrue(struck, "the bar read back strikes the windows it names")
             self.assertTrue(all(window.barred_by == (amrit,) for window in struck))
+
+            # A closed day names its blackouts as members, and a request
+            # takes one in either spelling: 1 June 2026 is in Jyeshtha's
+            # adhika month.
+            june = date(Calendar.GREGORIAN, 2026, 6, 1)
+
+            def closed_by(muhurta: MuhurtaRequest) -> tuple[BlackoutKind, ...]:
+                found = ctx.almanac.of(**{**days, "from_date": june, "to_date": june}, muhurta=muhurta).muhurta
+                assert found is not None
+                return found.closed[0].by
+
+            self.assertIn(BlackoutKind.ADHIKA_MASA, closed_by({"rules": "RAMAN_MARRIAGE"}))
+            for heed in (BlackoutKind.ADHIKA_MASA, "ADHIKA_MASA"):
+                heeding = {**rules, "bars": [], "heeds": [heed]}
+                self.assertEqual(closed_by({"rules": heeding}), (BlackoutKind.ADHIKA_MASA,))
 
             refusals: list[tuple[MuhurtaRequest, str]] = [
                 ({"rules": "RAMAN"}, "muhurta.rules"),  # type: ignore[typeddict-item]
@@ -1515,8 +1532,8 @@ class AnEngine(WithLibrary):
         answer, plain = asked()
         self.assertIsNone(plain)
         self.assertIsInstance(answer, Eclipses)
-        self.assertEqual([e.eclipse.kind for e in answer.value.lunar], ["TOTAL"])
-        self.assertEqual([e.eclipse.kind for e in answer.value.solar], ["PARTIAL"])
+        self.assertEqual([e.eclipse.kind for e in answer.value.lunar], [LunarEclipseKind.TOTAL])
+        self.assertEqual([e.eclipse.kind for e in answer.value.solar], [SolarEclipseKind.PARTIAL])
         lunar = answer.value.lunar[0]
         self.assertEqual(lunar.eclipse.shadow, "DANJON")
         u2 = lunar.eclipse.contacts.u2

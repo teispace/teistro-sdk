@@ -264,6 +264,15 @@ class Kind(Member):
     avastha_cheshta = 64
     """The three sub-states of a Sayanadi state, a remainder of three."""
 
+    blackout_kind = 67
+    """The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports."""
+
+    lunar_eclipse_kind = 68
+    """How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3)."""
+
+    solar_eclipse_kind = 69
+    """How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3286,6 +3295,90 @@ class AvasthaCheshta(Catalogued):
     """
 
 
+class BlackoutKind(Catalogued):
+    """The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`."""
+
+    CHATURMAS = 0
+    """Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps"""
+
+    ADHIKA_MASA = 1
+    """An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)"""
+
+    SAMSARPA = 2
+    """The adhika month before a kshaya month, fit for every rite (crux C179)"""
+
+    KSHAYA_MASA = 3
+    """A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)"""
+
+    KHARMAS = 4
+    """The Sun in Sagittarius or Pisces (crux C177)"""
+
+    PITRU_PAKSHA = 5
+    """The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya"""
+
+    SANKRANTI = 6
+    """Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2"""
+
+    HOLASHTAKA = 7
+    """The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)"""
+
+    GURU_ASTA = 8
+    """Jupiter unseen, from its last sighting to its next"""
+
+    SHUKRA_ASTA = 9
+    """Venus unseen, about either conjunction"""
+
+    ECLIPSE_STAR = 10
+    """The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)"""
+
+    ECLIPSE_VEDHA = 11
+    """An eclipse's vedha, the almanacs' sutak (crux C192)"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class LunarEclipseKind(Catalogued):
+    """How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`."""
+
+    PENUMBRAL = 0
+    """The penumbra only"""
+
+    PARTIAL = 1
+    """Part of the Moon in the umbra"""
+
+    TOTAL = 2
+    """The whole Moon in the umbra"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class SolarEclipseKind(Catalogued):
+    """How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`."""
+
+    PARTIAL = 0
+    """The umbra and the antumbra miss the Earth"""
+
+    ANNULAR = 1
+    """The Moon's disc inside the Sun's: the antumbra reaches the Earth"""
+
+    TOTAL = 2
+    """The Sun wholly hidden: the umbra reaches the Earth"""
+
+    HYBRID = 3
+    """Annular at the path's ends and total at its middle, read at the greatest eclipse"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -4677,6 +4770,9 @@ _KEYS: dict[str, dict[int, str]] = {
         62: "chart_layout",
         63: "vaiseshikamsa",
         64: "avastha_cheshta",
+        67: "blackout_kind",
+        68: "lunar_eclipse_kind",
+        69: "solar_eclipse_kind",
     },
     "Graha": {
         0: "SUN",
@@ -5685,6 +5781,34 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "VICHESHTA",
         -1: "UNKNOWN",
     },
+    "BlackoutKind": {
+        0: "CHATURMAS",
+        1: "ADHIKA_MASA",
+        2: "SAMSARPA",
+        3: "KSHAYA_MASA",
+        4: "KHARMAS",
+        5: "PITRU_PAKSHA",
+        6: "SANKRANTI",
+        7: "HOLASHTAKA",
+        8: "GURU_ASTA",
+        9: "SHUKRA_ASTA",
+        10: "ECLIPSE_STAR",
+        11: "ECLIPSE_VEDHA",
+        -1: "UNKNOWN",
+    },
+    "LunarEclipseKind": {
+        0: "PENUMBRAL",
+        1: "PARTIAL",
+        2: "TOTAL",
+        -1: "UNKNOWN",
+    },
+    "SolarEclipseKind": {
+        0: "PARTIAL",
+        1: "ANNULAR",
+        2: "TOTAL",
+        3: "HYBRID",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -6167,4 +6291,7 @@ _KINDS: dict[str, str] = {
     "ChartLayout": "chart_layout",
     "Vaiseshikamsa": "vaiseshikamsa",
     "AvasthaCheshta": "avastha_cheshta",
+    "BlackoutKind": "blackout_kind",
+    "LunarEclipseKind": "lunar_eclipse_kind",
+    "SolarEclipseKind": "solar_eclipse_kind",
 }

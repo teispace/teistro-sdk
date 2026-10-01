@@ -232,7 +232,13 @@ enum Kind {
   /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
   vaiseshikamsa(63, 'vaiseshikamsa'),
   /// The three sub-states of a Sayanadi state, a remainder of three.
-  avasthaCheshta(64, 'avastha_cheshta');
+  avasthaCheshta(64, 'avastha_cheshta'),
+  /// The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.
+  blackoutKind(67, 'blackout_kind'),
+  /// How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
+  lunarEclipseKind(68, 'lunar_eclipse_kind'),
+  /// How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
+  solarEclipseKind(69, 'solar_eclipse_kind');
 
   const Kind(this.id, this.key);
 
@@ -4189,6 +4195,155 @@ enum AvasthaCheshta implements KeyOf<AvasthaCheshta> {
 
   /// The member with a key, or `null` for one this build does not know.
   static AvasthaCheshta? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`.
+enum BlackoutKind implements KeyOf<BlackoutKind> {
+  /// Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps
+  chaturmas(0, 'CHATURMAS'),
+  /// An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)
+  adhikaMasa(1, 'ADHIKA_MASA'),
+  /// The adhika month before a kshaya month, fit for every rite (crux C179)
+  samsarpa(2, 'SAMSARPA'),
+  /// A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)
+  kshayaMasa(3, 'KSHAYA_MASA'),
+  /// The Sun in Sagittarius or Pisces (crux C177)
+  kharmas(4, 'KHARMAS'),
+  /// The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya
+  pitruPaksha(5, 'PITRU_PAKSHA'),
+  /// Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2
+  sankranti(6, 'SANKRANTI'),
+  /// The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)
+  holashtaka(7, 'HOLASHTAKA'),
+  /// Jupiter unseen, from its last sighting to its next
+  guruAsta(8, 'GURU_ASTA'),
+  /// Venus unseen, about either conjunction
+  shukraAsta(9, 'SHUKRA_ASTA'),
+  /// The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)
+  eclipseStar(10, 'ECLIPSE_STAR'),
+  /// An eclipse's vedha, the almanacs' sutak (crux C192)
+  eclipseVedha(11, 'ECLIPSE_VEDHA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const BlackoutKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'blackout_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<BlackoutKind> registered(String key) => Registered._('blackout_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static BlackoutKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => BlackoutKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BlackoutKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`.
+enum LunarEclipseKind implements KeyOf<LunarEclipseKind> {
+  /// The penumbra only
+  penumbral(0, 'PENUMBRAL'),
+  /// Part of the Moon in the umbra
+  partial(1, 'PARTIAL'),
+  /// The whole Moon in the umbra
+  total(2, 'TOTAL'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const LunarEclipseKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'lunar_eclipse_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<LunarEclipseKind> registered(String key) => Registered._('lunar_eclipse_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static LunarEclipseKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => LunarEclipseKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static LunarEclipseKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`.
+enum SolarEclipseKind implements KeyOf<SolarEclipseKind> {
+  /// The umbra and the antumbra miss the Earth
+  partial(0, 'PARTIAL'),
+  /// The Moon's disc inside the Sun's: the antumbra reaches the Earth
+  annular(1, 'ANNULAR'),
+  /// The Sun wholly hidden: the umbra reaches the Earth
+  total(2, 'TOTAL'),
+  /// Annular at the path's ends and total at its middle, read at the greatest eclipse
+  hybrid(3, 'HYBRID'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const SolarEclipseKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'solar_eclipse_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<SolarEclipseKind> registered(String key) => Registered._('solar_eclipse_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static SolarEclipseKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => SolarEclipseKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SolarEclipseKind? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

@@ -140,7 +140,7 @@ def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
             ),
         )
     for j, day in enumerate(answer.closed):
-        put(f"{prefix}-closed-{j}", f"{day.date.month}-{day.date.day} {listed(day.by)}")
+        put(f"{prefix}-closed-{j}", f"{day.date.month}-{day.date.day} {listed(k.full_key for k in day.by)}")
 
 
 def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
@@ -1287,7 +1287,7 @@ def main() -> None:
             f"eclipses-lunar-{k}",
             " ".join(
                 (
-                    lunar_found.kind,
+                    lunar_found.kind.full_key,
                     lunar_found.shadow,
                     number(lunar_found.greatest),
                     number(lunar_found.gamma),
@@ -1307,7 +1307,7 @@ def main() -> None:
             f"eclipses-solar-{k}",
             " ".join(
                 (
-                    solar_found.kind,
+                    solar_found.kind.full_key,
                     number(solar_found.greatest),
                     number(solar_found.gamma),
                     number(solar_found.magnitude),
@@ -1321,7 +1321,7 @@ def main() -> None:
             "-"
             if solar_view is None
             else " ".join(
-                [solar_view.kind, number(solar_view.magnitude), number(solar_view.obscuration)]
+                [solar_view.kind.full_key, number(solar_view.magnitude), number(solar_view.obscuration)]
                 + [eclipse_moment(m) for m in (solar_view.first, solar_view.second, solar_view.third, solar_view.fourth, solar_view.maximum)]
                 + [eclipse_seen(solar_view.seen)]
             ),

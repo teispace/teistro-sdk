@@ -1095,6 +1095,10 @@ pub mod sdk {
         pub mod ayanamsha {
         }
 
+        /// The `blackout_kind` group.
+        pub mod blackout_kind {
+        }
+
         /// The `chara_karaka` group.
         pub mod chara_karaka {
         }
@@ -1143,6 +1147,10 @@ pub mod sdk {
         pub mod karana {
         }
 
+        /// The `lunar_eclipse_kind` group.
+        pub mod lunar_eclipse_kind {
+        }
+
         /// The `masa` group.
         pub mod masa {
         }
@@ -1185,6 +1193,10 @@ pub mod sdk {
 
         /// The `samvatsara` group.
         pub mod samvatsara {
+        }
+
+        /// The `solar_eclipse_kind` group.
+        pub mod solar_eclipse_kind {
         }
 
         /// The `tatwa` group.

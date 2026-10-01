@@ -14,7 +14,7 @@
     reason = "a test fails by panicking"
 )]
 
-use teistro_astro::eclipse::{Eclipses, LunarKind, ShadowRule, SolarKind};
+use teistro_astro::eclipse::{Eclipses, LunarEclipseKind, ShadowRule, SolarEclipseKind};
 use teistro_astro::{Completion, DeltaTModel, tt_of};
 use teistro_core::error::Status;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
@@ -70,7 +70,7 @@ fn the_total_lunar_eclipse_of_2025_september_is_found_to_the_second() {
     let [eclipse] = found.as_slice() else {
         panic!("one lunar eclipse in four days, found {}", found.len());
     };
-    assert_eq!(eclipse.kind, LunarKind::Total);
+    assert_eq!(eclipse.kind, LunarEclipseKind::Total);
     assert_eq!(eclipse.shadow, ShadowRule::Danjon);
     let off = seconds_from(eclipse.greatest, LUNAR_2025_TT);
     assert!(
@@ -97,7 +97,7 @@ fn the_total_solar_eclipse_of_2024_april_is_greatest_over_mexico() {
     let [eclipse] = found.as_slice() else {
         panic!("one solar eclipse in four days, found {}", found.len());
     };
-    assert_eq!(eclipse.kind, SolarKind::Total);
+    assert_eq!(eclipse.kind, SolarEclipseKind::Total);
     let off = seconds_from(eclipse.greatest, SOLAR_2024_TT);
     assert!(
         off.abs() < BOUNDS.seconds,
@@ -158,7 +158,7 @@ fn the_next_lunar_eclipse_after_september_2025_is_march_2026s() {
         .unwrap();
     // NASA: 2026-03-03 11:34:52 TT, total.
     let march = 2_461_102.982_546_3;
-    assert_eq!(next.kind, LunarKind::Total);
+    assert_eq!(next.kind, LunarEclipseKind::Total);
     let off = seconds_from(next.greatest, march);
     assert!(
         off.abs() < BOUNDS.seconds,
@@ -182,14 +182,14 @@ fn kathmandu_saw_the_2009_eclipse_partial_as_the_bulletin_prints_it() {
     let [eclipse] = found.as_slice() else {
         panic!("one solar eclipse that day, found {}", found.len());
     };
-    assert_eq!(eclipse.kind, SolarKind::Total);
+    assert_eq!(eclipse.kind, SolarEclipseKind::Total);
     let view = eclipses
         .solar_seen(eclipse, kathmandu(), &Horizon::UPPER_LIMB_REFRACTION)
         .unwrap()
         .expect("Kathmandu is in the penumbra");
     // The bulletin: partial, magnitude 0.962; first contact 00:01:10.9,
     // the maximum 00:57:43.9 and the last contact 02:00:31.5, UT.
-    assert_eq!(view.kind, SolarKind::Partial);
+    assert_eq!(view.kind, SolarEclipseKind::Partial);
     assert!(view.second.is_none() && view.third.is_none());
     assert!(
         (view.magnitude - 0.962).abs() < BOUNDS.magnitude,

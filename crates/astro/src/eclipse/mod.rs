@@ -18,7 +18,7 @@
 //! horizon convention, which is what a sutak asks.
 //!
 //! ```
-//! use teistro_astro::eclipse::{Eclipses, LunarKind};
+//! use teistro_astro::eclipse::{Eclipses, LunarEclipseKind};
 //! use teistro_astro::{Completion, DeltaTModel};
 //! use teistro_core::quantity::{JulianDay, Ut1};
 //! use teistro_core::settings::OverridePolicy;
@@ -34,12 +34,13 @@
 //! assert!(lunar.len() >= 2);
 //! for eclipse in &lunar {
 //!     assert!(eclipse.penumbral_magnitude > 0.0);
-//!     assert_eq!(eclipse.kind == LunarKind::Total, eclipse.umbral_magnitude >= 1.0);
+//!     assert_eq!(eclipse.kind == LunarEclipseKind::Total, eclipse.umbral_magnitude >= 1.0);
 //! }
 //! ```
 
 use serde::Serialize;
 use teistro_core::angle::normalise_deg;
+pub use teistro_core::catalogue::{LunarEclipseKind, SolarEclipseKind};
 use teistro_core::error::{Error, Status};
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
@@ -175,36 +176,6 @@ impl ShadowRule {
     }
 }
 
-/// How much of the Moon the Earth's shadow takes.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-pub enum LunarKind {
-    /// The penumbra only.
-    Penumbral,
-    /// Part of the Moon in the umbra.
-    Partial,
-    /// The whole Moon in the umbra.
-    Total,
-}
-
-/// How much of the Sun the Moon hides, and how.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-pub enum SolarKind {
-    /// The umbra and the antumbra miss the Earth.
-    Partial,
-    /// The Moon's disc inside the Sun's: the antumbra reaches the Earth.
-    Annular,
-    /// The Sun wholly hidden: the umbra reaches the Earth.
-    Total,
-    /// Annular at the path's ends and total at its middle, read at the
-    /// greatest eclipse: the umbra reaches the Earth's surface there and
-    /// not the fundamental plane, or the other way about.
-    Hybrid,
-}
-
 /// A lunar eclipse's contacts, UT1: the Moon's limb meeting each
 /// shadow's edge. A contact the eclipse does not have is `None`.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
@@ -233,7 +204,7 @@ pub struct LunarEclipse {
     /// The instant the Moon's centre is nearest the shadow's axis, UT1.
     pub greatest: JulianDay<Ut1>,
     /// The kind.
-    pub kind: LunarKind,
+    pub kind: LunarEclipseKind,
     /// The Moon's centre from the shadow's axis at the greatest eclipse,
     /// Earth radii, positive when the Moon passes north of it.
     pub gamma: f64,
@@ -287,7 +258,7 @@ pub struct SolarEclipse {
     /// UT1.
     pub greatest: JulianDay<Ut1>,
     /// The kind.
-    pub kind: SolarKind,
+    pub kind: SolarEclipseKind,
     /// The axis from the Earth's centre at the greatest eclipse, Earth
     /// radii, positive when it passes north; under 1 the eclipse is
     /// central (for a sphere).
@@ -730,11 +701,11 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
         }
         let umbral_magnitude = lunar.magnitude(lunar.umbra);
         let kind = if umbral_magnitude >= 1.0 {
-            LunarKind::Total
+            LunarEclipseKind::Total
         } else if umbral_magnitude > 0.0 {
-            LunarKind::Partial
+            LunarEclipseKind::Partial
         } else {
-            LunarKind::Penumbral
+            LunarEclipseKind::Penumbral
         };
         // A contact: where the Moon's distance from the axis meets a
         // shadow's edge less or more its semidiameter, on one side.
@@ -759,8 +730,8 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
         let penumbra: fn(&LunarAt) -> f64 = |a| a.penumbra + a.moon_semidiameter;
         let umbra: fn(&LunarAt) -> f64 = |a| a.umbra + a.moon_semidiameter;
         let inner: fn(&LunarAt) -> f64 = |a| a.umbra - a.moon_semidiameter;
-        let partial = kind != LunarKind::Penumbral;
-        let total = kind == LunarKind::Total;
+        let partial = kind != LunarEclipseKind::Penumbral;
+        let total = kind == LunarEclipseKind::Total;
         let contacts = LunarContacts {
             p1: contact(penumbra, false)?,
             u1: partial.then(|| contact(umbra, false)).transpose()?,
@@ -814,9 +785,9 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
             let moon_disc = math::asin(MOON_RADIUS_UMBRA / pm(&sub(&pair.moon, &surface)));
             let sun_disc = math::asin(sun_radius() / pm(&sub(&pair.sun, &surface)));
             let kind = match (umbra_there > 0.0, umbra > 0.0) {
-                (true, true) => SolarKind::Total,
-                (false, false) => SolarKind::Annular,
-                _ => SolarKind::Hybrid,
+                (true, true) => SolarEclipseKind::Total,
+                (false, false) => SolarEclipseKind::Annular,
+                _ => SolarEclipseKind::Hybrid,
             };
             (kind, moon_disc / sun_disc, surface)
         } else {
@@ -828,12 +799,12 @@ impl<'s, S: ShadowSource + ?Sized> Eclipses<'s, S> {
             }
             let kind = if delta < umbra.abs() {
                 if umbra > 0.0 {
-                    SolarKind::Total
+                    SolarEclipseKind::Total
                 } else {
-                    SolarKind::Annular
+                    SolarEclipseKind::Annular
                 }
             } else {
-                SolarKind::Partial
+                SolarEclipseKind::Partial
             };
             let (_, limb) = pn(&offset);
             (kind, magnitude, flattened(&limb))

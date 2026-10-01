@@ -160,6 +160,39 @@ catalogue's with no rename. Each record is `name` and `prose` in the
 language, with the IAST in every locale. The other 22 systems, which the
 engine does not implement, are listed, bringing the list to 100.
 
+## 4b. The blackouts and the eclipses, named where the Nepali is vetted
+
+`blackout_kind`, `lunar_eclipse_kind` and `solar_eclipse_kind` joined the
+catalogue on 2026-10-01 so a consumer can name a closed day's reasons and
+an eclipse's kind. They are not in the document schema, so §4's list does
+not reach them. One rule does: a strict locale carries every key the base
+locale carries. So a member is named in English only when its Nepali is
+vetted too, and an English name alone would be refused.
+
+The Nepali is the Nepal Panchanga Decision Committee's own usage where it
+prints the thing, read from the 2083 national panchanga's page images
+(the PDF has no text layer). Otherwise it is the rank-1 text's own word:
+
+| member | Nepali | where |
+|---|---|---|
+| `CHATURMAS` | चतुर्मास | the committee, "चतुर्मासव्रत सुरु" on Harishayani Ekadashi |
+| `ADHIKA_MASA` | मलमास | the committee's usage (C177) |
+| `SAMSARPA` | संसर्प | *Dharmasindhu* p. 3, "संसर्पसंज्ञः" |
+| `KSHAYA_MASA` | क्षयमास | *Dharmasindhu* p. 3 |
+| `PITRU_PAKSHA` | पितृपक्ष | the committee, Ashwin's dark half headed "(पितृ) पक्ष" |
+| `SANKRANTI` | सङ्क्रान्ति | the committee, "फाल्गुनसङ्क्रान्ति" |
+| `HOLASHTAKA` | होलाष्टक | *Shighrabodha* I.137 (the committee prints "होलिकारम्भ" for its first day) |
+| `GURU_ASTA`, `SHUKRA_ASTA` | गुरु अस्त, शुक्र अस्त | the committee, "गुरु पश्चिममा अस्त", "शुक्र पश्चिममा अस्त" |
+| `PARTIAL`, `TOTAL` (both eclipse kinds) | खण्डग्रास, खग्रास | the committee, naming an eclipse as Nepal sees it |
+
+Six members stay unnamed in both locales: `KHARMAS`, `ECLIPSE_STAR`,
+`ECLIPSE_VEDHA`, `PENUMBRAL`, `ANNULAR` and `HYBRID`. The committee's
+2083 almanac prints none of them, since it shows no eclipse Nepal does
+not see, and no text read so far gives a Nepali word. Each record is
+`name` and `prose`, with no `iast` because no source gives one. The
+eclipse kinds' English `prose` is lower case (`total`), because it
+qualifies a noun.
+
 ## 5. What this does not settle
 
 - **Names for the listed members.** Each needs a rank-1 or rank-2

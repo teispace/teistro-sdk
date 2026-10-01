@@ -23,7 +23,7 @@
 //! the vedha before it.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::eclipse::{EclipsesHere, LunarKind};
+use teistro_astro::eclipse::{EclipsesHere, LunarEclipseKind};
 use teistro_astro::events::{Longitudes, Search, value_of};
 use teistro_astro::visibility::{Heliacal, HeliacalEvent, Visibility};
 use teistro_calendar::lunisolar::MonthKind;
@@ -36,97 +36,9 @@ use teistro_panchanga::limb::{Sidereal, Zodiac, signs_within};
 use teistro_panchanga::span::Span;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Lattice, Quantity};
 
-/// Which blackout.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[non_exhaustive]
-pub enum BlackoutKind {
-    /// Devshayani to Prabodhini: from the start of the bright eleventh of
-    /// (nija) Ashadha to the start of the bright eleventh of (nija)
-    /// Kartika, the four months Vishnu sleeps.
-    Chaturmas,
-    /// An intercalary month, which holds no sankranti: Nepal's Malmas,
-    /// also called Purushottam masa (C177). The adhika month before a
-    /// kshaya month is not one of these; it is [`BlackoutKind::Samsarpa`].
-    AdhikaMasa,
-    /// The adhika month before a kshaya month, which *Dharmasindhu* calls
-    /// samsarpa and holds fit for every rite (p. 3, C179). It is its own
-    /// kind so that a rule which closes every adhika month heeds this one
-    /// and [`BlackoutKind::AdhikaMasa`] together.
-    Samsarpa,
-    /// A month holding two sankrantis, whose second name the year skips:
-    /// *Dharmasindhu*'s amhaspati, avoided in every rite (p. 3, C179).
-    KshayaMasa,
-    /// The Sun in Sagittarius or Pisces. Some north Indian calendars call
-    /// it Malmas, a word that in Nepal names the adhika month instead
-    /// (C177).
-    Kharmas,
-    /// The dark fortnight of (nija, amanta) Bhadrapada, from the start of
-    /// the Purnima it is counted from to the Mahalaya new moon.
-    PitruPaksha,
-    /// Sixteen ghatis either side of a sankranti (Raman, ch. V, Mahadosha
-    /// 2: Surya sankramana).
-    Sankranti,
-    /// The eight days before Holi: from the start of the bright eighth of
-    /// (nija, amanta) Phalguna to the full moon (*Shighrabodha* I.137–138).
-    /// The text bars marriage and the like in it only on the Shutudri,
-    /// the Vipasha and the Iravati and at Tripushkara, and calls it
-    /// auspicious elsewhere, so no shipped activity heeds it (C193).
-    Holashtaka,
-    /// Jupiter unseen, from its last sighting to its next.
-    GuruAsta,
-    /// Venus unseen: twice a synodic cycle, about its inferior and its
-    /// superior conjunction, and both are windows.
-    ShukraAsta,
-    /// The Moon in the star an eclipse the place saw fell in, for six
-    /// synodic months after it (Raman, ch. V, Mahadosha 16: grahanotpatha;
-    /// cruxes C189 to C191).
-    EclipseStar,
-    /// An eclipse's vedha, the almanacs' sutak: from the prahara
-    /// *Dharmasindhu* counts back from the eclipse to its end as seen, or
-    /// to the body's next rising when it set eclipsed (C192).
-    EclipseVedha,
-}
-
-impl BlackoutKind {
-    /// Every kind, in declaration order. [`BlackoutKind::position`] is
-    /// an exhaustive match, so a kind added to the enum and not here fails
-    /// to compile there or fails the test that reads this back.
-    pub const ALL: [BlackoutKind; 12] = [
-        BlackoutKind::Chaturmas,
-        BlackoutKind::AdhikaMasa,
-        BlackoutKind::Samsarpa,
-        BlackoutKind::KshayaMasa,
-        BlackoutKind::Kharmas,
-        BlackoutKind::PitruPaksha,
-        BlackoutKind::Sankranti,
-        BlackoutKind::Holashtaka,
-        BlackoutKind::GuruAsta,
-        BlackoutKind::ShukraAsta,
-        BlackoutKind::EclipseStar,
-        BlackoutKind::EclipseVedha,
-    ];
-
-    /// The kind's place in [`BlackoutKind::ALL`].
-    #[must_use]
-    pub const fn position(self) -> usize {
-        match self {
-            BlackoutKind::Chaturmas => 0,
-            BlackoutKind::AdhikaMasa => 1,
-            BlackoutKind::Samsarpa => 2,
-            BlackoutKind::KshayaMasa => 3,
-            BlackoutKind::Kharmas => 4,
-            BlackoutKind::PitruPaksha => 5,
-            BlackoutKind::Sankranti => 6,
-            BlackoutKind::Holashtaka => 7,
-            BlackoutKind::GuruAsta => 8,
-            BlackoutKind::ShukraAsta => 9,
-            BlackoutKind::EclipseStar => 10,
-            BlackoutKind::EclipseVedha => 11,
-        }
-    }
-}
+/// Which blackout: the catalogue's `blackout_kind`, each member with its
+/// source.
+pub use teistro_core::catalogue::BlackoutKind;
 
 /// A blackout and the interval it holds over, clipped to the range asked.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -471,7 +383,7 @@ impl SeenEclipse {
                 continue;
             };
             seen.push(SeenEclipse {
-                kind: if lunar.eclipse.kind == LunarKind::Total {
+                kind: if lunar.eclipse.kind == LunarEclipseKind::Total {
                     SeenKind::TotalLunar
                 } else {
                     SeenKind::Lunar
@@ -668,13 +580,6 @@ mod tests {
         clippy::float_cmp,
         reason = "tests fail by panicking, and compare quarters of exact halves"
     )]
-
-    #[test]
-    fn every_blackout_kind_is_listed_once_in_its_place() {
-        for (at, kind) in BlackoutKind::ALL.iter().enumerate() {
-            assert_eq!(kind.position(), at, "{kind:?}");
-        }
-    }
 
     use super::{BlackoutKind, EclipseVedha, SeenEclipse, SeenKind, eclipse_vedha, vedha_praharas};
     use teistro_core::interval::Interval;

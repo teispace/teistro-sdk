@@ -2406,5 +2406,63 @@
       "prose": "Kalachakra Dasha",
       "iast": "Kālacakra Daśā"
     }
+  },
+  "blackout_kind": {
+    "CHATURMAS": {
+      "name": "Chaturmas",
+      "prose": "Chaturmas"
+    },
+    "ADHIKA_MASA": {
+      "name": "Adhika Masa",
+      "prose": "Adhika Masa"
+    },
+    "SAMSARPA": {
+      "name": "Samsarpa",
+      "prose": "Samsarpa"
+    },
+    "KSHAYA_MASA": {
+      "name": "Kshaya Masa",
+      "prose": "Kshaya Masa"
+    },
+    "PITRU_PAKSHA": {
+      "name": "Pitru Paksha",
+      "prose": "Pitru Paksha"
+    },
+    "SANKRANTI": {
+      "name": "Sankranti",
+      "prose": "Sankranti"
+    },
+    "HOLASHTAKA": {
+      "name": "Holashtaka",
+      "prose": "Holashtaka"
+    },
+    "GURU_ASTA": {
+      "name": "Guru Asta",
+      "prose": "Guru Asta"
+    },
+    "SHUKRA_ASTA": {
+      "name": "Shukra Asta",
+      "prose": "Shukra Asta"
+    }
+  },
+  "lunar_eclipse_kind": {
+    "PARTIAL": {
+      "name": "Partial",
+      "prose": "partial"
+    },
+    "TOTAL": {
+      "name": "Total",
+      "prose": "total"
+    }
+  },
+  "solar_eclipse_kind": {
+    "PARTIAL": {
+      "name": "Partial",
+      "prose": "partial"
+    },
+    "TOTAL": {
+      "name": "Total",
+      "prose": "total"
+    }
   }
 }

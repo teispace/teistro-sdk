@@ -529,6 +529,24 @@
           "value": 64,
           "doc": "The three sub-states of a Sayanadi state, a remainder of three.",
           "key": "avastha_cheshta"
+        },
+        {
+          "name": "BlackoutKind",
+          "value": 67,
+          "doc": "The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.",
+          "key": "blackout_kind"
+        },
+        {
+          "name": "LunarEclipseKind",
+          "value": 68,
+          "doc": "How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).",
+          "key": "lunar_eclipse_kind"
+        },
+        {
+          "name": "SolarEclipseKind",
+          "value": 69,
+          "doc": "How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).",
+          "key": "solar_eclipse_kind"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6013,6 +6031,147 @@
           "value": 2,
           "doc": "Vicheshta, a remainder of nothing: its effects slight",
           "key": "VICHESHTA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "BlackoutKind",
+      "doc": "The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "blackout_kind",
+      "values": [
+        {
+          "name": "Chaturmas",
+          "value": 0,
+          "doc": "Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps",
+          "key": "CHATURMAS"
+        },
+        {
+          "name": "AdhikaMasa",
+          "value": 1,
+          "doc": "An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)",
+          "key": "ADHIKA_MASA"
+        },
+        {
+          "name": "Samsarpa",
+          "value": 2,
+          "doc": "The adhika month before a kshaya month, fit for every rite (crux C179)",
+          "key": "SAMSARPA"
+        },
+        {
+          "name": "KshayaMasa",
+          "value": 3,
+          "doc": "A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)",
+          "key": "KSHAYA_MASA"
+        },
+        {
+          "name": "Kharmas",
+          "value": 4,
+          "doc": "The Sun in Sagittarius or Pisces (crux C177)",
+          "key": "KHARMAS"
+        },
+        {
+          "name": "PitruPaksha",
+          "value": 5,
+          "doc": "The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya",
+          "key": "PITRU_PAKSHA"
+        },
+        {
+          "name": "Sankranti",
+          "value": 6,
+          "doc": "Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2",
+          "key": "SANKRANTI"
+        },
+        {
+          "name": "Holashtaka",
+          "value": 7,
+          "doc": "The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)",
+          "key": "HOLASHTAKA"
+        },
+        {
+          "name": "GuruAsta",
+          "value": 8,
+          "doc": "Jupiter unseen, from its last sighting to its next",
+          "key": "GURU_ASTA"
+        },
+        {
+          "name": "ShukraAsta",
+          "value": 9,
+          "doc": "Venus unseen, about either conjunction",
+          "key": "SHUKRA_ASTA"
+        },
+        {
+          "name": "EclipseStar",
+          "value": 10,
+          "doc": "The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)",
+          "key": "ECLIPSE_STAR"
+        },
+        {
+          "name": "EclipseVedha",
+          "value": 11,
+          "doc": "An eclipse's vedha, the almanacs' sutak (crux C192)",
+          "key": "ECLIPSE_VEDHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "LunarEclipseKind",
+      "doc": "How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "lunar_eclipse_kind",
+      "values": [
+        {
+          "name": "Penumbral",
+          "value": 0,
+          "doc": "The penumbra only",
+          "key": "PENUMBRAL"
+        },
+        {
+          "name": "Partial",
+          "value": 1,
+          "doc": "Part of the Moon in the umbra",
+          "key": "PARTIAL"
+        },
+        {
+          "name": "Total",
+          "value": 2,
+          "doc": "The whole Moon in the umbra",
+          "key": "TOTAL"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "SolarEclipseKind",
+      "doc": "How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "solar_eclipse_kind",
+      "values": [
+        {
+          "name": "Partial",
+          "value": 0,
+          "doc": "The umbra and the antumbra miss the Earth",
+          "key": "PARTIAL"
+        },
+        {
+          "name": "Annular",
+          "value": 1,
+          "doc": "The Moon's disc inside the Sun's: the antumbra reaches the Earth",
+          "key": "ANNULAR"
+        },
+        {
+          "name": "Total",
+          "value": 2,
+          "doc": "The Sun wholly hidden: the umbra reaches the Earth",
+          "key": "TOTAL"
+        },
+        {
+          "name": "Hybrid",
+          "value": 3,
+          "doc": "Annular at the path's ends and total at its middle, read at the greatest eclipse",
+          "key": "HYBRID"
         }
       ],
       "source": "catalogue/catalogue.json"

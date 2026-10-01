@@ -776,15 +776,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
             })
             .transpose()?
             .unwrap_or_default();
-        // No catalogue member is in an eclipse: its kinds and its shadow
-        // rule are keys of their own, written as they are.
         let eclipses = answered
             .eclipses
-            .map(|answer| {
-                let value = serde_json::to_value(&answer.value)
-                    .map_err(|e| Error::internal(format!("an eclipse did not serialise: {e}")))?;
-                Ok::<_, Error>(section(value, answer.provenance))
-            })
+            .map(|answer| Ok::<_, Error>(section(answer.value.in_full()?, answer.provenance)))
             .transpose()?
             .unwrap_or_default();
         let encoded = encode(

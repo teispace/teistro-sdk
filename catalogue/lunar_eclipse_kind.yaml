@@ -1,0 +1,26 @@
+kind: lunar_eclipse_kind
+number: 68
+version: 1
+doc: "How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3)."
+members:
+  - key: PENUMBRAL
+    id: 0
+    doc: "The penumbra only"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses"
+        ref: "NASA/TP-2009-214172, eclipse types"
+    mark: V
+  - key: PARTIAL
+    id: 1
+    doc: "Part of the Moon in the umbra"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses"
+        ref: "NASA/TP-2009-214172, eclipse types"
+    mark: V
+  - key: TOTAL
+    id: 2
+    doc: "The whole Moon in the umbra"
+    sources:
+      - text: "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses"
+        ref: "NASA/TP-2009-214172, eclipse types"
+    mark: V

@@ -4483,8 +4483,8 @@ fn a_panchanga_request_answers_the_years_its_days_fall_in() {
 
 /// The eclipses beside a panchanga request's days (`eclipses.md` §5):
 /// asked by a bit beside the years', the days the ones asked without it,
-/// the section the façade's envelope with bare kinds in camelCase and
-/// sealed over what it holds.
+/// the section the façade's envelope in camelCase, its kinds written in
+/// full, and sealed over what it holds.
 #[test]
 fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
@@ -4522,8 +4522,14 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
         provenance.content_hash,
         teistro::content_hash(&envelope["value"])
     );
-    assert_eq!(envelope["value"]["lunar"][0]["eclipse"]["kind"], "TOTAL");
-    assert_eq!(envelope["value"]["solar"][0]["eclipse"]["kind"], "ANNULAR");
+    assert_eq!(
+        envelope["value"]["lunar"][0]["eclipse"]["kind"],
+        "lunar_eclipse_kind.TOTAL"
+    );
+    assert_eq!(
+        envelope["value"]["solar"][0]["eclipse"]["kind"],
+        "solar_eclipse_kind.ANNULAR"
+    );
     assert!(envelope["value"]["lunar"][0]["eclipse"]["umbralMagnitude"].is_number());
     assert!(envelope["value"]["lunar"][0]["here"]["p1"]["altitudeDeg"].is_number());
 
@@ -4541,10 +4547,7 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
             teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
         )
         .unwrap();
-    assert_eq!(
-        envelope["value"],
-        serde_json::to_value(&expected.value).unwrap()
-    );
+    assert_eq!(envelope["value"], expected.value.in_full().unwrap());
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
 }
 

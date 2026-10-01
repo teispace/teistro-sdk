@@ -183,6 +183,17 @@ export function messages(r) {
           valensMoon: () => r.entity('ayanamsha.VALENS_MOON'),
           yukteshwar: () => r.entity('ayanamsha.YUKTESHWAR'),
         },
+        blackoutKind: {
+          adhikaMasa: () => r.entity('blackout_kind.ADHIKA_MASA'),
+          chaturmas: () => r.entity('blackout_kind.CHATURMAS'),
+          guruAsta: () => r.entity('blackout_kind.GURU_ASTA'),
+          holashtaka: () => r.entity('blackout_kind.HOLASHTAKA'),
+          kshayaMasa: () => r.entity('blackout_kind.KSHAYA_MASA'),
+          pitruPaksha: () => r.entity('blackout_kind.PITRU_PAKSHA'),
+          samsarpa: () => r.entity('blackout_kind.SAMSARPA'),
+          sankranti: () => r.entity('blackout_kind.SANKRANTI'),
+          shukraAsta: () => r.entity('blackout_kind.SHUKRA_ASTA'),
+        },
         charaKaraka: {
           amatyakaraka: () => r.entity('chara_karaka.AMATYAKARAKA'),
           atmakaraka: () => r.entity('chara_karaka.ATMAKARAKA'),
@@ -342,6 +353,10 @@ export function messages(r) {
           taitila: () => r.entity('karana.TAITILA'),
           vanija: () => r.entity('karana.VANIJA'),
           vishti: () => r.entity('karana.VISHTI'),
+        },
+        lunarEclipseKind: {
+          partial: () => r.entity('lunar_eclipse_kind.PARTIAL'),
+          total: () => r.entity('lunar_eclipse_kind.TOTAL'),
         },
         masa: {
           ashadha: () => r.entity('masa.ASHADHA'),
@@ -509,6 +524,10 @@ export function messages(r) {
           vrisha: () => r.entity('samvatsara.VRISHA'),
           vyaya: () => r.entity('samvatsara.VYAYA'),
           yuva: () => r.entity('samvatsara.YUVA'),
+        },
+        solarEclipseKind: {
+          partial: () => r.entity('solar_eclipse_kind.PARTIAL'),
+          total: () => r.entity('solar_eclipse_kind.TOTAL'),
         },
         tatwa: {
           agni: () => r.entity('tatwa.AGNI'),

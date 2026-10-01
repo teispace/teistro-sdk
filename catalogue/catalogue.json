@@ -20252,6 +20252,359 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "blackout_kind",
+      "number": 67,
+      "version": 1,
+      "doc": "The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "CHATURMAS",
+          "id": 0,
+          "doc": "Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "muhurta blackouts"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "ADHIKA_MASA",
+          "id": 1,
+          "doc": "An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Dharmasindhu",
+              "ref": "p. 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SAMSARPA",
+          "id": 2,
+          "doc": "The adhika month before a kshaya month, fit for every rite (crux C179)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Dharmasindhu",
+              "ref": "p. 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KSHAYA_MASA",
+          "id": 3,
+          "doc": "A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Dharmasindhu",
+              "ref": "p. 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KHARMAS",
+          "id": 4,
+          "doc": "The Sun in Sagittarius or Pisces (crux C177)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "muhurta blackouts"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "PITRU_PAKSHA",
+          "id": 5,
+          "doc": "The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "baseline-engine",
+              "ref": "muhurta blackouts"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SANKRANTI",
+          "id": 6,
+          "doc": "Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Raman, Muhurtha",
+              "ref": "ch. V, Mahadosha 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HOLASHTAKA",
+          "id": 7,
+          "doc": "The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Kashinath, Shighrabodha",
+              "ref": "I.137-138"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GURU_ASTA",
+          "id": 8,
+          "doc": "Jupiter unseen, from its last sighting to its next",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani",
+              "ref": "ch. I, vv. 46-47"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHUKRA_ASTA",
+          "id": 9,
+          "doc": "Venus unseen, about either conjunction",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Muhurta Chintamani",
+              "ref": "ch. I, vv. 46-47"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ECLIPSE_STAR",
+          "id": 10,
+          "doc": "The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Raman, Muhurtha",
+              "ref": "ch. V, Mahadosha 16"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ECLIPSE_VEDHA",
+          "id": 11,
+          "doc": "An eclipse's vedha, the almanacs' sutak (crux C192)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Dharmasindhu",
+              "ref": "p. 28"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "lunar_eclipse_kind",
+      "number": 68,
+      "version": 1,
+      "doc": "How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "PENUMBRAL",
+          "id": 0,
+          "doc": "The penumbra only",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses",
+              "ref": "NASA/TP-2009-214172, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PARTIAL",
+          "id": 1,
+          "doc": "Part of the Moon in the umbra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses",
+              "ref": "NASA/TP-2009-214172, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "TOTAL",
+          "id": 2,
+          "doc": "The whole Moon in the umbra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Lunar Eclipses",
+              "ref": "NASA/TP-2009-214172, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "solar_eclipse_kind",
+      "number": 69,
+      "version": 1,
+      "doc": "How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "PARTIAL",
+          "id": 0,
+          "doc": "The umbra and the antumbra miss the Earth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Solar Eclipses",
+              "ref": "NASA/TP-2006-214141, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ANNULAR",
+          "id": 1,
+          "doc": "The Moon's disc inside the Sun's: the antumbra reaches the Earth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Solar Eclipses",
+              "ref": "NASA/TP-2006-214141, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "TOTAL",
+          "id": 2,
+          "doc": "The Sun wholly hidden: the umbra reaches the Earth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Solar Eclipses",
+              "ref": "NASA/TP-2006-214141, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HYBRID",
+          "id": 3,
+          "doc": "Annular at the path's ends and total at its middle, read at the greatest eclipse",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Espenak and Meeus, Five Millennium Canon of Solar Eclipses",
+              "ref": "NASA/TP-2006-214141, eclipse types"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

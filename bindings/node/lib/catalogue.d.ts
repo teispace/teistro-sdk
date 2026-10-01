@@ -194,7 +194,10 @@ export type Kind =
   | 'muhurta_yoga'
   | 'chart_layout'
   | 'vaiseshikamsa'
-  | 'avastha_cheshta';
+  | 'avastha_cheshta'
+  | 'blackout_kind'
+  | 'lunar_eclipse_kind'
+  | 'solar_eclipse_kind';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -446,6 +449,18 @@ export declare const Kind: {
    * The three sub-states of a Sayanadi state, a remainder of three.
    */
   readonly AvasthaCheshta: 'avastha_cheshta';
+  /**
+   * The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.
+   */
+  readonly BlackoutKind: 'blackout_kind';
+  /**
+   * How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
+   */
+  readonly LunarEclipseKind: 'lunar_eclipse_kind';
+  /**
+   * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
+   */
+  readonly SolarEclipseKind: 'solar_eclipse_kind';
 };
 
 /**
@@ -5436,6 +5451,140 @@ export declare const AvasthaCheshta: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const AvasthaCheshtaById: ReadonlyMap<number, AvasthaCheshta>;
+
+/**
+ * The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`.
+ */
+export type BlackoutKind =
+  | 'blackout_kind.CHATURMAS'
+  | 'blackout_kind.ADHIKA_MASA'
+  | 'blackout_kind.SAMSARPA'
+  | 'blackout_kind.KSHAYA_MASA'
+  | 'blackout_kind.KHARMAS'
+  | 'blackout_kind.PITRU_PAKSHA'
+  | 'blackout_kind.SANKRANTI'
+  | 'blackout_kind.HOLASHTAKA'
+  | 'blackout_kind.GURU_ASTA'
+  | 'blackout_kind.SHUKRA_ASTA'
+  | 'blackout_kind.ECLIPSE_STAR'
+  | 'blackout_kind.ECLIPSE_VEDHA'
+  | 'unknown';
+
+/** Every BlackoutKind by name; the values are the strings the union accepts. */
+export declare const BlackoutKind: {
+  /**
+   * Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps
+   */
+  readonly Chaturmas: 'blackout_kind.CHATURMAS';
+  /**
+   * An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)
+   */
+  readonly AdhikaMasa: 'blackout_kind.ADHIKA_MASA';
+  /**
+   * The adhika month before a kshaya month, fit for every rite (crux C179)
+   */
+  readonly Samsarpa: 'blackout_kind.SAMSARPA';
+  /**
+   * A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)
+   */
+  readonly KshayaMasa: 'blackout_kind.KSHAYA_MASA';
+  /**
+   * The Sun in Sagittarius or Pisces (crux C177)
+   */
+  readonly Kharmas: 'blackout_kind.KHARMAS';
+  /**
+   * The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya
+   */
+  readonly PitruPaksha: 'blackout_kind.PITRU_PAKSHA';
+  /**
+   * Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2
+   */
+  readonly Sankranti: 'blackout_kind.SANKRANTI';
+  /**
+   * The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)
+   */
+  readonly Holashtaka: 'blackout_kind.HOLASHTAKA';
+  /**
+   * Jupiter unseen, from its last sighting to its next
+   */
+  readonly GuruAsta: 'blackout_kind.GURU_ASTA';
+  /**
+   * Venus unseen, about either conjunction
+   */
+  readonly ShukraAsta: 'blackout_kind.SHUKRA_ASTA';
+  /**
+   * The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)
+   */
+  readonly EclipseStar: 'blackout_kind.ECLIPSE_STAR';
+  /**
+   * An eclipse's vedha, the almanacs' sutak (crux C192)
+   */
+  readonly EclipseVedha: 'blackout_kind.ECLIPSE_VEDHA';
+};
+
+/**
+ * Every BlackoutKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BlackoutKindById: ReadonlyMap<number, BlackoutKind>;
+
+/**
+ * How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`.
+ */
+export type LunarEclipseKind = 'lunar_eclipse_kind.PENUMBRAL' | 'lunar_eclipse_kind.PARTIAL' | 'lunar_eclipse_kind.TOTAL' | 'unknown';
+
+/** Every LunarEclipseKind by name; the values are the strings the union accepts. */
+export declare const LunarEclipseKind: {
+  /**
+   * The penumbra only
+   */
+  readonly Penumbral: 'lunar_eclipse_kind.PENUMBRAL';
+  /**
+   * Part of the Moon in the umbra
+   */
+  readonly Partial: 'lunar_eclipse_kind.PARTIAL';
+  /**
+   * The whole Moon in the umbra
+   */
+  readonly Total: 'lunar_eclipse_kind.TOTAL';
+};
+
+/**
+ * Every LunarEclipseKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LunarEclipseKindById: ReadonlyMap<number, LunarEclipseKind>;
+
+/**
+ * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`.
+ */
+export type SolarEclipseKind = 'solar_eclipse_kind.PARTIAL' | 'solar_eclipse_kind.ANNULAR' | 'solar_eclipse_kind.TOTAL' | 'solar_eclipse_kind.HYBRID' | 'unknown';
+
+/** Every SolarEclipseKind by name; the values are the strings the union accepts. */
+export declare const SolarEclipseKind: {
+  /**
+   * The umbra and the antumbra miss the Earth
+   */
+  readonly Partial: 'solar_eclipse_kind.PARTIAL';
+  /**
+   * The Moon's disc inside the Sun's: the antumbra reaches the Earth
+   */
+  readonly Annular: 'solar_eclipse_kind.ANNULAR';
+  /**
+   * The Sun wholly hidden: the umbra reaches the Earth
+   */
+  readonly Total: 'solar_eclipse_kind.TOTAL';
+  /**
+   * Annular at the path's ends and total at its middle, read at the greatest eclipse
+   */
+  readonly Hybrid: 'solar_eclipse_kind.HYBRID';
+};
+
+/**
+ * Every SolarEclipseKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SolarEclipseKindById: ReadonlyMap<number, SolarEclipseKind>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

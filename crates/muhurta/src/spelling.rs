@@ -63,11 +63,13 @@ impl ClauseKey {
 }
 
 /// Where the answer names catalogue members outside its clauses: a
-/// baseline factor's graha, and a closed day's calendar and era.
-const OUTSIDE_CLAUSES: [(&str, &str, Kind); 3] = [
+/// baseline factor's graha, a closed day's calendar and era, and the
+/// blackouts that closed it.
+const OUTSIDE_CLAUSES: [(&str, &str, Kind); 4] = [
     ("windows", "score.factors.graha", Kind::Graha),
     ("closed", "date.calendar", Kind::Calendar),
     ("closed", "date.era.era", Kind::Era),
+    ("closed", "by", Kind::BlackoutKind),
 ];
 
 /// The answer as JSON, every catalogue member written as its full key.
@@ -333,7 +335,7 @@ mod tests {
     /// The string leaves that are **not** catalogue members, and why: a
     /// crate-local enum, or text. Refused both ways: a leaf here written
     /// in full, or one listed here the sample never reaches, fails.
-    const LOCAL: [(&str, &str); 11] = [
+    const LOCAL: [(&str, &str); 10] = [
         ("windows[].clauses[].clause", "the tag, a `ClauseKey`"),
         ("windows[].clauses[].grade", "a `Grade`"),
         ("windows[].clauses[].reading.tara", "a `Tara`"),
@@ -343,7 +345,6 @@ mod tests {
             "windows[].score.factors[].dimension",
             "a baseline `Dimension`",
         ),
-        ("closed[].by[]", "a `BlackoutKind`"),
         (
             "closed[].date.resolution.kind",
             "a `CalendarResolution`'s tag",
