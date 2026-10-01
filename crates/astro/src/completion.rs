@@ -655,8 +655,15 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // 0.3 arcseconds turning once a day, which the conformance corpus
         // found as half a thousandth of a degree a day in every speed.
         let mut held = native;
+        // The light time steps back along each body's rate, so the
+        // rates are carried into it whether or not the caller asked for
+        // speeds. Precessed without them, as an apparent place without
+        // speeds once was, the Sun stood 20.7 arcseconds ahead of itself
+        // and the Moon 9.3 from where it is seen.
+        let rates =
+            request.speeds || (wanted.corrections.light_time && !native.corrections.light_time);
         if wanted.equinox != native.equinox {
-            self.precess(&mut columns, request, native, &mut steps)?;
+            self.precess(&mut columns, request, native, rates, &mut steps)?;
             held.equinox = wanted.equinox;
         }
         // The corrections next, while the columns are still geocentric:
@@ -740,6 +747,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         columns: &mut PositionColumns,
         request: &PositionRequest<'_>,
         native: Frame,
+        rates: bool,
         steps: &mut Vec<Step>,
     ) -> Result<(), CompletionError> {
         if native.equinox != Equinox::J2000 || request.frame.equinox != Equinox::OfDate {
@@ -771,7 +779,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                             tt,
                             native.coordinates,
                             (from_obliquity, to_obliquity),
-                            request.speeds,
+                            rates,
                         ),
                     );
                 }
@@ -1095,20 +1103,32 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 }
 
+impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
+    /// The frame "apparent" means for this provider: the geocentric
+    /// equator of date with every correction for a modern ephemeris,
+    /// whatever frame it states its theory in, and a classical text's own
+    /// frame, whose sunrise and places are its definitions, in equatorial
+    /// coordinates. Taking a modern provider's native frame instead read
+    /// the built-in ephemeris on the J2000 equator without light time or
+    /// aberration: 1.3° of right ascension in 1900, a minute of every
+    /// sunrise in 2025.
+    #[must_use]
+    pub fn apparent_frame(&self) -> Frame {
+        let base = match self.capabilities.astronomy {
+            Astronomy::Classical => self.capabilities.native_frame,
+            Astronomy::Modern => Frame::CANONICAL,
+        };
+        base.with_coordinates(Coordinates::Equatorial)
+            .with_zodiac(Zodiac::Tropical)
+    }
+}
+
 impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
         let jds = [ut1.get()];
         let bodies = [body];
-        // Equatorial coordinates in the tropical zodiac, with the
-        // provider's own centre, equinox and corrections: an ephemeris
-        // answers in the apparent frame, a classical text in its own,
-        // and "apparent" to an observer is what each provides.
-        let frame = self
-            .capabilities
-            .native_frame
-            .with_coordinates(Coordinates::Equatorial)
-            .with_zodiac(Zodiac::Tropical);
-        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame).without_speeds();
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, self.apparent_frame())
+            .without_speeds();
         let done = self.positions(&request)?;
         apparent_cell(&done, 0, body, ut1)
     }
@@ -1125,12 +1145,8 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
         }
         let jds: Vec<f64> = ut1.iter().map(|at| at.get()).collect();
         let bodies = [body];
-        let frame = self
-            .capabilities
-            .native_frame
-            .with_coordinates(Coordinates::Equatorial)
-            .with_zodiac(Zodiac::Tropical);
-        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame).without_speeds();
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, self.apparent_frame())
+            .without_speeds();
         let done = self.positions(&request)?;
         out.reserve(ut1.len());
         for (row, at) in ut1.iter().enumerate() {
@@ -1148,9 +1164,9 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
     }
 }
 
-/// One row of a completed grid as an apparent position, or the
+/// One row of a completed grid as an equatorial position, or the
 /// provider's refusal for that cell.
-fn apparent_cell(
+pub(crate) fn apparent_cell(
     done: &Completed,
     row: usize,
     body: Body,

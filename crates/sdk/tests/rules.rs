@@ -252,8 +252,11 @@ fn differences(chart: &teistro::RuleChart, recorded: &serde_json::Value) -> [usi
 /// class was decided and what it came to: three independent pairs agree all
 /// three one time in nine and differ all three two times in nine, and these
 /// are 9 and 14; Saturn among the contributors takes five short lives to
-/// Yogarishta.
-const THREE_PAIRS: [(&str, usize); 11] = [
+/// Yogarishta. c034's hora lagna stands 0.24° into Cancer, so its one
+/// `SaturnAndMoon/Medium` is decided by the sunrise's last half-minute
+/// (the lagna pair's `Long` before the apparent Sun was put in the frame
+/// of date).
+const THREE_PAIRS: [(&str, usize); 12] = [
     ("Agreement { pairs: 2 }/Long", 4),
     ("Agreement { pairs: 2 }/Medium", 8),
     ("Agreement { pairs: 2 }/Short", 12),
@@ -261,9 +264,10 @@ const THREE_PAIRS: [(&str, usize); 11] = [
     ("Agreement { pairs: 3 }/Long", 2),
     ("Agreement { pairs: 3 }/Medium", 4),
     ("Agreement { pairs: 3 }/Short", 3),
-    ("LagnaPair/Long", 4),
+    ("LagnaPair/Long", 3),
     ("LagnaPair/Medium", 3),
     ("LagnaPair/Short", 6),
+    ("SaturnAndMoon/Medium", 1),
     ("SaturnAndMoon/Yogarishta", 1),
 ];
 
@@ -352,11 +356,15 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // derivative of its standard-tier places, +1.5e-5 — a sign inside any
     // tier's accuracy, which the corpus's own edge policy reports rather
     // than fails. No field differs anywhere else. Twelve points and
-    // fourteen with Gulika and Mandi, and neither special-lagna figure on
-    // any chart.
+    // fourteen with Gulika and Mandi. The first special-lagna figure holds
+    // on no chart; the second on one, c034, whose hora lagna stands 0.24°
+    // into Cancer, 28 seconds of sunrise from Gemini, so that it holds or
+    // not with the sunrise's last half-minute (it did not until the
+    // apparent Sun was put in the frame of date). The corpus does not
+    // record the special lagnas, so the count is the SDK's own.
     assert_eq!(
         (charts, points, differ, special),
-        (51, 51 * 14, [1, 1, 1, 0, 7], [0, 0])
+        (51, 51 * 14, [1, 1, 1, 0, 7], [0, 1])
     );
     let decided: Vec<(&str, usize)> = decided
         .iter()

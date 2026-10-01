@@ -26,7 +26,7 @@ the season is read from and `panchanga.solar_month_start` the rule.
 | the lunar month's season (`panchanga.ritu` `LUNAR`): the seasons Nepal printed | falsified | 62 of 341 disagree; a rival |
 | the tropical Sun's (`panchanga.ritu` `TROPICAL`): the seasons Nepal printed | falsified | 139 of 341 disagree; a rival |
 | the ayana, the sidereal Sun's sign as the day opens: the ayana Nepal printed | **holds** | 0 of 341 disagree |
-| before aparahna, else the next day (`BEFORE_APARAHNA`): the season changes of Bikram Sambat 2070 to 2095 | falsified | 25 of 156 disagree; a rival the records cannot separate |
+| before aparahna, else the next day (`BEFORE_APARAHNA`): the season changes of Bikram Sambat 2070 to 2095 | falsified | 23 of 156 disagree; a rival the records cannot separate |
 
 ## 2. The records
 
@@ -75,7 +75,7 @@ years below: the day before the month and its first day.
 
 | reading | Bikram Sambat years | season changes it misses |
 |---|---|---|
-| before aparahna, else the next day (`BEFORE_APARAHNA`) | 2070 to 2095 | 25 of 156 |
+| before aparahna, else the next day (`BEFORE_APARAHNA`) | 2070 to 2095 | 23 of 156 |
 
 ## 6. What the records decide
 
