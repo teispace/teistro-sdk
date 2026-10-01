@@ -149,6 +149,13 @@ of a chart's sect is a fork with its own crux:
    - The Chaldean rule reproduces I.XXIII's stated totals.
 2. `terms-measured.md` moves onto the shipped tables, so the pass keeps
    no copy of what it measures. Its page must not move by a byte.
+   **Done**: every earlier row is unchanged. Four rows were added, holding
+   the shipped exaltation degrees, triplicity schemes and Ashmand table
+   to their transcriptions. One of them finds the Tajika decanate lord
+   (`drekkana_lord`) to be Lilly's face on all 36 decans. So the two
+   traditions share one rule, which still lives in two crates. It belongs
+   in the catalogue once a third reader needs it, and the gated row is
+   what will hold that move.
 3. The façade and the chart document: dignities per planet, with the
    sect and the rules that made them.
 4. The boundary and the four bindings, under the parity gate.

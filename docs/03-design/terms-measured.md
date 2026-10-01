@@ -30,6 +30,10 @@ is no corpus answer for the doctrine (crux C46).
 | Lilly's faces are ten-degree decans in the Chaldean order of the seven (Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon), from Mars in Aries | **holds** | 0 of 36 disagree |
 | Lilly's detriment of a sign is the lord of the sign opposite | **holds** | 0 of 12 disagree |
 | Lilly's fall of a sign is the planet exalted in the sign opposite, by his own exaltations | **holds** | 0 of 12 disagree |
+| the Tajika decanate lord (`drekkana_lord`) is the face Lilly prints, decan by decan | **holds** | 0 of 36 disagree |
+| the shipped exaltation degrees (`exaltation_degree`) are Lilly's | **holds** | 0 of 7 disagree |
+| the shipped triplicity schemes rule exactly the lords Ptolemy and Lilly print, by day and by night | **holds** | 0 of 8 disagree |
+| the shipped `PTOLEMAIC_ASHMAND` is Ashmand's alternate lords on his first lines' ends | **holds** | 0 of 1 disagree |
 
 ## Ptolemy's own terms, clause by clause
 

@@ -24,8 +24,12 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro::tajika::hudda_lord;
+use teistro::tajika::{drekkana_lord, hudda_lord};
 use teistro_core::catalogue::{Graha, Rashi};
+use teistro_hellenistic::{
+    CHALDEAN_ORDER, DignityRules, EssentialDignity, Sect, TermsTable, Triplicities,
+    essential_dignity, exaltation_degree, face_lord,
+};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, table};
@@ -162,24 +166,18 @@ const ALTERNATES: [Alternate; 13] = [
     Alternate::new(11, 4).width(3),
 ];
 
-/// Lilly, *Christian Astrology* (1647), p. 104, the terms column: each cell
-/// a lord and the degree its term ends at (Wellcome Collection scan,
-/// archive.org `b30338724`, leaf n137).
-#[rustfmt::skip]
-const LILLY: [Terms; SIGNS] = [
-    [(Ju, 6), (Ve, 14), (Me, 21), (Ma, 26), (Sa, 30)],
-    [(Ve, 8), (Me, 15), (Ju, 22), (Sa, 26), (Ma, 30)],
-    [(Me, 7), (Ju, 14), (Ve, 21), (Sa, 25), (Ma, 30)],
-    [(Ma, 6), (Ju, 13), (Me, 20), (Ve, 27), (Sa, 30)],
-    [(Sa, 6), (Me, 13), (Ve, 19), (Ju, 25), (Ma, 30)],
-    [(Me, 7), (Ve, 13), (Ju, 18), (Sa, 24), (Ma, 30)],
-    [(Sa, 6), (Ve, 11), (Ju, 19), (Me, 24), (Ma, 30)],
-    [(Ma, 6), (Ju, 14), (Ve, 21), (Me, 27), (Sa, 30)],
-    [(Ju, 8), (Ve, 14), (Me, 19), (Sa, 25), (Ma, 30)],
-    [(Ve, 6), (Me, 12), (Ju, 19), (Ma, 25), (Sa, 30)],
-    [(Sa, 6), (Me, 12), (Ve, 20), (Ju, 25), (Ma, 30)],
-    [(Ve, 8), (Ju, 14), (Me, 20), (Ma, 26), (Sa, 30)],
-];
+/// A shipped table as the pass's rows of lord and end.
+fn rows(table: TermsTable) -> [Terms; SIGNS] {
+    table
+        .signs()
+        .map(|terms| terms.map(|term| (term.lord, term.end)))
+}
+
+/// Lilly's terms (*Christian Astrology*, 1647, p. 104), read from the
+/// shipped table so the page measures what ships.
+fn lilly() -> [Terms; SIGNS] {
+    rows(TermsTable::PTOLEMAIC_LILLY)
+}
 
 /// Lilly's exaltations, p. 104, with their degrees; I.XXII gives the signs
 /// alone.
@@ -221,9 +219,6 @@ const LILLY_FALLS: [Option<Graha>; SIGNS] = [
     None,
     Some(Me),
 ];
-
-/// The Chaldean order of the seven, slowest first, which the faces follow.
-const CHALDEAN_ORDER: [Graha; 7] = [Sa, Ju, Ma, Sun, Ve, Me, Moon];
 
 /// The house of each sign, I.XX: the Moon's Cancer and the Sun's Leo, then
 /// each planet's two on either side of them.
@@ -332,29 +327,11 @@ fn widths(terms: &Terms) -> [u8; TERMS] {
     })
 }
 
-/// The Chaldean terms of a sign (I.XXIII): the cycle Jupiter, Venus, the
-/// pair Saturn and Mercury, Mars, started at the triplicity's own lord —
-/// fire Jupiter, earth Venus, air the pair, water Mars, which is to say at
-/// the triplicity's index — with Saturn first of the pair by day and
-/// Mercury by night, and widths 8, 7, 6, 5 and 4.
+/// The Chaldean terms of a sign, from the shipped rule
+/// (`TermsTable::chaldean`), which the claims below hold to I.XXIII.
 fn chaldean(sign: usize, by_day: bool) -> Terms {
-    let pair = if by_day { [Sa, Me] } else { [Me, Sa] };
-    let cycle = [[Ju, Ju], [Ve, Ve], pair, [Ma, Ma]];
-    let mut lords = Vec::with_capacity(TERMS);
-    for step in 0..4 {
-        let slot = cycle[(sign % 4 + step) % 4];
-        lords.push(slot[0]);
-        if slot[0] != slot[1] {
-            lords.push(slot[1]);
-        }
-    }
-    let mut end = 0;
-    let mut terms = [(Ju, 0); TERMS];
-    for ((term, lord), width) in terms.iter_mut().zip(lords).zip([8, 7, 6, 5, 4]) {
-        end += width;
-        *term = (lord, end);
-    }
-    terms
+    let sect = if by_day { Sect::Day } else { Sect::Night };
+    rows(TermsTable::chaldean(sect))[sign % SIGNS]
 }
 
 /// A planet's degrees summed over the twelve signs.
@@ -413,7 +390,7 @@ fn witnesses() -> [Witness; 4] {
         },
         Witness {
             name: "Lilly",
-            terms: LILLY,
+            terms: lilly(),
         },
     ]
 }
@@ -573,7 +550,7 @@ fn within_one(_: usize, terms: &Terms) -> (usize, usize) {
 fn lilly_agrees(sign: usize, terms: &Terms) -> (usize, usize) {
     let wrong = terms
         .iter()
-        .zip(LILLY[sign])
+        .zip(lilly()[sign])
         .filter(|(term, lilly)| **term != *lilly)
         .count();
     (wrong, TERMS)
@@ -769,6 +746,26 @@ fn term_claims() -> Vec<Claim> {
     ]
 }
 
+/// The middle degree of each of the 36 decans, Aries first.
+fn decan_midpoints() -> impl Iterator<Item = f64> {
+    (0..SIGNS * 3).map(|decan| f64::from(u8::try_from(decan).unwrap_or_default()) * 10.0 + 5.0)
+}
+
+/// The planets the shipped `essential_dignity` gives a flag in a sign, read
+/// at its middle degree under either sect, in the Chaldean order.
+fn holders(sign: usize, flag: fn(&EssentialDignity) -> bool) -> Vec<Graha> {
+    let longitude = f64::from(u8::try_from(sign).unwrap_or_default()) * 30.0 + 15.0;
+    CHALDEAN_ORDER
+        .into_iter()
+        .filter(|planet| {
+            [Sect::Day, Sect::Night].iter().any(|sect| {
+                essential_dignity(*planet, longitude, *sect, &DignityRules::LILLY)
+                    .is_ok_and(|dignity| flag(&dignity))
+            })
+        })
+        .collect()
+}
+
 /// What the dignities beneath the terms share with the catalogue, and
 /// where Lilly parts from Ptolemy.
 fn dignity_claims() -> Vec<Claim> {
@@ -806,19 +803,16 @@ fn dignity_claims() -> Vec<Claim> {
     let faces = LILLY_FACES
         .iter()
         .flatten()
-        .enumerate()
-        .filter(|(decan, lord)| CHALDEAN_ORDER[(decan + 2) % CHALDEAN_ORDER.len()] != **lord)
+        .zip(decan_midpoints())
+        .filter(|(lord, longitude)| face_lord(*longitude) != **lord)
         .count();
     let detriments = (0..SIGNS)
-        .filter(|sign| HOUSES[(sign + SIGNS / 2) % SIGNS] != LILLY_DETRIMENTS[*sign])
+        .filter(|sign| holders(*sign, |dignity| dignity.detriment) != [LILLY_DETRIMENTS[*sign]])
         .count();
     let falls = (0..SIGNS)
         .filter(|sign| {
-            let exalted = LILLY_EXALTATIONS
-                .iter()
-                .find(|(_, at, _)| *at == (sign + SIGNS / 2) % SIGNS)
-                .map(|(planet, _, _)| *planet);
-            exalted != LILLY_FALLS[*sign]
+            holders(*sign, |dignity| dignity.fall)
+                != LILLY_FALLS[*sign].into_iter().collect::<Vec<_>>()
         })
         .count();
     vec![
@@ -857,6 +851,71 @@ fn dignity_claims() -> Vec<Claim> {
             "Lilly's fall of a sign is the planet exalted in the sign opposite, by his own exaltations",
             falls,
             SIGNS,
+        ),
+    ]
+}
+
+/// The shipped constants and rules held to what was transcribed off the
+/// page, and the Tajika decanate held to the Western faces.
+fn shipped_claims() -> Vec<Claim> {
+    let drekkanas = decan_midpoints()
+        .filter(|longitude| drekkana_lord(*longitude) != face_lord(*longitude))
+        .count();
+    let degrees = LILLY_EXALTATIONS
+        .iter()
+        .filter(|(planet, sign, degree)| {
+            exaltation_degree(*planet) != Some((Rashi::ALL[*sign], *degree))
+        })
+        .count();
+    let triplicities = [
+        (Triplicities::Ptolemy, TRIPLICITIES),
+        (
+            Triplicities::Lilly,
+            LILLY_TRIPLICITIES.map(|(day, night)| [Some(day), Some(night), None]),
+        ),
+    ]
+    .iter()
+    .map(|(scheme, printed)| {
+        printed
+            .iter()
+            .enumerate()
+            .filter(|(sign, [day, night, both])| {
+                let ruling = |sect, lord: &Option<Graha>| {
+                    let mut printed: Vec<_> = [*lord, *both].into_iter().flatten().collect();
+                    printed.sort_by_key(|planet| CHALDEAN_ORDER.iter().position(|at| at == planet));
+                    printed.dedup();
+                    CHALDEAN_ORDER
+                        .into_iter()
+                        .filter(|planet| scheme.rules(*planet, Rashi::ALL[*sign], sect))
+                        .collect::<Vec<_>>()
+                        == printed
+                };
+                !(ruling(Sect::Day, day) && ruling(Sect::Night, night))
+            })
+            .count()
+    })
+    .sum();
+    let ashmand = usize::from(rows(TermsTable::PTOLEMAIC_ASHMAND) != alternated(false));
+    vec![
+        Claim::counted(
+            "the Tajika decanate lord (`drekkana_lord`) is the face Lilly prints, decan by decan",
+            drekkanas,
+            SIGNS * 3,
+        ),
+        Claim::counted(
+            "the shipped exaltation degrees (`exaltation_degree`) are Lilly's",
+            degrees,
+            LILLY_EXALTATIONS.len(),
+        ),
+        Claim::counted(
+            "the shipped triplicity schemes rule exactly the lords Ptolemy and Lilly print, by day and by night",
+            triplicities,
+            TRIPLICITIES.len() + LILLY_TRIPLICITIES.len(),
+        ),
+        Claim::counted(
+            "the shipped `PTOLEMAIC_ASHMAND` is Ashmand's alternate lords on his first lines' ends",
+            ashmand,
+            1,
         ),
     ]
 }
@@ -926,6 +985,7 @@ fn page() -> String {
             &term_claims()
                 .into_iter()
                 .chain(dignity_claims())
+                .chain(shipped_claims())
                 .collect::<Vec<_>>()
         ),
         clauses = clause_table(&witnesses),

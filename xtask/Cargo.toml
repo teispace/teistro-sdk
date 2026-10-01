@@ -26,6 +26,7 @@ teistro-chart = { path = "../crates/chart" }
 teistro-core = { path = "../crates/core" }
 teistro-strength = { path = "../crates/strength" }
 teistro-ffi = { path = "../crates/ffi" }
+teistro-hellenistic = { path = "../crates/hellenistic" }
 teistro-houses = { path = "../crates/houses" }
 teistro-idl = { path = "../crates/idl" }
 teistro-interpret = { path = "../crates/interpret" }
