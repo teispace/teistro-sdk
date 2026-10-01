@@ -23,6 +23,28 @@ use teistro_ephemeris_builtin::provider::Builtin;
 
 const DELTA_T: DeltaTModel = DeltaTModel::TableThenModel;
 
+/// The seconds, magnitude and degrees an eclipse is held to on this tier.
+/// The compact tier's Moon is good to a minute of arc (ADR-0027), which
+/// moves a greatest moment by seconds; the others are the canon's.
+#[cfg(feature = "compact")]
+const BOUNDS: Bounds = Bounds {
+    seconds: 15.0,
+    magnitude: 0.005,
+    degrees: 0.5,
+};
+#[cfg(not(feature = "compact"))]
+const BOUNDS: Bounds = Bounds {
+    seconds: 5.0,
+    magnitude: 0.001,
+    degrees: 0.5,
+};
+
+struct Bounds {
+    seconds: f64,
+    magnitude: f64,
+    degrees: f64,
+}
+
 /// NASA's greatest eclipse, Terrestrial Time: the total lunar eclipse of
 /// 2025-09-07 18:12:58 and the total solar eclipse of 2024-04-08
 /// 18:18:29.
@@ -50,9 +72,16 @@ fn the_total_lunar_eclipse_of_2025_september_is_found_to_the_second() {
     assert_eq!(eclipse.kind, LunarKind::Total);
     assert_eq!(eclipse.shadow, ShadowRule::Danjon);
     let off = seconds_from(eclipse.greatest, LUNAR_2025_TT);
-    assert!(off.abs() < 5.0, "greatest eclipse {off:+.1} s from NASA's");
+    assert!(
+        off.abs() < BOUNDS.seconds,
+        "greatest eclipse {off:+.1} s from NASA's"
+    );
     // NASA: umbral magnitude 1.3619, totality 82.1 minutes.
-    assert!((eclipse.umbral_magnitude - 1.3619).abs() < 0.001);
+    assert!(
+        (eclipse.umbral_magnitude - 1.3619).abs() < BOUNDS.magnitude,
+        "{}",
+        eclipse.umbral_magnitude
+    );
     let totality = eclipse.durations()[0].expect("a total eclipse has totality") * 1440.0;
     assert!((totality - 82.1).abs() < 1.0, "totality {totality:.1} min");
 }
@@ -69,11 +98,18 @@ fn the_total_solar_eclipse_of_2024_april_is_greatest_over_mexico() {
     };
     assert_eq!(eclipse.kind, SolarKind::Total);
     let off = seconds_from(eclipse.greatest, SOLAR_2024_TT);
-    assert!(off.abs() < 5.0, "greatest eclipse {off:+.1} s from NASA's");
+    assert!(
+        off.abs() < BOUNDS.seconds,
+        "greatest eclipse {off:+.1} s from NASA's"
+    );
     // NASA: magnitude 1.0566, greatest at 25.3°N 104.1°W.
-    assert!((eclipse.magnitude - 1.0566).abs() < 0.001);
-    assert!((eclipse.point.latitude.get() - 25.3).abs() < 0.5);
-    assert!((eclipse.point.longitude.get() + 104.1).abs() < 0.5);
+    assert!(
+        (eclipse.magnitude - 1.0566).abs() < BOUNDS.magnitude,
+        "{}",
+        eclipse.magnitude
+    );
+    assert!((eclipse.point.latitude.get() - 25.3).abs() < BOUNDS.degrees);
+    assert!((eclipse.point.longitude.get() + 104.1).abs() < BOUNDS.degrees);
 }
 
 #[test]
@@ -123,5 +159,8 @@ fn the_next_lunar_eclipse_after_september_2025_is_march_2026s() {
     let march = 2_461_102.982_546_3;
     assert_eq!(next.kind, LunarKind::Total);
     let off = seconds_from(next.greatest, march);
-    assert!(off.abs() < 5.0, "greatest eclipse {off:+.1} s from NASA's");
+    assert!(
+        off.abs() < BOUNDS.seconds,
+        "greatest eclipse {off:+.1} s from NASA's"
+    );
 }
