@@ -104,6 +104,9 @@
 //!   beside the readings other schools give.
 //! - `arudhas` and `check-arudhas`: the twelve arudha padas, their lords and
 //!   their exception.
+//! - `terms` and `check-terms`: the terms of the signs — the Egyptian,
+//!   Chaldean and Ptolemaic systems of the *Tetrabiblos* and Lilly's table,
+//!   each held to its own printing, its stated totals and its rule.
 //! - `gochar` and `check-gochar`: the transits read from the natal Moon, how
 //!   the verdicts fall over the recorded births and who obstructs whom over
 //!   sixty years of sky.
@@ -297,6 +300,7 @@ mod state;
 mod state_readings;
 mod stations;
 mod surface;
+mod terms;
 mod time;
 mod topocentric;
 mod vargas;
@@ -418,6 +422,7 @@ const PASSES: &[Pass] = &[
         rashi_dashas::check_generated,
     ),
     ("arudhas", arudhas::generate, arudhas::check_generated),
+    ("terms", terms::generate, terms::check_generated),
     (
         "kalachakra",
         kalachakra::generate,
