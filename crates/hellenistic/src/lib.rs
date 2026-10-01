@@ -27,7 +27,7 @@ mod dignity;
 mod terms;
 
 pub use dignity::{
-    CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, Triplicities, essential_dignity,
-    exaltation_degree, face_lord,
+    CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
+    essential_dignity, exaltation_degree, face_lord,
 };
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

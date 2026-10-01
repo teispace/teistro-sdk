@@ -9,8 +9,8 @@ use crate::terms::Terms;
 
 /// Whether a chart is of the day or of the night.
 ///
-/// The dignities take it as given. When a chart *is* diurnal is a fork the
-/// texts read here do not settle (crux C209), so it is the caller's to say.
+/// The dignities take it as given; [`SectRule`] says how a chart's is read
+/// (crux C209).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -19,6 +19,84 @@ pub enum Sect {
     Day,
     /// A night chart.
     Night,
+}
+
+impl Sect {
+    /// The sect by Valens's hemisphere (*Anthologies* I, 51K–52K): a day
+    /// chart when the Sun stands above the earth, on the Midheaven's side
+    /// of the Ascendant–Descendant axis, reckoned in degrees.
+    ///
+    /// The Sun is on the ecliptic, so this is its geometric altitude above
+    /// zero to within its latitude. Both longitudes are in one zodiac; which
+    /// one does not matter, since a sidereal shift moves them alike. The
+    /// Sun exactly on the Ascendant has risen; exactly on the Descendant,
+    /// it has set.
+    ///
+    /// ```
+    /// use teistro_hellenistic::Sect;
+    ///
+    /// // The Ascendant at 0° Aries: the Sun at 0° Capricorn culminates.
+    /// assert_eq!(Sect::from_horizon(270.0, 0.0), Sect::Day);
+    /// // At 0° Cancer it is at the lower midheaven.
+    /// assert_eq!(Sect::from_horizon(90.0, 0.0), Sect::Night);
+    /// ```
+    #[must_use]
+    pub fn from_horizon(sun_deg: f64, ascendant_deg: f64) -> Sect {
+        // Signs run counter-clockwise from the Ascendant beneath the earth,
+        // so the half above it is the half that has already risen.
+        let from_ascendant = (sun_deg - ascendant_deg).rem_euclid(360.0);
+        if from_ascendant == 0.0 || from_ascendant > 180.0 {
+            Sect::Day
+        } else {
+            Sect::Night
+        }
+    }
+}
+
+/// How a chart's sect is read (crux C209, `essential-dignities.md` §Sect).
+///
+/// Valens decides for the horizon, but his text cannot tell the geometric
+/// horizon from the apparent one, where refraction and the Sun's limb move
+/// sunrise by minutes. So both are rules, and a caller may also say the
+/// sect outright.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum SectRule {
+    /// Valens's hemisphere, from the Sun and the Ascendant
+    /// ([`Sect::from_horizon`]). The default.
+    #[default]
+    Horizon,
+    /// The chart's own sunrise to sunset, under the sunrise convention the
+    /// chart was founded with.
+    Daylight,
+    /// Every chart is read as a day chart.
+    Day,
+    /// Every chart is read as a night chart.
+    Night,
+}
+
+impl SectRule {
+    /// The sect this rule reads, from the Sun, the Ascendant and whether
+    /// the chart's instant falls between its sunrise and its sunset.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{Sect, SectRule};
+    ///
+    /// // Just after the geometric sunset, before the apparent one.
+    /// assert_eq!(SectRule::Horizon.sect(179.5, 0.0, true), Sect::Night);
+    /// assert_eq!(SectRule::Daylight.sect(179.5, 0.0, true), Sect::Day);
+    /// ```
+    #[must_use]
+    pub fn sect(self, sun_deg: f64, ascendant_deg: f64, daylight: bool) -> Sect {
+        match self {
+            SectRule::Horizon => Sect::from_horizon(sun_deg, ascendant_deg),
+            SectRule::Daylight if daylight => Sect::Day,
+            SectRule::Daylight | SectRule::Night => Sect::Night,
+            SectRule::Day => Sect::Day,
+        }
+    }
 }
 
 /// The seven planets that hold essential dignity, in the Chaldean order,
@@ -343,10 +421,52 @@ mod tests {
     )]
 
     use super::{
-        CHALDEAN_ORDER, DignityRules, Graha, Rashi, Scores, Sect, Triplicities, essential_dignity,
-        exaltation_degree, face_lord,
+        CHALDEAN_ORDER, DignityRules, Graha, Rashi, Scores, Sect, SectRule, Triplicities,
+        essential_dignity, exaltation_degree, face_lord,
     };
     use crate::Terms;
+
+    /// Valens's worked chart (I, 52K): the Moon at Libra 26° under a
+    /// Capricorn 24° Ascendant is "in the hemisphere above the earth".
+    /// The rule is the same for any body on the ecliptic.
+    #[test]
+    fn the_horizon_reproduces_valens_worked_hemisphere() {
+        assert_eq!(Sect::from_horizon(206.0, 294.0), Sect::Day);
+        // Its opposite point is beneath the earth.
+        assert_eq!(Sect::from_horizon(26.0, 294.0), Sect::Night);
+    }
+
+    #[test]
+    fn the_horizon_turns_at_the_ascendant_and_the_descendant() {
+        for ascendant in [0.0, 94.5, 294.0, 359.9] {
+            let at = |offset: f64| Sect::from_horizon(ascendant + offset, ascendant);
+            assert_eq!(at(0.0), Sect::Day, "risen on the Ascendant, {ascendant}");
+            assert_eq!(at(-0.01), Sect::Day, "just risen, {ascendant}");
+            assert_eq!(at(0.01), Sect::Night, "not yet risen, {ascendant}");
+            assert_eq!(at(180.0), Sect::Night, "set on the Descendant, {ascendant}");
+            assert_eq!(at(180.01), Sect::Day, "about to set, {ascendant}");
+            assert_eq!(at(-90.0), Sect::Day, "culminating, {ascendant}");
+            assert_eq!(at(90.0), Sect::Night, "at the lower midheaven, {ascendant}");
+            assert_eq!(at(-90.0 + 720.0), Sect::Day, "two turns on, {ascendant}");
+        }
+    }
+
+    #[test]
+    fn each_sect_rule_reads_what_it_names() {
+        for (sun, daylight) in [(270.0, true), (90.0, false), (179.5, true), (0.5, false)] {
+            let horizon = Sect::from_horizon(sun, 0.0);
+            assert_eq!(SectRule::Horizon.sect(sun, 0.0, daylight), horizon);
+            let lit = if daylight { Sect::Day } else { Sect::Night };
+            assert_eq!(SectRule::Daylight.sect(sun, 0.0, daylight), lit);
+            assert_eq!(SectRule::Day.sect(sun, 0.0, daylight), Sect::Day);
+            assert_eq!(SectRule::Night.sect(sun, 0.0, daylight), Sect::Night);
+        }
+        assert_eq!(SectRule::default(), SectRule::Horizon);
+        assert_eq!(
+            serde_json::to_string(&SectRule::Daylight).unwrap(),
+            "\"DAYLIGHT\""
+        );
+    }
 
     fn at(planet: Graha, longitude: f64, sect: Sect) -> super::EssentialDignity {
         essential_dignity(planet, longitude, sect, &DignityRules::LILLY).unwrap()
