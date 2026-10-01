@@ -24,9 +24,12 @@ use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
-use teistro_core::settings::{Centre, MoonEvents, Resolved, RituReckoning, Settings};
+use teistro_core::settings::{
+    Centre, GhatiReckoning, MoonEvents, Resolved, RituReckoning, Settings,
+};
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
+use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
 use teistro_time::local_day::{LocalDay, local_day, local_midnight};
 
@@ -35,7 +38,7 @@ use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Kaalas, Muhurtas, Part};
 use crate::sky::{self, MoonDay, SunDay};
-use crate::span::{self, Span};
+use crate::span::{self, Span, Sunrises};
 use crate::year::{LunarYear, name_counts};
 use teistro_calendar::samvatsara::JovianYear;
 
@@ -73,6 +76,9 @@ pub struct Panchanga {
     pub sun: SunDay,
     /// What the day is said to be.
     pub omens: Omens,
+    /// How the day's ghatis are counted, `day.ghati_reckoning` as
+    /// applied: what [`Panchanga::ghati_pala`] reads.
+    pub ghati_reckoning: GhatiReckoning,
 }
 
 impl Panchanga {
@@ -80,6 +86,70 @@ impl Panchanga {
     #[must_use]
     pub const fn vara(&self) -> Vara {
         self.day.vara
+    }
+
+    /// Which of the day's two sunrises a span of this day was running
+    /// at ([`Span::sunrises`]), by the day's own sunrises.
+    #[must_use]
+    pub fn sunrises<T>(&self, span: &Span<T>) -> Sunrises {
+        span.sunrises(self.day.sunrise, self.day.next_sunrise)
+    }
+
+    /// The member of a limb that names two days running: the one this
+    /// day's sunrise and the next both fall in (vriddhi).
+    ///
+    /// ```no_run
+    /// # fn day() -> teistro_panchanga::almanac::Panchanga { unimplemented!() }
+    /// let day = day();
+    /// if let Some(tithi) = day.vriddhi(&day.limbs.tithi) {
+    ///     println!("{tithi:?} names tomorrow too");
+    /// }
+    /// for tithi in day.kshaya(&day.limbs.tithi) {
+    ///     println!("{tithi:?} names no day");
+    /// }
+    /// ```
+    #[must_use]
+    pub fn vriddhi<T: Copy>(&self, spans: &[Span<T>]) -> Option<T> {
+        spans
+            .iter()
+            .find(|span| self.sunrises(span).is_vriddhi())
+            .map(|span| span.member)
+    }
+
+    /// The members of a limb that name no day: begun after this day's
+    /// sunrise and ended before the next (kshaya).
+    #[must_use]
+    pub fn kshaya<T: Copy>(&self, spans: &[Span<T>]) -> Vec<T> {
+        spans
+            .iter()
+            .filter(|span| self.sunrises(span).is_kshaya())
+            .map(|span| span.member)
+            .collect()
+    }
+
+    /// An instant of the day as ghati, pala and vipala from its sunrise,
+    /// counted under `ghati_reckoning`; an instant past the next sunrise
+    /// counts as the next sunrise, and one before this sunrise as the
+    /// sunrise, so a span's end reads as the patro prints it, clipped to
+    /// the day.
+    ///
+    /// # Errors
+    ///
+    /// A reckoning this build does not know.
+    pub fn ghati_pala(&self, instant: JulianDay<Utc>) -> Result<GhatiPala, Error> {
+        let clamped = if instant.get() < self.day.sunrise.get() {
+            self.day.sunrise
+        } else if instant.get() >= self.day.next_sunrise.get() {
+            // The day's own count runs to its next sunrise, which is
+            // outside `LocalDay::contains`; its full length is the count.
+            return Ok(ghati::day_length(
+                &self.day,
+                self.ghati_reckoning.try_into()?,
+            ));
+        } else {
+            instant
+        };
+        ghati::ghati_pala(&self.day, clamped, self.ghati_reckoning.try_into()?)
     }
 
     /// The direction not to travel in.
@@ -439,7 +509,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 (named(index)?, named(index + 1)?),
             )?);
         }
-        let frame = self.at_instant(opened)?.0;
+        let frame = self.at_instant(&completion, opened)?.0;
         let provenance = self.provenance(
             content_hash(&RangeInput {
                 from: from.to_string(),
@@ -461,7 +531,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
         at: JulianDay<Utc>,
     ) -> Result<JulianDay<Utc>, Error> {
-        let (frame, zodiac) = self.at_instant(at)?;
+        let (frame, zodiac) = self.at_instant(completion, at)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
@@ -515,7 +585,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
         // One ayanamsha evaluation for the day; everything below reads
         // it rather than asking again at the same instant.
-        let (frame, zodiac) = self.at_instant(window.from)?;
+        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
@@ -562,6 +632,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 limbs,
                 window,
                 day,
+                ghati_reckoning: settings.day.ghati_reckoning,
             },
             frame,
         ))
@@ -618,11 +689,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// off it: the frame to ask the provider for, and the zodiac the
     /// limbs are measured from.
     ///
-    /// The frame is always tropical — the shift is applied by the limb
-    /// kernel at each instant, so the elongation, the Moon's longitude
-    /// and their sum are all measured from one ayanamsha — and its
-    /// centre is `panchanga.centre`, geocentric by default however the
-    /// chart is computed, because an almanac is geocentric everywhere.
+    /// The frame is tropical — the shift is applied by the limb kernel
+    /// at each instant, so the elongation, the Moon's longitude and
+    /// their sum are all measured from one ayanamsha — except where the
+    /// provider **defines** the zodiac, when it is the provider's own
+    /// sidereal frame and nothing is shifted
+    /// ([`ChartZodiac::searched`]). Its centre is `panchanga.centre`,
+    /// geocentric by default however the chart is computed, because an
+    /// almanac is geocentric everywhere.
     ///
     /// The two used to be separate calls, and a day asked for one or the
     /// other **six times** at the same instant: the frame for the
@@ -636,27 +710,25 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// One evaluation, passed down. The instruction-count gate is what
     /// made the waste visible, by refusing an unrelated 8.95% and
     /// sending a reader through this path.
-    fn at_instant(&self, at: JulianDay<Utc>) -> Result<(Frame, Zodiac), Error> {
-        let chart = ChartZodiac::of(
+    fn at_instant(
+        &self,
+        completion: &Completion<'_, P>,
+        at: JulianDay<Utc>,
+    ) -> Result<(Frame, Zodiac), Error> {
+        let searched = ChartZodiac::searched(
+            completion,
             self.settings(),
             tt(at, self.delta_t)?,
-            self.precession,
-            self.delta_t,
+            (self.precession, self.delta_t),
         )?;
         let frame = Frame {
             centre: match self.settings().panchanga.centre {
                 Centre::Topocentric => teistro_port_ephemeris::Centre::Topocentric,
                 _ => teistro_port_ephemeris::Centre::Geocentric,
             },
-            ..chart.request
+            ..searched.frame
         };
-        let zodiac = Zodiac::of(
-            chart.ayanamsha,
-            self.settings().frame.ayanamsha_basis,
-            self.precession,
-            self.delta_t,
-        );
-        Ok((frame, zodiac))
+        Ok((frame, searched.zodiac))
     }
 
     /// The lunar month: the amanta month the new moon's solar sign names,

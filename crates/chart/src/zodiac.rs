@@ -26,12 +26,27 @@ use teistro_astro::ayanamsha;
 use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
+use teistro_astro::sidereal::Zodiac as SearchZodiac;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt};
-use teistro_core::settings::{AyanamshaChoice, Centre, Positions, Settings, Zodiac as ZodiacKnob};
+use teistro_core::settings::{
+    AyanamshaBasis, AyanamshaChoice, Centre, Positions, Settings, Zodiac as ZodiacKnob,
+};
 use teistro_port_ephemeris::{
     Centre as FrameCentre, Corrections, EphemerisProvider, Frame, TimeScale, Zodiac,
 };
+
+/// The chart's zodiac as a search reads it ([`ChartZodiac::searched`]).
+#[derive(Clone, Copy, Debug)]
+pub struct Searched {
+    /// The chart's zodiac itself, for a reading that needs its one value
+    /// (a lagna).
+    pub chart: ChartZodiac,
+    /// The frame to ask the completion for.
+    pub frame: Frame,
+    /// The shift to apply to what the frame answers, instant by instant.
+    pub zodiac: SearchZodiac,
+}
 
 /// The half-width of the central difference a zodiac's rate is taken
 /// over, days: far inside the shortest nutation term's period.
@@ -175,6 +190,67 @@ impl ChartZodiac {
             },
             rate,
         )))
+    }
+
+    /// The chart's zodiac as a **search** reads it: the zodiac, the frame
+    /// to ask the completion for, and the shift to apply to its answers
+    /// at each instant.
+    ///
+    /// Where the catalogue gives the zodiac, the frame is the chart's
+    /// tropical request and the shift is the catalogue's ayanamsha under
+    /// the chart's basis, evaluated at every instant a search visits.
+    /// Where the provider **defines** it ([`ChartZodiac::defined`]), the
+    /// frame is the provider's own sidereal zodiac and there is nothing
+    /// to shift: the text's longitudes are read as the text gives them.
+    /// A search that asked for the tropical frame and shifted it by the
+    /// catalogue member of the same name would stand about 1.6° from the
+    /// text today, which Nepal's printed nakshatra and yoga ends measured
+    /// as two to five hours (`03-design/nepal-day-measured.md`).
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartZodiac::defined`] and [`ChartZodiac::of`].
+    pub fn searched<P: EphemerisProvider + ?Sized>(
+        completion: &Completion<'_, P>,
+        settings: &Settings,
+        at: JulianDay<Tt>,
+        models: (PrecessionModel, DeltaTModel),
+    ) -> Result<Searched, Error> {
+        let chart = match ChartZodiac::defined(completion, settings, at)? {
+            Some((chart, _)) => chart,
+            None => ChartZodiac::of(settings, at, models.0, models.1)?,
+        };
+        chart.search(completion, settings.frame.ayanamsha_basis, models)
+    }
+
+    /// This zodiac as a search reads it, over a completion: what
+    /// [`ChartZodiac::searched`] answers for a zodiac already taken — a
+    /// chart document's own, say, whose searches (a return, the Moon's
+    /// star) must read the grahas in the zodiac the chart placed them in.
+    ///
+    /// # Errors
+    ///
+    /// `native-only` over a provider that does not list the member.
+    pub fn search<P: EphemerisProvider + ?Sized>(
+        &self,
+        completion: &Completion<'_, P>,
+        basis: AyanamshaBasis,
+        (precession, delta_t): (PrecessionModel, DeltaTModel),
+    ) -> Result<Searched, Error> {
+        if let Some(AyanamshaChoice::Catalogued { id }) = self.ayanamsha {
+            if completion.defines_ayanamsha(id)? {
+                return Ok(Searched {
+                    chart: *self,
+                    frame: self.request.with_zodiac(Zodiac::sidereal(id)),
+                    zodiac: SearchZodiac::of(None, basis, precession, delta_t),
+                });
+            }
+        }
+        Ok(Searched {
+            chart: *self,
+            frame: self.request,
+            zodiac: SearchZodiac::of(self.ayanamsha, basis, precession, delta_t),
+        })
     }
 
     /// How fast the chart's zodiac turns against the tropical one at an

@@ -23,7 +23,7 @@ use teistro_astro::houses::{
 };
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
-use teistro_astro::sidereal::{Sidereal, Zodiac as SiderealZodiac};
+use teistro_astro::sidereal::Sidereal;
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
@@ -701,22 +701,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         (from, to): (JulianDay<Utc>, JulianDay<Utc>),
     ) -> Result<Envelope<Vec<TransitEvent>>, Error> {
         let settings = self.settings();
-        let frame = request_of(settings);
         let completion = self.placing();
-        let mut tropical = completion.longitudes(frame);
+        // The zodiac the chart places its grahas in, read as a search
+        // reads it: the provider's own where it defines it.
+        let (tt, _) = tt_of(JulianDay::<Ut1>::literal(from.get()), self.delta_t)?;
+        let searched =
+            ChartZodiac::searched(&completion, settings, tt, (self.precession, self.delta_t))?;
+        let frame = searched.frame;
+        let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            tropical = tropical.with_observer(*place);
+            longitudes = longitudes.with_observer(*place);
         }
-        let source = Sidereal::over(
-            &tropical,
-            SiderealZodiac::of(
-                (settings.frame.zodiac != teistro_core::settings::Zodiac::Tropical)
-                    .then_some(settings.frame.ayanamsha),
-                settings.frame.ayanamsha_basis,
-                self.precession,
-                self.delta_t,
-            ),
-        );
+        let source = Sidereal::over(&longitudes, searched.zodiac);
         let bodies = bodies_of(settings);
         let (start, end) = (
             JulianDay::<Ut1>::literal(from.get()),

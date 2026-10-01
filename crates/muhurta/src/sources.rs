@@ -51,6 +51,10 @@ pub struct ProviderSources<'a, P: EphemerisProvider + ?Sized> {
     place: Place,
     bodies: Vec<Body>,
     chart: ChartZodiac,
+    /// The frame the grahas are asked for: the chart's tropical request,
+    /// or the provider's own sidereal frame where it defines the zodiac
+    /// ([`ChartZodiac::searched`]).
+    frame: Frame,
     zodiac: Zodiac,
     days: &'a [Panchanga],
 }
@@ -107,13 +111,12 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
         reference: JulianDay<Utc>,
     ) -> Result<ProviderSources<'a, P>, Error> {
         let (tt, _) = tt_of(JulianDay::<Ut1>::literal(reference.get()), over.delta_t)?;
-        let chart = ChartZodiac::of(over.settings, tt, over.precession, over.delta_t)?;
-        let zodiac = Zodiac::of(
-            chart.ayanamsha,
-            over.settings.frame.ayanamsha_basis,
-            over.precession,
-            over.delta_t,
-        );
+        let searched = ChartZodiac::searched(
+            over.completion,
+            over.settings,
+            tt,
+            (over.precession, over.delta_t),
+        )?;
         Ok(ProviderSources {
             almanac: over.almanac,
             founder: over.founder,
@@ -123,8 +126,9 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             clock: over.clock,
             place,
             bodies: bodies_of(over.settings),
-            chart,
-            zodiac,
+            chart: searched.chart,
+            frame: searched.frame,
+            zodiac: searched.zodiac,
             days: &[],
         })
     }
@@ -160,7 +164,7 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
     /// The grahas' source: the chart's own frame, at the place.
     fn chart_sky(&self) -> impl Longitudes + '_ {
         self.completion
-            .longitudes(self.chart.request)
+            .longitudes(self.frame)
             .with_observer(self.place)
     }
 }
@@ -190,7 +194,7 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
         // An almanac's season is geocentric wherever it is read.
         let geocentric = self.completion.longitudes(Frame {
             centre: Centre::Geocentric,
-            ..self.chart.request
+            ..self.frame
         });
         let mut found: Vec<Blackout> = blackouts(&geocentric, self.zodiac, range)?
             .into_iter()
