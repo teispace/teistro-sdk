@@ -24,6 +24,10 @@ design chose between.
 | a solar eclipse is greatest where the catalogue says | **holds** | worst 0.3130 °, bound 0.5 ° |
 | a lunar eclipse reads both bodies apparent, nearer the catalogue than either other placing | **holds** | median +0.16 s |
 | the catalogue enlarges the shadow by Danjon's rule and not Chauvenet's | **holds** | Chauvenet's median +0.0083 umbral, +0.0285 penumbral |
+| every bulletin city sees the contacts the bulletin prints, and any other only below the horizon | **holds** | 0 of 214 disagree; 50 contacts below the horizon |
+| every local contact is the bulletin's to the seconds it prints | **holds** | worst 2.54 s, bound 5 s |
+| every local maximum is the bulletin's, as flat as a shallow eclipse's is | **holds** | worst 6.84 s, bound 10 s |
+| every local magnitude is the bulletin's | **holds** | worst 0.0009, bound 0.002 |
 
 ## 2. The records
 
@@ -89,7 +93,37 @@ at the median, where Danjon's reads -0.00006 and -0.00011: the catalogue
 is Danjon's, which is the default, and Chauvenet's stays a knob for the
 almanacs that used it.
 
-## 6. What the records decide
+## 6. Local circumstances
+
+`Eclipses::solar_seen` reads a solar eclipse from a place: the eclipse's
+own Sun and Moon less the station's geocentric position, the maximum
+where the magnitude is greatest and the contacts where the discs touch,
+outside for the first and fourth and inside for the second and third
+(`eclipses.md` §4.5). It is held to the 214 cities of NASA's bulletins
+for the total eclipse of 2009 July 22 and the annular one of 2010
+January 15, Kathmandu among them, each at the latitude, longitude and
+elevation the bulletin prints. A contact the bulletin leaves out
+happened below the horizon; the SDK reports it with the Sun's altitude,
+and the claim holds it there. The bulletins print UT to a tenth of a
+second.
+
+| moment, ours less the bulletin's | cities | least | median | greatest | bound |
+|---|---|---|---|---|---|
+| first contact | 165 | -1.65 | -0.29 | +0.13 | 5 s |
+| second contact | 65 | -1.05 | -0.40 | +0.15 | 5 s |
+| third contact | 65 | -0.65 | -0.16 | +0.54 | 5 s |
+| fourth contact | 213 | -0.78 | -0.14 | +2.54 | 5 s |
+| maximum | 214 | -6.84 | -0.01 | +2.38 | 10 s |
+| magnitude | 214 | -0.0005 | +0.0002 | +0.0009 | 0.002 |
+
+The contacts are crossings and agree to a few seconds. The maximum is
+the top of a curve, and the greatest differences are the shallowest
+eclipses, Europe's in 2010 at magnitudes under 0.2 and the Sun near the
+horizon, where the curve is flattest; the magnitudes themselves agree.
+
+Disagreements: none.
+
+## 7. What the records decide
 
 The search finds the canon's eclipses and no others over two centuries,
 of every kind, and agrees with each to the precision the canon prints.

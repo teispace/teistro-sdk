@@ -204,6 +204,11 @@ CHART_JAIMINI: Final = 2048
 # for nothing, as a chart request's does.
 PANCHANGA_YEARS: Final = 1
 
+# `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
+# request's `sections` for the eclipses of its days and the place's view
+# of each (`03-design/eclipses.md`).
+PANCHANGA_ECLIPSES: Final = 2
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -3049,7 +3054,9 @@ class PanchangaRequest:
     sections: int
     """What to answer beside the days, as a bit set:
     `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
-    `years` section. Zero for the days alone, which is what every
+    `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
+    days with the place's view of each, in the `eclipses` section.
+    Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.
 

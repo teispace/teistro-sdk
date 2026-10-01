@@ -6,10 +6,16 @@
 //! and the place on the Earth where it is greatest. Held against NASA's
 //! Five Millennium Canon for 1900 to 2100 (`eclipses-measured.md`).
 //!
-//! The geometry is the shadow's, which aberration does not touch: each
-//! body is placed by the path its light took ([`ShadowSource`]), so a
-//! solar eclipse reads both astrometric and a lunar eclipse reads the
-//! Moon as seen against the shadow of the astrometric Sun.
+//! The geometry is the shadow's: each body is placed by the path its light
+//! took ([`ShadowSource`]). A solar eclipse reads both bodies astrometric,
+//! the Moon's shadow being where the light left the Moon; a lunar eclipse
+//! reads both apparent, the Earth's shadow falling where the Earth was
+//! when the light that casts it passed, which is the Moon's aberration.
+//!
+//! [`Eclipses::solar_seen`] and [`Eclipses::lunar_seen`] give an eclipse
+//! as one place sees it: the local contacts, each with the body's
+//! altitude, and the stretch of the eclipse the body stands above a
+//! horizon convention, which is what a sutak asks.
 //!
 //! ```
 //! use teistro_astro::eclipse::{Eclipses, LunarKind};
@@ -37,6 +43,7 @@ use teistro_core::angle::normalise_deg;
 use teistro_core::error::{Error, Status};
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+use teistro_core::settings::EclipseShadow;
 use teistro_port_ephemeris::{
     Astronomy, Body, Coordinates, Corrections, EphemerisProvider, Frame, PositionRequest, TimeScale,
 };
@@ -49,6 +56,10 @@ use crate::rise_set::{AU_KM, EARTH_EQUATORIAL_RADIUS_KM};
 use crate::scale::tt_of;
 use crate::sky::{Apparent, ApparentPositions, greenwich_sidereal_time_deg};
 use crate::solve::{Caps, SolveError, minimum, refine};
+
+mod local;
+
+pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
 
 /// The Sun's radius, km (IAU 2015 nominal).
 pub const SUN_RADIUS_KM: f64 = 696_000.0;
@@ -136,6 +147,24 @@ impl ShadowRule {
         }
     }
 
+    /// The rule `panchanga.eclipse_shadow` names.
+    ///
+    /// # Errors
+    ///
+    /// A member this release of the SDK does not compute (`Unsupported`,
+    /// on the knob).
+    pub fn of_setting(knob: EclipseShadow) -> Result<ShadowRule, Error> {
+        match knob {
+            EclipseShadow::Danjon => Ok(ShadowRule::Danjon),
+            EclipseShadow::Chauvenet => Ok(ShadowRule::Chauvenet),
+            other => Err(Error::new(
+                Status::Unsupported,
+                format!("the eclipse search does not know the shadow rule {other} yet"),
+            )
+            .with_field("panchanga.eclipse_shadow")),
+        }
+    }
+
     /// The rule's key.
     #[must_use]
     pub const fn key(self) -> &'static str {
@@ -180,6 +209,7 @@ pub enum SolarKind {
 /// shadow's edge. A contact the eclipse does not have is `None`.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct LunarContacts {
     /// The Moon enters the penumbra.
     pub p1: JulianDay<Ut1>,
@@ -198,6 +228,7 @@ pub struct LunarContacts {
 /// A lunar eclipse.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct LunarEclipse {
     /// The instant the Moon's centre is nearest the shadow's axis, UT1.
     pub greatest: JulianDay<Ut1>,
@@ -239,6 +270,7 @@ impl LunarEclipse {
 /// positive.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct GroundPoint {
     /// Geodetic latitude.
     pub latitude: Latitude,
@@ -249,6 +281,7 @@ pub struct GroundPoint {
 /// A solar eclipse.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct SolarEclipse {
     /// The instant the shadow's axis passes nearest the Earth's centre,
     /// UT1.

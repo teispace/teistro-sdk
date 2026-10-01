@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 15 exported constants, 128 enums of 1170 members
+The description carries 16 exported constants, 128 enums of 1170 members
 in all, 2 opaque handle types, 10 callback types, 27 structs, 48 entry
 points and 4 result-blob schemas, extracted from 19 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry

@@ -1385,7 +1385,9 @@ final class PanchangaRequestStruct extends ffi.Struct {
 
   /// What to answer beside the days, as a bit set:
   /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
-  /// `years` section. Zero for the days alone, which is what every
+  /// `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
+  /// days with the place's view of each, in the `eclipses` section.
+  /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
   ///
@@ -3706,7 +3708,9 @@ final class PanchangaRequest {
 
   /// What to answer beside the days, as a bit set:
   /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
-  /// `years` section. Zero for the days alone, which is what every
+  /// `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
+  /// days with the place's view of each, in the `eclipses` section.
+  /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
   ///

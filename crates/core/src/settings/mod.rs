@@ -35,15 +35,15 @@ pub use knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
     Cheshta, DayBoundary, DayLordDay, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
-    DualLord, Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
-    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount,
-    Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
-    SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
-    YearLength, Yuddha, Zodiac,
+    DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, GhatiReckoning, GrahaArudhaException,
+    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents,
+    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
+    NodeRulers, NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
+    PreDawnNight, RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
+    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -524,6 +524,10 @@ group!(
         /// Which civil day a sidereal solar month begins on, which the
         /// solar season reads (crux C186).
         solar_month_start: SolarMonthStart,
+        /// How much the Earth's shadow is enlarged for a lunar eclipse.
+        eclipse_shadow: EclipseShadow,
+        /// How far before an eclipse its vedha opens (crux C192).
+        eclipse_vedha: EclipseVedha,
     }
 );
 

@@ -3,6 +3,7 @@
 
 use serde::Serialize;
 use teistro_astro::Completion;
+use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::visibility::Heliacal;
 use teistro_calendar::{CalendarDate, CalendarSystem};
@@ -440,7 +441,7 @@ impl<'a> AlmanacArea<'a> {
     }
 
     /// Every day of a range with whatever `request` asks beside it — a
-    /// muhurta search, festivals, or both — over the days **founded
+    /// muhurta search, festivals, the lunar years, the eclipses — over the days **founded
     /// once**, sealed as [`AlmanacArea::of_each`] seals them. What the C
     /// boundary answers a panchanga request with.
     ///
@@ -476,6 +477,10 @@ impl<'a> AlmanacArea<'a> {
             .years
             .then(|| self.years(from, to, place, offset))
             .transpose()?;
+        let eclipses = request
+            .eclipses
+            .then(|| self.eclipses(from, to, place, offset))
+            .transpose()?;
         let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
         Ok(AlmanacAnswer {
             days,
@@ -483,6 +488,7 @@ impl<'a> AlmanacArea<'a> {
             muhurta,
             festivals,
             years,
+            eclipses,
         })
     }
 
@@ -520,6 +526,80 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<Envelope<Vec<LunarYear>>, Error> {
         let years = self.with_almanac(from, offset, |almanac| almanac.years(from, to, place))?;
         Ok(Envelope::sealing(years.value, years.provenance))
+    }
+
+    /// Every eclipse whose greatest moment falls in a range of civil
+    /// days, from the first day's local midnight to the midnight after
+    /// the last, each with how `place` sees it (`03-design/eclipses.md`).
+    ///
+    /// The shadow is `panchanga.eclipse_shadow`'s, and a body is seen
+    /// while it stands above `day.sunrise`'s horizon, the convention the
+    /// almanac's own sunrise is read under. A lunar eclipse comes back
+    /// with its contacts and the Moon's altitude at each; a solar one with
+    /// the place's own contacts and magnitude. `seen` on each view is
+    /// `None` where the place does not see it, which is what a sutak asks.
+    ///
+    /// ```no_run
+    /// use teistro::{CalendarDate, Context, UtcOffset};
+    /// use teistro::catalogue::Calendar;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    ///
+    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
+    /// let (from, to) = (
+    ///     CalendarDate::defined(Calendar::Gregorian, 2025, 1, 1),
+    ///     CalendarDate::defined(Calendar::Gregorian, 2025, 12, 31),
+    /// );
+    /// let year = sdk.almanac().eclipses(&from, &to, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// for lunar in &year.value.lunar {
+    ///     if let Some(seen) = lunar.here.seen {
+    ///         println!("{:?} seen from {:?} to {:?}", lunar.eclipse.kind, seen.from, seen.to);
+    ///     }
+    /// }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris or a classical one (whose eclipse is
+    /// its own method, C188), a calendar the SDK does not ship, a range
+    /// the wrong way round, or an instant the ephemeris cannot answer.
+    pub fn eclipses(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<EclipsesHere>, Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let calendar = system_of(from.calendar)?;
+        let start = local_midnight(&offset, calendar.fixed_of(from)?)?;
+        let end = local_midnight(&offset, calendar.fixed_of(to)?.plus_days(1))?;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
+        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let found = Eclipses::new(&sky, delta_t)
+            .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
+            .here_between(start.relabel(), end.relabel(), *place, &horizon)?;
+        let mut provenance = self.context.stamped(
+            content_hash(&EclipseInput {
+                from: from.to_string(),
+                to: to.to_string(),
+                place: *place,
+                utc_offset_seconds: offset.seconds(),
+            }),
+            sky.apparent_frame(),
+            Vec::new(),
+        );
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("eclipse.window"),
+            value: format!("JD {} to {}", start.get(), end.get()),
+            reason: String::from(
+                "an eclipse belongs to the range when its greatest moment falls between the first day's local midnight and the midnight after the last, UT1 read as UTC",
+            ),
+        });
+        Ok(Envelope::sealing(found, provenance))
     }
 
     /// One day: the run of one, unwrapped.
@@ -564,6 +644,7 @@ pub struct AlmanacRequest {
     muhurta: Option<MuhurtaRequest>,
     festivals: Option<FestivalRequest>,
     years: bool,
+    eclipses: bool,
 }
 
 impl AlmanacRequest {
@@ -594,6 +675,14 @@ impl AlmanacRequest {
         self
     }
 
+    /// With the eclipses of the days and the place's view of each
+    /// ([`AlmanacArea::eclipses`]).
+    #[must_use]
+    pub fn with_eclipses(mut self) -> AlmanacRequest {
+        self.eclipses = true;
+        self
+    }
+
     /// The muhurta search asked, if any.
     #[must_use]
     pub fn muhurta(&self) -> Option<&MuhurtaRequest> {
@@ -611,6 +700,12 @@ impl AlmanacRequest {
     pub fn years(&self) -> bool {
         self.years
     }
+
+    /// Whether the eclipses were asked.
+    #[must_use]
+    pub fn eclipses(&self) -> bool {
+        self.eclipses
+    }
 }
 
 /// The days of a range and what was asked beside them: what
@@ -627,6 +722,9 @@ pub struct AlmanacAnswer {
     pub festivals: Option<Envelope<Observances>>,
     /// The lunar years the days fall in, when they were asked.
     pub years: Option<Envelope<Vec<LunarYear>>>,
+    /// The eclipses of the days with the place's view of each, when they
+    /// were asked.
+    pub eclipses: Option<Envelope<EclipsesHere>>,
 }
 
 /// A festival reckoning's answer beside the range's days: what
@@ -663,6 +761,16 @@ struct MuhurtaInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r MuhurtaRequest,
+}
+
+/// What an eclipse answer is a function of, beside the settings.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EclipseInput {
+    from: String,
+    to: String,
+    place: Place,
+    utc_offset_seconds: i32,
 }
 
 /// What a festival answer is a function of, beside the settings.

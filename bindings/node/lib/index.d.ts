@@ -2500,6 +2500,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly festivals: FestivalAnswer | null;
   /** The lunar years the days fall in, when the request asked for them with `years: true`, or `null`. */
   readonly years: LunarYears | null;
+  /** The eclipses of the days with the place's view of each, when the request asked for them with `eclipses: true`, or `null`. */
+  readonly eclipses: Eclipses | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -2589,6 +2591,8 @@ export interface AlmanacRequest {
   readonly festivals?: FestivalRequest;
   /** Whether to answer the lunar years the days fall in, as `Almanac.years`; `false` by default, which costs nothing. */
   readonly years?: boolean;
+  /** Whether to answer the eclipses of the days and the place's view of each, as `Almanac.eclipses`; `false` by default, which costs nothing. */
+  readonly eclipses?: boolean;
 }
 
 /**
@@ -2745,6 +2749,120 @@ export interface FestivalObservance {
  * (`03-design/calendar-indian-lunisolar.md` §10), in order and abutting,
  * frozen to its leaves.
  */
+/**
+ * The eclipses whose greatest moment falls in an almanac's days
+ * (`03-design/eclipses.md`), each with how the almanac's place sees it,
+ * frozen to its leaves. Every instant is a UT1 Julian day, UTC to within
+ * a second.
+ */
+export interface Eclipses {
+  /** The lunar and solar eclipses, each list in order. */
+  readonly value: { readonly lunar: readonly LunarEclipseHere[]; readonly solar: readonly SolarEclipseHere[] };
+  /** What computed them, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** A lunar eclipse and the place's view of it. */
+export interface LunarEclipseHere {
+  /** The eclipse, the same everywhere. */
+  readonly eclipse: LunarEclipse;
+  /** Its contacts with the Moon's altitude at the place. */
+  readonly here: LunarEclipseView;
+}
+
+/** A solar eclipse and the place's view of it. */
+export interface SolarEclipseHere {
+  /** The eclipse, the same everywhere. */
+  readonly eclipse: SolarEclipse;
+  /** The place's own contacts and magnitude, or `null` where the Moon's disc never touches the Sun's from it. */
+  readonly here: SolarEclipseView | null;
+}
+
+/** A lunar eclipse: its kind, gamma, magnitudes and contacts under a rule for the Earth's shadow. */
+export interface LunarEclipse {
+  /** The greatest eclipse. */
+  readonly greatest: number;
+  /** Penumbral, partial or total. */
+  readonly kind: 'PENUMBRAL' | 'PARTIAL' | 'TOTAL';
+  /** The Moon's centre from the shadow's axis at greatest, Earth radii, signed by north. */
+  readonly gamma: number;
+  /** The umbral magnitude: negative for a penumbral eclipse, 1 or more for a total one. */
+  readonly umbralMagnitude: number;
+  /** The penumbral magnitude. */
+  readonly penumbralMagnitude: number;
+  /** The penumbra's and the umbra's contacts; the umbral ones `null` where the eclipse lacks them. */
+  readonly contacts: {
+    readonly p1: number;
+    readonly u1: number | null;
+    readonly u2: number | null;
+    readonly u3: number | null;
+    readonly u4: number | null;
+    readonly p4: number;
+  };
+  /** The rule the shadow was enlarged by (`panchanga.eclipse_shadow`). */
+  readonly shadow: 'DANJON' | 'CHAUVENET';
+}
+
+/** A solar eclipse: its kind at greatest, gamma, magnitude and where on the Earth it is greatest. */
+export interface SolarEclipse {
+  /** The greatest eclipse. */
+  readonly greatest: number;
+  /** Partial, annular, total, or hybrid (read at greatest). */
+  readonly kind: 'PARTIAL' | 'ANNULAR' | 'TOTAL' | 'HYBRID';
+  /** The shadow's axis from the Earth's centre at greatest, Earth radii, signed by north. */
+  readonly gamma: number;
+  /** The magnitude at greatest. */
+  readonly magnitude: number;
+  /** Where on the Earth it is greatest, degrees, east and north positive. */
+  readonly point: { readonly latitude: number; readonly longitude: number };
+}
+
+/** One moment of an eclipse at the place: when, and the body's topocentric geometric altitude there in degrees. */
+export interface EclipseMoment {
+  readonly at: number;
+  readonly altitudeDeg: number;
+}
+
+/** The stretch of an eclipse its body stands above `day.sunrise`'s horizon. */
+export interface EclipseSeen {
+  readonly from: number;
+  readonly to: number;
+}
+
+/** A lunar eclipse at the place: each contact with the Moon's altitude. */
+export interface LunarEclipseView {
+  readonly p1: EclipseMoment;
+  readonly u1: EclipseMoment | null;
+  readonly u2: EclipseMoment | null;
+  readonly greatest: EclipseMoment;
+  readonly u3: EclipseMoment | null;
+  readonly u4: EclipseMoment | null;
+  readonly p4: EclipseMoment;
+  /** When the Moon is up during the eclipse, or `null` where the place does not see it. */
+  readonly seen: EclipseSeen | null;
+  /** When the Moon is up during the umbral phase, the part the eye sees, or `null` (always for a penumbral eclipse). */
+  readonly umbralSeen: EclipseSeen | null;
+}
+
+/** A solar eclipse at the place: its own contacts, maximum and magnitude. */
+export interface SolarEclipseView {
+  /** What the place sees at its maximum: never hybrid. */
+  readonly kind: 'PARTIAL' | 'ANNULAR' | 'TOTAL';
+  /** The fraction of the Sun's diameter covered; the ratio of the diameters in a central phase. */
+  readonly magnitude: number;
+  /** The fraction of the Sun's disc covered. */
+  readonly obscuration: number;
+  readonly first: EclipseMoment;
+  /** Totality's or the ring's beginning, `null` outside the central path. */
+  readonly second: EclipseMoment | null;
+  readonly third: EclipseMoment | null;
+  readonly fourth: EclipseMoment;
+  /** The greatest magnitude. */
+  readonly maximum: EclipseMoment;
+  /** When the Sun is up during the eclipse, or `null` where the place does not see it. */
+  readonly seen: EclipseSeen | null;
+}
+
 export interface LunarYears {
   /** The years, each from one Chaitra Shukla Pratipada's sunrise to the next. */
   readonly value: readonly LunarYear[];
@@ -2913,7 +3031,9 @@ export type BlackoutKind =
   | 'PITRU_PAKSHA'
   | 'SANKRANTI'
   | 'GURU_ASTA'
-  | 'SHUKRA_ASTA';
+  | 'SHUKRA_ASTA'
+  | 'ECLIPSE_STAR'
+  | 'ECLIPSE_VEDHA';
 
 /** What bars a time: every clause of a kind, by its key, or one clause exactly. */
 export type MuhurtaBar = MuhurtaClauseKey | MuhurtaClauseKind;

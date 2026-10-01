@@ -105,6 +105,10 @@ name = "ritu"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "eclipses"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "turns"
 required-features = ["builtin-ephemeris"]
 
@@ -186,6 +190,10 @@ required-features = ["builtin-ephemeris"]
 
 [[example]]
 name = "almanac"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "parity"
 required-features = ["builtin-ephemeris"]
 
 [[example]]

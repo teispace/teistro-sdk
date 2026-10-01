@@ -826,7 +826,9 @@ final class AlmanacArea extends _Area {
   /// [muhurta] runs a search over the same days, answered as
   /// [Almanac.muhurta], and [festivals] the rules whose days fall in them,
   /// answered as [Almanac.festivals]; the days are founded once for both.
-  /// [years] answers the lunar years the days fall in, as [Almanac.years].
+  /// [years] answers the lunar years the days fall in, as [Almanac.years],
+  /// and [eclipses] the eclipses whose greatest moment falls in them with
+  /// how the place sees each, as [Almanac.eclipses].
   Almanac of({
     required CalendarDate from,
     required CalendarDate to,
@@ -835,6 +837,7 @@ final class AlmanacArea extends _Area {
     MuhurtaRequest? muhurta,
     FestivalRequest? festivals,
     bool years = false,
+    bool eclipses = false,
   }) => Almanac(
     decodePanchanga(
       _context._guarded(
@@ -853,7 +856,9 @@ final class AlmanacArea extends _Area {
             utcOffsetSeconds: utcOffsetSeconds,
             muhurtaJson: muhurta?._json,
             festivalsJson: festivals?._json,
-            sections: years ? panchangaYears : 0,
+            sections:
+                (years ? panchangaYears : 0) |
+                (eclipses ? panchangaEclipses : 0),
           ),
         ),
       ),
@@ -5805,7 +5810,7 @@ final class MuhurtaWindow extends _Value {
 
 /// A day the season closed, and the blackouts that closed it (`CHATURMAS`,
 /// `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`, `GURU_ASTA`,
-/// `SHUKRA_ASTA`).
+/// `SHUKRA_ASTA`, `ECLIPSE_STAR`, `ECLIPSE_VEDHA`).
 final class ClosedDay {
   const ClosedDay({required this.date, required this.by});
 
@@ -6416,6 +6421,447 @@ LunarYears _lunarYears(String json) {
     value: List.unmodifiable([
       for (final item in envelope['value']! as List<Object?>) year(at(item)),
     ]),
+    provenance: Provenance.fromJson(at(envelope['provenance'])),
+  );
+}
+
+/// A lunar eclipse's kind.
+enum LunarEclipseKind {
+  /// The Moon only in the penumbra.
+  penumbral('PENUMBRAL'),
+
+  /// The Moon partly in the umbra.
+  partial('PARTIAL'),
+
+  /// The Moon wholly in the umbra.
+  total('TOTAL');
+
+  const LunarEclipseKind(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static LunarEclipseKind _byKey(Object? key) => values.firstWhere(
+    (kind) => kind.key == key,
+    orElse: () => throw StateError('a lunar eclipse $key'),
+  );
+}
+
+/// A solar eclipse's kind, at its greatest or at a place.
+enum SolarEclipseKind {
+  /// The Moon covering part of the Sun.
+  partial('PARTIAL'),
+
+  /// The Moon inside the Sun's disc, leaving a ring.
+  annular('ANNULAR'),
+
+  /// The Moon covering the whole Sun.
+  total('TOTAL'),
+
+  /// Annular along part of the track and total along the rest; never a
+  /// place's own view.
+  hybrid('HYBRID');
+
+  const SolarEclipseKind(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static SolarEclipseKind _byKey(Object? key) => values.firstWhere(
+    (kind) => kind.key == key,
+    orElse: () => throw StateError('a solar eclipse $key'),
+  );
+}
+
+/// The rule that sized the Earth's shadow, `panchanga.eclipse_shadow`.
+enum EclipseShadowRule {
+  /// Danjon's, 1951: both radii grown by 1% of the Moon's horizontal
+  /// parallax.
+  danjon('DANJON'),
+
+  /// Chauvenet's, 1891: both radii multiplied by 1.02.
+  chauvenet('CHAUVENET');
+
+  const EclipseShadowRule(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static EclipseShadowRule _byKey(Object? key) => values.firstWhere(
+    (rule) => rule.key == key,
+    orElse: () => throw StateError('a shadow rule $key'),
+  );
+}
+
+/// One moment of an eclipse at the place: when, and the body's topocentric
+/// geometric altitude there.
+final class EclipseMoment extends _Value {
+  const EclipseMoment({required this.at, required this.altitudeDeg});
+
+  /// A UT1 Julian day.
+  final double at;
+
+  /// The eclipsed body's centre above the horizon, before refraction.
+  final double altitudeDeg;
+
+  @override
+  List<Object?> get _fields => [at, altitudeDeg];
+}
+
+/// The stretch of an eclipse the place sees, the body above its horizon.
+final class EclipseSeen extends _Value {
+  const EclipseSeen({required this.from, required this.to});
+
+  /// A UT1 Julian day.
+  final double from;
+
+  /// A UT1 Julian day.
+  final double to;
+
+  @override
+  List<Object?> get _fields => [from, to];
+}
+
+/// A lunar eclipse's contacts with the penumbra and umbra, UT1 Julian
+/// days; an umbral contact the eclipse never reaches is `null`.
+final class LunarContacts extends _Value {
+  const LunarContacts({
+    required this.p1,
+    required this.u1,
+    required this.u2,
+    required this.u3,
+    required this.u4,
+    required this.p4,
+  });
+
+  final double p1;
+  final double? u1;
+  final double? u2;
+  final double? u3;
+  final double? u4;
+  final double p4;
+
+  @override
+  List<Object?> get _fields => [p1, u1, u2, u3, u4, p4];
+}
+
+/// A lunar eclipse: its kind, gamma, magnitudes and contacts under a rule
+/// for the Earth's shadow.
+final class LunarEclipse extends _Value {
+  const LunarEclipse({
+    required this.greatest,
+    required this.kind,
+    required this.gamma,
+    required this.umbralMagnitude,
+    required this.penumbralMagnitude,
+    required this.contacts,
+    required this.shadow,
+  });
+
+  /// The greatest eclipse, a UT1 Julian day.
+  final double greatest;
+
+  final LunarEclipseKind kind;
+
+  /// The Moon's centre from the shadow's axis at the greatest eclipse, in
+  /// Earth radii, positive when the Moon passes north of it.
+  final double gamma;
+
+  /// Negative for a penumbral eclipse, 1 or more for a total one.
+  final double umbralMagnitude;
+
+  final double penumbralMagnitude;
+  final LunarContacts contacts;
+
+  /// The rule that sized the shadow.
+  final EclipseShadowRule shadow;
+
+  @override
+  List<Object?> get _fields => [
+    greatest,
+    kind,
+    gamma,
+    umbralMagnitude,
+    penumbralMagnitude,
+    contacts,
+    shadow,
+  ];
+}
+
+/// A solar eclipse: its kind at greatest, gamma, magnitude and where on the
+/// Earth it is greatest.
+final class SolarEclipse extends _Value {
+  const SolarEclipse({
+    required this.greatest,
+    required this.kind,
+    required this.gamma,
+    required this.magnitude,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  /// The greatest eclipse, a UT1 Julian day.
+  final double greatest;
+
+  final SolarEclipseKind kind;
+
+  /// The shadow's axis from the Earth's centre at the greatest eclipse, in
+  /// Earth radii, positive when it passes north.
+  final double gamma;
+
+  final double magnitude;
+
+  /// Where the eclipse is greatest: geodetic latitude, degrees.
+  final double latitude;
+
+  /// Where the eclipse is greatest: longitude, degrees east.
+  final double longitude;
+
+  @override
+  List<Object?> get _fields => [
+    greatest,
+    kind,
+    gamma,
+    magnitude,
+    latitude,
+    longitude,
+  ];
+}
+
+/// A lunar eclipse at the place: each contact with the Moon's altitude,
+/// and the stretch seen, or `null` when the Moon was down throughout.
+final class LunarEclipseView extends _Value {
+  const LunarEclipseView({
+    required this.p1,
+    required this.u1,
+    required this.u2,
+    required this.greatest,
+    required this.u3,
+    required this.u4,
+    required this.p4,
+    required this.seen,
+    required this.umbralSeen,
+  });
+
+  final EclipseMoment p1;
+  final EclipseMoment? u1;
+  final EclipseMoment? u2;
+  final EclipseMoment greatest;
+  final EclipseMoment? u3;
+  final EclipseMoment? u4;
+  final EclipseMoment p4;
+  final EclipseSeen? seen;
+
+  /// The stretch of the umbral phase seen, the part the eye sees, or
+  /// `null` (always for a penumbral eclipse).
+  final EclipseSeen? umbralSeen;
+
+  @override
+  List<Object?> get _fields => [
+    p1,
+    u1,
+    u2,
+    greatest,
+    u3,
+    u4,
+    p4,
+    seen,
+    umbralSeen,
+  ];
+}
+
+/// A solar eclipse at the place: its own contacts, maximum and magnitude,
+/// and the stretch seen, or `null` when the Sun was down throughout.
+final class SolarEclipseView extends _Value {
+  const SolarEclipseView({
+    required this.kind,
+    required this.magnitude,
+    required this.obscuration,
+    required this.first,
+    required this.second,
+    required this.third,
+    required this.fourth,
+    required this.maximum,
+    required this.seen,
+  });
+
+  /// What the place sees at its maximum: never [SolarEclipseKind.hybrid].
+  final SolarEclipseKind kind;
+
+  final double magnitude;
+
+  /// The fraction of the Sun's disc covered at the maximum.
+  final double obscuration;
+
+  final EclipseMoment first;
+  final EclipseMoment? second;
+  final EclipseMoment? third;
+  final EclipseMoment fourth;
+  final EclipseMoment maximum;
+  final EclipseSeen? seen;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    magnitude,
+    obscuration,
+    first,
+    second,
+    third,
+    fourth,
+    maximum,
+    seen,
+  ];
+}
+
+/// A lunar eclipse and how the place sees it.
+final class LunarEclipseHere extends _Value {
+  const LunarEclipseHere({required this.eclipse, required this.here});
+
+  final LunarEclipse eclipse;
+  final LunarEclipseView here;
+
+  @override
+  List<Object?> get _fields => [eclipse, here];
+}
+
+/// A solar eclipse and how the place sees it, `null` where the penumbra
+/// never reaches.
+final class SolarEclipseHere extends _Value {
+  const SolarEclipseHere({required this.eclipse, required this.here});
+
+  final SolarEclipse eclipse;
+  final SolarEclipseView? here;
+
+  @override
+  List<Object?> get _fields => [eclipse, here];
+}
+
+/// The eclipses whose greatest moment falls in an almanac's days, each kind
+/// in order.
+final class EclipsesFound extends _Value {
+  const EclipsesFound({required this.lunar, required this.solar});
+
+  final List<LunarEclipseHere> lunar;
+  final List<SolarEclipseHere> solar;
+
+  @override
+  List<Object?> get _fields => [lunar, solar];
+}
+
+/// The eclipses an almanac's days hold (`03-design/eclipses.md`).
+///
+/// ```dart
+/// final almanac = sdk.almanac.of(
+///     from: from, to: to, place: place, utcOffsetSeconds: 20700,
+///     eclipses: true);
+/// final seen = almanac.eclipses?.value.lunar.where((e) => e.here.seen != null);
+/// ```
+final class Eclipses {
+  const Eclipses({required this.value, required this.provenance});
+
+  /// The eclipses and how the place sees each.
+  final EclipsesFound value;
+
+  /// What computed them, the window searched among its conventions, and
+  /// the hash of [value].
+  final Provenance provenance;
+}
+
+/// The `eclipses` section: the envelope's eclipses as values, with the
+/// provenance beside them.
+Eclipses _eclipses(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  Map<String, Object?> at(Object? raw) => raw! as Map<String, Object?>;
+  double jd(Object? raw) => (raw! as num).toDouble();
+  double? reachedJd(Object? raw) => raw == null ? null : jd(raw);
+  EclipseMoment moment(Object? raw) {
+    final m = at(raw);
+    return EclipseMoment(at: jd(m['at']), altitudeDeg: jd(m['altitudeDeg']));
+  }
+
+  EclipseMoment? reached(Object? raw) => raw == null ? null : moment(raw);
+  EclipseSeen? seen(Object? raw) {
+    if (raw == null) return null;
+    final s = at(raw);
+    return EclipseSeen(from: jd(s['from']), to: jd(s['to']));
+  }
+
+  LunarEclipseHere lunar(Map<String, Object?> raw) {
+    final e = at(raw['eclipse']);
+    final c = at(e['contacts']);
+    final h = at(raw['here']);
+    return LunarEclipseHere(
+      eclipse: LunarEclipse(
+        greatest: jd(e['greatest']),
+        kind: LunarEclipseKind._byKey(e['kind']),
+        gamma: jd(e['gamma']),
+        umbralMagnitude: jd(e['umbralMagnitude']),
+        penumbralMagnitude: jd(e['penumbralMagnitude']),
+        contacts: LunarContacts(
+          p1: jd(c['p1']),
+          u1: reachedJd(c['u1']),
+          u2: reachedJd(c['u2']),
+          u3: reachedJd(c['u3']),
+          u4: reachedJd(c['u4']),
+          p4: jd(c['p4']),
+        ),
+        shadow: EclipseShadowRule._byKey(e['shadow']),
+      ),
+      here: LunarEclipseView(
+        p1: moment(h['p1']),
+        u1: reached(h['u1']),
+        u2: reached(h['u2']),
+        greatest: moment(h['greatest']),
+        u3: reached(h['u3']),
+        u4: reached(h['u4']),
+        p4: moment(h['p4']),
+        seen: seen(h['seen']),
+        umbralSeen: seen(h['umbralSeen']),
+      ),
+    );
+  }
+
+  SolarEclipseHere solar(Map<String, Object?> raw) {
+    final e = at(raw['eclipse']);
+    final point = at(e['point']);
+    final h = raw['here'] == null ? null : at(raw['here']);
+    return SolarEclipseHere(
+      eclipse: SolarEclipse(
+        greatest: jd(e['greatest']),
+        kind: SolarEclipseKind._byKey(e['kind']),
+        gamma: jd(e['gamma']),
+        magnitude: jd(e['magnitude']),
+        latitude: jd(point['latitude']),
+        longitude: jd(point['longitude']),
+      ),
+      here:
+          h == null
+              ? null
+              : SolarEclipseView(
+                kind: SolarEclipseKind._byKey(h['kind']),
+                magnitude: jd(h['magnitude']),
+                obscuration: jd(h['obscuration']),
+                first: moment(h['first']),
+                second: reached(h['second']),
+                third: reached(h['third']),
+                fourth: moment(h['fourth']),
+                maximum: moment(h['maximum']),
+                seen: seen(h['seen']),
+              ),
+    );
+  }
+
+  final value = at(envelope['value']);
+  return Eclipses(
+    value: EclipsesFound(
+      lunar: List.unmodifiable([
+        for (final item in value['lunar']! as List<Object?>) lunar(at(item)),
+      ]),
+      solar: List.unmodifiable([
+        for (final item in value['solar']! as List<Object?>) solar(at(item)),
+      ]),
+    ),
     provenance: Provenance.fromJson(at(envelope['provenance'])),
   );
 }
@@ -9571,6 +10017,14 @@ final class Almanac {
   /// ran in it and the one it expunged. Parsed once.
   late final LunarYears? years =
       decoded.years.isEmpty ? null : _lunarYears(decoded.years);
+
+  /// The eclipses whose greatest moment falls in these days, or `null`
+  /// when the request did not ask with `eclipses: true`
+  /// (`03-design/eclipses.md`): each lunar and solar eclipse with its
+  /// contacts and how the place sees it, the stretch above its horizon or
+  /// `null`. Parsed once.
+  late final Eclipses? eclipses =
+      decoded.eclipses.isEmpty ? null : _eclipses(decoded.eclipses);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

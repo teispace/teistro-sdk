@@ -75,6 +75,11 @@ const int chartJaimini = 2048;
 /// for nothing, as a chart request's does.
 const int panchangaYears = 1;
 
+/// `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
+/// request's `sections` for the eclipses of its days and the place's view
+/// of each (`03-design/eclipses.md`).
+const int panchangaEclipses = 2;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

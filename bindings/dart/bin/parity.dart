@@ -1384,6 +1384,105 @@ void main() {
   }
   geo.dispose();
 
+  // ── The eclipses ─────────────────────────────────────────────────────
+  // September 2025 at Kathmandu over the built-in sky, which the test
+  // provider cannot complete: a total lunar eclipse seen whole and a
+  // partial solar one the place does not see (`03-design/eclipses.md`).
+  final builtin = teistro.context(
+    profile: 'nepali-default',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  final eclipses =
+      builtin.almanac
+          .of(
+            from: Calendar.gregorian.date(2025, 9, 1),
+            to: Calendar.gregorian.date(2025, 9, 30),
+            place: place,
+            utcOffsetSeconds: 20700,
+            eclipses: true,
+          )
+          .eclipses!;
+  builtin.dispose();
+  String maybe(double? value) => value == null ? '-' : number(value);
+  String moment(EclipseMoment? m) =>
+      m == null ? '-' : '${number(m.at)}@${number(m.altitudeDeg)}';
+  String seen(EclipseSeen? s) =>
+      s == null ? '-' : '${number(s.from)}..${number(s.to)}';
+  put('eclipses-hash', eclipses.provenance.contentHash);
+  put(
+    'eclipses-count',
+    '${eclipses.value.lunar.length} ${eclipses.value.solar.length}',
+  );
+  for (final (k, LunarEclipseHere(:eclipse, :here))
+      in eclipses.value.lunar.indexed) {
+    final c = eclipse.contacts;
+    put(
+      'eclipses-lunar-$k',
+      [
+        eclipse.kind.key,
+        eclipse.shadow.key,
+        number(eclipse.greatest),
+        number(eclipse.gamma),
+        number(eclipse.umbralMagnitude),
+        number(eclipse.penumbralMagnitude),
+      ].join(' '),
+    );
+    put(
+      'eclipses-lunar-$k-contacts',
+      [c.p1, c.u1, c.u2, c.u3, c.u4, c.p4].map(maybe).join(' '),
+    );
+    put(
+      'eclipses-lunar-$k-here',
+      [
+        for (final m in [
+          here.p1,
+          here.u1,
+          here.u2,
+          here.greatest,
+          here.u3,
+          here.u4,
+          here.p4,
+        ])
+          moment(m),
+        seen(here.seen),
+        seen(here.umbralSeen),
+      ].join(' '),
+    );
+  }
+  for (final (k, SolarEclipseHere(:eclipse, :here))
+      in eclipses.value.solar.indexed) {
+    put(
+      'eclipses-solar-$k',
+      [
+        eclipse.kind.key,
+        number(eclipse.greatest),
+        number(eclipse.gamma),
+        number(eclipse.magnitude),
+        number(eclipse.latitude),
+        number(eclipse.longitude),
+      ].join(' '),
+    );
+    put(
+      'eclipses-solar-$k-here',
+      here == null
+          ? '-'
+          : [
+            here.kind.key,
+            number(here.magnitude),
+            number(here.obscuration),
+            for (final m in [
+              here.first,
+              here.second,
+              here.third,
+              here.fourth,
+              here.maximum,
+            ])
+              moment(m),
+            seen(here.seen),
+          ].join(' '),
+    );
+  }
+
   // ── The surface's shape ───────────────────────────────────────────
   //
   // The lines above compare what the bindings ANSWER. These compare

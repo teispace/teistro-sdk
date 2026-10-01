@@ -997,6 +997,53 @@ for (const [name, rules] of [
 }
 geo.dispose();
 
+// ── The eclipses ───────────────────────────────────────────────────────
+// September 2025 at Kathmandu over the built-in sky, which the test
+// provider cannot complete: a total lunar eclipse seen whole and a
+// partial solar one the place does not see (`03-design/eclipses.md`).
+{
+  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const { eclipses } = sky.almanac.of({
+    from: gregorian(2025, 9, 1),
+    to: gregorian(2025, 9, 30),
+    place,
+    utcOffsetSeconds: 20700,
+    eclipses: true,
+  });
+  sky.dispose();
+  const maybe = (value) => (value === null ? '-' : number(value));
+  const moment = (m) => (m === null ? '-' : `${number(m.at)}@${number(m.altitudeDeg)}`);
+  const seen = (s) => (s === null ? '-' : `${number(s.from)}..${number(s.to)}`);
+  put('eclipses-hash', eclipses.provenance.contentHash);
+  put('eclipses-count', `${eclipses.value.lunar.length} ${eclipses.value.solar.length}`);
+  eclipses.value.lunar.forEach(({ eclipse, here }, k) => {
+    const c = eclipse.contacts;
+    put(
+      `eclipses-lunar-${k}`,
+      [eclipse.kind, eclipse.shadow, number(eclipse.greatest), number(eclipse.gamma), number(eclipse.umbralMagnitude), number(eclipse.penumbralMagnitude)].join(' '),
+    );
+    put(`eclipses-lunar-${k}-contacts`, [c.p1, c.u1, c.u2, c.u3, c.u4, c.p4].map(maybe).join(' '));
+    put(
+      `eclipses-lunar-${k}-here`,
+      [here.p1, here.u1, here.u2, here.greatest, here.u3, here.u4, here.p4].map(moment).concat(seen(here.seen), seen(here.umbralSeen)).join(' '),
+    );
+  });
+  eclipses.value.solar.forEach(({ eclipse, here }, k) => {
+    put(
+      `eclipses-solar-${k}`,
+      [eclipse.kind, number(eclipse.greatest), number(eclipse.gamma), number(eclipse.magnitude), number(eclipse.point.latitude), number(eclipse.point.longitude)].join(' '),
+    );
+    put(
+      `eclipses-solar-${k}-here`,
+      here === null
+        ? '-'
+        : [here.kind, number(here.magnitude), number(here.obscuration)]
+            .concat([here.first, here.second, here.third, here.fourth, here.maximum].map(moment), seen(here.seen))
+            .join(' '),
+    );
+  });
+}
+
 // ── The surface's shape ─────────────────────────────────────────────
 //
 // The lines above compare what the bindings ANSWER. These compare where

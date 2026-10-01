@@ -123,6 +123,13 @@ export declare const CHART_JAIMINI: 2048;
 export declare const PANCHANGA_YEARS: 1;
 
 /**
+ * `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
+ * request's `sections` for the eclipses of its days and the place's view
+ * of each (`03-design/eclipses.md`).
+ */
+export declare const PANCHANGA_ECLIPSES: 2;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =

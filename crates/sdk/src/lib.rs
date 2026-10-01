@@ -175,6 +175,10 @@ pub use crate::sade_sati_request::SadeSatiRequest;
 pub use crate::festival_request::{FestivalPack, FestivalRequest};
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
 pub use teistro_astro::visibility::Criterion;
+// Eclipses: found over the sky, each with how a place sees it
+// (`03-design/eclipses.md`); `almanac().eclipses` answers in these.
+pub use teistro_astro::eclipse;
+pub use teistro_astro::eclipse::EclipsesHere;
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,

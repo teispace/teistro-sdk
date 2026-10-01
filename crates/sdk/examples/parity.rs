@@ -33,6 +33,7 @@
 use std::collections::BTreeMap;
 
 use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
+use teistro::eclipse::{LocalMoment, LunarHere, SolarHere, Visible};
 use teistro::settings::SunriseConvention;
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
@@ -41,7 +42,7 @@ use teistro::{
 use teistro::{DayState, LocalDay};
 use teistro_core::envelope::Envelope;
 use teistro_core::interval::Interval;
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_time::{CivilDateTime, CivilTime, ZoneSpec};
 
@@ -3279,6 +3280,140 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
     }
 }
 
+/// The eclipses a panchanga request carries, as the report prints them.
+///
+/// September 2025 at Kathmandu over the built-in sky, which the test
+/// provider cannot complete: a total lunar eclipse seen whole and a
+/// partial solar one the place does not see (`03-design/eclipses.md`).
+fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let sky = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let found = sky
+        .almanac()
+        .eclipses(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 9, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 9, 30),
+            place,
+            offset,
+        )
+        .expect("the built-in sky finds eclipses");
+    put(
+        report,
+        "eclipses-hash",
+        found.provenance.content_hash.to_string(),
+    );
+    let value = &found.value;
+    put(
+        report,
+        "eclipses-count",
+        format!("{} {}", value.lunar.len(), value.solar.len()),
+    );
+    for (k, LunarHere { eclipse, here }) in value.lunar.iter().enumerate() {
+        put(
+            report,
+            &format!("eclipses-lunar-{k}"),
+            format!(
+                "{} {} {} {} {} {}",
+                tag(&eclipse.kind),
+                tag(&eclipse.shadow),
+                number(eclipse.greatest.get()),
+                number(eclipse.gamma),
+                number(eclipse.umbral_magnitude),
+                number(eclipse.penumbral_magnitude),
+            ),
+        );
+        let c = &eclipse.contacts;
+        put(
+            report,
+            &format!("eclipses-lunar-{k}-contacts"),
+            [Some(c.p1), c.u1, c.u2, c.u3, c.u4, Some(c.p4)]
+                .map(maybe_at)
+                .join(" "),
+        );
+        let mut line = [
+            Some(&here.p1),
+            here.u1.as_ref(),
+            here.u2.as_ref(),
+            Some(&here.greatest),
+            here.u3.as_ref(),
+            here.u4.as_ref(),
+            Some(&here.p4),
+        ]
+        .map(moment)
+        .to_vec();
+        line.push(seen(here.seen.as_ref()));
+        line.push(seen(here.umbral_seen.as_ref()));
+        put(report, &format!("eclipses-lunar-{k}-here"), line.join(" "));
+    }
+    solar_eclipses(report, &value.solar);
+}
+
+/// A contact, or `-` for one the eclipse never reaches.
+fn maybe_at(at: Option<JulianDay<Ut1>>) -> String {
+    at.map_or_else(|| "-".to_owned(), |at| number(at.get()))
+}
+
+/// A moment at the place as `at@altitude`, or `-`.
+fn moment(m: Option<&LocalMoment>) -> String {
+    m.map_or_else(
+        || "-".to_owned(),
+        |m| format!("{}@{}", number(m.at.get()), number(m.altitude_deg)),
+    )
+}
+
+/// The stretch seen as `from..to`, or `-`.
+fn seen(s: Option<&Visible>) -> String {
+    s.map_or_else(
+        || "-".to_owned(),
+        |s| format!("{}..{}", number(s.from.get()), number(s.to.get())),
+    )
+}
+
+/// The solar eclipses of [`eclipses`], as the report prints them.
+fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
+    for (k, SolarHere { eclipse, here }) in solar.iter().enumerate() {
+        put(
+            report,
+            &format!("eclipses-solar-{k}"),
+            format!(
+                "{} {} {} {} {} {}",
+                tag(&eclipse.kind),
+                number(eclipse.greatest.get()),
+                number(eclipse.gamma),
+                number(eclipse.magnitude),
+                number(eclipse.point.latitude.get()),
+                number(eclipse.point.longitude.get()),
+            ),
+        );
+        let line = here.as_ref().map_or_else(
+            || "-".to_owned(),
+            |here| {
+                let mut line = vec![
+                    tag(&here.kind),
+                    number(here.magnitude),
+                    number(here.obscuration),
+                ];
+                line.extend(
+                    [
+                        Some(&here.first),
+                        here.second.as_ref(),
+                        here.third.as_ref(),
+                        Some(&here.fourth),
+                        Some(&here.maximum),
+                    ]
+                    .map(moment),
+                );
+                line.push(seen(here.seen.as_ref()));
+                line.join(" ")
+            },
+        );
+        put(report, &format!("eclipses-solar-{k}-here"), line);
+    }
+}
+
 /// The muhurta search a panchanga request carries, under both rankings,
 /// as the report prints it.
 ///
@@ -3441,6 +3576,7 @@ fn main() {
     a_muhurta(&mut report, &geo, &place, offset);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
+    eclipses(&mut report, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

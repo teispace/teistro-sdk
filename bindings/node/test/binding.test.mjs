@@ -2165,6 +2165,50 @@ test('an almanac carries the lunar years it was asked for', () => {
 });
 
 /**
+ * The eclipses cross beside the days they fall in (`03-design/eclipses.md`
+ * §5): asked by name, frozen, their kinds bare keys, each with how the
+ * almanac's place sees it, and the shadow knob moving the umbra.
+ */
+test('an almanac carries the eclipses it was asked for', () => {
+  // September 2025 at Kathmandu: the total lunar eclipse of the 7th, seen
+  // whole near midnight, and the partial solar eclipse of the 21st over
+  // the South Pacific, which Nepal does not see.
+  const days = {
+    from: date(Calendar.Gregorian, 2025, 9, 1),
+    to: date(Calendar.Gregorian, 2025, 9, 30),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const asked = (settings) => {
+    const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', settings });
+    const almanac = ctx.almanac.of({ ...days, eclipses: true });
+    const plain = ctx.almanac.of(days);
+    ctx.dispose();
+    return { almanac, plain };
+  };
+  const { almanac, plain } = asked();
+  assert.equal(plain.eclipses, null);
+  const { value, provenance } = almanac.eclipses;
+  assert.deepEqual(value.lunar.map((e) => e.eclipse.kind), ['TOTAL']);
+  assert.deepEqual(value.solar.map((e) => e.eclipse.kind), ['PARTIAL']);
+  const [lunar] = value.lunar;
+  assert.equal(lunar.eclipse.shadow, 'DANJON');
+  assert.ok(lunar.eclipse.contacts.u2 < lunar.eclipse.greatest);
+  assert.ok(lunar.here.greatest.altitudeDeg > 40);
+  assert.deepEqual(lunar.here.seen, { from: lunar.here.p1.at, to: lunar.here.p4.at });
+  assert.deepEqual(lunar.here.umbralSeen, { from: lunar.here.u1.at, to: lunar.here.u4.at });
+  assert.ok(Object.isFrozen(lunar.here.seen), 'frozen to its leaves');
+  const [solar] = value.solar;
+  assert.ok(solar.here === null || solar.here.seen === null);
+  assert.ok(provenance.appliedConventions.some((c) => c.knob === 'eclipse.window'));
+
+  const chauvenet = asked({ panchanga: { eclipse_shadow: 'CHAUVENET' } }).almanac.eclipses;
+  assert.equal(chauvenet.value.lunar[0].eclipse.shadow, 'CHAUVENET');
+  assert.ok(chauvenet.value.lunar[0].eclipse.umbralMagnitude > lunar.eclipse.umbralMagnitude);
+  assert.notEqual(chauvenet.provenance.settingsHash, provenance.settingsHash);
+});
+
+/**
  * A day's season is its solar month's, and a month begins on the day
  * Nepal's calendar begins it (`03-design/ritu-measured.md`).
  */

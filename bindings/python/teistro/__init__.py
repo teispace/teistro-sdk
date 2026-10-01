@@ -59,6 +59,7 @@ from ._ffi import (
     CHART_VAISESHIKAMSA,
     CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
+    PANCHANGA_ECLIPSES,
     PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
@@ -423,6 +424,18 @@ __all__ = [
     "FestivalUnjudged",
     "EkadashiFast",
     "LunarYears",
+    "Eclipses",
+    "EclipsesFound",
+    "LunarEclipseHere",
+    "SolarEclipseHere",
+    "LunarEclipse",
+    "LunarContacts",
+    "SolarEclipse",
+    "EclipsePoint",
+    "EclipseMoment",
+    "EclipseSeen",
+    "LunarEclipseView",
+    "SolarEclipseView",
     "LunarYear",
     "JovianYear",
     "TaraReading",
@@ -1580,6 +1593,7 @@ class AlmanacArea(_Area):
         muhurta: Optional[MuhurtaRequest] = None,
         festivals: Optional[FestivalRequest] = None,
         years: bool = False,
+        eclipses: bool = False,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
 
@@ -1591,7 +1605,9 @@ class AlmanacArea(_Area):
         `Almanac.muhurta`, and `festivals` the rules whose days fall in
         them, answered as `Almanac.festivals`; the days are founded once
         for both. `years=True` answers the lunar years the days fall in, as
-        `Almanac.years`.
+        `Almanac.years`, and `eclipses=True` the eclipses whose greatest
+        moment falls in them with how the place sees each, as
+        `Almanac.eclipses`.
         """
         request = PanchangaRequest(
             calendar=from_date.calendar,
@@ -1607,7 +1623,7 @@ class AlmanacArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             muhurta_json=_muhurta_json(muhurta),
             festivals_json=_festivals_json(festivals),
-            sections=PANCHANGA_YEARS if years else 0,
+            sections=(PANCHANGA_YEARS if years else 0) | (PANCHANGA_ECLIPSES if eclipses else 0),
         )
         return Almanac(
             decode_panchanga(
@@ -3032,7 +3048,7 @@ class MuhurtaWindow:
 class ClosedDay:
     """A day the season closed, and the blackouts that closed it
     (`CHATURMAS`, `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`,
-    `GURU_ASTA`, `SHUKRA_ASTA`)."""
+    `GURU_ASTA`, `SHUKRA_ASTA`, `ECLIPSE_STAR`, `ECLIPSE_VEDHA`)."""
 
     date: CalendarDate
     by: Tuple[str, ...]
@@ -3265,6 +3281,166 @@ class LunarYears:
     value: Tuple[LunarYear, ...]
     provenance: Provenance
     """What computed them, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class EclipseMoment:
+    """One moment of an eclipse at the place: when, and the body's
+    topocentric geometric altitude there."""
+
+    at: float
+    """A UT1 Julian day."""
+
+    altitude_deg: float
+    """The eclipsed body's centre above the horizon, before refraction."""
+
+
+@dataclass(frozen=True)
+class EclipseSeen:
+    """The stretch of an eclipse the place sees, the body above its
+    horizon; spelled `from_` because `from` is a keyword."""
+
+    from_: float
+    """A UT1 Julian day."""
+
+    to: float
+    """A UT1 Julian day."""
+
+
+@dataclass(frozen=True)
+class LunarContacts:
+    """A lunar eclipse's contacts with the penumbra and umbra, UT1 Julian
+    days; an umbral contact the eclipse never reaches is `None`."""
+
+    p1: float
+    u1: Optional[float]
+    u2: Optional[float]
+    u3: Optional[float]
+    u4: Optional[float]
+    p4: float
+
+
+@dataclass(frozen=True)
+class LunarEclipse:
+    """A lunar eclipse: its kind, gamma, magnitudes and contacts under a
+    rule for the Earth's shadow."""
+
+    greatest: float
+    """The greatest eclipse, a UT1 Julian day."""
+
+    kind: Literal["PENUMBRAL", "PARTIAL", "TOTAL"]
+    gamma: float
+    """The Moon's centre from the shadow's axis at the greatest eclipse, in
+    Earth radii, positive when the Moon passes north of it."""
+
+    umbral_magnitude: float
+    """Negative for a penumbral eclipse, 1 or more for a total one."""
+
+    penumbral_magnitude: float
+    contacts: LunarContacts
+    shadow: Literal["DANJON", "CHAUVENET"]
+    """The rule that sized the shadow, `panchanga.eclipse_shadow`."""
+
+
+@dataclass(frozen=True)
+class EclipsePoint:
+    """Where on the Earth a solar eclipse is greatest, in degrees."""
+
+    latitude: float
+    longitude: float
+
+
+@dataclass(frozen=True)
+class SolarEclipse:
+    """A solar eclipse: its kind at greatest, gamma, magnitude and where on
+    the Earth it is greatest."""
+
+    greatest: float
+    """The greatest eclipse, a UT1 Julian day."""
+
+    kind: Literal["PARTIAL", "ANNULAR", "TOTAL", "HYBRID"]
+    gamma: float
+    magnitude: float
+    point: EclipsePoint
+
+
+@dataclass(frozen=True)
+class LunarEclipseView:
+    """A lunar eclipse at the place: each contact with the Moon's altitude,
+    and the stretch seen, or `None` when the Moon was down throughout."""
+
+    p1: EclipseMoment
+    u1: Optional[EclipseMoment]
+    u2: Optional[EclipseMoment]
+    greatest: EclipseMoment
+    u3: Optional[EclipseMoment]
+    u4: Optional[EclipseMoment]
+    p4: EclipseMoment
+    seen: Optional[EclipseSeen]
+    umbral_seen: Optional[EclipseSeen]
+    """The stretch of the umbral phase seen, the part the eye sees, or
+    `None` (always for a penumbral eclipse)."""
+
+
+@dataclass(frozen=True)
+class SolarEclipseView:
+    """A solar eclipse at the place: its own contacts, maximum and
+    magnitude, and the stretch seen, or `None` when the Sun was down
+    throughout."""
+
+    kind: Literal["PARTIAL", "ANNULAR", "TOTAL"]
+    """What the place sees at its maximum: never hybrid."""
+
+    magnitude: float
+    obscuration: float
+    """The fraction of the Sun's disc covered at the maximum."""
+
+    first: EclipseMoment
+    second: Optional[EclipseMoment]
+    third: Optional[EclipseMoment]
+    fourth: EclipseMoment
+    maximum: EclipseMoment
+    seen: Optional[EclipseSeen]
+
+
+@dataclass(frozen=True)
+class LunarEclipseHere:
+    """A lunar eclipse and how the place sees it."""
+
+    eclipse: LunarEclipse
+    here: LunarEclipseView
+
+
+@dataclass(frozen=True)
+class SolarEclipseHere:
+    """A solar eclipse and how the place sees it, `None` where the
+    penumbra never reaches."""
+
+    eclipse: SolarEclipse
+    here: Optional[SolarEclipseView]
+
+
+@dataclass(frozen=True)
+class EclipsesFound:
+    """The eclipses whose greatest moment falls in an almanac's days, each
+    kind in order."""
+
+    lunar: Tuple[LunarEclipseHere, ...]
+    solar: Tuple[SolarEclipseHere, ...]
+
+
+@dataclass(frozen=True)
+class Eclipses:
+    """The eclipses an almanac's days hold (`03-design/eclipses.md`).
+
+    >>> # almanac = ctx.almanac.of(..., eclipses=True)
+    >>> # seen = [e for e in almanac.eclipses.value.lunar if e.here.seen]
+    """
+
+    value: EclipsesFound
+    provenance: Provenance
+    """What computed them, the window searched among its conventions, and
+    the hash of `value`."""
 
 
 GocharRequest = TypedDict(
@@ -5289,6 +5465,80 @@ def _years_answer(text: str) -> LunarYears:
 
     return LunarYears(
         value=tuple(year(y) for y in envelope["value"]),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _eclipses_answer(text: str) -> Eclipses:
+    """The `eclipses` section: the envelope's eclipses as frozen records,
+    with the provenance beside them."""
+    envelope = json.loads(text)
+
+    def moment(raw: Mapping[str, Any]) -> EclipseMoment:
+        return EclipseMoment(at=raw["at"], altitude_deg=raw["altitudeDeg"])
+
+    def reached(raw: Optional[Mapping[str, Any]]) -> Optional[EclipseMoment]:
+        return None if raw is None else moment(raw)
+
+    def seen(raw: Optional[Mapping[str, Any]]) -> Optional[EclipseSeen]:
+        return None if raw is None else EclipseSeen(from_=raw["from"], to=raw["to"])
+
+    def lunar(raw: Mapping[str, Any]) -> LunarEclipseHere:
+        e, h = raw["eclipse"], raw["here"]
+        return LunarEclipseHere(
+            eclipse=LunarEclipse(
+                greatest=e["greatest"],
+                kind=e["kind"],
+                gamma=e["gamma"],
+                umbral_magnitude=e["umbralMagnitude"],
+                penumbral_magnitude=e["penumbralMagnitude"],
+                contacts=LunarContacts(**e["contacts"]),
+                shadow=e["shadow"],
+            ),
+            here=LunarEclipseView(
+                p1=moment(h["p1"]),
+                u1=reached(h["u1"]),
+                u2=reached(h["u2"]),
+                greatest=moment(h["greatest"]),
+                u3=reached(h["u3"]),
+                u4=reached(h["u4"]),
+                p4=moment(h["p4"]),
+                seen=seen(h["seen"]),
+                umbral_seen=seen(h["umbralSeen"]),
+            ),
+        )
+
+    def solar(raw: Mapping[str, Any]) -> SolarEclipseHere:
+        e, h = raw["eclipse"], raw["here"]
+        return SolarEclipseHere(
+            eclipse=SolarEclipse(
+                greatest=e["greatest"],
+                kind=e["kind"],
+                gamma=e["gamma"],
+                magnitude=e["magnitude"],
+                point=EclipsePoint(latitude=e["point"]["latitude"], longitude=e["point"]["longitude"]),
+            ),
+            here=None
+            if h is None
+            else SolarEclipseView(
+                kind=h["kind"],
+                magnitude=h["magnitude"],
+                obscuration=h["obscuration"],
+                first=moment(h["first"]),
+                second=reached(h["second"]),
+                third=reached(h["third"]),
+                fourth=moment(h["fourth"]),
+                maximum=moment(h["maximum"]),
+                seen=seen(h["seen"]),
+            ),
+        )
+
+    value = envelope["value"]
+    return Eclipses(
+        value=EclipsesFound(
+            lunar=tuple(lunar(e) for e in value["lunar"]),
+            solar=tuple(solar(e) for e in value["solar"]),
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 
@@ -7532,6 +7782,15 @@ class Almanac:
         and the one it expunged. Parsed once."""
         text = self.decoded.years
         return _years_answer(text) if text else None
+
+    @cached_property
+    def eclipses(self) -> Optional[Eclipses]:
+        """The eclipses whose greatest moment falls in these days, or `None`
+        when `eclipses=True` was not asked (`03-design/eclipses.md`): each
+        lunar and solar eclipse with its contacts and how the place sees
+        it, the stretch above its horizon or `None`. Parsed once."""
+        text = self.decoded.eclipses
+        return _eclipses_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:

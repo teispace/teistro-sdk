@@ -267,21 +267,45 @@ ayanamsha. The muhurta reads it from there.
 ### 4.5 Local circumstances
 
 These are needed for the sutak, which is observed only where the eclipse
-is seen.
+is seen. Built as `Eclipses::solar_seen` and `Eclipses::lunar_seen`
+(`crates/astro/src/eclipse/local.rs`).
 
-- **A lunar eclipse** is seen wherever the Moon is above the horizon
-  during any contact interval. The local answer is the contacts as
-  above, each with the Moon's altitude at the place. A contact is
-  visible when the altitude is above the horizon convention's.
-- **A solar eclipse** needs the topocentric Moon. Its contacts at a
-  place are where the topocentric separation of the Sun's and the
-  Moon's centres equals the sum of their semidiameters, for C1 and C4,
-  or their difference, for C2 and C3. The local magnitude is at the
-  separation's minimum.
+- **A solar eclipse** is read from the place: the eclipse's own Sun and
+  Moon (astrometric, as in §4.1) less the station's geocentric position
+  (`sky::observer`, the place's height included), in the true equator of
+  date. The maximum is the greatest magnitude, which is not the least
+  separation of the centres: the discs' topocentric sizes change as the
+  bodies climb, and for a shallow eclipse the two instants are seconds
+  apart (measured: 14 s at the worst before the search was changed). The
+  first and fourth contacts are where the separation equals the sum of
+  the semidiameters (the Moon's at k = 0.2725076); the second and third,
+  for a central eclipse, where it equals their difference (k = 0.272281).
+  The magnitude is the fraction of the Sun's diameter covered, and inside
+  a central phase the ratio of the diameters, as NASA prints it; the
+  obscuration is the covered fraction of the disc's area.
+- **A lunar eclipse**'s contacts are the same instants everywhere; the
+  place adds the Moon's topocentric altitude at each.
+- **Seen.** Every contact is geometric, the Earth taken as transparent,
+  so a contact below the horizon is reported with its negative altitude
+  and a place on the night side can have all four. `seen` is the stretch
+  of the eclipse the body stands above a `Horizon` convention, the same
+  convention a sunrise is read under (`rise_set::centre_altitude_deg`,
+  less the parallax since the altitude is already topocentric): `None`
+  is the place not seeing the eclipse, which is the sutak's question.
+  It is the hull from the first instant up to the last, which differs
+  from the truth only for a body that sets and rises again inside one
+  eclipse. A lunar eclipse also gives `umbral_seen`, the same stretch
+  between the umbra's first and last touch. That is the part the eye
+  sees, and the observances count by it: *Dharmasindhu* holds an
+  eclipse's time to last only as long as it can be seen
+  ("चाक्षुषदर्शनयोग्य"). A penumbral eclipse has none.
 
-  Topocentric places come from `astro::topocentric`, which the rise and
-  set solver already uses. The reference is NASA's local circumstances
-  for named cities, which the GSFC eclipse pages print for each eclipse.
+**Measured** (`eclipses-measured.md` §6): against the 214 cities of
+NASA's bulletins for 2009 July 22 and 2010 January 15, Kathmandu among
+them, every contact the bulletin prints is found and every one it omits
+is below the horizon here; the contacts agree within 2.6 s, the maxima
+within 6.9 s (the flat tops of shallow eclipses) and the magnitudes
+within 0.0009.
 
 ## 5. The API
 
@@ -292,9 +316,42 @@ let solar: Vec<SolarEclipse> = eclipses.solar_between(from, to)?;
 let next = eclipses.next_lunar(from)?;   // the next one, at most a year on
 ```
 
-The façade's `Context::eclipses()` builds this over the context's
-completion and Delta T. The answers cross to every binding as records,
-and the kinds are catalogue members: `eclipse_kind`.
+A place reads each one through `solar_seen` and `lunar_seen`, or a
+window's worth at once through `here_between(from, to, place, &horizon)`,
+which answers `EclipsesHere { lunar, solar }`: each eclipse beside its
+`SolarView` or `LunarView` (§4.5).
+
+The façade asks it of an almanac's days:
+
+```rust
+let found: Envelope<EclipsesHere> =
+    sdk.almanac().eclipses(&from, &to, &place, offset)?;
+let seen = found.value.any_seen();
+```
+
+- **The window** runs from the local midnight that opens the first day
+  to the one that closes the last, on the almanac's clock, so an
+  eclipse belongs to the civil day its greatest moment falls in. The
+  provenance names it as the convention `eclipse.window`.
+- **The horizon** is the one the context's sunrise convention reads the
+  day by (`panchanga.sunrise`), so a body "up" for an eclipse is up by
+  the same rule the almanac's sunrise uses.
+- **The shadow** is the setting `panchanga.eclipse_shadow`, `DANJON` by
+  default, and it is part of the settings hash.
+- **A classical sky** (the Surya Siddhanta's) refuses with `Unsupported`
+  naming C188, rather than answering a modern eclipse over a text's day.
+
+Every binding asks for it beside the days, as it asks for the lunar
+years: `eclipses: true` in Node and Dart, `eclipses=True` in Python, the
+bit `TS_PANCHANGA_ECLIPSES` across the boundary, and the panchanga
+blob's section 24 carrying the envelope as JSON. The JSON is camelCase,
+and every instant in it is a UT1 Julian day.
+
+The kinds and the shadow rule cross as **bare keys** (`TOTAL`,
+`ANNULAR`, `DANJON`), as a lunar year's `count` does, and each binding
+types them: a literal union in TypeScript and Python, an enum in Dart.
+They are not catalogue members yet. A consumer who must *name* a kind
+in a language is the case for one (§9).
 
 ## 6. Errors and degenerate states
 
@@ -356,13 +413,22 @@ geometry's own in `crates/astro/src/eclipse.rs`):
 - the error for a backward window;
 - the next lunar eclipse after a known one.
 
-**Bindings:** the parity runner over the 2025 to 2026 eclipses.
+**Bindings:** each binding's suite reads September 2025 at Kathmandu: a
+total lunar eclipse seen whole, a partial solar one not seen, and the
+shadow knob moving the umbra. The parity runner prints every field of
+both eclipses in all five runners. The wasm runner carries the built-in
+sky's compact tier, so its eclipse lines are held to the same *shape*,
+every kind, count and absent contact, and their numbers are its tier's
+own. That exception fails both ways (`xtask/src/parity.rs`,
+`WASM_TIER`). The boundary's test holds the section to the façade's
+answer, byte for byte.
 
 ## 9. Localisation
 
-The kinds are catalogue members and are named in each locale's pack:
-*grahan*, *khagras*, *khandagras* and *kankanakriti* in Nepali and
-Hindi.
+The kinds cross as bare keys today (§5). Naming them, *grahan*,
+*khagras*, *khandagras* and *kankanakriti* in Nepali and Hindi, needs
+them to be catalogue members. That is the step that names the muhurta's
+eclipse blackouts, so the two are decided together.
 
 ## 10. Open questions
 

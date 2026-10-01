@@ -93,7 +93,26 @@ struct Report {
     /// with what it must say instead of agreeing: the wasm runner's
     /// `build-target` names wasm32 where every other names the host.
     own: &'static [(&'static str, &'static str)],
+    /// The key prefixes whose lines are computed over the built-in sky's
+    /// tier, which this build carries a different one of: held to the
+    /// same shape rather than the same numbers (see [`WASM_TIER`]).
+    tier: &'static [&'static str],
 }
+
+/// The wasm runner's lines computed over the built-in sky.
+///
+/// The wasm module carries the built-in ephemeris's **compact** tier, to
+/// keep within its size budget, where every native build carries the
+/// standard one (ADR-0027); the two differ by seconds of a moment and
+/// thousandths of a magnitude, each within the bounds its tier is held to
+/// in `crates/ephemeris-builtin/tests/eclipses.rs`. So these lines are
+/// held to the same **shape** — every kind, rule and count, and which
+/// contacts and stretches exist — and their numbers and hashes are the
+/// tier's own. The list fails both ways: a line with a different shape
+/// fails, and so does a prefix none of whose lines differ any more,
+/// because then the build carries the standard tier and the exception is
+/// stale.
+const WASM_TIER: [&str; 1] = ["eclipses-"];
 
 /// The wasm runner's own values: its build's target, which must be a
 /// wasm32 one, and is the one line it may not share.
@@ -142,8 +161,42 @@ impl Report {
             lines,
             absences,
             own,
+            tier: &[],
         }
     }
+
+    /// The report with the key prefixes it computes over its own tier of
+    /// the built-in sky.
+    fn tiered(self, tier: &'static [&'static str]) -> Report {
+        Report { tier, ..self }
+    }
+}
+
+/// Whether two lines computed over different tiers of one sky have one
+/// shape: the same tokens, but for measured numbers (a fraction, a moment
+/// and its altitude `at@alt`, a stretch `from..to`) and hashes, which are
+/// each tier's own. A whole number is a count and must agree.
+fn same_shape(left: &str, right: &str) -> bool {
+    fn free(token: &str) -> bool {
+        let hash = token.len() == 64 && token.bytes().all(|b| b.is_ascii_hexdigit());
+        let measured = token.contains('.')
+            && token
+                .split(['@', '.'])
+                .filter(|piece| !piece.is_empty())
+                .all(|piece| {
+                    let digits = piece.strip_prefix('-').unwrap_or(piece);
+                    !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit())
+                });
+        hash || measured
+    }
+    let (a, b): (Vec<&str>, Vec<&str>) = (
+        left.split_whitespace().collect(),
+        right.split_whitespace().collect(),
+    );
+    a.len() == b.len()
+        && a.iter()
+            .zip(&b)
+            .all(|(x, y)| x == y || (free(x) && free(y)))
 }
 
 /// Whether two values say the same thing, as text or as numbers.
@@ -230,10 +283,39 @@ fn compare(left: &Report, right: &Report) -> usize {
             }
             continue;
         }
+        // A line over the built-in sky's other tier is held to its shape.
+        if right.tier.iter().any(|prefix| key.starts_with(prefix)) {
+            if !same_shape(value, other) {
+                println!(
+                    "      {key}: {} says `{value}`, {} says `{other}`, which is not the same shape",
+                    left.binding, right.binding
+                );
+                differences += 1;
+            }
+            continue;
+        }
         if !agree(value, other) {
             println!(
                 "      {key}: {} says `{value}`, {} says `{other}`",
                 left.binding, right.binding
+            );
+            differences += 1;
+        }
+    }
+    // Both ways: a tier exception none of whose lines differ is stale.
+    for prefix in right.tier {
+        let differs = left.lines.iter().any(|(key, value)| {
+            key.starts_with(prefix)
+                && right
+                    .lines
+                    .iter()
+                    .find(|(k, _)| k == key)
+                    .is_some_and(|(_, other)| !agree(value, other))
+        });
+        if !differs {
+            println!(
+                "      {prefix}…: declared another tier's in {} and every line agrees; take it off the list",
+                right.binding
             );
             differences += 1;
         }
@@ -369,12 +451,15 @@ fn collect(
                 .map_err(|e| println!("FAIL  the parity runner did not copy: {e}"))
         });
         if ran.is_ok() {
-            reports.extend(run(
-                "wasm",
-                Command::new("node").arg("parity.mjs").current_dir(&staged),
-                &[],
-                &WASM_OWN,
-            ));
+            reports.extend(
+                run(
+                    "wasm",
+                    Command::new("node").arg("parity.mjs").current_dir(&staged),
+                    &[],
+                    &WASM_OWN,
+                )
+                .map(|report| report.tiered(&WASM_TIER)),
+            );
         }
     } else {
         println!("skip  the wasm runner: needs `node` and the `wasm32-unknown-unknown` target");
@@ -523,7 +608,52 @@ fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use super::{Report, WASM_OWN, compare};
+    use super::{Report, WASM_OWN, compare, same_shape};
+
+    /// A line over another tier keeps its kinds, counts and absences and
+    /// only its measured numbers and hashes move.
+    #[test]
+    fn a_tiers_line_is_held_to_its_shape() {
+        let native = "TOTAL DANJON 2460926.258207158 -0.275171339 1.361823104";
+        let compact = "TOTAL DANJON 2460926.258117373 -0.275814153 1.360000000";
+        assert!(same_shape(native, compact));
+        assert!(same_shape(
+            "2460926.144738019@36.824470770 - 2460926.1..2460926.3",
+            "2460926.144659119@36.803051217 - 2460926.2..2460926.4"
+        ));
+        assert!(same_shape(&"a".repeat(64), &"b".repeat(64)));
+        assert!(!same_shape(native, &compact.replace("TOTAL", "PARTIAL")));
+        assert!(!same_shape(
+            "2460926.1@36.8 -",
+            "2460926.1@36.8 2460926.2@40.1"
+        ));
+        assert!(!same_shape("1 1", "2 1"), "a count is not a measurement");
+        assert!(!same_shape(native, "TOTAL DANJON 2460926.258117373"));
+    }
+
+    /// The tier exception fails both ways: a different shape, and a
+    /// prefix every line of which agrees.
+    #[test]
+    fn a_tier_exception_fails_both_ways() {
+        let read = |kind: &str, at: &str| {
+            Report::read(
+                "x",
+                &format!("eclipses-count\t1 1\neclipses-lunar-0\t{kind} {at}\n"),
+                &[],
+                &[],
+            )
+        };
+        let node = read("TOTAL", "2460926.258207158");
+        let tiered = |kind: &str, at: &str| read(kind, at).tiered(&["eclipses-"]);
+        assert_eq!(compare(&node, &tiered("TOTAL", "2460926.258117373")), 0);
+        assert_eq!(compare(&node, &tiered("PARTIAL", "2460926.258117373")), 1);
+        assert_eq!(
+            compare(&node, &tiered("TOTAL", "2460926.258207158")),
+            1,
+            "a prefix no line of which differs is stale"
+        );
+        assert_eq!(compare(&node, &read("TOTAL", "2460926.258117373")), 1);
+    }
 
     fn report(binding: &'static str, target: &str, own: bool) -> Report {
         Report::read(

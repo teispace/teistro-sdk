@@ -90,6 +90,13 @@ export const CHART_JAIMINI = 2048;
  */
 export const PANCHANGA_YEARS = 1;
 
+/**
+ * `TS_PANCHANGA_ECLIPSES`, the bit a caller sets in a panchanga
+ * request's `sections` for the eclipses of its days and the place's view
+ * of each (`03-design/eclipses.md`).
+ */
+export const PANCHANGA_ECLIPSES = 2;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

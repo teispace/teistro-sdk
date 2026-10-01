@@ -1216,6 +1216,10 @@ export function decodePanchanga(bytes) {
     const at = section(blob, 23, 'years');
     out.years = text(blob, at);
   }
+  {
+    const at = section(blob, 24, 'eclipses');
+    out.eclipses = text(blob, at);
+  }
   return out;
 }
 
