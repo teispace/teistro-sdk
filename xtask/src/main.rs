@@ -135,6 +135,10 @@
 //! - `ritu` and `check-ritu`: the season, the shipped reading and every
 //!   rival against the seasons Nepal's daily panchanga printed, and the
 //!   ayana against the same days.
+//! - `nepal-day` and `check-nepal-day`: the tithi, nakshatra and yoga
+//!   ends, the days one holds both sunrises or neither, and the sunrise,
+//!   against Nepal's daily panchanga under the committee's Surya
+//!   Siddhanta, the text without its bija and the modern sky.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -253,6 +257,7 @@ mod measure;
 mod moon;
 mod muhurta;
 mod muntha;
+mod nepal_day;
 mod nepal_month;
 mod node_binding;
 mod package;
@@ -336,6 +341,7 @@ const PASSES: &[Pass] = &[
         samvatsara::check_generated,
     ),
     ("ritu", ritu::generate, ritu::check_generated),
+    ("nepal-day", nepal_day::generate, nepal_day::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

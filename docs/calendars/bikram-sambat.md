@@ -90,8 +90,10 @@ and sunset, eight tithi ends. Measured against the SDK
   within 0.3′ and the eight tithi ends within 0.5′, and no other pair of
   bija on the Moon and its apsis, nor the swapped epicycle convention
   (C27), fits as well. A measurement of the committee's practice, not a
-  citation: the knob stays refused as unsourced (C28) until the set is
-  named.
+  citation (C28): it ships as `SuryaBija::NepalCommittee`, named for
+  whose practice it measures, and Nepal's daily panchanga's 990 limb ends
+  over 333 days are the same set's within 1.5 minutes
+  (`03-design/nepal-day-measured.md`).
 - **The star planets and the node are not the text's.** They are modern
   positions in the Lahiri frame: Saturn, Jupiter and the mean node
   within 1′ to 11′ of Teimeris's Lahiri places on all four printed rows

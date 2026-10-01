@@ -217,6 +217,19 @@ pub(crate) fn worst(values: impl IntoIterator<Item = f64>) -> f64 {
     values.into_iter().fold(0.0_f64, f64::max)
 }
 
+/// The middle value of a set of measurements, the mean of the two middle
+/// ones for an even count, and NaN for none.
+pub(crate) fn median(values: impl IntoIterator<Item = f64>) -> f64 {
+    let mut values: Vec<f64> = values.into_iter().collect();
+    values.sort_by(f64::total_cmp);
+    let n = values.len();
+    match n {
+        0 => f64::NAN,
+        _ if n % 2 == 1 => values[n / 2],
+        _ => f64::midpoint(values[n / 2 - 1], values[n / 2]),
+    }
+}
+
 /// The width a generated page's prose is filled to.
 pub(crate) const FILL: usize = 72;
 
