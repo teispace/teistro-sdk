@@ -9,11 +9,13 @@
 //! - a decade of each rule, counting the case each year met and the guard
 //!   that decided, with every guard no year reached given its reason;
 //! - the three Ekadashi observers against a published almanac's Smarta,
-//!   Gauna and Vaishnava days ([`ekadashi`]).
+//!   Gauna and Vaishnava days ([`ekadashi`]);
+//! - the shipped rules at Kathmandu against the days Nepal's national
+//!   panchanga printed for VS 2082 and 2083 ([`nepal`]).
 //!
-//! Only the seasons the karmakala rules live in are founded, March to May
-//! and August to November, since a year of almanac is what the pass costs;
-//! a year the Ekadashi record covers is founded whole.
+//! Only the seasons the karmakala rules live in are founded, February to
+//! May and August to November, since a year of almanac is what the pass
+//! costs; a year the Ekadashi record covers is founded whole.
 //!
 //! `cargo xtask festival` writes the page; `check-festival` regenerates it
 //! in memory and fails on any difference.
@@ -31,6 +33,7 @@ use crate::generated::{Output, check, write};
 use crate::measure::{Claim, table};
 
 mod ekadashi;
+mod nepal;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
 
@@ -46,7 +49,7 @@ pub(super) type MonthDay = (u8, u8);
 type Span = (MonthDay, MonthDay);
 
 /// The seasons founded each year.
-const SEASONS: [Span; 2] = [((3, 1), (5, 5)), ((8, 1), (11, 20))];
+const SEASONS: [Span; 2] = [((2, 1), (5, 5)), ((8, 1), (11, 20))];
 
 /// The decade the reach is counted over.
 const REACH: std::ops::RangeInclusive<i32> = 2021..=2030;
@@ -130,7 +133,7 @@ const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 2] = [
+const UNREACHED: [(&str, usize, &str, &str); 4] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -142,6 +145,18 @@ const UNREACHED: [(&str, usize, &str, &str); 2] = [
         6,
         "vijaya_dashami_held_on_both_days_or_neither_goes_to_shravana_alone",
         "the 10th holding both aparahnas, neither or each in part, with Shravana joining it on the later day only, which no year of the decade had",
+    ),
+    (
+        "NAVARATRA_ARAMBHA",
+        0,
+        "navaratra_arambha_needs_a_muhurta_past_the_later_sunrise",
+        "the 1st holding two sunrises, a vriddhi no Ashwina of the decade had",
+    ),
+    (
+        "SHIVARATRI",
+        1,
+        "shivaratri_takes_the_book_s_day_in_each_of_its_clauses",
+        "the 14th holding the earlier night's eighth muhurta whole and the later's in part, which no year of the decade had",
     ),
 ];
 
@@ -360,11 +375,13 @@ fn page() -> Result<String, String> {
         .build()
         .map_err(|e| e.to_string())?;
     let fasts = ekadashi::compare(&context, request.ekadashis(), &years, &mut problems);
+    let nepal = nepal::compare(&request, &mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
     let mut out = render(rules, &rows, &cases, &decided);
     ekadashi::render(&mut out, &fasts);
+    nepal::render(&mut out, &nepal);
     Ok(out)
 }
 
@@ -514,9 +531,10 @@ fn render(rules: &[FestivalRule], rows: &[Row], cases: &Cases<'_>, decided: &Dec
     out.push_str(
         "Status: `generated` by `cargo xtask festival`. Do not edit:\n\
          `check-festival` regenerates this page and fails on any difference.\n\n\
-         It measures `festival-rules.md` §5.2 and §5.3: the shipped rules\n\
+         It measures `festival-rules.md` §5.2, §5.3 and §9.3: the shipped rules\n\
          (`FestivalRule::dharmasindhu()`) through `sdk.almanac().festivals`, over\n\
-         the built-in ephemeris at Delhi on India's clock.\n\n",
+         the built-in ephemeris at Delhi on India's clock, and at Kathmandu on\n\
+         Nepal's (§4).\n\n",
     );
 
     published(&mut out, rows);

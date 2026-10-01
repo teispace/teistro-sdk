@@ -742,12 +742,28 @@ function theFestivals(almanac: Almanac): string {
     decide: [{ when: [{ is: 'LASTS', day: 'LATER', from: 'SUNSET', ghatis: 1 }], choose: 'LATER' }],
     otherwise: 'EARLIER',
   };
-  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule, madhava] };
+  // Shivaratri as the Kaustubha reads it: both nights holding niśītha
+  // take the earlier, as does the earlier holding it whole.
+  const kaustubha: FestivalRule = {
+    key: 'SHIVARATRI',
+    source: 'Dharmasindhu p. 90, the Kaustubha',
+    month: 'masa.MAGHA',
+    tithi: 'tithi.KRISHNA_CHATURDASHI',
+    at: { window: 'NIGHT_MUHURTA', muhurta: 8 },
+    decide: [
+      { when: [{ is: 'CASE', case: 'BOTH' }], choose: 'EARLIER' },
+      { when: [{ is: 'WHOLLY', day: 'EARLIER' }], choose: 'EARLIER' },
+    ],
+    otherwise: 'LATER',
+  };
+  const asked: FestivalRequest = { rules: ['DHARMASINDHU', rule, madhava, kaustubha] };
+  // @ts-expect-error a night muhurta names which one
+  const unnumbered: FestivalRule = { ...kaustubha, at: { window: 'NIGHT_MUHURTA' } };
   // @ts-expect-error a predicate asks what its kind asks, not another's
   const wrong: FestivalRule = { ...rule, decide: [{ when: [{ is: 'CASE', day: 'LATER' }], choose: 'LATER' }] };
   // @ts-expect-error an unshipped pack is not one
   const unshipped: FestivalRequest = { rules: 'NIRNAYA_SINDHU' };
-  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), answer.provenance.contentHash].join();
+  return [...said, ...fasts, ...unjudged, String(yugma), String(asked.rules.length), String(wrong), String(unshipped), String(unnumbered), answer.provenance.contentHash].join();
 }
 
 void theFestivals;

@@ -1584,6 +1584,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   because it is sealed over the value as it is now spelt; the muhurta
   section's changes only where a day was closed.
 
+- **Four of Nepal's observances, and Nepal's printed days measured**
+  (`festival-rules.md` §9, C195 to C197).
+  - The `DHARMASINDHU` pack carries eight karmakala rules:
+    `HARITALIKA` (p. 55), `NAVARATRA_ARAMBHA` (p. 65), `YAMA_DWITIYA`
+    (p. 79) and `SHIVARATRI` (p. 90) join the four. Each is held to its
+    page's clauses on synthetic days.
+  - `Window::NightMuhurta { muhurta }` (`NIGHT_MUHURTA` in a record), a
+    fifteenth of the night counted from sunset (Shivaratri's niśītha is
+    the 8th), and `Predicate::Wholly { day }` (`WHOLLY`), the tithi
+    holding a day's whole window.
+    A night muhurta outside 1 to 15 is refused by its path
+    (`festivals.rules[0].at.muhurta`). Node's declarations type both.
+  - `festival-measured.md` §4 holds every shipped rule at Kathmandu
+    against the 15 days the Nepal Panchanga Decision Committee printed
+    for VS 2082 and 2083. Over the committee's own sky
+    (`nepali-committee`) 14 agree. The one that parts, Vijaya Dashami
+    in VS 2083, is named with its cause and checked. Over the modern
+    sky 11 agree.
+
+  **Numbers:** none moved for the four rules already shipped. An answer
+  over the shipped pack now carries the four new observances where its
+  range holds them, so its festival section's content hash changes.
+
 - **Nepal's vedha, and the eye's horizon for an eclipse** (`muhurta.md`
   §4.1.1, `eclipses.md` §5, cruxes C192 and C194).
   - `panchanga.eclipse_vedha` gains `FIXED_HOURS`, Nepal's committee's

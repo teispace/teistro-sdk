@@ -2624,7 +2624,9 @@ export type FestivalWindow =
   | { readonly window: 'SUNRISE' }
   | { readonly window: 'PART'; readonly part: FestivalDayPart }
   | { readonly window: 'PRADOSHA' }
-  | { readonly window: 'NISHITHA' };
+  | { readonly window: 'NISHITHA' }
+  /** A fifteenth of the night counted from sunset, 1 to 15; Shivaratri's niśītha is the 8th. */
+  | { readonly window: 'NIGHT_MUHURTA'; readonly muhurta: number };
 
 /** One of the tithi's two days. */
 export type FestivalWhich = 'EARLIER' | 'LATER';
@@ -2643,7 +2645,9 @@ export type FestivalPredicate =
   | { readonly is: 'CASE'; readonly case: FestivalCase }
   | { readonly is: 'JOINED'; readonly day: FestivalWhich; readonly nakshatra: Nakshatra; readonly at?: FestivalWindow }
   | { readonly is: 'STANDS'; readonly day: FestivalWhich; readonly nakshatra: Nakshatra; readonly at: FestivalWindow }
-  | { readonly is: 'LASTS'; readonly day: FestivalWhich; readonly from: 'SUNRISE' | 'SUNSET'; readonly ghatis: number };
+  | { readonly is: 'LASTS'; readonly day: FestivalWhich; readonly from: 'SUNRISE' | 'SUNSET'; readonly ghatis: number }
+  /** The tithi holds the whole of that day's window, or its instant. */
+  | { readonly is: 'WHOLLY'; readonly day: FestivalWhich };
 
 /** What a guard, or a rule's `otherwise`, decides. */
 export type FestivalChoice = 'EARLIER' | 'LATER' | 'BY_YUGMA';

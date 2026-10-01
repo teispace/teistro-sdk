@@ -778,6 +778,14 @@ measured against Nepal before it is called done:
 4. A Nepal festival pack, measured against the Government of Nepal's
    holiday list the way `festival-measured.md` holds the Delhi one,
    with region-scoped days (Holi in the hills and the Terai).
+   **Begun 2026-10-01** (`festival-rules.md` §9): Haritalika, Navaratra
+   arambha, Yama dwitiya and Shivaratri join the `DHARMASINDHU` pack, and
+   every shipped rule is held at Kathmandu to the 15 days the national
+   panchanga printed for VS 2082 and 2083. Over the committee's sky 14
+   agree, and Vijaya Dashami 2083 parts with its cause named (C197). Left:
+   the bhadra predicate for Holika (with Nepal's chir-daha and the hills'
+   and Terai's Holi) and Rakshabandhan, then Bali pratipada and Janai
+   purnima.
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
 

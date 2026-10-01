@@ -439,6 +439,184 @@ fn a_new_moon_is_read_in_the_month_it_ends() {
     );
 }
 
+/// The case, the day and the deciding guard when `tithi` runs from
+/// `from` to `to`, in `amanta`, between neighbours of its own fortnight.
+fn one(rule: &str, tithi: Tithi, from: f64, to: f64, amanta: Masa) -> (Case, u8, Decided) {
+    let tithis = [
+        (Tithi::Amavasya, ghati(0, 20.0)),
+        (Tithi::Purnima, from),
+        (tithi, to),
+        (Tithi::Amavasya, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &[], amanta, MonthKind::Nija);
+    decided(&shipped(rule), &days)
+}
+
+/// Haritalika (p. 55): the later day whenever its sunrise holds the 3rd,
+/// however briefly and however long the earlier held it; the earlier only
+/// when the 3rd is kshaya.
+#[test]
+fn haritalika_takes_the_later_sunrise_and_the_earlier_only_when_kshaya() {
+    let third = |from, to| {
+        one(
+            "HARITALIKA",
+            Tithi::ShuklaTritiya,
+            from,
+            to,
+            Masa::Bhadrapada,
+        )
+    };
+    // A ghati into the later day.
+    assert_eq!(
+        third(ghati(1, 10.0), ghati(2, 1.0)),
+        (Case::LaterOnly, 2, Decided::Otherwise)
+    );
+    // Sixty ghatis of the earlier day and half a ghati of the later.
+    assert_eq!(
+        third(ghati(0, 59.0), ghati(2, 0.5)),
+        (Case::Both, 2, Decided::Otherwise)
+    );
+    // Kshaya: begun after one sunrise and ended before the next.
+    assert_eq!(
+        third(ghati(1, 5.0), ghati(1, 55.0)),
+        (Case::Neither, 1, Decided::Guard { index: 0 })
+    );
+}
+
+/// Navaratra arambha (p. 65): the later day when its 1st lasts a muhurta
+/// past sunrise, else the day the new moon joins it; the earlier too when
+/// the 1st holds that whole day and grows into the next.
+#[test]
+fn navaratra_arambha_needs_a_muhurta_past_the_later_sunrise() {
+    let first = |from, to| {
+        one(
+            "NAVARATRA_ARAMBHA",
+            Tithi::ShuklaPratipada,
+            from,
+            to,
+            Masa::Ashwina,
+        )
+    };
+    // A daylight muhurta is two ghatis: three past sunrise is enough.
+    assert_eq!(
+        first(ghati(1, 30.0), ghati(2, 3.0)),
+        (Case::LaterOnly, 2, Decided::Guard { index: 1 })
+    );
+    // A ghati and a half is not: the day the new moon joins it.
+    assert_eq!(
+        first(ghati(1, 30.0), ghati(2, 1.5)),
+        (Case::LaterOnly, 1, Decided::Otherwise)
+    );
+    // Whole on the earlier day and growing: the earlier.
+    assert_eq!(
+        first(ghati(0, 58.0), ghati(2, 4.0)),
+        (Case::Both, 1, Decided::Guard { index: 0 })
+    );
+    // Kshaya: no sunrise holds it, so the day it falls in.
+    assert_eq!(
+        first(ghati(1, 5.0), ghati(1, 50.0)),
+        (Case::Neither, 1, Decided::Otherwise)
+    );
+}
+
+/// Yama dwitiya (p. 79): aparahna, ghatis 18 to 24; the earlier day only
+/// when it alone holds it.
+#[test]
+fn yama_dwitiya_takes_the_earlier_day_only_when_it_alone_holds_aparahna() {
+    let second = |from, to| {
+        one(
+            "YAMA_DWITIYA",
+            Tithi::ShuklaDvitiya,
+            from,
+            to,
+            Masa::Kartika,
+        )
+    };
+    assert_eq!(
+        second(ghati(1, 10.0), ghati(2, 15.0)),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 0 })
+    );
+    assert_eq!(
+        second(ghati(1, 10.0), ghati(2, 25.0)),
+        (Case::Both, 2, Decided::Otherwise)
+    );
+    assert_eq!(
+        second(ghati(1, 26.0), ghati(2, 20.0)),
+        (Case::LaterOnly, 2, Decided::Otherwise)
+    );
+    assert_eq!(
+        second(ghati(1, 20.0), ghati(2, 22.0)),
+        (Case::UnequalParts, 2, Decided::Otherwise)
+    );
+}
+
+/// Shivaratri (p. 90): niśītha is the night's eighth muhurta, ghatis 44
+/// to 46 of the synthetic day; each of the page's clauses in turn.
+#[test]
+fn shivaratri_takes_the_book_s_day_in_each_of_its_clauses() {
+    let fourteenth = |from, to| {
+        one(
+            "SHIVARATRI",
+            Tithi::KrishnaChaturdashi,
+            from,
+            to,
+            Masa::Magha,
+        )
+    };
+    // The earlier day only.
+    assert_eq!(
+        fourteenth(ghati(1, 40.0), ghati(2, 30.0)),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 0 })
+    );
+    // The later day only.
+    assert_eq!(
+        fourteenth(ghati(1, 50.0), ghati(2, 50.0)),
+        (Case::LaterOnly, 2, Decided::Otherwise)
+    );
+    // Whole on the earlier, part on the later: the earlier.
+    assert_eq!(
+        fourteenth(ghati(1, 40.0), ghati(2, 45.0)),
+        (Case::UnequalParts, 1, Decided::Guard { index: 1 })
+    );
+    // Part on the earlier, whole on the later: the later.
+    assert_eq!(
+        fourteenth(ghati(1, 45.0), ghati(2, 50.0)),
+        (Case::UnequalParts, 2, Decided::Otherwise)
+    );
+    // Whole on both: the later, with the many (C195).
+    assert_eq!(
+        fourteenth(ghati(1, 40.0), ghati(2, 47.0)),
+        (Case::Both, 2, Decided::Otherwise)
+    );
+    // Neither: the later.
+    assert_eq!(
+        fourteenth(ghati(1, 47.0), ghati(2, 43.0)),
+        (Case::Neither, 2, Decided::Otherwise)
+    );
+}
+
+#[test]
+fn a_night_muhurta_outside_the_night_s_fifteen_is_refused() {
+    for muhurta in [0, 16] {
+        let mut rule = shipped("SHIVARATRI");
+        rule.at = Window::NightMuhurta { muhurta };
+        assert_eq!(rule.check().unwrap_err().field(), Some("at.muhurta"));
+        let mut rule = shipped("SHIVARATRI");
+        rule.decide.push(Guard::new(
+            [Predicate::Stands {
+                day: Which::Later,
+                nakshatra: Nakshatra::Shravana,
+                at: Window::NightMuhurta { muhurta },
+            }],
+            Choice::Later,
+        ));
+        assert_eq!(
+            rule.check().unwrap_err().field(),
+            Some("decide.when.at.muhurta")
+        );
+    }
+}
+
 #[test]
 fn the_shipped_rules_round_trip_through_their_json_record() {
     let rules = FestivalRule::dharmasindhu();
@@ -447,6 +625,11 @@ fn the_shipped_rules_round_trip_through_their_json_record() {
     assert_eq!(back, rules);
     assert!(text.contains(r#""window":"NISHITHA""#), "{text}");
     assert!(text.contains(r#""is":"JOINED""#), "{text}");
+    assert!(
+        text.contains(r#""window":"NIGHT_MUHURTA","muhurta":8"#),
+        "{text}"
+    );
+    assert!(text.contains(r#""is":"WHOLLY","day":"EARLIER""#), "{text}");
 }
 
 /// Every string an answer's JSON holds, by its path with list indices

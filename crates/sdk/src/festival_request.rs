@@ -61,7 +61,7 @@ impl FestivalPack {
 /// earlier.decide.clear();
 /// earlier.otherwise = Choice::Earlier;
 /// let asked = FestivalRequest::from(FestivalPack::Dharmasindhu).with_rule(earlier.clone());
-/// assert_eq!(asked.rules().len(), 4);
+/// assert_eq!(asked.rules().len(), 8);
 /// assert_eq!(asked.rules()[3], earlier);
 /// assert_eq!(asked.ekadashis().len(), 3);
 ///
@@ -294,7 +294,7 @@ mod tests {
             FestivalRequest::from_json(&format!(r#"{{"rules": ["DHARMASINDHU", {rule}]}}"#))
                 .unwrap();
         assert_eq!(asked.rules()[0], moved);
-        assert_eq!(asked.rules().len(), 4);
+        assert_eq!(asked.rules().len(), 8);
         // And a pack after the rule puts the shipped one back.
         let asked =
             FestivalRequest::from_json(&format!(r#"{{"rules": [{rule}, "DHARMASINDHU"]}}"#))
@@ -357,7 +357,7 @@ mod tests {
                 .unwrap();
         assert_eq!(asked.ekadashis().len(), 3);
         assert_eq!(asked.ekadashis()[1], madhava);
-        assert_eq!(asked.rules().len(), 4);
+        assert_eq!(asked.rules().len(), 8);
         // A field the Ekadashi rule does not have is refused by its path.
         let wrong = rule.replacen('{', r#"{"month": "KARTIKA", "#, 1);
         assert_eq!(

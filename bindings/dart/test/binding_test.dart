@@ -1889,6 +1889,17 @@ void _engineTests() {
         'festivals.rules[0].at.window',
       ),
       (
+        FestivalRequest(
+          rules: [
+            {
+              ...sunrise,
+              'at': {'window': 'NIGHT_MUHURTA', 'muhurta': 16},
+            },
+          ],
+        ),
+        'festivals.rules[0].at.muhurta',
+      ),
+      (
         const FestivalRequest(
           rules: [
             FestivalPack.dharmasindhu,
