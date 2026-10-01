@@ -262,6 +262,47 @@ pub fn equatorial_to_ecliptic(p: Spherical, obliquity_deg: f64) -> Spherical {
     }
 }
 
+/// The geometric altitude of a body's centre above the horizon, degrees,
+/// read from a chart's own angles rather than a clock: its ecliptic
+/// position, the midheaven's longitude and the obliquity they share, all
+/// of one date and one equinox, and the observer's latitude.
+///
+/// The midheaven stands on the meridian, so its right ascension is the
+/// sidereal time the chart was cast for, and a body's hour angle is the
+/// difference. Nothing here refracts or lifts a limb: zero is the true
+/// horizon, which inside the polar circles is not the Ascendant's.
+///
+/// ```
+/// use teistro_astro::sky::{Spherical, altitude_by_midheaven_deg};
+///
+/// // A body on the midheaven of the equator culminates at the zenith less
+/// // its declination: the March equinox point, overhead.
+/// let point = Spherical { lon_deg: 0.0, lat_deg: 0.0 };
+/// assert!((altitude_by_midheaven_deg(point, 0.0, 23.44, 0.0) - 90.0).abs() < 1e-9);
+/// // Six hours on, it sets.
+/// assert!(altitude_by_midheaven_deg(point, 90.0, 23.44, 0.0).abs() < 1e-9);
+/// ```
+#[must_use]
+pub fn altitude_by_midheaven_deg(
+    body: Spherical,
+    midheaven_deg: f64,
+    obliquity_deg: f64,
+    latitude_deg: f64,
+) -> f64 {
+    let at = ecliptic_to_equatorial(body, obliquity_deg);
+    let meridian = ecliptic_to_equatorial(
+        Spherical {
+            lon_deg: midheaven_deg,
+            lat_deg: 0.0,
+        },
+        obliquity_deg,
+    );
+    let hour_angle = (meridian.lon_deg - at.lon_deg) * DEG2RAD;
+    let (sd, cd) = math::sin_cos(at.lat_deg * DEG2RAD);
+    let (sp, cp) = math::sin_cos(latitude_deg * DEG2RAD);
+    math::asin((sp * sd + cp * cd * math::cos(hour_angle)).clamp(-1.0, 1.0)) * RAD2DEG
+}
+
 /// The apparent geocentric equatorial position of a body: what an
 /// observer's horizon is reckoned against.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]

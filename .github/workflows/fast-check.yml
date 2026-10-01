@@ -157,6 +157,8 @@ jobs:
         run: cargo xtask check-arudhas
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
+      - name: Sect page (Valens's horizon against the chart's own sunrise and sunset and the recorded day births)
+        run: cargo xtask check-sect
       - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
         run: cargo xtask check-kalachakra
       - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)

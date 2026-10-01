@@ -107,6 +107,9 @@
 //! - `terms` and `check-terms`: the terms of the signs — the Egyptian,
 //!   Chaldean and Ptolemaic systems of the *Tetrabiblos* and Lilly's table,
 //!   each held to its own printing, its stated totals and its rule.
+//! - `sect` and `check-sect`: when a chart is diurnal — Valens's horizon
+//!   against the chart's apparent sunrise and sunset and the recorded day
+//!   birth, the minutes they part bisected at every birth's place.
 //! - `gochar` and `check-gochar`: the transits read from the natal Moon, how
 //!   the verdicts fall over the recorded births and who obstructs whom over
 //!   sixty years of sky.
@@ -293,6 +296,7 @@ mod saait;
 mod sade_sati;
 mod samvatsara;
 mod schema;
+mod sect;
 mod serial;
 mod shadbala;
 mod site;
@@ -423,6 +427,7 @@ const PASSES: &[Pass] = &[
     ),
     ("arudhas", arudhas::generate, arudhas::check_generated),
     ("terms", terms::generate, terms::check_generated),
+    ("sect", sect::generate, sect::check_generated),
     (
         "kalachakra",
         kalachakra::generate,

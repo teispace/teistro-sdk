@@ -196,6 +196,14 @@ pub use teistro_gochar::hits::{Hit, NatalPoint};
 pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
+// The essential dignities of the Hellenistic and later Western tradition:
+// the terms, the triplicities, the faces and the sect that chooses among
+// them (`03-design/essential-dignities.md`).
+pub use teistro_hellenistic as hellenistic;
+pub use teistro_hellenistic::{
+    Dignities, DignityRequest, DignityRules, EssentialDignity, PlanetDignity, Scores, Sect,
+    SectRule, Terms, TermsTable, Triplicities,
+};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_kp as kp;

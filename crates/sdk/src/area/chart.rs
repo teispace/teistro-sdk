@@ -5,6 +5,7 @@ use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
 use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
+use teistro_astro::sky::{Spherical, altitude_by_midheaven_deg};
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
     ChartAngles, ChartFoundation, Founder, angles_of, cusps_of, cusps_raising,
@@ -31,6 +32,7 @@ use teistro_dasha::{
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
+use teistro_hellenistic::{ChartSky, Dignities, DignityRequest};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
 use teistro_kp::{
@@ -2268,6 +2270,82 @@ impl<'a> ChartArea<'a> {
         Ok(angles)
     }
 
+    /// The seven planets' **essential dignities** in a chart you founded:
+    /// house, exaltation, triplicity, term and face, detriment and fall,
+    /// each a flag, and a score (`03-design/essential-dignities.md`).
+    ///
+    /// The sect is read by the request's rule, Valens's horizon unless
+    /// asked otherwise (crux C209), and the answer reports it with the
+    /// rules and scores it was read under. The longitudes are the chart's
+    /// own, in its zodiac: a tropical chart reads the Western dignities.
+    /// The horizon is read from the chart's own angles ([`ChartArea::angles`]),
+    /// so it needs **no ephemeris** unless they were its provider's.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::catalogue::Graha;
+    /// use teistro::{DignityRequest, Sect, SectRule};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let kathmandu = Place::new(
+    ///     Latitude::literal(27.7172),
+    ///     Longitude::literal(85.324),
+    ///     Altitude::literal(1400.0),
+    /// );
+    /// let request = ChartRequest::at(kathmandu, UtcOffset::literal(5, 45, 0));
+    /// // 12:00 UTC is 17:45 in Kathmandu, after a January sunset.
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let read = sdk.chart().dignities(&chart, &DignityRequest::default()).unwrap();
+    /// assert_eq!((read.sect, read.sect_rule), (Sect::Night, SectRule::Horizon));
+    /// // The chart's own sunset agrees, a quarter of an hour on.
+    /// let lit = DignityRequest::default().with_sect_rule(SectRule::Daylight);
+    /// assert_eq!(sdk.chart().dignities(&chart, &lit).unwrap().sect, Sect::Night);
+    /// let saturn = read.planets[0];
+    /// assert_eq!(saturn.planet, Graha::Saturn);
+    /// assert_eq!(saturn.score, saturn.dignity.score(&read.scores));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A chart that does not place one of the seven, or whatever
+    /// [`ChartArea::angles`] refuses.
+    pub fn dignities(self, chart: &Document, request: &DignityRequest) -> Result<Dignities, Error> {
+        let at = |graha: Graha| Self::longitude_of(chart, graha);
+        request.read(&ChartSky {
+            saturn_deg: at(Graha::Saturn)?,
+            jupiter_deg: at(Graha::Jupiter)?,
+            mars_deg: at(Graha::Mars)?,
+            sun_deg: at(Graha::Sun)?,
+            venus_deg: at(Graha::Venus)?,
+            mercury_deg: at(Graha::Mercury)?,
+            moon_deg: at(Graha::Moon)?,
+            sun_altitude_deg: self.sun_altitude_deg(chart)?,
+            daylight: chart.foundation.day.part.is_daylight(),
+        })
+    }
+
+    /// The Sun's centre above the true horizon, read from the chart's own
+    /// midheaven: the chart's zodiac is shifted back to the equinox by the
+    /// Sun's own two longitudes, so a sidereal chart reads the same sky.
+    fn sun_altitude_deg(self, chart: &Document) -> Result<f64, Error> {
+        let sun = chart
+            .foundation
+            .graha(Graha::Sun)
+            .ok_or_else(|| Error::internal("a founded chart places the Sun"))?;
+        let angles = self.angles(chart)?;
+        let to_equinox = sun.tropical_deg - sun.longitude_deg;
+        Ok(altitude_by_midheaven_deg(
+            Spherical {
+                lon_deg: sun.tropical_deg,
+                lat_deg: sun.latitude_deg,
+            },
+            angles.midheaven_deg + to_equinox,
+            angles.obliquity_deg,
+            chart.foundation.place.latitude.get(),
+        ))
+    }
+
     /// What a saham is read from, off a founded chart: its midheaven
     /// ([`ChartArea::angles`]), and its own chalit for a caller who asks for
     /// that.
@@ -2667,13 +2745,17 @@ impl<'a> ChartArea<'a> {
 
     /// Where the seven stand in a founded chart, which both the strengths
     /// and the aspects read.
+    /// Where a founded chart places one of the grahas.
+    fn longitude_of(chart: &Document, graha: Graha) -> Result<f64, Error> {
+        chart
+            .foundation
+            .graha(graha)
+            .map(|placed| placed.longitude_deg)
+            .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
+    }
+
     fn sky_of(annual: &Document) -> Result<AnnualSky, Error> {
-        let year = &annual.foundation;
-        let at = |graha: Graha| {
-            year.graha(graha)
-                .map(|placed| placed.longitude_deg)
-                .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
-        };
+        let at = |graha: Graha| Self::longitude_of(annual, graha);
         Ok(AnnualSky {
             sun_deg: at(Graha::Sun)?,
             moon_deg: at(Graha::Moon)?,
