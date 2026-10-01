@@ -121,6 +121,8 @@ jobs:
         run: cargo xtask check-ritu
       - name: Nepal day page (the tithi, nakshatra and yoga ends, the vriddhi and kshaya days and the sunrise Nepal's daily panchanga printed against the committee's Surya Siddhanta and its rivals)
         run: cargo xtask check-nepal-day
+      - name: Eclipses page (every solar and lunar eclipse of 1900 to 2100 against NASA's Five Millennium Canon, both ways, and the placings and shadow rule chosen between)
+        run: cargo xtask check-eclipses
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

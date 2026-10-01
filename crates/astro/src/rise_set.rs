@@ -26,7 +26,7 @@ use teistro_core::math;
 
 use serde::Serialize;
 use teistro_core::angle::difference_deg;
-use teistro_core::error::{Error, Status};
+use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refraction};
 
@@ -34,7 +34,7 @@ use crate::delta_t::DeltaTModel;
 use crate::iau::{DEG2RAD, RAD2DEG};
 use crate::scale::tt_of;
 use crate::sky::{Apparent, ApparentPositions, sidereal_time_deg};
-use crate::solve::{Caps, SCAN_CHUNK, Scan, SolveError, first_zero_gridded};
+use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded};
 
 /// The standard refraction at the horizon, arcminutes: the value the
 /// almanacs reckon rising and setting by (*Astronomical Almanac*,
@@ -793,17 +793,15 @@ impl<'a> Solver<'a> {
         let scan = Scan::new(start, end, SCAN_STEP_DAYS, upward, TOLERANCE_DAYS)
             .with_caps(scan_caps(end - start))
             .with_chunk(self.chunk);
-        let crossing = first_zero_gridded(grid, one, &scan).map_err(|error| match error {
-            SolveError::Evaluation(inner) => inner,
-            other => Error::new(
-                Status::NotConverged,
+        let crossing = first_zero_gridded(grid, one, &scan).map_err(|error| {
+            error.into_error(|| {
                 format!(
-                    "the {} of {} at {} from JD {start} was not found: {other}",
+                    "the {} of {} at {} from JD {start}",
                     kind.key().to_ascii_lowercase(),
                     self.body.key(),
                     self.place
-                ),
-            ),
+                )
+            })
         })?;
         let count = counted.get();
         Ok(match crossing {
