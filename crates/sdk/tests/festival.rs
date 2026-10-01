@@ -72,6 +72,8 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
         ("RAKSHABANDHAN", 7..=8),
         ("BALI_PRATIPADA", 10..=11),
         ("HOLIKA", 2..=3),
+        ("UPAKARMA_MADHYANDINA", 7..=8),
+        ("UPAKARMA_TAITTIRIYA", 7..=8),
         ("HOLI_HILLS", 2..=3),
         ("HOLI_TERAI", 2..=3),
     ];

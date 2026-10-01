@@ -133,7 +133,7 @@ const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 5] = [
+const UNREACHED: [(&str, usize, &str, &str); 7] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -163,6 +163,18 @@ const UNREACHED: [(&str, usize, &str, &str); 5] = [
         1,
         "holika_takes_the_later_day_whenever_its_pradosha_holds_the_full_moon",
         "the full moon beginning after the earlier day's pradosha and ending before the later's, a tithi shorter than the day between them, which no Phalguna of the decade had",
+    ),
+    (
+        "UPAKARMA_MADHYANDINA",
+        0,
+        "upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon",
+        "Shravana's full moon holding two sunrises, a vriddhi no year of the decade had",
+    ),
+    (
+        "UPAKARMA_TAITTIRIYA",
+        0,
+        "upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon",
+        "Shravana's full moon holding two sunrises, a vriddhi no year of the decade had",
     ),
 ];
 

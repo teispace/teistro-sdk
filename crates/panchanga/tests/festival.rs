@@ -443,6 +443,17 @@ fn a_new_moon_is_read_in_the_month_it_ends() {
 /// The case, the day and the deciding guard when `tithi` runs from
 /// `from` to `to`, in `amanta`, between neighbours of its own fortnight.
 fn one(rule: &str, tithi: Tithi, from: f64, to: f64, amanta: Masa) -> (Case, u8, Decided) {
+    one_of(&shipped(rule), tithi, from, to, amanta)
+}
+
+/// As [`one`], for a rule given whole.
+fn one_of(
+    rule: &FestivalRule,
+    tithi: Tithi,
+    from: f64,
+    to: f64,
+    amanta: Masa,
+) -> (Case, u8, Decided) {
     // Neighbours no shipped rule keeps, so the rule judges one occurrence.
     let tithis = [
         (Tithi::KrishnaNavami, ghati(0, 20.0)),
@@ -451,7 +462,49 @@ fn one(rule: &str, tithi: Tithi, from: f64, to: f64, amanta: Masa) -> (Case, u8,
         (Tithi::KrishnaNavami, ghati(5, 0.0)),
     ];
     let days = days_of(&tithis, &[], amanta, MonthKind::Nija);
-    decided(&shipped(rule), &days)
+    decided(rule, &days)
+}
+
+/// Nepal's reading (§9.5, C197): every rite of the night as the text has
+/// it, every rite of the daylight on the day whose sunrise holds its tithi;
+/// and Janai purnima 2083's shape, a full moon holding the later sunrise
+/// nine ghatis, is where the two part.
+#[test]
+fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
+    let (text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
+    assert_eq!(text.len(), nepal.len());
+    for (text, nepal) in text.iter().zip(&nepal) {
+        if text.at.in_daylight() {
+            assert_eq!(*nepal, text.clone().udaya(), "{}", text.key);
+            assert_eq!(nepal.at, Window::Sunrise);
+        } else {
+            assert_eq!(nepal, text, "{}", text.key);
+        }
+    }
+    let janai = |rule: &FestivalRule| {
+        one_of(
+            rule,
+            Tithi::Purnima,
+            ghati(1, 30.0),
+            ghati(2, 9.0),
+            Masa::Shravana,
+        )
+    };
+    let find = |rules: &[FestivalRule]| {
+        rules
+            .iter()
+            .find(|rule| rule.key == "UPAKARMA_MADHYANDINA")
+            .cloned()
+            .unwrap()
+    };
+    assert_eq!(
+        janai(&find(&text)),
+        (Case::LaterOnly, 1, Decided::Otherwise)
+    );
+    assert_eq!(
+        janai(&find(&nepal)),
+        (Case::LaterOnly, 2, Decided::Guard { index: 0 })
+    );
 }
 
 /// Haritalika (p. 55): the later day whenever its sunrise holds the 3rd,
@@ -642,6 +695,41 @@ fn bali_pratipada_needs_nine_muhurtas_past_the_later_sunrise() {
         first(ghati(2, 17.0)),
         (Case::LaterOnly, 1, Decided::Otherwise)
     );
+}
+
+/// The Yajurvedis' upakarma (p. 47): over the same full moons, the
+/// Madhyandina wants six muhurtas (twelve ghatis) past the later sunrise,
+/// the Taittiriya two (four), and both take the earlier day when the full
+/// moon holds both sunrises.
+#[test]
+fn upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon() {
+    let full = |key, from, to| one(key, Tithi::Purnima, from, to, Masa::Shravana);
+    let both = |from, to| {
+        (
+            full("UPAKARMA_MADHYANDINA", from, to),
+            full("UPAKARMA_TAITTIRIYA", from, to),
+        )
+    };
+    let later = (Case::LaterOnly, 2, Decided::Guard { index: 1 });
+    let earlier = (Case::LaterOnly, 1, Decided::Otherwise);
+    // More than six muhurtas: the later for both.
+    assert_eq!(
+        both(ghati(1, 30.0), ghati(2, 13.0)),
+        (later.clone(), later.clone())
+    );
+    // Between two and six: the Taittiriya's later, the Madhyandina's earlier.
+    assert_eq!(
+        both(ghati(1, 30.0), ghati(2, 8.0)),
+        (earlier.clone(), later)
+    );
+    // Fewer than two: the earlier for both.
+    assert_eq!(
+        both(ghati(1, 30.0), ghati(2, 3.0)),
+        (earlier.clone(), earlier)
+    );
+    // Holding both sunrises: the earlier for every Yajurvedi.
+    let grown = (Case::Both, 1, Decided::Guard { index: 0 });
+    assert_eq!(both(ghati(0, 58.0), ghati(2, 14.0)), (grown.clone(), grown));
 }
 
 /// Holika (p. 94): pradosha is ghatis 30 to 36 of the synthetic day; the

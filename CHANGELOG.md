@@ -1584,6 +1584,31 @@ the astronomical numbers do not move. Nothing else computes yet.
   because it is sealed over the value as it is now spelt; the muhurta
   section's changes only where a day was closed.
 
+- **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
+  on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
+  pack, C200 registered).
+  - `UPAKARMA_MADHYANDINA` and `UPAKARMA_TAITTIRIYA` (p. 47) join the
+    `DHARMASINDHU` pack: the earlier day when Shravana's full moon holds
+    both sunrises, else the later past six muhurtas of the later sunrise
+    (the Madhyandina) or two (the Taittiriya).
+  - `FestivalRule::udaya` reads a rule as the day whose sunrise holds
+    its tithi; `Window::in_daylight` says whether a window lies between
+    sunrise and sunset.
+  - **The `NEPAL` pack's rules change.** It now ships
+    `FestivalRule::nepal()`: a rite of the night or the evening as the
+    text has it, and a rite of the daylight on its sunrise tithi. Over
+    the committee's sky it falls on all 27 days printed for VS 2082 and
+    2083. The text alone parts on three daylight rites, all in VS 2083,
+    and every rule read at sunrise parts on ten rites of the night.
+    `festival-measured.md` §4 shows all four readings, and the pass
+    refuses any printed day the `NEPAL` pack misses.
+
+  **Numbers:** an answer over the `NEPAL` pack moves only where a
+  daylight rite's text and its sunrise tithi part. Over the two printed
+  years that is three days, all in 2026: Vijaya Dashami, Bali pratipada
+  and Janai purnima. `DHARMASINDHU`'s rules are unchanged, and its
+  answers gain the two upakarma.
+
 - **Holika, Rakshabandhan, Bali pratipada, and a day counted from
   another's** (`festival-rules.md` §9.4, C197 to C199).
   - The `DHARMASINDHU` pack carries eleven karmakala rules:

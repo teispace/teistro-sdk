@@ -14,7 +14,7 @@
 
 use std::fmt::Write as _;
 
-use teistro::festival::{Case, Decided, Observance, Observances};
+use teistro::festival::{Case, Decided, FestivalRule, FollowingRule, Observance, Observances};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 use teistro_core::catalogue::Calendar;
@@ -38,13 +38,14 @@ const SPANS: [(Day, Day); 4] = [
 /// What the committee printed: the Vikram year, the rule, the Gregorian
 /// day (the row's own column), and the page and the words it prints. VS
 /// 2083 ends at Chaitra's bright 7th, before Rama Navami.
-const PRINTED: [(i32, &str, Day, &str); 25] = [
+const PRINTED: [(i32, &str, Day, &str); 27] = [
     (
         2082,
         "RAKSHABANDHAN",
         (2025, 8, 9),
         "p. 9: रक्षाबन्धन, जनैपूर्णिमा",
     ),
+    (2082, "UPAKARMA_MADHYANDINA", (2025, 8, 9), "p. 9: जनैपूर्णिमा"),
     (
         2082,
         "JANMASHTAMI",
@@ -110,6 +111,12 @@ const PRINTED: [(i32, &str, Day, &str); 25] = [
     ),
     (
         2083,
+        "UPAKARMA_MADHYANDINA",
+        (2026, 8, 28),
+        "p. 11: जनैपूर्णिमा",
+    ),
+    (
+        2083,
         "JANMASHTAMI",
         (2026, 9, 4),
         "p. 12: श्रीकृष्णजन्माष्टमीव्रत",
@@ -165,7 +172,7 @@ const PRINTED: [(i32, &str, Day, &str); 25] = [
 /// rule), with the case and the deciding guard the cause asserts. The pass
 /// fails on a parting with no entry, on an entry whose row agrees, and on
 /// an entry the observance found does not bear out.
-const PARTS: [(i32, &str, Case, Decided, &str); 2] = [
+const PARTS: [(i32, &str, Case, Decided, &str); 3] = [
     (
         2083,
         "VIJAYA_DASHAMI",
@@ -179,6 +186,13 @@ const PARTS: [(i32, &str, Case, Decided, &str); 2] = [
         Case::LaterOnly,
         Decided::Otherwise,
         "the committee keeps the day whose sunrise the 1st holds, though by its print the 1st lasts only 15 ghatis 49 palas past it, until 12:41; p. 78 keeps that day only when the 1st lasts nine muhurtas (18 ghatis) past sunrise, and otherwise the earlier day the new moon pierces (C197)",
+    ),
+    (
+        2083,
+        "UPAKARMA_MADHYANDINA",
+        Case::LaterOnly,
+        Decided::Otherwise,
+        "the committee prints Janai purnima on the day whose sunrise the full moon holds, until 9:16 by its print after a 5:41 sunrise, about nine ghatis; p. 47 gives the Madhyandina the later day only past six muhurtas (12 ghatis), and the earlier when less (C197)",
     ),
 ];
 
@@ -257,8 +271,47 @@ pub(super) struct Row {
     rule: &'static str,
     printed: Day,
     page: &'static str,
-    committee: Option<Observance>,
+    /// The text's rules over the committee's sky.
+    text: Option<Observance>,
+    /// The text's rules over the modern sky.
     modern: Option<Observance>,
+    /// Every rule read at sunrise, over the committee's sky.
+    udaya: Option<Observance>,
+    /// The `NEPAL` pack over the committee's sky.
+    nepal: Option<Observance>,
+}
+
+/// The text's rules, with the days Nepal counts from them.
+fn text() -> FestivalRequest {
+    FollowingRule::nepal().into_iter().fold(
+        FestivalRequest::from(FestivalPack::Dharmasindhu),
+        FestivalRequest::with_following,
+    )
+}
+
+/// Whether `rule`'s rite lies in the daylight: a counted day's is the rite
+/// it counts from.
+fn in_daylight(rule: &str) -> Option<bool> {
+    let leader = FollowingRule::nepal()
+        .into_iter()
+        .find(|counted| counted.key == rule)
+        .map_or_else(|| rule.to_owned(), |counted| counted.after);
+    FestivalRule::dharmasindhu()
+        .into_iter()
+        .find(|shipped| shipped.key == leader)
+        .map(|shipped| shipped.at.in_daylight())
+}
+
+/// The rival C197 weighed: every rule, of the night as of the day, read as
+/// the day whose sunrise holds its tithi.
+fn udaya() -> FestivalRequest {
+    let rules = FestivalRule::dharmasindhu()
+        .into_iter()
+        .map(FestivalRule::udaya)
+        .collect();
+    FollowingRule::nepal()
+        .into_iter()
+        .fold(FestivalRequest::new(rules), FestivalRequest::with_following)
 }
 
 fn on(found: Option<&Observance>, (year, month, day): Day) -> bool {
@@ -284,13 +337,16 @@ fn near(observances: &Observances, rule: &str, printed: Day) -> Option<Observanc
         .cloned()
 }
 
-/// Each printed row beside the day each sky gives, with a problem for every
-/// parting under the committee's sky without its cause, and every cause
-/// without its parting or not borne out.
+/// Each printed row beside the day each reading gives, with a problem for
+/// every parting of the text's rules under the committee's sky without its
+/// cause, every cause without its parting or not borne out, and every
+/// parting of the `NEPAL` pack, which C197 holds to the print whole.
 pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
-    let request = FestivalRequest::from(FestivalPack::Nepal);
-    let committee = found(Sky::Committee, &request)?;
-    let modern = found(Sky::Modern, &request)?;
+    let text_request = text();
+    let text = found(Sky::Committee, &text_request)?;
+    let modern = found(Sky::Modern, &text_request)?;
+    let rival = found(Sky::Committee, &udaya())?;
+    let nepal = found(Sky::Committee, &FestivalRequest::from(FestivalPack::Nepal))?;
     let rows: Vec<Row> = PRINTED
         .iter()
         .map(|&(year, rule, printed, page)| Row {
@@ -298,20 +354,22 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
             rule,
             printed,
             page,
-            committee: near(&committee, rule, printed),
+            text: near(&text, rule, printed),
             modern: near(&modern, rule, printed),
+            udaya: near(&rival, rule, printed),
+            nepal: near(&nepal, rule, printed),
         })
         .collect();
     for row in &rows {
         let excuse = PARTS.iter().find(|p| (p.0, p.1) == (row.year, row.rule));
-        let agrees = on(row.committee.as_ref(), row.printed);
+        let agrees = on(row.text.as_ref(), row.printed);
         match (agrees, excuse) {
             (false, None) => problems.push(format!(
-                "VS {} {} printed {:?}, found {:?} over the committee's sky: a parting needs its cause in nepal::PARTS",
+                "VS {} {} printed {:?}, found {:?} by the text over the committee's sky: a parting needs its cause in nepal::PARTS",
                 row.year,
                 row.rule,
                 row.printed,
-                row.committee
+                row.text
                     .as_ref()
                     .map(|o| (o.day.month, o.day.day, o.case, decided_by(&o.decided_by)))
             )),
@@ -320,7 +378,7 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
                 row.year, row.rule
             )),
             (false, Some((_, _, case, decided, _))) => {
-                let found = row.committee.as_ref().map(|o| (o.case, &o.decided_by));
+                let found = row.text.as_ref().map(|o| (o.case, &o.decided_by));
                 if found != Some((*case, decided)) {
                     problems.push(format!(
                         "VS {} {} is excused as {case:?} decided by {decided:?}, and the observance found is {found:?}",
@@ -329,6 +387,21 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
                 }
             }
             (true, None) => {}
+        }
+        if !on(row.udaya.as_ref(), row.printed) && in_daylight(row.rule) != Some(false) {
+            problems.push(format!(
+                "VS {} {}: read at sunrise it parts from the print, and its rite is not of the night; the page says every such parting is",
+                row.year, row.rule
+            ));
+        }
+        if !on(row.nepal.as_ref(), row.printed) {
+            problems.push(format!(
+                "VS {} {} printed {:?}, and the NEPAL pack gives {:?}: C197's reading (the text for a rite of the night, the tithi at sunrise for one of the daylight) no longer holds every printed day, so reopen it in festival-rules.md §9.5",
+                row.year,
+                row.rule,
+                row.printed,
+                row.nepal.as_ref().map(|o| (o.day.month, o.day.day))
+            ));
         }
     }
     Ok(rows)
@@ -352,34 +425,38 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
     out.push_str(
         "\n## 4. Against Nepal's national panchanga\n\n\
          The days the Nepal Panchanga Decision Committee printed in its national\n\
-         panchanga for VS 2082 and 2083, read off the page images, beside the day\n\
-         each rule of the `NEPAL` pack gives at Kathmandu on Nepal's clock (Holi\n\
-         in the hills and the Terai counted from the Holika day, §9.4): over the\n\
-         committee's\n\
-         own sky (`nepali-committee`, the Surya Siddhanta with its bija, C187),\n\
-         which the pass holds to the print, and over the modern sky\n\
-         (`nepali-default`), counted beside it.\n\n",
+         panchanga for VS 2082 and 2083, read off the page images, at Kathmandu on\n\
+         Nepal's clock, beside four readings of each observance (Holi in the hills\n\
+         and the Terai counted from the Holika day, §9.4): the text's rules over\n\
+         the committee's own sky (`nepali-committee`, the Surya Siddhanta with its\n\
+         bija, C187), each parting named with its cause; the same over the modern\n\
+         sky (`nepali-default`); every rule read as the day whose sunrise holds\n\
+         its tithi, C197's rival; and the `NEPAL` pack, the text for a rite of the\n\
+         night and the tithi at sunrise for one of the daylight (§9.5), which the\n\
+         pass holds to every printed day.\n\n",
     );
     out.push_str(
-        "| VS | rule | printed | where | committee's sky | case | decided by | modern sky |\n\
-         |---:|---|---|---|---|---|---|---|\n",
+        "| VS | rule | printed | where | the text | case | decided by | modern sky | udaya | `NEPAL` |\n\
+         |---:|---|---|---|---|---|---|---|---|---|\n",
     );
     for row in rows {
-        let (case, by) = row.committee.as_ref().map_or_else(
+        let (case, by) = row.text.as_ref().map_or_else(
             || (String::new(), String::new()),
             |o| (format!("{:?}", o.case), decided_by(&o.decided_by)),
         );
         let _ = writeln!(
             out,
-            "| {} | {} | {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |",
             row.year,
             row.rule,
             spell((row.printed.1, row.printed.2)),
             row.page,
-            day_of(row.committee.as_ref(), row.printed),
+            day_of(row.text.as_ref(), row.printed),
             case,
             by,
             day_of(row.modern.as_ref(), row.printed),
+            day_of(row.udaya.as_ref(), row.printed),
+            day_of(row.nepal.as_ref(), row.printed),
         );
     }
     let parted = |pick: fn(&Row) -> Option<&Observance>| {
@@ -388,24 +465,38 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
             .count()
     };
     out.push('\n');
-    // The pass has refused a parting under the committee's sky without its
-    // cause, so every one counted is named below.
+    // The pass has refused a parting of the text without its cause and any
+    // parting of the NEPAL pack, so every one counted is named below.
     out.push_str(&table(&[
         Claim::counted(
-            "each shipped rule over the committee's sky falls on the printed day",
-            parted(|row| row.committee.as_ref()),
+            "the text's rules over the committee's sky fall on the printed day",
+            parted(|row| row.text.as_ref()),
             rows.len(),
         )
         .with_note("each parting is named below with its cause"),
         Claim::counted(
-            "each shipped rule over the modern sky falls on the printed day",
+            "the text's rules over the modern sky fall on the printed day",
             parted(|row| row.modern.as_ref()),
             rows.len(),
         )
         .with_note("the sky decides these: a tithi's end moves the day where the modern sky's and the text's part"),
+        Claim::counted(
+            "every rule read at sunrise, over the committee's sky, falls on the printed day",
+            parted(|row| row.udaya.as_ref()),
+            rows.len(),
+        )
+        .with_note("each parting is a rite of the night or the evening, where the committee keeps the text's window"),
+        Claim::counted(
+            "the `NEPAL` pack over the committee's sky falls on the printed day",
+            parted(|row| row.nepal.as_ref()),
+            rows.len(),
+        )
+        .with_note("C197: the text for a rite of the night, the tithi at sunrise for one of the daylight"),
     ]));
     out.push('\n');
-    out.push_str("Where a rule over the committee's sky parts from the print, and why:\n\n");
+    out.push_str(
+        "Where the text's rules over the committee's sky part from the print, and why:\n\n",
+    );
     for (year, rule, _, _, why) in PARTS {
         let _ = writeln!(out, "- VS {year} {rule}: {why}");
     }

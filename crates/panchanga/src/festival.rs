@@ -104,6 +104,23 @@ impl Window {
             Window::Sunrise | Window::Part { .. } | Window::Pradosha | Window::Nishitha => None,
         }
     }
+
+    /// Whether the window lies in the daylight, sunrise to sunset; the
+    /// pradosha after sunset and the night's windows do not.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::Window;
+    ///
+    /// assert!(Window::Sunrise.in_daylight());
+    /// assert!(!Window::Pradosha.in_daylight());
+    /// ```
+    #[must_use]
+    pub const fn in_daylight(self) -> bool {
+        match self {
+            Window::Sunrise | Window::Part { .. } => true,
+            Window::Pradosha | Window::Nishitha | Window::NightMuhurta { .. } => false,
+        }
+    }
 }
 
 /// One of the two days a tithi is judged between.
@@ -828,13 +845,64 @@ impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
     /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
-    /// (§9).
+    /// (§9), then two schools' upakarma (§9.5).
     #[must_use]
     pub fn dharmasindhu() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::first_four();
         rules.extend(FestivalRule::nepal_four());
         rules.extend(FestivalRule::nepal_three());
+        rules.extend(FestivalRule::upakarma());
         rules
+    }
+
+    /// *Dharmasindhu*'s rules as Nepal's national panchanga keeps them
+    /// (`festival-rules.md` §9.5, C197): a rite of the night or the evening
+    /// on the text's day, and a rite of the daylight on the day whose
+    /// sunrise holds its tithi ([`FestivalRule::udaya`]). The Nepal
+    /// Panchanga Decision Committee's printed days for VS 2082 and 2083
+    /// agree with this reading on every row, and with the text alone on all
+    /// but the three daylight rites where the two part.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalRule;
+    ///
+    /// let nepal = FestivalRule::nepal();
+    /// let tika = nepal.iter().find(|rule| rule.key == "VIJAYA_DASHAMI").ok_or("shipped")?;
+    /// assert!(tika.decide.len() == 1 && tika.source.contains("C197"));
+    /// let lakshmi = nepal.iter().find(|rule| rule.key == "LAKSHMI_PUJA").ok_or("shipped")?;
+    /// assert_eq!(Some(lakshmi), FestivalRule::dharmasindhu().iter().find(|rule| rule.key == "LAKSHMI_PUJA"));
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn nepal() -> Vec<FestivalRule> {
+        FestivalRule::dharmasindhu()
+            .into_iter()
+            .map(|rule| {
+                if rule.at.in_daylight() {
+                    rule.udaya()
+                } else {
+                    rule
+                }
+            })
+            .collect()
+    }
+
+    /// The same rule read as the day whose sunrise holds its tithi: the
+    /// later day when only its sunrise does, else the earlier (both
+    /// sunrises, or the day a tithi holding none falls in). Its source
+    /// says so, and names C197.
+    #[must_use]
+    pub fn udaya(self) -> FestivalRule {
+        FestivalRule {
+            source: format!(
+                "{}; read as the day whose sunrise holds the tithi, as Nepal's national panchanga keeps a rite of the daylight (C197)",
+                self.source
+            ),
+            at: Window::Sunrise,
+            decide: vec![Guard::new([case(Case::LaterOnly)], Choice::Later)],
+            otherwise: Choice::Earlier,
+            ..self
+        }
     }
 
     /// Rama Navami, Janmashtami, Vijaya Dashami and Lakshmi puja (§1).
@@ -1041,6 +1109,48 @@ impl FestivalRule {
                 ],
                 otherwise: Later,
             },
+        ]
+    }
+
+    /// The Yajurvedis' upakarma on Shravana's full moon (§9.5), for the
+    /// Madhyandina, whose rule is held to the Janai purnima Nepal's
+    /// panchanga prints, and for the Taittiriya: both take the earlier day
+    /// when the full moon holds both sunrises, and part only on how long
+    /// it must hold the later.
+    fn upakarma() -> Vec<FestivalRule> {
+        use Choice::{Earlier, Later};
+        let rule = |key: &str, source: &str, ghatis| FestivalRule {
+            key: key.to_owned(),
+            source: source.to_owned(),
+            month: Masa::Shravana,
+            convention: Convention::Amanta,
+            tithi: Tithi::Purnima,
+            in_adhika: false,
+            at: Window::Sunrise,
+            decide: vec![
+                Guard::new([case(Case::Both)], Earlier),
+                Guard::new(
+                    [Predicate::Lasts {
+                        day: Which::Later,
+                        from: Edge::Sunrise,
+                        ghatis,
+                    }],
+                    Later,
+                ),
+            ],
+            otherwise: Earlier,
+        };
+        vec![
+            rule(
+                "UPAKARMA_MADHYANDINA",
+                "Dharmasindhu p. 47: for the Kanva, the Madhyandina and the other Katyayanas, Shravana's full moon, joined to Shravana or alone; split over two days, the later when it holds more than six muhurtas past the later sunrise, the earlier when less; and for every Yajurvedi the earlier when it holds both sunrises",
+                12,
+            ),
+            rule(
+                "UPAKARMA_TAITTIRIYA",
+                "Dharmasindhu p. 47: for the Taittiriya, Shravana's full moon; the later day when it holds two muhurtas or more past the later sunrise, though fewer than six, where the other Yajurvedis take the earlier; and for every Yajurvedi the earlier when it holds both sunrises, or fewer than two muhurtas of the later",
+                4,
+            ),
         ]
     }
 }

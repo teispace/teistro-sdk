@@ -2616,9 +2616,10 @@ export interface FestivalRequest {
 }
 
 /**
- * A pack of festival rules the SDK ships: *Dharmasindhu*'s, or those and
- * the days Nepal's national panchanga counts from them
- * (`03-design/festival-rules.md` §9.4).
+ * A pack of festival rules the SDK ships: *Dharmasindhu*'s, or those as
+ * Nepal's national panchanga keeps them (a rite of the daylight on the day
+ * whose sunrise holds its tithi) with the days it counts from them
+ * (`03-design/festival-rules.md` §9.4–9.5).
  */
 export type FestivalPack = 'DHARMASINDHU' | 'NEPAL';
 
