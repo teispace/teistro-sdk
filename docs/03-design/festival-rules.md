@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's rules (§9) held to the committee's printed days, with the `NEPAL` pack's reading agreeing on all 27 (§9.5). Written from the source
+Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's rules (§9) held to the committee's printed days, with the `NEPAL` pack's reading agreeing on all 29 (§9.5, §9.7), and the monthly full-moon fast on all 24 (§9.6). Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -678,7 +678,7 @@ So `UPAKARMA_MADHYANDINA` (twelve ghatis) and `UPAKARMA_TAITTIRIYA`
 and one for the count. The committee prints one Janai purnima without
 naming a school, and the Madhyandina's rule is the row held to it. The Rigvedis' (Shravana nakshatra)
 and the Samavedis' (Hasta in Bhadrapada) are keyed by a nakshatra, not a
-tithi, and wait for a rule of that kind.
+tithi; §9.7 gives the rule that kind needs and the Samavedis' with it.
 
 **What the measuring found.** Janai purnima in VS 2083 parts from the text
 the way the tika and Govardhan puja did: by the committee's print the full
@@ -686,7 +686,7 @@ moon holds the later sunrise until 9:16, about nine ghatis, and the
 committee keeps that day. That is three partings in one year, every one
 toward the tithi at sunrise. So the rival was measured rather than
 argued: every rule read as the day whose sunrise holds its tithi
-(`FestivalRule::udaya`). It parts from the print on 10 of 27 rows, and
+(`FestivalRule::udaya`). It parts from the print on 10 of 29 rows, and
 every one of those is a rite of the night or the evening: Lakshmi puja,
 Shivaratri, Holika and the Holis counted from it. It agrees on every rite
 of the daylight, the three partings among them. The pass checks that
@@ -694,7 +694,7 @@ sentence row by row.
 
 **The decision (C197).** The `NEPAL` pack keeps the text for a rite of the
 night or the evening, and the tithi at sunrise for a rite of the daylight
-(`FestivalRule::nepal`, `Window::in_daylight`). It agrees with all 27
+(`FestivalRule::nepal`, `Window::in_daylight`). It agrees with all 29
 printed days. The pass holds it to every one with no list of excuses, and
 its refusal names this section to reopen. `DHARMASINDHU` keeps the text,
 and its three partings stay named with their causes. Two years are what
@@ -703,7 +703,7 @@ prints tests it again.
 
 | # | fork | default | the other reading |
 |---|---|---|---|
-| C197 | how Nepal keeps a rite of the daylight | **the tithi at sunrise** in the `NEPAL` pack, which holds 27 of 27 printed days; the text in `DHARMASINDHU` | the text's window for every rite, which parts on three daylight rites in VS 2083 |
+| C197 | how Nepal keeps a rite of the daylight | **the tithi at sunrise** in the `NEPAL` pack, which holds 29 of 29 printed days; the text in `DHARMASINDHU` | the text's window for every rite, which parts on three daylight rites in VS 2083 |
 
 ### 9.6 The monthly full-moon fast (C200)
 
@@ -762,3 +762,67 @@ evening first (1, Ashadha 2083); and any part of pradosha (1, Pausha
 |---|---|---|---|
 | C200 | the day of the monthly full-moon fast | **the evening the full moon holds, the later first** in the `NEPAL` pack, holding 24 of 24 printed days, with the committee as its only source | *Dharmasindhu* p. 20's later day, which parts on 10; a consumer replaces the rule by its key |
 
+
+### 9.7 A rule kept on a nakshatra: the Samavedis' upakarma (C207)
+
+Two schools keep the upakarma on a nakshatra rather than a tithi, which
+§9.5 left waiting for a rule of that kind. *Dharmasindhu* p. 47 (read off
+the page image) gives the Samavedis Hasta in Bhadrapada's bright half,
+at aparahna, clause by clause:
+
+- Hasta pervading both days' aparahna, or touching the later's in part:
+  the later day ("दिनद्वयेपराह्णपूर्णव्याप्तौ अपराह्णैकदेशस्पर्शे वा
+  परदिने एवोपाकर्म");
+- pervading the earlier day's alone, wholly: the earlier;
+- touching only the earlier day's, in part, or neither day's: the later.
+
+So the earlier day needs the earlier aparahna held wholly and the
+later's not at all, and every other shape takes the later.
+
+**The rows.** The committee prints सामवेदीहरूको उपाकर्म in both years it
+hosts, read off the page images with the nakshatra column beside it:
+
+- VS 2082 p. 11, 26 August 2025, Teej's own row: Hasta from 04:04 that
+  morning, all day and night ("अहोरात्र"), until 05:59 the next, past
+  its 05:40 sunrise. The earlier aparahna is held wholly and the later's
+  not at all: the earlier day.
+- VS 2083 p. 13, 13 September 2026, the day before Teej: Hasta from 14:08
+  on the 12th until 14:30 on the 13th. Both aparahnas are touched in part:
+  the later day.
+
+**The design.** `FestivalRule.occurs` is what a rule is kept on:
+`Occurs::Tithi`, every rule before this, or `Occurs::Nakshatra` with the
+paksha it must fall in. The JSON stays flat (`"tithi"`, or `"nakshatra"`
+with `"paksha"`), so every rule written before reads as it did, and a
+rule naming both, neither, or a nakshatra without its paksha is refused
+by name. A nakshatra's occurrence is judged between its two days exactly
+as a tithi's is (C172), by the share of the rite's window it holds. It
+falls in the month and paksha of the tithi running at its middle. Two
+things only a tithi has are refused for a nakshatra rule: the yugma verse,
+and `JOINED`, which asks the tithi and a nakshatra to stand together
+(`STANDS` asks the same of a nakshatra alone).
+
+`UPAKARMA_SAMAVEDI` joins `DHARMASINDHU`. `NEPAL` reads it as it reads
+every rite of the daylight, by the sunrise the nakshatra holds (§9.5,
+C197). Both readings give both printed days, so these two rows cannot
+separate them. The pass holds the `NEPAL` pack's to both rows
+(`festival-measured.md`).
+
+**What is not encoded.** The text has three further clauses, recorded
+here as forks:
+
+- Shravana's Hasta where a sankranti or the like bars Bhadrapada's, which
+  it cites from the Nirnaya-sindhu.
+- A sangava time for those Samavedis whose sutra puts the rite in the
+  morning.
+- The Sun-in-Leo reading, which it confines to another's practice.
+
+The Rigvedis' rule (p. 46 to 47) is Shravana in Shravana's bright half,
+or failing it the 5th and then Hasta. It falls back from one occurrence to
+another and counts muhurtas against the Dhanishtha and Uttarashadha
+vedhas. The committee prints no Rigvedi upakarma in either year, so there
+is no record to hold that rule to, and it waits (C207).
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C207 | the Samavedis' and the Rigvedis' upakarma | **Hasta in Bhadrapada's bright half at aparahna**, the earlier day only when it alone is held wholly (`UPAKARMA_SAMAVEDI`); 2 of 2 printed days | Shravana's Hasta under a sankranti, a sangava time, the Sun-in-Leo reading; the Rigvedis' fall-back rule, not encoded for want of a printed record |

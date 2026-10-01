@@ -2034,6 +2034,18 @@ void _engineTests() {
       [for (final o in mine.observances) (o.rule, o.month)],
       [('EVERY_FULL_MOON', Masa.ashwina)],
     );
+    final hasta = <String, Object?>{
+      for (final entry in everyMonth.entries)
+        if (entry.key != 'tithi') entry.key: entry.value,
+      'key': 'DARK_HASTA',
+      'nakshatra': 'nakshatra.HASTA',
+      'paksha': 'paksha.KRISHNA',
+    };
+    final kept = days(festivals: FestivalRequest(rules: [hasta])).festivals!;
+    expect(
+      [for (final o in kept.observances) (o.rule, o.month)],
+      [('DARK_HASTA', Masa.ashwina)],
+    );
 
     for (final (asked, field) in [
       (const FestivalRequest(rules: 'DHARMASINDHU'), 'festivals.rules'),
@@ -2056,6 +2068,14 @@ void _engineTests() {
           ],
         ),
         'festivals.rules[0].at.window',
+      ),
+      (
+        FestivalRequest(
+          rules: [
+            {...sunrise, 'nakshatra': 'HASTA', 'paksha': 'SHUKLA'},
+          ],
+        ),
+        'festivals.rules[0]',
       ),
       (
         FestivalRequest(

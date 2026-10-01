@@ -73,6 +73,7 @@ one a year did reach.
 | HOLIKA | EarlierOnly 7, LaterOnly 3 | otherwise: 3, guard 0: 7 |
 | UPAKARMA_MADHYANDINA | LaterOnly 10 | otherwise: 4, guard 1: 6 |
 | UPAKARMA_TAITTIRIYA | LaterOnly 10 | otherwise: 3, guard 1: 7 |
+| UPAKARMA_SAMAVEDI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 5, guard 0: 5 |
 
 The guards no year reached, and why:
 
@@ -122,6 +123,7 @@ pass holds to every printed day.
 | 2082 | UPAKARMA_MADHYANDINA | 9 Aug | p. 9: जनैपूर्णिमा | 9 Aug | LaterOnly | guard 1 | 9 Aug | 9 Aug | 9 Aug |
 | 2082 | JANMASHTAMI | 16 Aug | p. 10: श्रीकृष्णजन्माष्टमीव्रत | 16 Aug | Neither | otherwise | 15 Aug ✗ | 16 Aug | 16 Aug |
 | 2082 | HARITALIKA | 26 Aug | p. 11: हरितालिकाव्रत (तीज) | 26 Aug | LaterOnly | otherwise | 26 Aug | 26 Aug | 26 Aug |
+| 2082 | UPAKARMA_SAMAVEDI | 26 Aug | p. 11: सामवेदीहरूको उपाकर्म | 26 Aug | EarlierOnly | guard 0 | 26 Aug | 26 Aug | 26 Aug |
 | 2082 | NAVARATRA_ARAMBHA | 22 Sep | p. 13: नवरात्रारम्भ | 22 Sep | LaterOnly | guard 1 | 22 Sep | 22 Sep | 22 Sep |
 | 2082 | VIJAYA_DASHAMI | 2 Oct | p. 13: विजयादशमी, टीका | 2 Oct | UnequalParts | guard 6 | 2 Oct | 2 Oct | 2 Oct |
 | 2082 | LAKSHMI_PUJA | 20 Oct | p. 14: लक्ष्मीपूजा, दीपमालिका | 20 Oct | EarlierOnly | otherwise | 21 Oct ✗ | 21 Oct ✗ | 20 Oct |
@@ -135,6 +137,7 @@ pass holds to every printed day.
 | 2083 | RAKSHABANDHAN | 28 Aug | p. 11: रक्षाबन्धन, जनैपूर्णिमा | 28 Aug | LaterOnly | guard 0 | 28 Aug | 28 Aug | 28 Aug |
 | 2083 | UPAKARMA_MADHYANDINA | 28 Aug | p. 11: जनैपूर्णिमा | 27 Aug ✗ | LaterOnly | otherwise | 27 Aug ✗ | 28 Aug | 28 Aug |
 | 2083 | JANMASHTAMI | 4 Sep | p. 12: श्रीकृष्णजन्माष्टमीव्रत | 4 Sep | Neither | otherwise | 4 Sep | 4 Sep | 4 Sep |
+| 2083 | UPAKARMA_SAMAVEDI | 13 Sep | p. 13: सामवेदीहरूको उपाकर्म | 13 Sep | UnequalParts | otherwise | 13 Sep | 13 Sep | 13 Sep |
 | 2083 | HARITALIKA | 14 Sep | p. 13: हरितालिकाव्रत (तीज) | 14 Sep | LaterOnly | otherwise | 14 Sep | 14 Sep | 14 Sep |
 | 2083 | NAVARATRA_ARAMBHA | 11 Oct | p. 15: घटस्थापना, नवरात्रारम्भ | 11 Oct | LaterOnly | guard 1 | 11 Oct | 11 Oct | 11 Oct |
 | 2083 | VIJAYA_DASHAMI | 21 Oct | p. 15: विजयादशमी, दशैंको टीका | 20 Oct ✗ | EarlierOnly | guard 5 | 20 Oct ✗ | 21 Oct | 21 Oct |
@@ -148,10 +151,10 @@ pass holds to every printed day.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the text's rules over the committee's sky fall on the printed day | falsified | 3 of 27 disagree; each parting is named below with its cause |
-| the text's rules over the modern sky fall on the printed day | falsified | 5 of 27 disagree; the sky decides these: a tithi's end moves the day where the modern sky's and the text's part |
-| every rule read at sunrise, over the committee's sky, falls on the printed day | falsified | 10 of 27 disagree; each parting is a rite of the night or the evening, where the committee keeps the text's window |
-| the `NEPAL` pack over the committee's sky falls on the printed day | **holds** | 0 of 27 disagree; C197: the text for a rite of the night, the tithi at sunrise for one of the daylight |
+| the text's rules over the committee's sky fall on the printed day | falsified | 3 of 29 disagree; each parting is named below with its cause |
+| the text's rules over the modern sky fall on the printed day | falsified | 5 of 29 disagree; the sky decides these: a tithi's end moves the day where the modern sky's and the text's part |
+| every rule read at sunrise, over the committee's sky, falls on the printed day | falsified | 10 of 29 disagree; each parting is a rite of the night or the evening, where the committee keeps the text's window |
+| the `NEPAL` pack over the committee's sky falls on the printed day | **holds** | 0 of 29 disagree; C197: the text for a rite of the night, the tithi at sunrise for one of the daylight |
 
 Where the text's rules over the committee's sky part from the print, and why:
 

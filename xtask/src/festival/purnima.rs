@@ -292,7 +292,11 @@ const GHATI: f64 = 1.0 / 60.0;
 
 /// The readings computed from the shipped observance's two days rather
 /// than evaluated as rules.
-fn computed(reading: Reading, observance: &Observance, days: &BTreeMap<Day, Panchanga>) -> Option<Day> {
+fn computed(
+    reading: Reading,
+    observance: &Observance,
+    days: &BTreeMap<Day, Panchanga>,
+) -> Option<Day> {
     let earlier = days.get(&day_of(&observance.extents[0].day))?;
     let later = days.get(&day_of(&observance.extents[1].day))?;
     let pick = |earlier_wins: bool| {
@@ -334,7 +338,11 @@ pub(super) struct Row {
 pub(super) fn compare(problems: &mut Vec<String>) -> Result<Vec<Row>, String> {
     let shipped = shipped()?;
     let mut rules = vec![shipped.clone()];
-    rules.extend(Reading::ALL.iter().filter_map(|reading| reading.rule(&shipped)));
+    rules.extend(
+        Reading::ALL
+            .iter()
+            .filter_map(|reading| reading.rule(&shipped)),
+    );
     let committee = found(Sky::Committee, &rules)?;
     let modern = found(Sky::Modern, std::slice::from_ref(&shipped))?;
     let rows: Vec<Row> = PRINTED
@@ -417,7 +425,9 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
         let month = row.month.map_or_else(String::new, |(masa, adhika)| {
             format!("{}{}", masa.key(), if adhika { " (adhika)" } else { "" })
         });
-        let case = row.case.map_or_else(String::new, |case| format!("{case:?}"));
+        let case = row
+            .case
+            .map_or_else(String::new, |case| format!("{case:?}"));
         let _ = write!(
             out,
             "| {} | {} | {} | {month} | {case} |",
@@ -426,7 +436,11 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
             spell((row.printed.1, row.printed.2)),
         );
         for reading in Reading::ALL {
-            let _ = write!(out, " {} |", shown(row.readings[reading.index()], row.printed));
+            let _ = write!(
+                out,
+                " {} |",
+                shown(row.readings[reading.index()], row.printed)
+            );
         }
         out.push('\n');
     }

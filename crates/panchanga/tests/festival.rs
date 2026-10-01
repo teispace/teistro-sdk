@@ -17,13 +17,13 @@
 
 use teistro_calendar::EraNumber;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Era, Masa, Nakshatra, Tithi};
+use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Tithi};
 use teistro_core::interval::Interval;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule,
-    Guard, Observances, Predicate, Unjudged, Which, Window, ekadashis, following, observances,
-    yugma,
+    Guard, Observances, Occurs, Predicate, Unjudged, Which, Window, ekadashis, following,
+    observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -114,7 +114,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
         source: "a test".to_owned(),
         month: Some(Masa::Shravana),
         convention: Convention::Amanta,
-        tithi,
+        occurs: tithi.into(),
         in_adhika: false,
         at: Window::Part {
             part: DayPart::Madhyahna,
@@ -485,7 +485,10 @@ fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
     let (text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
     // The text's rules, then the monthly full-moon fast no text states.
     assert_eq!(text.len() + 1, nepal.len());
-    assert_eq!(nepal.last().map(|rule| rule.key.as_str()), Some("PURNIMA_VRATA"));
+    assert_eq!(
+        nepal.last().map(|rule| rule.key.as_str()),
+        Some("PURNIMA_VRATA")
+    );
     for (text, nepal) in text.iter().zip(&nepal) {
         if text.at.in_daylight() {
             assert_eq!(*nepal, text.clone().udaya(), "{}", text.key);
@@ -588,11 +591,21 @@ fn the_full_moon_fast_keeps_the_evening_the_full_moon_holds_the_later_first() {
 #[test]
 fn the_full_moon_fast_is_kept_every_month_and_says_which() {
     assert_eq!(
-        full_moon(ghati(1, 20.0), ghati(2, 18.0), Masa::Kartika, MonthKind::Nija),
+        full_moon(
+            ghati(1, 20.0),
+            ghati(2, 18.0),
+            Masa::Kartika,
+            MonthKind::Nija
+        ),
         (Case::EarlierOnly, 1, Masa::Kartika, false)
     );
     assert_eq!(
-        full_moon(ghati(1, 20.0), ghati(2, 18.0), Masa::Jyeshtha, MonthKind::Adhika),
+        full_moon(
+            ghati(1, 20.0),
+            ghati(2, 18.0),
+            Masa::Jyeshtha,
+            MonthKind::Adhika
+        ),
         (Case::EarlierOnly, 1, Masa::Jyeshtha, true)
     );
     // The window is an instant of the evening, so Nepal keeps the rule as
@@ -607,7 +620,8 @@ fn the_full_moon_fast_is_kept_every_month_and_says_which() {
         (Tithi::KrishnaPratipada, ghati(5, 0.0)),
     ];
     let days = days_of(&tithis, &[], Masa::Shravana, MonthKind::Nija);
-    assert!(observances(&[kartika_only], &days).unwrap().observances.is_empty());
+    let kept = observances(&[kartika_only], &days).unwrap().observances;
+    assert!(kept.is_empty(), "{kept:?}");
 }
 
 /// A rule spelt out without a month is kept every month, and one written
@@ -617,9 +631,141 @@ fn a_rule_without_a_month_reads_and_writes_without_one() {
     let rule = purnima_vrata();
     let written = serde_json::to_value(&rule).unwrap();
     assert!(written.get("month").is_none(), "{written}");
-    assert_eq!(serde_json::from_value::<FestivalRule>(written).unwrap(), rule);
+    assert_eq!(
+        serde_json::from_value::<FestivalRule>(written).unwrap(),
+        rule
+    );
     let sunset = serde_json::to_value(Window::Sunset).unwrap();
     assert_eq!(sunset, serde_json::json!({ "window": "SUNSET" }));
+}
+
+fn samavedi() -> FestivalRule {
+    FestivalRule::dharmasindhu()
+        .into_iter()
+        .find(|rule| rule.key == "UPAKARMA_SAMAVEDI")
+        .unwrap()
+}
+
+/// Hasta from `from` to `to` in the bright half of a month named `amanta`,
+/// judged by `rule`: the observances' (case, day) pairs, 1-based.
+fn hasta(rule: &FestivalRule, from: f64, to: f64, amanta: Masa) -> Vec<(Case, u8)> {
+    let tithis = [
+        (Tithi::Amavasya, ghati(0, 10.0)),
+        (Tithi::ShuklaPratipada, ghati(1, 30.0)),
+        (Tithi::ShuklaDvitiya, ghati(2, 40.0)),
+        (Tithi::ShuklaTritiya, ghati(4, 0.0)),
+        (Tithi::ShuklaChaturthi, ghati(5, 0.0)),
+    ];
+    let nakshatras = [
+        (Nakshatra::UttaraPhalguni, from),
+        (Nakshatra::Hasta, to),
+        (Nakshatra::Chitra, ghati(5, 0.0)),
+    ];
+    let days = days_of(&tithis, &nakshatras, amanta, MonthKind::Nija);
+    let answer = observances(std::slice::from_ref(rule), &days).unwrap();
+    assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+    answer
+        .observances
+        .iter()
+        .map(|observance| {
+            assert_eq!(observance.tithi, Interval::literal(from, to));
+            (observance.case, observance.day.day)
+        })
+        .collect()
+}
+
+/// The Samavedis' upakarma (p. 47, read off the page image): the earlier
+/// day only when Hasta pervades its aparahna wholly and the later's not at
+/// all. Aparahna is ghatis 18 to 24 of a thirty-ghati daylight here.
+#[test]
+fn the_samavedi_upakarma_takes_the_earlier_day_only_when_it_alone_is_wholly_pervaded() {
+    let rule = samavedi();
+    let at = |from, to| hasta(&rule, ghati(1, from), ghati(2, to), Masa::Bhadrapada);
+    // The earlier's aparahna wholly, the later's not at all.
+    assert_eq!(at(10.0, 10.0), [(Case::EarlierOnly, 2)]);
+    // The earlier's touched in part only: the later.
+    assert_eq!(at(20.0, 10.0), [(Case::EarlierOnly, 3)]);
+    // Both wholly, the later in part, or neither: the later.
+    assert_eq!(at(10.0, 30.0), [(Case::Both, 3)]);
+    assert_eq!(at(10.0, 20.0), [(Case::UnequalParts, 3)]);
+    assert_eq!(at(30.0, 15.0), [(Case::Neither, 3)]);
+    assert_eq!(at(30.0, 30.0), [(Case::LaterOnly, 3)]);
+}
+
+/// A nakshatra-keyed rule keeps its month and its paksha, read from the
+/// tithi running at the nakshatra's middle.
+#[test]
+fn a_rule_kept_on_a_nakshatra_keeps_its_month_and_its_paksha() {
+    let rule = samavedi();
+    let shravana = hasta(&rule, ghati(1, 10.0), ghati(2, 10.0), Masa::Shravana);
+    assert!(shravana.is_empty(), "{shravana:?}");
+    let dark = FestivalRule {
+        occurs: Occurs::Nakshatra {
+            nakshatra: Nakshatra::Hasta,
+            paksha: Paksha::Krishna,
+        },
+        ..rule.clone()
+    };
+    let bright = hasta(&dark, ghati(1, 10.0), ghati(2, 10.0), Masa::Bhadrapada);
+    assert!(bright.is_empty(), "{bright:?}");
+    // Through the pratipada into the dvitiya, the middle in the dvitiya: kept.
+    assert_eq!(
+        hasta(&rule, ghati(1, 25.0), ghati(2, 50.0), Masa::Bhadrapada).len(),
+        1
+    );
+}
+
+#[test]
+fn a_rule_kept_on_a_nakshatra_reads_and_writes_flat_and_is_refused_by_name() {
+    let rule = samavedi();
+    let written = serde_json::to_value(&rule).unwrap();
+    assert_eq!(
+        (
+            &written["nakshatra"],
+            &written["paksha"],
+            written.get("tithi")
+        ),
+        (
+            &serde_json::json!("HASTA"),
+            &serde_json::json!("SHUKLA"),
+            None
+        )
+    );
+    assert_eq!(
+        serde_json::from_value::<FestivalRule>(written.clone()).unwrap(),
+        rule
+    );
+    let tithi = serde_json::to_value(purnima_vrata()).unwrap();
+    assert_eq!(tithi["tithi"], serde_json::json!("PURNIMA"));
+    let refused = |edit: &dyn Fn(&mut serde_json::Value)| {
+        let mut value = written.clone();
+        edit(&mut value);
+        serde_json::from_value::<FestivalRule>(value)
+            .unwrap_err()
+            .to_string()
+    };
+    assert!(refused(&|v| v["tithi"] = serde_json::json!("PURNIMA")).contains("not both"));
+    assert!(refused(&|v| drop(v.as_object_mut().unwrap().remove("paksha"))).contains("`paksha`"));
+    assert!(
+        refused(&|v| drop(v.as_object_mut().unwrap().remove("nakshatra"))).contains("on a `tithi`")
+    );
+    let yugma = FestivalRule {
+        otherwise: Choice::ByYugma,
+        ..rule.clone()
+    };
+    assert_eq!(yugma.check().unwrap_err().field(), Some("decide"));
+    let joined = FestivalRule {
+        decide: vec![Guard::new(
+            [Predicate::Joined {
+                day: Which::Later,
+                nakshatra: Nakshatra::Shravana,
+                at: None,
+            }],
+            Choice::Later,
+        )],
+        ..rule
+    };
+    assert_eq!(joined.check().unwrap_err().field(), Some("decide.when.is"));
 }
 
 /// Haritalika (p. 55): the later day whenever its sunrise holds the 3rd,

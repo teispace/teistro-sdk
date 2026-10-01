@@ -6128,7 +6128,8 @@ final class FestivalObservance extends _Value {
   final String rule;
   final CalendarDate day;
 
-  /// The tithi's occurrence judged.
+  /// The occurrence judged: the tithi's, or the nakshatra's for a rule
+  /// kept on a nakshatra in a paksha.
   final Interval tithi;
 
   /// Its amanta month, as an Ekadashi fast's is: which month's occurrence a

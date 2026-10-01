@@ -2808,7 +2808,8 @@ pub struct PanchangaRequest {
     /// a list whose items name a pack or spell a rule out, a later rule
     /// replacing an earlier one with its key; an item with a `vedha` is
     /// an Ekadashi rule, one with an `after` a rule counting `days` civil
-    /// days from that tithi rule's day (§9.4), the rest tithi rules. A
+    /// days from that festival rule's day (§9.4), the rest festival rules,
+    /// each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A
     /// catalogue member may be written bare or in full. The answer comes
     /// back in the `festivals` section, over this blob's own days founded
     /// once, with the two days before and the two after, and as many more

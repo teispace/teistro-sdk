@@ -1715,11 +1715,17 @@ class AnEngine(WithLibrary):
             mine = ctx.almanac.of(**days, festivals={"rules": [every_month]}).festivals
             assert mine is not None
             self.assertEqual([(o.rule, o.month) for o in mine.observances], [("EVERY_FULL_MOON", Masa.ASHWINA)])
+            hasta = {k: v for k, v in every_month.items() if k != "tithi"}
+            hasta.update(key="DARK_HASTA", nakshatra="nakshatra.HASTA", paksha="paksha.KRISHNA")
+            kept = ctx.almanac.of(**days, festivals={"rules": [hasta]}).festivals
+            assert kept is not None
+            self.assertEqual([(o.rule, o.month) for o in kept.observances], [("DARK_HASTA", Masa.ASHWINA)])
 
             refusals: list[tuple[FestivalRequest, str]] = [
                 ({"rules": "DHARMA"}, "festivals.rules"),  # type: ignore[typeddict-item]
                 ({"rules": ["DHARMASINDHU", {**sunrise, "key": ""}]}, "festivals.rules[1].key"),
                 ({"rules": [{**sunrise, "at": {"window": "DUSK"}}]}, "festivals.rules[0].at.window"),
+                ({"rules": [{**sunrise, "nakshatra": "HASTA", "paksha": "SHUKLA"}]}, "festivals.rules[0]"),
                 (
                     {"rules": [{**sunrise, "at": {"window": "NIGHT_MUHURTA", "muhurta": 16}}]},
                     "festivals.rules[0].at.muhurta",

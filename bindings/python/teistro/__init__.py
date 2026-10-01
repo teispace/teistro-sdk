@@ -3140,7 +3140,8 @@ class FestivalRequest(TypedDict):
     SDK ships, or a list whose items each name a pack or spell a rule out as
     a mapping in its record's spelling (an Ekadashi rule when it has a
     `vedha`, a following rule when it has an `after`, which counts `days`
-    civil days from that festival rule's day), a later rule replacing an
+    civil days from that festival rule's day; a festival rule is kept on a
+    `tithi`, or on a `nakshatra` in a `paksha`), a later rule replacing an
     earlier one with its key. A catalogue member may be a member, a full key
     or a bare one.
 
@@ -3186,7 +3187,8 @@ class FestivalObservance:
 
     day: CalendarDate
     tithi: Interval
-    """The tithi's occurrence judged."""
+    """The occurrence judged: the tithi's, or the nakshatra's for a rule
+    kept on a nakshatra in a paksha."""
 
     month: Masa
     """Its amanta month, as an Ekadashi fast's is: which month's
