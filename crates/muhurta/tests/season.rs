@@ -461,3 +461,60 @@ fn the_chaturmas_regression_holds_on_the_season() {
     // 2026-11-25.
     assert!(clear.contains(&2_461_369.5), "{clear:?}");
 }
+
+/// 1982-08-01 and 1983-05-01, 00:00 UTC: the kshaya year 1982–83.
+const KSHAYA_FROM: f64 = 2_445_182.5;
+const KSHAYA_TO: f64 = 2_445_455.5;
+
+/// *Dharmasindhu* p. 3 (C179): the adhika before a kshaya month is the
+/// samsarpa, fit for every rite; the kshaya month and the adhika after
+/// it are avoided. 1982–83 is the last kshaya year: Ashwina adhika,
+/// Pausha kshaya, Phalguna adhika.
+#[test]
+fn a_kshaya_year_closes_its_kshaya_month_and_the_adhika_after_it_and_not_the_samsarpa() {
+    let provider = Builtin::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let range = Interval::literal(KSHAYA_FROM, KSHAYA_TO);
+    let marked: Vec<_> = months(&longitudes, zodiac(), range)
+        .unwrap()
+        .into_iter()
+        .filter(|m| m.kind != MonthKind::Nija)
+        .collect();
+    let named: Vec<_> = marked.iter().map(|m| (m.kind, m.masa)).collect();
+    assert_eq!(
+        named,
+        [
+            (MonthKind::Adhika, Masa::Ashwina),
+            (MonthKind::Kshaya, Masa::Pausha),
+            (MonthKind::Adhika, Masa::Phalguna),
+        ]
+    );
+    let found = blackouts(&longitudes, zodiac(), range).unwrap();
+    assert_eq!(of(&found, BlackoutKind::Samsarpa), [marked[0].at]);
+    assert_eq!(of(&found, BlackoutKind::KshayaMasa), [marked[1].at]);
+    assert_eq!(of(&found, BlackoutKind::AdhikaMasa), [marked[2].at]);
+}
+
+/// The samsarpa is known from inside a range that ends before its kshaya
+/// month: the season looks past the range for it.
+#[test]
+fn a_samsarpa_is_known_before_its_kshaya_month_is_reached() {
+    let provider = Builtin::new();
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    // 1982-09-01 to 1982-11-01, UTC: Ashwina adhika and no kshaya month.
+    let range = Interval::literal(2_445_213.5, 2_445_274.5);
+    let found = blackouts(&longitudes, zodiac(), range).unwrap();
+    assert_eq!(of(&found, BlackoutKind::Samsarpa).len(), 1);
+    assert_eq!(of(&found, BlackoutKind::AdhikaMasa), Vec::new());
+    assert_eq!(of(&found, BlackoutKind::KshayaMasa), Vec::new());
+}

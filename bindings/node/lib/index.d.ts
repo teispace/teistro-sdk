@@ -3027,6 +3027,8 @@ export interface MuhurtaBaselineEvent {
 export type BlackoutKind =
   | 'CHATURMAS'
   | 'ADHIKA_MASA'
+  | 'SAMSARPA'
+  | 'KSHAYA_MASA'
   | 'KHARMAS'
   | 'PITRU_PAKSHA'
   | 'SANKRANTI'

@@ -155,9 +155,10 @@ and the chart founder. Three layers, each usable alone.
 `Season::over(range, place, &SeasonRules) -> Vec<Blackout>`: each
 blackout a kind and a window, computed once. The kinds are a catalogue
 kind, `blackout`, because a consumer names them in a gate: `CHATURMAS`,
-`ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `GURU_ASTA`, `SHUKRA_ASTA`,
-`SANKRANTI` (Surya sankramana's sixteen ghatis) and `ECLIPSE_STAR`
-(grahanotpatha). Asta is the heliacal event pair from
+`ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`,
+`GURU_ASTA`, `SHUKRA_ASTA`, `SANKRANTI` (Surya sankramana's sixteen
+ghatis), `ECLIPSE_STAR` (grahanotpatha) and `ECLIPSE_VEDHA`. A kshaya
+year splits its months three ways (§4.1.2). Asta is the heliacal event pair from
 `visibility::Heliacal` under the caller's `Criterion`, which already
 offers the Surya Siddhanta's degrees of time, the tradition's
 longitudes and the astronomers' arcus visionis; Venus has two episodes a
@@ -256,6 +257,45 @@ reached it. The parity runners found the second case. Before it was
 handled, Raman's marriage over such a provider failed outright, in
 every binding.
 
+#### 4.1.2 A kshaya year
+
+*Dharmasindhu* (p. 3, read off the page image) names the three months a
+kshaya year marks. The adhika month **before** the kshaya month is
+*samsarpa*, and it is fit for every rite and not to be given up for an
+auspicious one. The kshaya month itself, *amhaspati*, and the adhika
+month **after** it are avoided in every rite. So is an ordinary adhika
+month, one that no kshaya month follows. The text puts the kshaya month
+only in Kartika, Margashirsha or Pausha. The lunisolar pass holds that
+over a millennium: 19 kshaya months, every one in those three, and
+every one with an adhika month on each side
+(`calendar-indian-lunisolar-measured.md` §5).
+
+The season therefore makes three kinds:
+
+- `SAMSARPA` is the adhika month whose next marked month is a kshaya
+  month.
+- `KSHAYA_MASA` is the kshaya month.
+- `ADHIKA_MASA` is every other adhika month.
+
+Whether an adhika month inside a range is the samsarpa depends on a
+month that may lie past the range. The season looks
+`SAMSARPA_REACH_MONTHS` (six) synodic months on. The lunisolar pass
+measures the gap back from each kshaya month to its samsarpa, at most
+five months, and refuses to write its page if the constant falls short
+of any gap.
+
+Raman's marriage heeds `ADHIKA_MASA` and `KSHAYA_MASA`, and so takes the
+samsarpa as fit. That reading is *Dharmasindhu*'s; Raman's own text
+names only the adhika month (C179). A caller who closes the samsarpa
+too adds `SAMSARPA` to the activity's `heeds`. The baseline engine's
+marriage closes every adhika month, so it heeds `ADHIKA_MASA` and
+`SAMSARPA` together, and its regression is unchanged.
+
+The kinds are spelled by hand in each binding, because they cross
+inside the muhurta answer's JSON. The lint
+`blackout-kind-reaches-every-binding` holds each binding's list to
+`BlackoutKind::ALL` both ways.
+
 ### 4.2 The clauses
 
 A **clause** is one named condition from a source: `Clause { kind,
@@ -340,7 +380,7 @@ Chintamani forbids a marriage in (ch. I, vv. 46–47: Jupiter or Venus
 set, an adhika month), the six considerations as **bars** named by
 `ClauseKey`, and what the texts ask that is not judged yet as a list
 (`unjudged`: the Mrityu yoga, C163; the bala and vriddha days either
-side of an asta; the kshaya month) rather than a silence. The
+side of an asta) rather than a silence. The
 baseline engine's marriage rules come with the regression (step 6),
 where they are measured.
 

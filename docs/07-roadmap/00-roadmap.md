@@ -766,7 +766,10 @@ measured against Nepal before it is called done:
    `ECLIPSE_STAR` (Raman's grahanotpatha, heeded by his marriage) and
    `ECLIPSE_VEDHA` (the sutak, by *Dharmasindhu*'s praharas, under
    `panchanga.eclipse_vedha`), each over the eclipses the place sees.
-   Next in this step: kshaya masa, Holashtaka, and naming the blackouts.
+   **Kshaya masa built the same day** (`muhurta.md` §4.1.2, C179): the
+   samsarpa adhika before a kshaya month is fit, the kshaya month and
+   the adhika after it closed, by *Dharmasindhu* p. 3.
+   Next in this step: Holashtaka, and naming the blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's
    holiday list the way `festival-measured.md` holds the Delhi one,
    with region-scoped days (Holi in the hills and the Terai).

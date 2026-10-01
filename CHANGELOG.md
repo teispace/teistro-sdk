@@ -1558,6 +1558,37 @@ the astronomical numbers do not move. Nothing else computes yet.
   narrows a minimum by golden sections, and every search's failure now
   says what was sought through one `SolveError::into_error`.
 
+- **A kshaya year in the muhurta season** (`muhurta.md` §4.1.2, crux
+  C179). The season now names all three months a kshaya year marks, read
+  from *Dharmasindhu* p. 3:
+  - `SAMSARPA`, the adhika month before the kshaya month, which the text
+    holds fit for every rite;
+  - `KSHAYA_MASA`, the kshaya month itself;
+  - `ADHIKA_MASA`, which now means every other adhika month, including
+    the one after the kshaya month.
+
+  Raman's marriage heeds the kshaya month and no longer lists it as
+  unjudged. The baseline engine's marriage heeds `SAMSARPA` beside
+  `ADHIKA_MASA`, so it still closes every adhika month. A `Sources`
+  implementation or a caller's own rules that heeded `ADHIKA_MASA` to
+  mean *every* adhika month adds `SAMSARPA`.
+
+  The season looks `SAMSARPA_REACH_MONTHS` (six) synodic months past
+  the range. That is how it can tell whether an adhika month inside the
+  range is the samsarpa.
+
+  **Measured:** the lunisolar pass measures the gap and refuses to write
+  its page if the constant does not cover it. Over a millennium there
+  are 19 kshaya months. Every one has an adhika month 1 to 5 months
+  before it and 1 to 5 months after it, and every one falls in the
+  text's Kartika, Margashirsha or Pausha. 1982–83 is held as a test:
+  Ashwina samsarpa, Pausha kshaya, Phalguna adhika.
+
+  `BlackoutKind::ALL` lists the kinds. A new lint,
+  `blackout-kind-reaches-every-binding`, holds the TypeScript union and
+  the Python and Dart documentation to that list, both ways, because no
+  binding generates these kinds.
+
 - **The eclipse blackouts in the muhurta season** (`muhurta.md` §4.1.1,
   cruxes C189 to C192). `ECLIPSE_STAR` is Raman's grahanotpatha: the
   Moon's star at the greatest eclipse is barred for six synodic months

@@ -5809,8 +5809,8 @@ final class MuhurtaWindow extends _Value {
 }
 
 /// A day the season closed, and the blackouts that closed it (`CHATURMAS`,
-/// `ADHIKA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI`, `GURU_ASTA`,
-/// `SHUKRA_ASTA`, `ECLIPSE_STAR`, `ECLIPSE_VEDHA`).
+/// `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`,
+/// `SANKRANTI`, `GURU_ASTA`, `SHUKRA_ASTA`, `ECLIPSE_STAR`, `ECLIPSE_VEDHA`).
 final class ClosedDay {
   const ClosedDay({required this.date, required this.by});
 
