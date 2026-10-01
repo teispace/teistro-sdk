@@ -3855,6 +3855,7 @@ List<Dignities> _dignitiesOf(Charts batch) =>
 List<Dignities> _decodeDignities(Charts batch) {
   final c = batch.dignities;
   final p = batch.dignityPlanets;
+  final r = batch.dignityReceptions;
   final charts = batch.cast.instant.length;
   if (c.length == 0) return const <Dignities>[];
   if (c.length != charts || p.length != 7 * charts) {
@@ -3863,29 +3864,76 @@ List<Dignities> _decodeDignities(Charts batch) {
       '$charts charts; they are one and seven a chart',
     );
   }
-  PlanetDignity planet(int row) {
-    final dignity = EssentialDignity(
-      house: p.house[row] == 1,
-      exaltation: p.exaltation[row] == 1,
-      triplicity: p.triplicity[row] == 1,
-      term: p.term[row] == 1,
-      face: p.face[row] == 1,
-      detriment: p.detriment[row] == 1,
-      fall: p.fall[row] == 1,
+  final starts = [0];
+  for (var chart = 0; chart < charts; chart += 1) {
+    starts.add(starts.last + c.receptionCount[chart]);
+  }
+  if (starts.last != r.length) {
+    throw StateError(
+      'dignity_receptions has ${r.length} rows and the charts count '
+      '${starts.last}',
     );
+  }
+  // One row's seven flags, from columns in `EssentialDignity`'s order.
+  EssentialDignity flags(List<List<int>> columns, int row) {
+    final [house, exaltation, triplicity, term, face, detriment, fall] = [
+      for (final column in columns) column[row] == 1,
+    ];
+    return EssentialDignity(
+      house: house,
+      exaltation: exaltation,
+      triplicity: triplicity,
+      term: term,
+      face: face,
+      detriment: detriment,
+      fall: fall,
+    );
+  }
+
+  final planetFlags = [
+    p.house,
+    p.exaltation,
+    p.triplicity,
+    p.term,
+    p.face,
+    p.detriment,
+    p.fall,
+  ];
+  final firstFlags = [
+    r.firstInHouse,
+    r.firstInExaltation,
+    r.firstInTriplicity,
+    r.firstInTerm,
+    r.firstInFace,
+    r.firstInDetriment,
+    r.firstInFall,
+  ];
+  final secondFlags = [
+    r.secondInHouse,
+    r.secondInExaltation,
+    r.secondInTriplicity,
+    r.secondInTerm,
+    r.secondInFace,
+    r.secondInDetriment,
+    r.secondInFall,
+  ];
+  PlanetDignity planet(int row) {
+    final dignity = flags(planetFlags, row);
     return PlanetDignity(
       planet: Graha.byId(p.planet[row]),
       longitudeDeg: p.longitude[row],
       dignity: dignity,
-      peregrine:
-          !(dignity.house ||
-              dignity.exaltation ||
-              dignity.triplicity ||
-              dignity.term ||
-              dignity.face),
+      peregrine: !DignityKind.values.any(dignity.holds),
       score: p.score[row],
+      reception: p.reception[row],
     );
   }
+
+  Reception reception(int row) => Reception(
+    planets: (Graha.byId(r.first[row]), Graha.byId(r.second[row])),
+    firstIn: flags(firstFlags, row),
+    secondIn: flags(secondFlags, row),
+  );
 
   return List<Dignities>.generate(
     charts,
@@ -3908,6 +3956,10 @@ List<Dignities> _decodeDignities(Charts batch) {
       ),
       planets: List<PlanetDignity>.unmodifiable([
         for (var row = 7 * chart; row < 7 * chart + 7; row += 1) planet(row),
+      ]),
+      receptions: List<Reception>.unmodifiable([
+        for (var row = starts[chart]; row < starts[chart + 1]; row += 1)
+          reception(row),
       ]),
     ),
   );
@@ -4739,6 +4791,15 @@ final class EssentialDignity extends _Value {
   final bool detriment;
   final bool fall;
 
+  /// Whether this dignity holds.
+  bool holds(DignityKind kind) => switch (kind) {
+    DignityKind.house => house,
+    DignityKind.exaltation => exaltation,
+    DignityKind.triplicity => triplicity,
+    DignityKind.term => term,
+    DignityKind.face => face,
+  };
+
   @override
   List<Object?> get _fields => [
     house,
@@ -4751,6 +4812,44 @@ final class EssentialDignity extends _Value {
   ];
 }
 
+/// One of the five essential dignities, strongest first, as Lilly scores
+/// them (p. 115).
+enum DignityKind { house, exaltation, triplicity, term, face }
+
+/// Two planets each standing in at least one of the other's five
+/// dignities (Lilly, p. 112), each side reported whole.
+///
+/// ```dart
+/// final byHouse = chart.dignities?.receptions
+///     .where((one) => one.mutual.contains(DignityKind.house));
+/// ```
+final class Reception extends _Value {
+  const Reception({
+    required this.planets,
+    required this.firstIn,
+    required this.secondIn,
+  });
+
+  /// The two, in the Chaldean order.
+  final (Graha, Graha) planets;
+
+  /// The second's dignities where the first stands.
+  final EssentialDignity firstIn;
+
+  /// The first's dignities where the second stands.
+  final EssentialDignity secondIn;
+
+  /// The kinds each stands in of the other's, strongest first; empty for a
+  /// mixed reception.
+  List<DignityKind> get mutual => [
+    for (final kind in DignityKind.values)
+      if (firstIn.holds(kind) && secondIn.holds(kind)) kind,
+  ];
+
+  @override
+  List<Object?> get _fields => [planets, firstIn, secondIn];
+}
+
 /// One planet's dignities and its score.
 final class PlanetDignity extends _Value {
   const PlanetDignity({
@@ -4759,6 +4858,7 @@ final class PlanetDignity extends _Value {
     required this.dignity,
     required this.peregrine,
     required this.score,
+    required this.reception,
   });
 
   final Graha planet;
@@ -4771,7 +4871,14 @@ final class PlanetDignity extends _Value {
   /// In none of its five dignities, whatever its debilities.
   final bool peregrine;
 
+  /// Its score from its own dignities alone.
   final int score;
+
+  /// What Lilly's table adds for mutual reception (p. 115): the house's
+  /// score when received by house, the exaltation's when by exaltation,
+  /// nothing for a mixed reception or one by a lesser dignity (C210). A
+  /// total is `score + reception`.
+  final int reception;
 
   @override
   List<Object?> get _fields => [
@@ -4780,6 +4887,7 @@ final class PlanetDignity extends _Value {
     dignity,
     peregrine,
     score,
+    reception,
   ];
 }
 
@@ -4793,6 +4901,7 @@ final class Dignities extends _Value {
     required this.rules,
     required this.scores,
     required this.planets,
+    required this.receptions,
   });
 
   final Sect sect;
@@ -4803,8 +4912,19 @@ final class Dignities extends _Value {
   /// The seven in the Chaldean order, Saturn first.
   final List<PlanetDignity> planets;
 
+  /// Every pair in reception, in the Chaldean order of the first and then
+  /// the second.
+  final List<Reception> receptions;
+
   @override
-  List<Object?> get _fields => [sect, sectRule, rules, scores, planets];
+  List<Object?> get _fields => [
+    sect,
+    sectRule,
+    rules,
+    scores,
+    planets,
+    receptions,
+  ];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),

@@ -285,6 +285,7 @@ mod pluto;
 mod points;
 mod python_binding;
 mod rashi_dashas;
+mod reception;
 mod release;
 mod render;
 mod ritu;
@@ -428,6 +429,7 @@ const PASSES: &[Pass] = &[
     ("arudhas", arudhas::generate, arudhas::check_generated),
     ("terms", terms::generate, terms::check_generated),
     ("sect", sect::generate, sect::check_generated),
+    ("reception", reception::generate, reception::check_generated),
     (
         "kalachakra",
         kalachakra::generate,

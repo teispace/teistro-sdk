@@ -2420,9 +2420,31 @@ impl SadeSatiColumns {
     }
 }
 
-/// Every chart's essential dignities: a row a chart in `dignities`, and the
-/// seven planets a chart in `dignity_planets`, in the Chaldean order; both
-/// empty when none was asked for.
+/// A planet's dignities as the boundary writes them, one flag a column in
+/// [`teistro::EssentialDignity`]'s order.
+const fn dignity_flags(d: teistro::EssentialDignity) -> [bool; 7] {
+    [
+        d.house,
+        d.exaltation,
+        d.triplicity,
+        d.term,
+        d.face,
+        d.detriment,
+        d.fall,
+    ]
+}
+
+/// Pushes one row of a dignity's flags onto its seven columns.
+fn push_flags(columns: &mut [Vec<u8>; 7], d: teistro::EssentialDignity) {
+    for (column, flag) in columns.iter_mut().zip(dignity_flags(d)) {
+        column.push(u8::from(flag));
+    }
+}
+
+/// Every chart's essential dignities: a row a chart in `dignities`, the
+/// seven planets a chart in `dignity_planets`, in the Chaldean order, and
+/// its receptions in `dignity_receptions`, ragged by `reception_count`;
+/// all empty when none was asked for.
 #[derive(Default)]
 struct DignityColumns {
     sect: Vec<u8>,
@@ -2431,13 +2453,18 @@ struct DignityColumns {
     triplicities: Vec<u8>,
     /// The scores, one column a dignity in [`teistro::Scores`]' order.
     scores: [Vec<i8>; 8],
+    reception_count: Vec<u8>,
     /// The `dignity_planets` section.
     planet: Vec<u16>,
     longitude: Vec<f64>,
-    /// The flags, one column a dignity in [`teistro::EssentialDignity`]'s
-    /// order.
     flags: [Vec<u8>; 7],
     score: Vec<i16>,
+    reception: Vec<i16>,
+    /// The `dignity_receptions` section.
+    first: Vec<u16>,
+    second: Vec<u16>,
+    first_in: [Vec<u8>; 7],
+    second_in: [Vec<u8>; 7],
 }
 
 impl DignityColumns {
@@ -2480,23 +2507,23 @@ impl DignityColumns {
             for (column, value) in columns.scores.iter_mut().zip(scores) {
                 column.push(value);
             }
+            columns.reception_count.push(
+                u8::try_from(one.receptions.len())
+                    .map_err(|_| Error::internal("more receptions than pairs of the seven"))?,
+            );
             for at in &one.planets {
                 columns.planet.push(at.planet.id());
                 columns.longitude.push(at.longitude_deg);
-                let d = at.dignity;
-                let flags = [
-                    d.house,
-                    d.exaltation,
-                    d.triplicity,
-                    d.term,
-                    d.face,
-                    d.detriment,
-                    d.fall,
-                ];
-                for (column, flag) in columns.flags.iter_mut().zip(flags) {
-                    column.push(u8::from(flag));
-                }
+                push_flags(&mut columns.flags, at.dignity);
                 columns.score.push(at.score);
+                columns.reception.push(at.reception);
+            }
+            for pair in &one.receptions {
+                let [first, second] = pair.planets;
+                columns.first.push(first.id());
+                columns.second.push(second.id());
+                push_flags(&mut columns.first_in, pair.first_in);
+                push_flags(&mut columns.second_in, pair.second_in);
             }
         }
         Ok(columns)
@@ -2510,6 +2537,7 @@ impl DignityColumns {
             ColumnData::U8(&self.triplicities),
         ];
         chart.extend(self.scores.iter().map(|column| ColumnData::I8(column)));
+        chart.push(ColumnData::U8(&self.reception_count));
         writer.columns("dignities", self.sect.len(), &chart)?;
         let mut planets = vec![
             ColumnData::U16(&self.planet),
@@ -2517,7 +2545,16 @@ impl DignityColumns {
         ];
         planets.extend(self.flags.iter().map(|column| ColumnData::U8(column)));
         planets.push(ColumnData::I16(&self.score));
-        writer.columns("dignity_planets", self.planet.len(), &planets)
+        planets.push(ColumnData::I16(&self.reception));
+        writer.columns("dignity_planets", self.planet.len(), &planets)?;
+        let mut pairs = vec![ColumnData::U16(&self.first), ColumnData::U16(&self.second)];
+        pairs.extend(
+            self.first_in
+                .iter()
+                .chain(&self.second_in)
+                .map(|column| ColumnData::U8(column)),
+        );
+        writer.columns("dignity_receptions", self.first.len(), &pairs)
     }
 }
 

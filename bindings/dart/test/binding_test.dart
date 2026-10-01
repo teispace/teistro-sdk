@@ -2196,6 +2196,35 @@ void _engineTests() {
       expect(at.score, score, reason: '${at.planet}');
     }
 
+    // Each reception whole both ways, in the Chaldean order, and scored
+    // only when mutual by house or by exaltation.
+    final order = [for (final at in read.planets) at.planet];
+    expect(read.receptions, isNotEmpty);
+    for (final one in read.receptions) {
+      final (first, second) = one.planets;
+      expect(order.indexOf(first), lessThan(order.indexOf(second)));
+      for (final side in [one.firstIn, one.secondIn]) {
+        expect(DignityKind.values.any(side.holds), isTrue, reason: '$one');
+      }
+      expect(one.mutual, [
+        for (final kind in DignityKind.values)
+          if (one.firstIn.holds(kind) && one.secondIn.holds(kind)) kind,
+      ]);
+    }
+    for (final at in read.planets) {
+      bool by(DignityKind kind) => read.receptions.any(
+        (one) =>
+            (one.planets.$1 == at.planet || one.planets.$2 == at.planet) &&
+            one.mutual.contains(kind),
+      );
+      expect(
+        at.reception,
+        (by(DignityKind.house) ? lilly.house : 0) +
+            (by(DignityKind.exaltation) ? lilly.exaltation : 0),
+        reason: '${at.planet}',
+      );
+    }
+
     // Every rule reported as asked, and a score left out stays Lilly's.
     final night =
         found(

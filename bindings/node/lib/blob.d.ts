@@ -2336,6 +2336,12 @@ export interface ChartsDignities {
    * What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default.
    */
   readonly scorePeregrine: Int8Array;
+  /**
+   * How many rows of the `dignity_receptions` section belong to this chart.
+   *
+   * Ragged because which pairs receive each other depends on where each planet stands.
+   */
+  readonly receptionCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2388,6 +2394,87 @@ export interface ChartsDignityPlanets {
    * Its flags read by the `dignities` row's scores.
    */
   readonly score: Int16Array;
+  /**
+   * What Lilly's table adds for mutual reception (p. 115): `score_house` when it is received by house, `score_exaltation` when by exaltation, nothing for a mixed reception or one by a lesser dignity (C210). Kept apart from `score`, since a planet in reception is still peregrine; a total is `score + reception`.
+   */
+  readonly reception: Int16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `dignity_receptions` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+ */
+export interface ChartsDignityReceptions {
+  /**
+   * The first of the two, in the Chaldean order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * 1 when `first` stands in `second`'s house, else 0.
+   */
+  readonly firstInHouse: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s exaltation, else 0.
+   */
+  readonly firstInExaltation: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s triplicity, else 0.
+   */
+  readonly firstInTriplicity: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s term, else 0.
+   */
+  readonly firstInTerm: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s face, else 0.
+   */
+  readonly firstInFace: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s detriment, else 0.
+   */
+  readonly firstInDetriment: Uint8Array;
+  /**
+   * 1 when `first` stands in `second`'s fall, else 0.
+   */
+  readonly firstInFall: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s house, else 0.
+   */
+  readonly secondInHouse: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s exaltation, else 0.
+   */
+  readonly secondInExaltation: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s triplicity, else 0.
+   */
+  readonly secondInTriplicity: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s term, else 0.
+   */
+  readonly secondInTerm: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s face, else 0.
+   */
+  readonly secondInFace: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s detriment, else 0.
+   */
+  readonly secondInDetriment: Uint8Array;
+  /**
+   * 1 when `second` stands in `first`'s fall, else 0.
+   */
+  readonly secondInFall: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2804,6 +2891,10 @@ export interface Charts {
    * The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
    */
   readonly dignityPlanets: ChartsDignityPlanets;
+  /**
+   * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+   */
+  readonly dignityReceptions: ChartsDignityReceptions;
 }
 
 /**

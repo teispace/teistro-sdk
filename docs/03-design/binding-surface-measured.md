@@ -171,12 +171,12 @@ the class of mistake a generated binding exists to make impossible.
 
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
-| `u8` | `c_uint8` | `B` | 67 | 212 |
-| `u16` | `c_uint16` | `H` | 20 | 146 |
+| `u8` | `c_uint8` | `B` | 67 | 227 |
+| `u16` | `c_uint16` | `H` | 20 | 148 |
 | `u32` | `c_uint32` | `I` | 50 | 40 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 8 |
-| `i16` | `c_int16` | `h` | 0 | 1 |
+| `i16` | `c_int16` | `h` | 0 | 2 |
 | `i32` | `c_int32` | `i` | 16 | 9 |
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
@@ -189,7 +189,7 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 598 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 616 disagree |
 
 ## 5. What a binding can say about a value
 

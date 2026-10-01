@@ -1705,9 +1705,21 @@ the astronomical numbers do not move. Nothing else computes yet.
     (`dignities`) and 61 (`dignity_planets`) and the enums `TsSect`,
     `TsSectRule`, `TsTerms` and `TsTriplicities`. All five parity runners
     agree on every value.
+  - **Reception** (§Reception, `reception-measured.md`, C210 decided).
+    `Dignities.receptions` lists every pair standing in each other's
+    dignities, both sides whole (`Reception`, `Reception::mutual`,
+    `DignityKind`, `EssentialDignity::holds`), so mutual and mixed
+    reception read off one record. `PlanetDignity::reception` adds
+    Lilly's house score for a mutual reception by house and his
+    exaltation score for one by exaltation, beside `score` and never in
+    it; a received planet stays peregrine. Every binding carries both,
+    through `reception_count`, `dignity_planets.reception` and section 62
+    (`dignity_receptions`).
 
   **Numbers:** none moved; everything here is new. The pass finds the
-  Tajika decanate lord equal to Lilly's face on all 36 decans.
+  Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
+  corpus's 55 births, 260 pairs receive each other and 170 of them are
+  mixed; 43 planets score by reception, 21 of them peregrine.
 
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the

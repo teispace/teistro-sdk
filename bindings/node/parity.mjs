@@ -570,8 +570,20 @@ for (const chart of charts) {
   const DIGNITY_FLAGS = ['house', 'exaltation', 'triplicity', 'term', 'face', 'detriment', 'fall'];
   for (const at of dg.planets) {
     const held = [...DIGNITY_FLAGS.filter((flag) => at.dignity[flag]), ...(at.peregrine ? ['peregrine'] : [])];
-    put(`chart-${i}-dignity-${at.planet}`, `${number(at.longitudeDeg)} ${held.join(',') || '-'} ${at.score}`);
+    put(
+      `chart-${i}-dignity-${at.planet}`,
+      `${number(at.longitudeDeg)} ${held.join(',') || '-'} ${at.score} ${at.reception}`,
+    );
   }
+  dg.receptions.forEach((one, k) => {
+    const [firstIn, secondIn] = [one.firstIn, one.secondIn].map((side) =>
+      DIGNITY_FLAGS.filter((flag) => side[flag]).join(','),
+    );
+    put(
+      `chart-${i}-reception-${k}`,
+      `${one.planets[0]} ${one.planets[1]} ${firstIn} ${secondIn} ${one.mutual.join(',') || '-'}`,
+    );
+  });
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

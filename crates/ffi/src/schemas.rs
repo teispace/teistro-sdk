@@ -722,8 +722,9 @@ fn chart_kp_section(id: u32) -> SectionSchema {
 }
 
 /// Every chart's essential dignities (`03-design/essential-dignities.md`):
-/// what was applied a chart, then the seven planets a chart.
-fn chart_dignity_sections(first: u32) -> [SectionSchema; 2] {
+/// what was applied a chart, the seven planets a chart, then its
+/// receptions.
+fn chart_dignity_sections(first: u32) -> [SectionSchema; 3] {
     let score = |name: &'static str, what: &str| {
         ColumnDef::new(
             name,
@@ -772,6 +773,11 @@ fn chart_dignity_sections(first: u32) -> [SectionSchema; 2] {
                 score("score_detriment", "a planet in its detriment"),
                 score("score_fall", "a planet in its fall"),
                 score("score_peregrine", "a planet in none of its five dignities"),
+                ColumnDef::new(
+                    "reception_count",
+                    Scalar::U8,
+                    "How many rows of the `dignity_receptions` section belong to this chart.\n\nRagged because which pairs receive each other depends on where each planet stands.",
+                ),
             ],
         ),
         SectionSchema::columns(
@@ -800,9 +806,60 @@ fn chart_dignity_sections(first: u32) -> [SectionSchema; 2] {
                     Scalar::I16,
                     "Its flags read by the `dignities` row's scores.",
                 ),
+                ColumnDef::new(
+                    "reception",
+                    Scalar::I16,
+                    "What Lilly's table adds for mutual reception (p. 115): `score_house` when it is received by house, `score_exaltation` when by exaltation, nothing for a mixed reception or one by a lesser dignity (C210). Kept apart from `score`, since a planet in reception is still peregrine; a total is `score + reception`.",
+                ),
             ],
         ),
+        dignity_receptions_section(first + 2),
     ]
+}
+
+/// Every chart's receptions, a row a pair (`essential-dignities.md`
+/// §Reception).
+fn dignity_receptions_section(id: u32) -> SectionSchema {
+    // One side of a reception: the other planet's dignities where this one
+    // stands, in `dignity_planets`' order of flags.
+    let received = |side: &str| {
+        let other = if side == "first" { "second" } else { "first" };
+        [
+            "house",
+            "exaltation",
+            "triplicity",
+            "term",
+            "face",
+            "detriment",
+            "fall",
+        ]
+        .map(|kind| {
+            ColumnDef::new(
+                &format!("{side}_in_{kind}"),
+                Scalar::U8,
+                &format!("1 when `{side}` stands in `{other}`'s {kind}, else 0."),
+            )
+        })
+    };
+    SectionSchema::columns(
+        id,
+        "dignity_receptions",
+        "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.",
+        {
+            let mut columns = vec![
+                ColumnDef::new(
+                    "first",
+                    Scalar::U16,
+                    "The first of the two, in the Chaldean order.",
+                )
+                .of_enum("Graha"),
+                ColumnDef::new("second", Scalar::U16, "The second.").of_enum("Graha"),
+            ];
+            columns.extend(received("first"));
+            columns.extend(received("second"));
+            columns
+        },
+    )
 }
 
 /// Every chart's transit hit list, a row a hit.

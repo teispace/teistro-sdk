@@ -950,6 +950,7 @@ export function decodeCharts(bytes) {
       scoreDetriment: column(blob, at, 9, 'i8', at.count),
       scoreFall: column(blob, at, 10, 'i8', at.count),
       scorePeregrine: column(blob, at, 11, 'i8', at.count),
+      receptionCount: column(blob, at, 12, 'u8', at.count),
       length: at.count,
     };
   }
@@ -966,6 +967,29 @@ export function decodeCharts(bytes) {
       detriment: column(blob, at, 7, 'u8', at.count),
       fall: column(blob, at, 8, 'u8', at.count),
       score: column(blob, at, 9, 'i16', at.count),
+      reception: column(blob, at, 10, 'i16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 62, 'dignity_receptions');
+    out.dignityReceptions = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      firstInHouse: column(blob, at, 2, 'u8', at.count),
+      firstInExaltation: column(blob, at, 3, 'u8', at.count),
+      firstInTriplicity: column(blob, at, 4, 'u8', at.count),
+      firstInTerm: column(blob, at, 5, 'u8', at.count),
+      firstInFace: column(blob, at, 6, 'u8', at.count),
+      firstInDetriment: column(blob, at, 7, 'u8', at.count),
+      firstInFall: column(blob, at, 8, 'u8', at.count),
+      secondInHouse: column(blob, at, 9, 'u8', at.count),
+      secondInExaltation: column(blob, at, 10, 'u8', at.count),
+      secondInTriplicity: column(blob, at, 11, 'u8', at.count),
+      secondInTerm: column(blob, at, 12, 'u8', at.count),
+      secondInFace: column(blob, at, 13, 'u8', at.count),
+      secondInDetriment: column(blob, at, 14, 'u8', at.count),
+      secondInFall: column(blob, at, 15, 'u8', at.count),
       length: at.count,
     };
   }

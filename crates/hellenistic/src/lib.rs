@@ -25,6 +25,7 @@
 
 mod dignity;
 mod reading;
+mod reception;
 mod terms;
 
 pub use dignity::{
@@ -32,4 +33,5 @@ pub use dignity::{
     essential_dignity, exaltation_degree, face_lord,
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
+pub use reception::{DignityKind, Reception};
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

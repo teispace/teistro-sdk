@@ -2465,6 +2465,7 @@ final class ChartsDignities {
     required this.scoreDetriment,
     required this.scoreFall,
     required this.scorePeregrine,
+    required this.receptionCount,
     required this.length,
   });
 
@@ -2504,6 +2505,11 @@ final class ChartsDignities {
   /// What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default.
   final Int8List scorePeregrine;
 
+  /// How many rows of the `dignity_receptions` section belong to this chart.
+  ///
+  /// Ragged because which pairs receive each other depends on where each planet stands.
+  final Uint8List receptionCount;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -2524,6 +2530,7 @@ final class ChartsDignityPlanets {
     required this.detriment,
     required this.fall,
     required this.score,
+    required this.reception,
     required this.length,
   });
 
@@ -2556,6 +2563,86 @@ final class ChartsDignityPlanets {
 
   /// Its flags read by the `dignities` row's scores.
   final Int16List score;
+
+  /// What Lilly's table adds for mutual reception (p. 115): `score_house` when it is received by house, `score_exaltation` when by exaltation, nothing for a mixed reception or one by a lesser dignity (C210). Kept apart from `score`, since a planet in reception is still peregrine; a total is `score + reception`.
+  final Int16List reception;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dignity_receptions` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+final class ChartsDignityReceptions {
+  const ChartsDignityReceptions({
+    required this.first,
+    required this.second,
+    required this.firstInHouse,
+    required this.firstInExaltation,
+    required this.firstInTriplicity,
+    required this.firstInTerm,
+    required this.firstInFace,
+    required this.firstInDetriment,
+    required this.firstInFall,
+    required this.secondInHouse,
+    required this.secondInExaltation,
+    required this.secondInTriplicity,
+    required this.secondInTerm,
+    required this.secondInFace,
+    required this.secondInDetriment,
+    required this.secondInFall,
+    required this.length,
+  });
+
+  /// The first of the two, in the Chaldean order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// 1 when `first` stands in `second`'s house, else 0.
+  final Uint8List firstInHouse;
+
+  /// 1 when `first` stands in `second`'s exaltation, else 0.
+  final Uint8List firstInExaltation;
+
+  /// 1 when `first` stands in `second`'s triplicity, else 0.
+  final Uint8List firstInTriplicity;
+
+  /// 1 when `first` stands in `second`'s term, else 0.
+  final Uint8List firstInTerm;
+
+  /// 1 when `first` stands in `second`'s face, else 0.
+  final Uint8List firstInFace;
+
+  /// 1 when `first` stands in `second`'s detriment, else 0.
+  final Uint8List firstInDetriment;
+
+  /// 1 when `first` stands in `second`'s fall, else 0.
+  final Uint8List firstInFall;
+
+  /// 1 when `second` stands in `first`'s house, else 0.
+  final Uint8List secondInHouse;
+
+  /// 1 when `second` stands in `first`'s exaltation, else 0.
+  final Uint8List secondInExaltation;
+
+  /// 1 when `second` stands in `first`'s triplicity, else 0.
+  final Uint8List secondInTriplicity;
+
+  /// 1 when `second` stands in `first`'s term, else 0.
+  final Uint8List secondInTerm;
+
+  /// 1 when `second` stands in `first`'s face, else 0.
+  final Uint8List secondInFace;
+
+  /// 1 when `second` stands in `first`'s detriment, else 0.
+  final Uint8List secondInDetriment;
+
+  /// 1 when `second` stands in `first`'s fall, else 0.
+  final Uint8List secondInFall;
 
   /// The number of rows every column holds.
   final int length;
@@ -2734,6 +2821,7 @@ final class Charts {
     required this.kp,
     required this.dignities,
     required this.dignityPlanets,
+    required this.dignityReceptions,
   });
 
   /// What kind of chart these are.
@@ -2963,6 +3051,9 @@ final class Charts {
   /// The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
   final ChartsDignityPlanets dignityPlanets;
 
+  /// Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+  final ChartsDignityReceptions dignityReceptions;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -3031,6 +3122,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atKp = blob.section(59, 'kp');
   final atDignities = blob.section(60, 'dignities');
   final atDignityPlanets = blob.section(61, 'dignity_planets');
+  final atDignityReceptions = blob.section(62, 'dignity_receptions');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -5231,6 +5323,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDignities, 11),
         blob.columnOffset(atDignities, 11) + atDignities.count * 1,
       ),
+      receptionCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 12),
+        blob.columnOffset(atDignities, 12) + atDignities.count * 1,
+      ),
       length: atDignities.count,
     ),
     dignityPlanets: ChartsDignityPlanets(
@@ -5284,7 +5381,95 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDignityPlanets, 9),
         blob.columnOffset(atDignityPlanets, 9) + atDignityPlanets.count * 2,
       ),
+      reception: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 10),
+        blob.columnOffset(atDignityPlanets, 10) + atDignityPlanets.count * 2,
+      ),
       length: atDignityPlanets.count,
+    ),
+    dignityReceptions: ChartsDignityReceptions(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 0),
+        blob.columnOffset(atDignityReceptions, 0) + atDignityReceptions.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 1),
+        blob.columnOffset(atDignityReceptions, 1) + atDignityReceptions.count * 2,
+      ),
+      firstInHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 2),
+        blob.columnOffset(atDignityReceptions, 2) + atDignityReceptions.count * 1,
+      ),
+      firstInExaltation: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 3),
+        blob.columnOffset(atDignityReceptions, 3) + atDignityReceptions.count * 1,
+      ),
+      firstInTriplicity: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 4),
+        blob.columnOffset(atDignityReceptions, 4) + atDignityReceptions.count * 1,
+      ),
+      firstInTerm: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 5),
+        blob.columnOffset(atDignityReceptions, 5) + atDignityReceptions.count * 1,
+      ),
+      firstInFace: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 6),
+        blob.columnOffset(atDignityReceptions, 6) + atDignityReceptions.count * 1,
+      ),
+      firstInDetriment: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 7),
+        blob.columnOffset(atDignityReceptions, 7) + atDignityReceptions.count * 1,
+      ),
+      firstInFall: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 8),
+        blob.columnOffset(atDignityReceptions, 8) + atDignityReceptions.count * 1,
+      ),
+      secondInHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 9),
+        blob.columnOffset(atDignityReceptions, 9) + atDignityReceptions.count * 1,
+      ),
+      secondInExaltation: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 10),
+        blob.columnOffset(atDignityReceptions, 10) + atDignityReceptions.count * 1,
+      ),
+      secondInTriplicity: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 11),
+        blob.columnOffset(atDignityReceptions, 11) + atDignityReceptions.count * 1,
+      ),
+      secondInTerm: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 12),
+        blob.columnOffset(atDignityReceptions, 12) + atDignityReceptions.count * 1,
+      ),
+      secondInFace: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 13),
+        blob.columnOffset(atDignityReceptions, 13) + atDignityReceptions.count * 1,
+      ),
+      secondInDetriment: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 14),
+        blob.columnOffset(atDignityReceptions, 14) + atDignityReceptions.count * 1,
+      ),
+      secondInFall: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityReceptions, 15),
+        blob.columnOffset(atDignityReceptions, 15) + atDignityReceptions.count * 1,
+      ),
+      length: atDignityReceptions.count,
     ),
   );
 }

@@ -1399,6 +1399,25 @@ class AnEngine(WithLibrary):
                 self.assertEqual(at.peregrine, not any(flag in flags[:5] for flag in held), at.planet)
                 score = sum(lilly[flag] for flag in held) + (lilly["peregrine"] if at.peregrine else 0)
                 self.assertEqual(at.score, score, at.planet)
+            # Each reception whole both ways, in the Chaldean order, and
+            # scored only when mutual by house or by exaltation.
+            order = [at.planet for at in read.planets]
+            self.assertTrue(read.receptions)
+            for one in read.receptions:
+                first, second = one.planets
+                self.assertLess(order.index(first), order.index(second))
+                for side in (one.first_in, one.second_in):
+                    self.assertTrue(any(getattr(side, flag) for flag in flags[:5]), one)
+                self.assertEqual(
+                    one.mutual, tuple(f for f in flags[:5] if getattr(one.first_in, f) and getattr(one.second_in, f))
+                )
+            for at in read.planets:
+
+                def by(kind: str, planet: Graha = at.planet) -> bool:
+                    return any(planet in one.planets and kind in one.mutual for one in read.receptions)
+
+                points = (lilly["house"] if by("house") else 0) + (lilly["exaltation"] if by("exaltation") else 0)
+                self.assertEqual(at.reception, points, at.planet)
 
             asked: DignityRequest = {
                 "sectRule": SectRule.NIGHT,

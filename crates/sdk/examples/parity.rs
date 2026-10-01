@@ -1811,30 +1811,72 @@ fn the_dignities(report: &mut Report, sdk: &Context, index: usize, document: &te
         ),
     );
     for at in read.planets {
-        let d = at.dignity;
-        let held: Vec<&str> = [
-            (d.house, "house"),
-            (d.exaltation, "exaltation"),
-            (d.triplicity, "triplicity"),
-            (d.term, "term"),
-            (d.face, "face"),
-            (d.detriment, "detriment"),
-            (d.fall, "fall"),
-            (d.peregrine(), "peregrine"),
-        ]
-        .into_iter()
-        .filter_map(|(holds, name)| holds.then_some(name))
-        .collect();
-        let held = if held.is_empty() {
-            String::from("-")
-        } else {
-            held.join(",")
-        };
+        let mut held = flags_held(at.dignity);
+        if at.dignity.peregrine() {
+            held.push("peregrine");
+        }
         put(
             report,
             &format!("chart-{index}-dignity-{}", at.planet.full_key()),
-            format!("{} {held} {}", number(at.longitude_deg), at.score),
+            format!(
+                "{} {} {} {}",
+                number(at.longitude_deg),
+                comma_listed(&held),
+                at.score,
+                at.reception
+            ),
         );
+    }
+    for (k, one) in read.receptions.iter().enumerate() {
+        let mutual: Vec<&str> = one
+            .mutual()
+            .map(|kind| match kind {
+                teistro::DignityKind::House => "house",
+                teistro::DignityKind::Exaltation => "exaltation",
+                teistro::DignityKind::Triplicity => "triplicity",
+                teistro::DignityKind::Term => "term",
+                teistro::DignityKind::Face => "face",
+                _ => "unknown",
+            })
+            .collect();
+        put(
+            report,
+            &format!("chart-{index}-reception-{k}"),
+            format!(
+                "{} {} {} {} {}",
+                one.planets[0].full_key(),
+                one.planets[1].full_key(),
+                flags_held(one.first_in).join(","),
+                flags_held(one.second_in).join(","),
+                comma_listed(&mutual)
+            ),
+        );
+    }
+}
+
+/// The dignities and debilities that hold, by the names every runner
+/// prints them by.
+fn flags_held(d: teistro::EssentialDignity) -> Vec<&'static str> {
+    [
+        (d.house, "house"),
+        (d.exaltation, "exaltation"),
+        (d.triplicity, "triplicity"),
+        (d.term, "term"),
+        (d.face, "face"),
+        (d.detriment, "detriment"),
+        (d.fall, "fall"),
+    ]
+    .into_iter()
+    .filter_map(|(holds, name)| holds.then_some(name))
+    .collect()
+}
+
+/// Names comma-joined, or `-` for none.
+fn comma_listed(names: &[&str]) -> String {
+    if names.is_empty() {
+        String::from("-")
+    } else {
+        names.join(",")
     }
 }
 

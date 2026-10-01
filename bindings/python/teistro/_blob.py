@@ -2011,6 +2011,12 @@ class ChartsDignities:
     score_peregrine: memoryview[int]
     """What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
 
+    reception_count: memoryview[int]
+    """How many rows of the `dignity_receptions` section belong to this chart.
+
+    Ragged because which pairs receive each other depends on where each planet stands.
+    """
+
     length: int
     """The number of rows every column holds."""
 
@@ -2052,6 +2058,69 @@ class ChartsDignityPlanets:
 
     score: memoryview[int]
     """Its flags read by the `dignities` row's scores."""
+
+    reception: memoryview[int]
+    """What Lilly's table adds for mutual reception (p. 115): `score_house` when it is received by house, `score_exaltation` when by exaltation, nothing for a mixed reception or one by a lesser dignity (C210). Kept apart from `score`, since a planet in reception is still peregrine; a total is `score + reception`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDignityReceptions:
+    """The `dignity_receptions` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+    """
+
+    first: memoryview[int]
+    """The first of the two, in the Chaldean order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    first_in_house: memoryview[int]
+    """1 when `first` stands in `second`'s house, else 0."""
+
+    first_in_exaltation: memoryview[int]
+    """1 when `first` stands in `second`'s exaltation, else 0."""
+
+    first_in_triplicity: memoryview[int]
+    """1 when `first` stands in `second`'s triplicity, else 0."""
+
+    first_in_term: memoryview[int]
+    """1 when `first` stands in `second`'s term, else 0."""
+
+    first_in_face: memoryview[int]
+    """1 when `first` stands in `second`'s face, else 0."""
+
+    first_in_detriment: memoryview[int]
+    """1 when `first` stands in `second`'s detriment, else 0."""
+
+    first_in_fall: memoryview[int]
+    """1 when `first` stands in `second`'s fall, else 0."""
+
+    second_in_house: memoryview[int]
+    """1 when `second` stands in `first`'s house, else 0."""
+
+    second_in_exaltation: memoryview[int]
+    """1 when `second` stands in `first`'s exaltation, else 0."""
+
+    second_in_triplicity: memoryview[int]
+    """1 when `second` stands in `first`'s triplicity, else 0."""
+
+    second_in_term: memoryview[int]
+    """1 when `second` stands in `first`'s term, else 0."""
+
+    second_in_face: memoryview[int]
+    """1 when `second` stands in `first`'s face, else 0."""
+
+    second_in_detriment: memoryview[int]
+    """1 when `second` stands in `first`'s detriment, else 0."""
+
+    second_in_fall: memoryview[int]
+    """1 when `second` stands in `first`'s fall, else 0."""
 
     length: int
     """The number of rows every column holds."""
@@ -2364,6 +2433,9 @@ class Charts:
     dignity_planets: ChartsDignityPlanets
     """The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none."""
 
+    dignity_receptions: ChartsDignityReceptions
+    """Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2434,6 +2506,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_kp = blob.section(59, "kp")
     at_dignities = blob.section(60, "dignities")
     at_dignity_planets = blob.section(61, "dignity_planets")
+    at_dignity_receptions = blob.section(62, "dignity_receptions")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3602,6 +3675,9 @@ def decode_charts(raw: bytes) -> Charts:
             score_peregrine=blob.column(
                 at_dignities, 11, 1, at_dignities.count
             ).cast("b"),
+            reception_count=blob.column(
+                at_dignities, 12, 1, at_dignities.count
+            ).cast("B"),
             length=at_dignities.count,
         ),
         dignity_planets=ChartsDignityPlanets(
@@ -3635,7 +3711,61 @@ def decode_charts(raw: bytes) -> Charts:
             score=blob.column(
                 at_dignity_planets, 9, 2, at_dignity_planets.count
             ).cast("h"),
+            reception=blob.column(
+                at_dignity_planets, 10, 2, at_dignity_planets.count
+            ).cast("h"),
             length=at_dignity_planets.count,
+        ),
+        dignity_receptions=ChartsDignityReceptions(
+            first=blob.column(
+                at_dignity_receptions, 0, 2, at_dignity_receptions.count
+            ).cast("H"),
+            second=blob.column(
+                at_dignity_receptions, 1, 2, at_dignity_receptions.count
+            ).cast("H"),
+            first_in_house=blob.column(
+                at_dignity_receptions, 2, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_exaltation=blob.column(
+                at_dignity_receptions, 3, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_triplicity=blob.column(
+                at_dignity_receptions, 4, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_term=blob.column(
+                at_dignity_receptions, 5, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_face=blob.column(
+                at_dignity_receptions, 6, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_detriment=blob.column(
+                at_dignity_receptions, 7, 1, at_dignity_receptions.count
+            ).cast("B"),
+            first_in_fall=blob.column(
+                at_dignity_receptions, 8, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_house=blob.column(
+                at_dignity_receptions, 9, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_exaltation=blob.column(
+                at_dignity_receptions, 10, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_triplicity=blob.column(
+                at_dignity_receptions, 11, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_term=blob.column(
+                at_dignity_receptions, 12, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_face=blob.column(
+                at_dignity_receptions, 13, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_detriment=blob.column(
+                at_dignity_receptions, 14, 1, at_dignity_receptions.count
+            ).cast("B"),
+            second_in_fall=blob.column(
+                at_dignity_receptions, 15, 1, at_dignity_receptions.count
+            ).cast("B"),
+            length=at_dignity_receptions.count,
         ),
     )
 

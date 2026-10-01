@@ -8,6 +8,7 @@ use teistro_core::error::Error;
 use crate::dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, essential_dignity,
 };
+use crate::reception::{DignityKind, Reception, receptions};
 
 /// What a chart's dignities are read from: the seven planets' longitudes
 /// in the chart's zodiac, the Sun's geometric altitude, and whether the
@@ -196,6 +197,7 @@ impl DignityRequest {
             .with_field("sun_altitude_deg"));
         }
         let sect = self.sect_rule.sect(sky.sun_altitude_deg, sky.daylight);
+        let mut places = Vec::with_capacity(CHALDEAN_ORDER.len());
         let mut planets = Vec::with_capacity(CHALDEAN_ORDER.len());
         for planet in CHALDEAN_ORDER {
             let Some((longitude_deg, field)) = sky.of(planet) else {
@@ -203,12 +205,20 @@ impl DignityRequest {
             };
             let dignity = essential_dignity(planet, longitude_deg, sect, &self.rules)
                 .map_err(|why| why.with_field(field))?;
+            places.push((planet, longitude_deg));
             planets.push(PlanetDignity {
                 planet,
                 longitude_deg,
                 dignity,
                 score: dignity.score(&self.scores),
+                reception: 0,
             });
+        }
+        let receptions = receptions(&places, |planet, at| {
+            essential_dignity(planet, at, sect, &self.rules)
+        })?;
+        for at in &mut planets {
+            at.reception = reception_score(at.planet, &receptions, self.scores);
         }
         let planets = planets
             .try_into()
@@ -219,6 +229,7 @@ impl DignityRequest {
             rules: self.rules,
             scores: self.scores,
             planets,
+            receptions,
         })
     }
 }
@@ -235,12 +246,38 @@ pub struct PlanetDignity {
     pub longitude_deg: f64,
     /// What it holds there.
     pub dignity: EssentialDignity,
-    /// Its score under the request's [`Scores`].
+    /// Its score under the request's [`Scores`], from its own dignities
+    /// alone.
     pub score: i16,
+    /// What Lilly's table adds for mutual reception (p. 115): the house's
+    /// score when it is received by house, and the exaltation's when by
+    /// exaltation; nothing for a mixed reception or one by a lesser
+    /// dignity (C210). A planet in reception is still peregrine, which is
+    /// a matter of its own dignities (p. 112), so the two are kept apart
+    /// and a total is `score + reception`.
+    pub reception: i16,
+}
+
+/// Lilly's points for a planet's mutual receptions by house and by
+/// exaltation, each counted once: a sign has one lord and one exalted
+/// planet, so a planet is received by each kind by one partner at most.
+fn reception_score(planet: Graha, receptions: &[Reception], scores: Scores) -> i16 {
+    [
+        (DignityKind::House, scores.house),
+        (DignityKind::Exaltation, scores.exaltation),
+    ]
+    .into_iter()
+    .filter(|&(kind, _)| {
+        receptions
+            .iter()
+            .any(|one| one.planets.contains(&planet) && one.mutual_by(kind))
+    })
+    .map(|(_, worth)| i16::from(worth))
+    .sum()
 }
 
 /// The seven's dignities in one chart, with everything that made them.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
@@ -255,6 +292,9 @@ pub struct Dignities {
     pub scores: Scores,
     /// The seven, in the Chaldean order, Saturn first.
     pub planets: [PlanetDignity; 7],
+    /// Every pair each standing in a dignity of the other's, in the
+    /// Chaldean order of the first and then the second (§Reception).
+    pub receptions: Vec<Reception>,
 }
 
 #[cfg(test)]
@@ -267,7 +307,8 @@ mod tests {
     )]
 
     use super::{ChartSky, DignityRequest};
-    use crate::{CHALDEAN_ORDER, Scores, Sect, SectRule, Terms};
+    use crate::{CHALDEAN_ORDER, DignityKind, Scores, Sect, SectRule, Terms};
+    use teistro_core::catalogue::Graha;
 
     /// The Sun just under the western horizon: set by the horizon, still
     /// lit by the chart's own sunset.
@@ -316,6 +357,41 @@ mod tests {
             assert_eq!(at.score, at.dignity.score(&scores), "{:?}", at.planet);
         }
         assert_eq!(read.scores, scores);
+    }
+
+    /// Lilly's first example (p. 112), the Sun in Aries and Mars in Leo,
+    /// each scored his house's worth again by p. 115's table, and kept
+    /// apart from the score his own dignities earn.
+    #[test]
+    fn a_mutual_reception_by_house_is_scored_apart() {
+        let sky = ChartSky {
+            sun_deg: 5.0,
+            mars_deg: 125.0,
+            ..DUSK
+        };
+        let read = DignityRequest::default().read(&sky).unwrap();
+        let by_house: Vec<_> = read
+            .receptions
+            .iter()
+            .filter(|one| one.mutual_by(DignityKind::House))
+            .map(|one| one.planets)
+            .collect();
+        assert_eq!(by_house, [[Graha::Mars, Graha::Sun]]);
+        // Receptions by the lesser dignities are reported and not scored:
+        // Saturn and Mercury here are in each other's terms.
+        assert!(read.receptions.len() > 1, "{:?}", read.receptions);
+        let reception: Vec<_> = read.planets.iter().map(|at| at.reception).collect();
+        assert_eq!(reception, [0, 0, 5, 5, 0, 0, 0]);
+        let mars = read.planets[2];
+        assert!(mars.dignity.peregrine(), "received, still peregrine");
+        assert_eq!(mars.score, -5);
+        // Scored by the request's own house.
+        let scores = Scores::new(7, 4, 3, 2, 1, -5, -4, -5);
+        let read = DignityRequest::default()
+            .with_scores(scores)
+            .read(&sky)
+            .unwrap();
+        assert_eq!(read.planets[2].reception, 7);
     }
 
     #[test]
