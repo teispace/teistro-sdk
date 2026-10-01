@@ -25,7 +25,7 @@ use super::knobs::{
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
     Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta,
-    State, Strength, Time, Vargas,
+    State, Strength, SuryaBija, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -88,8 +88,9 @@ pub struct Profile {
 pub const DEFAULT_PROFILE: &str = "parashari-classical";
 
 /// The ids of the shipped profiles.
-pub const SHIPPED_PROFILES: [&str; 6] = [
+pub const SHIPPED_PROFILES: [&str; 7] = [
     "nepali-default",
+    "nepali-committee",
     "parashari-classical",
     "surya-siddhanta",
     "kp-default",
@@ -349,6 +350,60 @@ fn nepali_default() -> Profile {
     }
 }
 
+/// Nepal's national panchanga as its committee computes it: Nepal's
+/// civil practice (`nepali-default`) over the Surya Siddhanta with the
+/// committee's bija, in the text's own zodiac.
+///
+/// The committee requires its panchanga makers to compute by the Surya
+/// Siddhanta, and its printed Sun and Moon are the text's, the Moon's
+/// apsis carrying a bija of four revolutions an age
+/// (`calendars/bikram-sambat.md`, R2); Nepal's daily panchanga prints
+/// its tithi, nakshatra and yoga ends from the same, where the modern
+/// sky under Lahiri parts from them by hours
+/// (`03-design/nepal-day-measured.md`). The zodiac is the text's own,
+/// which the text **defines**; the chart is geocentric, as the text's
+/// is. The provider is declared, never chosen by the profile
+/// (ADR-0029): open the context over `SURYA_SIDDHANTA`. The committee's
+/// five star planets are modern positions under Lahiri (C38) and its
+/// sunrise a modern one (C39), which the text's provider does not give.
+fn nepali_committee() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.centre = Some(Centre::Geocentric);
+    patch.frame.siddhanta = Some(Siddhanta::Surya {
+        bija: SuryaBija::NepalCommittee,
+    });
+    patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
+    let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
+    Profile {
+        id: ProfileId::new("nepali-committee"),
+        version: 1,
+        base: Some(ProfileId::new("nepali-default")),
+        patch,
+        sources: vec![
+            Citation::new(
+                "frame.siddhanta",
+                committee(
+                    "measured: the Rashtriya Panchangam 2082 and 2083 print the text's Moon with its apsis four revolutions an age fewer; docs/calendars/bikram-sambat.md R2 and docs/03-design/nepal-day-measured.md",
+                ),
+            ),
+            Citation::new(
+                "frame.ayanamsha",
+                committee(
+                    "measured: Nepal's daily nakshatra and yoga ends are the text's in its own zodiac; docs/03-design/nepal-day-measured.md",
+                ),
+            ),
+            Citation::new(
+                "frame.centre",
+                Source::new(
+                    "Surya Siddhanta",
+                    "Burgess 1860: the text's places are geocentric",
+                ),
+            ),
+        ],
+        mark: Mark::Traditional,
+    }
+}
+
 /// The texts as read, and nothing else (ADR-0024).
 ///
 /// It patches the root rather than another profile, which is what makes
@@ -413,7 +468,9 @@ fn parashari_classical() -> Profile {
 /// context over `SURYA_SIDDHANTA`.
 fn surya_siddhanta() -> Profile {
     let mut patch = SettingsPatch::default();
-    patch.frame.siddhanta = Some(Siddhanta::Surya { bija: false });
+    patch.frame.siddhanta = Some(Siddhanta::Surya {
+        bija: SuryaBija::None,
+    });
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
     let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
     Profile {
@@ -625,6 +682,7 @@ impl Profile {
     pub fn shipped(id: &str) -> Option<Profile> {
         match id {
             "nepali-default" => Some(nepali_default()),
+            "nepali-committee" => Some(nepali_committee()),
             "parashari-classical" => Some(parashari_classical()),
             "surya-siddhanta" => Some(surya_siddhanta()),
             "kp-default" => Some(kp_default()),

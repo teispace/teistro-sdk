@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 298 distinct paths between them. A recorded sample would go
+provider, 299 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 9 | 298 |
-| `day` | a foundation and the almanac of its day | 2 | 157 |
+| `whole` | every section the layer can produce | 9 | 299 |
+| `day` | a foundation and the almanac of its day | 2 | 158 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-11 boolean, 55 integer, 6 null, 118 number, 121 string.
+11 boolean, 55 integer, 6 null, 118 number, 122 string.
 
 ## 3. A whole double is written as an integer
 
@@ -76,9 +76,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 121 | 115 | 6 |
+| 122 | 116 | 6 |
 
-A schema would constrain each of those 115 with an `enum`, and it cannot
+A schema would constrain each of those 116 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 12 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -98,7 +98,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 226 | 9 |
+| 72 | 227 | 9 |
 
 The top-level sections of the widest document are `aspects`, `dashas`,
 `drawings`, `foundation`, `houses`, `panchanga`, `points`, `state`,
@@ -132,13 +132,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 2 | 2 |
 | `chart` | 12 | 10 |
-| `panchanga` | 35 | 35 |
+| `panchanga` | 36 | 36 |
 | `vargas` | 11 | 8 |
 | `state` | 12 | 12 |
 | `aspect` | 8 | 8 |
 | `points` | 4 | 4 |
 | `houses` | 5 | 5 |
-| **total** | **89** | **84** |
+| **total** | **90** | **85** |
 
 The five that do not derive it are the five that **cannot**, and they
 are all one shape: a value whose identity is a shipped constant, holding
@@ -234,7 +234,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 44 of 162 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 84 types derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 85 types derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5474 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5474 |

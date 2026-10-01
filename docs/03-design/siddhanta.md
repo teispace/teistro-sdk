@@ -36,9 +36,11 @@ from the catalogue, a latitude for the day's arc. Two choices, both
 plain values: the [`Parameters`] (the text's, or the text's with a
 tradition's bija applied) and the [`Trig`] (the text's table, or exact
 trigonometry for comparison). The settings knob `frame.siddhanta`
-selects the model in a profile; `Surya { bija: true }` is refused as
-unsourced until a bija set is cited (§10). The model uses no port; the
-provider adapter answers one (§5).
+selects the model in a profile, and its `bija` says which set:
+`NONE` (the text), `NEPAL_COMMITTEE` (the set measured from Nepal's
+national panchanga committee, marked a measurement and not a citation)
+or `CUSTOM { revolutions }`, a consumer's own (§10). The model uses no
+port; the provider adapter answers one (§5).
 
 ## 3. The data model
 
@@ -204,8 +206,11 @@ declination)`, `day_arc(local_mean_midnight, latitude)`,
 `asu_between(from, to)`; `Parameters::TEXT`,
 `Parameters::with_bija(&Bija)`. The calendar crate implements its
 `SolarModel` over this (`calendar-bikram-sambat.md`).
-`SiddhantaProvider::text()` (or `new(model)`) implements
-`EphemerisProvider`: nine bodies (the seven grahas, the mean node and
+`SiddhantaProvider::text()` (or `with_bija(bija)`, whose stamp names the
+set, or `new(model)`) implements `EphemerisProvider`; the SDK's
+`SURYA_SIDDHANTA` entry opens `with_bija` under the settings'
+`frame.siddhanta`, so the settings ask for the set and the chain
+supplies it: nine bodies (the seven grahas, the mean node and
 the mean apogee) in the text's own frame (geocentric, of date, ecliptic,
 sidereal by the text's ayanamsha, geometric), distances as the hypotenuse
 on the radius (`DistanceUnit::MeanDistances`), speeds by the text's rule
@@ -220,7 +225,7 @@ reach an engine.
 | situation | outcome |
 |---|---|
 | a graha the text does not model (Uranus, Neptune, Pluto) | `UNSUPPORTED` naming the graha, field `graha`, with the hint of what the text knows |
-| `Surya { bija: true }` in a profile | `UNSUPPORTED (unsourced)` until a bija set is cited; a consumer's own `Bija` through `with_bija` is accepted |
+| `bija: true` in a settings patch | `INVALID_ARG` on `settings.frame.siddhanta`: a bija is named (`NONE`, `NEPAL_COMMITTEE`) or counted (`CUSTOM { revolutions }`), never a bare switch that says "a bija" without saying which |
 | a latitude and declination where the Sun neither rises nor sets | `day_arc` and `ascensional_difference_deg` return `None`; no error |
 | an instant before the Kali age | a negative count; every place still wraps correctly (tested) |
 
@@ -305,14 +310,18 @@ the locale packs carry the presentation forms.
 
 1. **The bija sets.** The later commentators (Ranganatha, 1603; the
    Makaranda tables) apply corrections to the revolution counts that
-   differ between them; none is cited here yet, so `Surya { bija: true }`
-   is unsourced and refused, and a consumer supplies its own `Bija`
-   (cruxes register C28). Measured on 2026-09-05 from the national
-   panchanga committee's printed places for BS 2082 and 2083
-   (`fixtures/official/`): its Sun is the text's without bija within 3″,
-   its Moon the text's with `Bija { moon_apsis: -4 }` within 0.5′ at ten
-   printed points (`tests/official.rs`); its star planets are modern
-   positions, not the text's (C38).
+   differ between them; none is cited here yet (cruxes register C28), so
+   the one set that ships by name is a **measurement**: on 2026-09-05,
+   from the national panchanga committee's printed places for BS 2082
+   and 2083 (`fixtures/official/`), its Sun is the text's without bija
+   within 3″ and its Moon the text's with `Bija { moon_apsis: -4 }`
+   within 0.5′ at ten printed points (`tests/official.rs`); on
+   2026-10-01, Nepal's daily panchanga's 990 tithi, nakshatra and yoga
+   ends over 333 days are that set's within 1.5 minutes, in the text's
+   own zodiac (`nepal-day-measured.md`, C187). It ships as
+   `SuryaBija::NepalCommittee` and `Bija::NEPAL_COMMITTEE`; a consumer
+   with a cited set supplies it as `CUSTOM`. The committee's star
+   planets are modern positions, not the text's (C38).
 2. **The epicycle convention.** The text places the even-quadrant value
    at the anomaly's 0° and 180° and the odd-quadrant value at 90° and
    270° (II.34 to 38); the baseline engine had them swapped, which moves

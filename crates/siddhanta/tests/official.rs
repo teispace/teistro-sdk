@@ -29,17 +29,9 @@ const NPT_DAYS: f64 = 5.75 / 24.0;
 
 /// The bija the committee's Moon implies: its apsis makes four revolutions
 /// fewer in an age than the text's 488 203 (`docs/calendars/bikram-sambat.md`,
-/// R2). A measurement, not a citation: `Surya { bija: true }` stays refused.
-const COMMITTEE_MOON_BIJA: Bija = Bija {
-    moon_apsis: -4,
-    moon: 0,
-    moon_node: 0,
-    mars: 0,
-    mercury: 0,
-    jupiter: 0,
-    venus: 0,
-    saturn: 0,
-};
+/// R2). A measurement, not a citation (C28): the set `SuryaBija::NepalCommittee`
+/// names, held here to the committee's own printed places.
+const COMMITTEE_MOON_BIJA: Bija = Bija::NEPAL_COMMITTEE;
 
 fn fixture() -> Value {
     let path =

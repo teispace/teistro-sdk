@@ -3,6 +3,7 @@
 
 use teistro_core::Status;
 use teistro_core::error::Error;
+use teistro_core::settings::Siddhanta;
 use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
 use teistro_siddhanta::SiddhantaProvider;
 
@@ -141,7 +142,7 @@ impl Ephemeris {
     }
 
     /// The provider this entry opens, or the refusal that says why it
-    /// could not.
+    /// could not; the Surya Siddhanta opens as the text, without a bija.
     ///
     /// A chain opens its entries itself, so a consumer rarely needs
     /// this; what does is a caller holding one entry and wanting the
@@ -151,13 +152,41 @@ impl Ephemeris {
     ///
     /// Whatever a recipe's own opening refuses with.
     pub fn open(self) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
+        self.open_under(Siddhanta::Drik)
+    }
+
+    /// The provider this entry opens under the settings' astronomy: the
+    /// Surya Siddhanta entry opens the text with the bija
+    /// `frame.siddhanta` names (**the settings ask; the chain
+    /// supplies**), and every other entry is what it is.
+    ///
+    /// ```
+    /// use teistro::Ephemeris;
+    /// use teistro::settings::{Siddhanta, SuryaBija};
+    ///
+    /// let committee = Siddhanta::Surya { bija: SuryaBija::NepalCommittee };
+    /// let provider = Ephemeris::SuryaSiddhanta.open_under(committee)?.expect("a provider");
+    /// assert!(provider.capabilities().identity.data_version.contains("moon_apsis -4"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Whatever a recipe's own opening refuses with.
+    pub fn open_under(
+        self,
+        siddhanta: Siddhanta,
+    ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
         match self {
             Ephemeris::None => Ok(None),
             #[cfg(feature = "builtin-ephemeris")]
             Ephemeris::Builtin => Ok(Some(Box::new(
                 teistro_ephemeris_builtin::provider::Builtin::new(),
             ))),
-            Ephemeris::SuryaSiddhanta => Ok(Some(Box::new(SiddhantaProvider::text()))),
+            Ephemeris::SuryaSiddhanta => Ok(Some(Box::new(match siddhanta {
+                Siddhanta::Surya { bija } => SiddhantaProvider::with_bija(bija.revolutions()),
+                Siddhanta::Drik => SiddhantaProvider::text(),
+            }))),
             Ephemeris::Test => Ok(Some(Box::new(TestProvider::new()))),
             Ephemeris::Provider(provider) => Ok(Some(provider)),
             Ephemeris::Opening(opening) => (opening.open)().map(Some),
@@ -173,12 +202,15 @@ impl Ephemeris {
 /// the next entry turned a refusal carrying its status, its field and
 /// its hint into a bare "nothing could be opened". With one entry there
 /// is no next entry, so the refusal is the refusal.
-pub(crate) fn open(chain: Vec<Ephemeris>) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
+pub(crate) fn open(
+    chain: Vec<Ephemeris>,
+    siddhanta: Siddhanta,
+) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
     let mut refusals: Vec<String> = Vec::with_capacity(chain.len());
     let only = chain.len() == 1;
     for entry in chain {
         let name = entry.name();
-        match entry.open() {
+        match entry.open_under(siddhanta) {
             Ok(opened) => return Ok(opened),
             Err(refusal) if only => return Err(refusal),
             Err(refusal) => refusals.push(format!("{name}: {refusal}")),
