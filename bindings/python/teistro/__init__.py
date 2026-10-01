@@ -421,6 +421,8 @@ __all__ = [
     "AppliedDignityRules",
     "EssentialDignity",
     "PlanetDignity",
+    "DignityKind",
+    "Reception",
     "Sect",
     "SectRule",
     "Terms",
@@ -2793,6 +2795,46 @@ class PlanetDignity:
     """In none of its five dignities, whatever its debilities."""
 
     score: int
+    """Its score from its own dignities alone."""
+
+    reception: int
+    """What Lilly's table adds for mutual reception (p. 115): the house's
+    score when received by house, the exaltation's when by exaltation,
+    nothing for a mixed reception or one by a lesser dignity (C210). A
+    total is `score + reception`."""
+
+
+DignityKind = Literal["house", "exaltation", "triplicity", "term", "face"]
+"""One of the five essential dignities, by the name its flag has."""
+
+_DIGNITY_KINDS: Tuple[DignityKind, ...] = ("house", "exaltation", "triplicity", "term", "face")
+_DIGNITY_FLAGS = (*_DIGNITY_KINDS, "detriment", "fall")
+
+
+@dataclass(frozen=True)
+class Reception:
+    """Two planets each standing in at least one of the other's five
+    dignities (Lilly, p. 112), each side reported whole.
+
+    >>> # by_house = [one for one in chart.dignities.receptions if "house" in one.mutual]
+    """
+
+    planets: Tuple[Graha, Graha]
+    """The two, in the Chaldean order."""
+
+    first_in: EssentialDignity
+    """The second's dignities where the first stands."""
+
+    second_in: EssentialDignity
+    """The first's dignities where the second stands."""
+
+    @property
+    def mutual(self) -> Tuple[DignityKind, ...]:
+        """The kinds each stands in of the other's, strongest first; empty
+        for a mixed reception."""
+        return tuple(
+            kind for kind in _DIGNITY_KINDS if getattr(self.first_in, kind) and getattr(self.second_in, kind)
+        )
 
 
 @dataclass(frozen=True)
@@ -2811,6 +2853,10 @@ class Dignities:
     scores: DignityScores
     planets: Tuple[PlanetDignity, ...]
     """The seven in the Chaldean order, Saturn first."""
+
+    receptions: Tuple[Reception, ...]
+    """Every pair in reception, in the Chaldean order of the first and then
+    the second."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -7248,10 +7294,12 @@ class ChartBatch:
     @cached_property
     def _dignities(self) -> list[Dignities]:
         """Every chart's essential dignities, decoded once; empty when none
-        were asked for. `dignities` holds a row a chart and `dignity_planets`
-        seven a chart, in the Chaldean order."""
+        were asked for. `dignities` holds a row a chart, `dignity_planets`
+        seven a chart, in the Chaldean order, and `dignity_receptions` each
+        chart's receptions, ragged by `dignities.reception_count`."""
         c = self.decoded.dignities
         p = self.decoded.dignity_planets
+        r = self.decoded.dignity_receptions
         charts = len(self.decoded.cast.instant)
         if c.length == 0:
             return []
@@ -7262,24 +7310,35 @@ class ChartBatch:
                 " they are one and seven a chart",
             )
 
-        def planet(row: int) -> PlanetDignity:
-            dignity = EssentialDignity(
-                house=p.house[row] == 1,
-                exaltation=p.exaltation[row] == 1,
-                triplicity=p.triplicity[row] == 1,
-                term=p.term[row] == 1,
-                face=p.face[row] == 1,
-                detriment=p.detriment[row] == 1,
-                fall=p.fall[row] == 1,
+        if sum(c.reception_count) != r.length:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"dignity_receptions has {r.length} rows and the charts count {sum(c.reception_count)}",
             )
-            held = (dignity.house, dignity.exaltation, dignity.triplicity, dignity.term, dignity.face)
+
+        def flags(columns: Any, prefix: str, row: int) -> EssentialDignity:
+            held = {flag: getattr(columns, prefix + flag)[row] == 1 for flag in _DIGNITY_FLAGS}
+            return EssentialDignity(**held)
+
+        def planet(row: int) -> PlanetDignity:
+            dignity = flags(p, "", row)
             return PlanetDignity(
                 planet=Graha(p.planet[row]),
                 longitude_deg=p.longitude[row],
                 dignity=dignity,
-                peregrine=not any(held),
+                peregrine=not any(getattr(dignity, kind) for kind in _DIGNITY_KINDS),
                 score=p.score[row],
+                reception=p.reception[row],
             )
+
+        def reception(row: int) -> Reception:
+            return Reception(
+                planets=(Graha(r.first[row]), Graha(r.second[row])),
+                first_in=flags(r, "first_in_", row),
+                second_in=flags(r, "second_in_", row),
+            )
+
+        starts = [0, *itertools.accumulate(c.reception_count)]
 
         return [
             Dignities(
@@ -7297,6 +7356,7 @@ class ChartBatch:
                     peregrine=c.score_peregrine[chart],
                 ),
                 planets=tuple(planet(row) for row in range(7 * chart, 7 * chart + 7)),
+                receptions=tuple(reception(row) for row in range(starts[chart], starts[chart + 1])),
             )
             for chart in range(charts)
         ]

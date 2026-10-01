@@ -119,7 +119,7 @@ The reasons for this shape:
 
 Mutual reception (Lilly scores it as house or exaltation) needs the
 other planet's place, so it is a chart-level question and not this
-function's. It is the next step's, with the almuten.
+function's (§Reception).
 
 ## Sect
 
@@ -248,6 +248,52 @@ runner for a request with each knob turned from its default (`DAYLIGHT`,
 on every value. The ABI test holds every cell to the façade's own answer
 to the bit, and the keys test holds the four enums to serde's spelling.
 
+## Reception (step 5)
+
+Lilly (p. 112, read off the page image) calls it reception when two
+planets "are in each others dignity": by house, the strongest, or "by
+triplicity terme or face, or any essentiall dignity". He works three
+examples, and each holds on the shipped tables:
+
+- the Sun in Aries and Mars in Leo, by house;
+- Venus in Aries and the Sun in Taurus, by triplicity, "if the Question
+  or Nativity be by day";
+- Venus at 24° Aries and Mars at 16° Gemini, by term.
+
+Whose dignity a planet stands in is the other planet's
+`essential_dignity` at its place, so reception needs no table of its own.
+`Dignities.receptions` lists every pair in which each planet stands in
+at least one of the other's five dignities. Each `Reception` carries both
+sides whole (`first_in`, `second_in`), so one record answers both
+questions:
+
+- **mutual**: the same kind both ways (`Reception::mutual`, Lilly's three
+  examples);
+- **mixed**: different kinds each way, which Lilly does not name.
+
+**Scoring (C210).** Lilly's table (p. 115) scores a planet "in mutual
+reception … by house" as its own house, 5, and "reception by exaltation"
+as its exaltation, 4, and names no other kind. So
+`PlanetDignity::reception` adds the request's house score for a mutual
+reception by house and its exaltation score for one by exaltation, and
+nothing else. It is kept apart from `score`, never folded into it, so a
+reader who scores mixed reception, or reception by the lesser
+dignities, adds what the pair carries. A received planet stays peregrine,
+because Lilly defines peregrine by the planet's own dignities (p. 112).
+
+**One partner a kind, but for Ptolemy's water.** A place has one lord,
+one exalted planet, one term lord and one face lord. So a planet is
+received by any of those kinds by one partner at most, and a kind's
+score is earned once. Ptolemy's water triplicity is ruled jointly
+(Venus or the Moon, with Mars), so there a planet can be received by
+triplicity by two partners, and both pairs are listed.
+
+At the boundary, `dignities` gains `reception_count`. `dignity_planets`
+gains `reception`. A third section, `dignity_receptions`, holds each
+chart's pairs, ragged by that count. Each pair is a row: `first` and
+`second`, then the seven flags of each side. [`reception-measured.md`](reception-measured.md)
+holds Lilly's examples and counts each kind over the corpus.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
@@ -272,6 +318,10 @@ to the bit, and the keys test holds the four enums to serde's spelling.
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental
    fortitudes (p. 115's second half), each a falsification pass first.
+   **Reception done** (§Reception, C210). The accidental fortitudes come
+   next: they need a house division, motion and the fixed stars, and
+   their acceptance test is the Chapter XXVIII figure's printed totals
+   (pp. 178–180). Then the almuten, which needs both.
 
 ## What is not decided
 

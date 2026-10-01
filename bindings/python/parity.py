@@ -865,7 +865,18 @@ def main() -> None:
                 flags_held += ["peregrine"] if planet_dignity.peregrine else []
                 put(
                     f"chart-{i}-dignity-{planet_dignity.planet.full_key}",
-                    f"{number(planet_dignity.longitude_deg)} {','.join(flags_held) or '-'} {planet_dignity.score}",
+                    f"{number(planet_dignity.longitude_deg)} {','.join(flags_held) or '-'} "
+                    f"{planet_dignity.score} {planet_dignity.reception}",
+                )
+            for k, reception in enumerate(dg.receptions):
+                sides = [
+                    ",".join(flag for flag in dignity_flags if getattr(side, flag))
+                    for side in (reception.first_in, reception.second_in)
+                ]
+                put(
+                    f"chart-{i}-reception-{k}",
+                    f"{reception.planets[0].full_key} {reception.planets[1].full_key} {sides[0]} {sides[1]} "
+                    f"{','.join(reception.mutual) or '-'}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

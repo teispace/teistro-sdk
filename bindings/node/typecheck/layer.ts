@@ -33,12 +33,14 @@ import type {
   HitRequest,
   SadeSatiRequest,
   Dignities,
+  DignityKind,
   DignityRequest,
   GrahaName,
   KpLords,
   KpReading,
   KpRequest,
   PlanetDignity,
+  Reception,
   Term,
   LayoutHolds,
   LayoutKey,
@@ -751,7 +753,12 @@ function theDignities(ctx: Context): string {
   const planets = read.planets.map((at: PlanetDignity) => {
     const d = at.dignity;
     const flags = [d.house, d.exaltation, d.triplicity, d.term, d.face, d.detriment, d.fall, at.peregrine];
-    return `${at.planet} ${at.longitudeDeg} ${flags.join()} ${at.score}`;
+    return `${at.planet} ${at.longitudeDeg} ${flags.join()} ${at.score} ${at.reception}`;
+  });
+  const receptions = read.receptions.map((one: Reception) => {
+    const [first, second] = one.planets;
+    const kinds: readonly DignityKind[] = one.mutual;
+    return `${first} ${second} ${one.firstIn.house} ${one.secondIn.exaltation} ${kinds.join()}`;
   });
   const s = read.scores;
   const scores = [s.house, s.exaltation, s.triplicity, s.term, s.face, s.detriment, s.fall, s.peregrine];
@@ -759,7 +766,7 @@ function theDignities(ctx: Context): string {
   const dusk: DignityRequest = { sectRule: 'DUSK' };
   // @ts-expect-error `TABLE` names the request's table in an answer, and is no system to ask for
   const table: DignityRequest = { rules: { terms: 'TABLE' } };
-  return [read.sect, read.sectRule, read.rules.terms, read.rules.triplicities, ...scores, ...planets, String(dusk), String(table)].join();
+  return [read.sect, read.sectRule, read.rules.terms, read.rules.triplicities, ...scores, ...planets, ...receptions, String(dusk), String(table)].join();
 }
 
 void theDignities;

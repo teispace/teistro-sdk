@@ -201,8 +201,8 @@ pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 // them (`03-design/essential-dignities.md`).
 pub use teistro_hellenistic as hellenistic;
 pub use teistro_hellenistic::{
-    Dignities, DignityRequest, DignityRules, EssentialDignity, PlanetDignity, Scores, Sect,
-    SectRule, Terms, TermsTable, Triplicities,
+    Dignities, DignityKind, DignityRequest, DignityRules, EssentialDignity, PlanetDignity,
+    Reception, Scores, Sect, SectRule, Terms, TermsTable, Triplicities,
 };
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};

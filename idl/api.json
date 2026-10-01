@@ -17200,6 +17200,11 @@
               "name": "score_peregrine",
               "scalar": "i8",
               "doc": "What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "reception_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `dignity_receptions` section belong to this chart.\n\nRagged because which pairs receive each other depends on where each planet stands."
             }
           ]
         },
@@ -17259,6 +17264,101 @@
               "name": "score",
               "scalar": "i16",
               "doc": "Its flags read by the `dignities` row's scores."
+            },
+            {
+              "name": "reception",
+              "scalar": "i16",
+              "doc": "What Lilly's table adds for mutual reception (p. 115): `score_house` when it is received by house, `score_exaltation` when by exaltation, nothing for a mixed reception or one by a lesser dignity (C210). Kept apart from `score`, since a planet in reception is still peregrine; a total is `score + reception`."
+            }
+          ]
+        },
+        {
+          "id": 62,
+          "name": "dignity_receptions",
+          "doc": "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first of the two, in the Chaldean order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "first_in_house",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s house, else 0."
+            },
+            {
+              "name": "first_in_exaltation",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s exaltation, else 0."
+            },
+            {
+              "name": "first_in_triplicity",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s triplicity, else 0."
+            },
+            {
+              "name": "first_in_term",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s term, else 0."
+            },
+            {
+              "name": "first_in_face",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s face, else 0."
+            },
+            {
+              "name": "first_in_detriment",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s detriment, else 0."
+            },
+            {
+              "name": "first_in_fall",
+              "scalar": "u8",
+              "doc": "1 when `first` stands in `second`'s fall, else 0."
+            },
+            {
+              "name": "second_in_house",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s house, else 0."
+            },
+            {
+              "name": "second_in_exaltation",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s exaltation, else 0."
+            },
+            {
+              "name": "second_in_triplicity",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s triplicity, else 0."
+            },
+            {
+              "name": "second_in_term",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s term, else 0."
+            },
+            {
+              "name": "second_in_face",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s face, else 0."
+            },
+            {
+              "name": "second_in_detriment",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s detriment, else 0."
+            },
+            {
+              "name": "second_in_fall",
+              "scalar": "u8",
+              "doc": "1 when `second` stands in `first`'s fall, else 0."
             }
           ]
         }

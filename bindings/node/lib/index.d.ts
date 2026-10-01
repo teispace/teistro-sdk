@@ -932,7 +932,36 @@ export interface PlanetDignity {
   readonly dignity: EssentialDignity;
   /** Whether it is in none of its five dignities, whatever its debilities. */
   readonly peregrine: boolean;
+  /** Its score from its own dignities alone. */
   readonly score: number;
+  /**
+   * What Lilly's table adds for mutual reception (p. 115): the house's
+   * score when received by house, the exaltation's when by exaltation,
+   * nothing for a mixed reception or one by a lesser dignity (C210). A
+   * total is `score + reception`.
+   */
+  readonly reception: number;
+}
+
+/** One of the five essential dignities, by the name its flag has. */
+export type DignityKind = 'house' | 'exaltation' | 'triplicity' | 'term' | 'face';
+
+/**
+ * Two planets each standing in at least one of the other's five
+ * dignities (Lilly, p. 112), each side reported whole.
+ *
+ * @example
+ * const byHouse = chart.dignities?.receptions.filter((one) => one.mutual.includes('house'));
+ */
+export interface Reception {
+  /** The two, in the Chaldean order. */
+  readonly planets: readonly [Graha, Graha];
+  /** The second's dignities where the first stands. */
+  readonly firstIn: EssentialDignity;
+  /** The first's dignities where the second stands. */
+  readonly secondIn: EssentialDignity;
+  /** The kinds each stands in of the other's, strongest first; empty for a mixed reception. */
+  readonly mutual: readonly DignityKind[];
 }
 
 /**
@@ -954,6 +983,8 @@ export interface Dignities {
   readonly scores: DignityScores;
   /** The seven in the Chaldean order, Saturn first. */
   readonly planets: readonly PlanetDignity[];
+  /** Every pair in reception, in the Chaldean order of the first and then the second. */
+  readonly receptions: readonly Reception[];
 }
 
 /**

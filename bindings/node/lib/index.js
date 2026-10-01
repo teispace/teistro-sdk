@@ -2829,10 +2829,19 @@ const DIGNITY_FLAGS = ['house', 'exaltation', 'triplicity', 'term', 'face', 'det
 /** The five flags a planet that holds none of is peregrine. */
 const DIGNITIES_HELD = DIGNITY_FLAGS.slice(0, 5);
 
+/** `house` as it ends a camel-cased column name, `House`. */
+const capitalised = (word) => word[0].toUpperCase() + word.slice(1);
+
+/** One row's seven flags, each read from the column `prefix` names it by. */
+function dignityAt(columns, prefix, row) {
+  return Object.freeze(Object.fromEntries(DIGNITY_FLAGS.map((flag) => [flag, columns[prefix(flag)][row] === 1])));
+}
+
 /**
  * Every chart's essential dignities in a batch: `dignities` holds a row a
- * chart, or none when none was asked, and `dignity_planets` seven rows a
- * chart in the Chaldean order (`03-design/essential-dignities.md`).
+ * chart, or none when none was asked, `dignity_planets` seven rows a chart
+ * in the Chaldean order, and `dignity_receptions` each chart's receptions,
+ * ragged by its `receptionCount` (`03-design/essential-dignities.md`).
  *
  * @param {Charts} batch
  * @returns {readonly (object|null)[]}
@@ -2844,6 +2853,7 @@ function dignitiesOf(batch) {
   const charts = d.cast.instant.length;
   const c = d.dignities;
   const p = d.dignityPlanets;
+  const r = d.dignityReceptions;
   if (c.sect.length === 0) {
     decoded = Object.freeze(Array.from({ length: charts }, () => null));
   } else {
@@ -2853,17 +2863,30 @@ function dignitiesOf(batch) {
           'they are one and seven a chart, or none',
       );
     }
+    let pair = 0;
     decoded = Object.freeze(
       Array.from({ length: charts }, (_, chart) => {
         const planets = Array.from({ length: 7 }, (_, k) => {
           const row = 7 * chart + k;
-          const dignity = Object.freeze(Object.fromEntries(DIGNITY_FLAGS.map((flag) => [flag, p[flag][row] === 1])));
+          const dignity = dignityAt(p, (flag) => flag, row);
           return Object.freeze({
             planet: GrahaById.get(p.planet[row]) ?? 'unknown',
             longitudeDeg: p.longitude[row],
             dignity,
             peregrine: !DIGNITIES_HELD.some((flag) => dignity[flag]),
             score: p.score[row],
+            reception: p.reception[row],
+          });
+        });
+        const receptions = Array.from({ length: c.receptionCount[chart] }, () => {
+          const row = pair++;
+          const firstIn = dignityAt(r, (flag) => `firstIn${capitalised(flag)}`, row);
+          const secondIn = dignityAt(r, (flag) => `secondIn${capitalised(flag)}`, row);
+          return Object.freeze({
+            planets: Object.freeze([GrahaById.get(r.first[row]) ?? 'unknown', GrahaById.get(r.second[row]) ?? 'unknown']),
+            firstIn,
+            secondIn,
+            mutual: Object.freeze(DIGNITIES_HELD.filter((flag) => firstIn[flag] && secondIn[flag])),
           });
         });
         return Object.freeze({
@@ -2884,9 +2907,13 @@ function dignitiesOf(batch) {
             peregrine: c.scorePeregrine[chart],
           }),
           planets: Object.freeze(planets),
+          receptions: Object.freeze(receptions),
         });
       }),
     );
+    if (pair !== r.first.length) {
+      throw new Error(`dignity_receptions has ${r.first.length} rows and the charts count ${pair}`);
+    }
   }
   DIGNITIES.set(batch, decoded);
   return decoded;

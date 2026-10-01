@@ -922,21 +922,30 @@ void main() {
           '${dg.rules.triplicities.key} '
           '${[sc.house, sc.exaltation, sc.triplicity, sc.term, sc.face, sc.detriment, sc.fall, sc.peregrine].join(',')}',
     );
+    List<String> flagsHeld(EssentialDignity d) => [
+      if (d.house) 'house',
+      if (d.exaltation) 'exaltation',
+      if (d.triplicity) 'triplicity',
+      if (d.term) 'term',
+      if (d.face) 'face',
+      if (d.detriment) 'detriment',
+      if (d.fall) 'fall',
+    ];
+    String listed(List<String> names) => names.isEmpty ? '-' : names.join(',');
     for (final at in dg.planets) {
-      final d = at.dignity;
-      final held = [
-        if (d.house) 'house',
-        if (d.exaltation) 'exaltation',
-        if (d.triplicity) 'triplicity',
-        if (d.term) 'term',
-        if (d.face) 'face',
-        if (d.detriment) 'detriment',
-        if (d.fall) 'fall',
-        if (at.peregrine) 'peregrine',
-      ];
+      final held = [...flagsHeld(at.dignity), if (at.peregrine) 'peregrine'];
       put(
         'chart-$i-dignity-${at.planet.fullKey}',
-        '${number(at.longitudeDeg)} ${held.isEmpty ? '-' : held.join(',')} ${at.score}',
+        '${number(at.longitudeDeg)} ${listed(held)} ${at.score} ${at.reception}',
+      );
+    }
+    for (final (k, one) in dg.receptions.indexed) {
+      put(
+        'chart-$i-reception-$k',
+        '${one.planets.$1.fullKey} ${one.planets.$2.fullKey} '
+            '${flagsHeld(one.firstIn).join(',')} '
+            '${flagsHeld(one.secondIn).join(',')} '
+            '${listed([for (final kind in one.mutual) kind.name])}',
       );
     }
     final vs = chart.vimshopaka!;

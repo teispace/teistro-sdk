@@ -2501,8 +2501,63 @@ fn a_chart_request_answers_the_dignities() {
             .map(|at| i64::from(at.score))
             .collect::<Vec<_>>()
     );
+    let reception: Vec<i64> = row("reception")
+        .into_iter()
+        .map(ScalarValue::as_i64)
+        .collect();
+    assert_eq!(
+        reception,
+        planets
+            .iter()
+            .map(|at| i64::from(at.reception))
+            .collect::<Vec<_>>()
+    );
 
-    // None asked: both sections empty.
+    // The receptions, ragged by each chart's count.
+    let pairs: Vec<&teistro::Reception> = expected
+        .iter()
+        .flat_map(|one| one.receptions.iter())
+        .collect();
+    assert!(!pairs.is_empty(), "two charts with no reception at all");
+    assert_eq!(
+        charted("reception_count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.receptions.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let pair = |name: &str| -> Vec<i64> {
+        reader
+            .column("dignity_receptions", name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    for (k, side) in [("first", 0), ("second", 1)] {
+        assert_eq!(
+            pair(k),
+            pairs
+                .iter()
+                .map(|one| i64::from(one.planets[side].id()))
+                .collect::<Vec<_>>(),
+            "{k}"
+        );
+    }
+    for (name, flag) in flags {
+        for (side, first) in [("first_in", true), ("second_in", false)] {
+            assert_eq!(
+                pair(&format!("{side}_{name}")),
+                pairs
+                    .iter()
+                    .map(|one| i64::from(flag(if first { &one.first_in } else { &one.second_in })))
+                    .collect::<Vec<_>>(),
+                "{side}_{name}"
+            );
+        }
+    }
+
+    // None asked: every section empty.
     let (status, mut blob) = found(&request(ptr::null()));
     assert_eq!(status, Status::Ok);
     // SAFETY: the library wrote `len` bytes.
@@ -2512,6 +2567,10 @@ fn a_chart_request_answers_the_dignities() {
     let reader = Reader::parse(&bytes, &schema).unwrap();
     assert_eq!(reader.column("dignities", "sect").unwrap().len(), 0);
     assert_eq!(reader.column("dignity_planets", "planet").unwrap().len(), 0);
+    assert_eq!(
+        reader.column("dignity_receptions", "first").unwrap().len(),
+        0
+    );
 
     // A refusal names the field the caller wrote.
     let typo = CString::new(r#"{"scores":{"peregrin":0}}"#).unwrap();

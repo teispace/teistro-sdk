@@ -2027,6 +2027,25 @@ test('a chart carries its essential dignities', () => {
     const score = held.reduce((sum, flag) => sum + lilly[flag], at.peregrine ? lilly.peregrine : 0);
     assert.equal(at.score, score, at.planet);
   }
+  // Each reception whole both ways, in the Chaldean order, and scored by
+  // Lilly's table only when mutual by house or by exaltation.
+  const order = read.planets.map((at) => at.planet);
+  assert.ok(read.receptions.length > 0);
+  for (const one of read.receptions) {
+    const [first, second] = one.planets;
+    assert.ok(order.indexOf(first) < order.indexOf(second), `${first} ${second}`);
+    for (const side of [one.firstIn, one.secondIn]) {
+      assert.ok(flags.slice(0, 5).some((flag) => side[flag]), `${first} ${second}`);
+    }
+    assert.deepEqual(
+      one.mutual,
+      flags.slice(0, 5).filter((flag) => one.firstIn[flag] && one.secondIn[flag]),
+    );
+  }
+  for (const at of read.planets) {
+    const by = (kind) => read.receptions.some((one) => one.planets.includes(at.planet) && one.mutual.includes(kind));
+    assert.equal(at.reception, (by('house') ? lilly.house : 0) + (by('exaltation') ? lilly.exaltation : 0), at.planet);
+  }
   // Every rule reported as asked, and a score left out stays Lilly's.
   const asked = { sectRule: 'NIGHT', rules: { triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } };
   const night = ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: asked }).dignities;
