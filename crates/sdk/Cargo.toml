@@ -23,6 +23,7 @@ teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }
+teistro-hellenistic = { path = "../hellenistic" }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret" }
 teistro-intl = { path = "../intl", default-features = false }

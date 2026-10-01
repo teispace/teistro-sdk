@@ -23,29 +23,23 @@ pub enum Sect {
 
 impl Sect {
     /// The sect by Valens's hemisphere (*Anthologies* I, 51K–52K): a day
-    /// chart when the Sun stands above the earth, on the Midheaven's side
-    /// of the Ascendant–Descendant axis, reckoned in degrees.
+    /// chart when the Sun's centre stands above the true horizon.
     ///
-    /// The Sun is on the ecliptic, so this is its geometric altitude above
-    /// zero to within its latitude. Both longitudes are in one zodiac; which
-    /// one does not matter, since a sidereal shift moves them alike. The
-    /// Sun exactly on the Ascendant has risen; exactly on the Descendant,
-    /// it has set.
+    /// Valens reckons the hemisphere in degrees from the Ascendant and the
+    /// Descendant, which is this rule wherever the zodiac rises in order.
+    /// Inside the polar circles part of it rises backwards, and only the
+    /// altitude still says whether the Sun is up. The Sun exactly on the
+    /// horizon is read as set.
     ///
     /// ```
     /// use teistro_hellenistic::Sect;
     ///
-    /// // The Ascendant at 0° Aries: the Sun at 0° Capricorn culminates.
-    /// assert_eq!(Sect::from_horizon(270.0, 0.0), Sect::Day);
-    /// // At 0° Cancer it is at the lower midheaven.
-    /// assert_eq!(Sect::from_horizon(90.0, 0.0), Sect::Night);
+    /// assert_eq!(Sect::from_altitude(0.1), Sect::Day);
+    /// assert_eq!(Sect::from_altitude(-0.1), Sect::Night);
     /// ```
     #[must_use]
-    pub fn from_horizon(sun_deg: f64, ascendant_deg: f64) -> Sect {
-        // Signs run counter-clockwise from the Ascendant beneath the earth,
-        // so the half above it is the half that has already risen.
-        let from_ascendant = (sun_deg - ascendant_deg).rem_euclid(360.0);
-        if from_ascendant == 0.0 || from_ascendant > 180.0 {
+    pub fn from_altitude(sun_altitude_deg: f64) -> Sect {
+        if sun_altitude_deg > 0.0 {
             Sect::Day
         } else {
             Sect::Night
@@ -64,8 +58,8 @@ impl Sect {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum SectRule {
-    /// Valens's hemisphere, from the Sun and the Ascendant
-    /// ([`Sect::from_horizon`]). The default.
+    /// Valens's hemisphere: the Sun's centre above the true horizon
+    /// ([`Sect::from_altitude`]). The default.
     #[default]
     Horizon,
     /// The chart's own sunrise to sunset, under the sunrise convention the
@@ -78,20 +72,20 @@ pub enum SectRule {
 }
 
 impl SectRule {
-    /// The sect this rule reads, from the Sun, the Ascendant and whether
-    /// the chart's instant falls between its sunrise and its sunset.
+    /// The sect this rule reads, from the Sun's geometric altitude and
+    /// whether the chart's instant falls between its sunrise and sunset.
     ///
     /// ```
     /// use teistro_hellenistic::{Sect, SectRule};
     ///
     /// // Just after the geometric sunset, before the apparent one.
-    /// assert_eq!(SectRule::Horizon.sect(179.5, 0.0, true), Sect::Night);
-    /// assert_eq!(SectRule::Daylight.sect(179.5, 0.0, true), Sect::Day);
+    /// assert_eq!(SectRule::Horizon.sect(-0.3, true), Sect::Night);
+    /// assert_eq!(SectRule::Daylight.sect(-0.3, true), Sect::Day);
     /// ```
     #[must_use]
-    pub fn sect(self, sun_deg: f64, ascendant_deg: f64, daylight: bool) -> Sect {
+    pub fn sect(self, sun_altitude_deg: f64, daylight: bool) -> Sect {
         match self {
-            SectRule::Horizon => Sect::from_horizon(sun_deg, ascendant_deg),
+            SectRule::Horizon => Sect::from_altitude(sun_altitude_deg),
             SectRule::Daylight if daylight => Sect::Day,
             SectRule::Daylight | SectRule::Night => Sect::Night,
             SectRule::Day => Sect::Day,
@@ -426,40 +420,25 @@ mod tests {
     };
     use crate::Terms;
 
-    /// Valens's worked chart (I, 52K): the Moon at Libra 26° under a
-    /// Capricorn 24° Ascendant is "in the hemisphere above the earth".
-    /// The rule is the same for any body on the ecliptic.
     #[test]
-    fn the_horizon_reproduces_valens_worked_hemisphere() {
-        assert_eq!(Sect::from_horizon(206.0, 294.0), Sect::Day);
-        // Its opposite point is beneath the earth.
-        assert_eq!(Sect::from_horizon(26.0, 294.0), Sect::Night);
-    }
-
-    #[test]
-    fn the_horizon_turns_at_the_ascendant_and_the_descendant() {
-        for ascendant in [0.0, 94.5, 294.0, 359.9] {
-            let at = |offset: f64| Sect::from_horizon(ascendant + offset, ascendant);
-            assert_eq!(at(0.0), Sect::Day, "risen on the Ascendant, {ascendant}");
-            assert_eq!(at(-0.01), Sect::Day, "just risen, {ascendant}");
-            assert_eq!(at(0.01), Sect::Night, "not yet risen, {ascendant}");
-            assert_eq!(at(180.0), Sect::Night, "set on the Descendant, {ascendant}");
-            assert_eq!(at(180.01), Sect::Day, "about to set, {ascendant}");
-            assert_eq!(at(-90.0), Sect::Day, "culminating, {ascendant}");
-            assert_eq!(at(90.0), Sect::Night, "at the lower midheaven, {ascendant}");
-            assert_eq!(at(-90.0 + 720.0), Sect::Day, "two turns on, {ascendant}");
-        }
+    fn the_horizon_is_the_suns_centre() {
+        assert_eq!(Sect::from_altitude(45.0), Sect::Day);
+        assert_eq!(Sect::from_altitude(1e-9), Sect::Day);
+        assert_eq!(Sect::from_altitude(0.0), Sect::Night);
+        assert_eq!(Sect::from_altitude(-18.0), Sect::Night);
     }
 
     #[test]
     fn each_sect_rule_reads_what_it_names() {
-        for (sun, daylight) in [(270.0, true), (90.0, false), (179.5, true), (0.5, false)] {
-            let horizon = Sect::from_horizon(sun, 0.0);
-            assert_eq!(SectRule::Horizon.sect(sun, 0.0, daylight), horizon);
+        for (altitude, daylight) in [(30.0, true), (-30.0, false), (-0.3, true), (0.3, false)] {
+            assert_eq!(
+                SectRule::Horizon.sect(altitude, daylight),
+                Sect::from_altitude(altitude)
+            );
             let lit = if daylight { Sect::Day } else { Sect::Night };
-            assert_eq!(SectRule::Daylight.sect(sun, 0.0, daylight), lit);
-            assert_eq!(SectRule::Day.sect(sun, 0.0, daylight), Sect::Day);
-            assert_eq!(SectRule::Night.sect(sun, 0.0, daylight), Sect::Night);
+            assert_eq!(SectRule::Daylight.sect(altitude, daylight), lit);
+            assert_eq!(SectRule::Day.sect(altitude, daylight), Sect::Day);
+            assert_eq!(SectRule::Night.sect(altitude, daylight), Sect::Night);
         }
         assert_eq!(SectRule::default(), SectRule::Horizon);
         assert_eq!(

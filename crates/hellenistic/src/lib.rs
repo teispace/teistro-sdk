@@ -24,10 +24,12 @@
 #![doc(html_no_source)]
 
 mod dignity;
+mod reading;
 mod terms;
 
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,
 };
+pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

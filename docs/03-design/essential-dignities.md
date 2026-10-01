@@ -137,32 +137,46 @@ Capricorn 24° Ascendant). In Book IX (362K–363K) a birth is "during the
 day" or "after sunset", by a day hemisphere and a night hemisphere. So
 the horizon decides, and whole-sign houses do not. The Sun stands on the
 ecliptic, which meets the horizon at the Ascendant and the Descendant.
-So three readings are one rule to within the Sun's latitude (under 1″):
+Wherever the zodiac rises in order, three readings are one rule to
+within the Sun's latitude (under 1″):
 
-- the Sun above the ecliptic horizon;
+- the Sun above the ecliptic horizon, Valens's degrees from the
+  Ascendant;
 - the Sun's geometric altitude above zero;
 - the Sun in houses 7 to 12 of a quadrant division.
 
+Inside the polar circles part of the zodiac rises backwards. There the
+half of the ecliptic below the Ascendant in longitude is no longer the
+half that has risen, so only the altitude still says whether the Sun is
+up. [`sect-measured.md`](sect-measured.md) finds the degrees and the
+altitude agree at all 53 recorded births outside the circles, and part
+at the polar-night birth inside them.
+
 The text cannot part the geometric horizon from the apparent one, where
-refraction and the Sun's limb move sunrise by minutes. So the façade
-reads a chart's sect by a named rule:
+refraction and the Sun's limb move sunrise by minutes; the same page
+measures 3 to 25 minutes at each end of the day. So the façade reads a
+chart's sect by a named rule:
 
 ```rust
 pub enum SectRule {
-    Horizon,      // the default: Valens's hemisphere, from the Sun and the Ascendant
-    Daylight,     // the chart's own sunrise to sunset, under its sunrise convention
-    Given(Sect),  // the caller's
+    Horizon,   // the default: the Sun's centre above the true horizon
+    Daylight,  // the chart's own sunrise to sunset, under its sunrise convention
+    Day,       // the caller's: every chart a day chart
+    Night,     // the caller's: every chart a night chart
 }
 impl Sect {
-    pub fn from_horizon(sun_deg: f64, ascendant_deg: f64) -> Sect;
+    pub fn from_altitude(sun_altitude_deg: f64) -> Sect;
 }
 ```
 
-`Sect::from_horizon` is pure arithmetic. The Sun is above the earth
-when its longitude stands on the Midheaven's side of the Ascendant, that
-is when `(sun − ascendant) mod 360 ≥ 180`. A sidereal chart shifts the
-Sun and the Ascendant alike, so the answer does not depend on the
-zodiac. The answer reports the sect it used and the rule that chose it.
+The altitude is read from the chart's own Midheaven, its obliquity and
+the place's latitude (`teistro_astro::sky::altitude_by_midheaven_deg`).
+The Midheaven's right ascension is the sidereal time the chart was cast
+for, so no clock is read again. A sidereal chart is shifted back to the
+equinox by the Sun's own two longitudes, so the answer does not depend
+on the zodiac. A caller's sect is two unit members rather than a member
+carrying a value, so every binding spells the rule as one string. The
+answer reports the sect it used and the rule that chose it.
 
 ## The façade (step 3)
 
@@ -183,8 +197,9 @@ impl ChartArea<'_> {
 }
 ```
 
-It needs **no ephemeris**. The Sun, the planets, the lagna and the day
-part are all on the founded chart. The request is a value with a
+It needs **no ephemeris** unless the chart's angles were its provider's.
+The Sun, the planets, the angles and the day part are all on the
+founded chart. The request is a value with a
 default and builders, and every knob in it is reported back in the
 answer.
 
@@ -217,8 +232,8 @@ answer.
 - **C208**: which printing of Ptolemy's own terms is the default. Both
   ship, and nothing is a default until a third printing (the Greek)
   is read.
-- **C209** is decided to the horizon (§Sect). Measuring how often the
-  horizon and the chart's daylight part is step 3's pass.
+- **C209** is decided to the horizon (§Sect), measured in
+  [`sect-measured.md`](sect-measured.md).
 - **The default `DignityRules`**: `LILLY` is the only complete, scored,
   cited row, because Ptolemy scores nothing. It is named rather than
   implied, and a request names its rules.
