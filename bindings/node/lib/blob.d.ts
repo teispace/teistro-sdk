@@ -2884,6 +2884,23 @@ export interface PanchangaTithi {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2916,6 +2933,23 @@ export interface PanchangaNakshatra {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2948,6 +2982,23 @@ export interface PanchangaYoga {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2980,6 +3031,23 @@ export interface PanchangaKarana {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3012,6 +3080,23 @@ export interface PanchangaPanchaka {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3044,6 +3129,23 @@ export interface PanchangaMoonSigns {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3076,6 +3178,23 @@ export interface PanchangaSunSigns {
    * Where the part inside the day ends.
    */
   readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

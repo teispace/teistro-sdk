@@ -40,7 +40,7 @@ use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{FixedValue, Writer};
 use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::omen::YogaCause;
-use teistro_panchanga::span::Span;
+use teistro_panchanga::span::{Span, Sunrises};
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
@@ -133,6 +133,34 @@ impl From<MonthKind> for TsMonthKind {
             MonthKind::Nija => TsMonthKind::Nija,
             MonthKind::Adhika => TsMonthKind::Adhika,
             MonthKind::Kshaya => TsMonthKind::Kshaya,
+        }
+    }
+}
+
+/// Which of its day's two sunrises a limb's member was running at, which
+/// is how a patro marks a member naming two days (vriddhi) or none
+/// (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
+/// is.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSunrises {
+    /// The day's own sunrise only: the member the day is named by.
+    Opening = 0,
+    /// The next day's sunrise only: the member the next day is named by.
+    Next = 1,
+    /// Both: the member names two days running (vriddhi).
+    Both = 2,
+    /// Neither: the member names no day (kshaya).
+    Neither = 3,
+}
+
+impl From<Sunrises> for TsSunrises {
+    fn from(sunrises: Sunrises) -> TsSunrises {
+        match sunrises {
+            Sunrises::Opening => TsSunrises::Opening,
+            Sunrises::Next => TsSunrises::Next,
+            Sunrises::Both => TsSunrises::Both,
+            Sunrises::Neither => TsSunrises::Neither,
         }
     }
 }
@@ -327,21 +355,26 @@ fn flag(yes: bool) -> FixedValue {
 /// Seven of the panchanga's lists are a `Span<T>` of some catalogue, so
 /// this is written once and the member's id is the only thing that
 /// differs.
-#[must_use]
 fn span_rows<T>(
     days: &[Panchanga],
     list: impl Fn(&Panchanga) -> &[Span<T>],
     id: impl Fn(&T) -> u16,
-) -> Vec<Vec<FixedValue>> {
-    days.iter()
-        .flat_map(|day| list(day).iter())
-        .map(|span| {
+) -> Result<Vec<Vec<FixedValue>>, Error> {
+    let mut rows = Vec::new();
+    for day in days {
+        for span in list(day) {
             let mut row = vec![u64::from(id(&span.member)).into()];
             row.extend(interval(span.whole));
             row.extend(interval(span.inside));
-            row
-        })
-        .collect()
+            row.push((TsSunrises::from(day.sunrises(span)) as u64).into());
+            let ends = day.ghati_pala(span.whole.to)?;
+            row.extend(
+                [ends.ghati, ends.pala, ends.vipala].map(|part| FixedValue::from(u64::from(part))),
+            );
+            rows.push(row);
+        }
+    }
+    Ok(rows)
 }
 
 /// The seven lists that are a span of a catalogue's members.
@@ -366,18 +399,18 @@ type Periods = (
 );
 
 /// Every span list, concatenated days outermost.
-fn spans(days: &[Panchanga]) -> Spans {
-    let tithi = span_rows(days, |day| &day.limbs.tithi, |m| m.id());
-    let nakshatra = span_rows(days, |day| &day.limbs.nakshatra, |m| m.id());
-    let yoga = span_rows(days, |day| &day.limbs.yoga, |m| m.id());
-    let karana = span_rows(days, |day| &day.limbs.karana, |m| m.id());
-    let panchaka = span_rows(days, |day| &day.omens.panchaka, |m| m.id());
-    let moon_signs = span_rows(days, |day| &day.moon.signs, |m| m.id());
-    let sun_signs = span_rows(days, |day| &day.sun.signs, |m| m.id());
+fn spans(days: &[Panchanga]) -> Result<Spans, Error> {
+    let tithi = span_rows(days, |day| &day.limbs.tithi, |m| m.id())?;
+    let nakshatra = span_rows(days, |day| &day.limbs.nakshatra, |m| m.id())?;
+    let yoga = span_rows(days, |day| &day.limbs.yoga, |m| m.id())?;
+    let karana = span_rows(days, |day| &day.limbs.karana, |m| m.id())?;
+    let panchaka = span_rows(days, |day| &day.omens.panchaka, |m| m.id())?;
+    let moon_signs = span_rows(days, |day| &day.moon.signs, |m| m.id())?;
+    let sun_signs = span_rows(days, |day| &day.sun.signs, |m| m.id())?;
 
-    (
+    Ok((
         tithi, nakshatra, yoga, karana, panchaka, moon_signs, sun_signs,
-    )
+    ))
 }
 
 /// Every period and event list, concatenated days outermost.
@@ -502,10 +535,10 @@ struct RaggedRows {
 }
 
 impl RaggedRows {
-    fn of(days: &[Panchanga]) -> RaggedRows {
-        let (tithi, nakshatra, yoga, karana, panchaka, moon_signs, sun_signs) = spans(days);
+    fn of(days: &[Panchanga]) -> Result<RaggedRows, Error> {
+        let (tithi, nakshatra, yoga, karana, panchaka, moon_signs, sun_signs) = spans(days)?;
         let (kaalas, choghadiya, horas, muhurtas, moon_events, muhurta_yogas) = periods(days);
-        RaggedRows {
+        Ok(RaggedRows {
             tithi,
             nakshatra,
             yoga,
@@ -519,7 +552,7 @@ impl RaggedRows {
             muhurtas,
             moon_events,
             muhurta_yogas,
-        }
+        })
     }
 }
 
@@ -565,7 +598,7 @@ pub fn encode(
         .map_or(u64::from(u8::MAX), |month| month as u64);
     let model = first.map_or("", |day| day.day.model.as_str());
 
-    let ragged = RaggedRows::of(days);
+    let ragged = RaggedRows::of(days)?;
     let day_rows: Vec<Vec<FixedValue>> = days.iter().map(day_row).collect();
     let count_rows: Vec<Vec<FixedValue>> = days.iter().map(count_row).collect();
     let local_days: Vec<Vec<FixedValue>> = days

@@ -699,8 +699,8 @@ test('every catalogue enum has a complete id table', () => {
   // Ashtakavarga's `TsAshtakavargaGoodFrom`, two, `TsKakshyaLord`, eight,
   // and `TsSarvaStanding`, three; 1163 since the hit list's `TsHitKind`,
   // four, `TsMotion`, two, and `TsAspectPhase`, three; 1165 since Sade
-  // Sati's `TsReckoning`, two.
-  assert.equal(entries, 1165, 'every member of every enum is in a table');
+  // Sati's `TsReckoning`, two; 1169 since a span's `TsSunrises`, four.
+  assert.equal(entries, 1169, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2184,6 +2184,37 @@ test('a day\'s season turns on the first of its solar month', () => {
   assert.deepEqual(seasons(), [catalogue.Ritu.Shishira, catalogue.Ritu.Shishira, catalogue.Ritu.Vasanta, catalogue.Ritu.Vasanta]);
   // Amanta Phalguna runs to the new moon of 19 March: Shishira.
   assert.deepEqual(seasons({ panchanga: { ritu: 'LUNAR' } }), Array(4).fill(catalogue.Ritu.Shishira));
+});
+
+/**
+ * A limb's member naming two days or none, and its end in ghatis
+ * (`03-design/nepal-day-measured.md`): Nepal's print, under the
+ * committee's Surya Siddhanta.
+ */
+test('a span says which sunrises it held and when it ended in ghatis', () => {
+  const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const day = (y, m, d) => ctx.almanac.of({
+    from: date(Calendar.Gregorian, y, m, d),
+    to: date(Calendar.Gregorian, y, m, d),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  }).at(0);
+  // 13 April 2025: Krishna Pratipada day and night, a vriddhi.
+  const vriddhi = day(2025, 4, 13).tithi.filter((span) => span.sunrises === catalogue.Sunrises.Both);
+  assert.deepEqual(vriddhi.map((span) => span.member), ['tithi.KRISHNA_PRATIPADA']);
+  // 26 April 2025: Krishna Chaturdashi between the sunrises, a kshaya.
+  const kshaya = day(2025, 4, 26).tithi;
+  assert.deepEqual(kshaya.map((span) => span.sunrises), [
+    catalogue.Sunrises.Opening, catalogue.Sunrises.Neither, catalogue.Sunrises.Next,
+  ]);
+  assert.equal(kshaya[1].member, 'tithi.KRISHNA_CHATURDASHI');
+  // 25 September 2026: Chaturdashi ended at 22:16, sunrise 05:54, which
+  // is past 40 ghatis; frozen, as every part of a day is.
+  const ends = day(2026, 9, 25).tithi[0].ends;
+  assert.ok(ends.ghati >= 40 && ends.ghati <= 41, `${ends.ghati}`);
+  assert.ok(ends.pala < 60 && ends.vipala < 60);
+  assert.ok(Object.isFrozen(ends));
+  ctx.dispose();
 });
 
 /**

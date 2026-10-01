@@ -35,6 +35,7 @@ import type {
   Masa,
   MonthKind,
   MuhurtaYoga,
+  Sunrises,
   Nakshatra,
   Paksha,
   Panchaka,
@@ -2286,6 +2287,32 @@ export interface Span<T> {
   readonly whole: Interval;
   /** The part inside the day: what an almanac row prints. */
   readonly inside: Interval;
+  /**
+   * Which of the day's two sunrises the member was running at: `'BOTH'`
+   * when it names two days (vriddhi), `'NEITHER'` when it names none
+   * (kshaya).
+   *
+   * ```ts
+   * const kshaya = day.tithi.filter((span) => span.sunrises === Sunrises.Neither);
+   * ```
+   */
+  readonly sunrises: Sunrises | 'unknown';
+  /**
+   * When the member ended, in ghati-pala from the day's sunrise under
+   * `day.ghati_reckoning`; a member outlasting the day reads as the day's
+   * whole count.
+   */
+  readonly ends: GhatiPala;
+}
+
+/** A count from sunrise in ghatis of sixty palas of sixty vipalas. */
+export interface GhatiPala {
+  /** Ghatis, 0 to 59 (60 when a civil day outlasts twenty-four hours). */
+  readonly ghati: number;
+  /** Palas, 0 to 59. */
+  readonly pala: number;
+  /** Vipalas, 0 to 59. */
+  readonly vipala: number;
 }
 
 /** The lunar month a day falls in, under both conventions. */

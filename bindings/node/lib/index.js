@@ -61,6 +61,7 @@ import {
   MasaById,
   MonthKindById,
   MuhurtaYogaById,
+  SunrisesById,
   NakshatraById,
   PakshaById,
   PanchakaById,
@@ -1583,6 +1584,8 @@ export class AlmanacDay {
       member: names.get(c.member[i]) ?? 'unknown',
       whole: { from: c.wholeFrom[i], to: c.wholeTo[i] },
       inside: { from: c.insideFrom[i], to: c.insideTo[i] },
+      sunrises: SunrisesById.get(c.sunrises[i]) ?? 'unknown',
+      ends: Object.freeze({ ghati: c.endsGhati[i], pala: c.endsPala[i], vipala: c.endsVipala[i] }),
     }));
   }
 }

@@ -8213,6 +8213,38 @@
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TsSunrises",
+      "doc": "Which of its day's two sunrises a limb's member was running at, which\nis how a patro marks a member naming two days (vriddhi) or none\n(kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind\nis.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Opening",
+          "value": 0,
+          "doc": "The day's own sunrise only: the member the day is named by.",
+          "key": "OPENING"
+        },
+        {
+          "name": "Next",
+          "value": 1,
+          "doc": "The next day's sunrise only: the member the next day is named by.",
+          "key": "NEXT"
+        },
+        {
+          "name": "Both",
+          "value": 2,
+          "doc": "Both: the member names two days running (vriddhi).",
+          "key": "BOTH"
+        },
+        {
+          "name": "Neither",
+          "value": 3,
+          "doc": "Neither: the member names no day (kshaya).",
+          "key": "NEITHER"
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "opaques": [
@@ -10134,7 +10166,7 @@
             },
             "mutable": false
           },
-          "doc": "The shipped profile's id (`parashari-classical`, `nepali-default`,\n`surya-siddhanta`, `kp-default`, `western-tropical-default`,\n`conformance-baseline`).",
+          "doc": "The shipped profile's id (`parashari-classical`, `nepali-default`,\n`nepali-committee`, `surya-siddhanta`, `kp-default`,\n`western-tropical-default`, `conformance-baseline`).",
           "meta": {
             "example": "parashari-classical",
             "nullable": true
@@ -17184,6 +17216,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17218,6 +17271,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17252,6 +17326,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17286,6 +17381,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17320,6 +17436,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17354,6 +17491,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },
@@ -17388,6 +17546,27 @@
               "name": "inside_to",
               "scalar": "f64",
               "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
             }
           ]
         },

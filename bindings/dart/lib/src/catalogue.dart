@@ -6814,3 +6814,44 @@ enum MonthKind {
   }
 }
 
+/// Which of its day's two sunrises a limb's member was running at, which
+/// is how a patro marks a member naming two days (vriddhi) or none
+/// (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
+/// is.
+enum Sunrises {
+  /// The day's own sunrise only: the member the day is named by.
+  opening(0, 'OPENING'),
+  /// The next day's sunrise only: the member the next day is named by.
+  next(1, 'NEXT'),
+  /// Both: the member names two days running (vriddhi).
+  both(2, 'BOTH'),
+  /// Neither: the member names no day (kshaya).
+  neither(3, 'NEITHER');
+
+  const Sunrises(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Sunrises byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Sunrises'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Sunrises? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+

@@ -7768,3 +7768,37 @@ export declare const MonthKind: {
  */
 export declare const MonthKindById: ReadonlyMap<number, MonthKind>;
 
+/**
+ * Which of its day's two sunrises a limb's member was running at, which
+ * is how a patro marks a member naming two days (vriddhi) or none
+ * (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
+ * is.
+ */
+export type Sunrises = 'OPENING' | 'NEXT' | 'BOTH' | 'NEITHER';
+
+/** Every Sunrises by name; the values are the strings the union accepts. */
+export declare const Sunrises: {
+  /**
+   * The day's own sunrise only: the member the day is named by.
+   */
+  readonly Opening: 'OPENING';
+  /**
+   * The next day's sunrise only: the member the next day is named by.
+   */
+  readonly Next: 'NEXT';
+  /**
+   * Both: the member names two days running (vriddhi).
+   */
+  readonly Both: 'BOTH';
+  /**
+   * Neither: the member names no day (kshaya).
+   */
+  readonly Neither: 'NEITHER';
+};
+
+/**
+ * Every Sunrises by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SunrisesById: ReadonlyMap<number, Sunrises>;
+

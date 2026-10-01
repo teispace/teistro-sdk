@@ -3621,6 +3621,18 @@ class PanchangaTithi:
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
 
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3647,6 +3659,18 @@ class PanchangaNakshatra:
 
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
 
     length: int
     """The number of rows every column holds."""
@@ -3675,6 +3699,18 @@ class PanchangaYoga:
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
 
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3701,6 +3737,18 @@ class PanchangaKarana:
 
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
 
     length: int
     """The number of rows every column holds."""
@@ -3729,6 +3777,18 @@ class PanchangaPanchaka:
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
 
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3756,6 +3816,18 @@ class PanchangaMoonSigns:
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
 
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3782,6 +3854,18 @@ class PanchangaSunSigns:
 
     inside_to: memoryview[float]
     """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
 
     length: int
     """The number of rows every column holds."""
@@ -4150,6 +4234,10 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             whole_to=blob.column(at_tithi, 2, 8, at_tithi.count).cast("d"),
             inside_from=blob.column(at_tithi, 3, 8, at_tithi.count).cast("d"),
             inside_to=blob.column(at_tithi, 4, 8, at_tithi.count).cast("d"),
+            sunrises=blob.column(at_tithi, 5, 1, at_tithi.count).cast("B"),
+            ends_ghati=blob.column(at_tithi, 6, 1, at_tithi.count).cast("B"),
+            ends_pala=blob.column(at_tithi, 7, 1, at_tithi.count).cast("B"),
+            ends_vipala=blob.column(at_tithi, 8, 1, at_tithi.count).cast("B"),
             length=at_tithi.count,
         ),
         nakshatra=PanchangaNakshatra(
@@ -4168,6 +4256,18 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             inside_to=blob.column(
                 at_nakshatra, 4, 8, at_nakshatra.count
             ).cast("d"),
+            sunrises=blob.column(
+                at_nakshatra, 5, 1, at_nakshatra.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_nakshatra, 6, 1, at_nakshatra.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_nakshatra, 7, 1, at_nakshatra.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_nakshatra, 8, 1, at_nakshatra.count
+            ).cast("B"),
             length=at_nakshatra.count,
         ),
         yoga=PanchangaYoga(
@@ -4176,6 +4276,10 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             whole_to=blob.column(at_yoga, 2, 8, at_yoga.count).cast("d"),
             inside_from=blob.column(at_yoga, 3, 8, at_yoga.count).cast("d"),
             inside_to=blob.column(at_yoga, 4, 8, at_yoga.count).cast("d"),
+            sunrises=blob.column(at_yoga, 5, 1, at_yoga.count).cast("B"),
+            ends_ghati=blob.column(at_yoga, 6, 1, at_yoga.count).cast("B"),
+            ends_pala=blob.column(at_yoga, 7, 1, at_yoga.count).cast("B"),
+            ends_vipala=blob.column(at_yoga, 8, 1, at_yoga.count).cast("B"),
             length=at_yoga.count,
         ),
         karana=PanchangaKarana(
@@ -4186,6 +4290,12 @@ def decode_panchanga(raw: bytes) -> Panchanga:
                 at_karana, 3, 8, at_karana.count
             ).cast("d"),
             inside_to=blob.column(at_karana, 4, 8, at_karana.count).cast("d"),
+            sunrises=blob.column(at_karana, 5, 1, at_karana.count).cast("B"),
+            ends_ghati=blob.column(at_karana, 6, 1, at_karana.count).cast("B"),
+            ends_pala=blob.column(at_karana, 7, 1, at_karana.count).cast("B"),
+            ends_vipala=blob.column(
+                at_karana, 8, 1, at_karana.count
+            ).cast("B"),
             length=at_karana.count,
         ),
         panchaka=PanchangaPanchaka(
@@ -4202,6 +4312,18 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             inside_to=blob.column(
                 at_panchaka, 4, 8, at_panchaka.count
             ).cast("d"),
+            sunrises=blob.column(
+                at_panchaka, 5, 1, at_panchaka.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_panchaka, 6, 1, at_panchaka.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_panchaka, 7, 1, at_panchaka.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_panchaka, 8, 1, at_panchaka.count
+            ).cast("B"),
             length=at_panchaka.count,
         ),
         moon_signs=PanchangaMoonSigns(
@@ -4220,6 +4342,18 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             inside_to=blob.column(
                 at_moon_signs, 4, 8, at_moon_signs.count
             ).cast("d"),
+            sunrises=blob.column(
+                at_moon_signs, 5, 1, at_moon_signs.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_moon_signs, 6, 1, at_moon_signs.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_moon_signs, 7, 1, at_moon_signs.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_moon_signs, 8, 1, at_moon_signs.count
+            ).cast("B"),
             length=at_moon_signs.count,
         ),
         sun_signs=PanchangaSunSigns(
@@ -4238,6 +4372,18 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             inside_to=blob.column(
                 at_sun_signs, 4, 8, at_sun_signs.count
             ).cast("d"),
+            sunrises=blob.column(
+                at_sun_signs, 5, 1, at_sun_signs.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_sun_signs, 6, 1, at_sun_signs.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_sun_signs, 7, 1, at_sun_signs.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_sun_signs, 8, 1, at_sun_signs.count
+            ).cast("B"),
             length=at_sun_signs.count,
         ),
         kaalas=PanchangaKaalas(

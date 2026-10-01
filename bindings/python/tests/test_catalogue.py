@@ -74,11 +74,11 @@ class TheCatalogue(unittest.TestCase):
         # Ashtakavarga's `AshtakavargaGoodFrom`, two, `KakshyaLord`, eight,
         # and `SarvaStanding`, three; 126 since the hit list's `HitKind`,
         # four, `Motion`, two, and `AspectPhase`, three; 127 since Sade
-        # Sati's `Reckoning`.
-        self.assertEqual(len(every_enum()), 127)
+        # Sati's `Reckoning`; 128 since a span's `Sunrises`, four.
+        self.assertEqual(len(every_enum()), 128)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

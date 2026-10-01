@@ -1596,6 +1596,49 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  // A limb's member naming two days or none, and its end in ghatis
+  // (`03-design/nepal-day-measured.md`): Nepal's print, under the
+  // committee's Surya Siddhanta.
+  test('a span says which sunrises it held and when it ended in ghatis', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    AlmanacDay day(int y, int m, int d) => ctx.almanac
+        .of(
+          from: gregorian(y, m, d),
+          to: gregorian(y, m, d),
+          place: Observer(
+            latitudeDeg: Latitude(27.7172),
+            longitudeDeg: Longitude(85.324),
+            altitudeM: Altitude(1400),
+          ),
+          utcOffsetSeconds: 20700,
+        )
+        .at(0);
+    // 13 April 2025: Krishna Pratipada day and night, a vriddhi.
+    expect(
+      [
+        for (final span in day(2025, 4, 13).tithi)
+          if (span.sunrises == Sunrises.both) span.member,
+      ],
+      [Tithi.krishnaPratipada],
+    );
+    // 26 April 2025: Krishna Chaturdashi between the sunrises, a kshaya.
+    final kshaya = day(2025, 4, 26).tithi;
+    expect(
+      [for (final span in kshaya) span.sunrises],
+      [Sunrises.opening, Sunrises.neither, Sunrises.next],
+    );
+    expect(kshaya[1].member, Tithi.krishnaChaturdashi);
+    // 25 September 2026: Chaturdashi ended at 22:16, sunrise 05:54.
+    final ends = day(2026, 9, 25).tithi[0].ends;
+    expect(ends.ghati, inInclusiveRange(40, 41));
+    expect(ends.pala, lessThan(60));
+    expect(ends.vipala, lessThan(60));
+    ctx.dispose();
+  });
+
   // A day's season is its solar month's, and a month begins on the day
   // Nepal's calendar begins it (`03-design/ritu-measured.md`).
   test('a day\'s season turns on the first of its solar month', () {

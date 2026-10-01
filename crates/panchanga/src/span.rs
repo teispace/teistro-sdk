@@ -79,6 +79,38 @@ impl<T> Span<T> {
         self.whole.contains(instant)
     }
 
+    /// Which of a day's two sunrises the member was running at: the one
+    /// that opens the day and the one that opens the next.
+    ///
+    /// A patro names a day's limbs by its sunrise, so a member holding
+    /// **both** names two days running (vriddhi; Nepal's printed
+    /// panchanga writes "दिनरात", day and night) and one holding
+    /// **neither** names no day (kshaya: it began after one sunrise and
+    /// ended before the next).
+    ///
+    /// ```
+    /// use teistro_core::interval::Interval;
+    /// use teistro_panchanga::span::{Span, Sunrises};
+    ///
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let (sunrise, next) = (day.from, day.to);
+    /// // Begun before the sunrise, ended in the afternoon: the day's own.
+    /// let opening = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).unwrap();
+    /// // Begun and ended between the two sunrises: no day's name.
+    /// let skipped = Span::new("Chaturthi", Interval::literal(100.6, 101.2), day).unwrap();
+    /// assert_eq!(opening.sunrises(sunrise, next), Sunrises::Opening);
+    /// assert_eq!(skipped.sunrises(sunrise, next), Sunrises::Neither);
+    /// ```
+    #[must_use]
+    pub fn sunrises(&self, sunrise: JulianDay<Utc>, next_sunrise: JulianDay<Utc>) -> Sunrises {
+        match (self.contains(sunrise), self.contains(next_sunrise)) {
+            (true, true) => Sunrises::Both,
+            (true, false) => Sunrises::Opening,
+            (false, true) => Sunrises::Next,
+            (false, false) => Sunrises::Neither,
+        }
+    }
+
     /// The same span with the member mapped, keeping both intervals.
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Span<U> {
         Span {
@@ -86,6 +118,36 @@ impl<T> Span<T> {
             whole: self.whole,
             inside: self.inside,
         }
+    }
+}
+
+/// Which of a day's two sunrises a member was running at
+/// ([`Span::sunrises`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Sunrises {
+    /// The day's own sunrise only: the member the day is named by.
+    Opening,
+    /// The next day's sunrise only: the member tomorrow is named by.
+    Next,
+    /// Both: the member names two days running (vriddhi).
+    Both,
+    /// Neither: the member names no day (kshaya).
+    Neither,
+}
+
+impl Sunrises {
+    /// Whether the member names two days running.
+    #[must_use]
+    pub const fn is_vriddhi(self) -> bool {
+        matches!(self, Sunrises::Both)
+    }
+
+    /// Whether the member names no day.
+    #[must_use]
+    pub const fn is_kshaya(self) -> bool {
+        matches!(self, Sunrises::Neither)
     }
 }
 

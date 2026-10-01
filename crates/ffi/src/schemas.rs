@@ -2483,6 +2483,19 @@ fn span_section(id: u32, name: &str, doc: &str, member: &str, enum_name: &str) -
                 Scalar::F64,
                 "Where the part inside the day ends.",
             ),
+            ColumnDef::new(
+                "sunrises",
+                Scalar::U8,
+                "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+            )
+            .of_enum("TsSunrises"),
+            ColumnDef::new(
+                "ends_ghati",
+                Scalar::U8,
+                "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.",
+            ),
+            ColumnDef::new("ends_pala", Scalar::U8, "And palas, 0 to 59."),
+            ColumnDef::new("ends_vipala", Scalar::U8, "And vipalas, 0 to 59."),
         ],
     )
 }

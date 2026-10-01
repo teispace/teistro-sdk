@@ -9308,7 +9308,13 @@ final class Interval {
 
 /// One member of a limb, with its own bounds and the clipped ones.
 final class Span<T> {
-  const Span({required this.member, required this.whole, required this.inside});
+  const Span({
+    required this.member,
+    required this.whole,
+    required this.inside,
+    required this.sunrises,
+    required this.ends,
+  });
 
   /// Which member ran.
   final T member;
@@ -9318,6 +9324,41 @@ final class Span<T> {
 
   /// The part inside the day: what an almanac row prints.
   final Interval inside;
+
+  /// Which of the day's two sunrises the member was running at:
+  /// [Sunrises.both] when it names two days (vriddhi), [Sunrises.neither]
+  /// when it names none (kshaya).
+  ///
+  /// ```dart
+  /// final kshaya = [
+  ///   for (final span in day.tithi)
+  ///     if (span.sunrises == Sunrises.neither) span.member,
+  /// ];
+  /// ```
+  final Sunrises sunrises;
+
+  /// When the member ended, in ghati-pala from the day's sunrise under
+  /// `day.ghati_reckoning`; a member outlasting the day reads as the day's
+  /// whole count.
+  final GhatiPala ends;
+}
+
+/// A count from sunrise in ghatis of sixty palas of sixty vipalas.
+final class GhatiPala {
+  const GhatiPala({
+    required this.ghati,
+    required this.pala,
+    required this.vipala,
+  });
+
+  /// Ghatis, 0 to 59 (60 when a civil day outlasts twenty-four hours).
+  final int ghati;
+
+  /// Palas, 0 to 59.
+  final int pala;
+
+  /// Vipalas, 0 to 59.
+  final int vipala;
 }
 
 /// The lunar month a day falls in, under both conventions.
@@ -9664,6 +9705,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Tithi.byId,
     );
   }
@@ -9678,6 +9720,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Nakshatra.byId,
     );
   }
@@ -9692,6 +9735,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Yoga.byId,
     );
   }
@@ -9706,6 +9750,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Karana.byId,
     );
   }
@@ -9720,6 +9765,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Panchaka.byId,
     );
   }
@@ -9734,6 +9780,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Rashi.byId,
     );
   }
@@ -9748,6 +9795,7 @@ final class AlmanacDay {
       c.wholeTo,
       c.insideFrom,
       c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Rashi.byId,
     );
   }
@@ -9842,15 +9890,21 @@ final class AlmanacDay {
     Float64List wholeTo,
     Float64List insideFrom,
     Float64List insideTo,
+    (Uint8List, Uint8List, Uint8List, Uint8List) turns,
     T Function(int) byId,
-  ) => _rows(
-    list,
-    (i) => Span<T>(
-      member: byId(member[i]),
-      whole: Interval(from: wholeFrom[i], to: wholeTo[i]),
-      inside: Interval(from: insideFrom[i], to: insideTo[i]),
-    ),
-  );
+  ) {
+    final (sunrises, ghati, pala, vipala) = turns;
+    return _rows(
+      list,
+      (i) => Span<T>(
+        member: byId(member[i]),
+        whole: Interval(from: wholeFrom[i], to: wholeTo[i]),
+        inside: Interval(from: insideFrom[i], to: insideTo[i]),
+        sunrises: Sunrises.byId(sunrises[i]),
+        ends: GhatiPala(ghati: ghati[i], pala: pala[i], vipala: vipala[i]),
+      ),
+    );
+  }
 }
 
 /// Each result's provenance, decoded once: an extension cannot hold a
