@@ -347,3 +347,106 @@ never described as constants. The code said they were "named in the
 header", but the header did not carry them, and each binding kept its
 own copy of the numbers. They are described now, so the header and
 every binding generate them, and the copies are gone.
+
+## 11. Nepal Sambat, a reading of the lunar months
+
+Nepal Sambat is the lunar era Nepal's panchanga committee prints beside
+Vikrama on every page. The roadmap's step 5 calls it "a calendar", but
+measured it is something smaller: a **reading** of the months this page
+already marks, under their own names and with a year that turns at
+Kartika. So it follows §10 rather than §6. Nothing here converts a date,
+because a Nepal Sambat date shares §6's problem: an adhika month and a
+vriddhi tithi make `(year, month, day)` ambiguous.
+
+**What the committee prints.** Each page of its national panchanga is
+one half-month. Each page's header prints the half by the purnimanta
+month the page is named for, then the Nepal Sambat year, month and half:
+"वैशाखशुक्लपक्षः ने.सं. ११४५ (वछलाथ्व)". The month in brackets is the
+**amanta** month under its Newar name: वैशाख's dark half is चौलागा,
+amanta Chaitra. The names, as its VS 2082 and 2083 headers spell them
+(read off the page images at 200 dpi):
+
+| amanta month | Nepal Sambat month | | amanta month | Nepal Sambat month |
+|---|---|---|---|---|
+| Kartika | कछला Kachhala | | Vaishakha | वछला Bachhala |
+| Margashirsha | थिंल्ला Thinla | | Jyeshtha | तछला Tachhala |
+| Pausha | पोहेला Pwanhela | | Ashadha | दिल्ला Dila |
+| Magha | सिल्ला Sila | | Shravana | गुंला Gunla |
+| Phalguna | चिल्ला Chila | | Bhadrapada | ञँला Yanla |
+| Chaitra | चौला Chaula | | Ashwina | कौला Kaula |
+
+Any adhika month is **अनला Anala**, whichever month it repeats. VS 2083's
+adhika Jyeshtha prints as अनलाथ्व and अनलागा, between वछलागा and
+तछलाथ्व. The halves are **थ्व thwa**, the bright, and **गा gā**, the
+dark. The English names are the reference romanisation (Wikipedia,
+"Nepal Sambat", rank 3) written in ASCII, as the Bikram Sambat months'
+already are. The committee's website writes the Bhadrapada month ञलागा,
+without the chandrabindu its print carries. The print is the rank-2
+source, so the locale follows it.
+
+**The year turns at Kachhala's first day.** The VS 2082 row of 22
+October 2025, the day after Kartika's new moon, prints
+"ने.सं.११४६ प्रारम्भ", and VS 2083's row of 10 November 2026 opens 1147.
+So the Nepal Sambat year is the Vikrama year less 937 until Kartika, and
+less 936 from Kachhala on. A day carries its amanta month and its
+sunrise. The count needs no lunar-year search, because the year's middle
+is a month or so either side of the day's sunrise moved by the months
+between. The year is the civil year that middle falls in, less 880. The
+middle stands about three months from a civil new year at its nearest
+over the six centuries measured (the measured page gives the figure),
+and the sidereal months drift through the civil year at a day in
+seventy years. The measured page holds the count to
+the lunar years `almanac().years` finds, on every day around each
+year's turn.
+
+**The API.** `Panchanga::nepal_sambat()` reads a day's
+`NepalSambatDate { year, month, kind, paksha }`. `month` counts from 1
+for Kachhala, an adhika month keeps the number of the month it repeats,
+`kind` marks Anala, and `paksha` is the half. Each day carries every
+input, so the reading is a method and costs a day nothing until it is
+called. To reach the bindings, `AlmanacRequest::with_nepal_sambat` answers
+one date a day beside the days. At the boundary that is the bit
+`TS_PANCHANGA_NEPAL_SAMBAT` (4) and the blob's `nepal_sambat` section: the
+canonical envelope sealed under the days' provenance, its paksha written
+in full. Every binding names it as an option (`nepalSambat: true`,
+`nepal_sambat=True`) and hands back typed dates. Every parity runner
+prints the dates across a turn of the year.
+
+**Saying it.** No catalogue kind was spent. The months are another
+calendar's names for the masas, as the Bikram Sambat months are, so
+they are messages rather than a key space a consumer must name
+(`a-kind-is-a-key-space`, Q38):
+
+- `sdk.calendar.nepalSambatMonth` takes `{month, kind}`, and an `ADHIKA`
+  kind is Anala.
+- `sdk.calendar.nepalSambatHalf` takes `{paksha}`, bare or in full
+  (`paksha.SHUKLA`), which is the spelling the bindings' answers read
+  back.
+- `sdk.calendar.nepalSambatDate` takes all four and says the committee's
+  form, "ने.सं. ११४६ कछलाथ्व" in Nepali and "NS 1146 Kachhala Thwa" in
+  English.
+
+**What is measured** (`nepal-sambat-measured.md`):
+
+- All 51 headers of VS 2082 and 2083 against each page's first day, said
+  through the Nepali messages. The committee's sky reads every one. The
+  modern sky misses two, each a first day whose new or full moon falls
+  just after sunrise, and the pass refuses a miss on a day the two skies'
+  sunrise tithis agree.
+- The year's count against the engine's own lunar years, on every day
+  around the year's turn in every twentieth year from 1810 to 2390. The
+  pass refuses any difference.
+
+**What waits.**
+
+- **An adhika Kartika** (C201). Does the year open at the adhika month or
+  at the nija? Neither printed year has one. The count opens it at the
+  first Kartika, as the lunar year opens at an adhika Chaitra (§10).
+- **A kshaya month** (C202). The reference names a reduced month, न्हंला
+  Nhanla, but no committee print vets it. The reading names a kshaya
+  month by its amanta month, as the day's own month does, and `kind`
+  carries the mark.
+- **Newar tithi names.** Some almanacs print the tithis in Nepal Bhasa.
+  The committee's own site writes "११४६ ञलागा पञ्चमी" with the Sanskrit
+  tithi, so the day's tithi completes a date as the panchanga already
+  names it.

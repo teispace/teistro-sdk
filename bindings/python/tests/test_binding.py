@@ -1559,6 +1559,52 @@ class AnEngine(WithLibrary):
         )
         self.assertNotEqual(chauvenet.provenance.settings_hash, answer.provenance.settings_hash)
 
+    def test_an_almanac_carries_each_days_nepal_sambat_date(self) -> None:
+        """Each day's Nepal Sambat date crosses beside the days
+        (`03-design/calendar-indian-lunisolar.md` §11): one a day, frozen,
+        the year turning at Kachhala's first day, and said as the
+        committee's page header prints it."""
+        import dataclasses
+
+        from teistro import NepalSambatDates, date
+        from teistro.catalogue import Calendar, MonthKind, Paksha
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        days: dict[str, Any] = {
+            "from_date": date(Calendar.GREGORIAN, 2025, 10, 20),
+            "to_date": date(Calendar.GREGORIAN, 2025, 10, 23),
+            "place": observer,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(
+            profile=PROFILE, locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        ) as ctx:
+            self.assertIsNone(ctx.almanac.of(**days).nepal_sambat)
+            almanac = ctx.almanac.of(**days, nepal_sambat=True)
+            answer = almanac.nepal_sambat
+            assert answer is not None
+            self.assertIsInstance(answer, NepalSambatDates)
+            self.assertEqual(len(answer.value), len(almanac))
+            self.assertEqual(
+                [(d.year, d.month, d.kind, d.paksha) for d in answer.value],
+                [
+                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA),
+                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA),
+                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA),
+                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA),
+                ],
+            )
+            self.assertEqual(answer.provenance.input_hash, almanac.provenance.input_hash)
+            with self.assertRaises(dataclasses.FrozenInstanceError):
+                answer.value[0].year = 0  # type: ignore[misc]
+            first = answer.value[2]
+            said = ctx.intl.messages.sdk.calendar.nepal_sambat_date(
+                year=first.year, month=first.month, kind=first.kind.key, paksha=first.paksha.key
+            )
+            self.assertEqual(said, "ने.सं. ११४६ कछलाथ्व")
+
     def test_an_almanac_carries_the_festivals_it_was_asked_for(self) -> None:
         """Festival rules cross beside the days they fall on
         (`03-design/festival-rules.md` §7): dates in this binding's shape,

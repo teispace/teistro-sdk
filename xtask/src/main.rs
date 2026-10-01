@@ -129,6 +129,9 @@
 //! - `nepal-month` and `check-nepal-month`: Nepal's lunar month at
 //!   Kathmandu, the adhika days against the malmas the panchanga
 //!   committee announced and the month named against Nepali designations.
+//! - `nepal-sambat` and `check-nepal-sambat`: the committee's 51 page
+//!   headers against each page's first day said in Nepali, and the year's
+//!   count against the almanac's own lunar years over six centuries.
 //! - `samvatsara` and `check-samvatsara`: the sixty-year cycle, the text's
 //!   worked example, the years Nepal's committee named against the shipped
 //!   count and its rivals, and six centuries of years at Kathmandu.
@@ -263,6 +266,7 @@ mod muhurta;
 mod muntha;
 mod nepal_day;
 mod nepal_month;
+mod nepal_sambat;
 mod node_binding;
 mod package;
 mod panchanga;
@@ -338,6 +342,11 @@ const PASSES: &[Pass] = &[
         "nepal-month",
         nepal_month::generate,
         nepal_month::check_generated,
+    ),
+    (
+        "nepal-sambat",
+        nepal_sambat::generate,
+        nepal_sambat::check_generated,
     ),
     (
         "samvatsara",

@@ -1584,6 +1584,31 @@ the astronomical numbers do not move. Nothing else computes yet.
   because it is sealed over the value as it is now spelt; the muhurta
   section's changes only where a day was closed.
 
+- **Nepal Sambat, read off every almanac day**
+  (`calendar-indian-lunisolar.md` §11, C201 and C202 registered).
+  - `Panchanga::nepal_sambat()` gives a day's `NepalSambatDate`: the
+    year, which opens at Kachhala's first day (1146 from 2025-10-22);
+    the month counted from Kachhala (amanta Kartika); the month's kind,
+    where adhika is Anala; and the half.
+  - `AlmanacRequest::with_nepal_sambat` answers one date a day beside
+    the days. At the C boundary that is the bit
+    `TS_PANCHANGA_NEPAL_SAMBAT` (4) and the panchanga blob's section 25,
+    `nepal_sambat`.
+  - Node, Python and Dart read it as `nepalSambat` / `nepal_sambat`,
+    typed. Every parity runner prints the dates across a turn of the
+    year.
+  - `sdk.calendar.nepalSambatMonth`, `nepalSambatHalf` and
+    `nepalSambatDate` say a date in English and in Nepali, the Nepali
+    as the committee's page headers spell it. The half takes the paksha
+    bare or in full.
+  - `nepal-sambat-measured.md` checks all 51 headers of the committee's
+    VS 2082 and 2083 panchanga over its sky, and the year's count
+    against the almanac's own lunar years over six centuries.
+
+  **Numbers:** none moved. The days, their hashes and every existing
+  section are unchanged, and the new section costs nothing unless it is
+  asked for.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).

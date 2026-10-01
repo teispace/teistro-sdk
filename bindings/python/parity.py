@@ -1269,6 +1269,22 @@ def main() -> None:
                 listed(f"{j.member.full_key}:{j.count}:{number(j.from_)}" for j in year.jovian),
             )
 
+        # The Nepal Sambat dates over 2024-10-30..11-03, which holds
+        # Kartika's new moon, where the year turns.
+        nepal_sambat = geo.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2024, 10, 30),
+            to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
+            place=place,
+            utc_offset_seconds=20700,
+            nepal_sambat=True,
+        ).nepal_sambat
+        assert nepal_sambat is not None
+        put("nepal-sambat-hash", nepal_sambat.provenance.content_hash)
+        put(
+            "nepal-sambat",
+            listed(f"{d.year}:{d.month}:{d.kind.key}:{d.paksha.full_key}" for d in nepal_sambat.value),
+        )
+
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
     # provider cannot complete: a total lunar eclipse seen whole and a

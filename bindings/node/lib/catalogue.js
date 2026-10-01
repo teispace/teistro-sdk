@@ -97,6 +97,13 @@ export const PANCHANGA_YEARS = 1;
  */
 export const PANCHANGA_ECLIPSES = 2;
 
+/**
+ * `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's Nepal Sambat date
+ * (`03-design/calendar-indian-lunisolar.md` §11).
+ */
+export const PANCHANGA_NEPAL_SAMBAT = 4;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

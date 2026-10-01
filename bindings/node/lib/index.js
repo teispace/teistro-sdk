@@ -38,6 +38,7 @@ import {
   CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
   PANCHANGA_ECLIPSES,
+  PANCHANGA_NEPAL_SAMBAT,
   PANCHANGA_YEARS,
   CalendarById,
   DayStateById,
@@ -1245,6 +1246,7 @@ export class Almanac extends Stamped {
   #festivals = undefined;
   #years = undefined;
   #eclipses = undefined;
+  #nepalSambat = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1328,6 +1330,23 @@ export class Almanac extends Stamped {
   get eclipses() {
     if (this.#eclipses === undefined) this.#eclipses = envelopeFrom(this.decoded.eclipses);
     return this.#eclipses;
+  }
+
+  /**
+   * Each day's Nepal Sambat date (`03-design/calendar-indian-lunisolar.md`
+   * §11), or `null` when the request did not ask with `nepalSambat: true`:
+   * `{ value, provenance }`, `value` one date a day in the days' order,
+   * each `{ year, month, kind, paksha }`: the year, which opens at
+   * Kachhala's first day; the month, 1 for Kachhala (amanta Kartika) to 12
+   * for Kaula; `'ADHIKA'` for Anala; and the half, `'paksha.SHUKLA'`
+   * (thwa) or `'paksha.KRISHNA'` (ga). `sdk.calendar.nepalSambatDate`
+   * says one. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get nepalSambat() {
+    if (this.#nepalSambat === undefined) this.#nepalSambat = envelopeFrom(this.decoded.nepalSambat);
+    return this.#nepalSambat;
   }
 
 
@@ -2893,7 +2912,7 @@ function muhurtaFrom(json) {
 
 /**
  * A JSON section whose value needs no reshaping (the years, the
- * eclipses) as this layer hands it out: the envelope, its provenance
+ * eclipses, the Nepal Sambat dates) as this layer hands it out: the envelope, its provenance
  * decoded as every other one is.
  *
  * @param {string} json the section, empty when none was asked for
@@ -3640,6 +3659,8 @@ export class AlmanacArea extends Area {
    *   the days and the place's view of each, as `Almanac.eclipses`
    * @param {boolean} [request.years] whether to answer the lunar years
    *   the days fall in, as `Almanac.years`
+   * @param {boolean} [request.nepalSambat] whether to answer each day's
+   *   Nepal Sambat date, as `Almanac.nepalSambat`
    * @returns {Almanac}
    */
   of(request) {
@@ -3663,7 +3684,8 @@ export class AlmanacArea extends Area {
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
         sections:
           (request.years === true ? PANCHANGA_YEARS : 0) |
-          (request.eclipses === true ? PANCHANGA_ECLIPSES : 0),
+          (request.eclipses === true ? PANCHANGA_ECLIPSES : 0) |
+          (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0),
       }),
     );
     return new Almanac(bytes);

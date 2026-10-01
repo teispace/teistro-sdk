@@ -130,6 +130,13 @@ export declare const PANCHANGA_YEARS: 1;
 export declare const PANCHANGA_ECLIPSES: 2;
 
 /**
+ * `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's Nepal Sambat date
+ * (`03-design/calendar-indian-lunisolar.md` §11).
+ */
+export declare const PANCHANGA_NEPAL_SAMBAT: 4;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =

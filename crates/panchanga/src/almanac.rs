@@ -88,6 +88,13 @@ impl Panchanga {
         self.day.vara
     }
 
+    /// The day's Nepal Sambat date: its year, its month and its half
+    /// (`03-design/calendar-indian-lunisolar.md` §11).
+    #[must_use]
+    pub fn nepal_sambat(&self) -> crate::NepalSambatDate {
+        crate::NepalSambatDate::of(self)
+    }
+
     /// Which of the day's two sunrises a span of this day was running
     /// at ([`Span::sunrises`]), by the day's own sunrises.
     #[must_use]

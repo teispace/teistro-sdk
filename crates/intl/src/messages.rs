@@ -727,6 +727,66 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.calendar.nepalSambatDate`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct NepalSambatDate {
+            /// The `kind` parameter.
+            pub kind: String,
+            /// The `month` parameter.
+            pub month: i64,
+            /// The `paksha` parameter.
+            pub paksha: String,
+            /// The `year` parameter.
+            pub year: i64,
+        }
+
+        impl crate::TypedMessage for NepalSambatDate {
+            const KEY: &'static str = "sdk.calendar.nepalSambatDate";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                    ("month", crate::Value::Int(self.month)),
+                    ("paksha", crate::Value::Str(self.paksha.clone())),
+                    ("year", crate::Value::Int(self.year)),
+                ])
+            }
+        }
+
+        /// The message `sdk.calendar.nepalSambatHalf`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct NepalSambatHalf {
+            /// The `paksha` parameter.
+            pub paksha: String,
+        }
+
+        impl crate::TypedMessage for NepalSambatHalf {
+            const KEY: &'static str = "sdk.calendar.nepalSambatHalf";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("paksha", crate::Value::Str(self.paksha.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.calendar.nepalSambatMonth`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct NepalSambatMonth {
+            /// The `kind` parameter.
+            pub kind: String,
+            /// The `month` parameter.
+            pub month: i64,
+        }
+
+        impl crate::TypedMessage for NepalSambatMonth {
+            const KEY: &'static str = "sdk.calendar.nepalSambatMonth";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                    ("month", crate::Value::Int(self.month)),
+                ])
+            }
+        }
+
         /// The `time` group.
         pub mod time {
             /// The message `sdk.calendar.time.long`.

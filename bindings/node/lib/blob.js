@@ -1220,6 +1220,10 @@ export function decodePanchanga(bytes) {
     const at = section(blob, 24, 'eclipses');
     out.eclipses = text(blob, at);
   }
+  {
+    const at = section(blob, 25, 'nepal_sambat');
+    out.nepalSambat = text(blob, at);
+  }
   return out;
 }
 

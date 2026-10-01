@@ -384,6 +384,91 @@ fn an_adhika_month_is_said_the_nepali_way() {
     assert_eq!(said(teistro::MonthKind::Nija).text, "ज्येष्ठ");
 }
 
+/// A day's Nepal Sambat date is said the way the committee's page header
+/// prints it: "ने.सं. ११४६ (कछलाथ्व)" for Kachhala's first day, and an
+/// adhika month as Anala whichever month it repeats
+/// (`03-design/calendar-indian-lunisolar.md` §11).
+#[test]
+fn a_nepal_sambat_date_is_said_as_the_committee_prints_it() {
+    let sdk = context();
+    let kathmandu = teistro::quantity::Place::new(
+        teistro::quantity::Latitude::literal(27.7172),
+        teistro::quantity::Longitude::literal(85.324),
+        teistro::quantity::Altitude::literal(1400.0),
+    );
+    let said = |year, month, day| {
+        let day = teistro::CalendarDate::defined(
+            teistro::catalogue::Calendar::Gregorian,
+            year,
+            month,
+            day,
+        );
+        let days = sdk
+            .almanac()
+            .of(
+                &day,
+                &day,
+                &kathmandu,
+                teistro::UtcOffset::literal(5, 45, 0),
+            )
+            .expect("a day at Kathmandu");
+        let date = days.value[0].nepal_sambat();
+        let rendered =
+            sdk.intl()
+                .render_typed(&teistro::messages::sdk::calendar::NepalSambatDate {
+                    year: i64::from(date.year),
+                    month: i64::from(date.month),
+                    kind: date.kind.key().to_owned(),
+                    paksha: date.paksha.key().to_owned(),
+                });
+        assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        rendered.text
+    };
+    assert_eq!(said(2025, 10, 22), "ने.सं. ११४६ कछलाथ्व");
+    // The adhika Jyeshtha of 2026, its bright half.
+    assert_eq!(said(2026, 5, 25), "ने.सं. ११४६ अनलाथ्व");
+    // The half takes the spelling every binding's answer reads back too.
+    let half = |paksha: &str| {
+        sdk.intl()
+            .render_typed(&teistro::messages::sdk::calendar::NepalSambatHalf {
+                paksha: paksha.to_owned(),
+            })
+            .text
+    };
+    assert_eq!(half("paksha.KRISHNA"), half("KRISHNA"));
+    assert_eq!(half("paksha.KRISHNA"), "गा");
+
+    // Asked beside the days, one date a day under the days' provenance.
+    let (from, to) = (
+        teistro::CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 2025, 10, 20),
+        teistro::CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 2025, 10, 23),
+    );
+    let asked = sdk
+        .almanac()
+        .asked(
+            &from,
+            &to,
+            &kathmandu,
+            teistro::UtcOffset::literal(5, 45, 0),
+            &teistro::AlmanacRequest::new().with_nepal_sambat(),
+        )
+        .expect("days at Kathmandu");
+    let dates = asked.nepal_sambat.expect("asked for");
+    let read: Vec<teistro::NepalSambatDate> = asked
+        .days
+        .value
+        .iter()
+        .map(teistro::Panchanga::nepal_sambat)
+        .collect();
+    assert_eq!(dates.value, read);
+    assert_eq!(
+        dates.provenance.input_hash,
+        asked.days.provenance.input_hash
+    );
+    let years: Vec<i32> = dates.value.iter().map(|date| date.year).collect();
+    assert_eq!(years, [1145, 1145, 1146, 1146]);
+}
+
 /// An instant is read in a zone through the context's own zone database,
 /// the one its birth-time resolutions use: `sdk.calendar.datetime.inZone`
 /// in every binding, typed as an instant and a zone.

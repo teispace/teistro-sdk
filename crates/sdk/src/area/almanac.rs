@@ -16,6 +16,7 @@ use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, following, observances};
+use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
@@ -450,7 +451,8 @@ impl<'a> AlmanacArea<'a> {
     }
 
     /// Every day of a range with whatever `request` asks beside it — a
-    /// muhurta search, festivals, the lunar years, the eclipses — over the days **founded
+    /// muhurta search, festivals, the lunar years, the eclipses, the
+    /// Nepal Sambat dates — over the days **founded
     /// once**, sealed as [`AlmanacArea::of_each`] seals them. What the C
     /// boundary answers a panchanga request with.
     ///
@@ -490,6 +492,12 @@ impl<'a> AlmanacArea<'a> {
             .eclipses
             .then(|| self.eclipses(from, to, place, offset))
             .transpose()?;
+        let nepal_sambat = request.nepal_sambat.then(|| {
+            Envelope::sealing(
+                days.value.iter().map(Panchanga::nepal_sambat).collect(),
+                days.provenance.clone(),
+            )
+        });
         let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
         Ok(AlmanacAnswer {
             days,
@@ -498,6 +506,7 @@ impl<'a> AlmanacArea<'a> {
             festivals,
             years,
             eclipses,
+            nepal_sambat,
         })
     }
 
@@ -654,6 +663,7 @@ pub struct AlmanacRequest {
     festivals: Option<FestivalRequest>,
     years: bool,
     eclipses: bool,
+    nepal_sambat: bool,
 }
 
 impl AlmanacRequest {
@@ -692,6 +702,15 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's Nepal Sambat date, which its lunar month and its
+    /// sunrise settle ([`Panchanga::nepal_sambat`],
+    /// `03-design/calendar-indian-lunisolar.md` §11).
+    #[must_use]
+    pub fn with_nepal_sambat(mut self) -> AlmanacRequest {
+        self.nepal_sambat = true;
+        self
+    }
+
     /// The muhurta search asked, if any.
     #[must_use]
     pub fn muhurta(&self) -> Option<&MuhurtaRequest> {
@@ -715,6 +734,12 @@ impl AlmanacRequest {
     pub fn eclipses(&self) -> bool {
         self.eclipses
     }
+
+    /// Whether the days' Nepal Sambat dates were asked.
+    #[must_use]
+    pub fn nepal_sambat(&self) -> bool {
+        self.nepal_sambat
+    }
 }
 
 /// The days of a range and what was asked beside them: what
@@ -734,6 +759,10 @@ pub struct AlmanacAnswer {
     /// The eclipses of the days with the place's view of each, when they
     /// were asked.
     pub eclipses: Option<Envelope<EclipsesHere>>,
+    /// Each day's Nepal Sambat date, in the days' order, when they were
+    /// asked: read off the days themselves, so sealed under their
+    /// provenance.
+    pub nepal_sambat: Option<Envelope<Vec<NepalSambatDate>>>,
 }
 
 /// A festival reckoning's answer beside the range's days: what

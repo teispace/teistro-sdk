@@ -216,7 +216,9 @@ pub struct TsPanchangaRequest {
     /// What to answer beside the days, as a bit set:
     /// `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the
     /// `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the
-    /// days with the place's view of each, in the `eclipses` section.
+    /// days with the place's view of each, in the `eclipses` section;
+    /// `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in
+    /// the `nepal_sambat` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -286,6 +288,13 @@ pub const TS_PANCHANGA_YEARS: u32 = 1;
 ///
 /// `api: constant`
 pub const TS_PANCHANGA_ECLIPSES: u32 = 2;
+
+/// `TS_PANCHANGA_NEPAL_SAMBAT`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's Nepal Sambat date
+/// (`03-design/calendar-indian-lunisolar.md` §11).
+///
+/// `api: constant`
+pub const TS_PANCHANGA_NEPAL_SAMBAT: u32 = 4;
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
@@ -579,6 +588,8 @@ pub struct Beside<'a> {
     pub years: &'a str,
     /// The `eclipses` section.
     pub eclipses: &'a str,
+    /// The `nepal_sambat` section.
+    pub nepal_sambat: &'a str,
 }
 
 /// A batch of almanacs as the blob its schema describes.
@@ -657,6 +668,7 @@ pub fn encode(
         writer.bytes("festivals", beside.festivals.as_bytes())?;
         writer.bytes("years", beside.years.as_bytes())?;
         writer.bytes("eclipses", beside.eclipses.as_bytes())?;
+        writer.bytes("nepal_sambat", beside.nepal_sambat.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -752,37 +764,21 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if asked.sections & TS_PANCHANGA_ECLIPSES == TS_PANCHANGA_ECLIPSES {
             beside = beside.with_eclipses();
         }
+        if asked.sections & TS_PANCHANGA_NEPAL_SAMBAT == TS_PANCHANGA_NEPAL_SAMBAT {
+            beside = beside.with_nepal_sambat();
+        }
         // The façade founds the days once for everything asked beside them.
         let answered = ctx
             .sdk()
             .almanac()
             .asked(&from, &to, &place, clock, &beside)?;
-        let muhurta = answered
-            .muhurta
-            .map(|answer| {
-                let value = teistro::muhurta::spelling::in_full(&answer.value)?;
-                Ok::<_, Error>(section(value, answer.provenance))
-            })
-            .transpose()?
-            .unwrap_or_default();
-        let festivals = answered
-            .festivals
-            .map(|answer| Ok::<_, Error>(section(answer.value.in_full()?, answer.provenance)))
-            .transpose()?
-            .unwrap_or_default();
-        let years = answered
-            .years
-            .map(|answer| {
-                let value = teistro::LunarYear::in_full(&answer.value)?;
-                Ok::<_, Error>(section(value, answer.provenance))
-            })
-            .transpose()?
-            .unwrap_or_default();
-        let eclipses = answered
-            .eclipses
-            .map(|answer| Ok::<_, Error>(section(answer.value.in_full()?, answer.provenance)))
-            .transpose()?
-            .unwrap_or_default();
+        let muhurta = written(answered.muhurta, teistro::muhurta::spelling::in_full)?;
+        let festivals = written(answered.festivals, teistro::festival::Observances::in_full)?;
+        let years = written(answered.years, |years| teistro::LunarYear::in_full(years))?;
+        let eclipses = written(answered.eclipses, teistro::EclipsesHere::in_full)?;
+        let nepal_sambat = written(answered.nepal_sambat, |value| {
+            teistro::NepalSambatDate::in_full(value)
+        })?;
         let encoded = encode(
             &answered.days.value,
             &place,
@@ -794,6 +790,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
                 festivals: &festivals,
                 years: &years,
                 eclipses: &eclipses,
+                nepal_sambat: &nepal_sambat,
             },
         )?;
         // SAFETY: the entry point's contract.
@@ -808,6 +805,18 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// (`03-design/muhurta-at-the-boundary.md` §4).
 fn section(value: serde_json::Value, provenance: Provenance) -> String {
     teistro_core::envelope::canonical_json(&teistro::Envelope::sealing(value, provenance))
+}
+
+/// A section answered beside the days as its canonical JSON, its members
+/// written in full by `in_full`, or empty when it was not asked for.
+fn written<T>(
+    answer: Option<teistro::Envelope<T>>,
+    in_full: impl FnOnce(&T) -> Result<serde_json::Value, Error>,
+) -> Result<String, Error> {
+    answer.map_or_else(
+        || Ok(String::new()),
+        |answer| Ok(section(in_full(&answer.value)?, answer.provenance)),
+    )
 }
 
 #[cfg(test)]

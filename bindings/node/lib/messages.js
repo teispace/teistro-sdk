@@ -76,6 +76,9 @@ export function messages(r) {
           numeric: (p) => r.render('sdk.calendar.ghati.numeric', { ghati: p.ghati, pala: p.pala }),
         },
         lunarMonth: (p) => r.render('sdk.calendar.lunarMonth', { kind: p.kind, masa: { '$entity': p.masa } }),
+        nepalSambatDate: (p) => r.render('sdk.calendar.nepalSambatDate', { kind: p.kind, month: p.month, paksha: p.paksha, year: p.year }),
+        nepalSambatHalf: (p) => r.render('sdk.calendar.nepalSambatHalf', { paksha: p.paksha }),
+        nepalSambatMonth: (p) => r.render('sdk.calendar.nepalSambatMonth', { kind: p.kind, month: p.month }),
         time: {
           long: (p) => r.render('sdk.calendar.time.long', { hour: p.hour, minute: p.minute, second: p.second }),
           long12: (p) => r.render('sdk.calendar.time.long12', { hour12: p.hour12, meridiem: p.meridiem, minute: p.minute, second: p.second }),
