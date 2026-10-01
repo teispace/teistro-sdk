@@ -88,6 +88,9 @@ import type {
   PolarKind,
   Sunrise,
   Longitude,
+  BlackoutKind,
+  LunarEclipseKind,
+  SolarEclipseKind,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -2783,7 +2786,7 @@ export interface LunarEclipse {
   /** The greatest eclipse. */
   readonly greatest: number;
   /** Penumbral, partial or total. */
-  readonly kind: 'PENUMBRAL' | 'PARTIAL' | 'TOTAL';
+  readonly kind: LunarEclipseKind;
   /** The Moon's centre from the shadow's axis at greatest, Earth radii, signed by north. */
   readonly gamma: number;
   /** The umbral magnitude: negative for a penumbral eclipse, 1 or more for a total one. */
@@ -2808,7 +2811,7 @@ export interface SolarEclipse {
   /** The greatest eclipse. */
   readonly greatest: number;
   /** Partial, annular, total, or hybrid (read at greatest). */
-  readonly kind: 'PARTIAL' | 'ANNULAR' | 'TOTAL' | 'HYBRID';
+  readonly kind: SolarEclipseKind;
   /** The shadow's axis from the Earth's centre at greatest, Earth radii, signed by north. */
   readonly gamma: number;
   /** The magnitude at greatest. */
@@ -2847,7 +2850,7 @@ export interface LunarEclipseView {
 /** A solar eclipse at the place: its own contacts, maximum and magnitude. */
 export interface SolarEclipseView {
   /** What the place sees at its maximum: never hybrid. */
-  readonly kind: 'PARTIAL' | 'ANNULAR' | 'TOTAL';
+  readonly kind: Exclude<SolarEclipseKind, 'solar_eclipse_kind.HYBRID'>;
   /** The fraction of the Sun's diameter covered; the ratio of the diameters in a central phase. */
   readonly magnitude: number;
   /** The fraction of the Sun's disc covered. */
@@ -3022,21 +3025,6 @@ export interface MuhurtaBaselineEvent {
   readonly seventhEmpty: boolean;
   readonly abhijitForbidden: boolean;
 }
-
-/** A season that closes the days it covers. */
-export type BlackoutKind =
-  | 'CHATURMAS'
-  | 'ADHIKA_MASA'
-  | 'SAMSARPA'
-  | 'KSHAYA_MASA'
-  | 'KHARMAS'
-  | 'PITRU_PAKSHA'
-  | 'SANKRANTI'
-  | 'HOLASHTAKA'
-  | 'GURU_ASTA'
-  | 'SHUKRA_ASTA'
-  | 'ECLIPSE_STAR'
-  | 'ECLIPSE_VEDHA';
 
 /** What bars a time: every clause of a kind, by its key, or one clause exactly. */
 export type MuhurtaBar = MuhurtaClauseKey | MuhurtaClauseKind;

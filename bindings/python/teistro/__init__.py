@@ -237,6 +237,9 @@ from .catalogue import (
     Ritu,
     Samvatsara,
     Sex,
+    BlackoutKind,
+    LunarEclipseKind,
+    SolarEclipseKind,
     Star,
     StarClass,
     State,
@@ -632,6 +635,9 @@ __all__ = [
     "Ritu",
     "Samvatsara",
     "Sex",
+    "BlackoutKind",
+    "LunarEclipseKind",
+    "SolarEclipseKind",
     "Star",
     "StarClass",
     "State",
@@ -3046,13 +3052,10 @@ class MuhurtaWindow:
 
 @dataclass(frozen=True)
 class ClosedDay:
-    """A day the season closed, and the blackouts that closed it
-    (`CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`,
-    `PITRU_PAKSHA`, `SANKRANTI`, `HOLASHTAKA`, `GURU_ASTA`, `SHUKRA_ASTA`,
-    `ECLIPSE_STAR`, `ECLIPSE_VEDHA`)."""
+    """A day the season closed, and the blackouts that closed it."""
 
     date: CalendarDate
-    by: Tuple[str, ...]
+    by: Tuple[BlackoutKind, ...]
 
 
 @dataclass(frozen=True)
@@ -3329,7 +3332,7 @@ class LunarEclipse:
     greatest: float
     """The greatest eclipse, a UT1 Julian day."""
 
-    kind: Literal["PENUMBRAL", "PARTIAL", "TOTAL"]
+    kind: LunarEclipseKind
     gamma: float
     """The Moon's centre from the shadow's axis at the greatest eclipse, in
     Earth radii, positive when the Moon passes north of it."""
@@ -3359,7 +3362,7 @@ class SolarEclipse:
     greatest: float
     """The greatest eclipse, a UT1 Julian day."""
 
-    kind: Literal["PARTIAL", "ANNULAR", "TOTAL", "HYBRID"]
+    kind: SolarEclipseKind
     gamma: float
     magnitude: float
     point: EclipsePoint
@@ -3389,8 +3392,8 @@ class SolarEclipseView:
     magnitude, and the stretch seen, or `None` when the Sun was down
     throughout."""
 
-    kind: Literal["PARTIAL", "ANNULAR", "TOTAL"]
-    """What the place sees at its maximum: never hybrid."""
+    kind: SolarEclipseKind
+    """What the place sees at its maximum: never `HYBRID`."""
 
     magnitude: float
     obscuration: float
@@ -5370,7 +5373,10 @@ def _muhurta_answer(text: str) -> MuhurtaAnswer:
 
     return MuhurtaAnswer(
         windows=tuple(window(w) for w in value["windows"]),
-        closed=tuple(ClosedDay(date=_serde_date(d["date"]), by=tuple(d["by"])) for d in value["closed"]),
+        closed=tuple(
+            ClosedDay(date=_serde_date(d["date"]), by=tuple(_member(BlackoutKind, k) for k in d["by"]))
+            for d in value["closed"]
+        ),
         days_judged=value["daysJudged"],
         days_cut=value["daysCut"],
         windows_blacked_out=value["windowsBlackedOut"],
@@ -5489,7 +5495,7 @@ def _eclipses_answer(text: str) -> Eclipses:
         return LunarEclipseHere(
             eclipse=LunarEclipse(
                 greatest=e["greatest"],
-                kind=e["kind"],
+                kind=_member(LunarEclipseKind, e["kind"]),
                 gamma=e["gamma"],
                 umbral_magnitude=e["umbralMagnitude"],
                 penumbral_magnitude=e["penumbralMagnitude"],
@@ -5514,7 +5520,7 @@ def _eclipses_answer(text: str) -> Eclipses:
         return SolarEclipseHere(
             eclipse=SolarEclipse(
                 greatest=e["greatest"],
-                kind=e["kind"],
+                kind=_member(SolarEclipseKind, e["kind"]),
                 gamma=e["gamma"],
                 magnitude=e["magnitude"],
                 point=EclipsePoint(latitude=e["point"]["latitude"], longitude=e["point"]["longitude"]),
@@ -5522,7 +5528,7 @@ def _eclipses_answer(text: str) -> Eclipses:
             here=None
             if h is None
             else SolarEclipseView(
-                kind=h["kind"],
+                kind=_member(SolarEclipseKind, h["kind"]),
                 magnitude=h["magnitude"],
                 obscuration=h["obscuration"],
                 first=moment(h["first"]),

@@ -1,0 +1,89 @@
+kind: blackout_kind
+number: 67
+version: 1
+doc: "The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports."
+members:
+  - key: CHATURMAS
+    id: 0
+    doc: "Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps"
+    sources:
+      - text: "baseline-engine"
+        ref: "muhurta blackouts"
+    mark: T
+  - key: ADHIKA_MASA
+    id: 1
+    doc: "An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)"
+    sources:
+      - text: "Dharmasindhu"
+        ref: "p. 3"
+    mark: V
+  - key: SAMSARPA
+    id: 2
+    doc: "The adhika month before a kshaya month, fit for every rite (crux C179)"
+    sources:
+      - text: "Dharmasindhu"
+        ref: "p. 3"
+    mark: V
+  - key: KSHAYA_MASA
+    id: 3
+    doc: "A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)"
+    sources:
+      - text: "Dharmasindhu"
+        ref: "p. 3"
+    mark: V
+  - key: KHARMAS
+    id: 4
+    doc: "The Sun in Sagittarius or Pisces (crux C177)"
+    sources:
+      - text: "baseline-engine"
+        ref: "muhurta blackouts"
+    mark: T
+  - key: PITRU_PAKSHA
+    id: 5
+    doc: "The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya"
+    sources:
+      - text: "baseline-engine"
+        ref: "muhurta blackouts"
+    mark: T
+  - key: SANKRANTI
+    id: 6
+    doc: "Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2"
+    sources:
+      - text: "Raman, Muhurtha"
+        ref: "ch. V, Mahadosha 2"
+    mark: V
+  - key: HOLASHTAKA
+    id: 7
+    doc: "The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)"
+    sources:
+      - text: "Kashinath, Shighrabodha"
+        ref: "I.137-138"
+    mark: V
+  - key: GURU_ASTA
+    id: 8
+    doc: "Jupiter unseen, from its last sighting to its next"
+    sources:
+      - text: "Muhurta Chintamani"
+        ref: "ch. I, vv. 46-47"
+    mark: V
+  - key: SHUKRA_ASTA
+    id: 9
+    doc: "Venus unseen, about either conjunction"
+    sources:
+      - text: "Muhurta Chintamani"
+        ref: "ch. I, vv. 46-47"
+    mark: V
+  - key: ECLIPSE_STAR
+    id: 10
+    doc: "The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)"
+    sources:
+      - text: "Raman, Muhurtha"
+        ref: "ch. V, Mahadosha 16"
+    mark: V
+  - key: ECLIPSE_VEDHA
+    id: 11
+    doc: "An eclipse's vedha, the almanacs' sutak (crux C192)"
+    sources:
+      - text: "Dharmasindhu"
+        ref: "p. 28"
+    mark: V

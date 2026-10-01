@@ -17,7 +17,8 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro_astro::eclipse::{
-    Eclipses, LunarEclipse, LunarKind, Seen, ShadowRule, ShadowSource, SolarEclipse, SolarKind,
+    Eclipses, LunarEclipse, LunarEclipseKind, Seen, ShadowRule, ShadowSource, SolarEclipse,
+    SolarEclipseKind,
 };
 use teistro_astro::sky::Apparent;
 use teistro_astro::{Completion, DeltaTModel, tt_of};
@@ -87,7 +88,7 @@ const DELTA_T: DeltaTModel = DeltaTModel::TableThenModel;
 struct LunarRecord {
     tt: f64,
     date: String,
-    kind: LunarKind,
+    kind: LunarEclipseKind,
     gamma: f64,
     penumbral: f64,
     umbral: f64,
@@ -98,7 +99,7 @@ struct LunarRecord {
 struct SolarRecord {
     tt: f64,
     date: String,
-    kind: SolarKind,
+    kind: SolarEclipseKind,
     gamma: f64,
     magnitude: f64,
     latitude: f64,
@@ -192,9 +193,9 @@ fn lunar_records() -> Result<Vec<LunarRecord>, String> {
                 return Err(format!("'{line}' is no lunar record"));
             };
             let kind = match *kind {
-                "N" => LunarKind::Penumbral,
-                "P" => LunarKind::Partial,
-                "T" => LunarKind::Total,
+                "N" => LunarEclipseKind::Penumbral,
+                "P" => LunarEclipseKind::Partial,
+                "T" => LunarEclipseKind::Total,
                 other => return Err(format!("{date}: '{other}' is no lunar kind")),
             };
             let minutes = |text: &str| (text != "-").then(|| number(text)).transpose();
@@ -220,10 +221,10 @@ fn solar_records() -> Result<Vec<SolarRecord>, String> {
                 return Err(format!("'{line}' is no solar record"));
             };
             let kind = match *kind {
-                "P" => SolarKind::Partial,
-                "A" => SolarKind::Annular,
-                "T" => SolarKind::Total,
-                "H" => SolarKind::Hybrid,
+                "P" => SolarEclipseKind::Partial,
+                "A" => SolarEclipseKind::Annular,
+                "T" => SolarEclipseKind::Total,
+                "H" => SolarEclipseKind::Hybrid,
                 other => return Err(format!("{date}: '{other}' is no solar kind")),
             };
             Ok(SolarRecord {

@@ -1433,8 +1433,12 @@ void _engineTests() {
       altitudeM: Altitude(1400),
     );
     final from = gregorian(2026, 11, 25);
-    Almanac days({CalendarDate? to, MuhurtaRequest? muhurta}) => ctx.almanac.of(
-      from: from,
+    Almanac days({
+      CalendarDate? since,
+      CalendarDate? to,
+      MuhurtaRequest? muhurta,
+    }) => ctx.almanac.of(
+      from: since ?? from,
       to: to ?? gregorian(2026, 12, 3),
       place: place,
       utcOffsetSeconds: 20700,
@@ -1529,6 +1533,30 @@ void _engineTests() {
       reason: 'the bar read back strikes the windows it names',
     );
     expect(struck.every((window) => window.barredBy.single == amrit), isTrue);
+
+    // A closed day names its blackouts as members, and a request takes one
+    // in either spelling: 1 June 2026 is in Jyeshtha's adhika month.
+    final june = gregorian(2026, 6, 1);
+    List<BlackoutKind> closedBy(Object rules) =>
+        days(
+          since: june,
+          to: june,
+          muhurta: MuhurtaRequest(rules: rules),
+        ).muhurta!.closed.single.by;
+    expect(
+      closedBy(MuhurtaActivity.ramanMarriage),
+      contains(BlackoutKind.adhikaMasa),
+    );
+    for (final heed in <Object>[BlackoutKind.adhikaMasa, 'ADHIKA_MASA']) {
+      expect(
+        closedBy({
+          ...rules,
+          'bars': <Object?>[],
+          'heeds': [heed],
+        }),
+        [BlackoutKind.adhikaMasa],
+      );
+    }
 
     for (final (asked, field) in [
       (

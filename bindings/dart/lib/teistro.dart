@@ -5808,15 +5808,12 @@ final class MuhurtaWindow extends _Value {
   List<Object?> get _fields => [at.from, at.to, clauses, barredBy, score];
 }
 
-/// A day the season closed, and the blackouts that closed it (`CHATURMAS`,
-/// `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`,
-/// `SANKRANTI`, `HOLASHTAKA`, `GURU_ASTA`, `SHUKRA_ASTA`, `ECLIPSE_STAR`,
-/// `ECLIPSE_VEDHA`).
+/// A day the season closed, and the blackouts that closed it.
 final class ClosedDay {
   const ClosedDay({required this.date, required this.by});
 
   final CalendarDate date;
-  final List<String> by;
+  final List<BlackoutKind> by;
 }
 
 /// Something the rules ask that the SDK does not judge yet, and why.
@@ -5923,7 +5920,7 @@ MuhurtaAnswer _muhurtaAnswer(String json) {
       for (final day in each(value['closed']))
         ClosedDay(
           date: _serdeDate(at(day['date'])),
-          by: List.unmodifiable((day['by']! as List<Object?>).cast<String>()),
+          by: _keys(day['by'], BlackoutKind.byKey, BlackoutKind.unknown),
         ),
     ]),
     daysJudged: value['daysJudged']! as int,
@@ -6426,54 +6423,6 @@ LunarYears _lunarYears(String json) {
   );
 }
 
-/// A lunar eclipse's kind.
-enum LunarEclipseKind {
-  /// The Moon only in the penumbra.
-  penumbral('PENUMBRAL'),
-
-  /// The Moon partly in the umbra.
-  partial('PARTIAL'),
-
-  /// The Moon wholly in the umbra.
-  total('TOTAL');
-
-  const LunarEclipseKind(this.key);
-
-  /// The key the boundary spells it with.
-  final String key;
-
-  static LunarEclipseKind _byKey(Object? key) => values.firstWhere(
-    (kind) => kind.key == key,
-    orElse: () => throw StateError('a lunar eclipse $key'),
-  );
-}
-
-/// A solar eclipse's kind, at its greatest or at a place.
-enum SolarEclipseKind {
-  /// The Moon covering part of the Sun.
-  partial('PARTIAL'),
-
-  /// The Moon inside the Sun's disc, leaving a ring.
-  annular('ANNULAR'),
-
-  /// The Moon covering the whole Sun.
-  total('TOTAL'),
-
-  /// Annular along part of the track and total along the rest; never a
-  /// place's own view.
-  hybrid('HYBRID');
-
-  const SolarEclipseKind(this.key);
-
-  /// The key the boundary spells it with.
-  final String key;
-
-  static SolarEclipseKind _byKey(Object? key) => values.firstWhere(
-    (kind) => kind.key == key,
-    orElse: () => throw StateError('a solar eclipse $key'),
-  );
-}
-
 /// The rule that sized the Earth's shadow, `panchanga.eclipse_shadow`.
 enum EclipseShadowRule {
   /// Danjon's, 1951: both radii grown by 1% of the Moon's horizontal
@@ -6795,7 +6744,7 @@ Eclipses _eclipses(String json) {
     return LunarEclipseHere(
       eclipse: LunarEclipse(
         greatest: jd(e['greatest']),
-        kind: LunarEclipseKind._byKey(e['kind']),
+        kind: _key(e['kind'], LunarEclipseKind.byKey, LunarEclipseKind.unknown),
         gamma: jd(e['gamma']),
         umbralMagnitude: jd(e['umbralMagnitude']),
         penumbralMagnitude: jd(e['penumbralMagnitude']),
@@ -6830,7 +6779,7 @@ Eclipses _eclipses(String json) {
     return SolarEclipseHere(
       eclipse: SolarEclipse(
         greatest: jd(e['greatest']),
-        kind: SolarEclipseKind._byKey(e['kind']),
+        kind: _key(e['kind'], SolarEclipseKind.byKey, SolarEclipseKind.unknown),
         gamma: jd(e['gamma']),
         magnitude: jd(e['magnitude']),
         latitude: jd(point['latitude']),
@@ -6840,7 +6789,11 @@ Eclipses _eclipses(String json) {
           h == null
               ? null
               : SolarEclipseView(
-                kind: SolarEclipseKind._byKey(h['kind']),
+                kind: _key(
+                  h['kind'],
+                  SolarEclipseKind.byKey,
+                  SolarEclipseKind.unknown,
+                ),
                 magnitude: jd(h['magnitude']),
                 obscuration: jd(h['obscuration']),
                 first: moment(h['first']),

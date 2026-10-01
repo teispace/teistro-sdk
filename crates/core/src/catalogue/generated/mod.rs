@@ -64,6 +64,9 @@ mod muhurta_yoga;
 mod chart_layout;
 mod vaiseshikamsa;
 mod avastha_cheshta;
+mod blackout_kind;
+mod lunar_eclipse_kind;
+mod solar_eclipse_kind;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -128,6 +131,9 @@ pub use muhurta_yoga::*;
 pub use chart_layout::*;
 pub use vaiseshikamsa::*;
 pub use avastha_cheshta::*;
+pub use blackout_kind::*;
+pub use lunar_eclipse_kind::*;
+pub use solar_eclipse_kind::*;
 
 use crate::key::KeyId;
 
@@ -197,6 +203,9 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::ChartLayout => ChartLayout::from_key(key).map(ChartLayout::key_id),
         Kind::Vaiseshikamsa => Vaiseshikamsa::from_key(key).map(Vaiseshikamsa::key_id),
         Kind::AvasthaCheshta => AvasthaCheshta::from_key(key).map(AvasthaCheshta::key_id),
+        Kind::BlackoutKind => BlackoutKind::from_key(key).map(BlackoutKind::key_id),
+        Kind::LunarEclipseKind => LunarEclipseKind::from_key(key).map(LunarEclipseKind::key_id),
+        Kind::SolarEclipseKind => SolarEclipseKind::from_key(key).map(SolarEclipseKind::key_id),
         _ => None,
     }
 }
@@ -267,6 +276,9 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::ChartLayout => ChartLayout::from_id(id.id()).map(ChartLayout::key),
         Kind::Vaiseshikamsa => Vaiseshikamsa::from_id(id.id()).map(Vaiseshikamsa::key),
         Kind::AvasthaCheshta => AvasthaCheshta::from_id(id.id()).map(AvasthaCheshta::key),
+        Kind::BlackoutKind => BlackoutKind::from_id(id.id()).map(BlackoutKind::key),
+        Kind::LunarEclipseKind => LunarEclipseKind::from_id(id.id()).map(LunarEclipseKind::key),
+        Kind::SolarEclipseKind => SolarEclipseKind::from_id(id.id()).map(SolarEclipseKind::key),
         _ => None,
     }
 }

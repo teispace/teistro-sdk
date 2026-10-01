@@ -3300,10 +3300,12 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
             offset,
         )
         .expect("the built-in sky finds eclipses");
+    // The boundary seals the full-keyed value, as it does the years.
+    let written = found.value.in_full().expect("written eclipses");
     put(
         report,
         "eclipses-hash",
-        found.provenance.content_hash.to_string(),
+        teistro_core::envelope::content_hash(&written).to_string(),
     );
     let value = &found.value;
     put(
@@ -3317,7 +3319,7 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
             &format!("eclipses-lunar-{k}"),
             format!(
                 "{} {} {} {} {} {}",
-                tag(&eclipse.kind),
+                eclipse.kind.full_key().to_owned(),
                 tag(&eclipse.shadow),
                 number(eclipse.greatest.get()),
                 number(eclipse.gamma),
@@ -3380,7 +3382,7 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
             &format!("eclipses-solar-{k}"),
             format!(
                 "{} {} {} {} {} {}",
-                tag(&eclipse.kind),
+                eclipse.kind.full_key().to_owned(),
                 number(eclipse.greatest.get()),
                 number(eclipse.gamma),
                 number(eclipse.magnitude),
@@ -3392,7 +3394,7 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
             || "-".to_owned(),
             |here| {
                 let mut line = vec![
-                    tag(&here.kind),
+                    here.kind.full_key().to_owned(),
                     number(here.magnitude),
                     number(here.obscuration),
                 ];
@@ -3518,7 +3520,7 @@ fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                     "{}-{} {}",
                     day.date.month,
                     day.date.day,
-                    listed(day.by.iter().map(tag)),
+                    listed(day.by.iter().map(|kind| kind.full_key().to_owned())),
                 ),
             );
         }

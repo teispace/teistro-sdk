@@ -369,6 +369,18 @@ typedef enum ts_kind {
      * The three sub-states of a Sayanadi state, a remainder of three.
      */
     TS_KIND_AVASTHA_CHESHTA = 64,
+    /**
+     * The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.
+     */
+    TS_KIND_BLACKOUT_KIND = 67,
+    /**
+     * How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
+     */
+    TS_KIND_LUNAR_ECLIPSE_KIND = 68,
+    /**
+     * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
+     */
+    TS_KIND_SOLAR_ECLIPSE_KIND = 69,
 } ts_kind;
 
 /**
@@ -4150,6 +4162,106 @@ typedef enum ts_avastha_cheshta {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_AVASTHA_CHESHTA_UNKNOWN = -1,
 } ts_avastha_cheshta;
+
+/**
+ * The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports. Members are the catalogue's ids; the full key id is `(TS_KIND_BLACKOUT_KIND << 16) | member`.
+ */
+typedef enum ts_blackout_kind {
+    /**
+     * Chaturmas: from the bright eleventh of (nija) Ashadha to that of Kartika, the four months Vishnu sleeps
+     */
+    TS_BLACKOUT_KIND_CHATURMAS = 0,
+    /**
+     * An intercalary month, holding no sankranti, other than the samsarpa: Nepal's Malmas (crux C177)
+     */
+    TS_BLACKOUT_KIND_ADHIKA_MASA = 1,
+    /**
+     * The adhika month before a kshaya month, fit for every rite (crux C179)
+     */
+    TS_BLACKOUT_KIND_SAMSARPA = 2,
+    /**
+     * A month holding two sankrantis, whose second name the year skips: the amhaspati, avoided in every rite (crux C179)
+     */
+    TS_BLACKOUT_KIND_KSHAYA_MASA = 3,
+    /**
+     * The Sun in Sagittarius or Pisces (crux C177)
+     */
+    TS_BLACKOUT_KIND_KHARMAS = 4,
+    /**
+     * The dark fortnight of (nija, amanta) Bhadrapada, the Mahalaya
+     */
+    TS_BLACKOUT_KIND_PITRU_PAKSHA = 5,
+    /**
+     * Sixteen ghatis either side of a sankranti: Surya sankramana, Mahadosha 2
+     */
+    TS_BLACKOUT_KIND_SANKRANTI = 6,
+    /**
+     * The eight tithis from Phalguna's bright eighth to the full moon, barred only in the lands of the Punjab rivers and at Tripushkara (crux C193)
+     */
+    TS_BLACKOUT_KIND_HOLASHTAKA = 7,
+    /**
+     * Jupiter unseen, from its last sighting to its next
+     */
+    TS_BLACKOUT_KIND_GURU_ASTA = 8,
+    /**
+     * Venus unseen, about either conjunction
+     */
+    TS_BLACKOUT_KIND_SHUKRA_ASTA = 9,
+    /**
+     * The star an eclipse the place saw fell in, for six synodic months: grahanotpatha, Mahadosha 16 (cruxes C189 to C191)
+     */
+    TS_BLACKOUT_KIND_ECLIPSE_STAR = 10,
+    /**
+     * An eclipse's vedha, the almanacs' sutak (crux C192)
+     */
+    TS_BLACKOUT_KIND_ECLIPSE_VEDHA = 11,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_BLACKOUT_KIND_UNKNOWN = -1,
+} ts_blackout_kind;
+
+/**
+ * How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_LUNAR_ECLIPSE_KIND << 16) | member`.
+ */
+typedef enum ts_lunar_eclipse_kind {
+    /**
+     * The penumbra only
+     */
+    TS_LUNAR_ECLIPSE_KIND_PENUMBRAL = 0,
+    /**
+     * Part of the Moon in the umbra
+     */
+    TS_LUNAR_ECLIPSE_KIND_PARTIAL = 1,
+    /**
+     * The whole Moon in the umbra
+     */
+    TS_LUNAR_ECLIPSE_KIND_TOTAL = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_LUNAR_ECLIPSE_KIND_UNKNOWN = -1,
+} ts_lunar_eclipse_kind;
+
+/**
+ * How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3). Members are the catalogue's ids; the full key id is `(TS_KIND_SOLAR_ECLIPSE_KIND << 16) | member`.
+ */
+typedef enum ts_solar_eclipse_kind {
+    /**
+     * The umbra and the antumbra miss the Earth
+     */
+    TS_SOLAR_ECLIPSE_KIND_PARTIAL = 0,
+    /**
+     * The Moon's disc inside the Sun's: the antumbra reaches the Earth
+     */
+    TS_SOLAR_ECLIPSE_KIND_ANNULAR = 1,
+    /**
+     * The Sun wholly hidden: the umbra reaches the Earth
+     */
+    TS_SOLAR_ECLIPSE_KIND_TOTAL = 2,
+    /**
+     * Annular at the path's ends and total at its middle, read at the greatest eclipse
+     */
+    TS_SOLAR_ECLIPSE_KIND_HYBRID = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_SOLAR_ECLIPSE_KIND_UNKNOWN = -1,
+} ts_solar_eclipse_kind;
 
 /**
  * The status of a call, with the code it has at the C boundary.

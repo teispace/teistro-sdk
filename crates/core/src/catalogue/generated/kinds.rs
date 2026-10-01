@@ -138,9 +138,15 @@ pub enum Kind {
     GrahaBhava = 65,
     /// A graha in transit through a house counted from the natal Moon, as `SATURN_IN_12`; the readings that name one arrive in a loaded pack.
     GocharBhava = 66,
+    /// The seasons a muhurta search closes the days of (`03-design/muhurta.md` §4.1). A search heeds the kinds its activity names, and the kinds a day was closed by are what the answer reports.
+    BlackoutKind = 67,
+    /// How much of the Moon the Earth's shadow takes (`03-design/eclipses.md` §3).
+    LunarEclipseKind = 68,
+    /// How much of the Sun the Moon hides, and how (`03-design/eclipses.md` §3).
+    SolarEclipseKind = 69,
 }
 
-const BY_NAME: [(&str, Kind); 65] = [
+const BY_NAME: [(&str, Kind); 68] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -152,6 +158,7 @@ const BY_NAME: [(&str, Kind); 65] = [
     ("ayanamsha", Kind::Ayanamsha),
     ("ayanamsha_category", Kind::AyanamshaCategory),
     ("bala_scheme", Kind::BalaScheme),
+    ("blackout_kind", Kind::BlackoutKind),
     ("body_class", Kind::BodyClass),
     ("calendar", Kind::Calendar),
     ("chara_karaka", Kind::CharaKaraka),
@@ -175,6 +182,7 @@ const BY_NAME: [(&str, Kind); 65] = [
     ("kaala", Kind::Kaala),
     ("karana", Kind::Karana),
     ("koota", Kind::Koota),
+    ("lunar_eclipse_kind", Kind::LunarEclipseKind),
     ("masa", Kind::Masa),
     ("modality", Kind::Modality),
     ("muhurta_nature", Kind::MuhurtaNature),
@@ -194,6 +202,7 @@ const BY_NAME: [(&str, Kind); 65] = [
     ("rule", Kind::Rule),
     ("samvatsara", Kind::Samvatsara),
     ("sex", Kind::Sex),
+    ("solar_eclipse_kind", Kind::SolarEclipseKind),
     ("star", Kind::Star),
     ("star_class", Kind::StarClass),
     ("state", Kind::State),
@@ -210,7 +219,7 @@ const BY_NAME: [(&str, Kind); 65] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 65] = [
+    pub const ALL: [Kind; 68] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -276,6 +285,9 @@ impl Kind {
         Kind::AvasthaCheshta,
         Kind::GrahaBhava,
         Kind::GocharBhava,
+        Kind::BlackoutKind,
+        Kind::LunarEclipseKind,
+        Kind::SolarEclipseKind,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -347,6 +359,9 @@ impl Kind {
             Kind::AvasthaCheshta => "avastha_cheshta",
             Kind::GrahaBhava => "graha_bhava",
             Kind::GocharBhava => "gochar_bhava",
+            Kind::BlackoutKind => "blackout_kind",
+            Kind::LunarEclipseKind => "lunar_eclipse_kind",
+            Kind::SolarEclipseKind => "solar_eclipse_kind",
         }
     }
 
@@ -425,6 +440,9 @@ impl Kind {
             Kind::AvasthaCheshta => 3,
             Kind::GrahaBhava => 0,
             Kind::GocharBhava => 0,
+            Kind::BlackoutKind => 12,
+            Kind::LunarEclipseKind => 3,
+            Kind::SolarEclipseKind => 4,
         }
     }
 
@@ -503,6 +521,9 @@ impl Kind {
             64 => Some(Kind::AvasthaCheshta),
             65 => Some(Kind::GrahaBhava),
             66 => Some(Kind::GocharBhava),
+            67 => Some(Kind::BlackoutKind),
+            68 => Some(Kind::LunarEclipseKind),
+            69 => Some(Kind::SolarEclipseKind),
             _ => None,
         }
     }

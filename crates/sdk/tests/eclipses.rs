@@ -8,8 +8,10 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
+use std::collections::BTreeSet;
+
 use teistro::catalogue::Calendar;
-use teistro::eclipse::{LunarKind, ShadowRule, SolarKind};
+use teistro::eclipse::{LunarEclipseKind, ShadowRule, SolarEclipseKind};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
     AlmanacRequest, CalendarDate, Context, EclipsesHere, Envelope, Ephemeris, Status, UtcOffset,
@@ -55,10 +57,13 @@ fn kathmandu_saw_one_of_2025s_four_eclipses() {
     // Two total lunar eclipses, March's and September's, and two partial
     // solar ones, March's over the North Atlantic and September's over
     // the South Pacific.
-    let lunar: Vec<LunarKind> = found.lunar.iter().map(|e| e.eclipse.kind).collect();
-    let solar: Vec<SolarKind> = found.solar.iter().map(|e| e.eclipse.kind).collect();
-    assert_eq!(lunar, [LunarKind::Total, LunarKind::Total]);
-    assert_eq!(solar, [SolarKind::Partial, SolarKind::Partial]);
+    let lunar: Vec<LunarEclipseKind> = found.lunar.iter().map(|e| e.eclipse.kind).collect();
+    let solar: Vec<SolarEclipseKind> = found.solar.iter().map(|e| e.eclipse.kind).collect();
+    assert_eq!(lunar, [LunarEclipseKind::Total, LunarEclipseKind::Total]);
+    assert_eq!(
+        solar,
+        [SolarEclipseKind::Partial, SolarEclipseKind::Partial]
+    );
     // March's lunar eclipse fell in Kathmandu's afternoon, the Moon below
     // the horizon; September's near midnight, seen whole.
     assert!(found.lunar[0].here.seen.is_none());
@@ -133,4 +138,85 @@ fn the_eclipses_asked_beside_the_days_are_the_eclipses() {
     assert_eq!(answer.eclipses.unwrap().value, alone.value);
     assert_eq!((alone.value.lunar.len(), alone.value.solar.len()), (1, 1));
     assert!(ask(&AlmanacRequest::new()).eclipses.is_none());
+}
+
+/// Every string leaf's dotted path, a list reaching each element.
+fn string_paths(value: &serde_json::Value, path: &str, out: &mut BTreeSet<String>) {
+    match value {
+        serde_json::Value::String(_) => {
+            out.insert(path.to_owned());
+        }
+        serde_json::Value::Array(list) => {
+            for item in list {
+                string_paths(item, path, out);
+            }
+        }
+        serde_json::Value::Object(fields) => {
+            for (field, inner) in fields {
+                let joined = if path.is_empty() {
+                    field.clone()
+                } else {
+                    format!("{path}.{field}")
+                };
+                string_paths(inner, &joined, out);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// The section a boundary carries names each kind in full, where
+/// `EclipsesHere::MEMBERS` says and nowhere else: every string path of a
+/// year whose views are all present is a listed member or the shadow
+/// rule, and every listed path is reached.
+#[test]
+fn the_eclipses_name_their_kinds_where_their_table_says() {
+    // The shadow rule, which is a setting's value.
+    const NOT_MEMBERS: [&str; 1] = ["lunar.eclipse.shadow"];
+    // London saw March 2025's partial solar eclipse, so a view of each
+    // kind is there to read.
+    let london = Place::new(
+        Latitude::literal(51.5),
+        Longitude::literal(-0.13),
+        Altitude::literal(20.0),
+    );
+    let found = context("nepali-default", None)
+        .almanac()
+        .eclipses(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 3, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 3, 31),
+            &london,
+            UtcOffset::literal(0, 0, 0),
+        )
+        .unwrap()
+        .value;
+    assert!(found.solar.iter().any(|e| e.here.is_some()));
+    assert!(!found.lunar.is_empty());
+
+    let mut found_paths = BTreeSet::new();
+    string_paths(&serde_json::to_value(&found).unwrap(), "", &mut found_paths);
+    let listed: BTreeSet<String> = EclipsesHere::MEMBERS
+        .iter()
+        .map(|(path, _)| (*path).to_owned())
+        .chain(NOT_MEMBERS.iter().map(|path| (*path).to_owned()))
+        .collect();
+    assert_eq!(
+        found_paths, listed,
+        "a string path is unlisted, or a listed one is gone"
+    );
+
+    let full = found.in_full().unwrap();
+    assert_eq!(
+        full["lunar"][0]["eclipse"]["kind"],
+        "lunar_eclipse_kind.TOTAL"
+    );
+    assert_eq!(
+        full["solar"][0]["eclipse"]["kind"],
+        "solar_eclipse_kind.PARTIAL"
+    );
+    assert_eq!(
+        full["solar"][0]["here"]["kind"],
+        "solar_eclipse_kind.PARTIAL"
+    );
+    assert_eq!(full["lunar"][0]["eclipse"]["shadow"], "DANJON");
 }

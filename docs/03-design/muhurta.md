@@ -308,10 +308,13 @@ too adds `SAMSARPA` to the activity's `heeds`. The baseline engine's
 marriage closes every adhika month, so it heeds `ADHIKA_MASA` and
 `SAMSARPA` together, and its regression is unchanged.
 
-The kinds are spelled by hand in each binding, because they cross
-inside the muhurta answer's JSON. The lint
-`blackout-kind-reaches-every-binding` holds each binding's list to
-`BlackoutKind::ALL` both ways.
+The kinds are the catalogue's `blackout_kind` (67). A closed day's
+blackouts cross inside the muhurta answer's JSON as full keys
+(`blackout_kind.ADHIKA_MASA`), written from the answer's one spelling
+table, so each binding reads them as the generated type. A request's
+`heeds` takes a member in either spelling. The kinds were spelled by
+hand in each binding until then, held by a lint that is now retired
+with the lists it held.
 
 #### 4.1.3 Holashtaka
 

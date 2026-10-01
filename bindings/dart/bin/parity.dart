@@ -138,7 +138,7 @@ void putMuhurta(String prefix, MuhurtaAnswer answer) {
   for (final (j, day) in answer.closed.indexed) {
     put(
       '$prefix-closed-$j',
-      '${day.date.month}-${day.date.day} ${listed(day.by)}',
+      '${day.date.month}-${day.date.day} ${listed(day.by.map((kind) => kind.fullKey))}',
     );
   }
 }
@@ -1419,7 +1419,7 @@ void main() {
     put(
       'eclipses-lunar-$k',
       [
-        eclipse.kind.key,
+        eclipse.kind.fullKey,
         eclipse.shadow.key,
         number(eclipse.greatest),
         number(eclipse.gamma),
@@ -1454,7 +1454,7 @@ void main() {
     put(
       'eclipses-solar-$k',
       [
-        eclipse.kind.key,
+        eclipse.kind.fullKey,
         number(eclipse.greatest),
         number(eclipse.gamma),
         number(eclipse.magnitude),
@@ -1467,7 +1467,7 @@ void main() {
       here == null
           ? '-'
           : [
-            here.kind.key,
+            here.kind.fullKey,
             number(here.magnitude),
             number(here.obscuration),
             for (final m in [

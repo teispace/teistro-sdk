@@ -194,6 +194,9 @@ export const Kind = Object.freeze({
   ChartLayout: 'chart_layout',
   Vaiseshikamsa: 'vaiseshikamsa',
   AvasthaCheshta: 'avastha_cheshta',
+  BlackoutKind: 'blackout_kind',
+  LunarEclipseKind: 'lunar_eclipse_kind',
+  SolarEclipseKind: 'solar_eclipse_kind',
 });
 
 /**
@@ -263,6 +266,9 @@ export const KindById = new Map([
   [62, 'chart_layout'],
   [63, 'vaiseshikamsa'],
   [64, 'avastha_cheshta'],
+  [67, 'blackout_kind'],
+  [68, 'lunar_eclipse_kind'],
+  [69, 'solar_eclipse_kind'],
 ]);
 
 /** Every Graha by name. */
@@ -2587,6 +2593,77 @@ export const AvasthaCheshtaById = new Map([
   [0, 'avastha_cheshta.DRISHTI'],
   [1, 'avastha_cheshta.CHESHTA'],
   [2, 'avastha_cheshta.VICHESHTA'],
+]);
+
+/** Every BlackoutKind by name. */
+export const BlackoutKind = Object.freeze({
+  Chaturmas: 'blackout_kind.CHATURMAS',
+  AdhikaMasa: 'blackout_kind.ADHIKA_MASA',
+  Samsarpa: 'blackout_kind.SAMSARPA',
+  KshayaMasa: 'blackout_kind.KSHAYA_MASA',
+  Kharmas: 'blackout_kind.KHARMAS',
+  PitruPaksha: 'blackout_kind.PITRU_PAKSHA',
+  Sankranti: 'blackout_kind.SANKRANTI',
+  Holashtaka: 'blackout_kind.HOLASHTAKA',
+  GuruAsta: 'blackout_kind.GURU_ASTA',
+  ShukraAsta: 'blackout_kind.SHUKRA_ASTA',
+  EclipseStar: 'blackout_kind.ECLIPSE_STAR',
+  EclipseVedha: 'blackout_kind.ECLIPSE_VEDHA',
+});
+
+/**
+ * Every BlackoutKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BlackoutKindById = new Map([
+  [0, 'blackout_kind.CHATURMAS'],
+  [1, 'blackout_kind.ADHIKA_MASA'],
+  [2, 'blackout_kind.SAMSARPA'],
+  [3, 'blackout_kind.KSHAYA_MASA'],
+  [4, 'blackout_kind.KHARMAS'],
+  [5, 'blackout_kind.PITRU_PAKSHA'],
+  [6, 'blackout_kind.SANKRANTI'],
+  [7, 'blackout_kind.HOLASHTAKA'],
+  [8, 'blackout_kind.GURU_ASTA'],
+  [9, 'blackout_kind.SHUKRA_ASTA'],
+  [10, 'blackout_kind.ECLIPSE_STAR'],
+  [11, 'blackout_kind.ECLIPSE_VEDHA'],
+]);
+
+/** Every LunarEclipseKind by name. */
+export const LunarEclipseKind = Object.freeze({
+  Penumbral: 'lunar_eclipse_kind.PENUMBRAL',
+  Partial: 'lunar_eclipse_kind.PARTIAL',
+  Total: 'lunar_eclipse_kind.TOTAL',
+});
+
+/**
+ * Every LunarEclipseKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LunarEclipseKindById = new Map([
+  [0, 'lunar_eclipse_kind.PENUMBRAL'],
+  [1, 'lunar_eclipse_kind.PARTIAL'],
+  [2, 'lunar_eclipse_kind.TOTAL'],
+]);
+
+/** Every SolarEclipseKind by name. */
+export const SolarEclipseKind = Object.freeze({
+  Partial: 'solar_eclipse_kind.PARTIAL',
+  Annular: 'solar_eclipse_kind.ANNULAR',
+  Total: 'solar_eclipse_kind.TOTAL',
+  Hybrid: 'solar_eclipse_kind.HYBRID',
+});
+
+/**
+ * Every SolarEclipseKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SolarEclipseKindById = new Map([
+  [0, 'solar_eclipse_kind.PARTIAL'],
+  [1, 'solar_eclipse_kind.ANNULAR'],
+  [2, 'solar_eclipse_kind.TOTAL'],
+  [3, 'solar_eclipse_kind.HYBRID'],
 ]);
 
 /** Every Status by name. */

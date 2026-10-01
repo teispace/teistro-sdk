@@ -10,6 +10,7 @@
 //! what a sutak, observed only where the eclipse is seen, asks.
 
 use serde::Serialize;
+use teistro_core::catalogue::{Kind, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
@@ -17,7 +18,7 @@ use teistro_port_ephemeris::{Body, Horizon};
 
 use super::{
     COARSE_DAYS, CONTACT_REACH_DAYS, Eclipses, LunarEclipse, MOON_RADIUS, MOON_RADIUS_UMBRA, Pair,
-    ShadowSource, SolarEclipse, SolarKind, Syzygy, TOLERANCE_DAYS, angle, sub, sun_radius,
+    ShadowSource, SolarEclipse, SolarEclipseKind, Syzygy, TOLERANCE_DAYS, angle, sub, sun_radius,
 };
 use crate::iau::vector::{Vector3, pdp, pm, pn, sxp};
 use crate::iau::{DAU, DEG2RAD, RAD2DEG};
@@ -69,7 +70,7 @@ pub struct Visible {
 pub struct SolarView {
     /// What the place sees at its maximum: partial, annular or total,
     /// never hybrid.
-    pub kind: SolarKind,
+    pub kind: SolarEclipseKind,
     /// The fraction of the Sun's diameter the Moon covers at the
     /// maximum; in a total or annular phase, the ratio of the Moon's
     /// apparent diameter to the Sun's.
@@ -160,6 +161,34 @@ pub struct EclipsesHere {
 }
 
 impl EclipsesHere {
+    /// Where the eclipses name catalogue members, and of which kind: a
+    /// dotted path through the value, a list reaching each element. What
+    /// a boundary section writes in full; `crates/sdk/tests/eclipses.rs`
+    /// holds it to serde, both ways. The shadow rule is a setting's
+    /// value, written as it is.
+    pub const MEMBERS: [(&'static str, Kind); 3] = [
+        ("lunar.eclipse.kind", Kind::LunarEclipseKind),
+        ("solar.eclipse.kind", Kind::SolarEclipseKind),
+        ("solar.here.kind", Kind::SolarEclipseKind),
+    ];
+
+    /// The eclipses as JSON, every catalogue member written as its full
+    /// key where [`EclipsesHere::MEMBERS`] says: what a boundary section
+    /// carries and seals.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if the eclipses do not serialise, which a value this
+    /// crate built cannot do.
+    pub fn in_full(&self) -> Result<serde_json::Value, Error> {
+        let mut value = serde_json::to_value(self)
+            .map_err(|error| Error::internal(format!("an eclipse did not serialise: {error}")))?;
+        for (path, kind) in Self::MEMBERS {
+            write_in_full(&mut value, path, kind);
+        }
+        Ok(value)
+    }
+
     /// Whether the place sees any of them.
     #[must_use]
     pub fn any_seen(&self) -> bool {
@@ -279,9 +308,9 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         let (_, _, moon_inner) = there.discs(MOON_RADIUS_UMBRA);
         let central = d < (moon_inner - sun).abs();
         let kind = match (central, moon_inner > sun) {
-            (true, true) => SolarKind::Total,
-            (true, false) => SolarKind::Annular,
-            (false, _) => SolarKind::Partial,
+            (true, true) => SolarEclipseKind::Total,
+            (true, false) => SolarEclipseKind::Annular,
+            (false, _) => SolarEclipseKind::Partial,
         };
         // A contact: where the separation meets the discs' sum (outer) or
         // difference (inner), on one side of the maximum.

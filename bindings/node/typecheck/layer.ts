@@ -6,6 +6,8 @@
 import type {
   Air,
   Almanac,
+  BlackoutKind,
+  LunarEclipseKind,
   AlmanacDay,
   AnnualDashaSystem,
   Body,
@@ -317,7 +319,9 @@ function eclipses(): string {
   const asked: Almanac = ctx.almanac.of({ from: someDate, to: someDate, place, utcOffsetSeconds: 20700, eclipses: true });
   const found: Eclipses | null = asked.eclipses;
   const lunar: LunarEclipseHere | undefined = found?.value.lunar[0];
-  const kind: 'PENUMBRAL' | 'PARTIAL' | 'TOTAL' | undefined = lunar?.eclipse.kind;
+  const kind: LunarEclipseKind | undefined = lunar?.eclipse.kind;
+  // @ts-expect-error a kind is its catalogue member, never the bare key
+  const bare: 'TOTAL' | undefined = lunar?.eclipse.kind;
   const totality: number | null | undefined = lunar?.eclipse.contacts.u2;
   const altitude: number | undefined = lunar?.here.greatest.altitudeDeg;
   const seenFrom: number | undefined = lunar?.here.seen?.from;
@@ -327,10 +331,10 @@ function eclipses(): string {
   const obscured: number | undefined = local?.obscuration;
   const where: number | undefined = solar?.eclipse.point.latitude;
   // @ts-expect-error a place's view of a solar eclipse is never hybrid
-  const hybrid: SolarEclipseView['kind'] = 'HYBRID';
+  const hybrid: SolarEclipseView['kind'] = 'solar_eclipse_kind.HYBRID';
   // @ts-expect-error an eclipse not asked for is null, so it needs a check
   const unchecked: number = asked.eclipses.value.lunar.length;
-  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked}`;
+  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked} ${bare}`;
 }
 
 void eclipses;
@@ -777,6 +781,7 @@ function theMuhurta(almanac: Almanac): string {
     const factors = window.score?.factors.map((f) => `${f.dimension} ${f.weight} ${f.graha ?? ''}`) ?? [];
     return [...clauses, ...bars, ...factors, String(window.score?.cappedAt)].join();
   });
+  const closedBy: readonly BlackoutKind[] = answer.closed.flatMap((day) => day.by);
   const closed = answer.closed.map((day) => `${day.date.calendar} ${day.date.month} ${day.by.join()}`);
   const found = answer.windows[0]?.clauses[0];
   if (found === undefined) return '';
@@ -793,7 +798,7 @@ function theMuhurta(almanac: Almanac): string {
   // @ts-expect-error a shipped set is named, not guessed
   const guessed: MuhurtaRequest = { rules: 'RAMAN' };
   const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
-  return [...windows, ...closed, JSON.stringify(bar), JSON.stringify(asked), String(wrong), String(guessed), ...knobs, answer.daysJudged, answer.unjudged.map((u) => u.what)].join();
+  return [...windows, ...closed, ...closedBy, JSON.stringify(bar), JSON.stringify(asked), String(wrong), String(guessed), ...knobs, answer.daysJudged, answer.unjudged.map((u) => u.what)].join();
 }
 
 void theMuhurta;

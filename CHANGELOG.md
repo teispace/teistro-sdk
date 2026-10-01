@@ -1558,6 +1558,32 @@ the astronomical numbers do not move. Nothing else computes yet.
   narrows a minimum by golden sections, and every search's failure now
   says what was sought through one `SolveError::into_error`.
 
+- **The blackouts and the eclipse kinds are catalogue members**
+  (`muhurta.md` §4.1.2, `eclipses.md` §5 and §9, `entity-names.md` §4b).
+  - New kinds `blackout_kind` (67), `lunar_eclipse_kind` (68) and
+    `solar_eclipse_kind` (69) replace the muhurta's and the eclipses'
+    hand-written enums, so every binding reads them as the generated
+    types: TypeScript unions of full keys, Python and Dart enums.
+  - **Breaking, in the bindings:** a closed day's `by` and an eclipse's
+    `kind` now read `blackout_kind.ADHIKA_MASA` and
+    `lunar_eclipse_kind.TOTAL` in Node, and the catalogue enums in
+    Python and Dart, where they read the bare key or a hand-written
+    enum. The boundary's muhurta and eclipse sections write them in
+    full, from one table each, held to serde both ways. A request's
+    `heeds` takes a member in either spelling.
+  - `sdk.entity` names 13 of the 19 members in English and Nepali, the
+    Nepali from the Nepal Panchanga Decision Committee's 2083 almanac or
+    the rank-1 text's own word. `KHARMAS`, `ECLIPSE_STAR`,
+    `ECLIPSE_VEDHA`, `PENUMBRAL`, `ANNULAR` and `HYBRID` stay unnamed
+    until a source gives their Nepali, because a strict locale names
+    what the base locale names.
+  - The lint that held the bindings' hand-written blackout lists is
+    retired with the lists.
+
+  **Numbers:** none moved. The eclipse section's content hash changed,
+  because it is sealed over the value as it is now spelt; the muhurta
+  section's changes only where a day was closed.
+
 - **Nepal's vedha, and the eye's horizon for an eclipse** (`muhurta.md`
   §4.1.1, `eclipses.md` §5, cruxes C192 and C194).
   - `panchanga.eclipse_vedha` gains `FIXED_HOURS`, Nepal's committee's

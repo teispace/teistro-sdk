@@ -121,6 +121,20 @@ class AyanamshaKey(enum.StrEnum):
     LAHIRI_ICRC = "ayanamsha.LAHIRI_ICRC"
 
 
+class BlackoutKindKey(enum.StrEnum):
+    """A `blackout_kind` as a message names it: the full catalogue key."""
+
+    CHATURMAS = "blackout_kind.CHATURMAS"
+    ADHIKA_MASA = "blackout_kind.ADHIKA_MASA"
+    SAMSARPA = "blackout_kind.SAMSARPA"
+    KSHAYA_MASA = "blackout_kind.KSHAYA_MASA"
+    PITRU_PAKSHA = "blackout_kind.PITRU_PAKSHA"
+    SANKRANTI = "blackout_kind.SANKRANTI"
+    HOLASHTAKA = "blackout_kind.HOLASHTAKA"
+    GURU_ASTA = "blackout_kind.GURU_ASTA"
+    SHUKRA_ASTA = "blackout_kind.SHUKRA_ASTA"
+
+
 class CharaKarakaKey(enum.StrEnum):
     """A `chara_karaka` as a message names it: the full catalogue key."""
 
@@ -315,6 +329,13 @@ class KaranaKey(enum.StrEnum):
     CHATUSHPADA = "karana.CHATUSHPADA"
     NAGA = "karana.NAGA"
     KIMSTUGHNA = "karana.KIMSTUGHNA"
+
+
+class LunarEclipseKindKey(enum.StrEnum):
+    """A `lunar_eclipse_kind` as a message names it: the full catalogue key."""
+
+    PARTIAL = "lunar_eclipse_kind.PARTIAL"
+    TOTAL = "lunar_eclipse_kind.TOTAL"
 
 
 class MasaKey(enum.StrEnum):
@@ -515,6 +536,13 @@ class SamvatsaraKey(enum.StrEnum):
     RAKTAKSHI = "samvatsara.RAKTAKSHI"
     KRODHANA = "samvatsara.KRODHANA"
     AKSHAYA = "samvatsara.AKSHAYA"
+
+
+class SolarEclipseKindKey(enum.StrEnum):
+    """A `solar_eclipse_kind` as a message names it: the full catalogue key."""
+
+    PARTIAL = "solar_eclipse_kind.PARTIAL"
+    TOTAL = "solar_eclipse_kind.TOTAL"
 
 
 class StateKey(enum.StrEnum):
@@ -1359,6 +1387,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityAyanamsha(self._r)
 
     @property
+    def blackout_kind(self) -> MessagesSdkEntityBlackoutKind:
+        """The messages under `blackout_kind`."""
+        return MessagesSdkEntityBlackoutKind(self._r)
+
+    @property
     def chara_karaka(self) -> MessagesSdkEntityCharaKaraka:
         """The messages under `chara_karaka`."""
         return MessagesSdkEntityCharaKaraka(self._r)
@@ -1419,6 +1452,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityKarana(self._r)
 
     @property
+    def lunar_eclipse_kind(self) -> MessagesSdkEntityLunarEclipseKind:
+        """The messages under `lunar_eclipse_kind`."""
+        return MessagesSdkEntityLunarEclipseKind(self._r)
+
+    @property
     def masa(self) -> MessagesSdkEntityMasa:
         """The messages under `masa`."""
         return MessagesSdkEntityMasa(self._r)
@@ -1472,6 +1510,11 @@ class MessagesSdkEntity:
     def samvatsara(self) -> MessagesSdkEntitySamvatsara:
         """The messages under `samvatsara`."""
         return MessagesSdkEntitySamvatsara(self._r)
+
+    @property
+    def solar_eclipse_kind(self) -> MessagesSdkEntitySolarEclipseKind:
+        """The messages under `solar_eclipse_kind`."""
+        return MessagesSdkEntitySolarEclipseKind(self._r)
 
     @property
     def tatwa(self) -> MessagesSdkEntityTatwa:
@@ -1990,6 +2033,24 @@ class MessagesSdkEntityTatwa:
     def vayu(self) -> EntityForms:
         """The forms of `tatwa.VAYU` in the current locale."""
         return self._r.entity("tatwa.VAYU")
+
+
+class MessagesSdkEntitySolarEclipseKind:
+    """The messages under `MessagesSdkEntitySolarEclipseKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def partial(self) -> EntityForms:
+        """The forms of `solar_eclipse_kind.PARTIAL` in the current locale."""
+        return self._r.entity("solar_eclipse_kind.PARTIAL")
+
+    @property
+    def total(self) -> EntityForms:
+        """The forms of `solar_eclipse_kind.TOTAL` in the current locale."""
+        return self._r.entity("solar_eclipse_kind.TOTAL")
 
 
 class MessagesSdkEntitySamvatsara:
@@ -2805,6 +2866,24 @@ class MessagesSdkEntityMasa:
         return self._r.entity("masa.VAISHAKHA")
 
 
+class MessagesSdkEntityLunarEclipseKind:
+    """The messages under `MessagesSdkEntityLunarEclipseKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def partial(self) -> EntityForms:
+        """The forms of `lunar_eclipse_kind.PARTIAL` in the current locale."""
+        return self._r.entity("lunar_eclipse_kind.PARTIAL")
+
+    @property
+    def total(self) -> EntityForms:
+        """The forms of `lunar_eclipse_kind.TOTAL` in the current locale."""
+        return self._r.entity("lunar_eclipse_kind.TOTAL")
+
+
 class MessagesSdkEntityKarana:
     """The messages under `MessagesSdkEntityKarana`, each rendered by its own key."""
 
@@ -3579,6 +3658,59 @@ class MessagesSdkEntityCharaKaraka:
     def putrakaraka(self) -> EntityForms:
         """The forms of `chara_karaka.PUTRAKARAKA` in the current locale."""
         return self._r.entity("chara_karaka.PUTRAKARAKA")
+
+
+class MessagesSdkEntityBlackoutKind:
+    """The messages under `MessagesSdkEntityBlackoutKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def adhika_masa(self) -> EntityForms:
+        """The forms of `blackout_kind.ADHIKA_MASA` in the current locale."""
+        return self._r.entity("blackout_kind.ADHIKA_MASA")
+
+    @property
+    def chaturmas(self) -> EntityForms:
+        """The forms of `blackout_kind.CHATURMAS` in the current locale."""
+        return self._r.entity("blackout_kind.CHATURMAS")
+
+    @property
+    def guru_asta(self) -> EntityForms:
+        """The forms of `blackout_kind.GURU_ASTA` in the current locale."""
+        return self._r.entity("blackout_kind.GURU_ASTA")
+
+    @property
+    def holashtaka(self) -> EntityForms:
+        """The forms of `blackout_kind.HOLASHTAKA` in the current locale."""
+        return self._r.entity("blackout_kind.HOLASHTAKA")
+
+    @property
+    def kshaya_masa(self) -> EntityForms:
+        """The forms of `blackout_kind.KSHAYA_MASA` in the current locale."""
+        return self._r.entity("blackout_kind.KSHAYA_MASA")
+
+    @property
+    def pitru_paksha(self) -> EntityForms:
+        """The forms of `blackout_kind.PITRU_PAKSHA` in the current locale."""
+        return self._r.entity("blackout_kind.PITRU_PAKSHA")
+
+    @property
+    def samsarpa(self) -> EntityForms:
+        """The forms of `blackout_kind.SAMSARPA` in the current locale."""
+        return self._r.entity("blackout_kind.SAMSARPA")
+
+    @property
+    def sankranti(self) -> EntityForms:
+        """The forms of `blackout_kind.SANKRANTI` in the current locale."""
+        return self._r.entity("blackout_kind.SANKRANTI")
+
+    @property
+    def shukra_asta(self) -> EntityForms:
+        """The forms of `blackout_kind.SHUKRA_ASTA` in the current locale."""
+        return self._r.entity("blackout_kind.SHUKRA_ASTA")
 
 
 class MessagesSdkEntityAyanamsha:
