@@ -27,6 +27,9 @@ is no corpus answer for the doctrine (crux C46).
 | Ptolemy's exaltations (I.XXII) are the catalogue's exaltation signs | **holds** | 0 of 7 disagree |
 | Lilly's exaltation degrees are the catalogue's | falsified | 3 of 7 disagree; Sun 19° against 10°, Jupiter 15° against 5°, Saturn 21° against 20° |
 | Lilly's triplicity lords by day and night are Ptolemy's | falsified | 1 of 4 disagree |
+| Lilly's faces are ten-degree decans in the Chaldean order of the seven (Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon), from Mars in Aries | **holds** | 0 of 36 disagree |
+| Lilly's detriment of a sign is the lord of the sign opposite | **holds** | 0 of 12 disagree |
+| Lilly's fall of a sign is the planet exalted in the sign opposite, by his own exaltations | **holds** | 0 of 12 disagree |
 
 ## Ptolemy's own terms, clause by clause
 
@@ -85,6 +88,15 @@ Western score that weighs a degree reads its own table. Lilly's
 triplicity lords part from Ptolemy's only in the water signs, where
 Ptolemy gives Venus and the Moon with Mars and Lilly gives Mars alone;
 that is a named choice of triplicity scheme, not a correction.
+
+**Lilly's faces, detriments and falls are rules**, each reproducing
+every cell he prints: the faces are the 36 decans in the Chaldean order,
+the detriment is the lord of the opposite sign, the fall the planet
+exalted opposite. So they ship as rules. The word "face" names two
+doctrines, and the catalogue must keep them apart: Ptolemy's "proper
+face" (I.XXVI) is no division of a sign but a planet's aspect to the Sun
+or the Moon matching the distance between their houses, the text giving
+Venus's case and Ashmand's note 60 the rest.
 
 ## The tables
 

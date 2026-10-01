@@ -193,6 +193,38 @@ const LILLY_EXALTATIONS: [(Graha, usize, u8); 7] = [
     (Ve, 11, 27),
 ];
 
+/// Lilly's faces, p. 104: each sign's three ten-degree faces by lord.
+#[rustfmt::skip]
+const LILLY_FACES: [[Graha; 3]; SIGNS] = [
+    [Ma, Sun, Ve], [Me, Moon, Sa], [Ju, Ma, Sun], [Ve, Me, Moon],
+    [Sa, Ju, Ma], [Sun, Ve, Me], [Moon, Sa, Ju], [Ma, Sun, Ve],
+    [Me, Moon, Sa], [Ju, Ma, Sun], [Ve, Me, Moon], [Sa, Ju, Ma],
+];
+
+/// Lilly's detriments, p. 104, a sign to a planet.
+const LILLY_DETRIMENTS: [Graha; SIGNS] = [Ve, Ma, Ju, Sa, Sa, Ju, Ma, Ve, Me, Moon, Sun, Me];
+
+/// Lilly's falls, p. 104: the planet each sign prints, or none. Gemini and
+/// Sagittarius print one of the Moon's nodes, whose glyph this scan does
+/// not settle, so they are read as no planet.
+const LILLY_FALLS: [Option<Graha>; SIGNS] = [
+    Some(Sa),
+    None,
+    None,
+    Some(Ma),
+    None,
+    Some(Ve),
+    Some(Sun),
+    Some(Moon),
+    None,
+    Some(Ju),
+    None,
+    Some(Me),
+];
+
+/// The Chaldean order of the seven, slowest first, which the faces follow.
+const CHALDEAN_ORDER: [Graha; 7] = [Sa, Ju, Ma, Sun, Ve, Me, Moon];
+
 /// The house of each sign, I.XX: the Moon's Cancer and the Sun's Leo, then
 /// each planet's two on either side of them.
 const HOUSES: [Graha; SIGNS] = [Ma, Ve, Me, Moon, Sun, Me, Ve, Ma, Ju, Sa, Sa, Ju];
@@ -771,6 +803,24 @@ fn dignity_claims() -> Vec<Claim> {
         .zip(TRIPLICITIES)
         .filter(|((day, night), ptolemy)| [Some(*day), Some(*night)] != ptolemy[..2])
         .count();
+    let faces = LILLY_FACES
+        .iter()
+        .flatten()
+        .enumerate()
+        .filter(|(decan, lord)| CHALDEAN_ORDER[(decan + 2) % CHALDEAN_ORDER.len()] != **lord)
+        .count();
+    let detriments = (0..SIGNS)
+        .filter(|sign| HOUSES[(sign + SIGNS / 2) % SIGNS] != LILLY_DETRIMENTS[*sign])
+        .count();
+    let falls = (0..SIGNS)
+        .filter(|sign| {
+            let exalted = LILLY_EXALTATIONS
+                .iter()
+                .find(|(_, at, _)| *at == (sign + SIGNS / 2) % SIGNS)
+                .map(|(planet, _, _)| *planet);
+            exalted != LILLY_FALLS[*sign]
+        })
+        .count();
     vec![
         Claim::counted(
             "Ptolemy's houses (I.XX) are the catalogue's sign lords",
@@ -792,6 +842,21 @@ fn dignity_claims() -> Vec<Claim> {
             "Lilly's triplicity lords by day and night are Ptolemy's",
             lilly_triplicities,
             TRIPLICITIES.len(),
+        ),
+        Claim::counted(
+            "Lilly's faces are ten-degree decans in the Chaldean order of the seven (Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon), from Mars in Aries",
+            faces,
+            SIGNS * 3,
+        ),
+        Claim::counted(
+            "Lilly's detriment of a sign is the lord of the sign opposite",
+            detriments,
+            SIGNS,
+        ),
+        Claim::counted(
+            "Lilly's fall of a sign is the planet exalted in the sign opposite, by his own exaltations",
+            falls,
+            SIGNS,
         ),
     ]
 }
@@ -892,7 +957,14 @@ fn page() -> String {
          exaltations, so a Western score that weighs a degree reads its own table. Lilly's \
          triplicity lords part from Ptolemy's only in the water signs, where Ptolemy gives Venus \
          and the Moon with Mars and Lilly gives Mars alone; that is a named choice of \
-         triplicity scheme, not a correction.\n\n",
+         triplicity scheme, not a correction.\n\n\
+         **Lilly's faces, detriments and falls are rules**, each reproducing every cell he \
+         prints: the faces are the 36 decans in the Chaldean order, the detriment is the lord \
+         of the opposite sign, the fall the planet exalted opposite. So they ship as rules. \
+         The word \"face\" names two doctrines, and the catalogue must keep them apart: \
+         Ptolemy's \"proper face\" (I.XXVI) is no division of a sign but a planet's aspect \
+         to the Sun or the Moon matching the distance between their houses, the text giving \
+         Venus's case and Ashmand's note 60 the rest.\n\n",
     );
     out.push_str("## The tables\n\n### Egyptian (I.XXIII)\n\n");
     out.push_str(&terms_table(&EGYPTIAN.map(|sign| of_printed(&sign))));
