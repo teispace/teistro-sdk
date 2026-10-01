@@ -68,6 +68,12 @@ pub enum BlackoutKind {
     /// Sixteen ghatis either side of a sankranti (Raman, ch. V, Mahadosha
     /// 2: Surya sankramana).
     Sankranti,
+    /// The eight days before Holi: from the start of the bright eighth of
+    /// (nija, amanta) Phalguna to the full moon (*Shighrabodha* I.137–138).
+    /// The text bars marriage and the like in it only on the Shutudri,
+    /// the Vipasha and the Iravati and at Tripushkara, and calls it
+    /// auspicious elsewhere, so no shipped activity heeds it (C193).
+    Holashtaka,
     /// Jupiter unseen, from its last sighting to its next.
     GuruAsta,
     /// Venus unseen: twice a synodic cycle, about its inferior and its
@@ -87,7 +93,7 @@ impl BlackoutKind {
     /// Every kind, in declaration order. [`BlackoutKind::position`] is
     /// an exhaustive match, so a kind added to the enum and not here fails
     /// to compile there or fails the test that reads this back.
-    pub const ALL: [BlackoutKind; 11] = [
+    pub const ALL: [BlackoutKind; 12] = [
         BlackoutKind::Chaturmas,
         BlackoutKind::AdhikaMasa,
         BlackoutKind::Samsarpa,
@@ -95,6 +101,7 @@ impl BlackoutKind {
         BlackoutKind::Kharmas,
         BlackoutKind::PitruPaksha,
         BlackoutKind::Sankranti,
+        BlackoutKind::Holashtaka,
         BlackoutKind::GuruAsta,
         BlackoutKind::ShukraAsta,
         BlackoutKind::EclipseStar,
@@ -112,10 +119,11 @@ impl BlackoutKind {
             BlackoutKind::Kharmas => 4,
             BlackoutKind::PitruPaksha => 5,
             BlackoutKind::Sankranti => 6,
-            BlackoutKind::GuruAsta => 7,
-            BlackoutKind::ShukraAsta => 8,
-            BlackoutKind::EclipseStar => 9,
-            BlackoutKind::EclipseVedha => 10,
+            BlackoutKind::Holashtaka => 7,
+            BlackoutKind::GuruAsta => 8,
+            BlackoutKind::ShukraAsta => 9,
+            BlackoutKind::EclipseStar => 10,
+            BlackoutKind::EclipseVedha => 11,
         }
     }
 }
@@ -280,6 +288,11 @@ pub fn blackouts<S: Longitudes + ?Sized>(
                     found.push(blackout(BlackoutKind::Chaturmas, interval(from, to)?));
                 }
             }
+            (Masa::Phalguna, MonthKind::Nija) => {
+                let from = elongation_in(&source, month.at, BRIGHT_EIGHTH_DEG)?;
+                let to = elongation_in(&source, month.at, FULL_MOON_DEG)?;
+                found.push(blackout(BlackoutKind::Holashtaka, interval(from, to)?));
+            }
             (Masa::Bhadrapada, MonthKind::Nija) => {
                 let from = elongation_in(&source, month.at, PURNIMA_DEG)?;
                 found.push(blackout(
@@ -309,6 +322,12 @@ const BRIGHT_ELEVENTH_DEG: f64 = 120.0;
 
 /// The elongation at the start of the Purnima, the fifteenth tithi.
 const PURNIMA_DEG: f64 = 168.0;
+
+/// The elongation at the start of the bright eighth tithi, degrees.
+const BRIGHT_EIGHTH_DEG: f64 = 84.0;
+
+/// The elongation at the full moon, where the Purnima ends, degrees.
+const FULL_MOON_DEG: f64 = 180.0;
 
 /// When the elongation reaches a value inside a month, which it does once.
 fn elongation_in<S: Longitudes + ?Sized>(

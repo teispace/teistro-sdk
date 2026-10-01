@@ -3032,6 +3032,7 @@ export type BlackoutKind =
   | 'KHARMAS'
   | 'PITRU_PAKSHA'
   | 'SANKRANTI'
+  | 'HOLASHTAKA'
   | 'GURU_ASTA'
   | 'SHUKRA_ASTA'
   | 'ECLIPSE_STAR'

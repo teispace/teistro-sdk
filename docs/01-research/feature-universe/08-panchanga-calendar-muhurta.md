@@ -88,7 +88,7 @@ Nepal) or *missing*.
 | **Nepal Sambat** | A lunar year from Kartika's bright first (Mha puja), in official use beside Bikram Sambat. | An era only (`Era::NepalSambat`), not a calendar a date can be written in. | missing |
 | **Nepal's festivals** | The committee fixes Dashain (Ghatasthapana to Kojagrat Purnima), Tihar, Teej, Chhath, Janai Purnima, Shivaratri and the rest, including the tika's time. Holi falls a day apart in the hills and the Terai. | Four Dharmasindhu rules; measured against India's Delhi list only (`festival-rules.md` §5.3). | partial |
 | **Muhurta (saait) beyond marriage** | Bratabandha, pasni (annaprashan), nwaran, griha pravesh and more. | Marriage only (Raman's and the baseline's rules). | missing |
-| **Holashtaka and eclipses** | Both close days for rites. | Eclipses are found (`teistro_astro::eclipse`, every one of NASA's 913 from 1900 to 2100, `eclipses-measured.md`) but are not yet a muhurta blackout; Holashtaka is not built. | partial |
+| **Holashtaka and eclipses** | Both close days for rites. | Eclipses are found (`teistro_astro::eclipse`, every one of NASA's 913 from 1900 to 2100, `eclipses-measured.md`) and close days as `ECLIPSE_STAR` and `ECLIPSE_VEDHA`, by the eclipses the place sees (`muhurta.md` §4.1.1). `HOLASHTAKA` is built by *Shighrabodha* I.137–138, which bars it only on the Punjab rivers and at Tripushkara, so no shipped activity heeds it (C193, §4.1.3). | built |
 
 What reading the code found (2026-09-30, both since built): two
 catalogue kinds, samvatsara and ritu, were named in every locale and

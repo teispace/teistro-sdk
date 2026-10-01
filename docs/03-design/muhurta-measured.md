@@ -123,10 +123,10 @@ context's cache, over Raman's search:
 
 | asked | provider calls |
 |---|---:|
-| the search alone | 116 284 |
+| the search alone | 116 290 |
 | the almanac alone | 5718 |
-| the two apart | 122 002 |
-| the two together | 117 329 |
+| the two apart | 122 008 |
+| the two together | 117 335 |
 
 Together they are spared 4673 calls, 3.8% of the two apart: the
 almanac beside the search adds 0.9% to the search's own.

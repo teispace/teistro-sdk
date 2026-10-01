@@ -1558,6 +1558,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   narrows a minimum by golden sections, and every search's failure now
   says what was sought through one `SolveError::into_error`.
 
+- **Holashtaka in the muhurta season** (`muhurta.md` §4.1.3, crux C193).
+  `HOLASHTAKA` runs from the start of Phalguna's bright eighth to the
+  full moon before Holi: eight tithis, by Kashinath's *Shighrabodha*
+  (I.137–138). The text bars these days for marriage and other
+  auspicious acts only on the Shutudri, the Vipasha and the Iravati and
+  at Tripushkara, and calls them auspicious elsewhere. So no shipped
+  activity heeds the kind; a consumer whose place is in those lands
+  names it. Held to the full moons of 2025 and 2026.
+
 - **A kshaya year in the muhurta season** (`muhurta.md` §4.1.2, crux
   C179). The season now names all three months a kshaya year marks, read
   from *Dharmasindhu* p. 3:
