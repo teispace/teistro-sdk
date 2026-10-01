@@ -6437,8 +6437,8 @@
           "type": "string"
         },
         {
-          "const": "UPPER_LIMB_NO_REFRACTION",
-          "description": "The upper limb on the geometric horizon, without refraction: Nepal's daily print (`03-design/nepal-day-measured.md`, C39).",
+          "const": "CENTRE_REFRACTION",
+          "description": "The centre of the disc with standard refraction: the Indian almanacs' disc middle, and Nepal's daily print (`03-design/nepal-day-measured.md`, C39).",
           "type": "string"
         }
       ]

@@ -4,8 +4,9 @@
 //!
 //! Nepal's daily panchanga prints the text's limbs to the minute and a
 //! sunrise the text does not give: the text's has no equation of time
-//! (III.34 to 35, C37), and the print's is within 2.4 minutes of a modern
-//! one (C39, `docs/03-design/nepal-day-measured.md`). A day's flags are
+//! (III.34 to 35, C37), and the print's is within 1.7 minutes of a modern
+//! one, the disc's centre with standard refraction (C39,
+//! `docs/03-design/nepal-day-measured.md`). A day's flags are
 //! decided by where an end falls against the sunrises, so a limb ending
 //! within minutes of sunrise is flagged by the print's sunrise and not by
 //! the text's. This provider answers both questions the way the print

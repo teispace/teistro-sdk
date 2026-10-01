@@ -654,8 +654,8 @@ pub enum TsSunrise {
     UpperLimbRefraction = 1,
     /// The lower limb with refraction.
     LowerLimbRefraction = 2,
-    /// The upper limb on the geometric horizon, without refraction.
-    UpperLimbNoRefraction = 3,
+    /// The centre of the disc with standard refraction.
+    CentreRefraction = 3,
 }
 
 impl TsSunrise {
@@ -668,7 +668,7 @@ impl TsSunrise {
             Sunrise::CentreNoRefraction => Some(TsSunrise::CentreNoRefraction),
             Sunrise::UpperLimbRefraction => Some(TsSunrise::UpperLimbRefraction),
             Sunrise::LowerLimbRefraction => Some(TsSunrise::LowerLimbRefraction),
-            Sunrise::UpperLimbNoRefraction => Some(TsSunrise::UpperLimbNoRefraction),
+            Sunrise::CentreRefraction => Some(TsSunrise::CentreRefraction),
             _ => None,
         }
     }

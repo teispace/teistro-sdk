@@ -99,10 +99,10 @@ knob!(
     Sunrise { /// The centre of the disc on the geometric horizon.
         CentreNoRefraction = "CENTRE_NO_REFRACTION", /// The upper limb with refraction.
         UpperLimbRefraction = "UPPER_LIMB_REFRACTION", /// The lower limb with refraction.
-        LowerLimbRefraction = "LOWER_LIMB_REFRACTION", /// The upper limb on the
-        /// geometric horizon, without refraction: Nepal's daily print
-        /// (`03-design/nepal-day-measured.md`, C39).
-        UpperLimbNoRefraction = "UPPER_LIMB_NO_REFRACTION" }
+        LowerLimbRefraction = "LOWER_LIMB_REFRACTION", /// The centre of the disc
+        /// with standard refraction: the Indian almanacs' disc middle,
+        /// and Nepal's daily print (`03-design/nepal-day-measured.md`, C39).
+        CentreRefraction = "CENTRE_REFRACTION" }
 );
 knob!(
     /// When the day begins.

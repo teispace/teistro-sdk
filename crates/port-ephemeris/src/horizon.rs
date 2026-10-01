@@ -219,12 +219,13 @@ impl Horizon {
         altitude_deg: 0.0,
     };
 
-    /// The upper limb on the geometric horizon, without refraction
-    /// (`UPPER_LIMB_NO_REFRACTION`): the convention Nepal's daily
-    /// panchanga's sunrise is nearest, measured (C39).
-    pub const UPPER_LIMB_NO_REFRACTION: Horizon = Horizon {
-        disc: DiscPoint::UpperLimb,
-        refraction: Refraction::None,
+    /// The centre of the disc with standard refraction
+    /// (`CENTRE_REFRACTION`): the sunrise of the Indian almanacs that take
+    /// the disc's middle, and the convention Nepal's daily panchanga's
+    /// sunrise is nearest, measured (C39).
+    pub const CENTRE_REFRACTION: Horizon = Horizon {
+        disc: DiscPoint::Centre,
+        refraction: Refraction::Standard,
         altitude_deg: 0.0,
     };
 
@@ -233,7 +234,7 @@ impl Horizon {
         match which {
             Sunrise::UpperLimbRefraction => Horizon::UPPER_LIMB_REFRACTION,
             Sunrise::LowerLimbRefraction => Horizon::LOWER_LIMB_REFRACTION,
-            Sunrise::UpperLimbNoRefraction => Horizon::UPPER_LIMB_NO_REFRACTION,
+            Sunrise::CentreRefraction => Horizon::CENTRE_REFRACTION,
             // The classical convention, and any named convention core
             // adds before this crate learns it.
             _ => Horizon::CENTRE_NO_REFRACTION,
@@ -279,8 +280,8 @@ impl Horizon {
             Some(Sunrise::UpperLimbRefraction.into())
         } else if *self == Horizon::LOWER_LIMB_REFRACTION {
             Some(Sunrise::LowerLimbRefraction.into())
-        } else if *self == Horizon::UPPER_LIMB_NO_REFRACTION {
-            Some(Sunrise::UpperLimbNoRefraction.into())
+        } else if *self == Horizon::CENTRE_REFRACTION {
+            Some(Sunrise::CentreRefraction.into())
         } else if self.disc == DiscPoint::Centre && self.refraction == Refraction::None {
             Some(SunriseConvention::Custom {
                 altitude_deg: self.altitude_deg,
