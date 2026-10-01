@@ -1696,6 +1696,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   - `teistro_astro::sky::altitude_by_midheaven_deg`: a body's altitude
     from a chart's own Midheaven, obliquity and latitude.
   - `Rashi::of_longitude` and `Rashi::opposite` in the catalogue.
+  - **Every binding.** A chart request's `dignities` record
+    (`dignities_json` in C) is read by `DignityRequest::from_json`, every
+    member optional and a misspelt one refused at its path. The answer is
+    each chart's `dignities`: the sect, every rule applied and the seven
+    planets with their flags and scores. A table of terms of the caller's
+    own crosses as `{"TABLE": [...]}`. The boundary adds sections 60
+    (`dignities`) and 61 (`dignity_planets`) and the enums `TsSect`,
+    `TsSectRule`, `TsTerms` and `TsTriplicities`. All five parity runners
+    agree on every value.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans.

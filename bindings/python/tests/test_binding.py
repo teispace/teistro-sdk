@@ -1359,6 +1359,99 @@ class AnEngine(WithLibrary):
             assert taken is not None
             self.assertEqual(len(taken.chart.cusps), 12)
 
+    def test_a_chart_carries_its_essential_dignities(self) -> None:
+        """The essential dignities cross whole, members resolved: the sect and
+        every rule applied reported back, the seven in the Chaldean order with
+        the score their flags give, a polar-night noon a night chart, a table
+        of the caller's own obeyed, and a refusal named in the record
+        (`03-design/essential-dignities.md`)."""
+        from teistro import DignityRequest, Sect, SectRule, Terms, Triplicities
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 20700,
+        }
+        instants = [2460676.5, 2460676.75]
+        lilly = {
+            "house": 5,
+            "exaltation": 4,
+            "triplicity": 3,
+            "term": 2,
+            "face": 1,
+            "detriment": -5,
+            "fall": -4,
+            "peregrine": -5,
+        }
+        flags = ("house", "exaltation", "triplicity", "term", "face", "detriment", "fall")
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instants[0], **kathmandu).dignities)
+            read = ctx.chart.found(instant=instants[0], dignities={}, **kathmandu).dignities
+            assert read is not None
+            self.assertIs(read.sect_rule, SectRule.HORIZON)
+            self.assertEqual((read.rules.terms, read.rules.triplicities), (Terms.PTOLEMAIC_LILLY, Triplicities.LILLY))
+            self.assertEqual(vars(read.scores), lilly)
+            self.assertEqual(
+                [at.planet for at in read.planets],
+                [Graha.SATURN, Graha.JUPITER, Graha.MARS, Graha.SUN, Graha.VENUS, Graha.MERCURY, Graha.MOON],
+            )
+            for at in read.planets:
+                held = [flag for flag in flags if getattr(at.dignity, flag)]
+                self.assertEqual(at.peregrine, not any(flag in flags[:5] for flag in held), at.planet)
+                score = sum(lilly[flag] for flag in held) + (lilly["peregrine"] if at.peregrine else 0)
+                self.assertEqual(at.score, score, at.planet)
+
+            asked: DignityRequest = {
+                "sectRule": SectRule.NIGHT,
+                "rules": {"triplicities": Triplicities.PTOLEMY},
+                "scores": {"peregrine": 0},
+            }
+            night = ctx.chart.found(instant=instants[0], dignities=asked, **kathmandu).dignities
+            assert night is not None
+            self.assertIs(night.sect, Sect.NIGHT)
+            self.assertIs(night.rules.triplicities, Triplicities.PTOLEMY)
+            self.assertEqual(vars(night.scores), {**lilly, "peregrine": 0})
+
+            # 21 December 1988 at Tromsø: the Sun culminates under the horizon.
+            tromso = Observer(latitude_deg=Latitude(69.6492), longitude_deg=Longitude(18.9553), altitude_m=Altitude(0))
+            polar = ctx.chart.found(instant=2447516.9583333335, place=tromso, utc_offset_seconds=3600, dignities={})
+            assert polar.dignities is not None
+            self.assertIs(polar.dignities.sect, Sect.NIGHT)
+
+            # A table of the caller's own: Aries' Egyptian terms in every sign,
+            # the lords as members and as keys.
+            row: list[tuple[Any, int]] = [
+                (Graha.JUPITER, 6),
+                ("VENUS", 12),
+                ("graha.MERCURY", 20),
+                (Graha.MARS, 25),
+                (Graha.SATURN, 30),
+            ]
+            table = [[{"lord": lord, "end": end} for lord, end in row] for _ in range(12)]
+            own = ctx.chart.found(instant=instants[0], dignities={"rules": {"terms": {"TABLE": table}}}, **kathmandu)
+            assert own.dignities is not None
+            self.assertIs(own.dignities.rules.terms, Terms.TABLE)
+            lords = [Graha.JUPITER, Graha.VENUS, Graha.MERCURY, Graha.MARS, Graha.SATURN]
+            for at in own.dignities.planets:
+                degree = at.longitude_deg % 30
+                lord = next(lord for lord, (_, end) in zip(lords, row) if degree < end)
+                self.assertEqual(at.dignity.term, lord is at.planet, at.planet)
+
+            batch = ctx.chart.found_many(instants=instants, dignities={}, **kathmandu)
+            for k, instant in enumerate(instants):
+                alone = ctx.chart.found(instant=instant, dignities={}, **kathmandu).dignities
+                self.assertEqual(batch.at(k).dignities, alone)
+
+            refusals: list[tuple[Any, str]] = [
+                ({"sectRule": "DUSK"}, "dignities.sectRule"),
+                ({"scores": {"peregrin": 0}}, "dignities.scores.peregrin"),
+                ({"rules": {"terms": {"TABLE": table[1:]}}}, "dignities.rules.terms.TABLE"),
+                ("LILLY", "dignities"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=instants[0], dignities=bad, **kathmandu)
+                self.assertEqual(refused.exception.field, field)
+
     def test_an_almanac_carries_the_muhurta_search_it_was_asked_for(self) -> None:
         """A muhurta search crosses beside the days it judged
         (`03-design/muhurta-at-the-boundary.md`): its clauses a class a kind,

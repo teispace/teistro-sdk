@@ -6892,6 +6892,116 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsSect",
+      "doc": "Whether a chart is of the day or of the night\n(`03-design/essential-dignities.md` §Sect).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Day",
+          "value": 0,
+          "doc": "A day chart.",
+          "key": "DAY"
+        },
+        {
+          "name": "Night",
+          "value": 1,
+          "doc": "A night chart.",
+          "key": "NIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSectRule",
+      "doc": "How a chart's sect is read (C209, `03-design/essential-dignities.md`\n§Sect).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Horizon",
+          "value": 0,
+          "doc": "The Sun's centre above the true horizon, Valens's hemisphere.",
+          "key": "HORIZON"
+        },
+        {
+          "name": "Daylight",
+          "value": 1,
+          "doc": "The chart's own sunrise to sunset.",
+          "key": "DAYLIGHT"
+        },
+        {
+          "name": "Day",
+          "value": 2,
+          "doc": "Every chart read as a day chart.",
+          "key": "DAY"
+        },
+        {
+          "name": "Night",
+          "value": 3,
+          "doc": "Every chart read as a night chart.",
+          "key": "NIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsTerms",
+      "doc": "Which system of terms a reading used (C208,\n`03-design/essential-dignities.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Egyptian",
+          "value": 0,
+          "doc": "The Egyptian terms, as Ptolemy transmits them.",
+          "key": "EGYPTIAN"
+        },
+        {
+          "name": "PtolemaicLilly",
+          "value": 1,
+          "doc": "Ptolemy's own terms as Lilly prints them.",
+          "key": "PTOLEMAIC_LILLY"
+        },
+        {
+          "name": "PtolemaicAshmand",
+          "value": 2,
+          "doc": "Ptolemy's own terms as Ashmand translates them.",
+          "key": "PTOLEMAIC_ASHMAND"
+        },
+        {
+          "name": "Chaldean",
+          "value": 3,
+          "doc": "The Chaldean terms, by the chart's sect.",
+          "key": "CHALDEAN"
+        },
+        {
+          "name": "Table",
+          "value": 4,
+          "doc": "The table the request's `dignities_json` gave.",
+          "key": "TABLE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsTriplicities",
+      "doc": "Who rules each triplicity (`03-design/essential-dignities.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Ptolemy",
+          "value": 0,
+          "doc": "Ptolemy's, Mars ruling water with Venus and the Moon.",
+          "key": "PTOLEMY"
+        },
+        {
+          "name": "Lilly",
+          "value": 1,
+          "doc": "Lilly's, Mars ruling water alone.",
+          "key": "LILLY"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -11124,6 +11234,21 @@
           "doc": "Every chart read as KP (Krishnamurti Paddhati), as a JSON object,\nevery member optional: `number`, the querent's horary number 1 to\n249, which casts the cusps from it (C156); `clock`, seconds east of\nUT that the civil day lord is the weekday on, this request's own\nwhen absent (C151); and `anyAyanamsha`, true to read a chart whose\nzodiac is not Krishnamurti's (C157). Each chart's reading — its\ncusps and planets to the sub-sub lord, its significators and the\nruling planets of its moment — comes back in the `kp` section,\nunder the settings' `kp` group. Null for none, which costs nothing\n(`03-design/kp.md`). Refusals are named from the record every\nbinding calls `kp`, as `kp.number`.",
           "meta": {
             "example": "{\"number\":74}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "dignities_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's essential dignities, as a JSON object, every member\noptional: `sectRule` (`\"HORIZON\"`, the Sun's centre above the true\nhorizon and the default; `\"DAYLIGHT\"`, the chart's own sunrise to\nsunset; or `\"DAY\"` or `\"NIGHT\"` outright; C209), `rules`\n(`{terms, triplicities}`: the terms `\"PTOLEMAIC_LILLY\"`, the\ndefault, `\"EGYPTIAN\"`, `\"PTOLEMAIC_ASHMAND\"`, `\"CHALDEAN\"` or\n`{\"TABLE\": ...}`, twelve signs of five `{lord, end}` from Aries;\nthe triplicities `\"LILLY\"`, the default, or `\"PTOLEMY\"`; C208) and\n`scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,\n`detriment`, `fall`, `peregrine`, Lilly's by default). The sect and\nwhat was applied come back in the `dignities` section and the seven\nplanets in `dignity_planets`. Null for none, which costs nothing\n(`03-design/essential-dignities.md`). Refusals are named from the\nrecord every binding calls `dignities`, as `dignities.sectRule`.",
+          "meta": {
+            "example": "{\"sectRule\":\"HORIZON\",\"rules\":{\"terms\":\"EGYPTIAN\"}}",
             "nullable": true
           }
         }
@@ -17005,6 +17130,137 @@
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 60,
+          "name": "dignities",
+          "doc": "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sect",
+              "scalar": "u8",
+              "doc": "Whether the chart is of the day or of the night, as `sect_rule` reads it.",
+              "enum": "TsSect"
+            },
+            {
+              "name": "sect_rule",
+              "scalar": "u8",
+              "doc": "How the sect was read, `dignities_json.sectRule` (C209).",
+              "enum": "TsSectRule"
+            },
+            {
+              "name": "terms",
+              "scalar": "u8",
+              "doc": "The system of terms, `dignities_json.rules.terms` (C208); `TABLE` is the table the request gave.",
+              "enum": "TsTerms"
+            },
+            {
+              "name": "triplicities",
+              "scalar": "u8",
+              "doc": "Who rules each triplicity, `dignities_json.rules.triplicities`.",
+              "enum": "TsTriplicities"
+            },
+            {
+              "name": "score_house",
+              "scalar": "i8",
+              "doc": "What a planet in its own house scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_exaltation",
+              "scalar": "i8",
+              "doc": "What a planet in its exaltation scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_triplicity",
+              "scalar": "i8",
+              "doc": "What a planet ruling its sign's triplicity scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_term",
+              "scalar": "i8",
+              "doc": "What a planet in its own term scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_face",
+              "scalar": "i8",
+              "doc": "What a planet in its own face scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_detriment",
+              "scalar": "i8",
+              "doc": "What a planet in its detriment scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_fall",
+              "scalar": "i8",
+              "doc": "What a planet in its fall scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_peregrine",
+              "scalar": "i8",
+              "doc": "What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default."
+            }
+          ]
+        },
+        {
+          "id": 61,
+          "name": "dignity_planets",
+          "doc": "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "planet",
+              "scalar": "u16",
+              "doc": "The planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude",
+              "scalar": "f64",
+              "doc": "Where it stands, in degrees of the chart's zodiac."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "1 when the sign is its house, else 0."
+            },
+            {
+              "name": "exaltation",
+              "scalar": "u8",
+              "doc": "1 when the sign is its exaltation, else 0."
+            },
+            {
+              "name": "triplicity",
+              "scalar": "u8",
+              "doc": "1 when it rules the sign's triplicity in a chart of the sect, else 0."
+            },
+            {
+              "name": "term",
+              "scalar": "u8",
+              "doc": "1 when the degree lies in its own term, else 0."
+            },
+            {
+              "name": "face",
+              "scalar": "u8",
+              "doc": "1 when the degree lies in its own face, else 0."
+            },
+            {
+              "name": "detriment",
+              "scalar": "u8",
+              "doc": "1 when the sign is opposite its house, else 0."
+            },
+            {
+              "name": "fall",
+              "scalar": "u8",
+              "doc": "1 when the sign is opposite its exaltation, else 0."
+            },
+            {
+              "name": "score",
+              "scalar": "i16",
+              "doc": "Its flags read by the `dignities` row's scores."
+            }
+          ]
         }
       ]
     },

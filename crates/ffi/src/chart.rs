@@ -337,6 +337,112 @@ impl TsReckoning {
     }
 }
 
+/// Whether a chart is of the day or of the night
+/// (`03-design/essential-dignities.md` §Sect).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSect {
+    /// A day chart.
+    Day = 0,
+    /// A night chart.
+    Night = 1,
+}
+
+impl From<teistro::Sect> for TsSect {
+    fn from(sect: teistro::Sect) -> TsSect {
+        match sect {
+            teistro::Sect::Day => TsSect::Day,
+            teistro::Sect::Night => TsSect::Night,
+        }
+    }
+}
+
+/// How a chart's sect is read (C209, `03-design/essential-dignities.md`
+/// §Sect).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSectRule {
+    /// The Sun's centre above the true horizon, Valens's hemisphere.
+    Horizon = 0,
+    /// The chart's own sunrise to sunset.
+    Daylight = 1,
+    /// Every chart read as a day chart.
+    Day = 2,
+    /// Every chart read as a night chart.
+    Night = 3,
+}
+
+impl TsSectRule {
+    /// The code a rule crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(rule: teistro::SectRule) -> Option<TsSectRule> {
+        match rule {
+            teistro::SectRule::Horizon => Some(TsSectRule::Horizon),
+            teistro::SectRule::Daylight => Some(TsSectRule::Daylight),
+            teistro::SectRule::Day => Some(TsSectRule::Day),
+            teistro::SectRule::Night => Some(TsSectRule::Night),
+            _ => None,
+        }
+    }
+}
+
+/// Which system of terms a reading used (C208,
+/// `03-design/essential-dignities.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsTerms {
+    /// The Egyptian terms, as Ptolemy transmits them.
+    Egyptian = 0,
+    /// Ptolemy's own terms as Lilly prints them.
+    PtolemaicLilly = 1,
+    /// Ptolemy's own terms as Ashmand translates them.
+    PtolemaicAshmand = 2,
+    /// The Chaldean terms, by the chart's sect.
+    Chaldean = 3,
+    /// The table the request's `dignities_json` gave.
+    Table = 4,
+}
+
+impl TsTerms {
+    /// The code a system crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(terms: &teistro::Terms) -> Option<TsTerms> {
+        match terms {
+            teistro::Terms::Egyptian => Some(TsTerms::Egyptian),
+            teistro::Terms::PtolemaicLilly => Some(TsTerms::PtolemaicLilly),
+            teistro::Terms::PtolemaicAshmand => Some(TsTerms::PtolemaicAshmand),
+            teistro::Terms::Chaldean => Some(TsTerms::Chaldean),
+            teistro::Terms::Table(_) => Some(TsTerms::Table),
+            _ => None,
+        }
+    }
+}
+
+/// Who rules each triplicity (`03-design/essential-dignities.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsTriplicities {
+    /// Ptolemy's, Mars ruling water with Venus and the Moon.
+    Ptolemy = 0,
+    /// Lilly's, Mars ruling water alone.
+    Lilly = 1,
+}
+
+impl TsTriplicities {
+    /// The code a scheme crosses as; `None` for one this boundary does
+    /// not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(triplicities: teistro::Triplicities) -> Option<TsTriplicities> {
+        match triplicities {
+            teistro::Triplicities::Ptolemy => Some(TsTriplicities::Ptolemy),
+            teistro::Triplicities::Lilly => Some(TsTriplicities::Lilly),
+            _ => None,
+        }
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -989,6 +1095,22 @@ pub struct TsChartRequest {
     /// binding calls `kp`, as `kp.number`.
     /// `api: nullable example={"number":74}`
     pub kp_json: *const c_char,
+    /// Every chart's essential dignities, as a JSON object, every member
+    /// optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+    /// horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+    /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+    /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+    /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+    /// `{"TABLE": [...]}`, twelve signs of five `{lord, end}` from Aries;
+    /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+    /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+    /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+    /// what was applied come back in the `dignities` section and the seven
+    /// planets in `dignity_planets`. Null for none, which costs nothing
+    /// (`03-design/essential-dignities.md`). Refusals are named from the
+    /// record every binding calls `dignities`, as `dignities.sectRule`.
+    /// `api: nullable example={"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}`
+    pub dignities_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2295,6 +2417,107 @@ impl SadeSatiColumns {
                 ColumnData::F64(&self.to),
             ],
         )
+    }
+}
+
+/// Every chart's essential dignities: a row a chart in `dignities`, and the
+/// seven planets a chart in `dignity_planets`, in the Chaldean order; both
+/// empty when none was asked for.
+#[derive(Default)]
+struct DignityColumns {
+    sect: Vec<u8>,
+    sect_rule: Vec<u8>,
+    terms: Vec<u8>,
+    triplicities: Vec<u8>,
+    /// The scores, one column a dignity in [`teistro::Scores`]' order.
+    scores: [Vec<i8>; 8],
+    /// The `dignity_planets` section.
+    planet: Vec<u16>,
+    longitude: Vec<f64>,
+    /// The flags, one column a dignity in [`teistro::EssentialDignity`]'s
+    /// order.
+    flags: [Vec<u8>; 7],
+    score: Vec<i16>,
+}
+
+impl DignityColumns {
+    fn of(read: &[teistro::Dignities], charts: usize) -> Result<DignityColumns, Error> {
+        let mut columns = DignityColumns::default();
+        if read.is_empty() {
+            return Ok(columns);
+        }
+        if read.len() != charts {
+            return Err(Error::internal(format!(
+                "{} readings of the dignities for {charts} charts",
+                read.len()
+            )));
+        }
+        let refused =
+            |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
+        for one in read {
+            columns.sect.push(TsSect::from(one.sect) as u8);
+            columns
+                .sect_rule
+                .push(TsSectRule::of(one.sect_rule).ok_or_else(|| refused("the sect rule"))? as u8);
+            columns.terms.push(
+                TsTerms::of(&one.rules.terms).ok_or_else(|| refused("the system of terms"))? as u8,
+            );
+            columns.triplicities.push(
+                TsTriplicities::of(one.rules.triplicities)
+                    .ok_or_else(|| refused("the triplicity scheme"))? as u8,
+            );
+            let s = one.scores;
+            let scores = [
+                s.house,
+                s.exaltation,
+                s.triplicity,
+                s.term,
+                s.face,
+                s.detriment,
+                s.fall,
+                s.peregrine,
+            ];
+            for (column, value) in columns.scores.iter_mut().zip(scores) {
+                column.push(value);
+            }
+            for at in &one.planets {
+                columns.planet.push(at.planet.id());
+                columns.longitude.push(at.longitude_deg);
+                let d = at.dignity;
+                let flags = [
+                    d.house,
+                    d.exaltation,
+                    d.triplicity,
+                    d.term,
+                    d.face,
+                    d.detriment,
+                    d.fall,
+                ];
+                for (column, flag) in columns.flags.iter_mut().zip(flags) {
+                    column.push(u8::from(flag));
+                }
+                columns.score.push(at.score);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut chart = vec![
+            ColumnData::U8(&self.sect),
+            ColumnData::U8(&self.sect_rule),
+            ColumnData::U8(&self.terms),
+            ColumnData::U8(&self.triplicities),
+        ];
+        chart.extend(self.scores.iter().map(|column| ColumnData::I8(column)));
+        writer.columns("dignities", self.sect.len(), &chart)?;
+        let mut planets = vec![
+            ColumnData::U16(&self.planet),
+            ColumnData::F64(&self.longitude),
+        ];
+        planets.extend(self.flags.iter().map(|column| ColumnData::U8(column)));
+        planets.push(ColumnData::I16(&self.score));
+        writer.columns("dignity_planets", self.planet.len(), &planets)
     }
 }
 
@@ -3776,6 +3999,9 @@ pub struct Composed<'a> {
     /// Every chart's KP reading as canonical JSON (`kp.md`); empty when
     /// none was asked for.
     pub kp: &'a str,
+    /// Every chart's essential dignities, in the batch's order
+    /// (`essential-dignities.md`); empty when none was asked for.
+    pub dignities: &'a [teistro::Dignities],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -3818,6 +4044,7 @@ pub fn encode(
         hits,
         sade_sati,
         kp,
+        dignities,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -3835,6 +4062,7 @@ pub fn encode(
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
+    let dignities = DignityColumns::of(dignities, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -3895,6 +4123,7 @@ pub fn encode(
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
         writer.bytes("kp", kp.as_bytes())?;
+        dignities.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -4635,6 +4864,37 @@ fn kp_json(
     Ok(teistro_core::envelope::canonical_json(&readings))
 }
 
+/// The dignities a request's `dignities_json` asks for, none for null; the
+/// crate reads the record ([`teistro::DignityRequest::from_json`]), naming
+/// a refusal from its root, `dignities.rules.terms`.
+///
+/// # Safety
+///
+/// `dignities_json` null or a NUL-terminated string.
+unsafe fn dignity_request_of(
+    dignities_json: *const c_char,
+) -> Result<Option<teistro::DignityRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(dignities_json, "dignities_json") }?
+        .map(teistro::DignityRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's essential dignities, none when none was asked for.
+fn dignities_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::DignityRequest>,
+) -> Result<Vec<teistro::Dignities>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .map(|document| sdk.chart().dignities(document, asked))
+        .collect()
+}
+
 /// The Sade Sati a request's `sade_sati_json` asks for, none for null; the
 /// façade reads and checks the record
 /// ([`teistro::SadeSatiRequest::from_json`]), naming a refusal from its
@@ -4829,6 +5089,7 @@ struct AskedRecords {
     hits: Option<teistro::HitRequest>,
     sade_sati: Option<teistro::SadeSatiRequest>,
     kp: Option<teistro::KpRequest>,
+    dignities: Option<teistro::DignityRequest>,
 }
 
 impl AskedRecords {
@@ -4854,6 +5115,7 @@ impl AskedRecords {
                 hits: hit_request_of(asked.hits_json)?,
                 sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
                 kp: kp_request_of(asked.kp_json, clock)?,
+                dignities: dignity_request_of(asked.dignities_json)?,
             })
         }
     }
@@ -5056,6 +5318,7 @@ pub unsafe extern "C" fn ts_chart_found(
         let transits = gochar_of(ctx.sdk(), &founded.value, records.gochar.as_ref())?;
         let hits = hits_of(ctx.sdk(), &founded.value, records.hits.as_ref())?;
         let kp = kp_json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
+        let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -5074,6 +5337,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 hits: &hits,
                 sade_sati: &sade_sati,
                 kp: &kp,
+                dignities: &dignities,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

@@ -4814,6 +4814,85 @@ typedef enum ts_reckoning {
 } ts_reckoning;
 
 /**
+ * Whether a chart is of the day or of the night
+ * (`03-design/essential-dignities.md` §Sect).
+ */
+typedef enum ts_sect {
+    /**
+     * A day chart.
+     */
+    TS_SECT_DAY = 0,
+    /**
+     * A night chart.
+     */
+    TS_SECT_NIGHT = 1,
+} ts_sect;
+
+/**
+ * How a chart's sect is read (C209, `03-design/essential-dignities.md`
+ * §Sect).
+ */
+typedef enum ts_sect_rule {
+    /**
+     * The Sun's centre above the true horizon, Valens's hemisphere.
+     */
+    TS_SECT_RULE_HORIZON = 0,
+    /**
+     * The chart's own sunrise to sunset.
+     */
+    TS_SECT_RULE_DAYLIGHT = 1,
+    /**
+     * Every chart read as a day chart.
+     */
+    TS_SECT_RULE_DAY = 2,
+    /**
+     * Every chart read as a night chart.
+     */
+    TS_SECT_RULE_NIGHT = 3,
+} ts_sect_rule;
+
+/**
+ * Which system of terms a reading used (C208,
+ * `03-design/essential-dignities.md`).
+ */
+typedef enum ts_terms {
+    /**
+     * The Egyptian terms, as Ptolemy transmits them.
+     */
+    TS_TERMS_EGYPTIAN = 0,
+    /**
+     * Ptolemy's own terms as Lilly prints them.
+     */
+    TS_TERMS_PTOLEMAIC_LILLY = 1,
+    /**
+     * Ptolemy's own terms as Ashmand translates them.
+     */
+    TS_TERMS_PTOLEMAIC_ASHMAND = 2,
+    /**
+     * The Chaldean terms, by the chart's sect.
+     */
+    TS_TERMS_CHALDEAN = 3,
+    /**
+     * The table the request's `dignities_json` gave.
+     */
+    TS_TERMS_TABLE = 4,
+} ts_terms;
+
+/**
+ * Who rules each triplicity (`03-design/essential-dignities.md`).
+ */
+typedef enum ts_triplicities {
+    /**
+     * Ptolemy's, Mars ruling water with Venus and the Moon.
+     */
+    TS_TRIPLICITIES_PTOLEMY = 0,
+    /**
+     * Lilly's, Mars ruling water alone.
+     */
+    TS_TRIPLICITIES_LILLY = 1,
+} ts_triplicities;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -7111,6 +7190,24 @@ struct ts_chart_request {
      * Example: {"number":74}. May be null.
      */
     const char * kp_json;
+    /**
+     * Every chart's essential dignities, as a JSON object, every member
+     * optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+     * horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+     * sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+     * (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+     * default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+     * `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+     * the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+     * `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+     * `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+     * what was applied come back in the `dignities` section and the seven
+     * planets in `dignity_planets`. Null for none, which costs nothing
+     * (`03-design/essential-dignities.md`). Refusals are named from the
+     * record every binding calls `dignities`, as `dignities.sectRule`.
+     * Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+     */
+    const char * dignities_json;
 };
 
 /**
@@ -8045,7 +8142,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 176, "ts_chart_request is 176 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 184, "ts_chart_request is 184 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

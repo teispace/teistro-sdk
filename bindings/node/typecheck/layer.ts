@@ -32,9 +32,14 @@ import type {
   FollowingRule,
   HitRequest,
   SadeSatiRequest,
+  Dignities,
+  DignityRequest,
+  GrahaName,
   KpLords,
   KpReading,
   KpRequest,
+  PlanetDignity,
+  Term,
   LayoutHolds,
   LayoutKey,
   LayoutRow,
@@ -725,6 +730,39 @@ function theKpReading(ctx: Context): string {
 }
 
 void theKpReading;
+
+// The essential dignities read all the way down, and a request in every
+// field, a table's lords in either spelling.
+function theDignities(ctx: Context): string {
+  const term = (lord: GrahaName, end: number): Term => ({ lord, end });
+  const sign = [term('JUPITER', 6), term('graha.VENUS', 12), term('MERCURY', 20), term('MARS', 25), term('SATURN', 30)];
+  const asked: DignityRequest = {
+    sectRule: 'DAYLIGHT',
+    rules: { terms: { TABLE: Array.from({ length: 12 }, () => sign) }, triplicities: 'PTOLEMY' },
+    scores: { peregrine: 0 },
+  };
+  const read: Dignities | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dignities: asked,
+  }).dignities;
+  if (read === null) return 'none';
+  const planets = read.planets.map((at: PlanetDignity) => {
+    const d = at.dignity;
+    const flags = [d.house, d.exaltation, d.triplicity, d.term, d.face, d.detriment, d.fall, at.peregrine];
+    return `${at.planet} ${at.longitudeDeg} ${flags.join()} ${at.score}`;
+  });
+  const s = read.scores;
+  const scores = [s.house, s.exaltation, s.triplicity, s.term, s.face, s.detriment, s.fall, s.peregrine];
+  // @ts-expect-error a sect rule is spelt as the answer reads it back
+  const dusk: DignityRequest = { sectRule: 'DUSK' };
+  // @ts-expect-error `TABLE` names the request's table in an answer, and is no system to ask for
+  const table: DignityRequest = { rules: { terms: 'TABLE' } };
+  return [read.sect, read.sectRule, read.rules.terms, read.rules.triplicities, ...scores, ...planets, String(dusk), String(table)].join();
+}
+
+void theDignities;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

@@ -2447,6 +2447,120 @@ final class ChartsSadeSatiVisits {
   final int length;
 }
 
+/// The `dignities` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+final class ChartsDignities {
+  const ChartsDignities({
+    required this.sect,
+    required this.sectRule,
+    required this.terms,
+    required this.triplicities,
+    required this.scoreHouse,
+    required this.scoreExaltation,
+    required this.scoreTriplicity,
+    required this.scoreTerm,
+    required this.scoreFace,
+    required this.scoreDetriment,
+    required this.scoreFall,
+    required this.scorePeregrine,
+    required this.length,
+  });
+
+  /// Whether the chart is of the day or of the night, as `sect_rule` reads it.
+  final Uint8List sect;
+
+  /// How the sect was read, `dignities_json.sectRule` (C209).
+  final Uint8List sectRule;
+
+  /// The system of terms, `dignities_json.rules.terms` (C208); `TABLE` is the table the request gave.
+  final Uint8List terms;
+
+  /// Who rules each triplicity, `dignities_json.rules.triplicities`.
+  final Uint8List triplicities;
+
+  /// What a planet in its own house scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreHouse;
+
+  /// What a planet in its exaltation scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreExaltation;
+
+  /// What a planet ruling its sign's triplicity scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreTriplicity;
+
+  /// What a planet in its own term scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreTerm;
+
+  /// What a planet in its own face scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreFace;
+
+  /// What a planet in its detriment scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreDetriment;
+
+  /// What a planet in its fall scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scoreFall;
+
+  /// What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default.
+  final Int8List scorePeregrine;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dignity_planets` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+final class ChartsDignityPlanets {
+  const ChartsDignityPlanets({
+    required this.planet,
+    required this.longitude,
+    required this.house,
+    required this.exaltation,
+    required this.triplicity,
+    required this.term,
+    required this.face,
+    required this.detriment,
+    required this.fall,
+    required this.score,
+    required this.length,
+  });
+
+  /// The planet.
+  final Uint16List planet;
+
+  /// Where it stands, in degrees of the chart's zodiac.
+  final Float64List longitude;
+
+  /// 1 when the sign is its house, else 0.
+  final Uint8List house;
+
+  /// 1 when the sign is its exaltation, else 0.
+  final Uint8List exaltation;
+
+  /// 1 when it rules the sign's triplicity in a chart of the sect, else 0.
+  final Uint8List triplicity;
+
+  /// 1 when the degree lies in its own term, else 0.
+  final Uint8List term;
+
+  /// 1 when the degree lies in its own face, else 0.
+  final Uint8List face;
+
+  /// 1 when the sign is opposite its house, else 0.
+  final Uint8List detriment;
+
+  /// 1 when the sign is opposite its exaltation, else 0.
+  final Uint8List fall;
+
+  /// Its flags read by the `dignities` row's scores.
+  final Int16List score;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2618,6 +2732,8 @@ final class Charts {
     required this.sadeSati,
     required this.sadeSatiVisits,
     required this.kp,
+    required this.dignities,
+    required this.dignityPlanets,
   });
 
   /// What kind of chart these are.
@@ -2841,6 +2957,12 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.
   final String kp;
 
+  /// Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+  final ChartsDignities dignities;
+
+  /// The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+  final ChartsDignityPlanets dignityPlanets;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2907,6 +3029,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atSadeSati = blob.section(57, 'sade_sati');
   final atSadeSatiVisits = blob.section(58, 'sade_sati_visits');
   final atKp = blob.section(59, 'kp');
+  final atDignities = blob.section(60, 'dignities');
+  final atDignityPlanets = blob.section(61, 'dignity_planets');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -5046,6 +5170,122 @@ Charts decodeCharts(Uint8List bytes) {
       length: atSadeSatiVisits.count,
     ),
     kp: blob.text(atKp),
+    dignities: ChartsDignities(
+      sect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 0),
+        blob.columnOffset(atDignities, 0) + atDignities.count * 1,
+      ),
+      sectRule: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 1),
+        blob.columnOffset(atDignities, 1) + atDignities.count * 1,
+      ),
+      terms: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 2),
+        blob.columnOffset(atDignities, 2) + atDignities.count * 1,
+      ),
+      triplicities: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 3),
+        blob.columnOffset(atDignities, 3) + atDignities.count * 1,
+      ),
+      scoreHouse: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 4),
+        blob.columnOffset(atDignities, 4) + atDignities.count * 1,
+      ),
+      scoreExaltation: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 5),
+        blob.columnOffset(atDignities, 5) + atDignities.count * 1,
+      ),
+      scoreTriplicity: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 6),
+        blob.columnOffset(atDignities, 6) + atDignities.count * 1,
+      ),
+      scoreTerm: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 7),
+        blob.columnOffset(atDignities, 7) + atDignities.count * 1,
+      ),
+      scoreFace: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 8),
+        blob.columnOffset(atDignities, 8) + atDignities.count * 1,
+      ),
+      scoreDetriment: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 9),
+        blob.columnOffset(atDignities, 9) + atDignities.count * 1,
+      ),
+      scoreFall: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 10),
+        blob.columnOffset(atDignities, 10) + atDignities.count * 1,
+      ),
+      scorePeregrine: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignities, 11),
+        blob.columnOffset(atDignities, 11) + atDignities.count * 1,
+      ),
+      length: atDignities.count,
+    ),
+    dignityPlanets: ChartsDignityPlanets(
+      planet: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 0),
+        blob.columnOffset(atDignityPlanets, 0) + atDignityPlanets.count * 2,
+      ),
+      longitude: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 1),
+        blob.columnOffset(atDignityPlanets, 1) + atDignityPlanets.count * 8,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 2),
+        blob.columnOffset(atDignityPlanets, 2) + atDignityPlanets.count * 1,
+      ),
+      exaltation: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 3),
+        blob.columnOffset(atDignityPlanets, 3) + atDignityPlanets.count * 1,
+      ),
+      triplicity: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 4),
+        blob.columnOffset(atDignityPlanets, 4) + atDignityPlanets.count * 1,
+      ),
+      term: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 5),
+        blob.columnOffset(atDignityPlanets, 5) + atDignityPlanets.count * 1,
+      ),
+      face: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 6),
+        blob.columnOffset(atDignityPlanets, 6) + atDignityPlanets.count * 1,
+      ),
+      detriment: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 7),
+        blob.columnOffset(atDignityPlanets, 7) + atDignityPlanets.count * 1,
+      ),
+      fall: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 8),
+        blob.columnOffset(atDignityPlanets, 8) + atDignityPlanets.count * 1,
+      ),
+      score: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDignityPlanets, 9),
+        blob.columnOffset(atDignityPlanets, 9) + atDignityPlanets.count * 2,
+      ),
+      length: atDignityPlanets.count,
+    ),
   );
 }
 

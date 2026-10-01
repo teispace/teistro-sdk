@@ -2129,6 +2129,150 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its essential dignities', () {
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    const instants = [2460676.5, 2460676.75];
+    Dignities? found(
+      double instant,
+      DignityRequest? asked, {
+      Observer? place,
+      int utcOffsetSeconds = 20700,
+    }) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place ?? kathmandu,
+              utcOffsetSeconds: utcOffsetSeconds,
+              dignities: asked,
+            )
+            .dignities;
+    expect(found(instants[0], null), isNull);
+
+    final read = found(instants[0], const DignityRequest())!;
+    expect(read.sectRule, SectRule.horizon);
+    expect(
+      read.rules,
+      const AppliedDignityRules(
+        terms: Terms.ptolemaicLilly,
+        triplicities: Triplicities.lilly,
+      ),
+    );
+    expect(read.scores, DignityScores.lilly);
+    expect(read.planets.map((at) => at.planet), [
+      Graha.saturn,
+      Graha.jupiter,
+      Graha.mars,
+      Graha.sun,
+      Graha.venus,
+      Graha.mercury,
+      Graha.moon,
+    ]);
+    const lilly = DignityScores.lilly;
+    for (final at in read.planets) {
+      final d = at.dignity;
+      final held = [d.house, d.exaltation, d.triplicity, d.term, d.face];
+      expect(at.peregrine, !held.contains(true), reason: '${at.planet}');
+      final worth = [
+        (d.house, lilly.house),
+        (d.exaltation, lilly.exaltation),
+        (d.triplicity, lilly.triplicity),
+        (d.term, lilly.term),
+        (d.face, lilly.face),
+        (d.detriment, lilly.detriment),
+        (d.fall, lilly.fall),
+        (at.peregrine, lilly.peregrine),
+      ];
+      final score = worth
+          .where((one) => one.$1)
+          .fold<int>(0, (sum, one) => sum + one.$2);
+      expect(at.score, score, reason: '${at.planet}');
+    }
+
+    // Every rule reported as asked, and a score left out stays Lilly's.
+    final night =
+        found(
+          instants[0],
+          const DignityRequest(
+            sectRule: SectRule.night,
+            triplicities: Triplicities.ptolemy,
+            scores: DignityScores(peregrine: 0),
+          ),
+        )!;
+    expect(night.sect, Sect.night);
+    expect(night.rules.triplicities, Triplicities.ptolemy);
+    expect(night.scores, const DignityScores(peregrine: 0));
+
+    // 21 December 1988 at Tromsø: the Sun culminates under the horizon.
+    final tromso = Observer(
+      latitudeDeg: Latitude(69.6492),
+      longitudeDeg: Longitude(18.9553),
+      altitudeM: Altitude(0),
+    );
+    expect(
+      found(
+        2447516.9583333335,
+        const DignityRequest(),
+        place: tromso,
+        utcOffsetSeconds: 3600,
+      )!.sect,
+      Sect.night,
+    );
+
+    // A table of the caller's own: Aries' Egyptian terms in every sign.
+    const row = [
+      Term(Graha.jupiter, 6),
+      Term(Graha.venus, 12),
+      Term(Graha.mercury, 20),
+      Term(Graha.mars, 25),
+      Term(Graha.saturn, 30),
+    ];
+    final own =
+        found(instants[0], DignityRequest(table: List.filled(12, row)))!;
+    expect(own.rules.terms, Terms.table);
+    for (final at in own.planets) {
+      final degree = at.longitudeDeg % 30;
+      final lord = row.firstWhere((term) => degree < term.end).lord;
+      expect(at.dignity.term, lord == at.planet, reason: '${at.planet}');
+    }
+
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      dignities: const DignityRequest(),
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).dignities,
+        found(instant, const DignityRequest()),
+        reason: 'each alone',
+      );
+    }
+
+    for (final (bad, field) in [
+      (
+        DignityRequest(table: List.filled(11, row)),
+        'dignities.rules.terms.TABLE',
+      ),
+      // `TABLE` names a table in an answer and carries none in a request.
+      (const DignityRequest(terms: Terms.table), 'dignities.rules.terms.TABLE'),
+    ]) {
+      expect(
+        () => found(instants[0], bad),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

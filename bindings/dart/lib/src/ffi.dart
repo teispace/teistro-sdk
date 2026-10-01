@@ -1033,6 +1033,23 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"number":74}. May be null.
   external ffi.Pointer<ffi.Char> kpJson;
 
+  /// Every chart's essential dignities, as a JSON object, every member
+  /// optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+  /// horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+  /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+  /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+  /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+  /// `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+  /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+  /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+  /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+  /// what was applied come back in the `dignities` section and the seven
+  /// planets in `dignity_planets`. Null for none, which costs nothing
+  /// (`03-design/essential-dignities.md`). Refusals are named from the
+  /// record every binding calls `dignities`, as `dignities.sectRule`.
+  /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+  external ffi.Pointer<ffi.Char> dignitiesJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2922,7 +2939,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3101,6 +3118,23 @@ final class ChartRequest {
   /// Example: {"number":74}. May be null.
   final String? kpJson;
 
+  /// Every chart's essential dignities, as a JSON object, every member
+  /// optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+  /// horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+  /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+  /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+  /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+  /// `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+  /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+  /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+  /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+  /// what was applied come back in the `dignities` section and the seven
+  /// planets in `dignity_planets`. Null for none, which costs nothing
+  /// (`03-design/essential-dignities.md`). Refusals are named from the
+  /// record every binding calls `dignities`, as `dignities.sectRule`.
+  /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+  final String? dignitiesJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3164,6 +3198,9 @@ final class ChartRequest {
     raw.kpJson = kpJson == null
         ? ffi.nullptr
         : kpJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.dignitiesJson = dignitiesJson == null
+        ? ffi.nullptr
+        : dignitiesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3213,6 +3250,9 @@ final class ChartRequest {
         kpJson: raw.kpJson == ffi.nullptr
             ? null
             : raw.kpJson.cast<pkg_ffi.Utf8>().toDartString(),
+        dignitiesJson: raw.dignitiesJson == ffi.nullptr
+            ? null
+            : raw.dignitiesJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

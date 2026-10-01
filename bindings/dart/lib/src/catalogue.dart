@@ -5304,6 +5304,155 @@ enum Reckoning {
   }
 }
 
+/// Whether a chart is of the day or of the night
+/// (`03-design/essential-dignities.md` §Sect).
+enum Sect {
+  /// A day chart.
+  day(0, 'DAY'),
+  /// A night chart.
+  night(1, 'NIGHT');
+
+  const Sect(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Sect byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Sect'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Sect? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How a chart's sect is read (C209, `03-design/essential-dignities.md`
+/// §Sect).
+enum SectRule {
+  /// The Sun's centre above the true horizon, Valens's hemisphere.
+  horizon(0, 'HORIZON'),
+  /// The chart's own sunrise to sunset.
+  daylight(1, 'DAYLIGHT'),
+  /// Every chart read as a day chart.
+  day(2, 'DAY'),
+  /// Every chart read as a night chart.
+  night(3, 'NIGHT');
+
+  const SectRule(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static SectRule byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a SectRule'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SectRule? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which system of terms a reading used (C208,
+/// `03-design/essential-dignities.md`).
+enum Terms {
+  /// The Egyptian terms, as Ptolemy transmits them.
+  egyptian(0, 'EGYPTIAN'),
+  /// Ptolemy's own terms as Lilly prints them.
+  ptolemaicLilly(1, 'PTOLEMAIC_LILLY'),
+  /// Ptolemy's own terms as Ashmand translates them.
+  ptolemaicAshmand(2, 'PTOLEMAIC_ASHMAND'),
+  /// The Chaldean terms, by the chart's sect.
+  chaldean(3, 'CHALDEAN'),
+  /// The table the request's `dignities_json` gave.
+  table(4, 'TABLE');
+
+  const Terms(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Terms byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Terms'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Terms? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Who rules each triplicity (`03-design/essential-dignities.md`).
+enum Triplicities {
+  /// Ptolemy's, Mars ruling water with Venus and the Moon.
+  ptolemy(0, 'PTOLEMY'),
+  /// Lilly's, Mars ruling water alone.
+  lilly(1, 'LILLY');
+
+  const Triplicities(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Triplicities byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Triplicities'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Triplicities? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

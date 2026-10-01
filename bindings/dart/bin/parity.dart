@@ -518,6 +518,12 @@ void main() {
       spells: [4, 7, 8],
     ),
     kp: const KpRequest(number: 74, anyAyanamsha: true),
+    dignities: const DignityRequest(
+      sectRule: SectRule.daylight,
+      terms: Terms.egyptian,
+      triplicities: Triplicities.ptolemy,
+      scores: DignityScores(peregrine: 0),
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -906,6 +912,31 @@ void main() {
       put(
         'chart-$i-kp-ruler-$k',
         '${r.graha.fullKey} $reasons ${r.retrograde} ${rejection(r.rejectedBy)} ${rejection(r.rejectedBySub)}',
+      );
+    }
+    final dg = chart.dignities!;
+    final sc = dg.scores;
+    put(
+      'chart-$i-dignities',
+      '${dg.sect.key} ${dg.sectRule.key} ${dg.rules.terms.key} '
+          '${dg.rules.triplicities.key} '
+          '${[sc.house, sc.exaltation, sc.triplicity, sc.term, sc.face, sc.detriment, sc.fall, sc.peregrine].join(',')}',
+    );
+    for (final at in dg.planets) {
+      final d = at.dignity;
+      final held = [
+        if (d.house) 'house',
+        if (d.exaltation) 'exaltation',
+        if (d.triplicity) 'triplicity',
+        if (d.term) 'term',
+        if (d.face) 'face',
+        if (d.detriment) 'detriment',
+        if (d.fall) 'fall',
+        if (at.peregrine) 'peregrine',
+      ];
+      put(
+        'chart-$i-dignity-${at.planet.fullKey}',
+        '${number(at.longitudeDeg)} ${held.isEmpty ? '-' : held.join(',')} ${at.score}',
       );
     }
     final vs = chart.vimshopaka!;

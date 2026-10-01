@@ -1657,6 +1657,47 @@ What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
 | `TS_RECKONING_SIGN` | 0 | Whole signs from the reference's sign. |
 | `TS_RECKONING_DEGREE` | 1 | 30° houses with the reference's degree in the middle of the first. |
 
+## ts_sect
+
+Whether a chart is of the day or of the night (`03-design/essential-dignities.md` §Sect).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SECT_DAY` | 0 | A day chart. |
+| `TS_SECT_NIGHT` | 1 | A night chart. |
+
+## ts_sect_rule
+
+How a chart's sect is read (C209, `03-design/essential-dignities.md` §Sect).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SECT_RULE_HORIZON` | 0 | The Sun's centre above the true horizon, Valens's hemisphere. |
+| `TS_SECT_RULE_DAYLIGHT` | 1 | The chart's own sunrise to sunset. |
+| `TS_SECT_RULE_DAY` | 2 | Every chart read as a day chart. |
+| `TS_SECT_RULE_NIGHT` | 3 | Every chart read as a night chart. |
+
+## ts_terms
+
+Which system of terms a reading used (C208, `03-design/essential-dignities.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TERMS_EGYPTIAN` | 0 | The Egyptian terms, as Ptolemy transmits them. |
+| `TS_TERMS_PTOLEMAIC_LILLY` | 1 | Ptolemy's own terms as Lilly prints them. |
+| `TS_TERMS_PTOLEMAIC_ASHMAND` | 2 | Ptolemy's own terms as Ashmand translates them. |
+| `TS_TERMS_CHALDEAN` | 3 | The Chaldean terms, by the chart's sect. |
+| `TS_TERMS_TABLE` | 4 | The table the request's `dignities_json` gave. |
+
+## ts_triplicities
+
+Who rules each triplicity (`03-design/essential-dignities.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TRIPLICITIES_PTOLEMY` | 0 | Ptolemy's, Mars ruling water with Venus and the Moon. |
+| `TS_TRIPLICITIES_LILLY` | 1 | Lilly's, Mars ruling water alone. |
+
 ## ts_hit_kind
 
 What a hit of the transit hit list was (`03-design/transit-hit-list.md`).

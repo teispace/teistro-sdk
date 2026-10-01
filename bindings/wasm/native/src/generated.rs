@@ -2019,6 +2019,23 @@ pub struct ChartRequest {
     /// Example: {"number":74}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub kp_json: Option<String>,
+    /// Every chart's essential dignities, as a JSON object, every member
+    /// optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+    /// horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+    /// sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+    /// (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+    /// default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+    /// `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+    /// the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+    /// `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+    /// `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+    /// what was applied come back in the `dignities` section and the seven
+    /// planets in `dignity_planets`. Null for none, which costs nothing
+    /// (`03-design/essential-dignities.md`). Refusals are named from the
+    /// record every binding calls `dignities`, as `dignities.sectRule`.
+    /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dignities_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2042,6 +2059,7 @@ pub struct HeldChartRequest {
     hits_json: Option<std::ffi::CString>,
     sade_sati_json: Option<std::ffi::CString>,
     kp_json: Option<std::ffi::CString>,
+    dignities_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2086,6 +2104,10 @@ impl HeldChartRequest {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             kp_json: self.kp_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            dignities_json: self
+                .dignities_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2148,6 +2170,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            dignities_json: self
+                .dignities_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2189,6 +2216,7 @@ impl ChartRequest {
             hits_json: unsafe { lent_text(raw.hits_json) },
             sade_sati_json: unsafe { lent_text(raw.sade_sati_json) },
             kp_json: unsafe { lent_text(raw.kp_json) },
+            dignities_json: unsafe { lent_text(raw.dignities_json) },
         }
     }
 }

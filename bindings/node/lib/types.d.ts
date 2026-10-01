@@ -888,6 +888,25 @@ export interface ChartRequest {
    * @nullable
    */
   readonly kpJson?: string;
+  /**
+   * Every chart's essential dignities, as a JSON object, every member
+   * optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+   * horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+   * sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+   * (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+   * default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+   * `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+   * the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+   * `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+   * `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+   * what was applied come back in the `dignities` section and the seven
+   * planets in `dignity_planets`. Null for none, which costs nothing
+   * (`03-design/essential-dignities.md`). Refusals are named from the
+   * record every binding calls `dignities`, as `dignities.sectRule`.
+   * @example {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}
+   * @nullable
+   */
+  readonly dignitiesJson?: string;
 }
 
 /**

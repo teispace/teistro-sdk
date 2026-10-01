@@ -203,6 +203,51 @@ founded chart. The request is a value with a
 default and builders, and every knob in it is reported back in the
 answer.
 
+## The boundary (step 4)
+
+A chart request's `dignities_json` is the request record as serde writes
+it, with every member optional: `{"sectRule": "DAYLIGHT", "rules":
+{"terms": "EGYPTIAN", "triplicities": "PTOLEMY"}, "scores":
+{"peregrine": 0}}`.
+`DignityRequest::from_json` reads it strictly, so a misspelt key is
+refused at its path (`dignities.scores.peregrin`). A member left out takes
+the default's value; that holds inside `rules` and `scores` too, so
+`{"scores": {"peregrine": 0}}` changes one score and keeps Lilly's other
+seven.
+
+A table of the caller's own crosses as `{"terms": {"TABLE": [[{"lord",
+"end"}, …], …]}}`: twelve signs of five terms, a lord in either spelling
+(`MARS` or `graha.MARS`). `TermsTable::new` checks it, and a malformed
+table is refused at `dignities.rules.terms.TABLE`. So no system of terms
+is out of a binding's reach.
+
+Two sections answer it:
+
+- **`dignities`**, a row a chart: the sect, the rule that read it, the
+  terms and the triplicities, as `TsSect`, `TsSectRule`, `TsTerms` and
+  `TsTriplicities`. The eight scores follow, as `i8`. The answer reports
+  what was applied, defaults included, so a binding never infers a rule
+  it did not see.
+- **`dignity_planets`**, seven rows a chart in the Chaldean order: the
+  planet, its longitude and the seven flags as 0 or 1, then the score as
+  `i16`. Peregrine is left out because it is derived (none of the first
+  five flags is set). Each binding derives it once, as Rust's
+  `EssentialDignity::peregrine` does.
+
+**`TsTerms::TABLE` reports a table without repeating it.** The table is
+the caller's own, and sixty cells a chart would cost bytes to say what
+the request already holds. It is the one place an answer cannot be fed
+back as a request unchanged. Node's types make that a compile error
+(`terms: 'TABLE'` is not a `DignityRequest`), and the boundary refuses it
+by `dignities.rules.terms.TABLE`.
+
+Node, Python and Dart each rebuild Rust's `Dignities`, with the planet
+as a catalogue member and `peregrine` beside the flags. Parity asks every
+runner for a request with each knob turned from its default (`DAYLIGHT`,
+`EGYPTIAN`, `PTOLEMY`, a peregrine score of 0), and the five runners agree
+on every value. The ABI test holds every cell to the façade's own answer
+to the bit, and the keys test holds the four enums to serde's spelling.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
@@ -223,6 +268,7 @@ answer.
 3. The façade and the chart document: dignities per planet, with the
    sect and the rules that made them (§The façade).
 4. The boundary and the four bindings, under the parity gate.
+   **Done** (§The boundary).
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental
    fortitudes (p. 115's second half), each a falsification pass first.

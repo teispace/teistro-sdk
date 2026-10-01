@@ -3109,6 +3109,76 @@ export const ReckoningById = new Map([
   [1, 'DEGREE'],
 ]);
 
+/** Every Sect by name. */
+export const Sect = Object.freeze({
+  Day: 'DAY',
+  Night: 'NIGHT',
+});
+
+/**
+ * Every Sect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SectById = new Map([
+  [0, 'DAY'],
+  [1, 'NIGHT'],
+]);
+
+/** Every SectRule by name. */
+export const SectRule = Object.freeze({
+  Horizon: 'HORIZON',
+  Daylight: 'DAYLIGHT',
+  Day: 'DAY',
+  Night: 'NIGHT',
+});
+
+/**
+ * Every SectRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SectRuleById = new Map([
+  [0, 'HORIZON'],
+  [1, 'DAYLIGHT'],
+  [2, 'DAY'],
+  [3, 'NIGHT'],
+]);
+
+/** Every Terms by name. */
+export const Terms = Object.freeze({
+  Egyptian: 'EGYPTIAN',
+  PtolemaicLilly: 'PTOLEMAIC_LILLY',
+  PtolemaicAshmand: 'PTOLEMAIC_ASHMAND',
+  Chaldean: 'CHALDEAN',
+  Table: 'TABLE',
+});
+
+/**
+ * Every Terms by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TermsById = new Map([
+  [0, 'EGYPTIAN'],
+  [1, 'PTOLEMAIC_LILLY'],
+  [2, 'PTOLEMAIC_ASHMAND'],
+  [3, 'CHALDEAN'],
+  [4, 'TABLE'],
+]);
+
+/** Every Triplicities by name. */
+export const Triplicities = Object.freeze({
+  Ptolemy: 'PTOLEMY',
+  Lilly: 'LILLY',
+});
+
+/**
+ * Every Triplicities by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TriplicitiesById = new Map([
+  [0, 'PTOLEMY'],
+  [1, 'LILLY'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',
