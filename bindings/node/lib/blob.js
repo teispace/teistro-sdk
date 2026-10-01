@@ -935,6 +935,40 @@ export function decodeCharts(bytes) {
     const at = section(blob, 59, 'kp');
     out.kp = text(blob, at);
   }
+  {
+    const at = section(blob, 60, 'dignities');
+    out.dignities = {
+      sect: column(blob, at, 0, 'u8', at.count),
+      sectRule: column(blob, at, 1, 'u8', at.count),
+      terms: column(blob, at, 2, 'u8', at.count),
+      triplicities: column(blob, at, 3, 'u8', at.count),
+      scoreHouse: column(blob, at, 4, 'i8', at.count),
+      scoreExaltation: column(blob, at, 5, 'i8', at.count),
+      scoreTriplicity: column(blob, at, 6, 'i8', at.count),
+      scoreTerm: column(blob, at, 7, 'i8', at.count),
+      scoreFace: column(blob, at, 8, 'i8', at.count),
+      scoreDetriment: column(blob, at, 9, 'i8', at.count),
+      scoreFall: column(blob, at, 10, 'i8', at.count),
+      scorePeregrine: column(blob, at, 11, 'i8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 61, 'dignity_planets');
+    out.dignityPlanets = {
+      planet: column(blob, at, 0, 'u16', at.count),
+      longitude: column(blob, at, 1, 'f64', at.count),
+      house: column(blob, at, 2, 'u8', at.count),
+      exaltation: column(blob, at, 3, 'u8', at.count),
+      triplicity: column(blob, at, 4, 'u8', at.count),
+      term: column(blob, at, 5, 'u8', at.count),
+      face: column(blob, at, 6, 'u8', at.count),
+      detriment: column(blob, at, 7, 'u8', at.count),
+      fall: column(blob, at, 8, 'u8', at.count),
+      score: column(blob, at, 9, 'i16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

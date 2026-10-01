@@ -608,6 +608,7 @@ pub fn charts() -> BlobSchema {
         .chain([chart_hits_section(56)])
         .chain(chart_sade_sati_sections(57))
         .chain([chart_kp_section(59)])
+        .chain(chart_dignity_sections(60))
         .collect(),
     }
 }
@@ -718,6 +719,90 @@ fn chart_kp_section(id: u32) -> SectionSchema {
         "kp",
         "UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none.",
     )
+}
+
+/// Every chart's essential dignities (`03-design/essential-dignities.md`):
+/// what was applied a chart, then the seven planets a chart.
+fn chart_dignity_sections(first: u32) -> [SectionSchema; 2] {
+    let score = |name: &'static str, what: &str| {
+        ColumnDef::new(
+            name,
+            Scalar::I8,
+            &format!("What {what} scores, `dignities_json.scores`, Lilly's (p. 115) by default."),
+        )
+    };
+    let flag = |name: &'static str, what: &str| {
+        ColumnDef::new(name, Scalar::U8, &format!("1 when {what}, else 0."))
+    };
+    [
+        SectionSchema::columns(
+            first,
+            "dignities",
+            "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.",
+            vec![
+                ColumnDef::new(
+                    "sect",
+                    Scalar::U8,
+                    "Whether the chart is of the day or of the night, as `sect_rule` reads it.",
+                )
+                .of_enum("TsSect"),
+                ColumnDef::new(
+                    "sect_rule",
+                    Scalar::U8,
+                    "How the sect was read, `dignities_json.sectRule` (C209).",
+                )
+                .of_enum("TsSectRule"),
+                ColumnDef::new(
+                    "terms",
+                    Scalar::U8,
+                    "The system of terms, `dignities_json.rules.terms` (C208); `TABLE` is the table the request gave.",
+                )
+                .of_enum("TsTerms"),
+                ColumnDef::new(
+                    "triplicities",
+                    Scalar::U8,
+                    "Who rules each triplicity, `dignities_json.rules.triplicities`.",
+                )
+                .of_enum("TsTriplicities"),
+                score("score_house", "a planet in its own house"),
+                score("score_exaltation", "a planet in its exaltation"),
+                score("score_triplicity", "a planet ruling its sign's triplicity"),
+                score("score_term", "a planet in its own term"),
+                score("score_face", "a planet in its own face"),
+                score("score_detriment", "a planet in its detriment"),
+                score("score_fall", "a planet in its fall"),
+                score("score_peregrine", "a planet in none of its five dignities"),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "dignity_planets",
+            "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.",
+            vec![
+                ColumnDef::new("planet", Scalar::U16, "The planet.").of_enum("Graha"),
+                ColumnDef::new(
+                    "longitude",
+                    Scalar::F64,
+                    "Where it stands, in degrees of the chart's zodiac.",
+                ),
+                flag("house", "the sign is its house"),
+                flag("exaltation", "the sign is its exaltation"),
+                flag(
+                    "triplicity",
+                    "it rules the sign's triplicity in a chart of the sect",
+                ),
+                flag("term", "the degree lies in its own term"),
+                flag("face", "the degree lies in its own face"),
+                flag("detriment", "the sign is opposite its house"),
+                flag("fall", "the sign is opposite its exaltation"),
+                ColumnDef::new(
+                    "score",
+                    Scalar::I16,
+                    "Its flags read by the `dignities` row's scores.",
+                ),
+            ],
+        ),
+    ]
 }
 
 /// Every chart's transit hit list, a row a hit.

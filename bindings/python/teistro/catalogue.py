@@ -3815,6 +3815,67 @@ class Reckoning(Member):
     """30° houses with the reference's degree in the middle of the first."""
 
 
+class Sect(Member):
+    """Whether a chart is of the day or of the night
+    (`03-design/essential-dignities.md` §Sect).
+    """
+
+    DAY = 0
+    """A day chart."""
+
+    NIGHT = 1
+    """A night chart."""
+
+
+class SectRule(Member):
+    """How a chart's sect is read (C209, `03-design/essential-dignities.md`
+    §Sect).
+    """
+
+    HORIZON = 0
+    """The Sun's centre above the true horizon, Valens's hemisphere."""
+
+    DAYLIGHT = 1
+    """The chart's own sunrise to sunset."""
+
+    DAY = 2
+    """Every chart read as a day chart."""
+
+    NIGHT = 3
+    """Every chart read as a night chart."""
+
+
+class Terms(Member):
+    """Which system of terms a reading used (C208,
+    `03-design/essential-dignities.md`).
+    """
+
+    EGYPTIAN = 0
+    """The Egyptian terms, as Ptolemy transmits them."""
+
+    PTOLEMAIC_LILLY = 1
+    """Ptolemy's own terms as Lilly prints them."""
+
+    PTOLEMAIC_ASHMAND = 2
+    """Ptolemy's own terms as Ashmand translates them."""
+
+    CHALDEAN = 3
+    """The Chaldean terms, by the chart's sect."""
+
+    TABLE = 4
+    """The table the request's `dignities_json` gave."""
+
+
+class Triplicities(Member):
+    """Who rules each triplicity (`03-design/essential-dignities.md`)."""
+
+    PTOLEMY = 0
+    """Ptolemy's, Mars ruling water with Venus and the Moon."""
+
+    LILLY = 1
+    """Lilly's, Mars ruling water alone."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -5942,6 +6003,27 @@ _KEYS: dict[str, dict[int, str]] = {
     "Reckoning": {
         0: "SIGN",
         1: "DEGREE",
+    },
+    "Sect": {
+        0: "DAY",
+        1: "NIGHT",
+    },
+    "SectRule": {
+        0: "HORIZON",
+        1: "DAYLIGHT",
+        2: "DAY",
+        3: "NIGHT",
+    },
+    "Terms": {
+        0: "EGYPTIAN",
+        1: "PTOLEMAIC_LILLY",
+        2: "PTOLEMAIC_ASHMAND",
+        3: "CHALDEAN",
+        4: "TABLE",
+    },
+    "Triplicities": {
+        0: "PTOLEMY",
+        1: "LILLY",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

@@ -703,8 +703,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1170 since `TsSunrise` named the upper limb unrefracted; 1192 since
   // the blackouts and the eclipses were named: `blackout_kind`'s twelve,
   // `lunar_eclipse_kind`'s three and `solar_eclipse_kind`'s four, each
-  // with its UNKNOWN.
-  assert.equal(entries, 1192, 'every member of every enum is in a table');
+  // with its UNKNOWN; 1205 since the essential dignities' `TsSect`, two,
+  // `TsSectRule`, four, `TsTerms`, five, and `TsTriplicities`, two.
+  assert.equal(entries, 1205, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1993,6 +1994,79 @@ test('a chart carries its Sade Sati, each period whole', () => {
     );
   }
   assert.throws(() => ctx.chart.found({ instant: births[0], ...at, sadeSati: 2460676.5 }), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * The essential dignities cross whole: the sect and every rule applied
+ * reported back, the seven in the Chaldean order with their flags and the
+ * score those flags give, a polar-night noon read as a night chart, a
+ * table of the caller's own obeyed, and a refusal named in the record
+ * (`03-design/essential-dignities.md`).
+ */
+test('a chart carries its essential dignities', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const kathmandu = { place: { latitude: 27.7172, longitude: 85.324, altitude: 0 }, utcOffsetSeconds: 20700 };
+  const instants = [2460676.5, 2460676.75];
+  assert.equal(ctx.chart.found({ instant: instants[0], ...kathmandu }).dignities, null);
+
+  const read = ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: {} }).dignities;
+  assert.equal(read.sectRule, 'HORIZON');
+  assert.deepEqual(read.rules, { terms: 'PTOLEMAIC_LILLY', triplicities: 'LILLY' });
+  const lilly = { house: 5, exaltation: 4, triplicity: 3, term: 2, face: 1, detriment: -5, fall: -4, peregrine: -5 };
+  assert.deepEqual(read.scores, lilly);
+  assert.deepEqual(
+    read.planets.map((at) => at.planet),
+    ['graha.SATURN', 'graha.JUPITER', 'graha.MARS', 'graha.SUN', 'graha.VENUS', 'graha.MERCURY', 'graha.MOON'],
+  );
+  assert.ok(Object.isFrozen(read.planets[0].dignity), 'frozen to its leaves');
+  const flags = ['house', 'exaltation', 'triplicity', 'term', 'face', 'detriment', 'fall'];
+  for (const at of read.planets) {
+    const held = flags.filter((flag) => at.dignity[flag]);
+    assert.equal(at.peregrine, !held.some((flag) => flags.indexOf(flag) < 5), at.planet);
+    const score = held.reduce((sum, flag) => sum + lilly[flag], at.peregrine ? lilly.peregrine : 0);
+    assert.equal(at.score, score, at.planet);
+  }
+  // Every rule reported as asked, and a score left out stays Lilly's.
+  const asked = { sectRule: 'NIGHT', rules: { triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } };
+  const night = ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: asked }).dignities;
+  assert.equal(night.sect, 'NIGHT');
+  assert.deepEqual(night.rules, { terms: 'PTOLEMAIC_LILLY', triplicities: 'PTOLEMY' });
+  assert.deepEqual(night.scores, { ...lilly, peregrine: 0 });
+
+  // 21 December 1988 at Tromsø: the Sun culminates under the horizon.
+  const tromso = { place: { latitude: 69.6492, longitude: 18.9553, altitude: 0 }, utcOffsetSeconds: 3600 };
+  assert.equal(ctx.chart.found({ instant: 2447516.9583333335, ...tromso, dignities: {} }).dignities.sect, 'NIGHT');
+
+  // A table of the caller's own: Aries' Egyptian terms in every sign, the
+  // lords in either spelling.
+  const row = [['JUPITER', 6], ['graha.VENUS', 12], ['MERCURY', 20], ['MARS', 25], ['SATURN', 30]];
+  const table = Array.from({ length: 12 }, () => row.map(([lord, end]) => ({ lord, end })));
+  const own = ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: { rules: { terms: { TABLE: table } } } })
+    .dignities;
+  assert.equal(own.rules.terms, 'TABLE');
+  for (const at of own.planets) {
+    const degree = at.longitudeDeg % 30;
+    const [lord] = row.find(([, end]) => degree < end);
+    assert.equal(at.dignity.term, `graha.${lord.replace('graha.', '')}` === at.planet, at.planet);
+  }
+
+  const batch = ctx.chart.foundMany({ instants, ...kathmandu, dignities: {} });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).dignities, ctx.chart.found({ instant, ...kathmandu, dignities: {} }).dignities),
+  );
+  for (const [refused, field] of [
+    [{ sectRule: 'DUSK' }, 'dignities.sectRule'],
+    [{ scores: { peregrin: 0 } }, 'dignities.scores.peregrin'],
+    [{ rules: { terms: { TABLE: table.slice(1) } } }, 'dignities.rules.terms.TABLE'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: refused }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: 'LILLY' }), TypeError);
   ctx.dispose();
 });
 

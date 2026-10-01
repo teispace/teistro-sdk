@@ -1968,6 +1968,96 @@ class ChartsSadeSatiVisits:
 
 
 @dataclass(frozen=True)
+class ChartsDignities:
+    """The `dignities` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+    """
+
+    sect: memoryview[int]
+    """Whether the chart is of the day or of the night, as `sect_rule` reads it."""
+
+    sect_rule: memoryview[int]
+    """How the sect was read, `dignities_json.sectRule` (C209)."""
+
+    terms: memoryview[int]
+    """The system of terms, `dignities_json.rules.terms` (C208); `TABLE` is the table the request gave."""
+
+    triplicities: memoryview[int]
+    """Who rules each triplicity, `dignities_json.rules.triplicities`."""
+
+    score_house: memoryview[int]
+    """What a planet in its own house scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_exaltation: memoryview[int]
+    """What a planet in its exaltation scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_triplicity: memoryview[int]
+    """What a planet ruling its sign's triplicity scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_term: memoryview[int]
+    """What a planet in its own term scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_face: memoryview[int]
+    """What a planet in its own face scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_detriment: memoryview[int]
+    """What a planet in its detriment scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_fall: memoryview[int]
+    """What a planet in its fall scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    score_peregrine: memoryview[int]
+    """What a planet in none of its five dignities scores, `dignities_json.scores`, Lilly's (p. 115) by default."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDignityPlanets:
+    """The `dignity_planets` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+    """
+
+    planet: memoryview[int]
+    """The planet."""
+
+    longitude: memoryview[float]
+    """Where it stands, in degrees of the chart's zodiac."""
+
+    house: memoryview[int]
+    """1 when the sign is its house, else 0."""
+
+    exaltation: memoryview[int]
+    """1 when the sign is its exaltation, else 0."""
+
+    triplicity: memoryview[int]
+    """1 when it rules the sign's triplicity in a chart of the sect, else 0."""
+
+    term: memoryview[int]
+    """1 when the degree lies in its own term, else 0."""
+
+    face: memoryview[int]
+    """1 when the degree lies in its own face, else 0."""
+
+    detriment: memoryview[int]
+    """1 when the sign is opposite its house, else 0."""
+
+    fall: memoryview[int]
+    """1 when the sign is opposite its exaltation, else 0."""
+
+    score: memoryview[int]
+    """Its flags read by the `dignities` row's scores."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2268,6 +2358,12 @@ class Charts:
     kp: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none."""
 
+    dignities: ChartsDignities
+    """Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too."""
+
+    dignity_planets: ChartsDignityPlanets
+    """The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2336,6 +2432,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_sade_sati = blob.section(57, "sade_sati")
     at_sade_sati_visits = blob.section(58, "sade_sati_visits")
     at_kp = blob.section(59, "kp")
+    at_dignities = blob.section(60, "dignities")
+    at_dignity_planets = blob.section(61, "dignity_planets")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3469,6 +3567,76 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_sade_sati_visits.count,
         ),
         kp=blob.text(at_kp),
+        dignities=ChartsDignities(
+            sect=blob.column(at_dignities, 0, 1, at_dignities.count).cast("B"),
+            sect_rule=blob.column(
+                at_dignities, 1, 1, at_dignities.count
+            ).cast("B"),
+            terms=blob.column(
+                at_dignities, 2, 1, at_dignities.count
+            ).cast("B"),
+            triplicities=blob.column(
+                at_dignities, 3, 1, at_dignities.count
+            ).cast("B"),
+            score_house=blob.column(
+                at_dignities, 4, 1, at_dignities.count
+            ).cast("b"),
+            score_exaltation=blob.column(
+                at_dignities, 5, 1, at_dignities.count
+            ).cast("b"),
+            score_triplicity=blob.column(
+                at_dignities, 6, 1, at_dignities.count
+            ).cast("b"),
+            score_term=blob.column(
+                at_dignities, 7, 1, at_dignities.count
+            ).cast("b"),
+            score_face=blob.column(
+                at_dignities, 8, 1, at_dignities.count
+            ).cast("b"),
+            score_detriment=blob.column(
+                at_dignities, 9, 1, at_dignities.count
+            ).cast("b"),
+            score_fall=blob.column(
+                at_dignities, 10, 1, at_dignities.count
+            ).cast("b"),
+            score_peregrine=blob.column(
+                at_dignities, 11, 1, at_dignities.count
+            ).cast("b"),
+            length=at_dignities.count,
+        ),
+        dignity_planets=ChartsDignityPlanets(
+            planet=blob.column(
+                at_dignity_planets, 0, 2, at_dignity_planets.count
+            ).cast("H"),
+            longitude=blob.column(
+                at_dignity_planets, 1, 8, at_dignity_planets.count
+            ).cast("d"),
+            house=blob.column(
+                at_dignity_planets, 2, 1, at_dignity_planets.count
+            ).cast("B"),
+            exaltation=blob.column(
+                at_dignity_planets, 3, 1, at_dignity_planets.count
+            ).cast("B"),
+            triplicity=blob.column(
+                at_dignity_planets, 4, 1, at_dignity_planets.count
+            ).cast("B"),
+            term=blob.column(
+                at_dignity_planets, 5, 1, at_dignity_planets.count
+            ).cast("B"),
+            face=blob.column(
+                at_dignity_planets, 6, 1, at_dignity_planets.count
+            ).cast("B"),
+            detriment=blob.column(
+                at_dignity_planets, 7, 1, at_dignity_planets.count
+            ).cast("B"),
+            fall=blob.column(
+                at_dignity_planets, 8, 1, at_dignity_planets.count
+            ).cast("B"),
+            score=blob.column(
+                at_dignity_planets, 9, 2, at_dignity_planets.count
+            ).cast("h"),
+            length=at_dignity_planets.count,
+        ),
     )
 
 

@@ -509,6 +509,11 @@ def main() -> None:
             },
             sade_sati={"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]},
             kp={"number": 74, "anyAyanamsha": True},
+            dignities={
+                "sectRule": "DAYLIGHT",
+                "rules": {"terms": "EGYPTIAN", "triplicities": "PTOLEMY"},
+                "scores": {"peregrine": 0},
+            },
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -844,6 +849,23 @@ def main() -> None:
                     f"chart-{i}-kp-ruler-{k}",
                     f"{r.graha.full_key} {reasons} {str(r.retrograde).lower()} "
                     f"{rejection(r.rejected_by)} {rejection(r.rejected_by_sub)}",
+                )
+            dg = chart.dignities
+            assert dg is not None
+            sc = dg.scores
+            worth = [sc.house, sc.exaltation, sc.triplicity, sc.term, sc.face, sc.detriment, sc.fall, sc.peregrine]
+            put(
+                f"chart-{i}-dignities",
+                f"{dg.sect.key} {dg.sect_rule.key} {dg.rules.terms.key} {dg.rules.triplicities.key} "
+                + ",".join(str(one) for one in worth),
+            )
+            dignity_flags = ("house", "exaltation", "triplicity", "term", "face", "detriment", "fall")
+            for planet_dignity in dg.planets:
+                flags_held = [flag for flag in dignity_flags if getattr(planet_dignity.dignity, flag)]
+                flags_held += ["peregrine"] if planet_dignity.peregrine else []
+                put(
+                    f"chart-{i}-dignity-{planet_dignity.planet.full_key}",
+                    f"{number(planet_dignity.longitude_deg)} {','.join(flags_held) or '-'} {planet_dignity.score}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

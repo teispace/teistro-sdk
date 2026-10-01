@@ -515,6 +515,50 @@ fn time_and_calendar(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The essential dignities' enums. `TsTerms`' `TABLE` stands for a table
+/// of the caller's own, which serde writes as `{"TABLE": [...]}` under the
+/// same key, held here apart since it is no unit variant.
+fn dignities(api: &Api) -> Vec<&'static str> {
+    use teistro_ffi::chart::{TsSect, TsSectRule, TsTerms, TsTriplicities};
+    let id = |value: u8| Some(i64::from(value));
+    let table = serde_json::to_value(teistro::Terms::Table(teistro::TermsTable::EGYPTIAN)).unwrap();
+    assert!(
+        table.get("TABLE").is_some_and(serde_json::Value::is_array),
+        "a table of the caller's own serialises under `TABLE`: {table}"
+    );
+    assert_eq!(
+        TsTerms::of(&teistro::Terms::Table(teistro::TermsTable::EGYPTIAN)),
+        Some(TsTerms::Table)
+    );
+    let named = [
+        teistro::Terms::Egyptian,
+        teistro::Terms::PtolemaicLilly,
+        teistro::Terms::PtolemaicAshmand,
+        teistro::Terms::Chaldean,
+    ];
+    vec![
+        unit(
+            api,
+            "TsSect",
+            |s: &teistro::Sect| id(TsSect::from(*s) as u8),
+        ),
+        unit(api, "TsSectRule", |r: &teistro::SectRule| {
+            TsSectRule::of(*r).and_then(|r| id(r as u8))
+        }),
+        spelled_as(
+            api,
+            "TsTerms",
+            "",
+            &named,
+            |t| TsTerms::of(t).and_then(|t| id(t as u8)),
+            &["TABLE"],
+        ),
+        unit(api, "TsTriplicities", |t: &teistro::Triplicities| {
+            TsTriplicities::of(*t).and_then(|t| id(t as u8))
+        }),
+    ]
+}
+
 #[test]
 fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
     let api = api();
@@ -524,6 +568,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         chart(&api),
         gochar(&api),
         hits(&api),
+        dignities(&api),
         time_and_calendar(&api),
     ]
     .concat();

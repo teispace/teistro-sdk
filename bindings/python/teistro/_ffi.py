@@ -119,6 +119,8 @@ from .catalogue import (
     Samvatsara,
     SarvaStanding,
     Scale,
+    Sect,
+    SectRule,
     Sex,
     Shodhana,
     SolarEclipseKind,
@@ -134,9 +136,11 @@ from .catalogue import (
     TajikaRelation,
     TajikaYoga,
     Tatwa,
+    Terms,
     TimeScale,
     Tithi,
     TithiClass,
+    Triplicities,
     Vaiseshikamsa,
     Vara,
     Varga,
@@ -245,7 +249,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 176,
+    "ts_chart_request": 184,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -275,7 +279,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 112,
+    "ts_chart_request": 120,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -679,6 +683,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("hits_json", ctypes.c_char_p),
         ("sade_sati_json", ctypes.c_char_p),
         ("kp_json", ctypes.c_char_p),
+        ("dignities_json", ctypes.c_char_p),
     ]
 
 
@@ -2365,6 +2370,24 @@ class ChartRequest:
     Example: {"number":74}. May be null.
     """
 
+    dignities_json: Optional[str] = None
+    """Every chart's essential dignities, as a JSON object, every member
+    optional: `sectRule` (`"HORIZON"`, the Sun's centre above the true
+    horizon and the default; `"DAYLIGHT"`, the chart's own sunrise to
+    sunset; or `"DAY"` or `"NIGHT"` outright; C209), `rules`
+    (`{terms, triplicities}`: the terms `"PTOLEMAIC_LILLY"`, the
+    default, `"EGYPTIAN"`, `"PTOLEMAIC_ASHMAND"`, `"CHALDEAN"` or
+    `{"TABLE": ...}`, twelve signs of five `{lord, end}` from Aries;
+    the triplicities `"LILLY"`, the default, or `"PTOLEMY"`; C208) and
+    `scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,
+    `detriment`, `fall`, `peregrine`, Lilly's by default). The sect and
+    what was applied come back in the `dignities` section and the seven
+    planets in `dignity_planets`. Null for none, which costs nothing
+    (`03-design/essential-dignities.md`). Refusals are named from the
+    record every binding calls `dignities`, as `dignities.sectRule`.
+    Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2427,6 +2450,9 @@ class ChartRequest:
         _kp_json = None if self.kp_json is None else self.kp_json.encode("utf-8")
         owned.append(_kp_json)
         raw.kp_json = _kp_json
+        _dignities_json = None if self.dignities_json is None else self.dignities_json.encode("utf-8")
+        owned.append(_dignities_json)
+        raw.dignities_json = _dignities_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2471,6 +2497,7 @@ class ChartRequest:
             hits_json=_text(raw.hits_json),
             sade_sati_json=_text(raw.sade_sati_json),
             kp_json=_text(raw.kp_json),
+            dignities_json=_text(raw.dignities_json),
         )
 
 

@@ -187,14 +187,24 @@ pub fn exaltation_degree(planet: Graha) -> Option<(Rashi, u8)> {
 }
 
 /// What a reading of the dignities chooses.
+///
+/// The default is [`DignityRules::LILLY`], and a record that names one
+/// member takes the other from it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default)]
 #[non_exhaustive]
 pub struct DignityRules {
     /// The system of terms.
     pub terms: Terms,
     /// Who rules each triplicity.
     pub triplicities: Triplicities,
+}
+
+impl Default for DignityRules {
+    fn default() -> DignityRules {
+        DignityRules::LILLY
+    }
 }
 
 impl DignityRules {
@@ -227,8 +237,12 @@ impl DignityRules {
 }
 
 /// What each dignity and debility is worth.
+///
+/// The default is [`Scores::LILLY`], and a record that names some scores
+/// takes the rest from it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default)]
 #[non_exhaustive]
 pub struct Scores {
     /// In its own house.
@@ -247,6 +261,12 @@ pub struct Scores {
     pub fall: i8,
     /// Peregrine: in none of its five dignities.
     pub peregrine: i8,
+}
+
+impl Default for Scores {
+    fn default() -> Scores {
+        Scores::LILLY
+    }
 }
 
 impl Scores {

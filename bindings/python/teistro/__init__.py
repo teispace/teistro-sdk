@@ -151,6 +151,10 @@ from .catalogue import (
     Motion,
     AspectPhase,
     Reckoning,
+    Sect,
+    SectRule,
+    Terms,
+    Triplicities,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -409,6 +413,18 @@ __all__ = [
     # KP: a chart read as the KP Readers read it.
     "KpRequest",
     "KpReading",
+    # The essential dignities, and the sect they are read in.
+    "DignityRequest",
+    "DignityRules",
+    "DignityScores",
+    "Dignities",
+    "AppliedDignityRules",
+    "EssentialDignity",
+    "PlanetDignity",
+    "Sect",
+    "SectRule",
+    "Terms",
+    "Triplicities",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1445,6 +1461,7 @@ class ChartArea(_Area):
         hits: Optional[HitRequest] = None,
         sade_sati: Optional[SadeSatiRequest] = None,
         kp: Optional[KpRequest] = None,
+        dignities: Optional[DignityRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1486,6 +1503,7 @@ class ChartArea(_Area):
             hits=hits,
             sade_sati=sade_sati,
             kp=kp,
+            dignities=dignities,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1517,6 +1535,7 @@ class ChartArea(_Area):
         hits: Optional[HitRequest] = None,
         sade_sati: Optional[SadeSatiRequest] = None,
         kp: Optional[KpRequest] = None,
+        dignities: Optional[DignityRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1579,6 +1598,7 @@ class ChartArea(_Area):
             hits_json=_hits_json(hits),
             sade_sati_json=_sade_sati_json(sade_sati),
             kp_json=_kp_json(kp),
+            dignities_json=_dignities_json(dignities),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2695,6 +2715,102 @@ class KpReading:
     chart: KpChart
     significators: KpSignificators
     ruling: KpRuling
+
+
+class DignityRules(TypedDict, total=False):
+    """The terms and triplicities a reading of the dignities uses
+    (`03-design/essential-dignities.md`, C208): `terms` a `Terms` member,
+    Lilly's printing of Ptolemy's by default, or `{"TABLE": [...]}`, twelve
+    signs of five `{"lord", "end"}` from Aries, a lord a `Graha` or its key;
+    `triplicities` a `Triplicities` member, Lilly's by default."""
+
+    terms: Union[Terms, str, Mapping[str, Any]]
+    triplicities: Union[Triplicities, str]
+
+
+class DignityRequest(TypedDict, total=False):
+    """How to read every chart's essential dignities
+    (`03-design/essential-dignities.md`), every field optional: `sectRule`,
+    the Sun's centre above the true horizon by default (Valens's hemisphere,
+    C209); `rules`; and `scores`, any of `house`, `exaltation`,
+    `triplicity`, `term`, `face`, `detriment`, `fall` and `peregrine`, the
+    rest Lilly's (p. 115).
+
+    >>> asked: DignityRequest = {"sectRule": SectRule.DAYLIGHT, "rules": {"terms": Terms.EGYPTIAN}}
+    """
+
+    sectRule: Union[SectRule, str]
+    rules: DignityRules
+    scores: Mapping[str, int]
+
+
+@dataclass(frozen=True)
+class DignityScores:
+    """What each dignity and debility was worth."""
+
+    house: int
+    exaltation: int
+    triplicity: int
+    term: int
+    face: int
+    detriment: int
+    fall: int
+    peregrine: int
+
+
+@dataclass(frozen=True)
+class AppliedDignityRules:
+    """The terms and triplicities a reading used; `Terms.TABLE` for the
+    request's own table."""
+
+    terms: Terms
+    triplicities: Triplicities
+
+
+@dataclass(frozen=True)
+class EssentialDignity:
+    """The dignities and debilities a planet holds where it stands."""
+
+    house: bool
+    exaltation: bool
+    triplicity: bool
+    term: bool
+    face: bool
+    detriment: bool
+    fall: bool
+
+
+@dataclass(frozen=True)
+class PlanetDignity:
+    """One planet's dignities and its score."""
+
+    planet: Graha
+    longitude_deg: float
+    """Degrees of the chart's zodiac."""
+
+    dignity: EssentialDignity
+    peregrine: bool
+    """In none of its five dignities, whatever its debilities."""
+
+    score: int
+
+
+@dataclass(frozen=True)
+class Dignities:
+    """A chart's essential dignities, with everything that made them: the
+    sect, the rule that chose it, the rules and the scores
+    (`03-design/essential-dignities.md`).
+
+    >>> # chart = ctx.chart.found(..., dignities={})
+    >>> # mars = next(at for at in chart.dignities.planets if at.planet is Graha.MARS)
+    """
+
+    sect: Sect
+    sect_rule: SectRule
+    rules: AppliedDignityRules
+    scores: DignityScores
+    planets: Tuple[PlanetDignity, ...]
+    """The seven in the Chaldean order, Saturn first."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -5259,6 +5375,16 @@ def _kp_json(kp: Optional[KpRequest]) -> Optional[str]:
     return _record_json(kp, "kp", "{'number': 74}")
 
 
+def _dignities_json(dignities: Optional[DignityRequest]) -> Optional[str]:
+    """The dignities as the JSON the boundary reads, or nothing for none; a
+    member is written as its key, a table's lords too, and the SDK refuses
+    the rest, naming the field from `dignities`."""
+    example = "{'sectRule': 'HORIZON', 'rules': {'terms': 'EGYPTIAN'}}"
+    if not isinstance(dignities, Mapping):
+        return _record_json(dignities, "dignities", example)
+    return _record_json(_written(dignities), "dignities", example)
+
+
 def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
     """A chart's KP reading from the `kp` section's JSON, its keys made
     members."""
@@ -6734,6 +6860,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def dignities(self) -> Optional[Dignities]:
+        """The seven planets' essential dignities and the chart's sect, with
+        everything that made them; `None` unless `dignities=` asked for them
+        (`03-design/essential-dignities.md`)."""
+        parsed = self.batch._dignities
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -7110,6 +7244,62 @@ class ChartBatch:
         for."""
         text = self.decoded.kp
         return [_kp_reading(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _dignities(self) -> list[Dignities]:
+        """Every chart's essential dignities, decoded once; empty when none
+        were asked for. `dignities` holds a row a chart and `dignity_planets`
+        seven a chart, in the Chaldean order."""
+        c = self.decoded.dignities
+        p = self.decoded.dignity_planets
+        charts = len(self.decoded.cast.instant)
+        if c.length == 0:
+            return []
+        if c.length != charts or p.length != 7 * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"dignities has {c.length} rows and dignity_planets {p.length} for {charts} charts;"
+                " they are one and seven a chart",
+            )
+
+        def planet(row: int) -> PlanetDignity:
+            dignity = EssentialDignity(
+                house=p.house[row] == 1,
+                exaltation=p.exaltation[row] == 1,
+                triplicity=p.triplicity[row] == 1,
+                term=p.term[row] == 1,
+                face=p.face[row] == 1,
+                detriment=p.detriment[row] == 1,
+                fall=p.fall[row] == 1,
+            )
+            held = (dignity.house, dignity.exaltation, dignity.triplicity, dignity.term, dignity.face)
+            return PlanetDignity(
+                planet=Graha(p.planet[row]),
+                longitude_deg=p.longitude[row],
+                dignity=dignity,
+                peregrine=not any(held),
+                score=p.score[row],
+            )
+
+        return [
+            Dignities(
+                sect=Sect(c.sect[chart]),
+                sect_rule=SectRule(c.sect_rule[chart]),
+                rules=AppliedDignityRules(terms=Terms(c.terms[chart]), triplicities=Triplicities(c.triplicities[chart])),
+                scores=DignityScores(
+                    house=c.score_house[chart],
+                    exaltation=c.score_exaltation[chart],
+                    triplicity=c.score_triplicity[chart],
+                    term=c.score_term[chart],
+                    face=c.score_face[chart],
+                    detriment=c.score_detriment[chart],
+                    fall=c.score_fall[chart],
+                    peregrine=c.score_peregrine[chart],
+                ),
+                planets=tuple(planet(row) for row in range(7 * chart, 7 * chart + 7)),
+            )
+            for chart in range(charts)
+        ]
 
     @cached_property
     def _sade_satis(self) -> list[SadeSatiReport]:

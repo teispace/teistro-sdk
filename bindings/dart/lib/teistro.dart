@@ -675,6 +675,7 @@ final class ChartArea extends _Area {
     HitRequest? hits,
     SadeSatiRequest? sadeSati,
     KpRequest? kp,
+    DignityRequest? dignities,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -702,6 +703,7 @@ final class ChartArea extends _Area {
     hits: hits,
     sadeSati: sadeSati,
     kp: kp,
+    dignities: dignities,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -749,6 +751,7 @@ final class ChartArea extends _Area {
     HitRequest? hits,
     SadeSatiRequest? sadeSati,
     KpRequest? kp,
+    DignityRequest? dignities,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -798,6 +801,7 @@ final class ChartArea extends _Area {
             hitsJson: hits?._json,
             sadeSatiJson: sadeSati?._json,
             kpJson: kp?._json,
+            dignitiesJson: dignities?._json,
           ),
         ),
       ),
@@ -3839,6 +3843,76 @@ Hit _hitAt(ChartsHits h, int row) {
   );
 }
 
+final Expando<List<Dignities>> _dignities = Expando<List<Dignities>>(
+  'dignities',
+);
+
+List<Dignities> _dignitiesOf(Charts batch) =>
+    _dignities[batch] ??= _decodeDignities(batch);
+
+/// `dignities` holds a row a chart, or none when none was asked, and
+/// `dignity_planets` seven a chart, in the Chaldean order.
+List<Dignities> _decodeDignities(Charts batch) {
+  final c = batch.dignities;
+  final p = batch.dignityPlanets;
+  final charts = batch.cast.instant.length;
+  if (c.length == 0) return const <Dignities>[];
+  if (c.length != charts || p.length != 7 * charts) {
+    throw StateError(
+      'dignities has ${c.length} rows and dignity_planets ${p.length} for '
+      '$charts charts; they are one and seven a chart',
+    );
+  }
+  PlanetDignity planet(int row) {
+    final dignity = EssentialDignity(
+      house: p.house[row] == 1,
+      exaltation: p.exaltation[row] == 1,
+      triplicity: p.triplicity[row] == 1,
+      term: p.term[row] == 1,
+      face: p.face[row] == 1,
+      detriment: p.detriment[row] == 1,
+      fall: p.fall[row] == 1,
+    );
+    return PlanetDignity(
+      planet: Graha.byId(p.planet[row]),
+      longitudeDeg: p.longitude[row],
+      dignity: dignity,
+      peregrine:
+          !(dignity.house ||
+              dignity.exaltation ||
+              dignity.triplicity ||
+              dignity.term ||
+              dignity.face),
+      score: p.score[row],
+    );
+  }
+
+  return List<Dignities>.generate(
+    charts,
+    (chart) => Dignities(
+      sect: Sect.byId(c.sect[chart]),
+      sectRule: SectRule.byId(c.sectRule[chart]),
+      rules: AppliedDignityRules(
+        terms: Terms.byId(c.terms[chart]),
+        triplicities: Triplicities.byId(c.triplicities[chart]),
+      ),
+      scores: DignityScores(
+        house: c.scoreHouse[chart],
+        exaltation: c.scoreExaltation[chart],
+        triplicity: c.scoreTriplicity[chart],
+        term: c.scoreTerm[chart],
+        face: c.scoreFace[chart],
+        detriment: c.scoreDetriment[chart],
+        fall: c.scoreFall[chart],
+        peregrine: c.scorePeregrine[chart],
+      ),
+      planets: List<PlanetDignity>.unmodifiable([
+        for (var row = 7 * chart; row < 7 * chart + 7; row += 1) planet(row),
+      ]),
+    ),
+  );
+}
+
 final Expando<List<SadeSatiReport>> _sadeSatis = Expando<List<SadeSatiReport>>(
   'sadeSatis',
 );
@@ -4515,6 +4589,222 @@ abstract base class _Value {
   int get hashCode => Object.hashAll(
     _fields.map((field) => field is List ? Object.hashAll(field) : field),
   );
+}
+
+/// One term of a table of the caller's own: its lord, and the degree within
+/// the sign it ends at, exclusive.
+final class Term {
+  const Term(this.lord, this.end);
+
+  final Graha lord;
+  final int end;
+
+  Map<String, Object?> get _json => {'lord': lord.key, 'end': end};
+}
+
+/// What each dignity and debility is worth; every one left out is Lilly's
+/// (p. 115), so `DignityScores(peregrine: 0)` changes that one alone.
+final class DignityScores extends _Value {
+  const DignityScores({
+    this.house = 5,
+    this.exaltation = 4,
+    this.triplicity = 3,
+    this.term = 2,
+    this.face = 1,
+    this.detriment = -5,
+    this.fall = -4,
+    this.peregrine = -5,
+  });
+
+  /// Lilly's "ready Table" (p. 115).
+  static const DignityScores lilly = DignityScores();
+
+  final int house;
+  final int exaltation;
+  final int triplicity;
+  final int term;
+  final int face;
+  final int detriment;
+  final int fall;
+
+  /// In none of its five dignities.
+  final int peregrine;
+
+  @override
+  List<Object?> get _fields => [
+    house,
+    exaltation,
+    triplicity,
+    term,
+    face,
+    detriment,
+    fall,
+    peregrine,
+  ];
+
+  Map<String, Object?> get _json => {
+    'house': house,
+    'exaltation': exaltation,
+    'triplicity': triplicity,
+    'term': term,
+    'face': face,
+    'detriment': detriment,
+    'fall': fall,
+    'peregrine': peregrine,
+  };
+}
+
+/// How to read every chart's essential dignities
+/// (`03-design/essential-dignities.md`). Each chart's come back as its
+/// `dignities`, every rule applied reported beside them.
+///
+/// The sect is the Sun's centre above the true horizon by default,
+/// Valens's hemisphere (C209), and the rest is Lilly's. A [table] of the
+/// caller's own, twelve signs of five [Term]s from Aries, stands in for
+/// [terms]; a malformed one is refused by `dignities.rules.terms.TABLE`.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ dignities: const DignityRequest(terms: Terms.egyptian),
+/// );
+/// final sect = chart.dignities?.sect;
+/// ```
+final class DignityRequest {
+  const DignityRequest({
+    this.sectRule = SectRule.horizon,
+    this.terms = Terms.ptolemaicLilly,
+    this.table,
+    this.triplicities = Triplicities.lilly,
+    this.scores = DignityScores.lilly,
+  });
+
+  final SectRule sectRule;
+
+  /// The system of terms, unless [table] gives one.
+  final Terms terms;
+
+  /// A table of terms of the caller's own, which [terms] then does not
+  /// name.
+  final List<List<Term>>? table;
+
+  final Triplicities triplicities;
+  final DignityScores scores;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'sectRule': sectRule.key,
+    'rules': {
+      'terms': switch (table) {
+        final table? => {
+          'TABLE': [
+            for (final sign in table) [for (final term in sign) term._json],
+          ],
+        },
+        null => terms.key,
+      },
+      'triplicities': triplicities.key,
+    },
+    'scores': scores._json,
+  });
+}
+
+/// The terms and triplicities a reading used; [Terms.table] for the
+/// request's own table.
+final class AppliedDignityRules extends _Value {
+  const AppliedDignityRules({required this.terms, required this.triplicities});
+
+  final Terms terms;
+  final Triplicities triplicities;
+
+  @override
+  List<Object?> get _fields => [terms, triplicities];
+}
+
+/// The dignities and debilities a planet holds where it stands.
+final class EssentialDignity extends _Value {
+  const EssentialDignity({
+    required this.house,
+    required this.exaltation,
+    required this.triplicity,
+    required this.term,
+    required this.face,
+    required this.detriment,
+    required this.fall,
+  });
+
+  final bool house;
+  final bool exaltation;
+  final bool triplicity;
+  final bool term;
+  final bool face;
+  final bool detriment;
+  final bool fall;
+
+  @override
+  List<Object?> get _fields => [
+    house,
+    exaltation,
+    triplicity,
+    term,
+    face,
+    detriment,
+    fall,
+  ];
+}
+
+/// One planet's dignities and its score.
+final class PlanetDignity extends _Value {
+  const PlanetDignity({
+    required this.planet,
+    required this.longitudeDeg,
+    required this.dignity,
+    required this.peregrine,
+    required this.score,
+  });
+
+  final Graha planet;
+
+  /// Degrees of the chart's zodiac.
+  final double longitudeDeg;
+
+  final EssentialDignity dignity;
+
+  /// In none of its five dignities, whatever its debilities.
+  final bool peregrine;
+
+  final int score;
+
+  @override
+  List<Object?> get _fields => [
+    planet,
+    longitudeDeg,
+    dignity,
+    peregrine,
+    score,
+  ];
+}
+
+/// A chart's essential dignities, with everything that made them: the
+/// sect, the rule that chose it, the rules and the scores
+/// (`03-design/essential-dignities.md`).
+final class Dignities extends _Value {
+  const Dignities({
+    required this.sect,
+    required this.sectRule,
+    required this.rules,
+    required this.scores,
+    required this.planets,
+  });
+
+  final Sect sect;
+  final SectRule sectRule;
+  final AppliedDignityRules rules;
+  final DignityScores scores;
+
+  /// The seven in the Chaldean order, Saturn first.
+  final List<PlanetDignity> planets;
+
+  @override
+  List<Object?> get _fields => [sect, sectRule, rules, scores, planets];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),
@@ -9676,6 +9966,14 @@ final class Chart {
   /// nanoarcseconds, exact.
   KpReading? get kp {
     final all = _kpsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The seven planets' essential dignities and the chart's sect, with
+  /// everything that made them; null unless `dignities` asked for them
+  /// (`03-design/essential-dignities.md`).
+  Dignities? get dignities {
+    final all = _dignitiesOf(batch);
     return index < all.length ? all[index] : null;
   }
 

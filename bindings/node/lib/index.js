@@ -103,6 +103,10 @@ import {
   GocharFromById,
   HitKindById,
   ReckoningById,
+  SectById,
+  SectRuleById,
+  TermsById,
+  TriplicitiesById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1005,6 +1009,20 @@ export class Chart {
    */
   get kp() {
     return kpsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The seven planets' essential dignities (`dignities: { sectRule, rules,
+   * scores }`), with the chart's sect and everything that made them;
+   * `null` unless asked for (`03-design/essential-dignities.md`).
+   *
+   * It is `{ sect, sectRule, rules: { terms, triplicities }, scores,
+   * planets }`, the planets in the Chaldean order, each `{ planet,
+   * longitudeDeg, dignity, peregrine, score }`. `terms` is `'TABLE'` when
+   * the request gave a table of its own.
+   */
+  get dignities() {
+    return dignitiesOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2168,6 +2186,11 @@ export class ChartArea extends Area {
           'a Sade Sati request record, e.g. { from: 2460676.5, to: 2464329, reckoning: "SIGN" }',
         ),
         kpJson: recordJson(request.kp, 'kp', 'a KP request record, e.g. { number: 74 }'),
+        dignitiesJson: recordJson(
+          request.dignities,
+          'dignities',
+          'a dignities request record, e.g. { sectRule: "HORIZON", rules: { terms: "EGYPTIAN" } }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2795,6 +2818,78 @@ const PLANS = new WeakMap();
  */
 function plansOf(batch) {
   return sectionOf(PLANS, batch, 'plans');
+}
+
+/** Each batch's dignities, decoded once however many charts read them. */
+const DIGNITIES = new WeakMap();
+
+/** The flags of `dignity_planets`, in `EssentialDignity`'s order. */
+const DIGNITY_FLAGS = ['house', 'exaltation', 'triplicity', 'term', 'face', 'detriment', 'fall'];
+
+/** The five flags a planet that holds none of is peregrine. */
+const DIGNITIES_HELD = DIGNITY_FLAGS.slice(0, 5);
+
+/**
+ * Every chart's essential dignities in a batch: `dignities` holds a row a
+ * chart, or none when none was asked, and `dignity_planets` seven rows a
+ * chart in the Chaldean order (`03-design/essential-dignities.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function dignitiesOf(batch) {
+  let decoded = DIGNITIES.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const c = d.dignities;
+  const p = d.dignityPlanets;
+  if (c.sect.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    if (c.sect.length !== charts || p.planet.length !== 7 * charts) {
+      throw new Error(
+        `dignities has ${c.sect.length} rows and dignity_planets ${p.planet.length} for ${charts} charts; ` +
+          'they are one and seven a chart, or none',
+      );
+    }
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, chart) => {
+        const planets = Array.from({ length: 7 }, (_, k) => {
+          const row = 7 * chart + k;
+          const dignity = Object.freeze(Object.fromEntries(DIGNITY_FLAGS.map((flag) => [flag, p[flag][row] === 1])));
+          return Object.freeze({
+            planet: GrahaById.get(p.planet[row]) ?? 'unknown',
+            longitudeDeg: p.longitude[row],
+            dignity,
+            peregrine: !DIGNITIES_HELD.some((flag) => dignity[flag]),
+            score: p.score[row],
+          });
+        });
+        return Object.freeze({
+          sect: SectById.get(c.sect[chart]) ?? 'unknown',
+          sectRule: SectRuleById.get(c.sectRule[chart]) ?? 'unknown',
+          rules: Object.freeze({
+            terms: TermsById.get(c.terms[chart]) ?? 'unknown',
+            triplicities: TriplicitiesById.get(c.triplicities[chart]) ?? 'unknown',
+          }),
+          scores: Object.freeze({
+            house: c.scoreHouse[chart],
+            exaltation: c.scoreExaltation[chart],
+            triplicity: c.scoreTriplicity[chart],
+            term: c.scoreTerm[chart],
+            face: c.scoreFace[chart],
+            detriment: c.scoreDetriment[chart],
+            fall: c.scoreFall[chart],
+            peregrine: c.scorePeregrine[chart],
+          }),
+          planets: Object.freeze(planets),
+        });
+      }),
+    );
+  }
+  DIGNITIES.set(batch, decoded);
+  return decoded;
 }
 
 /** Each batch's KP readings, parsed once however many charts read them. */

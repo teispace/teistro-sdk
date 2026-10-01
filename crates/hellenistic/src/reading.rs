@@ -71,7 +71,7 @@ impl ChartSky {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", default)]
 pub struct DignityRequest {
     sect_rule: SectRule,
     rules: DignityRules,
@@ -88,7 +88,43 @@ impl Default for DignityRequest {
     }
 }
 
+/// The record every binding writes the request as.
+const DIGNITIES: &str = "dignities";
+
 impl DignityRequest {
+    /// The request as the bindings write it, the shape the answer reports
+    /// it in: `{"sectRule": "DAYLIGHT", "rules": {"terms": "EGYPTIAN",
+    /// "triplicities": "PTOLEMY"}, "scores": {"peregrine": 0}}`. Every
+    /// member is optional and takes the default's; a table of the
+    /// caller's own is `{"terms": {"TABLE": [[{"lord": "MARS", "end": 6},
+    /// …], …]}}`, five terms a sign from Aries.
+    ///
+    /// ```
+    /// use teistro_hellenistic::{DignityRequest, SectRule, Terms, Triplicities};
+    ///
+    /// let asked = DignityRequest::from_json(
+    ///     r#"{"sectRule": "DAYLIGHT", "rules": {"terms": "EGYPTIAN"}, "scores": {"peregrine": 0}}"#,
+    /// )?;
+    /// assert_eq!(asked.sect_rule(), SectRule::Daylight);
+    /// assert_eq!(asked.rules().terms, Terms::Egyptian);
+    /// assert_eq!(asked.rules().triplicities, Triplicities::Lilly);
+    /// assert_eq!((asked.scores().peregrine, asked.scores().house), (0, 5));
+    /// assert_eq!(DignityRequest::from_json("{}")?, DignityRequest::default());
+    ///
+    /// let typo = DignityRequest::from_json(r#"{"scores": {"peregrin": 0}}"#).unwrap_err();
+    /// assert_eq!(typo.field(), Some("dignities.scores.peregrin"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Text that is not the record, a member it does not know, or a value
+    /// that is not one, such as a malformed table of terms, each named
+    /// under `dignities`.
+    pub fn from_json(text: &str) -> Result<DignityRequest, Error> {
+        teistro_core::strict::read(text, DIGNITIES)
+    }
+
     /// The same request, reading the sect by another rule.
     #[must_use]
     pub const fn with_sect_rule(mut self, sect_rule: SectRule) -> DignityRequest {
@@ -231,7 +267,7 @@ mod tests {
     )]
 
     use super::{ChartSky, DignityRequest};
-    use crate::{CHALDEAN_ORDER, Scores, Sect, SectRule};
+    use crate::{CHALDEAN_ORDER, Scores, Sect, SectRule, Terms};
 
     /// The Sun just under the western horizon: set by the horizon, still
     /// lit by the chart's own sunset.
@@ -296,6 +332,29 @@ mod tests {
         };
         let why = DignityRequest::default().read(&sky).unwrap_err();
         assert_eq!(why.field(), Some("sun_altitude_deg"));
+    }
+
+    /// The Egyptian table as a binding writes it, with the first term of
+    /// Aries in the spelling every binding reads a graha back in.
+    fn egyptian_as_written(first_lord: &str) -> String {
+        let mut table = serde_json::to_value(crate::TermsTable::EGYPTIAN).unwrap();
+        table[0][0]["lord"] = serde_json::Value::from(first_lord);
+        serde_json::json!({"rules": {"terms": {"TABLE": table}}}).to_string()
+    }
+
+    #[test]
+    fn a_table_of_the_callers_own_crosses_in_either_spelling() {
+        for lord in ["JUPITER", "graha.JUPITER"] {
+            let asked = DignityRequest::from_json(&egyptian_as_written(lord)).unwrap();
+            assert_eq!(
+                asked.rules().terms,
+                Terms::Table(crate::TermsTable::EGYPTIAN),
+                "{lord}"
+            );
+        }
+        // Mars twice in Aries is no table, and the refusal says where.
+        let why = DignityRequest::from_json(&egyptian_as_written("MARS")).unwrap_err();
+        assert_eq!(why.field(), Some("dignities.rules.terms.TABLE"), "{why}");
     }
 
     #[test]

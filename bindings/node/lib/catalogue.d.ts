@@ -6378,6 +6378,121 @@ export declare const Reckoning: {
 export declare const ReckoningById: ReadonlyMap<number, Reckoning>;
 
 /**
+ * Whether a chart is of the day or of the night
+ * (`03-design/essential-dignities.md` §Sect).
+ */
+export type Sect = 'DAY' | 'NIGHT';
+
+/** Every Sect by name; the values are the strings the union accepts. */
+export declare const Sect: {
+  /**
+   * A day chart.
+   */
+  readonly Day: 'DAY';
+  /**
+   * A night chart.
+   */
+  readonly Night: 'NIGHT';
+};
+
+/**
+ * Every Sect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SectById: ReadonlyMap<number, Sect>;
+
+/**
+ * How a chart's sect is read (C209, `03-design/essential-dignities.md`
+ * §Sect).
+ */
+export type SectRule = 'HORIZON' | 'DAYLIGHT' | 'DAY' | 'NIGHT';
+
+/** Every SectRule by name; the values are the strings the union accepts. */
+export declare const SectRule: {
+  /**
+   * The Sun's centre above the true horizon, Valens's hemisphere.
+   */
+  readonly Horizon: 'HORIZON';
+  /**
+   * The chart's own sunrise to sunset.
+   */
+  readonly Daylight: 'DAYLIGHT';
+  /**
+   * Every chart read as a day chart.
+   */
+  readonly Day: 'DAY';
+  /**
+   * Every chart read as a night chart.
+   */
+  readonly Night: 'NIGHT';
+};
+
+/**
+ * Every SectRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SectRuleById: ReadonlyMap<number, SectRule>;
+
+/**
+ * Which system of terms a reading used (C208,
+ * `03-design/essential-dignities.md`).
+ */
+export type Terms = 'EGYPTIAN' | 'PTOLEMAIC_LILLY' | 'PTOLEMAIC_ASHMAND' | 'CHALDEAN' | 'TABLE';
+
+/** Every Terms by name; the values are the strings the union accepts. */
+export declare const Terms: {
+  /**
+   * The Egyptian terms, as Ptolemy transmits them.
+   */
+  readonly Egyptian: 'EGYPTIAN';
+  /**
+   * Ptolemy's own terms as Lilly prints them.
+   */
+  readonly PtolemaicLilly: 'PTOLEMAIC_LILLY';
+  /**
+   * Ptolemy's own terms as Ashmand translates them.
+   */
+  readonly PtolemaicAshmand: 'PTOLEMAIC_ASHMAND';
+  /**
+   * The Chaldean terms, by the chart's sect.
+   */
+  readonly Chaldean: 'CHALDEAN';
+  /**
+   * The table the request's `dignities_json` gave.
+   */
+  readonly Table: 'TABLE';
+};
+
+/**
+ * Every Terms by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TermsById: ReadonlyMap<number, Terms>;
+
+/**
+ * Who rules each triplicity (`03-design/essential-dignities.md`).
+ */
+export type Triplicities = 'PTOLEMY' | 'LILLY';
+
+/** Every Triplicities by name; the values are the strings the union accepts. */
+export declare const Triplicities: {
+  /**
+   * Ptolemy's, Mars ruling water with Venus and the Moon.
+   */
+  readonly Ptolemy: 'PTOLEMY';
+  /**
+   * Lilly's, Mars ruling water alone.
+   */
+  readonly Lilly: 'LILLY';
+};
+
+/**
+ * Every Triplicities by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TriplicitiesById: ReadonlyMap<number, Triplicities>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

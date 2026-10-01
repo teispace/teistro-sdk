@@ -345,6 +345,7 @@ const charts = geo.chart.foundMany({
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
   sadeSati: { from: 2460676.5, to: 2464329, reckoning: 'DEGREE', spells: [4, 7, 8] },
   kp: { number: 74, anyAyanamsha: true },
+  dignities: { sectRule: 'DAYLIGHT', rules: { terms: 'EGYPTIAN', triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -559,6 +560,18 @@ for (const chart of charts) {
       `${r.graha} ${reasons.join(',')} ${r.retrograde} ${rejection(r.rejectedBy)} ${rejection(r.rejectedBySub)}`,
     );
   });
+  const dg = chart.dignities;
+  const s = dg.scores;
+  put(
+    `chart-${i}-dignities`,
+    `${dg.sect} ${dg.sectRule} ${dg.rules.terms} ${dg.rules.triplicities} ` +
+      [s.house, s.exaltation, s.triplicity, s.term, s.face, s.detriment, s.fall, s.peregrine].join(','),
+  );
+  const DIGNITY_FLAGS = ['house', 'exaltation', 'triplicity', 'term', 'face', 'detriment', 'fall'];
+  for (const at of dg.planets) {
+    const held = [...DIGNITY_FLAGS.filter((flag) => at.dignity[flag]), ...(at.peregrine ? ['peregrine'] : [])];
+    put(`chart-${i}-dignity-${at.planet}`, `${number(at.longitudeDeg)} ${held.join(',') || '-'} ${at.score}`);
+  }
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

@@ -59,6 +59,10 @@ import type {
   SarvaStanding,
   HitKind,
   Reckoning,
+  Sect,
+  SectRule,
+  Terms,
+  Triplicities,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -865,6 +869,91 @@ export interface SadeSatiReport {
   readonly sadeSati: readonly SadeSati[];
   /** The smaller spells asked for, in time order. */
   readonly spells: readonly SadeSatiSpell[];
+}
+
+/** One term: its lord, and the degree within the sign it ends at, exclusive. */
+export interface Term {
+  readonly lord: GrahaName;
+  readonly end: number;
+}
+
+/**
+ * The terms and triplicities a reading of the dignities uses: a system of
+ * terms by name or a table of the caller's own, twelve signs of five terms
+ * from Aries (`03-design/essential-dignities.md`, C208).
+ */
+export interface DignityRules {
+  /** Lilly's printing of Ptolemy's terms by default. */
+  readonly terms?: Exclude<Terms, 'TABLE' | 'unknown'> | { readonly TABLE: readonly (readonly Term[])[] };
+  /** Lilly's by default, Mars ruling water alone. */
+  readonly triplicities?: Exclude<Triplicities, 'unknown'>;
+}
+
+/** What each dignity and debility is worth; Lilly's (p. 115) for any left out. */
+export interface DignityScores {
+  readonly house: number;
+  readonly exaltation: number;
+  readonly triplicity: number;
+  readonly term: number;
+  readonly face: number;
+  readonly detriment: number;
+  readonly fall: number;
+  readonly peregrine: number;
+}
+
+/**
+ * How to read every chart's essential dignities
+ * (`03-design/essential-dignities.md`); every field is optional, and an
+ * absent one is the default.
+ */
+export interface DignityRequest {
+  /** The Sun's centre above the true horizon by default, Valens's hemisphere (C209). */
+  readonly sectRule?: Exclude<SectRule, 'unknown'>;
+  readonly rules?: DignityRules;
+  readonly scores?: Partial<DignityScores>;
+}
+
+/** The dignities and debilities a planet holds where it stands. */
+export interface EssentialDignity {
+  readonly house: boolean;
+  readonly exaltation: boolean;
+  readonly triplicity: boolean;
+  readonly term: boolean;
+  readonly face: boolean;
+  readonly detriment: boolean;
+  readonly fall: boolean;
+}
+
+/** One planet's dignities and its score. */
+export interface PlanetDignity {
+  readonly planet: Graha;
+  /** Degrees of the chart's zodiac. */
+  readonly longitudeDeg: number;
+  readonly dignity: EssentialDignity;
+  /** Whether it is in none of its five dignities, whatever its debilities. */
+  readonly peregrine: boolean;
+  readonly score: number;
+}
+
+/**
+ * A chart's essential dignities, with everything that made them: the sect,
+ * the rule that chose it, the terms (`'TABLE'` for the request's own
+ * table), the triplicities and the scores.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, dignities: {} });
+ * const mars = chart.dignities?.planets.find((at) => at.planet === 'graha.MARS');
+ */
+export interface Dignities {
+  readonly sect: Sect | 'unknown';
+  readonly sectRule: SectRule | 'unknown';
+  readonly rules: {
+    readonly terms: Terms | 'unknown';
+    readonly triplicities: Triplicities | 'unknown';
+  };
+  readonly scores: DignityScores;
+  /** The seven in the Chaldean order, Saturn first. */
+  readonly planets: readonly PlanetDignity[];
 }
 
 /**
@@ -2254,6 +2343,11 @@ export declare class Chart {
    */
   readonly kp: KpReading | null;
   /**
+   * The seven planets' essential dignities and the chart's sect; `null`
+   * unless `dignities` asked (`03-design/essential-dignities.md`).
+   */
+  readonly dignities: Dignities | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -3333,6 +3427,12 @@ export interface ChartRequest {
    * (`03-design/kp.md`). None by default.
    */
   readonly kp?: KpRequest;
+  /**
+   * The seven planets' essential dignities to read in every chart, read
+   * back as each chart's `dignities` (`03-design/essential-dignities.md`).
+   * None by default; `{}` is Valens's horizon and Lilly's tables.
+   */
+  readonly dignities?: DignityRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

@@ -1773,6 +1773,69 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_hits(report, geo, index, document);
     the_sade_sati(report, geo, index, document);
     the_kp(report, geo, index, document);
+    the_dignities(report, geo, index, document);
+}
+
+/// The dignities every runner asks for, every knob turned from its default.
+const DIGNITIES_JSON: &str = r#"{"sectRule":"DAYLIGHT","rules":{"terms":"EGYPTIAN","triplicities":"PTOLEMY"},"scores":{"peregrine":0}}"#;
+
+/// The dignities as the other three print them: what was applied, then
+/// each planet's longitude, the dignities it holds by name and its score.
+fn the_dignities(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::DignityRequest::from_json(DIGNITIES_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .dignities(document, &asked)
+        .expect("the test provider");
+    let s = read.scores;
+    let worth = [
+        s.house,
+        s.exaltation,
+        s.triplicity,
+        s.term,
+        s.face,
+        s.detriment,
+        s.fall,
+        s.peregrine,
+    ];
+    put(
+        report,
+        &format!("chart-{index}-dignities"),
+        format!(
+            "{} {} {} {} {}",
+            wire_key(&read.sect),
+            wire_key(&read.sect_rule),
+            wire_key(&read.rules.terms),
+            wire_key(&read.rules.triplicities),
+            worth.map(|one| one.to_string()).join(",")
+        ),
+    );
+    for at in read.planets {
+        let d = at.dignity;
+        let held: Vec<&str> = [
+            (d.house, "house"),
+            (d.exaltation, "exaltation"),
+            (d.triplicity, "triplicity"),
+            (d.term, "term"),
+            (d.face, "face"),
+            (d.detriment, "detriment"),
+            (d.fall, "fall"),
+            (d.peregrine(), "peregrine"),
+        ]
+        .into_iter()
+        .filter_map(|(holds, name)| holds.then_some(name))
+        .collect();
+        let held = if held.is_empty() {
+            String::from("-")
+        } else {
+            held.join(",")
+        };
+        put(
+            report,
+            &format!("chart-{index}-dignity-{}", at.planet.full_key()),
+            format!("{} {held} {}", number(at.longitude_deg), at.score),
+        );
+    }
 }
 
 /// The KP reading every runner asks for: a horary number, in the geo
