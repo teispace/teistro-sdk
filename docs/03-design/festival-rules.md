@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's seven rules and two counted days (§9) held to the committee's printed days. Written from the source
+Status: `building`, 2026-10-01: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac, and Nepal's rules (§9) held to the committee's printed days, with the `NEPAL` pack's reading agreeing on all 27 (§9.5). Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -635,7 +635,7 @@ honoured "the morning after", on the 1st. So:
 
 | # | fork | default | the other reading |
 |---|---|---|---|
-| C197 | Nepal keeping the tithi at sunrise where the text gives the earlier day | **the text's rules** | the udaya day, which the committee printed for Vijaya Dashami and Bali pratipada in VS 2083: a sunrise rule a consumer puts in place by its key |
+| C197 | Nepal keeping the tithi at sunrise where the text gives the earlier day | **the text's rules** (decided for the `NEPAL` pack in §9.5) | the udaya day, which the committee printed for Vijaya Dashami and Bali pratipada in VS 2083: a sunrise rule a consumer puts in place by its key |
 | C198 | how long Bali pratipada's 1st must last | **nine muhurtas** (18 ghatis), the clause naming the puja | ten (20 ghatis): a ghati count a consumer changes |
 | C199 | Holika when the full moon lasts three and a half yamas into the later day and the 1st grows | **not encoded**: no predicate measures the 1st's growth | a guard a consumer adds once one does |
 
@@ -657,3 +657,51 @@ The Delhi decade reached every new guard but one: Holika's second
 (the full moon touching neither pradosha), which a Phalguna meets only
 when the full moon is shorter than the day between them. The crate test
 reaches it.
+
+### 9.5 The upakarma, and how Nepal keeps a rite of the daylight
+
+**The upakarma.** Nepal's panchanga prints Janai purnima, the renewing
+of the thread, on the same row as Rakshabandhan. *Dharmasindhu* p. 47
+gives the Yajurvedis' upakarma on Shravana's full moon, read off the page
+image clause by clause:
+
+- for every Yajurvedi, the earlier day when the full moon holds both
+  sunrises ("शुद्धाधिकतया दिनद्वयेपि सूर्योदयव्यापिनी");
+- for the Kanva, the Madhyandina and the other Katyayanas, a full moon
+  split over two days goes to the later when it holds more than six
+  muhurtas past the later sunrise, and to the earlier when it holds less;
+- for the Taittiriya, the later from two muhurtas, where the others take
+  the earlier.
+
+So `UPAKARMA_MADHYANDINA` (twelve ghatis) and `UPAKARMA_TAITTIRIYA`
+(four) join the `DHARMASINDHU` pack, with one guard for the two sunrises
+and one for the count. The committee prints one Janai purnima without
+naming a school, and the Madhyandina's rule is the row held to it. The Rigvedis' (Shravana nakshatra)
+and the Samavedis' (Hasta in Bhadrapada) are keyed by a nakshatra, not a
+tithi, and wait for a rule of that kind.
+
+**What the measuring found.** Janai purnima in VS 2083 parts from the text
+the way the tika and Govardhan puja did: by the committee's print the full
+moon holds the later sunrise until 9:16, about nine ghatis, and the
+committee keeps that day. That is three partings in one year, every one
+toward the tithi at sunrise. So the rival was measured rather than
+argued: every rule read as the day whose sunrise holds its tithi
+(`FestivalRule::udaya`). It parts from the print on 10 of 27 rows, and
+every one of those is a rite of the night or the evening: Lakshmi puja,
+Shivaratri, Holika and the Holis counted from it. It agrees on every rite
+of the daylight, the three partings among them. The pass checks that
+sentence row by row.
+
+**The decision (C197).** The `NEPAL` pack keeps the text for a rite of the
+night or the evening, and the tithi at sunrise for a rite of the daylight
+(`FestivalRule::nepal`, `Window::in_daylight`). It agrees with all 27
+printed days. The pass holds it to every one with no list of excuses, and
+its refusal names this section to reopen. `DHARMASINDHU` keeps the text,
+and its three partings stay named with their causes. Two years are what
+the committee hosts, so the reading is a measured one, and each year it
+prints tests it again.
+
+| # | fork | default | the other reading |
+|---|---|---|---|
+| C197 | how Nepal keeps a rite of the daylight | **the tithi at sunrise** in the `NEPAL` pack, which holds 27 of 27 printed days; the text in `DHARMASINDHU` | the text's window for every rite, which parts on three daylight rites in VS 2083 |
+

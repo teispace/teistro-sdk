@@ -788,9 +788,15 @@ measured against Nepal before it is called done:
    hills' and the Terai's Holi; 23 of 25 printed days agree over the
    committee's sky, and Bali pratipada 2083 is the second udaya parting
    (C197). Bhadra decides the hour, not the day, so its predicate waits
-   for the rite's hour. Left: the monthly purnima vrata the committee
-   prints the day before the full moon's sunrise day, and Janai purnima
-   (the upakarma by shakha, pp. 46–48).
+   for the rite's hour. **Batch C** (§9.5): the Madhyandina's and the
+   Taittiriya's upakarma join the pack, and Janai purnima 2083 is a third
+   udaya parting. Measuring the rival settled C197 for the `NEPAL` pack:
+   the text for a rite of the night, the tithi at sunrise for one of the
+   daylight, which holds all 27 printed days. **Step 4 is done.** Left
+   for a later pass: the monthly purnima vrata the committee prints the
+   day before the full moon's sunrise day, against *Dharmasindhu*'s "the
+   later" (a source first, C200), and the Rigvedis' and Samavedis'
+   upakarma, keyed by a nakshatra.
 5. Nepal Sambat as a calendar, and saait packs beyond marriage:
    bratabandha, pasni, nwaran and griha pravesh.
 

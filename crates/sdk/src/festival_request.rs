@@ -18,9 +18,11 @@ pub enum FestivalPack {
     /// *Dharmasindhu*'s rules ([`FestivalRule::dharmasindhu`]) and its
     /// three Ekadashi observers ([`EkadashiRule::dharmasindhu`]).
     Dharmasindhu,
-    /// *Dharmasindhu*'s, with the days Nepal's national panchanga counts
-    /// from another's ([`FollowingRule::nepal`]): Holi in the hills and
-    /// in the Terai.
+    /// *Dharmasindhu*'s rules as Nepal's national panchanga keeps them
+    /// ([`FestivalRule::nepal`]: a rite of the daylight on the day whose
+    /// sunrise holds its tithi, C197), with the days it counts from
+    /// another's ([`FollowingRule::nepal`]): Holi in the hills and in the
+    /// Terai.
     Nepal,
 }
 
@@ -41,7 +43,8 @@ impl FestivalPack {
     #[must_use]
     pub fn rules(self) -> Vec<FestivalRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::Nepal => FestivalRule::dharmasindhu(),
+            FestivalPack::Dharmasindhu => FestivalRule::dharmasindhu(),
+            FestivalPack::Nepal => FestivalRule::nepal(),
         }
     }
 
@@ -504,7 +507,8 @@ mod tests {
     fn the_nepal_pack_is_dharmasindhu_s_with_its_counted_days() {
         let nepal = FestivalRequest::from_json(r#"{"rules": "NEPAL"}"#).unwrap();
         assert_eq!(nepal, FestivalRequest::from(FestivalPack::Nepal));
-        assert_eq!(nepal.rules(), FestivalRule::dharmasindhu().as_slice());
+        assert_eq!(nepal.rules(), FestivalRule::nepal().as_slice());
+        assert_ne!(nepal.rules(), FestivalRule::dharmasindhu().as_slice());
         assert_eq!(nepal.following(), FollowingRule::nepal().as_slice());
         assert_eq!(nepal.reach(), 1);
         let shipped = FestivalRequest::from(FestivalPack::Dharmasindhu);
