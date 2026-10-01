@@ -74,7 +74,7 @@ pub struct ProviderSources<'a, P: EphemerisProvider + ?Sized> {
     shadow: ShadowRule,
     /// How far before an eclipse its vedha opens (`panchanga.eclipse_vedha`).
     vedha: EclipseVedha,
-    /// The horizon a body is seen above, the almanac's sunrise convention.
+    /// The horizon an eclipsed body is seen above (`panchanga.eclipse_horizon`).
     horizon: Horizon,
 }
 
@@ -152,7 +152,7 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             delta_t: over.delta_t,
             shadow: ShadowRule::of_setting(over.settings.panchanga.eclipse_shadow)?,
             vedha: over.settings.panchanga.eclipse_vedha,
-            horizon: Horizon::from_convention(over.settings.day.sunrise),
+            horizon: Horizon::from_convention(over.settings.panchanga.eclipse_horizon),
         })
     }
 

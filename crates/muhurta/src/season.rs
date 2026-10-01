@@ -564,12 +564,20 @@ pub fn eclipse_stars<S: Longitudes + ?Sized>(
 /// that rises eclipsed, three for any other lunar eclipse, or four for a
 /// total one under `FULL_LUNAR_FOUR`.
 #[must_use]
-pub fn vedha_praharas(eclipse: &SeenEclipse, rule: EclipseVedha) -> usize {
-    let four = eclipse.kind == SeenKind::Solar
-        || eclipse.rose_eclipsed
-        || (rule == EclipseVedha::FullLunarFour && eclipse.kind == SeenKind::TotalLunar);
+pub fn vedha_praharas(eclipse: &SeenEclipse, rule: EclipseVedha) -> u8 {
+    let solar = eclipse.kind == SeenKind::Solar;
+    let four = match rule {
+        EclipseVedha::FixedHours => solar,
+        EclipseVedha::FullLunarFour => {
+            solar || eclipse.rose_eclipsed || eclipse.kind == SeenKind::TotalLunar
+        }
+        _ => solar || eclipse.rose_eclipsed,
+    };
     if four { 4 } else { 3 }
 }
+
+/// A prahara under [`EclipseVedha::FixedHours`]: three hours, days.
+const FIXED_PRAHARA_DAYS: f64 = 3.0 / 24.0;
 
 /// An eclipse's vedha (*Dharmasindhu* p. 28; `muhurta.md` §4.1.1).
 ///
@@ -578,7 +586,10 @@ pub fn vedha_praharas(eclipse: &SeenEclipse, rule: EclipseVedha) -> usize {
 /// enough back that the praharas counted exist. The vedha opens at the
 /// start of the prahara [`vedha_praharas`] before the one holding the
 /// first moment seen, and closes when the eclipse ends as seen, or at
-/// `next_rising` when the body set eclipsed.
+/// `next_rising` when the body set eclipsed. Under
+/// [`EclipseVedha::FixedHours`] the praharas are three hours each,
+/// counted back from the first moment seen itself, and `turns` is not
+/// read.
 ///
 /// # Errors
 ///
@@ -598,6 +609,18 @@ pub fn eclipse_vedha(
     }
     edges.extend(turns.last());
     let first = eclipse.seen.from.get();
+    let closes = if eclipse.set_eclipsed {
+        next_rising
+    } else {
+        eclipse.seen.to.get()
+    };
+    if rule == EclipseVedha::FixedHours {
+        let count = f64::from(vedha_praharas(eclipse, rule));
+        return Ok(blackout(
+            BlackoutKind::EclipseVedha,
+            interval(first - count * FIXED_PRAHARA_DAYS, closes)?,
+        ));
+    }
     let holding = edges
         .windows(2)
         .position(|pair| matches!(pair, [a, b] if *a <= first && first < *b))
@@ -605,18 +628,13 @@ pub fn eclipse_vedha(
             Error::internal(format!("no prahara around the eclipse seen from {first}"))
         })?;
     let opens = holding
-        .checked_sub(vedha_praharas(eclipse, rule))
+        .checked_sub(usize::from(vedha_praharas(eclipse, rule)))
         .and_then(|k| edges.get(k).copied())
         .ok_or_else(|| {
             Error::internal(format!(
                 "too few praharas before the eclipse seen from {first}"
             ))
         })?;
-    let closes = if eclipse.set_eclipsed {
-        next_rising
-    } else {
-        eclipse.seen.to.get()
-    };
     Ok(blackout(
         BlackoutKind::EclipseVedha,
         interval(opens, closes)?,

@@ -533,8 +533,8 @@ impl<'a> AlmanacArea<'a> {
     /// the last, each with how `place` sees it (`03-design/eclipses.md`).
     ///
     /// The shadow is `panchanga.eclipse_shadow`'s, and a body is seen
-    /// while it stands above `day.sunrise`'s horizon, the convention the
-    /// almanac's own sunrise is read under. A lunar eclipse comes back
+    /// while it stands above `panchanga.eclipse_horizon`'s horizon, the
+    /// eye's by default: the upper limb, with refraction. A lunar eclipse comes back
     /// with its contacts and the Moon's altitude at each; a solar one with
     /// the place's own contacts and magnitude. `seen` on each view is
     /// `None` where the place does not see it, which is what a sutak asks.
@@ -578,7 +578,7 @@ impl<'a> AlmanacArea<'a> {
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
         let sky = Completion::new(provider, settings.provider.overrides, delta_t);
-        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let horizon = Horizon::from_convention(settings.panchanga.eclipse_horizon);
         let found = Eclipses::new(&sky, delta_t)
             .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
             .here_between(start.relabel(), end.relabel(), *place, &horizon)?;

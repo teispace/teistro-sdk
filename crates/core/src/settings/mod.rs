@@ -526,6 +526,11 @@ group!(
         solar_month_start: SolarMonthStart,
         /// How much the Earth's shadow is enlarged for a lunar eclipse.
         eclipse_shadow: EclipseShadow,
+        /// The horizon an eclipsed body is seen above. The eye sees the
+        /// upper limb, lifted by refraction, which is *Dharmasindhu*'s test
+        /// for an eclipse that counts and the rising Nepal's committee
+        /// times a vedha from (`03-design/eclipses.md` §5).
+        eclipse_horizon: SunriseConvention,
         /// How far before an eclipse its vedha opens (crux C192).
         eclipse_vedha: EclipseVedha,
     }

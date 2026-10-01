@@ -1558,6 +1558,30 @@ the astronomical numbers do not move. Nothing else computes yet.
   narrows a minimum by golden sections, and every search's failure now
   says what was sought through one `SolveError::into_error`.
 
+- **Nepal's vedha, and the eye's horizon for an eclipse** (`muhurta.md`
+  §4.1.1, `eclipses.md` §5, cruxes C192 and C194).
+  - `panchanga.eclipse_vedha` gains `FIXED_HOURS`, Nepal's committee's
+    rule: fixed three-hour praharas counted back from the first moment
+    seen, twelve hours before a solar eclipse and nine before a lunar
+    one, including a Moon that rises eclipsed. `nepali-default`
+    (version 4) takes it.
+  - A test holds it, within three minutes, to the three eclipses the
+    press reported the committee timing: 2022-10-25, 2025-09-07 and
+    2026-03-03.
+  - The new setting `panchanga.eclipse_horizon` decides when an eclipse
+    is seen. It defaults to the upper limb with refraction, the eye's
+    horizon, where it was the almanac's sunrise convention.
+    *Dharmasindhu* counts an eclipse only while the eye can see it, and
+    the committee timed the 2026-03-03 vedha from an 18:03 moonrise. The
+    upper limb with refraction gives 18:03.7 over the built-in sky, the
+    old default 18:07.7.
+
+  **Numbers:** an eclipse's `seen` begins a few minutes earlier and ends
+  a few minutes later where the body rises or sets during it. The new
+  setting enters every settings hash. The C boundary's description of a
+  lunar `here` now names `umbralSeen`, which already crossed and was
+  missing from it.
+
 - **Holashtaka in the muhurta season** (`muhurta.md` §4.1.3, crux C193).
   `HOLASHTAKA` runs from the start of Phalguna's bright eighth to the
   full moon before Holi: eight tithis, by Kashinath's *Shighrabodha*

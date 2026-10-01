@@ -130,6 +130,25 @@ fn calendars() -> Calendars {
     }
 }
 
+/// The root's daily panchanga: the knobs every profile starts from.
+fn root_panchanga() -> Panchanga {
+    Panchanga {
+        // An almanac is geocentric wherever the chart is; the daily
+        // limbs of every published panchanga are, and the corpus
+        // measures the difference at five classifications in 136
+        // (`03-design/panchanga-day.md` §10).
+        centre: Centre::Geocentric,
+        moon_events: MoonEvents::Window,
+        muhurta_tables: String::from("CLASSICAL"),
+        panchaka_start: PanchakaStart::Aquarius,
+        ritu: RituReckoning::Solar,
+        solar_month_start: SolarMonthStart::Punyakala,
+        eclipse_shadow: EclipseShadow::Danjon,
+        eclipse_horizon: Sunrise::UpperLimbRefraction.into(),
+        eclipse_vedha: EclipseVedha::Dharmasindhu,
+    }
+}
+
 /// The root: every knob set and cited; never selected directly.
 #[must_use]
 pub fn root() -> Settings {
@@ -160,20 +179,7 @@ pub fn root() -> Settings {
             ghati_reckoning: GhatiReckoning::Civil,
             hora_reckoning: HoraReckoning::Proportional,
         },
-        panchanga: Panchanga {
-            // An almanac is geocentric wherever the chart is; the daily
-            // limbs of every published panchanga are, and the corpus
-            // measures the difference at five classifications in 136
-            // (`03-design/panchanga-day.md` §10).
-            centre: Centre::Geocentric,
-            moon_events: MoonEvents::Window,
-            muhurta_tables: String::from("CLASSICAL"),
-            panchaka_start: PanchakaStart::Aquarius,
-            ritu: RituReckoning::Solar,
-            solar_month_start: SolarMonthStart::Punyakala,
-            eclipse_shadow: EclipseShadow::Danjon,
-            eclipse_vedha: EclipseVedha::Dharmasindhu,
-        },
+        panchanga: root_panchanga(),
         time: Time {
             dst_gap: DstGap::Error,
             dst_overlap: DstOverlap::Earlier,
@@ -304,6 +310,7 @@ fn nepali_default() -> Profile {
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
     patch.calendars.lunar_month = Some(LunarMonth::Purnimanta);
     patch.panchanga.solar_month_start = Some(SolarMonthStart::BikramSambat);
+    patch.panchanga.eclipse_vedha = Some(EclipseVedha::FixedHours);
     patch.calendars.eras = Some(
         [Era::Vikrama, Era::Shaka, Era::Kali, Era::NepalSambat]
             .into_iter()
@@ -313,7 +320,8 @@ fn nepali_default() -> Profile {
         id: ProfileId::new("nepali-default"),
         // 2: the lunar month leads purnimanta, as Nepal names it.
         // 3: the season follows the civil calendar's solar months.
-        version: 3,
+        // 4: an eclipse's vedha is the committee's fixed hours.
+        version: 4,
         base: None,
         patch,
         sources: vec![
@@ -345,6 +353,13 @@ fn nepali_default() -> Profile {
                 Source::new(
                     "Nepal's daily panchanga",
                     "the season changes on the Bikram Sambat month's first day on all 341 recorded days; docs/03-design/ritu-measured.md",
+                ),
+            ),
+            Citation::new(
+                "panchanga.eclipse_vedha",
+                Source::new(
+                    "Nepal Panchanga Nirnayak Vikas Samiti",
+                    "no food from nine hours before a lunar eclipse's first seen moment and twelve before a solar one's: 2025-09-07, 2026-03-03 (the Moon rising eclipsed) and 2022-10-25 (the Sun setting eclipsed), as the press reported the committee; docs/03-design/muhurta.md §4.1.1",
                 ),
             ),
         ],
