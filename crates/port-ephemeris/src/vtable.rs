@@ -1818,6 +1818,7 @@ mod tests {
         let named = [
             Horizon::CENTRE_NO_REFRACTION,
             Horizon::UPPER_LIMB_REFRACTION,
+            Horizon::UPPER_LIMB_NO_REFRACTION,
             Horizon::from_convention(teistro_core::settings::SunriseConvention::Atmospheric {
                 which: teistro_core::settings::Sunrise::UpperLimbRefraction,
                 air: Atmosphere::STANDARD,

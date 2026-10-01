@@ -3910,6 +3910,9 @@ class Sunrise(Member):
     LOWER_LIMB_REFRACTION = 2
     """The lower limb with refraction."""
 
+    UPPER_LIMB_NO_REFRACTION = 3
+    """The upper limb on the geometric horizon, without refraction."""
+
 
 class GhatiReckoning(Member):
     """How the sixty ghatis of a day are measured."""
@@ -5883,6 +5886,7 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "CENTRE_NO_REFRACTION",
         1: "UPPER_LIMB_REFRACTION",
         2: "LOWER_LIMB_REFRACTION",
+        3: "UPPER_LIMB_NO_REFRACTION",
     },
     "GhatiReckoning": {
         0: "CIVIL",

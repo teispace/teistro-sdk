@@ -1,11 +1,12 @@
 //! Which ephemeris a context computes with, and the ordered chain that
 //! chooses between them.
 
+use teistro_astro::DeltaTModel;
 use teistro_core::Status;
 use teistro_core::error::Error;
-use teistro_core::settings::Siddhanta;
-use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
-use teistro_siddhanta::SiddhantaProvider;
+use teistro_core::settings::{Siddhanta, SuryaSunrise};
+use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
+use teistro_siddhanta::{ModernSunrise, SiddhantaProvider};
 
 /// One entry of the chain: an ephemeris the SDK carries, or one a
 /// consumer brings.
@@ -164,18 +165,35 @@ impl Ephemeris {
     /// use teistro::Ephemeris;
     /// use teistro::settings::{Siddhanta, SuryaBija};
     ///
-    /// let committee = Siddhanta::Surya { bija: SuryaBija::NepalCommittee };
+    /// let committee = Siddhanta::surya(SuryaBija::NepalCommittee);
     /// let provider = Ephemeris::SuryaSiddhanta.open_under(committee)?.expect("a provider");
     /// assert!(provider.capabilities().identity.data_version.contains("moon_apsis -4"));
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
+    /// A day at a modern sunrise (`SuryaSunrise::Modern`) takes it from the
+    /// entries after this one in a context's chain; opened alone, as here,
+    /// there are none, so it takes the built-in ephemeris's, and refuses
+    /// without that feature.
+    ///
     /// # Errors
     ///
-    /// Whatever a recipe's own opening refuses with.
+    /// Whatever a recipe's own opening refuses with, and a modern sunrise
+    /// with no modern ephemeris to give it.
     pub fn open_under(
         self,
         siddhanta: Siddhanta,
+    ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
+        self.open_before(siddhanta, DeltaTModel::default(), Vec::new())
+    }
+
+    /// As [`Ephemeris::open_under`], with the entries that follow this one
+    /// in the chain, which a modern sunrise beside the text is taken from.
+    fn open_before(
+        self,
+        siddhanta: Siddhanta,
+        delta_t: DeltaTModel,
+        rest: Vec<Ephemeris>,
     ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
         match self {
             Ephemeris::None => Ok(None),
@@ -183,15 +201,68 @@ impl Ephemeris {
             Ephemeris::Builtin => Ok(Some(Box::new(
                 teistro_ephemeris_builtin::provider::Builtin::new(),
             ))),
-            Ephemeris::SuryaSiddhanta => Ok(Some(Box::new(match siddhanta {
-                Siddhanta::Surya { bija } => SiddhantaProvider::with_bija(bija.revolutions()),
-                Siddhanta::Drik => SiddhantaProvider::text(),
-            }))),
+            Ephemeris::SuryaSiddhanta => {
+                let Siddhanta::Surya { bija, sunrise } = siddhanta else {
+                    return Ok(Some(Box::new(SiddhantaProvider::text())));
+                };
+                let text = SiddhantaProvider::with_bija(bija.revolutions());
+                match sunrise {
+                    SuryaSunrise::Text => Ok(Some(Box::new(text))),
+                    SuryaSunrise::Modern => Ok(Some(Box::new(
+                        ModernSunrise::new(text, modern_sunrise(rest)?).with_delta_t(delta_t),
+                    ))),
+                    other => Err(Error::unsupported(format!(
+                        "the {other} sunrise; this build knows TEXT and MODERN"
+                    ))
+                    .with_field("settings.frame.siddhanta.sunrise")),
+                }
+            }
             Ephemeris::Test => Ok(Some(Box::new(TestProvider::new()))),
             Ephemeris::Provider(provider) => Ok(Some(provider)),
             Ephemeris::Opening(opening) => (opening.open)().map(Some),
         }
     }
+}
+
+/// The modern ephemeris a day's sunrise comes from beside the text: the
+/// first of the remaining entries that opens a modern astronomy, else the
+/// SDK's built-in one.
+///
+/// A classical entry is passed over rather than refused, because it gives
+/// the very sunrise this setting asks to replace; an entry that fails to
+/// open is passed over as the chain passes over it.
+fn modern_sunrise(rest: Vec<Ephemeris>) -> Result<Box<dyn EphemerisProvider>, Error> {
+    for entry in rest {
+        if let Ok(Some(provider)) = entry.open_under(Siddhanta::Drik) {
+            if provider.capabilities().astronomy != Astronomy::Classical {
+                return Ok(provider);
+            }
+        }
+    }
+    built_in_sunrise()
+}
+
+/// The built-in ephemeris, as the modern sunrise's last resort.
+#[cfg(feature = "builtin-ephemeris")]
+#[allow(
+    clippy::unnecessary_wraps,
+    reason = "one signature for both builds; the other refuses"
+)]
+fn built_in_sunrise() -> Result<Box<dyn EphemerisProvider>, Error> {
+    Ok(Box::new(teistro_ephemeris_builtin::provider::Builtin::new()))
+}
+
+/// Without the built-in ephemeris, a modern sunrise needs a modern entry
+/// after the text's in the chain.
+#[cfg(not(feature = "builtin-ephemeris"))]
+fn built_in_sunrise() -> Result<Box<dyn EphemerisProvider>, Error> {
+    Err(Error::unsupported(
+        "a modern sunrise beside the Surya Siddhanta, with no modern ephemeris to give it",
+    )
+    .with_field("settings.frame.siddhanta.sunrise")
+    .with_hint(
+        "name a modern ephemeris after 'SURYA_SIDDHANTA' in the chain, or set the sunrise to TEXT",
+    ))
 }
 
 /// The first entry of the chain that opens, or the refusal that names
@@ -202,15 +273,25 @@ impl Ephemeris {
 /// the next entry turned a refusal carrying its status, its field and
 /// its hint into a bare "nothing could be opened". With one entry there
 /// is no next entry, so the refusal is the refusal.
+///
+/// The entries after the one that opens are handed to it: the Surya
+/// Siddhanta at a modern sunrise takes that sunrise from them.
 pub(crate) fn open(
     chain: Vec<Ephemeris>,
     siddhanta: Siddhanta,
+    delta_t: DeltaTModel,
 ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
     let mut refusals: Vec<String> = Vec::with_capacity(chain.len());
     let only = chain.len() == 1;
-    for entry in chain {
+    let mut entries = chain.into_iter();
+    while let Some(entry) = entries.next() {
         let name = entry.name();
-        match entry.open_under(siddhanta) {
+        let rest = if matches!(entry, Ephemeris::SuryaSiddhanta) {
+            entries.by_ref().collect()
+        } else {
+            Vec::new()
+        };
+        match entry.open_before(siddhanta, delta_t, rest) {
             Ok(opened) => return Ok(opened),
             Err(refusal) if only => return Err(refusal),
             Err(refusal) => refusals.push(format!("{name}: {refusal}")),

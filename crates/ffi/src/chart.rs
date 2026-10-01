@@ -654,6 +654,8 @@ pub enum TsSunrise {
     UpperLimbRefraction = 1,
     /// The lower limb with refraction.
     LowerLimbRefraction = 2,
+    /// The upper limb on the geometric horizon, without refraction.
+    UpperLimbNoRefraction = 3,
 }
 
 impl TsSunrise {
@@ -666,6 +668,7 @@ impl TsSunrise {
             Sunrise::CentreNoRefraction => Some(TsSunrise::CentreNoRefraction),
             Sunrise::UpperLimbRefraction => Some(TsSunrise::UpperLimbRefraction),
             Sunrise::LowerLimbRefraction => Some(TsSunrise::LowerLimbRefraction),
+            Sunrise::UpperLimbNoRefraction => Some(TsSunrise::UpperLimbNoRefraction),
             _ => None,
         }
     }
@@ -5152,7 +5155,7 @@ mod tests {
                     as u8
             })
             .collect();
-        assert_eq!(sunrises, vec![0, 1, 2], "one id each, in order");
+        assert_eq!(sunrises, vec![0, 1, 2, 3], "one id each, in order");
 
         let ghatis: Vec<u8> = GhatiReckoning::ALL
             .iter()

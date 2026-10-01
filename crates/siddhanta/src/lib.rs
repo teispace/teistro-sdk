@@ -50,6 +50,7 @@ pub mod mean;
 pub mod model;
 pub mod params;
 pub mod provider;
+pub mod sunrise;
 pub mod trig;
 
 pub use equation::{Epicycle, SighraEquation};
@@ -58,4 +59,5 @@ pub use mean::{Ahargana, Cycle, Motion};
 pub use model::{DayArc, Position, SuryaSiddhanta, Trace};
 pub use params::{Bija, Parameters, Planet};
 pub use provider::SiddhantaProvider;
+pub use sunrise::ModernSunrise;
 pub use trig::Trig;

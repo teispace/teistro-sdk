@@ -42,8 +42,8 @@ pub use knobs::{
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount,
     Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
-    SolarMonthStart, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
-    Yuddha, Zodiac,
+    SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
+    YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -253,7 +253,30 @@ pub enum Siddhanta {
     Surya {
         /// Which bija the text's revolution counts take.
         bija: SuryaBija,
+        /// Whose sunrise the day begins at: the text's (the default) or a
+        /// modern ephemeris's beside the text's sky.
+        #[serde(default)]
+        sunrise: SuryaSunrise,
     },
+}
+
+impl Siddhanta {
+    /// The Surya Siddhanta under a bija, its day beginning at the text's
+    /// own sunrise.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Siddhanta, SuryaBija, SuryaSunrise};
+    ///
+    /// let text = Siddhanta::surya(SuryaBija::None);
+    /// assert_eq!(text, Siddhanta::Surya { bija: SuryaBija::None, sunrise: SuryaSunrise::Text });
+    /// ```
+    #[must_use]
+    pub const fn surya(bija: SuryaBija) -> Siddhanta {
+        Siddhanta::Surya {
+            bija,
+            sunrise: SuryaSunrise::Text,
+        }
+    }
 }
 
 /// Which bija (seed) corrections the Surya Siddhanta's revolution counts
@@ -1075,9 +1098,9 @@ impl Resolved {
     ///
     /// let mut patch = SettingsPatch::default();
     /// patch.frame.centre = Some(teistro_core::settings::Centre::Topocentric);
-    /// patch.frame.siddhanta = Some(teistro_core::settings::Siddhanta::Surya {
-    ///     bija: teistro_core::settings::SuryaBija::None,
-    /// });
+    /// patch.frame.siddhanta = Some(teistro_core::settings::Siddhanta::surya(
+    ///     teistro_core::settings::SuryaBija::None,
+    /// ));
     /// let resolved = Profile::shipped("parashari-classical").unwrap().resolve(&patch).unwrap();
     /// let stamp = resolved.provenance(Version::new(0, 1, 0), Hash::of(b"input"));
     /// assert_eq!(stamp.profile, "parashari-classical");
@@ -1202,6 +1225,24 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             "siddhanta-topocentric",
             "the classical model is geocentric; the topocentric correction is applied on top and stamped",
             &["frame.siddhanta", "frame.centre"],
+        ));
+    }
+    // The text's sunrise is the centre on the geometric horizon, in local
+    // mean time; asked for another convention, the provider declines and
+    // the SDK solves it over the text's Sun, which is neither the text's
+    // sunrise nor a modern one (`03-design/nepal-day-measured.md` §4).
+    if matches!(
+        s.frame.siddhanta,
+        Siddhanta::Surya {
+            sunrise: SuryaSunrise::Text,
+            ..
+        }
+    ) && s.day.sunrise != SunriseConvention::from(Sunrise::CentreNoRefraction)
+    {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-sunrise-convention",
+            "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
+            &["frame.siddhanta", "day.sunrise"],
         ));
     }
     let root = profiles::root();
@@ -1464,9 +1505,7 @@ mod tests {
                 .into_iter()
                 .collect(),
         );
-        warned.frame.siddhanta = Some(Siddhanta::Surya {
-            bija: SuryaBija::NepalCommittee,
-        });
+        warned.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::NepalCommittee));
         let resolved = shipped("nepali-default")
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
@@ -1484,7 +1523,7 @@ mod tests {
         )
         .unwrap_or_else(|e| panic!("{e}"));
         let revolutions = |siddhanta: Siddhanta| match siddhanta {
-            Siddhanta::Surya { bija } => bija.revolutions(),
+            Siddhanta::Surya { bija, .. } => bija.revolutions(),
             Siddhanta::Drik => panic!("not the text"),
         };
         assert_eq!(revolutions(named), revolutions(counted));
@@ -1501,16 +1540,61 @@ mod tests {
             .resolve(&SettingsPatch::default())
             .unwrap_or_else(|e| panic!("{e}"))
             .settings;
-        assert_eq!(
+        assert!(matches!(
             settings.frame.siddhanta,
             Siddhanta::Surya {
-                bija: SuryaBija::NepalCommittee
+                bija: SuryaBija::NepalCommittee,
+                ..
             }
-        );
+        ));
         assert_eq!(
             settings.frame.ayanamsha,
             AyanamshaChoice::from(crate::catalogue::Ayanamsha::Suryasiddhanta)
         );
+    }
+
+    #[test]
+    fn the_texts_day_begins_at_its_own_sunrise_unless_asked_for_a_modern_one() {
+        let read =
+            |json: &str| serde_json::from_str::<Siddhanta>(json).unwrap_or_else(|e| panic!("{e}"));
+        // A document written before the knob reads as the text's sunrise.
+        assert_eq!(
+            read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}}"#),
+            Siddhanta::surya(SuryaBija::None)
+        );
+        assert_eq!(
+            read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}, "sunrise": "MODERN"}"#),
+            Siddhanta::Surya {
+                bija: SuryaBija::None,
+                sunrise: SuryaSunrise::Modern
+            }
+        );
+        // The committee's sky: the text's limbs at a modern sunrise, the
+        // upper limb on the geometric horizon, and no warning for it.
+        let committee = shipped("nepali-committee")
+            .resolve(&SettingsPatch::default())
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(
+            committee.settings.frame.siddhanta,
+            Siddhanta::Surya {
+                bija: SuryaBija::NepalCommittee,
+                sunrise: SuryaSunrise::Modern
+            }
+        );
+        assert_eq!(
+            committee.settings.day.sunrise,
+            SunriseConvention::from(Sunrise::UpperLimbNoRefraction)
+        );
+        assert!(committee.warnings.is_empty(), "{:?}", committee.warnings);
+        // The same sky at the text's sunrise under that convention is
+        // neither, and says so.
+        let mut text = SettingsPatch::default();
+        text.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::NepalCommittee));
+        let warned = shipped("nepali-committee")
+            .resolve(&text)
+            .unwrap_or_else(|e| panic!("{e}"));
+        let rules: Vec<&str> = warned.warnings.iter().map(|d| d.rule).collect();
+        assert_eq!(rules, ["siddhanta-text-sunrise-convention"]);
     }
 
     #[test]

@@ -6569,7 +6569,7 @@ export declare const DayPartById: ReadonlyMap<number, DayPart>;
  * with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
  * §8).
  */
-export type Sunrise = 'CENTRE_NO_REFRACTION' | 'UPPER_LIMB_REFRACTION' | 'LOWER_LIMB_REFRACTION';
+export type Sunrise = 'CENTRE_NO_REFRACTION' | 'UPPER_LIMB_REFRACTION' | 'LOWER_LIMB_REFRACTION' | 'UPPER_LIMB_NO_REFRACTION';
 
 /** Every Sunrise by name; the values are the strings the union accepts. */
 export declare const Sunrise: {
@@ -6585,6 +6585,10 @@ export declare const Sunrise: {
    * The lower limb with refraction.
    */
   readonly LowerLimbRefraction: 'LOWER_LIMB_REFRACTION';
+  /**
+   * The upper limb on the geometric horizon, without refraction.
+   */
+  readonly UpperLimbNoRefraction: 'UPPER_LIMB_NO_REFRACTION';
 };
 
 /**

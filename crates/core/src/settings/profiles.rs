@@ -19,8 +19,8 @@ use super::knobs::{
     OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
     RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount,
     Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
-    SolarMonthStart, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength,
-    Yuddha, Zodiac,
+    SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka,
+    YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -363,20 +363,28 @@ fn nepali_default() -> Profile {
 /// (`03-design/nepal-day-measured.md`). The zodiac is the text's own,
 /// which the text **defines**; the chart is geocentric, as the text's
 /// is. The provider is declared, never chosen by the profile
-/// (ADR-0029): open the context over `SURYA_SIDDHANTA`. The committee's
-/// five star planets are modern positions under Lahiri (C38) and its
-/// sunrise a modern one (C39), which the text's provider does not give.
+/// (ADR-0029): open the context over `SURYA_SIDDHANTA`.
+///
+/// The day begins at a **modern** sunrise beside the text's sky, the
+/// upper limb on the geometric horizon: the text's own sunrise has no
+/// equation of time and stands up to twenty minutes from the print's,
+/// and with this one every printed vriddhi and kshaya agrees (C39). The
+/// modern sunrise comes from the chain's next modern entry, or the
+/// built-in ephemeris. The committee's five star planets are modern
+/// positions under Lahiri (C38), which this profile does not reproduce.
 fn nepali_committee() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Geocentric);
     patch.frame.siddhanta = Some(Siddhanta::Surya {
         bija: SuryaBija::NepalCommittee,
+        sunrise: SuryaSunrise::Modern,
     });
+    patch.day.sunrise = Some(Sunrise::UpperLimbNoRefraction.into());
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
-        version: 1,
+        version: 2,
         base: Some(ProfileId::new("nepali-default")),
         patch,
         sources: vec![
@@ -397,6 +405,12 @@ fn nepali_committee() -> Profile {
                 Source::new(
                     "Surya Siddhanta",
                     "Burgess 1860: the text's places are geocentric",
+                ),
+            ),
+            Citation::new(
+                "day.sunrise",
+                committee(
+                    "measured: Nepal's daily sunrise is a modern upper limb on the geometric horizon, within 1.4 minutes on 333 days; docs/03-design/nepal-day-measured.md, C39",
                 ),
             ),
         ],
@@ -468,9 +482,7 @@ fn parashari_classical() -> Profile {
 /// context over `SURYA_SIDDHANTA`.
 fn surya_siddhanta() -> Profile {
     let mut patch = SettingsPatch::default();
-    patch.frame.siddhanta = Some(Siddhanta::Surya {
-        bija: SuryaBija::None,
-    });
+    patch.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None));
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
     let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
     Profile {

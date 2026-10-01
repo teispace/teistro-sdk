@@ -7070,6 +7070,12 @@
           "value": 2,
           "doc": "The lower limb with refraction.",
           "key": "LOWER_LIMB_REFRACTION"
+        },
+        {
+          "name": "UpperLimbNoRefraction",
+          "value": 3,
+          "doc": "The upper limb on the geometric horizon, without refraction.",
+          "key": "UPPER_LIMB_NO_REFRACTION"
         }
       ],
       "source": "crates/ffi/src/chart.rs"

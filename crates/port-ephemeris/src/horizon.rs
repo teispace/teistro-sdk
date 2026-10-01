@@ -219,11 +219,21 @@ impl Horizon {
         altitude_deg: 0.0,
     };
 
+    /// The upper limb on the geometric horizon, without refraction
+    /// (`UPPER_LIMB_NO_REFRACTION`): the convention Nepal's daily
+    /// panchanga's sunrise is nearest, measured (C39).
+    pub const UPPER_LIMB_NO_REFRACTION: Horizon = Horizon {
+        disc: DiscPoint::UpperLimb,
+        refraction: Refraction::None,
+        altitude_deg: 0.0,
+    };
+
     /// The horizon a named convention is.
     const fn named(which: Sunrise) -> Horizon {
         match which {
             Sunrise::UpperLimbRefraction => Horizon::UPPER_LIMB_REFRACTION,
             Sunrise::LowerLimbRefraction => Horizon::LOWER_LIMB_REFRACTION,
+            Sunrise::UpperLimbNoRefraction => Horizon::UPPER_LIMB_NO_REFRACTION,
             // The classical convention, and any named convention core
             // adds before this crate learns it.
             _ => Horizon::CENTRE_NO_REFRACTION,
@@ -269,6 +279,8 @@ impl Horizon {
             Some(Sunrise::UpperLimbRefraction.into())
         } else if *self == Horizon::LOWER_LIMB_REFRACTION {
             Some(Sunrise::LowerLimbRefraction.into())
+        } else if *self == Horizon::UPPER_LIMB_NO_REFRACTION {
+            Some(Sunrise::UpperLimbNoRefraction.into())
         } else if self.disc == DiscPoint::Centre && self.refraction == Refraction::None {
             Some(SunriseConvention::Custom {
                 altitude_deg: self.altitude_deg,
@@ -365,6 +377,17 @@ mod tests {
             assert_eq!(Refraction::from_id(refraction.id(), air), Some(refraction));
         }
         assert_eq!(Refraction::from_id(9, air), None);
+        // Every named convention is a horizon of its own and reads back as
+        // itself, so a member core adds without a horizon here fails.
+        let horizons: Vec<Horizon> = Sunrise::ALL
+            .iter()
+            .map(|which| Horizon::from_convention((*which).into()))
+            .collect();
+        for (which, horizon) in Sunrise::ALL.iter().zip(&horizons) {
+            assert_eq!(horizon.convention(), Some((*which).into()), "{which}");
+            let same = horizons.iter().filter(|other| *other == horizon).count();
+            assert_eq!(same, 1, "{which} shares its horizon");
+        }
         for which in [Sunrise::UpperLimbRefraction, Sunrise::LowerLimbRefraction] {
             for air in [Atmosphere::STANDARD, air] {
                 let convention = SunriseConvention::Atmospheric { which, air };
@@ -394,23 +417,12 @@ mod tests {
             .key(),
             "UPPER_LIMB/ATMOSPHERE[987hPa,STANDARD]/0"
         );
-        for named in [
-            Sunrise::CentreNoRefraction,
-            Sunrise::UpperLimbRefraction,
-            Sunrise::LowerLimbRefraction,
-        ] {
-            let convention: SunriseConvention = named.into();
-            assert_eq!(
-                Horizon::from_convention(convention).convention(),
-                Some(convention)
-            );
-        }
         let custom = SunriseConvention::Custom {
             altitude_deg: -12.0,
         };
         assert_eq!(Horizon::from_convention(custom).convention(), Some(custom));
         let unnamed = Horizon {
-            disc: DiscPoint::UpperLimb,
+            disc: DiscPoint::LowerLimb,
             refraction: Refraction::None,
             altitude_deg: 0.0,
         };

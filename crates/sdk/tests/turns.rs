@@ -13,6 +13,7 @@
 use teistro::catalogue::{Calendar, Nakshatra, Tithi, Yoga};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, Panchanga, Sunrises, UtcOffset};
+use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
 
 fn day(sdk: &Context, (y, m, d): (i32, u8, u8)) -> Panchanga {
     let place = Place::new(
@@ -30,7 +31,7 @@ fn day(sdk: &Context, (y, m, d): (i32, u8, u8)) -> Panchanga {
 }
 
 /// Nepal's national panchanga: the text with the committee's bija, in
-/// the text's own zodiac.
+/// the text's own zodiac, its day begun at a modern sunrise.
 fn nepal() -> Context {
     Context::builder()
         .profile("nepali-committee")
@@ -119,7 +120,7 @@ fn a_consumers_own_bija_is_the_named_one_when_the_counts_agree() {
     let own = Context::builder()
         .profile("nepali-committee")
         .settings_json(
-            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"moon_apsis": -4}}}}}"#,
+            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"moon_apsis": -4}}, "sunrise": "MODERN"}}}"#,
         )
         .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()
@@ -160,9 +161,11 @@ fn a_tithi_between_two_sunrises_names_no_day() {
     for (date, tithi) in [
         ((2025, 4, 26), Tithi::KrishnaChaturdashi),
         ((2025, 8, 14), Tithi::KrishnaShashthi),
-        // Not 11 November 2025: Shashthi ended a minute after the print's
-        // sunrise and seventeen before the text's, which has no equation
-        // of time, so the text names no tithi lost that day (C39).
+        // Shashthi ended a minute after the print's sunrise and seventeen
+        // before the text's own, which has no equation of time: the modern
+        // sunrise the committee's sky begins its day at is what loses
+        // Saptami here (C39).
+        ((2025, 11, 11), Tithi::KrishnaSaptami),
         ((2026, 1, 31), Tithi::ShuklaChaturdashi),
         ((2026, 4, 22), Tithi::ShuklaShashthi),
         ((2026, 5, 15), Tithi::KrishnaChaturdashi),
@@ -201,4 +204,85 @@ fn a_span_ends_in_ghatis_from_sunrise() {
     let last = found.limbs.tithi.last().unwrap();
     let whole = found.ghati_pala(last.whole.to).unwrap();
     assert!((59..=60).contains(&whole.ghati), "{whole}");
+}
+
+#[test]
+fn the_committees_sunrise_comes_from_the_next_modern_entry() {
+    let stamp = |sdk: &Context| {
+        sdk.ephemeris()
+            .unwrap()
+            .capabilities()
+            .identity
+            .data_version
+    };
+    // Alone in the chain, the text takes the built-in ephemeris's sunrise.
+    assert!(
+        stamp(&nepal()).contains("sunrise from teistro-builtin"),
+        "{}",
+        stamp(&nepal())
+    );
+    // A modern entry after it gives the sunrise instead, and the limbs
+    // stay the text's.
+    let modern = TestProvider::new().capabilities().identity.name;
+    let beside = Context::builder()
+        .profile("nepali-committee")
+        .ephemeris([
+            Ephemeris::SuryaSiddhanta,
+            Ephemeris::Provider(Box::new(TestProvider::new())),
+        ])
+        .build()
+        .unwrap();
+    assert!(
+        stamp(&beside).contains(&format!("sunrise from {modern}")),
+        "{}",
+        stamp(&beside)
+    );
+    // Its day is another, so compare a member both days hold whole.
+    let date = (2025, 11, 11);
+    let saptami = |sdk: &Context| {
+        day(sdk, date)
+            .limbs
+            .tithi
+            .into_iter()
+            .find(|span| span.member == Tithi::KrishnaSaptami)
+            .unwrap()
+            .whole
+    };
+    assert_eq!(saptami(&beside), saptami(&nepal()));
+    assert_ne!(
+        day(&beside, date).day.sunrise,
+        day(&nepal(), date).day.sunrise
+    );
+    // The text's own sunrise names nothing else.
+    let text = Context::builder()
+        .profile("nepali-committee")
+        .settings_json(r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}, "sunrise": "TEXT"}}}"#)
+        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap();
+    assert!(!stamp(&text).contains("sunrise from"), "{}", stamp(&text));
+}
+
+#[test]
+fn the_modern_sunrise_is_the_prints_and_the_texts_is_not() {
+    // 11 November 2025 by Nepal's clock: the print's sunrise is 06:23.
+    let printed = npt((2025, 11, 11), (6, 23));
+    let modern = day(&nepal(), (2025, 11, 11)).day.sunrise.get();
+    assert!(
+        minutes_apart(modern, printed) < 1.5,
+        "{}",
+        (modern - printed) * 1440.0
+    );
+    let text = Context::builder()
+        .profile("nepali-committee")
+        .settings_json(r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}, "sunrise": "TEXT"}}, "day": {"sunrise": {"kind": "NAMED", "which": "CENTRE_NO_REFRACTION"}}}"#)
+        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap();
+    let own = day(&text, (2025, 11, 11)).day.sunrise.get();
+    assert!(
+        minutes_apart(own, printed) > 10.0,
+        "{}",
+        (own - printed) * 1440.0
+    );
 }

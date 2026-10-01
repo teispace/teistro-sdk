@@ -6435,6 +6435,11 @@
           "const": "LOWER_LIMB_REFRACTION",
           "description": "The lower limb with refraction.",
           "type": "string"
+        },
+        {
+          "const": "UPPER_LIMB_NO_REFRACTION",
+          "description": "The upper limb on the geometric horizon, without refraction: Nepal's daily print (`03-design/nepal-day-measured.md`, C39).",
+          "type": "string"
         }
       ]
     },
