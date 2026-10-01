@@ -294,6 +294,88 @@ chart's pairs, ragged by that count. Each pair is a row: `first` and
 `second`, then the seven flags of each side. [`reception-measured.md`](reception-measured.md)
 holds Lilly's examples and counts each kind over the corpus.
 
+## Accidental fortitudes (step 5)
+
+Lilly's "ready Table" (p. 115) gives, beside the essential dignities, a
+planet's **accidental** fortitudes and debilities: its house, its
+motion, its place about the Sun, its partile aspects, a siege and three
+fixed stars. They are read in `accidental_dignities`, from an
+`AccidentalSky`:
+
+- the seven's longitudes and daily motions;
+- the twelve cusps;
+- the North Node;
+- Regulus, Spica and Algol at their places of date.
+
+As with the essential dignities there is no ephemeris here. Each planet
+gets a `PlanetAccidents`: the house it is counted in, every other line
+it meets (`Accident`), and its fortitudes and debilities summed apart,
+the way Lilly prints them. `AccidentalScores::LILLY` is the table's
+worth for each line, and every orb Lilly states is a field of
+`AccidentalRules::LILLY`.
+
+What the text decides (pp. 33, 106, 113–115, read off the page images):
+
+- **House.** The Midheaven or Ascendant 5; the 7th, 4th and 11th 4; the
+  2nd and 5th 3; the 9th 2; the 3rd 1; the 12th −5; the 8th and 6th −2.
+  A planet within five degrees of a cusp counts in the house "to whose
+  Cusp he is neerest" (p. 33), before or after it (C214).
+- **Motion.** Direct 4, retrograde −5, both void for the Sun and the
+  Moon. Swift 2 and slow −2, against Lilly's mean motions (Saturn 2′01″,
+  Jupiter 4′59″, Mars 31′27″, the Sun, Venus and Mercury 59′08″, the
+  Moon 13°10′36″).
+- **Orientality.** Oriental means behind the Sun in longitude, rising
+  before him. It is worth 2 to Saturn, Jupiter and Mars and −2 to Venus
+  and Mercury, and occidental the reverse. The Moon is increasing (2)
+  from conjunction to opposition and decreasing (−2) after. The Sun has
+  none.
+- **The Sun.** Each planet but the Sun holds exactly one of four:
+  - cazimi, within 17′ (5);
+  - combust, within 8°30′ and in the Sun's own sign (−5, C211);
+  - under the beams, within 17° (−4, C212);
+  - free from combustion (5).
+
+  The merchant's figure scores Venus in cazimi as cazimi alone, not
+  "free" as well.
+- **Partile aspects.** Partile means the same degree of signs the
+  aspect apart (C216). The lines are:
+  - conjunction with Jupiter or Venus 5, with the North Node 4;
+  - trine to Jupiter or Venus 4, sextile 3;
+  - conjunction with Saturn or Mars −5, with the South Node −4;
+  - opposition to Saturn or Mars −4, square −3.
+
+  Each line counts once however many bodies hold it, and a planet is
+  never in aspect with itself.
+- **Besieged** between the bodies of Saturn and Mars, −5 (C215).
+- **Fixed stars**, each within five degrees (C213): Regulus 6, Spica 5,
+  Algol −5.
+
+**The acceptance test** is two figures whose tallies Lilly prints line
+by line:
+
+- Chapter XXVIII's "Rich or Poore" (pp. 177–180);
+- Book III's English merchant (pp. 742–745).
+
+Both are fed as printed: positions, cusps, motions, and the stars at
+their places of date. Each planet's computed lines and net are then held
+to the tally cell by cell. Under the stated rules every printed line is
+reproduced except these, which the tests list:
+
+- The beams. In the first figure Jupiter (15°39′ from the Sun), Mercury
+  (14°35′) and the Moon (15°57′) are within 17°, yet the tally prints
+  each as "free from combustion" (C212).
+- Omissions. The first figure's Jupiter is oriental, unprinted. The
+  merchant's Mercury, combust, is oriental and peregrine, neither
+  printed. The first figure's Sun holds its fire triplicity by day,
+  unprinted (C217).
+- The eighth house. The merchant's tally charges it 4 where the table
+  charges 2, for the Sun, Venus and Mercury (C217).
+
+The stars of date matter. Lilly prints Regulus at "24 Leo", which would
+put the first figure's Moon (19°07′ Leo) within five degrees. Of date,
+Regulus stood near 24°43′, 5°36′ from her, and the tally gives her no
+Regulus.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
@@ -318,10 +400,12 @@ holds Lilly's examples and counts each kind over the corpus.
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental
    fortitudes (p. 115's second half), each a falsification pass first.
-   **Reception done** (§Reception, C210). The accidental fortitudes come
-   next: they need a house division, motion and the fixed stars, and
-   their acceptance test is the Chapter XXVIII figure's printed totals
-   (pp. 178–180). Then the almuten, which needs both.
+   **Reception done** (§Reception, C210). **The accidental fortitudes'
+   doctrine is done** (§Accidental fortitudes, C211–C217), held to two
+   printed figures. Their façade comes next. It reads the chart's
+   motions, its Regiomontanus cusps (Lilly's division), the mean node
+   and the three stars of date into an `AccidentalSky`, and measures
+   the lines over the corpus. Then the almuten, which needs both.
 
 ## What is not decided
 

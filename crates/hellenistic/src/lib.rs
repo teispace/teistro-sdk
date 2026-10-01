@@ -23,11 +23,16 @@
 
 #![doc(html_no_source)]
 
+mod accidental;
 mod dignity;
 mod reading;
 mod reception;
 mod terms;
 
+pub use accidental::{
+    Accident, AccidentalRules, AccidentalScores, AccidentalSky, Motion, Partile, PlanetAccidents,
+    Siege, accidental_dignities, house_of,
+};
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,
