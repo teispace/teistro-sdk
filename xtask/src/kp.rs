@@ -31,7 +31,7 @@ use teistro::{Context, Document, Ephemeris, KpChart, KpNumber, KpRequest, Nas};
 
 use crate::births::{Birth, births};
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, Verdict, capitalised, count, spelled, table};
+use crate::measure::{Claim, Verdict, capitalised, count, median, spelled, table};
 
 const PAGE: &str = "docs/03-design/kp-measured.md";
 
@@ -309,17 +309,6 @@ fn measure(
     })
 }
 
-/// The middle value, the mean of the two middle ones for an even count.
-fn median(mut values: Vec<f64>) -> f64 {
-    values.sort_by(f64::total_cmp);
-    let n = values.len();
-    match n {
-        0 => f64::NAN,
-        _ if n % 2 == 1 => values[n / 2],
-        _ => f64::midpoint(values[n / 2 - 1], values[n / 2]),
-    }
-}
-
 /// One row of the margin table: the median and shortest in minutes, and how
 /// many fall within each of [`WITHIN_MINUTES`].
 fn margin_row(label: &str, minutes: &[f64]) -> String {
@@ -330,7 +319,7 @@ fn margin_row(label: &str, minutes: &[f64]) -> String {
     });
     format!(
         "| {label} | {:.2} | {:.2} | {} |",
-        median(minutes.to_vec()),
+        median(minutes.iter().copied()),
         shortest,
         within.join(" | ")
     )
@@ -406,13 +395,8 @@ fn margins(out: &mut String, measured: &[Measured]) {
         margin_row("the lagna", &lagna),
         margin_row("any cusp", &cusps),
         one_in(lagna.iter().filter(|m| **m < 2.0).count(), lagna.len()),
-        median(
-            measured
-                .iter()
-                .map(|m| m.lagna_sub_sub.minutes * 60.0)
-                .collect()
-        ),
-        median(measured.iter().map(|m| m.moon_sub.minutes / 60.0).collect()),
+        median(measured.iter().map(|m| m.lagna_sub_sub.minutes * 60.0)),
+        median(measured.iter().map(|m| m.moon_sub.minutes / 60.0)),
     );
 }
 

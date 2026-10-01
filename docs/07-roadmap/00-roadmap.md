@@ -732,7 +732,23 @@ measured against Nepal before it is called done:
    sign at sunrise does not (C178, C186). It is a day column in every
    binding, with `panchanga.ritu` choosing solar, lunar or tropical
    months and `panchanga.solar_month_start` the day a solar month
-   begins on. Left: the flags and ghati-pala.
+   begins on. **Flags and ghati-pala measured 2026-10-01**
+   (`nepal-day-measured.md`): every span says which of its day's two
+   sunrises it held (`span.sunrises`, a vriddhi `BOTH` and a kshaya
+   `NEITHER`) and when it ended in ghatis from sunrise (`span.ends`), in
+   every binding. Measuring them against Nepal's daily print found what
+   the print is computed from — the Surya Siddhanta with the committee's
+   Moon bija, in the text's own zodiac, every one of 990 ends within 1.5
+   minutes (C187) — and two defects on the way: the bija was a switch
+   nothing read (now `SuryaBija`, C28), and every search over a provider
+   that defines its zodiac shifted by the catalogue's member of the same
+   name, 1.6° off (now `ChartZodiac::searched`). `nepali-committee` is
+   the profile. Left in this line: **the committee's mixed sky** (C38,
+   C39) — the text's Sun and Moon for the limbs beside a modern horizon
+   for the sunrise and modern places for the five star planets, as one
+   composed provider — which moves the days §5 of that page names, where
+   an end within minutes of sunrise meets the text's sunrise rather than
+   the print's.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
    as blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's

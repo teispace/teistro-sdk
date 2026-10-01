@@ -1537,6 +1537,27 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none moved. Each day gains a field, so a stored day's
   content hash differs, and `nepali-default`'s version is 3.
 
+- **Nepal's daily panchanga, reproduced** (`nepal-day-measured.md`, C28,
+  C187). The new `nepali-committee` profile reads the Surya Siddhanta
+  with the national committee's bija in the text's own zodiac, and
+  `cargo xtask nepal-day` (gated in fast-check) holds it to 333 days of
+  Nepal's daily print: all 990 printed tithi, nakshatra and yoga ends
+  within 1.5 minutes. `Siddhanta::Surya`'s `bija` was a flag nothing
+  read. It is now `SuryaBija`: `NONE`, `NEPAL_COMMITTEE`, or `CUSTOM`
+  with the counted revolutions. `Ephemeris::SuryaSiddhanta` opens the
+  provider it names, and its data version lists the counts. Each span
+  says which of the day's sunrises it held (`span.sunrises`) and its end
+  in ghatis and palas from sunrise, in Rust and in Node, Python and Dart.
+
+  **Numbers:** a search over a provider that defines its own ayanamsha
+  (the Surya Siddhanta) moved. It shifted the tropical longitudes by the
+  catalogue member of the same name, 1.6° from the text's own today, and
+  it now reads the provider's sidereal longitudes. The Surya Siddhanta's
+  nakshatra and yoga ends, its muhurta windows, transits and
+  praveshas move by up to hours. Its tithis and karanas do not move: a
+  difference of two longitudes carries no zodiac. Nothing under a modern
+  provider moved.
+
 - **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
   C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika
