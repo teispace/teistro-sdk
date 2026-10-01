@@ -2027,9 +2027,7 @@ void _engineTests() {
       'otherwise': 'LATER',
     };
     final mine =
-        days(
-          festivals: const FestivalRequest(rules: [everyMonth]),
-        ).festivals!;
+        days(festivals: const FestivalRequest(rules: [everyMonth])).festivals!;
     expect(
       [for (final o in mine.observances) (o.rule, o.month)],
       [('EVERY_FULL_MOON', Masa.ashwina)],
