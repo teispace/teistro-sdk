@@ -1715,6 +1715,20 @@ the astronomical numbers do not move. Nothing else computes yet.
     it; a received planet stays peregrine. Every binding carries both,
     through `reception_count`, `dignity_planets.reception` and section 62
     (`dignity_receptions`).
+  - **Accidental fortitudes** (§Accidental fortitudes, C211–C217
+    decided). `accidental_dignities` reads Lilly's p. 115 table from an
+    `AccidentalSky`: the seven's longitudes and motions, the cusps, the
+    North Node and three stars of date. Each planet gets a
+    `PlanetAccidents` with its house by the five-degree rule
+    (`house_of`), every other line it meets (`Accident`), and its
+    fortitudes and debilities summed apart. Every orb is a field of
+    `AccidentalRules` and every line's worth one of `AccidentalScores`.
+    Two printed figures are the acceptance test, cell by cell: Chapter
+    XXVIII's and Book III's English merchant. Every printed line is
+    reproduced except ten listed cells. In three of them the tally
+    ignores the beams, and `beams_deg` is the knob that reproduces them.
+    The other seven are lines Lilly's own table gives that his tallies
+    leave out or score otherwise.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
