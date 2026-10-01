@@ -4417,7 +4417,7 @@ fn a_panchanga_request_answers_festivals_over_its_own_days() {
     assert_eq!(answer, expected.value);
     assert_eq!(provenance.input_hash, expected.provenance.input_hash);
     let rules: Vec<&str> = answer.observances.iter().map(|o| o.rule.as_str()).collect();
-    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA"]);
+    assert_eq!(rules, ["VIJAYA_DASHAMI", "LAKSHMI_PUJA", "BALI_PRATIPADA"]);
 }
 
 /// The lunar years beside a panchanga request's days
