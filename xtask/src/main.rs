@@ -139,6 +139,9 @@
 //!   ends, the days one holds both sunrises or neither, and the sunrise,
 //!   against Nepal's daily panchanga under the committee's Surya
 //!   Siddhanta, the text without its bija and the modern sky.
+//! - `eclipses` and `check-eclipses`: every solar and lunar eclipse of
+//!   1900 to 2100 against NASA's Five Millennium Canon, both ways, with
+//!   the placings and the shadow rule the design chose between.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -233,6 +236,7 @@ mod dasha_systems;
 mod dashas;
 mod document_schema;
 mod doshas;
+mod eclipses;
 mod engine;
 mod ephemgen;
 mod examples;
@@ -342,6 +346,7 @@ const PASSES: &[Pass] = &[
     ),
     ("ritu", ritu::generate, ritu::check_generated),
     ("nepal-day", nepal_day::generate, nepal_day::check_generated),
+    ("eclipses", eclipses::generate, eclipses::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

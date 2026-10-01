@@ -38,7 +38,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::completion::{Completed, Completion, CompletionError, Implementation};
-use crate::solve::{Caps, SolveError, first_zero, refine_known, refine_with_rates};
+use crate::solve::{Caps, first_zero, refine_known, refine_with_rates};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
 /// a hundredth of the target the kernel is held to against the engines.
@@ -1444,7 +1444,7 @@ impl<S: Longitudes + ?Sized> Search<'_, S> {
             } else {
                 refine_with_rates(gap, lo, hi, self.tolerance_days, self.caps)
             }
-            .map_err(solve_error)?;
+            .map_err(|error| error.into_error(|| format!("the crossing of {line}°")))?;
             found.push(Event {
                 instant: JulianDay::literal(refined.instant),
                 boundary_deg: if wraps { normalise_deg(line) } else { line },
@@ -1545,13 +1545,6 @@ pub(crate) fn check_window(
     .with_field("to"))
 }
 
-fn solve_error(error: SolveError<Error>) -> Error {
-    match error {
-        SolveError::Evaluation(inner) => inner,
-        other => Error::new(Status::NotConverged, other.to_string()),
-    }
-}
-
 /// The stations of a body between two instants: where its rate of
 /// longitude changes sign, each found by the sign change and refined to
 /// the tolerance.
@@ -1590,7 +1583,7 @@ pub fn stations(
                     ..Caps::DEFAULT
                 },
             )
-            .map_err(solve_error)?;
+            .map_err(|error| error.into_error(|| "the next station".into()))?;
             let Some(crossing) = found else {
                 break;
             };

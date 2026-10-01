@@ -1,8 +1,8 @@
 //! The sankranti finder: when the Sun next enters a sign, from a model,
 //! through the shared solver.
 
-use teistro_astro::solve::{Caps, SolveError, next_crossing};
-use teistro_core::error::{Error, Status};
+use teistro_astro::solve::{Caps, next_crossing};
+use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 
 use crate::solar::SolarModel;
@@ -51,13 +51,7 @@ pub fn find_sankranti(
         TOLERANCE_DAYS,
         Caps::DEFAULT,
     )
-    .map_err(|error| match error {
-        SolveError::Evaluation(inner) => inner,
-        other => Error::new(
-            Status::NotConverged,
-            format!("the sankranti of sign {sign} after {from} was not found: {other}"),
-        ),
-    })?;
+    .map_err(|error| error.into_error(|| format!("the sankranti of sign {sign} after {from}")))?;
     Ok(Sankranti {
         sign,
         instant: JulianDay::try_new(crossing.instant)?,

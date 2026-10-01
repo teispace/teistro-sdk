@@ -51,6 +51,7 @@
 pub mod ayanamsha;
 pub mod completion;
 pub mod delta_t;
+pub mod eclipse;
 pub mod events;
 pub mod houses;
 pub mod iau;
@@ -77,6 +78,7 @@ pub use sky::{
     obliquity, observer, sidereal_time_deg,
 };
 pub use solve::{
-    Caps, Crossing, Scan, SolveError, first_zero, first_zero_gridded, next_crossing, refine,
+    Caps, Crossing, Minimum, Scan, SolveError, first_zero, first_zero_gridded, minimum,
+    next_crossing, refine,
 };
 pub use topocentric::Station;

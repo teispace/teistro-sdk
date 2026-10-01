@@ -27,7 +27,7 @@
 //! *about* the sky rather than a measurement *of* it.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::solve::{Caps, SolveError, next_crossing};
+use teistro_astro::solve::{Caps, next_crossing};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Utc};
 
@@ -152,13 +152,7 @@ pub fn next_new_moon(moon: &dyn LunarModel, from: JulianDay<Utc>) -> Result<Juli
         TOLERANCE_DAYS,
         Caps::DEFAULT,
     )
-    .map_err(|error| match error {
-        SolveError::Evaluation(inner) => inner,
-        other => Error::new(
-            Status::NotConverged,
-            format!("the new moon after {from} was not found: {other}"),
-        ),
-    })?;
+    .map_err(|error| error.into_error(|| format!("the new moon after {from}")))?;
     JulianDay::try_new(crossing.instant).map_err(Error::from)
 }
 

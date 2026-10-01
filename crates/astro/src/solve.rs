@@ -28,6 +28,7 @@
 //! ```
 
 use core::fmt;
+use teistro_core::error::{Error, Status};
 use teistro_core::math;
 
 use teistro_core::angle::difference_deg;
@@ -118,6 +119,32 @@ impl<E: fmt::Display> fmt::Display for SolveError<E> {
 }
 
 impl<E: fmt::Debug + fmt::Display> std::error::Error for SolveError<E> {}
+
+impl SolveError<Error> {
+    /// The SDK error a failed search becomes. An evaluation's own error
+    /// passes through whole, so a provider's refusal keeps its kind and its
+    /// field; anything else is `NotConverged`, naming what was sought.
+    ///
+    /// ```
+    /// use teistro_astro::solve::SolveError;
+    /// use teistro_core::error::{Error, Status};
+    ///
+    /// let stuck = SolveError::<Error>::NotConverged { steps: 64, width: 0.5 };
+    /// let error = stuck.into_error(|| "the new moon after JD 2451545".into());
+    /// assert_eq!(error.status, Status::NotConverged);
+    /// assert!(error.message.starts_with("the new moon after JD 2451545 was not found"));
+    /// ```
+    #[must_use]
+    pub fn into_error(self, sought: impl FnOnce() -> String) -> Error {
+        match self {
+            SolveError::Evaluation(inner) => inner,
+            other => Error::new(
+                Status::NotConverged,
+                format!("{} was not found: {other}", sought()),
+            ),
+        }
+    }
+}
 
 /// The signed gap from `target` to `angle`, in (-180, 180].
 fn gap(angle: f64, target: f64) -> f64 {
@@ -800,6 +827,111 @@ pub fn next_crossing<E>(
     Ok(crossing(narrowed, evaluations))
 }
 
+/// A found minimum.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Minimum {
+    /// Where the quantity is least, in the unit the search was given.
+    pub instant: f64,
+    /// The quantity there.
+    pub value: f64,
+    /// The final bracket width, at most the tolerance.
+    pub width: f64,
+    /// How many times the quantity was evaluated.
+    pub evaluations: u32,
+}
+
+/// The golden section's interior point, `(√5 − 1) / 2`.
+const GOLDEN: f64 = 0.618_033_988_749_894_9;
+
+/// The least value of a quantity with **one** minimum between `lo` and
+/// `hi`, narrowed by golden sections to `tolerance`: the companion of
+/// [`refine`] for the searches that ask when something is closest (an
+/// eclipse's greatest moment) rather than when it crosses a line. Each
+/// step keeps one of its two interior points, so a narrowing costs one
+/// evaluation a step, and needs no derivative.
+///
+/// A quantity with two minima in the bracket gets one of them; a caller
+/// keeps the bracket inside the stretch where its quantity is unimodal.
+///
+/// ```
+/// use teistro_astro::solve::{minimum, Caps};
+///
+/// // No constant added: a bowl lifted off zero is flat to the last bit
+/// // within 1e-8 of its floor, and no search can see further than that.
+/// let bowl = |t: f64| -> Result<f64, ()> { Ok((t - 0.3).powi(2)) };
+/// let least = minimum(bowl, 0.0, 1.0, 1e-9, Caps::DEFAULT).expect("narrowed");
+/// assert!((least.instant - 0.3).abs() < 1e-8);
+/// assert!(least.value < 1e-15);
+/// assert!(least.evaluations <= 46);
+/// ```
+///
+/// # Errors
+///
+/// A non-positive or non-finite tolerance, a bracket that does not run
+/// forward, an evaluation error, or a bracket that does not narrow within
+/// the cap.
+pub fn minimum<E>(
+    mut quantity: impl FnMut(f64) -> Result<f64, E>,
+    lo: f64,
+    hi: f64,
+    tolerance: f64,
+    caps: Caps,
+) -> Result<Minimum, SolveError<E>> {
+    if !(tolerance.is_finite() && tolerance > 0.0) {
+        return Err(SolveError::Argument {
+            name: "tolerance",
+            value: tolerance,
+        });
+    }
+    if !(lo.is_finite() && hi.is_finite() && hi > lo) {
+        return Err(SolveError::Argument {
+            name: "bracket",
+            value: hi - lo,
+        });
+    }
+    let (mut low, mut high) = (lo, hi);
+    let mut left = high - GOLDEN * (high - low);
+    let mut right = low + GOLDEN * (high - low);
+    let mut at_left = quantity(left).map_err(SolveError::Evaluation)?;
+    let mut at_right = quantity(right).map_err(SolveError::Evaluation)?;
+    let mut evaluations = 2;
+    let mut steps = 0;
+    while high - low > tolerance {
+        if steps == caps.refinements {
+            return Err(SolveError::NotConverged {
+                steps,
+                width: high - low,
+            });
+        }
+        steps += 1;
+        evaluations += 1;
+        if at_left < at_right {
+            high = right;
+            right = left;
+            at_right = at_left;
+            left = high - GOLDEN * (high - low);
+            at_left = quantity(left).map_err(SolveError::Evaluation)?;
+        } else {
+            low = left;
+            left = right;
+            at_left = at_right;
+            right = low + GOLDEN * (high - low);
+            at_right = quantity(right).map_err(SolveError::Evaluation)?;
+        }
+    }
+    let (instant, value) = if at_left < at_right {
+        (left, at_left)
+    } else {
+        (right, at_right)
+    };
+    Ok(Minimum {
+        instant,
+        value,
+        width: high - low,
+        evaluations,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
@@ -854,6 +986,39 @@ mod tests {
         assert!(matches!(
             refine(flat, 0.0, 1.0, 1e-9, Caps::DEFAULT),
             Err(SolveError::NotBracketed { steps: 0, .. })
+        ));
+    }
+
+    #[test]
+    fn a_minimum_is_narrowed_by_golden_sections() {
+        // A minimum is only as sharp as the quantity's rounding allows: a
+        // parabola resolves to the tolerance, where a cosine about its
+        // trough is flat to the last bit 1e-8 either side.
+        let bowl = |t: f64| -> Result<f64, ()> { Ok((t - 3.0) * (t - 3.0)) };
+        let least = minimum(bowl, 2.0, 4.0, 1e-9, Caps::DEFAULT).unwrap();
+        assert!((least.instant - 3.0).abs() < 1e-8, "{least:?}");
+        assert!(least.width <= 1e-9);
+        // One evaluation a step: 2 / 0.618^n <= 1e-9 at n = 45.
+        assert!(least.evaluations <= 2 + 45, "{}", least.evaluations);
+        // A minimum at an end is approached, never passed.
+        let rising = |t: f64| -> Result<f64, ()> { Ok(t) };
+        let edge = minimum(rising, 0.0, 1.0, 1e-9, Caps::DEFAULT).unwrap();
+        assert!(edge.instant < 1e-8, "{edge:?}");
+        // A bracket the caps cannot narrow is an error, as is a reversed one.
+        let tight = Caps {
+            bracket_steps: 0,
+            refinements: 3,
+        };
+        assert!(matches!(
+            minimum(bowl, 2.0, 4.0, 1e-9, tight),
+            Err(SolveError::NotConverged { steps: 3, .. })
+        ));
+        assert!(matches!(
+            minimum(bowl, 4.0, 2.0, 1e-9, Caps::DEFAULT),
+            Err(SolveError::Argument {
+                name: "bracket",
+                ..
+            })
         ));
     }
 
