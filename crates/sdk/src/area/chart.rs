@@ -1602,17 +1602,16 @@ impl<'a> ChartArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        let frame = foundation.zodiac.request;
+        let searched = foundation.zodiac.search(
+            &completion,
+            settings.frame.ayanamsha_basis,
+            (PrecessionModel::default(), self.context.delta_t()),
+        )?;
+        let (frame, zodiac) = (searched.frame, searched.zodiac);
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(foundation.place);
         }
-        let zodiac = LimbZodiac::of(
-            foundation.zodiac.ayanamsha,
-            settings.frame.ayanamsha_basis,
-            PrecessionModel::default(),
-            self.context.delta_t(),
-        );
         // Asked for more years than the provider covers, answer the ones
         // it does. Without this the search runs off the end and the
         // provider's own `OutOfRange` comes back naming an instant the
@@ -2722,17 +2721,16 @@ impl<'a> ChartArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        let frame = foundation.zodiac.request;
+        let searched = foundation.zodiac.search(
+            &completion,
+            settings.frame.ayanamsha_basis,
+            (PrecessionModel::default(), self.context.delta_t()),
+        )?;
+        let (frame, zodiac) = (searched.frame, searched.zodiac);
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(foundation.place);
         }
-        let zodiac = LimbZodiac::of(
-            foundation.zodiac.ayanamsha,
-            settings.frame.ayanamsha_basis,
-            PrecessionModel::default(),
-            self.context.delta_t(),
-        );
         search(&longitudes, zodiac)
     }
 
