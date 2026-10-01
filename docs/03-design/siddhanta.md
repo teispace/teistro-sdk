@@ -220,11 +220,24 @@ on the geometric horizon; other conventions refused as unsupported). C
 ABI and bindings reach the model through the port's vtable the way they
 reach an engine.
 
+`ModernSunrise::new(text, modern)` is the text's sky with a modern
+sunrise: every place, angle and the zodiac from the text, and a rise or
+set from the SDK's solver over the modern ephemeris under whatever
+convention is asked, its stamp naming both (`sunrise from …`). The
+`SURYA_SIDDHANTA` entry opens it when `frame.siddhanta.sunrise` is
+`MODERN`, the modern ephemeris being the first modern entry after it in
+the chain, else the built-in one; without either it refuses on
+`settings.frame.siddhanta.sunrise`. It is how Nepal's daily panchanga
+is computed: the text's limbs, a modern sunrise (C39,
+`nepal-day-measured.md`).
+
 ## 6. Errors and degenerate states
 
 | situation | outcome |
 |---|---|
 | a graha the text does not model (Uranus, Neptune, Pluto) | `UNSUPPORTED` naming the graha, field `graha`, with the hint of what the text knows |
+| `sunrise: MODERN` with no modern entry after `SURYA_SIDDHANTA` and no built-in ephemeris | `UNSUPPORTED` on `settings.frame.siddhanta.sunrise`, with the hint to name one or set `TEXT` |
+| `sunrise: TEXT` with a `day.sunrise` other than the centre on the geometric horizon | the text declines the convention and the SDK solves it over the text's Sun, which is neither sunrise; the settings warn (`siddhanta-text-sunrise-convention`) |
 | `bija: true` in a settings patch | `INVALID_ARG` on `settings.frame.siddhanta`: a bija is named (`NONE`, `NEPAL_COMMITTEE`) or counted (`CUSTOM { revolutions }`), never a bare switch that says "a bija" without saying which |
 | a latitude and declination where the Sun neither rises nor sets | `day_arc` and `ascensional_difference_deg` return `None`; no error |
 | an instant before the Kali age | a negative count; every place still wraps correctly (tested) |

@@ -181,28 +181,45 @@ struct Reading {
     profile: &'static str,
     patch: Option<&'static str>,
     ephemeris: fn() -> Ephemeris,
-    /// The committee's reading, which every flag is held to.
+    /// The shipped profile's reading, whose flags the records paragraph
+    /// counts from.
     shipped: bool,
-    /// Whether its ends are the print's within the bound.
+    /// Whether its ends are the print's within the bound; a reading whose
+    /// ends are has its flags held to the print too.
     ends_agree: bool,
-    /// Whether its sunrise is the print's within the bound.
+    /// Whether its sunrise is the print's within the bound; a reading
+    /// whose sunrise and ends both are disagrees on a flag only where the
+    /// source misnames a yoga.
     sunrise_agrees: bool,
 }
 
-const READINGS: [Reading; 3] = [
+const READINGS: [Reading; 4] = [
     Reading {
-        name: "the Surya Siddhanta with the committee's bija, in its own zodiac (`nepali-committee`)",
+        name: "the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise",
         profile: "nepali-committee",
         patch: None,
         ephemeris: || Ephemeris::SuryaSiddhanta,
         shipped: true,
         ends_agree: true,
+        sunrise_agrees: true,
+    },
+    Reading {
+        name: "the same text at its own sunrise",
+        profile: "nepali-committee",
+        patch: Some(
+            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}, "sunrise": "TEXT"}}, "day": {"sunrise": {"kind": "NAMED", "which": "CENTRE_NO_REFRACTION"}}}"#,
+        ),
+        ephemeris: || Ephemeris::SuryaSiddhanta,
+        shipped: false,
+        ends_agree: true,
         sunrise_agrees: false,
     },
     Reading {
-        name: "the text without a bija",
+        name: "the text without a bija, at its own sunrise",
         profile: "nepali-committee",
-        patch: Some(r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NONE"}}}}"#),
+        patch: Some(
+            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "NONE"}}}, "day": {"sunrise": {"kind": "NAMED", "which": "CENTRE_NO_REFRACTION"}}}"#,
+        ),
         ephemeris: || Ephemeris::SuryaSiddhanta,
         shipped: false,
         ends_agree: false,
@@ -666,7 +683,7 @@ fn sunrises(
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Reason {
     /// Counted between the printed sunrises, the reading's ends give the
-    /// printed flag: an end falls between the text's sunrise and the
+    /// printed flag: an end falls between the reading's sunrise and the
     /// print's.
     Sunrise,
     /// The print's vriddhi of Shubha is Shubha then Shukla, which the
@@ -677,7 +694,7 @@ enum Reason {
 impl Reason {
     const fn says(self) -> &'static str {
         match self {
-            Reason::Sunrise => "an end between the text's sunrise and the print's",
+            Reason::Sunrise => "an end between the reading's sunrise and the print's",
             Reason::ShuklaAsShubha => "Shubha then Shukla, which the source prints as Shubha",
         }
     }
@@ -731,93 +748,159 @@ fn reason(
     None
 }
 
-/// §5: every printed flag against the committee's reading; each
-/// disagreement named with its reason, and one without a reason fails
-/// the pass.
+/// One limb's flags under one reading: the printed days it reads, how
+/// many the print calls vriddhi and kshaya, how many agree, and the
+/// disagreements by reason.
+#[derive(Default)]
+struct Tally {
+    days_read: usize,
+    vriddhi: usize,
+    kshaya: usize,
+    agree: usize,
+    by_sunrise: usize,
+    misnamed: usize,
+}
+
+/// Counts one limb's printed flags against one reading, listing each
+/// disagreement with its reason and recording one without a reason as a
+/// problem.
+fn tally(
+    records: &[Record],
+    days: &[Panchanga],
+    limb: Limb,
+    reading: &Reading,
+    listed: &mut String,
+    found: &mut Findings,
+) -> Result<Tally, String> {
+    let mut tally = Tally::default();
+    for (index, (record, day)) in records.iter().zip(days).enumerate() {
+        let printed = record.limb(limb);
+        if !printed.consistent(limb) {
+            continue;
+        }
+        tally.days_read += 1;
+        tally.vriddhi += usize::from(printed.flag == Flag::Vriddhi);
+        tally.kshaya += usize::from(printed.flag == Flag::Kshaya);
+        let turns = turns(day, limb);
+        let ours = flag_of(&turns);
+        if ours == printed.flag {
+            tally.agree += 1;
+            continue;
+        }
+        let sunrise = jd_of(record.date, record.sunrise)?;
+        let next = next_printed_sunrise(records, index, day)?;
+        match reason(limb, printed, &turns, (sunrise, next)) {
+            Some(why) => {
+                tally.by_sunrise += usize::from(why == Reason::Sunrise);
+                tally.misnamed += usize::from(why == Reason::ShuklaAsShubha);
+                let _ = writeln!(
+                    listed,
+                    "| {} | {} | {} | {} | {} | {} |",
+                    reading.name,
+                    iso(record.date),
+                    limb.name(),
+                    printed.flag.name(),
+                    ours.name(),
+                    why.says()
+                );
+            }
+            None => found.problems.push(format!(
+                "{} {} under {}: printed {}, the reading {}, and no reason the pass can check",
+                iso(record.date),
+                limb.name(),
+                reading.name,
+                printed.flag.name(),
+                ours.name()
+            )),
+        }
+    }
+    Ok(tally)
+}
+
+/// §5: every printed flag against each reading whose ends are the
+/// print's; each disagreement named with its reason, and one without a
+/// reason fails the pass. Returns the section and how often the shipped
+/// reading found Shukla printed as a Shubha lasting day and night.
 fn flags(
     records: &[Record],
     founded: &[Vec<Panchanga>],
     found: &mut Findings,
 ) -> Result<(String, usize), String> {
-    let (reading, days) = READINGS
-        .iter()
-        .zip(founded)
-        .find(|(reading, _)| reading.shipped)
-        .ok_or("no shipped reading")?;
-    let mut out = format!(
+    let mut out = String::from(
         "\n## 5. The flags\n\n\
          Each day's printed flag for each limb — plain, a vriddhi (\"दिनरात\")\n\
-         or a kshaya (three in a day) — against the flag {}\n\
-         gives through `span.sunrises`. A record that contradicts itself\n\
-         (§6) is left out. Every disagreement is listed with the reason the\n\
-         pass checked for it.\n\n\
-         | limb | days | printed vriddhi | printed kshaya | agree | disagree |\n\
-         |---|---|---|---|---|---|\n",
-        reading.name
+         or a kshaya (three in a day) — against the flag each reading whose\n\
+         ends are the print's gives through `span.sunrises`. A record that\n\
+         contradicts itself (§6) is left out. Every disagreement is listed\n\
+         with the reason the pass checked for it.\n\n\
+         | reading | limb | days | printed vriddhi | printed kshaya | agree | disagree |\n\
+         |---|---|---|---|---|---|---|\n",
     );
-    let mut misnamed = 0;
-    let mut listed =
-        String::from("\n| day | limb | printed | the reading's | why |\n|---|---|---|---|---|\n");
-    for limb in Limb::ALL {
-        let (mut days_read, mut vriddhi, mut kshaya, mut agree) = (0, 0, 0, 0);
-        let mut disagree = 0;
-        for (index, (record, day)) in records.iter().zip(days).enumerate() {
-            let printed = record.limb(limb);
-            if !printed.consistent(limb) {
-                continue;
-            }
-            days_read += 1;
-            vriddhi += usize::from(printed.flag == Flag::Vriddhi);
-            kshaya += usize::from(printed.flag == Flag::Kshaya);
-            let turns = turns(day, limb);
-            let ours = flag_of(&turns);
-            if ours == printed.flag {
-                agree += 1;
-                continue;
-            }
-            disagree += 1;
-            let sunrise = jd_of(record.date, record.sunrise)?;
-            let next = next_printed_sunrise(records, index, day)?;
-            let why = reason(limb, printed, &turns, (sunrise, next));
-            match why {
-                Some(why) => {
-                    misnamed += usize::from(why == Reason::ShuklaAsShubha);
-                    let _ = writeln!(
-                        listed,
-                        "| {} | {} | {} | {} | {} |",
-                        iso(record.date),
-                        limb.name(),
-                        printed.flag.name(),
-                        ours.name(),
-                        why.says()
-                    );
-                }
-                None => found.problems.push(format!(
-                    "{} {}: printed {}, the committee's reading {}, and no reason the pass can check",
-                    iso(record.date),
-                    limb.name(),
-                    printed.flag.name(),
-                    ours.name()
-                )),
-            }
+    let mut listed = String::from(
+        "\n| reading | day | limb | printed | the reading's | why |\n|---|---|---|---|---|---|\n",
+    );
+    let mut shipped_misnamed = 0;
+    for (reading, days) in READINGS.iter().zip(founded) {
+        if !reading.ends_agree {
+            continue;
         }
-        let _ = writeln!(
-            out,
-            "| {} | {days_read} | {vriddhi} | {kshaya} | {agree} | {disagree} |",
-            limb.name()
-        );
-        found.claims.push(Claim::stated(
-            format!(
-                "{}: every printed {} flag, or a reason the pass checks",
+        let mut by_sunrise = 0;
+        let mut misnamed = 0;
+        for limb in Limb::ALL {
+            let tally = tally(records, days, limb, reading, &mut listed, found)?;
+            by_sunrise += tally.by_sunrise;
+            misnamed += tally.misnamed;
+            let Tally {
+                days_read,
+                vriddhi,
+                kshaya,
+                agree,
+                ..
+            } = tally;
+            let disagree = days_read - agree;
+            let _ = writeln!(
+                out,
+                "| {} | {} | {days_read} | {vriddhi} | {kshaya} | {agree} | {disagree} |",
                 reading.name,
                 limb.name()
+            );
+            found.claims.push(Claim::stated(
+                format!(
+                    "{}: every printed {} flag, or a reason the pass checks",
+                    reading.name,
+                    limb.name()
+                ),
+                Verdict::Holds,
+                format!(
+                    "{agree} of {days_read} agree; the {disagree} others each for a reason in §5"
+                ),
+            ));
+        }
+        found.expect(
+            Claim::stated(
+                format!("{}: no flag is decided by the sunrise alone", reading.name),
+                if by_sunrise == 0 {
+                    Verdict::Holds
+                } else {
+                    Verdict::Falsified
+                },
+                format!(
+                    "{by_sunrise} {} between the reading's sunrise and the print's",
+                    if by_sunrise == 1 {
+                        "end falls"
+                    } else {
+                        "ends fall"
+                    }
+                ),
             ),
-            Verdict::Holds,
-            format!("{agree} of {days_read} agree; the {disagree} others each for a reason in §5"),
-        ));
+            reading.sunrise_agrees,
+        );
+        if reading.shipped {
+            shipped_misnamed = misnamed;
+        }
     }
     out.push_str(&listed);
-    Ok((out, misnamed))
+    Ok((out, shipped_misnamed))
 }
 
 /// §6: the records that contradict themselves.
@@ -927,11 +1010,15 @@ fn page() -> Result<String, String> {
          tropical ones by the catalogue member of the same name, which stands\n\
          1.6° from the text today.\n\n\
          The print's sunrise is not the text's: the text's carries no\n\
-         equation of time (C37), and the print's is a modern one (C39). A\n\
-         flag decided within minutes of sunrise can differ for that alone,\n\
-         and §5 names each such day; reproducing them needs the modern\n\
-         Sun's horizon beside the text's limbs, the mixed provider C38 and\n\
-         C39 record.\n",
+         equation of time (C37), and the print's is a modern one, the\n\
+         upper limb on the geometric horizon (C39). A flag decided within\n\
+         minutes of sunrise differs for that alone, so the committee's sky\n\
+         takes its sunrise from a modern ephemeris beside the text's limbs\n\
+         (`SuryaSunrise::Modern`, `UPPER_LIMB_NO_REFRACTION`), and then\n\
+         every printed flag agrees but where the source names Shukla as\n\
+         Shubha. The committee's five star planets, modern positions under\n\
+         Lahiri (C38), are not read here: a day's limbs need only the Sun\n\
+         and the Moon.\n",
     );
     if found.problems.is_empty() {
         Ok(fill(&out))

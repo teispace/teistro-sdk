@@ -80,19 +80,20 @@ Nepal) or *missing*.
 | **Lunar month names** | Purnimanta: a dark fortnight carries the next month's name (Gai Jatra is Bhadra Krishna Pratipada, the day after Shravana's full moon; Mahashivaratri is Phalguna Krishna Chaturdashi). | Both months are carried on every day; `nepali-default` leads with purnimanta from version 2 (C183). | built: measured on six designated days (`03-design/nepal-month-measured.md`) |
 | **Kshaya masa** | A lunar month holding two sankrantis, whose name is skipped. It is rare, and the texts treat it and the adhika months around it as unfit for rites. | `MonthKind::Kshaya` is computed. No blackout reads it, and the months around it are not named (C179). | partial |
 | **Udaya tithi at Kathmandu's sunrise** | The day's tithi is the one running at local sunrise, and festivals are fixed on it. | Every limb is a span over the sunrise day, so the sunrise member is `spans[0]`; festivals take the karmakala rule instead (`festival-rules.md`). | built |
-| **Tithi vriddhi and kshaya** | The patro marks a tithi that holds two sunrises (vriddhi) or none (kshaya). | Derivable from the spans; not answered as a flag. | missing |
-| **Ghati-pala** | The patro prints a limb's end, the dinaman and the ratriman in ghati-pala from sunrise. | The intl layer formats a `ghati` parameter (`GhatiValue`). No day answer carries ghati-pala. | partial |
+| **Tithi vriddhi and kshaya** | The patro marks a tithi that holds two sunrises (vriddhi) or none (kshaya). | `span.sunrises` (`OPENING`, `NEXT`, `BOTH` a vriddhi, `NEITHER` a kshaya) in every binding; under `nepali-committee` every printed flag on 333 days agrees but where the source names Shukla as Shubha. | built (`03-design/nepal-day-measured.md`, C39) |
+| **Ghati-pala** | The patro prints a limb's end, the dinaman and the ratriman in ghati-pala from sunrise. | `Panchanga::ghati_pala(instant)` under `day.ghati_reckoning`, and each span's end as `ends` in every binding; the dinaman and ratriman are the day's arc read the same way. | built |
 | **Samvatsara** | The patro names the year of the 60-year cycle. | `sdk.almanac().years`: each lunar year's name under `calendars.samvatsara` (the text's Jovian count read at Chaitra Shukla Pratipada, a name never naming two years), the Jovian years in it and the one it expunges (C180, C184, C185). | built: all seven years the committee named, VS 2076 to 2082 (`03-design/samvatsara-measured.md`) |
-| **Ritu** | The six seasons, printed by month. | Catalogued (`ritu.yaml`); **computed nowhere** (C178). Ayana is computed. | missing |
+| **Ritu** | The six seasons, printed by month. | `Panchanga::sun.ritu`, the solar month's season under `panchanga.ritu` and `panchanga.solar_month_start` (C178, C186). | built: all 341 recorded days (`03-design/ritu-measured.md`) |
 | **Bikram Sambat months** | Official month lengths, 29 to 32 days, fixed by the committee. | Built and measured against the official table for BS 1970 to 2095 (`calendar-bikram-sambat.md`). | built |
 | **Nepal Sambat** | A lunar year from Kartika's bright first (Mha puja), in official use beside Bikram Sambat. | An era only (`Era::NepalSambat`), not a calendar a date can be written in. | missing |
 | **Nepal's festivals** | The committee fixes Dashain (Ghatasthapana to Kojagrat Purnima), Tihar, Teej, Chhath, Janai Purnima, Shivaratri and the rest, including the tika's time. Holi falls a day apart in the hills and the Terai. | Four Dharmasindhu rules; measured against India's Delhi list only (`festival-rules.md` §5.3). | partial |
 | **Muhurta (saait) beyond marriage** | Bratabandha, pasni (annaprashan), nwaran, griha pravesh and more. | Marriage only (Raman's and the baseline's rules). | missing |
 | **Holashtaka and eclipses** | Both close days for rites. | Listed as blackouts in this page's muhurta table; neither is built. | missing |
 
-What reading the code found: two catalogue kinds, samvatsara and ritu,
-are named in every locale and computed by nothing. A reader of the
-catalogue would take them as answered. That is the
+What reading the code found (2026-09-30, both since built): two
+catalogue kinds, samvatsara and ritu, were named in every locale and
+computed by nothing. A reader of the
+catalogue would have taken them as answered. That is the
 `catalogued-is-not-computed` shape, and it gets the same treatment: count
 the gap, then build it.
 
