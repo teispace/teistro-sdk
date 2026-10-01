@@ -128,16 +128,65 @@ function's. It is the next step's, with the almuten.
 which of the night (the Moon, Venus, Mars), and that Mercury is of the
 day when matutine and of the night when vespertine. **He does not say
 when a chart is a day chart.** The above-the-horizon rule in Ashmand's
-edition is Whalley's note, not Ptolemy's text. So the façade's reading
-of a chart's sect is a fork with its own crux:
+edition is Whalley's note, not Ptolemy's text.
 
-- **C209, when a chart is diurnal**: the Sun's geometric altitude above
-  zero, the Sun in houses 7 to 12 of the chart's own division, or the
-  Sun above the ecliptic horizon. These part near the horizon and at
-  high latitude. The pass that decides it must cite a rank-1 statement,
-  Valens or Dorotheus, before any reading becomes a default. Until then
-  the façade takes the sect as a request field and reports the one it
-  used.
+Valens decides it (C209, rank 1, Riley's translation). He reckons "the
+hemisphere above the earth" in degrees from the Descendant and the
+Ascendant (Book I, 51K–52K, worked on a Moon at Libra 26° under a
+Capricorn 24° Ascendant). In Book IX (362K–363K) a birth is "during the
+day" or "after sunset", by a day hemisphere and a night hemisphere. So
+the horizon decides, and whole-sign houses do not. The Sun stands on the
+ecliptic, which meets the horizon at the Ascendant and the Descendant.
+So three readings are one rule to within the Sun's latitude (under 1″):
+
+- the Sun above the ecliptic horizon;
+- the Sun's geometric altitude above zero;
+- the Sun in houses 7 to 12 of a quadrant division.
+
+The text cannot part the geometric horizon from the apparent one, where
+refraction and the Sun's limb move sunrise by minutes. So the façade
+reads a chart's sect by a named rule:
+
+```rust
+pub enum SectRule {
+    Horizon,      // the default: Valens's hemisphere, from the Sun and the Ascendant
+    Daylight,     // the chart's own sunrise to sunset, under its sunrise convention
+    Given(Sect),  // the caller's
+}
+impl Sect {
+    pub fn from_horizon(sun_deg: f64, ascendant_deg: f64) -> Sect;
+}
+```
+
+`Sect::from_horizon` is pure arithmetic. The Sun is above the earth
+when its longitude stands on the Midheaven's side of the Ascendant, that
+is when `(sun − ascendant) mod 360 ≥ 180`. A sidereal chart shifts the
+Sun and the Ascendant alike, so the answer does not depend on the
+zodiac. The answer reports the sect it used and the rule that chose it.
+
+## The façade (step 3)
+
+```rust
+pub struct DignityRequest { sect: SectRule, rules: DignityRules, scores: Scores }
+// DignityRequest::default(): Horizon, DignityRules::LILLY, Scores::LILLY
+
+pub struct Dignities {
+    sect: Sect, sect_rule: SectRule, rules: DignityRules, scores: Scores,
+    planets: [PlanetDignity; 7],   // in the Chaldean order
+}
+pub struct PlanetDignity { planet: Graha, longitude_deg: f64,
+                           dignity: EssentialDignity, score: i16 }
+
+impl ChartArea<'_> {
+    pub fn dignities(self, chart: &Document, request: &DignityRequest)
+        -> Result<Dignities, Error>;
+}
+```
+
+It needs **no ephemeris**. The Sun, the planets, the lagna and the day
+part are all on the founded chart. The request is a value with a
+default and builders, and every knob in it is reported back in the
+answer.
 
 ## The order of work
 
@@ -157,7 +206,7 @@ of a chart's sect is a fork with its own crux:
    in the catalogue once a third reader needs it, and the gated row is
    what will hold that move.
 3. The façade and the chart document: dignities per planet, with the
-   sect and the rules that made them.
+   sect and the rules that made them (§The façade).
 4. The boundary and the four bindings, under the parity gate.
 5. Mutual reception, the almuten (Lilly's own definition, and Ibn
    Ezra's weights once they are read), and Lilly's accidental
@@ -168,7 +217,8 @@ of a chart's sect is a fork with its own crux:
 - **C208**: which printing of Ptolemy's own terms is the default. Both
   ship, and nothing is a default until a third printing (the Greek)
   is read.
-- **C209**: when a chart is diurnal.
+- **C209** is decided to the horizon (§Sect). Measuring how often the
+  horizon and the chart's daylight part is step 3's pass.
 - **The default `DignityRules`**: `LILLY` is the only complete, scored,
   cited row, because Ptolemy scores nothing. It is named rather than
   implied, and a request names its rules.
