@@ -288,9 +288,9 @@ is seen. Built as `Eclipses::solar_seen` and `Eclipses::lunar_seen`
 - **Seen.** Every contact is geometric, the Earth taken as transparent,
   so a contact below the horizon is reported with its negative altitude
   and a place on the night side can have all four. `seen` is the stretch
-  of the eclipse the body stands above a `Horizon` convention, the same
-  convention a sunrise is read under (`rise_set::centre_altitude_deg`,
-  less the parallax since the altitude is already topocentric): `None`
+  of the eclipse the body stands above a `Horizon` convention, read the
+  way a sunrise is (`rise_set::centre_altitude_deg`, less the parallax
+  since the altitude is already topocentric): `None`
   is the place not seeing the eclipse, which is the sutak's question.
   It is the hull from the first instant up to the last, which differs
   from the truth only for a body that sets and rises again inside one
@@ -333,9 +333,17 @@ let seen = found.value.any_seen();
   to the one that closes the last, on the almanac's clock, so an
   eclipse belongs to the civil day its greatest moment falls in. The
   provenance names it as the convention `eclipse.window`.
-- **The horizon** is the one the context's sunrise convention reads the
-  day by (`panchanga.sunrise`), so a body "up" for an eclipse is up by
-  the same rule the almanac's sunrise uses.
+- **The horizon** is the setting `panchanga.eclipse_horizon`, by default
+  the **eye's**: the upper limb, lifted by standard refraction. The first
+  design took the almanac's sunrise convention, so that a body "up" for
+  an eclipse would be up by the same rule as the day. Measurement
+  overturned it (C194). *Dharmasindhu* counts an eclipse only while the
+  eye can see it, and the eye sees the refracted limb. Nepal's committee
+  timed the 2026-03-03 vedha from a moonrise at 18:03. The upper limb
+  with refraction rises at 18:03.7 over the built-in sky, the disc's
+  centre with refraction at 18:05.0, and the centre without it at
+  18:07.7. A consumer who wants the day's convention sets the same value
+  on both settings.
 - **The shadow** is the setting `panchanga.eclipse_shadow`, `DANJON` by
   default, and it is part of the settings hash.
 - **A classical sky** (the Surya Siddhanta's) refuses with `Unsupported`

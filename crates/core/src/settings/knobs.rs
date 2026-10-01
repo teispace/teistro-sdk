@@ -230,10 +230,14 @@ knob!(
     /// seen moment: four before a solar eclipse, three before a lunar one,
     /// and four before a Moon that rises eclipsed. It gives a second view
     /// as some authorities': four for a lunar eclipse the umbra covers
-    /// whole.
+    /// whole. Nepal's committee counts fixed three-hour praharas back from
+    /// the first moment seen, whatever the length of the day: twelve hours
+    /// before a solar eclipse and nine before a lunar one, a Moon rising
+    /// eclipsed included.
     EclipseVedha { /// Four praharas solar, three lunar, four for a Moon rising eclipsed.
         Dharmasindhu = "DHARMASINDHU", /// As `DHARMASINDHU`, and four for a total lunar eclipse too.
-        FullLunarFour = "FULL_LUNAR_FOUR" }
+        FullLunarFour = "FULL_LUNAR_FOUR", /// Twelve hours before the first moment seen of a solar eclipse, nine of a lunar one (Nepal's committee).
+        FixedHours = "FIXED_HOURS" }
 );
 knob!(
     /// Which civil day a sidereal solar month begins on (crux C186).

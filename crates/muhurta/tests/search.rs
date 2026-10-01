@@ -69,7 +69,17 @@ fn with_over<R>(f: impl FnOnce(&Over<'_, Counted>, &Counted) -> R) -> R {
 /// Runs `f` over the search's collaborators at Kathmandu, asking
 /// `provider`.
 fn over_on<P: EphemerisProvider, R>(provider: &P, f: impl FnOnce(&Over<'_, P>) -> R) -> R {
-    let resolved = Profile::shipped(teistro_core::settings::DEFAULT_PROFILE)
+    over_under(provider, teistro_core::settings::DEFAULT_PROFILE, f)
+}
+
+/// Runs `f` over the search's collaborators at Kathmandu under a shipped
+/// profile, asking `provider`.
+fn over_under<P: EphemerisProvider, R>(
+    provider: &P,
+    profile: &str,
+    f: impl FnOnce(&Over<'_, P>) -> R,
+) -> R {
+    let resolved = Profile::shipped(profile)
         .unwrap()
         .resolve(&SettingsPatch::default())
         .unwrap();
@@ -441,5 +451,63 @@ fn a_sky_that_cannot_see_an_eclipse_leaves_its_kinds_unjudged() {
         for unjudged in &season.unjudged {
             assert!(unjudged.why.contains("refused them"), "{}", unjudged.why);
         }
+    });
+}
+
+/// Nepal's committee prints the vedha as fixed three-hour praharas back
+/// from the first moment Nepal sees, and `nepali-default` reads it so
+/// (`FIXED_HOURS`). Three eclipses, as the committee gave them (UTC
+/// here, Nepal's clock in the comments):
+///
+/// - 2025-09-07, lunar: touch 22:11, no food from 13:11, release 01:41;
+/// - 2026-03-03, lunar, the Moon rising eclipsed at 18:03: no food from
+///   09:03, release 19:02;
+/// - 2022-10-25, solar, the Sun setting eclipsed: touch 16:52, no food
+///   from 04:52 until the next sunrise.
+///
+/// The printed minutes are rounded, and a touch is the umbra's, so the
+/// tolerance is three minutes.
+#[test]
+fn the_nepali_vedha_is_nine_hours_before_a_lunar_eclipse_seen_and_twelve_before_a_solar_one() {
+    const MINUTES: f64 = 3.0 / 1440.0;
+    over_under(&Builtin::new(), "nepali-default", |over| {
+        assert_eq!(
+            over.settings.panchanga.eclipse_vedha,
+            teistro_core::settings::EclipseVedha::FixedHours
+        );
+        let sources = ProviderSources::new(over, place(), reference()).unwrap();
+        let vedha = |from: f64, to: f64| {
+            let season = sources
+                .season(Interval::literal(from, to), &[BlackoutKind::EclipseVedha])
+                .unwrap();
+            assert_eq!(season.unjudged, Vec::new());
+            let found: Vec<Interval> = season.blackouts.iter().map(|b| b.at).collect();
+            let [one] = found.as_slice() else {
+                panic!("one vedha, found {found:?}");
+            };
+            *one
+        };
+        let near = |at: f64, printed: f64, what: &str| {
+            assert!(
+                (at - printed).abs() < MINUTES,
+                "{what}: {at} against {printed}, {:.1} min off",
+                (at - printed) * 1440.0
+            );
+        };
+
+        let september = vedha(2_460_924.5, 2_460_927.5);
+        near(september.from.get(), 2_460_925.809_7, "2025-09-07 opens");
+        near(september.to.get(), 2_460_926.330_6, "2025-09-07 closes");
+
+        let march = vedha(2_461_101.5, 2_461_104.5);
+        near(march.from.get(), 2_461_102.637_5, "2026-03-03 opens");
+        near(march.to.get(), 2_461_103.053_5, "2026-03-03 closes");
+
+        let october = vedha(2_459_876.5, 2_459_879.5);
+        near(october.from.get(), 2_459_877.463_2, "2022-10-25 opens");
+        let next_day = sources
+            .day(&CalendarDate::defined(Calendar::Gregorian, 2022, 10, 26))
+            .unwrap();
+        assert!((october.to.get() - next_day.day.sunrise.get()).abs() < 1e-6);
     });
 }

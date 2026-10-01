@@ -133,6 +133,7 @@ the answer (C162).
 | C190 | which eclipses bar | **those the place sees**, a lunar one by its umbral phase (*Dharmasindhu*: an eclipse's time lasts while it can be seen) | every eclipse anywhere on the Earth |
 | C191 | Raman's "six months" | **six synodic months** from the greatest eclipse, the months a muhurta counts | six solar months, about five days longer, which can add one passage of the Moon through the star |
 | C193 | Holashtaka | **a kind no shipped activity heeds**, from the start of Phalguna's bright eighth to the full moon (*Shighrabodha* I.137–138: eight days, Ashtami to Purnima, barred for marriage and the like only on the Shutudri, Vipasha and Iravati and at Tripushkara, "auspicious elsewhere") | heeded everywhere, as many north Indian almanacs print it; or eight civil days rather than eight tithis |
+| C194 | the horizon an eclipse is seen above | **the eye's**, the upper limb with refraction (`panchanga.eclipse_horizon`): *Dharmasindhu*'s test is the eye, and the committee's 2026-03-03 moonrise is 18:03 against 18:03.7 | the almanac's sunrise convention, 2 to 5 minutes later at a rising |
 | C192 | the vedha as a blackout | **a kind no shipped activity heeds**: *Dharmasindhu*'s vedha is a rule about eating, and holding rites off in it is the almanacs' practice | heeded by a marriage, which no source in hand says |
 | C167 | the malefics neutralisation 11 places in the 3rd, 6th or 11th | **the Sun, Mars and Saturn**: counted with both nodes, which always stand opposite, it could never hold | Rahu counted as well, Ketu not |
 
@@ -237,7 +238,21 @@ cannot see, makes neither.
   observer bathe and eat. The knob `panchanga.eclipse_vedha` chooses
   `DHARMASINDHU` (the above) or `FULL_LUNAR_FOUR`, the view the text
   gives as "some say": four praharas for a lunar eclipse the umbra covers
-  whole. The text's shorter vedha for the young, the old and the sick
+  whole. A third member, `FIXED_HOURS`, is what Nepal's committee
+  prints: fixed three-hour praharas counted back from the first moment
+  seen, twelve hours before a solar eclipse and nine before a lunar one,
+  a Moon rising eclipsed included. Three eclipses, as the press reported
+  the committee, establish it, and `nepali-default` (version 4) takes it:
+
+  | eclipse | first moment seen | no food from | until |
+  |---|---|---|---|
+  | 2025-09-07, lunar | 22:11 | 13:11 | 01:41 |
+  | 2026-03-03, lunar, the Moon rising eclipsed | 18:03 | 09:03 | 19:02 |
+  | 2022-10-25, solar, the Sun setting eclipsed | 16:52 | 04:52 | the next sunrise |
+
+  A test holds all three to three minutes, the printed minutes being
+  rounded. The committee's close follows the *Dharmasindhu*'s, and its
+  exemption of children, the old and the sick is the text's. The text's shorter vedha for the young, the old and the sick
   (one and a half praharas, or three muhurtas) is declared and not
   built. The vedha is a rule about **food**; holding rites off in it is
   the almanacs' practice, so no shipped activity heeds it, and a
