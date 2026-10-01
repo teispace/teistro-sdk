@@ -140,6 +140,19 @@ fn micros_between(from: JulianDay<Utc>, to: JulianDay<Utc>) -> i128 {
     (((to.get() - from.get()) * 86_400e6 / GRID_MICROS).round() * GRID_MICROS) as i128
 }
 
+/// The whole day's count, sunrise to the next sunrise: sixty ghatis under
+/// proportional reckoning, and under civil the day's length in ghatis of
+/// twenty-four minutes, which a day longer than twenty-four hours carries
+/// past sixty.
+#[must_use]
+pub fn day_length(day: &LocalDay, reckoning: Reckoning) -> GhatiPala {
+    let vipalas = match reckoning {
+        Reckoning::Civil => micros_between(day.sunrise, day.next_sunrise) / MICROS_PER_VIPALA,
+        Reckoning::Proportional => 2 * VIPALAS_PER_HALF,
+    };
+    GhatiPala::from_vipalas(u32::try_from(vipalas).unwrap_or(0))
+}
+
 /// The ghati-pala of an instant in a local day.
 ///
 /// # Errors

@@ -37,12 +37,13 @@ use teistro_ffi::chart::{
     TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring,
     TsYearYoga,
 };
-use teistro_ffi::panchanga::{TsLunarMonth, TsMonthKind, TsYogaCause};
+use teistro_ffi::panchanga::{TsLunarMonth, TsMonthKind, TsSunrises, TsYogaCause};
 use teistro_ffi::time::{TsChosen, TsDeltaTSource, TsDst, TsZoneEra, TsZoneSource, TsZoneWarning};
 use teistro_ffi::{SDK_VERSION, schemas};
 use teistro_idl::model::{Api, EnumDef};
 use teistro_idl::sdk::describe;
 use teistro_panchanga::omen::YogaCause;
+use teistro_panchanga::span::Sunrises;
 use teistro_port_ephemeris::ProviderError;
 use teistro_time::{DayState, DstOutcome};
 
@@ -508,6 +509,9 @@ fn time_and_calendar(api: &Api) -> Vec<&'static str> {
             "TsMonthKind",
             |k: &teistro_calendar::lunisolar::MonthKind| id(TsMonthKind::from(*k) as u8),
         ),
+        unit(api, "TsSunrises", |s: &Sunrises| {
+            id(TsSunrises::from(*s) as u8)
+        }),
     ]
 }
 

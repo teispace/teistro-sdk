@@ -5795,6 +5795,31 @@ typedef enum ts_month_kind {
 } ts_month_kind;
 
 /**
+ * Which of its day's two sunrises a limb's member was running at, which
+ * is how a patro marks a member naming two days (vriddhi) or none
+ * (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
+ * is.
+ */
+typedef enum ts_sunrises {
+    /**
+     * The day's own sunrise only: the member the day is named by.
+     */
+    TS_SUNRISES_OPENING = 0,
+    /**
+     * The next day's sunrise only: the member the next day is named by.
+     */
+    TS_SUNRISES_NEXT = 1,
+    /**
+     * Both: the member names two days running (vriddhi).
+     */
+    TS_SUNRISES_BOTH = 2,
+    /**
+     * Neither: the member names no day (kshaya).
+     */
+    TS_SUNRISES_NEITHER = 3,
+} ts_sunrises;
+
+/**
  * An opaque context: settings, a provider, the locale engine, the last
  * error. Used by one thread at a time.
  */
@@ -6490,8 +6515,8 @@ struct ts_context_options {
     uint32_t flags;
     /**
      * The shipped profile's id (`parashari-classical`, `nepali-default`,
-     * `surya-siddhanta`, `kp-default`, `western-tropical-default`,
-     * `conformance-baseline`).
+     * `nepali-committee`, `surya-siddhanta`, `kp-default`,
+     * `western-tropical-default`, `conformance-baseline`).
      * Example: parashari-classical. May be null.
      */
     const char * profile;

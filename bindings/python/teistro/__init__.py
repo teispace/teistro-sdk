@@ -169,6 +169,7 @@ from .catalogue import (
     Masa,
     MonthKind,
     MuhurtaYoga,
+    Sunrises,
     Nakshatra,
     Paksha,
     Panchaka,
@@ -298,6 +299,7 @@ __all__ = [
     "PositionQuery",
     "Positions",
     "Span",
+    "Sunrises",
     "Resolution",
     "Scale",
     "Status",
@@ -604,6 +606,7 @@ __all__ = [
     "Masa",
     "Modality",
     "MonthKind",
+    "GhatiPala",
     "MuhurtaNature",
     "MuhurtaYoga",
     "Nadi",
@@ -7041,6 +7044,33 @@ class Span(Generic[T]):
     inside: Interval
     """The part inside the day: what an almanac row prints."""
 
+    sunrises: Sunrises
+    """Which of the day's two sunrises the member was running at:
+    `Sunrises.BOTH` when it names two days (vriddhi), `Sunrises.NEITHER`
+    when it names none (kshaya).
+
+    >>> kshaya = [s.member for s in day.tithi if s.sunrises is Sunrises.NEITHER]  # doctest: +SKIP
+    """
+
+    ends: GhatiPala
+    """When the member ended, in ghati-pala from the day's sunrise under
+    `day.ghati_reckoning`; a member outlasting the day reads as the day's
+    whole count."""
+
+
+@dataclass(frozen=True)
+class GhatiPala:
+    """A count from sunrise in ghatis of sixty palas of sixty vipalas."""
+
+    ghati: int
+    """Ghatis, 0 to 59 (60 when a civil day outlasts twenty-four hours)."""
+
+    pala: int
+    """Palas, 0 to 59."""
+
+    vipala: int
+    """Vipalas, 0 to 59."""
+
 
 @dataclass(frozen=True)
 class Month:
@@ -7383,6 +7413,10 @@ class AlmanacDay:
                 member=member(columns.member[i]),
                 whole=Interval(columns.whole_from[i], columns.whole_to[i]),
                 inside=Interval(columns.inside_from[i], columns.inside_to[i]),
+                sunrises=Sunrises(columns.sunrises[i]),
+                ends=GhatiPala(
+                    columns.ends_ghati[i], columns.ends_pala[i], columns.ends_vipala[i]
+                ),
             ),
         )
 

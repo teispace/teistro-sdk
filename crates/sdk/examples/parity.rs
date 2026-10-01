@@ -2989,8 +2989,30 @@ fn one_day_items(report: &mut Report, index: usize, day: &teistro_panchanga::alm
 }
 
 /// One span of one limb, flattened so the four lists can be walked as
-/// one: the member's key, when it ran, and the part inside the day.
-type LimbSpan = (String, Interval, Interval);
+/// one: the member's key, when it ran, the part inside the day, which of
+/// the day's sunrises it held, and its end in ghatis from sunrise.
+type LimbSpan = (
+    String,
+    Interval,
+    Interval,
+    teistro::Sunrises,
+    teistro::GhatiPala,
+);
+
+/// A limb's span as `LimbSpan` holds it.
+fn limb_span<T>(
+    day: &teistro_panchanga::almanac::Panchanga,
+    span: &teistro::Span<T>,
+    key: &str,
+) -> LimbSpan {
+    (
+        key.to_owned(),
+        span.whole,
+        span.inside,
+        day.sunrises(span),
+        day.ghati_pala(span.whole.to).expect("an end the day reads"),
+    )
+}
 
 /// One day's limb spans, which are the bulk of its rows.
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
@@ -3001,7 +3023,7 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
             day.limbs
                 .tithi
                 .iter()
-                .map(|span| (span.member.full_key().to_owned(), span.whole, span.inside))
+                .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),
         ),
         (
@@ -3009,7 +3031,7 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
             day.limbs
                 .nakshatra
                 .iter()
-                .map(|span| (span.member.full_key().to_owned(), span.whole, span.inside))
+                .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),
         ),
         (
@@ -3017,7 +3039,7 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
             day.limbs
                 .yoga
                 .iter()
-                .map(|span| (span.member.full_key().to_owned(), span.whole, span.inside))
+                .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),
         ),
         (
@@ -3025,12 +3047,12 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
             day.limbs
                 .karana
                 .iter()
-                .map(|span| (span.member.full_key().to_owned(), span.whole, span.inside))
+                .map(|span| limb_span(day, span, span.member.full_key()))
                 .collect(),
         ),
     ];
     for (what, spans) in &limbs {
-        for (at, (member, whole, inside)) in spans.iter().enumerate() {
+        for (at, (member, whole, inside, sunrises, ends)) in spans.iter().enumerate() {
             put(report, &format!("day-{index}-{what}-{at}"), member.clone());
             put(
                 report,
@@ -3041,6 +3063,16 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
                 report,
                 &format!("day-{index}-{what}-{at}-inside-to"),
                 number(inside.to.get()),
+            );
+            put(
+                report,
+                &format!("day-{index}-{what}-{at}-sunrises"),
+                wire_key(sunrises),
+            );
+            put(
+                report,
+                &format!("day-{index}-{what}-{at}-ends"),
+                format!("{}-{}-{}", ends.ghati, ends.pala, ends.vipala),
             );
         }
     }

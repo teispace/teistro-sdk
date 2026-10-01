@@ -83,6 +83,8 @@ from teistro.catalogue import (
     PolarKind,
     Ritu,
     Sunrise,
+    Sunrises,
+    Tithi,
     Vara,
 )
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
@@ -2427,6 +2429,50 @@ class AnEngine(WithLibrary):
         self.assertEqual(refused([kerala, row]), "options.layouts_json[1].key")
         misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "CLOCKWISE"}}
         self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]
+
+
+class ASpansTurns(WithLibrary):
+    """A limb's member naming two days or none, and its end in ghatis
+    (`03-design/nepal-day-measured.md`): Nepal's print, under the
+    committee's Surya Siddhanta."""
+
+    def tithis(self, y: int, m: int, d: int) -> list[Any]:
+        """The day's tithi spans, read while the context is open."""
+        with self.teistro.context(
+            profile="nepali-committee", ephemeris=Ephemeris.SURYA_SIDDHANTA
+        ) as ctx:
+            days = ctx.almanac.of(
+                from_date=date(Calendar.GREGORIAN, y, m, d),
+                to_date=date(Calendar.GREGORIAN, y, m, d),
+                place=Observer(
+                    latitude_deg=Latitude(27.7172),
+                    longitude_deg=Longitude(85.324),
+                    altitude_m=Altitude(1400),
+                ),
+                utc_offset_seconds=20_700,
+            )
+            return list(days[0].tithi)
+
+    def test_a_tithi_printed_day_and_night_holds_both_sunrises(self) -> None:
+        tithis = self.tithis(2025, 4, 13)
+        self.assertEqual(
+            [span.member for span in tithis if span.sunrises is Sunrises.BOTH],
+            [Tithi.KRISHNA_PRATIPADA],
+        )
+
+    def test_a_tithi_between_two_sunrises_holds_neither(self) -> None:
+        tithis = self.tithis(2025, 4, 26)
+        self.assertEqual(
+            [span.sunrises for span in tithis],
+            [Sunrises.OPENING, Sunrises.NEITHER, Sunrises.NEXT],
+        )
+        self.assertEqual(tithis[1].member, Tithi.KRISHNA_CHATURDASHI)
+
+    def test_an_end_reads_in_ghatis_from_sunrise(self) -> None:
+        # Chaturdashi ended at 22:16, sunrise 05:54: past 40 ghatis.
+        ends = self.tithis(2026, 9, 25)[0].ends
+        self.assertIn(ends.ghati, (40, 41))
+        self.assertLess(max(ends.pala, ends.vipala), 60)
 
 
 class ADaysSeason(WithLibrary):

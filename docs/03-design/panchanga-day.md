@@ -135,6 +135,32 @@ with `began_before()`, `ends_after()` and `fraction_at(instant)` over it.
 `inside` is never empty — a span that does not touch the window is not in
 the list.
 
+### Which sunrises a member held, and its end in ghatis
+
+A patro marks two things about a member that the bounds imply but a
+reader should not have to derive. A member running at both the day's
+sunrise and the next day's names two days — a **vriddhi**, printed
+"दिनरात" (day and night); one running at neither names no day — a
+**kshaya**, and the day prints three members. `Span::sunrises(sunrise,
+next_sunrise)` answers `Sunrises::{Opening, Next, Both, Neither}`, and the
+day asks it of its own two sunrises (`Panchanga::sunrises(span)`, with
+`vriddhi(spans)` and `kshaya(spans)` over a limb). A patro also writes an
+end as ghatis and palas from sunrise: `Panchanga::ghati_pala(instant)`
+reads one under the day's `day.ghati_reckoning`, clamped to the day — an
+end after the next sunrise reads as the day's whole count, sixty ghatis
+under the proportional reckoning and the civil day's own length under
+the civil one. Every binding carries both on each span as `sunrises` and
+`ends`.
+
+Which member a sunrise names turns on minutes near a boundary, so the
+flags inherit the sunrise's convention. Against Nepal's daily panchanga
+the committee's reading (`nepali-committee`) gives every printed flag
+but those an end within minutes of sunrise decides, where the text's
+sunrise, without the equation of time, is not the print's modern one;
+each such day is named on
+[the measured page](nepal-day-measured.md) with the check that explains
+it.
+
 ### The kernel
 
 `astro::events` already has the lattices (`Lattice::TITHIS` at 12°,

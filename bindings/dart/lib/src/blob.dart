@@ -5222,6 +5222,10 @@ final class PanchangaTithi {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5240,6 +5244,18 @@ final class PanchangaTithi {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5255,6 +5271,10 @@ final class PanchangaNakshatra {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5273,6 +5293,18 @@ final class PanchangaNakshatra {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5288,6 +5320,10 @@ final class PanchangaYoga {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5306,6 +5342,18 @@ final class PanchangaYoga {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5321,6 +5369,10 @@ final class PanchangaKarana {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5339,6 +5391,18 @@ final class PanchangaKarana {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5354,6 +5418,10 @@ final class PanchangaPanchaka {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5372,6 +5440,18 @@ final class PanchangaPanchaka {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5387,6 +5467,10 @@ final class PanchangaMoonSigns {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5405,6 +5489,18 @@ final class PanchangaMoonSigns {
   /// Where the part inside the day ends.
   final Float64List insideTo;
 
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -5420,6 +5516,10 @@ final class PanchangaSunSigns {
     required this.wholeTo,
     required this.insideFrom,
     required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
     required this.length,
   });
 
@@ -5437,6 +5537,18 @@ final class PanchangaSunSigns {
 
   /// Where the part inside the day ends.
   final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
 
   /// The number of rows every column holds.
   final int length;
@@ -6077,6 +6189,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atTithi, 4),
         blob.columnOffset(atTithi, 4) + atTithi.count * 8,
       ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 5),
+        blob.columnOffset(atTithi, 5) + atTithi.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 6),
+        blob.columnOffset(atTithi, 6) + atTithi.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 7),
+        blob.columnOffset(atTithi, 7) + atTithi.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atTithi, 8),
+        blob.columnOffset(atTithi, 8) + atTithi.count * 1,
+      ),
       length: atTithi.count,
     ),
     nakshatra: PanchangaNakshatra(
@@ -6104,6 +6236,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atNakshatra, 4),
         blob.columnOffset(atNakshatra, 4) + atNakshatra.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 5),
+        blob.columnOffset(atNakshatra, 5) + atNakshatra.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 6),
+        blob.columnOffset(atNakshatra, 6) + atNakshatra.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 7),
+        blob.columnOffset(atNakshatra, 7) + atNakshatra.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNakshatra, 8),
+        blob.columnOffset(atNakshatra, 8) + atNakshatra.count * 1,
       ),
       length: atNakshatra.count,
     ),
@@ -6133,6 +6285,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atYoga, 4),
         blob.columnOffset(atYoga, 4) + atYoga.count * 8,
       ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 5),
+        blob.columnOffset(atYoga, 5) + atYoga.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 6),
+        blob.columnOffset(atYoga, 6) + atYoga.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 7),
+        blob.columnOffset(atYoga, 7) + atYoga.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYoga, 8),
+        blob.columnOffset(atYoga, 8) + atYoga.count * 1,
+      ),
       length: atYoga.count,
     ),
     karana: PanchangaKarana(
@@ -6160,6 +6332,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atKarana, 4),
         blob.columnOffset(atKarana, 4) + atKarana.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 5),
+        blob.columnOffset(atKarana, 5) + atKarana.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 6),
+        blob.columnOffset(atKarana, 6) + atKarana.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 7),
+        blob.columnOffset(atKarana, 7) + atKarana.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKarana, 8),
+        blob.columnOffset(atKarana, 8) + atKarana.count * 1,
       ),
       length: atKarana.count,
     ),
@@ -6189,6 +6381,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atPanchaka, 4),
         blob.columnOffset(atPanchaka, 4) + atPanchaka.count * 8,
       ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 5),
+        blob.columnOffset(atPanchaka, 5) + atPanchaka.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 6),
+        blob.columnOffset(atPanchaka, 6) + atPanchaka.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 7),
+        blob.columnOffset(atPanchaka, 7) + atPanchaka.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPanchaka, 8),
+        blob.columnOffset(atPanchaka, 8) + atPanchaka.count * 1,
+      ),
       length: atPanchaka.count,
     ),
     moonSigns: PanchangaMoonSigns(
@@ -6217,6 +6429,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.columnOffset(atMoonSigns, 4),
         blob.columnOffset(atMoonSigns, 4) + atMoonSigns.count * 8,
       ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 5),
+        blob.columnOffset(atMoonSigns, 5) + atMoonSigns.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 6),
+        blob.columnOffset(atMoonSigns, 6) + atMoonSigns.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 7),
+        blob.columnOffset(atMoonSigns, 7) + atMoonSigns.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMoonSigns, 8),
+        blob.columnOffset(atMoonSigns, 8) + atMoonSigns.count * 1,
+      ),
       length: atMoonSigns.count,
     ),
     sunSigns: PanchangaSunSigns(
@@ -6244,6 +6476,26 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atSunSigns, 4),
         blob.columnOffset(atSunSigns, 4) + atSunSigns.count * 8,
+      ),
+      sunrises: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 5),
+        blob.columnOffset(atSunSigns, 5) + atSunSigns.count * 1,
+      ),
+      endsGhati: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 6),
+        blob.columnOffset(atSunSigns, 6) + atSunSigns.count * 1,
+      ),
+      endsPala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 7),
+        blob.columnOffset(atSunSigns, 7) + atSunSigns.count * 1,
+      ),
+      endsVipala: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSunSigns, 8),
+        blob.columnOffset(atSunSigns, 8) + atSunSigns.count * 1,
       ),
       length: atSunSigns.count,
     ),

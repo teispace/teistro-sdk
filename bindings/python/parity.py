@@ -1131,6 +1131,11 @@ def main() -> None:
                     put(f"day-{i}-{name}-{j}", span.member.full_key)
                     put(f"day-{i}-{name}-{j}-whole-from", span.whole.from_jd)
                     put(f"day-{i}-{name}-{j}-inside-to", span.inside.to_jd)
+                    put(f"day-{i}-{name}-{j}-sunrises", span.sunrises.key)
+                    put(
+                        f"day-{i}-{name}-{j}-ends",
+                        f"{span.ends.ghati}-{span.ends.pala}-{span.ends.vipala}",
+                    )
             for j, kaala in enumerate(almanac_day.kaalas):
                 put(f"day-{i}-kaala-{j}", kaala.kaala.full_key)
                 put(f"day-{i}-kaala-{j}-from", kaala.at.from_jd)

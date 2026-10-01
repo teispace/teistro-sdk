@@ -113,6 +113,11 @@ pub use teistro_panchanga::almanac::Panchanga;
 // `sdk.calendar.lunarMonth` says it (`03-design/calendar-indian-lunisolar.md` §9).
 pub use teistro_calendar::lunisolar::MonthKind;
 pub use teistro_panchanga::festival;
+// Which of its day's two sunrises a limb's member held, which is how a
+// patro marks vriddhi and kshaya, and the ghati-pala a day's instants
+// read as: both answered by every almanac day.
+pub use teistro_panchanga::span::{Span, Sunrises};
+pub use teistro_time::ghati::GhatiPala;
 // A lunar year, the name the sixty-year cycle gives it and the Jovian
 // years that ran in it: what `sdk.almanac().years` answers with.
 pub use teistro_calendar::samvatsara::JovianYear;

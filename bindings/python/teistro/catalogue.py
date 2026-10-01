@@ -4588,6 +4588,26 @@ class MonthKind(Member):
     """Two: the next name is skipped this year."""
 
 
+class Sunrises(Member):
+    """Which of its day's two sunrises a limb's member was running at, which
+    is how a patro marks a member naming two days (vriddhi) or none
+    (kshaya) (`teistro::Sunrises`). An exhaustive match, as the month kind
+    is.
+    """
+
+    OPENING = 0
+    """The day's own sunrise only: the member the day is named by."""
+
+    NEXT = 1
+    """The next day's sunrise only: the member the next day is named by."""
+
+    BOTH = 2
+    """Both: the member names two days running (vriddhi)."""
+
+    NEITHER = 3
+    """Neither: the member names no day (kshaya)."""
+
+
 # The key of every member, by enum and id, and the kind of every
 # catalogued enum. The two bases above read them; nothing else should.
 _KEYS: dict[str, dict[int, str]] = {
@@ -6071,6 +6091,12 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "NIJA",
         1: "ADHIKA",
         2: "KSHAYA",
+    },
+    "Sunrises": {
+        0: "OPENING",
+        1: "NEXT",
+        2: "BOTH",
+        3: "NEITHER",
     },
 }
 

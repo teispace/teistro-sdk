@@ -1235,6 +1235,11 @@ void main() {
         put('day-$i-$name-$j', (span.member as dynamic).fullKey);
         put('day-$i-$name-$j-whole-from', span.whole.from);
         put('day-$i-$name-$j-inside-to', span.inside.to);
+        put('day-$i-$name-$j-sunrises', span.sunrises.key);
+        put(
+          'day-$i-$name-$j-ends',
+          '${span.ends.ghati}-${span.ends.pala}-${span.ends.vipala}',
+        );
       }
     }
 

@@ -810,6 +810,8 @@ for (const day of week) {
       put(`day-${i}-${limb}-${j}`, span.member);
       put(`day-${i}-${limb}-${j}-whole-from`, span.whole.from);
       put(`day-${i}-${limb}-${j}-inside-to`, span.inside.to);
+      put(`day-${i}-${limb}-${j}-sunrises`, span.sunrises);
+      put(`day-${i}-${limb}-${j}-ends`, `${span.ends.ghati}-${span.ends.pala}-${span.ends.vipala}`);
     });
   }
   day.kaalas.forEach((kaala, j) => {

@@ -3850,3 +3850,22 @@ export const MonthKindById = new Map([
   [2, 'KSHAYA'],
 ]);
 
+/** Every Sunrises by name. */
+export const Sunrises = Object.freeze({
+  Opening: 'OPENING',
+  Next: 'NEXT',
+  Both: 'BOTH',
+  Neither: 'NEITHER',
+});
+
+/**
+ * Every Sunrises by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SunrisesById = new Map([
+  [0, 'OPENING'],
+  [1, 'NEXT'],
+  [2, 'BOTH'],
+  [3, 'NEITHER'],
+]);
+
