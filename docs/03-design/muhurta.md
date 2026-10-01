@@ -132,6 +132,7 @@ the answer (C162).
 | C189 | the eclipse's star | **the Moon's sidereal nakshatra at the greatest eclipse**, the *grahana nakshatra* | the Sun's, which at a solar eclipse is the Moon's but for an eclipse at a star's edge |
 | C190 | which eclipses bar | **those the place sees**, a lunar one by its umbral phase (*Dharmasindhu*: an eclipse's time lasts while it can be seen) | every eclipse anywhere on the Earth |
 | C191 | Raman's "six months" | **six synodic months** from the greatest eclipse, the months a muhurta counts | six solar months, about five days longer, which can add one passage of the Moon through the star |
+| C193 | Holashtaka | **a kind no shipped activity heeds**, from the start of Phalguna's bright eighth to the full moon (*Shighrabodha* I.137–138: eight days, Ashtami to Purnima, barred for marriage and the like only on the Shutudri, Vipasha and Iravati and at Tripushkara, "auspicious elsewhere") | heeded everywhere, as many north Indian almanacs print it; or eight civil days rather than eight tithis |
 | C192 | the vedha as a blackout | **a kind no shipped activity heeds**: *Dharmasindhu*'s vedha is a rule about eating, and holding rites off in it is the almanacs' practice | heeded by a marriage, which no source in hand says |
 | C167 | the malefics neutralisation 11 places in the 3rd, 6th or 11th | **the Sun, Mars and Saturn**: counted with both nodes, which always stand opposite, it could never hold | Rahu counted as well, Ketu not |
 
@@ -157,7 +158,8 @@ blackout a kind and a window, computed once. The kinds are a catalogue
 kind, `blackout`, because a consumer names them in a gate: `CHATURMAS`,
 `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`,
 `GURU_ASTA`, `SHUKRA_ASTA`, `SANKRANTI` (Surya sankramana's sixteen
-ghatis), `ECLIPSE_STAR` (grahanotpatha) and `ECLIPSE_VEDHA`. A kshaya
+ghatis), `HOLASHTAKA` (§4.1.3), `ECLIPSE_STAR` (grahanotpatha) and
+`ECLIPSE_VEDHA`. A kshaya
 year splits its months three ways (§4.1.2). Asta is the heliacal event pair from
 `visibility::Heliacal` under the caller's `Criterion`, which already
 offers the Surya Siddhanta's degrees of time, the tradition's
@@ -295,6 +297,21 @@ The kinds are spelled by hand in each binding, because they cross
 inside the muhurta answer's JSON. The lint
 `blackout-kind-reaches-every-binding` holds each binding's list to
 `BlackoutKind::ALL` both ways.
+
+#### 4.1.3 Holashtaka
+
+Kashinath's *Shighrabodha* (I.137–138, with Vaijnath Prasad's tika,
+read off the page image, printed p. 33; the first verse is misnumbered
+१६७ in that print) gives the eight days before Holi. They run from
+Phalguna's bright eighth with the Purnima as their limit, and are
+avoided for marriage and other auspicious acts. The text confines that
+to the lands of the Shutudri, the Vipasha and the Iravati and to
+Tripushkara, and says that elsewhere they are auspicious ("अन्यत्र
+शुभ"). `HOLASHTAKA` is therefore built and heeded by no shipped
+activity: Kathmandu is not on those rivers, and a consumer whose place
+is names it (C193). The days are read as tithis: from the start of the
+bright eighth (elongation 84°) of the nija Phalguna to the full moon,
+eight tithis.
 
 ### 4.2 The clauses
 

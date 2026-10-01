@@ -518,3 +518,21 @@ fn a_samsarpa_is_known_before_its_kshaya_month_is_reached() {
     assert_eq!(of(&found, BlackoutKind::AdhikaMasa), Vec::new());
     assert_eq!(of(&found, BlackoutKind::KshayaMasa), Vec::new());
 }
+
+/// *Shighrabodha* I.137–138: Phalguna's bright eighth to the Purnima,
+/// eight tithis, ending at the full moon before Holi. The full moons are
+/// 2025-03-14 06:55 and 2026-03-03 11:38 UTC.
+#[test]
+fn holashtaka_runs_phalgunas_bright_eighth_to_its_full_moon() {
+    with_season(|season| {
+        let found = of(season, BlackoutKind::Holashtaka);
+        assert_eq!(found.len(), 2, "{found:?}");
+        near(found[0].to.get(), 2_460_748.788, 0.01, "full moon 2025");
+        near(found[1].to.get(), 2_461_102.985, 0.01, "full moon 2026");
+        for at in &found {
+            // Eight tithis, each 0.9 to 1.1 days long.
+            let days = at.to.get() - at.from.get();
+            assert!((7.0..8.6).contains(&days), "{days} days");
+        }
+    });
+}
