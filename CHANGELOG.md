@@ -1789,12 +1789,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     to the opposite sign once its twelve are spent; its years are 360
     days. When Daimon shares Fortune's sign, activity is released from the
     next sign (IV.4). The profected year counts from the Ascendant's sign
-    in years of 365¼ days, and Valens's 35th year from Virgo is Cancer. A
+    in years of 365¼ days, and Valens's 35th year from Virgo is Cancer; a
+    document stores 120 of them (`PROFECTION_YEARS`), the completed age
+    each year's index, and the cursor runs on past them. A
     document records the sign each starts from, and
     `ChartArea::dasha` rebuilds the cursor from it. `time-lords-measured.md`
     finds Daimon in Fortune's sign on 3 of the corpus's 55 births, and
     every start sign reaching the second-level loosing before 52 calendar
-    years.
+    years. Every parity runner asks for `RELEASING_FORTUNE` and
+    `PROFECTION`.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

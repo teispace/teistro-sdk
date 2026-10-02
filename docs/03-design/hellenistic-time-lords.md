@@ -109,8 +109,13 @@ because the family names the kernel.
     never loosed and never repeated, since no life reaches its end, and
     `AfterCycle` has nothing there to act on.
 - **`ProfectionDasha`** holds a start sign, the birth and a year length:
-  twelve one-year periods, the *n*th sign *n − 1* on, under `AfterCycle`'s
-  repeat. It has one level, because Valens's months (IV.28, a quoted
+  a cycle of 120 one-year periods (`PROFECTION_YEARS`, ten circuits of
+  the signs, the life Vimshottari reckons), the *n*th sign *n − 1* on, so
+  a year's index is the native's completed age; the count runs on past
+  them. The draft stored twelve years, and the parity runners caught
+  what that cost: every binding reads `at` from the stored rows, so each
+  answered nothing from the thirteenth year while Rust's cursor answered
+  the year. It has one level, because Valens's months (IV.28, a quoted
   school's) are read from transits, not divided from the year.
 
 New `DashaSystem` members, appended:
@@ -165,9 +170,10 @@ consumer must name one in a request.
    shares Fortune's sign on 3 of the corpus's 55 births, and the
    second-level loosing is not a question of the sky at all, since every
    start sign reaches it before 52 calendar years (Libra's, the latest).
-4. The boundary comes with the dasha sections. The bindings' catalogues,
-   the parity runners and the intl names of the three members follow.
-   The names wait on a vetted Nepali and Hindi rendering, so the three
-   are on `xtask/src/intl.rs`'s unnamed list.
+4. **Done.** The boundary comes with the dasha sections, and every parity
+   runner asks for `RELEASING_FORTUNE` and `PROFECTION`, one of each
+   kernel, so five bindings agree on their periods. The names wait on a
+   vetted Nepali and Hindi rendering, so the three are on
+   `xtask/src/intl.rs`'s unnamed list.
 5. The knobs: a `lots` settings group (sect and Fortune rules) that
    releasing reads, and C223's choice of the shared sign.

@@ -210,6 +210,12 @@ impl Timeline for ReleasingDasha {
     }
 }
 
+/// The years one cycle of the profected year holds: ten circuits of the
+/// twelve signs, the life Vimshottari reckons, so that a stored reading
+/// answers the year at any age a life reaches. Valens's count itself never
+/// ends, and the cursor carries on past it.
+pub const PROFECTION_YEARS: u8 = 120;
+
 /// The profected year: one sign a year from a start, without end (IV.11).
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProfectionDasha {
@@ -258,13 +264,15 @@ impl Timeline for ProfectionDasha {
         0
     }
 
-    /// The `index`th year of `cycle`'s twelve; the cycles never end.
+    /// The `index`th year of `cycle`'s [`PROFECTION_YEARS`], so that a
+    /// year's index is the native's completed age; the cycles never end.
     fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
-        if index >= SIGNS {
+        if index >= usize::from(PROFECTION_YEARS) {
             return None;
         }
         let sign = step(self.start, Direction::Forward, index);
-        let years = f64::from(cycle) * 12.0 + f64::from(u8::try_from(index).ok()?);
+        let years =
+            f64::from(cycle) * f64::from(PROFECTION_YEARS) + f64::from(u8::try_from(index).ok()?);
         let from = self.birth.get() + years * self.year_days;
         Some(Period::of_sign(
             sign,
@@ -285,7 +293,8 @@ impl Timeline for ProfectionDasha {
             reason = "a non-negative whole number of years, far below u32::MAX for any date"
         )]
         let elapsed = (into / self.year_days).floor() as u32;
-        self.mahadasha(elapsed / 12, usize::try_from(elapsed % 12).ok()?)
+        let span = u32::from(PROFECTION_YEARS);
+        self.mahadasha(elapsed / span, usize::try_from(elapsed % span).ok()?)
     }
 
     /// A year has no division here: Valens's months (IV.28) are read from
@@ -557,7 +566,8 @@ mod tests {
         let period = chain.iter().next().unwrap();
         assert_eq!(period.sign, Some(Rashi::Cancer));
         assert_eq!(period.lord, Graha::Moon);
-        assert_eq!(period.path.cycle(), 2);
+        // The year's index is the completed age, 34, in the first cycle.
+        assert_eq!(period.path.to_string(), "34");
         assert_ne!(Some(period.sign.unwrap()), dasha.sign_of_year(36));
     }
 }

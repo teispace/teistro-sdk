@@ -93,12 +93,15 @@ fn the_time_lords_start_where_valens_counts_them() {
     let profection = reading(&document, DashaSystem::Profection);
     let ascendant = Rashi::of_longitude(sdk.chart().angles(&document).unwrap().ascendant_deg);
     assert_eq!(profection.start_sign(), Some(ascendant));
-    assert_eq!(profection.periods.len(), 12);
+    assert_eq!(
+        profection.periods.len(),
+        usize::from(teistro::dasha::PROFECTION_YEARS)
+    );
     assert_eq!(profection.depth, Depth::MIN);
     assert!((profection.periods[0].interval.days() - 365.25).abs() < 1e-6);
 
     // A cursor rebuilt from the document answers what its rows say, and
-    // the profection keeps counting past the twelve years it carries.
+    // the profection keeps counting past the 120 years it carries.
     for system in TIME_LORDS {
         let cursor = sdk.chart().dasha(&document, system).unwrap();
         let rows = &reading(&document, system).periods;
@@ -112,10 +115,12 @@ fn the_time_lords_start_where_valens_counts_them() {
         .chart()
         .dasha(&document, DashaSystem::Profection)
         .unwrap();
-    let thirty_fifth = JulianDay::literal(birth + 34.5 * 365.25);
-    let year = cursor.at(thirty_fifth, Depth::MIN);
-    let profected = cursor.profection().unwrap().sign_of_year(35);
-    assert_eq!(year.iter().next().unwrap().sign, profected);
+    for ordinal in [35_u32, 121] {
+        let into = (f64::from(ordinal) - 0.5) * 365.25;
+        let year = cursor.at(JulianDay::literal(birth + into), Depth::MIN);
+        let profected = cursor.profection().unwrap().sign_of_year(ordinal);
+        assert_eq!(year.iter().next().unwrap().sign, profected, "{ordinal}");
+    }
 }
 
 /// At a new moon Fortune and Daimon share the Ascendant's sign, and Valens
