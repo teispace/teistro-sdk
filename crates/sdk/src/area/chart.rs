@@ -31,14 +31,14 @@ use teistro_dasha::jaimini::{
 };
 use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
-    Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
-    ProfectionDasha, RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha,
-    YearRing,
+    Birth, Dasha, DashaCursor, DashaName, DashaReading, FirdariaDasha, KalachakraDasha,
+    KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules, Rules as DashaRules,
+    Wheel, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, Dignities, DignityRequest, FortitudeRequest,
-    Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, LotSky,
+    Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, LotSky, Sect,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -711,9 +711,11 @@ impl<'a> ChartArea<'a> {
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
         if let Some(cursor) = self.time_lord_of(chart, system, rules, lots)? {
-            // A year is not divided, so a profection carries one level.
+            // A year is not divided, so a profection carries one level; a
+            // firdar is divided once, into sevenths.
             let depth = match cursor {
                 DashaCursor::Profection(_) => Depth::MIN,
+                DashaCursor::Firdaria(_) => Depth::try_new(2).map_or(depth, |two| depth.min(two)),
                 _ => depth,
             };
             return Ok(DashaReading::of_time_lord(system, &cursor, rules, depth));
@@ -751,6 +753,22 @@ impl<'a> ChartArea<'a> {
         rules: DashaRules,
         lots: LotRequest,
     ) -> Result<Option<DashaCursor>, Error> {
+        if system == DashaSystem::Firdaria {
+            // The Sun begins a day birth's firdaria and the Moon a night
+            // one's, the sect read under the request's lot rules, as the
+            // lots are (`03-design/hellenistic-firdaria.md`).
+            let first = match self.lots_with_request(chart, &[], lots)?.sect {
+                Sect::Day => Graha::Sun,
+                Sect::Night => Graha::Moon,
+            };
+            return FirdariaDasha::new(
+                first,
+                chart.foundation.instant,
+                rules.year_length,
+                self.context.settings().dasha.firdaria_nodes,
+            )
+            .map(|dasha| Some(DashaCursor::Firdaria(dasha)));
+        }
         if !teistro_dasha::TIME_LORDS.contains(&system) {
             return Ok(None);
         }
@@ -3232,6 +3250,17 @@ impl<'a> ChartArea<'a> {
             ) {
                 return cursor;
             }
+        }
+        if system == DashaSystem::Firdaria {
+            // The firdaria rebuild from the luminary that begins them and
+            // the nodes' place their stored round shows.
+            return FirdariaDasha::new(
+                reading.first_lord,
+                document.foundation.instant,
+                reading.rules.year_length,
+                reading.firdaria_nodes(),
+            )
+            .map(DashaCursor::Firdaria);
         }
         if teistro_dasha::rashi_row(system).is_some() {
             // A document from before the readings were recorded was computed

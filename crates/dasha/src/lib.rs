@@ -50,6 +50,7 @@
 pub mod annual;
 pub mod balance;
 pub mod definition;
+pub mod firdaria;
 pub mod jaimini;
 pub mod kalachakra;
 pub mod rashi;
@@ -63,6 +64,9 @@ pub mod wheel;
 pub use annual::{Clock, Share, YearDasha, YearRing};
 pub use balance::{BalanceAtBirth, Written};
 pub use definition::DashaDefinition;
+pub use firdaria::{
+    FIRDARIA_PERIODS, FIRDARIA_ROUNDS, FIRDARIA_YEARS, FirdariaDasha, firdar_years, firdaria_order,
+};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{
     Footedness, Length, NamedLord, Order, Parity, RASHI_ROWS, RashiChart, RashiDasha,
@@ -92,6 +96,7 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
             teistro_core::catalogue::DashaSystem::Kalachakra,
         ))
         .chain(TIME_LORDS)
+        .chain([teistro_core::catalogue::DashaSystem::Firdaria])
 }
 
 /// [`systems`] but those a chart may be refused: every system this build

@@ -10,9 +10,11 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
+use teistro_core::settings::FirdariaNodes;
 
 use crate::balance::BalanceAtBirth;
 use crate::definition::DashaDefinition;
+use crate::firdaria::{DESCENDING, FirdariaDasha};
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
 use crate::rashi::{RashiDasha, RashiDefinition, RashiRules};
 use crate::releasing::{ProfectionDasha, ReleasingDasha};
@@ -249,6 +251,23 @@ impl DashaReading {
     pub fn start_sign(&self) -> Option<Rashi> {
         self.periods.first().and_then(|row| row.sign)
     }
+
+    /// Where a firdaria reading's round places the nodes: after Mars when
+    /// its stored periods put the Head before the seven are done, at the
+    /// end otherwise (a day round, whose Mars is last, reads the same
+    /// both ways).
+    #[must_use]
+    pub fn firdaria_nodes(&self) -> FirdariaNodes {
+        let head = self
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .position(|row| row.lord == Graha::Rahu);
+        match head {
+            Some(at) if at < DESCENDING.len() => FirdariaNodes::AfterMars,
+            _ => FirdariaNodes::End,
+        }
+    }
 }
 
 /// Every period of the birth cycle to `depth`, depth first, as rows.
@@ -283,6 +302,8 @@ pub enum DashaCursor {
     Releasing(ReleasingDasha),
     /// The profected year.
     Profection(ProfectionDasha),
+    /// The firdaria.
+    Firdaria(FirdariaDasha),
 }
 
 impl Timeline for DashaCursor {
@@ -293,6 +314,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Kalachakra(dasha) => dasha.breadth(),
             DashaCursor::Releasing(dasha) => dasha.breadth(),
             DashaCursor::Profection(dasha) => dasha.breadth(),
+            DashaCursor::Firdaria(dasha) => dasha.breadth(),
         }
     }
 
@@ -303,6 +325,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Kalachakra(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Releasing(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Profection(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Firdaria(dasha) => dasha.mahadasha(cycle, index),
         }
     }
 
@@ -313,6 +336,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Kalachakra(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Releasing(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Profection(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Firdaria(dasha) => dasha.mahadasha_at(instant),
         }
     }
 
@@ -323,6 +347,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Kalachakra(dasha) => dasha.child(parent, index),
             DashaCursor::Releasing(dasha) => dasha.child(parent, index),
             DashaCursor::Profection(dasha) => dasha.child(parent, index),
+            DashaCursor::Firdaria(dasha) => dasha.child(parent, index),
         }
     }
 }
@@ -369,6 +394,15 @@ impl DashaCursor {
     pub const fn profection(&self) -> Option<&ProfectionDasha> {
         match self {
             DashaCursor::Profection(dasha) => Some(dasha),
+            _ => None,
+        }
+    }
+
+    /// The firdaria, when it is the firdaria.
+    #[must_use]
+    pub const fn firdaria(&self) -> Option<&FirdariaDasha> {
+        match self {
+            DashaCursor::Firdaria(dasha) => Some(dasha),
             _ => None,
         }
     }

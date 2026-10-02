@@ -477,6 +477,7 @@ def main() -> None:
                 DashaSystem.KALACHAKRA,
                 DashaSystem.RELEASING_FORTUNE,
                 DashaSystem.PROFECTION,
+                DashaSystem.FIRDARIA,
                 "dasha_system.ACME_PARITY",
             ],
             drawings=[

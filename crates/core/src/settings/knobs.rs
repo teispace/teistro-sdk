@@ -156,6 +156,14 @@ knob!(
         Same = "SAME" }
 );
 knob!(
+    /// Where the Dragon's Head and Tail take their years in the firdaria of
+    /// a night birth (crux C225).
+    FirdariaNodes { /// After the seven, by day and by night: al-Biruni's table (§438) and
+        /// Abu Ma'shar's "after the years of Mercury" by night.
+        End = "END", /// After Mars in both sects, as Bonatti gives it after al-Qabisi.
+        AfterMars = "AFTER_MARS" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

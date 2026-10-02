@@ -99,6 +99,8 @@ pub enum DashaSystem {
     ReleasingDaimon = 41,
     /// The profected year from the Ascendant
     Profection = 42,
+    /// The firdaria, the Persian periods of the seven and the nodes
+    Firdaria = 43,
 }
 
 /// The attributes of a `dasha_system` member.
@@ -108,7 +110,7 @@ pub struct DashaSystemAttributes {
     pub family: DashaFamily,
 }
 
-static ATTRIBUTES: [DashaSystemAttributes; 43] = [
+static ATTRIBUTES: [DashaSystemAttributes; 44] = [
     DashaSystemAttributes { family: DashaFamily::Udu, },
     DashaSystemAttributes { family: DashaFamily::Udu, },
     DashaSystemAttributes { family: DashaFamily::Udu, },
@@ -152,9 +154,10 @@ static ATTRIBUTES: [DashaSystemAttributes; 43] = [
     DashaSystemAttributes { family: DashaFamily::Releasing, },
     DashaSystemAttributes { family: DashaFamily::Releasing, },
     DashaSystemAttributes { family: DashaFamily::Profection, },
+    DashaSystemAttributes { family: DashaFamily::Firdaria, },
 ];
 
-const BY_KEY: [(&str, DashaSystem); 43] = [
+const BY_KEY: [(&str, DashaSystem); 44] = [
     ("AAYU", DashaSystem::Aayu),
     ("ASHTAKAVARGA", DashaSystem::Ashtakavarga),
     ("ASHTOTTARI", DashaSystem::Ashtottari),
@@ -163,6 +166,7 @@ const BY_KEY: [(&str, DashaSystem); 43] = [
     ("DRIG", DashaSystem::Drig),
     ("DWADASHOTTARI", DashaSystem::Dwadashottari),
     ("DWISAPTATI_SAMA", DashaSystem::DwisaptatiSama),
+    ("FIRDARIA", DashaSystem::Firdaria),
     ("KALACHAKRA", DashaSystem::Kalachakra),
     ("KARAKA", DashaSystem::Karaka),
     ("KARANA_CHATURASHITI", DashaSystem::KaranaChaturashiti),
@@ -208,7 +212,7 @@ impl DashaSystem {
     pub const KIND: Kind = Kind::DashaSystem;
 
     /// Every member, in id order.
-    pub const ALL: [DashaSystem; 43] = [
+    pub const ALL: [DashaSystem; 44] = [
         DashaSystem::Vimshottari,
         DashaSystem::Ashtottari,
         DashaSystem::Dwadashottari,
@@ -252,6 +256,7 @@ impl DashaSystem {
         DashaSystem::ReleasingFortune,
         DashaSystem::ReleasingDaimon,
         DashaSystem::Profection,
+        DashaSystem::Firdaria,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -301,6 +306,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => "RELEASING_FORTUNE",
             DashaSystem::ReleasingDaimon => "RELEASING_DAIMON",
             DashaSystem::Profection => "PROFECTION",
+            DashaSystem::Firdaria => "FIRDARIA",
         }
     }
 
@@ -351,6 +357,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => "dasha_system.RELEASING_FORTUNE",
             DashaSystem::ReleasingDaimon => "dasha_system.RELEASING_DAIMON",
             DashaSystem::Profection => "dasha_system.PROFECTION",
+            DashaSystem::Firdaria => "dasha_system.FIRDARIA",
         }
     }
 
@@ -401,6 +408,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => "Releasing from the Lot of Fortune, Valens's vital sector for the body",
             DashaSystem::ReleasingDaimon => "Releasing from Daimon, Valens's vital sector for action",
             DashaSystem::Profection => "The profected year from the Ascendant",
+            DashaSystem::Firdaria => "The firdaria, the Persian periods of the seven and the nodes",
         }
     }
 
@@ -451,6 +459,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => None,
             DashaSystem::ReleasingDaimon => None,
             DashaSystem::Profection => None,
+            DashaSystem::Firdaria => None,
         }
     }
 
@@ -501,6 +510,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => Mark::Verified,
             DashaSystem::ReleasingDaimon => Mark::Verified,
             DashaSystem::Profection => Mark::Verified,
+            DashaSystem::Firdaria => Mark::Verified,
         }
     }
 
@@ -551,6 +561,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => false,
             DashaSystem::ReleasingDaimon => false,
             DashaSystem::Profection => false,
+            DashaSystem::Firdaria => false,
         }
     }
 
@@ -601,6 +612,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
             DashaSystem::ReleasingDaimon => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
             DashaSystem::Profection => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
+            DashaSystem::Firdaria => &[Source { text: "hellenistic-firdaria", reference: "docs/03-design/hellenistic-firdaria.md" }],
         }
     }
 
@@ -651,6 +663,7 @@ impl DashaSystem {
             DashaSystem::ReleasingFortune => &[],
             DashaSystem::ReleasingDaimon => &[],
             DashaSystem::Profection => &[],
+            DashaSystem::Firdaria => &[],
         }
     }
 
@@ -719,6 +732,7 @@ impl DashaSystem {
             40 => Some(DashaSystem::ReleasingFortune),
             41 => Some(DashaSystem::ReleasingDaimon),
             42 => Some(DashaSystem::Profection),
+            43 => Some(DashaSystem::Firdaria),
             _ => None,
         }
     }
