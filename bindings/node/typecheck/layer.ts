@@ -43,6 +43,15 @@ import type {
   ConsiderationRequest,
   Considerations,
   Perfection,
+  PerfectionRequest,
+  Matter,
+  Application,
+  ApplicationKind,
+  Impediment,
+  ImpedimentKind,
+  Translation,
+  Collection,
+  Way,
   Lots,
   PlacedLot,
   Almuten,
@@ -896,6 +905,45 @@ function theConsiderations(ctx: Context): string {
 }
 
 void theConsiderations;
+
+// The perfection read all the way down, a request naming its house.
+function thePerfection(ctx: Context): string {
+  const asked: PerfectionRequest = { house: 7, rules: { horizonDays: 30 } };
+  const read: Matter | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 51.5, longitude: -0.12, altitude: 0 },
+    utcOffsetSeconds: 0,
+    perfection: asked,
+  }).perfection;
+  if (read === null) return 'none';
+  // @ts-expect-error a significator is a graha, not a house number
+  const misread: PerfectionRequest = { quesited: 7 };
+  const application: Application | null = read.application;
+  const kind: ApplicationKind | undefined = application?.kind;
+  const impediment: Impediment | undefined = read.impediments[0];
+  const third: Graha | null | undefined = impediment?.third;
+  const translation: Translation | undefined = read.translations[0];
+  const collection: Collection | undefined = read.collections[0];
+  const held: readonly Way[] = read.ways.held;
+  return [
+    read.querent,
+    read.quesited,
+    kind ?? 'none',
+    application?.gapDeg ?? Number.NaN,
+    read.separation?.pastDeg ?? Number.NaN,
+    impediment?.kind satisfies ImpedimentKind | undefined,
+    third ?? 'none',
+    translation?.received.term ?? false,
+    collection?.fromQuerent.days ?? Number.NaN,
+    read.ways.quesited.dignity.exaltation,
+    read.ways.infortunesBetween.join(),
+    held.join(),
+    read.rules.horizonDays ?? 'unset',
+    String(misread),
+  ].join();
+}
+
+void thePerfection;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them
