@@ -409,6 +409,12 @@ pub struct AccidentalSky {
     pub houses: HouseSystem,
     /// The twelve house cusps, first to twelfth, in degrees.
     pub cusps_deg: [f64; 12],
+    /// The ascendant, from the chart's angles: whole-sign and equal houses
+    /// do not put it on a cusp.
+    pub ascendant_deg: f64,
+    /// The midheaven, from the chart's angles: only a quadrant division
+    /// puts it on the tenth cusp.
+    pub midheaven_deg: f64,
     /// The North Node's longitude; the South Node is opposite.
     pub north_node_deg: f64,
     /// Regulus's longitude of date.
@@ -632,6 +638,8 @@ impl Reading<'_> {
 ///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
 ///     houses: HouseSystem::Equal,
 ///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
+///     ascendant_deg: 0.0,
+///     midheaven_deg: 270.0,
 ///     north_node_deg: 250.0,
 ///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
 /// };
@@ -725,6 +733,8 @@ fn check_sky(longitudes_deg: &[f64; 7], sky: &AccidentalSky) -> Result<(), Error
         .enumerate()
         .map(|(k, &cusp)| (format!("cuspsDeg.{}", k + 1), cusp));
     let points = [
+        ("ascendantDeg", sky.ascendant_deg),
+        ("midheavenDeg", sky.midheaven_deg),
         ("northNodeDeg", sky.north_node_deg),
         ("regulusDeg", sky.regulus_deg),
         ("spicaDeg", sky.spica_deg),
@@ -794,6 +804,8 @@ mod tests {
                 speeds_deg_per_day: planets.map(|(_, speed)| speed),
                 houses: HouseSystem::Regiomontanus,
                 cusps_deg: cusps,
+                ascendant_deg: cusps[0],
+                midheaven_deg: cusps[9],
                 north_node_deg: node,
                 regulus_deg: star_of(149.8298, year),
                 spica_deg: star_of(203.8410, year),
@@ -1060,7 +1072,7 @@ mod tests {
         assert_eq!(read.net(Graha::Rahu), None);
         // Lilly names Venus "Almuten of the Geniture" in his judgment of
         // this nativity: the greatest net, alone.
-        let almuten = read.almuten();
+        let almuten = read.almutens.figure;
         assert_eq!(almuten.almutens(), [Graha::Venus]);
         assert_eq!(almuten.total(Graha::Venus), Some(18));
     }

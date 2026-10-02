@@ -460,9 +460,19 @@ impl Almuten {
 pub enum PlaceReading { Degree, Sign }        // C218
 pub fn almuten_of(longitude_deg, sect, &DignityRules, &Scores, PlaceReading) -> Result<Almuten>;
 pub fn almuten_of_places(&[f64], ...) -> Result<Almuten>;  // summed
-pub fn part_of_fortune(asc, sun, moon, FortuneRule) -> f64; // C220
-impl Fortitudes { pub fn almuten(&self) -> Almuten }       // the nets
+pub fn part_of_fortune(asc, sun, moon, sect, FortuneRule) -> f64; // C220
+pub struct AlmutenRules { pub place: PlaceReading, pub fortune: FortuneRule }
+pub struct Almutens {                        // Fortitudes::almutens
+    pub rules: AlmutenRules, pub fortune_deg: f64,
+    pub figure: Almuten, pub places: Almuten, pub houses: [Almuten; 12],
+}
 ```
+
+A `FortitudeRequest` names its `almuten` rules beside its orbs and
+scores, and `Fortitudes` answers all three almutens with the rules and
+the Fortune that made them. `net` reads the figure's totals, so the two
+cannot part. `AccidentalSky` carries the chart's ascendant and
+midheaven from its angles, the two places a cusp does not always hold.
 
 - **A house's almuten** is the almuten of its cusp. By the degree
   (`PlaceReading::Degree`, the default) it counts all five of Lilly's

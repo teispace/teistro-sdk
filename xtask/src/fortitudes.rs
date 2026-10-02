@@ -11,9 +11,9 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::catalogue::Graha;
-use teistro::hellenistic::{almuten_of, almuten_of_places, house_of, part_of_fortune};
+use teistro::hellenistic::house_of;
 use teistro::{
-    Accident, AccidentalRules, Almuten, Context, Ephemeris, FortitudeRequest, Fortitudes,
+    Accident, AccidentalRules, AlmutenRules, Context, Ephemeris, FortitudeRequest, Fortitudes,
     FortuneRule, Partile, PlaceReading, Sect,
 };
 
@@ -50,8 +50,10 @@ struct Read {
     within_a_degree: Fortitudes,
     /// Combust whatever the sign (C211).
     any_sign: Fortitudes,
-    /// The chart's ascendant and midheaven, from its angles.
-    angles: (f64, f64),
+    /// Each place's almuten by its sign (C218).
+    by_sign: Fortitudes,
+    /// Fortune reversed by night (C220).
+    fortune_reversed: Fortitudes,
 }
 
 /// Each planet of a read, its longitude beside it.
@@ -190,74 +192,30 @@ fn rival_claims(reads: &[Read]) -> Vec<Claim> {
     ]
 }
 
-/// Chapter CV's places almuten of a read: its ascendant, midheaven, Sun,
-/// Moon and Part of Fortune, Fortune taken by `fortune`.
-fn places_almuten(read: &Read, fortune: FortuneRule) -> Result<Almuten, String> {
-    let lilly = &read.lilly;
-    let dignities = &lilly.dignities;
-    let (ascendant, midheaven) = read.angles;
-    let at = |planet: Graha| {
-        dignities
-            .planets
-            .iter()
-            .find(|each| each.planet == planet)
-            .map(|each| each.longitude_deg)
-            .ok_or_else(|| format!("a read without {planet:?}"))
-    };
-    let (sun, moon) = (at(Graha::Sun)?, at(Graha::Moon)?);
-    let places = [
-        ascendant,
-        midheaven,
-        sun,
-        moon,
-        part_of_fortune(ascendant, sun, moon, dignities.sect, fortune),
-    ];
-    almuten_of_places(
-        &places,
-        dignities.sect,
-        &dignities.rules,
-        &dignities.scores,
-        PlaceReading::Degree,
-    )
-    .map_err(|why| why.to_string())
-}
-
 /// The three almutens over the corpus (C218–C220): how often each ties,
 /// how often Lilly's and Chapter CV's agree, and what each rival moves.
-fn almuten_claims(reads: &[Read]) -> Result<Vec<Claim>, String> {
+fn almuten_claims(reads: &[Read]) -> Vec<Claim> {
     let (mut figure_tied, mut places_tied, mut agree) = (0, 0, 0);
     let (mut houses, mut sign_moves) = (0, 0);
     let (mut nights, mut reversal_moves) = (0, 0);
     for read in reads {
-        let figure = read.lilly.almuten().almutens();
-        let places = places_almuten(read, FortuneRule::DayAndNight)?.almutens();
+        let lilly = &read.lilly.almutens;
+        let (figure, places) = (lilly.figure.almutens(), lilly.places.almutens());
         figure_tied += usize::from(figure.len() > 1);
         places_tied += usize::from(places.len() > 1);
         agree += usize::from(figure == places);
-        let dignities = &read.lilly.dignities;
-        for &cusp in &read.lilly.sky.cusps_deg {
-            let by = |reading| {
-                almuten_of(
-                    cusp,
-                    dignities.sect,
-                    &dignities.rules,
-                    &dignities.scores,
-                    reading,
-                )
-                .map(|at| at.almutens())
-                .map_err(|why| why.to_string())
-            };
+        for (degree, sign) in lilly.houses.iter().zip(&read.by_sign.almutens.houses) {
             houses += 1;
-            sign_moves += usize::from(by(PlaceReading::Degree)? != by(PlaceReading::Sign)?);
+            sign_moves += usize::from(degree.almutens() != sign.almutens());
         }
-        if dignities.sect == Sect::Night {
+        if read.lilly.dignities.sect == Sect::Night {
             nights += 1;
-            let reversed = places_almuten(read, FortuneRule::ReversedByNight)?.almutens();
-            reversal_moves += usize::from(reversed != places);
+            reversal_moves +=
+                usize::from(read.fortune_reversed.almutens.places.almutens() != places);
         }
     }
     let births = reads.len();
-    Ok(vec![
+    vec![
         Claim::stated(
             "C219: births whose almuten is tied, which the shipped reading reports rather than breaks",
             Verdict::Holds,
@@ -287,7 +245,7 @@ fn almuten_claims(reads: &[Read]) -> Result<Vec<Claim>, String> {
                 count(nights)
             ),
         ),
-    ])
+    ]
 }
 
 /// How often each line holds, over every planet of every birth.
@@ -338,6 +296,9 @@ fn page(root: &Path) -> Result<String, String> {
     let mut any_sign_rules = AccidentalRules::LILLY;
     any_sign_rules.combustion_in_sign = false;
     let any_sign = lilly.with_rules(any_sign_rules);
+    let by_sign = lilly.with_almuten(AlmutenRules::LILLY.with_place(PlaceReading::Sign));
+    let fortune_reversed =
+        lilly.with_almuten(AlmutenRules::LILLY.with_fortune(FortuneRule::ReversedByNight));
     let reads = births
         .iter()
         .map(|birth| {
@@ -350,18 +311,15 @@ fn page(root: &Path) -> Result<String, String> {
                 lilly: read(&lilly)?,
                 within_a_degree: read(&within_a_degree)?,
                 any_sign: read(&any_sign)?,
-                angles: sdk
-                    .chart()
-                    .angles(&birth.document)
-                    .map(|at| (at.ascendant_deg, at.midheaven_deg))
-                    .map_err(|why| format!("{}: {why}", birth.name))?,
+                by_sign: read(&by_sign)?,
+                fortune_reversed: read(&fortune_reversed)?,
             })
         })
         .collect::<Result<Vec<_>, String>>()?;
     let claims: Vec<Claim> = structural_claims(&reads)
         .into_iter()
         .chain(rival_claims(&reads))
-        .chain(almuten_claims(&reads)?)
+        .chain(almuten_claims(&reads))
         .collect();
     let mut out = String::from(
         "# Accidental fortitudes, measured\n\n\

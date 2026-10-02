@@ -2352,6 +2352,11 @@ impl<'a> ChartArea<'a> {
     /// let sun = &read.planets[3];
     /// assert_eq!(sun.planet, Graha::Sun);
     /// assert!(read.net(Graha::Sun).is_some());
+    /// // Lilly's almuten of the figure holds the greatest net.
+    /// let greatest = read.almutens.figure.totals.iter().copied().max();
+    /// for lord in read.almutens.figure.almutens() {
+    ///     assert_eq!(read.net(lord), greatest);
+    /// }
     /// ```
     ///
     /// # Errors
@@ -2387,8 +2392,8 @@ impl<'a> ChartArea<'a> {
 
     /// What a chart's accidental fortitudes are read from beside its
     /// longitudes: the seven's motions, the cusps of the module's
-    /// division, the North Node, and the three stars of date in the
-    /// chart's zodiac.
+    /// division, the angles, the North Node, and the three stars of date
+    /// in the chart's zodiac.
     fn accidental_sky(self, chart: &Document) -> Result<AccidentalSky, Error> {
         let foundation = &chart.foundation;
         let settings = self.context.settings();
@@ -2417,10 +2422,13 @@ impl<'a> ChartArea<'a> {
             let place = place_of(star, tt, &StarOptions::APPARENT)?;
             Ok(foundation.zodiac.of_tropical(place.lon_deg))
         };
+        let angles = self.angles(chart)?;
         Ok(AccidentalSky {
             speeds_deg_per_day,
             houses,
             cusps_deg,
+            ascendant_deg: angles.ascendant_deg,
+            midheaven_deg: angles.midheaven_deg,
             north_node_deg,
             regulus_deg: star(Star::Regulus)?,
             spica_deg: star(Star::Spica)?,
