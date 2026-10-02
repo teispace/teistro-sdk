@@ -414,13 +414,22 @@ pub struct PerfectionRules {
     /// How many days ahead to look; unset, until the swifter significator
     /// leaves its sign (crux C232).
     pub horizon_days: Option<f64>,
+    /// Whether a contact with a third planet counts only when the planet
+    /// applying perfects it before leaving its sign, as Lilly's void of
+    /// course bounds an application (p. 112) and his p. 387 figure reads
+    /// a void Moon's six contacts as no prohibition (crux C234); `false`
+    /// counts every contact inside the horizon. It bounds the
+    /// impediments, a translator's next contact and a collector's.
+    pub within_sign: bool,
 }
 
 impl PerfectionRules {
-    /// Lilly's orbs, and the swifter significator's sign as the horizon.
+    /// Lilly's orbs, the swifter significator's sign as the horizon, and
+    /// a third planet's contacts bounded by the applier's sign.
     pub const LILLY: PerfectionRules = PerfectionRules {
         orbs_deg: LILLY_ORBS_DEG,
         horizon_days: None,
+        within_sign: true,
     };
 
     /// Reads the rules from JSON, every member optional and Lilly's when
@@ -1055,6 +1064,17 @@ impl Reader<'_> {
             .find(|contact| contact.involves(first) && contact.involves(second))
     }
 
+    /// Whether a contact counts under the rules: always, or only when the
+    /// planet applying perfects it before leaving its sign (C234).
+    fn counts(&self, contact: &Contact) -> bool {
+        let [first, second] = contact.planets;
+        !self.rules.within_sign
+            || self
+                .timeline
+                .motion(applier(self.timeline, first, second))
+                .is_some_and(|(place, speed)| contact.days <= days_in_sign(place, speed))
+    }
+
     /// The host's dignities the guest stands in, at the guest's place.
     fn receives(&self, host: Graha, guest: Graha) -> Result<EssentialDignity, Error> {
         let (place, _) = self
@@ -1184,6 +1204,7 @@ impl Reader<'_> {
             .contacts
             .iter()
             .take_while(|contact| contact.days < application.days)
+            .filter(|contact| self.counts(contact))
         {
             for significator in [self.querent, self.quesited] {
                 let Some(third) = contact.other(significator) else {
@@ -1217,7 +1238,8 @@ impl Reader<'_> {
             .timeline
             .contacts
             .iter()
-            .find(|contact| contact.involves(third));
+            .find(|contact| contact.involves(third))
+            .filter(|contact| self.counts(contact));
         let mut found = Vec::new();
         for (from, to) in [(self.querent, self.quesited), (self.quesited, self.querent)] {
             let next = next.filter(|contact| contact.other(third) == Some(to));
@@ -1247,8 +1269,10 @@ impl Reader<'_> {
         let heavier = weight(third) < weight(querent).min(weight(quesited));
         let (true, Some(&from_querent), Some(&from_quesited)) = (
             heavier,
-            self.first_between(querent, third),
-            self.first_between(quesited, third),
+            self.first_between(querent, third)
+                .filter(|contact| self.counts(contact)),
+            self.first_between(quesited, third)
+                .filter(|contact| self.counts(contact)),
         ) else {
             return Ok(None);
         };
@@ -1744,7 +1768,7 @@ mod tests {
         // under the orbs he works there (4° 30′ each).
         let rules = PerfectionRules {
             orbs_deg: ORBS_ACCORDING_TO_OTHERS,
-            horizon_days: None,
+            ..PerfectionRules::LILLY
         };
         let near = sky(
             &[
@@ -1884,6 +1908,93 @@ mod tests {
             application.days
         );
         assert!(application.days < horizon);
+        assert_eq!(matter.impediments, []);
+        assert_eq!(matter.translations, []);
+        assert_eq!(matter.collections, []);
+        assert!(!matter.ways.mutual_by_house);
+        assert_eq!(matter.ways.held, []);
+    }
+
+    /// Lilly's "A Lady, if marry the Gentleman desired?" (*Christian
+    /// Astrology* p. 385), recast as the considerations' figure is: the
+    /// Sun, lord of the Ascendant, and Saturn, the seventh's lord, apply
+    /// to a sextile, his "first" reason, and the match was made. The Moon
+    /// is void, a quarter of a day from leaving Sagittarius, and every
+    /// contact she makes before the sextile comes after: counted, she
+    /// prohibits six times, where Lilly reads her opposition to the Sun
+    /// as "another small argument" for, and Jupiter's part as "meeting
+    /// with no manner of prohibition" (p. 387; C234).
+    #[test]
+    fn lillys_lady_figure_applies_by_sextile_and_the_void_moon_prohibits_nothing() {
+        let places = [44.61, 104.75, 47.72, 95.51, 50.35, 76.39, 267.29];
+        let speeds = [0.097, 0.223, 0.714, 0.953, 0.860, 0.407, 11.842];
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [10, 11, 10, 11, 10, 11, 5].map(house),
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let read = |rules: &PerfectionRules| {
+            let horizon = rules.horizon_for(&places, &speeds, Sun, Saturn).unwrap();
+            let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+            perfection(&timeline, Sun, Saturn, &standing, rules).unwrap()
+        };
+        let matter = read(&PerfectionRules::LILLY);
+        let application = matter.application.unwrap();
+        assert_eq!(
+            (application.aspect, application.applying, application.kind),
+            (PtolemaicAspect::Sextile, Sun, ApplicationKind::BothDirect)
+        );
+        assert!(
+            (application.days - 10.63).abs() < 0.01,
+            "{}",
+            application.days
+        );
+        assert_eq!(matter.impediments, []);
+        assert_eq!(matter.ways.held, [Way::SextileOrTrine]);
+        // Every contact inside the horizon: the Moon's six.
+        let every = read(&PerfectionRules {
+            within_sign: false,
+            ..PerfectionRules::LILLY
+        });
+        assert_eq!(every.impediments.len(), 6);
+        assert!(every.impediments.iter().all(|impediment| {
+            (impediment.kind, impediment.third) == (ImpedimentKind::Prohibition, Some(Moon))
+        }));
+    }
+
+    /// Lilly's "If he should obtain the Parsonage desired" (*Christian
+    /// Astrology* p. 437), "♂ 6 August 1644, 8h 24′ p.m." in London,
+    /// recast by pyswisseph (Moshier) at the printed Ascendant, Aries
+    /// 5°19′: two minutes from the printed time in local apparent time,
+    /// every cusp within 8′ of the figure's. He finds "no ☌ betwixt ♃"
+    /// and Mars, the ninth's lord and the Ascendant's, and "no weighty
+    /// Planet that translates or collects". Mars has passed Jupiter's
+    /// body in the next sign, Saturn reaches neither, and the Moon,
+    /// leaving Mars's trine, meets Mercury's opposition before Jupiter's
+    /// square, so she translates nothing (p. 438).
+    #[test]
+    fn lillys_parsonage_figure_perfects_nothing() {
+        let places = [
+            20.6527, 59.6107, 64.3973, 144.3232, 181.6502, 129.3135, 307.9198,
+        ];
+        let speeds = [-0.0255, 0.1032, 0.6058, 0.9633, 0.3916, 1.7282, 13.9918];
+        let horizon = PerfectionRules::LILLY
+            .horizon_for(&places, &speeds, Mars, Jupiter)
+            .unwrap();
+        let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [1, 2, 2, 6, 6, 6, 11].map(house),
+            sect: Sect::Night,
+            dignities: &DignityRules::LILLY,
+        };
+        let matter =
+            perfection(&timeline, Mars, Jupiter, &standing, &PerfectionRules::LILLY).unwrap();
+        assert_eq!(matter.application, None);
+        let parted = matter.separation.unwrap();
+        assert_eq!(parted.aspect, PtolemaicAspect::Conjunction);
+        assert!((parted.past_deg - 4.79).abs() < 0.01, "{}", parted.past_deg);
         assert_eq!(matter.impediments, []);
         assert_eq!(matter.translations, []);
         assert_eq!(matter.collections, []);

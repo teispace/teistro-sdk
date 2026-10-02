@@ -1867,7 +1867,7 @@ the astronomical numbers do not move. Nothing else computes yet.
     serde shape, an answer's `rules` handed back as a request, and every
     parity runner prints them.
   - **Perfection, the relations between two significators**
-    (`hellenistic-perfection.md`, C232–C233). An `AspectTimeline` holds
+    (`hellenistic-perfection.md`, C232–C235). An `AspectTimeline` holds
     the contacts (exact Ptolemaic aspects) and stations ahead of a
     figure, from a search or `AspectTimeline::projected` at the motions
     of the moment, and `perfection(&AspectTimeline, querent, quesited,
@@ -1878,8 +1878,11 @@ the astronomical numbers do not move. Nothing else computes yet.
     carries, and each collection with the receptions both ways (C233).
     `PerfectionRules` shares Lilly's orb table (`LILLY_ORBS_DEG`) with the
     considerations and sets the horizon, unset the swifter significator's
-    sign (C232). Held to Lilly's worked examples on pp. 107–113, verified
-    on the page images, and to his p. 238 figure recast.
+    sign (C232), and `within_sign`, true by default: a third planet's
+    contact counts only before the planet applying leaves its sign, so
+    a void Moon prohibits nothing (C234). Held to Lilly's worked examples
+    on pp. 107–113, verified on the page images, and to his figures on
+    pp. 238, 385 and 437 recast.
     `sdk.chart().perfection(&chart, &FortitudeRequest,
     &PerfectionRequest)` names the significators (both, or the house of
     the matter, whose cusp's lord signifies the quesited, the querent's
