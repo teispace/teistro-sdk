@@ -1058,6 +1058,11 @@ mod tests {
         assert_eq!(read.net(Graha::Venus), Some(16 + 2));
         assert_eq!(read.net(Graha::Sun), Some(-6 + 2));
         assert_eq!(read.net(Graha::Rahu), None);
+        // Lilly names Venus "Almuten of the Geniture" in his judgment of
+        // this nativity: the greatest net, alone.
+        let almuten = read.almuten();
+        assert_eq!(almuten.almutens(), [Graha::Venus]);
+        assert_eq!(almuten.total(Graha::Venus), Some(18));
     }
 
     /// Book III, Chapter CLXXV, an English merchant born 19 September 1616
