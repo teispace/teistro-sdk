@@ -74,6 +74,7 @@ every shipped profile. The v1 inventory:
 | dasha | `rashi_start` | enum | `STRONGER` (the default, ch. 46 vv. 179 to 184), `LAGNA` (the corpus's engine; crux C53) |
 | dasha | `releasing_shared_sign` | enum | `NEXT` (the default, Valens IV.4: Daimon's releasing begins at the sign after a shared one), `SAME` (Daimon's own sign; crux C223) |
 | dasha | `firdaria_nodes` | enum | `END` (the default, al-Biruni §438 and Abu Ma'shar: the Head and the Tail after the seven), `AFTER_MARS` (Bonatti: after Mars by night too; crux C225) |
+| dasha | `decennial_division` | enum | `PROPORTIONAL` (the default, Valens VI.6: every level below the first in proportion to the minimum years), `CYCLES` (VI.5's worked count: 129-day cycles at the third level, the minimum years as days at the fourth; crux C228) |
 | dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |

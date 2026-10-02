@@ -364,3 +364,106 @@ fn the_nodes_can_follow_mars() {
         teistro::dasha::firdaria_order(Graha::Moon, teistro::settings::FirdariaNodes::AfterMars)
     );
 }
+
+/// London at `jd`, its decennials asked for.
+fn decennials_chart(sdk: &Context, jd: f64) -> Document {
+    let place = Place::new(
+        Latitude::literal(51.5),
+        Longitude::literal(-0.12),
+        Altitude::literal(0.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::UTC).with_dashas([DashaSystem::Decennials]);
+    sdk.chart()
+        .reading(JulianDay::<Utc>::literal(jd), &request)
+        .unwrap()
+        .value
+}
+
+/// The decennials begin from the luminary of the sect and run on by
+/// longitude, 129 months of 360-day years each (Valens VI.5); a stored
+/// document's cursor answers what its rows say, and keeps the division
+/// its third level shows under a context that says otherwise (C228).
+#[test]
+fn the_decennials_run_from_the_luminary_of_the_sect() {
+    use teistro::dasha::{DECENNIAL_ROUNDS, DECENNIAL_STARS};
+
+    let sdk = tropical();
+    // 1 January 2000, 18:00 UTC: night in London.
+    let night = decennials_chart(&sdk, 2_451_545.25);
+    let stored = reading(&night, DashaSystem::Decennials).clone();
+    let order = stored.decennial_order().unwrap();
+    assert_eq!(order[0], Graha::Moon);
+    let longitude = |graha: Graha| night.foundation.graha(graha).unwrap().longitude_deg;
+    let onwards = |graha: Graha| (longitude(graha) - longitude(Graha::Moon)).rem_euclid(360.0);
+    assert!(
+        order
+            .windows(2)
+            .all(|pair| onwards(pair[0]) < onwards(pair[1]))
+    );
+    assert_eq!(stored.rules.year_length.days(), 360.0);
+    let first: Vec<_> = stored
+        .periods
+        .iter()
+        .filter(|row| row.level() == 1)
+        .collect();
+    assert_eq!(first.len(), DECENNIAL_STARS * DECENNIAL_ROUNDS);
+    assert!(
+        first
+            .iter()
+            .all(|row| (row.interval.days() - 129.0 * 30.0).abs() < 1e-6)
+    );
+
+    // Each second-level share is its lord's minimum years in months.
+    let moon_shares: Vec<_> = stored
+        .periods
+        .iter()
+        .filter(|row| row.level() == 2 && row.path.starts_with("0/"))
+        .collect();
+    assert_eq!(moon_shares[0].lord, Graha::Moon);
+    assert!((moon_shares[0].interval.days() - 25.0 * 30.0).abs() < 1e-6);
+
+    // A day birth (noon) begins from the Sun.
+    let day = decennials_chart(&sdk, 2_451_545.0);
+    assert_eq!(
+        reading(&day, DashaSystem::Decennials)
+            .decennial_order()
+            .unwrap()[0],
+        Graha::Sun
+    );
+
+    // Counted in 129-day cycles, the third level keeps them when a
+    // proportional context rebuilds it.
+    let cycles = tropical_with(r#"{"decennial_division": "CYCLES"}"#);
+    let counted = decennials_chart(&cycles, 2_451_545.25);
+    for document in [&night, &day, &counted] {
+        let cursor = sdk
+            .chart()
+            .dasha(document, DashaSystem::Decennials)
+            .unwrap();
+        for row in &reading(document, DashaSystem::Decennials).periods {
+            let middle = f64::midpoint(row.interval.from.get(), row.interval.to.get());
+            let depth = Depth::try_new(u8::try_from(row.level()).unwrap()).unwrap();
+            let chain = cursor.at(JulianDay::literal(middle), depth);
+            assert_eq!(chain.iter().last().unwrap().lord, row.lord, "{row:?}");
+        }
+    }
+    let rebuilt = sdk
+        .chart()
+        .dasha(&counted, DashaSystem::Decennials)
+        .unwrap();
+    assert_eq!(
+        rebuilt.decennials().unwrap().division(),
+        teistro::settings::DecennialDivision::Cycles
+    );
+
+    // From any of the seven, and the nodes refused.
+    let from_mars = sdk.chart().decennials_from(&night, Graha::Mars).unwrap();
+    assert_eq!(from_mars.order()[0], Graha::Mars);
+    assert_eq!(
+        sdk.chart()
+            .decennials_from(&night, Graha::Rahu)
+            .unwrap_err()
+            .field(),
+        Some("apheta")
+    );
+}

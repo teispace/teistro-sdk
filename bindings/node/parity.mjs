@@ -313,6 +313,7 @@ const charts = geo.chart.foundMany({
     DashaSystem.ReleasingFortune,
     DashaSystem.Profection,
     DashaSystem.Firdaria,
+    DashaSystem.Decennials,
     'dasha_system.ACME_PARITY',
   ],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:

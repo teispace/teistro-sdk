@@ -11,16 +11,17 @@ use crate::catalogue::{
 use super::knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
-    Cheshta, DayBoundary, DayLordDay, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
-    DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes, GhatiReckoning,
-    GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
-    KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth,
-    MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, ReleasingSharedSign,
-    RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, SunAyana,
-    Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    Cheshta, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik,
+    DstGap, DstOverlap, DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
+    GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
+    NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy,
+    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
+    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -213,6 +214,7 @@ pub fn root() -> Settings {
             rashi_start: RashiStart::Stronger,
             releasing_shared_sign: ReleasingSharedSign::Next,
             firdaria_nodes: FirdariaNodes::End,
+            decennial_division: DecennialDivision::Proportional,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,
@@ -520,14 +522,15 @@ fn surya_siddhanta() -> Profile {
     }
 }
 
-/// Every system's year: 365.25 days, but releasing's 360, the year Valens
-/// distributes in (*Anthologies* IV.9, `03-design/hellenistic-time-lords.md`).
+/// Every system's year: 365.25 days, but releasing's and the decennials'
+/// 360, the year Valens distributes in (*Anthologies* IV.9 and VI.5,
+/// `03-design/hellenistic-time-lords.md`, `hellenistic-decennials.md`).
 fn year_lengths() -> BTreeMap<DashaSystem, YearLength> {
     DashaSystem::ALL
         .iter()
         .map(|system| {
             let length = match system.attributes().family {
-                DashaFamily::Releasing => YearLength::Savana360,
+                DashaFamily::Releasing | DashaFamily::Decennials => YearLength::Savana360,
                 _ => YearLength::Julian36525,
             };
             (*system, length)

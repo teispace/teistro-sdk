@@ -1030,6 +1030,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
             DashaSystem::ReleasingFortune.key_id(),
             DashaSystem::Profection.key_id(),
             DashaSystem::Firdaria.key_id(),
+            DashaSystem::Decennials.key_id(),
             own,
         ])
         // The other runners' `lots` record sets the rules releasing reads

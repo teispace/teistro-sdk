@@ -10,9 +10,10 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
-use teistro_core::settings::FirdariaNodes;
+use teistro_core::settings::{DecennialDivision, FirdariaNodes};
 
 use crate::balance::BalanceAtBirth;
+use crate::decennials::{DECENNIAL_STARS, DecennialDasha};
 use crate::definition::DashaDefinition;
 use crate::firdaria::{DESCENDING, FirdariaDasha};
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
@@ -268,6 +269,36 @@ impl DashaReading {
             _ => FirdariaNodes::End,
         }
     }
+
+    /// The order a decennials reading runs the seven in: its first
+    /// periods' lords, or nothing when it stores fewer than seven.
+    #[must_use]
+    pub fn decennial_order(&self) -> Option<[Graha; DECENNIAL_STARS]> {
+        let mut order = [Graha::Sun; DECENNIAL_STARS];
+        let mut lords = self
+            .periods
+            .iter()
+            .filter(|row| row.level() == 1)
+            .map(|row| row.lord);
+        for slot in &mut order {
+            *slot = lords.next()?;
+        }
+        Some(order)
+    }
+
+    /// How a decennials reading divides below the second level, when its
+    /// rows show it: a third-level period of exactly 129 days is a cycle
+    /// (VI.5), which no proportion of the minimum years gives. Nothing
+    /// when it stores two levels or fewer.
+    #[must_use]
+    pub fn decennial_division(&self) -> Option<DecennialDivision> {
+        let third = self.periods.iter().find(|row| row.level() == 3)?;
+        Some(if (third.interval.days() - 129.0).abs() < 1e-6 {
+            DecennialDivision::Cycles
+        } else {
+            DecennialDivision::Proportional
+        })
+    }
 }
 
 /// Every period of the birth cycle to `depth`, depth first, as rows.
@@ -304,6 +335,8 @@ pub enum DashaCursor {
     Profection(ProfectionDasha),
     /// The firdaria.
     Firdaria(FirdariaDasha),
+    /// Valens's decennials.
+    Decennials(DecennialDasha),
 }
 
 impl Timeline for DashaCursor {
@@ -315,6 +348,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Releasing(dasha) => dasha.breadth(),
             DashaCursor::Profection(dasha) => dasha.breadth(),
             DashaCursor::Firdaria(dasha) => dasha.breadth(),
+            DashaCursor::Decennials(dasha) => dasha.breadth(),
         }
     }
 
@@ -326,6 +360,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Releasing(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Profection(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Firdaria(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Decennials(dasha) => dasha.mahadasha(cycle, index),
         }
     }
 
@@ -337,6 +372,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Releasing(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Profection(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Firdaria(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Decennials(dasha) => dasha.mahadasha_at(instant),
         }
     }
 
@@ -348,6 +384,7 @@ impl Timeline for DashaCursor {
             DashaCursor::Releasing(dasha) => dasha.child(parent, index),
             DashaCursor::Profection(dasha) => dasha.child(parent, index),
             DashaCursor::Firdaria(dasha) => dasha.child(parent, index),
+            DashaCursor::Decennials(dasha) => dasha.child(parent, index),
         }
     }
 }
@@ -403,6 +440,15 @@ impl DashaCursor {
     pub const fn firdaria(&self) -> Option<&FirdariaDasha> {
         match self {
             DashaCursor::Firdaria(dasha) => Some(dasha),
+            _ => None,
+        }
+    }
+
+    /// The decennials' kernel, when that is what this is.
+    #[must_use]
+    pub const fn decennials(&self) -> Option<&DecennialDasha> {
+        match self {
+            DashaCursor::Decennials(dasha) => Some(dasha),
             _ => None,
         }
     }

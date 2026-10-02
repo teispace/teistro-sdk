@@ -58,8 +58,12 @@ pub fn releasing_years(sign: Rashi) -> u32 {
     }
 }
 
-/// A planet's minimum period (IV.1).
-const fn minimum_years(planet: Graha) -> u32 {
+/// A planet's minimum years (*Anthologies* IV.1): Saturn 30, Jupiter 12,
+/// Mars 15, Venus 8, Mercury 20, the Sun 19 and the Moon 25, 129 in all;
+/// a node has none. Releasing gives them to signs, and the decennials
+/// share their 129 months by them.
+#[must_use]
+pub const fn minimum_years(planet: Graha) -> u32 {
     match planet {
         Graha::Saturn => 30,
         Graha::Jupiter => 12,
@@ -67,7 +71,8 @@ const fn minimum_years(planet: Graha) -> u32 {
         Graha::Venus => 8,
         Graha::Mercury => 20,
         Graha::Sun => 19,
-        _ => 25,
+        Graha::Moon => 25,
+        _ => 0,
     }
 }
 

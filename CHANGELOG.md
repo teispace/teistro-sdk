@@ -1818,6 +1818,22 @@ the astronomical numbers do not move. Nothing else computes yet.
     one (C226). `time-lords-measured.md` finds one of the corpus's 55
     births whose sect the horizon and daylight rules disagree on. Every
     parity runner asks for `FIRDARIA`.
+  - **The decennials** (`hellenistic-decennials.md`, C227–C228). Valens's
+    distribution of 10 years 9 months is a dasha: `DecennialDasha` behind
+    `Timeline`, named by the new `DECENNIALS` member (44) in a new family.
+    It begins from the luminary of the sect, read under the request's lot
+    rules, and runs through the seven by longitude
+    (`decennial_order`); each star's 129 months are shared by the
+    minimum years (`minimum_years`, now public and shared with
+    releasing), in 360-day years, and the third stage again in
+    proportion, as *Anthologies* VI.6's tables give it: 44 of their 49
+    cells agree, and the five that do not disagree with their own twins.
+    The dasha group's `decennial_division` (`PROPORTIONAL`, `CYCLES`)
+    decides C228, `CYCLES` counting 129-day cycles as Valens's worked
+    nativity does, and `ChartArea::decennials_from` begins them from any
+    of the seven (C227). A document stores two rounds to its depth, and
+    the cursor rebuilds from the order and the division its rows show.
+    Every parity runner asks for `DECENNIALS`.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

@@ -2362,6 +2362,10 @@ typedef enum ts_dasha_system {
      * The firdaria, the Persian periods of the seven and the nodes
      */
     TS_DASHA_SYSTEM_FIRDARIA = 43,
+    /**
+     * Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect
+     */
+    TS_DASHA_SYSTEM_DECENNIALS = 44,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_SYSTEM_UNKNOWN = -1,
 } ts_dasha_system;
@@ -3170,6 +3174,10 @@ typedef enum ts_dasha_family {
      * Firdaria
      */
     TS_DASHA_FAMILY_FIRDARIA = 8,
+    /**
+     * Decennials
+     */
+    TS_DASHA_FAMILY_DECENNIALS = 9,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_FAMILY_UNKNOWN = -1,
 } ts_dasha_family;

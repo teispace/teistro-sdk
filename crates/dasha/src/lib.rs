@@ -49,6 +49,7 @@
 
 pub mod annual;
 pub mod balance;
+pub mod decennials;
 pub mod definition;
 pub mod firdaria;
 pub mod jaimini;
@@ -63,6 +64,9 @@ pub mod wheel;
 
 pub use annual::{Clock, Share, YearDasha, YearRing};
 pub use balance::{BalanceAtBirth, Written};
+pub use decennials::{
+    DECENNIAL_MONTHS, DECENNIAL_ROUNDS, DECENNIAL_STARS, DecennialDasha, decennial_order,
+};
 pub use definition::DashaDefinition;
 pub use firdaria::{
     FIRDARIA_PERIODS, FIRDARIA_ROUNDS, FIRDARIA_YEARS, FirdariaDasha, firdar_years, firdaria_order,
@@ -75,7 +79,7 @@ pub use rashi::{
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
 pub use releasing::{
-    PROFECTION_YEARS, ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS,
+    PROFECTION_YEARS, ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS, minimum_years,
     releasing_years, time_lord,
 };
 pub use row::{
@@ -96,7 +100,10 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
             teistro_core::catalogue::DashaSystem::Kalachakra,
         ))
         .chain(TIME_LORDS)
-        .chain([teistro_core::catalogue::DashaSystem::Firdaria])
+        .chain([
+            teistro_core::catalogue::DashaSystem::Firdaria,
+            teistro_core::catalogue::DashaSystem::Decennials,
+        ])
 }
 
 /// [`systems`] but those a chart may be refused: every system this build

@@ -3440,6 +3440,12 @@
           "value": 43,
           "doc": "The firdaria, the Persian periods of the seven and the nodes",
           "key": "FIRDARIA"
+        },
+        {
+          "name": "Decennials",
+          "value": 44,
+          "doc": "Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect",
+          "key": "DECENNIALS"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4586,6 +4592,12 @@
           "value": 8,
           "doc": "Firdaria",
           "key": "FIRDARIA"
+        },
+        {
+          "name": "Decennials",
+          "value": 9,
+          "doc": "Decennials",
+          "key": "DECENNIALS"
         }
       ],
       "source": "catalogue/catalogue.json"
