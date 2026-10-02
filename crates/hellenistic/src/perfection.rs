@@ -2133,4 +2133,74 @@ mod tests {
             parted.past_deg
         );
     }
+
+    /// Lilly's "If she should marry the man desired?" (*Christian
+    /// Astrology* p. 389), "11 June 1646, 10h 38′ A.M.", a Thursday, "☽
+    /// a □ ♃ ad △ ☿". Recast at the printed Ascendant, Virgo 15°35′, it
+    /// lands a minute from the printed time, but the Moon is 1°49′ ahead
+    /// of his and past Mercury's trine, so the figure is read on his
+    /// printed places at the recast's motions. Mercury, the Ascendant's
+    /// lord, and Jupiter, the seventh's, stand only in a semisextile;
+    /// "the ☽ feparating from a □ of ♃, and carrying his light by a △
+    /// afpect to ☿ … receiving willingly, by his Retrograde motion, that
+    /// her vertue which fhe brought from ♃", and the match was made
+    /// (p. 390). She stands in Jupiter's term, so p. 126's way holds.
+    #[test]
+    fn lillys_marriage_figure_translates_jupiter_to_retrograde_mercury() {
+        let dm = |degree: f64, minute: f64| degree + minute / 60.0;
+        let places = [
+            dm(44.0, 19.0),
+            dm(103.0, 20.0),
+            dm(43.0, 28.0),
+            dm(89.0, 57.0),
+            dm(45.0, 20.0),
+            dm(74.0, 47.0),
+            dm(193.0, 49.0),
+        ];
+        let speeds = [0.1025, 0.2211, 0.7204, 0.9533, 0.7919, -0.0662, 12.8096];
+        let horizon = PerfectionRules::LILLY
+            .horizon_for(&places, &speeds, Mercury, Jupiter)
+            .unwrap();
+        let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [9, 10, 9, 10, 9, 10, 2].map(house),
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let matter = perfection(
+            &timeline,
+            Mercury,
+            Jupiter,
+            &standing,
+            &PerfectionRules::LILLY,
+        )
+        .unwrap();
+        assert_eq!(matter.application, None);
+        let [moon] = matter.translations.as_slice() else {
+            panic!("{:?}", matter.translations)
+        };
+        assert_eq!(
+            (moon.translator, moon.from, moon.to),
+            (Moon, Jupiter, Mercury)
+        );
+        assert_eq!(
+            (moon.separating.aspect, moon.aspect),
+            (PtolemaicAspect::Square, PtolemaicAspect::Trine)
+        );
+        assert!(
+            (moon.separating.past_deg - dm(0.0, 29.0)).abs() < 1e-6,
+            "{}",
+            moon.separating.past_deg
+        );
+        // 58′ to the trine, closed by her motion and his retrogradation.
+        assert!(
+            (moon.days - dm(0.0, 58.0) / (speeds[6] - speeds[5])).abs() < 1e-6,
+            "{}",
+            moon.days
+        );
+        assert!(moon.received.term);
+        assert_eq!(matter.impediments, []);
+        assert_eq!(matter.ways.held, [Way::Translation]);
+    }
 }
