@@ -8,7 +8,6 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
 use crate::dignity::{CHALDEAN_ORDER, DignityRules, Scores, Sect, essential_dignity};
-use crate::fortitude::Fortitudes;
 
 /// What of a place an almuten's dignities are counted from (crux C218).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -211,17 +210,107 @@ pub fn almuten_of_places(
     Ok(Almuten { totals })
 }
 
-impl Fortitudes {
-    /// The almuten of the figure, Lilly's lord of the geniture: each
-    /// planet's [`net`](Fortitudes::net), essential and accidental, "most
-    /// powerfull in the whole Scheame" (p. 49).
+/// How a chart's almutens are read: a place by its degree or its sign,
+/// and Fortune by night.
+///
+/// The default is Lilly's: the degree, and Fortune the same by day and
+/// night.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", default)]
+#[non_exhaustive]
+pub struct AlmutenRules {
+    /// What of a place its dignities are counted from (C218).
+    pub place: PlaceReading,
+    /// How Fortune is taken by night (C220).
+    pub fortune: FortuneRule,
+}
+
+impl AlmutenRules {
+    /// Lilly's: the degree, and Fortune the same by day and night.
+    pub const LILLY: AlmutenRules = AlmutenRules {
+        place: PlaceReading::Degree,
+        fortune: FortuneRule::DayAndNight,
+    };
+
+    /// These rules with a place read otherwise.
     #[must_use]
-    pub fn almuten(&self) -> Almuten {
-        let mut totals = [0; 7];
-        for (total, planet) in totals.iter_mut().zip(CHALDEAN_ORDER) {
-            *total = self.net(planet).unwrap_or_default();
+    pub const fn with_place(mut self, place: PlaceReading) -> AlmutenRules {
+        self.place = place;
+        self
+    }
+
+    /// These rules with Fortune taken otherwise by night.
+    #[must_use]
+    pub const fn with_fortune(mut self, fortune: FortuneRule) -> AlmutenRules {
+        self.fortune = fortune;
+        self
+    }
+}
+
+/// A chart's almutens, three ways, with the rules that made them.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
+pub struct Almutens {
+    /// The rules they were read under.
+    pub rules: AlmutenRules,
+    /// The Part of Fortune's longitude, one of the five places.
+    pub fortune_deg: f64,
+    /// Lilly's almuten of the figure: each planet's net, essential and
+    /// accidental, "most powerfull in the whole Scheame" (p. 49).
+    pub figure: Almuten,
+    /// Chapter CV's: each planet's dignities over the ascendant,
+    /// midheaven, Sun, Moon and Part of Fortune.
+    pub places: Almuten,
+    /// Each house's, of its cusp, first to twelfth.
+    pub houses: [Almuten; 12],
+}
+
+/// What the almutens are read from beyond the nets: the angles, the
+/// luminaries, the cusps, and the chart's sect and essential tables.
+pub(crate) struct AlmutenSky<'a> {
+    pub(crate) ascendant_deg: f64,
+    pub(crate) midheaven_deg: f64,
+    pub(crate) sun_deg: f64,
+    pub(crate) moon_deg: f64,
+    pub(crate) cusps_deg: &'a [f64; 12],
+    pub(crate) sect: Sect,
+    pub(crate) rules: &'a DignityRules,
+    pub(crate) scores: &'a Scores,
+}
+
+impl AlmutenRules {
+    /// The three almutens of a chart whose nets are `nets`, in the
+    /// Chaldean order.
+    pub(crate) fn read(self, nets: [i16; 7], sky: &AlmutenSky<'_>) -> Result<Almutens, Error> {
+        let fortune_deg = part_of_fortune(
+            sky.ascendant_deg,
+            sky.sun_deg,
+            sky.moon_deg,
+            sky.sect,
+            self.fortune,
+        );
+        let places = [
+            sky.ascendant_deg,
+            sky.midheaven_deg,
+            sky.sun_deg,
+            sky.moon_deg,
+            fortune_deg,
+        ];
+        let of = |cusp: f64| almuten_of(cusp, sky.sect, sky.rules, sky.scores, self.place);
+        let mut houses = [Almuten { totals: [0; 7] }; 12];
+        for (house, &cusp) in houses.iter_mut().zip(sky.cusps_deg) {
+            *house = of(cusp)?;
         }
-        Almuten { totals }
+        Ok(Almutens {
+            rules: self,
+            fortune_deg,
+            figure: Almuten { totals: nets },
+            places: almuten_of_places(&places, sky.sect, sky.rules, sky.scores, self.place)?,
+            houses,
+        })
     }
 }
 

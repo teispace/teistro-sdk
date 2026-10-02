@@ -9,6 +9,7 @@ use teistro_core::error::Error;
 use crate::accidental::{
     AccidentalRules, AccidentalScores, AccidentalSky, PlanetAccidents, accidental_dignities,
 };
+use crate::almuten::{AlmutenRules, AlmutenSky, Almutens};
 use crate::reading::{ChartSky, Dignities, DignityRequest};
 
 /// How a chart's fortitudes are read: its essential dignities' request,
@@ -18,7 +19,7 @@ use crate::reading::{ChartSky, Dignities, DignityRequest};
 /// answer reports each.
 ///
 /// ```
-/// use teistro_hellenistic::{AccidentalRules, FortitudeRequest, SectRule};
+/// use teistro_hellenistic::{AccidentalRules, FortitudeRequest, FortuneRule, PlaceReading, SectRule};
 ///
 /// let asked = FortitudeRequest::from_json(
 ///     r#"{"dignities": {"sectRule": "DAYLIGHT"}, "rules": {"beamsDeg": 15}}"#,
@@ -26,6 +27,10 @@ use crate::reading::{ChartSky, Dignities, DignityRequest};
 /// assert_eq!(asked.dignities().sect_rule(), SectRule::Daylight);
 /// assert_eq!(asked.rules().beams_deg, 15.0);
 /// assert_eq!(asked.rules().combustion_deg, AccidentalRules::LILLY.combustion_deg);
+///
+/// let sign = FortitudeRequest::from_json(r#"{"almuten": {"place": "SIGN"}}"#)?;
+/// assert_eq!(sign.almuten().place, PlaceReading::Sign);
+/// assert_eq!(sign.almuten().fortune, FortuneRule::DayAndNight);
 ///
 /// let typo = FortitudeRequest::from_json(r#"{"rules": {"beamDeg": 15}}"#).unwrap_err();
 /// assert_eq!(typo.field(), Some("fortitudes.rules.beamDeg"));
@@ -41,6 +46,7 @@ pub struct FortitudeRequest {
     dignities: DignityRequest,
     rules: AccidentalRules,
     scores: AccidentalScores,
+    almuten: AlmutenRules,
 }
 
 /// The record every binding writes the request as.
@@ -48,8 +54,8 @@ const FORTITUDES: &str = "fortitudes";
 
 impl FortitudeRequest {
     /// The request as the bindings write it: `{"dignities": {...},
-    /// "rules": {...}, "scores": {...}}`, every member optional and
-    /// taking Lilly's. `dignities` is a [`DignityRequest`]'s record; a
+    /// "rules": {...}, "scores": {...}, "almuten": {...}}`, every member
+    /// optional and taking Lilly's. `dignities` is a [`DignityRequest`]'s record; a
     /// partile orb is `{"partile": {"WITHIN": {"orbDeg": 1}}}`.
     ///
     /// # Errors
@@ -88,6 +94,13 @@ impl FortitudeRequest {
         self
     }
 
+    /// The same request, its almutens read otherwise.
+    #[must_use]
+    pub const fn with_almuten(mut self, almuten: AlmutenRules) -> FortitudeRequest {
+        self.almuten = almuten;
+        self
+    }
+
     /// How the essential dignities are read.
     #[must_use]
     pub const fn dignities(&self) -> DignityRequest {
@@ -106,6 +119,12 @@ impl FortitudeRequest {
         self.scores
     }
 
+    /// How the almutens are read.
+    #[must_use]
+    pub const fn almuten(&self) -> AlmutenRules {
+        self.almuten
+    }
+
     /// Both halves of the table in a chart: the essential dignities from
     /// the chart's sky, and the accidental fortitudes from the same
     /// longitudes and the rest of it.
@@ -119,12 +138,33 @@ impl FortitudeRequest {
         self.rules.check().map_err(|why| why.under("rules"))?;
         let dignities = self.dignities.read(chart)?;
         let planets = accidental_dignities(&chart.longitudes(), sky, &self.rules, &self.scores)?;
+        let mut nets = [0; 7];
+        for (net, (essential, accidental)) in
+            nets.iter_mut().zip(dignities.planets.iter().zip(&planets))
+        {
+            *net =
+                essential.score + essential.reception + accidental.fortitude - accidental.debility;
+        }
+        let almutens = self.almuten.read(
+            nets,
+            &AlmutenSky {
+                ascendant_deg: sky.ascendant_deg,
+                midheaven_deg: sky.midheaven_deg,
+                sun_deg: chart.sun_deg,
+                moon_deg: chart.moon_deg,
+                cusps_deg: &sky.cusps_deg,
+                sect: dignities.sect,
+                rules: &dignities.rules,
+                scores: &dignities.scores,
+            },
+        )?;
         Ok(Fortitudes {
             dignities,
             sky: *sky,
             rules: self.rules,
             scores: self.scores,
             planets,
+            almutens,
         })
     }
 }
@@ -147,6 +187,9 @@ pub struct Fortitudes {
     pub scores: AccidentalScores,
     /// The seven's accidental fortitudes, in the Chaldean order.
     pub planets: [PlanetAccidents; 7],
+    /// The almutens: of the figure (each planet's net), of the five
+    /// places, and of each house.
+    pub almutens: Almutens,
 }
 
 impl Fortitudes {
@@ -156,12 +199,6 @@ impl Fortitudes {
     /// outside the seven.
     #[must_use]
     pub fn net(&self, planet: Graha) -> Option<i16> {
-        let essential = self
-            .dignities
-            .planets
-            .iter()
-            .find(|at| at.planet == planet)?;
-        let accidental = self.planets.iter().find(|at| at.planet == planet)?;
-        Some(essential.score + essential.reception + accidental.fortitude - accidental.debility)
+        self.almutens.figure.total(planet)
     }
 }
