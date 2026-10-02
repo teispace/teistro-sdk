@@ -3,14 +3,14 @@
 
 use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
-use teistro_astro::events::FrameLongitudes;
+use teistro_astro::events::{FrameLongitudes, StationKind};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_astro::sky::{Spherical, altitude_by_midheaven_deg};
 use teistro_astro::stars::{Options as StarOptions, place_of};
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
-    ChartAngles, ChartFoundation, Founder, angles_of, cusps_of, cusps_raising,
+    ChartAngles, ChartFoundation, Founder, TransitEventKind, angles_of, cusps_of, cusps_raising,
 };
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
@@ -39,7 +39,7 @@ use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
     DignityRequest, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading,
-    LotRequest, LotSky, Sect, considerations,
+    LotRequest, LotSky, Matter, PerfectionRules, Sect, considerations,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -146,6 +146,11 @@ fn degrees_in_sign(foundation: &ChartFoundation) -> Result<[f64; 9], Error> {
     }
     Ok(out)
 }
+
+/// The furthest [`ChartArea::perfection`] searches ahead, days: ten
+/// years, which a horizon set by a significator standing nearly still in
+/// its sign would otherwise exceed without end.
+const PERFECTION_HORIZON_CAP_DAYS: f64 = 3653.0;
 
 /// The nine grahas a chart places, in the catalogue's order: the Sun to
 /// Ketu, without the outer planets the catalogue also names.
@@ -2555,6 +2560,119 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Considerations, Error> {
         let fortitudes = self.fortitudes(chart, request)?;
         considerations(&fortitudes, chart.foundation.timing.hora.lord, rules)
+    }
+
+    /// Whether a horary matter is brought to pass
+    /// (`03-design/hellenistic-perfection.md`): the relations between the
+    /// querent's and the quesited's significators, each reported with
+    /// what it rests on and never summed into a verdict — the application
+    /// and which of Lilly's three it is, the separation still inside the
+    /// moieties, each prohibition, frustration and refranation before it,
+    /// each translation of light and, when they do not apply, each
+    /// collection.
+    ///
+    /// The timeline is searched on the ephemeris from the chart's instant
+    /// to the rules' horizon (unset, until the swifter significator leaves
+    /// its sign at its present motion, crux C232; never more than ten
+    /// years): every pair of the seven's
+    /// Ptolemaic aspects, and the significators' stations, so a
+    /// refranation is seen where it happens. The dignities a reception
+    /// reads are `request`'s. Read a horary figure geocentrically, as
+    /// Lilly's ephemerides were.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::catalogue::Graha;
+    /// use teistro::{FortitudeRequest, PerfectionRules};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let london = Place::new(Latitude::try_new(51.5)?, Longitude::try_new(-0.12)?, Altitude::try_new(0.0)?);
+    /// let figure = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_461_000.25), &ChartRequest::at(london, UtcOffset::UTC))?
+    ///     .value;
+    /// let matter = sdk.chart().perfection(
+    ///     &figure,
+    ///     &FortitudeRequest::default(),
+    ///     Graha::Venus,
+    ///     Graha::Mars,
+    ///     PerfectionRules::LILLY,
+    /// )?;
+    /// if let Some(application) = matter.application {
+    ///     println!("{:?} in {:.1} days, {} impediment(s) first", application.aspect, application.days, matter.impediments.len());
+    /// }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::fortitudes`]; a significator outside the seven or
+    /// the two the same, named `querent` or `quesited`; rules out of
+    /// range, named as [`PerfectionRules::from_json`] names them; and the
+    /// search's own, such as a window the ephemeris does not cover.
+    pub fn perfection(
+        self,
+        chart: &Document,
+        request: &FortitudeRequest,
+        querent: Graha,
+        quesited: Graha,
+        rules: PerfectionRules,
+    ) -> Result<Matter, Error> {
+        let fortitudes = self.fortitudes(chart, request)?;
+        let dignities = &fortitudes.dignities;
+        let places = dignities
+            .planets
+            .each_ref()
+            .map(|planet| planet.longitude_deg);
+        let speeds = fortitudes.sky.speeds_deg_per_day;
+        let horizon = rules
+            .horizon_for(&places, &speeds, querent, quesited)?
+            .min(PERFECTION_HORIZON_CAP_DAYS);
+        let foundation = &chart.foundation;
+        let from = foundation.instant;
+        let to = JulianDay::<Utc>::literal(from.get() + horizon);
+        let found = self.founding(UtcOffset::UTC, |founder| {
+            founder.contact_events(
+                &foundation.place,
+                &CHALDEAN_ORDER,
+                &[querent, quesited],
+                (from, to),
+            )
+        })?;
+        let days = |instant: JulianDay<Utc>| (instant.get() - from.get()).max(0.0);
+        let mut contacts = Vec::new();
+        for event in &found.value.contacts {
+            if let Some(aspect) = teistro_hellenistic::aspect_at(event.separation_deg) {
+                let [first, second] = event.planets;
+                contacts.push(teistro_hellenistic::Contact::new(
+                    first,
+                    second,
+                    aspect,
+                    days(event.instant),
+                )?);
+            }
+        }
+        let mut stations = Vec::new();
+        for event in &found.value.stations {
+            if let TransitEventKind::Station { kind, .. } = event.kind {
+                stations.push(teistro_hellenistic::Station::new(
+                    event.graha,
+                    days(event.instant),
+                    kind == StationKind::Retrograde,
+                )?);
+            }
+        }
+        let timeline =
+            teistro_hellenistic::AspectTimeline::new(places, speeds, horizon, contacts, stations)?;
+        teistro_hellenistic::perfection(
+            &timeline,
+            querent,
+            quesited,
+            dignities.sect,
+            &dignities.rules,
+            &rules,
+        )
     }
 
     /// The **lots** Valens gives, in a chart you founded: each the distance

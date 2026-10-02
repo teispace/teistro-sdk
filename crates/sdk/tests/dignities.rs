@@ -18,8 +18,8 @@ use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
     Accident, AccidentalRules, ChartRequest, ConsiderationRules, Context, DignityRequest,
-    DignityRules, Document, Ephemeris, FortitudeRequest, FortuneRule, Lot, LotRequest, Scores,
-    Sect, SectRule, Terms, UtcOffset,
+    DignityRules, Document, Ephemeris, FortitudeRequest, FortuneRule, ImpedimentKind, Lot,
+    LotRequest, PerfectionRules, PtolemaicAspect, Scores, Sect, SectRule, Terms, UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -327,4 +327,115 @@ fn the_moons_next_aspect_is_where_the_later_chart_finds_her() {
     }
     assert!(perfections > 0);
     assert!(worst < 0.01, "worst {worst}");
+}
+
+/// How far two planets in a later chart stand from an aspect, degrees.
+fn off_the_aspect(later: &Document, first: Graha, second: Graha, aspect: PtolemaicAspect) -> f64 {
+    let at = |graha| later.foundation.graha(graha).unwrap().longitude_deg;
+    let gap = at(first) - at(second);
+    [aspect.degrees(), -aspect.degrees()]
+        .into_iter()
+        .map(|side| ((gap - side + 180.0).rem_euclid(360.0) - 180.0).abs())
+        .fold(f64::INFINITY, f64::min)
+}
+
+/// Lilly's perfection read back elsewhere: every application and every
+/// impediment's contact the search promises is where the chart cast at
+/// that instant finds the two planets, and every refranation's station
+/// is where the planet's motion turns.
+#[test]
+fn every_promised_contact_is_where_the_later_chart_finds_it() {
+    let sdk = context(Some(r#"{"frame": {"centre": "GEOCENTRIC"}}"#));
+    let pairs = [
+        (Graha::Venus, Graha::Mars),
+        (Graha::Mercury, Graha::Jupiter),
+        (Graha::Moon, Graha::Saturn),
+        (Graha::Sun, Graha::Mars),
+    ];
+    let (mut worst, mut applications, mut impediments) = (0.0_f64, 0, 0);
+    for month in 0..12 {
+        let jd = 2_451_545.0 + f64::from(month) * 61.0;
+        let figure = chart(&sdk, 51.5, -0.12, jd);
+        for (querent, quesited) in pairs {
+            let matter = sdk
+                .chart()
+                .perfection(
+                    &figure,
+                    &FortitudeRequest::default(),
+                    querent,
+                    quesited,
+                    PerfectionRules::LILLY,
+                )
+                .unwrap();
+            if let Some(application) = matter.application {
+                applications += 1;
+                let later = chart(&sdk, 51.5, -0.12, jd + application.days);
+                worst = worst.max(off_the_aspect(
+                    &later,
+                    querent,
+                    quesited,
+                    application.aspect,
+                ));
+            }
+            for impediment in &matter.impediments {
+                match (impediment.kind, impediment.third) {
+                    (ImpedimentKind::Refranation, None) => {
+                        let speed = |days: f64| {
+                            chart(&sdk, 51.5, -0.12, jd + impediment.days + days)
+                                .foundation
+                                .graha(impediment.significator)
+                                .unwrap()
+                                .speed_deg_per_day
+                        };
+                        assert!(speed(-0.5) * speed(0.5) < 0.0, "{impediment:?}");
+                    }
+                    (_, Some(third)) => {
+                        impediments += 1;
+                        let later = chart(&sdk, 51.5, -0.12, jd + impediment.days);
+                        let off = off_the_aspect(
+                            &later,
+                            impediment.significator,
+                            third,
+                            impediment.aspect,
+                        );
+                        worst = worst.max(off);
+                    }
+                    other => panic!("an impediment without its third: {other:?}"),
+                }
+            }
+        }
+    }
+    assert!(
+        applications > 10 && impediments > 10,
+        "{applications} {impediments}"
+    );
+    assert!(worst < 1e-3, "worst {worst}");
+}
+
+#[test]
+fn a_perfection_refuses_one_planet_for_both_significators() {
+    let sdk = context(None);
+    let figure = london(&sdk);
+    let same = sdk
+        .chart()
+        .perfection(
+            &figure,
+            &FortitudeRequest::default(),
+            Graha::Mars,
+            Graha::Mars,
+            PerfectionRules::LILLY,
+        )
+        .unwrap_err();
+    assert_eq!(same.field(), Some("quesited"));
+    let node = sdk
+        .chart()
+        .perfection(
+            &figure,
+            &FortitudeRequest::default(),
+            Graha::Rahu,
+            Graha::Mars,
+            PerfectionRules::LILLY,
+        )
+        .unwrap_err();
+    assert_eq!(node.field(), Some("querent"));
 }

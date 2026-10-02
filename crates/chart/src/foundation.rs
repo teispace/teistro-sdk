@@ -17,7 +17,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
-use teistro_astro::events::{Direction, Lattice, Quantity, Search, StationKind};
+use teistro_astro::events::{Direction, Lattice, Longitudes, Quantity, Search, StationKind};
 use teistro_astro::houses::{
     ChartFrame, Input as HouseInput, cusps_from_angles, houses, houses_at,
 };
@@ -275,6 +275,30 @@ pub enum TransitEventKind {
         /// Where, degrees in the chart's zodiac.
         longitude_deg: f64,
     },
+}
+
+/// An exact aspect between two planets found by
+/// [`Founder::contact_events`]: their separation reached a multiple of
+/// 30°.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ContactEvent {
+    /// The two, in the order asked.
+    pub planets: [Graha; 2],
+    /// When.
+    pub instant: JulianDay<Utc>,
+    /// The first's longitude less the second's there, degrees in `[0,
+    /// 360)`: the multiple of 30° reached.
+    pub separation_deg: f64,
+}
+
+/// What lies ahead of a figure ([`Founder::contact_events`]).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ContactEvents {
+    /// Every contact, in time order.
+    pub contacts: Vec<ContactEvent>,
+    /// Every station of the planets asked after, in time order, each a
+    /// [`TransitEventKind::Station`].
+    pub stations: Vec<TransitEvent>,
 }
 
 /// The bodies a chart asks the provider for, and the graha each answers
@@ -700,10 +724,160 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         stations: bool,
         (from, to): (JulianDay<Utc>, JulianDay<Utc>),
     ) -> Result<Envelope<Vec<TransitEvent>>, Error> {
+        let bodies = bodies_of(self.settings());
+        let (start, end) = (
+            JulianDay::<Ut1>::literal(from.get()),
+            JulianDay::<Ut1>::literal(to.get()),
+        );
+        let (events, frame) = self.searching(place, from, |source| {
+            let mut events = Vec::new();
+            for graha in grahas {
+                // Ketu is Rahu turned half a circle.
+                let (body, turned) = match graha {
+                    Graha::Ketu => (bodies.get(7), 180.0),
+                    other => (bodies.get(*other as usize), 0.0),
+                };
+                let body = *body.ok_or_else(|| {
+                    Error::invalid_arg(format!("{} has no transit to search", graha.key()))
+                        .with_field("grahas")
+                })?;
+                // One scan of the graha's longitude, tested against every
+                // lattice at each sample: the signs, the nakshatras and every
+                // natal point's aspects cost one walk over the window.
+                let mut shifted = lattices.iter().map(|lattice| Lattice {
+                    origin_deg: lattice.origin_deg - turned,
+                    step_deg: lattice.step_deg,
+                });
+                let crossings = match shifted.next() {
+                    Some(first) => Search::each(source, Quantity::Longitude(body), first, shifted)
+                        .between_each(start, end)?,
+                    None => Vec::new(),
+                };
+                for (index, found) in crossings.into_iter().enumerate() {
+                    for event in found {
+                        events.push(TransitEvent {
+                            graha: *graha,
+                            instant: JulianDay::<Utc>::literal(event.instant.get()),
+                            kind: TransitEventKind::Crossing {
+                                lattice: index,
+                                boundary_deg: (event.boundary_deg + turned).rem_euclid(360.0),
+                                direction: event.direction,
+                            },
+                        });
+                    }
+                }
+                if stations {
+                    for station in teistro_astro::events::stations(source, body, start, end, 1e-6)?
+                    {
+                        events.push(TransitEvent {
+                            graha: *graha,
+                            instant: JulianDay::<Utc>::literal(station.instant.get()),
+                            kind: TransitEventKind::Station {
+                                kind: station.kind,
+                                longitude_deg: (station.longitude_deg + turned).rem_euclid(360.0),
+                            },
+                        });
+                    }
+                }
+            }
+            events.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+            Ok(events)
+        })?;
+        Ok(self.searched(events, place, (from, to), "TRANSIT_EVENTS", frame))
+    }
+
+    /// Every instant two of `planets` stand a multiple of 30° apart, and
+    /// every station of each of `stations_of`,
+    /// between two instants: what lies ahead of a horary figure
+    /// (`03-design/hellenistic-perfection.md`). Each pair's separation is
+    /// scanned once over the lattice, so the semisextiles and quincunxes
+    /// come too, for the reader to keep or drop; a station is a
+    /// [`TransitEventKind::Station`].
+    ///
+    /// Read in the chart's zodiac, as [`Founder::transit_events`] reads
+    /// it: a separation is the same in any zodiac, a station's longitude
+    /// is not.
+    ///
+    /// # Errors
+    ///
+    /// A planet outside the seven, named `planets`; and the search's own,
+    /// as [`Founder::transit_events`].
+    pub fn contact_events(
+        &self,
+        place: &Place,
+        planets: &[Graha],
+        stations_of: &[Graha],
+        (from, to): (JulianDay<Utc>, JulianDay<Utc>),
+    ) -> Result<Envelope<ContactEvents>, Error> {
+        let bodies = bodies_of(self.settings());
+        let body = |graha: Graha| -> Result<Body, Error> {
+            match graha {
+                Graha::Rahu | Graha::Ketu => None,
+                other => bodies.get(other as usize).copied(),
+            }
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("{} is not one of the seven", graha.key()))
+                    .with_field("planets")
+            })
+        };
+        let (start, end) = (
+            JulianDay::<Ut1>::literal(from.get()),
+            JulianDay::<Ut1>::literal(to.get()),
+        );
+        let thirty = Lattice {
+            origin_deg: 0.0,
+            step_deg: 30.0,
+        };
+        let (found, frame) = self.searching(place, from, |source| {
+            let mut found = ContactEvents::default();
+            for (k, &first) in planets.iter().enumerate() {
+                for &second in planets.iter().skip(k + 1) {
+                    let quantity = Quantity::separation(body(first)?, body(second)?);
+                    for event in Search::new(source, quantity, thirty).between(start, end)? {
+                        found.contacts.push(ContactEvent {
+                            planets: [first, second],
+                            instant: JulianDay::<Utc>::literal(event.instant.get()),
+                            separation_deg: event.boundary_deg.rem_euclid(360.0),
+                        });
+                    }
+                }
+            }
+            for &graha in stations_of {
+                for station in
+                    teistro_astro::events::stations(source, body(graha)?, start, end, 1e-6)?
+                {
+                    found.stations.push(TransitEvent {
+                        graha,
+                        instant: JulianDay::<Utc>::literal(station.instant.get()),
+                        kind: TransitEventKind::Station {
+                            kind: station.kind,
+                            longitude_deg: station.longitude_deg,
+                        },
+                    });
+                }
+            }
+            found
+                .contacts
+                .sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+            found
+                .stations
+                .sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+            Ok(found)
+        })?;
+        Ok(self.searched(found, place, (from, to), "CONTACT_EVENTS", frame))
+    }
+
+    /// Runs a search over the longitudes a chart founded at `place` would
+    /// read, in its zodiac — the provider's own where it defines it — and
+    /// topocentric under a topocentric frame; and the frame searched.
+    fn searching<R>(
+        &self,
+        place: &Place,
+        from: JulianDay<Utc>,
+        search: impl FnOnce(&dyn Longitudes) -> Result<R, Error>,
+    ) -> Result<(R, Frame), Error> {
         let settings = self.settings();
         let completion = self.placing();
-        // The zodiac the chart places its grahas in, read as a search
-        // reads it: the provider's own where it defines it.
         let (tt, _) = tt_of(JulianDay::<Ut1>::literal(from.get()), self.delta_t)?;
         let searched =
             ChartZodiac::searched(&completion, settings, tt, (self.precession, self.delta_t))?;
@@ -713,70 +887,27 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             longitudes = longitudes.with_observer(*place);
         }
         let source = Sidereal::over(&longitudes, searched.zodiac);
-        let bodies = bodies_of(settings);
-        let (start, end) = (
-            JulianDay::<Ut1>::literal(from.get()),
-            JulianDay::<Ut1>::literal(to.get()),
-        );
-        let mut events = Vec::new();
-        for graha in grahas {
-            // Ketu is Rahu turned half a circle.
-            let (body, turned) = match graha {
-                Graha::Ketu => (bodies.get(7), 180.0),
-                other => (bodies.get(*other as usize), 0.0),
-            };
-            let body = *body.ok_or_else(|| {
-                Error::invalid_arg(format!("{} has no transit to search", graha.key()))
-                    .with_field("grahas")
-            })?;
-            // One scan of the graha's longitude, tested against every
-            // lattice at each sample: the signs, the nakshatras and every
-            // natal point's aspects cost one walk over the window.
-            let mut shifted = lattices.iter().map(|lattice| Lattice {
-                origin_deg: lattice.origin_deg - turned,
-                step_deg: lattice.step_deg,
-            });
-            let crossings = match shifted.next() {
-                Some(first) => Search::each(&source, Quantity::Longitude(body), first, shifted)
-                    .between_each(start, end)?,
-                None => Vec::new(),
-            };
-            for (index, found) in crossings.into_iter().enumerate() {
-                for event in found {
-                    events.push(TransitEvent {
-                        graha: *graha,
-                        instant: JulianDay::<Utc>::literal(event.instant.get()),
-                        kind: TransitEventKind::Crossing {
-                            lattice: index,
-                            boundary_deg: (event.boundary_deg + turned).rem_euclid(360.0),
-                            direction: event.direction,
-                        },
-                    });
-                }
-            }
-            if stations {
-                for station in teistro_astro::events::stations(&source, body, start, end, 1e-6)? {
-                    events.push(TransitEvent {
-                        graha: *graha,
-                        instant: JulianDay::<Utc>::literal(station.instant.get()),
-                        kind: TransitEventKind::Station {
-                            kind: station.kind,
-                            longitude_deg: (station.longitude_deg + turned).rem_euclid(360.0),
-                        },
-                    });
-                }
-            }
-        }
-        events.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+        Ok((search(&source)?, frame))
+    }
+
+    /// A search's answer, stamped with its window and place.
+    fn searched<T>(
+        &self,
+        value: T,
+        place: &Place,
+        (from, to): (JulianDay<Utc>, JulianDay<Utc>),
+        kind: &'static str,
+        frame: Frame,
+    ) -> Envelope<T> {
         let input_hash = content_hash(&BatchInput {
             jds_utc: vec![from.get(), to.get()],
             latitude_deg: place.latitude.get(),
             longitude_deg: place.longitude.get(),
             altitude_m: place.altitude.get(),
-            kind: "TRANSIT_EVENTS",
+            kind,
         });
         let steps = vec![format!("crossings:{}", Implementation::Sdk.key())];
-        Ok(Envelope::new(events, self.stamp(input_hash, frame, steps)))
+        Envelope::new(value, self.stamp(input_hash, frame, steps))
     }
 
     /// The stamp of a batch that founded nothing, which still says under
