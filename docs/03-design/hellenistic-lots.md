@@ -137,8 +137,11 @@ however many read it.
 1. **The lots in Rust and the SDK.** The catalogue, the evaluator, the
    third Fortune rule (the almuten reads it too), and `ChartArea::lots`.
    Done.
-2. **Measured over the corpus.** How often each Fortune rule moves
-   Fortune's sign on the corpus's night births, and how often the Moon is
-   set by night, which is all that tells III.11 from II.22.
+2. **Measured over the corpus** ([`lots-measured.md`](lots-measured.md),
+   `check-lots`). Done. Lilly's rule moves Fortune's sign on 30 of the 32
+   night births, and III.11 parts from II.22 on 20 of the 22 whose Moon
+   had set. The premise of reading the Moon by its altitude is counted
+   too: its ecliptic hemisphere from the ascendant says otherwise on 3
+   of the 32.
 3. **The boundary.** `lots` in the chart blob and every binding, with the
    lot names as a catalogue kind if a consumer must name them (Q38).
