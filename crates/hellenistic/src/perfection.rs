@@ -2001,4 +2001,62 @@ mod tests {
         assert!(!matter.ways.mutual_by_house);
         assert_eq!(matter.ways.held, []);
     }
+
+    /// Lilly's "If the Querent shall be Rich or Poore" (*Christian
+    /// Astrology* p. 177), "16 July 1634, 11h 6′ A.M.", Mercury's day,
+    /// recast by pyswisseph (Moshier) at the printed Ascendant, Libra
+    /// 14°13′: every planet within 5′ of the places his table of antiscia
+    /// gives (p. 181). Venus, the Ascendant's lady, signifies the querent
+    /// and Mars, the second's lord, the substance. The Moon "feperated
+    /// newly from a ✶ of ♂ Lord of the fecond … then inftantly applying
+    /// to the ☌ of ♀", "transferring" Mars's virtue to the querent, and
+    /// "wanted of her perfect ☌ with ♀ … fix degrees, 27. minutes"
+    /// (pp. 182–183): a translation, though not p. 126's way, because
+    /// the Moon stands in none of Mars's dignities. Mars in the Ascendant
+    /// with the Moon translating is the seventh way, which Lilly reads as
+    /// an estate coming "fomewhat eafily" (p. 182). The houses are his,
+    /// Jupiter and Venus counted in the next house by the five-degree
+    /// rule (p. 179's fortitudes).
+    #[test]
+    fn lillys_rich_figure_translates_mars_to_venus_by_the_moon() {
+        let places = [
+            255.3980, 107.6060, 196.1937, 123.2275, 145.5129, 137.6829, 139.0726,
+        ];
+        let speeds = [-0.0370, 0.2203, 0.5849, 0.9569, 1.2212, 1.8073, 11.8864];
+        let horizon = PerfectionRules::LILLY
+            .horizon_for(&places, &speeds, Venus, Mars)
+            .unwrap();
+        let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [3, 10, 1, 10, 11, 10, 10].map(house),
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let matter =
+            perfection(&timeline, Venus, Mars, &standing, &PerfectionRules::LILLY).unwrap();
+        assert_eq!(matter.application, None);
+        let [carried] = matter.translations.as_slice() else {
+            panic!("{:?}", matter.translations)
+        };
+        assert_eq!(
+            (carried.translator, carried.from, carried.to),
+            (Moon, Mars, Venus)
+        );
+        assert_eq!(
+            (carried.separating.aspect, carried.aspect),
+            (PtolemaicAspect::Sextile, PtolemaicAspect::Conjunction)
+        );
+        assert!(
+            (carried.separating.past_deg - 2.88).abs() < 0.01,
+            "{}",
+            carried.separating.past_deg
+        );
+        // Six degrees, 27 minutes to run at the Moon's speed over Venus's.
+        let gap = carried.days * (speeds[6] - speeds[4]);
+        assert!((gap - (6.0 + 27.0 / 60.0)).abs() < 2.0 / 60.0, "{gap}");
+        assert!(carried.received.peregrine());
+        assert!(matter.ways.quesited_in_ascendant);
+        assert_eq!(matter.ways.held, [Way::Dwelling]);
+    }
 }
