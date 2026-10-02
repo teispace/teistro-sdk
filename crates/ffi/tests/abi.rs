@@ -2606,7 +2606,9 @@ type ReadsPlanet = fn(&teistro::PlanetAccidents) -> i64;
 #[test]
 #[allow(clippy::too_many_lines, reason = "one request, every section it fills")]
 fn a_chart_request_answers_the_fortitudes() {
-    use teistro_ffi::chart::{TsAccident, TsPartile, TsSectRule, TsSiege};
+    use teistro_ffi::chart::{
+        TsAccident, TsFortuneRule, TsPartile, TsPlaceReading, TsSectRule, TsSiege,
+    };
 
     let ctx = Ctx::with_ephemeris(
         0,
@@ -2617,7 +2619,7 @@ fn a_chart_request_answers_the_fortitudes() {
     )
     .unwrap();
     let instants = [2_460_676.5, 2_460_676.75];
-    let text = r#"{"dignities":{"sectRule":"DAYLIGHT"},"rules":{"beamsDeg":15,"partile":{"WITHIN":{"orbDeg":1}},"siege":{"WITHIN":{"spanDeg":30}}},"scores":{"regulus":5,"houses":[5,3,1,4,3,-2,4,-2,2,5,4,-5]}}"#;
+    let text = r#"{"dignities":{"sectRule":"DAYLIGHT"},"rules":{"beamsDeg":15,"partile":{"WITHIN":{"orbDeg":1}},"siege":{"WITHIN":{"spanDeg":30}}},"scores":{"regulus":5,"houses":[5,3,1,4,3,-2,4,-2,2,5,4,-5]},"almuten":{"place":"SIGN","fortune":"REVERSED_BY_NIGHT"}}"#;
     let base = sized(
         TsChartRequest {
             struct_size: 0,
@@ -2738,7 +2740,10 @@ fn a_chart_request_answers_the_fortitudes() {
             .map(|one| i64::from(one.sky.houses.id()))
             .collect::<Vec<_>>()
     );
-    let sky: [(&str, ReadsSky); 9] = [
+    let sky: [(&str, ReadsSky); 12] = [
+        ("ascendant", |one| one.sky.ascendant_deg),
+        ("midheaven", |one| one.sky.midheaven_deg),
+        ("fortune", |one| one.almutens.fortune_deg),
         ("north_node", |one| one.sky.north_node_deg),
         ("regulus", |one| one.sky.regulus_deg),
         ("spica", |one| one.sky.spica_deg),
@@ -2776,6 +2781,14 @@ fn a_chart_request_answers_the_fortitudes() {
     assert_eq!(
         bits("fortitudes", "siege_span"),
         vec![30.0_f64.to_bits(); 2]
+    );
+    assert_eq!(
+        ints("fortitudes", "almuten_place"),
+        vec![code(TsPlaceReading::Sign as u8); 2]
+    );
+    assert_eq!(
+        ints("fortitudes", "almuten_fortune"),
+        vec![code(TsFortuneRule::ReversedByNight as u8); 2]
     );
     let lines = asked.scores();
     for (name, worth) in [
@@ -2816,6 +2829,21 @@ fn a_chart_request_answers_the_fortitudes() {
             .collect::<Vec<_>>()
     );
     assert_eq!(&ints("fortitude_houses", "score")[..3], [5, 3, 1]);
+    for (k, name) in [
+        "saturn", "jupiter", "mars", "sun", "venus", "mercury", "moon",
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        assert_eq!(
+            ints("fortitude_houses", &format!("almuten_{name}")),
+            expected
+                .iter()
+                .flat_map(|one| one.almutens.houses.map(|house| i64::from(house.totals[k])))
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
 
     // Seven planets a chart, and their accidents, ragged.
     let planets: Vec<(&teistro::Fortitudes, usize, &teistro::PlanetAccidents)> = expected
@@ -2864,6 +2892,13 @@ fn a_chart_request_answers_the_fortitudes() {
             "{name}"
         );
     }
+    assert_eq!(
+        planet("places"),
+        planets
+            .iter()
+            .map(|(one, k, _)| i64::from(one.almutens.places.totals[*k]))
+            .collect::<Vec<_>>()
+    );
     let accidents: Vec<(
         &teistro::Fortitudes,
         &teistro::PlanetAccidents,

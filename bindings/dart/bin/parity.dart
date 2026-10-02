@@ -534,6 +534,7 @@ void main() {
         siegeSpanDeg: 30,
       ),
       scores: AccidentalScores(regulus: 5),
+      almuten: AlmutenRules(fortune: FortuneRule.reversedByNight),
     ),
     shadbala: true,
     bhavaBala: true,
@@ -995,6 +996,21 @@ void main() {
         '${number(ft.sky.speedsDegPerDay[k])} ${at.house} ${listed(lines)} '
             '${at.fortitude} ${at.debility} ${at.net}',
       );
+    }
+    final al = ft.almutens;
+    put(
+      'chart-$i-almuten-rules',
+      '${al.rules.place.key} ${al.rules.fortune.key} '
+          '${[al.fortuneDeg, ft.sky.ascendantDeg, ft.sky.midheavenDeg].map(number).join(' ')}',
+    );
+    String ranked(Almuten almuten) =>
+        '${almuten.totals.map((at) => at.total).join(',')} '
+        '${listed([for (final planet in almuten.almutens) planet.fullKey])} '
+        '${listed([for (final planet in almuten.partakers) planet.fullKey])}';
+    put('chart-$i-almuten-figure', ranked(al.figure));
+    put('chart-$i-almuten-places', ranked(al.places));
+    for (final (k, almuten) in al.houses.indexed) {
+      put('chart-$i-almuten-house-${k + 1}', ranked(almuten));
     }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);

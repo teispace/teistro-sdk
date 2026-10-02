@@ -3978,6 +3978,30 @@ class Siege(Member):
     """On the shorter arc between the two, the arc no wider than a span."""
 
 
+class PlaceReading(Member):
+    """What of a place an almuten's dignities are counted from (C218,
+    `03-design/essential-dignities.md` §The almuten).
+    """
+
+    DEGREE = 0
+    """The degree: house, exaltation, triplicity, term and face."""
+
+    SIGN = 1
+    """The sign: house, exaltation and triplicity."""
+
+
+class FortuneRule(Member):
+    """How the Part of Fortune is taken by night (C220,
+    `03-design/essential-dignities.md` §The almuten).
+    """
+
+    DAY_AND_NIGHT = 0
+    """Lilly's: the ascendant plus the Moon less the Sun, by day or night."""
+
+    REVERSED_BY_NIGHT = 1
+    """By night, the ascendant plus the Sun less the Moon."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -6160,6 +6184,14 @@ _KEYS: dict[str, dict[int, str]] = {
     "Siege": {
         0: "SAME_SIGN",
         1: "WITHIN",
+    },
+    "PlaceReading": {
+        0: "DEGREE",
+        1: "SIGN",
+    },
+    "FortuneRule": {
+        0: "DAY_AND_NIGHT",
+        1: "REVERSED_BY_NIGHT",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

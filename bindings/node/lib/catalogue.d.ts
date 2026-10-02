@@ -6677,6 +6677,54 @@ export declare const Siege: {
 export declare const SiegeById: ReadonlyMap<number, Siege>;
 
 /**
+ * What of a place an almuten's dignities are counted from (C218,
+ * `03-design/essential-dignities.md` §The almuten).
+ */
+export type PlaceReading = 'DEGREE' | 'SIGN';
+
+/** Every PlaceReading by name; the values are the strings the union accepts. */
+export declare const PlaceReading: {
+  /**
+   * The degree: house, exaltation, triplicity, term and face.
+   */
+  readonly Degree: 'DEGREE';
+  /**
+   * The sign: house, exaltation and triplicity.
+   */
+  readonly Sign: 'SIGN';
+};
+
+/**
+ * Every PlaceReading by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PlaceReadingById: ReadonlyMap<number, PlaceReading>;
+
+/**
+ * How the Part of Fortune is taken by night (C220,
+ * `03-design/essential-dignities.md` §The almuten).
+ */
+export type FortuneRule = 'DAY_AND_NIGHT' | 'REVERSED_BY_NIGHT';
+
+/** Every FortuneRule by name; the values are the strings the union accepts. */
+export declare const FortuneRule: {
+  /**
+   * Lilly's: the ascendant plus the Moon less the Sun, by day or night.
+   */
+  readonly DayAndNight: 'DAY_AND_NIGHT';
+  /**
+   * By night, the ascendant plus the Sun less the Moon.
+   */
+  readonly ReversedByNight: 'REVERSED_BY_NIGHT';
+};
+
+/**
+ * Every FortuneRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const FortuneRuleById: ReadonlyMap<number, FortuneRule>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

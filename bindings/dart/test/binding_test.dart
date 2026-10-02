@@ -2372,12 +2372,49 @@ void _engineTests() {
       );
     }
 
+    // The almutens: Lilly's of the figure is the greatest net, Fortune the
+    // ascendant plus the Moon less the Sun, and every house has one.
+    final almutens = read.almutens;
+    expect(almutens.rules, AlmutenRules.lilly);
+    expect(
+      [for (final at in almutens.figure.totals) at.total],
+      [for (final at in read.planets) at.net],
+    );
+    final greatest = read.planets
+        .map((at) => at.net)
+        .reduce((a, b) => a > b ? a : b);
+    expect(almutens.figure.almutens, [
+      for (final at in read.planets)
+        if (at.net == greatest) at.planet,
+    ]);
+    double longitude(Graha planet) =>
+        read.dignities.planets
+            .firstWhere((at) => at.planet == planet)
+            .longitudeDeg;
+    final fortune =
+        (read.sky.ascendantDeg + longitude(Graha.moon) - longitude(Graha.sun)) %
+        360;
+    expect(almutens.fortuneDeg, closeTo(fortune, 1e-9));
+    expect(almutens.houses, hasLength(12));
+    for (final almuten in [
+      almutens.figure,
+      almutens.places,
+      ...almutens.houses,
+    ]) {
+      expect(almuten.almutens, isNotEmpty);
+      expect(almuten.partakers.where(almuten.almutens.contains), isEmpty);
+    }
+
     // The answer's rules and scores are a request as they stand, and one
     // changed is obeyed.
     expect(
       found(
         instants[0],
-        fortitudes: FortitudeRequest(rules: read.rules, scores: read.scores),
+        fortitudes: FortitudeRequest(
+          rules: read.rules,
+          scores: read.scores,
+          almuten: almutens.rules,
+        ),
       ).fortitudes,
       read,
     );
@@ -2390,10 +2427,15 @@ void _engineTests() {
         siegeSpanDeg: 30,
       ),
       scores: AccidentalScores(regulus: 5),
+      almuten: AlmutenRules(
+        place: PlaceReading.sign,
+        fortune: FortuneRule.reversedByNight,
+      ),
     );
     final other = found(instants[0], fortitudes: asked).fortitudes!;
     expect(other.rules, asked.rules);
     expect(other.scores, asked.scores);
+    expect(other.almutens.rules, asked.almuten);
 
     final batch = ctx.chart.foundMany(
       instants: instants,

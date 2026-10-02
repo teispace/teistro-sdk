@@ -1782,7 +1782,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
 /// accidental knob of each kind turned.
 fn fortitudes_json() -> String {
     format!(
-        r#"{{"dignities":{DIGNITIES_JSON},"rules":{{"beamsDeg":15,"combustionInSign":false,"partile":{{"WITHIN":{{"orbDeg":1}}}},"siege":{{"WITHIN":{{"spanDeg":30}}}}}},"scores":{{"regulus":5}}}}"#
+        r#"{{"dignities":{DIGNITIES_JSON},"rules":{{"beamsDeg":15,"combustionInSign":false,"partile":{{"WITHIN":{{"orbDeg":1}}}},"siege":{{"WITHIN":{{"spanDeg":30}}}}}},"scores":{{"regulus":5}},"almuten":{{"fortune":"REVERSED_BY_NIGHT"}}}}"#
     )
 }
 
@@ -1872,6 +1872,59 @@ fn the_fortitudes(report: &mut Report, sdk: &Context, index: usize, document: &t
                 read.net(at.planet)
                     .map_or_else(|| String::from("-"), |net| net.to_string())
             ),
+        );
+    }
+    the_almutens(report, index, &read);
+}
+
+/// The almutens as every runner prints them: the rules, Fortune and the
+/// angles, then each ranking's totals, almutens and partakers.
+fn the_almutens(report: &mut Report, index: usize, read: &teistro::Fortitudes) {
+    let almutens = &read.almutens;
+    put(
+        report,
+        &format!("chart-{index}-almuten-rules"),
+        format!(
+            "{} {} {} {} {}",
+            wire_key(&almutens.rules.place),
+            wire_key(&almutens.rules.fortune),
+            number(almutens.fortune_deg),
+            number(read.sky.ascendant_deg),
+            number(read.sky.midheaven_deg)
+        ),
+    );
+    let ranked = |almuten: &teistro::Almuten| {
+        let planets = |of: Vec<teistro::catalogue::Graha>| {
+            let keys: Vec<&str> = of.iter().map(|planet| planet.full_key()).collect();
+            if keys.is_empty() {
+                String::from("-")
+            } else {
+                keys.join(",")
+            }
+        };
+        let totals: Vec<String> = almuten.totals.iter().map(i16::to_string).collect();
+        format!(
+            "{} {} {}",
+            totals.join(","),
+            planets(almuten.almutens()),
+            planets(almuten.partakers())
+        )
+    };
+    put(
+        report,
+        &format!("chart-{index}-almuten-figure"),
+        ranked(&almutens.figure),
+    );
+    put(
+        report,
+        &format!("chart-{index}-almuten-places"),
+        ranked(&almutens.places),
+    );
+    for (house, almuten) in almutens.houses.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-almuten-house-{}", house + 1),
+            ranked(almuten),
         );
     }
 }

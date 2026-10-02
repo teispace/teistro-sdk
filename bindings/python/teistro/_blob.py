@@ -2137,6 +2137,12 @@ class ChartsFortitudes:
     houses: memoryview[int]
     """The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module."""
 
+    ascendant: memoryview[float]
+    """The ascendant, from the chart's angles, in degrees of the chart's zodiac: whole-sign and equal houses do not put it on a cusp."""
+
+    midheaven: memoryview[float]
+    """The midheaven, from the chart's angles: only a quadrant division puts it on the tenth cusp."""
+
     north_node: memoryview[float]
     """The North Node's longitude, in degrees of the chart's zodiac."""
 
@@ -2178,6 +2184,15 @@ class ChartsFortitudes:
 
     siege_span: memoryview[float]
     """The span of `WITHIN`; 0 for `SAME_SIGN`."""
+
+    almuten_place: memoryview[int]
+    """What of a place its almuten's dignities are counted from, `fortitudes_json.almuten.place` (C218)."""
+
+    almuten_fortune: memoryview[int]
+    """How the Part of Fortune is taken by night, `fortitudes_json.almuten.fortune` (C220)."""
+
+    fortune: memoryview[float]
+    """The Part of Fortune, one of the five places `fortitude_planets`' `places` sums over."""
 
     score_direct: memoryview[int]
     """What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
@@ -2275,6 +2290,27 @@ class ChartsFortitudeHouses:
     score: memoryview[int]
     """What a planet in the house scores, `fortitudes_json.scores.houses`."""
 
+    almuten_saturn: memoryview[int]
+    """The dignities Saturn holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_jupiter: memoryview[int]
+    """The dignities Jupiter holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_mars: memoryview[int]
+    """The dignities Mars holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_sun: memoryview[int]
+    """The dignities the Sun holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_venus: memoryview[int]
+    """The dignities Venus holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_mercury: memoryview[int]
+    """The dignities Mercury holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
+    almuten_moon: memoryview[int]
+    """The dignities the Moon holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -2284,7 +2320,7 @@ class ChartsFortitudePlanets:
     """The `fortitude_planets` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+    The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.
     """
 
     planet: memoryview[int]
@@ -2304,6 +2340,9 @@ class ChartsFortitudePlanets:
 
     debility: memoryview[int]
     """The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it."""
+
+    places: memoryview[int]
+    """Its essential dignities summed over the ascendant, midheaven, Sun, Moon and Part of Fortune: Chapter CV's almuten is the planet with the most. Lilly's almuten of the figure is the greatest net."""
 
     accident_count: memoryview[int]
     """How many rows of the `fortitude_accidents` section belong to this planet.
@@ -2650,7 +2689,7 @@ class Charts:
     """Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none."""
 
     fortitude_planets: ChartsFortitudePlanets
-    """The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none."""
+    """The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none."""
 
     fortitude_accidents: ChartsFortitudeAccidents
     """Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none."""
@@ -3994,125 +4033,140 @@ def decode_charts(raw: bytes) -> Charts:
             houses=blob.column(
                 at_fortitudes, 0, 2, at_fortitudes.count
             ).cast("H"),
-            north_node=blob.column(
+            ascendant=blob.column(
                 at_fortitudes, 1, 8, at_fortitudes.count
             ).cast("d"),
-            regulus=blob.column(
+            midheaven=blob.column(
                 at_fortitudes, 2, 8, at_fortitudes.count
             ).cast("d"),
-            spica=blob.column(
+            north_node=blob.column(
                 at_fortitudes, 3, 8, at_fortitudes.count
             ).cast("d"),
-            algol=blob.column(
+            regulus=blob.column(
                 at_fortitudes, 4, 8, at_fortitudes.count
             ).cast("d"),
-            combustion_orb=blob.column(
+            spica=blob.column(
                 at_fortitudes, 5, 8, at_fortitudes.count
             ).cast("d"),
-            combustion_in_sign=blob.column(
-                at_fortitudes, 6, 1, at_fortitudes.count
-            ).cast("B"),
-            beams_orb=blob.column(
+            algol=blob.column(
+                at_fortitudes, 6, 8, at_fortitudes.count
+            ).cast("d"),
+            combustion_orb=blob.column(
                 at_fortitudes, 7, 8, at_fortitudes.count
             ).cast("d"),
-            cazimi_orb=blob.column(
-                at_fortitudes, 8, 8, at_fortitudes.count
-            ).cast("d"),
-            cusp_orb=blob.column(
+            combustion_in_sign=blob.column(
+                at_fortitudes, 8, 1, at_fortitudes.count
+            ).cast("B"),
+            beams_orb=blob.column(
                 at_fortitudes, 9, 8, at_fortitudes.count
             ).cast("d"),
-            star_orb=blob.column(
+            cazimi_orb=blob.column(
                 at_fortitudes, 10, 8, at_fortitudes.count
             ).cast("d"),
-            partile=blob.column(
-                at_fortitudes, 11, 1, at_fortitudes.count
-            ).cast("B"),
-            partile_orb=blob.column(
+            cusp_orb=blob.column(
+                at_fortitudes, 11, 8, at_fortitudes.count
+            ).cast("d"),
+            star_orb=blob.column(
                 at_fortitudes, 12, 8, at_fortitudes.count
             ).cast("d"),
-            siege=blob.column(
+            partile=blob.column(
                 at_fortitudes, 13, 1, at_fortitudes.count
             ).cast("B"),
-            siege_span=blob.column(
+            partile_orb=blob.column(
                 at_fortitudes, 14, 8, at_fortitudes.count
             ).cast("d"),
-            score_direct=blob.column(
+            siege=blob.column(
                 at_fortitudes, 15, 1, at_fortitudes.count
-            ).cast("b"),
-            score_retrograde=blob.column(
-                at_fortitudes, 16, 1, at_fortitudes.count
-            ).cast("b"),
-            score_swift=blob.column(
+            ).cast("B"),
+            siege_span=blob.column(
+                at_fortitudes, 16, 8, at_fortitudes.count
+            ).cast("d"),
+            almuten_place=blob.column(
                 at_fortitudes, 17, 1, at_fortitudes.count
-            ).cast("b"),
-            score_slow=blob.column(
+            ).cast("B"),
+            almuten_fortune=blob.column(
                 at_fortitudes, 18, 1, at_fortitudes.count
-            ).cast("b"),
-            score_superior_oriental=blob.column(
-                at_fortitudes, 19, 1, at_fortitudes.count
-            ).cast("b"),
-            score_superior_occidental=blob.column(
+            ).cast("B"),
+            fortune=blob.column(
+                at_fortitudes, 19, 8, at_fortitudes.count
+            ).cast("d"),
+            score_direct=blob.column(
                 at_fortitudes, 20, 1, at_fortitudes.count
             ).cast("b"),
-            score_inferior_oriental=blob.column(
+            score_retrograde=blob.column(
                 at_fortitudes, 21, 1, at_fortitudes.count
             ).cast("b"),
-            score_inferior_occidental=blob.column(
+            score_swift=blob.column(
                 at_fortitudes, 22, 1, at_fortitudes.count
             ).cast("b"),
-            score_increasing=blob.column(
+            score_slow=blob.column(
                 at_fortitudes, 23, 1, at_fortitudes.count
             ).cast("b"),
-            score_decreasing=blob.column(
+            score_superior_oriental=blob.column(
                 at_fortitudes, 24, 1, at_fortitudes.count
             ).cast("b"),
-            score_free_from_combustion=blob.column(
+            score_superior_occidental=blob.column(
                 at_fortitudes, 25, 1, at_fortitudes.count
             ).cast("b"),
-            score_cazimi=blob.column(
+            score_inferior_oriental=blob.column(
                 at_fortitudes, 26, 1, at_fortitudes.count
             ).cast("b"),
-            score_combust=blob.column(
+            score_inferior_occidental=blob.column(
                 at_fortitudes, 27, 1, at_fortitudes.count
             ).cast("b"),
-            score_under_beams=blob.column(
+            score_increasing=blob.column(
                 at_fortitudes, 28, 1, at_fortitudes.count
             ).cast("b"),
-            score_conjunct_benefic=blob.column(
+            score_decreasing=blob.column(
                 at_fortitudes, 29, 1, at_fortitudes.count
             ).cast("b"),
-            score_conjunct_north_node=blob.column(
+            score_free_from_combustion=blob.column(
                 at_fortitudes, 30, 1, at_fortitudes.count
             ).cast("b"),
-            score_trine_benefic=blob.column(
+            score_cazimi=blob.column(
                 at_fortitudes, 31, 1, at_fortitudes.count
             ).cast("b"),
-            score_sextile_benefic=blob.column(
+            score_combust=blob.column(
                 at_fortitudes, 32, 1, at_fortitudes.count
             ).cast("b"),
-            score_conjunct_malefic=blob.column(
+            score_under_beams=blob.column(
                 at_fortitudes, 33, 1, at_fortitudes.count
             ).cast("b"),
-            score_conjunct_south_node=blob.column(
+            score_conjunct_benefic=blob.column(
                 at_fortitudes, 34, 1, at_fortitudes.count
             ).cast("b"),
-            score_opposed_malefic=blob.column(
+            score_conjunct_north_node=blob.column(
                 at_fortitudes, 35, 1, at_fortitudes.count
             ).cast("b"),
-            score_square_malefic=blob.column(
+            score_trine_benefic=blob.column(
                 at_fortitudes, 36, 1, at_fortitudes.count
             ).cast("b"),
-            score_besieged=blob.column(
+            score_sextile_benefic=blob.column(
                 at_fortitudes, 37, 1, at_fortitudes.count
             ).cast("b"),
-            score_regulus=blob.column(
+            score_conjunct_malefic=blob.column(
                 at_fortitudes, 38, 1, at_fortitudes.count
             ).cast("b"),
-            score_spica=blob.column(
+            score_conjunct_south_node=blob.column(
                 at_fortitudes, 39, 1, at_fortitudes.count
             ).cast("b"),
-            score_algol=blob.column(
+            score_opposed_malefic=blob.column(
                 at_fortitudes, 40, 1, at_fortitudes.count
+            ).cast("b"),
+            score_square_malefic=blob.column(
+                at_fortitudes, 41, 1, at_fortitudes.count
+            ).cast("b"),
+            score_besieged=blob.column(
+                at_fortitudes, 42, 1, at_fortitudes.count
+            ).cast("b"),
+            score_regulus=blob.column(
+                at_fortitudes, 43, 1, at_fortitudes.count
+            ).cast("b"),
+            score_spica=blob.column(
+                at_fortitudes, 44, 1, at_fortitudes.count
+            ).cast("b"),
+            score_algol=blob.column(
+                at_fortitudes, 45, 1, at_fortitudes.count
             ).cast("b"),
             length=at_fortitudes.count,
         ),
@@ -4123,6 +4177,27 @@ def decode_charts(raw: bytes) -> Charts:
             score=blob.column(
                 at_fortitude_houses, 1, 1, at_fortitude_houses.count
             ).cast("b"),
+            almuten_saturn=blob.column(
+                at_fortitude_houses, 2, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_jupiter=blob.column(
+                at_fortitude_houses, 3, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_mars=blob.column(
+                at_fortitude_houses, 4, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_sun=blob.column(
+                at_fortitude_houses, 5, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_venus=blob.column(
+                at_fortitude_houses, 6, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_mercury=blob.column(
+                at_fortitude_houses, 7, 2, at_fortitude_houses.count
+            ).cast("h"),
+            almuten_moon=blob.column(
+                at_fortitude_houses, 8, 2, at_fortitude_houses.count
+            ).cast("h"),
             length=at_fortitude_houses.count,
         ),
         fortitude_planets=ChartsFortitudePlanets(
@@ -4144,8 +4219,11 @@ def decode_charts(raw: bytes) -> Charts:
             debility=blob.column(
                 at_fortitude_planets, 5, 2, at_fortitude_planets.count
             ).cast("h"),
+            places=blob.column(
+                at_fortitude_planets, 6, 2, at_fortitude_planets.count
+            ).cast("h"),
             accident_count=blob.column(
-                at_fortitude_planets, 6, 1, at_fortitude_planets.count
+                at_fortitude_planets, 7, 1, at_fortitude_planets.count
             ).cast("B"),
             length=at_fortitude_planets.count,
         ),

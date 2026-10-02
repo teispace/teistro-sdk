@@ -38,6 +38,9 @@ import type {
   DignityRequest,
   FortitudeRequest,
   Fortitudes,
+  Almuten,
+  Almutens,
+  AlmutenTotal,
   PlanetAccidents,
   GrahaName,
   KpLords,
@@ -782,6 +785,7 @@ function theFortitudes(ctx: Context): string {
     dignities: { sectRule: 'DAYLIGHT' },
     rules: { beamsDeg: 15, combustionInSign: false, partile: { WITHIN: { orbDeg: 1 } }, siege: 'SAME_SIGN' },
     scores: { regulus: 5, houses: [5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5] },
+    almuten: { place: 'SIGN', fortune: 'REVERSED_BY_NIGHT' },
   };
   const read: Fortitudes | null = ctx.chart.found({
     instant: 2451545,
@@ -795,7 +799,12 @@ function theFortitudes(ctx: Context): string {
     return `${at.planet} ${at.house} ${lines.join()} ${at.fortitude} ${at.debility} ${at.net}`;
   });
   const sky = read.sky;
-  const fedBack: FortitudeRequest = { rules: read.rules, scores: read.scores };
+  const almutens: Almutens = read.almutens;
+  const ranked = (almuten: Almuten) =>
+    `${almuten.totals.map((at: AlmutenTotal) => `${at.planet}:${at.total}`).join()} ${almuten.almutens.join()} ${almuten.partakers.join()}`;
+  const fedBack: FortitudeRequest = { rules: read.rules, scores: read.scores, almuten: almutens.rules };
+  // @ts-expect-error a place is read by `DEGREE` or `SIGN`, nothing else
+  const misread: FortitudeRequest = { almuten: { place: 'CUSP' } };
   // @ts-expect-error an orb is written under `WITHIN`, as the answer reads it back
   const bare: FortitudeRequest = { rules: { partile: 'WITHIN' } };
   return [
@@ -807,6 +816,13 @@ function theFortitudes(ctx: Context): string {
     sky.regulusDeg,
     sky.spicaDeg,
     sky.algolDeg,
+    sky.ascendantDeg,
+    sky.midheavenDeg,
+    almutens.fortuneDeg,
+    ranked(almutens.figure),
+    ranked(almutens.places),
+    ...almutens.houses.map(ranked),
+    String(misread),
     read.rules.combustionDeg,
     read.scores.algol,
     ...planets,

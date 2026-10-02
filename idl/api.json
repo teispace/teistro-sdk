@@ -7194,6 +7194,46 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsPlaceReading",
+      "doc": "What of a place an almuten's dignities are counted from (C218,\n`03-design/essential-dignities.md` §The almuten).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Degree",
+          "value": 0,
+          "doc": "The degree: house, exaltation, triplicity, term and face.",
+          "key": "DEGREE"
+        },
+        {
+          "name": "Sign",
+          "value": 1,
+          "doc": "The sign: house, exaltation and triplicity.",
+          "key": "SIGN"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsFortuneRule",
+      "doc": "How the Part of Fortune is taken by night (C220,\n`03-design/essential-dignities.md` §The almuten).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "DayAndNight",
+          "value": 0,
+          "doc": "Lilly's: the ascendant plus the Moon less the Sun, by day or night.",
+          "key": "DAY_AND_NIGHT"
+        },
+        {
+          "name": "ReversedByNight",
+          "value": 1,
+          "doc": "By night, the ascendant plus the Sun less the Moon.",
+          "key": "REVERSED_BY_NIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -17582,6 +17622,16 @@
               "enum": "HouseSystem"
             },
             {
+              "name": "ascendant",
+              "scalar": "f64",
+              "doc": "The ascendant, from the chart's angles, in degrees of the chart's zodiac: whole-sign and equal houses do not put it on a cusp."
+            },
+            {
+              "name": "midheaven",
+              "scalar": "f64",
+              "doc": "The midheaven, from the chart's angles: only a quadrant division puts it on the tenth cusp."
+            },
+            {
               "name": "north_node",
               "scalar": "f64",
               "doc": "The North Node's longitude, in degrees of the chart's zodiac."
@@ -17652,6 +17702,23 @@
               "name": "siege_span",
               "scalar": "f64",
               "doc": "The span of `WITHIN`; 0 for `SAME_SIGN`."
+            },
+            {
+              "name": "almuten_place",
+              "scalar": "u8",
+              "doc": "What of a place its almuten's dignities are counted from, `fortitudes_json.almuten.place` (C218).",
+              "enum": "TsPlaceReading"
+            },
+            {
+              "name": "almuten_fortune",
+              "scalar": "u8",
+              "doc": "How the Part of Fortune is taken by night, `fortitudes_json.almuten.fortune` (C220).",
+              "enum": "TsFortuneRule"
+            },
+            {
+              "name": "fortune",
+              "scalar": "f64",
+              "doc": "The Part of Fortune, one of the five places `fortitude_planets`' `places` sums over."
             },
             {
               "name": "score_direct",
@@ -17800,13 +17867,48 @@
               "name": "score",
               "scalar": "i8",
               "doc": "What a planet in the house scores, `fortitudes_json.scores.houses`."
+            },
+            {
+              "name": "almuten_saturn",
+              "scalar": "i16",
+              "doc": "The dignities Saturn holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_jupiter",
+              "scalar": "i16",
+              "doc": "The dignities Jupiter holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_mars",
+              "scalar": "i16",
+              "doc": "The dignities Mars holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_sun",
+              "scalar": "i16",
+              "doc": "The dignities the Sun holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_venus",
+              "scalar": "i16",
+              "doc": "The dignities Venus holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_mercury",
+              "scalar": "i16",
+              "doc": "The dignities Mercury holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+            },
+            {
+              "name": "almuten_moon",
+              "scalar": "i16",
+              "doc": "The dignities the Moon holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
             }
           ]
         },
         {
           "id": 65,
           "name": "fortitude_planets",
-          "doc": "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.",
+          "doc": "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.",
           "kind": "columns",
           "fields": [
             {
@@ -17839,6 +17941,11 @@
               "name": "debility",
               "scalar": "i16",
               "doc": "The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it."
+            },
+            {
+              "name": "places",
+              "scalar": "i16",
+              "doc": "Its essential dignities summed over the ascendant, midheaven, Sun, Moon and Part of Fortune: Chapter CV's almuten is the planet with the most. Lilly's almuten of the figure is the greatest net."
             },
             {
               "name": "accident_count",

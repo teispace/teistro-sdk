@@ -1747,6 +1747,24 @@ the astronomical numbers do not move. Nothing else computes yet.
     Asking for `dignities_json` as well is refused (field `dignities`).
     An orb out of range is refused when the request is read, at its
     path (`fortitudes.rules.beamsDeg`), not later when the chart is.
+  - **The almuten** (§The almuten, C218–C220). Lilly defines two on p.
+    49: of a house, the planet with the most dignities on its cusp, and
+    of the figure, the most powerful in essential and accidental dignities
+    together. Chapter CV reports a rival, the most essential dignities
+    over the ascendant, midheaven, Sun, Moon and Part of Fortune. All three
+    ship. `almuten_of` and `almuten_of_places` count a place by its degree
+    or by its sign (C218). `part_of_fortune` is Lilly's ascendant + Moon −
+    Sun by day and by night, held to his worked example (10°27′ Aquarius);
+    the night reversal he sets aside is a knob (C220). An `Almuten`
+    reports every planet's total, every planet tied at the top and the
+    partakers below, and never breaks a tie (C219). A `FortitudeRequest`
+    names its `almuten` rules, and `Fortitudes` answers `almutens`. The
+    acceptance test is Book III's merchant, whose "Almuten of the
+    Geniture" Lilly names as Venus. `AccidentalSky` now carries the chart's
+    ascendant and midheaven from its angles. At the C boundary the
+    `fortitudes`, `fortitude_houses` and `fortitude_planets` sections gain
+    the almuten columns and two enums (`TsPlaceReading`, `TsFortuneRule`),
+    and every binding answers `fortitudes.almutens`.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

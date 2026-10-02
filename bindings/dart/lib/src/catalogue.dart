@@ -5602,6 +5602,76 @@ enum Siege {
   }
 }
 
+/// What of a place an almuten's dignities are counted from (C218,
+/// `03-design/essential-dignities.md` §The almuten).
+enum PlaceReading {
+  /// The degree: house, exaltation, triplicity, term and face.
+  degree(0, 'DEGREE'),
+  /// The sign: house, exaltation and triplicity.
+  sign(1, 'SIGN');
+
+  const PlaceReading(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static PlaceReading byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a PlaceReading'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static PlaceReading? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How the Part of Fortune is taken by night (C220,
+/// `03-design/essential-dignities.md` §The almuten).
+enum FortuneRule {
+  /// Lilly's: the ascendant plus the Moon less the Sun, by day or night.
+  dayAndNight(0, 'DAY_AND_NIGHT'),
+  /// By night, the ascendant plus the Sun less the Moon.
+  reversedByNight(1, 'REVERSED_BY_NIGHT');
+
+  const FortuneRule(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static FortuneRule byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a FortuneRule'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static FortuneRule? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

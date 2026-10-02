@@ -829,6 +829,14 @@ fn fortitude_chart_columns() -> Vec<ColumnDef> {
             "The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module.",
         )
         .of_enum("HouseSystem"),
+        degrees(
+            "ascendant",
+            "The ascendant, from the chart's angles, in degrees of the chart's zodiac: whole-sign and equal houses do not put it on a cusp.",
+        ),
+        degrees(
+            "midheaven",
+            "The midheaven, from the chart's angles: only a quadrant division puts it on the tenth cusp.",
+        ),
         degrees("north_node", "The North Node's longitude, in degrees of the chart's zodiac."),
         degrees("regulus", "Regulus's apparent longitude of date, in degrees of the chart's zodiac."),
         degrees("spica", "Spica's, likewise."),
@@ -872,6 +880,22 @@ fn fortitude_chart_columns() -> Vec<ColumnDef> {
         )
         .of_enum("TsSiege"),
         degrees("siege_span", "The span of `WITHIN`; 0 for `SAME_SIGN`."),
+        ColumnDef::new(
+            "almuten_place",
+            Scalar::U8,
+            "What of a place its almuten's dignities are counted from, `fortitudes_json.almuten.place` (C218).",
+        )
+        .of_enum("TsPlaceReading"),
+        ColumnDef::new(
+            "almuten_fortune",
+            Scalar::U8,
+            "How the Part of Fortune is taken by night, `fortitudes_json.almuten.fortune` (C220).",
+        )
+        .of_enum("TsFortuneRule"),
+        degrees(
+            "fortune",
+            "The Part of Fortune, one of the five places `fortitude_planets`' `places` sums over.",
+        ),
     ];
     chart.extend(crate::chart::ACCIDENTAL_LINES.map(|line| {
         ColumnDef::new(
@@ -884,6 +908,18 @@ fn fortitude_chart_columns() -> Vec<ColumnDef> {
     }));
     chart
 }
+
+/// The seven in the Chaldean order: each almuten column's name, and the
+/// planet as its description names it.
+const CHALDEAN_NAMES: [(&str, &str); 7] = [
+    ("saturn", "Saturn"),
+    ("jupiter", "Jupiter"),
+    ("mars", "Mars"),
+    ("sun", "the Sun"),
+    ("venus", "Venus"),
+    ("mercury", "Mercury"),
+    ("moon", "the Moon"),
+];
 
 /// Every chart's accidental fortitudes (`03-design/essential-dignities.md`
 /// §Accidental fortitudes): what was applied a chart, its twelve houses,
@@ -916,13 +952,24 @@ fn chart_fortitude_sections(first: u32) -> [SectionSchema; 4] {
                     Scalar::I8,
                     "What a planet in the house scores, `fortitudes_json.scores.houses`.",
                 ),
-            ],
+            ]
+            .into_iter()
+            .chain(CHALDEAN_NAMES.map(|(column, planet)| {
+                ColumnDef::new(
+                    &format!("almuten_{column}"),
+                    Scalar::I16,
+                    &format!(
+                        "The dignities {planet} holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most."
+                    ),
+                )
+            }))
+            .collect(),
         ),
         SectionSchema::columns(
             first + 2,
             "fortitude_planets",
             &format!(
-                "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. {empty}"
+                "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. {empty}"
             ),
             vec![
                 ColumnDef::new("planet", Scalar::U16, "The planet.").of_enum("Graha"),
@@ -948,6 +995,11 @@ fn chart_fortitude_sections(first: u32) -> [SectionSchema; 4] {
                     "debility",
                     Scalar::I16,
                     "The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it.",
+                ),
+                ColumnDef::new(
+                    "places",
+                    Scalar::I16,
+                    "Its essential dignities summed over the ascendant, midheaven, Sun, Moon and Part of Fortune: Chapter CV's almuten is the planet with the most. Lilly's almuten of the figure is the greatest net.",
                 ),
                 ColumnDef::new(
                     "accident_count",

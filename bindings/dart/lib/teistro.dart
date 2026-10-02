@@ -4038,6 +4038,16 @@ List<Fortitudes> _decodeFortitudes(Charts batch) {
     c.scoreSpica,
     c.scoreAlgol,
   ];
+  // Each house's almuten totals, a column a planet in the Chaldean order.
+  final houseAlmutens = [
+    h.almutenSaturn,
+    h.almutenJupiter,
+    h.almutenMars,
+    h.almutenSun,
+    h.almutenVenus,
+    h.almutenMercury,
+    h.almutenMoon,
+  ];
   PlanetAccidents planet(int chart, int row) {
     final own = essential[chart].planets[row - 7 * chart];
     return PlanetAccidents(
@@ -4085,11 +4095,15 @@ List<Fortitudes> _decodeFortitudes(Charts batch) {
       spica,
       algol,
     ] = [for (final line in lines) line[chart]];
+    final planets = rows(7, chart, (row) => planet(chart, row));
+    final seven = [for (final at in planets) at.planet];
     return Fortitudes(
       dignities: essential[chart],
       sky: AccidentalSky(
         houses: HouseSystem.byId(c.houses[chart]),
         cuspsDeg: rows(12, chart, (row) => h.cusp[row]),
+        ascendantDeg: c.ascendant[chart],
+        midheavenDeg: c.midheaven[chart],
         speedsDegPerDay: rows(7, chart, (row) => p.speed[row]),
         northNodeDeg: c.northNode[chart],
         regulusDeg: c.regulus[chart],
@@ -4138,7 +4152,23 @@ List<Fortitudes> _decodeFortitudes(Charts batch) {
         spica: spica,
         algol: algol,
       ),
-      planets: rows(7, chart, (row) => planet(chart, row)),
+      planets: planets,
+      almutens: Almutens(
+        rules: AlmutenRules(
+          place: PlaceReading.byId(c.almutenPlace[chart]),
+          fortune: FortuneRule.byId(c.almutenFortune[chart]),
+        ),
+        fortuneDeg: c.fortune[chart],
+        figure: Almuten._of(seven, [for (final at in planets) at.net]),
+        places: Almuten._of(seven, rows(7, chart, (row) => p.places[row])),
+        houses: rows(
+          12,
+          chart,
+          (row) => Almuten._of(seven, [
+            for (final column in houseAlmutens) column[row],
+          ]),
+        ),
+      ),
     );
   });
 }
@@ -5346,6 +5376,7 @@ final class FortitudeRequest {
     this.dignities = const DignityRequest(),
     this.rules = AccidentalRules.lilly,
     this.scores = AccidentalScores.lilly,
+    this.almuten = AlmutenRules.lilly,
   });
 
   /// How the essential half is read.
@@ -5353,11 +5384,137 @@ final class FortitudeRequest {
   final AccidentalRules rules;
   final AccidentalScores scores;
 
+  /// How the almutens are read.
+  final AlmutenRules almuten;
+
   String get _json => jsonEncode(<String, Object?>{
     'dignities': dignities._record,
     'rules': rules._json,
     'scores': scores._json,
+    'almuten': almuten._json,
   });
+}
+
+/// How a chart's almutens are read, Lilly's by default
+/// (`03-design/essential-dignities.md` §The almuten). An answer's
+/// `almutens.rules` is one, handed back as it stands.
+///
+/// ```dart
+/// const sign = AlmutenRules(place: PlaceReading.sign);
+/// ```
+final class AlmutenRules extends _Value {
+  const AlmutenRules({
+    this.place = PlaceReading.degree,
+    this.fortune = FortuneRule.dayAndNight,
+  });
+
+  /// Lilly's: the degree, and Fortune the same by day and night.
+  static const AlmutenRules lilly = AlmutenRules();
+
+  /// What of a place its dignities are counted from: the degree (all five)
+  /// or the sign (house, exaltation, triplicity), C218.
+  final PlaceReading place;
+
+  /// How Fortune is taken by night: Lilly's, or reversed (C220).
+  final FortuneRule fortune;
+
+  Map<String, Object?> get _json => {
+    'place': place.key,
+    'fortune': fortune.key,
+  };
+
+  @override
+  List<Object?> get _fields => [place, fortune];
+}
+
+/// One planet's total in an almuten's ranking.
+final class AlmutenTotal extends _Value {
+  const AlmutenTotal({required this.planet, required this.total});
+
+  final Graha planet;
+  final int total;
+
+  @override
+  List<Object?> get _fields => [planet, total];
+}
+
+/// An almuten as a ranking. Lilly breaks no tie, so every planet holding
+/// the greatest total is an almuten (C219).
+final class Almuten extends _Value {
+  const Almuten({
+    required this.totals,
+    required this.almutens,
+    required this.partakers,
+  });
+
+  /// The ranking of `planets` by `totals`, both in the Chaldean order.
+  factory Almuten._of(List<Graha> planets, List<int> totals) {
+    int greatest(int a, int b) => a > b ? a : b;
+    final top = totals.reduce(greatest);
+    final below = [
+      for (final total in totals)
+        if (total < top) total,
+    ];
+    List<Graha> holding(int total) => List<Graha>.unmodifiable([
+      for (var k = 0; k < planets.length; k += 1)
+        if (totals[k] == total) planets[k],
+    ]);
+    return Almuten(
+      totals: List<AlmutenTotal>.unmodifiable([
+        for (var k = 0; k < planets.length; k += 1)
+          AlmutenTotal(planet: planets[k], total: totals[k]),
+      ]),
+      almutens: holding(top),
+      partakers:
+          below.isEmpty ? const <Graha>[] : holding(below.reduce(greatest)),
+    );
+  }
+
+  /// The seven's totals, in the Chaldean order.
+  final List<AlmutenTotal> totals;
+
+  /// Every planet holding the greatest total: one unless they tie.
+  final List<Graha> almutens;
+
+  /// Every planet holding the next total down, Chapter CV's partakers;
+  /// empty when all seven tie.
+  final List<Graha> partakers;
+
+  @override
+  List<Object?> get _fields => [totals, almutens, partakers];
+}
+
+/// A chart's almutens three ways, with the rules that made them.
+///
+/// ```dart
+/// final lord = chart.fortitudes?.almutens.figure.almutens; // Lilly's
+/// ```
+final class Almutens extends _Value {
+  const Almutens({
+    required this.rules,
+    required this.fortuneDeg,
+    required this.figure,
+    required this.places,
+    required this.houses,
+  });
+
+  final AlmutenRules rules;
+
+  /// The Part of Fortune, one of the five places.
+  final double fortuneDeg;
+
+  /// Lilly's almuten of the figure: each planet's `net`.
+  final Almuten figure;
+
+  /// Chapter CV's: essential dignities over the ascendant, midheaven, Sun,
+  /// Moon and Fortune.
+  final Almuten places;
+
+  /// Each house's, of its cusp, the first to the twelfth.
+  final List<Almuten> houses;
+
+  @override
+  List<Object?> get _fields => [rules, fortuneDeg, figure, places, houses];
 }
 
 /// What a chart's accidental fortitudes were read from, in the chart's
@@ -5366,6 +5523,8 @@ final class AccidentalSky extends _Value {
   const AccidentalSky({
     required this.houses,
     required this.cuspsDeg,
+    required this.ascendantDeg,
+    required this.midheavenDeg,
     required this.speedsDegPerDay,
     required this.northNodeDeg,
     required this.regulusDeg,
@@ -5379,6 +5538,13 @@ final class AccidentalSky extends _Value {
 
   /// The twelve cusps, the first to the twelfth.
   final List<double> cuspsDeg;
+
+  /// The ascendant, from the chart's angles: whole-sign and equal houses do
+  /// not put it on a cusp.
+  final double ascendantDeg;
+
+  /// The midheaven, from the chart's angles.
+  final double midheavenDeg;
 
   /// The seven's daily motions in the Chaldean order, negative when
   /// retrograde.
@@ -5395,6 +5561,8 @@ final class AccidentalSky extends _Value {
   List<Object?> get _fields => [
     houses,
     cuspsDeg,
+    ascendantDeg,
+    midheavenDeg,
     speedsDegPerDay,
     northNodeDeg,
     regulusDeg,
@@ -5465,6 +5633,7 @@ final class Fortitudes extends _Value {
     required this.rules,
     required this.scores,
     required this.planets,
+    required this.almutens,
   });
 
   /// The essential half, which the chart's `dignities` also reads.
@@ -5476,8 +5645,18 @@ final class Fortitudes extends _Value {
   /// The seven in the Chaldean order, Saturn first.
   final List<PlanetAccidents> planets;
 
+  /// The almutens: of the figure, of the five places, and of each house.
+  final Almutens almutens;
+
   @override
-  List<Object?> get _fields => [dignities, sky, rules, scores, planets];
+  List<Object?> get _fields => [
+    dignities,
+    sky,
+    rules,
+    scores,
+    planets,
+    almutens,
+  ];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),

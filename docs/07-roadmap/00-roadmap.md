@@ -840,8 +840,11 @@ the same machinery rather than new mechanisms:
   `crates/hellenistic`, each held to its printing in `terms-measured.md`;
   the sect is read from the Sun's altitude, Valens's horizon (C209,
   `sect-measured.md`); and `ChartArea::dignities` answers them in Rust.
-  The boundary and the bindings are next, then mutual reception, the
-  almuten and Lilly's accidental fortitudes.
+  Mutual reception (C210), Lilly's accidental fortitudes (C211–C217) and
+  the almuten three ways (C218–C220) followed, each through the boundary
+  and every binding: **the dignities are done** but for Ibn Ezra's
+  weights. The lots are next. Lilly's Part of Fortune is already the
+  almuten's (`part_of_fortune`), and the rest of the lots generalise it.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the

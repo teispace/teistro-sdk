@@ -110,6 +110,8 @@ import {
   AccidentById,
   PartileById,
   SiegeById,
+  PlaceReadingById,
+  FortuneRuleById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1034,13 +1036,15 @@ export class Chart {
    * accidental fortitudes; `null` unless asked for
    * (`03-design/essential-dignities.md` §Accidental fortitudes).
    *
-   * It is `{ dignities, sky, rules, scores, planets }`. `sky` is what the
-   * lines were read from, `{ houses, cuspsDeg, speedsDegPerDay,
-   * northNodeDeg, regulusDeg, spicaDeg, algolDeg }`; `rules` and `scores`
-   * are what was applied, each a request's own record. The planets are in
-   * the Chaldean order, each `{ planet, house, accidents, fortitude,
-   * debility, net }`, every accident `{ accident, points }`, and `net`
-   * Lilly's sum of both halves.
+   * It is `{ dignities, sky, rules, scores, planets, almutens }`. `sky` is
+   * what the lines were read from, `{ houses, cuspsDeg, ascendantDeg,
+   * midheavenDeg, speedsDegPerDay, northNodeDeg, regulusDeg, spicaDeg,
+   * algolDeg }`; `rules` and `scores` are what was applied, each a
+   * request's own record. The planets are in the Chaldean order, each `{
+   * planet, house, accidents, fortitude, debility, net }`, every accident
+   * `{ accident, points }`, and `net` Lilly's sum of both halves.
+   * `almutens` is `{ rules, fortuneDeg, figure, places, houses }`, each
+   * almuten `{ totals, almutens, partakers }` (§The almuten).
    */
   get fortitudes() {
     return fortitudesOf(this.#batch)[this.#index] ?? null;
@@ -2215,7 +2219,7 @@ export class ChartArea extends Area {
         fortitudesJson: recordJson(
           request.fortitudes,
           'fortitudes',
-          'a fortitudes request record, e.g. { rules: { beamsDeg: 15 }, scores: { regulus: 6 } }',
+          'a fortitudes request record, e.g. { rules: { beamsDeg: 15 }, scores: { regulus: 6 }, almuten: { place: "SIGN" } }',
         ),
       }),
     );
@@ -2978,6 +2982,29 @@ const ACCIDENTAL_LINES = [
   'algol',
 ];
 
+/** The seven in the Chaldean order, as the `fortitude_houses` almuten columns name them. */
+const CHALDEAN = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon'];
+
+/**
+ * An almuten as a ranking: each planet's total, every planet holding the
+ * greatest (one unless they tie), and the next total down's, Chapter CV's
+ * partakers (`03-design/essential-dignities.md` §The almuten).
+ *
+ * @param {readonly string[]} planets the seven, in the Chaldean order
+ * @param {readonly number[]} totals theirs, in the same order
+ */
+function almutenOf(planets, totals) {
+  const top = Math.max(...totals);
+  const below = totals.filter((total) => total < top);
+  const next = below.length === 0 ? null : Math.max(...below);
+  const holding = (total) => Object.freeze(planets.filter((_, k) => totals[k] === total));
+  return Object.freeze({
+    totals: Object.freeze(planets.map((planet, k) => Object.freeze({ planet, total: totals[k] }))),
+    almutens: holding(top),
+    partakers: next === null ? Object.freeze([]) : holding(next),
+  });
+}
+
 /** A reading with an orb, as the request writes it: the bare name, or `{ WITHIN: { [field]: orb } }`. */
 function withOrb(name, field, orb) {
   return name === 'WITHIN' ? Object.freeze({ WITHIN: Object.freeze({ [field]: orb }) }) : name;
@@ -3018,6 +3045,7 @@ function fortitudesOf(batch) {
       Array.from({ length: charts }, (_, chart) => {
         const dignities = essential[chart];
         const rows = (count) => Array.from({ length: count }, (_, k) => count * chart + k);
+        const places = [];
         const planets = rows(7).map((row, k) => {
           const accidents = Array.from({ length: p.accidentCount[row] }, () => {
             const at = line++;
@@ -3027,6 +3055,7 @@ function fortitudesOf(batch) {
             });
           });
           const own = dignities.planets[k];
+          places.push(p.places[row]);
           return Object.freeze({
             planet: GrahaById.get(p.planet[row]) ?? 'unknown',
             house: p.house[row],
@@ -3041,6 +3070,8 @@ function fortitudesOf(batch) {
           sky: Object.freeze({
             houses: HouseSystemById.get(c.houses[chart]) ?? 'unknown',
             cuspsDeg: Object.freeze(rows(12).map((row) => h.cusp[row])),
+            ascendantDeg: c.ascendant[chart],
+            midheavenDeg: c.midheaven[chart],
             speedsDegPerDay: Object.freeze(rows(7).map((row) => p.speed[row])),
             northNodeDeg: c.northNode[chart],
             regulusDeg: c.regulus[chart],
@@ -3063,6 +3094,29 @@ function fortitudesOf(batch) {
             ...Object.fromEntries(ACCIDENTAL_LINES.map((name) => [name, c[`score${capitalised(name)}`][chart]])),
           }),
           planets: Object.freeze(planets),
+          almutens: Object.freeze({
+            rules: Object.freeze({
+              place: PlaceReadingById.get(c.almutenPlace[chart]) ?? 'unknown',
+              fortune: FortuneRuleById.get(c.almutenFortune[chart]) ?? 'unknown',
+            }),
+            fortuneDeg: c.fortune[chart],
+            figure: almutenOf(
+              planets.map((at) => at.planet),
+              planets.map((at) => at.net),
+            ),
+            places: almutenOf(
+              planets.map((at) => at.planet),
+              places,
+            ),
+            houses: Object.freeze(
+              rows(12).map((row) =>
+                almutenOf(
+                  planets.map((at) => at.planet),
+                  CHALDEAN.map((name) => h[`almuten${name}`][row]),
+                ),
+              ),
+            ),
+          }),
         });
       }),
     );
