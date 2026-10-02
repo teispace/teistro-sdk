@@ -3205,6 +3205,7 @@ final class ChartsPerfection {
     required this.quesited,
     required this.horizonDays,
     required this.horizonRuleDays,
+    required this.withinSignRule,
     required this.applicationPresent,
     required this.applicationAspect,
     required this.applicationDays,
@@ -3241,6 +3242,9 @@ final class ChartsPerfection {
 
   /// `perfection_json.rules.horizonDays` as asked; NaN when unset.
   final Float64List horizonRuleDays;
+
+  /// 1 when 1 when `perfection_json.rules.withinSign` held, as by default: a third planet's contact counted only before the applier left its sign (C234).; 0 otherwise.
+  final Uint8List withinSignRule;
 
   /// 1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN.
   final Uint8List applicationPresent;
@@ -6936,115 +6940,120 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atPerfection, 3),
         blob.columnOffset(atPerfection, 3) + atPerfection.count * 8,
       ),
-      applicationPresent: Uint8List.sublistView(
+      withinSignRule: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 4),
         blob.columnOffset(atPerfection, 4) + atPerfection.count * 1,
       ),
-      applicationAspect: Uint8List.sublistView(
+      applicationPresent: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 5),
         blob.columnOffset(atPerfection, 5) + atPerfection.count * 1,
       ),
-      applicationDays: Float64List.sublistView(
+      applicationAspect: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 6),
-        blob.columnOffset(atPerfection, 6) + atPerfection.count * 8,
+        blob.columnOffset(atPerfection, 6) + atPerfection.count * 1,
+      ),
+      applicationDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 7),
+        blob.columnOffset(atPerfection, 7) + atPerfection.count * 8,
       ),
       applying: Uint16List.sublistView(
         blob.bytes,
-        blob.columnOffset(atPerfection, 7),
-        blob.columnOffset(atPerfection, 7) + atPerfection.count * 2,
+        blob.columnOffset(atPerfection, 8),
+        blob.columnOffset(atPerfection, 8) + atPerfection.count * 2,
       ),
       applicationKind: Uint8List.sublistView(
         blob.bytes,
-        blob.columnOffset(atPerfection, 8),
-        blob.columnOffset(atPerfection, 8) + atPerfection.count * 1,
+        blob.columnOffset(atPerfection, 9),
+        blob.columnOffset(atPerfection, 9) + atPerfection.count * 1,
       ),
       gapDeg: Float64List.sublistView(
         blob.bytes,
-        blob.columnOffset(atPerfection, 9),
-        blob.columnOffset(atPerfection, 9) + atPerfection.count * 8,
+        blob.columnOffset(atPerfection, 10),
+        blob.columnOffset(atPerfection, 10) + atPerfection.count * 8,
       ),
       withinMoieties: Uint8List.sublistView(
-        blob.bytes,
-        blob.columnOffset(atPerfection, 10),
-        blob.columnOffset(atPerfection, 10) + atPerfection.count * 1,
-      ),
-      separationPresent: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 11),
         blob.columnOffset(atPerfection, 11) + atPerfection.count * 1,
       ),
-      separationAspect: Uint8List.sublistView(
+      separationPresent: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 12),
         blob.columnOffset(atPerfection, 12) + atPerfection.count * 1,
       ),
-      separationPastDeg: Float64List.sublistView(
+      separationAspect: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 13),
-        blob.columnOffset(atPerfection, 13) + atPerfection.count * 8,
+        blob.columnOffset(atPerfection, 13) + atPerfection.count * 1,
       ),
-      querentHouse: Uint8List.sublistView(
+      separationPastDeg: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 14),
-        blob.columnOffset(atPerfection, 14) + atPerfection.count * 1,
+        blob.columnOffset(atPerfection, 14) + atPerfection.count * 8,
       ),
-      querentDignity: Uint8List.sublistView(
+      querentHouse: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 15),
         blob.columnOffset(atPerfection, 15) + atPerfection.count * 1,
       ),
-      quesitedHouse: Uint8List.sublistView(
+      querentDignity: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 16),
         blob.columnOffset(atPerfection, 16) + atPerfection.count * 1,
       ),
-      quesitedDignity: Uint8List.sublistView(
+      quesitedHouse: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 17),
         blob.columnOffset(atPerfection, 17) + atPerfection.count * 1,
       ),
-      mutualByHouse: Uint8List.sublistView(
+      quesitedDignity: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 18),
         blob.columnOffset(atPerfection, 18) + atPerfection.count * 1,
       ),
-      infortunesBetween: Uint8List.sublistView(
+      mutualByHouse: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 19),
         blob.columnOffset(atPerfection, 19) + atPerfection.count * 1,
       ),
-      moonRelays: Uint8List.sublistView(
+      infortunesBetween: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 20),
         blob.columnOffset(atPerfection, 20) + atPerfection.count * 1,
       ),
-      quesitedInAscendant: Uint8List.sublistView(
+      moonRelays: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 21),
         blob.columnOffset(atPerfection, 21) + atPerfection.count * 1,
       ),
-      waysHeld: Uint8List.sublistView(
+      quesitedInAscendant: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 22),
         blob.columnOffset(atPerfection, 22) + atPerfection.count * 1,
       ),
-      impedimentCount: Uint32List.sublistView(
+      waysHeld: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 23),
-        blob.columnOffset(atPerfection, 23) + atPerfection.count * 4,
+        blob.columnOffset(atPerfection, 23) + atPerfection.count * 1,
       ),
-      translationCount: Uint32List.sublistView(
+      impedimentCount: Uint32List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 24),
         blob.columnOffset(atPerfection, 24) + atPerfection.count * 4,
       ),
-      collectionCount: Uint32List.sublistView(
+      translationCount: Uint32List.sublistView(
         blob.bytes,
         blob.columnOffset(atPerfection, 25),
         blob.columnOffset(atPerfection, 25) + atPerfection.count * 4,
+      ),
+      collectionCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 26),
+        blob.columnOffset(atPerfection, 26) + atPerfection.count * 4,
       ),
       length: atPerfection.count,
     ),

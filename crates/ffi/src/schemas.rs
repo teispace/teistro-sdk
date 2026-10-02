@@ -1322,6 +1322,10 @@ fn perfection_section(id: u32, empty: &str) -> SectionSchema {
                 Scalar::F64,
                 "`perfection_json.rules.horizonDays` as asked; NaN when unset.",
             ),
+            flag(
+                "within_sign_rule",
+                "1 when `perfection_json.rules.withinSign` held, as by default: a third planet's contact counted only before the applier left its sign (C234).",
+            ),
             ColumnDef::new(
                 "application_present",
                 Scalar::U8,

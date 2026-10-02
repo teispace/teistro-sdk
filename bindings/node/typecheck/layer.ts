@@ -908,7 +908,7 @@ void theConsiderations;
 
 // The perfection read all the way down, a request naming its house.
 function thePerfection(ctx: Context): string {
-  const asked: PerfectionRequest = { house: 7, rules: { horizonDays: 30 } };
+  const asked: PerfectionRequest = { house: 7, rules: { horizonDays: 30, withinSign: false } };
   const read: Matter | null = ctx.chart.found({
     instant: 2451545,
     place: { latitude: 51.5, longitude: -0.12, altitude: 0 },
@@ -939,6 +939,7 @@ function thePerfection(ctx: Context): string {
     read.ways.infortunesBetween.join(),
     held.join(),
     read.rules.horizonDays ?? 'unset',
+    read.rules.withinSign satisfies boolean,
     String(misread),
   ].join();
 }

@@ -1348,6 +1348,12 @@ export interface PerfectionRequest {
     readonly orbsDeg?: readonly [number, number, number, number, number, number, number];
     /** How many days ahead to look; by default until the swifter significator leaves its sign (C232). */
     readonly horizonDays?: number;
+    /**
+     * Whether a third planet's contact counts only before the planet applying
+     * leaves its sign (C234); `true` by default, `false` counts every contact
+     * inside the horizon.
+     */
+    readonly withinSign?: boolean;
   };
 }
 
@@ -1468,6 +1474,7 @@ export interface Matter {
   readonly rules: {
     readonly orbsDeg: readonly number[];
     readonly horizonDays: number | null;
+    readonly withinSign: boolean;
   };
 }
 

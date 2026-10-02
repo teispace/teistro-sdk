@@ -4261,6 +4261,7 @@ List<Matter> _decodePerfections(Charts batch) {
       rules: PerfectionRules(
         orbsDeg: List<double>.unmodifiable(o.orbDeg.sublist(7 * k, 7 * k + 7)),
         horizonDays: horizonRule.isNaN ? null : horizonRule,
+        withinSign: m.withinSignRule[k] == 1,
       ),
     );
   });
@@ -6098,10 +6099,11 @@ final class PerfectionRules extends _Value {
   const PerfectionRules({
     this.orbsDeg = const <double>[10, 12, 7.5, 17, 8, 7, 12.5],
     this.horizonDays,
+    this.withinSign = true,
   });
 
   /// Lilly's orbs (p. 107), looking until the swifter significator leaves
-  /// its sign.
+  /// its sign, a third planet's contacts bounded by the applier's sign.
   static const PerfectionRules lilly = PerfectionRules();
 
   /// Each planet's whole orb in the Chaldean order, Saturn to the Moon;
@@ -6113,13 +6115,19 @@ final class PerfectionRules extends _Value {
   /// `perfection.rules.horizonDays`.
   final double? horizonDays;
 
+  /// Whether a third planet's contact counts only before the planet
+  /// applying leaves its sign (C234); false counts every contact inside
+  /// the horizon.
+  final bool withinSign;
+
   Map<String, Object?> get _record => <String, Object?>{
     'orbsDeg': orbsDeg,
     if (horizonDays != null) 'horizonDays': horizonDays,
+    'withinSign': withinSign,
   };
 
   @override
-  List<Object?> get _fields => [orbsDeg, horizonDays];
+  List<Object?> get _fields => [orbsDeg, horizonDays, withinSign];
 }
 
 /// Whether a horary matter is brought to pass (Lilly, *Christian

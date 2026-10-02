@@ -1653,7 +1653,7 @@ class AnEngine(WithLibrary):
                 chart = ctx.chart.found(instant=instant, perfection={"house": 7}, fortitudes={}, **london)
                 read = chart.perfection
                 assert read is not None and chart.fortitudes is not None
-                self.assertEqual(read.rules, PerfectionRules(lilly, None))
+                self.assertEqual(read.rules, PerfectionRules(lilly, None, True))
                 self.assertIsNot(read.querent, read.quesited)
                 houses = {at.planet: at.house for at in chart.fortitudes.planets}
                 self.assertEqual(read.ways.querent.house, houses[read.querent])
@@ -1684,6 +1684,11 @@ class AnEngine(WithLibrary):
                 (other.querent, other.quesited, other.rules.horizon_days, other.horizon_days),
                 (Graha.VENUS, Graha.MARS, 30.0, 30.0),
             )
+            every = ctx.chart.found(
+                instant=instants[0], perfection={**named, "rules": {"withinSign": False}}, **london
+            ).perfection
+            assert every is not None
+            self.assertFalse(every.rules.within_sign)
 
             batch = ctx.chart.found_many(instants=instants, perfection={"house": 7}, **london)
             for k, instant in enumerate(instants):

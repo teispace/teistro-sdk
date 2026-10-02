@@ -2572,6 +2572,16 @@ void _engineTests() {
       ),
       (Graha.venus, Graha.mars, 30.0, 30.0),
     );
+    final every =
+        found(
+          instants[0],
+          perfection: const PerfectionRequest.between(
+            Graha.venus,
+            Graha.mars,
+            rules: PerfectionRules(withinSign: false),
+          ),
+        ).perfection!;
+    expect(every.rules.withinSign, isFalse);
 
     final batch = ctx.chart.foundMany(
       instants: instants,
