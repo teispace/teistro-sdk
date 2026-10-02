@@ -3745,8 +3745,8 @@ fn a_chart_request_answers_the_perfection() {
     let collections: Vec<&teistro::Collection> =
         expected.iter().flat_map(|one| &one.collections).collect();
     assert!(
-        !impediments.is_empty() && !translations.is_empty(),
-        "the sweep reaches impediments and translations"
+        !impediments.is_empty() && !translations.is_empty() && !collections.is_empty(),
+        "the sweep reaches impediments, translations and collections"
     );
     assert_eq!(
         ints("perfection_impediments", "kind"),
