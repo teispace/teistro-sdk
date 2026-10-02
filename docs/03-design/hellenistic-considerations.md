@@ -123,10 +123,19 @@ own chapter.
 
   `within_orb` is the first of those already within the two planets'
   moieties of orb. The moieties are half of each one's orb in
-  `ConsiderationRules::orbs_deg`, by default Lilly's table on p. 107:
-  Saturn 10°, Jupiter 12°, Mars 7½°, the Sun 17°, Venus 8°, Mercury 7°
-  and the Moon 12½°. So `void()` and `void_by_moieties()` report the two
-  readings side by side (C230).
+  `ConsiderationRules::orbs_deg`, by default the first of the two
+  columns Lilly prints on p. 107: Saturn 10°, Jupiter 12°, Mars 7½°, the
+  Sun 17°, Venus 8°, Mercury 7° and the Moon 12½°. So `void()` and
+  `void_by_moieties()` report the two readings side by side (C230).
+
+  His second column, "According to others", is Saturn 9°, Jupiter 9°,
+  Mars 7°, the Sun 15°, Venus 7°, Mercury 7° and the Moon 12°, and he
+  uses "sometimes the one, and sometimes the other": his own worked
+  separation on p. 110 halves Saturn and Jupiter to 4°30′ each and the
+  Sun and Moon to 7°30′ and 6°, which is the second. al-Biruni's table
+  (*Book of Instruction* §436) differs from it only in Mars, 8°. Every
+  recast figure reads alike under both of Lilly's columns, which a test
+  holds. A consumer sets either through `orbsDeg`.
 
 ## What building it found
 
