@@ -115,6 +115,9 @@ import {
   LotById,
   PtolemaicAspectById,
   RadicalGroundById,
+  ApplicationKindById,
+  ImpedimentKindById,
+  WayById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1082,6 +1085,22 @@ export class Chart {
    */
   get considerations() {
     return considerationsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Whether a horary matter is brought to pass (`perfection: { house }` or
+   * `{ querent, quesited }`, Lilly pp. 107–113 and 125–127), weighed on the
+   * chart's fortitudes and searched on the ephemeris; `null` unless asked
+   * for (`03-design/hellenistic-perfection.md`).
+   *
+   * It is `{ querent, quesited, application, separation, impediments,
+   * translations, collections, ways, horizonDays, rules }`: the relations
+   * between the two significators with the facts each rests on, and in
+   * `ways.held` which of the seven ways of perfection the figure holds,
+   * never a verdict.
+   */
+  get perfection() {
+    return perfectionsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2265,6 +2284,11 @@ export class ChartArea extends Area {
           'considerations',
           'a considerations request record, e.g. { moonLateFromDeg: 25 }',
         ),
+        perfectionJson: recordJson(
+          request.perfection,
+          'perfection',
+          'a perfection request record, e.g. { house: 7 } or { querent: "VENUS", quesited: "MARS" }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -3274,6 +3298,142 @@ function considerationsOf(batch) {
     );
   }
   CONSIDERATIONS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's perfections, decoded once however many charts read them. */
+const PERFECTIONS = new WeakMap();
+
+/** A dignity bit set as its seven flags, bit `n` the `n`th of `DIGNITY_FLAGS`. */
+function dignityOf(bits) {
+  return Object.freeze(Object.fromEntries(DIGNITY_FLAGS.map((flag, n) => [flag, ((bits >> n) & 1) === 1])));
+}
+
+/**
+ * Every chart's perfection in a batch: `perfection` holds a row a chart, or
+ * none when none was asked, its impediments, translations and collections
+ * ragged by that row's counts, and `perfection_orbs` seven a chart
+ * (`03-design/hellenistic-perfection.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function perfectionsOf(batch) {
+  let decoded = PERFECTIONS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const m = d.perfection;
+  const i = d.perfectionImpediments;
+  const t = d.perfectionTranslations;
+  const c = d.perfectionCollections;
+  const o = d.perfectionOrbs;
+  if (m.querent.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    if (m.querent.length !== charts || o.orbDeg.length !== 7 * charts) {
+      throw new Error(
+        `perfection has ${m.querent.length} rows and perfection_orbs ${o.orbDeg.length} ` +
+          `for ${charts} charts; they are one and seven a chart, or none`,
+      );
+    }
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    const aspect = (id) => PtolemaicAspectById.get(id) ?? 'unknown';
+    let impediment = 0;
+    let translation = 0;
+    let collection = 0;
+    const rows = (count, next) => Object.freeze(Array.from({ length: count }, next));
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, k) =>
+        Object.freeze({
+          querent: graha(m.querent[k]),
+          quesited: graha(m.quesited[k]),
+          application:
+            m.applicationPresent[k] === 1
+              ? Object.freeze({
+                  aspect: aspect(m.applicationAspect[k]),
+                  days: m.applicationDays[k],
+                  applying: graha(m.applying[k]),
+                  kind: ApplicationKindById.get(m.applicationKind[k]) ?? 'unknown',
+                  gapDeg: m.gapDeg[k],
+                  withinMoieties: m.withinMoieties[k] === 1,
+                })
+              : null,
+          separation:
+            m.separationPresent[k] === 1
+              ? Object.freeze({ aspect: aspect(m.separationAspect[k]), pastDeg: m.separationPastDeg[k] })
+              : null,
+          impediments: rows(m.impedimentCount[k], () => {
+            const at = impediment++;
+            return Object.freeze({
+              kind: ImpedimentKindById.get(i.kind[at]) ?? 'unknown',
+              significator: graha(i.significator[at]),
+              third: i.thirdPresent[at] === 1 ? graha(i.third[at]) : null,
+              aspect: aspect(i.aspect[at]),
+              days: i.days[at],
+            });
+          }),
+          translations: rows(m.translationCount[k], () => {
+            const at = translation++;
+            return Object.freeze({
+              translator: graha(t.translator[at]),
+              from: graha(t.from[at]),
+              to: graha(t.to[at]),
+              separating: Object.freeze({
+                aspect: aspect(t.separatingAspect[at]),
+                pastDeg: t.separatingPastDeg[at],
+              }),
+              aspect: aspect(t.aspect[at]),
+              days: t.days[at],
+              received: dignityOf(t.received[at]),
+            });
+          }),
+          collections: rows(m.collectionCount[k], () => {
+            const at = collection++;
+            return Object.freeze({
+              collector: graha(c.collector[at]),
+              fromQuerent: Object.freeze({ aspect: aspect(c.fromQuerentAspect[at]), days: c.fromQuerentDays[at] }),
+              fromQuesited: Object.freeze({ aspect: aspect(c.fromQuesitedAspect[at]), days: c.fromQuesitedDays[at] }),
+              collectorInQuerent: dignityOf(c.collectorInQuerent[at]),
+              collectorInQuesited: dignityOf(c.collectorInQuesited[at]),
+              querentInCollector: dignityOf(c.querentInCollector[at]),
+              quesitedInCollector: dignityOf(c.quesitedInCollector[at]),
+            });
+          }),
+          ways: Object.freeze({
+            querent: Object.freeze({
+              planet: graha(m.querent[k]),
+              house: m.querentHouse[k],
+              dignity: dignityOf(m.querentDignity[k]),
+            }),
+            quesited: Object.freeze({
+              planet: graha(m.quesited[k]),
+              house: m.quesitedHouse[k],
+              dignity: dignityOf(m.quesitedDignity[k]),
+            }),
+            mutualByHouse: m.mutualByHouse[k] === 1,
+            infortunesBetween: members(m.infortunesBetween[k], GrahaById),
+            moonRelays: m.moonRelays[k] === 1,
+            quesitedInAscendant: m.quesitedInAscendant[k] === 1,
+            held: members(m.waysHeld[k], WayById),
+          }),
+          horizonDays: m.horizonDays[k],
+          rules: Object.freeze({
+            orbsDeg: Object.freeze(Array.from(o.orbDeg.subarray(7 * k, 7 * k + 7))),
+            horizonDays: Number.isNaN(m.horizonRuleDays[k]) ? null : m.horizonRuleDays[k],
+          }),
+        }),
+      ),
+    );
+    for (const [name, read, held] of [
+      ['perfection_impediments', impediment, i.kind.length],
+      ['perfection_translations', translation, t.translator.length],
+      ['perfection_collections', collection, c.collector.length],
+    ]) {
+      if (read !== held) throw new Error(`${name} has ${held} rows and the charts count ${read}`);
+    }
+  }
+  PERFECTIONS.set(batch, decoded);
   return decoded;
 }
 

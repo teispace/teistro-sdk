@@ -71,6 +71,9 @@ import type {
   Lot,
   PtolemaicAspect,
   RadicalGround,
+  ApplicationKind,
+  ImpedimentKind,
+  Way,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -1323,6 +1326,149 @@ export interface Considerations {
   readonly ascendantLordCombust: boolean;
   /** The request as it stood, every field filled. */
   readonly rules: Required<ConsiderationRequest>;
+}
+
+/**
+ * How to read every chart's perfection (`03-design/hellenistic-perfection.md`);
+ * name the quesited's significator or the house of the matter, not both.
+ *
+ * @example
+ * const marriage: PerfectionRequest = { house: 7 };
+ * const named: PerfectionRequest = { querent: 'VENUS', quesited: 'MARS', rules: { horizonDays: 30 } };
+ */
+export interface PerfectionRequest {
+  /** The querent's significator; the Ascendant's lord by default. One of the seven. */
+  readonly querent?: GrahaName;
+  /** The quesited's significator. One of the seven, never the querent's. */
+  readonly quesited?: GrahaName;
+  /** The house of the matter, 1 to 12: its cusp's lord signifies the quesited. */
+  readonly house?: number;
+  readonly rules?: {
+    /** The seven whole orbs in the Chaldean order; Lilly's p. 107 by default. */
+    readonly orbsDeg?: readonly [number, number, number, number, number, number, number];
+    /** How many days ahead to look; by default until the swifter significator leaves its sign (C232). */
+    readonly horizonDays?: number;
+  };
+}
+
+/** The significators coming to an aspect (p. 107). */
+export interface Application {
+  readonly aspect: PtolemaicAspect;
+  /** Days until it is exact. */
+  readonly days: number;
+  /** The significator whose motion closes it. */
+  readonly applying: Graha;
+  readonly kind: ApplicationKind;
+  /** How far it is from exact now, degrees. */
+  readonly gapDeg: number;
+  /** Whether the gap is already within the two planets' moieties of orb. */
+  readonly withinMoieties: boolean;
+}
+
+/** Two planets past an aspect and still within their moieties (p. 110). */
+export interface Separation {
+  readonly aspect: PtolemaicAspect;
+  /** How far past exact, degrees. */
+  readonly pastDeg: number;
+}
+
+/** What stops or hinders the application (pp. 110–113). */
+export interface Impediment {
+  readonly kind: ImpedimentKind;
+  /** The significator it falls on. */
+  readonly significator: Graha;
+  /** The third planet; `null` for a refranation. */
+  readonly third: Graha | null;
+  /** The aspect the third perfects, or the one refrained from. */
+  readonly aspect: PtolemaicAspect;
+  /** Days until the contact, or the station. */
+  readonly days: number;
+}
+
+/** A lighter planet carrying one significator's light to the other (p. 111). */
+export interface Translation {
+  readonly translator: Graha;
+  readonly from: Graha;
+  readonly to: Graha;
+  /** Its separation from `from`. */
+  readonly separating: Separation;
+  /** The aspect it applies to `to` by. */
+  readonly aspect: PtolemaicAspect;
+  /** Days until that is exact. */
+  readonly days: number;
+  /** The dignities of `from` the translator stands in: how it is received (p. 126). */
+  readonly received: EssentialDignity;
+}
+
+/** A significator's application to a collector. */
+export interface ContactAhead {
+  readonly aspect: PtolemaicAspect;
+  /** Days until it is exact. */
+  readonly days: number;
+}
+
+/** A heavier planet both significators apply to (p. 112); who must receive whom is C233. */
+export interface Collection {
+  readonly collector: Graha;
+  readonly fromQuerent: ContactAhead;
+  readonly fromQuesited: ContactAhead;
+  readonly collectorInQuerent: EssentialDignity;
+  readonly collectorInQuesited: EssentialDignity;
+  readonly querentInCollector: EssentialDignity;
+  readonly quesitedInCollector: EssentialDignity;
+}
+
+/** Where a significator stands. */
+export interface SignificatorPlace {
+  readonly planet: Graha;
+  /** 1 to 12. */
+  readonly house: number;
+  /** Its own dignities at its degree. */
+  readonly dignity: EssentialDignity;
+}
+
+/** The ways of perfection (pp. 125–127): what they weigh, and which hold. */
+export interface Ways {
+  readonly querent: SignificatorPlace;
+  readonly quesited: SignificatorPlace;
+  /** Each stands in the other's house. */
+  readonly mutualByHouse: boolean;
+  /** Saturn and Mars among the thirds that come between the significators before they perfect. */
+  readonly infortunesBetween: readonly Graha[];
+  /** The Moon, neither significator, separating from the quesited's and coming next to the querent's. */
+  readonly moonRelays: boolean;
+  /** The quesited's significator in the first house. */
+  readonly quesitedInAscendant: boolean;
+  /** The ways the figure holds, in `Way`'s order. */
+  readonly held: readonly Way[];
+}
+
+/**
+ * Whether a horary matter is brought to pass: the relations between two
+ * significators with the facts each rests on, never a verdict.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, perfection: { house: 7 } });
+ * const perfects = (chart.perfection?.ways.held.length ?? 0) > 0;
+ */
+export interface Matter {
+  readonly querent: Graha;
+  readonly quesited: Graha;
+  /** Their application within the horizon; `null` when none. */
+  readonly application: Application | null;
+  /** Their separation at the figure; `null` when none. */
+  readonly separation: Separation | null;
+  readonly impediments: readonly Impediment[];
+  readonly translations: readonly Translation[];
+  readonly collections: readonly Collection[];
+  readonly ways: Ways;
+  /** How many days ahead it was read. */
+  readonly horizonDays: number;
+  /** The rules as they stood: `horizonDays` is `null` when unset. */
+  readonly rules: {
+    readonly orbsDeg: readonly number[];
+    readonly horizonDays: number | null;
+  };
 }
 
 /**
@@ -2733,6 +2879,11 @@ export declare class Chart {
    */
   readonly considerations: Considerations | null;
   /**
+   * Whether a horary matter is brought to pass; `null` unless `perfection`
+   * asked (`03-design/hellenistic-perfection.md`).
+   */
+  readonly perfection: Matter | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -3839,6 +3990,12 @@ export interface ChartRequest {
    * by default; `{}` is Lilly's.
    */
   readonly considerations?: ConsiderationRequest;
+  /**
+   * The horary matter to weigh in every chart, read back as each chart's
+   * `perfection`, on the fortitudes `fortitudes` asks for or Lilly's
+   * (`03-design/hellenistic-perfection.md`). None by default.
+   */
+  readonly perfection?: PerfectionRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

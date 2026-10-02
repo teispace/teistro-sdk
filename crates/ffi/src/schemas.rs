@@ -1185,10 +1185,13 @@ fn chart_perfection_sections(first: u32) -> [SectionSchema; 5] {
                 ColumnDef::new(
                     "third_present",
                     Scalar::U8,
-                    "1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.",
+                    "1 when a third planet takes part; 0 for a refranation, and then `third` is 0.",
                 ),
                 graha_column("third", "The third planet."),
-                aspect_column("aspect", "The aspect the third is met by."),
+                aspect_column(
+                    "aspect",
+                    "The aspect the third perfects, or the one refrained from.",
+                ),
                 ColumnDef::new(
                     "days",
                     Scalar::F64,

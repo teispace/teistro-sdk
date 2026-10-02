@@ -713,8 +713,10 @@ test('every catalogue enum has a complete id table', () => {
   // since his time lords, three `TsDashaSystem`s in two `TsDashaFamily`s;
   // 1259 since the firdaria, a `TsDashaSystem` in a `TsDashaFamily`, and
   // 1261 since the decennials, the same; 1269 since Lilly's considerations,
-  // five `TsPtolemaicAspect`s and three `TsRadicalGround`s.
-  assert.equal(entries, 1269, 'every member of every enum is in a table');
+  // five `TsPtolemaicAspect`s and three `TsRadicalGround`s; 1282 since
+  // Lilly's perfection, three `TsApplicationKind`s, three
+  // `TsImpedimentKind`s and seven `TsWay`s.
+  assert.equal(entries, 1282, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2147,6 +2149,74 @@ test('a chart carries its considerations', () => {
       field,
     );
   }
+  ctx.dispose();
+});
+
+/**
+ * Lilly's perfection crosses whole: the significators the asked house
+ * names, where each stands on the chart's own fortitudes, the ways held
+ * agreeing with the application they rest on, the rules read back, a batch
+ * the charts one at a time, and refusals named in the record
+ * (`03-design/hellenistic-perfection.md`).
+ */
+test('a chart carries its perfection', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const london = { place: { latitude: 51.5, longitude: -0.12, altitude: 0 }, utcOffsetSeconds: 0 };
+  const instants = Array.from({ length: 12 }, (_, k) => 2451545 + 23 * k + k / 7);
+  assert.equal(ctx.chart.found({ instant: instants[0], ...london }).perfection, null);
+
+  let applying = 0;
+  let hindered = 0;
+  for (const instant of instants) {
+    const chart = ctx.chart.found({ instant, ...london, perfection: { house: 7 }, fortitudes: {} });
+    const read = chart.perfection;
+    assert.ok(Object.isFrozen(read.ways.querent.dignity), 'frozen to its leaves');
+    assert.deepEqual(read.rules, { orbsDeg: [10, 12, 7.5, 17, 8, 7, 12.5], horizonDays: null });
+    assert.notEqual(read.querent, read.quesited);
+    const houseOf = (planet) => chart.fortitudes.planets.find((at) => at.planet === planet).house;
+    assert.equal(read.ways.querent.house, houseOf(read.querent));
+    assert.equal(read.ways.quesited.house, houseOf(read.quesited));
+    assert.equal(read.ways.querent.planet, read.querent);
+    assert.ok(read.horizonDays > 0);
+    if (read.application !== null) {
+      applying += 1;
+      assert.ok(read.application.days >= 0 && read.application.days <= read.horizonDays);
+      assert.ok([read.querent, read.quesited].includes(read.application.applying));
+    }
+    for (const way of ['CONJUNCTION', 'SEXTILE_OR_TRINE', 'SQUARE', 'OPPOSITION']) {
+      if (read.ways.held.includes(way)) assert.notEqual(read.application, null, way);
+    }
+    for (const impediment of read.impediments) {
+      hindered += 1;
+      assert.equal(impediment.third === null, impediment.kind === 'REFRANATION');
+      assert.ok([read.querent, read.quesited].includes(impediment.significator));
+    }
+    for (const translation of read.translations) {
+      assert.deepEqual(new Set([translation.from, translation.to]), new Set([read.querent, read.quesited]));
+    }
+  }
+  assert.ok(applying > 0 && hindered > 0, 'the sweep applies and is hindered');
+
+  const named = { querent: 'VENUS', quesited: 'graha.MARS', rules: { horizonDays: 30 } };
+  const read = ctx.chart.found({ instant: instants[0], ...london, perfection: named }).perfection;
+  assert.deepEqual([read.querent, read.quesited, read.rules.horizonDays, read.horizonDays], ['graha.VENUS', 'graha.MARS', 30, 30]);
+
+  const batch = ctx.chart.foundMany({ instants, ...london, perfection: { house: 7 } });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).perfection, ctx.chart.found({ instant, ...london, perfection: { house: 7 } }).perfection),
+  );
+  for (const [request, field] of [
+    [{ perfection: {} }, 'perfection.quesited'],
+    [{ perfection: { house: 7, quesited: 'MARS' } }, 'perfection.house'],
+    [{ perfection: { house: 7, rules: { horizonDays: -1 } } }, 'perfection.rules.horizonDays'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: instants[0], ...london, ...request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: instants[0], ...london, perfection: 7 }), TypeError);
   ctx.dispose();
 });
 
