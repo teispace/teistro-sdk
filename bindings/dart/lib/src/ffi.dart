@@ -1070,6 +1070,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
   external ffi.Pointer<ffi.Char> fortitudesJson;
 
+  /// Every chart's lots, all fourteen Valens gives, as a JSON object,
+  /// every member optional: `sectRule` (the record `dignities_json`
+  /// names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+  /// the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+  /// (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+  /// `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+  /// comes back in the `lots` section and the fourteen in `lot_places`.
+  /// Null for none, which costs nothing
+  /// (`03-design/hellenistic-lots.md`). Refusals are named from the
+  /// record every binding calls `lots`, as `lots.fortune`.
+  /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+  external ffi.Pointer<ffi.Char> lotsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2959,7 +2972,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3175,6 +3188,19 @@ final class ChartRequest {
   /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
   final String? fortitudesJson;
 
+  /// Every chart's lots, all fourteen Valens gives, as a JSON object,
+  /// every member optional: `sectRule` (the record `dignities_json`
+  /// names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+  /// the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+  /// (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+  /// `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+  /// comes back in the `lots` section and the fourteen in `lot_places`.
+  /// Null for none, which costs nothing
+  /// (`03-design/hellenistic-lots.md`). Refusals are named from the
+  /// record every binding calls `lots`, as `lots.fortune`.
+  /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+  final String? lotsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3244,6 +3270,9 @@ final class ChartRequest {
     raw.fortitudesJson = fortitudesJson == null
         ? ffi.nullptr
         : fortitudesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.lotsJson = lotsJson == null
+        ? ffi.nullptr
+        : lotsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3299,6 +3328,9 @@ final class ChartRequest {
         fortitudesJson: raw.fortitudesJson == ffi.nullptr
             ? null
             : raw.fortitudesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        lotsJson: raw.lotsJson == ffi.nullptr
+            ? null
+            : raw.lotsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

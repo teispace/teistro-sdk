@@ -2962,6 +2962,68 @@ final class ChartsFortitudeAccidents {
   final int length;
 }
 
+/// The `lots` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.
+final class ChartsLots {
+  const ChartsLots({
+    required this.sect,
+    required this.sectRule,
+    required this.fortune,
+    required this.fortuneReversed,
+    required this.length,
+  });
+
+  /// Whether the chart is of the day or of the night, as `sect_rule` reads it: a night chart takes each lot's night arc.
+  final Uint8List sect;
+
+  /// How the sect was read, `lots_json.sectRule` (C209).
+  final Uint8List sectRule;
+
+  /// How the Part of Fortune is taken by night, `lots_json.fortune` (C221).
+  final Uint8List fortune;
+
+  /// 1 when Fortune was counted from the Moon to the Sun, and Daimon from the Sun to the Moon; 0 otherwise.
+  final Uint8List fortuneReversed;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `lot_places` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
+final class ChartsLotPlaces {
+  const ChartsLotPlaces({
+    required this.lot,
+    required this.longitudeDeg,
+    required this.sign,
+    required this.lord,
+    required this.house,
+    required this.length,
+  });
+
+  /// Which.
+  final Uint8List lot;
+
+  /// Where it fell, degrees of the chart's zodiac in [0, 360).
+  final Float64List longitudeDeg;
+
+  /// The sign it fell in.
+  final Uint16List sign;
+
+  /// That sign's lord, the lot's ruler, which Valens reads it by.
+  final Uint16List lord;
+
+  /// Its place, 1 to 12, counted in whole signs from the ascendant's sign.
+  final Uint8List house;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3140,6 +3202,8 @@ final class Charts {
     required this.fortitudeHouses,
     required this.fortitudePlanets,
     required this.fortitudeAccidents,
+    required this.lots,
+    required this.lotPlaces,
   });
 
   /// What kind of chart these are.
@@ -3384,6 +3448,12 @@ final class Charts {
   /// Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
   final ChartsFortitudeAccidents fortitudeAccidents;
 
+  /// Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.
+  final ChartsLots lots;
+
+  /// Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
+  final ChartsLotPlaces lotPlaces;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -3457,6 +3527,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atFortitudeHouses = blob.section(64, 'fortitude_houses');
   final atFortitudePlanets = blob.section(65, 'fortitude_planets');
   final atFortitudeAccidents = blob.section(66, 'fortitude_accidents');
+  final atLots = blob.section(67, 'lots');
+  final atLotPlaces = blob.section(68, 'lot_places');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -6141,6 +6213,57 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atFortitudeAccidents, 1) + atFortitudeAccidents.count * 1,
       ),
       length: atFortitudeAccidents.count,
+    ),
+    lots: ChartsLots(
+      sect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLots, 0),
+        blob.columnOffset(atLots, 0) + atLots.count * 1,
+      ),
+      sectRule: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLots, 1),
+        blob.columnOffset(atLots, 1) + atLots.count * 1,
+      ),
+      fortune: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLots, 2),
+        blob.columnOffset(atLots, 2) + atLots.count * 1,
+      ),
+      fortuneReversed: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLots, 3),
+        blob.columnOffset(atLots, 3) + atLots.count * 1,
+      ),
+      length: atLots.count,
+    ),
+    lotPlaces: ChartsLotPlaces(
+      lot: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLotPlaces, 0),
+        blob.columnOffset(atLotPlaces, 0) + atLotPlaces.count * 1,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLotPlaces, 1),
+        blob.columnOffset(atLotPlaces, 1) + atLotPlaces.count * 8,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLotPlaces, 2),
+        blob.columnOffset(atLotPlaces, 2) + atLotPlaces.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLotPlaces, 3),
+        blob.columnOffset(atLotPlaces, 3) + atLotPlaces.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atLotPlaces, 4),
+        blob.columnOffset(atLotPlaces, 4) + atLotPlaces.count * 1,
+      ),
+      length: atLotPlaces.count,
     ),
   );
 }

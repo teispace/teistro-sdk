@@ -5675,6 +5675,66 @@ enum FortuneRule {
   }
 }
 
+/// One of Valens's lots (`03-design/hellenistic-lots.md`).
+enum Lot {
+  /// Fortune: from the Sun to the Moon, from the ascendant.
+  fortune(0, 'FORTUNE'),
+  /// Daimon: Fortune reflected in the ascendant.
+  daimon(1, 'DAIMON'),
+  /// Basis: the shorter arc between Fortune and Daimon.
+  basis(2, 'BASIS'),
+  /// Love: from Fortune to Daimon by day.
+  love(3, 'LOVE'),
+  /// Necessity: from Daimon to Fortune by day.
+  necessity(4, 'NECESSITY'),
+  /// Exaltation: from the Sun to its exaltation by day, the Moon to its
+  /// by night.
+  exaltation(5, 'EXALTATION'),
+  /// Debt: from Mercury to Saturn.
+  debt(6, 'DEBT'),
+  /// Theft: from Mercury to Mars by day, counted from Saturn.
+  theft(7, 'THEFT'),
+  /// Deceit: from the Sun to Mars by day.
+  deceit(8, 'DECEIT'),
+  /// Foreign lands: from Saturn to Mars.
+  foreignLands(9, 'FOREIGN_LANDS'),
+  /// The father: from the Sun to Saturn by day, Venus to the Moon by
+  /// night.
+  father(10, 'FATHER'),
+  /// Marriage: from Jupiter to Venus by day.
+  marriage(11, 'MARRIAGE'),
+  /// Brothers: from Saturn to Jupiter by day.
+  brothers(12, 'BROTHERS'),
+  /// The crisis-producing place: from Saturn to Mars by day.
+  crisis(13, 'CRISIS');
+
+  const Lot(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Lot byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Lot'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Lot? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

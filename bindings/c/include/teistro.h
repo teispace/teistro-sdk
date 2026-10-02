@@ -5061,6 +5061,70 @@ typedef enum ts_fortune_rule {
 } ts_fortune_rule;
 
 /**
+ * One of Valens's lots (`03-design/hellenistic-lots.md`).
+ */
+typedef enum ts_lot {
+    /**
+     * Fortune: from the Sun to the Moon, from the ascendant.
+     */
+    TS_LOT_FORTUNE = 0,
+    /**
+     * Daimon: Fortune reflected in the ascendant.
+     */
+    TS_LOT_DAIMON = 1,
+    /**
+     * Basis: the shorter arc between Fortune and Daimon.
+     */
+    TS_LOT_BASIS = 2,
+    /**
+     * Love: from Fortune to Daimon by day.
+     */
+    TS_LOT_LOVE = 3,
+    /**
+     * Necessity: from Daimon to Fortune by day.
+     */
+    TS_LOT_NECESSITY = 4,
+    /**
+     * Exaltation: from the Sun to its exaltation by day, the Moon to its
+     * by night.
+     */
+    TS_LOT_EXALTATION = 5,
+    /**
+     * Debt: from Mercury to Saturn.
+     */
+    TS_LOT_DEBT = 6,
+    /**
+     * Theft: from Mercury to Mars by day, counted from Saturn.
+     */
+    TS_LOT_THEFT = 7,
+    /**
+     * Deceit: from the Sun to Mars by day.
+     */
+    TS_LOT_DECEIT = 8,
+    /**
+     * Foreign lands: from Saturn to Mars.
+     */
+    TS_LOT_FOREIGN_LANDS = 9,
+    /**
+     * The father: from the Sun to Saturn by day, Venus to the Moon by
+     * night.
+     */
+    TS_LOT_FATHER = 10,
+    /**
+     * Marriage: from Jupiter to Venus by day.
+     */
+    TS_LOT_MARRIAGE = 11,
+    /**
+     * Brothers: from Saturn to Jupiter by day.
+     */
+    TS_LOT_BROTHERS = 12,
+    /**
+     * The crisis-producing place: from Saturn to Mars by day.
+     */
+    TS_LOT_CRISIS = 13,
+} ts_lot;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -7397,6 +7461,20 @@ struct ts_chart_request {
      * Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
      */
     const char * fortitudes_json;
+    /**
+     * Every chart's lots, all fourteen Valens gives, as a JSON object,
+     * every member optional: `sectRule` (the record `dignities_json`
+     * names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+     * the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+     * (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+     * `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+     * comes back in the `lots` section and the fourteen in `lot_places`.
+     * Null for none, which costs nothing
+     * (`03-design/hellenistic-lots.md`). Refusals are named from the
+     * record every binding calls `lots`, as `lots.fortune`.
+     * Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+     */
+    const char * lots_json;
 };
 
 /**
@@ -8331,7 +8409,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 192, "ts_chart_request is 192 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 200, "ts_chart_request is 200 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

@@ -1775,6 +1775,46 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_kp(report, geo, index, document);
     the_dignities(report, geo, index, document);
     the_fortitudes(report, geo, index, document);
+    the_lots(report, geo, index, document);
+}
+
+/// The lots every runner asks for: III.11's Fortune, the one that reads
+/// the Moon's altitude.
+const LOTS_JSON: &str = r#"{"fortune":"REVERSED_WHILE_MOON_UP"}"#;
+
+/// The lots as the other three print them: the sect and rules, then each
+/// lot's longitude, sign, lord and house, in the catalogue's order.
+fn the_lots(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::LotRequest::from_json(LOTS_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .lots_with_request(document, &teistro::Lot::ALL, asked)
+        .expect("the test provider");
+    put(
+        report,
+        &format!("chart-{index}-lots"),
+        format!(
+            "{} {} {} {}",
+            wire_key(&read.sect),
+            wire_key(&read.request.sect_rule()),
+            wire_key(&read.request.fortune()),
+            u8::from(read.fortune_reversed)
+        ),
+    );
+    for placed in &read.lots {
+        let place = &placed.place;
+        put(
+            report,
+            &format!("chart-{index}-lot-{}", wire_key(&placed.lot)),
+            format!(
+                "{} {} {} {}",
+                number(place.longitude_deg),
+                place.sign.full_key(),
+                place.lord.full_key(),
+                place.house.get()
+            ),
+        );
+    }
 }
 
 /// The fortitudes every runner asks for: the dignities' own request as the

@@ -38,6 +38,10 @@ import type {
   DignityRequest,
   FortitudeRequest,
   Fortitudes,
+  LotPlace,
+  LotRequest,
+  Lots,
+  PlacedLot,
   Almuten,
   Almutens,
   AlmutenTotal,
@@ -832,6 +836,29 @@ function theFortitudes(ctx: Context): string {
 }
 
 void theFortitudes;
+
+// The lots read all the way down, and the answer's request fed back as it
+// stands.
+function theLots(ctx: Context): string {
+  const asked: LotRequest = { sectRule: 'DAYLIGHT', fortune: 'REVERSED_WHILE_MOON_UP' };
+  const read: Lots | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    lots: asked,
+  }).lots;
+  if (read === null) return 'none';
+  const fedBack: LotRequest = read.request;
+  // @ts-expect-error Fortune by night is one of the three readings, nothing else
+  const misread: LotRequest = { fortune: 'REVERSED' };
+  const places = read.lots.map(({ lot, place }: PlacedLot) => {
+    const at: LotPlace = place;
+    return `${lot} ${at.longitudeDeg} ${at.sign} ${at.lord} ${at.house}`;
+  });
+  return [read.sect, read.fortuneReversed, ...places, String(fedBack), String(misread)].join();
+}
+
+void theLots;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

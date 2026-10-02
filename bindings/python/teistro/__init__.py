@@ -160,6 +160,7 @@ from .catalogue import (
     Siege,
     PlaceReading,
     FortuneRule,
+    Lot,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -449,6 +450,13 @@ __all__ = [
     "Siege",
     "PlaceReading",
     "FortuneRule",
+    # Valens's lots.
+    "LotRequest",
+    "LotRules",
+    "LotPlace",
+    "PlacedLot",
+    "Lots",
+    "Lot",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1487,6 +1495,7 @@ class ChartArea(_Area):
         kp: Optional[KpRequest] = None,
         dignities: Optional[DignityRequest] = None,
         fortitudes: Optional[FortitudeRequest] = None,
+        lots: Optional[Union[LotRequest, LotRules]] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1530,6 +1539,7 @@ class ChartArea(_Area):
             kp=kp,
             dignities=dignities,
             fortitudes=fortitudes,
+            lots=lots,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1563,6 +1573,7 @@ class ChartArea(_Area):
         kp: Optional[KpRequest] = None,
         dignities: Optional[DignityRequest] = None,
         fortitudes: Optional[FortitudeRequest] = None,
+        lots: Optional[Union[LotRequest, LotRules]] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1627,6 +1638,7 @@ class ChartArea(_Area):
             kp_json=_kp_json(kp),
             dignities_json=_dignities_json(dignities),
             fortitudes_json=_fortitudes_json(fortitudes),
+            lots_json=_lots_json(lots),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3069,7 +3081,8 @@ class AlmutenRules:
     five) or the sign (house, exaltation, triplicity), C218."""
 
     fortune: FortuneRule = FortuneRule.DAY_AND_NIGHT
-    """How Fortune is taken by night: Lilly's, or reversed (C220)."""
+    """How Fortune is taken by night: Lilly's, reversed, or reversed while
+    the Moon is up (C220, C221)."""
 
 
 @dataclass(frozen=True)
@@ -3215,6 +3228,71 @@ class Fortitudes:
     """The seven in the Chaldean order, Saturn first."""
 
     almutens: Almutens
+
+
+class LotRequest(TypedDict, total=False):
+    """How to read every chart's lots (`03-design/hellenistic-lots.md`),
+    every field optional and Valens's when absent: `sectRule`, the Sun's
+    centre above the true horizon by default (C209), and `fortune`, how
+    Fortune is taken by night, reversed by default (II.22, C221). An
+    answer's `request`, a `LotRules`, may be handed back as it stands.
+
+    >>> asked: LotRequest = {"fortune": FortuneRule.REVERSED_WHILE_MOON_UP}
+    """
+
+    sectRule: Union[SectRule, str]
+    fortune: Union[FortuneRule, str]
+
+
+@dataclass(frozen=True)
+class LotRules:
+    """The rules a chart's lots were read under, every field filled."""
+
+    sect_rule: SectRule
+    fortune: FortuneRule
+    """How Fortune is taken by night (C221)."""
+
+
+@dataclass(frozen=True)
+class LotPlace:
+    """Where a lot fell, in the chart's zodiac."""
+
+    longitude_deg: float
+    """Degrees in [0, 360)."""
+
+    sign: Rashi
+    lord: Graha
+    """The sign's lord, the lot's ruler."""
+
+    house: int
+    """1 to 12, counted in whole signs from the ascendant's sign."""
+
+
+@dataclass(frozen=True)
+class PlacedLot:
+    """One lot and where it fell."""
+
+    lot: Lot
+    place: LotPlace
+
+
+@dataclass(frozen=True)
+class Lots:
+    """A chart's lots, with its sect and the rules they were read under
+    (`03-design/hellenistic-lots.md`).
+
+    >>> # chart = ctx.chart.found(..., lots={})
+    >>> # fortune = next(at for at in chart.lots.lots if at.lot is Lot.FORTUNE).place.sign
+    """
+
+    sect: Sect
+    request: LotRules
+    fortune_reversed: bool
+    """Whether Fortune was counted from the Moon to the Sun, and Daimon the
+    other way."""
+
+    lots: Tuple[PlacedLot, ...]
+    """All fourteen, in the catalogue's order."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -5799,6 +5877,16 @@ def _fortitudes_json(fortitudes: Optional[FortitudeRequest]) -> Optional[str]:
     return _record_json(_written(fortitudes), "fortitudes", example)
 
 
+def _lots_json(lots: Optional[Union[LotRequest, LotRules]]) -> Optional[str]:
+    """The lots as the JSON the boundary reads, or nothing for none; an
+    answer's rules are written as a request writes them, and the SDK
+    refuses the rest, naming the field from `lots`."""
+    example = "{'fortune': 'REVERSED_WHILE_MOON_UP'}"
+    if not isinstance(lots, (Mapping, LotRules)):
+        return _record_json(lots, "lots", example)
+    return _record_json(_written(lots), "lots", example)
+
+
 def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
     """A chart's KP reading from the `kp` section's JSON, its keys made
     members."""
@@ -5917,7 +6005,7 @@ def _written(value: Any) -> Any:
         return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
     if isinstance(value, (AccidentalRules, AccidentalScores)):
         return value._record()
-    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules)):
+    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules, LotRules)):
         return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
     if isinstance(value, Mapping):
         return {key: _written(inner) for key, inner in value.items()}
@@ -7293,6 +7381,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def lots(self) -> Optional[Lots]:
+        """Valens's fourteen lots, with the chart's sect and the rules they
+        were read under; `None` unless `lots=` asked for them
+        (`03-design/hellenistic-lots.md`)."""
+        parsed = self.batch._lots
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -7669,6 +7765,45 @@ class ChartBatch:
         for."""
         text = self.decoded.kp
         return [_kp_reading(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _lots(self) -> list[Lots]:
+        """Every chart's lots, decoded once; empty when none were asked for.
+        `lots` holds a row a chart and `lot_places` the catalogue's lots for
+        each chart, in its order."""
+        c = self.decoded.lots
+        p = self.decoded.lot_places
+        charts = len(self.decoded.cast.instant)
+        if c.length == 0:
+            return []
+        per = len(Lot)
+        if c.length != charts or p.length != per * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"lots has {c.length} rows and lot_places {p.length} for {charts} charts;"
+                f" they are one and {per} a chart",
+            )
+
+        def placed(row: int) -> PlacedLot:
+            return PlacedLot(
+                lot=Lot(p.lot[row]),
+                place=LotPlace(
+                    longitude_deg=p.longitude_deg[row],
+                    sign=Rashi(p.sign[row]),
+                    lord=Graha(p.lord[row]),
+                    house=p.house[row],
+                ),
+            )
+
+        return [
+            Lots(
+                sect=Sect(c.sect[chart]),
+                request=LotRules(sect_rule=SectRule(c.sect_rule[chart]), fortune=FortuneRule(c.fortune[chart])),
+                fortune_reversed=c.fortune_reversed[chart] == 1,
+                lots=tuple(placed(row) for row in range(per * chart, per * chart + per)),
+            )
+            for chart in range(charts)
+        ]
 
     @cached_property
     def _fortitudes(self) -> list[Fortitudes]:

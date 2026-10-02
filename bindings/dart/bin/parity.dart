@@ -536,6 +536,7 @@ void main() {
       scores: AccidentalScores(regulus: 5),
       almuten: AlmutenRules(fortune: FortuneRule.reversedByNight),
     ),
+    lots: const LotRequest(fortune: FortuneRule.reversedWhileMoonUp),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -1011,6 +1012,20 @@ void main() {
     put('chart-$i-almuten-places', ranked(al.places));
     for (final (k, almuten) in al.houses.indexed) {
       put('chart-$i-almuten-house-${k + 1}', ranked(almuten));
+    }
+    final lt = chart.lots!;
+    put(
+      'chart-$i-lots',
+      '${lt.sect.key} ${lt.request.sectRule.key} ${lt.request.fortune.key} '
+          '${lt.fortuneReversed ? 1 : 0}',
+    );
+    for (final placed in lt.lots) {
+      final at = placed.place;
+      put(
+        'chart-$i-lot-${placed.lot.key}',
+        '${number(at.longitudeDeg)} ${at.sign.fullKey} ${at.lord.fullKey} '
+            '${at.house}',
+      );
     }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);

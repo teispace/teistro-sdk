@@ -15,6 +15,7 @@ import {
   Calendar,
   ProviderCode,
   ProviderCodeById,
+  LotById,
   RashiById,
   SahamById,
   ChartLayout,
@@ -708,8 +709,8 @@ test('every catalogue enum has a complete id table', () => {
   // since the accidental fortitudes' `TsAccident`, twenty-four, and
   // `TsPartile` and `TsSiege`, two each; 1237 since the almuten's
   // `TsPlaceReading` and `TsFortuneRule`, two each; 1238 since Valens's
-  // reading of Fortune by night.
-  assert.equal(entries, 1238, 'every member of every enum is in a table');
+  // reading of Fortune by night; 1252 since his fourteen `TsLot`s.
+  assert.equal(entries, 1252, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2090,6 +2091,65 @@ test('a chart carries its essential dignities', () => {
     );
   }
   assert.throws(() => ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: 'LILLY' }), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * Valens's lots cross whole: the sect and the rules read back as a request
+ * would write them, all fourteen in the catalogue's order, Fortune where
+ * its formula puts it and Daimon its mirror in the ascendant, a batch the
+ * charts one at a time, and a refusal named in the record
+ * (`03-design/hellenistic-lots.md`).
+ */
+test('a chart carries its lots', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const kathmandu = { place: { latitude: 27.7172, longitude: 85.324, altitude: 0 }, utcOffsetSeconds: 20700 };
+  const instants = [2460676.5, 2460676.75];
+  assert.equal(ctx.chart.found({ instant: instants[0], ...kathmandu }).lots, null);
+
+  const normalised = (deg) => ((deg % 360) + 360) % 360;
+  const apart = (one, other) => Math.min(normalised(one - other), normalised(other - one));
+  for (const instant of instants) {
+    const chart = ctx.chart.found({ instant, ...kathmandu, lots: {}, fortitudes: {} });
+    const read = chart.lots;
+    assert.deepEqual(read.request, { sectRule: 'HORIZON', fortune: 'REVERSED_BY_NIGHT' });
+    assert.equal(read.fortuneReversed, read.sect === 'NIGHT');
+    assert.deepEqual(
+      read.lots.map((at) => at.lot),
+      [...LotById.values()],
+    );
+    assert.ok(Object.isFrozen(read.lots[0].place), 'frozen to its leaves');
+    const at = (lot) => read.lots.find((one) => one.lot === lot).place.longitudeDeg;
+    const longitude = (planet) => chart.fortitudes.dignities.planets.find((one) => one.planet === planet).longitudeDeg;
+    const ascendant = chart.fortitudes.sky.ascendantDeg;
+    const [from, to] = read.fortuneReversed ? ['graha.MOON', 'graha.SUN'] : ['graha.SUN', 'graha.MOON'];
+    const fortune = normalised(ascendant + longitude(to) - longitude(from));
+    assert.ok(apart(at('FORTUNE'), fortune) < 1e-9, `${at('FORTUNE')} against ${fortune}`);
+    assert.ok(apart(at('DAIMON'), 2 * ascendant - fortune) < 1e-9, 'Daimon mirrors Fortune');
+    for (const { place } of read.lots) {
+      assert.ok(place.longitudeDeg >= 0 && place.longitudeDeg < 360);
+      assert.ok(place.house >= 1 && place.house <= 12);
+    }
+  }
+
+  const asked = { sectRule: 'DAYLIGHT', fortune: 'REVERSED_WHILE_MOON_UP' };
+  assert.deepEqual(ctx.chart.found({ instant: instants[0], ...kathmandu, lots: asked }).lots.request, asked);
+
+  const batch = ctx.chart.foundMany({ instants, ...kathmandu, lots: {} });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).lots, ctx.chart.found({ instant, ...kathmandu, lots: {} }).lots),
+  );
+  for (const [request, field] of [
+    [{ lots: { fortuna: 'DAY_AND_NIGHT' } }, 'lots.fortuna'],
+    [{ lots: { fortune: 'REVERSED' } }, 'lots.fortune'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: instants[0], ...kathmandu, ...request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: instants[0], ...kathmandu, lots: 'VALENS' }), TypeError);
   ctx.dispose();
 });
 

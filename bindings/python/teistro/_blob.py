@@ -2373,6 +2373,57 @@ class ChartsFortitudeAccidents:
 
 
 @dataclass(frozen=True)
+class ChartsLots:
+    """The `lots` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.
+    """
+
+    sect: memoryview[int]
+    """Whether the chart is of the day or of the night, as `sect_rule` reads it: a night chart takes each lot's night arc."""
+
+    sect_rule: memoryview[int]
+    """How the sect was read, `lots_json.sectRule` (C209)."""
+
+    fortune: memoryview[int]
+    """How the Part of Fortune is taken by night, `lots_json.fortune` (C221)."""
+
+    fortune_reversed: memoryview[int]
+    """1 when Fortune was counted from the Moon to the Sun, and Daimon from the Sun to the Moon; 0 otherwise."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsLotPlaces:
+    """The `lot_places` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
+    """
+
+    lot: memoryview[int]
+    """Which."""
+
+    longitude_deg: memoryview[float]
+    """Where it fell, degrees of the chart's zodiac in [0, 360)."""
+
+    sign: memoryview[int]
+    """The sign it fell in."""
+
+    lord: memoryview[int]
+    """That sign's lord, the lot's ruler, which Valens reads it by."""
+
+    house: memoryview[int]
+    """Its place, 1 to 12, counted in whole signs from the ascendant's sign."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2694,6 +2745,12 @@ class Charts:
     fortitude_accidents: ChartsFortitudeAccidents
     """Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none."""
 
+    lots: ChartsLots
+    """Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none."""
+
+    lot_places: ChartsLotPlaces
+    """Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2769,6 +2826,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_fortitude_houses = blob.section(64, "fortitude_houses")
     at_fortitude_planets = blob.section(65, "fortitude_planets")
     at_fortitude_accidents = blob.section(66, "fortitude_accidents")
+    at_lots = blob.section(67, "lots")
+    at_lot_places = blob.section(68, "lot_places")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -4235,6 +4294,33 @@ def decode_charts(raw: bytes) -> Charts:
                 at_fortitude_accidents, 1, 1, at_fortitude_accidents.count
             ).cast("b"),
             length=at_fortitude_accidents.count,
+        ),
+        lots=ChartsLots(
+            sect=blob.column(at_lots, 0, 1, at_lots.count).cast("B"),
+            sect_rule=blob.column(at_lots, 1, 1, at_lots.count).cast("B"),
+            fortune=blob.column(at_lots, 2, 1, at_lots.count).cast("B"),
+            fortune_reversed=blob.column(
+                at_lots, 3, 1, at_lots.count
+            ).cast("B"),
+            length=at_lots.count,
+        ),
+        lot_places=ChartsLotPlaces(
+            lot=blob.column(
+                at_lot_places, 0, 1, at_lot_places.count
+            ).cast("B"),
+            longitude_deg=blob.column(
+                at_lot_places, 1, 8, at_lot_places.count
+            ).cast("d"),
+            sign=blob.column(
+                at_lot_places, 2, 2, at_lot_places.count
+            ).cast("H"),
+            lord=blob.column(
+                at_lot_places, 3, 2, at_lot_places.count
+            ).cast("H"),
+            house=blob.column(
+                at_lot_places, 4, 1, at_lot_places.count
+            ).cast("B"),
+            length=at_lot_places.count,
         ),
     )
 

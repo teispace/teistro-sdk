@@ -6730,6 +6730,93 @@ export declare const FortuneRule: {
 export declare const FortuneRuleById: ReadonlyMap<number, FortuneRule>;
 
 /**
+ * One of Valens's lots (`03-design/hellenistic-lots.md`).
+ */
+export type Lot =
+  | 'FORTUNE'
+  | 'DAIMON'
+  | 'BASIS'
+  | 'LOVE'
+  | 'NECESSITY'
+  | 'EXALTATION'
+  | 'DEBT'
+  | 'THEFT'
+  | 'DECEIT'
+  | 'FOREIGN_LANDS'
+  | 'FATHER'
+  | 'MARRIAGE'
+  | 'BROTHERS'
+  | 'CRISIS';
+
+/** Every Lot by name; the values are the strings the union accepts. */
+export declare const Lot: {
+  /**
+   * Fortune: from the Sun to the Moon, from the ascendant.
+   */
+  readonly Fortune: 'FORTUNE';
+  /**
+   * Daimon: Fortune reflected in the ascendant.
+   */
+  readonly Daimon: 'DAIMON';
+  /**
+   * Basis: the shorter arc between Fortune and Daimon.
+   */
+  readonly Basis: 'BASIS';
+  /**
+   * Love: from Fortune to Daimon by day.
+   */
+  readonly Love: 'LOVE';
+  /**
+   * Necessity: from Daimon to Fortune by day.
+   */
+  readonly Necessity: 'NECESSITY';
+  /**
+   * Exaltation: from the Sun to its exaltation by day, the Moon to its
+   * by night.
+   */
+  readonly Exaltation: 'EXALTATION';
+  /**
+   * Debt: from Mercury to Saturn.
+   */
+  readonly Debt: 'DEBT';
+  /**
+   * Theft: from Mercury to Mars by day, counted from Saturn.
+   */
+  readonly Theft: 'THEFT';
+  /**
+   * Deceit: from the Sun to Mars by day.
+   */
+  readonly Deceit: 'DECEIT';
+  /**
+   * Foreign lands: from Saturn to Mars.
+   */
+  readonly ForeignLands: 'FOREIGN_LANDS';
+  /**
+   * The father: from the Sun to Saturn by day, Venus to the Moon by
+   * night.
+   */
+  readonly Father: 'FATHER';
+  /**
+   * Marriage: from Jupiter to Venus by day.
+   */
+  readonly Marriage: 'MARRIAGE';
+  /**
+   * Brothers: from Saturn to Jupiter by day.
+   */
+  readonly Brothers: 'BROTHERS';
+  /**
+   * The crisis-producing place: from Saturn to Mars by day.
+   */
+  readonly Crisis: 'CRISIS';
+};
+
+/**
+ * Every Lot by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LotById: ReadonlyMap<number, Lot>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

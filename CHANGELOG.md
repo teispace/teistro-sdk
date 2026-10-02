@@ -1775,7 +1775,10 @@ the astronomical numbers do not move. Nothing else computes yet.
     decides. `TsFortuneRule` gains the member at the C boundary. `lots-measured.md`
     counts the readings over the corpus: Lilly's rule moves Fortune's
     sign on 30 of 32 night births, and the Moon's ecliptic hemisphere
-    disagrees with its altitude on 3 of them.
+    disagrees with its altitude on 3 of them. A chart request's `lots_json`
+    answers the `lots` and `lot_places` sections (67 and 68) with a new
+    `TsLot` enum, and every binding reads them back as `lots`, under the
+    parity gate.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

@@ -636,6 +636,68 @@ impl TsFortuneRule {
     }
 }
 
+/// One of Valens's lots (`03-design/hellenistic-lots.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsLot {
+    /// Fortune: from the Sun to the Moon, from the ascendant.
+    Fortune = 0,
+    /// Daimon: Fortune reflected in the ascendant.
+    Daimon = 1,
+    /// Basis: the shorter arc between Fortune and Daimon.
+    Basis = 2,
+    /// Love: from Fortune to Daimon by day.
+    Love = 3,
+    /// Necessity: from Daimon to Fortune by day.
+    Necessity = 4,
+    /// Exaltation: from the Sun to its exaltation by day, the Moon to its
+    /// by night.
+    Exaltation = 5,
+    /// Debt: from Mercury to Saturn.
+    Debt = 6,
+    /// Theft: from Mercury to Mars by day, counted from Saturn.
+    Theft = 7,
+    /// Deceit: from the Sun to Mars by day.
+    Deceit = 8,
+    /// Foreign lands: from Saturn to Mars.
+    ForeignLands = 9,
+    /// The father: from the Sun to Saturn by day, Venus to the Moon by
+    /// night.
+    Father = 10,
+    /// Marriage: from Jupiter to Venus by day.
+    Marriage = 11,
+    /// Brothers: from Saturn to Jupiter by day.
+    Brothers = 12,
+    /// The crisis-producing place: from Saturn to Mars by day.
+    Crisis = 13,
+}
+
+impl TsLot {
+    /// The code a lot crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(lot: teistro::Lot) -> Option<TsLot> {
+        use teistro::Lot;
+        Some(match lot {
+            Lot::Fortune => TsLot::Fortune,
+            Lot::Daimon => TsLot::Daimon,
+            Lot::Basis => TsLot::Basis,
+            Lot::Love => TsLot::Love,
+            Lot::Necessity => TsLot::Necessity,
+            Lot::Exaltation => TsLot::Exaltation,
+            Lot::Debt => TsLot::Debt,
+            Lot::Theft => TsLot::Theft,
+            Lot::Deceit => TsLot::Deceit,
+            Lot::ForeignLands => TsLot::ForeignLands,
+            Lot::Father => TsLot::Father,
+            Lot::Marriage => TsLot::Marriage,
+            Lot::Brothers => TsLot::Brothers,
+            Lot::Crisis => TsLot::Crisis,
+            _ => return None,
+        })
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1323,6 +1385,18 @@ pub struct TsChartRequest {
     /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
     /// `api: nullable example={"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}`
     pub fortitudes_json: *const c_char,
+    /// Every chart's lots, all fourteen Valens gives, as a JSON object,
+    /// every member optional: `sectRule` (the record `dignities_json`
+    /// names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+    /// the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+    /// (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+    /// `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+    /// comes back in the `lots` section and the fourteen in `lot_places`.
+    /// Null for none, which costs nothing
+    /// (`03-design/hellenistic-lots.md`). Refusals are named from the
+    /// record every binding calls `lots`, as `lots.fortune`.
+    /// `api: nullable example={"fortune":"REVERSED_WHILE_MOON_UP"}`
+    pub lots_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2776,34 +2850,108 @@ impl DignityColumns {
     }
 }
 
-/// Both halves of Lilly's table: the essential dignities, from
-/// `dignities_json` or from the fortitudes' own, and the accidental
-/// fortitudes.
-struct LillyColumns {
+/// The `hellenistic` module's sections: both halves of Lilly's table (the
+/// essential dignities, from `dignities_json` or from the fortitudes' own,
+/// and the accidental fortitudes) and Valens's lots.
+struct HellenisticColumns {
     dignities: DignityColumns,
     fortitudes: FortitudeColumns,
+    lots: LotColumns,
 }
 
-impl LillyColumns {
+impl HellenisticColumns {
     fn of(
         dignities: &[teistro::Dignities],
         fortitudes: &[teistro::Fortitudes],
+        lots: &[teistro::LotReading],
         charts: usize,
-    ) -> Result<LillyColumns, Error> {
+    ) -> Result<HellenisticColumns, Error> {
         let essential = if fortitudes.is_empty() {
             DignityColumns::of(dignities.iter(), charts)?
         } else {
             DignityColumns::of(fortitudes.iter().map(|one| &one.dignities), charts)?
         };
-        Ok(LillyColumns {
+        Ok(HellenisticColumns {
             dignities: essential,
             fortitudes: FortitudeColumns::of(fortitudes, charts)?,
+            lots: LotColumns::of(lots, charts)?,
         })
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         self.dignities.write(writer)?;
-        self.fortitudes.write(writer)
+        self.fortitudes.write(writer)?;
+        self.lots.write(writer)
+    }
+}
+
+/// Every chart's lots: a row a chart in `lots`, and fourteen in
+/// `lot_places`.
+#[derive(Default)]
+struct LotColumns {
+    sect: Vec<u8>,
+    sect_rule: Vec<u8>,
+    fortune: Vec<u8>,
+    fortune_reversed: Vec<u8>,
+    lot: Vec<u8>,
+    longitude: Vec<f64>,
+    sign: Vec<u16>,
+    lord: Vec<u16>,
+    house: Vec<u8>,
+}
+
+impl LotColumns {
+    fn of(read: &[teistro::LotReading], charts: usize) -> Result<LotColumns, Error> {
+        one_a_chart(read.len(), charts, "lots")?;
+        let mut columns = LotColumns::default();
+        for one in read {
+            columns.sect.push(TsSect::from(one.sect) as u8);
+            columns.sect_rule.push(
+                TsSectRule::of(one.request.sect_rule()).ok_or_else(|| no_code("the sect rule"))?
+                    as u8,
+            );
+            columns.fortune.push(
+                TsFortuneRule::of(one.request.fortune())
+                    .ok_or_else(|| no_code("the Fortune rule"))? as u8,
+            );
+            columns
+                .fortune_reversed
+                .push(u8::from(one.fortune_reversed));
+            for placed in &one.lots {
+                columns
+                    .lot
+                    .push(TsLot::of(placed.lot).ok_or_else(|| no_code("the lot"))? as u8);
+                columns.longitude.push(placed.place.longitude_deg);
+                columns.sign.push(placed.place.sign.id());
+                columns.lord.push(placed.place.lord.id());
+                columns.house.push(placed.place.house.get());
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "lots",
+            self.sect.len(),
+            &[
+                ColumnData::U8(&self.sect),
+                ColumnData::U8(&self.sect_rule),
+                ColumnData::U8(&self.fortune),
+                ColumnData::U8(&self.fortune_reversed),
+            ],
+        )?;
+        writer.columns(
+            "lot_places",
+            self.lot.len(),
+            &[
+                ColumnData::U8(&self.lot),
+                ColumnData::F64(&self.longitude),
+                ColumnData::U16(&self.sign),
+                ColumnData::U16(&self.lord),
+                ColumnData::U8(&self.house),
+            ],
+        )
     }
 }
 
@@ -4555,6 +4703,9 @@ pub struct Composed<'a> {
     /// given, `dignities` is empty and the dignity sections are filled
     /// from these.
     pub fortitudes: &'a [teistro::Fortitudes],
+    /// Every chart's lots, all fourteen, in the batch's order
+    /// (`hellenistic-lots.md`); empty when none was asked for.
+    pub lots: &'a [teistro::LotReading],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -4599,6 +4750,7 @@ pub fn encode(
         kp,
         dignities,
         fortitudes,
+        lots,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -4616,7 +4768,7 @@ pub fn encode(
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
-    let lilly = LillyColumns::of(dignities, fortitudes, charts.len())?;
+    let hellenistic = HellenisticColumns::of(dignities, fortitudes, lots, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -4677,7 +4829,7 @@ pub fn encode(
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
         writer.bytes("kp", kp.as_bytes())?;
-        lilly.write(&mut writer)?;
+        hellenistic.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -5450,6 +5602,38 @@ unsafe fn fortitude_request_of(
         .transpose()
 }
 
+/// The lots a request's `lots_json` asks for, none for null; the crate
+/// reads the record ([`teistro::LotRequest::from_json`]), naming a
+/// refusal from its root, `lots.fortune`.
+///
+/// # Safety
+///
+/// `lots_json` null or a NUL-terminated string.
+unsafe fn lot_request_of(lots_json: *const c_char) -> Result<Option<teistro::LotRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(lots_json, "lots_json") }?
+        .map(teistro::LotRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's fourteen lots, none when none was asked for.
+fn lots_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<teistro::LotRequest>,
+) -> Result<Vec<teistro::LotReading>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .map(|document| {
+            sdk.chart()
+                .lots_with_request(document, &teistro::Lot::ALL, asked)
+        })
+        .collect()
+}
+
 /// Every chart's accidental fortitudes, none when none was asked for.
 fn fortitudes_of(
     sdk: &teistro::Context,
@@ -5736,6 +5920,7 @@ struct AskedRecords {
     kp: Option<teistro::KpRequest>,
     dignities: Option<teistro::DignityRequest>,
     fortitudes: Option<teistro::FortitudeRequest>,
+    lots: Option<teistro::LotRequest>,
 }
 
 impl AskedRecords {
@@ -5763,6 +5948,7 @@ impl AskedRecords {
                 kp: kp_request_of(asked.kp_json, clock)?,
                 dignities: dignity_request_of(asked.dignities_json)?,
                 fortitudes: fortitude_request_of(asked.fortitudes_json)?,
+                lots: lot_request_of(asked.lots_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -5942,6 +6128,7 @@ pub unsafe extern "C" fn ts_chart_found(
         let kp = kp_json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
         let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
         let fortitudes = fortitudes_of(ctx.sdk(), &founded.value, records.fortitudes.as_ref())?;
+        let lots = lots_of(ctx.sdk(), &founded.value, records.lots)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -5962,6 +6149,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 kp: &kp,
                 dignities: &dignities,
                 fortitudes: &fortitudes,
+                lots: &lots,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

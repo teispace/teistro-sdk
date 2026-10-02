@@ -3300,6 +3300,45 @@ export const FortuneRuleById = new Map([
   [2, 'REVERSED_WHILE_MOON_UP'],
 ]);
 
+/** Every Lot by name. */
+export const Lot = Object.freeze({
+  Fortune: 'FORTUNE',
+  Daimon: 'DAIMON',
+  Basis: 'BASIS',
+  Love: 'LOVE',
+  Necessity: 'NECESSITY',
+  Exaltation: 'EXALTATION',
+  Debt: 'DEBT',
+  Theft: 'THEFT',
+  Deceit: 'DECEIT',
+  ForeignLands: 'FOREIGN_LANDS',
+  Father: 'FATHER',
+  Marriage: 'MARRIAGE',
+  Brothers: 'BROTHERS',
+  Crisis: 'CRISIS',
+});
+
+/**
+ * Every Lot by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LotById = new Map([
+  [0, 'FORTUNE'],
+  [1, 'DAIMON'],
+  [2, 'BASIS'],
+  [3, 'LOVE'],
+  [4, 'NECESSITY'],
+  [5, 'EXALTATION'],
+  [6, 'DEBT'],
+  [7, 'THEFT'],
+  [8, 'DECEIT'],
+  [9, 'FOREIGN_LANDS'],
+  [10, 'FATHER'],
+  [11, 'MARRIAGE'],
+  [12, 'BROTHERS'],
+  [13, 'CRISIS'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

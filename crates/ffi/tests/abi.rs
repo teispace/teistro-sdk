@@ -257,6 +257,64 @@ fn sized<T>(mut value: T, set: impl FnOnce(&mut T, u32)) -> T {
     value
 }
 
+/// A chart request for `instants` at a place and clock, asking for
+/// nothing beside the charts: a test sets the one record it reads with
+/// `..chart_request(...)`.
+fn chart_request(
+    instants: &[f64],
+    (latitude_deg, longitude_deg): (f64, f64),
+    utc_offset_seconds: i32,
+) -> TsChartRequest {
+    sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg,
+            longitude_deg,
+            altitude_m: 0.0,
+            utc_offset_seconds,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
+            kp_json: ptr::null(),
+            dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    )
+}
+
+/// The blob a chart request answers, or the status it was refused with.
+fn chart_blob(ctx: &Ctx, asked: &TsChartRequest) -> Result<Vec<u8>, Status> {
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    let status = unsafe { ts_chart_found(ctx.handle, asked, &raw mut blob) };
+    let bytes = (status == Status::Ok).then(|| {
+        // SAFETY: the library wrote `len` bytes.
+        unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec()
+    });
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_blob_free(&raw mut blob) };
+    bytes.ok_or(status)
+}
+
 fn date(calendar: Calendar, year: i32, month: u8, day: u8) -> TsCalendarDate {
     sized(
         TsCalendarDate {
@@ -1504,6 +1562,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1644,6 +1703,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1782,6 +1842,7 @@ fn a_chart_request_answers_the_transits() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1992,6 +2053,7 @@ fn a_chart_request_answers_the_hit_list() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2155,6 +2217,7 @@ fn a_chart_request_answers_sade_sati() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2260,6 +2323,7 @@ fn a_chart_request_answers_sade_sati() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2319,6 +2383,7 @@ fn a_chart_request_answers_sade_sati() {
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
+        lots_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2382,6 +2447,7 @@ fn a_chart_request_answers_the_dignities() {
                 kp_json: ptr::null(),
                 dignities_json,
                 fortitudes_json: ptr::null(),
+                lots_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2650,6 +2716,7 @@ fn a_chart_request_answers_the_fortitudes() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2969,6 +3036,156 @@ fn a_chart_request_answers_the_fortitudes() {
     }
 }
 
+/// The lots cross: a request's `lots_json` answers every chart's sect and
+/// rules in `lots` and its fourteen lots in `lot_places`, each cell the
+/// façade's own to the bit; none asked is an empty section, and a
+/// misspelt rule is refused by its field (`03-design/hellenistic-lots.md`).
+#[test]
+fn a_chart_request_answers_the_lots() {
+    use teistro_ffi::chart::{TsFortuneRule, TsLot, TsSect};
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    // Kathmandu, a day and a night in late December 2024.
+    let instants = [2_460_676.5, 2_460_676.75];
+    let base = chart_request(&instants, (27.7172, 85.324), 20_700);
+    let text = r#"{"fortune":"REVERSED_WHILE_MOON_UP"}"#;
+    let json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            lots_json: json.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("conformance-baseline")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &instants.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::LotRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::LotReading> = natal
+        .iter()
+        .map(|document| {
+            sdk.chart()
+                .lots_with_request(document, &teistro::Lot::ALL, asked)
+                .unwrap()
+        })
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let code = |value: u8| i64::from(value);
+
+    // A row a chart: the sect, the rules and whether Fortune reversed.
+    assert_eq!(
+        ints("lots", "sect"),
+        expected
+            .iter()
+            .map(|one| code(TsSect::from(one.sect) as u8))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("lots", "fortune"),
+        vec![code(TsFortuneRule::ReversedWhileMoonUp as u8); 2]
+    );
+    assert_eq!(
+        ints("lots", "fortune_reversed"),
+        expected
+            .iter()
+            .map(|one| i64::from(one.fortune_reversed))
+            .collect::<Vec<_>>()
+    );
+    // Fourteen rows a chart, each the façade's to the bit.
+    let placed: Vec<&teistro::PlacedLot> = expected.iter().flat_map(|one| &one.lots).collect();
+    assert_eq!(placed.len(), 28);
+    assert_eq!(
+        ints("lot_places", "lot"),
+        placed
+            .iter()
+            .map(|one| code(TsLot::of(one.lot).unwrap() as u8))
+            .collect::<Vec<_>>()
+    );
+    let longitudes: Vec<u64> = reader
+        .column("lot_places", "longitude_deg")
+        .unwrap()
+        .into_iter()
+        .map(|cell| cell.as_f64().to_bits())
+        .collect();
+    assert_eq!(
+        longitudes,
+        placed
+            .iter()
+            .map(|one| one.place.longitude_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("lot_places", "sign"),
+        placed
+            .iter()
+            .map(|one| i64::from(one.place.sign.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("lot_places", "lord"),
+        placed
+            .iter()
+            .map(|one| i64::from(one.place.lord.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("lot_places", "house"),
+        placed
+            .iter()
+            .map(|one| i64::from(one.place.house.get()))
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    assert_eq!(reader.column("lots", "sect").unwrap().len(), 0);
+    assert_eq!(reader.column("lot_places", "lot").unwrap().len(), 0);
+
+    // A misspelt rule is refused by the field the caller wrote.
+    let refused = CString::new(r#"{"fortuna":"DAY_AND_NIGHT"}"#).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            lots_json: refused.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("lots.fortuna"));
+}
+
 /// KP crosses: a request's `kp_json` answers every chart's reading as
 /// canonical JSON in the `kp` section, the façade's own reading on the
 /// chart request's clock unless the record names one, spelled as the
@@ -3010,6 +3227,7 @@ fn a_chart_request_answers_kp() {
             kp_json: json.as_ptr(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3113,6 +3331,7 @@ fn a_chart_request_answers_kp() {
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
+        lots_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -3124,6 +3343,7 @@ fn a_chart_request_answers_kp() {
             kp_json: text.as_ptr(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -3175,6 +3395,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3209,6 +3430,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
+        lots_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -3264,6 +3486,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3394,6 +3617,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3529,6 +3753,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4295,6 +4520,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4398,6 +4624,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4570,6 +4797,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
+            lots_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4846,6 +5074,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 kp_json: ptr::null(),
                 dignities_json: ptr::null(),
                 fortitudes_json: ptr::null(),
+                lots_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
