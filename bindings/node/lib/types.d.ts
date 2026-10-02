@@ -944,6 +944,23 @@ export interface ChartRequest {
    * @nullable
    */
   readonly lotsJson?: string;
+  /**
+   * Every chart's considerations before judgement (Lilly, *Christian
+   * Astrology* I.XIX), as a JSON object, every member optional:
+   * `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+   * whole orbs in the Chaldean order whose halves make an application
+   * (Lilly's p. 107 by default, C230). The fortitudes they read are
+   * `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+   * back in `considerations`, the Moon's two perfections in
+   * `consideration_perfections` and the orbs applied in
+   * `consideration_orbs`. Null for none, which costs nothing
+   * (`03-design/hellenistic-considerations.md`). Refusals are named from
+   * the record every binding calls `considerations`, as
+   * `considerations.moonLateFromDeg`.
+   * @example {"moonLateFromDeg":25}
+   * @nullable
+   */
+  readonly considerationsJson?: string;
 }
 
 /**

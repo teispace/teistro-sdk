@@ -101,6 +101,18 @@ own chapter.
 
   `ChartArea::considerations(chart, &FortitudeRequest,
   ConsiderationRules)` reads them, and needs no ephemeris.
+- **Across the boundary** the chart request's nullable
+  `considerations_json` is the rules, every member optional and refused
+  by `considerations.<member>`. The answer is three sections: the
+  clauses a row a chart, the Moon's two perfections two rows a chart
+  (`present` 0 where she is void by that reading), and the orbs seven a
+  chart. Bit sets carry the radical grounds and the seventh's
+  infortunes, bit `n` the member with id `n`, so `RadicalGround` and
+  `PtolemaicAspect` are boundary enums every binding names. When the
+  request asks for no fortitudes the clauses are read under Lilly's;
+  when it does, under the ones it asked for, so the two always agree.
+  Each binding reads them into the Rust serde shape, and an answer's
+  `rules` is a request as it stands.
 - **The natures are `Temperament`.** The name is not `Nature` because the
   catalogue's `Nature` is a different key space.
 - **Void of course is the one new computation.** `moon_course` projects
@@ -165,6 +177,6 @@ own chapter.
 
 1. ~~The clauses in `crates/hellenistic`, held to the tests.~~
 2. ~~`ChartArea::considerations`.~~
-3. The boundary and every binding, as the fortitudes crossed.
+3. ~~The boundary and every binding, as the fortitudes crossed.~~
 4. Read Book II's other questions for the considerations they name, and
    recast each with a date to test C230 further.

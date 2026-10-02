@@ -113,6 +113,8 @@ import {
   PlaceReadingById,
   FortuneRuleById,
   LotById,
+  PtolemaicAspectById,
+  RadicalGroundById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1063,6 +1065,23 @@ export class Chart {
    */
   get lots() {
     return lotsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Lilly's considerations before judgement (`considerations: {
+   * moonLateFromDeg, orbsDeg }`), read from the chart's fortitudes and its
+   * planetary hour; `null` unless asked for
+   * (`03-design/hellenistic-considerations.md`).
+   *
+   * It is `{ radicality, ascendant, moon, seventh, saturnHouse,
+   * saturnRetrograde, ascendantLordCombust, rules }`, each clause with the
+   * facts it rests on and none folded into a verdict. The Moon's `course`
+   * holds `next`, her first perfection before she leaves her sign, and
+   * `withinOrb`, the first already within the moieties; either is `null`
+   * when she is void by that reading (C230).
+   */
+  get considerations() {
+    return considerationsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2241,6 +2260,11 @@ export class ChartArea extends Area {
           'lots',
           'a lots request record, e.g. { fortune: "REVERSED_WHILE_MOON_UP" }',
         ),
+        considerationsJson: recordJson(
+          request.considerations,
+          'considerations',
+          'a considerations request record, e.g. { moonLateFromDeg: 25 }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -3145,6 +3169,111 @@ function fortitudesOf(batch) {
     }
   }
   FORTITUDES.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's considerations, decoded once however many charts read them. */
+const CONSIDERATIONS = new WeakMap();
+
+/**
+ * The members of a bit set over an enum, bit `n` the member with id `n`, in
+ * id order.
+ */
+function members(set, byId) {
+  const found = [];
+  for (let id = 0; set >> id !== 0; id += 1) {
+    if (((set >> id) & 1) === 1) found.push(byId.get(id) ?? 'unknown');
+  }
+  return Object.freeze(found);
+}
+
+/**
+ * Every chart's considerations in a batch: `considerations` holds a row a
+ * chart, or none when none was asked, `consideration_perfections` two a
+ * chart and `consideration_orbs` seven
+ * (`03-design/hellenistic-considerations.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function considerationsOf(batch) {
+  let decoded = CONSIDERATIONS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const c = d.considerations;
+  const p = d.considerationPerfections;
+  const o = d.considerationOrbs;
+  if (c.hourLord.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    if (c.hourLord.length !== charts || p.present.length !== 2 * charts || o.orbDeg.length !== 7 * charts) {
+      throw new Error(
+        `considerations has ${c.hourLord.length} rows, consideration_perfections ${p.present.length} ` +
+          `and consideration_orbs ${o.orbDeg.length} for ${charts} charts; they are one, two and seven a chart, or none`,
+      );
+    }
+    const perfection = (row) =>
+      p.present[row] === 1
+        ? Object.freeze({
+            planet: GrahaById.get(p.planet[row]) ?? 'unknown',
+            aspect: PtolemaicAspectById.get(p.aspect[row]) ?? 'unknown',
+            days: p.days[row],
+            gapDeg: p.gapDeg[row],
+          })
+        : null;
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    const rashi = (id) => RashiById.get(id) ?? 'unknown';
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, k) =>
+        Object.freeze({
+          radicality: Object.freeze({
+            hourLord: graha(c.hourLord[k]),
+            ascendantLord: graha(c.ascendantLord[k]),
+            grounds: members(c.radicalGrounds[k], RadicalGroundById),
+          }),
+          ascendant: Object.freeze({
+            sign: rashi(c.ascendantSign[k]),
+            degree: c.ascendantDegree[k],
+            early: c.ascendantEarly[k] === 1,
+            late: c.ascendantLate[k] === 1,
+            shortAscension: c.shortAscension[k] === 1,
+          }),
+          moon: Object.freeze({
+            sign: rashi(c.moonSign[k]),
+            degree: c.moonDegree[k],
+            late: c.moonLate[k] === 1,
+            lateSign: c.moonLateSign[k] === 1,
+            viaCombusta: c.viaCombusta[k] === 1,
+            course: Object.freeze({
+              next: perfection(2 * k),
+              withinOrb: perfection(2 * k + 1),
+              daysInSign: c.daysInSign[k],
+              eased: c.eased[k] === 1,
+            }),
+          }),
+          seventh: Object.freeze({
+            cuspDeg: c.seventhCuspDeg[k],
+            lord: graha(c.seventhLord[k]),
+            infortunesInHouse: members(c.seventhInfortunes[k], GrahaById),
+            lordRetrograde: c.seventhLordRetrograde[k] === 1,
+            lordCombust: c.seventhLordCombust[k] === 1,
+            lordInFall: c.seventhLordInFall[k] === 1,
+            lordInInfortuneTerm: c.seventhLordInInfortuneTerm[k] === 1,
+            lordNet: c.seventhLordNet[k],
+          }),
+          saturnHouse: c.saturnHouse[k],
+          saturnRetrograde: c.saturnRetrograde[k] === 1,
+          ascendantLordCombust: c.ascendantLordCombust[k] === 1,
+          rules: Object.freeze({
+            moonLateFromDeg: c.moonLateFromDeg[k],
+            orbsDeg: Object.freeze(Array.from(o.orbDeg.subarray(7 * k, 7 * k + 7))),
+          }),
+        }),
+      ),
+    );
+  }
+  CONSIDERATIONS.set(batch, decoded);
   return decoded;
 }
 

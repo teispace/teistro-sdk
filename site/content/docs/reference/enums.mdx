@@ -1796,6 +1796,28 @@ One of Valens's lots (`03-design/hellenistic-lots.md`).
 | `TS_LOT_BROTHERS` | 12 | Brothers: from Saturn to Jupiter by day. |
 | `TS_LOT_CRISIS` | 13 | The crisis-producing place: from Saturn to Mars by day. |
 
+## ts_radical_ground
+
+Why a horary figure is radical (Lilly p. 121, `03-design/hellenistic-considerations.md`); a figure's grounds cross as a bit set, bit `n` the member with code `n`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RADICAL_GROUND_ONE_LORD` | 0 | The lord of the hour and the lord of the Ascendant are one planet. |
+| `TS_RADICAL_GROUND_TRIPLICITY` | 1 | The lord of the hour rules the rising sign's triplicity. |
+| `TS_RADICAL_GROUND_NATURE` | 2 | The two lords share a temperament. |
+
+## ts_ptolemaic_aspect
+
+A Ptolemaic aspect the Moon perfects before judgement (`03-design/hellenistic-considerations.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PTOLEMAIC_ASPECT_CONJUNCTION` | 0 | 0°. |
+| `TS_PTOLEMAIC_ASPECT_SEXTILE` | 1 | 60°. |
+| `TS_PTOLEMAIC_ASPECT_SQUARE` | 2 | 90°. |
+| `TS_PTOLEMAIC_ASPECT_TRINE` | 3 | 120°. |
+| `TS_PTOLEMAIC_ASPECT_OPPOSITION` | 4 | 180°. |
+
 ## ts_hit_kind
 
 What a hit of the transit hit list was (`03-design/transit-hit-list.md`).

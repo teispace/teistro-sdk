@@ -698,6 +698,78 @@ impl TsLot {
     }
 }
 
+/// Why a horary figure is radical (Lilly p. 121,
+/// `03-design/hellenistic-considerations.md`); a figure's grounds cross as
+/// a bit set, bit `n` the member with code `n`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsRadicalGround {
+    /// The lord of the hour and the lord of the Ascendant are one planet.
+    OneLord = 0,
+    /// The lord of the hour rules the rising sign's triplicity.
+    Triplicity = 1,
+    /// The two lords share a temperament.
+    Nature = 2,
+}
+
+impl TsRadicalGround {
+    /// The code a ground crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(ground: teistro::RadicalGround) -> Option<TsRadicalGround> {
+        use teistro::RadicalGround;
+        Some(match ground {
+            RadicalGround::OneLord => TsRadicalGround::OneLord,
+            RadicalGround::Triplicity => TsRadicalGround::Triplicity,
+            RadicalGround::Nature => TsRadicalGround::Nature,
+            _ => return None,
+        })
+    }
+}
+
+/// A set of up to eight members as a byte, bit `n` the member with id `n`;
+/// `None` for a member past the eighth.
+fn bit_set(ids: impl IntoIterator<Item = u16>) -> Option<u8> {
+    ids.into_iter().try_fold(0_u8, |set, id| {
+        let bit = 1_u8.checked_shl(u32::from(id))?;
+        Some(set | bit)
+    })
+}
+
+/// A Ptolemaic aspect the Moon perfects before judgement
+/// (`03-design/hellenistic-considerations.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsPtolemaicAspect {
+    /// 0°.
+    Conjunction = 0,
+    /// 60°.
+    Sextile = 1,
+    /// 90°.
+    Square = 2,
+    /// 120°.
+    Trine = 3,
+    /// 180°.
+    Opposition = 4,
+}
+
+impl TsPtolemaicAspect {
+    /// The code an aspect crosses as; `None` for one this boundary does
+    /// not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(aspect: teistro::PtolemaicAspect) -> Option<TsPtolemaicAspect> {
+        use teistro::PtolemaicAspect;
+        Some(match aspect {
+            PtolemaicAspect::Conjunction => TsPtolemaicAspect::Conjunction,
+            PtolemaicAspect::Sextile => TsPtolemaicAspect::Sextile,
+            PtolemaicAspect::Square => TsPtolemaicAspect::Square,
+            PtolemaicAspect::Trine => TsPtolemaicAspect::Trine,
+            PtolemaicAspect::Opposition => TsPtolemaicAspect::Opposition,
+            _ => return None,
+        })
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1397,6 +1469,20 @@ pub struct TsChartRequest {
     /// record every binding calls `lots`, as `lots.fortune`.
     /// `api: nullable example={"fortune":"REVERSED_WHILE_MOON_UP"}`
     pub lots_json: *const c_char,
+    /// Every chart's considerations before judgement (Lilly, *Christian
+    /// Astrology* I.XIX), as a JSON object, every member optional:
+    /// `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+    /// whole orbs in the Chaldean order whose halves make an application
+    /// (Lilly's p. 107 by default, C230). The fortitudes they read are
+    /// `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+    /// back in `considerations`, the Moon's two perfections in
+    /// `consideration_perfections` and the orbs applied in
+    /// `consideration_orbs`. Null for none, which costs nothing
+    /// (`03-design/hellenistic-considerations.md`). Refusals are named from
+    /// the record every binding calls `considerations`, as
+    /// `considerations.moonLateFromDeg`.
+    /// `api: nullable example={"moonLateFromDeg":25}`
+    pub considerations_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2857,15 +2943,19 @@ struct HellenisticColumns {
     dignities: DignityColumns,
     fortitudes: FortitudeColumns,
     lots: LotColumns,
+    considerations: ConsiderationColumns,
 }
 
 impl HellenisticColumns {
-    fn of(
-        dignities: &[teistro::Dignities],
-        fortitudes: &[teistro::Fortitudes],
-        lots: &[teistro::LotReading],
-        charts: usize,
-    ) -> Result<HellenisticColumns, Error> {
+    /// The sections from what `composed` carries for `charts` charts.
+    fn of(composed: &Composed<'_>, charts: usize) -> Result<HellenisticColumns, Error> {
+        let Composed {
+            dignities,
+            fortitudes,
+            lots,
+            considerations,
+            ..
+        } = *composed;
         let essential = if fortitudes.is_empty() {
             DignityColumns::of(dignities.iter(), charts)?
         } else {
@@ -2875,13 +2965,192 @@ impl HellenisticColumns {
             dignities: essential,
             fortitudes: FortitudeColumns::of(fortitudes, charts)?,
             lots: LotColumns::of(lots, charts)?,
+            considerations: ConsiderationColumns::of(considerations, charts)?,
         })
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         self.dignities.write(writer)?;
         self.fortitudes.write(writer)?;
-        self.lots.write(writer)
+        self.lots.write(writer)?;
+        self.considerations.write(writer)
+    }
+}
+
+/// Every chart's considerations before judgement: a row a chart in
+/// `considerations`, the Moon's two perfections a chart in
+/// `consideration_perfections` (by the sign's end, then within the
+/// moieties), and the seven orbs a chart in `consideration_orbs`.
+#[derive(Default)]
+struct ConsiderationColumns {
+    hour_lord: Vec<u16>,
+    ascendant_lord: Vec<u16>,
+    grounds: Vec<u8>,
+    ascendant_sign: Vec<u16>,
+    ascendant_degree: Vec<f64>,
+    ascendant_early: Vec<u8>,
+    ascendant_late: Vec<u8>,
+    short_ascension: Vec<u8>,
+    moon_sign: Vec<u16>,
+    moon_degree: Vec<f64>,
+    moon_late: Vec<u8>,
+    moon_late_sign: Vec<u8>,
+    via_combusta: Vec<u8>,
+    days_in_sign: Vec<f64>,
+    eased: Vec<u8>,
+    seventh_cusp: Vec<f64>,
+    seventh_lord: Vec<u16>,
+    seventh_infortunes: Vec<u8>,
+    lord_retrograde: Vec<u8>,
+    lord_combust: Vec<u8>,
+    lord_in_fall: Vec<u8>,
+    lord_in_infortune_term: Vec<u8>,
+    lord_net: Vec<i16>,
+    saturn_house: Vec<u8>,
+    saturn_retrograde: Vec<u8>,
+    ascendant_lord_combust: Vec<u8>,
+    moon_late_from: Vec<f64>,
+    present: Vec<u8>,
+    planet: Vec<u16>,
+    aspect: Vec<u8>,
+    days: Vec<f64>,
+    gap: Vec<f64>,
+    orb: Vec<f64>,
+}
+
+impl ConsiderationColumns {
+    fn of(read: &[teistro::Considerations], charts: usize) -> Result<ConsiderationColumns, Error> {
+        one_a_chart(read.len(), charts, "considerations")?;
+        let mut columns = ConsiderationColumns::default();
+        for one in read {
+            let radicality = &one.radicality;
+            columns.hour_lord.push(radicality.hour_lord.id());
+            columns.ascendant_lord.push(radicality.ascendant_lord.id());
+            let grounds = radicality
+                .grounds
+                .iter()
+                .map(|ground| TsRadicalGround::of(*ground).map(|code| u16::from(code as u8)))
+                .collect::<Option<Vec<u16>>>()
+                .and_then(bit_set)
+                .ok_or_else(|| no_code("the radical ground"))?;
+            columns.grounds.push(grounds);
+            let ascendant = &one.ascendant;
+            columns.ascendant_sign.push(ascendant.sign.id());
+            columns.ascendant_degree.push(ascendant.degree);
+            columns.ascendant_early.push(u8::from(ascendant.early));
+            columns.ascendant_late.push(u8::from(ascendant.late));
+            columns
+                .short_ascension
+                .push(u8::from(ascendant.short_ascension));
+            let moon = &one.moon;
+            columns.moon_sign.push(moon.sign.id());
+            columns.moon_degree.push(moon.degree);
+            columns.moon_late.push(u8::from(moon.late));
+            columns.moon_late_sign.push(u8::from(moon.late_sign));
+            columns.via_combusta.push(u8::from(moon.via_combusta));
+            columns.days_in_sign.push(moon.course.days_in_sign);
+            columns.eased.push(u8::from(moon.course.eased));
+            let seventh = &one.seventh;
+            columns.seventh_cusp.push(seventh.cusp_deg);
+            columns.seventh_lord.push(seventh.lord.id());
+            let infortunes = bit_set(seventh.infortunes_in_house.iter().map(|graha| graha.id()))
+                .ok_or_else(|| no_code("the infortune"))?;
+            columns.seventh_infortunes.push(infortunes);
+            columns
+                .lord_retrograde
+                .push(u8::from(seventh.lord_retrograde));
+            columns.lord_combust.push(u8::from(seventh.lord_combust));
+            columns.lord_in_fall.push(u8::from(seventh.lord_in_fall));
+            columns
+                .lord_in_infortune_term
+                .push(u8::from(seventh.lord_in_infortune_term));
+            columns.lord_net.push(seventh.lord_net);
+            columns.saturn_house.push(one.saturn_house.get());
+            columns
+                .saturn_retrograde
+                .push(u8::from(one.saturn_retrograde));
+            columns
+                .ascendant_lord_combust
+                .push(u8::from(one.ascendant_lord_combust));
+            columns.moon_late_from.push(one.rules.moon_late_from_deg);
+            for perfection in [moon.course.next, moon.course.within_orb] {
+                columns.push_perfection(perfection)?;
+            }
+            columns.orb.extend(one.rules.orbs_deg);
+        }
+        Ok(columns)
+    }
+
+    /// One of the Moon's perfections, or a row saying there is none.
+    fn push_perfection(&mut self, perfection: Option<teistro::Perfection>) -> Result<(), Error> {
+        if let Some(found) = perfection {
+            self.present.push(1);
+            self.planet.push(found.planet.id());
+            self.aspect.push(
+                TsPtolemaicAspect::of(found.aspect).ok_or_else(|| no_code("the aspect"))? as u8,
+            );
+            self.days.push(found.days);
+            self.gap.push(found.gap_deg);
+        } else {
+            self.present.push(0);
+            self.planet.push(0);
+            self.aspect.push(0);
+            self.days.push(f64::NAN);
+            self.gap.push(f64::NAN);
+        }
+        Ok(())
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "considerations",
+            self.hour_lord.len(),
+            &[
+                ColumnData::U16(&self.hour_lord),
+                ColumnData::U16(&self.ascendant_lord),
+                ColumnData::U8(&self.grounds),
+                ColumnData::U16(&self.ascendant_sign),
+                ColumnData::F64(&self.ascendant_degree),
+                ColumnData::U8(&self.ascendant_early),
+                ColumnData::U8(&self.ascendant_late),
+                ColumnData::U8(&self.short_ascension),
+                ColumnData::U16(&self.moon_sign),
+                ColumnData::F64(&self.moon_degree),
+                ColumnData::U8(&self.moon_late),
+                ColumnData::U8(&self.moon_late_sign),
+                ColumnData::U8(&self.via_combusta),
+                ColumnData::F64(&self.days_in_sign),
+                ColumnData::U8(&self.eased),
+                ColumnData::F64(&self.seventh_cusp),
+                ColumnData::U16(&self.seventh_lord),
+                ColumnData::U8(&self.seventh_infortunes),
+                ColumnData::U8(&self.lord_retrograde),
+                ColumnData::U8(&self.lord_combust),
+                ColumnData::U8(&self.lord_in_fall),
+                ColumnData::U8(&self.lord_in_infortune_term),
+                ColumnData::I16(&self.lord_net),
+                ColumnData::U8(&self.saturn_house),
+                ColumnData::U8(&self.saturn_retrograde),
+                ColumnData::U8(&self.ascendant_lord_combust),
+                ColumnData::F64(&self.moon_late_from),
+            ],
+        )?;
+        writer.columns(
+            "consideration_perfections",
+            self.present.len(),
+            &[
+                ColumnData::U8(&self.present),
+                ColumnData::U16(&self.planet),
+                ColumnData::U8(&self.aspect),
+                ColumnData::F64(&self.days),
+                ColumnData::F64(&self.gap),
+            ],
+        )?;
+        writer.columns(
+            "consideration_orbs",
+            self.orb.len(),
+            &[ColumnData::F64(&self.orb)],
+        )
     }
 }
 
@@ -4706,6 +4975,9 @@ pub struct Composed<'a> {
     /// Every chart's lots, all fourteen, in the batch's order
     /// (`hellenistic-lots.md`); empty when none was asked for.
     pub lots: &'a [teistro::LotReading],
+    /// Every chart's considerations before judgement, in the batch's order
+    /// (`hellenistic-considerations.md`); empty when none was asked for.
+    pub considerations: &'a [teistro::Considerations],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -4748,10 +5020,8 @@ pub fn encode(
         hits,
         sade_sati,
         kp,
-        dignities,
-        fortitudes,
-        lots,
         hashes,
+        ..
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
@@ -4768,7 +5038,7 @@ pub fn encode(
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
-    let hellenistic = HellenisticColumns::of(dignities, fortitudes, lots, charts.len())?;
+    let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -5616,6 +5886,51 @@ unsafe fn lot_request_of(lots_json: *const c_char) -> Result<Option<teistro::Lot
         .transpose()
 }
 
+/// The considerations a request's `considerations_json` asks for, none
+/// for null; the crate reads the record
+/// ([`teistro::ConsiderationRules::from_json`]), naming a refusal from
+/// its root, `considerations.moonLateFromDeg`.
+///
+/// # Safety
+///
+/// `considerations_json` null or a NUL-terminated string.
+unsafe fn consideration_rules_of(
+    considerations_json: *const c_char,
+) -> Result<Option<teistro::ConsiderationRules>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(considerations_json, "considerations_json") }?
+        .map(teistro::ConsiderationRules::from_json)
+        .transpose()
+}
+
+/// Every chart's considerations, none when none was asked for: read from
+/// the fortitudes the request asked for, and Lilly's when it asked for
+/// none, so no chart's fortitudes are read twice.
+fn considerations_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<teistro::ConsiderationRules>,
+    fortitudes: &[teistro::Fortitudes],
+) -> Result<Vec<teistro::Considerations>, Error> {
+    let Some(rules) = asked else {
+        return Ok(Vec::new());
+    };
+    if fortitudes.is_empty() {
+        let lilly = teistro::FortitudeRequest::default();
+        return documents
+            .iter()
+            .map(|document| sdk.chart().considerations(document, &lilly, rules))
+            .collect();
+    }
+    documents
+        .iter()
+        .zip(fortitudes)
+        .map(|(document, read)| {
+            teistro::hellenistic::considerations(read, document.foundation.timing.hora.lord, rules)
+        })
+        .collect()
+}
+
 /// Every chart's fourteen lots, none when none was asked for.
 fn lots_of(
     sdk: &teistro::Context,
@@ -5921,6 +6236,7 @@ struct AskedRecords {
     dignities: Option<teistro::DignityRequest>,
     fortitudes: Option<teistro::FortitudeRequest>,
     lots: Option<teistro::LotRequest>,
+    considerations: Option<teistro::ConsiderationRules>,
 }
 
 impl AskedRecords {
@@ -5949,6 +6265,7 @@ impl AskedRecords {
                 dignities: dignity_request_of(asked.dignities_json)?,
                 fortitudes: fortitude_request_of(asked.fortitudes_json)?,
                 lots: lot_request_of(asked.lots_json)?,
+                considerations: consideration_rules_of(asked.considerations_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -6135,6 +6452,12 @@ pub unsafe extern "C" fn ts_chart_found(
         let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
         let fortitudes = fortitudes_of(ctx.sdk(), &founded.value, records.fortitudes.as_ref())?;
         let lots = lots_of(ctx.sdk(), &founded.value, records.lots)?;
+        let considerations = considerations_of(
+            ctx.sdk(),
+            &founded.value,
+            records.considerations,
+            &fortitudes,
+        )?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -6156,6 +6479,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 dignities: &dignities,
                 fortitudes: &fortitudes,
                 lots: &lots,
+                considerations: &considerations,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

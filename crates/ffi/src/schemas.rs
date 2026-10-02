@@ -611,6 +611,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_dignity_sections(60))
         .chain(chart_fortitude_sections(63))
         .chain(chart_lot_sections(67))
+        .chain(chart_consideration_sections(69))
         .collect(),
     }
 }
@@ -1092,6 +1093,181 @@ fn chart_lot_sections(first: u32) -> [SectionSchema; 2] {
             ],
         ),
     ]
+}
+
+/// Every chart's considerations before judgement
+/// (`03-design/hellenistic-considerations.md`): the clauses a chart, the
+/// Moon's two perfections a chart, then the seven orbs applied.
+fn chart_consideration_sections(first: u32) -> [SectionSchema; 3] {
+    let empty = "Empty when `considerations_json` asked for none.";
+    [
+        consideration_clauses_section(first, empty),
+        SectionSchema::columns(
+            first + 1,
+            "consideration_perfections",
+            &format!(
+                "The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "present",
+                    Scalar::U8,
+                    "1 when there is such a perfection; 0 when she is void by this reading, and then the other columns are 0 and NaN.",
+                ),
+                ColumnDef::new("planet", Scalar::U16, "The planet she perfects it with.")
+                    .of_enum("Graha"),
+                ColumnDef::new("aspect", Scalar::U8, "The aspect.").of_enum("TsPtolemaicAspect"),
+                ColumnDef::new(
+                    "days",
+                    Scalar::F64,
+                    "Days until it is exact, at the motions of the moment.",
+                ),
+                ColumnDef::new(
+                    "gap_deg",
+                    Scalar::F64,
+                    "How far it is from exact now, degrees.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "consideration_orbs",
+            &format!(
+                "The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "orb_deg",
+                Scalar::F64,
+                "The planet's whole orb, degrees; half of it counts toward an application.",
+            )],
+        ),
+    ]
+}
+
+/// The `considerations` section: a row a chart, each clause with the
+/// facts it rests on.
+#[expect(
+    clippy::too_many_lines,
+    reason = "one declaration per clause Lilly lists; splitting it would hide the shape it exists to show"
+)]
+fn consideration_clauses_section(id: u32, empty: &str) -> SectionSchema {
+    let flag = |name: &str, doc: &str| {
+        ColumnDef::new(name, Scalar::U8, &format!("1 when {doc}; 0 otherwise."))
+    };
+    SectionSchema::columns(
+        id,
+        "considerations",
+        &format!(
+            "Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. {empty}"
+        ),
+        vec![
+            ColumnDef::new(
+                "hour_lord",
+                Scalar::U16,
+                "The lord of the chart's planetary hour, under the settings' `hora_reckoning`.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "ascendant_lord",
+                Scalar::U16,
+                "The lord of the rising sign.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "radical_grounds",
+                Scalar::U8,
+                "Why the figure is radical, as a bit set over `TsRadicalGround`: bit `n` is the member with code `n` (p. 122). 0 when it is not radical.",
+            ),
+            ColumnDef::new("ascendant_sign", Scalar::U16, "The rising sign.").of_enum("Rashi"),
+            ColumnDef::new(
+                "ascendant_degree",
+                Scalar::F64,
+                "The Ascendant's degree within its sign, [0, 30).",
+            ),
+            flag(
+                "ascendant_early",
+                "fewer than 3 degrees rise, too early to judge",
+            ),
+            flag(
+                "ascendant_late",
+                "27 degrees or more rise, too late to judge",
+            ),
+            flag(
+                "short_ascension",
+                "the rising sign is one of short ascension, Capricorn to Gemini",
+            ),
+            ColumnDef::new("moon_sign", Scalar::U16, "The Moon's sign.").of_enum("Rashi"),
+            ColumnDef::new(
+                "moon_degree",
+                Scalar::F64,
+                "The Moon's degree within her sign, [0, 30).",
+            ),
+            flag(
+                "moon_late",
+                "the Moon is in the later degrees of her sign, from `moon_late_from_deg` (C229)",
+            ),
+            flag(
+                "moon_late_sign",
+                "the Moon is in Gemini, Scorpio or Capricorn, where Lilly says lateness matters most",
+            ),
+            flag(
+                "via_combusta",
+                "the Moon is in the via combusta, Libra 15° to Scorpio 15°",
+            ),
+            ColumnDef::new(
+                "days_in_sign",
+                Scalar::F64,
+                "Days until the Moon leaves her sign, at her motion of the moment.",
+            ),
+            flag(
+                "eased",
+                "the Moon is in Taurus, Cancer, Sagittarius or Pisces, where void of course \"somewhat she performes\"",
+            ),
+            ColumnDef::new(
+                "seventh_cusp_deg",
+                Scalar::F64,
+                "The seventh cusp, degrees of the chart's zodiac.",
+            ),
+            ColumnDef::new(
+                "seventh_lord",
+                Scalar::U16,
+                "The lord of the sign on the seventh cusp.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "seventh_infortunes",
+                Scalar::U8,
+                "Saturn and Mars when counted in the seventh house, as a bit set: bit `n` is the graha with catalogue id `n` (C231).",
+            ),
+            flag(
+                "seventh_lord_retrograde",
+                "the seventh's lord is retrograde",
+            ),
+            flag("seventh_lord_combust", "the seventh's lord is combust"),
+            flag("seventh_lord_in_fall", "the seventh's lord is in his fall"),
+            flag(
+                "seventh_lord_in_infortune_term",
+                "the seventh's lord is in the terms of Saturn or Mars",
+            ),
+            ColumnDef::new(
+                "seventh_lord_net",
+                Scalar::I16,
+                "The seventh's lord's net strength, his essential and accidental fortitudes less his debilities.",
+            ),
+            ColumnDef::new(
+                "saturn_house",
+                Scalar::U8,
+                "The house Saturn is counted in, 1 to 12, by the fortitudes' five-degree rule.",
+            ),
+            flag("saturn_retrograde", "Saturn is retrograde"),
+            flag("ascendant_lord_combust", "the Ascendant's lord is combust"),
+            ColumnDef::new(
+                "moon_late_from_deg",
+                Scalar::F64,
+                "The degree the Moon's lateness was counted from, `considerations_json.moonLateFromDeg`.",
+            ),
+        ],
+    )
 }
 
 /// Every chart's receptions, a row a pair (`essential-dignities.md`

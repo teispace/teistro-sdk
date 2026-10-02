@@ -678,6 +678,7 @@ final class ChartArea extends _Area {
     DignityRequest? dignities,
     FortitudeRequest? fortitudes,
     LotRequest? lots,
+    ConsiderationRules? considerations,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -708,6 +709,7 @@ final class ChartArea extends _Area {
     dignities: dignities,
     fortitudes: fortitudes,
     lots: lots,
+    considerations: considerations,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -758,6 +760,7 @@ final class ChartArea extends _Area {
     DignityRequest? dignities,
     FortitudeRequest? fortitudes,
     LotRequest? lots,
+    ConsiderationRules? considerations,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -810,6 +813,7 @@ final class ChartArea extends _Area {
             dignitiesJson: dignities?._json,
             fortitudesJson: fortitudes?._json,
             lotsJson: lots?._json,
+            considerationsJson: considerations?._json,
           ),
         ),
       ),
@@ -4017,6 +4021,95 @@ List<Lots> _decodeLots(Charts batch) {
   );
 }
 
+final Expando<List<Considerations>> _considerations =
+    Expando<List<Considerations>>('considerations');
+
+List<Considerations> _considerationsOf(Charts batch) =>
+    _considerations[batch] ??= _decodeConsiderations(batch);
+
+/// `considerations` holds a row a chart, or none when none was asked,
+/// `consideration_perfections` two a chart (the Moon's next aspect, then
+/// the first within the moieties), and `consideration_orbs` seven a chart
+/// in the Chaldean order.
+List<Considerations> _decodeConsiderations(Charts batch) {
+  final c = batch.considerations;
+  final p = batch.considerationPerfections;
+  final o = batch.considerationOrbs;
+  final charts = batch.cast.instant.length;
+  if (c.length == 0) return const <Considerations>[];
+  if (c.length != charts || p.length != 2 * charts || o.length != 7 * charts) {
+    throw StateError(
+      'considerations has ${c.length} rows, consideration_perfections '
+      '${p.length} and consideration_orbs ${o.length} for $charts charts; '
+      'they are one, two and seven a chart',
+    );
+  }
+  Perfection? perfection(int row) =>
+      p.present[row] == 1
+          ? Perfection(
+            planet: Graha.byId(p.planet[row]),
+            aspect: PtolemaicAspect.byId(p.aspect[row]),
+            days: p.days[row],
+            gapDeg: p.gapDeg[row],
+          )
+          : null;
+  return List<Considerations>.generate(
+    charts,
+    (k) => Considerations(
+      radicality: Radicality(
+        hourLord: Graha.byId(c.hourLord[k]),
+        ascendantLord: Graha.byId(c.ascendantLord[k]),
+        grounds: List<RadicalGround>.unmodifiable(
+          _members<RadicalGround>(
+            c.radicalGrounds[k],
+            RadicalGround.values,
+            (g) => g.id,
+          ),
+        ),
+      ),
+      ascendant: AscendantClause(
+        sign: Rashi.byId(c.ascendantSign[k]),
+        degree: c.ascendantDegree[k],
+        early: c.ascendantEarly[k] == 1,
+        late: c.ascendantLate[k] == 1,
+        shortAscension: c.shortAscension[k] == 1,
+      ),
+      moon: MoonClause(
+        sign: Rashi.byId(c.moonSign[k]),
+        degree: c.moonDegree[k],
+        late: c.moonLate[k] == 1,
+        lateSign: c.moonLateSign[k] == 1,
+        viaCombusta: c.viaCombusta[k] == 1,
+        course: MoonCourse(
+          next: perfection(2 * k),
+          withinOrb: perfection(2 * k + 1),
+          daysInSign: c.daysInSign[k],
+          eased: c.eased[k] == 1,
+        ),
+      ),
+      seventh: SeventhClause(
+        cuspDeg: c.seventhCuspDeg[k],
+        lord: Graha.byId(c.seventhLord[k]),
+        infortunesInHouse: List<Graha>.unmodifiable(
+          _seven(c.seventhInfortunes[k]),
+        ),
+        lordRetrograde: c.seventhLordRetrograde[k] == 1,
+        lordCombust: c.seventhLordCombust[k] == 1,
+        lordInFall: c.seventhLordInFall[k] == 1,
+        lordInInfortuneTerm: c.seventhLordInInfortuneTerm[k] == 1,
+        lordNet: c.seventhLordNet[k],
+      ),
+      saturnHouse: c.saturnHouse[k],
+      saturnRetrograde: c.saturnRetrograde[k] == 1,
+      ascendantLordCombust: c.ascendantLordCombust[k] == 1,
+      rules: ConsiderationRules(
+        moonLateFromDeg: c.moonLateFromDeg[k],
+        orbsDeg: List<double>.unmodifiable(o.orbDeg.sublist(7 * k, 7 * k + 7)),
+      ),
+    ),
+  );
+}
+
 final Expando<List<Fortitudes>> _fortitudes = Expando<List<Fortitudes>>(
   'fortitudes',
 );
@@ -5800,6 +5893,276 @@ final class Lots extends _Value {
 
   @override
   List<Object?> get _fields => [sect, request, fortuneReversed, lots];
+}
+
+/// How to read every chart's considerations before judgement, Lilly's by
+/// default (`03-design/hellenistic-considerations.md`). Each chart's come
+/// back as its `considerations`, and an answer's `rules` is one, handed
+/// back as it stands.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ considerations: const ConsiderationRules(moonLateFromDeg: 25),
+/// );
+/// final voidOfCourse = chart.considerations?.moon.course.next == null;
+/// ```
+final class ConsiderationRules extends _Value {
+  const ConsiderationRules({
+    this.moonLateFromDeg = 27,
+    this.orbsDeg = const <double>[10, 12, 7.5, 17, 8, 7, 12.5],
+  });
+
+  /// Lilly's: the Moon late from 27°, and his orbs (*Christian Astrology*
+  /// p. 107).
+  static const ConsiderationRules lilly = ConsiderationRules();
+
+  /// From what degree of her sign the Moon is late (C229): Lilly gives no
+  /// number, so 27, his late Ascendant's. 0 to 30, or the SDK refuses it
+  /// by `considerations.moonLateFromDeg`.
+  final double moonLateFromDeg;
+
+  /// Each planet's orb in the Chaldean order, Saturn to the Moon; a
+  /// perfection is within the moieties when the gap is under half the sum
+  /// of the two planets' (C230). Seven, none negative.
+  final List<double> orbsDeg;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'moonLateFromDeg': moonLateFromDeg,
+    'orbsDeg': orbsDeg,
+  });
+
+  @override
+  List<Object?> get _fields => [moonLateFromDeg, orbsDeg];
+}
+
+/// A Ptolemaic aspect the Moon perfects with another planet, and how far
+/// off it is.
+final class Perfection extends _Value {
+  const Perfection({
+    required this.planet,
+    required this.aspect,
+    required this.days,
+    required this.gapDeg,
+  });
+
+  final Graha planet;
+  final PtolemaicAspect aspect;
+
+  /// Days until it is exact, at the motions of the moment.
+  final double days;
+
+  /// How far it is from exact now, degrees: the arc the two close, which
+  /// a reading by the moieties weighs (C230).
+  final double gapDeg;
+
+  @override
+  List<Object?> get _fields => [planet, aspect, days, gapDeg];
+}
+
+/// The Moon's course to the end of her sign, read both ways Lilly's
+/// figures support (C230).
+final class MoonCourse extends _Value {
+  const MoonCourse({
+    required this.next,
+    required this.withinOrb,
+    required this.daysInSign,
+    required this.eased,
+  });
+
+  /// Her first perfection before she leaves her sign; null when she makes
+  /// none, void by the modern reading.
+  final Perfection? next;
+
+  /// Her first perfection already within the two planets' moieties; null
+  /// when none is, void by the moieties.
+  final Perfection? withinOrb;
+
+  /// Days until she leaves her sign.
+  final double daysInSign;
+
+  /// Taurus, Cancer, Sagittarius or Pisces, where void "somewhat she
+  /// performes" (p. 122).
+  final bool eased;
+
+  @override
+  List<Object?> get _fields => [next, withinOrb, daysInSign, eased];
+}
+
+/// Whether the question is radical: the lord of the hour against the lord
+/// of the Ascendant, with every ground that holds.
+final class Radicality extends _Value {
+  const Radicality({
+    required this.hourLord,
+    required this.ascendantLord,
+    required this.grounds,
+  });
+
+  final Graha hourLord;
+  final Graha ascendantLord;
+
+  /// Every ground that holds, in id order; empty when none does.
+  final List<RadicalGround> grounds;
+
+  @override
+  List<Object?> get _fields => [hourLord, ascendantLord, grounds];
+}
+
+/// The Ascendant's clause: too early, too late, or in a sign of short
+/// ascension.
+final class AscendantClause extends _Value {
+  const AscendantClause({
+    required this.sign,
+    required this.degree,
+    required this.early,
+    required this.late,
+    required this.shortAscension,
+  });
+
+  final Rashi sign;
+
+  /// Degrees within the sign.
+  final double degree;
+
+  /// Under 3°.
+  final bool early;
+
+  /// 27° or more.
+  final bool late;
+
+  /// Capricorn to Gemini.
+  final bool shortAscension;
+
+  @override
+  List<Object?> get _fields => [sign, degree, early, late, shortAscension];
+}
+
+/// The Moon's clause: late in her sign, in a sign Lilly names, in the via
+/// combusta, and her course.
+final class MoonClause extends _Value {
+  const MoonClause({
+    required this.sign,
+    required this.degree,
+    required this.late,
+    required this.lateSign,
+    required this.viaCombusta,
+    required this.course,
+  });
+
+  final Rashi sign;
+
+  /// Degrees within the sign.
+  final double degree;
+
+  /// At or past the rules' `moonLateFromDeg` (C229).
+  final bool late;
+
+  /// In Gemini, Scorpio or Capricorn.
+  final bool lateSign;
+
+  /// Between Libra 15° and Scorpio 15°.
+  final bool viaCombusta;
+
+  final MoonCourse course;
+
+  @override
+  List<Object?> get _fields => [
+    sign,
+    degree,
+    late,
+    lateSign,
+    viaCombusta,
+    course,
+  ];
+}
+
+/// The seventh house's clause, which Lilly says reads the astrologer
+/// (C231).
+final class SeventhClause extends _Value {
+  const SeventhClause({
+    required this.cuspDeg,
+    required this.lord,
+    required this.infortunesInHouse,
+    required this.lordRetrograde,
+    required this.lordCombust,
+    required this.lordInFall,
+    required this.lordInInfortuneTerm,
+    required this.lordNet,
+  });
+
+  /// The seventh cusp's longitude, degrees in [0, 360).
+  final double cuspDeg;
+  final Graha lord;
+
+  /// Saturn or Mars counted in the seventh house, in id order: what
+  /// afflicts the cusp, by one reading of C231.
+  final List<Graha> infortunesInHouse;
+  final bool lordRetrograde;
+  final bool lordCombust;
+  final bool lordInFall;
+
+  /// In a term of Saturn or Mars.
+  final bool lordInInfortuneTerm;
+
+  /// The lord's net strength over Lilly's table, which says whether he is
+  /// "unfortunate".
+  final int lordNet;
+
+  @override
+  List<Object?> get _fields => [
+    cuspDeg,
+    lord,
+    infortunesInHouse,
+    lordRetrograde,
+    lordCombust,
+    lordInFall,
+    lordInInfortuneTerm,
+    lordNet,
+  ];
+}
+
+/// A chart's considerations before judgement (Lilly, *Christian
+/// Astrology* I.XIX), each clause with the facts it rests on and never a
+/// verdict (`03-design/hellenistic-considerations.md`).
+final class Considerations extends _Value {
+  const Considerations({
+    required this.radicality,
+    required this.ascendant,
+    required this.moon,
+    required this.seventh,
+    required this.saturnHouse,
+    required this.saturnRetrograde,
+    required this.ascendantLordCombust,
+    required this.rules,
+  });
+
+  final Radicality radicality;
+  final AscendantClause ascendant;
+  final MoonClause moon;
+  final SeventhClause seventh;
+
+  /// Saturn's house, 1 to 12; Lilly's cautions name the first and seventh.
+  final int saturnHouse;
+
+  /// Saturn retrograde, which makes him in the Ascendant the worse.
+  final bool saturnRetrograde;
+
+  /// Whether the lord of the Ascendant is combust.
+  final bool ascendantLordCombust;
+
+  /// The rules they were read under, every field filled.
+  final ConsiderationRules rules;
+
+  @override
+  List<Object?> get _fields => [
+    radicality,
+    ascendant,
+    moon,
+    seventh,
+    saturnHouse,
+    saturnRetrograde,
+    ascendantLordCombust,
+    rules,
+  ];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),
@@ -10986,6 +11349,14 @@ final class Chart {
   /// (`03-design/hellenistic-lots.md`).
   Lots? get lots {
     final all = _lotsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Lilly's considerations before judgement, each clause with the facts
+  /// it rests on; null unless `considerations` asked for them
+  /// (`03-design/hellenistic-considerations.md`).
+  Considerations? get considerations {
+    final all = _considerationsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

@@ -40,6 +40,9 @@ import type {
   Fortitudes,
   LotPlace,
   LotRequest,
+  ConsiderationRequest,
+  Considerations,
+  Perfection,
   Lots,
   PlacedLot,
   Almuten,
@@ -859,6 +862,40 @@ function theLots(ctx: Context): string {
 }
 
 void theLots;
+
+// The considerations read all the way down, and the answer's rules fed
+// back as a request.
+function theConsiderations(ctx: Context): string {
+  const asked: ConsiderationRequest = { moonLateFromDeg: 25 };
+  const read: Considerations | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 51.5, longitude: -0.12, altitude: 0 },
+    utcOffsetSeconds: 0,
+    considerations: asked,
+  }).considerations;
+  if (read === null) return 'none';
+  const fedBack: ConsiderationRequest = read.rules;
+  // @ts-expect-error the orbs are seven, one a planet in the Chaldean order
+  const misread: ConsiderationRequest = { orbsDeg: [10, 12] };
+  const next: Perfection | null = read.moon.course.next;
+  const lord: Graha = read.seventh.lord;
+  return [
+    read.radicality.hourLord,
+    read.radicality.grounds.join(),
+    read.ascendant.sign,
+    read.moon.viaCombusta,
+    next?.aspect ?? 'void',
+    next?.gapDeg ?? Number.NaN,
+    read.moon.course.withinOrb?.planet ?? 'void',
+    lord,
+    read.seventh.infortunesInHouse.join(),
+    read.saturnHouse,
+    String(fedBack),
+    String(misread),
+  ].join();
+}
+
+void theConsiderations;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

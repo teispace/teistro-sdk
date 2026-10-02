@@ -1784,6 +1784,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_dignities(report, geo, index, document);
     the_fortitudes(report, geo, index, document);
     the_lots(report, geo, index, document);
+    the_considerations(report, geo, index, document);
 }
 
 /// The lots every runner asks for: III.11's Fortune, the one that reads
@@ -1823,6 +1824,148 @@ fn the_lots(report: &mut Report, sdk: &Context, index: usize, document: &teistro
             ),
         );
     }
+}
+
+/// The considerations every runner asks for: a late Moon from 25°, read
+/// from the fortitudes every runner asks for.
+const CONSIDERATIONS_JSON: &str = r#"{"moonLateFromDeg":25}"#;
+
+/// A perfection as the runners print it, or `-` when the Moon is void by
+/// that reading.
+fn perfection(found: Option<teistro::Perfection>) -> String {
+    found.map_or_else(
+        || String::from("-"),
+        |at| {
+            format!(
+                "{} {} {} {}",
+                at.planet.full_key(),
+                wire_key(&at.aspect),
+                number(at.days),
+                number(at.gap_deg)
+            )
+        },
+    )
+}
+
+/// The Moon's clause and her two perfections, as the runners print them.
+fn the_moon_clause(report: &mut Report, index: usize, moon: &teistro::MoonClause) {
+    put(
+        report,
+        &format!("chart-{index}-considerations-moon"),
+        format!(
+            "{} {} {} {} {} {} {}",
+            moon.sign.full_key(),
+            number(moon.degree),
+            u8::from(moon.late),
+            u8::from(moon.late_sign),
+            u8::from(moon.via_combusta),
+            number(moon.course.days_in_sign),
+            u8::from(moon.course.eased)
+        ),
+    );
+    put(
+        report,
+        &format!("chart-{index}-considerations-next"),
+        perfection(moon.course.next),
+    );
+    put(
+        report,
+        &format!("chart-{index}-considerations-within"),
+        perfection(moon.course.within_orb),
+    );
+}
+
+/// The considerations as the other three print them: radicality and the
+/// Ascendant, the Moon, her two perfections, the seventh, Saturn and the
+/// rules.
+fn the_considerations(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let rules =
+        teistro::ConsiderationRules::from_json(CONSIDERATIONS_JSON).expect("a valid request");
+    let fortitudes =
+        teistro::FortitudeRequest::from_json(&fortitudes_json()).expect("a valid request");
+    let read = sdk
+        .chart()
+        .considerations(document, &fortitudes, rules)
+        .expect("the test provider");
+    let flag = u8::from;
+    let radicality = &read.radicality;
+    let ascendant = &read.ascendant;
+    put(
+        report,
+        &format!("chart-{index}-considerations"),
+        format!(
+            "{} {} {} {} {} {} {} {}",
+            radicality.hour_lord.full_key(),
+            radicality.ascendant_lord.full_key(),
+            comma_listed(
+                &radicality
+                    .grounds
+                    .iter()
+                    .map(wire_key)
+                    .collect::<Vec<_>>()
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>()
+            ),
+            ascendant.sign.full_key(),
+            number(ascendant.degree),
+            flag(ascendant.early),
+            flag(ascendant.late),
+            flag(ascendant.short_ascension)
+        ),
+    );
+    the_moon_clause(report, index, &read.moon);
+    let seventh = &read.seventh;
+    put(
+        report,
+        &format!("chart-{index}-considerations-seventh"),
+        format!(
+            "{} {} {} {} {} {} {} {}",
+            number(seventh.cusp_deg),
+            seventh.lord.full_key(),
+            comma_listed(
+                &seventh
+                    .infortunes_in_house
+                    .iter()
+                    .map(|graha| graha.full_key())
+                    .collect::<Vec<_>>()
+            ),
+            flag(seventh.lord_retrograde),
+            flag(seventh.lord_combust),
+            flag(seventh.lord_in_fall),
+            flag(seventh.lord_in_infortune_term),
+            seventh.lord_net
+        ),
+    );
+    put(
+        report,
+        &format!("chart-{index}-considerations-saturn"),
+        format!(
+            "{} {} {}",
+            read.saturn_house.get(),
+            flag(read.saturn_retrograde),
+            flag(read.ascendant_lord_combust)
+        ),
+    );
+    put(
+        report,
+        &format!("chart-{index}-considerations-rules"),
+        format!(
+            "{} {}",
+            number(read.rules.moon_late_from_deg),
+            read.rules
+                .orbs_deg
+                .iter()
+                .map(|orb| number(*orb))
+                .collect::<Vec<_>>()
+                .join(",")
+        ),
+    );
 }
 
 /// The fortitudes every runner asks for: the dignities' own request as the

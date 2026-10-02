@@ -1855,7 +1855,13 @@ the astronomical numbers do not move. Nothing else computes yet.
     as he says, while the ship at sea is void by neither reading, so C230
     stays open with both reported. A topocentric
     Moon swings by parallax beyond what the projection follows (2.3°), so
-    a horary figure is read geocentrically. Rust only so far.
+    a horary figure is read geocentrically. They cross the boundary as the
+    chart request's `considerations_json` and three sections (the clauses,
+    the Moon's two perfections, the orbs), the grounds and the seventh's
+    infortunes as bit sets over the new boundary enums `RadicalGround`
+    and `PtolemaicAspect`; Node, wasm, Python and Dart read them into the
+    serde shape, an answer's `rules` handed back as a request, and every
+    parity runner prints them.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

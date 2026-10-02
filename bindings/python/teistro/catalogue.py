@@ -4084,6 +4084,43 @@ class Lot(Member):
     """The crisis-producing place: from Saturn to Mars by day."""
 
 
+class RadicalGround(Member):
+    """Why a horary figure is radical (Lilly p. 121,
+    `03-design/hellenistic-considerations.md`); a figure's grounds cross as
+    a bit set, bit `n` the member with code `n`.
+    """
+
+    ONE_LORD = 0
+    """The lord of the hour and the lord of the Ascendant are one planet."""
+
+    TRIPLICITY = 1
+    """The lord of the hour rules the rising sign's triplicity."""
+
+    NATURE = 2
+    """The two lords share a temperament."""
+
+
+class PtolemaicAspect(Member):
+    """A Ptolemaic aspect the Moon perfects before judgement
+    (`03-design/hellenistic-considerations.md`).
+    """
+
+    CONJUNCTION = 0
+    """0°."""
+
+    SEXTILE = 1
+    """60°."""
+
+    SQUARE = 2
+    """90°."""
+
+    TRINE = 3
+    """120°."""
+
+    OPPOSITION = 4
+    """180°."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -6300,6 +6337,18 @@ _KEYS: dict[str, dict[int, str]] = {
         11: "MARRIAGE",
         12: "BROTHERS",
         13: "CRISIS",
+    },
+    "RadicalGround": {
+        0: "ONE_LORD",
+        1: "TRIPLICITY",
+        2: "NATURE",
+    },
+    "PtolemaicAspect": {
+        0: "CONJUNCTION",
+        1: "SEXTILE",
+        2: "SQUARE",
+        3: "TRINE",
+        4: "OPPOSITION",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

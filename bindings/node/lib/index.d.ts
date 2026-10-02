@@ -69,6 +69,8 @@ import type {
   PlaceReading,
   FortuneRule,
   Lot,
+  PtolemaicAspect,
+  RadicalGround,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -1223,6 +1225,104 @@ export interface Lots {
   readonly fortuneReversed: boolean;
   /** All fourteen, in the catalogue's order. */
   readonly lots: readonly PlacedLot[];
+}
+
+/**
+ * How to read every chart's considerations before judgement
+ * (`03-design/hellenistic-considerations.md`); every field is optional,
+ * and an absent one is Lilly's.
+ *
+ * @example
+ * const asked: ConsiderationRequest = { moonLateFromDeg: 25 };
+ */
+export interface ConsiderationRequest {
+  /** From what degree of her sign the Moon is late; 27 by default, his late Ascendant (C229). */
+  readonly moonLateFromDeg?: number;
+  /**
+   * The seven whole orbs in the Chaldean order (Saturn, Jupiter, Mars, the
+   * Sun, Venus, Mercury, the Moon), half of each counting toward an
+   * application; Lilly's p. 107 by default (C230).
+   */
+  readonly orbsDeg?: readonly [number, number, number, number, number, number, number];
+}
+
+/** An aspect the Moon perfects with a planet. */
+export interface Perfection {
+  readonly planet: Graha;
+  readonly aspect: PtolemaicAspect;
+  /** Days until it is exact, at the motions of the moment. */
+  readonly days: number;
+  /** How far it is from exact now, degrees. */
+  readonly gapDeg: number;
+}
+
+/** Where the Moon is going before she leaves her sign (p. 112). */
+export interface MoonCourse {
+  /** Her first perfection before she leaves her sign; `null` when void by that reading. */
+  readonly next: Perfection | null;
+  /** The first already within the two planets' moieties; `null` when void by Lilly's moieties (C230). */
+  readonly withinOrb: Perfection | null;
+  /** Days until she leaves her sign. */
+  readonly daysInSign: number;
+  /** Taurus, Cancer, Sagittarius or Pisces, where void "somewhat she performes". */
+  readonly eased: boolean;
+}
+
+/**
+ * A chart's considerations before judgement, each clause with the facts it
+ * rests on and none folded into a verdict.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, considerations: {} });
+ * const radical = (chart.considerations?.radicality.grounds.length ?? 0) > 0;
+ */
+export interface Considerations {
+  readonly radicality: {
+    /** The lord of the chart's planetary hour. */
+    readonly hourLord: Graha;
+    readonly ascendantLord: Graha;
+    /** Every ground that holds; empty when the figure is not radical. */
+    readonly grounds: readonly RadicalGround[];
+  };
+  readonly ascendant: {
+    readonly sign: Rashi;
+    /** Degrees within the sign, [0, 30). */
+    readonly degree: number;
+    /** Fewer than 3 degrees rise. */
+    readonly early: boolean;
+    /** 27 degrees or more rise. */
+    readonly late: boolean;
+    /** A sign of short ascension, Capricorn to Gemini. */
+    readonly shortAscension: boolean;
+  };
+  readonly moon: {
+    readonly sign: Rashi;
+    readonly degree: number;
+    readonly late: boolean;
+    /** Gemini, Scorpio or Capricorn. */
+    readonly lateSign: boolean;
+    /** Libra 15° to Scorpio 15°. */
+    readonly viaCombusta: boolean;
+    readonly course: MoonCourse;
+  };
+  readonly seventh: {
+    readonly cuspDeg: number;
+    readonly lord: Graha;
+    /** Saturn and Mars, when counted in the seventh house (C231). */
+    readonly infortunesInHouse: readonly Graha[];
+    readonly lordRetrograde: boolean;
+    readonly lordCombust: boolean;
+    readonly lordInFall: boolean;
+    readonly lordInInfortuneTerm: boolean;
+    /** Essential and accidental fortitudes less debilities. */
+    readonly lordNet: number;
+  };
+  /** 1 to 12. */
+  readonly saturnHouse: number;
+  readonly saturnRetrograde: boolean;
+  readonly ascendantLordCombust: boolean;
+  /** The request as it stood, every field filled. */
+  readonly rules: Required<ConsiderationRequest>;
 }
 
 /**
@@ -2628,6 +2728,11 @@ export declare class Chart {
    */
   readonly lots: Lots | null;
   /**
+   * Lilly's considerations before judgement; `null` unless
+   * `considerations` asked (`03-design/hellenistic-considerations.md`).
+   */
+  readonly considerations: Considerations | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -3727,6 +3832,13 @@ export interface ChartRequest {
    * horizon and his II.22 Fortune.
    */
   readonly lots?: LotRequest;
+  /**
+   * Lilly's considerations before judgement to read in every chart, read
+   * back as each chart's `considerations`, from the fortitudes `fortitudes`
+   * asks for or Lilly's (`03-design/hellenistic-considerations.md`). None
+   * by default; `{}` is Lilly's.
+   */
+  readonly considerations?: ConsiderationRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

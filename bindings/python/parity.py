@@ -51,6 +51,7 @@ from teistro import (
     Latitude,
     Longitude,
     Observer,
+    Perfection,
     PlanItem,
     Scale,
     Teistro,
@@ -536,6 +537,7 @@ def main() -> None:
                 "almuten": {"fortune": "REVERSED_BY_NIGHT"},
             },
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
+            considerations={"moonLateFromDeg": 25},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -959,6 +961,44 @@ def main() -> None:
                     f"chart-{i}-lot-{placed_lot.lot.key}",
                     f"{number(lot_at.longitude_deg)} {lot_at.sign.full_key} {lot_at.lord.full_key} {lot_at.house}",
                 )
+            cs = chart.considerations
+            assert cs is not None
+
+            def commas(values: Iterable[str]) -> str:
+                return ",".join(values) or "-"
+
+            def perfection(found: Optional[Perfection]) -> str:
+                if found is None:
+                    return "-"
+                return f"{found.planet.full_key} {found.aspect.key} {number(found.days)} {number(found.gap_deg)}"
+
+            rd, asc, mn, sv = cs.radicality, cs.ascendant, cs.moon, cs.seventh
+            put(
+                f"chart-{i}-considerations",
+                f"{rd.hour_lord.full_key} {rd.ascendant_lord.full_key} {commas([g.key for g in rd.grounds])}"
+                f" {asc.sign.full_key} {number(asc.degree)} {int(asc.early)} {int(asc.late)} {int(asc.short_ascension)}",
+            )
+            put(
+                f"chart-{i}-considerations-moon",
+                f"{mn.sign.full_key} {number(mn.degree)} {int(mn.late)} {int(mn.late_sign)} {int(mn.via_combusta)}"
+                f" {number(mn.course.days_in_sign)} {int(mn.course.eased)}",
+            )
+            put(f"chart-{i}-considerations-next", perfection(mn.course.next))
+            put(f"chart-{i}-considerations-within", perfection(mn.course.within_orb))
+            put(
+                f"chart-{i}-considerations-seventh",
+                f"{number(sv.cusp_deg)} {sv.lord.full_key} {commas([g.full_key for g in sv.infortunes_in_house])}"
+                f" {int(sv.lord_retrograde)} {int(sv.lord_combust)} {int(sv.lord_in_fall)}"
+                f" {int(sv.lord_in_infortune_term)} {sv.lord_net}",
+            )
+            put(
+                f"chart-{i}-considerations-saturn",
+                f"{cs.saturn_house} {int(cs.saturn_retrograde)} {int(cs.ascendant_lord_combust)}",
+            )
+            put(
+                f"chart-{i}-considerations-rules",
+                f"{number(cs.rules.moon_late_from_deg)} {','.join(number(orb) for orb in cs.rules.orbs_deg)}",
+            )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

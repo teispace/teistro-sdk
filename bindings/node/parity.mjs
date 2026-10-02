@@ -361,6 +361,7 @@ const charts = geo.chart.foundMany({
     almuten: { fortune: 'REVERSED_BY_NIGHT' },
   },
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
+  considerations: { moonLateFromDeg: 25 },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -638,6 +639,27 @@ for (const chart of charts) {
   lt.lots.forEach(({ lot, place }) =>
     put(`chart-${i}-lot-${lot}`, `${number(place.longitudeDeg)} ${place.sign} ${place.lord} ${place.house}`),
   );
+  const cs = chart.considerations;
+  const flag = (value) => (value ? 1 : 0);
+  const list = (values) => values.join(',') || '-';
+  const perfection = (found) => (found === null ? '-' : `${found.planet} ${found.aspect} ${number(found.days)} ${number(found.gapDeg)}`);
+  put(
+    `chart-${i}-considerations`,
+    `${cs.radicality.hourLord} ${cs.radicality.ascendantLord} ${list(cs.radicality.grounds)} ${cs.ascendant.sign} ${number(cs.ascendant.degree)} ${flag(cs.ascendant.early)} ${flag(cs.ascendant.late)} ${flag(cs.ascendant.shortAscension)}`,
+  );
+  put(
+    `chart-${i}-considerations-moon`,
+    `${cs.moon.sign} ${number(cs.moon.degree)} ${flag(cs.moon.late)} ${flag(cs.moon.lateSign)} ${flag(cs.moon.viaCombusta)} ${number(cs.moon.course.daysInSign)} ${flag(cs.moon.course.eased)}`,
+  );
+  put(`chart-${i}-considerations-next`, perfection(cs.moon.course.next));
+  put(`chart-${i}-considerations-within`, perfection(cs.moon.course.withinOrb));
+  const sv = cs.seventh;
+  put(
+    `chart-${i}-considerations-seventh`,
+    `${number(sv.cuspDeg)} ${sv.lord} ${list(sv.infortunesInHouse)} ${flag(sv.lordRetrograde)} ${flag(sv.lordCombust)} ${flag(sv.lordInFall)} ${flag(sv.lordInInfortuneTerm)} ${sv.lordNet}`,
+  );
+  put(`chart-${i}-considerations-saturn`, `${cs.saturnHouse} ${flag(cs.saturnRetrograde)} ${flag(cs.ascendantLordCombust)}`);
+  put(`chart-${i}-considerations-rules`, `${number(cs.rules.moonLateFromDeg)} ${cs.rules.orbsDeg.map(number).join(',')}`);
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

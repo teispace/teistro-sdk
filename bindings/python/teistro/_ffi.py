@@ -110,7 +110,9 @@ from .catalogue import (
     PolarDayPolicy,
     PolarKind,
     ProviderCode,
+    PtolemaicAspect,
     Quadrant,
+    RadicalGround,
     Rashi,
     Reading,
     Reckoning,
@@ -255,7 +257,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 200,
+    "ts_chart_request": 208,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -692,6 +694,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("dignities_json", ctypes.c_char_p),
         ("fortitudes_json", ctypes.c_char_p),
         ("lots_json", ctypes.c_char_p),
+        ("considerations_json", ctypes.c_char_p),
     ]
 
 
@@ -2431,6 +2434,22 @@ class ChartRequest:
     Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
     """
 
+    considerations_json: Optional[str] = None
+    """Every chart's considerations before judgement (Lilly, *Christian
+    Astrology* I.XIX), as a JSON object, every member optional:
+    `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+    whole orbs in the Chaldean order whose halves make an application
+    (Lilly's p. 107 by default, C230). The fortitudes they read are
+    `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+    back in `considerations`, the Moon's two perfections in
+    `consideration_perfections` and the orbs applied in
+    `consideration_orbs`. Null for none, which costs nothing
+    (`03-design/hellenistic-considerations.md`). Refusals are named from
+    the record every binding calls `considerations`, as
+    `considerations.moonLateFromDeg`.
+    Example: {"moonLateFromDeg":25}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2502,6 +2521,9 @@ class ChartRequest:
         _lots_json = None if self.lots_json is None else self.lots_json.encode("utf-8")
         owned.append(_lots_json)
         raw.lots_json = _lots_json
+        _considerations_json = None if self.considerations_json is None else self.considerations_json.encode("utf-8")
+        owned.append(_considerations_json)
+        raw.considerations_json = _considerations_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2549,6 +2571,7 @@ class ChartRequest:
             dignities_json=_text(raw.dignities_json),
             fortitudes_json=_text(raw.fortitudes_json),
             lots_json=_text(raw.lots_json),
+            considerations_json=_text(raw.considerations_json),
         )
 
 

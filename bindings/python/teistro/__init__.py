@@ -161,6 +161,8 @@ from .catalogue import (
     PlaceReading,
     FortuneRule,
     Lot,
+    PtolemaicAspect,
+    RadicalGround,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -457,6 +459,18 @@ __all__ = [
     "PlacedLot",
     "Lots",
     "Lot",
+    # Lilly's considerations before judgement.
+    "ConsiderationRequest",
+    "ConsiderationRules",
+    "Perfection",
+    "MoonCourse",
+    "Radicality",
+    "AscendantClause",
+    "MoonClause",
+    "SeventhClause",
+    "Considerations",
+    "PtolemaicAspect",
+    "RadicalGround",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1496,6 +1510,7 @@ class ChartArea(_Area):
         dignities: Optional[DignityRequest] = None,
         fortitudes: Optional[FortitudeRequest] = None,
         lots: Optional[Union[LotRequest, LotRules]] = None,
+        considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1540,6 +1555,7 @@ class ChartArea(_Area):
             dignities=dignities,
             fortitudes=fortitudes,
             lots=lots,
+            considerations=considerations,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1574,6 +1590,7 @@ class ChartArea(_Area):
         dignities: Optional[DignityRequest] = None,
         fortitudes: Optional[FortitudeRequest] = None,
         lots: Optional[Union[LotRequest, LotRules]] = None,
+        considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1639,6 +1656,7 @@ class ChartArea(_Area):
             dignities_json=_dignities_json(dignities),
             fortitudes_json=_fortitudes_json(fortitudes),
             lots_json=_lots_json(lots),
+            considerations_json=_considerations_json(considerations),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3293,6 +3311,150 @@ class Lots:
 
     lots: Tuple[PlacedLot, ...]
     """All fourteen, in the catalogue's order."""
+
+
+class ConsiderationRequest(TypedDict, total=False):
+    """How to read every chart's considerations before judgement
+    (`03-design/hellenistic-considerations.md`), every field optional and
+    Lilly's when absent: `moonLateFromDeg`, 27 by default (C229), and
+    `orbsDeg`, the seven whole orbs in the Chaldean order whose halves make
+    an application, his p. 107 by default (C230). An answer's `rules`, a
+    `ConsiderationRules`, may be handed back as it stands.
+
+    >>> asked: ConsiderationRequest = {"moonLateFromDeg": 25}
+    """
+
+    moonLateFromDeg: float
+    orbsDeg: Sequence[float]
+
+
+@dataclass(frozen=True)
+class ConsiderationRules:
+    """The rules a chart's considerations were read under, every field
+    filled."""
+
+    moon_late_from_deg: float
+    """From what degree of her sign the Moon is late (C229)."""
+
+    orbs_deg: Tuple[float, ...]
+    """The seven whole orbs in the Chaldean order: Saturn, Jupiter, Mars,
+    the Sun, Venus, Mercury, the Moon (C230)."""
+
+
+@dataclass(frozen=True)
+class Perfection:
+    """An aspect the Moon perfects with a planet."""
+
+    planet: Graha
+    aspect: PtolemaicAspect
+    days: float
+    """Days until it is exact, at the motions of the moment."""
+
+    gap_deg: float
+    """How far it is from exact now, degrees."""
+
+
+@dataclass(frozen=True)
+class MoonCourse:
+    """Where the Moon is going before she leaves her sign (p. 112)."""
+
+    next: Optional[Perfection]
+    """Her first perfection before she leaves her sign; `None` when void by
+    that reading."""
+
+    within_orb: Optional[Perfection]
+    """The first already within the two planets' moieties; `None` when void
+    by Lilly's moieties (C230)."""
+
+    days_in_sign: float
+    eased: bool
+    """Taurus, Cancer, Sagittarius or Pisces, where void "somewhat she
+    performes"."""
+
+
+@dataclass(frozen=True)
+class Radicality:
+    """Whether the figure is radical (p. 121)."""
+
+    hour_lord: Graha
+    """The lord of the chart's planetary hour."""
+
+    ascendant_lord: Graha
+    grounds: Tuple[RadicalGround, ...]
+    """Every ground that holds; empty when the figure is not radical."""
+
+
+@dataclass(frozen=True)
+class AscendantClause:
+    """The Ascendant's degree (p. 122)."""
+
+    sign: Rashi
+    degree: float
+    """Degrees within the sign, [0, 30)."""
+
+    early: bool
+    """Fewer than 3 degrees rise."""
+
+    late: bool
+    """27 degrees or more rise."""
+
+    short_ascension: bool
+    """A sign of short ascension, Capricorn to Gemini."""
+
+
+@dataclass(frozen=True)
+class MoonClause:
+    """The Moon's place and course (pp. 112, 122)."""
+
+    sign: Rashi
+    degree: float
+    late: bool
+    late_sign: bool
+    """Gemini, Scorpio or Capricorn."""
+
+    via_combusta: bool
+    """Libra 15° to Scorpio 15°."""
+
+    course: MoonCourse
+
+
+@dataclass(frozen=True)
+class SeventhClause:
+    """The seventh house and its lord (pp. 122–123)."""
+
+    cusp_deg: float
+    lord: Graha
+    infortunes_in_house: Tuple[Graha, ...]
+    """Saturn and Mars when counted in the seventh house (C231)."""
+
+    lord_retrograde: bool
+    lord_combust: bool
+    lord_in_fall: bool
+    lord_in_infortune_term: bool
+    lord_net: int
+    """Essential and accidental fortitudes less debilities."""
+
+
+@dataclass(frozen=True)
+class Considerations:
+    """A chart's considerations before judgement, each clause with the facts
+    it rests on and none folded into a verdict
+    (`03-design/hellenistic-considerations.md`).
+
+    >>> # chart = ctx.chart.found(..., considerations={})
+    >>> # radical = bool(chart.considerations.radicality.grounds)
+    """
+
+    radicality: Radicality
+    ascendant: AscendantClause
+    moon: MoonClause
+    seventh: SeventhClause
+    saturn_house: int
+    """1 to 12."""
+
+    saturn_retrograde: bool
+    ascendant_lord_combust: bool
+    rules: ConsiderationRules
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -5877,6 +6039,18 @@ def _fortitudes_json(fortitudes: Optional[FortitudeRequest]) -> Optional[str]:
     return _record_json(_written(fortitudes), "fortitudes", example)
 
 
+def _considerations_json(
+    considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]],
+) -> Optional[str]:
+    """The considerations as the JSON the boundary reads, or nothing for
+    none; an answer's rules are written as a request writes them, and the
+    SDK refuses the rest, naming the field from `considerations`."""
+    example = "{'moonLateFromDeg': 25}"
+    if not isinstance(considerations, (Mapping, ConsiderationRules)):
+        return _record_json(considerations, "considerations", example)
+    return _record_json(_written(considerations), "considerations", example)
+
+
 def _lots_json(lots: Optional[Union[LotRequest, LotRules]]) -> Optional[str]:
     """The lots as the JSON the boundary reads, or nothing for none; an
     answer's rules are written as a request writes them, and the SDK
@@ -6005,7 +6179,7 @@ def _written(value: Any) -> Any:
         return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
     if isinstance(value, (AccidentalRules, AccidentalScores)):
         return value._record()
-    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules, LotRules)):
+    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules, LotRules, ConsiderationRules)):
         return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
     if isinstance(value, Mapping):
         return {key: _written(inner) for key, inner in value.items()}
@@ -7389,6 +7563,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def considerations(self) -> Optional[Considerations]:
+        """Lilly's considerations before judgement, read from the chart's
+        fortitudes and its planetary hour; `None` unless `considerations=`
+        asked for them (`03-design/hellenistic-considerations.md`)."""
+        parsed = self.batch._considerations
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -7765,6 +7947,82 @@ class ChartBatch:
         for."""
         text = self.decoded.kp
         return [_kp_reading(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _considerations(self) -> list[Considerations]:
+        """Every chart's considerations, decoded once; empty when none were
+        asked for. `considerations` holds a row a chart,
+        `consideration_perfections` two and `consideration_orbs` seven."""
+        c = self.decoded.considerations
+        p = self.decoded.consideration_perfections
+        o = self.decoded.consideration_orbs
+        charts = len(self.decoded.cast.instant)
+        if c.length == 0:
+            return []
+        if c.length != charts or p.length != 2 * charts or o.length != 7 * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"considerations has {c.length} rows, consideration_perfections {p.length}"
+                f" and consideration_orbs {o.length} for {charts} charts; they are one, two and seven a chart",
+            )
+
+        def perfection(row: int) -> Optional[Perfection]:
+            if p.present[row] != 1:
+                return None
+            return Perfection(
+                planet=Graha(p.planet[row]),
+                aspect=PtolemaicAspect(p.aspect[row]),
+                days=p.days[row],
+                gap_deg=p.gap_deg[row],
+            )
+
+        def read(k: int) -> Considerations:
+            return Considerations(
+                radicality=Radicality(
+                    hour_lord=Graha(c.hour_lord[k]),
+                    ascendant_lord=Graha(c.ascendant_lord[k]),
+                    grounds=tuple(_members(c.radical_grounds[k], RadicalGround)),
+                ),
+                ascendant=AscendantClause(
+                    sign=Rashi(c.ascendant_sign[k]),
+                    degree=c.ascendant_degree[k],
+                    early=c.ascendant_early[k] == 1,
+                    late=c.ascendant_late[k] == 1,
+                    short_ascension=c.short_ascension[k] == 1,
+                ),
+                moon=MoonClause(
+                    sign=Rashi(c.moon_sign[k]),
+                    degree=c.moon_degree[k],
+                    late=c.moon_late[k] == 1,
+                    late_sign=c.moon_late_sign[k] == 1,
+                    via_combusta=c.via_combusta[k] == 1,
+                    course=MoonCourse(
+                        next=perfection(2 * k),
+                        within_orb=perfection(2 * k + 1),
+                        days_in_sign=c.days_in_sign[k],
+                        eased=c.eased[k] == 1,
+                    ),
+                ),
+                seventh=SeventhClause(
+                    cusp_deg=c.seventh_cusp_deg[k],
+                    lord=Graha(c.seventh_lord[k]),
+                    infortunes_in_house=tuple(_members(c.seventh_infortunes[k], _SEVEN)),
+                    lord_retrograde=c.seventh_lord_retrograde[k] == 1,
+                    lord_combust=c.seventh_lord_combust[k] == 1,
+                    lord_in_fall=c.seventh_lord_in_fall[k] == 1,
+                    lord_in_infortune_term=c.seventh_lord_in_infortune_term[k] == 1,
+                    lord_net=c.seventh_lord_net[k],
+                ),
+                saturn_house=c.saturn_house[k],
+                saturn_retrograde=c.saturn_retrograde[k] == 1,
+                ascendant_lord_combust=c.ascendant_lord_combust[k] == 1,
+                rules=ConsiderationRules(
+                    moon_late_from_deg=c.moon_late_from_deg[k],
+                    orbs_deg=tuple(o.orb_deg[7 * k + n] for n in range(7)),
+                ),
+            )
+
+        return [read(k) for k in range(charts)]
 
     @cached_property
     def _lots(self) -> list[Lots]:

@@ -38,6 +38,7 @@ const SIGN_DEG: f64 = 30.0;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
 pub enum Temperament {
     /// Mars and the Sun.
     HotDry,
@@ -69,6 +70,7 @@ impl Temperament {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
 pub enum RadicalGround {
     /// The lord of the hour rules the ascending sign: Mars's hour with
     /// Aries rising.
@@ -116,6 +118,7 @@ pub fn radical_grounds(
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
 pub enum PtolemaicAspect {
     /// 0°.
     Conjunction,

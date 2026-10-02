@@ -1573,6 +1573,64 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=instants[0], **bad, **kathmandu)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_considerations(self) -> None:
+        """Lilly's considerations cross whole, members resolved: each clause
+        read from the chart's own fortitudes, the Moon's two readings of her
+        course, the rules read back and handed back as a request, a batch
+        the charts one at a time, and a refusal named in the record
+        (`03-design/hellenistic-considerations.md`)."""
+        from teistro import ConsiderationRequest, ConsiderationRules, RadicalGround
+
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(-0.12), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        instants = [2451545 + k / 8 for k in range(16)]
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instants[0], **london).considerations)
+            voids = 0
+            for instant in instants:
+                chart = ctx.chart.found(instant=instant, considerations={}, fortitudes={}, **london)
+                read = chart.considerations
+                assert read is not None and chart.fortitudes is not None
+                self.assertEqual(read.rules, ConsiderationRules(27.0, (10.0, 12.0, 7.5, 17.0, 8.0, 7.0, 12.5)))
+                sky = chart.fortitudes.sky
+                self.assertEqual(read.ascendant.sign.id, int(sky.ascendant_deg // 30))
+                self.assertEqual(read.seventh.cusp_deg, sky.cusps_deg[6])
+                self.assertEqual(read.ascendant.early, read.ascendant.degree < 3)
+                course = read.moon.course
+                if course.next is None:
+                    self.assertIsNone(course.within_orb)
+                if course.next is None or course.within_orb is None:
+                    voids += 1
+                self.assertEqual(
+                    RadicalGround.ONE_LORD in read.radicality.grounds,
+                    read.radicality.hour_lord is read.radicality.ascendant_lord,
+                )
+                # The answer's rules are a request as they stand.
+                fed_back = ctx.chart.found(instant=instant, considerations=read.rules, fortitudes={}, **london)
+                self.assertEqual(fed_back.considerations, read)
+            self.assertGreater(voids, 0, "a void Moon in the batch")
+
+            asked: ConsiderationRequest = {"moonLateFromDeg": 25, "orbsDeg": [9, 9, 7, 15, 7, 7, 12]}
+            other = ctx.chart.found(instant=instants[0], considerations=asked, **london).considerations
+            assert other is not None
+            self.assertEqual(other.rules, ConsiderationRules(25.0, (9.0, 9.0, 7.0, 15.0, 7.0, 7.0, 12.0)))
+
+            batch = ctx.chart.found_many(instants=instants, considerations={}, **london)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).considerations, ctx.chart.found(instant=instant, considerations={}, **london).considerations
+                )
+            refusals: list[tuple[dict[str, Any], str]] = [
+                ({"moonLateFromDeg": 31}, "considerations.moonLateFromDeg"),
+                ({"moonLate": 25}, "considerations.moonLate"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=instants[0], considerations=request, **london)  # type: ignore[arg-type]
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_lots(self) -> None:
         """Valens's lots cross whole, members resolved: the sect and the rules
         read back and handed back as a request, all fourteen in the
