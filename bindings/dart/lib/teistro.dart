@@ -679,6 +679,7 @@ final class ChartArea extends _Area {
     FortitudeRequest? fortitudes,
     LotRequest? lots,
     ConsiderationRules? considerations,
+    PerfectionRequest? perfection,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -710,6 +711,7 @@ final class ChartArea extends _Area {
     fortitudes: fortitudes,
     lots: lots,
     considerations: considerations,
+    perfection: perfection,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -761,6 +763,7 @@ final class ChartArea extends _Area {
     FortitudeRequest? fortitudes,
     LotRequest? lots,
     ConsiderationRules? considerations,
+    PerfectionRequest? perfection,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -814,6 +817,7 @@ final class ChartArea extends _Area {
             fortitudesJson: fortitudes?._json,
             lotsJson: lots?._json,
             considerationsJson: considerations?._json,
+            perfectionJson: perfection?._json,
           ),
         ),
       ),
@@ -4110,6 +4114,158 @@ List<Considerations> _decodeConsiderations(Charts batch) {
   );
 }
 
+final Expando<List<Matter>> _perfections = Expando<List<Matter>>('perfections');
+
+List<Matter> _perfectionsOf(Charts batch) =>
+    _perfections[batch] ??= _decodePerfections(batch);
+
+/// A dignity bit set, bit `n` the `n`th of [EssentialDignity]'s flags in
+/// its order: house, exaltation, triplicity, term, face, detriment, fall.
+EssentialDignity _dignityOf(int bits) {
+  bool bit(int n) => (bits >> n) & 1 == 1;
+  return EssentialDignity(
+    house: bit(0),
+    exaltation: bit(1),
+    triplicity: bit(2),
+    term: bit(3),
+    face: bit(4),
+    detriment: bit(5),
+    fall: bit(6),
+  );
+}
+
+/// `perfection` holds a row a chart, or none when none was asked; its
+/// impediments, translations and collections are ragged by that row's
+/// counts, and `perfection_orbs` holds seven a chart in the Chaldean order.
+List<Matter> _decodePerfections(Charts batch) {
+  final m = batch.perfection;
+  final i = batch.perfectionImpediments;
+  final t = batch.perfectionTranslations;
+  final c = batch.perfectionCollections;
+  final o = batch.perfectionOrbs;
+  final charts = batch.cast.instant.length;
+  if (m.length == 0) return const <Matter>[];
+  if (m.length != charts || o.length != 7 * charts) {
+    throw StateError(
+      'perfection has ${m.length} rows and perfection_orbs ${o.length} for '
+      '$charts charts; they are one and seven a chart',
+    );
+  }
+  final impediments = _Starts._running(m.impedimentCount);
+  final translations = _Starts._running(m.translationCount);
+  final collections = _Starts._running(m.collectionCount);
+  for (final (name, rows, counted) in [
+    ('perfection_impediments', i.length, impediments.last),
+    ('perfection_translations', t.length, translations.last),
+    ('perfection_collections', c.length, collections.last),
+  ]) {
+    if (rows != counted) {
+      throw StateError('$name has $rows rows and the charts count $counted');
+    }
+  }
+  List<T> rows<T>(List<int> starts, int k, T Function(int) read) =>
+      List<T>.unmodifiable([
+        for (var at = starts[k]; at < starts[k + 1]; at += 1) read(at),
+      ]);
+  return List<Matter>.generate(charts, (k) {
+    final horizonRule = m.horizonRuleDays[k];
+    return Matter(
+      querent: Graha.byId(m.querent[k]),
+      quesited: Graha.byId(m.quesited[k]),
+      application:
+          m.applicationPresent[k] == 1
+              ? Application(
+                aspect: PtolemaicAspect.byId(m.applicationAspect[k]),
+                days: m.applicationDays[k],
+                applying: Graha.byId(m.applying[k]),
+                kind: ApplicationKind.byId(m.applicationKind[k]),
+                gapDeg: m.gapDeg[k],
+                withinMoieties: m.withinMoieties[k] == 1,
+              )
+              : null,
+      separation:
+          m.separationPresent[k] == 1
+              ? Separation(
+                aspect: PtolemaicAspect.byId(m.separationAspect[k]),
+                pastDeg: m.separationPastDeg[k],
+              )
+              : null,
+      impediments: rows(
+        impediments,
+        k,
+        (at) => Impediment(
+          kind: ImpedimentKind.byId(i.kind[at]),
+          significator: Graha.byId(i.significator[at]),
+          third: i.thirdPresent[at] == 1 ? Graha.byId(i.third[at]) : null,
+          aspect: PtolemaicAspect.byId(i.aspect[at]),
+          days: i.days[at],
+        ),
+      ),
+      translations: rows(
+        translations,
+        k,
+        (at) => Translation(
+          translator: Graha.byId(t.translator[at]),
+          from: Graha.byId(t.from[at]),
+          to: Graha.byId(t.to[at]),
+          separating: Separation(
+            aspect: PtolemaicAspect.byId(t.separatingAspect[at]),
+            pastDeg: t.separatingPastDeg[at],
+          ),
+          aspect: PtolemaicAspect.byId(t.aspect[at]),
+          days: t.days[at],
+          received: _dignityOf(t.received[at]),
+        ),
+      ),
+      collections: rows(
+        collections,
+        k,
+        (at) => Collection(
+          collector: Graha.byId(c.collector[at]),
+          fromQuerent: ContactAhead(
+            aspect: PtolemaicAspect.byId(c.fromQuerentAspect[at]),
+            days: c.fromQuerentDays[at],
+          ),
+          fromQuesited: ContactAhead(
+            aspect: PtolemaicAspect.byId(c.fromQuesitedAspect[at]),
+            days: c.fromQuesitedDays[at],
+          ),
+          collectorInQuerent: _dignityOf(c.collectorInQuerent[at]),
+          collectorInQuesited: _dignityOf(c.collectorInQuesited[at]),
+          querentInCollector: _dignityOf(c.querentInCollector[at]),
+          quesitedInCollector: _dignityOf(c.quesitedInCollector[at]),
+        ),
+      ),
+      ways: Ways(
+        querent: SignificatorPlace(
+          planet: Graha.byId(m.querent[k]),
+          house: m.querentHouse[k],
+          dignity: _dignityOf(m.querentDignity[k]),
+        ),
+        quesited: SignificatorPlace(
+          planet: Graha.byId(m.quesited[k]),
+          house: m.quesitedHouse[k],
+          dignity: _dignityOf(m.quesitedDignity[k]),
+        ),
+        mutualByHouse: m.mutualByHouse[k] == 1,
+        infortunesBetween: List<Graha>.unmodifiable(
+          _seven(m.infortunesBetween[k]),
+        ),
+        moonRelays: m.moonRelays[k] == 1,
+        quesitedInAscendant: m.quesitedInAscendant[k] == 1,
+        held: List<Way>.unmodifiable(
+          _members<Way>(m.waysHeld[k], Way.values, (w) => w.id),
+        ),
+      ),
+      horizonDays: m.horizonDays[k],
+      rules: PerfectionRules(
+        orbsDeg: List<double>.unmodifiable(o.orbDeg.sublist(7 * k, 7 * k + 7)),
+        horizonDays: horizonRule.isNaN ? null : horizonRule,
+      ),
+    );
+  });
+}
+
 final Expando<List<Fortitudes>> _fortitudes = Expando<List<Fortitudes>>(
   'fortitudes',
 );
@@ -5933,6 +6089,378 @@ final class ConsiderationRules extends _Value {
 
   @override
   List<Object?> get _fields => [moonLateFromDeg, orbsDeg];
+}
+
+/// Lilly's rules a chart's perfection is read under
+/// (`03-design/hellenistic-perfection.md`); an answer's `rules` is one,
+/// handed back as it stands.
+final class PerfectionRules extends _Value {
+  const PerfectionRules({
+    this.orbsDeg = const <double>[10, 12, 7.5, 17, 8, 7, 12.5],
+    this.horizonDays,
+  });
+
+  /// Lilly's orbs (p. 107), looking until the swifter significator leaves
+  /// its sign.
+  static const PerfectionRules lilly = PerfectionRules();
+
+  /// Each planet's whole orb in the Chaldean order, Saturn to the Moon;
+  /// half of each counts toward an application. Seven, none negative.
+  final List<double> orbsDeg;
+
+  /// How many days ahead to look; null, until the swifter significator
+  /// leaves its sign (C232). Positive, or the SDK refuses it by
+  /// `perfection.rules.horizonDays`.
+  final double? horizonDays;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'orbsDeg': orbsDeg,
+    if (horizonDays != null) 'horizonDays': horizonDays,
+  };
+
+  @override
+  List<Object?> get _fields => [orbsDeg, horizonDays];
+}
+
+/// Whether a horary matter is brought to pass (Lilly, *Christian
+/// Astrology* pp. 107–113 and 125–127,
+/// `03-design/hellenistic-perfection.md`): the quesited's significator
+/// named, or the house of the matter, whose cusp's lord signifies it; the
+/// querent's is the Ascendant's lord unless named.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ perfection: const PerfectionRequest.ofHouse(7),
+/// );
+/// final perfects = chart.perfection?.ways.held.isNotEmpty ?? false;
+/// ```
+final class PerfectionRequest extends _Value {
+  /// Every field as written; the SDK refuses neither or both of `quesited`
+  /// and `house`, by the field it names.
+  const PerfectionRequest({
+    this.querent,
+    this.quesited,
+    this.house,
+    this.rules = PerfectionRules.lilly,
+  });
+
+  /// The matter of house [house], 1 to 12.
+  const PerfectionRequest.ofHouse(
+    int this.house, {
+    this.querent,
+    this.rules = PerfectionRules.lilly,
+  }) : quesited = null;
+
+  /// The matter between two named significators.
+  const PerfectionRequest.between(
+    Graha this.querent,
+    Graha this.quesited, {
+    this.rules = PerfectionRules.lilly,
+  }) : house = null;
+
+  /// The querent's significator; null, the Ascendant's lord.
+  final Graha? querent;
+
+  /// The quesited's significator, one of the seven.
+  final Graha? quesited;
+
+  /// The house of the matter, 1 to 12.
+  final int? house;
+
+  final PerfectionRules rules;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (querent case final querent?) 'querent': querent.fullKey,
+    if (quesited case final quesited?) 'quesited': quesited.fullKey,
+    if (house != null) 'house': house,
+    'rules': rules._record,
+  });
+
+  @override
+  List<Object?> get _fields => [querent, quesited, house, rules];
+}
+
+/// The significators coming to an aspect (p. 107).
+final class Application extends _Value {
+  const Application({
+    required this.aspect,
+    required this.days,
+    required this.applying,
+    required this.kind,
+    required this.gapDeg,
+    required this.withinMoieties,
+  });
+
+  final PtolemaicAspect aspect;
+
+  /// Days until it is exact.
+  final double days;
+
+  /// The significator whose motion closes it.
+  final Graha applying;
+  final ApplicationKind kind;
+
+  /// How far it is from exact now, degrees.
+  final double gapDeg;
+
+  /// Whether the gap is already within the two planets' moieties of orb.
+  final bool withinMoieties;
+
+  @override
+  List<Object?> get _fields => [
+    aspect,
+    days,
+    applying,
+    kind,
+    gapDeg,
+    withinMoieties,
+  ];
+}
+
+/// Two planets past an aspect and still within their moieties (p. 110).
+final class Separation extends _Value {
+  const Separation({required this.aspect, required this.pastDeg});
+
+  final PtolemaicAspect aspect;
+
+  /// How far past exact, degrees.
+  final double pastDeg;
+
+  @override
+  List<Object?> get _fields => [aspect, pastDeg];
+}
+
+/// What stops or hinders the application (pp. 110–113).
+final class Impediment extends _Value {
+  const Impediment({
+    required this.kind,
+    required this.significator,
+    required this.third,
+    required this.aspect,
+    required this.days,
+  });
+
+  final ImpedimentKind kind;
+
+  /// The significator it falls on.
+  final Graha significator;
+
+  /// The third planet; null for a refranation.
+  final Graha? third;
+
+  /// The aspect the third perfects, or the one refrained from.
+  final PtolemaicAspect aspect;
+
+  /// Days until the contact, or the station.
+  final double days;
+
+  @override
+  List<Object?> get _fields => [kind, significator, third, aspect, days];
+}
+
+/// A lighter planet carrying one significator's light to the other
+/// (p. 111).
+final class Translation extends _Value {
+  const Translation({
+    required this.translator,
+    required this.from,
+    required this.to,
+    required this.separating,
+    required this.aspect,
+    required this.days,
+    required this.received,
+  });
+
+  final Graha translator;
+
+  /// The significator it separates from.
+  final Graha from;
+
+  /// The significator it applies to next.
+  final Graha to;
+  final Separation separating;
+
+  /// The aspect it applies to [to] by.
+  final PtolemaicAspect aspect;
+
+  /// Days until that is exact.
+  final double days;
+
+  /// The dignities of [from] the translator stands in: how it is received
+  /// (p. 126).
+  final EssentialDignity received;
+
+  @override
+  List<Object?> get _fields => [
+    translator,
+    from,
+    to,
+    separating,
+    aspect,
+    days,
+    received,
+  ];
+}
+
+/// A significator's application to a collector.
+final class ContactAhead extends _Value {
+  const ContactAhead({required this.aspect, required this.days});
+
+  final PtolemaicAspect aspect;
+
+  /// Days until it is exact.
+  final double days;
+
+  @override
+  List<Object?> get _fields => [aspect, days];
+}
+
+/// A heavier planet both significators apply to (p. 112); who must
+/// receive whom is C233.
+final class Collection extends _Value {
+  const Collection({
+    required this.collector,
+    required this.fromQuerent,
+    required this.fromQuesited,
+    required this.collectorInQuerent,
+    required this.collectorInQuesited,
+    required this.querentInCollector,
+    required this.quesitedInCollector,
+  });
+
+  final Graha collector;
+  final ContactAhead fromQuerent;
+  final ContactAhead fromQuesited;
+  final EssentialDignity collectorInQuerent;
+  final EssentialDignity collectorInQuesited;
+  final EssentialDignity querentInCollector;
+  final EssentialDignity quesitedInCollector;
+
+  @override
+  List<Object?> get _fields => [
+    collector,
+    fromQuerent,
+    fromQuesited,
+    collectorInQuerent,
+    collectorInQuesited,
+    querentInCollector,
+    quesitedInCollector,
+  ];
+}
+
+/// Where a significator stands.
+final class SignificatorPlace extends _Value {
+  const SignificatorPlace({
+    required this.planet,
+    required this.house,
+    required this.dignity,
+  });
+
+  final Graha planet;
+
+  /// 1 to 12.
+  final int house;
+
+  /// Its own dignities at its degree.
+  final EssentialDignity dignity;
+
+  @override
+  List<Object?> get _fields => [planet, house, dignity];
+}
+
+/// The ways of perfection (pp. 125–127): what they weigh, and which hold.
+final class Ways extends _Value {
+  const Ways({
+    required this.querent,
+    required this.quesited,
+    required this.mutualByHouse,
+    required this.infortunesBetween,
+    required this.moonRelays,
+    required this.quesitedInAscendant,
+    required this.held,
+  });
+
+  final SignificatorPlace querent;
+  final SignificatorPlace quesited;
+
+  /// Each stands in the other's house.
+  final bool mutualByHouse;
+
+  /// Saturn and Mars among the thirds that come between the significators
+  /// before they perfect.
+  final List<Graha> infortunesBetween;
+
+  /// The Moon, neither significator, separating from the quesited's and
+  /// coming next to the querent's.
+  final bool moonRelays;
+
+  /// The quesited's significator in the first house.
+  final bool quesitedInAscendant;
+
+  /// The ways the figure holds, in [Way]'s order.
+  final List<Way> held;
+
+  @override
+  List<Object?> get _fields => [
+    querent,
+    quesited,
+    mutualByHouse,
+    infortunesBetween,
+    moonRelays,
+    quesitedInAscendant,
+    held,
+  ];
+}
+
+/// Whether a horary matter is brought to pass: the relations between two
+/// significators with the facts each rests on, never a verdict
+/// (`03-design/hellenistic-perfection.md`).
+final class Matter extends _Value {
+  const Matter({
+    required this.querent,
+    required this.quesited,
+    required this.application,
+    required this.separation,
+    required this.impediments,
+    required this.translations,
+    required this.collections,
+    required this.ways,
+    required this.horizonDays,
+    required this.rules,
+  });
+
+  final Graha querent;
+  final Graha quesited;
+
+  /// Their application within the horizon; null when none.
+  final Application? application;
+
+  /// Their separation at the figure; null when none.
+  final Separation? separation;
+  final List<Impediment> impediments;
+  final List<Translation> translations;
+  final List<Collection> collections;
+  final Ways ways;
+
+  /// How many days ahead it was read.
+  final double horizonDays;
+
+  /// The rules it was read under, as asked.
+  final PerfectionRules rules;
+
+  @override
+  List<Object?> get _fields => [
+    querent,
+    quesited,
+    application,
+    separation,
+    impediments,
+    translations,
+    collections,
+    ways,
+    horizonDays,
+    rules,
+  ];
 }
 
 /// A Ptolemaic aspect the Moon perfects with another planet, and how far
@@ -11357,6 +11885,14 @@ final class Chart {
   /// (`03-design/hellenistic-considerations.md`).
   Considerations? get considerations {
     final all = _considerationsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Whether a horary matter is brought to pass, weighed on the chart's
+  /// fortitudes and searched on the ephemeris; null unless `perfection`
+  /// asked (`03-design/hellenistic-perfection.md`).
+  Matter? get perfection {
+    final all = _perfectionsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

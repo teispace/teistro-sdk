@@ -2473,6 +2473,140 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its perfection', () {
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(-0.12),
+      altitudeM: Altitude(0),
+    );
+    final instants = [for (var k = 0; k < 12; k += 1) 2451545 + 23 * k + k / 7];
+    const seventh = PerfectionRequest.ofHouse(7);
+    Chart found(
+      double instant, {
+      PerfectionRequest? perfection,
+      FortitudeRequest? fortitudes,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: london,
+      utcOffsetSeconds: 0,
+      perfection: perfection,
+      fortitudes: fortitudes,
+    );
+    expect(found(instants[0]).perfection, isNull);
+
+    var applying = 0;
+    var hindered = 0;
+    for (final instant in instants) {
+      final chart = found(
+        instant,
+        perfection: seventh,
+        fortitudes: const FortitudeRequest(),
+      );
+      final read = chart.perfection!;
+      expect(read.rules, PerfectionRules.lilly);
+      expect(read.querent, isNot(read.quesited));
+      final houses = {
+        for (final at in chart.fortitudes!.planets) at.planet: at.house,
+      };
+      expect(read.ways.querent.house, houses[read.querent]);
+      expect(read.ways.quesited.house, houses[read.quesited]);
+      if (read.application case final application?) {
+        applying += 1;
+        expect(application.days, inInclusiveRange(0, read.horizonDays));
+        expect([read.querent, read.quesited], contains(application.applying));
+      }
+      for (final way in [
+        Way.conjunction,
+        Way.sextileOrTrine,
+        Way.square,
+        Way.opposition,
+      ]) {
+        if (read.ways.held.contains(way)) {
+          expect(read.application, isNotNull, reason: '$way');
+        }
+      }
+      for (final impediment in read.impediments) {
+        hindered += 1;
+        expect(
+          impediment.third == null,
+          impediment.kind == ImpedimentKind.refranation,
+        );
+      }
+      for (final translation in read.translations) {
+        expect(
+          {translation.from, translation.to},
+          {read.querent, read.quesited},
+        );
+      }
+      // The answer's rules are a request as they stand.
+      expect(
+        found(
+          instant,
+          perfection: PerfectionRequest.ofHouse(7, rules: read.rules),
+        ).perfection,
+        read,
+      );
+    }
+    expect(applying, greaterThan(0), reason: 'the sweep applies');
+    expect(hindered, greaterThan(0), reason: 'and is hindered');
+
+    final named =
+        found(
+          instants[0],
+          perfection: const PerfectionRequest.between(
+            Graha.venus,
+            Graha.mars,
+            rules: PerfectionRules(horizonDays: 30),
+          ),
+        ).perfection!;
+    expect(
+      (
+        named.querent,
+        named.quesited,
+        named.rules.horizonDays,
+        named.horizonDays,
+      ),
+      (Graha.venus, Graha.mars, 30.0, 30.0),
+    );
+
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: london,
+      utcOffsetSeconds: 0,
+      perfection: seventh,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).perfection,
+        found(instant, perfection: seventh).perfection,
+      );
+    }
+    for (final (asked, field) in [
+      (const PerfectionRequest(), 'perfection.quesited'),
+      (
+        const PerfectionRequest(house: 7, quesited: Graha.mars),
+        'perfection.house',
+      ),
+      (
+        const PerfectionRequest.ofHouse(
+          7,
+          rules: PerfectionRules(horizonDays: -1),
+        ),
+        'perfection.rules.horizonDays',
+      ),
+    ]) {
+      expect(
+        () => found(instants[0], perfection: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its accidental fortitudes', () {
     final ctx = teistro.context(
       profile: 'conformance-baseline',
