@@ -1,0 +1,173 @@
+# Perfection: whether a matter is brought to pass (the `hellenistic` module, step 11)
+
+Status: `designed`, 2026-10-02 — written from Lilly's text before any
+code; the building will correct it.
+
+A horary question names two significators, the querent's (the lord of
+the Ascendant) and the quesited's (the lord of the house of the thing
+asked). Lilly lists the ways a matter between them is brought to pass,
+and the ways it is stopped short. As with the
+considerations ([`hellenistic-considerations.md`](hellenistic-considerations.md)),
+the SDK reports each way and each impediment that holds, with the facts
+it rests on, and never a verdict.
+
+## What the source decides
+
+**Lilly**, *Christian Astrology* (1647), is the rank 1 text, read off
+the Wellcome scan's page images (leaf = printed page + 33):
+
+- Book I ch. XXI, printed pp. 125–127, the ways of perfection;
+- pp. 106–113, the relations they are built from: application and
+  separation, prohibition, refranation, translation, frustration.
+
+The relations, each a clause between named planets:
+
+1. **Application** (p. 107) "is three severall wayes": a swifter direct
+   planet to a slower direct one; both retrograde; and a direct planet
+   in fewer degrees meeting a retrograde one in more. He calls the second
+   and the third each "an ill Application" (verified on the page image).
+2. **Separation** (p. 110): once past exact, the swifter is separating,
+   and "totally separated" only when past the two moieties of orb.
+3. **Prohibition** (pp. 110–111): before two significators perfect,
+   "another Planet interposeth either his body or aspect". Bodily
+   prohibition is a third planet conjoining one of them first; by aspect,
+   a third perfecting an aspect with one of them first.
+4. **Refranation** (p. 111): the applying planet turns retrograde before
+   it perfects, and "refraines to come".
+5. **Translation of light** (p. 111): a light planet "separates from a
+   more weighty one, and presently joynes to another", by body or
+   aspect.
+6. **Frustration** (pp. 112–113): a swift planet applies to a slower,
+   but the slower perfects with a third first.
+
+The ways of perfection (pp. 125–127), between the two significators:
+
+1. **Conjunction**, meeting "no prohibition or refrenation before they
+   come to perfect", soonest from angles, slower from succedent houses,
+   "with infinite losse of time" from cadent.
+2. **Sextile or trine** out of good houses and well dignified, with no
+   malevolent aspect intervening, perfected "to the partill".
+3. **Square**, "provided each Planet have dignity in the Degrees wherein
+   they are, and apply out of proper and good Houses, otherwise not".
+4. **Opposition**, which he has "rarely" seen perfect a matter, and then
+   with mutual reception by house and the Moon separating from the
+   quesited's significator and applying to the querent's.
+5. **Translation**: the significators separated, a third planet
+   separating from one of them, by which it is received "either by House,
+   Triplicity or Terme", and applying to the other "before he meeteth
+   with" any other planet.
+6. **Collection**: the significators "doe not behold one another, but
+   both cast their severall Aspects to a more weighty Planet then
+   themselves, and they both receive him in some of their essentiall
+   dignities".
+7. **Dwelling in houses**: the quesited's significator in the Ascendant,
+   which "holds not true" unless the Moon translates the light as well.
+
+## The acceptance tests
+
+Lilly's own examples, each verified on the page image, become the first
+tests, each on a hand-made timeline:
+
+1. **p. 107, application.** Mars 10° Aries and Mercury 5°, both direct:
+   Mercury applies. Mercury 10° and Mars 9°, both retrograde: an ill
+   application. Mars direct at 15° and Mercury retrograde at 17°: the
+   third kind, also ill.
+2. **p. 111, bodily prohibition.** Mars 7° Aries, Saturn 12°, the Sun
+   6°: the Sun conjoins Mars, then Saturn, before Mars reaches Saturn.
+3. **p. 111, prohibition by aspect.** Mars 7° Aries, Saturn 15°, the Sun
+   5° Gemini: the Sun passes Mars's dexter sextile and reaches Saturn's
+   before Mars conjoins Saturn.
+4. **p. 111, refranation.** Saturn 12° Aries, Mars 7°: Mars stations
+   before the tenth or eleventh degree and never perfects.
+5. **p. 111, translation.** Saturn 20° Aries, Mars 15°, Mercury 16°:
+   Mercury separates from Mars and conjoins Saturn.
+6. **p. 113, frustration.** Mercury 10° Aries, Mars 12°, Jupiter 13°:
+   Mars conjoins Jupiter before Mercury reaches Mars.
+
+## The design
+
+### One search gives every relation
+
+Every clause above is a statement about **the order in which aspects
+perfect**, and about stations between them. So the module computes one
+timeline and reads every clause off it:
+
+- For each pair of the seven, the instants their longitudes stand at a
+  Ptolemaic angle, searched forward from the figure. This is the port's
+  crossing search over `Quantity::Composite { a: 1, first, b: -1,
+  second }` against the five angles on both sides. The port documents
+  the composite as "an aspect" for exactly this, so a provider's own
+  crossings override serves it too.
+- For each of the seven, its next station: `Quantity::Speed(body)`
+  crossing zero, which `events::stations` already searches for.
+- For each pair, the last perfection before the figure, and whether the
+  two are still within their moieties.
+
+That is the timeline. **Linear projection is not enough here**, unlike
+`moon_course`: refranation is a station before perfection, which a
+straight line never shows, and the slower planets' perfections lie days
+or weeks away. The search uses the chart's own ephemeris and frame.
+
+### What a report holds
+
+`perfection(chart, querent: Graha, quesited: Graha, rules)` returns:
+
+- `application`: the next perfection between the two, if any, with the
+  aspect, its instant, which applies, and which of Lilly's three kinds it
+  is (`BothDirect`, `BothRetrograde`, `AgainstRetrograde`), or none;
+- `separation`: the last perfection between them, with whether they are
+  still within the moieties;
+- `impediments`: each prohibition (bodily or by aspect, naming the
+  third planet and its perfection), each refranation (the station's
+  instant and planet) and each frustration that comes before the
+  application perfects;
+- `ways`: each of the seven ways that holds, with the facts it was read
+  from (houses angular, succedent or cadent; each significator's
+  dignity at its degree; reception and by what; the translator or
+  collector and its perfections).
+
+A way's conditions that are judgements rather than facts — "good
+houses", "well dignified" — are reported as facts (the house, the
+dignity score from `Fortitudes`), as the considerations report theirs.
+
+### The rules
+
+`PerfectionRules`, every member optional:
+
+- `orbsDeg`: the planets' orbs, by default the first of Lilly's two
+  columns on p. 107, as `ConsiderationRules` has it. The two share one
+  table type, so a consumer sets the orbs once.
+- `horizonDays`: how far forward the search runs, by default until the
+  swifter significator leaves its sign (C232).
+
+### Where it lives
+
+The clauses are arithmetic over a timeline, so they live in
+`crates/hellenistic` and are tested on hand-made timelines. The search
+is the SDK's (`ChartArea::perfection`), because it needs the ephemeris.
+`moon_course` stays as it is: the considerations ask a different
+question, and need no ephemeris.
+
+## What is not decided
+
+- **C232: does an application run past the sign?** Lilly defines void
+  of course as no application "during his being in that Signe" (p. 112),
+  but nowhere bounds an application between two significators by the
+  sign. The default stops at the swifter significator's sign; the
+  horizon is a knob.
+- **C233: who receives whom in collection.** Lilly's words are that the
+  significators "both receive him" — the collector stands in *their*
+  dignities. Later accounts often put the significators in the
+  collector's dignities instead. The report states the reception both
+  ways, and the way follows Lilly.
+
+## Order of work
+
+1. ~~Verify the quotations and the worked examples on the page
+   images.~~
+2. The timeline search in the SDK, held against a step-by-step walk of
+   the ephemeris, as `moon_course` was.
+3. The clauses in `crates/hellenistic`, on hand-made timelines.
+4. `ChartArea::perfection`, then the boundary and every binding.
+5. Recast the Book II figures where Lilly names a translation,
+   prohibition or collection, and test each against his judgement.

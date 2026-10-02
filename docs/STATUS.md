@@ -1052,12 +1052,12 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: C230 against more of Lilly's figures** — the considerations
-   before judgement are built and cross to every binding
-   (`hellenistic-considerations.md`, C229–C231). Read Book II's other
-   questions that name the Moon void or applying, and recast each with a
-   date to test the two readings further, as the ship at sea and the
-   Presbytery were.
+0. **Next: Lilly's perfection, step 1** — `hellenistic-perfection.md`
+   is designed (C232, C233): transcribe his worked prohibition,
+   refranation, translation and frustration examples (pp. 110–113) as
+   the first tests, then build the pairwise perfection search. The
+   considerations are built and cross to every binding, and C230 stands
+   at seven recast figures.
    Ibn Ezra's almuten weights wait on a rank 1 reading, and C208 waits
    on the Greek.
 
