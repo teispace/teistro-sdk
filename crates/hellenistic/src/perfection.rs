@@ -13,7 +13,8 @@
 //!
 //! ```
 //! use teistro_core::catalogue::Graha;
-//! use teistro_hellenistic::{DignityRules, PerfectionRules, Sect, AspectTimeline, perfection};
+//! use teistro_core::house::House;
+//! use teistro_hellenistic::{AspectTimeline, DignityRules, PerfectionRules, Sect, Standing, perfection};
 //!
 //! // Lilly p. 113: Mercury in 10° Aries, Mars 12°, Jupiter 13°. Mercury
 //! // strives to come to Mars, but Mars first gets to Jupiter.
@@ -21,7 +22,8 @@
 //! let places = [42.0, 13.0, 12.0, 162.0, 222.0, 10.0, 342.0];
 //! let speeds = [0.0, 0.2, 0.7, 0.0, 0.0, 1.4, 0.0];
 //! let sky = AspectTimeline::projected(places, speeds, 3.0)?;
-//! let matter = perfection(&sky, Graha::Mercury, Graha::Mars, Sect::Day, &DignityRules::LILLY, &PerfectionRules::LILLY)?;
+//! let standing = Standing { houses: [House::try_new(1)?; 7], sect: Sect::Day, dignities: &DignityRules::LILLY };
+//! let matter = perfection(&sky, Graha::Mercury, Graha::Mars, &standing, &PerfectionRules::LILLY)?;
 //! let first = matter.impediments.first().expect("Mars meets Jupiter first");
 //! assert_eq!((first.significator, first.third), (Graha::Mars, Some(Graha::Jupiter)));
 //! # Ok::<(), teistro_core::error::Error>(())
@@ -30,9 +32,11 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
+use teistro_core::house::House;
 
 use crate::considerations::{LILLY_ORBS_DEG, PtolemaicAspect, check_orbs};
 use crate::dignity::{CHALDEAN_ORDER, DignityRules, EssentialDignity, Sect, essential_dignity};
+use crate::fortitude::Fortitudes;
 
 /// The degrees of a sign.
 const SIGN_DEG: f64 = 30.0;
@@ -629,6 +633,115 @@ pub struct Collection {
     pub quesited_in_collector: EssentialDignity,
 }
 
+/// What the ways of perfection weigh of a figure beside its timeline: the
+/// house each of the seven is counted in, and whose dignities stand where.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Standing<'a> {
+    /// Each planet's house in the Chaldean order, as the accidental
+    /// fortitudes count it.
+    pub houses: [House; 7],
+    /// The figure's sect, for the triplicities.
+    pub sect: Sect,
+    /// How the essential dignities are read.
+    pub dignities: &'a DignityRules,
+}
+
+impl<'a> Standing<'a> {
+    /// The standing a figure's fortitudes give: their houses, sect and
+    /// dignity rules.
+    #[must_use]
+    pub fn of(fortitudes: &'a Fortitudes) -> Standing<'a> {
+        Standing {
+            houses: fortitudes.planets.each_ref().map(|planet| planet.house),
+            sect: fortitudes.dignities.sect,
+            dignities: &fortitudes.dignities.rules,
+        }
+    }
+}
+
+/// One of Lilly's seven ways a matter is perfected (pp. 125–127).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum Way {
+    /// The significators' conjunction, with no prohibition or refranation
+    /// before it.
+    Conjunction,
+    /// Their sextile or trine, with no prohibition, refranation or
+    /// infortune's aspect before it.
+    SextileOrTrine,
+    /// Their square, each in some dignity at its degree, with no
+    /// prohibition or refranation before it.
+    Square,
+    /// Their opposition, with mutual reception by house and the Moon
+    /// separating from the quesited's significator to the querent's.
+    Opposition,
+    /// A translation of light, the translator received by house,
+    /// triplicity or term.
+    Translation,
+    /// A collection of light, the collector in some dignity of each.
+    Collection,
+    /// The quesited's significator in the Ascendant, the Moon translating
+    /// the light as well.
+    Dwelling,
+}
+
+impl Way {
+    /// The seven, in Lilly's order.
+    pub const ALL: [Way; 7] = [
+        Way::Conjunction,
+        Way::SextileOrTrine,
+        Way::Square,
+        Way::Opposition,
+        Way::Translation,
+        Way::Collection,
+        Way::Dwelling,
+    ];
+}
+
+/// A significator's place in the figure, as the ways weigh it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct SignificatorPlace {
+    /// The planet.
+    pub planet: Graha,
+    /// Its house: angular, succedent or cadent is the house's own
+    /// question ([`House::is_kendra`] and its kin).
+    pub house: House,
+    /// Its own dignities at its degree.
+    pub dignity: EssentialDignity,
+}
+
+/// The facts Lilly's ways weigh beside the relations, and the ways whose
+/// stated conditions hold.
+///
+/// "Out of good houses" and "well dignified" are judgements, so they are
+/// left to the reader on [`SignificatorPlace`]; a way is held on the
+/// conditions Lilly states as facts.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct Ways {
+    /// The querent's significator.
+    pub querent: SignificatorPlace,
+    /// The quesited's significator.
+    pub quesited: SignificatorPlace,
+    /// Each stands in the other's house.
+    pub mutual_by_house: bool,
+    /// The infortunes, Saturn and Mars, among the thirds that come between
+    /// the significators before they perfect.
+    pub infortunes_between: Vec<Graha>,
+    /// The Moon, neither significator, separating from the quesited's and
+    /// coming next to the querent's (p. 126, the opposition).
+    pub moon_relays: bool,
+    /// The quesited's significator in the first house.
+    pub quesited_in_ascendant: bool,
+    /// The ways whose stated conditions hold, in Lilly's order.
+    pub held: Vec<Way>,
+}
+
 /// The relations between two significators, each with the facts it rests
 /// on; never a verdict.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -650,6 +763,8 @@ pub struct Matter {
     pub translations: Vec<Translation>,
     /// Every collection of light, when they do not apply to each other.
     pub collections: Vec<Collection>,
+    /// The ways of perfection: what they weigh, and which hold.
+    pub ways: Ways,
     /// How many days ahead it was read.
     pub horizon_days: f64,
 }
@@ -704,8 +819,8 @@ fn separation_of(
 
 /// The two significators' relations, read off a figure's timeline.
 ///
-/// `sect` and `dignities` say whose dignities a planet stands in, for the
-/// receptions a translation and a collection report.
+/// `standing` gives the houses the ways weigh and whose dignities a planet
+/// stands in, for the receptions a translation and a collection report.
 ///
 /// # Errors
 ///
@@ -717,8 +832,7 @@ pub fn perfection(
     timeline: &AspectTimeline,
     querent: Graha,
     quesited: Graha,
-    sect: Sect,
-    dignities: &DignityRules,
+    standing: &Standing<'_>,
     rules: &PerfectionRules,
 ) -> Result<Matter, Error> {
     rules.check()?;
@@ -737,8 +851,7 @@ pub fn perfection(
         timeline,
         querent,
         quesited,
-        sect,
-        dignities,
+        standing,
         rules,
     };
     let application = reader.application();
@@ -756,6 +869,7 @@ pub fn perfection(
             collections.extend(reader.collection(third)?);
         }
     }
+    let ways = reader.ways(application, &impediments, &translations, &collections)?;
     Ok(Matter {
         querent,
         quesited,
@@ -764,6 +878,7 @@ pub fn perfection(
         impediments,
         translations,
         collections,
+        ways,
         horizon_days: timeline.horizon_days,
     })
 }
@@ -773,8 +888,7 @@ struct Reader<'r> {
     timeline: &'r AspectTimeline,
     querent: Graha,
     quesited: Graha,
-    sect: Sect,
-    dignities: &'r DignityRules,
+    standing: &'r Standing<'r>,
     rules: &'r PerfectionRules,
 }
 
@@ -798,7 +912,98 @@ impl Reader<'_> {
             .timeline
             .motion(guest)
             .ok_or_else(|| not_one_of_the_seven(guest, "planets"))?;
-        essential_dignity(host, place, self.sect, self.dignities)
+        essential_dignity(host, place, self.standing.sect, self.standing.dignities)
+    }
+
+    /// A significator's house and its own dignities at its degree.
+    fn place_of(&self, planet: Graha) -> Result<SignificatorPlace, Error> {
+        let house = weight(planet)
+            .and_then(|at| self.standing.houses.get(at))
+            .copied()
+            .ok_or_else(|| not_one_of_the_seven(planet, "planets"))?;
+        Ok(SignificatorPlace {
+            planet,
+            house,
+            dignity: self.receives(planet, planet)?,
+        })
+    }
+
+    /// The facts the seven ways weigh, and the ways whose stated
+    /// conditions hold.
+    fn ways(
+        &self,
+        application: Option<Application>,
+        impediments: &[Impediment],
+        translations: &[Translation],
+        collections: &[Collection],
+    ) -> Result<Ways, Error> {
+        let (querent, quesited) = (self.place_of(self.querent)?, self.place_of(self.quesited)?);
+        let infortunes_between: Vec<Graha> = [Graha::Saturn, Graha::Mars]
+            .into_iter()
+            .filter(|&infortune| impediments.iter().any(|each| each.third == Some(infortune)))
+            .collect();
+        let stopped = impediments.iter().any(|each| {
+            matches!(
+                each.kind,
+                ImpedimentKind::Prohibition | ImpedimentKind::Refranation
+            )
+        });
+        let mutual_by_house = self.receives(self.querent, self.quesited)?.house
+            && self.receives(self.quesited, self.querent)?.house;
+        let moon_relays = !self.signifies(Graha::Moon)
+            && separation_of(self.timeline, self.rules, Graha::Moon, self.quesited).is_some()
+            && self
+                .timeline
+                .contacts
+                .iter()
+                .find(|contact| contact.involves(Graha::Moon))
+                .is_some_and(|contact| contact.other(Graha::Moon) == Some(self.querent));
+        let quesited_in_ascendant = quesited.house.get() == 1;
+        let aspect = application.map(|found| found.aspect);
+        let held = Way::ALL
+            .into_iter()
+            .filter(|way| match way {
+                Way::Conjunction => aspect == Some(PtolemaicAspect::Conjunction) && !stopped,
+                Way::SextileOrTrine => {
+                    matches!(
+                        aspect,
+                        Some(PtolemaicAspect::Sextile | PtolemaicAspect::Trine)
+                    ) && !stopped
+                        && infortunes_between.is_empty()
+                }
+                Way::Square => {
+                    aspect == Some(PtolemaicAspect::Square)
+                        && !stopped
+                        && !querent.dignity.peregrine()
+                        && !quesited.dignity.peregrine()
+                }
+                Way::Opposition => {
+                    aspect == Some(PtolemaicAspect::Opposition) && mutual_by_house && moon_relays
+                }
+                Way::Translation => translations.iter().any(|each| {
+                    each.received.house || each.received.triplicity || each.received.term
+                }),
+                Way::Collection => collections.iter().any(|each| {
+                    !each.collector_in_querent.peregrine()
+                        && !each.collector_in_quesited.peregrine()
+                }),
+                Way::Dwelling => {
+                    quesited_in_ascendant
+                        && translations
+                            .iter()
+                            .any(|each| each.translator == Graha::Moon)
+                }
+            })
+            .collect();
+        Ok(Ways {
+            querent,
+            quesited,
+            mutual_by_house,
+            infortunes_between,
+            moon_relays,
+            quesited_in_ascendant,
+            held,
+        })
     }
 
     /// The significators' next perfection.
@@ -968,7 +1173,7 @@ mod tests {
     )]
 
     use super::*;
-    use teistro_core::catalogue::Graha::{Jupiter, Mars, Mercury, Saturn, Sun, Venus};
+    use teistro_core::catalogue::Graha::{Jupiter, Mars, Mercury, Moon, Saturn, Sun, Venus};
 
     /// Lilly's second orb column of p. 107, which his p. 110 separation
     /// works in.
@@ -1008,6 +1213,15 @@ mod tests {
         AspectTimeline::projected(places, speeds, horizon_days).unwrap()
     }
 
+    /// Every planet in the tenth, by day, under Lilly's dignities.
+    fn standing() -> Standing<'static> {
+        Standing {
+            houses: [House::try_new(10).unwrap(); 7],
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        }
+    }
+
     fn read(timeline: &AspectTimeline, querent: Graha, quesited: Graha) -> Matter {
         read_under(timeline, querent, quesited, &PerfectionRules::LILLY)
     }
@@ -1018,15 +1232,7 @@ mod tests {
         quesited: Graha,
         rules: &PerfectionRules,
     ) -> Matter {
-        perfection(
-            timeline,
-            querent,
-            quesited,
-            Sect::Day,
-            &DignityRules::LILLY,
-            rules,
-        )
-        .unwrap()
+        perfection(timeline, querent, quesited, &standing(), rules).unwrap()
     }
 
     #[test]
@@ -1263,6 +1469,126 @@ mod tests {
     }
 
     #[test]
+    fn a_way_holds_on_the_conditions_lilly_states() {
+        // p. 107's first application, met by nothing: a conjunction.
+        let clear = read(
+            &sky(&[(Mars, 10.0, 0.7), (Mercury, 5.0, 1.5)], 8.0),
+            Mercury,
+            Mars,
+        );
+        assert_eq!(clear.ways.held, [Way::Conjunction]);
+        // p. 111's bodily prohibition: the conjunction is stopped.
+        let prohibited = read(
+            &sky(
+                &[(Mars, 7.0, 0.7), (Saturn, 12.0, 0.03), (Sun, 6.0, 0.98)],
+                8.0,
+            ),
+            Mars,
+            Saturn,
+        );
+        assert_eq!(prohibited.ways.held, []);
+        // p. 111's translation: Mercury in 16° Aries stands in Mars's
+        // house, so the light is carried by a reception Lilly names.
+        let carried = read(
+            &sky(
+                &[
+                    (Saturn, 20.0, 0.03),
+                    (Mars, 15.0, 0.7),
+                    (Mercury, 16.0, 1.4),
+                ],
+                6.0,
+            ),
+            Mars,
+            Saturn,
+        );
+        assert!(carried.ways.held.contains(&Way::Translation));
+    }
+
+    #[test]
+    fn a_square_perfects_only_with_dignity_at_both_degrees() {
+        // Mars in 10° Aries, his house, squaring Saturn in 14° Capricorn,
+        // his house: both dignified.
+        let dignified = read(
+            &sky(&[(Mars, 10.0, 0.7), (Saturn, 284.0, 0.03)], 8.0),
+            Mars,
+            Saturn,
+        );
+        assert_eq!(
+            dignified.application.unwrap().aspect,
+            PtolemaicAspect::Square
+        );
+        assert_eq!(dignified.ways.held, [Way::Square]);
+        // Saturn in 14° Cancer, his detriment and nothing else, is
+        // peregrine.
+        let peregrine = read(
+            &sky(&[(Mars, 10.0, 0.7), (Saturn, 284.0 - 180.0, 0.03)], 8.0),
+            Mars,
+            Saturn,
+        );
+        assert!(peregrine.ways.quesited.dignity.peregrine());
+        assert_eq!(peregrine.ways.held, []);
+    }
+
+    #[test]
+    fn a_collection_needs_the_collector_in_both_significators_dignities() {
+        // As above: Saturn is in Venus's term and triplicity but in none
+        // of Mars's, so the light is collected and the way does not hold.
+        let timeline = sky(
+            &[(Venus, 98.0, 1.2), (Mars, 67.0, 0.7), (Saturn, 160.0, 0.03)],
+            10.0,
+        );
+        let matter = read(&timeline, Venus, Mars);
+        assert_eq!(matter.collections.len(), 1);
+        assert!(!matter.ways.held.contains(&Way::Collection));
+    }
+
+    #[test]
+    fn an_opposition_perfects_by_mutual_reception_and_the_moons_relay() {
+        // Venus in Scorpio and Mars in Taurus, each in the other's house;
+        // the Moon just past Mars, coming next to Venus's trine.
+        let (venus, mars, moon) = (210.0, 52.0, 54.0);
+        let places = [300.0, 140.0, mars, 170.0, venus, 20.0, moon];
+        let speeds = [0.0, 0.0, 0.6, 0.0, 1.2, 0.0, 13.0];
+        let contacts = vec![
+            Contact::new(Moon, Venus, PtolemaicAspect::Trine, 3.05).unwrap(),
+            Contact::new(Venus, Mars, PtolemaicAspect::Opposition, 36.7).unwrap(),
+        ];
+        let timeline = AspectTimeline::new(places, speeds, 40.0, contacts, Vec::new()).unwrap();
+        let matter = read(&timeline, Venus, Mars);
+        assert!(matter.ways.mutual_by_house && matter.ways.moon_relays);
+        assert_eq!(matter.ways.held, [Way::Opposition]);
+        // Without the reception the opposition does not perfect.
+        let mut apart = places;
+        apart[4] = venus + 30.0;
+        let contacts = vec![
+            Contact::new(Moon, Venus, PtolemaicAspect::Opposition, 3.05).unwrap(),
+            Contact::new(Venus, Mars, PtolemaicAspect::Opposition, 36.7).unwrap(),
+        ];
+        let timeline = AspectTimeline::new(apart, speeds, 40.0, contacts, Vec::new()).unwrap();
+        assert_eq!(read(&timeline, Venus, Mars).ways.held, []);
+    }
+
+    #[test]
+    fn dwelling_holds_with_the_moon_translating() {
+        // Saturn, the quesited's significator, in the Ascendant; the Moon
+        // in 16° Aries carries Mars's light to him.
+        let timeline = sky(
+            &[(Saturn, 20.0, 0.03), (Mars, 15.0, 0.7), (Moon, 16.0, 13.0)],
+            0.5,
+        );
+        let mut houses = [House::try_new(10).unwrap(); 7];
+        houses[0] = House::try_new(1).unwrap();
+        let standing = Standing {
+            houses,
+            ..standing()
+        };
+        let matter =
+            perfection(&timeline, Mars, Saturn, &standing, &PerfectionRules::LILLY).unwrap();
+        assert!(matter.ways.quesited_in_ascendant);
+        assert_eq!(matter.ways.held, [Way::Translation, Way::Dwelling]);
+    }
+
+    #[test]
     fn lillys_separation_lasts_to_the_moieties() {
         // p. 110: Saturn in 10° 25′ Aries, Jupiter in 10° 25′, then 10°
         // 31′: separating, but not clear of Saturn's rays until 9° away
@@ -1321,22 +1647,14 @@ mod tests {
     #[test]
     fn refusals_name_their_field() {
         let timeline = sky(&[(Mars, 7.0, 0.7)], 1.0);
-        let same = perfection(
-            &timeline,
-            Mars,
-            Mars,
-            Sect::Day,
-            &DignityRules::LILLY,
-            &PerfectionRules::LILLY,
-        )
-        .unwrap_err();
+        let same =
+            perfection(&timeline, Mars, Mars, &standing(), &PerfectionRules::LILLY).unwrap_err();
         assert_eq!(same.field(), Some("quesited"));
         let node = perfection(
             &timeline,
             Graha::Rahu,
             Mars,
-            Sect::Day,
-            &DignityRules::LILLY,
+            &standing(),
             &PerfectionRules::LILLY,
         )
         .unwrap_err();

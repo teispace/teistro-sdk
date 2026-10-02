@@ -1886,7 +1886,12 @@ the astronomical numbers do not move. Nothing else computes yet.
     lattice, and the significators' stations, sharing `transit_events`'
     search source), so a refranation is seen where it happens; every
     promised contact is read back in the chart cast at its instant within
-    3.4 × 10⁻⁹°.
+    3.4 × 10⁻⁹°. `Matter::ways` reports what Lilly's seven ways weigh
+    (each significator's house and dignity at its degree, mutual
+    reception by house, the infortunes between, the Moon's relay, the
+    quesited's significator in the Ascendant) and `held`, the `Way`s whose
+    stated conditions hold; "good houses" and "well dignified" are left to
+    the reader.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

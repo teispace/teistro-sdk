@@ -173,9 +173,20 @@ question, and need no ephemeris.
   The search scans each pair's separation once over a 30° lattice, so
   `aspect_at` keeps the five aspects and drops the semisextiles and
   quincunxes it also finds.
-- **The ways of perfection wait for the houses.** The relations are
-  built; the seven ways, which weigh houses and dignity at the degree,
-  come with `ChartArea::perfection`, which has the figure's houses.
+- **A way is held on what Lilly states as fact, and the judgements are
+  left as facts.** `Ways` reports each significator's house and its own
+  dignities at its degree, the mutual reception by house, the
+  infortunes among the thirds that come between, the Moon's relay and
+  the quesited's significator in the Ascendant; `held` names each way
+  whose stated conditions hold. "Out of good houses" and "well
+  dignified" are judgements, so they are not folded into `held`: the
+  reader weighs them on the houses and dignities reported. A square
+  needs "dignity in the Degrees wherein they are", so it is held only
+  when neither significator is peregrine; a collection only when the
+  collector stands in some dignity of each (C233); a translation only
+  when its translator is received by house, triplicity or term. The
+  houses come from the fortitudes (`Standing::of`), as the accidental
+  table counts them.
 
 ## What is not decided
 
@@ -197,7 +208,7 @@ question, and need no ephemeris.
 2. ~~The timeline search in the SDK (`Founder::contact_events`), read
    back in the chart cast at each promised contact.~~
 3. ~~The relations in `crates/hellenistic`, on hand-made timelines.~~
-4. ~~`ChartArea::perfection`~~; the seven ways, then the boundary and
+4. ~~`ChartArea::perfection` and the seven ways~~; then the boundary and
    every binding.
 5. Recast the Book II figures where Lilly names a translation,
    prohibition or collection, and test each against his judgement.

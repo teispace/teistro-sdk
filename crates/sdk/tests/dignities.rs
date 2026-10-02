@@ -367,6 +367,21 @@ fn every_promised_contact_is_where_the_later_chart_finds_it() {
                     PerfectionRules::LILLY,
                 )
                 .unwrap();
+            // The ways weigh the houses the fortitudes count.
+            let fortitudes = sdk
+                .chart()
+                .fortitudes(&figure, &FortitudeRequest::default())
+                .unwrap();
+            let house = |graha| {
+                fortitudes
+                    .planets
+                    .iter()
+                    .find(|planet| planet.planet == graha)
+                    .unwrap()
+                    .house
+            };
+            assert_eq!(matter.ways.querent.house, house(querent));
+            assert_eq!(matter.ways.quesited.house, house(quesited));
             if let Some(application) = matter.application {
                 applications += 1;
                 let later = chart(&sdk, 51.5, -0.12, jd + application.days);

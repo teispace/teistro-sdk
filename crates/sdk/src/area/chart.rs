@@ -2669,8 +2669,7 @@ impl<'a> ChartArea<'a> {
             &timeline,
             querent,
             quesited,
-            dignities.sect,
-            &dignities.rules,
+            &teistro_hellenistic::Standing::of(&fortitudes),
             &rules,
         )
     }

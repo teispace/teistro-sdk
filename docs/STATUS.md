@@ -1054,9 +1054,10 @@ provider's DUT1).
 
 0. **Next: Lilly's perfection in the SDK** — `hellenistic-perfection.md`
    (C232, C233): the relations are built in `crates/hellenistic` and held
-   to his worked examples (pp. 107–113), and `ChartArea::perfection`
-   searches the ephemeris for the timeline. Add the seven ways, which
-   weigh the houses and the dignity at the degree, then the boundary. The considerations cross to every binding, and
+   to his worked examples (pp. 107–113), `ChartArea::perfection`
+   searches the ephemeris for the timeline, and `Matter::ways` reports
+   the seven ways. Next: carry it across the boundary into every
+   binding, as the considerations crossed. The considerations cross to every binding, and
    C230 stands at seven recast figures.
    Ibn Ezra's almuten weights wait on a rank 1 reading, and C208 waits
    on the Greek.

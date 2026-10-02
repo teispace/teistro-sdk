@@ -60,7 +60,8 @@ pub use lot::{
 };
 pub use perfection::{
     Application, ApplicationKind, AspectTimeline, Collection, Contact, Impediment, ImpedimentKind,
-    Matter, PerfectionRules, Separation, Station, Translation, aspect_at, days_in_sign, perfection,
+    Matter, PerfectionRules, Separation, SignificatorPlace, Standing, Station, Translation, Way,
+    Ways, aspect_at, days_in_sign, perfection,
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};
