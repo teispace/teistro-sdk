@@ -23,8 +23,9 @@ use crate::measure::{Claim, Verdict, count, fill, table};
 
 const PAGE: &str = "docs/03-design/fortitudes-measured.md";
 
-/// Lilly's tropical zodiac over the conformance profile's sky.
-fn tropical() -> Result<Context, String> {
+/// Lilly's tropical zodiac over the conformance profile's sky: the
+/// Western pages' context.
+pub(crate) fn tropical() -> Result<Context, String> {
     Context::builder()
         .profile("conformance-baseline")
         .settings_json(r#"{"frame": {"zodiac": "TROPICAL"}}"#)

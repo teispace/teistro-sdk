@@ -269,6 +269,7 @@ mod jaimini;
 mod kalachakra;
 mod kp;
 mod lints;
+mod lots;
 mod lunisolar;
 mod measure;
 mod moon;
@@ -436,6 +437,7 @@ const PASSES: &[Pass] = &[
         fortitudes::generate,
         fortitudes::check_generated,
     ),
+    ("lots", lots::generate, lots::check_generated),
     (
         "kalachakra",
         kalachakra::generate,

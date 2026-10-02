@@ -1772,7 +1772,10 @@ the astronomical numbers do not move. Nothing else computes yet.
     `FortuneRule` gains `ReversedWhileMoonUp`, Valens's III.11 reading,
     and `ChartSky` the Moon's altitude it reads; `part_of_fortune` now
     takes whether Fortune is reversed, which `FortuneRule::reverses`
-    decides. `TsFortuneRule` gains the member at the C boundary.
+    decides. `TsFortuneRule` gains the member at the C boundary. `lots-measured.md`
+    counts the readings over the corpus: Lilly's rule moves Fortune's
+    sign on 30 of 32 night births, and the Moon's ecliptic hemisphere
+    disagrees with its altitude on 3 of them.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
