@@ -31,6 +31,21 @@ impl Rashi {
         Rashi::ALL.get(index).copied().unwrap_or(Rashi::Aries)
     }
 
+    /// The longitude the sign begins at, degrees: 0 for Aries, 330 for
+    /// Pisces.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    ///
+    /// assert_eq!(Rashi::Aries.start_deg(), 0.0);
+    /// assert_eq!(Rashi::Pisces.start_deg(), 330.0);
+    /// assert_eq!(Rashi::of_longitude(Rashi::Leo.start_deg()), Rashi::Leo);
+    /// ```
+    #[must_use]
+    pub fn start_deg(self) -> f64 {
+        30.0 * f64::from(u8::try_from(self.index()).unwrap_or_default())
+    }
+
     /// The sign six from this one: Libra for Aries, Aries for Libra.
     ///
     /// ```
@@ -41,14 +56,20 @@ impl Rashi {
     /// ```
     #[must_use]
     pub fn opposite(self) -> Rashi {
-        let index = Rashi::ALL
-            .iter()
-            .position(|sign| *sign == self)
-            .unwrap_or_default();
         Rashi::ALL
-            .get((index + 6) % 12)
+            .get((self.index() + 6) % 12)
             .copied()
             .unwrap_or(Rashi::Aries)
+    }
+}
+
+impl Rashi {
+    /// The sign's place in [`Rashi::ALL`], Aries first.
+    fn index(self) -> usize {
+        Rashi::ALL
+            .iter()
+            .position(|sign| *sign == self)
+            .unwrap_or_default()
     }
 }
 
