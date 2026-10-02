@@ -147,6 +147,15 @@ knob!(
         Lagna = "LAGNA" }
 );
 knob!(
+    /// Where releasing from Daimon begins when Daimon falls in Fortune's
+    /// sign, as it does at a new or a full moon (*Anthologies* IV.4; crux
+    /// C223).
+    ReleasingSharedSign { /// Valens: the body is read from the shared sign and activity "from the
+        /// sign immediately following", so Daimon's releasing begins there.
+        Next = "NEXT", /// Daimon's own sign, shared or not: the count as the lot falls.
+        Same = "SAME" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

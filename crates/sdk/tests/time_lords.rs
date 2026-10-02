@@ -13,7 +13,9 @@
 use teistro::catalogue::{DashaSystem, Rashi};
 use teistro::dasha::{DashaReading, Timeline, releasing_years};
 use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Document, Ephemeris, Lot, UtcOffset};
+use teistro::{
+    ChartRequest, Context, Document, Ephemeris, FortuneRule, Lot, LotRequest, UtcOffset,
+};
 
 const TIME_LORDS: [DashaSystem; 3] = [
     DashaSystem::ReleasingFortune,
@@ -22,22 +24,39 @@ const TIME_LORDS: [DashaSystem; 3] = [
 ];
 
 fn tropical() -> Context {
+    tropical_with("")
+}
+
+/// The tropical conformance profile, with a dasha group patch.
+fn tropical_with(dasha: &str) -> Context {
+    let patch = if dasha.is_empty() {
+        r#"{"frame": {"zodiac": "TROPICAL"}}"#.to_owned()
+    } else {
+        format!(r#"{{"frame": {{"zodiac": "TROPICAL"}}, "dasha": {dasha}}}"#)
+    };
     Context::builder()
         .profile("conformance-baseline")
         .ephemeris([Ephemeris::Builtin])
-        .settings_json(r#"{"frame": {"zodiac": "TROPICAL"}}"#)
+        .settings_json(&patch)
         .build()
         .unwrap()
 }
 
 /// London at `jd`, with the three time lords asked for.
 fn chart(sdk: &Context, jd: f64) -> Document {
+    chart_under(sdk, jd, LotRequest::VALENS)
+}
+
+/// London at `jd`, its time lords released from lots read under `lots`.
+fn chart_under(sdk: &Context, jd: f64, lots: LotRequest) -> Document {
     let place = Place::new(
         Latitude::literal(51.5),
         Longitude::literal(-0.12),
         Altitude::literal(0.0),
     );
-    let request = ChartRequest::at(place, UtcOffset::UTC).with_dashas(TIME_LORDS);
+    let request = ChartRequest::at(place, UtcOffset::UTC)
+        .with_dashas(TIME_LORDS)
+        .with_lot_rules(lots);
     sdk.chart()
         .reading(JulianDay::<Utc>::literal(jd), &request)
         .unwrap()
@@ -138,5 +157,48 @@ fn daimon_in_fortunes_sign_releases_from_the_next() {
     assert_eq!(
         reading(&document, DashaSystem::ReleasingFortune).start_sign(),
         Some(fortune)
+    );
+}
+
+/// C223's other reading: a consumer who keeps the shared sign gets
+/// Daimon's own.
+#[test]
+fn the_shared_sign_can_be_kept() {
+    let sdk = tropical_with(r#"{"releasing_shared_sign": "SAME"}"#);
+    let document = chart(&sdk, 2_451_550.26);
+    let fortune = lot_sign(&sdk, &document, Lot::Fortune);
+    let daimon = reading(&document, DashaSystem::ReleasingDaimon);
+    assert_eq!(daimon.start_sign(), Some(fortune));
+}
+
+/// The lots releasing starts from are read under the request's rules, so
+/// a night birth whose Fortune moves sign under Lilly's rule releases
+/// from where Lilly puts it.
+#[test]
+fn releasing_reads_the_lots_under_the_requests_rules() {
+    let sdk = tropical();
+    // 1 January 2000, 18:00 UTC: night in London.
+    let jd = 2_451_545.25;
+    let lilly = LotRequest::VALENS.with_fortune(FortuneRule::DayAndNight);
+    let valens = chart(&sdk, jd);
+    let document = chart_under(&sdk, jd, lilly);
+    let under = |request: LotRequest| {
+        sdk.chart()
+            .lots_with_request(&document, &[Lot::Fortune], request)
+            .unwrap()
+            .lots[0]
+            .place
+            .sign
+    };
+    assert_ne!(
+        under(lilly),
+        under(LotRequest::VALENS),
+        "the test must bite"
+    );
+    let fortune = reading(&document, DashaSystem::ReleasingFortune);
+    assert_eq!(fortune.start_sign(), Some(under(lilly)));
+    assert_eq!(
+        reading(&valens, DashaSystem::ReleasingFortune).start_sign(),
+        Some(under(LotRequest::VALENS))
     );
 }

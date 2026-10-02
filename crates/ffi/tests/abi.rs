@@ -3186,6 +3186,67 @@ fn a_chart_request_answers_the_lots() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("lots.fortuna"));
 }
 
+/// The lots record also sets the rules releasing reads its lots under: a
+/// night birth whose Fortune moves sign under Lilly's rule releases from
+/// where Lilly puts it, as the façade's `with_lot_rules` does
+/// (`03-design/hellenistic-time-lords.md`).
+#[test]
+fn a_lots_record_sets_the_lots_releasing_starts_from() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    // 1 January 2000, 18:00 UTC: night in London.
+    let instants = [2_451_545.25];
+    let dashas = [DashaSystem::ReleasingFortune.id()];
+    let base = TsChartRequest {
+        dashas: dashas.as_ptr(),
+        dasha_count: dashas.len(),
+        ..chart_request(&instants, (51.5, -0.12), 0)
+    };
+    let schema = schemas::charts();
+    let first_sign = |lots_json: *const core::ffi::c_char| {
+        let bytes = chart_blob(&ctx, &TsChartRequest { lots_json, ..base })
+            .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        reader.column("dasha_periods", "sign").unwrap()[0].as_i64()
+    };
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("conformance-baseline")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5, -0.12, 0.0).unwrap();
+    let facade = |rules: teistro::LotRequest| {
+        let request = teistro::ChartRequest::at(place, teistro::UtcOffset::UTC)
+            .with_dashas([DashaSystem::ReleasingFortune])
+            .with_lot_rules(rules);
+        let document = sdk
+            .chart()
+            .reading(
+                teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(instants[0]),
+                &request,
+            )
+            .unwrap()
+            .value;
+        i64::from(document.dashas[0].start_sign().unwrap().id())
+    };
+    let lilly = teistro::LotRequest::VALENS.with_fortune(teistro::FortuneRule::DayAndNight);
+    let text = CString::new(r#"{"fortune":"DAY_AND_NIGHT"}"#).unwrap();
+    assert_ne!(
+        facade(lilly),
+        facade(teistro::LotRequest::VALENS),
+        "the test must bite"
+    );
+    assert_eq!(first_sign(text.as_ptr()), facade(lilly));
+    assert_eq!(first_sign(ptr::null()), facade(teistro::LotRequest::VALENS));
+}
+
 /// KP crosses: a request's `kp_json` answers every chart's reading as
 /// canonical JSON in the `kp` section, the façade's own reading on the
 /// chart request's clock unless the record names one, spelled as the

@@ -24,7 +24,7 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::settings::{CharaKarakas, DayLordDay};
+use teistro_core::settings::{CharaKarakas, DayLordDay, ReleasingSharedSign};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
@@ -643,7 +643,7 @@ impl<'a> ChartArea<'a> {
         }
         for (index, system) in request.dashas().iter().enumerate() {
             let dasha = self
-                .dasha_reading(&document, *system)
+                .dasha_reading(&document, *system, request.lot_rules())
                 .map_err(|error| error.under(&format!("dashas[{index}]")))?;
             document = document.with_dasha(dasha);
         }
@@ -664,8 +664,14 @@ impl<'a> ChartArea<'a> {
 
     /// One dasha of a chart under the settings' rules, its periods to the
     /// settings' depth: a nakshatra-seeded one with its balance, a
-    /// sign-based one with its signs.
-    fn dasha_reading(self, chart: &Document, id: KeyId) -> Result<DashaReading, Error> {
+    /// sign-based one with its signs, a time lord from the lots read under
+    /// `lots`.
+    fn dasha_reading(
+        self,
+        chart: &Document,
+        id: KeyId,
+        lots: LotRequest,
+    ) -> Result<DashaReading, Error> {
         let foundation = &chart.foundation;
         let settings = self.context.settings();
         if let Some(definition) = self.context.dashas().by_id(id) {
@@ -703,7 +709,7 @@ impl<'a> ChartArea<'a> {
             let dasha = self.rashi_dasha_of(foundation, system, rules, RashiRules::of(settings))?;
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
-        if let Some(cursor) = self.time_lord_of(chart, system, rules)? {
+        if let Some(cursor) = self.time_lord_of(chart, system, rules, lots)? {
             // A year is not divided, so a profection carries one level.
             let depth = match cursor {
                 DashaCursor::Profection(_) => Depth::MIN,
@@ -742,24 +748,30 @@ impl<'a> ChartArea<'a> {
         chart: &Document,
         system: DashaSystem,
         rules: DashaRules,
+        lots: LotRequest,
     ) -> Result<Option<DashaCursor>, Error> {
         if !teistro_dasha::TIME_LORDS.contains(&system) {
             return Ok(None);
         }
-        let start = self.time_lord_start(chart, system)?;
+        let start = self.time_lord_start(chart, system, lots)?;
         teistro_dasha::time_lord(system, start, chart.foundation.instant, rules.year_length)
             .transpose()
     }
 
     /// The sign a time lord starts from: the Ascendant's for the profected
     /// year (IV.11); the Lot of Fortune's or Daimon's for releasing, read
-    /// under Valens's rules, and the sign after Daimon's when the two lots
-    /// share one (IV.4, crux C223).
-    fn time_lord_start(self, chart: &Document, system: DashaSystem) -> Result<Rashi, Error> {
+    /// under `lots`, and, when the two lots share a sign, the one the
+    /// settings' `releasing_shared_sign` names (IV.4, crux C223).
+    fn time_lord_start(
+        self,
+        chart: &Document,
+        system: DashaSystem,
+        lots: LotRequest,
+    ) -> Result<Rashi, Error> {
         if system == DashaSystem::Profection {
             return Ok(Rashi::of_longitude(self.angles(chart)?.ascendant_deg));
         }
-        let read = self.lots(chart, &[Lot::Fortune, Lot::Daimon])?;
+        let read = self.lots_with_request(chart, &[Lot::Fortune, Lot::Daimon], lots)?;
         let sign = |lot: Lot| {
             read.lots
                 .iter()
@@ -772,11 +784,14 @@ impl<'a> ChartArea<'a> {
             return Ok(fortune);
         }
         let daimon = sign(Lot::Daimon)?;
-        Ok(if daimon == fortune {
-            step(daimon, Direction::Forward, 1)
-        } else {
-            daimon
-        })
+        let shared = self.context.settings().dasha.releasing_shared_sign;
+        Ok(
+            if daimon == fortune && shared == ReleasingSharedSign::Next {
+                step(daimon, Direction::Forward, 1)
+            } else {
+                daimon
+            },
+        )
     }
 
     /// An id that is neither a catalogued dasha system nor one this context

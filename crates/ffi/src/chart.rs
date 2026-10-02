@@ -6100,6 +6100,12 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: the entry point's contract — each record null, or a
         // NUL-terminated string.
         let records = unsafe { AskedRecords::of(&asked, clock) }?;
+        // The lots a chart reports are the lots its time lords release
+        // from, so one `lots` record sets both.
+        let request = match records.lots {
+            Some(rules) => request.with_lot_rules(rules),
+            None => request,
+        };
         let ReadCharts {
             founded,
             hashes,
