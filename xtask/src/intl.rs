@@ -244,13 +244,14 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
     ),
     (
         "dasha_system",
-        "Valens's time lords and the firdaria have no vetted Nepali or Hindi name, and a \
-         strict locale binds the English to one",
+        "The Hellenistic time lords have no vetted Nepali or Hindi name, and a strict \
+         locale binds the English to one",
         &[
             "RELEASING_FORTUNE",
             "RELEASING_DAIMON",
             "PROFECTION",
             "FIRDARIA",
+            "DECENNIALS",
         ],
     ),
     (

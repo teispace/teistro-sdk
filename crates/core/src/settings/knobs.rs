@@ -164,6 +164,15 @@ knob!(
         AfterMars = "AFTER_MARS" }
 );
 knob!(
+    /// How the decennials divide a period below the second level (crux
+    /// C228).
+    DecennialDivision { /// In proportion to the minor years at every level, as Valens's tables
+        /// of the third stage give it (*Anthologies* VI.6).
+        Proportional = "PROPORTIONAL", /// In equal cycles of 129 days at the third level and the minor years
+        /// as days below them, as his worked nativity counts (VI.5).
+        Cycles = "CYCLES" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

@@ -854,6 +854,10 @@ the same machinery rather than new mechanisms:
   firdaria followed (`hellenistic-firdaria.md`, C225–C226): a
   `DashaSystem` member from al-Biruni's table, its sect under the
   request's lot rules, the nodes' place by night a knob. The decennials
+  followed (`hellenistic-decennials.md`, C227–C228): a `DashaSystem`
+  member from Valens VI.5–6, begun from the sect's luminary or any star
+  through `decennials_from`, the third stage's division a knob. **The
+  time lords are done**; horary considerations and Ibn Ezra's weights
   remain.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta

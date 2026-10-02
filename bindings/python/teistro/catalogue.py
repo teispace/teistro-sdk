@@ -1828,6 +1828,9 @@ class DashaSystem(Catalogued):
     FIRDARIA = 43
     """The firdaria, the Persian periods of the seven and the nodes"""
 
+    DECENNIALS = 44
+    """Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -2499,6 +2502,9 @@ class DashaFamily(Catalogued):
 
     FIRDARIA = 8
     """Firdaria"""
+
+    DECENNIALS = 9
+    """Decennials"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -5555,6 +5561,7 @@ _KEYS: dict[str, dict[int, str]] = {
         41: "RELEASING_DAIMON",
         42: "PROFECTION",
         43: "FIRDARIA",
+        44: "DECENNIALS",
         -1: "UNKNOWN",
     },
     "BalaScheme": {
@@ -5779,6 +5786,7 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "RELEASING",
         7: "PROFECTION",
         8: "FIRDARIA",
+        9: "DECENNIALS",
         -1: "UNKNOWN",
     },
     "AvasthaJagradadi": {

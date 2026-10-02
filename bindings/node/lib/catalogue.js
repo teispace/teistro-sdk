@@ -1395,6 +1395,7 @@ export const DashaSystem = Object.freeze({
   ReleasingDaimon: 'dasha_system.RELEASING_DAIMON',
   Profection: 'dasha_system.PROFECTION',
   Firdaria: 'dasha_system.FIRDARIA',
+  Decennials: 'dasha_system.DECENNIALS',
 });
 
 /**
@@ -1446,6 +1447,7 @@ export const DashaSystemById = new Map([
   [41, 'dasha_system.RELEASING_DAIMON'],
   [42, 'dasha_system.PROFECTION'],
   [43, 'dasha_system.FIRDARIA'],
+  [44, 'dasha_system.DECENNIALS'],
 ]);
 
 /** Every BalaScheme by name. */
@@ -1988,6 +1990,7 @@ export const DashaFamily = Object.freeze({
   Releasing: 'dasha_family.RELEASING',
   Profection: 'dasha_family.PROFECTION',
   Firdaria: 'dasha_family.FIRDARIA',
+  Decennials: 'dasha_family.DECENNIALS',
 });
 
 /**
@@ -2004,6 +2007,7 @@ export const DashaFamilyById = new Map([
   [6, 'dasha_family.RELEASING'],
   [7, 'dasha_family.PROFECTION'],
   [8, 'dasha_family.FIRDARIA'],
+  [9, 'dasha_family.DECENNIALS'],
 ]);
 
 /** Every AvasthaJagradadi by name. */

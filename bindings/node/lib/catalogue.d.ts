@@ -2876,6 +2876,7 @@ export type DashaSystem =
   | 'dasha_system.RELEASING_DAIMON'
   | 'dasha_system.PROFECTION'
   | 'dasha_system.FIRDARIA'
+  | 'dasha_system.DECENNIALS'
   | 'unknown';
 
 /** Every DashaSystem by name; the values are the strings the union accepts. */
@@ -3056,6 +3057,10 @@ export declare const DashaSystem: {
    * The firdaria, the Persian periods of the seven and the nodes
    */
   readonly Firdaria: 'dasha_system.FIRDARIA';
+  /**
+   * Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect
+   */
+  readonly Decennials: 'dasha_system.DECENNIALS';
 };
 
 /**
@@ -4110,6 +4115,7 @@ export type DashaFamily =
   | 'dasha_family.RELEASING'
   | 'dasha_family.PROFECTION'
   | 'dasha_family.FIRDARIA'
+  | 'dasha_family.DECENNIALS'
   | 'unknown';
 
 /** Every DashaFamily by name; the values are the strings the union accepts. */
@@ -4150,6 +4156,10 @@ export declare const DashaFamily: {
    * Firdaria
    */
   readonly Firdaria: 'dasha_family.FIRDARIA';
+  /**
+   * Decennials
+   */
+  readonly Decennials: 'dasha_family.DECENNIALS';
 };
 
 /**

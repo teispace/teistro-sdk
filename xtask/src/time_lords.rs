@@ -34,12 +34,14 @@ const JULIAN_YEAR_DAYS: f64 = 365.25;
 /// The signs a level runs through before it is loosed.
 const SIGNS: usize = 12;
 
-/// Every time lord the page founds: Valens's three and the firdaria.
-const SYSTEMS: [DashaSystem; 4] = [
+/// Every time lord the page founds: releasing, the profected year, the
+/// firdaria and the decennials.
+const SYSTEMS: [DashaSystem; 5] = [
     DashaSystem::ReleasingFortune,
     DashaSystem::ReleasingDaimon,
     DashaSystem::Profection,
     DashaSystem::Firdaria,
+    DashaSystem::Decennials,
 ];
 
 /// One birth founded with its time lords, and the points they start from
@@ -109,6 +111,30 @@ impl Read {
         self.fortune == self.daimon
     }
 
+    /// The seven by longitude onwards from the luminary of the sect, as
+    /// the decennials run them, read off the founded chart directly.
+    fn decennial_order(&self) -> Vec<Graha> {
+        let apheta = luminary(self.sect);
+        let place = |graha: Graha| {
+            self.document
+                .foundation
+                .graha(graha)
+                .map_or(f64::NAN, |position| position.longitude_deg)
+        };
+        let mut seven = vec![
+            Graha::Saturn,
+            Graha::Jupiter,
+            Graha::Mars,
+            Graha::Sun,
+            Graha::Venus,
+            Graha::Mercury,
+            Graha::Moon,
+        ];
+        let onwards = |graha: Graha| (place(graha) - place(apheta)).rem_euclid(360.0);
+        seven.sort_by(|left, right| onwards(*left).total_cmp(&onwards(*right)));
+        seven
+    }
+
     /// The sign Valens starts `system` from.
     fn start(&self, system: DashaSystem) -> Rashi {
         match system {
@@ -156,7 +182,7 @@ fn rebuilds(sdk: &Context, read: &Read, system: DashaSystem, stored: &DashaReadi
 /// rebuilt from what it records gives back every row it carries.
 fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
     let (mut start_wrong, mut rebuild_wrong) = ([0_usize; 3], 0);
-    let mut firdaria_wrong = 0;
+    let (mut firdaria_wrong, mut decennials_wrong) = (0, 0);
     for read in reads {
         for (slot, system) in TIME_LORDS.into_iter().enumerate() {
             let stored = read.reading(system);
@@ -168,6 +194,10 @@ fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
         let firdaria = read.reading(DashaSystem::Firdaria);
         let begins = firdaria.and_then(|stored| stored.periods.first().map(|row| row.lord));
         firdaria_wrong += usize::from(begins != Some(luminary(read.sect)));
+        let order = read
+            .reading(DashaSystem::Decennials)
+            .and_then(DashaReading::decennial_order);
+        decennials_wrong += usize::from(order.map(Vec::from) != Some(read.decennial_order()));
         for system in SYSTEMS {
             let rebuilt = read
                 .reading(system)
@@ -199,7 +229,12 @@ fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
             of,
         ),
         Claim::counted(
-            "a stored reading rebuilt from its start sign or first lord gives back every row it carries",
+            "the decennials run from the luminary of the sect through the seven by longitude (Valens VI.5, VI.7)",
+            decennials_wrong,
+            of,
+        ),
+        Claim::counted(
+            "a stored reading rebuilt from its start sign, first lord or order gives back every row it carries",
             rebuild_wrong,
             of * SYSTEMS.len(),
         ),
@@ -303,9 +338,11 @@ fn page(root: &Path) -> Result<String, String> {
          regenerates this page and fails on any difference.\n\n\
          Releasing and the profected year (`hellenistic-time-lords.md`) \
          are held to Valens's worked nativities by the unit tests of \
-         `crates/dasha/src/releasing.rs`, and the firdaria \
+         `crates/dasha/src/releasing.rs`, the firdaria \
          (`hellenistic-firdaria.md`) to al-Biruni's table by those of \
-         `crates/dasha/src/firdaria.rs`. Those give signs, lords and years \
+         `crates/dasha/src/firdaria.rs`, and the decennials \
+         (`hellenistic-decennials.md`) to Valens's worked nativity and \
+         tables by those of `crates/dasha/src/decennials.rs`. Those give signs, lords and years \
          from a stated start, so they cannot say how often a real sky puts \
          Daimon in Fortune's sign, whether a life reaches the loosing of \
          the bond, or how many births the sect rule decides; this page \
@@ -314,8 +351,8 @@ fn page(root: &Path) -> Result<String, String> {
     let _ = write!(
         out,
         "It founds each of the corpus's {} births in the tropical zodiac \
-         with `RELEASING_FORTUNE`, `RELEASING_DAIMON`, `PROFECTION` and \
-         `FIRDARIA` asked for, and reads their lots and sect through \
+         with `RELEASING_FORTUNE`, `RELEASING_DAIMON`, `PROFECTION`, \
+         `FIRDARIA` and `DECENNIALS` asked for, and reads their lots and sect through \
          `ChartArea::lots` under Valens's rules.\n\n",
         count(reads.len())
     );
@@ -324,7 +361,7 @@ fn page(root: &Path) -> Result<String, String> {
     out.push_str(&row_counts(&reads));
     out.push_str(
         "\n## What it means\n\n\
-         The first five rows hold what the façade must do on every birth: \
+         The first six rows hold what the façade must do on every birth: \
          start each time lord where its source counts it, and record \
          enough that a stored chart rebuilds the same periods. The next \
          counts the births C223 decides, where the activity count moves \
@@ -338,8 +375,9 @@ fn page(root: &Path) -> Result<String, String> {
          and Aquarius), one of them begins within any 80 years, and C224's \
          reading of the opposite sign then decides every period after it. \
          A document carries releasing's whole 211-year cycle to its \
-         depth, and the firdaria's two 75-year rounds to their sevenths, \
-         which the row counts above price.\n",
+         depth, the firdaria's two 75-year rounds to their sevenths, and \
+         the decennials' two rounds of the seven to their depth, which \
+         the row counts above price.\n",
     );
     Ok(fill(&out))
 }

@@ -10721,6 +10721,25 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "DECENNIALS",
+          "id": 44,
+          "doc": "Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "family": "DECENNIALS"
+          },
+          "sources": [
+            {
+              "text": "hellenistic-decennials",
+              "ref": "docs/03-design/hellenistic-decennials.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },
@@ -13749,6 +13768,23 @@
             {
               "text": "hellenistic-firdaria",
               "ref": "docs/03-design/hellenistic-firdaria.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DECENNIALS",
+          "id": 9,
+          "doc": "Decennials",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "hellenistic-decennials",
+              "ref": "docs/03-design/hellenistic-decennials.md"
             }
           ],
           "mark": "V",

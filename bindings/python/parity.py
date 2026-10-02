@@ -478,6 +478,7 @@ def main() -> None:
                 DashaSystem.RELEASING_FORTUNE,
                 DashaSystem.PROFECTION,
                 DashaSystem.FIRDARIA,
+                DashaSystem.DECENNIALS,
                 "dasha_system.ACME_PARITY",
             ],
             drawings=[

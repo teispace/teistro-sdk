@@ -24,16 +24,16 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::settings::{CharaKarakas, DayLordDay, ReleasingSharedSign};
+use teistro_core::settings::{CharaKarakas, DayLordDay, DecennialDivision, ReleasingSharedSign};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
 };
 use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
-    Birth, Dasha, DashaCursor, DashaName, DashaReading, FirdariaDasha, KalachakraDasha,
-    KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules, Rules as DashaRules,
-    Wheel, YearDasha, YearRing,
+    Birth, Dasha, DashaCursor, DashaName, DashaReading, DecennialDasha, FirdariaDasha,
+    KalachakraDasha, KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules,
+    Rules as DashaRules, Wheel, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
@@ -755,19 +755,21 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Option<DashaCursor>, Error> {
         if system == DashaSystem::Firdaria {
             // The Sun begins a day birth's firdaria and the Moon a night
-            // one's, the sect read under the request's lot rules, as the
-            // lots are (`03-design/hellenistic-firdaria.md`).
-            let first = match self.lots_with_request(chart, &[], lots)?.sect {
-                Sect::Day => Graha::Sun,
-                Sect::Night => Graha::Moon,
-            };
+            // one's (`03-design/hellenistic-firdaria.md`).
             return FirdariaDasha::new(
-                first,
+                self.sect_luminary(chart, lots)?,
                 chart.foundation.instant,
                 rules.year_length,
                 self.context.settings().dasha.firdaria_nodes,
             )
             .map(|dasha| Some(DashaCursor::Firdaria(dasha)));
+        }
+        if system == DashaSystem::Decennials {
+            // The luminary of the sect is the apheta (VI.5,
+            // `03-design/hellenistic-decennials.md`).
+            let order = Self::decennial_order_of(chart, self.sect_luminary(chart, lots)?)?;
+            return Self::decennials_in(chart, order, rules, self.decennial_division())
+                .map(|dasha| Some(DashaCursor::Decennials(dasha)));
         }
         if !teistro_dasha::TIME_LORDS.contains(&system) {
             return Ok(None);
@@ -775,6 +777,46 @@ impl<'a> ChartArea<'a> {
         let start = self.time_lord_start(chart, system, lots)?;
         teistro_dasha::time_lord(system, start, chart.foundation.instant, rules.year_length)
             .transpose()
+    }
+
+    /// The luminary of a chart's sect, read under the request's lot rules
+    /// as the lots are: the Sun by day, the Moon by night.
+    fn sect_luminary(self, chart: &Document, lots: LotRequest) -> Result<Graha, Error> {
+        Ok(match self.lots_with_request(chart, &[], lots)?.sect {
+            Sect::Day => Graha::Sun,
+            Sect::Night => Graha::Moon,
+        })
+    }
+
+    /// The seven in the order the decennials run from `apheta`, by their
+    /// longitudes on the chart.
+    fn decennial_order_of(
+        chart: &Document,
+        apheta: Graha,
+    ) -> Result<[Graha; teistro_dasha::DECENNIAL_STARS], Error> {
+        let places = chart
+            .foundation
+            .grahas
+            .iter()
+            .filter(|position| CHALDEAN_ORDER.contains(&position.graha))
+            .map(|position| (position.graha, position.longitude_deg))
+            .collect::<Vec<_>>();
+        teistro_dasha::decennial_order(apheta, &places)
+    }
+
+    /// The decennials of a chart in `order`, under `rules`' year.
+    fn decennials_in(
+        chart: &Document,
+        order: [Graha; teistro_dasha::DECENNIAL_STARS],
+        rules: DashaRules,
+        division: DecennialDivision,
+    ) -> Result<DecennialDasha, Error> {
+        DecennialDasha::new(order, chart.foundation.instant, rules.year_length, division)
+    }
+
+    /// How the settings divide the decennials below the second level.
+    fn decennial_division(self) -> DecennialDivision {
+        self.context.settings().dasha.decennial_division
     }
 
     /// The sign a time lord starts from: the Ascendant's for the profected
@@ -2553,6 +2595,47 @@ impl<'a> ChartArea<'a> {
         teistro_hellenistic::point_place(&self.lot_sky(chart)?, point, request)
     }
 
+    /// Valens's decennials begun from any of the seven: his apheta when
+    /// the luminary of the sect is "badly situated", which he leaves to
+    /// judgement (VI.5, crux C227), or any star a consumer reads from. The
+    /// others follow by their longitudes on the chart, under the
+    /// `DECENNIALS` system's year and the settings' division.
+    ///
+    /// ```
+    /// use teistro::catalogue::Graha;
+    /// use teistro::dasha::Timeline;
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(
+    ///     Latitude::try_new(51.5)?,
+    ///     Longitude::try_new(-0.12)?,
+    ///     Altitude::try_new(0.0)?,
+    /// );
+    /// let birth = JulianDay::<Utc>::literal(2_451_545.25);
+    /// let chart = sdk
+    ///     .chart()
+    ///     .reading(birth, &ChartRequest::at(place, UtcOffset::UTC))?
+    ///     .value;
+    /// // Begun from Jupiter, which takes the first 10 years 9 months.
+    /// let decennials = sdk.chart().decennials_from(&chart, Graha::Jupiter)?;
+    /// assert_eq!(decennials.order()[0], Graha::Jupiter);
+    /// let first = decennials.mahadasha(0, 0).map(|period| period.lord);
+    /// assert_eq!(first, Some(Graha::Jupiter));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// An `apheta` outside the seven, named `apheta`; a chart that does
+    /// not place the seven, named `places`.
+    pub fn decennials_from(self, chart: &Document, apheta: Graha) -> Result<DecennialDasha, Error> {
+        let rules = DashaRules::of(&self.context.settings().dasha, DashaSystem::Decennials);
+        let order = Self::decennial_order_of(chart, apheta)?;
+        Self::decennials_in(chart, order, rules, self.decennial_division())
+    }
+
     /// The profected year counted from any point of a chart rather than
     /// the Ascendant: Valens profects from "every point", the Sun, the
     /// Moon, Fortune and Daimon among them (*Anthologies* IV.11). It
@@ -3250,6 +3333,20 @@ impl<'a> ChartArea<'a> {
             ) {
                 return cursor;
             }
+        }
+        if system == DashaSystem::Decennials {
+            // The decennials rebuild from the order their first periods
+            // run in and the division their third level shows, or the
+            // settings' when they store no third level.
+            let order = reading.decennial_order().ok_or_else(|| {
+                Error::invalid_arg("the document's decennials store fewer than seven periods")
+                    .with_field("system")
+            })?;
+            let division = reading
+                .decennial_division()
+                .unwrap_or_else(|| self.decennial_division());
+            return Self::decennials_in(document, order, reading.rules, division)
+                .map(DashaCursor::Decennials);
         }
         if system == DashaSystem::Firdaria {
             // The firdaria rebuild from the luminary that begins them and

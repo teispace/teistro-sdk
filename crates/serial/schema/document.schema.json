@@ -1911,7 +1911,8 @@
             "RELEASING_FORTUNE",
             "RELEASING_DAIMON",
             "PROFECTION",
-            "FIRDARIA"
+            "FIRDARIA",
+            "DECENNIALS"
           ],
           "type": "string"
         },
@@ -1961,7 +1962,8 @@
             "dasha_system.RELEASING_FORTUNE",
             "dasha_system.RELEASING_DAIMON",
             "dasha_system.PROFECTION",
-            "dasha_system.FIRDARIA"
+            "dasha_system.FIRDARIA",
+            "dasha_system.DECENNIALS"
           ],
           "type": "string",
           "writeOnly": true

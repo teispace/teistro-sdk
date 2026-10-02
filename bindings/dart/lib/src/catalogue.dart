@@ -2083,6 +2083,8 @@ enum DashaSystem implements KeyOf<DashaSystem> {
   profection(42, 'PROFECTION'),
   /// The firdaria, the Persian periods of the seven and the nodes
   firdaria(43, 'FIRDARIA'),
+  /// Valens's decennials, 10 years 9 months to each of the seven from the luminary of the sect
+  decennials(44, 'DECENNIALS'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -3213,6 +3215,8 @@ enum DashaFamily implements KeyOf<DashaFamily> {
   profection(7, 'PROFECTION'),
   /// Firdaria
   firdaria(8, 'FIRDARIA'),
+  /// Decennials
+  decennials(9, 'DECENNIALS'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

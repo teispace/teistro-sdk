@@ -473,6 +473,7 @@ void main() {
       DashaSystem.releasingFortune,
       DashaSystem.profection,
       DashaSystem.firdaria,
+      DashaSystem.decennials,
       DashaSystem.registered('ACME_PARITY'),
     ],
     drawings: [
