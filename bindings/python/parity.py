@@ -20,6 +20,7 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    Almuten,
     EclipseMoment,
     EclipseSeen,
     KpLevel,
@@ -523,6 +524,7 @@ def main() -> None:
                     "siege": {"WITHIN": {"spanDeg": 30}},
                 },
                 "scores": {"regulus": 5},
+                "almuten": {"fortune": "REVERSED_BY_NIGHT"},
             },
             shadbala=True,
             bhava_bala=True,
@@ -918,6 +920,23 @@ def main() -> None:
                     f"{number(ft.sky.speeds_deg_per_day[k])} {planet_accidents.house} {met or '-'} "
                     f"{planet_accidents.fortitude} {planet_accidents.debility} {planet_accidents.net}",
                 )
+            al = ft.almutens
+            put(
+                f"chart-{i}-almuten-rules",
+                f"{al.rules.place.key} {al.rules.fortune.key} "
+                + " ".join(number(v) for v in (al.fortune_deg, ft.sky.ascendant_deg, ft.sky.midheaven_deg)),
+            )
+
+            def ranked(almuten: Almuten) -> str:
+                totals = ",".join(str(at.total) for at in almuten.totals)
+                tops = ",".join(planet.full_key for planet in almuten.almutens) or "-"
+                partakers = ",".join(planet.full_key for planet in almuten.partakers) or "-"
+                return f"{totals} {tops} {partakers}"
+
+            put(f"chart-{i}-almuten-figure", ranked(al.figure))
+            put(f"chart-{i}-almuten-places", ranked(al.places))
+            for house_number, almuten in enumerate(al.houses, start=1):
+                put(f"chart-{i}-almuten-house-{house_number}", ranked(almuten))
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

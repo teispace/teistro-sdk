@@ -158,6 +158,8 @@ from .catalogue import (
     Accident,
     Partile,
     Siege,
+    PlaceReading,
+    FortuneRule,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -434,6 +436,10 @@ __all__ = [
     "AccidentLine",
     "PlanetAccidents",
     "Fortitudes",
+    "AlmutenRules",
+    "AlmutenTotal",
+    "Almuten",
+    "Almutens",
     "Sect",
     "SectRule",
     "Terms",
@@ -441,6 +447,8 @@ __all__ = [
     "Accident",
     "Partile",
     "Siege",
+    "PlaceReading",
+    "FortuneRule",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -2877,6 +2885,10 @@ class Dignities:
     the second."""
 
 
+_CHALDEAN_NAMES = ("saturn", "jupiter", "mars", "sun", "venus", "mercury", "moon")
+"""The seven in the Chaldean order, as the `fortitude_houses` almuten
+columns name them."""
+
 _ACCIDENTAL_LINES = (
     "direct",
     "retrograde",
@@ -3030,8 +3042,10 @@ class FortitudeRequest(TypedDict, total=False):
     `combustionInSign`, `beamsDeg`, `cazimiDeg`, `cuspOrbDeg`,
     `starOrbDeg`, `partile` (`"SAME_DEGREE"` or `{"WITHIN": {"orbDeg":
     …}}`), `siege` (`"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}`) and
-    `meanMotionDeg`; and `scores`, `houses` and any line by its camel-cased
-    name. An answer's `rules` and `scores` may be handed back as they stand.
+    `meanMotionDeg`; `scores`, `houses` and any line by its camel-cased
+    name; and `almuten`, an `AlmutenRules` or its `place` and `fortune`.
+    An answer's `rules`, `scores` and almuten rules may be handed back as
+    they stand.
 
     >>> asked: FortitudeRequest = {"rules": {"partile": {"WITHIN": {"orbDeg": 1}}}, "scores": {"regulus": 5}}
     """
@@ -3039,6 +3053,83 @@ class FortitudeRequest(TypedDict, total=False):
     dignities: DignityRequest
     rules: Union[Mapping[str, Any], AccidentalRules]
     scores: Union[Mapping[str, Any], AccidentalScores]
+    almuten: Union[Mapping[str, Any], "AlmutenRules"]
+
+
+@dataclass(frozen=True)
+class AlmutenRules:
+    """How a chart's almutens are read, Lilly's by default
+    (`03-design/essential-dignities.md` §The almuten).
+
+    >>> sign = AlmutenRules(place=PlaceReading.SIGN)
+    """
+
+    place: PlaceReading = PlaceReading.DEGREE
+    """What of a place its dignities are counted from: the degree (all
+    five) or the sign (house, exaltation, triplicity), C218."""
+
+    fortune: FortuneRule = FortuneRule.DAY_AND_NIGHT
+    """How Fortune is taken by night: Lilly's, or reversed (C220)."""
+
+
+@dataclass(frozen=True)
+class AlmutenTotal:
+    """One planet's total in an almuten's ranking."""
+
+    planet: Graha
+    total: int
+
+
+@dataclass(frozen=True)
+class Almuten:
+    """An almuten as a ranking. Lilly breaks no tie, so every planet
+    holding the greatest total is an almuten (C219)."""
+
+    totals: Tuple[AlmutenTotal, ...]
+    """The seven's totals, in the Chaldean order."""
+
+    almutens: Tuple[Graha, ...]
+    """Every planet holding the greatest total: one unless they tie."""
+
+    partakers: Tuple[Graha, ...]
+    """Every planet holding the next total down, Chapter CV's partakers;
+    empty when all seven tie."""
+
+    @staticmethod
+    def _of(planets: Sequence[Graha], totals: Sequence[int]) -> "Almuten":
+        top = max(totals)
+        below = [total for total in totals if total < top]
+
+        def holding(total: Optional[int]) -> Tuple[Graha, ...]:
+            return tuple(planet for planet, each in zip(planets, totals) if each == total)
+
+        return Almuten(
+            totals=tuple(AlmutenTotal(planet=planet, total=total) for planet, total in zip(planets, totals)),
+            almutens=holding(top),
+            partakers=holding(max(below)) if below else (),
+        )
+
+
+@dataclass(frozen=True)
+class Almutens:
+    """A chart's almutens three ways, with the rules that made them.
+
+    >>> # lord = chart.fortitudes.almutens.figure.almutens  # Lilly's lord of the geniture
+    """
+
+    rules: AlmutenRules
+    fortune_deg: float
+    """The Part of Fortune, one of the five places."""
+
+    figure: Almuten
+    """Lilly's almuten of the figure: each planet's `net`."""
+
+    places: Almuten
+    """Chapter CV's: essential dignities over the ascendant, midheaven,
+    Sun, Moon and Fortune."""
+
+    houses: Tuple[Almuten, ...]
+    """Each house's, of its cusp, the first to the twelfth."""
 
 
 @dataclass(frozen=True)
@@ -3052,6 +3143,13 @@ class AccidentalSky:
 
     cusps_deg: Tuple[float, ...]
     """The twelve cusps, the first to the twelfth."""
+
+    ascendant_deg: float
+    """The ascendant, from the chart's angles: whole-sign and equal houses
+    do not put it on a cusp."""
+
+    midheaven_deg: float
+    """The midheaven, from the chart's angles."""
 
     speeds_deg_per_day: Tuple[float, ...]
     """The seven's daily motions in the Chaldean order, negative when
@@ -3115,6 +3213,8 @@ class Fortitudes:
     scores: AccidentalScores
     planets: Tuple[PlanetAccidents, ...]
     """The seven in the Chaldean order, Saturn first."""
+
+    almutens: Almutens
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -5693,7 +5793,7 @@ def _fortitudes_json(fortitudes: Optional[FortitudeRequest]) -> Optional[str]:
     """The fortitudes as the JSON the boundary reads, or nothing for none;
     an answer's rules and scores are written as a request writes them, and
     the SDK refuses the rest, naming the field from `fortitudes`."""
-    example = "{'rules': {'beamsDeg': 15}, 'scores': {'regulus': 6}}"
+    example = "{'rules': {'beamsDeg': 15}, 'scores': {'regulus': 6}, 'almuten': {'place': 'SIGN'}}"
     if not isinstance(fortitudes, Mapping):
         return _record_json(fortitudes, "fortitudes", example)
     return _record_json(_written(fortitudes), "fortitudes", example)
@@ -5817,7 +5917,7 @@ def _written(value: Any) -> Any:
         return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
     if isinstance(value, (AccidentalRules, AccidentalScores)):
         return value._record()
-    if isinstance(value, (MuhurtaPada, TaraReading)):
+    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules)):
         return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
     if isinstance(value, Mapping):
         return {key: _written(inner) for key, inner in value.items()}
@@ -7616,12 +7716,31 @@ class ChartBatch:
                 net=own.score + own.reception + p.fortitude[row] - p.debility[row],
             )
 
-        return [
-            Fortitudes(
+        def almutens(chart: int, planets: Tuple[PlanetAccidents, ...]) -> Almutens:
+            seven = [at.planet for at in planets]
+            return Almutens(
+                rules=AlmutenRules(
+                    place=PlaceReading(c.almuten_place[chart]),
+                    fortune=FortuneRule(c.almuten_fortune[chart]),
+                ),
+                fortune_deg=c.fortune[chart],
+                figure=Almuten._of(seven, [at.net for at in planets]),
+                places=Almuten._of(seven, [p.places[row] for row in rows(7, chart)]),
+                houses=tuple(
+                    Almuten._of(seven, [getattr(h, f"almuten_{name}")[row] for name in _CHALDEAN_NAMES])
+                    for row in rows(12, chart)
+                ),
+            )
+
+        def one(chart: int) -> Fortitudes:
+            planets = tuple(planet(chart, k) for k in range(7))
+            return Fortitudes(
                 dignities=essential[chart],
                 sky=AccidentalSky(
                     houses=HouseSystem(c.houses[chart]),
                     cusps_deg=tuple(h.cusp[row] for row in rows(12, chart)),
+                    ascendant_deg=c.ascendant[chart],
+                    midheaven_deg=c.midheaven[chart],
                     speeds_deg_per_day=tuple(p.speed[row] for row in rows(7, chart)),
                     north_node_deg=c.north_node[chart],
                     regulus_deg=c.regulus[chart],
@@ -7645,10 +7764,11 @@ class ChartBatch:
                     houses=tuple(h.score[row] for row in rows(12, chart)),
                     **{line: getattr(c, f"score_{line}")[chart] for line in _ACCIDENTAL_LINES},
                 ),
-                planets=tuple(planet(chart, k) for k in range(7)),
+                planets=planets,
+                almutens=almutens(chart, planets),
             )
-            for chart in range(charts)
-        ]
+
+        return [one(chart) for chart in range(charts)]
 
     @cached_property
     def _dignities(self) -> list[Dignities]:

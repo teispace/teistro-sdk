@@ -349,6 +349,7 @@ const charts = geo.chart.foundMany({
     dignities: { sectRule: 'DAYLIGHT', rules: { terms: 'EGYPTIAN', triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } },
     rules: { beamsDeg: 15, combustionInSign: false, partile: { WITHIN: { orbDeg: 1 } }, siege: { WITHIN: { spanDeg: 30 } } },
     scores: { regulus: 5 },
+    almuten: { fortune: 'REVERSED_BY_NIGHT' },
   },
   shadbala: true,
   bhavaBala: true,
@@ -612,6 +613,16 @@ for (const chart of charts) {
       `${number(ft.sky.speedsDegPerDay[k])} ${at.house} ${lines.join(',') || '-'} ${at.fortitude} ${at.debility} ${at.net}`,
     );
   });
+  const al = ft.almutens;
+  put(
+    `chart-${i}-almuten-rules`,
+    `${al.rules.place} ${al.rules.fortune} ${[al.fortuneDeg, ft.sky.ascendantDeg, ft.sky.midheavenDeg].map(number).join(' ')}`,
+  );
+  const ranked = (almuten) =>
+    `${almuten.totals.map((at) => at.total).join(',')} ${almuten.almutens.join(',') || '-'} ${almuten.partakers.join(',') || '-'}`;
+  put(`chart-${i}-almuten-figure`, ranked(al.figure));
+  put(`chart-${i}-almuten-places`, ranked(al.places));
+  al.houses.forEach((almuten, h) => put(`chart-${i}-almuten-house-${h + 1}`, ranked(almuten)));
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

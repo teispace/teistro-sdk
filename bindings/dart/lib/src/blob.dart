@@ -2655,6 +2655,8 @@ final class ChartsDignityReceptions {
 final class ChartsFortitudes {
   const ChartsFortitudes({
     required this.houses,
+    required this.ascendant,
+    required this.midheaven,
     required this.northNode,
     required this.regulus,
     required this.spica,
@@ -2669,6 +2671,9 @@ final class ChartsFortitudes {
     required this.partileOrb,
     required this.siege,
     required this.siegeSpan,
+    required this.almutenPlace,
+    required this.almutenFortune,
+    required this.fortune,
     required this.scoreDirect,
     required this.scoreRetrograde,
     required this.scoreSwift,
@@ -2700,6 +2705,12 @@ final class ChartsFortitudes {
 
   /// The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module.
   final Uint16List houses;
+
+  /// The ascendant, from the chart's angles, in degrees of the chart's zodiac: whole-sign and equal houses do not put it on a cusp.
+  final Float64List ascendant;
+
+  /// The midheaven, from the chart's angles: only a quadrant division puts it on the tenth cusp.
+  final Float64List midheaven;
 
   /// The North Node's longitude, in degrees of the chart's zodiac.
   final Float64List northNode;
@@ -2742,6 +2753,15 @@ final class ChartsFortitudes {
 
   /// The span of `WITHIN`; 0 for `SAME_SIGN`.
   final Float64List siegeSpan;
+
+  /// What of a place its almuten's dignities are counted from, `fortitudes_json.almuten.place` (C218).
+  final Uint8List almutenPlace;
+
+  /// How the Part of Fortune is taken by night, `fortitudes_json.almuten.fortune` (C220).
+  final Uint8List almutenFortune;
+
+  /// The Part of Fortune, one of the five places `fortitude_planets`' `places` sums over.
+  final Float64List fortune;
 
   /// What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
   final Int8List scoreDirect;
@@ -2833,6 +2853,13 @@ final class ChartsFortitudeHouses {
   const ChartsFortitudeHouses({
     required this.cusp,
     required this.score,
+    required this.almutenSaturn,
+    required this.almutenJupiter,
+    required this.almutenMars,
+    required this.almutenSun,
+    required this.almutenVenus,
+    required this.almutenMercury,
+    required this.almutenMoon,
     required this.length,
   });
 
@@ -2842,6 +2869,27 @@ final class ChartsFortitudeHouses {
   /// What a planet in the house scores, `fortitudes_json.scores.houses`.
   final Int8List score;
 
+  /// The dignities Saturn holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenSaturn;
+
+  /// The dignities Jupiter holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenJupiter;
+
+  /// The dignities Mars holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenMars;
+
+  /// The dignities the Sun holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenSun;
+
+  /// The dignities Venus holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenVenus;
+
+  /// The dignities Mercury holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenMercury;
+
+  /// The dignities the Moon holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+  final Int16List almutenMoon;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -2849,7 +2897,7 @@ final class ChartsFortitudeHouses {
 /// The `fortitude_planets` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+/// The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.
 final class ChartsFortitudePlanets {
   const ChartsFortitudePlanets({
     required this.planet,
@@ -2858,6 +2906,7 @@ final class ChartsFortitudePlanets {
     required this.house,
     required this.fortitude,
     required this.debility,
+    required this.places,
     required this.accidentCount,
     required this.length,
   });
@@ -2879,6 +2928,9 @@ final class ChartsFortitudePlanets {
 
   /// The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it.
   final Int16List debility;
+
+  /// Its essential dignities summed over the ascendant, midheaven, Sun, Moon and Part of Fortune: Chapter CV's almuten is the planet with the most. Lilly's almuten of the figure is the greatest net.
+  final Int16List places;
 
   /// How many rows of the `fortitude_accidents` section belong to this planet.
   ///
@@ -3326,7 +3378,7 @@ final class Charts {
   /// Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none.
   final ChartsFortitudeHouses fortitudeHouses;
 
-  /// The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+  /// The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.
   final ChartsFortitudePlanets fortitudePlanets;
 
   /// Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
@@ -5759,205 +5811,230 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atFortitudes, 0),
         blob.columnOffset(atFortitudes, 0) + atFortitudes.count * 2,
       ),
-      northNode: Float64List.sublistView(
+      ascendant: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 1),
         blob.columnOffset(atFortitudes, 1) + atFortitudes.count * 8,
       ),
-      regulus: Float64List.sublistView(
+      midheaven: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 2),
         blob.columnOffset(atFortitudes, 2) + atFortitudes.count * 8,
       ),
-      spica: Float64List.sublistView(
+      northNode: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 3),
         blob.columnOffset(atFortitudes, 3) + atFortitudes.count * 8,
       ),
-      algol: Float64List.sublistView(
+      regulus: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 4),
         blob.columnOffset(atFortitudes, 4) + atFortitudes.count * 8,
       ),
-      combustionOrb: Float64List.sublistView(
+      spica: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 5),
         blob.columnOffset(atFortitudes, 5) + atFortitudes.count * 8,
       ),
-      combustionInSign: Uint8List.sublistView(
+      algol: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 6),
-        blob.columnOffset(atFortitudes, 6) + atFortitudes.count * 1,
+        blob.columnOffset(atFortitudes, 6) + atFortitudes.count * 8,
       ),
-      beamsOrb: Float64List.sublistView(
+      combustionOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 7),
         blob.columnOffset(atFortitudes, 7) + atFortitudes.count * 8,
       ),
-      cazimiOrb: Float64List.sublistView(
+      combustionInSign: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 8),
-        blob.columnOffset(atFortitudes, 8) + atFortitudes.count * 8,
+        blob.columnOffset(atFortitudes, 8) + atFortitudes.count * 1,
       ),
-      cuspOrb: Float64List.sublistView(
+      beamsOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 9),
         blob.columnOffset(atFortitudes, 9) + atFortitudes.count * 8,
       ),
-      starOrb: Float64List.sublistView(
+      cazimiOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 10),
         blob.columnOffset(atFortitudes, 10) + atFortitudes.count * 8,
       ),
-      partile: Uint8List.sublistView(
+      cuspOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 11),
-        blob.columnOffset(atFortitudes, 11) + atFortitudes.count * 1,
+        blob.columnOffset(atFortitudes, 11) + atFortitudes.count * 8,
       ),
-      partileOrb: Float64List.sublistView(
+      starOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 12),
         blob.columnOffset(atFortitudes, 12) + atFortitudes.count * 8,
       ),
-      siege: Uint8List.sublistView(
+      partile: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 13),
         blob.columnOffset(atFortitudes, 13) + atFortitudes.count * 1,
       ),
-      siegeSpan: Float64List.sublistView(
+      partileOrb: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 14),
         blob.columnOffset(atFortitudes, 14) + atFortitudes.count * 8,
       ),
-      scoreDirect: Int8List.sublistView(
+      siege: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 15),
         blob.columnOffset(atFortitudes, 15) + atFortitudes.count * 1,
       ),
-      scoreRetrograde: Int8List.sublistView(
+      siegeSpan: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 16),
-        blob.columnOffset(atFortitudes, 16) + atFortitudes.count * 1,
+        blob.columnOffset(atFortitudes, 16) + atFortitudes.count * 8,
       ),
-      scoreSwift: Int8List.sublistView(
+      almutenPlace: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 17),
         blob.columnOffset(atFortitudes, 17) + atFortitudes.count * 1,
       ),
-      scoreSlow: Int8List.sublistView(
+      almutenFortune: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 18),
         blob.columnOffset(atFortitudes, 18) + atFortitudes.count * 1,
       ),
-      scoreSuperiorOriental: Int8List.sublistView(
+      fortune: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 19),
-        blob.columnOffset(atFortitudes, 19) + atFortitudes.count * 1,
+        blob.columnOffset(atFortitudes, 19) + atFortitudes.count * 8,
       ),
-      scoreSuperiorOccidental: Int8List.sublistView(
+      scoreDirect: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 20),
         blob.columnOffset(atFortitudes, 20) + atFortitudes.count * 1,
       ),
-      scoreInferiorOriental: Int8List.sublistView(
+      scoreRetrograde: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 21),
         blob.columnOffset(atFortitudes, 21) + atFortitudes.count * 1,
       ),
-      scoreInferiorOccidental: Int8List.sublistView(
+      scoreSwift: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 22),
         blob.columnOffset(atFortitudes, 22) + atFortitudes.count * 1,
       ),
-      scoreIncreasing: Int8List.sublistView(
+      scoreSlow: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 23),
         blob.columnOffset(atFortitudes, 23) + atFortitudes.count * 1,
       ),
-      scoreDecreasing: Int8List.sublistView(
+      scoreSuperiorOriental: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 24),
         blob.columnOffset(atFortitudes, 24) + atFortitudes.count * 1,
       ),
-      scoreFreeFromCombustion: Int8List.sublistView(
+      scoreSuperiorOccidental: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 25),
         blob.columnOffset(atFortitudes, 25) + atFortitudes.count * 1,
       ),
-      scoreCazimi: Int8List.sublistView(
+      scoreInferiorOriental: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 26),
         blob.columnOffset(atFortitudes, 26) + atFortitudes.count * 1,
       ),
-      scoreCombust: Int8List.sublistView(
+      scoreInferiorOccidental: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 27),
         blob.columnOffset(atFortitudes, 27) + atFortitudes.count * 1,
       ),
-      scoreUnderBeams: Int8List.sublistView(
+      scoreIncreasing: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 28),
         blob.columnOffset(atFortitudes, 28) + atFortitudes.count * 1,
       ),
-      scoreConjunctBenefic: Int8List.sublistView(
+      scoreDecreasing: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 29),
         blob.columnOffset(atFortitudes, 29) + atFortitudes.count * 1,
       ),
-      scoreConjunctNorthNode: Int8List.sublistView(
+      scoreFreeFromCombustion: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 30),
         blob.columnOffset(atFortitudes, 30) + atFortitudes.count * 1,
       ),
-      scoreTrineBenefic: Int8List.sublistView(
+      scoreCazimi: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 31),
         blob.columnOffset(atFortitudes, 31) + atFortitudes.count * 1,
       ),
-      scoreSextileBenefic: Int8List.sublistView(
+      scoreCombust: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 32),
         blob.columnOffset(atFortitudes, 32) + atFortitudes.count * 1,
       ),
-      scoreConjunctMalefic: Int8List.sublistView(
+      scoreUnderBeams: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 33),
         blob.columnOffset(atFortitudes, 33) + atFortitudes.count * 1,
       ),
-      scoreConjunctSouthNode: Int8List.sublistView(
+      scoreConjunctBenefic: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 34),
         blob.columnOffset(atFortitudes, 34) + atFortitudes.count * 1,
       ),
-      scoreOpposedMalefic: Int8List.sublistView(
+      scoreConjunctNorthNode: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 35),
         blob.columnOffset(atFortitudes, 35) + atFortitudes.count * 1,
       ),
-      scoreSquareMalefic: Int8List.sublistView(
+      scoreTrineBenefic: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 36),
         blob.columnOffset(atFortitudes, 36) + atFortitudes.count * 1,
       ),
-      scoreBesieged: Int8List.sublistView(
+      scoreSextileBenefic: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 37),
         blob.columnOffset(atFortitudes, 37) + atFortitudes.count * 1,
       ),
-      scoreRegulus: Int8List.sublistView(
+      scoreConjunctMalefic: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 38),
         blob.columnOffset(atFortitudes, 38) + atFortitudes.count * 1,
       ),
-      scoreSpica: Int8List.sublistView(
+      scoreConjunctSouthNode: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 39),
         blob.columnOffset(atFortitudes, 39) + atFortitudes.count * 1,
       ),
-      scoreAlgol: Int8List.sublistView(
+      scoreOpposedMalefic: Int8List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudes, 40),
         blob.columnOffset(atFortitudes, 40) + atFortitudes.count * 1,
+      ),
+      scoreSquareMalefic: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudes, 41),
+        blob.columnOffset(atFortitudes, 41) + atFortitudes.count * 1,
+      ),
+      scoreBesieged: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudes, 42),
+        blob.columnOffset(atFortitudes, 42) + atFortitudes.count * 1,
+      ),
+      scoreRegulus: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudes, 43),
+        blob.columnOffset(atFortitudes, 43) + atFortitudes.count * 1,
+      ),
+      scoreSpica: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudes, 44),
+        blob.columnOffset(atFortitudes, 44) + atFortitudes.count * 1,
+      ),
+      scoreAlgol: Int8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudes, 45),
+        blob.columnOffset(atFortitudes, 45) + atFortitudes.count * 1,
       ),
       length: atFortitudes.count,
     ),
@@ -5971,6 +6048,41 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atFortitudeHouses, 1),
         blob.columnOffset(atFortitudeHouses, 1) + atFortitudeHouses.count * 1,
+      ),
+      almutenSaturn: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 2),
+        blob.columnOffset(atFortitudeHouses, 2) + atFortitudeHouses.count * 2,
+      ),
+      almutenJupiter: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 3),
+        blob.columnOffset(atFortitudeHouses, 3) + atFortitudeHouses.count * 2,
+      ),
+      almutenMars: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 4),
+        blob.columnOffset(atFortitudeHouses, 4) + atFortitudeHouses.count * 2,
+      ),
+      almutenSun: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 5),
+        blob.columnOffset(atFortitudeHouses, 5) + atFortitudeHouses.count * 2,
+      ),
+      almutenVenus: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 6),
+        blob.columnOffset(atFortitudeHouses, 6) + atFortitudeHouses.count * 2,
+      ),
+      almutenMercury: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 7),
+        blob.columnOffset(atFortitudeHouses, 7) + atFortitudeHouses.count * 2,
+      ),
+      almutenMoon: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudeHouses, 8),
+        blob.columnOffset(atFortitudeHouses, 8) + atFortitudeHouses.count * 2,
       ),
       length: atFortitudeHouses.count,
     ),
@@ -6005,10 +6117,15 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atFortitudePlanets, 5),
         blob.columnOffset(atFortitudePlanets, 5) + atFortitudePlanets.count * 2,
       ),
-      accidentCount: Uint8List.sublistView(
+      places: Int16List.sublistView(
         blob.bytes,
         blob.columnOffset(atFortitudePlanets, 6),
-        blob.columnOffset(atFortitudePlanets, 6) + atFortitudePlanets.count * 1,
+        blob.columnOffset(atFortitudePlanets, 6) + atFortitudePlanets.count * 2,
+      ),
+      accidentCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atFortitudePlanets, 7),
+        blob.columnOffset(atFortitudePlanets, 7) + atFortitudePlanets.count * 1,
       ),
       length: atFortitudePlanets.count,
     ),

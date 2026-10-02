@@ -66,6 +66,8 @@ import type {
   Accident,
   Partile,
   Siege,
+  PlaceReading,
+  FortuneRule,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -1065,6 +1067,15 @@ export interface FortitudeRequest {
   readonly dignities?: DignityRequest;
   readonly rules?: Partial<AccidentalRules>;
   readonly scores?: Partial<AccidentalScores>;
+  readonly almuten?: Partial<AlmutenRules>;
+}
+
+/** How the almutens are read; Lilly's by default (`03-design/essential-dignities.md` §The almuten). */
+export interface AlmutenRules {
+  /** What of a place its dignities are counted from: `DEGREE` (all five) or `SIGN` (house, exaltation, triplicity), C218. */
+  readonly place: PlaceReading;
+  /** How Fortune is taken by night: `DAY_AND_NIGHT`, Lilly's, or `REVERSED_BY_NIGHT`, C220. */
+  readonly fortune: FortuneRule;
 }
 
 /** What a chart's accidental fortitudes were read from, in the chart's zodiac. */
@@ -1073,6 +1084,10 @@ export interface AccidentalSky {
   readonly houses: HouseSystem;
   /** The twelve cusps, the first to the twelfth, in degrees. */
   readonly cuspsDeg: readonly number[];
+  /** The ascendant, from the chart's angles: whole-sign and equal houses do not put it on a cusp. */
+  readonly ascendantDeg: number;
+  /** The midheaven, from the chart's angles. */
+  readonly midheavenDeg: number;
   /** The seven's daily motions in the Chaldean order, negative when retrograde. */
   readonly speedsDegPerDay: readonly number[];
   readonly northNodeDeg: number;
@@ -1120,6 +1135,45 @@ export interface Fortitudes {
   readonly scores: AccidentalScores;
   /** The seven in the Chaldean order, Saturn first. */
   readonly planets: readonly PlanetAccidents[];
+  readonly almutens: Almutens;
+}
+
+/** One planet's total in an almuten's ranking. */
+export interface AlmutenTotal {
+  readonly planet: Graha;
+  readonly total: number;
+}
+
+/**
+ * An almuten as a ranking. Lilly breaks no tie, so every planet holding the
+ * greatest total is an almuten (C219).
+ */
+export interface Almuten {
+  /** The seven's totals, in the Chaldean order. */
+  readonly totals: readonly AlmutenTotal[];
+  /** Every planet holding the greatest total: one unless they tie. */
+  readonly almutens: readonly Graha[];
+  /** Every planet holding the next total down, Chapter CV's partakers; empty when all seven tie. */
+  readonly partakers: readonly Graha[];
+}
+
+/**
+ * A chart's almutens three ways, with the rules that made them.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, fortitudes: { almuten: { place: 'SIGN' } } });
+ * const lord = chart.fortitudes?.almutens.figure.almutens; // Lilly's lord of the geniture
+ */
+export interface Almutens {
+  readonly rules: AlmutenRules;
+  /** The Part of Fortune, one of the five places. */
+  readonly fortuneDeg: number;
+  /** Lilly's almuten of the figure: each planet's `net`. */
+  readonly figure: Almuten;
+  /** Chapter CV's: essential dignities over the ascendant, midheaven, Sun, Moon and Fortune. */
+  readonly places: Almuten;
+  /** Each house's, of its cusp, the first to the twelfth. */
+  readonly houses: readonly Almuten[];
 }
 
 /**

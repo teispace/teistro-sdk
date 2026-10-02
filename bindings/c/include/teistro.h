@@ -5026,6 +5026,36 @@ typedef enum ts_siege {
 } ts_siege;
 
 /**
+ * What of a place an almuten's dignities are counted from (C218,
+ * `03-design/essential-dignities.md` §The almuten).
+ */
+typedef enum ts_place_reading {
+    /**
+     * The degree: house, exaltation, triplicity, term and face.
+     */
+    TS_PLACE_READING_DEGREE = 0,
+    /**
+     * The sign: house, exaltation and triplicity.
+     */
+    TS_PLACE_READING_SIGN = 1,
+} ts_place_reading;
+
+/**
+ * How the Part of Fortune is taken by night (C220,
+ * `03-design/essential-dignities.md` §The almuten).
+ */
+typedef enum ts_fortune_rule {
+    /**
+     * Lilly's: the ascendant plus the Moon less the Sun, by day or night.
+     */
+    TS_FORTUNE_RULE_DAY_AND_NIGHT = 0,
+    /**
+     * By night, the ascendant plus the Sun less the Moon.
+     */
+    TS_FORTUNE_RULE_REVERSED_BY_NIGHT = 1,
+} ts_fortune_rule;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {

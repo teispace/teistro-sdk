@@ -3268,6 +3268,36 @@ export const SiegeById = new Map([
   [1, 'WITHIN'],
 ]);
 
+/** Every PlaceReading by name. */
+export const PlaceReading = Object.freeze({
+  Degree: 'DEGREE',
+  Sign: 'SIGN',
+});
+
+/**
+ * Every PlaceReading by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PlaceReadingById = new Map([
+  [0, 'DEGREE'],
+  [1, 'SIGN'],
+]);
+
+/** Every FortuneRule by name. */
+export const FortuneRule = Object.freeze({
+  DayAndNight: 'DAY_AND_NIGHT',
+  ReversedByNight: 'REVERSED_BY_NIGHT',
+});
+
+/**
+ * Every FortuneRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const FortuneRuleById = new Map([
+  [0, 'DAY_AND_NIGHT'],
+  [1, 'REVERSED_BY_NIGHT'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

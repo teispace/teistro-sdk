@@ -1478,7 +1478,16 @@ class AnEngine(WithLibrary):
         chart's own dignities, an answer's rules and scores handed back as a
         request, and a refusal named in the record
         (`03-design/essential-dignities.md` §Accidental fortitudes)."""
-        from teistro import Accident, FortitudeRequest, HouseSystem, Partile, Siege
+        from teistro import (
+            Accident,
+            AlmutenRules,
+            FortitudeRequest,
+            FortuneRule,
+            HouseSystem,
+            Partile,
+            PlaceReading,
+            Siege,
+        )
 
         kathmandu: dict[str, Any] = {
             "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)),
@@ -1512,18 +1521,37 @@ class AnEngine(WithLibrary):
                 held = [line.accident for line in at.accidents if line.accident in solar]
                 self.assertEqual(len(held), 0 if at.planet is Graha.SUN else 1, at.planet)
 
+            # The almutens: Lilly's of the figure is the greatest net, Fortune
+            # the ascendant plus the Moon less the Sun, and every house has one.
+            almutens = read.almutens
+            self.assertEqual(almutens.rules, AlmutenRules())
+            self.assertEqual([at.total for at in almutens.figure.totals], [at.net for at in read.planets])
+            greatest = max(at.net for at in read.planets)
+            self.assertEqual(almutens.figure.almutens, tuple(at.planet for at in read.planets if at.net == greatest))
+            longitude = {at.planet: at.longitude_deg for at in read.dignities.planets}
+            fortune = (read.sky.ascendant_deg + longitude[Graha.MOON] - longitude[Graha.SUN]) % 360
+            self.assertAlmostEqual(almutens.fortune_deg, fortune, places=9)
+            self.assertEqual(len(almutens.houses), 12)
+            for almuten in (almutens.figure, almutens.places, *almutens.houses):
+                self.assertTrue(almuten.almutens)
+                self.assertFalse(set(almuten.partakers) & set(almuten.almutens))
+
             # The answer's rules and scores are a request as they stand, and
             # one changed is obeyed.
             fed_back = ctx.chart.found(
-                instant=instants[0], fortitudes={"rules": read.rules, "scores": read.scores}, **kathmandu
+                instant=instants[0],
+                fortitudes={"rules": read.rules, "scores": read.scores, "almuten": almutens.rules},
+                **kathmandu,
             )
             self.assertEqual(fed_back.fortitudes, read)
             asked: FortitudeRequest = {
                 "rules": {"beamsDeg": 15, "partile": {"WITHIN": {"orbDeg": 1}}, "siege": {"WITHIN": {"spanDeg": 30}}},
                 "scores": {"regulus": 5},
+                "almuten": AlmutenRules(place=PlaceReading.SIGN, fortune=FortuneRule.REVERSED_BY_NIGHT),
             }
             other = ctx.chart.found(instant=instants[0], fortitudes=asked, **kathmandu).fortitudes
             assert other is not None
+            self.assertEqual(other.almutens.rules, AlmutenRules(PlaceReading.SIGN, FortuneRule.REVERSED_BY_NIGHT))
             self.assertEqual(other.rules.beams_deg, 15.0)
             self.assertEqual((other.rules.partile, other.rules.partile_orb_deg), (Partile.WITHIN, 1.0))
             self.assertEqual((other.rules.siege, other.rules.siege_span_deg), (Siege.WITHIN, 30.0))
@@ -1537,6 +1565,7 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[dict[str, Any], str]] = [
                 ({"fortitudes": {"rules": {"beamDeg": 15}}}, "fortitudes.rules.beamDeg"),
                 ({"fortitudes": {"rules": {"beamsDeg": -1}}}, "fortitudes.rules.beamsDeg"),
+                ({"fortitudes": {"almuten": {"place": "CUSP"}}}, "fortitudes.almuten.place"),
                 ({"fortitudes": {}, "dignities": {}}, "dignities"),
             ]
             for bad, field in refusals:

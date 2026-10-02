@@ -706,8 +706,9 @@ test('every catalogue enum has a complete id table', () => {
   // with its UNKNOWN; 1205 since the essential dignities' `TsSect`, two,
   // `TsSectRule`, four, `TsTerms`, five, and `TsTriplicities`, two; 1233
   // since the accidental fortitudes' `TsAccident`, twenty-four, and
-  // `TsPartile` and `TsSiege`, two each.
-  assert.equal(entries, 1233, 'every member of every enum is in a table');
+  // `TsPartile` and `TsSiege`, two each; 1237 since the almuten's
+  // `TsPlaceReading` and `TsFortuneRule`, two each.
+  assert.equal(entries, 1237, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2144,14 +2145,38 @@ test('a chart carries its accidental fortitudes', () => {
     assert.equal(solar.length, at.planet === 'graha.SUN' ? 0 : 1, at.planet);
   }
 
+  // The almutens: Lilly's of the figure is the greatest net, Fortune is
+  // the ascendant plus the Moon less the Sun, and every house has one.
+  const almutens = read.almutens;
+  assert.deepEqual(almutens.rules, { place: 'DEGREE', fortune: 'DAY_AND_NIGHT' });
+  assert.deepEqual(
+    almutens.figure.totals,
+    read.planets.map((at) => ({ planet: at.planet, total: at.net })),
+  );
+  const greatest = Math.max(...read.planets.map((at) => at.net));
+  assert.deepEqual(
+    almutens.figure.almutens,
+    read.planets.filter((at) => at.net === greatest).map((at) => at.planet),
+  );
+  const longitude = (planet) => read.dignities.planets.find((at) => at.planet === planet).longitudeDeg;
+  const fortune = (((read.sky.ascendantDeg + longitude('graha.MOON') - longitude('graha.SUN')) % 360) + 360) % 360;
+  assert.ok(Math.abs(almutens.fortuneDeg - fortune) < 1e-9, `${almutens.fortuneDeg} against ${fortune}`);
+  assert.equal(almutens.houses.length, 12);
+  for (const almuten of [almutens.figure, almutens.places, ...almutens.houses]) {
+    assert.ok(almuten.almutens.length >= 1);
+    assert.ok(almuten.partakers.every((planet) => !almuten.almutens.includes(planet)));
+  }
+
   // The answer's rules and scores are requests as they stand.
   const asked = {
     rules: { ...read.rules, beamsDeg: 15, partile: { WITHIN: { orbDeg: 1 } }, siege: { WITHIN: { spanDeg: 30 } } },
     scores: { ...read.scores, regulus: 5 },
+    almuten: { place: 'SIGN', fortune: 'REVERSED_BY_NIGHT' },
   };
   const again = ctx.chart.found({ instant: instants[0], ...kathmandu, fortitudes: asked }).fortitudes;
   assert.deepEqual(again.rules, asked.rules);
   assert.deepEqual(again.scores, asked.scores);
+  assert.deepEqual(again.almutens.rules, asked.almuten);
 
   const batch = ctx.chart.foundMany({ instants, ...kathmandu, fortitudes: {} });
   instants.forEach((instant, k) =>
@@ -2160,6 +2185,7 @@ test('a chart carries its accidental fortitudes', () => {
   for (const [request, field] of [
     [{ fortitudes: { rules: { beamDeg: 15 } } }, 'fortitudes.rules.beamDeg'],
     [{ fortitudes: { rules: { beamsDeg: -1 } } }, 'fortitudes.rules.beamsDeg'],
+    [{ fortitudes: { almuten: { place: 'CUSP' } } }, 'fortitudes.almuten.place'],
     [{ fortitudes: {}, dignities: {} }, 'dignities'],
   ]) {
     assert.throws(

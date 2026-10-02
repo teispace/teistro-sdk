@@ -498,6 +498,16 @@ midheaven from its angles, the two places a cusp does not always hold.
   them; "posited best, and elevated most" (p. 532) is a judgment in
   words, so it is not encoded as a score.
 
+**At the boundary** the almutens ride the fortitudes' sections, because
+they are read in the same request and from the same sky. The
+`fortitudes` row gains the ascendant, the midheaven, Fortune and the two
+rules (`TsPlaceReading`, `TsFortuneRule`). Each `fortitude_planets` row
+gains `places`, its total over the five places. Each `fortitude_houses`
+row gains seven columns, `almuten_saturn` to `almuten_moon`, named rather
+than indexed. The figure's totals are the nets each binding already
+sums, and each binding ranks all three as `{totals, almutens,
+partakers}`.
+
 The acceptance tests are the merchant's figure almuten (Venus) and the
 Part of Fortune's worked example (10°27′ Aquarius), in the unit tests
 of `crates/hellenistic`. [`fortitudes-measured.md`](fortitudes-measured.md)
@@ -536,8 +546,10 @@ the other.
    printed figures, and so is its façade (`ChartArea::fortitudes`,
    `fortitudes-measured.md`), and so is its boundary (§At the boundary:
    sections 63–66 in every binding, under the parity gate). **The
-   almuten's doctrine is done** (§The almuten, C218–C220), measured on
-   the same page. Its façade and boundary come next.
+   almuten is done** (§The almuten, C218–C220): its doctrine, measured
+   on the same page, its façade (`Fortitudes::almutens`) and its
+   boundary, in every binding under the parity gate. Step 5 is done but
+   for Ibn Ezra's weights, which wait on a rank 1 reading.
 
 ## What is not decided
 

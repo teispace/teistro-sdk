@@ -559,11 +559,11 @@ fn dignities(api: &Api) -> Vec<&'static str> {
     ]
 }
 
-/// The accidental fortitudes' enums. `TsPartile`'s and `TsSiege`'s
+/// The accidental fortitudes' and almutens' enums. `TsPartile`'s and `TsSiege`'s
 /// `WITHIN` carry an orb, which serde writes as `{"WITHIN": {...}}` under
 /// the same key, held here apart since it is no unit variant.
 fn fortitudes(api: &Api) -> Vec<&'static str> {
-    use teistro_ffi::chart::{TsAccident, TsPartile, TsSiege};
+    use teistro_ffi::chart::{TsAccident, TsFortuneRule, TsPartile, TsPlaceReading, TsSiege};
     let id = |value: u8| Some(i64::from(value));
     let within = |value: serde_json::Value| {
         assert!(
@@ -603,6 +603,12 @@ fn fortitudes(api: &Api) -> Vec<&'static str> {
             |s| TsSiege::of(*s).and_then(|(s, _)| id(s as u8)),
             &["WITHIN"],
         ),
+        unit(api, "TsPlaceReading", |r: &teistro::PlaceReading| {
+            TsPlaceReading::of(*r).and_then(|r| id(r as u8))
+        }),
+        unit(api, "TsFortuneRule", |r: &teistro::FortuneRule| {
+            TsFortuneRule::of(*r).and_then(|r| id(r as u8))
+        }),
     ]
 }
 

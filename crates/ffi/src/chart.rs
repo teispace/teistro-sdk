@@ -584,6 +584,54 @@ impl TsSiege {
     }
 }
 
+/// What of a place an almuten's dignities are counted from (C218,
+/// `03-design/essential-dignities.md` §The almuten).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsPlaceReading {
+    /// The degree: house, exaltation, triplicity, term and face.
+    Degree = 0,
+    /// The sign: house, exaltation and triplicity.
+    Sign = 1,
+}
+
+impl TsPlaceReading {
+    /// The code a reading crosses as; `None` for one this boundary does
+    /// not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(reading: teistro::PlaceReading) -> Option<TsPlaceReading> {
+        match reading {
+            teistro::PlaceReading::Degree => Some(TsPlaceReading::Degree),
+            teistro::PlaceReading::Sign => Some(TsPlaceReading::Sign),
+            _ => None,
+        }
+    }
+}
+
+/// How the Part of Fortune is taken by night (C220,
+/// `03-design/essential-dignities.md` §The almuten).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsFortuneRule {
+    /// Lilly's: the ascendant plus the Moon less the Sun, by day or night.
+    DayAndNight = 0,
+    /// By night, the ascendant plus the Sun less the Moon.
+    ReversedByNight = 1,
+}
+
+impl TsFortuneRule {
+    /// The code a rule crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(rule: teistro::FortuneRule) -> Option<TsFortuneRule> {
+        match rule {
+            teistro::FortuneRule::DayAndNight => Some(TsFortuneRule::DayAndNight),
+            teistro::FortuneRule::ReversedByNight => Some(TsFortuneRule::ReversedByNight),
+            _ => None,
+        }
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -2827,8 +2875,9 @@ const fn accidental_lines(s: &teistro::AccidentalScores) -> [i8; 26] {
 #[derive(Default)]
 struct FortitudeColumns {
     houses: Vec<u16>,
-    /// The North Node, Regulus, Spica and Algol.
-    points: [Vec<f64>; 4],
+    /// The ascendant, the midheaven, the North Node, Regulus, Spica and
+    /// Algol.
+    points: [Vec<f64>; 6],
     /// The combustion, beams, cazimi, cusp and star orbs.
     orbs: [Vec<f64>; 5],
     combustion_in_sign: Vec<u8>,
@@ -2836,11 +2885,17 @@ struct FortitudeColumns {
     partile_orb: Vec<f64>,
     siege: Vec<u8>,
     siege_span: Vec<f64>,
+    almuten_place: Vec<u8>,
+    almuten_fortune: Vec<u8>,
+    fortune: Vec<f64>,
     /// The line scores, one column a line in [`ACCIDENTAL_LINES`]' order.
     scores: Vec<Vec<i8>>,
     /// The `fortitude_houses` section.
     cusp: Vec<f64>,
     house_score: Vec<i8>,
+    /// Each house's almuten totals, a column a planet in the Chaldean
+    /// order.
+    house_almuten: [Vec<i16>; 7],
     /// The `fortitude_planets` section.
     planet: Vec<u16>,
     speed: Vec<f64>,
@@ -2848,6 +2903,7 @@ struct FortitudeColumns {
     house: Vec<u8>,
     fortitude: Vec<i16>,
     debility: Vec<i16>,
+    places: Vec<i16>,
     accident_count: Vec<u8>,
     /// The `fortitude_accidents` section.
     accident: Vec<u8>,
@@ -2865,6 +2921,8 @@ impl FortitudeColumns {
             let (sky, rules) = (&one.sky, &one.rules);
             columns.houses.push(sky.houses.id());
             let points = [
+                sky.ascendant_deg,
+                sky.midheaven_deg,
                 sky.north_node_deg,
                 sky.regulus_deg,
                 sky.spica_deg,
@@ -2894,16 +2952,32 @@ impl FortitudeColumns {
                 TsSiege::of(rules.siege).ok_or_else(|| no_code("the siege reading"))?;
             columns.siege.push(siege as u8);
             columns.siege_span.push(span);
+            let almutens = &one.almutens;
+            columns.almuten_place.push(
+                TsPlaceReading::of(almutens.rules.place)
+                    .ok_or_else(|| no_code("the place reading"))? as u8,
+            );
+            columns.almuten_fortune.push(
+                TsFortuneRule::of(almutens.rules.fortune)
+                    .ok_or_else(|| no_code("the Fortune rule"))? as u8,
+            );
+            columns.fortune.push(almutens.fortune_deg);
             for (column, value) in columns.scores.iter_mut().zip(accidental_lines(&one.scores)) {
                 column.push(value);
             }
             columns.cusp.extend(sky.cusps_deg);
             columns.house_score.extend(one.scores.houses);
-            for ((at, speed), mean) in one
+            for house in &almutens.houses {
+                for (column, total) in columns.house_almuten.iter_mut().zip(house.totals) {
+                    column.push(total);
+                }
+            }
+            for (((at, speed), mean), places) in one
                 .planets
                 .iter()
                 .zip(sky.speeds_deg_per_day)
                 .zip(rules.mean_motion_deg)
+                .zip(almutens.places.totals)
             {
                 columns.planet.push(at.planet.id());
                 columns.speed.push(speed);
@@ -2911,6 +2985,7 @@ impl FortitudeColumns {
                 columns.house.push(at.house.get());
                 columns.fortitude.push(at.fortitude);
                 columns.debility.push(at.debility);
+                columns.places.push(places);
                 columns.accident_count.push(
                     u8::try_from(at.accidents.len())
                         .map_err(|_| Error::internal("more accidents than lines"))?,
@@ -2929,10 +3004,12 @@ impl FortitudeColumns {
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        let [north_node, regulus, spica, algol] = &self.points;
+        let [ascendant, midheaven, north_node, regulus, spica, algol] = &self.points;
         let [combustion, beams, cazimi, cusp_orb, star_orb] = &self.orbs;
         let mut chart = vec![
             ColumnData::U16(&self.houses),
+            ColumnData::F64(ascendant),
+            ColumnData::F64(midheaven),
             ColumnData::F64(north_node),
             ColumnData::F64(regulus),
             ColumnData::F64(spica),
@@ -2947,17 +3024,22 @@ impl FortitudeColumns {
             ColumnData::F64(&self.partile_orb),
             ColumnData::U8(&self.siege),
             ColumnData::F64(&self.siege_span),
+            ColumnData::U8(&self.almuten_place),
+            ColumnData::U8(&self.almuten_fortune),
+            ColumnData::F64(&self.fortune),
         ];
         chart.extend(self.scores.iter().map(|column| ColumnData::I8(column)));
         writer.columns("fortitudes", self.houses.len(), &chart)?;
-        writer.columns(
-            "fortitude_houses",
-            self.cusp.len(),
-            &[
-                ColumnData::F64(&self.cusp),
-                ColumnData::I8(&self.house_score),
-            ],
-        )?;
+        let mut houses = vec![
+            ColumnData::F64(&self.cusp),
+            ColumnData::I8(&self.house_score),
+        ];
+        houses.extend(
+            self.house_almuten
+                .iter()
+                .map(|column| ColumnData::I16(column)),
+        );
+        writer.columns("fortitude_houses", self.cusp.len(), &houses)?;
         writer.columns(
             "fortitude_planets",
             self.planet.len(),
@@ -2968,6 +3050,7 @@ impl FortitudeColumns {
                 ColumnData::U8(&self.house),
                 ColumnData::I16(&self.fortitude),
                 ColumnData::I16(&self.debility),
+                ColumnData::I16(&self.places),
                 ColumnData::U8(&self.accident_count),
             ],
         )?;

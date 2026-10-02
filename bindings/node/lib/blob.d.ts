@@ -2492,6 +2492,14 @@ export interface ChartsFortitudes {
    */
   readonly houses: Uint16Array;
   /**
+   * The ascendant, from the chart's angles, in degrees of the chart's zodiac: whole-sign and equal houses do not put it on a cusp.
+   */
+  readonly ascendant: Float64Array;
+  /**
+   * The midheaven, from the chart's angles: only a quadrant division puts it on the tenth cusp.
+   */
+  readonly midheaven: Float64Array;
+  /**
    * The North Node's longitude, in degrees of the chart's zodiac.
    */
   readonly northNode: Float64Array;
@@ -2549,6 +2557,20 @@ export interface ChartsFortitudes {
    * The span of `WITHIN`; 0 for `SAME_SIGN`.
    */
   readonly siegeSpan: Float64Array;
+  /**
+   * What of a place its almuten's dignities are counted from, `fortitudes_json.almuten.place` (C218).
+   * The values are `PlaceReading` ids.
+   */
+  readonly almutenPlace: Uint8Array;
+  /**
+   * How the Part of Fortune is taken by night, `fortitudes_json.almuten.fortune` (C220).
+   * The values are `FortuneRule` ids.
+   */
+  readonly almutenFortune: Uint8Array;
+  /**
+   * The Part of Fortune, one of the five places `fortitude_planets`' `places` sums over.
+   */
+  readonly fortune: Float64Array;
   /**
    * What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
    */
@@ -2672,6 +2694,34 @@ export interface ChartsFortitudeHouses {
    * What a planet in the house scores, `fortitudes_json.scores.houses`.
    */
   readonly score: Int8Array;
+  /**
+   * The dignities Saturn holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenSaturn: Int16Array;
+  /**
+   * The dignities Jupiter holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenJupiter: Int16Array;
+  /**
+   * The dignities Mars holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenMars: Int16Array;
+  /**
+   * The dignities the Sun holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenSun: Int16Array;
+  /**
+   * The dignities Venus holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenVenus: Int16Array;
+  /**
+   * The dignities Mercury holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenMercury: Int16Array;
+  /**
+   * The dignities the Moon holds at the cusp, read under `almuten_place`: the house's almuten is the planet with the most.
+   */
+  readonly almutenMoon: Int16Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2680,7 +2730,7 @@ export interface ChartsFortitudeHouses {
  * The `fortitude_planets` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+ * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.
  */
 export interface ChartsFortitudePlanets {
   /**
@@ -2708,6 +2758,10 @@ export interface ChartsFortitudePlanets {
    * The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it.
    */
   readonly debility: Int16Array;
+  /**
+   * Its essential dignities summed over the ascendant, midheaven, Sun, Moon and Part of Fortune: Chapter CV's almuten is the planet with the most. Lilly's almuten of the figure is the greatest net.
+   */
+  readonly places: Int16Array;
   /**
    * How many rows of the `fortitude_accidents` section belong to this planet.
    *
@@ -3163,7 +3217,7 @@ export interface Charts {
    */
   readonly fortitudeHouses: ChartsFortitudeHouses;
   /**
-   * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+   * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`, and the planet with the greatest is his almuten of the figure. Empty when `fortitudes_json` asked for none.
    */
   readonly fortitudePlanets: ChartsFortitudePlanets;
   /**
