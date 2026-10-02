@@ -1855,7 +1855,9 @@ the astronomical numbers do not move. Nothing else computes yet.
     as he says, while the ship at sea is void by neither reading, so C230
     stays open with both reported. A third, "A Lady, if marry the
     Gentleman desired?", is void by both: the Sun's opposition is inside
-    the moieties but past her sign's end, so the sign's end bounds both. A topocentric
+    the moieties but past her sign's end, so the sign's end bounds both.
+    Four more figures agree with both readings; of seven, the moieties
+    read six as Lilly does and the sign's end five. A topocentric
     Moon swings by parallax beyond what the projection follows (2.3°), so
     a horary figure is read geocentrically. They cross the boundary as the
     chart request's `considerations_json` and three sections (the clauses,
