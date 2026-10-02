@@ -1055,7 +1055,8 @@ provider's DUT1).
 0. **Next: more of Lilly's Book II figures for the perfection** —
    `hellenistic-perfection.md` step 5 (C232, C233): the relations, the
    seven ways and the boundary are built and cross every binding, and
-   four of his figures read as he judged them (pp. 177, 238, 385, 437).
+   five of his figures read as he judged them (pp. 177, 238, 385, 437,
+   452).
    A collection and a frustration in one of his own figures are still
    untested, and C235 is open; then the rest of the `western` module. C230
    stands at seven recast figures.

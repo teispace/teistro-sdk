@@ -2059,4 +2059,78 @@ mod tests {
         assert!(matter.ways.quesited_in_ascendant);
         assert_eq!(matter.ways.held, [Way::Dwelling]);
     }
+
+    /// Lilly's "If Prince Rupert should get honour by our Warres, or
+    /// worst the Earle of Essex?" (*Christian Astrology* p. 452), "28
+    /// Novem. 1642, 9h 23′ A.M.", a Monday, "☽ a △ ♃ ad △ ♄". Recast at
+    /// the printed Ascendant, Capricorn 3°32′, it lands three minutes from
+    /// the printed time with every planet within 15′ of his but the Moon,
+    /// 35′ behind his and short of Jupiter's trine, so the figure is read
+    /// on his printed places at the recast's motions. "The ☽ transferres
+    /// the influence of ♃ to ♄, by a forcible and ftrong afpect, viz. a
+    /// △", and "♀ is in □ of ♂, but feparated" (p. 454): the Moon leaves
+    /// Jupiter's trine for Saturn's, and Venus, Essex's significator, has
+    /// passed Mars's square.
+    #[test]
+    fn lillys_rupert_figure_translates_jupiter_to_saturn_by_trine() {
+        let dm = |degree: f64, minute: f64| degree + minute / 60.0;
+        let places = [
+            dm(348.0, 40.0),
+            dm(340.0, 24.0),
+            dm(31.0, 58.0),
+            dm(256.0, 28.0),
+            dm(303.0, 40.0),
+            264.0,
+            dm(100.0, 32.0),
+        ];
+        let speeds = [0.0302, 0.1122, 0.0549, 1.0171, 1.0093, -1.1651, 12.2440];
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [2, 2, 3, 12, 1, 12, 7].map(house),
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let read = |querent: Graha, quesited: Graha| {
+            let horizon = PerfectionRules::LILLY
+                .horizon_for(&places, &speeds, querent, quesited)
+                .unwrap();
+            let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+            perfection(
+                &timeline,
+                querent,
+                quesited,
+                &standing,
+                &PerfectionRules::LILLY,
+            )
+            .unwrap()
+        };
+        let carried = read(Saturn, Jupiter);
+        // The Sun, 6° past Jupiter's square and inside their moieties,
+        // reaches Saturn's square too: a translation by p. 111's words
+        // that Lilly passes over for the Moon's "forcible" one.
+        let translators: Vec<Graha> = carried.translations.iter().map(|t| t.translator).collect();
+        assert_eq!(translators, [Sun, Moon]);
+        let moon = &carried.translations[1];
+        assert_eq!(
+            (moon.from, moon.to, moon.aspect),
+            (Jupiter, Saturn, PtolemaicAspect::Trine)
+        );
+        assert_eq!(moon.separating.aspect, PtolemaicAspect::Trine);
+        assert!(
+            (moon.separating.past_deg - 8.0 / 60.0).abs() < 1e-6,
+            "{}",
+            moon.separating.past_deg
+        );
+        // Received in Jupiter's exaltation and term, p. 126's way.
+        assert!(moon.received.exaltation && moon.received.term);
+        assert!(carried.ways.held.contains(&Way::Translation));
+        let war = read(Mars, Venus);
+        let parted = war.separation.unwrap();
+        assert_eq!(parted.aspect, PtolemaicAspect::Square);
+        assert!(
+            (parted.past_deg - dm(1.0, 42.0)).abs() < 1e-6,
+            "{}",
+            parted.past_deg
+        );
+    }
 }
