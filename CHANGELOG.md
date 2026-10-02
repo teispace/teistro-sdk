@@ -1779,6 +1779,22 @@ the astronomical numbers do not move. Nothing else computes yet.
     answers the `lots` and `lot_places` sections (67 and 68) with a new
     `TsLot` enum, and every binding reads them back as `lots`, under the
     parity gate.
+  - **Valens's time lords** (`hellenistic-time-lords.md`, C223–C224).
+    Zodiacal releasing and the profected year are dashas: `ReleasingDasha`
+    and `ProfectionDasha` behind `Timeline`, named by three new
+    `DashaSystem` members (`RELEASING_FORTUNE`, `RELEASING_DAIMON`,
+    `PROFECTION`) in two new families. Releasing gives each sign its
+    lord's minimum years (Capricorn 27, Aquarius 30), four levels deep,
+    each a twelfth of the one above, every level below the first loosed
+    to the opposite sign once its twelve are spent; its years are 360
+    days. When Daimon shares Fortune's sign, activity is released from the
+    next sign (IV.4). The profected year counts from the Ascendant's sign
+    in years of 365¼ days, and Valens's 35th year from Virgo is Cancer. A
+    document records the sign each starts from, and
+    `ChartArea::dasha` rebuilds the cursor from it. `time-lords-measured.md`
+    finds Daimon in Fortune's sign on 3 of the corpus's 55 births, and
+    every start sign reaching the second-level loosing before 52 calendar
+    years.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

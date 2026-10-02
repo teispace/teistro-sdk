@@ -1391,6 +1391,9 @@ export const DashaSystem = Object.freeze({
   Mudda: 'dasha_system.MUDDA',
   VarshaNarayana: 'dasha_system.VARSHA_NARAYANA',
   VarshaYogini: 'dasha_system.VARSHA_YOGINI',
+  ReleasingFortune: 'dasha_system.RELEASING_FORTUNE',
+  ReleasingDaimon: 'dasha_system.RELEASING_DAIMON',
+  Profection: 'dasha_system.PROFECTION',
 });
 
 /**
@@ -1438,6 +1441,9 @@ export const DashaSystemById = new Map([
   [37, 'dasha_system.MUDDA'],
   [38, 'dasha_system.VARSHA_NARAYANA'],
   [39, 'dasha_system.VARSHA_YOGINI'],
+  [40, 'dasha_system.RELEASING_FORTUNE'],
+  [41, 'dasha_system.RELEASING_DAIMON'],
+  [42, 'dasha_system.PROFECTION'],
 ]);
 
 /** Every BalaScheme by name. */
@@ -1977,6 +1983,8 @@ export const DashaFamily = Object.freeze({
   Scale: 'dasha_family.SCALE',
   Composition: 'dasha_family.COMPOSITION',
   Own: 'dasha_family.OWN',
+  Releasing: 'dasha_family.RELEASING',
+  Profection: 'dasha_family.PROFECTION',
 });
 
 /**
@@ -1990,6 +1998,8 @@ export const DashaFamilyById = new Map([
   [3, 'dasha_family.SCALE'],
   [4, 'dasha_family.COMPOSITION'],
   [5, 'dasha_family.OWN'],
+  [6, 'dasha_family.RELEASING'],
+  [7, 'dasha_family.PROFECTION'],
 ]);
 
 /** Every AvasthaJagradadi by name. */

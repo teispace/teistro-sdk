@@ -2075,6 +2075,12 @@ enum DashaSystem implements KeyOf<DashaSystem> {
   varshaNarayana(38, 'VARSHA_NARAYANA'),
   /// Varsha Yogini
   varshaYogini(39, 'VARSHA_YOGINI'),
+  /// Releasing from the Lot of Fortune, Valens's vital sector for the body
+  releasingFortune(40, 'RELEASING_FORTUNE'),
+  /// Releasing from Daimon, Valens's vital sector for action
+  releasingDaimon(41, 'RELEASING_DAIMON'),
+  /// The profected year from the Ascendant
+  profection(42, 'PROFECTION'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -3199,6 +3205,10 @@ enum DashaFamily implements KeyOf<DashaFamily> {
   composition(4, 'COMPOSITION'),
   /// Own
   own(5, 'OWN'),
+  /// Releasing
+  releasing(6, 'RELEASING'),
+  /// Profection
+  profection(7, 'PROFECTION'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

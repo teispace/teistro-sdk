@@ -309,6 +309,7 @@ mod stations;
 mod surface;
 mod terms;
 mod time;
+mod time_lords;
 mod topocentric;
 mod vargas;
 mod varshaphala;
@@ -438,6 +439,11 @@ const PASSES: &[Pass] = &[
         fortitudes::check_generated,
     ),
     ("lots", lots::generate, lots::check_generated),
+    (
+        "time-lords",
+        time_lords::generate,
+        time_lords::check_generated,
+    ),
     (
         "kalachakra",
         kalachakra::generate,

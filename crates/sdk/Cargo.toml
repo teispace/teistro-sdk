@@ -166,6 +166,10 @@ name = "dignities"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "time_lords"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "kp"
 required-features = ["builtin-ephemeris"]
 

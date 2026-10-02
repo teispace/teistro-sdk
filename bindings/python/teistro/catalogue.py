@@ -1816,6 +1816,15 @@ class DashaSystem(Catalogued):
     VARSHA_YOGINI = 39
     """Varsha Yogini"""
 
+    RELEASING_FORTUNE = 40
+    """Releasing from the Lot of Fortune, Valens's vital sector for the body"""
+
+    RELEASING_DAIMON = 41
+    """Releasing from Daimon, Valens's vital sector for action"""
+
+    PROFECTION = 42
+    """The profected year from the Ascendant"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -2478,6 +2487,12 @@ class DashaFamily(Catalogued):
 
     OWN = 5
     """Own"""
+
+    RELEASING = 6
+    """Releasing"""
+
+    PROFECTION = 7
+    """Profection"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -5530,6 +5545,9 @@ _KEYS: dict[str, dict[int, str]] = {
         37: "MUDDA",
         38: "VARSHA_NARAYANA",
         39: "VARSHA_YOGINI",
+        40: "RELEASING_FORTUNE",
+        41: "RELEASING_DAIMON",
+        42: "PROFECTION",
         -1: "UNKNOWN",
     },
     "BalaScheme": {
@@ -5751,6 +5769,8 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "SCALE",
         4: "COMPOSITION",
         5: "OWN",
+        6: "RELEASING",
+        7: "PROFECTION",
         -1: "UNKNOWN",
     },
     "AvasthaJagradadi": {

@@ -24,13 +24,19 @@ pub enum DashaFamily {
     Composition = 4,
     /// Own
     Own = 5,
+    /// Releasing
+    Releasing = 6,
+    /// Profection
+    Profection = 7,
 }
 
-const BY_KEY: [(&str, DashaFamily); 6] = [
+const BY_KEY: [(&str, DashaFamily); 8] = [
     ("COMPOSITION", DashaFamily::Composition),
     ("KALACHAKRA", DashaFamily::Kalachakra),
     ("OWN", DashaFamily::Own),
+    ("PROFECTION", DashaFamily::Profection),
     ("RASHI", DashaFamily::Rashi),
+    ("RELEASING", DashaFamily::Releasing),
     ("SCALE", DashaFamily::Scale),
     ("UDU", DashaFamily::Udu),
 ];
@@ -43,13 +49,15 @@ impl DashaFamily {
     pub const KIND: Kind = Kind::DashaFamily;
 
     /// Every member, in id order.
-    pub const ALL: [DashaFamily; 6] = [
+    pub const ALL: [DashaFamily; 8] = [
         DashaFamily::Udu,
         DashaFamily::Rashi,
         DashaFamily::Kalachakra,
         DashaFamily::Scale,
         DashaFamily::Composition,
         DashaFamily::Own,
+        DashaFamily::Releasing,
+        DashaFamily::Profection,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -62,6 +70,8 @@ impl DashaFamily {
             DashaFamily::Scale => "SCALE",
             DashaFamily::Composition => "COMPOSITION",
             DashaFamily::Own => "OWN",
+            DashaFamily::Releasing => "RELEASING",
+            DashaFamily::Profection => "PROFECTION",
         }
     }
 
@@ -75,6 +85,8 @@ impl DashaFamily {
             DashaFamily::Scale => "dasha_family.SCALE",
             DashaFamily::Composition => "dasha_family.COMPOSITION",
             DashaFamily::Own => "dasha_family.OWN",
+            DashaFamily::Releasing => "dasha_family.RELEASING",
+            DashaFamily::Profection => "dasha_family.PROFECTION",
         }
     }
 
@@ -88,6 +100,8 @@ impl DashaFamily {
             DashaFamily::Scale => "Scale",
             DashaFamily::Composition => "Composition",
             DashaFamily::Own => "Own",
+            DashaFamily::Releasing => "Releasing",
+            DashaFamily::Profection => "Profection",
         }
     }
 
@@ -101,6 +115,8 @@ impl DashaFamily {
             DashaFamily::Scale => None,
             DashaFamily::Composition => None,
             DashaFamily::Own => None,
+            DashaFamily::Releasing => None,
+            DashaFamily::Profection => None,
         }
     }
 
@@ -114,6 +130,8 @@ impl DashaFamily {
             DashaFamily::Scale => Mark::Verified,
             DashaFamily::Composition => Mark::Verified,
             DashaFamily::Own => Mark::Verified,
+            DashaFamily::Releasing => Mark::Verified,
+            DashaFamily::Profection => Mark::Verified,
         }
     }
 
@@ -127,6 +145,8 @@ impl DashaFamily {
             DashaFamily::Scale => false,
             DashaFamily::Composition => false,
             DashaFamily::Own => false,
+            DashaFamily::Releasing => false,
+            DashaFamily::Profection => false,
         }
     }
 
@@ -140,6 +160,8 @@ impl DashaFamily {
             DashaFamily::Scale => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaFamily::Composition => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaFamily::Own => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
+            DashaFamily::Releasing => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
+            DashaFamily::Profection => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
         }
     }
 
@@ -153,6 +175,8 @@ impl DashaFamily {
             DashaFamily::Scale => &[],
             DashaFamily::Composition => &[],
             DashaFamily::Own => &[],
+            DashaFamily::Releasing => &[],
+            DashaFamily::Profection => &[],
         }
     }
 
@@ -184,6 +208,8 @@ impl DashaFamily {
             3 => Some(DashaFamily::Scale),
             4 => Some(DashaFamily::Composition),
             5 => Some(DashaFamily::Own),
+            6 => Some(DashaFamily::Releasing),
+            7 => Some(DashaFamily::Profection),
             _ => None,
         }
     }

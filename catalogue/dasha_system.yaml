@@ -328,3 +328,27 @@ members:
       - text: "dasha-kernels"
         ref: "docs/03-design/dasha-kernels.md"
     mark: T
+  - key: RELEASING_FORTUNE
+    id: 40
+    doc: "Releasing from the Lot of Fortune, Valens's vital sector for the body"
+    attributes: { family: RELEASING }
+    sources:
+      - text: "hellenistic-time-lords"
+        ref: "docs/03-design/hellenistic-time-lords.md"
+    mark: V
+  - key: RELEASING_DAIMON
+    id: 41
+    doc: "Releasing from Daimon, Valens's vital sector for action"
+    attributes: { family: RELEASING }
+    sources:
+      - text: "hellenistic-time-lords"
+        ref: "docs/03-design/hellenistic-time-lords.md"
+    mark: V
+  - key: PROFECTION
+    id: 42
+    doc: "The profected year from the Ascendant"
+    attributes: { family: PROFECTION }
+    sources:
+      - text: "hellenistic-time-lords"
+        ref: "docs/03-design/hellenistic-time-lords.md"
+    mark: V
