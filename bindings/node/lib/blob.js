@@ -1154,6 +1154,86 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 72, 'perfection');
+    out.perfection = {
+      querent: column(blob, at, 0, 'u16', at.count),
+      quesited: column(blob, at, 1, 'u16', at.count),
+      horizonDays: column(blob, at, 2, 'f64', at.count),
+      horizonRuleDays: column(blob, at, 3, 'f64', at.count),
+      applicationPresent: column(blob, at, 4, 'u8', at.count),
+      applicationAspect: column(blob, at, 5, 'u8', at.count),
+      applicationDays: column(blob, at, 6, 'f64', at.count),
+      applying: column(blob, at, 7, 'u16', at.count),
+      applicationKind: column(blob, at, 8, 'u8', at.count),
+      gapDeg: column(blob, at, 9, 'f64', at.count),
+      withinMoieties: column(blob, at, 10, 'u8', at.count),
+      separationPresent: column(blob, at, 11, 'u8', at.count),
+      separationAspect: column(blob, at, 12, 'u8', at.count),
+      separationPastDeg: column(blob, at, 13, 'f64', at.count),
+      querentHouse: column(blob, at, 14, 'u8', at.count),
+      querentDignity: column(blob, at, 15, 'u8', at.count),
+      quesitedHouse: column(blob, at, 16, 'u8', at.count),
+      quesitedDignity: column(blob, at, 17, 'u8', at.count),
+      mutualByHouse: column(blob, at, 18, 'u8', at.count),
+      infortunesBetween: column(blob, at, 19, 'u8', at.count),
+      moonRelays: column(blob, at, 20, 'u8', at.count),
+      quesitedInAscendant: column(blob, at, 21, 'u8', at.count),
+      waysHeld: column(blob, at, 22, 'u8', at.count),
+      impedimentCount: column(blob, at, 23, 'u32', at.count),
+      translationCount: column(blob, at, 24, 'u32', at.count),
+      collectionCount: column(blob, at, 25, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 73, 'perfection_impediments');
+    out.perfectionImpediments = {
+      kind: column(blob, at, 0, 'u8', at.count),
+      significator: column(blob, at, 1, 'u16', at.count),
+      thirdPresent: column(blob, at, 2, 'u8', at.count),
+      third: column(blob, at, 3, 'u16', at.count),
+      aspect: column(blob, at, 4, 'u8', at.count),
+      days: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 74, 'perfection_translations');
+    out.perfectionTranslations = {
+      translator: column(blob, at, 0, 'u16', at.count),
+      from: column(blob, at, 1, 'u16', at.count),
+      to: column(blob, at, 2, 'u16', at.count),
+      separatingAspect: column(blob, at, 3, 'u8', at.count),
+      separatingPastDeg: column(blob, at, 4, 'f64', at.count),
+      aspect: column(blob, at, 5, 'u8', at.count),
+      days: column(blob, at, 6, 'f64', at.count),
+      received: column(blob, at, 7, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 75, 'perfection_collections');
+    out.perfectionCollections = {
+      collector: column(blob, at, 0, 'u16', at.count),
+      fromQuerentAspect: column(blob, at, 1, 'u8', at.count),
+      fromQuerentDays: column(blob, at, 2, 'f64', at.count),
+      fromQuesitedAspect: column(blob, at, 3, 'u8', at.count),
+      fromQuesitedDays: column(blob, at, 4, 'f64', at.count),
+      collectorInQuerent: column(blob, at, 5, 'u8', at.count),
+      collectorInQuesited: column(blob, at, 6, 'u8', at.count),
+      querentInCollector: column(blob, at, 7, 'u8', at.count),
+      quesitedInCollector: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 76, 'perfection_orbs');
+    out.perfectionOrbs = {
+      orbDeg: column(blob, at, 0, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

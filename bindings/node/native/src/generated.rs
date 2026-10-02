@@ -2015,6 +2015,24 @@ pub struct ChartRequest {
     /// `considerations.moonLateFromDeg`.
     /// Example: {"moonLateFromDeg":25}. May be null.
     pub considerations_json: Option<String>,
+    /// Whether a horary matter is brought to pass (Lilly, *Christian
+    /// Astrology* pp. 107–113 and 125–127), as a JSON object:
+    /// `querent` and `quesited`, the two significators by key, or
+    /// `house`, the house of the matter, whose cusp's lord signifies the
+    /// quesited, the querent's being the Ascendant's lord unless named;
+    /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+    /// `horizonDays` (unset, until the swifter significator leaves its
+    /// sign, C232). The houses and dignities it weighs are
+    /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+    /// searched on the ephemeris. The relations come back in
+    /// `perfection`, `perfection_impediments`, `perfection_translations`
+    /// and `perfection_collections`, and the orbs applied in
+    /// `perfection_orbs`. Null for none, which costs nothing
+    /// (`03-design/hellenistic-perfection.md`). Refusals are named from
+    /// the record every binding calls `perfection`, as
+    /// `perfection.quesited`.
+    /// Example: {"house":7}. May be null.
+    pub perfection_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2042,6 +2060,7 @@ pub struct HeldChartRequest {
     fortitudes_json: Option<std::ffi::CString>,
     lots_json: Option<std::ffi::CString>,
     considerations_json: Option<std::ffi::CString>,
+    perfection_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2097,6 +2116,10 @@ impl HeldChartRequest {
             lots_json: self.lots_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             considerations_json: self
                 .considerations_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            perfection_json: self
+                .perfection_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2181,6 +2204,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            perfection_json: self
+                .perfection_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2226,6 +2254,7 @@ impl ChartRequest {
             fortitudes_json: unsafe { lent_text(raw.fortitudes_json) },
             lots_json: unsafe { lent_text(raw.lots_json) },
             considerations_json: unsafe { lent_text(raw.considerations_json) },
+            perfection_json: unsafe { lent_text(raw.perfection_json) },
         }
     }
 }

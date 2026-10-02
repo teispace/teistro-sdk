@@ -624,6 +624,23 @@ fn fortitudes(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The perfection's enums (`03-design/hellenistic-perfection.md`).
+fn perfection(api: &Api) -> Vec<&'static str> {
+    use teistro_ffi::chart::{TsApplicationKind, TsImpedimentKind, TsWay};
+    let id = |value: u8| Some(i64::from(value));
+    vec![
+        unit(api, "TsApplicationKind", |k: &teistro::ApplicationKind| {
+            TsApplicationKind::of(*k).and_then(|k| id(k as u8))
+        }),
+        unit(api, "TsImpedimentKind", |k: &teistro::ImpedimentKind| {
+            TsImpedimentKind::of(*k).and_then(|k| id(k as u8))
+        }),
+        unit(api, "TsWay", |w: &teistro::Way| {
+            TsWay::of(*w).and_then(|w| id(w as u8))
+        }),
+    ]
+}
+
 #[test]
 fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
     let api = api();
@@ -635,6 +652,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         hits(&api),
         dignities(&api),
         fortitudes(&api),
+        perfection(&api),
         time_and_calendar(&api),
     ]
     .concat();

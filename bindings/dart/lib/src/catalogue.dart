@@ -5832,6 +5832,127 @@ enum PtolemaicAspect {
   }
 }
 
+/// Which of Lilly's three kinds an application is (p. 107,
+/// `03-design/hellenistic-perfection.md`).
+enum ApplicationKind {
+  /// A swifter planet to a slower, both direct.
+  bothDirect(0, 'BOTH_DIRECT'),
+  /// Both retrograde, "an ill Application".
+  bothRetrograde(1, 'BOTH_RETROGRADE'),
+  /// One direct and one retrograde, meeting.
+  againstRetrograde(2, 'AGAINST_RETROGRADE');
+
+  const ApplicationKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static ApplicationKind byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a ApplicationKind'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ApplicationKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What stops or hinders two significators' application (pp. 110–113,
+/// `03-design/hellenistic-perfection.md`).
+enum ImpedimentKind {
+  /// A third planet comes to a significator first.
+  prohibition(0, 'PROHIBITION'),
+  /// A significator comes to a third planet first.
+  frustration(1, 'FRUSTRATION'),
+  /// A significator stations before the perfection its motion promises.
+  refranation(2, 'REFRANATION');
+
+  const ImpedimentKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static ImpedimentKind byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a ImpedimentKind'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ImpedimentKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// One of Lilly's seven ways a matter is perfected (pp. 125–127,
+/// `03-design/hellenistic-perfection.md`); the ways a figure holds cross
+/// as a bit set, bit `n` the member with code `n`.
+enum Way {
+  /// The significators' conjunction, unhindered.
+  conjunction(0, 'CONJUNCTION'),
+  /// Their sextile or trine, unhindered.
+  sextileOrTrine(1, 'SEXTILE_OR_TRINE'),
+  /// Their square, each in some dignity at its degree.
+  square(2, 'SQUARE'),
+  /// Their opposition, with mutual reception by house and the Moon's
+  /// relay.
+  opposition(3, 'OPPOSITION'),
+  /// A translation of light, received by house, triplicity or term.
+  translation(4, 'TRANSLATION'),
+  /// A collection of light, the collector in a dignity of each.
+  collection(5, 'COLLECTION'),
+  /// The quesited's significator in the Ascendant, the Moon translating.
+  dwelling(6, 'DWELLING');
+
+  const Way(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Way byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Way'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Way? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

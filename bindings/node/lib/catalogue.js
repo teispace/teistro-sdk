@@ -3395,6 +3395,65 @@ export const PtolemaicAspectById = new Map([
   [4, 'OPPOSITION'],
 ]);
 
+/** Every ApplicationKind by name. */
+export const ApplicationKind = Object.freeze({
+  BothDirect: 'BOTH_DIRECT',
+  BothRetrograde: 'BOTH_RETROGRADE',
+  AgainstRetrograde: 'AGAINST_RETROGRADE',
+});
+
+/**
+ * Every ApplicationKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ApplicationKindById = new Map([
+  [0, 'BOTH_DIRECT'],
+  [1, 'BOTH_RETROGRADE'],
+  [2, 'AGAINST_RETROGRADE'],
+]);
+
+/** Every ImpedimentKind by name. */
+export const ImpedimentKind = Object.freeze({
+  Prohibition: 'PROHIBITION',
+  Frustration: 'FRUSTRATION',
+  Refranation: 'REFRANATION',
+});
+
+/**
+ * Every ImpedimentKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ImpedimentKindById = new Map([
+  [0, 'PROHIBITION'],
+  [1, 'FRUSTRATION'],
+  [2, 'REFRANATION'],
+]);
+
+/** Every Way by name. */
+export const Way = Object.freeze({
+  Conjunction: 'CONJUNCTION',
+  SextileOrTrine: 'SEXTILE_OR_TRINE',
+  Square: 'SQUARE',
+  Opposition: 'OPPOSITION',
+  Translation: 'TRANSLATION',
+  Collection: 'COLLECTION',
+  Dwelling: 'DWELLING',
+});
+
+/**
+ * Every Way by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const WayById = new Map([
+  [0, 'CONJUNCTION'],
+  [1, 'SEXTILE_OR_TRINE'],
+  [2, 'SQUARE'],
+  [3, 'OPPOSITION'],
+  [4, 'TRANSLATION'],
+  [5, 'COLLECTION'],
+  [6, 'DWELLING'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

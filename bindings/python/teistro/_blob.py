@@ -2559,6 +2559,216 @@ class ChartsConsiderationOrbs:
 
 
 @dataclass(frozen=True)
+class ChartsPerfection:
+    """The `perfection` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.
+    """
+
+    querent: memoryview[int]
+    """The querent's significator: the Ascendant's lord unless named."""
+
+    quesited: memoryview[int]
+    """The quesited's significator: as named, or the lord of the asked house's cusp."""
+
+    horizon_days: memoryview[float]
+    """How far ahead the timeline was searched, days: the rules' horizon, or until the swifter significator leaves its sign (C232), at most ten years."""
+
+    horizon_rule_days: memoryview[float]
+    """`perfection_json.rules.horizonDays` as asked; NaN when unset."""
+
+    application_present: memoryview[int]
+    """1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN."""
+
+    application_aspect: memoryview[int]
+    """The aspect they apply by."""
+
+    application_days: memoryview[float]
+    """Days until it is exact."""
+
+    applying: memoryview[int]
+    """The significator whose motion closes it."""
+
+    application_kind: memoryview[int]
+    """Which of the three kinds (p. 107)."""
+
+    gap_deg: memoryview[float]
+    """How far it is from exact now, degrees."""
+
+    within_moieties: memoryview[int]
+    """1 when the gap is already within the two planets' moieties of orb; 0 otherwise."""
+
+    separation_present: memoryview[int]
+    """1 when the significators are separating within their moieties at the figure (p. 110); 0 otherwise, and then the separation's columns are 0 and NaN."""
+
+    separation_aspect: memoryview[int]
+    """The aspect they separate from."""
+
+    separation_past_deg: memoryview[float]
+    """How far past exact it is, degrees."""
+
+    querent_house: memoryview[int]
+    """The house the querent's significator is in, 1 to 12, under the fortitudes' houses."""
+
+    querent_dignity: memoryview[int]
+    """The querent's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    quesited_house: memoryview[int]
+    """The house the quesited's significator is in, 1 to 12."""
+
+    quesited_dignity: memoryview[int]
+    """The quesited's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    mutual_by_house: memoryview[int]
+    """1 when each significator stands in the other's house; 0 otherwise."""
+
+    infortunes_between: memoryview[int]
+    """Saturn and Mars when among the thirds that come between the significators before they perfect, as a bit set: bit `n` is the graha with catalogue id `n`."""
+
+    moon_relays: memoryview[int]
+    """1 when the Moon, neither significator, separates from the quesited's and comes next to the querent's (p. 126, the opposition); 0 otherwise."""
+
+    quesited_in_ascendant: memoryview[int]
+    """1 when the quesited's significator is in the first house; 0 otherwise."""
+
+    ways_held: memoryview[int]
+    """The ways of perfection the figure holds (pp. 125–127), as a bit set over `TsWay`: bit `n` is the member with code `n`. 0 when it holds none."""
+
+    impediment_count: memoryview[int]
+    """How many rows of the `perfection_impediments` section belong to this chart."""
+
+    translation_count: memoryview[int]
+    """How many rows of the `perfection_translations` section belong to this chart."""
+
+    collection_count: memoryview[int]
+    """How many rows of the `perfection_collections` section belong to this chart."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsPerfectionImpediments:
+    """The `perfection_impediments` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.
+    """
+
+    kind: memoryview[int]
+    """What it is."""
+
+    significator: memoryview[int]
+    """The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations."""
+
+    third_present: memoryview[int]
+    """1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0."""
+
+    third: memoryview[int]
+    """The third planet."""
+
+    aspect: memoryview[int]
+    """The aspect the third is met by."""
+
+    days: memoryview[float]
+    """Days until it happens: the contact, or the station."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsPerfectionTranslations:
+    """The `perfection_translations` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.
+    """
+
+    translator: memoryview[int]
+    """The lighter planet carrying the light."""
+
+    from_: memoryview[int]
+    """The significator it separates from."""
+
+    to: memoryview[int]
+    """The significator it applies to next."""
+
+    separating_aspect: memoryview[int]
+    """The aspect it separates from."""
+
+    separating_past_deg: memoryview[float]
+    """How far past exact that separation is, degrees."""
+
+    aspect: memoryview[int]
+    """The aspect it applies by."""
+
+    days: memoryview[float]
+    """Days until that application is exact."""
+
+    received: memoryview[int]
+    """The dignities of `from` the translator stands in: how it is received, by house, triplicity or term (p. 126), as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsPerfectionCollections:
+    """The `perfection_collections` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.
+    """
+
+    collector: memoryview[int]
+    """The heavier planet."""
+
+    from_querent_aspect: memoryview[int]
+    """The aspect the querent's significator applies by."""
+
+    from_querent_days: memoryview[float]
+    """Days until it is exact."""
+
+    from_quesited_aspect: memoryview[int]
+    """The aspect the quesited's significator applies by."""
+
+    from_quesited_days: memoryview[float]
+    """Days until it is exact."""
+
+    collector_in_querent: memoryview[int]
+    """The querent's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    collector_in_quesited: memoryview[int]
+    """The quesited's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    querent_in_collector: memoryview[int]
+    """The collector's dignities the querent's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    quesited_in_collector: memoryview[int]
+    """The collector's dignities the quesited's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsPerfectionOrbs:
+    """The `perfection_orbs` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
+    """
+
+    orb_deg: memoryview[float]
+    """The planet's whole orb, degrees; half of it counts toward an application."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2895,6 +3105,21 @@ class Charts:
     consideration_orbs: ChartsConsiderationOrbs
     """The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none."""
 
+    perfection: ChartsPerfection
+    """Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none."""
+
+    perfection_impediments: ChartsPerfectionImpediments
+    """What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none."""
+
+    perfection_translations: ChartsPerfectionTranslations
+    """Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none."""
+
+    perfection_collections: ChartsPerfectionCollections
+    """Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none."""
+
+    perfection_orbs: ChartsPerfectionOrbs
+    """The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2975,6 +3200,11 @@ def decode_charts(raw: bytes) -> Charts:
     at_considerations = blob.section(69, "considerations")
     at_consideration_perfections = blob.section(70, "consideration_perfections")
     at_consideration_orbs = blob.section(71, "consideration_orbs")
+    at_perfection = blob.section(72, "perfection")
+    at_perfection_impediments = blob.section(73, "perfection_impediments")
+    at_perfection_translations = blob.section(74, "perfection_translations")
+    at_perfection_collections = blob.section(75, "perfection_collections")
+    at_perfection_orbs = blob.section(76, "perfection_orbs")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -4576,6 +4806,171 @@ def decode_charts(raw: bytes) -> Charts:
                 at_consideration_orbs, 0, 8, at_consideration_orbs.count
             ).cast("d"),
             length=at_consideration_orbs.count,
+        ),
+        perfection=ChartsPerfection(
+            querent=blob.column(
+                at_perfection, 0, 2, at_perfection.count
+            ).cast("H"),
+            quesited=blob.column(
+                at_perfection, 1, 2, at_perfection.count
+            ).cast("H"),
+            horizon_days=blob.column(
+                at_perfection, 2, 8, at_perfection.count
+            ).cast("d"),
+            horizon_rule_days=blob.column(
+                at_perfection, 3, 8, at_perfection.count
+            ).cast("d"),
+            application_present=blob.column(
+                at_perfection, 4, 1, at_perfection.count
+            ).cast("B"),
+            application_aspect=blob.column(
+                at_perfection, 5, 1, at_perfection.count
+            ).cast("B"),
+            application_days=blob.column(
+                at_perfection, 6, 8, at_perfection.count
+            ).cast("d"),
+            applying=blob.column(
+                at_perfection, 7, 2, at_perfection.count
+            ).cast("H"),
+            application_kind=blob.column(
+                at_perfection, 8, 1, at_perfection.count
+            ).cast("B"),
+            gap_deg=blob.column(
+                at_perfection, 9, 8, at_perfection.count
+            ).cast("d"),
+            within_moieties=blob.column(
+                at_perfection, 10, 1, at_perfection.count
+            ).cast("B"),
+            separation_present=blob.column(
+                at_perfection, 11, 1, at_perfection.count
+            ).cast("B"),
+            separation_aspect=blob.column(
+                at_perfection, 12, 1, at_perfection.count
+            ).cast("B"),
+            separation_past_deg=blob.column(
+                at_perfection, 13, 8, at_perfection.count
+            ).cast("d"),
+            querent_house=blob.column(
+                at_perfection, 14, 1, at_perfection.count
+            ).cast("B"),
+            querent_dignity=blob.column(
+                at_perfection, 15, 1, at_perfection.count
+            ).cast("B"),
+            quesited_house=blob.column(
+                at_perfection, 16, 1, at_perfection.count
+            ).cast("B"),
+            quesited_dignity=blob.column(
+                at_perfection, 17, 1, at_perfection.count
+            ).cast("B"),
+            mutual_by_house=blob.column(
+                at_perfection, 18, 1, at_perfection.count
+            ).cast("B"),
+            infortunes_between=blob.column(
+                at_perfection, 19, 1, at_perfection.count
+            ).cast("B"),
+            moon_relays=blob.column(
+                at_perfection, 20, 1, at_perfection.count
+            ).cast("B"),
+            quesited_in_ascendant=blob.column(
+                at_perfection, 21, 1, at_perfection.count
+            ).cast("B"),
+            ways_held=blob.column(
+                at_perfection, 22, 1, at_perfection.count
+            ).cast("B"),
+            impediment_count=blob.column(
+                at_perfection, 23, 4, at_perfection.count
+            ).cast("I"),
+            translation_count=blob.column(
+                at_perfection, 24, 4, at_perfection.count
+            ).cast("I"),
+            collection_count=blob.column(
+                at_perfection, 25, 4, at_perfection.count
+            ).cast("I"),
+            length=at_perfection.count,
+        ),
+        perfection_impediments=ChartsPerfectionImpediments(
+            kind=blob.column(
+                at_perfection_impediments, 0, 1, at_perfection_impediments.count
+            ).cast("B"),
+            significator=blob.column(
+                at_perfection_impediments, 1, 2, at_perfection_impediments.count
+            ).cast("H"),
+            third_present=blob.column(
+                at_perfection_impediments, 2, 1, at_perfection_impediments.count
+            ).cast("B"),
+            third=blob.column(
+                at_perfection_impediments, 3, 2, at_perfection_impediments.count
+            ).cast("H"),
+            aspect=blob.column(
+                at_perfection_impediments, 4, 1, at_perfection_impediments.count
+            ).cast("B"),
+            days=blob.column(
+                at_perfection_impediments, 5, 8, at_perfection_impediments.count
+            ).cast("d"),
+            length=at_perfection_impediments.count,
+        ),
+        perfection_translations=ChartsPerfectionTranslations(
+            translator=blob.column(
+                at_perfection_translations, 0, 2, at_perfection_translations.count
+            ).cast("H"),
+            from_=blob.column(
+                at_perfection_translations, 1, 2, at_perfection_translations.count
+            ).cast("H"),
+            to=blob.column(
+                at_perfection_translations, 2, 2, at_perfection_translations.count
+            ).cast("H"),
+            separating_aspect=blob.column(
+                at_perfection_translations, 3, 1, at_perfection_translations.count
+            ).cast("B"),
+            separating_past_deg=blob.column(
+                at_perfection_translations, 4, 8, at_perfection_translations.count
+            ).cast("d"),
+            aspect=blob.column(
+                at_perfection_translations, 5, 1, at_perfection_translations.count
+            ).cast("B"),
+            days=blob.column(
+                at_perfection_translations, 6, 8, at_perfection_translations.count
+            ).cast("d"),
+            received=blob.column(
+                at_perfection_translations, 7, 1, at_perfection_translations.count
+            ).cast("B"),
+            length=at_perfection_translations.count,
+        ),
+        perfection_collections=ChartsPerfectionCollections(
+            collector=blob.column(
+                at_perfection_collections, 0, 2, at_perfection_collections.count
+            ).cast("H"),
+            from_querent_aspect=blob.column(
+                at_perfection_collections, 1, 1, at_perfection_collections.count
+            ).cast("B"),
+            from_querent_days=blob.column(
+                at_perfection_collections, 2, 8, at_perfection_collections.count
+            ).cast("d"),
+            from_quesited_aspect=blob.column(
+                at_perfection_collections, 3, 1, at_perfection_collections.count
+            ).cast("B"),
+            from_quesited_days=blob.column(
+                at_perfection_collections, 4, 8, at_perfection_collections.count
+            ).cast("d"),
+            collector_in_querent=blob.column(
+                at_perfection_collections, 5, 1, at_perfection_collections.count
+            ).cast("B"),
+            collector_in_quesited=blob.column(
+                at_perfection_collections, 6, 1, at_perfection_collections.count
+            ).cast("B"),
+            querent_in_collector=blob.column(
+                at_perfection_collections, 7, 1, at_perfection_collections.count
+            ).cast("B"),
+            quesited_in_collector=blob.column(
+                at_perfection_collections, 8, 1, at_perfection_collections.count
+            ).cast("B"),
+            length=at_perfection_collections.count,
+        ),
+        perfection_orbs=ChartsPerfectionOrbs(
+            orb_deg=blob.column(
+                at_perfection_orbs, 0, 8, at_perfection_orbs.count
+            ).cast("d"),
+            length=at_perfection_orbs.count,
         ),
     )
 

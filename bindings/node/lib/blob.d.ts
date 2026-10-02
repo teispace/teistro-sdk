@@ -3029,6 +3029,279 @@ export interface ChartsConsiderationOrbs {
 }
 
 /**
+ * The `perfection` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.
+ */
+export interface ChartsPerfection {
+  /**
+   * The querent's significator: the Ascendant's lord unless named.
+   * The values are `Graha` ids.
+   */
+  readonly querent: Uint16Array;
+  /**
+   * The quesited's significator: as named, or the lord of the asked house's cusp.
+   * The values are `Graha` ids.
+   */
+  readonly quesited: Uint16Array;
+  /**
+   * How far ahead the timeline was searched, days: the rules' horizon, or until the swifter significator leaves its sign (C232), at most ten years.
+   */
+  readonly horizonDays: Float64Array;
+  /**
+   * `perfection_json.rules.horizonDays` as asked; NaN when unset.
+   */
+  readonly horizonRuleDays: Float64Array;
+  /**
+   * 1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN.
+   */
+  readonly applicationPresent: Uint8Array;
+  /**
+   * The aspect they apply by.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly applicationAspect: Uint8Array;
+  /**
+   * Days until it is exact.
+   */
+  readonly applicationDays: Float64Array;
+  /**
+   * The significator whose motion closes it.
+   * The values are `Graha` ids.
+   */
+  readonly applying: Uint16Array;
+  /**
+   * Which of the three kinds (p. 107).
+   * The values are `ApplicationKind` ids.
+   */
+  readonly applicationKind: Uint8Array;
+  /**
+   * How far it is from exact now, degrees.
+   */
+  readonly gapDeg: Float64Array;
+  /**
+   * 1 when the gap is already within the two planets' moieties of orb; 0 otherwise.
+   */
+  readonly withinMoieties: Uint8Array;
+  /**
+   * 1 when the significators are separating within their moieties at the figure (p. 110); 0 otherwise, and then the separation's columns are 0 and NaN.
+   */
+  readonly separationPresent: Uint8Array;
+  /**
+   * The aspect they separate from.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly separationAspect: Uint8Array;
+  /**
+   * How far past exact it is, degrees.
+   */
+  readonly separationPastDeg: Float64Array;
+  /**
+   * The house the querent's significator is in, 1 to 12, under the fortitudes' houses.
+   */
+  readonly querentHouse: Uint8Array;
+  /**
+   * The querent's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly querentDignity: Uint8Array;
+  /**
+   * The house the quesited's significator is in, 1 to 12.
+   */
+  readonly quesitedHouse: Uint8Array;
+  /**
+   * The quesited's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly quesitedDignity: Uint8Array;
+  /**
+   * 1 when each significator stands in the other's house; 0 otherwise.
+   */
+  readonly mutualByHouse: Uint8Array;
+  /**
+   * Saturn and Mars when among the thirds that come between the significators before they perfect, as a bit set: bit `n` is the graha with catalogue id `n`.
+   */
+  readonly infortunesBetween: Uint8Array;
+  /**
+   * 1 when the Moon, neither significator, separates from the quesited's and comes next to the querent's (p. 126, the opposition); 0 otherwise.
+   */
+  readonly moonRelays: Uint8Array;
+  /**
+   * 1 when the quesited's significator is in the first house; 0 otherwise.
+   */
+  readonly quesitedInAscendant: Uint8Array;
+  /**
+   * The ways of perfection the figure holds (pp. 125–127), as a bit set over `TsWay`: bit `n` is the member with code `n`. 0 when it holds none.
+   */
+  readonly waysHeld: Uint8Array;
+  /**
+   * How many rows of the `perfection_impediments` section belong to this chart.
+   */
+  readonly impedimentCount: Uint32Array;
+  /**
+   * How many rows of the `perfection_translations` section belong to this chart.
+   */
+  readonly translationCount: Uint32Array;
+  /**
+   * How many rows of the `perfection_collections` section belong to this chart.
+   */
+  readonly collectionCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `perfection_impediments` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.
+ */
+export interface ChartsPerfectionImpediments {
+  /**
+   * What it is.
+   * The values are `ImpedimentKind` ids.
+   */
+  readonly kind: Uint8Array;
+  /**
+   * The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations.
+   * The values are `Graha` ids.
+   */
+  readonly significator: Uint16Array;
+  /**
+   * 1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.
+   */
+  readonly thirdPresent: Uint8Array;
+  /**
+   * The third planet.
+   * The values are `Graha` ids.
+   */
+  readonly third: Uint16Array;
+  /**
+   * The aspect the third is met by.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly aspect: Uint8Array;
+  /**
+   * Days until it happens: the contact, or the station.
+   */
+  readonly days: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `perfection_translations` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.
+ */
+export interface ChartsPerfectionTranslations {
+  /**
+   * The lighter planet carrying the light.
+   * The values are `Graha` ids.
+   */
+  readonly translator: Uint16Array;
+  /**
+   * The significator it separates from.
+   * The values are `Graha` ids.
+   */
+  readonly from: Uint16Array;
+  /**
+   * The significator it applies to next.
+   * The values are `Graha` ids.
+   */
+  readonly to: Uint16Array;
+  /**
+   * The aspect it separates from.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly separatingAspect: Uint8Array;
+  /**
+   * How far past exact that separation is, degrees.
+   */
+  readonly separatingPastDeg: Float64Array;
+  /**
+   * The aspect it applies by.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly aspect: Uint8Array;
+  /**
+   * Days until that application is exact.
+   */
+  readonly days: Float64Array;
+  /**
+   * The dignities of `from` the translator stands in: how it is received, by house, triplicity or term (p. 126), as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly received: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `perfection_collections` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.
+ */
+export interface ChartsPerfectionCollections {
+  /**
+   * The heavier planet.
+   * The values are `Graha` ids.
+   */
+  readonly collector: Uint16Array;
+  /**
+   * The aspect the querent's significator applies by.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly fromQuerentAspect: Uint8Array;
+  /**
+   * Days until it is exact.
+   */
+  readonly fromQuerentDays: Float64Array;
+  /**
+   * The aspect the quesited's significator applies by.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly fromQuesitedAspect: Uint8Array;
+  /**
+   * Days until it is exact.
+   */
+  readonly fromQuesitedDays: Float64Array;
+  /**
+   * The querent's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly collectorInQuerent: Uint8Array;
+  /**
+   * The quesited's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly collectorInQuesited: Uint8Array;
+  /**
+   * The collector's dignities the querent's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly querentInCollector: Uint8Array;
+  /**
+   * The collector's dignities the quesited's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+   */
+  readonly quesitedInCollector: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `perfection_orbs` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
+ */
+export interface ChartsPerfectionOrbs {
+  /**
+   * The planet's whole orb, degrees; half of it counts toward an application.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -3480,6 +3753,26 @@ export interface Charts {
    * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
    */
   readonly considerationOrbs: ChartsConsiderationOrbs;
+  /**
+   * Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.
+   */
+  readonly perfection: ChartsPerfection;
+  /**
+   * What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.
+   */
+  readonly perfectionImpediments: ChartsPerfectionImpediments;
+  /**
+   * Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.
+   */
+  readonly perfectionTranslations: ChartsPerfectionTranslations;
+  /**
+   * Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.
+   */
+  readonly perfectionCollections: ChartsPerfectionCollections;
+  /**
+   * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
+   */
+  readonly perfectionOrbs: ChartsPerfectionOrbs;
 }
 
 /**

@@ -3195,6 +3195,271 @@ final class ChartsConsiderationOrbs {
   final int length;
 }
 
+/// The `perfection` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.
+final class ChartsPerfection {
+  const ChartsPerfection({
+    required this.querent,
+    required this.quesited,
+    required this.horizonDays,
+    required this.horizonRuleDays,
+    required this.applicationPresent,
+    required this.applicationAspect,
+    required this.applicationDays,
+    required this.applying,
+    required this.applicationKind,
+    required this.gapDeg,
+    required this.withinMoieties,
+    required this.separationPresent,
+    required this.separationAspect,
+    required this.separationPastDeg,
+    required this.querentHouse,
+    required this.querentDignity,
+    required this.quesitedHouse,
+    required this.quesitedDignity,
+    required this.mutualByHouse,
+    required this.infortunesBetween,
+    required this.moonRelays,
+    required this.quesitedInAscendant,
+    required this.waysHeld,
+    required this.impedimentCount,
+    required this.translationCount,
+    required this.collectionCount,
+    required this.length,
+  });
+
+  /// The querent's significator: the Ascendant's lord unless named.
+  final Uint16List querent;
+
+  /// The quesited's significator: as named, or the lord of the asked house's cusp.
+  final Uint16List quesited;
+
+  /// How far ahead the timeline was searched, days: the rules' horizon, or until the swifter significator leaves its sign (C232), at most ten years.
+  final Float64List horizonDays;
+
+  /// `perfection_json.rules.horizonDays` as asked; NaN when unset.
+  final Float64List horizonRuleDays;
+
+  /// 1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN.
+  final Uint8List applicationPresent;
+
+  /// The aspect they apply by.
+  final Uint8List applicationAspect;
+
+  /// Days until it is exact.
+  final Float64List applicationDays;
+
+  /// The significator whose motion closes it.
+  final Uint16List applying;
+
+  /// Which of the three kinds (p. 107).
+  final Uint8List applicationKind;
+
+  /// How far it is from exact now, degrees.
+  final Float64List gapDeg;
+
+  /// 1 when the gap is already within the two planets' moieties of orb; 0 otherwise.
+  final Uint8List withinMoieties;
+
+  /// 1 when the significators are separating within their moieties at the figure (p. 110); 0 otherwise, and then the separation's columns are 0 and NaN.
+  final Uint8List separationPresent;
+
+  /// The aspect they separate from.
+  final Uint8List separationAspect;
+
+  /// How far past exact it is, degrees.
+  final Float64List separationPastDeg;
+
+  /// The house the querent's significator is in, 1 to 12, under the fortitudes' houses.
+  final Uint8List querentHouse;
+
+  /// The querent's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List querentDignity;
+
+  /// The house the quesited's significator is in, 1 to 12.
+  final Uint8List quesitedHouse;
+
+  /// The quesited's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List quesitedDignity;
+
+  /// 1 when each significator stands in the other's house; 0 otherwise.
+  final Uint8List mutualByHouse;
+
+  /// Saturn and Mars when among the thirds that come between the significators before they perfect, as a bit set: bit `n` is the graha with catalogue id `n`.
+  final Uint8List infortunesBetween;
+
+  /// 1 when the Moon, neither significator, separates from the quesited's and comes next to the querent's (p. 126, the opposition); 0 otherwise.
+  final Uint8List moonRelays;
+
+  /// 1 when the quesited's significator is in the first house; 0 otherwise.
+  final Uint8List quesitedInAscendant;
+
+  /// The ways of perfection the figure holds (pp. 125–127), as a bit set over `TsWay`: bit `n` is the member with code `n`. 0 when it holds none.
+  final Uint8List waysHeld;
+
+  /// How many rows of the `perfection_impediments` section belong to this chart.
+  final Uint32List impedimentCount;
+
+  /// How many rows of the `perfection_translations` section belong to this chart.
+  final Uint32List translationCount;
+
+  /// How many rows of the `perfection_collections` section belong to this chart.
+  final Uint32List collectionCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `perfection_impediments` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.
+final class ChartsPerfectionImpediments {
+  const ChartsPerfectionImpediments({
+    required this.kind,
+    required this.significator,
+    required this.thirdPresent,
+    required this.third,
+    required this.aspect,
+    required this.days,
+    required this.length,
+  });
+
+  /// What it is.
+  final Uint8List kind;
+
+  /// The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations.
+  final Uint16List significator;
+
+  /// 1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.
+  final Uint8List thirdPresent;
+
+  /// The third planet.
+  final Uint16List third;
+
+  /// The aspect the third is met by.
+  final Uint8List aspect;
+
+  /// Days until it happens: the contact, or the station.
+  final Float64List days;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `perfection_translations` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.
+final class ChartsPerfectionTranslations {
+  const ChartsPerfectionTranslations({
+    required this.translator,
+    required this.from,
+    required this.to,
+    required this.separatingAspect,
+    required this.separatingPastDeg,
+    required this.aspect,
+    required this.days,
+    required this.received,
+    required this.length,
+  });
+
+  /// The lighter planet carrying the light.
+  final Uint16List translator;
+
+  /// The significator it separates from.
+  final Uint16List from;
+
+  /// The significator it applies to next.
+  final Uint16List to;
+
+  /// The aspect it separates from.
+  final Uint8List separatingAspect;
+
+  /// How far past exact that separation is, degrees.
+  final Float64List separatingPastDeg;
+
+  /// The aspect it applies by.
+  final Uint8List aspect;
+
+  /// Days until that application is exact.
+  final Float64List days;
+
+  /// The dignities of `from` the translator stands in: how it is received, by house, triplicity or term (p. 126), as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List received;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `perfection_collections` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.
+final class ChartsPerfectionCollections {
+  const ChartsPerfectionCollections({
+    required this.collector,
+    required this.fromQuerentAspect,
+    required this.fromQuerentDays,
+    required this.fromQuesitedAspect,
+    required this.fromQuesitedDays,
+    required this.collectorInQuerent,
+    required this.collectorInQuesited,
+    required this.querentInCollector,
+    required this.quesitedInCollector,
+    required this.length,
+  });
+
+  /// The heavier planet.
+  final Uint16List collector;
+
+  /// The aspect the querent's significator applies by.
+  final Uint8List fromQuerentAspect;
+
+  /// Days until it is exact.
+  final Float64List fromQuerentDays;
+
+  /// The aspect the quesited's significator applies by.
+  final Uint8List fromQuesitedAspect;
+
+  /// Days until it is exact.
+  final Float64List fromQuesitedDays;
+
+  /// The querent's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List collectorInQuerent;
+
+  /// The quesited's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List collectorInQuesited;
+
+  /// The collector's dignities the querent's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List querentInCollector;
+
+  /// The collector's dignities the quesited's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall.
+  final Uint8List quesitedInCollector;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `perfection_orbs` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
+final class ChartsPerfectionOrbs {
+  const ChartsPerfectionOrbs({
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The planet's whole orb, degrees; half of it counts toward an application.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3378,6 +3643,11 @@ final class Charts {
     required this.considerations,
     required this.considerationPerfections,
     required this.considerationOrbs,
+    required this.perfection,
+    required this.perfectionImpediments,
+    required this.perfectionTranslations,
+    required this.perfectionCollections,
+    required this.perfectionOrbs,
   });
 
   /// What kind of chart these are.
@@ -3637,6 +3907,21 @@ final class Charts {
   /// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
   final ChartsConsiderationOrbs considerationOrbs;
 
+  /// Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.
+  final ChartsPerfection perfection;
+
+  /// What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.
+  final ChartsPerfectionImpediments perfectionImpediments;
+
+  /// Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.
+  final ChartsPerfectionTranslations perfectionTranslations;
+
+  /// Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.
+  final ChartsPerfectionCollections perfectionCollections;
+
+  /// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
+  final ChartsPerfectionOrbs perfectionOrbs;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -3715,6 +4000,11 @@ Charts decodeCharts(Uint8List bytes) {
   final atConsiderations = blob.section(69, 'considerations');
   final atConsiderationPerfections = blob.section(70, 'consideration_perfections');
   final atConsiderationOrbs = blob.section(71, 'consideration_orbs');
+  final atPerfection = blob.section(72, 'perfection');
+  final atPerfectionImpediments = blob.section(73, 'perfection_impediments');
+  final atPerfectionTranslations = blob.section(74, 'perfection_translations');
+  final atPerfectionCollections = blob.section(75, 'perfection_collections');
+  final atPerfectionOrbs = blob.section(76, 'perfection_orbs');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -6624,6 +6914,271 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atConsiderationOrbs, 0) + atConsiderationOrbs.count * 8,
       ),
       length: atConsiderationOrbs.count,
+    ),
+    perfection: ChartsPerfection(
+      querent: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 0),
+        blob.columnOffset(atPerfection, 0) + atPerfection.count * 2,
+      ),
+      quesited: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 1),
+        blob.columnOffset(atPerfection, 1) + atPerfection.count * 2,
+      ),
+      horizonDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 2),
+        blob.columnOffset(atPerfection, 2) + atPerfection.count * 8,
+      ),
+      horizonRuleDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 3),
+        blob.columnOffset(atPerfection, 3) + atPerfection.count * 8,
+      ),
+      applicationPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 4),
+        blob.columnOffset(atPerfection, 4) + atPerfection.count * 1,
+      ),
+      applicationAspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 5),
+        blob.columnOffset(atPerfection, 5) + atPerfection.count * 1,
+      ),
+      applicationDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 6),
+        blob.columnOffset(atPerfection, 6) + atPerfection.count * 8,
+      ),
+      applying: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 7),
+        blob.columnOffset(atPerfection, 7) + atPerfection.count * 2,
+      ),
+      applicationKind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 8),
+        blob.columnOffset(atPerfection, 8) + atPerfection.count * 1,
+      ),
+      gapDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 9),
+        blob.columnOffset(atPerfection, 9) + atPerfection.count * 8,
+      ),
+      withinMoieties: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 10),
+        blob.columnOffset(atPerfection, 10) + atPerfection.count * 1,
+      ),
+      separationPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 11),
+        blob.columnOffset(atPerfection, 11) + atPerfection.count * 1,
+      ),
+      separationAspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 12),
+        blob.columnOffset(atPerfection, 12) + atPerfection.count * 1,
+      ),
+      separationPastDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 13),
+        blob.columnOffset(atPerfection, 13) + atPerfection.count * 8,
+      ),
+      querentHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 14),
+        blob.columnOffset(atPerfection, 14) + atPerfection.count * 1,
+      ),
+      querentDignity: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 15),
+        blob.columnOffset(atPerfection, 15) + atPerfection.count * 1,
+      ),
+      quesitedHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 16),
+        blob.columnOffset(atPerfection, 16) + atPerfection.count * 1,
+      ),
+      quesitedDignity: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 17),
+        blob.columnOffset(atPerfection, 17) + atPerfection.count * 1,
+      ),
+      mutualByHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 18),
+        blob.columnOffset(atPerfection, 18) + atPerfection.count * 1,
+      ),
+      infortunesBetween: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 19),
+        blob.columnOffset(atPerfection, 19) + atPerfection.count * 1,
+      ),
+      moonRelays: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 20),
+        blob.columnOffset(atPerfection, 20) + atPerfection.count * 1,
+      ),
+      quesitedInAscendant: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 21),
+        blob.columnOffset(atPerfection, 21) + atPerfection.count * 1,
+      ),
+      waysHeld: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 22),
+        blob.columnOffset(atPerfection, 22) + atPerfection.count * 1,
+      ),
+      impedimentCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 23),
+        blob.columnOffset(atPerfection, 23) + atPerfection.count * 4,
+      ),
+      translationCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 24),
+        blob.columnOffset(atPerfection, 24) + atPerfection.count * 4,
+      ),
+      collectionCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfection, 25),
+        blob.columnOffset(atPerfection, 25) + atPerfection.count * 4,
+      ),
+      length: atPerfection.count,
+    ),
+    perfectionImpediments: ChartsPerfectionImpediments(
+      kind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 0),
+        blob.columnOffset(atPerfectionImpediments, 0) + atPerfectionImpediments.count * 1,
+      ),
+      significator: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 1),
+        blob.columnOffset(atPerfectionImpediments, 1) + atPerfectionImpediments.count * 2,
+      ),
+      thirdPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 2),
+        blob.columnOffset(atPerfectionImpediments, 2) + atPerfectionImpediments.count * 1,
+      ),
+      third: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 3),
+        blob.columnOffset(atPerfectionImpediments, 3) + atPerfectionImpediments.count * 2,
+      ),
+      aspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 4),
+        blob.columnOffset(atPerfectionImpediments, 4) + atPerfectionImpediments.count * 1,
+      ),
+      days: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionImpediments, 5),
+        blob.columnOffset(atPerfectionImpediments, 5) + atPerfectionImpediments.count * 8,
+      ),
+      length: atPerfectionImpediments.count,
+    ),
+    perfectionTranslations: ChartsPerfectionTranslations(
+      translator: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 0),
+        blob.columnOffset(atPerfectionTranslations, 0) + atPerfectionTranslations.count * 2,
+      ),
+      from: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 1),
+        blob.columnOffset(atPerfectionTranslations, 1) + atPerfectionTranslations.count * 2,
+      ),
+      to: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 2),
+        blob.columnOffset(atPerfectionTranslations, 2) + atPerfectionTranslations.count * 2,
+      ),
+      separatingAspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 3),
+        blob.columnOffset(atPerfectionTranslations, 3) + atPerfectionTranslations.count * 1,
+      ),
+      separatingPastDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 4),
+        blob.columnOffset(atPerfectionTranslations, 4) + atPerfectionTranslations.count * 8,
+      ),
+      aspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 5),
+        blob.columnOffset(atPerfectionTranslations, 5) + atPerfectionTranslations.count * 1,
+      ),
+      days: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 6),
+        blob.columnOffset(atPerfectionTranslations, 6) + atPerfectionTranslations.count * 8,
+      ),
+      received: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionTranslations, 7),
+        blob.columnOffset(atPerfectionTranslations, 7) + atPerfectionTranslations.count * 1,
+      ),
+      length: atPerfectionTranslations.count,
+    ),
+    perfectionCollections: ChartsPerfectionCollections(
+      collector: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 0),
+        blob.columnOffset(atPerfectionCollections, 0) + atPerfectionCollections.count * 2,
+      ),
+      fromQuerentAspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 1),
+        blob.columnOffset(atPerfectionCollections, 1) + atPerfectionCollections.count * 1,
+      ),
+      fromQuerentDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 2),
+        blob.columnOffset(atPerfectionCollections, 2) + atPerfectionCollections.count * 8,
+      ),
+      fromQuesitedAspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 3),
+        blob.columnOffset(atPerfectionCollections, 3) + atPerfectionCollections.count * 1,
+      ),
+      fromQuesitedDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 4),
+        blob.columnOffset(atPerfectionCollections, 4) + atPerfectionCollections.count * 8,
+      ),
+      collectorInQuerent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 5),
+        blob.columnOffset(atPerfectionCollections, 5) + atPerfectionCollections.count * 1,
+      ),
+      collectorInQuesited: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 6),
+        blob.columnOffset(atPerfectionCollections, 6) + atPerfectionCollections.count * 1,
+      ),
+      querentInCollector: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 7),
+        blob.columnOffset(atPerfectionCollections, 7) + atPerfectionCollections.count * 1,
+      ),
+      quesitedInCollector: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionCollections, 8),
+        blob.columnOffset(atPerfectionCollections, 8) + atPerfectionCollections.count * 1,
+      ),
+      length: atPerfectionCollections.count,
+    ),
+    perfectionOrbs: ChartsPerfectionOrbs(
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPerfectionOrbs, 0),
+        blob.columnOffset(atPerfectionOrbs, 0) + atPerfectionOrbs.count * 8,
+      ),
+      length: atPerfectionOrbs.count,
     ),
   );
 }

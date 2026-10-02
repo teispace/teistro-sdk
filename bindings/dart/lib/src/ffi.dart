@@ -1098,6 +1098,25 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"moonLateFromDeg":25}. May be null.
   external ffi.Pointer<ffi.Char> considerationsJson;
 
+  /// Whether a horary matter is brought to pass (Lilly, *Christian
+  /// Astrology* pp. 107–113 and 125–127), as a JSON object:
+  /// `querent` and `quesited`, the two significators by key, or
+  /// `house`, the house of the matter, whose cusp's lord signifies the
+  /// quesited, the querent's being the Ascendant's lord unless named;
+  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+  /// `horizonDays` (unset, until the swifter significator leaves its
+  /// sign, C232). The houses and dignities it weighs are
+  /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+  /// searched on the ephemeris. The relations come back in
+  /// `perfection`, `perfection_impediments`, `perfection_translations`
+  /// and `perfection_collections`, and the orbs applied in
+  /// `perfection_orbs`. Null for none, which costs nothing
+  /// (`03-design/hellenistic-perfection.md`). Refusals are named from
+  /// the record every binding calls `perfection`, as
+  /// `perfection.quesited`.
+  /// Example: {"house":7}. May be null.
+  external ffi.Pointer<ffi.Char> perfectionJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2987,7 +3006,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3231,6 +3250,25 @@ final class ChartRequest {
   /// Example: {"moonLateFromDeg":25}. May be null.
   final String? considerationsJson;
 
+  /// Whether a horary matter is brought to pass (Lilly, *Christian
+  /// Astrology* pp. 107–113 and 125–127), as a JSON object:
+  /// `querent` and `quesited`, the two significators by key, or
+  /// `house`, the house of the matter, whose cusp's lord signifies the
+  /// quesited, the querent's being the Ascendant's lord unless named;
+  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+  /// `horizonDays` (unset, until the swifter significator leaves its
+  /// sign, C232). The houses and dignities it weighs are
+  /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+  /// searched on the ephemeris. The relations come back in
+  /// `perfection`, `perfection_impediments`, `perfection_translations`
+  /// and `perfection_collections`, and the orbs applied in
+  /// `perfection_orbs`. Null for none, which costs nothing
+  /// (`03-design/hellenistic-perfection.md`). Refusals are named from
+  /// the record every binding calls `perfection`, as
+  /// `perfection.quesited`.
+  /// Example: {"house":7}. May be null.
+  final String? perfectionJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3306,6 +3344,9 @@ final class ChartRequest {
     raw.considerationsJson = considerationsJson == null
         ? ffi.nullptr
         : considerationsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.perfectionJson = perfectionJson == null
+        ? ffi.nullptr
+        : perfectionJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3367,6 +3408,9 @@ final class ChartRequest {
         considerationsJson: raw.considerationsJson == ffi.nullptr
             ? null
             : raw.considerationsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        perfectionJson: raw.perfectionJson == ffi.nullptr
+            ? null
+            : raw.perfectionJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
