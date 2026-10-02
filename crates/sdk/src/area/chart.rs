@@ -39,7 +39,7 @@ use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
     DignityRequest, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading,
-    LotRequest, LotSky, Matter, PerfectionRules, Sect, considerations,
+    LotRequest, LotSky, Matter, PerfectionRequest, Sect, considerations,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -2564,7 +2564,9 @@ impl<'a> ChartArea<'a> {
 
     /// Whether a horary matter is brought to pass
     /// (`03-design/hellenistic-perfection.md`): the relations between the
-    /// querent's and the quesited's significators, each reported with
+    /// querent's and the quesited's significators — named in `asked`, or
+    /// the lords of the Ascendant and of the house of the matter — each
+    /// reported with
     /// what it rests on and never summed into a verdict — the application
     /// and which of Lilly's three it is, the separation still inside the
     /// moieties, each prohibition, frustration and refranation before it,
@@ -2583,8 +2585,7 @@ impl<'a> ChartArea<'a> {
     /// ```no_run
     /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-    /// use teistro::catalogue::Graha;
-    /// use teistro::{FortitudeRequest, PerfectionRules};
+    /// use teistro::{FortitudeRequest, House, PerfectionRequest};
     ///
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
     /// let london = Place::new(Latitude::try_new(51.5)?, Longitude::try_new(-0.12)?, Altitude::try_new(0.0)?);
@@ -2592,13 +2593,9 @@ impl<'a> ChartArea<'a> {
     ///     .chart()
     ///     .reading(JulianDay::<Utc>::literal(2_461_000.25), &ChartRequest::at(london, UtcOffset::UTC))?
     ///     .value;
-    /// let matter = sdk.chart().perfection(
-    ///     &figure,
-    ///     &FortitudeRequest::default(),
-    ///     Graha::Venus,
-    ///     Graha::Mars,
-    ///     PerfectionRules::LILLY,
-    /// )?;
+    /// // "Shall I marry?": the Ascendant's lord and the seventh's.
+    /// let marriage = PerfectionRequest::of_house(House::try_new(7)?);
+    /// let matter = sdk.chart().perfection(&figure, &FortitudeRequest::default(), &marriage)?;
     /// if let Some(application) = matter.application {
     ///     println!("{:?} in {:.1} days, {} impediment(s) first", application.aspect, application.days, matter.impediments.len());
     /// }
@@ -2607,19 +2604,20 @@ impl<'a> ChartArea<'a> {
     ///
     /// # Errors
     ///
-    /// As [`ChartArea::fortitudes`]; a significator outside the seven or
-    /// the two the same, named `querent` or `quesited`; rules out of
-    /// range, named as [`PerfectionRules::from_json`] names them; and the
-    /// search's own, such as a window the ephemeris does not cover.
+    /// As [`ChartArea::fortitudes`]; a request
+    /// [`PerfectionRequest::from_json`] refuses; a significator outside
+    /// the seven, or one planet for both, named `querent` or `quesited`;
+    /// and the search's own, such as a window the ephemeris does not
+    /// cover.
     pub fn perfection(
         self,
         chart: &Document,
         request: &FortitudeRequest,
-        querent: Graha,
-        quesited: Graha,
-        rules: PerfectionRules,
+        asked: &PerfectionRequest,
     ) -> Result<Matter, Error> {
         let fortitudes = self.fortitudes(chart, request)?;
+        let (querent, quesited) = asked.significators(&fortitudes)?;
+        let rules = asked.rules;
         let dignities = &fortitudes.dignities;
         let places = dignities
             .planets
