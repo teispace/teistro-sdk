@@ -165,6 +165,8 @@ jobs:
         run: cargo xtask check-fortitudes
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
         run: cargo xtask check-lots
+      - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
+        run: cargo xtask check-time-lords
       - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
         run: cargo xtask check-kalachakra
       - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)

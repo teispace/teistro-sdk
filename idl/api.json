@@ -3416,6 +3416,24 @@
           "value": 39,
           "doc": "Varsha Yogini",
           "key": "VARSHA_YOGINI"
+        },
+        {
+          "name": "ReleasingFortune",
+          "value": 40,
+          "doc": "Releasing from the Lot of Fortune, Valens's vital sector for the body",
+          "key": "RELEASING_FORTUNE"
+        },
+        {
+          "name": "ReleasingDaimon",
+          "value": 41,
+          "doc": "Releasing from Daimon, Valens's vital sector for action",
+          "key": "RELEASING_DAIMON"
+        },
+        {
+          "name": "Profection",
+          "value": 42,
+          "doc": "The profected year from the Ascendant",
+          "key": "PROFECTION"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4544,6 +4562,18 @@
           "value": 5,
           "doc": "Own",
           "key": "OWN"
+        },
+        {
+          "name": "Releasing",
+          "value": 6,
+          "doc": "Releasing",
+          "key": "RELEASING"
+        },
+        {
+          "name": "Profection",
+          "value": 7,
+          "doc": "Profection",
+          "key": "PROFECTION"
         }
       ],
       "source": "catalogue/catalogue.json"

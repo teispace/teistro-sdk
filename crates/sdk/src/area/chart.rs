@@ -29,6 +29,7 @@ use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
 };
+use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
@@ -642,7 +643,7 @@ impl<'a> ChartArea<'a> {
         }
         for (index, system) in request.dashas().iter().enumerate() {
             let dasha = self
-                .dasha_reading(foundation, *system)
+                .dasha_reading(&document, *system)
                 .map_err(|error| error.under(&format!("dashas[{index}]")))?;
             document = document.with_dasha(dasha);
         }
@@ -664,7 +665,8 @@ impl<'a> ChartArea<'a> {
     /// One dasha of a chart under the settings' rules, its periods to the
     /// settings' depth: a nakshatra-seeded one with its balance, a
     /// sign-based one with its signs.
-    fn dasha_reading(self, foundation: &ChartFoundation, id: KeyId) -> Result<DashaReading, Error> {
+    fn dasha_reading(self, chart: &Document, id: KeyId) -> Result<DashaReading, Error> {
+        let foundation = &chart.foundation;
         let settings = self.context.settings();
         if let Some(definition) = self.context.dashas().by_id(id) {
             let rules = DashaRules::of_definition(&settings.dasha, definition);
@@ -701,6 +703,14 @@ impl<'a> ChartArea<'a> {
             let dasha = self.rashi_dasha_of(foundation, system, rules, RashiRules::of(settings))?;
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
+        if let Some(cursor) = self.time_lord_of(chart, system, rules)? {
+            // A year is not divided, so a profection carries one level.
+            let depth = match cursor {
+                DashaCursor::Profection(_) => Depth::MIN,
+                _ => depth,
+            };
+            return Ok(DashaReading::of_time_lord(system, &cursor, rules, depth));
+        }
         let temporal = rules.balance == Balance::Temporal;
         if system == DashaSystem::Kalachakra {
             let moon_span = if temporal {
@@ -722,6 +732,51 @@ impl<'a> ChartArea<'a> {
         };
         let dasha = Dasha::new(row, &Self::birth_of(foundation, moon_span)?, rules)?;
         Ok(DashaReading::of(&dasha, depth, moon_span))
+    }
+
+    /// A Hellenistic time lord of a chart, begun from the sign its system
+    /// names (`03-design/hellenistic-time-lords.md`); nothing for a system
+    /// of another kernel.
+    fn time_lord_of(
+        self,
+        chart: &Document,
+        system: DashaSystem,
+        rules: DashaRules,
+    ) -> Result<Option<DashaCursor>, Error> {
+        if !teistro_dasha::TIME_LORDS.contains(&system) {
+            return Ok(None);
+        }
+        let start = self.time_lord_start(chart, system)?;
+        teistro_dasha::time_lord(system, start, chart.foundation.instant, rules.year_length)
+            .transpose()
+    }
+
+    /// The sign a time lord starts from: the Ascendant's for the profected
+    /// year (IV.11); the Lot of Fortune's or Daimon's for releasing, read
+    /// under Valens's rules, and the sign after Daimon's when the two lots
+    /// share one (IV.4, crux C223).
+    fn time_lord_start(self, chart: &Document, system: DashaSystem) -> Result<Rashi, Error> {
+        if system == DashaSystem::Profection {
+            return Ok(Rashi::of_longitude(self.angles(chart)?.ascendant_deg));
+        }
+        let read = self.lots(chart, &[Lot::Fortune, Lot::Daimon])?;
+        let sign = |lot: Lot| {
+            read.lots
+                .iter()
+                .find(|placed| placed.lot == lot)
+                .map(|placed| placed.place.sign)
+                .ok_or_else(|| Error::internal("the lots read leave out one asked for"))
+        };
+        let fortune = sign(Lot::Fortune)?;
+        if system == DashaSystem::ReleasingFortune {
+            return Ok(fortune);
+        }
+        let daimon = sign(Lot::Daimon)?;
+        Ok(if daimon == fortune {
+            step(daimon, Direction::Forward, 1)
+        } else {
+            daimon
+        })
     }
 
     /// An id that is neither a catalogued dasha system nor one this context
@@ -3087,6 +3142,17 @@ impl<'a> ChartArea<'a> {
             ))
             .with_field("system"));
         };
+        if let Some(start) = reading.start_sign() {
+            // A time lord rebuilds from the sign its first period names.
+            if let Some(cursor) = teistro_dasha::time_lord(
+                system,
+                start,
+                document.foundation.instant,
+                reading.rules.year_length,
+            ) {
+                return cursor;
+            }
+        }
         if teistro_dasha::rashi_row(system).is_some() {
             // A document from before the readings were recorded was computed
             // under the recording engine's.

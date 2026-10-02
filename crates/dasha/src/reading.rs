@@ -15,6 +15,7 @@ use crate::balance::BalanceAtBirth;
 use crate::definition::DashaDefinition;
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
 use crate::rashi::{RashiDasha, RashiDefinition, RashiRules};
+use crate::releasing::{ProfectionDasha, ReleasingDasha};
 use crate::row::{DashaName, UduDefinition};
 use crate::tree::{Dasha, Period, Rules, Timeline};
 
@@ -213,6 +214,43 @@ impl DashaReading {
     }
 }
 
+impl DashaReading {
+    /// A Hellenistic time lord's reading (`03-design/hellenistic-time-lords.md`):
+    /// releasing or the profected year, its periods to `depth` levels. It
+    /// carries no seed and no balance, since its first period runs whole
+    /// from birth, and its first period's sign is the sign it starts from,
+    /// which is all a stored document needs to rebuild it.
+    #[must_use]
+    pub fn of_time_lord(
+        system: DashaSystem,
+        timeline: &impl Timeline,
+        rules: Rules,
+        depth: Depth,
+    ) -> DashaReading {
+        let periods = rows(timeline, depth);
+        DashaReading {
+            system: DashaName::Catalogued(system),
+            definition: None,
+            rules,
+            kalachakra: None,
+            rashi: None,
+            seed: None,
+            first_lord: periods.first().map_or(Graha::Sun, |row| row.lord),
+            overflow: false,
+            moon_span: None,
+            balance: None,
+            depth,
+            periods,
+        }
+    }
+
+    /// The sign a time lord's reading starts from: its first period's.
+    #[must_use]
+    pub fn start_sign(&self) -> Option<Rashi> {
+        self.periods.first().and_then(|row| row.sign)
+    }
+}
+
 /// Every period of the birth cycle to `depth`, depth first, as rows.
 fn rows(timeline: &impl Timeline, depth: Depth) -> Vec<PeriodRow> {
     fn collect(timeline: &impl Timeline, period: Period, depth: usize, out: &mut Vec<PeriodRow>) {
@@ -241,6 +279,10 @@ pub enum DashaCursor {
     Rashi(RashiDasha),
     /// The Kalachakra.
     Kalachakra(KalachakraDasha),
+    /// Valens's releasing from a lot.
+    Releasing(ReleasingDasha),
+    /// The profected year.
+    Profection(ProfectionDasha),
 }
 
 impl Timeline for DashaCursor {
@@ -249,6 +291,8 @@ impl Timeline for DashaCursor {
             DashaCursor::Nakshatra(dasha) => dasha.breadth(),
             DashaCursor::Rashi(dasha) => dasha.breadth(),
             DashaCursor::Kalachakra(dasha) => dasha.breadth(),
+            DashaCursor::Releasing(dasha) => dasha.breadth(),
+            DashaCursor::Profection(dasha) => dasha.breadth(),
         }
     }
 
@@ -257,6 +301,8 @@ impl Timeline for DashaCursor {
             DashaCursor::Nakshatra(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Rashi(dasha) => dasha.mahadasha(cycle, index),
             DashaCursor::Kalachakra(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Releasing(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Profection(dasha) => dasha.mahadasha(cycle, index),
         }
     }
 
@@ -265,6 +311,8 @@ impl Timeline for DashaCursor {
             DashaCursor::Nakshatra(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Rashi(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Kalachakra(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Releasing(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Profection(dasha) => dasha.mahadasha_at(instant),
         }
     }
 
@@ -273,6 +321,8 @@ impl Timeline for DashaCursor {
             DashaCursor::Nakshatra(dasha) => dasha.child(parent, index),
             DashaCursor::Rashi(dasha) => dasha.child(parent, index),
             DashaCursor::Kalachakra(dasha) => dasha.child(parent, index),
+            DashaCursor::Releasing(dasha) => dasha.child(parent, index),
+            DashaCursor::Profection(dasha) => dasha.child(parent, index),
         }
     }
 }
@@ -301,6 +351,24 @@ impl DashaCursor {
     pub const fn kalachakra(&self) -> Option<&KalachakraDasha> {
         match self {
             DashaCursor::Kalachakra(dasha) => Some(dasha),
+            _ => None,
+        }
+    }
+
+    /// Valens's releasing, when it is releasing.
+    #[must_use]
+    pub const fn releasing(&self) -> Option<&ReleasingDasha> {
+        match self {
+            DashaCursor::Releasing(dasha) => Some(dasha),
+            _ => None,
+        }
+    }
+
+    /// The profected year, when it is a profection.
+    #[must_use]
+    pub const fn profection(&self) -> Option<&ProfectionDasha> {
+        match self {
+            DashaCursor::Profection(dasha) => Some(dasha),
             _ => None,
         }
     }

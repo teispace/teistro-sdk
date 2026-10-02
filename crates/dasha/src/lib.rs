@@ -55,6 +55,7 @@ pub mod kalachakra;
 pub mod rashi;
 pub mod reading;
 pub mod registry;
+pub mod releasing;
 pub mod row;
 pub mod tree;
 pub mod wheel;
@@ -69,6 +70,9 @@ pub use rashi::{
 };
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
+pub use releasing::{
+    ProfectionDasha, RELEASING_CYCLE, ReleasingDasha, TIME_LORDS, releasing_years, time_lord,
+};
 pub use row::{
     ASHTOTTARI_BPHS, Count, DashaName, Lord, ROWS, SHASHTIHAYANI, Scale, Seat, UduDefinition,
     UduRow, VIMSHOTTARI, VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS, row,
@@ -77,8 +81,8 @@ pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
 pub use wheel::{Segment, Wheel};
 
 /// Every dasha system this build computes, in the catalogue's order within
-/// each kernel: the nakshatra-seeded rows, the sign-based rows, and the
-/// Kalachakra.
+/// each kernel: the nakshatra-seeded rows, the sign-based rows, the
+/// Kalachakra, and Valens's time lords.
 pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     ROWS.iter()
         .filter_map(|row| row.system.catalogued())
@@ -86,6 +90,7 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
         .chain(core::iter::once(
             teistro_core::catalogue::DashaSystem::Kalachakra,
         ))
+        .chain(TIME_LORDS)
 }
 
 /// [`systems`] but those a chart may be refused: every system this build

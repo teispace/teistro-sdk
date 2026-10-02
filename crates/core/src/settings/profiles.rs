@@ -5,7 +5,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, Source,
+    Ayanamsha, BalaScheme, Calendar, DashaFamily, DashaSystem, Era, HouseSystem, Mark, Source,
 };
 
 use super::knobs::{
@@ -188,10 +188,7 @@ pub fn root() -> Settings {
         },
         dasha: Dasha {
             balance: Balance::Spatial,
-            year_length: DashaSystem::ALL
-                .iter()
-                .map(|d| (*d, YearLength::Julian36525))
-                .collect(),
+            year_length: year_lengths(),
             depth: depth_all(3),
             seed_overflow: SeedOverflow::WrapToStart,
             // BPHS ch. 46 vv. 17 to 20: four and three alternately from
@@ -521,6 +518,21 @@ fn surya_siddhanta() -> Profile {
     }
 }
 
+/// Every system's year: 365.25 days, but releasing's 360, the year Valens
+/// distributes in (*Anthologies* IV.9, `03-design/hellenistic-time-lords.md`).
+fn year_lengths() -> BTreeMap<DashaSystem, YearLength> {
+    DashaSystem::ALL
+        .iter()
+        .map(|system| {
+            let length = match system.attributes().family {
+                DashaFamily::Releasing => YearLength::Savana360,
+                _ => YearLength::Julian36525,
+            };
+            (*system, length)
+        })
+        .collect()
+}
+
 fn kp_default() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.ayanamsha = Some(Ayanamsha::Krishnamurti.into());
@@ -528,12 +540,7 @@ fn kp_default() -> Profile {
     patch.houses.placement_system = Some(HouseSystem::Placidus);
     patch.houses.chalit_system = Some(HouseSystem::Placidus);
     patch.houses.polar_policy = Some(PolarPolicy::FallbackPorphyry);
-    patch.dasha.year_length = Some(
-        DashaSystem::ALL
-            .iter()
-            .map(|d| (*d, YearLength::Julian36525))
-            .collect(),
-    );
+    patch.dasha.year_length = Some(year_lengths());
     Profile {
         id: ProfileId::new("kp-default"),
         version: 1,

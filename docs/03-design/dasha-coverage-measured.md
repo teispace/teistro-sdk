@@ -6,7 +6,7 @@ Status: `generated` by `cargo xtask dasha-coverage` over
 regenerates this page and fails on any difference. The design it
 measures is [`dasha-kernels.md`](dasha-kernels.md).
 
-The catalogue names 40 dasha systems and this build computes 24. The 16
+The catalogue names 43 dasha systems and this build computes 27. The 16
 left are **not** a backlog of unwritten code: every one of them is
 blocked on something that is not typing, and this page is the list of
 what, grouped by the blocker that would have to go first.
@@ -79,7 +79,7 @@ answered an empty reading would be indistinguishable from a bug, and
 nothing but a call can tell the two apart.
 
 ```text
-unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, KALACHAKRA
+unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, SHASHTIHAYANI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, STHIRA, YOGARDHA, KALACHAKRA, RELEASING_FORTUNE, RELEASING_DAIMON, PROFECTION
 ```
 
 ## Who can supply one
@@ -124,5 +124,5 @@ visible.
 | asking for an unbuilt system is refused and never answered | **holds** | 0 of 16 disagree |
 | the refusal names the system asked for | **holds** | 0 of 16 disagree |
 | the refusal names every system this build does compute | **holds** | 0 of 16 disagree |
-| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 40, `teistro::dasha::systems()` 24 |
+| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 43, `teistro::dasha::systems()` 27 |
 

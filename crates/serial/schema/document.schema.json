@@ -1907,7 +1907,10 @@
             "PATYAYINI",
             "MUDDA",
             "VARSHA_NARAYANA",
-            "VARSHA_YOGINI"
+            "VARSHA_YOGINI",
+            "RELEASING_FORTUNE",
+            "RELEASING_DAIMON",
+            "PROFECTION"
           ],
           "type": "string"
         },
@@ -1953,7 +1956,10 @@
             "dasha_system.PATYAYINI",
             "dasha_system.MUDDA",
             "dasha_system.VARSHA_NARAYANA",
-            "dasha_system.VARSHA_YOGINI"
+            "dasha_system.VARSHA_YOGINI",
+            "dasha_system.RELEASING_FORTUNE",
+            "dasha_system.RELEASING_DAIMON",
+            "dasha_system.PROFECTION"
           ],
           "type": "string",
           "writeOnly": true

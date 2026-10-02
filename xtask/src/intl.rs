@@ -243,6 +243,12 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
         ],
     ),
     (
+        "dasha_system",
+        "Valens's time lords have no vetted Nepali or Hindi name, and a strict locale binds \
+         the English to one",
+        &["RELEASING_FORTUNE", "RELEASING_DAIMON", "PROFECTION"],
+    ),
+    (
         "avastha_cheshta",
         "no vetted name table for the Sayanadi's sub-states",
         &["DRISHTI", "CHESHTA", "VICHESHTA"],

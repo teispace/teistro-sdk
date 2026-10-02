@@ -2872,6 +2872,9 @@ export type DashaSystem =
   | 'dasha_system.MUDDA'
   | 'dasha_system.VARSHA_NARAYANA'
   | 'dasha_system.VARSHA_YOGINI'
+  | 'dasha_system.RELEASING_FORTUNE'
+  | 'dasha_system.RELEASING_DAIMON'
+  | 'dasha_system.PROFECTION'
   | 'unknown';
 
 /** Every DashaSystem by name; the values are the strings the union accepts. */
@@ -3036,6 +3039,18 @@ export declare const DashaSystem: {
    * Varsha Yogini
    */
   readonly VarshaYogini: 'dasha_system.VARSHA_YOGINI';
+  /**
+   * Releasing from the Lot of Fortune, Valens's vital sector for the body
+   */
+  readonly ReleasingFortune: 'dasha_system.RELEASING_FORTUNE';
+  /**
+   * Releasing from Daimon, Valens's vital sector for action
+   */
+  readonly ReleasingDaimon: 'dasha_system.RELEASING_DAIMON';
+  /**
+   * The profected year from the Ascendant
+   */
+  readonly Profection: 'dasha_system.PROFECTION';
 };
 
 /**
@@ -4087,6 +4102,8 @@ export type DashaFamily =
   | 'dasha_family.SCALE'
   | 'dasha_family.COMPOSITION'
   | 'dasha_family.OWN'
+  | 'dasha_family.RELEASING'
+  | 'dasha_family.PROFECTION'
   | 'unknown';
 
 /** Every DashaFamily by name; the values are the strings the union accepts. */
@@ -4115,6 +4132,14 @@ export declare const DashaFamily: {
    * Own
    */
   readonly Own: 'dasha_family.OWN';
+  /**
+   * Releasing
+   */
+  readonly Releasing: 'dasha_family.RELEASING';
+  /**
+   * Profection
+   */
+  readonly Profection: 'dasha_family.PROFECTION';
 };
 
 /**

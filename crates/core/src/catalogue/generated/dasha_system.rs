@@ -93,6 +93,12 @@ pub enum DashaSystem {
     VarshaNarayana = 38,
     /// Varsha Yogini
     VarshaYogini = 39,
+    /// Releasing from the Lot of Fortune, Valens's vital sector for the body
+    ReleasingFortune = 40,
+    /// Releasing from Daimon, Valens's vital sector for action
+    ReleasingDaimon = 41,
+    /// The profected year from the Ascendant
+    Profection = 42,
 }
 
 /// The attributes of a `dasha_system` member.
@@ -102,7 +108,7 @@ pub struct DashaSystemAttributes {
     pub family: DashaFamily,
 }
 
-static ATTRIBUTES: [DashaSystemAttributes; 40] = [
+static ATTRIBUTES: [DashaSystemAttributes; 43] = [
     DashaSystemAttributes { family: DashaFamily::Udu, },
     DashaSystemAttributes { family: DashaFamily::Udu, },
     DashaSystemAttributes { family: DashaFamily::Udu, },
@@ -143,9 +149,12 @@ static ATTRIBUTES: [DashaSystemAttributes; 40] = [
     DashaSystemAttributes { family: DashaFamily::Scale, },
     DashaSystemAttributes { family: DashaFamily::Scale, },
     DashaSystemAttributes { family: DashaFamily::Scale, },
+    DashaSystemAttributes { family: DashaFamily::Releasing, },
+    DashaSystemAttributes { family: DashaFamily::Releasing, },
+    DashaSystemAttributes { family: DashaFamily::Profection, },
 ];
 
-const BY_KEY: [(&str, DashaSystem); 40] = [
+const BY_KEY: [(&str, DashaSystem); 43] = [
     ("AAYU", DashaSystem::Aayu),
     ("ASHTAKAVARGA", DashaSystem::Ashtakavarga),
     ("ASHTOTTARI", DashaSystem::Ashtottari),
@@ -166,6 +175,9 @@ const BY_KEY: [(&str, DashaSystem); 40] = [
     ("PANCHASWARA", DashaSystem::Panchaswara),
     ("PANCHOTTARI", DashaSystem::Panchottari),
     ("PATYAYINI", DashaSystem::Patyayini),
+    ("PROFECTION", DashaSystem::Profection),
+    ("RELEASING_DAIMON", DashaSystem::ReleasingDaimon),
+    ("RELEASING_FORTUNE", DashaSystem::ReleasingFortune),
     ("SHASHTIHAYANI", DashaSystem::Shashtihayani),
     ("SHATABDIKA", DashaSystem::Shatabdika),
     ("SHATTRIMSHA_SAMA", DashaSystem::ShattrimshaSama),
@@ -196,7 +208,7 @@ impl DashaSystem {
     pub const KIND: Kind = Kind::DashaSystem;
 
     /// Every member, in id order.
-    pub const ALL: [DashaSystem; 40] = [
+    pub const ALL: [DashaSystem; 43] = [
         DashaSystem::Vimshottari,
         DashaSystem::Ashtottari,
         DashaSystem::Dwadashottari,
@@ -237,6 +249,9 @@ impl DashaSystem {
         DashaSystem::Mudda,
         DashaSystem::VarshaNarayana,
         DashaSystem::VarshaYogini,
+        DashaSystem::ReleasingFortune,
+        DashaSystem::ReleasingDaimon,
+        DashaSystem::Profection,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -283,6 +298,9 @@ impl DashaSystem {
             DashaSystem::Mudda => "MUDDA",
             DashaSystem::VarshaNarayana => "VARSHA_NARAYANA",
             DashaSystem::VarshaYogini => "VARSHA_YOGINI",
+            DashaSystem::ReleasingFortune => "RELEASING_FORTUNE",
+            DashaSystem::ReleasingDaimon => "RELEASING_DAIMON",
+            DashaSystem::Profection => "PROFECTION",
         }
     }
 
@@ -330,6 +348,9 @@ impl DashaSystem {
             DashaSystem::Mudda => "dasha_system.MUDDA",
             DashaSystem::VarshaNarayana => "dasha_system.VARSHA_NARAYANA",
             DashaSystem::VarshaYogini => "dasha_system.VARSHA_YOGINI",
+            DashaSystem::ReleasingFortune => "dasha_system.RELEASING_FORTUNE",
+            DashaSystem::ReleasingDaimon => "dasha_system.RELEASING_DAIMON",
+            DashaSystem::Profection => "dasha_system.PROFECTION",
         }
     }
 
@@ -377,6 +398,9 @@ impl DashaSystem {
             DashaSystem::Mudda => "Mudda",
             DashaSystem::VarshaNarayana => "Varsha Narayana",
             DashaSystem::VarshaYogini => "Varsha Yogini",
+            DashaSystem::ReleasingFortune => "Releasing from the Lot of Fortune, Valens's vital sector for the body",
+            DashaSystem::ReleasingDaimon => "Releasing from Daimon, Valens's vital sector for action",
+            DashaSystem::Profection => "The profected year from the Ascendant",
         }
     }
 
@@ -424,6 +448,9 @@ impl DashaSystem {
             DashaSystem::Mudda => None,
             DashaSystem::VarshaNarayana => None,
             DashaSystem::VarshaYogini => None,
+            DashaSystem::ReleasingFortune => None,
+            DashaSystem::ReleasingDaimon => None,
+            DashaSystem::Profection => None,
         }
     }
 
@@ -471,6 +498,9 @@ impl DashaSystem {
             DashaSystem::Mudda => Mark::Traditional,
             DashaSystem::VarshaNarayana => Mark::Traditional,
             DashaSystem::VarshaYogini => Mark::Traditional,
+            DashaSystem::ReleasingFortune => Mark::Verified,
+            DashaSystem::ReleasingDaimon => Mark::Verified,
+            DashaSystem::Profection => Mark::Verified,
         }
     }
 
@@ -518,6 +548,9 @@ impl DashaSystem {
             DashaSystem::Mudda => false,
             DashaSystem::VarshaNarayana => false,
             DashaSystem::VarshaYogini => false,
+            DashaSystem::ReleasingFortune => false,
+            DashaSystem::ReleasingDaimon => false,
+            DashaSystem::Profection => false,
         }
     }
 
@@ -565,6 +598,9 @@ impl DashaSystem {
             DashaSystem::Mudda => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::VarshaNarayana => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::VarshaYogini => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
+            DashaSystem::ReleasingFortune => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
+            DashaSystem::ReleasingDaimon => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
+            DashaSystem::Profection => &[Source { text: "hellenistic-time-lords", reference: "docs/03-design/hellenistic-time-lords.md" }],
         }
     }
 
@@ -612,6 +648,9 @@ impl DashaSystem {
             DashaSystem::Mudda => &[],
             DashaSystem::VarshaNarayana => &[],
             DashaSystem::VarshaYogini => &[],
+            DashaSystem::ReleasingFortune => &[],
+            DashaSystem::ReleasingDaimon => &[],
+            DashaSystem::Profection => &[],
         }
     }
 
@@ -677,6 +716,9 @@ impl DashaSystem {
             37 => Some(DashaSystem::Mudda),
             38 => Some(DashaSystem::VarshaNarayana),
             39 => Some(DashaSystem::VarshaYogini),
+            40 => Some(DashaSystem::ReleasingFortune),
+            41 => Some(DashaSystem::ReleasingDaimon),
+            42 => Some(DashaSystem::Profection),
             _ => None,
         }
     }

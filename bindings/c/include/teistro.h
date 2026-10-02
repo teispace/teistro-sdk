@@ -2346,6 +2346,18 @@ typedef enum ts_dasha_system {
      * Varsha Yogini
      */
     TS_DASHA_SYSTEM_VARSHA_YOGINI = 39,
+    /**
+     * Releasing from the Lot of Fortune, Valens's vital sector for the body
+     */
+    TS_DASHA_SYSTEM_RELEASING_FORTUNE = 40,
+    /**
+     * Releasing from Daimon, Valens's vital sector for action
+     */
+    TS_DASHA_SYSTEM_RELEASING_DAIMON = 41,
+    /**
+     * The profected year from the Ascendant
+     */
+    TS_DASHA_SYSTEM_PROFECTION = 42,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_SYSTEM_UNKNOWN = -1,
 } ts_dasha_system;
@@ -3142,6 +3154,14 @@ typedef enum ts_dasha_family {
      * Own
      */
     TS_DASHA_FAMILY_OWN = 5,
+    /**
+     * Releasing
+     */
+    TS_DASHA_FAMILY_RELEASING = 6,
+    /**
+     * Profection
+     */
+    TS_DASHA_FAMILY_PROFECTION = 7,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_FAMILY_UNKNOWN = -1,
 } ts_dasha_family;

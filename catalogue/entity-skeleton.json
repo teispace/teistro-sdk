@@ -556,7 +556,10 @@
     "PATYAYINI": {},
     "MUDDA": {},
     "VARSHA_NARAYANA": {},
-    "VARSHA_YOGINI": {}
+    "VARSHA_YOGINI": {},
+    "RELEASING_FORTUNE": {},
+    "RELEASING_DAIMON": {},
+    "PROFECTION": {}
   },
   "bala_scheme": {
     "PARASHARA": {},
@@ -755,7 +758,9 @@
     "KALACHAKRA": {},
     "SCALE": {},
     "COMPOSITION": {},
-    "OWN": {}
+    "OWN": {},
+    "RELEASING": {},
+    "PROFECTION": {}
   },
   "avastha_jagradadi": {
     "JAGRAT": {},
