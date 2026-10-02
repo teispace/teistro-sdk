@@ -32,12 +32,13 @@ use teistro_dasha::jaimini::{
 use teistro_dasha::rashi::{Direction, step};
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
-    RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
+    ProfectionDasha, RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha,
+    YearRing,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, Dignities, DignityRequest, FortitudeRequest,
-    Fortitudes, Lot, LotFormula, LotPlace, LotReading, LotRequest, LotSky,
+    Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, LotSky,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -2515,6 +2516,70 @@ impl<'a> ChartArea<'a> {
         request: LotRequest,
     ) -> Result<LotPlace, Error> {
         teistro_hellenistic::lot_place(&self.lot_sky(chart)?, formula, request)
+    }
+
+    /// Where one point a lot is counted from falls on a chart: the
+    /// Ascendant, a planet, a lot under `request`, an exaltation or a
+    /// fixed degree, with its sign, lord and whole-sign house.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::lots`]; and a planet outside the seven or an
+    /// unreadable fixed degree, named `point`.
+    pub fn point_place(
+        self,
+        chart: &Document,
+        point: LotPoint,
+        request: LotRequest,
+    ) -> Result<LotPlace, Error> {
+        teistro_hellenistic::point_place(&self.lot_sky(chart)?, point, request)
+    }
+
+    /// The profected year counted from any point of a chart rather than
+    /// the Ascendant: Valens profects from "every point", the Sun, the
+    /// Moon, Fortune and Daimon among them (*Anthologies* IV.11). It
+    /// starts at the point's sign at birth, one sign a year, each year
+    /// the `PROFECTION` system's year length in the context's settings;
+    /// a lot is read under `request`. The catalogue's `PROFECTION`
+    /// member is this from the Ascendant.
+    ///
+    /// ```
+    /// use teistro::catalogue::{Graha, Rashi};
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::{ChartRequest, Context, Ephemeris, LotPoint, LotRequest, UtcOffset};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(
+    ///     Latitude::try_new(51.5)?,
+    ///     Longitude::try_new(-0.12)?,
+    ///     Altitude::try_new(0.0)?,
+    /// );
+    /// let birth = JulianDay::<Utc>::literal(2_451_545.25);
+    /// let chart = sdk
+    ///     .chart()
+    ///     .reading(birth, &ChartRequest::at(place, UtcOffset::UTC))?
+    ///     .value;
+    /// let moon = LotPoint::Planet(Graha::Moon);
+    /// let years = sdk.chart().profection_from(&chart, moon, LotRequest::VALENS)?;
+    /// let at_birth = sdk.chart().point_place(&chart, moon, LotRequest::VALENS)?.sign;
+    /// assert_eq!(years.start(), at_birth);
+    /// // The 13th year comes back to the Moon's sign.
+    /// assert_eq!(years.sign_of_year(13), Some(at_birth));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::point_place`]; and a year length of no days.
+    pub fn profection_from(
+        self,
+        chart: &Document,
+        point: LotPoint,
+        request: LotRequest,
+    ) -> Result<ProfectionDasha, Error> {
+        let start = self.point_place(chart, point, request)?.sign;
+        let rules = DashaRules::of(&self.context.settings().dasha, DashaSystem::Profection);
+        ProfectionDasha::new(start, chart.foundation.instant, rules.year_length)
     }
 
     /// What a chart's dignities are read from: the seven's longitudes and

@@ -10,11 +10,11 @@
     reason = "tests fail by panicking, index what they found, and compare whole days"
 )]
 
-use teistro::catalogue::{DashaSystem, Rashi};
+use teistro::catalogue::{DashaSystem, Graha, Rashi};
 use teistro::dasha::{DashaReading, Timeline, releasing_years};
 use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, FortuneRule, Lot, LotRequest, UtcOffset,
+    ChartRequest, Context, Document, Ephemeris, FortuneRule, Lot, LotPoint, LotRequest, UtcOffset,
 };
 
 const TIME_LORDS: [DashaSystem; 3] = [
@@ -201,4 +201,49 @@ fn releasing_reads_the_lots_under_the_requests_rules() {
         reading(&valens, DashaSystem::ReleasingFortune).start_sign(),
         Some(under(LotRequest::VALENS))
     );
+}
+
+/// Profection from a point: from the Ascendant it is the catalogue's
+/// `PROFECTION` row for row, and from the Moon it starts at the Moon's
+/// sign (IV.11's "every point").
+#[test]
+fn a_year_profects_from_any_point() {
+    let sdk = tropical();
+    let document = chart(&sdk, 2_451_545.25);
+    let stored = reading(&document, DashaSystem::Profection);
+    let from_ascendant = sdk
+        .chart()
+        .profection_from(&document, LotPoint::Ascendant, LotRequest::VALENS)
+        .unwrap();
+    assert_eq!(
+        DashaReading::of_time_lord(
+            DashaSystem::Profection,
+            &from_ascendant,
+            stored.rules,
+            stored.depth
+        ),
+        *stored
+    );
+    let moon = LotPoint::Planet(Graha::Moon);
+    let from_moon = sdk
+        .chart()
+        .profection_from(&document, moon, LotRequest::VALENS)
+        .unwrap();
+    let moon_sign = sdk
+        .chart()
+        .point_place(&document, moon, LotRequest::VALENS)
+        .unwrap()
+        .sign;
+    assert_eq!(from_moon.start(), moon_sign);
+    assert_ne!(
+        from_moon.start(),
+        from_ascendant.start(),
+        "the test must bite"
+    );
+    // A planet outside the seven is refused by the point.
+    let refused = sdk
+        .chart()
+        .profection_from(&document, LotPoint::Planet(Graha::Rahu), LotRequest::VALENS)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("point"));
 }

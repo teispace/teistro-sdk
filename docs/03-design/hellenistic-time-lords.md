@@ -1,8 +1,9 @@
 # Valens's time lords (the `hellenistic` module, step 7)
 
-Status: `building`, 2026-10-02 — written from Valens's text before the
+Status: `built`, 2026-10-02 — written from Valens's text before the
 kernels, and corrected by building them: the first level is one cycle, so
-the loosing lives below it.
+the loosing lives below it, and the profected year stores a life, not a
+circuit.
 
 Valens gives two ways of saying which sign rules a stretch of a life.
 **Releasing** is the "vital sector" begun from a lot, each sign holding the
@@ -142,7 +143,7 @@ calendar years, which some modern practice does.
 
 Profection from points other than the Ascendant (the Sun, the Moon, a lot)
 is one `ProfectionDasha` with another start. It ships as a function
-taking a `LotPoint`. A catalogue member is added for a point only when a
+taking a `LotPoint`, `ChartArea::profection_from`. A catalogue member is added for a point only when a
 consumer must name one in a request.
 
 ## What is not decided
@@ -182,6 +183,12 @@ consumer must name one in a request.
    `releasing_shared_sign`. An SDK test and an ABI test hold a night
    birth whose Fortune moves sign under Lilly's rule to release from
    where Lilly puts it.
-6. Profection from another point (the Sun, the Moon, a lot), as a
-   function taking a `LotPoint`; a catalogue member only when a consumer
+6. **Done.** Profection from another point (the Sun, the Moon, a lot):
+   `ChartArea::profection_from(chart, point, request)` returns the
+   `ProfectionDasha` begun at the point's sign, under the `PROFECTION`
+   system's year length, and `ChartArea::point_place` (over
+   `teistro_hellenistic::point_place`) says where any `LotPoint` falls.
+   From the Ascendant it is the catalogue's `PROFECTION` row for row. No
+   catalogue member is spent: a binding reads the same from the point's
+   sign in its chart and counts on, and a member waits on a consumer who
    must name one in a request.
