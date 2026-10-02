@@ -20,6 +20,10 @@ Lilly's orbs and scores), and again under the rival each crux weighed.
 | C211: what the sign clause decides — planets within 8°30′ of the Sun but in another sign, read under the beams rather than combust | **holds** | 30 combust in the Sun's sign; 3 more would be combust whatever the sign |
 | C212: how many planets the stated beams (17°) take, which the Chapter XXVIII tally never scores | **holds** | 41 planets under the beams |
 | C216: partile lines read by the same degree, against within a degree of the exact aspect | **holds** | 17 by the same degree; 33 within a degree |
+| C219: births whose almuten is tied, which the shipped reading reports rather than breaks | **holds** | the figure's in 2 of 55; the five places' in 5 |
+| Lilly's almuten of the figure (the greatest net) and Chapter CV's (the most essential dignities over the ascendant, midheaven, Sun, Moon and Fortune) name the same planets | **holds** | in 9 of 55 births |
+| C218: houses whose almuten changes when the cusp's sign is read instead of its degree | **holds** | 138 of 660 houses |
+| C220: night births whose places' almuten moves when Fortune is reversed by night | **holds** | 15 of 32 night births |
 
 ## How often each line holds
 
@@ -53,6 +57,10 @@ Lilly's orbs and scores), and again under the rival each crux weighed.
 ## What it means
 
 The first three rows hold the shipped rules to the shape the text gives
-them. The last three weigh each crux's rival on these skies: their
+them. The next three weigh each crux's rival on these skies: their
 counts are how many lines the choice moves, and each rival is a knob of
-`AccidentalRules` for a reader who decides the other way.
+`AccidentalRules` for a reader who decides the other way. The last four
+read the almuten (§The almuten) three ways, Lilly's of the figure,
+Chapter CV's over five places, and each house's of its cusp, and count
+what C218 and C220's rivals move; those rivals are `PlaceReading::Sign`
+and `FortuneRule::ReversedByNight`.
