@@ -261,6 +261,16 @@ question, and need no ephemeris.
   The SDK also finds the Sun, 6° past Jupiter's square, translating to
   Saturn's: a translation by p. 111's words that Lilly passes over for
   the Moon's "forcible" one.
+- **Lilly's p. 389 figure translates to a retrograde significator.** In
+  "If she should marry the man desired?" (11 June 1646, 10h 38m a.m.),
+  Mercury and Jupiter, lords of the first and seventh, stand only in a
+  semisextile. The Moon leaves Jupiter's square, 29′ past, and reaches
+  Mercury's trine as his retrograde motion meets her, "receiving
+  willingly … her vertue" (p. 390). She stands in Jupiter's term, so
+  p. 126's way holds. The recast Moon is 1°49′ ahead of his, already past
+  the trine, so this figure too is read on his printed places. Lilly's
+  Moons disagree with Moshier by up to two degrees, and two of the six
+  figures needed his own places to show what he judged.
 
 ## What is not decided
 
@@ -298,5 +308,6 @@ question, and need no ephemeris.
    prohibition or collection, and test each against his judgement: p. 238
    done (an application by opposition, no way held), p. 385 (a sextile,
    the void Moon prohibiting nothing, C234), p. 437 (nothing perfects)
-   p. 177 (the Moon translating, the seventh way held) and p. 452 (the
-   Moon translating by trine, received, on the printed places).
+   p. 177 (the Moon translating, the seventh way held), p. 452 (the
+   Moon translating by trine, received, on the printed places) and
+   p. 389 (to a retrograde significator, on the printed places).
