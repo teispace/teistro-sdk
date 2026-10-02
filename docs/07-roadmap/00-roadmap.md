@@ -859,7 +859,11 @@ the same machinery rather than new mechanisms:
   through `decennials_from`, the third stage's division a knob. **The
   time lords are done.** Lilly's considerations before judgement followed
   (`hellenistic-considerations.md`, C229–C231), reported as clauses and
-  crossing the boundary to every binding; Ibn Ezra's weights remain.
+  crossing the boundary to every binding. His perfection followed
+  (`hellenistic-perfection.md`, C232–C235): the relations between two
+  significators read off one searched timeline, the seven ways weighed,
+  carried to every binding, and held to six of his Book II figures
+  recast. Ibn Ezra's weights remain.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the
