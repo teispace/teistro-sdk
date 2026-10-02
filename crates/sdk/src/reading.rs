@@ -21,6 +21,7 @@ use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
+use teistro_hellenistic::LotRequest;
 
 /// Which sections of the document to compute, beside the foundation, as
 /// a set.
@@ -123,6 +124,7 @@ pub struct ChartRequest {
     vargas: Vec<Varga>,
     drawings: Vec<(KeyId, Varga)>,
     dashas: Vec<KeyId>,
+    lot_rules: LotRequest,
     pub(crate) sections: Sections,
 }
 
@@ -138,6 +140,7 @@ impl ChartRequest {
             vargas: Vec::new(),
             drawings: Vec::new(),
             dashas: Vec::new(),
+            lot_rules: LotRequest::VALENS,
             sections: Sections::default(),
         }
     }
@@ -473,6 +476,35 @@ impl ChartRequest {
         self
     }
 
+    /// The sect and Fortune rules the lots a time lord releases from are
+    /// read under: Valens's ([`LotRequest::VALENS`]) unless said. A
+    /// boundary request's `lots` record sets the same, so the lots a chart
+    /// reports are the lots it releases from
+    /// (`03-design/hellenistic-time-lords.md`).
+    ///
+    /// ```
+    /// use teistro::catalogue::DashaSystem;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, FortuneRule, LotRequest, UtcOffset};
+    ///
+    /// let place = Place::new(
+    ///     Latitude::try_new(51.5)?,
+    ///     Longitude::try_new(-0.12)?,
+    ///     Altitude::try_new(0.0)?,
+    /// );
+    /// let lilly = LotRequest::VALENS.with_fortune(FortuneRule::DayAndNight);
+    /// let request = ChartRequest::at(place, UtcOffset::UTC)
+    ///     .with_dashas([DashaSystem::ReleasingFortune])
+    ///     .with_lot_rules(lilly);
+    /// assert_eq!(request.lot_rules(), lilly);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_lot_rules(mut self, rules: LotRequest) -> ChartRequest {
+        self.lot_rules = rules;
+        self
+    }
+
     /// Every section, and every divisional chart.
     ///
     /// What a consumer storing a chart for later wants, and what the
@@ -529,6 +561,12 @@ impl ChartRequest {
     #[must_use]
     pub fn dashas(&self) -> &[KeyId] {
         &self.dashas
+    }
+
+    /// The rules the time lords' lots are read under.
+    #[must_use]
+    pub const fn lot_rules(&self) -> LotRequest {
+        self.lot_rules
     }
 
     /// The charts to draw, as layout ids and the chart drawn in each.

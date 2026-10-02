@@ -1031,6 +1031,9 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
             DashaSystem::Profection.key_id(),
             own,
         ])
+        // The other runners' `lots` record sets the rules releasing reads
+        // its lots under, so this request carries the same.
+        .with_lot_rules(teistro::LotRequest::from_json(LOTS_JSON).expect("a valid request"))
         .with_drawings([
             (ChartLayout::NorthIndian.key_id(), Varga::D1),
             (ChartLayout::SouthIndian.key_id(), Varga::D9),

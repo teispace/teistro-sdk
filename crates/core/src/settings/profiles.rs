@@ -17,10 +17,10 @@ use super::knobs::{
     KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents,
     Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
     NodeRulers, NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    PreDawnNight, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -211,6 +211,7 @@ pub fn root() -> Settings {
             // BPHS ch. 46 vv. 158 to 166 and 179 to 184 (cruxes C51, C53).
             dual_lord: DualLord::Bphs,
             rashi_start: RashiStart::Stronger,
+            releasing_shared_sign: ReleasingSharedSign::Next,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,

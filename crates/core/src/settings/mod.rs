@@ -40,10 +40,10 @@ pub use knobs::{
     KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents,
     Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
     NodeRulers, NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, RashiStart, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    PreDawnNight, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -584,6 +584,9 @@ group!(
         /// Where the rashi dashas that start from a stronger sign begin (crux
         /// C53).
         rashi_start: RashiStart,
+        /// Where releasing from Daimon begins when Daimon shares Fortune's
+        /// sign (crux C223).
+        releasing_shared_sign: ReleasingSharedSign,
     }
 );
 

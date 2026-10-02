@@ -1797,7 +1797,10 @@ the astronomical numbers do not move. Nothing else computes yet.
     finds Daimon in Fortune's sign on 3 of the corpus's 55 births, and
     every start sign reaching the second-level loosing before 52 calendar
     years. Every parity runner asks for `RELEASING_FORTUNE` and
-    `PROFECTION`.
+    `PROFECTION`. `ChartRequest::with_lot_rules` names the rules the
+    lots are read under (Valens's unless said), and a boundary request's
+    `lots` record sets the same; the dasha group's
+    `releasing_shared_sign` (`NEXT`, `SAME`) decides C223.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

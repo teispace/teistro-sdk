@@ -126,13 +126,14 @@ New `DashaSystem` members, appended:
 | `RELEASING_DAIMON` | 41 | releasing | the sign of Daimon, or the next sign when it shares Fortune's | 360 days |
 | `PROFECTION` | 42 | profection | the Ascendant's sign | 365¼ days |
 
-The lots are read through `ChartArea::lots`, under Valens's sect rule and
-his Fortune (`LotRequest::VALENS`). A `lots` settings group that lets a
-context change both comes with step 5; until then a consumer who wants
-another rule reads the lot with `lots_with_request` and builds the kernel
-from its sign. A document records the start sign it read. A
-stored chart can then rebuild its periods however the context's settings
-change, the way `RashiRules` does for the sign-based dashas.
+The lots are read through `ChartArea::lots_with_request`, under the
+chart request's lot rules: Valens's sect rule and his Fortune
+(`LotRequest::VALENS`) unless `ChartRequest::with_lot_rules` says
+otherwise. At the boundary the request's `lots` record sets them, so the
+lots a chart reports are the lots its time lords release from, in every
+binding. They are the request's rather than a settings group's because
+the lots are asked per request already, and one record governing both
+cannot disagree with itself.
 
 The year length is the dasha group's existing `YearLength` knob, with a
 per-system default: `SAVANA_360` for releasing and `JULIAN_365_25` for
@@ -148,8 +149,9 @@ consumer must name one in a request.
 
 - **C223, Daimon in Fortune's sign.** Valens moves the activity count to
   the next sign; IV.4 also reports "some astrologers" who do the same for
-  a square of the luminaries, and rejects them. The next sign ships; the
-  knob that keeps the shared sign comes with step 5.
+  a square of the luminaries, and rejects them. The next sign ships, and
+  the dasha group's `releasing_shared_sign` knob (`NEXT`, `SAME`) keeps
+  the shared sign for a consumer who reads the count as the lot falls.
 - **C224, the order of the loosing at every level.** The text states it
   for the second level (IV.4) and for days and hours (IV.10). The first
   level never reaches it within a life. The second, third and fourth
@@ -175,5 +177,11 @@ consumer must name one in a request.
    kernel, so five bindings agree on their periods. The names wait on a
    vetted Nepali and Hindi rendering, so the three are on
    `xtask/src/intl.rs`'s unnamed list.
-5. The knobs: a `lots` settings group (sect and Fortune rules) that
-   releasing reads, and C223's choice of the shared sign.
+5. **Done.** The knobs: the request's lot rules releasing reads
+   (`with_lot_rules`, and the boundary's `lots` record), and C223's
+   `releasing_shared_sign`. An SDK test and an ABI test hold a night
+   birth whose Fortune moves sign under Lilly's rule to release from
+   where Lilly puts it.
+6. Profection from another point (the Sun, the Moon, a lot), as a
+   function taking a `LotPoint`; a catalogue member only when a consumer
+   must name one in a request.
