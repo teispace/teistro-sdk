@@ -206,10 +206,10 @@ pub use teistro_hellenistic::{
     Considerations, Contact, Dignities, DignityKind, DignityRequest, DignityRules, Distance,
     EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule, Impediment, ImpedimentKind, Lot,
     LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, Matter, MoonClause, MoonCourse,
-    Partile, Perfection, PerfectionRules, PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity,
-    PtolemaicAspect, RadicalGround, Radicality, Reception, Scores, Sect, SectRule, Separation,
-    SeventhClause, Siege, SignificatorPlace, Standing, Station, Temperament, Terms, TermsTable,
-    Translation, Triplicities, Way, Ways,
+    Partile, Perfection, PerfectionRequest, PerfectionRules, PlaceReading, PlacedLot,
+    PlanetAccidents, PlanetDignity, PtolemaicAspect, RadicalGround, Radicality, Reception, Scores,
+    Sect, SectRule, Separation, SeventhClause, Siege, SignificatorPlace, Standing, Station,
+    Temperament, Terms, TermsTable, Translation, Triplicities, Way, Ways,
 };
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};

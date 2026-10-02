@@ -506,6 +506,155 @@ impl Default for PerfectionRules {
     }
 }
 
+/// Whose perfection is asked: the two significators, named or found by
+/// Lilly's rule, and the rules it is read under.
+///
+/// The querent's significator is the lord of the Ascendant unless named;
+/// the quesited's is named, or the lord of the sign on the cusp of the
+/// house of the matter (`house`), in the fortitudes' own house division.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_core::house::House;
+/// use teistro_hellenistic::PerfectionRequest;
+///
+/// // "Shall I marry?": the seventh house's lord.
+/// let marriage = PerfectionRequest::of_house(House::try_new(7)?);
+/// assert_eq!(marriage.querent, None);
+/// // Or both named, as a request writes them, bare or in full.
+/// let named = PerfectionRequest::from_json(r#"{"querent": "VENUS", "quesited": "graha.MARS", "rules": {"horizonDays": 30}}"#)?;
+/// assert_eq!(named, PerfectionRequest::between(Graha::Venus, Graha::Mars).with_rules(teistro_hellenistic::PerfectionRules {
+///     horizon_days: Some(30.0),
+///     ..teistro_hellenistic::PerfectionRules::LILLY
+/// }));
+/// // Neither the quesited nor its house is no question.
+/// let empty = PerfectionRequest::from_json("{}").unwrap_err();
+/// assert_eq!(empty.field(), Some("perfection.quesited"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", default)]
+pub struct PerfectionRequest {
+    /// The querent's significator; unset, the lord of the Ascendant.
+    pub querent: Option<Graha>,
+    /// The quesited's significator, or unset for the lord of `house`.
+    pub quesited: Option<Graha>,
+    /// The house of the matter, whose cusp's lord signifies the quesited
+    /// when `quesited` is unset.
+    pub house: Option<House>,
+    /// How the perfection is read.
+    pub rules: PerfectionRules,
+}
+
+impl PerfectionRequest {
+    /// A question of the matter of one house: the Ascendant's lord for
+    /// the querent, the house's for the quesited.
+    #[must_use]
+    pub const fn of_house(house: House) -> PerfectionRequest {
+        PerfectionRequest {
+            querent: None,
+            quesited: None,
+            house: Some(house),
+            rules: PerfectionRules::LILLY,
+        }
+    }
+
+    /// A question between two named significators.
+    #[must_use]
+    pub const fn between(querent: Graha, quesited: Graha) -> PerfectionRequest {
+        PerfectionRequest {
+            querent: Some(querent),
+            quesited: Some(quesited),
+            house: None,
+            rules: PerfectionRules::LILLY,
+        }
+    }
+
+    /// The same question, the querent signified by another planet than
+    /// the Ascendant's lord.
+    #[must_use]
+    pub const fn with_querent(mut self, querent: Graha) -> PerfectionRequest {
+        self.querent = Some(querent);
+        self
+    }
+
+    /// The same question, read under other rules.
+    #[must_use]
+    pub const fn with_rules(mut self, rules: PerfectionRules) -> PerfectionRequest {
+        self.rules = rules;
+        self
+    }
+
+    /// Reads the request from JSON, `{"querent", "quesited", "house",
+    /// "rules"}`, a significator by its key bare or in full; a refusal is
+    /// named from the root, as `perfection.rules.horizonDays`.
+    ///
+    /// # Errors
+    ///
+    /// Text that is not the record, a key it does not read, rules out of
+    /// range, and a question that names neither the quesited nor its
+    /// house, or both.
+    pub fn from_json(text: &str) -> Result<PerfectionRequest, Error> {
+        let request: PerfectionRequest = teistro_core::strict::read(text, "perfection")?;
+        request.check().map_err(|why| why.under("perfection"))?;
+        Ok(request)
+    }
+
+    /// The quesited named one way, and the rules in range.
+    fn check(&self) -> Result<(), Error> {
+        match (self.quesited, self.house) {
+            (None, None) => {
+                return Err(Error::invalid_arg(
+                    "no quesited's significator, and no house of the matter",
+                )
+                .with_field("quesited")
+                .with_hint(
+                    "name the quesited's significator, or the house of the matter as `house`",
+                ));
+            }
+            (Some(_), Some(_)) => {
+                return Err(Error::invalid_arg(
+                    "both a quesited's significator and a house of the matter",
+                )
+                .with_field("house")
+                .with_hint("name one: `quesited` or `house`"));
+            }
+            _ => {}
+        }
+        self.rules.check().map_err(|why| why.under("rules"))
+    }
+
+    /// The two significators on a figure: the named ones, or the lords of
+    /// the Ascendant and of the house of the matter's cusp.
+    ///
+    /// # Errors
+    ///
+    /// As [`PerfectionRequest::from_json`] for a request built otherwise.
+    pub fn significators(&self, fortitudes: &Fortitudes) -> Result<(Graha, Graha), Error> {
+        self.check()?;
+        let sky = &fortitudes.sky;
+        let lord = |deg: f64| {
+            teistro_core::catalogue::Rashi::of_longitude(deg)
+                .attributes()
+                .lord
+        };
+        let querent = self.querent.unwrap_or_else(|| lord(sky.ascendant_deg));
+        let quesited = match (self.quesited, self.house) {
+            (Some(quesited), _) => quesited,
+            (None, Some(house)) => {
+                let cusp = sky
+                    .cusps_deg
+                    .get(usize::from(house.get()) - 1)
+                    .ok_or_else(|| Error::internal("a figure has twelve cusps"))?;
+                lord(*cusp)
+            }
+            (None, None) => return Err(Error::internal("checked above")),
+        };
+        Ok((querent, quesited))
+    }
+}
+
 /// Lilly's three kinds of application (p. 107).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]

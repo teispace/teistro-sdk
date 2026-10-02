@@ -19,7 +19,7 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
     Accident, AccidentalRules, ChartRequest, ConsiderationRules, Context, DignityRequest,
     DignityRules, Document, Ephemeris, FortitudeRequest, FortuneRule, ImpedimentKind, Lot,
-    LotRequest, PerfectionRules, PtolemaicAspect, Scores, Sect, SectRule, Terms, UtcOffset,
+    LotRequest, PerfectionRequest, PtolemaicAspect, Scores, Sect, SectRule, Terms, UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -362,9 +362,7 @@ fn every_promised_contact_is_where_the_later_chart_finds_it() {
                 .perfection(
                     &figure,
                     &FortitudeRequest::default(),
-                    querent,
-                    quesited,
-                    PerfectionRules::LILLY,
+                    &PerfectionRequest::between(querent, quesited),
                 )
                 .unwrap();
             // The ways weigh the houses the fortitudes count.
@@ -436,9 +434,7 @@ fn a_perfection_refuses_one_planet_for_both_significators() {
         .perfection(
             &figure,
             &FortitudeRequest::default(),
-            Graha::Mars,
-            Graha::Mars,
-            PerfectionRules::LILLY,
+            &PerfectionRequest::between(Graha::Mars, Graha::Mars),
         )
         .unwrap_err();
     assert_eq!(same.field(), Some("quesited"));
@@ -447,10 +443,26 @@ fn a_perfection_refuses_one_planet_for_both_significators() {
         .perfection(
             &figure,
             &FortitudeRequest::default(),
-            Graha::Rahu,
-            Graha::Mars,
-            PerfectionRules::LILLY,
+            &PerfectionRequest::between(Graha::Rahu, Graha::Mars),
         )
         .unwrap_err();
     assert_eq!(node.field(), Some("querent"));
+    // A house of the matter: the Ascendant's lord and the cusp's.
+    let fortitudes = sdk
+        .chart()
+        .fortitudes(&figure, &FortitudeRequest::default())
+        .unwrap();
+    let lord = |deg: f64| Rashi::of_longitude(deg).attributes().lord;
+    let seventh = teistro::House::try_new(7).unwrap();
+    let asked = PerfectionRequest::of_house(seventh);
+    let (querent, quesited) = asked.significators(&fortitudes).unwrap();
+    assert_eq!(querent, lord(fortitudes.sky.ascendant_deg));
+    assert_eq!(quesited, lord(fortitudes.sky.cusps_deg[6]));
+    if querent != quesited {
+        let matter = sdk
+            .chart()
+            .perfection(&figure, &FortitudeRequest::default(), &asked)
+            .unwrap();
+        assert_eq!((matter.querent, matter.quesited), (querent, quesited));
+    }
 }
