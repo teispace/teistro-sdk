@@ -239,6 +239,17 @@ question, and need no ephemeris.
   opposition before Jupiter's square, so she translates nothing. Saturn
   reaches neither significator. Lilly finds "no weighty Planet that
   translates or collects", and the SDK finds no relation at all.
+- **Lilly's p. 177 figure translates as he judged.** "If the Querent
+  shall be Rich or Poore" is dated 16 July 1634, 11h 6m a.m., on
+  Mercury's day. Recast at the printed Ascendant, every planet is within
+  5′ of the places his antiscia table gives (p. 181). The Moon leaves
+  Mars's sextile, 2°53′ past, and conjoins Venus 6°26′ ahead, where
+  Lilly counts "fix degrees, 27. minutes" (p. 183). That is a translation
+  from the second's lord to the querent's. It is not p. 126's way,
+  because she stands in none of Mars's dignities, but it does make the
+  seventh way hold: Mars sits in the Ascendant and the Moon translates.
+  Lilly reads that as an estate coming "fomewhat eafily". This is the
+  first of his own figures to hold a translation and the seventh way.
 
 ## What is not decided
 
@@ -275,5 +286,5 @@ question, and need no ephemeris.
 5. Recast the Book II figures where Lilly names a translation,
    prohibition or collection, and test each against his judgement: p. 238
    done (an application by opposition, no way held), p. 385 (a sextile,
-   the void Moon prohibiting nothing, C234) and p. 437 (nothing
-   perfects).
+   the void Moon prohibiting nothing, C234), p. 437 (nothing perfects)
+   and p. 177 (the Moon translating, the seventh way held).
