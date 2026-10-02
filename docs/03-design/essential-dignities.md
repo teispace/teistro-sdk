@@ -489,9 +489,13 @@ impl Fortitudes { pub fn almuten(&self) -> Almuten }       // the nets
   words, so it is not encoded as a score.
 
 The acceptance tests are the merchant's figure almuten (Venus) and the
-Part of Fortune's worked example (10°27′ Aquarius). A measured page counts how
-often the three almutens agree over the corpus, how often each is tied,
-and what each crux's rival moves, before anything reaches the façade.
+Part of Fortune's worked example (10°27′ Aquarius), in the unit tests
+of `crates/hellenistic`. [`fortitudes-measured.md`](fortitudes-measured.md)
+counts, over the corpus, how often each almuten ties, how often Lilly's
+and Chapter CV's name the same planets, and what C218's and C220's
+rivals move. Its counts are why both readings ship rather than one: the
+two lords of the geniture part on most births, so neither stands in for
+the other.
 
 ## The order of work
 
@@ -521,8 +525,9 @@ and what each crux's rival moves, before anything reaches the façade.
    doctrine is done** (§Accidental fortitudes, C211–C217), held to two
    printed figures, and so is its façade (`ChartArea::fortitudes`,
    `fortitudes-measured.md`), and so is its boundary (§At the boundary:
-   sections 63–66 in every binding, under the parity gate). Next is the
-   almuten, which needs both halves.
+   sections 63–66 in every binding, under the parity gate). **The
+   almuten's doctrine is done** (§The almuten, C218–C220), measured on
+   the same page. Its façade and boundary come next.
 
 ## What is not decided
 
