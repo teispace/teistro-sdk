@@ -2056,6 +2056,19 @@ pub struct ChartRequest {
     /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fortitudes_json: Option<String>,
+    /// Every chart's lots, all fourteen Valens gives, as a JSON object,
+    /// every member optional: `sectRule` (the record `dignities_json`
+    /// names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+    /// the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+    /// (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+    /// `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+    /// comes back in the `lots` section and the fourteen in `lot_places`.
+    /// Null for none, which costs nothing
+    /// (`03-design/hellenistic-lots.md`). Refusals are named from the
+    /// record every binding calls `lots`, as `lots.fortune`.
+    /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lots_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2081,6 +2094,7 @@ pub struct HeldChartRequest {
     kp_json: Option<std::ffi::CString>,
     dignities_json: Option<std::ffi::CString>,
     fortitudes_json: Option<std::ffi::CString>,
+    lots_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2133,6 +2147,7 @@ impl HeldChartRequest {
                 .fortitudes_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
+            lots_json: self.lots_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2205,6 +2220,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            lots_json: self
+                .lots_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2248,6 +2268,7 @@ impl ChartRequest {
             kp_json: unsafe { lent_text(raw.kp_json) },
             dignities_json: unsafe { lent_text(raw.dignities_json) },
             fortitudes_json: unsafe { lent_text(raw.fortitudes_json) },
+            lots_json: unsafe { lent_text(raw.lots_json) },
         }
     }
 }

@@ -677,6 +677,7 @@ final class ChartArea extends _Area {
     KpRequest? kp,
     DignityRequest? dignities,
     FortitudeRequest? fortitudes,
+    LotRequest? lots,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -706,6 +707,7 @@ final class ChartArea extends _Area {
     kp: kp,
     dignities: dignities,
     fortitudes: fortitudes,
+    lots: lots,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -755,6 +757,7 @@ final class ChartArea extends _Area {
     KpRequest? kp,
     DignityRequest? dignities,
     FortitudeRequest? fortitudes,
+    LotRequest? lots,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -806,6 +809,7 @@ final class ChartArea extends _Area {
             kpJson: kp?._json,
             dignitiesJson: dignities?._json,
             fortitudesJson: fortitudes?._json,
+            lotsJson: lots?._json,
           ),
         ),
       ),
@@ -3969,6 +3973,50 @@ List<Dignities> _decodeDignities(Charts batch) {
   );
 }
 
+final Expando<List<Lots>> _lots = Expando<List<Lots>>('lots');
+
+List<Lots> _lotsOf(Charts batch) => _lots[batch] ??= _decodeLots(batch);
+
+/// `lots` holds a row a chart, or none when none was asked, and
+/// `lot_places` the catalogue's lots for each chart, in its order.
+List<Lots> _decodeLots(Charts batch) {
+  final c = batch.lots;
+  final p = batch.lotPlaces;
+  final charts = batch.cast.instant.length;
+  if (c.length == 0) return const <Lots>[];
+  final per = Lot.values.length;
+  if (c.length != charts || p.length != per * charts) {
+    throw StateError(
+      'lots has ${c.length} rows and lot_places ${p.length} for $charts '
+      'charts; they are one and $per a chart',
+    );
+  }
+  PlacedLot placed(int row) => PlacedLot(
+    lot: Lot.byId(p.lot[row]),
+    place: LotPlace(
+      longitudeDeg: p.longitudeDeg[row],
+      sign: Rashi.byId(p.sign[row]),
+      lord: Graha.byId(p.lord[row]),
+      house: p.house[row],
+    ),
+  );
+  return List<Lots>.generate(
+    charts,
+    (chart) => Lots(
+      sect: Sect.byId(c.sect[chart]),
+      request: LotRequest(
+        sectRule: SectRule.byId(c.sectRule[chart]),
+        fortune: FortuneRule.byId(c.fortune[chart]),
+      ),
+      fortuneReversed: c.fortuneReversed[chart] == 1,
+      lots: List<PlacedLot>.unmodifiable([
+        for (var row = per * chart; row < per * chart + per; row += 1)
+          placed(row),
+      ]),
+    ),
+  );
+}
+
 final Expando<List<Fortitudes>> _fortitudes = Expando<List<Fortitudes>>(
   'fortitudes',
 );
@@ -5415,7 +5463,8 @@ final class AlmutenRules extends _Value {
   /// or the sign (house, exaltation, triplicity), C218.
   final PlaceReading place;
 
-  /// How Fortune is taken by night: Lilly's, or reversed (C220).
+  /// How Fortune is taken by night: Lilly's, reversed, or reversed while
+  /// the Moon is up (C220, C221).
   final FortuneRule fortune;
 
   Map<String, Object?> get _json => {
@@ -5657,6 +5706,100 @@ final class Fortitudes extends _Value {
     planets,
     almutens,
   ];
+}
+
+/// How to read every chart's lots, Valens's by default
+/// (`03-design/hellenistic-lots.md`). Each chart's come back as its
+/// `lots`, and an answer's `request` is one, handed back as it stands.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ lots: const LotRequest(fortune: FortuneRule.reversedWhileMoonUp),
+/// );
+/// final fortune = chart.lots?.lots.first.place.sign;
+/// ```
+final class LotRequest extends _Value {
+  const LotRequest({
+    this.sectRule = SectRule.horizon,
+    this.fortune = FortuneRule.reversedByNight,
+  });
+
+  /// Valens's: his hemisphere (C209), and Fortune reversed by night
+  /// (II.22, C221).
+  static const LotRequest valens = LotRequest();
+
+  final SectRule sectRule;
+
+  /// How Fortune is taken by night (C221).
+  final FortuneRule fortune;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'sectRule': sectRule.key,
+    'fortune': fortune.key,
+  });
+
+  @override
+  List<Object?> get _fields => [sectRule, fortune];
+}
+
+/// Where a lot fell, in the chart's zodiac.
+final class LotPlace extends _Value {
+  const LotPlace({
+    required this.longitudeDeg,
+    required this.sign,
+    required this.lord,
+    required this.house,
+  });
+
+  /// Degrees in [0, 360).
+  final double longitudeDeg;
+  final Rashi sign;
+
+  /// The sign's lord, the lot's ruler.
+  final Graha lord;
+
+  /// 1 to 12, counted in whole signs from the ascendant's sign.
+  final int house;
+
+  @override
+  List<Object?> get _fields => [longitudeDeg, sign, lord, house];
+}
+
+/// One lot and where it fell.
+final class PlacedLot extends _Value {
+  const PlacedLot({required this.lot, required this.place});
+
+  final Lot lot;
+  final LotPlace place;
+
+  @override
+  List<Object?> get _fields => [lot, place];
+}
+
+/// A chart's lots, with its sect and the rules they were read under
+/// (`03-design/hellenistic-lots.md`).
+final class Lots extends _Value {
+  const Lots({
+    required this.sect,
+    required this.request,
+    required this.fortuneReversed,
+    required this.lots,
+  });
+
+  final Sect sect;
+
+  /// The rules they were read under, every field filled.
+  final LotRequest request;
+
+  /// Whether Fortune was counted from the Moon to the Sun, and Daimon the
+  /// other way.
+  final bool fortuneReversed;
+
+  /// All fourteen, in the catalogue's order.
+  final List<PlacedLot> lots;
+
+  @override
+  List<Object?> get _fields => [sect, request, fortuneReversed, lots];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),
@@ -10835,6 +10978,14 @@ final class Chart {
   /// §Accidental fortitudes).
   Fortitudes? get fortitudes {
     final all = _fortitudesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Valens's fourteen lots, with the chart's sect and the rules they were
+  /// read under; null unless `lots` asked for them
+  /// (`03-design/hellenistic-lots.md`).
+  Lots? get lots {
+    final all = _lotsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

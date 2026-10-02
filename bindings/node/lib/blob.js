@@ -1082,6 +1082,27 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 67, 'lots');
+    out.lots = {
+      sect: column(blob, at, 0, 'u8', at.count),
+      sectRule: column(blob, at, 1, 'u8', at.count),
+      fortune: column(blob, at, 2, 'u8', at.count),
+      fortuneReversed: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 68, 'lot_places');
+    out.lotPlaces = {
+      lot: column(blob, at, 0, 'u8', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      lord: column(blob, at, 3, 'u16', at.count),
+      house: column(blob, at, 4, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

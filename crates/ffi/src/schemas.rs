@@ -610,6 +610,7 @@ pub fn charts() -> BlobSchema {
         .chain([chart_kp_section(59)])
         .chain(chart_dignity_sections(60))
         .chain(chart_fortitude_sections(63))
+        .chain(chart_lot_sections(67))
         .collect(),
     }
 }
@@ -1020,6 +1021,73 @@ fn chart_fortitude_sections(first: u32) -> [SectionSchema; 4] {
                     "points",
                     Scalar::I8,
                     "What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other.",
+                ),
+            ],
+        ),
+    ]
+}
+
+/// Every chart's lots (`03-design/hellenistic-lots.md`): what was applied
+/// a chart, then the fourteen.
+fn chart_lot_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `lots_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "lots",
+            &format!(
+                "Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "sect",
+                    Scalar::U8,
+                    "Whether the chart is of the day or of the night, as `sect_rule` reads it: a night chart takes each lot's night arc.",
+                )
+                .of_enum("TsSect"),
+                ColumnDef::new(
+                    "sect_rule",
+                    Scalar::U8,
+                    "How the sect was read, `lots_json.sectRule` (C209).",
+                )
+                .of_enum("TsSectRule"),
+                ColumnDef::new(
+                    "fortune",
+                    Scalar::U8,
+                    "How the Part of Fortune is taken by night, `lots_json.fortune` (C221).",
+                )
+                .of_enum("TsFortuneRule"),
+                ColumnDef::new(
+                    "fortune_reversed",
+                    Scalar::U8,
+                    "1 when Fortune was counted from the Moon to the Sun, and Daimon from the Sun to the Moon; 0 otherwise.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "lot_places",
+            &format!(
+                "Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. {empty}"
+            ),
+            vec![
+                ColumnDef::new("lot", Scalar::U8, "Which.").of_enum("TsLot"),
+                ColumnDef::new(
+                    "longitude_deg",
+                    Scalar::F64,
+                    "Where it fell, degrees of the chart's zodiac in [0, 360).",
+                ),
+                ColumnDef::new("sign", Scalar::U16, "The sign it fell in.").of_enum("Rashi"),
+                ColumnDef::new(
+                    "lord",
+                    Scalar::U16,
+                    "That sign's lord, the lot's ruler, which Valens reads it by.",
+                )
+                .of_enum("Graha"),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "Its place, 1 to 12, counted in whole signs from the ascendant's sign.",
                 ),
             ],
         ),

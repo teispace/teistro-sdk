@@ -112,6 +112,7 @@ import {
   SiegeById,
   PlaceReadingById,
   FortuneRuleById,
+  LotById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1048,6 +1049,20 @@ export class Chart {
    */
   get fortitudes() {
     return fortitudesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Valens's fourteen lots (`lots: { sectRule, fortune }`), with the
+   * chart's sect and the rules they were read under; `null` unless asked
+   * for (`03-design/hellenistic-lots.md`).
+   *
+   * It is `{ sect, request: { sectRule, fortune }, fortuneReversed, lots
+   * }`, the lots in the catalogue's order, each `{ lot, place: {
+   * longitudeDeg, sign, lord, house } }`. `fortuneReversed` says whether
+   * Fortune was counted from the Moon to the Sun (C221).
+   */
+  get lots() {
+    return lotsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2221,6 +2236,11 @@ export class ChartArea extends Area {
           'fortitudes',
           'a fortitudes request record, e.g. { rules: { beamsDeg: 15 }, scores: { regulus: 6 }, almuten: { place: "SIGN" } }',
         ),
+        lotsJson: recordJson(
+          request.lots,
+          'lots',
+          'a lots request record, e.g. { fortune: "REVERSED_WHILE_MOON_UP" }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -3125,6 +3145,67 @@ function fortitudesOf(batch) {
     }
   }
   FORTITUDES.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's lots, decoded once however many charts read them. */
+const LOTS = new WeakMap();
+
+/** How many lots the catalogue names, and so how many rows a chart holds. */
+const LOT_COUNT = LotById.size;
+
+/**
+ * Every chart's lots in a batch: `lots` holds a row a chart, or none when
+ * none was asked, and `lot_places` the catalogue's lots for each chart, in
+ * its order (`03-design/hellenistic-lots.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function lotsOf(batch) {
+  let decoded = LOTS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const c = d.lots;
+  const p = d.lotPlaces;
+  if (c.sect.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    if (c.sect.length !== charts || p.lot.length !== LOT_COUNT * charts) {
+      throw new Error(
+        `lots has ${c.sect.length} rows and lot_places ${p.lot.length} for ${charts} charts; ` +
+          `they are one and ${LOT_COUNT} a chart, or none`,
+      );
+    }
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, chart) =>
+        Object.freeze({
+          sect: SectById.get(c.sect[chart]) ?? 'unknown',
+          request: Object.freeze({
+            sectRule: SectRuleById.get(c.sectRule[chart]) ?? 'unknown',
+            fortune: FortuneRuleById.get(c.fortune[chart]) ?? 'unknown',
+          }),
+          fortuneReversed: c.fortuneReversed[chart] === 1,
+          lots: Object.freeze(
+            Array.from({ length: LOT_COUNT }, (_, k) => {
+              const row = LOT_COUNT * chart + k;
+              return Object.freeze({
+                lot: LotById.get(p.lot[row]) ?? 'unknown',
+                place: Object.freeze({
+                  longitudeDeg: p.longitudeDeg[row],
+                  sign: RashiById.get(p.sign[row]) ?? 'unknown',
+                  lord: GrahaById.get(p.lord[row]) ?? 'unknown',
+                  house: p.house[row],
+                }),
+              });
+            }),
+          ),
+        }),
+      ),
+    );
+  }
+  LOTS.set(batch, decoded);
   return decoded;
 }
 

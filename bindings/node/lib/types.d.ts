@@ -929,6 +929,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly fortitudesJson?: string;
+  /**
+   * Every chart's lots, all fourteen Valens gives, as a JSON object,
+   * every member optional: `sectRule` (the record `dignities_json`
+   * names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+   * the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+   * (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+   * `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+   * comes back in the `lots` section and the fourteen in `lot_places`.
+   * Null for none, which costs nothing
+   * (`03-design/hellenistic-lots.md`). Refusals are named from the
+   * record every binding calls `lots`, as `lots.fortune`.
+   * @example {"fortune":"REVERSED_WHILE_MOON_UP"}
+   * @nullable
+   */
+  readonly lotsJson?: string;
 }
 
 /**

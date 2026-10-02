@@ -526,6 +526,7 @@ def main() -> None:
                 "scores": {"regulus": 5},
                 "almuten": {"fortune": "REVERSED_BY_NIGHT"},
             },
+            lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -937,6 +938,18 @@ def main() -> None:
             put(f"chart-{i}-almuten-places", ranked(al.places))
             for house_number, almuten in enumerate(al.houses, start=1):
                 put(f"chart-{i}-almuten-house-{house_number}", ranked(almuten))
+            lt = chart.lots
+            assert lt is not None
+            put(
+                f"chart-{i}-lots",
+                f"{lt.sect.key} {lt.request.sect_rule.key} {lt.request.fortune.key} {int(lt.fortune_reversed)}",
+            )
+            for placed_lot in lt.lots:
+                lot_at = placed_lot.place
+                put(
+                    f"chart-{i}-lot-{placed_lot.lot.key}",
+                    f"{number(lot_at.longitude_deg)} {lot_at.sign.full_key} {lot_at.lord.full_key} {lot_at.house}",
+                )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

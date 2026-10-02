@@ -7240,6 +7240,98 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsLot",
+      "doc": "One of Valens's lots (`03-design/hellenistic-lots.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Fortune",
+          "value": 0,
+          "doc": "Fortune: from the Sun to the Moon, from the ascendant.",
+          "key": "FORTUNE"
+        },
+        {
+          "name": "Daimon",
+          "value": 1,
+          "doc": "Daimon: Fortune reflected in the ascendant.",
+          "key": "DAIMON"
+        },
+        {
+          "name": "Basis",
+          "value": 2,
+          "doc": "Basis: the shorter arc between Fortune and Daimon.",
+          "key": "BASIS"
+        },
+        {
+          "name": "Love",
+          "value": 3,
+          "doc": "Love: from Fortune to Daimon by day.",
+          "key": "LOVE"
+        },
+        {
+          "name": "Necessity",
+          "value": 4,
+          "doc": "Necessity: from Daimon to Fortune by day.",
+          "key": "NECESSITY"
+        },
+        {
+          "name": "Exaltation",
+          "value": 5,
+          "doc": "Exaltation: from the Sun to its exaltation by day, the Moon to its\nby night.",
+          "key": "EXALTATION"
+        },
+        {
+          "name": "Debt",
+          "value": 6,
+          "doc": "Debt: from Mercury to Saturn.",
+          "key": "DEBT"
+        },
+        {
+          "name": "Theft",
+          "value": 7,
+          "doc": "Theft: from Mercury to Mars by day, counted from Saturn.",
+          "key": "THEFT"
+        },
+        {
+          "name": "Deceit",
+          "value": 8,
+          "doc": "Deceit: from the Sun to Mars by day.",
+          "key": "DECEIT"
+        },
+        {
+          "name": "ForeignLands",
+          "value": 9,
+          "doc": "Foreign lands: from Saturn to Mars.",
+          "key": "FOREIGN_LANDS"
+        },
+        {
+          "name": "Father",
+          "value": 10,
+          "doc": "The father: from the Sun to Saturn by day, Venus to the Moon by\nnight.",
+          "key": "FATHER"
+        },
+        {
+          "name": "Marriage",
+          "value": 11,
+          "doc": "Marriage: from Jupiter to Venus by day.",
+          "key": "MARRIAGE"
+        },
+        {
+          "name": "Brothers",
+          "value": 12,
+          "doc": "Brothers: from Saturn to Jupiter by day.",
+          "key": "BROTHERS"
+        },
+        {
+          "name": "Crisis",
+          "value": 13,
+          "doc": "The crisis-producing place: from Saturn to Mars by day.",
+          "key": "CRISIS"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -11502,6 +11594,21 @@
           "doc": "Every chart's accidental fortitudes beside its essential dignities\n(Lilly, p. 115), as a JSON object, every member optional:\n`dignities` (the record `dignities_json` takes), `rules`\n(`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,\n`cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`\n`\"SAME_DEGREE\"` or `{\"WITHIN\": {\"orbDeg\": …}}` (C216), `siege`\n`\"SAME_SIGN\"` or `{\"WITHIN\": {\"spanDeg\": …}}` (C215) and\n`meanMotionDeg`, seven in the Chaldean order) and `scores` (the\ntwelve `houses` and each line by name), Lilly's by default. The\nessential half comes back in the sections `dignities_json` fills, so\nasking for both is refused; the accidental half in `fortitudes`,\n`fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.\nThe houses are Regiomontanus's unless a profile names another\ndivision for the `hellenistic` module. Null for none, which costs\nnothing (`03-design/essential-dignities.md` §Accidental fortitudes).\nRefusals are named from the record every binding calls\n`fortitudes`, as `fortitudes.rules.beamsDeg`.",
           "meta": {
             "example": "{\"rules\":{\"partile\":{\"WITHIN\":{\"orbDeg\":1}}},\"scores\":{\"regulus\":5}}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "lots_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's lots, all fourteen Valens gives, as a JSON object,\nevery member optional: `sectRule` (the record `dignities_json`\nnames it in, Valens's `\"HORIZON\"` by default) and `fortune`, how\nthe Part of Fortune is taken by night: `\"REVERSED_BY_NIGHT\"`\n(Valens II.22, the default), `\"DAY_AND_NIGHT\"` (Lilly) or\n`\"REVERSED_WHILE_MOON_UP\"` (Valens III.11, C221). What was applied\ncomes back in the `lots` section and the fourteen in `lot_places`.\nNull for none, which costs nothing\n(`03-design/hellenistic-lots.md`). Refusals are named from the\nrecord every binding calls `lots`, as `lots.fortune`.",
+          "meta": {
+            "example": "{\"fortune\":\"REVERSED_WHILE_MOON_UP\"}",
             "nullable": true
           }
         }
@@ -17976,6 +18083,73 @@
               "name": "points",
               "scalar": "i8",
               "doc": "What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other."
+            }
+          ]
+        },
+        {
+          "id": 67,
+          "name": "lots",
+          "doc": "Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sect",
+              "scalar": "u8",
+              "doc": "Whether the chart is of the day or of the night, as `sect_rule` reads it: a night chart takes each lot's night arc.",
+              "enum": "TsSect"
+            },
+            {
+              "name": "sect_rule",
+              "scalar": "u8",
+              "doc": "How the sect was read, `lots_json.sectRule` (C209).",
+              "enum": "TsSectRule"
+            },
+            {
+              "name": "fortune",
+              "scalar": "u8",
+              "doc": "How the Part of Fortune is taken by night, `lots_json.fortune` (C221).",
+              "enum": "TsFortuneRule"
+            },
+            {
+              "name": "fortune_reversed",
+              "scalar": "u8",
+              "doc": "1 when Fortune was counted from the Moon to the Sun, and Daimon from the Sun to the Moon; 0 otherwise."
+            }
+          ]
+        },
+        {
+          "id": 68,
+          "name": "lot_places",
+          "doc": "Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lot",
+              "scalar": "u8",
+              "doc": "Which.",
+              "enum": "TsLot"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Where it fell, degrees of the chart's zodiac in [0, 360)."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it fell in.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "That sign's lord, the lot's ruler, which Valens reads it by.",
+              "enum": "Graha"
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "Its place, 1 to 12, counted in whole signs from the ascendant's sign."
             }
           ]
         }

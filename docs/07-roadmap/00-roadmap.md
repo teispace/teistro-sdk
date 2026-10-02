@@ -844,8 +844,8 @@ the same machinery rather than new mechanisms:
   the almuten three ways (C218–C220) followed, each through the boundary
   and every binding: **the dignities are done** but for Ibn Ezra's
   weights. Valens's fourteen lots followed (`hellenistic-lots.md`,
-  C221–C222) in Rust and the SDK; their measured page and the boundary
-  are next.
+  C221–C222), measured in `lots-measured.md` and carried through the
+  boundary into every binding.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the

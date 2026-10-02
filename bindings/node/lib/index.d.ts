@@ -68,6 +68,7 @@ import type {
   Siege,
   PlaceReading,
   FortuneRule,
+  Lot,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -1074,7 +1075,7 @@ export interface FortitudeRequest {
 export interface AlmutenRules {
   /** What of a place its dignities are counted from: `DEGREE` (all five) or `SIGN` (house, exaltation, triplicity), C218. */
   readonly place: PlaceReading;
-  /** How Fortune is taken by night: `DAY_AND_NIGHT`, Lilly's, or `REVERSED_BY_NIGHT`, C220. */
+  /** How Fortune is taken by night: `DAY_AND_NIGHT`, Lilly's, `REVERSED_BY_NIGHT` or `REVERSED_WHILE_MOON_UP`, C220 and C221. */
   readonly fortune: FortuneRule;
 }
 
@@ -1174,6 +1175,54 @@ export interface Almutens {
   readonly places: Almuten;
   /** Each house's, of its cusp, the first to the twelfth. */
   readonly houses: readonly Almuten[];
+}
+
+/**
+ * How to read every chart's lots (`03-design/hellenistic-lots.md`); every
+ * field is optional, and an absent one is Valens's.
+ *
+ * @example
+ * const asked: LotRequest = { fortune: 'REVERSED_WHILE_MOON_UP' };
+ */
+export interface LotRequest {
+  /** The Sun's centre above the true horizon by default, Valens's hemisphere (C209). */
+  readonly sectRule?: Exclude<SectRule, 'unknown'>;
+  /** How Fortune is taken by night; `REVERSED_BY_NIGHT`, Valens's II.22, by default (C221). */
+  readonly fortune?: Exclude<FortuneRule, 'unknown'>;
+}
+
+/** Where a lot fell, in the chart's zodiac. */
+export interface LotPlace {
+  /** Degrees in [0, 360). */
+  readonly longitudeDeg: number;
+  readonly sign: Rashi;
+  /** The sign's lord, the lot's ruler. */
+  readonly lord: Graha;
+  /** 1 to 12, counted in whole signs from the ascendant's sign. */
+  readonly house: number;
+}
+
+/** One lot and where it fell. */
+export interface PlacedLot {
+  readonly lot: Lot;
+  readonly place: LotPlace;
+}
+
+/**
+ * A chart's lots, with its sect and the rules they were read under.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, lots: {} });
+ * const fortune = chart.lots?.lots.find((at) => at.lot === 'FORTUNE')?.place.sign;
+ */
+export interface Lots {
+  readonly sect: Sect;
+  /** The request as it stood, every field filled. */
+  readonly request: Required<LotRequest>;
+  /** Whether Fortune was counted from the Moon to the Sun, and Daimon the other way. */
+  readonly fortuneReversed: boolean;
+  /** All fourteen, in the catalogue's order. */
+  readonly lots: readonly PlacedLot[];
 }
 
 /**
@@ -2574,6 +2623,11 @@ export declare class Chart {
    */
   readonly fortitudes: Fortitudes | null;
   /**
+   * Valens's fourteen lots; `null` unless `lots` asked
+   * (`03-design/hellenistic-lots.md`).
+   */
+  readonly lots: Lots | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -3667,6 +3721,12 @@ export interface ChartRequest {
    * refused: put that record under `fortitudes.dignities`.
    */
   readonly fortitudes?: FortitudeRequest;
+  /**
+   * Valens's lots to read in every chart, read back as each chart's `lots`
+   * (`03-design/hellenistic-lots.md`). None by default; `{}` is Valens's
+   * horizon and his II.22 Fortune.
+   */
+  readonly lots?: LotRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

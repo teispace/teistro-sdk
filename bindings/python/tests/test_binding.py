@@ -1573,6 +1573,65 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=instants[0], **bad, **kathmandu)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_lots(self) -> None:
+        """Valens's lots cross whole, members resolved: the sect and the rules
+        read back and handed back as a request, all fourteen in the
+        catalogue's order, Fortune where its formula puts it and Daimon its
+        mirror in the ascendant, a batch the charts one at a time, and a
+        refusal named in the record (`03-design/hellenistic-lots.md`)."""
+        from teistro import FortuneRule, Lot, LotRequest, LotRules, Sect, SectRule
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 20700,
+        }
+        instants = [2460676.5, 2460676.75]
+
+        def apart(one: float, other: float) -> float:
+            return min((one - other) % 360, (other - one) % 360)
+
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instants[0], **kathmandu).lots)
+            for instant in instants:
+                chart = ctx.chart.found(instant=instant, lots={}, fortitudes={}, **kathmandu)
+                read = chart.lots
+                assert read is not None and chart.fortitudes is not None
+                self.assertEqual(read.request, LotRules(SectRule.HORIZON, FortuneRule.REVERSED_BY_NIGHT))
+                self.assertEqual(read.fortune_reversed, read.sect is Sect.NIGHT)
+                self.assertEqual([placed.lot for placed in read.lots], list(Lot))
+                at = {placed.lot: placed.place.longitude_deg for placed in read.lots}
+                longitude = {own.planet: own.longitude_deg for own in chart.fortitudes.dignities.planets}
+                ascendant = chart.fortitudes.sky.ascendant_deg
+                start, end = (Graha.MOON, Graha.SUN) if read.fortune_reversed else (Graha.SUN, Graha.MOON)
+                fortune = (ascendant + longitude[end] - longitude[start]) % 360
+                self.assertLess(apart(at[Lot.FORTUNE], fortune), 1e-9)
+                self.assertLess(apart(at[Lot.DAIMON], 2 * ascendant - fortune), 1e-9, "Daimon mirrors Fortune")
+                for placed in read.lots:
+                    self.assertTrue(0 <= placed.place.longitude_deg < 360)
+                    self.assertIn(placed.place.house, range(1, 13))
+
+                # The answer's rules are a request as they stand.
+                fed_back = ctx.chart.found(instant=instant, lots=read.request, **kathmandu)
+                self.assertEqual(fed_back.lots, read)
+
+            asked: LotRequest = {"sectRule": SectRule.DAYLIGHT, "fortune": FortuneRule.REVERSED_WHILE_MOON_UP}
+            other = ctx.chart.found(instant=instants[0], lots=asked, **kathmandu).lots
+            assert other is not None
+            self.assertEqual(other.request, LotRules(SectRule.DAYLIGHT, FortuneRule.REVERSED_WHILE_MOON_UP))
+
+            batch = ctx.chart.found_many(instants=instants, lots={}, **kathmandu)
+            for k, instant in enumerate(instants):
+                self.assertEqual(batch.at(k).lots, ctx.chart.found(instant=instant, lots={}, **kathmandu).lots)
+
+            refusals: list[tuple[dict[str, Any], str]] = [
+                ({"lots": {"fortuna": "DAY_AND_NIGHT"}}, "lots.fortuna"),
+                ({"lots": {"fortune": "REVERSED"}}, "lots.fortune"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=instants[0], **bad, **kathmandu)
+                self.assertEqual(refused.exception.field, field)
+
     def test_an_almanac_carries_the_muhurta_search_it_was_asked_for(self) -> None:
         """A muhurta search crosses beside the days it judged
         (`03-design/muhurta-at-the-boundary.md`): its clauses a class a kind,

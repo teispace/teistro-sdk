@@ -351,6 +351,7 @@ const charts = geo.chart.foundMany({
     scores: { regulus: 5 },
     almuten: { fortune: 'REVERSED_BY_NIGHT' },
   },
+  lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -623,6 +624,11 @@ for (const chart of charts) {
   put(`chart-${i}-almuten-figure`, ranked(al.figure));
   put(`chart-${i}-almuten-places`, ranked(al.places));
   al.houses.forEach((almuten, h) => put(`chart-${i}-almuten-house-${h + 1}`, ranked(almuten)));
+  const lt = chart.lots;
+  put(`chart-${i}-lots`, `${lt.sect} ${lt.request.sectRule} ${lt.request.fortune} ${lt.fortuneReversed ? 1 : 0}`);
+  lt.lots.forEach(({ lot, place }) =>
+    put(`chart-${i}-lot-${lot}`, `${number(place.longitudeDeg)} ${place.sign} ${place.lord} ${place.house}`),
+  );
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

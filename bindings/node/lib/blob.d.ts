@@ -2793,6 +2793,70 @@ export interface ChartsFortitudeAccidents {
 }
 
 /**
+ * The `lots` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.
+ */
+export interface ChartsLots {
+  /**
+   * Whether the chart is of the day or of the night, as `sect_rule` reads it: a night chart takes each lot's night arc.
+   * The values are `Sect` ids.
+   */
+  readonly sect: Uint8Array;
+  /**
+   * How the sect was read, `lots_json.sectRule` (C209).
+   * The values are `SectRule` ids.
+   */
+  readonly sectRule: Uint8Array;
+  /**
+   * How the Part of Fortune is taken by night, `lots_json.fortune` (C221).
+   * The values are `FortuneRule` ids.
+   */
+  readonly fortune: Uint8Array;
+  /**
+   * 1 when Fortune was counted from the Moon to the Sun, and Daimon from the Sun to the Moon; 0 otherwise.
+   */
+  readonly fortuneReversed: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `lot_places` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
+ */
+export interface ChartsLotPlaces {
+  /**
+   * Which.
+   * The values are `Lot` ids.
+   */
+  readonly lot: Uint8Array;
+  /**
+   * Where it fell, degrees of the chart's zodiac in [0, 360).
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * The sign it fell in.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * That sign's lord, the lot's ruler, which Valens reads it by.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * Its place, 1 to 12, counted in whole signs from the ascendant's sign.
+   */
+  readonly house: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -3224,6 +3288,14 @@ export interface Charts {
    * Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
    */
   readonly fortitudeAccidents: ChartsFortitudeAccidents;
+  /**
+   * Every chart's sect and the rules its lots were read under, a row a chart in the `cast` section's order. Empty when `lots_json` asked for none.
+   */
+  readonly lots: ChartsLots;
+  /**
+   * Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
+   */
+  readonly lotPlaces: ChartsLotPlaces;
 }
 
 /**

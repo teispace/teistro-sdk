@@ -84,6 +84,7 @@ from .catalogue import (
     Karana,
     Kind,
     Koota,
+    Lot,
     LunarEclipseKind,
     LunarMonth,
     Masa,
@@ -254,7 +255,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 192,
+    "ts_chart_request": 200,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -284,7 +285,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 120,
+    "ts_chart_request": 128,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -690,6 +691,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("kp_json", ctypes.c_char_p),
         ("dignities_json", ctypes.c_char_p),
         ("fortitudes_json", ctypes.c_char_p),
+        ("lots_json", ctypes.c_char_p),
     ]
 
 
@@ -2415,6 +2417,20 @@ class ChartRequest:
     Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
     """
 
+    lots_json: Optional[str] = None
+    """Every chart's lots, all fourteen Valens gives, as a JSON object,
+    every member optional: `sectRule` (the record `dignities_json`
+    names it in, Valens's `"HORIZON"` by default) and `fortune`, how
+    the Part of Fortune is taken by night: `"REVERSED_BY_NIGHT"`
+    (Valens II.22, the default), `"DAY_AND_NIGHT"` (Lilly) or
+    `"REVERSED_WHILE_MOON_UP"` (Valens III.11, C221). What was applied
+    comes back in the `lots` section and the fourteen in `lot_places`.
+    Null for none, which costs nothing
+    (`03-design/hellenistic-lots.md`). Refusals are named from the
+    record every binding calls `lots`, as `lots.fortune`.
+    Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2483,6 +2499,9 @@ class ChartRequest:
         _fortitudes_json = None if self.fortitudes_json is None else self.fortitudes_json.encode("utf-8")
         owned.append(_fortitudes_json)
         raw.fortitudes_json = _fortitudes_json
+        _lots_json = None if self.lots_json is None else self.lots_json.encode("utf-8")
+        owned.append(_lots_json)
+        raw.lots_json = _lots_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2529,6 +2548,7 @@ class ChartRequest:
             kp_json=_text(raw.kp_json),
             dignities_json=_text(raw.dignities_json),
             fortitudes_json=_text(raw.fortitudes_json),
+            lots_json=_text(raw.lots_json),
         )
 
 

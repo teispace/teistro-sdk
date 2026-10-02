@@ -143,5 +143,13 @@ however many read it.
    had set. The premise of reading the Moon by its altitude is counted
    too: its ecliptic hemisphere from the ascendant says otherwise on 3
    of the 32.
-3. **The boundary.** `lots` in the chart blob and every binding, with the
-   lot names as a catalogue kind if a consumer must name them (Q38).
+3. **The boundary.** Done. A chart request's `lots_json` (`{ sectRule,
+   fortune }`, Valens's when empty) answers sections 67 and 68: `lots`, a
+   row a chart with the sect, the rules and whether Fortune was
+   reversed, and `lot_places`, the fourteen a chart in `TsLot`'s order
+   with each one's longitude, sign, lord and house. Every binding reads
+   them back as `lots`, its request fed back as it stands, under the
+   parity gate. The lot names are a `TsLot` enum and not a catalogue
+   kind: the request asks for every lot and names none, so no consumer
+   yet names one, which is what earns a kind. A caller's own formula
+   stays in Rust (`lot_place`) until a binding asks to write one.

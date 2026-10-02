@@ -6,6 +6,7 @@
 // `TEISTRO_LIBRARY` names it.
 
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:teistro/teistro.dart';
@@ -2298,6 +2299,88 @@ void _engineTests() {
         () => found(instants[0], bad),
         throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
       );
+    }
+    ctx.dispose();
+  });
+
+  test('a chart carries its lots', () {
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    const instants = [2460676.5, 2460676.75];
+    Chart found(
+      double instant, {
+      LotRequest? lots,
+      FortitudeRequest? fortitudes,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      lots: lots,
+      fortitudes: fortitudes,
+    );
+    double apart(double one, double other) =>
+        math.min((one - other) % 360, (other - one) % 360);
+    expect(found(instants[0]).lots, isNull);
+
+    for (final instant in instants) {
+      final chart = found(
+        instant,
+        lots: LotRequest.valens,
+        fortitudes: const FortitudeRequest(),
+      );
+      final read = chart.lots!;
+      final fortitudes = chart.fortitudes!;
+      expect(read.request, LotRequest.valens);
+      expect(read.fortuneReversed, read.sect == Sect.night);
+      expect([for (final placed in read.lots) placed.lot], Lot.values);
+      final at = {
+        for (final placed in read.lots) placed.lot: placed.place.longitudeDeg,
+      };
+      final longitude = {
+        for (final own in fortitudes.dignities.planets)
+          own.planet: own.longitudeDeg,
+      };
+      final ascendant = fortitudes.sky.ascendantDeg;
+      final (start, end) =
+          read.fortuneReversed
+              ? (Graha.moon, Graha.sun)
+              : (Graha.sun, Graha.moon);
+      final fortune = (ascendant + longitude[end]! - longitude[start]!) % 360;
+      expect(apart(at[Lot.fortune]!, fortune), lessThan(1e-9));
+      expect(
+        apart(at[Lot.daimon]!, 2 * ascendant - fortune),
+        lessThan(1e-9),
+        reason: 'Daimon mirrors Fortune',
+      );
+      for (final placed in read.lots) {
+        expect(placed.place.longitudeDeg, inInclusiveRange(0, 360));
+        expect(placed.place.house, inInclusiveRange(1, 12));
+      }
+      // The answer's rules are a request as they stand.
+      expect(found(instant, lots: read.request).lots, read);
+    }
+
+    const asked = LotRequest(
+      sectRule: SectRule.daylight,
+      fortune: FortuneRule.reversedWhileMoonUp,
+    );
+    expect(found(instants[0], lots: asked).lots!.request, asked);
+
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      lots: LotRequest.valens,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(batch.at(k).lots, found(instant, lots: LotRequest.valens).lots);
     }
     ctx.dispose();
   });

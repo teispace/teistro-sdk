@@ -4007,6 +4007,56 @@ class FortuneRule(Member):
     """
 
 
+class Lot(Member):
+    """One of Valens's lots (`03-design/hellenistic-lots.md`)."""
+
+    FORTUNE = 0
+    """Fortune: from the Sun to the Moon, from the ascendant."""
+
+    DAIMON = 1
+    """Daimon: Fortune reflected in the ascendant."""
+
+    BASIS = 2
+    """Basis: the shorter arc between Fortune and Daimon."""
+
+    LOVE = 3
+    """Love: from Fortune to Daimon by day."""
+
+    NECESSITY = 4
+    """Necessity: from Daimon to Fortune by day."""
+
+    EXALTATION = 5
+    """Exaltation: from the Sun to its exaltation by day, the Moon to its
+    by night.
+    """
+
+    DEBT = 6
+    """Debt: from Mercury to Saturn."""
+
+    THEFT = 7
+    """Theft: from Mercury to Mars by day, counted from Saturn."""
+
+    DECEIT = 8
+    """Deceit: from the Sun to Mars by day."""
+
+    FOREIGN_LANDS = 9
+    """Foreign lands: from Saturn to Mars."""
+
+    FATHER = 10
+    """The father: from the Sun to Saturn by day, Venus to the Moon by
+    night.
+    """
+
+    MARRIAGE = 11
+    """Marriage: from Jupiter to Venus by day."""
+
+    BROTHERS = 12
+    """Brothers: from Saturn to Jupiter by day."""
+
+    CRISIS = 13
+    """The crisis-producing place: from Saturn to Mars by day."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -6198,6 +6248,22 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "DAY_AND_NIGHT",
         1: "REVERSED_BY_NIGHT",
         2: "REVERSED_WHILE_MOON_UP",
+    },
+    "Lot": {
+        0: "FORTUNE",
+        1: "DAIMON",
+        2: "BASIS",
+        3: "LOVE",
+        4: "NECESSITY",
+        5: "EXALTATION",
+        6: "DEBT",
+        7: "THEFT",
+        8: "DECEIT",
+        9: "FOREIGN_LANDS",
+        10: "FATHER",
+        11: "MARRIAGE",
+        12: "BROTHERS",
+        13: "CRISIS",
     },
     "HitKind": {
         0: "SIGN_INGRESS",
