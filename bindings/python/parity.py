@@ -1049,7 +1049,10 @@ def main() -> None:
                     f" {dignities_held(co.collector_in_querent)} {dignities_held(co.collector_in_quesited)}"
                     f" {dignities_held(co.querent_in_collector)} {dignities_held(co.quesited_in_collector)}",
                 )
-            put(f"chart-{i}-perfection-rules", ",".join(number(orb) for orb in pf.rules.orbs_deg))
+            put(
+                f"chart-{i}-perfection-rules",
+                f"{','.join(number(orb) for orb in pf.rules.orbs_deg)} {int(pf.rules.within_sign)}",
+            )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)
