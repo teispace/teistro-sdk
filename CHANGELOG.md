@@ -1904,6 +1904,24 @@ the astronomical numbers do not move. Nothing else computes yet.
     held over `TsWay`. Node, wasm, Python and Dart read it as
     `chart.perfection`, whose `rules` a request takes back as they stand,
     and the five runners agree on it value for value.
+  - **Progressions and directions: the measures**
+    (`western-progressions.md`, C236–C238). A new crate,
+    `teistro-western`, carries the arithmetic. A `Progression` is a
+    `Rate` and a `YearMeasure`:
+    - the rates are a day for a year, a day for a synodic month, a
+      synodic month for a year, or any spans;
+    - the years are the tropical, the Julian, or Leo's own rule by
+      sidereal time at noon. That rule is in closed form: each ephemeris
+      noon measures to one date, and a day of sky to a year and a day.
+
+    Each measure answers `sky_at` and its inverse `life_at`. An
+    `ArcMeasure` (Ptolemy's, Naibod's or any rate) turns degrees into
+    years and back. All of it is held to Leo's *The Progressed Horoscope*
+    (1906), read on the page images:
+    - his Appendix V contact, which falls on 22 October 1906 by his rule
+      and on the 21st by either year;
+    - his November 10th for noon;
+    - his Naibod example, and his table to the day and the hour.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

@@ -1,0 +1,18 @@
+[package]
+name = "teistro-western"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's modern Western doctrine: progressions and directions, the measures that match the sky's time to a life's"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[dependencies]
+teistro-core = { path = "../core" }
+
+[lints]
+workspace = true
