@@ -7450,6 +7450,108 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsApplicationKind",
+      "doc": "Which of Lilly's three kinds an application is (p. 107,\n`03-design/hellenistic-perfection.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "BothDirect",
+          "value": 0,
+          "doc": "A swifter planet to a slower, both direct.",
+          "key": "BOTH_DIRECT"
+        },
+        {
+          "name": "BothRetrograde",
+          "value": 1,
+          "doc": "Both retrograde, \"an ill Application\".",
+          "key": "BOTH_RETROGRADE"
+        },
+        {
+          "name": "AgainstRetrograde",
+          "value": 2,
+          "doc": "One direct and one retrograde, meeting.",
+          "key": "AGAINST_RETROGRADE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsImpedimentKind",
+      "doc": "What stops or hinders two significators' application (pp. 110–113,\n`03-design/hellenistic-perfection.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Prohibition",
+          "value": 0,
+          "doc": "A third planet comes to a significator first.",
+          "key": "PROHIBITION"
+        },
+        {
+          "name": "Frustration",
+          "value": 1,
+          "doc": "A significator comes to a third planet first.",
+          "key": "FRUSTRATION"
+        },
+        {
+          "name": "Refranation",
+          "value": 2,
+          "doc": "A significator stations before the perfection its motion promises.",
+          "key": "REFRANATION"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsWay",
+      "doc": "One of Lilly's seven ways a matter is perfected (pp. 125–127,\n`03-design/hellenistic-perfection.md`); the ways a figure holds cross\nas a bit set, bit `n` the member with code `n`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Conjunction",
+          "value": 0,
+          "doc": "The significators' conjunction, unhindered.",
+          "key": "CONJUNCTION"
+        },
+        {
+          "name": "SextileOrTrine",
+          "value": 1,
+          "doc": "Their sextile or trine, unhindered.",
+          "key": "SEXTILE_OR_TRINE"
+        },
+        {
+          "name": "Square",
+          "value": 2,
+          "doc": "Their square, each in some dignity at its degree.",
+          "key": "SQUARE"
+        },
+        {
+          "name": "Opposition",
+          "value": 3,
+          "doc": "Their opposition, with mutual reception by house and the Moon's\nrelay.",
+          "key": "OPPOSITION"
+        },
+        {
+          "name": "Translation",
+          "value": 4,
+          "doc": "A translation of light, received by house, triplicity or term.",
+          "key": "TRANSLATION"
+        },
+        {
+          "name": "Collection",
+          "value": 5,
+          "doc": "A collection of light, the collector in a dignity of each.",
+          "key": "COLLECTION"
+        },
+        {
+          "name": "Dwelling",
+          "value": 6,
+          "doc": "The quesited's significator in the Ascendant, the Moon translating.",
+          "key": "DWELLING"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -11742,6 +11844,21 @@
           "doc": "Every chart's considerations before judgement (Lilly, *Christian\nAstrology* I.XIX), as a JSON object, every member optional:\n`moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven\nwhole orbs in the Chaldean order whose halves make an application\n(Lilly's p. 107 by default, C230). The fortitudes they read are\n`fortitudes_json`'s, or Lilly's when it is null. The clauses come\nback in `considerations`, the Moon's two perfections in\n`consideration_perfections` and the orbs applied in\n`consideration_orbs`. Null for none, which costs nothing\n(`03-design/hellenistic-considerations.md`). Refusals are named from\nthe record every binding calls `considerations`, as\n`considerations.moonLateFromDeg`.",
           "meta": {
             "example": "{\"moonLateFromDeg\":25}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "perfection_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Whether a horary matter is brought to pass (Lilly, *Christian\nAstrology* pp. 107–113 and 125–127), as a JSON object:\n`querent` and `quesited`, the two significators by key, or\n`house`, the house of the matter, whose cusp's lord signifies the\nquesited, the querent's being the Ascendant's lord unless named;\nand `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and\n`horizonDays` (unset, until the swifter significator leaves its\nsign, C232). The houses and dignities it weighs are\n`fortitudes_json`'s, or Lilly's when it is null; the timeline is\nsearched on the ephemeris. The relations come back in\n`perfection`, `perfection_impediments`, `perfection_translations`\nand `perfection_collections`, and the orbs applied in\n`perfection_orbs`. Null for none, which costs nothing\n(`03-design/hellenistic-perfection.md`). Refusals are named from\nthe record every binding calls `perfection`, as\n`perfection.quesited`.",
+          "meta": {
+            "example": "{\"house\":7}",
             "nullable": true
           }
         }
@@ -18473,6 +18590,314 @@
           "id": 71,
           "name": "consideration_orbs",
           "doc": "The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The planet's whole orb, degrees; half of it counts toward an application."
+            }
+          ]
+        },
+        {
+          "id": 72,
+          "name": "perfection",
+          "doc": "Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. Empty when `perfection_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "querent",
+              "scalar": "u16",
+              "doc": "The querent's significator: the Ascendant's lord unless named.",
+              "enum": "Graha"
+            },
+            {
+              "name": "quesited",
+              "scalar": "u16",
+              "doc": "The quesited's significator: as named, or the lord of the asked house's cusp.",
+              "enum": "Graha"
+            },
+            {
+              "name": "horizon_days",
+              "scalar": "f64",
+              "doc": "How far ahead the timeline was searched, days: the rules' horizon, or until the swifter significator leaves its sign (C232), at most ten years."
+            },
+            {
+              "name": "horizon_rule_days",
+              "scalar": "f64",
+              "doc": "`perfection_json.rules.horizonDays` as asked; NaN when unset."
+            },
+            {
+              "name": "application_present",
+              "scalar": "u8",
+              "doc": "1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN."
+            },
+            {
+              "name": "application_aspect",
+              "scalar": "u8",
+              "doc": "The aspect they apply by.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "application_days",
+              "scalar": "f64",
+              "doc": "Days until it is exact."
+            },
+            {
+              "name": "applying",
+              "scalar": "u16",
+              "doc": "The significator whose motion closes it.",
+              "enum": "Graha"
+            },
+            {
+              "name": "application_kind",
+              "scalar": "u8",
+              "doc": "Which of the three kinds (p. 107).",
+              "enum": "TsApplicationKind"
+            },
+            {
+              "name": "gap_deg",
+              "scalar": "f64",
+              "doc": "How far it is from exact now, degrees."
+            },
+            {
+              "name": "within_moieties",
+              "scalar": "u8",
+              "doc": "1 when the gap is already within the two planets' moieties of orb; 0 otherwise."
+            },
+            {
+              "name": "separation_present",
+              "scalar": "u8",
+              "doc": "1 when the significators are separating within their moieties at the figure (p. 110); 0 otherwise, and then the separation's columns are 0 and NaN."
+            },
+            {
+              "name": "separation_aspect",
+              "scalar": "u8",
+              "doc": "The aspect they separate from.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "separation_past_deg",
+              "scalar": "f64",
+              "doc": "How far past exact it is, degrees."
+            },
+            {
+              "name": "querent_house",
+              "scalar": "u8",
+              "doc": "The house the querent's significator is in, 1 to 12, under the fortitudes' houses."
+            },
+            {
+              "name": "querent_dignity",
+              "scalar": "u8",
+              "doc": "The querent's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            },
+            {
+              "name": "quesited_house",
+              "scalar": "u8",
+              "doc": "The house the quesited's significator is in, 1 to 12."
+            },
+            {
+              "name": "quesited_dignity",
+              "scalar": "u8",
+              "doc": "The quesited's significator's essential dignities at its degree, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            },
+            {
+              "name": "mutual_by_house",
+              "scalar": "u8",
+              "doc": "1 when each significator stands in the other's house; 0 otherwise."
+            },
+            {
+              "name": "infortunes_between",
+              "scalar": "u8",
+              "doc": "Saturn and Mars when among the thirds that come between the significators before they perfect, as a bit set: bit `n` is the graha with catalogue id `n`."
+            },
+            {
+              "name": "moon_relays",
+              "scalar": "u8",
+              "doc": "1 when the Moon, neither significator, separates from the quesited's and comes next to the querent's (p. 126, the opposition); 0 otherwise."
+            },
+            {
+              "name": "quesited_in_ascendant",
+              "scalar": "u8",
+              "doc": "1 when the quesited's significator is in the first house; 0 otherwise."
+            },
+            {
+              "name": "ways_held",
+              "scalar": "u8",
+              "doc": "The ways of perfection the figure holds (pp. 125–127), as a bit set over `TsWay`: bit `n` is the member with code `n`. 0 when it holds none."
+            },
+            {
+              "name": "impediment_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `perfection_impediments` section belong to this chart."
+            },
+            {
+              "name": "translation_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `perfection_translations` section belong to this chart."
+            },
+            {
+              "name": "collection_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `perfection_collections` section belong to this chart."
+            }
+          ]
+        },
+        {
+          "id": 73,
+          "name": "perfection_impediments",
+          "doc": "What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. Empty when `perfection_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "kind",
+              "scalar": "u8",
+              "doc": "What it is.",
+              "enum": "TsImpedimentKind"
+            },
+            {
+              "name": "significator",
+              "scalar": "u16",
+              "doc": "The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations.",
+              "enum": "Graha"
+            },
+            {
+              "name": "third_present",
+              "scalar": "u8",
+              "doc": "1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0."
+            },
+            {
+              "name": "third",
+              "scalar": "u16",
+              "doc": "The third planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "aspect",
+              "scalar": "u8",
+              "doc": "The aspect the third is met by.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "days",
+              "scalar": "f64",
+              "doc": "Days until it happens: the contact, or the station."
+            }
+          ]
+        },
+        {
+          "id": 74,
+          "name": "perfection_translations",
+          "doc": "Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. Empty when `perfection_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "translator",
+              "scalar": "u16",
+              "doc": "The lighter planet carrying the light.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from",
+              "scalar": "u16",
+              "doc": "The significator it separates from.",
+              "enum": "Graha"
+            },
+            {
+              "name": "to",
+              "scalar": "u16",
+              "doc": "The significator it applies to next.",
+              "enum": "Graha"
+            },
+            {
+              "name": "separating_aspect",
+              "scalar": "u8",
+              "doc": "The aspect it separates from.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "separating_past_deg",
+              "scalar": "f64",
+              "doc": "How far past exact that separation is, degrees."
+            },
+            {
+              "name": "aspect",
+              "scalar": "u8",
+              "doc": "The aspect it applies by.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "days",
+              "scalar": "f64",
+              "doc": "Days until that application is exact."
+            },
+            {
+              "name": "received",
+              "scalar": "u8",
+              "doc": "The dignities of `from` the translator stands in: how it is received, by house, triplicity or term (p. 126), as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            }
+          ]
+        },
+        {
+          "id": 75,
+          "name": "perfection_collections",
+          "doc": "Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. Empty when `perfection_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "collector",
+              "scalar": "u16",
+              "doc": "The heavier planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from_querent_aspect",
+              "scalar": "u8",
+              "doc": "The aspect the querent's significator applies by.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "from_querent_days",
+              "scalar": "f64",
+              "doc": "Days until it is exact."
+            },
+            {
+              "name": "from_quesited_aspect",
+              "scalar": "u8",
+              "doc": "The aspect the quesited's significator applies by.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "from_quesited_days",
+              "scalar": "f64",
+              "doc": "Days until it is exact."
+            },
+            {
+              "name": "collector_in_querent",
+              "scalar": "u8",
+              "doc": "The querent's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            },
+            {
+              "name": "collector_in_quesited",
+              "scalar": "u8",
+              "doc": "The quesited's significator's dignities the collector stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            },
+            {
+              "name": "querent_in_collector",
+              "scalar": "u8",
+              "doc": "The collector's dignities the querent's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            },
+            {
+              "name": "quesited_in_collector",
+              "scalar": "u8",
+              "doc": "The collector's dignities the quesited's significator stands in, as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall."
+            }
+          ]
+        },
+        {
+          "id": 76,
+          "name": "perfection_orbs",
+          "doc": "The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.",
           "kind": "columns",
           "fields": [
             {

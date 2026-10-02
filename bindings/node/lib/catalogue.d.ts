@@ -6927,6 +6927,115 @@ export declare const PtolemaicAspect: {
 export declare const PtolemaicAspectById: ReadonlyMap<number, PtolemaicAspect>;
 
 /**
+ * Which of Lilly's three kinds an application is (p. 107,
+ * `03-design/hellenistic-perfection.md`).
+ */
+export type ApplicationKind = 'BOTH_DIRECT' | 'BOTH_RETROGRADE' | 'AGAINST_RETROGRADE';
+
+/** Every ApplicationKind by name; the values are the strings the union accepts. */
+export declare const ApplicationKind: {
+  /**
+   * A swifter planet to a slower, both direct.
+   */
+  readonly BothDirect: 'BOTH_DIRECT';
+  /**
+   * Both retrograde, "an ill Application".
+   */
+  readonly BothRetrograde: 'BOTH_RETROGRADE';
+  /**
+   * One direct and one retrograde, meeting.
+   */
+  readonly AgainstRetrograde: 'AGAINST_RETROGRADE';
+};
+
+/**
+ * Every ApplicationKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ApplicationKindById: ReadonlyMap<number, ApplicationKind>;
+
+/**
+ * What stops or hinders two significators' application (pp. 110–113,
+ * `03-design/hellenistic-perfection.md`).
+ */
+export type ImpedimentKind = 'PROHIBITION' | 'FRUSTRATION' | 'REFRANATION';
+
+/** Every ImpedimentKind by name; the values are the strings the union accepts. */
+export declare const ImpedimentKind: {
+  /**
+   * A third planet comes to a significator first.
+   */
+  readonly Prohibition: 'PROHIBITION';
+  /**
+   * A significator comes to a third planet first.
+   */
+  readonly Frustration: 'FRUSTRATION';
+  /**
+   * A significator stations before the perfection its motion promises.
+   */
+  readonly Refranation: 'REFRANATION';
+};
+
+/**
+ * Every ImpedimentKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ImpedimentKindById: ReadonlyMap<number, ImpedimentKind>;
+
+/**
+ * One of Lilly's seven ways a matter is perfected (pp. 125–127,
+ * `03-design/hellenistic-perfection.md`); the ways a figure holds cross
+ * as a bit set, bit `n` the member with code `n`.
+ */
+export type Way =
+  | 'CONJUNCTION'
+  | 'SEXTILE_OR_TRINE'
+  | 'SQUARE'
+  | 'OPPOSITION'
+  | 'TRANSLATION'
+  | 'COLLECTION'
+  | 'DWELLING';
+
+/** Every Way by name; the values are the strings the union accepts. */
+export declare const Way: {
+  /**
+   * The significators' conjunction, unhindered.
+   */
+  readonly Conjunction: 'CONJUNCTION';
+  /**
+   * Their sextile or trine, unhindered.
+   */
+  readonly SextileOrTrine: 'SEXTILE_OR_TRINE';
+  /**
+   * Their square, each in some dignity at its degree.
+   */
+  readonly Square: 'SQUARE';
+  /**
+   * Their opposition, with mutual reception by house and the Moon's
+   * relay.
+   */
+  readonly Opposition: 'OPPOSITION';
+  /**
+   * A translation of light, received by house, triplicity or term.
+   */
+  readonly Translation: 'TRANSLATION';
+  /**
+   * A collection of light, the collector in a dignity of each.
+   */
+  readonly Collection: 'COLLECTION';
+  /**
+   * The quesited's significator in the Ascendant, the Moon translating.
+   */
+  readonly Dwelling: 'DWELLING';
+};
+
+/**
+ * Every Way by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const WayById: ReadonlyMap<number, Way>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

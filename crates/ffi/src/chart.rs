@@ -770,6 +770,104 @@ impl TsPtolemaicAspect {
     }
 }
 
+/// Which of Lilly's three kinds an application is (p. 107,
+/// `03-design/hellenistic-perfection.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsApplicationKind {
+    /// A swifter planet to a slower, both direct.
+    BothDirect = 0,
+    /// Both retrograde, "an ill Application".
+    BothRetrograde = 1,
+    /// One direct and one retrograde, meeting.
+    AgainstRetrograde = 2,
+}
+
+impl TsApplicationKind {
+    /// The code a kind crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(kind: teistro::ApplicationKind) -> Option<TsApplicationKind> {
+        use teistro::ApplicationKind;
+        Some(match kind {
+            ApplicationKind::BothDirect => TsApplicationKind::BothDirect,
+            ApplicationKind::BothRetrograde => TsApplicationKind::BothRetrograde,
+            ApplicationKind::AgainstRetrograde => TsApplicationKind::AgainstRetrograde,
+            _ => return None,
+        })
+    }
+}
+
+/// What stops or hinders two significators' application (pp. 110–113,
+/// `03-design/hellenistic-perfection.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsImpedimentKind {
+    /// A third planet comes to a significator first.
+    Prohibition = 0,
+    /// A significator comes to a third planet first.
+    Frustration = 1,
+    /// A significator stations before the perfection its motion promises.
+    Refranation = 2,
+}
+
+impl TsImpedimentKind {
+    /// The code a kind crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(kind: teistro::ImpedimentKind) -> Option<TsImpedimentKind> {
+        use teistro::ImpedimentKind;
+        Some(match kind {
+            ImpedimentKind::Prohibition => TsImpedimentKind::Prohibition,
+            ImpedimentKind::Frustration => TsImpedimentKind::Frustration,
+            ImpedimentKind::Refranation => TsImpedimentKind::Refranation,
+            _ => return None,
+        })
+    }
+}
+
+/// One of Lilly's seven ways a matter is perfected (pp. 125–127,
+/// `03-design/hellenistic-perfection.md`); the ways a figure holds cross
+/// as a bit set, bit `n` the member with code `n`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsWay {
+    /// The significators' conjunction, unhindered.
+    Conjunction = 0,
+    /// Their sextile or trine, unhindered.
+    SextileOrTrine = 1,
+    /// Their square, each in some dignity at its degree.
+    Square = 2,
+    /// Their opposition, with mutual reception by house and the Moon's
+    /// relay.
+    Opposition = 3,
+    /// A translation of light, received by house, triplicity or term.
+    Translation = 4,
+    /// A collection of light, the collector in a dignity of each.
+    Collection = 5,
+    /// The quesited's significator in the Ascendant, the Moon translating.
+    Dwelling = 6,
+}
+
+impl TsWay {
+    /// The code a way crosses as; `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(way: teistro::Way) -> Option<TsWay> {
+        use teistro::Way;
+        Some(match way {
+            Way::Conjunction => TsWay::Conjunction,
+            Way::SextileOrTrine => TsWay::SextileOrTrine,
+            Way::Square => TsWay::Square,
+            Way::Opposition => TsWay::Opposition,
+            Way::Translation => TsWay::Translation,
+            Way::Collection => TsWay::Collection,
+            Way::Dwelling => TsWay::Dwelling,
+            _ => return None,
+        })
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1483,6 +1581,24 @@ pub struct TsChartRequest {
     /// `considerations.moonLateFromDeg`.
     /// `api: nullable example={"moonLateFromDeg":25}`
     pub considerations_json: *const c_char,
+    /// Whether a horary matter is brought to pass (Lilly, *Christian
+    /// Astrology* pp. 107–113 and 125–127), as a JSON object:
+    /// `querent` and `quesited`, the two significators by key, or
+    /// `house`, the house of the matter, whose cusp's lord signifies the
+    /// quesited, the querent's being the Ascendant's lord unless named;
+    /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+    /// `horizonDays` (unset, until the swifter significator leaves its
+    /// sign, C232). The houses and dignities it weighs are
+    /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+    /// searched on the ephemeris. The relations come back in
+    /// `perfection`, `perfection_impediments`, `perfection_translations`
+    /// and `perfection_collections`, and the orbs applied in
+    /// `perfection_orbs`. Null for none, which costs nothing
+    /// (`03-design/hellenistic-perfection.md`). Refusals are named from
+    /// the record every binding calls `perfection`, as
+    /// `perfection.quesited`.
+    /// `api: nullable example={"house":7}`
+    pub perfection_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2944,6 +3060,7 @@ struct HellenisticColumns {
     fortitudes: FortitudeColumns,
     lots: LotColumns,
     considerations: ConsiderationColumns,
+    perfections: PerfectionColumns,
 }
 
 impl HellenisticColumns {
@@ -2954,6 +3071,7 @@ impl HellenisticColumns {
             fortitudes,
             lots,
             considerations,
+            perfections,
             ..
         } = *composed;
         let essential = if fortitudes.is_empty() {
@@ -2966,6 +3084,7 @@ impl HellenisticColumns {
             fortitudes: FortitudeColumns::of(fortitudes, charts)?,
             lots: LotColumns::of(lots, charts)?,
             considerations: ConsiderationColumns::of(considerations, charts)?,
+            perfections: PerfectionColumns::of(perfections, charts)?,
         })
     }
 
@@ -2973,7 +3092,330 @@ impl HellenisticColumns {
         self.dignities.write(writer)?;
         self.fortitudes.write(writer)?;
         self.lots.write(writer)?;
-        self.considerations.write(writer)
+        self.considerations.write(writer)?;
+        self.perfections.write(writer)
+    }
+}
+
+/// A planet's dignities as one byte, bit `n` the `n`th of
+/// [`teistro::EssentialDignity`]'s flags in its order: house, exaltation,
+/// triplicity, term, face, detriment, fall.
+fn dignity_bits(d: teistro::EssentialDignity) -> u8 {
+    dignity_flags(d)
+        .into_iter()
+        .enumerate()
+        .fold(0, |bits, (n, flag)| bits | (u8::from(flag) << n))
+}
+
+/// A Ptolemaic aspect's code.
+fn aspect_code(aspect: teistro::PtolemaicAspect) -> Result<u8, Error> {
+    TsPtolemaicAspect::of(aspect)
+        .map(|code| code as u8)
+        .ok_or_else(|| no_code("the aspect"))
+}
+
+/// Every chart's perfection between its two significators: a row a chart
+/// in `perfection`, its impediments, translations and collections ragged
+/// by that row's counts, and the seven orbs a chart in `perfection_orbs`.
+#[derive(Default)]
+struct PerfectionColumns {
+    querent: Vec<u16>,
+    quesited: Vec<u16>,
+    horizon_days: Vec<f64>,
+    horizon_rule_days: Vec<f64>,
+    application_present: Vec<u8>,
+    application_aspect: Vec<u8>,
+    application_days: Vec<f64>,
+    applying: Vec<u16>,
+    application_kind: Vec<u8>,
+    gap_deg: Vec<f64>,
+    within_moieties: Vec<u8>,
+    separation_present: Vec<u8>,
+    separation_aspect: Vec<u8>,
+    separation_past_deg: Vec<f64>,
+    querent_house: Vec<u8>,
+    querent_dignity: Vec<u8>,
+    quesited_house: Vec<u8>,
+    quesited_dignity: Vec<u8>,
+    mutual_by_house: Vec<u8>,
+    infortunes_between: Vec<u8>,
+    moon_relays: Vec<u8>,
+    quesited_in_ascendant: Vec<u8>,
+    ways_held: Vec<u8>,
+    impediment_count: Vec<u32>,
+    translation_count: Vec<u32>,
+    collection_count: Vec<u32>,
+    /// The `perfection_impediments` section.
+    impediment_kind: Vec<u8>,
+    impediment_significator: Vec<u16>,
+    impediment_third_present: Vec<u8>,
+    impediment_third: Vec<u16>,
+    impediment_aspect: Vec<u8>,
+    impediment_days: Vec<f64>,
+    /// The `perfection_translations` section.
+    translator: Vec<u16>,
+    translated_from: Vec<u16>,
+    translated_to: Vec<u16>,
+    separating_aspect: Vec<u8>,
+    separating_past_deg: Vec<f64>,
+    translation_aspect: Vec<u8>,
+    translation_days: Vec<f64>,
+    received: Vec<u8>,
+    /// The `perfection_collections` section.
+    collector: Vec<u16>,
+    from_querent_aspect: Vec<u8>,
+    from_querent_days: Vec<f64>,
+    from_quesited_aspect: Vec<u8>,
+    from_quesited_days: Vec<f64>,
+    collector_in_querent: Vec<u8>,
+    collector_in_quesited: Vec<u8>,
+    querent_in_collector: Vec<u8>,
+    quesited_in_collector: Vec<u8>,
+    /// The `perfection_orbs` section.
+    orb: Vec<f64>,
+}
+
+impl PerfectionColumns {
+    fn of(
+        read: &[(teistro::Matter, teistro::PerfectionRules)],
+        charts: usize,
+    ) -> Result<PerfectionColumns, Error> {
+        one_a_chart(read.len(), charts, "perfection")?;
+        let mut columns = PerfectionColumns::default();
+        let count =
+            |n: usize| u32::try_from(n).map_err(|_| Error::internal("too many rows for one chart"));
+        for (matter, rules) in read {
+            columns.querent.push(matter.querent.id());
+            columns.quesited.push(matter.quesited.id());
+            columns.horizon_days.push(matter.horizon_days);
+            columns
+                .horizon_rule_days
+                .push(rules.horizon_days.unwrap_or(f64::NAN));
+            columns.push_application(matter.application)?;
+            columns.push_separation(matter.separation)?;
+            columns.push_ways(&matter.ways)?;
+            columns
+                .impediment_count
+                .push(count(matter.impediments.len())?);
+            columns
+                .translation_count
+                .push(count(matter.translations.len())?);
+            columns
+                .collection_count
+                .push(count(matter.collections.len())?);
+            for impediment in &matter.impediments {
+                columns.push_impediment(impediment)?;
+            }
+            for translation in &matter.translations {
+                columns.push_translation(translation)?;
+            }
+            for collection in &matter.collections {
+                columns.push_collection(collection)?;
+            }
+            columns.orb.extend(rules.orbs_deg);
+        }
+        Ok(columns)
+    }
+
+    /// The significators' application, or a row saying there is none.
+    fn push_application(&mut self, application: Option<teistro::Application>) -> Result<(), Error> {
+        if let Some(found) = application {
+            self.application_present.push(1);
+            self.application_aspect.push(aspect_code(found.aspect)?);
+            self.application_days.push(found.days);
+            self.applying.push(found.applying.id());
+            self.application_kind.push(
+                TsApplicationKind::of(found.kind).ok_or_else(|| no_code("the application"))? as u8,
+            );
+            self.gap_deg.push(found.gap_deg);
+            self.within_moieties.push(u8::from(found.within_moieties));
+        } else {
+            self.application_present.push(0);
+            self.application_aspect.push(0);
+            self.application_days.push(f64::NAN);
+            self.applying.push(0);
+            self.application_kind.push(0);
+            self.gap_deg.push(f64::NAN);
+            self.within_moieties.push(0);
+        }
+        Ok(())
+    }
+
+    /// The significators' separation, or a row saying there is none.
+    fn push_separation(&mut self, separation: Option<teistro::Separation>) -> Result<(), Error> {
+        if let Some(found) = separation {
+            self.separation_present.push(1);
+            self.separation_aspect.push(aspect_code(found.aspect)?);
+            self.separation_past_deg.push(found.past_deg);
+        } else {
+            self.separation_present.push(0);
+            self.separation_aspect.push(0);
+            self.separation_past_deg.push(f64::NAN);
+        }
+        Ok(())
+    }
+
+    /// Where the significators stand and the ways the figure holds.
+    fn push_ways(&mut self, ways: &teistro::Ways) -> Result<(), Error> {
+        self.querent_house.push(ways.querent.house.get());
+        self.querent_dignity
+            .push(dignity_bits(ways.querent.dignity));
+        self.quesited_house.push(ways.quesited.house.get());
+        self.quesited_dignity
+            .push(dignity_bits(ways.quesited.dignity));
+        self.mutual_by_house.push(u8::from(ways.mutual_by_house));
+        self.infortunes_between.push(
+            bit_set(ways.infortunes_between.iter().map(|graha| graha.id()))
+                .ok_or_else(|| no_code("the infortune"))?,
+        );
+        self.moon_relays.push(u8::from(ways.moon_relays));
+        self.quesited_in_ascendant
+            .push(u8::from(ways.quesited_in_ascendant));
+        self.ways_held.push(
+            ways.held
+                .iter()
+                .map(|way| TsWay::of(*way).map(|code| u16::from(code as u8)))
+                .collect::<Option<Vec<u16>>>()
+                .and_then(bit_set)
+                .ok_or_else(|| no_code("the way"))?,
+        );
+        Ok(())
+    }
+
+    /// One translation's row.
+    fn push_translation(&mut self, translation: &teistro::Translation) -> Result<(), Error> {
+        self.translator.push(translation.translator.id());
+        self.translated_from.push(translation.from.id());
+        self.translated_to.push(translation.to.id());
+        self.separating_aspect
+            .push(aspect_code(translation.separating.aspect)?);
+        self.separating_past_deg
+            .push(translation.separating.past_deg);
+        self.translation_aspect
+            .push(aspect_code(translation.aspect)?);
+        self.translation_days.push(translation.days);
+        self.received.push(dignity_bits(translation.received));
+        Ok(())
+    }
+
+    /// One collection's row.
+    fn push_collection(&mut self, collection: &teistro::Collection) -> Result<(), Error> {
+        self.collector.push(collection.collector.id());
+        self.from_querent_aspect
+            .push(aspect_code(collection.from_querent.aspect)?);
+        self.from_querent_days.push(collection.from_querent.days);
+        self.from_quesited_aspect
+            .push(aspect_code(collection.from_quesited.aspect)?);
+        self.from_quesited_days.push(collection.from_quesited.days);
+        self.collector_in_querent
+            .push(dignity_bits(collection.collector_in_querent));
+        self.collector_in_quesited
+            .push(dignity_bits(collection.collector_in_quesited));
+        self.querent_in_collector
+            .push(dignity_bits(collection.querent_in_collector));
+        self.quesited_in_collector
+            .push(dignity_bits(collection.quesited_in_collector));
+        Ok(())
+    }
+
+    /// One impediment's row.
+    fn push_impediment(&mut self, impediment: &teistro::Impediment) -> Result<(), Error> {
+        self.impediment_kind.push(
+            TsImpedimentKind::of(impediment.kind).ok_or_else(|| no_code("the impediment"))? as u8,
+        );
+        self.impediment_significator
+            .push(impediment.significator.id());
+        self.impediment_third_present
+            .push(u8::from(impediment.third.is_some()));
+        self.impediment_third.push(
+            impediment
+                .third
+                .map_or(0, teistro_core::catalogue::Graha::id),
+        );
+        self.impediment_aspect.push(aspect_code(impediment.aspect)?);
+        self.impediment_days.push(impediment.days);
+        Ok(())
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "perfection",
+            self.querent.len(),
+            &[
+                ColumnData::U16(&self.querent),
+                ColumnData::U16(&self.quesited),
+                ColumnData::F64(&self.horizon_days),
+                ColumnData::F64(&self.horizon_rule_days),
+                ColumnData::U8(&self.application_present),
+                ColumnData::U8(&self.application_aspect),
+                ColumnData::F64(&self.application_days),
+                ColumnData::U16(&self.applying),
+                ColumnData::U8(&self.application_kind),
+                ColumnData::F64(&self.gap_deg),
+                ColumnData::U8(&self.within_moieties),
+                ColumnData::U8(&self.separation_present),
+                ColumnData::U8(&self.separation_aspect),
+                ColumnData::F64(&self.separation_past_deg),
+                ColumnData::U8(&self.querent_house),
+                ColumnData::U8(&self.querent_dignity),
+                ColumnData::U8(&self.quesited_house),
+                ColumnData::U8(&self.quesited_dignity),
+                ColumnData::U8(&self.mutual_by_house),
+                ColumnData::U8(&self.infortunes_between),
+                ColumnData::U8(&self.moon_relays),
+                ColumnData::U8(&self.quesited_in_ascendant),
+                ColumnData::U8(&self.ways_held),
+                ColumnData::U32(&self.impediment_count),
+                ColumnData::U32(&self.translation_count),
+                ColumnData::U32(&self.collection_count),
+            ],
+        )?;
+        writer.columns(
+            "perfection_impediments",
+            self.impediment_kind.len(),
+            &[
+                ColumnData::U8(&self.impediment_kind),
+                ColumnData::U16(&self.impediment_significator),
+                ColumnData::U8(&self.impediment_third_present),
+                ColumnData::U16(&self.impediment_third),
+                ColumnData::U8(&self.impediment_aspect),
+                ColumnData::F64(&self.impediment_days),
+            ],
+        )?;
+        writer.columns(
+            "perfection_translations",
+            self.translator.len(),
+            &[
+                ColumnData::U16(&self.translator),
+                ColumnData::U16(&self.translated_from),
+                ColumnData::U16(&self.translated_to),
+                ColumnData::U8(&self.separating_aspect),
+                ColumnData::F64(&self.separating_past_deg),
+                ColumnData::U8(&self.translation_aspect),
+                ColumnData::F64(&self.translation_days),
+                ColumnData::U8(&self.received),
+            ],
+        )?;
+        writer.columns(
+            "perfection_collections",
+            self.collector.len(),
+            &[
+                ColumnData::U16(&self.collector),
+                ColumnData::U8(&self.from_querent_aspect),
+                ColumnData::F64(&self.from_querent_days),
+                ColumnData::U8(&self.from_quesited_aspect),
+                ColumnData::F64(&self.from_quesited_days),
+                ColumnData::U8(&self.collector_in_querent),
+                ColumnData::U8(&self.collector_in_quesited),
+                ColumnData::U8(&self.querent_in_collector),
+                ColumnData::U8(&self.quesited_in_collector),
+            ],
+        )?;
+        writer.columns(
+            "perfection_orbs",
+            self.orb.len(),
+            &[ColumnData::F64(&self.orb)],
+        )
     }
 }
 
@@ -4978,6 +5420,10 @@ pub struct Composed<'a> {
     /// Every chart's considerations before judgement, in the batch's order
     /// (`hellenistic-considerations.md`); empty when none was asked for.
     pub considerations: &'a [teistro::Considerations],
+    /// Every chart's perfection between its two significators, with the
+    /// rules it was read under, in the batch's order
+    /// (`hellenistic-perfection.md`); empty when none was asked for.
+    pub perfections: &'a [(teistro::Matter, teistro::PerfectionRules)],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5903,6 +6349,52 @@ unsafe fn consideration_rules_of(
         .transpose()
 }
 
+/// The perfection a request's `perfection_json` asks for, none for null;
+/// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
+/// naming a refusal from its root, `perfection.quesited`.
+///
+/// # Safety
+///
+/// `perfection_json` null or a NUL-terminated string.
+unsafe fn perfection_request_of(
+    perfection_json: *const c_char,
+) -> Result<Option<teistro::PerfectionRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(perfection_json, "perfection_json") }?
+        .map(teistro::PerfectionRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's perfection, none when none was asked for: weighed on the
+/// fortitudes the request asked for, and Lilly's when it asked for none.
+fn perfections_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<teistro::PerfectionRequest>,
+    fortitudes: &[teistro::Fortitudes],
+) -> Result<Vec<(teistro::Matter, teistro::PerfectionRules)>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    let read = |document: &Document, fortitudes: &teistro::Fortitudes| {
+        sdk.chart()
+            .perfection_in(document, fortitudes, &asked)
+            .map(|matter| (matter, asked.rules))
+    };
+    if fortitudes.is_empty() {
+        let lilly = teistro::FortitudeRequest::default();
+        return documents
+            .iter()
+            .map(|document| read(document, &sdk.chart().fortitudes(document, &lilly)?))
+            .collect();
+    }
+    documents
+        .iter()
+        .zip(fortitudes)
+        .map(|(document, fortitudes)| read(document, fortitudes))
+        .collect()
+}
+
 /// Every chart's considerations, none when none was asked for: read from
 /// the fortitudes the request asked for, and Lilly's when it asked for
 /// none, so no chart's fortitudes are read twice.
@@ -6237,6 +6729,7 @@ struct AskedRecords {
     fortitudes: Option<teistro::FortitudeRequest>,
     lots: Option<teistro::LotRequest>,
     considerations: Option<teistro::ConsiderationRules>,
+    perfection: Option<teistro::PerfectionRequest>,
 }
 
 impl AskedRecords {
@@ -6266,6 +6759,7 @@ impl AskedRecords {
                 fortitudes: fortitude_request_of(asked.fortitudes_json)?,
                 lots: lot_request_of(asked.lots_json)?,
                 considerations: consideration_rules_of(asked.considerations_json)?,
+                perfection: perfection_request_of(asked.perfection_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -6458,6 +6952,8 @@ pub unsafe extern "C" fn ts_chart_found(
             records.considerations,
             &fortitudes,
         )?;
+        let perfections =
+            perfections_of(ctx.sdk(), &founded.value, records.perfection, &fortitudes)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -6480,6 +6976,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 fortitudes: &fortitudes,
                 lots: &lots,
                 considerations: &considerations,
+                perfections: &perfections,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

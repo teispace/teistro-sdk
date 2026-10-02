@@ -4121,6 +4121,66 @@ class PtolemaicAspect(Member):
     """180°."""
 
 
+class ApplicationKind(Member):
+    """Which of Lilly's three kinds an application is (p. 107,
+    `03-design/hellenistic-perfection.md`).
+    """
+
+    BOTH_DIRECT = 0
+    """A swifter planet to a slower, both direct."""
+
+    BOTH_RETROGRADE = 1
+    """Both retrograde, "an ill Application"."""
+
+    AGAINST_RETROGRADE = 2
+    """One direct and one retrograde, meeting."""
+
+
+class ImpedimentKind(Member):
+    """What stops or hinders two significators' application (pp. 110–113,
+    `03-design/hellenistic-perfection.md`).
+    """
+
+    PROHIBITION = 0
+    """A third planet comes to a significator first."""
+
+    FRUSTRATION = 1
+    """A significator comes to a third planet first."""
+
+    REFRANATION = 2
+    """A significator stations before the perfection its motion promises."""
+
+
+class Way(Member):
+    """One of Lilly's seven ways a matter is perfected (pp. 125–127,
+    `03-design/hellenistic-perfection.md`); the ways a figure holds cross
+    as a bit set, bit `n` the member with code `n`.
+    """
+
+    CONJUNCTION = 0
+    """The significators' conjunction, unhindered."""
+
+    SEXTILE_OR_TRINE = 1
+    """Their sextile or trine, unhindered."""
+
+    SQUARE = 2
+    """Their square, each in some dignity at its degree."""
+
+    OPPOSITION = 3
+    """Their opposition, with mutual reception by house and the Moon's
+    relay.
+    """
+
+    TRANSLATION = 4
+    """A translation of light, received by house, triplicity or term."""
+
+    COLLECTION = 5
+    """A collection of light, the collector in a dignity of each."""
+
+    DWELLING = 6
+    """The quesited's significator in the Ascendant, the Moon translating."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -6349,6 +6409,25 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "SQUARE",
         3: "TRINE",
         4: "OPPOSITION",
+    },
+    "ApplicationKind": {
+        0: "BOTH_DIRECT",
+        1: "BOTH_RETROGRADE",
+        2: "AGAINST_RETROGRADE",
+    },
+    "ImpedimentKind": {
+        0: "PROHIBITION",
+        1: "FRUSTRATION",
+        2: "REFRANATION",
+    },
+    "Way": {
+        0: "CONJUNCTION",
+        1: "SEXTILE_OR_TRINE",
+        2: "SQUARE",
+        3: "OPPOSITION",
+        4: "TRANSLATION",
+        5: "COLLECTION",
+        6: "DWELLING",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

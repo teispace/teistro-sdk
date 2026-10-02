@@ -1818,6 +1818,40 @@ A Ptolemaic aspect the Moon perfects before judgement (`03-design/hellenistic-co
 | `TS_PTOLEMAIC_ASPECT_TRINE` | 3 | 120°. |
 | `TS_PTOLEMAIC_ASPECT_OPPOSITION` | 4 | 180°. |
 
+## ts_application_kind
+
+Which of Lilly's three kinds an application is (p. 107, `03-design/hellenistic-perfection.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_APPLICATION_KIND_BOTH_DIRECT` | 0 | A swifter planet to a slower, both direct. |
+| `TS_APPLICATION_KIND_BOTH_RETROGRADE` | 1 | Both retrograde, "an ill Application". |
+| `TS_APPLICATION_KIND_AGAINST_RETROGRADE` | 2 | One direct and one retrograde, meeting. |
+
+## ts_impediment_kind
+
+What stops or hinders two significators' application (pp. 110–113, `03-design/hellenistic-perfection.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_IMPEDIMENT_KIND_PROHIBITION` | 0 | A third planet comes to a significator first. |
+| `TS_IMPEDIMENT_KIND_FRUSTRATION` | 1 | A significator comes to a third planet first. |
+| `TS_IMPEDIMENT_KIND_REFRANATION` | 2 | A significator stations before the perfection its motion promises. |
+
+## ts_way
+
+One of Lilly's seven ways a matter is perfected (pp. 125–127, `03-design/hellenistic-perfection.md`); the ways a figure holds cross as a bit set, bit `n` the member with code `n`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_WAY_CONJUNCTION` | 0 | The significators' conjunction, unhindered. |
+| `TS_WAY_SEXTILE_OR_TRINE` | 1 | Their sextile or trine, unhindered. |
+| `TS_WAY_SQUARE` | 2 | Their square, each in some dignity at its degree. |
+| `TS_WAY_OPPOSITION` | 3 | Their opposition, with mutual reception by house and the Moon's relay. |
+| `TS_WAY_TRANSLATION` | 4 | A translation of light, received by house, triplicity or term. |
+| `TS_WAY_COLLECTION` | 5 | A collection of light, the collector in a dignity of each. |
+| `TS_WAY_DWELLING` | 6 | The quesited's significator in the Ascendant, the Moon translating. |
+
 ## ts_hit_kind
 
 What a hit of the transit hit list was (`03-design/transit-hit-list.md`).

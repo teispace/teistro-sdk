@@ -2615,8 +2615,22 @@ impl<'a> ChartArea<'a> {
         request: &FortitudeRequest,
         asked: &PerfectionRequest,
     ) -> Result<Matter, Error> {
-        let fortitudes = self.fortitudes(chart, request)?;
-        let (querent, quesited) = asked.significators(&fortitudes)?;
+        self.perfection_in(chart, &self.fortitudes(chart, request)?, asked)
+    }
+
+    /// [`ChartArea::perfection`] over fortitudes already read for the
+    /// chart, so a caller holding them pays for the search alone.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::perfection`], but for the fortitudes' own.
+    pub fn perfection_in(
+        self,
+        chart: &Document,
+        fortitudes: &Fortitudes,
+        asked: &PerfectionRequest,
+    ) -> Result<Matter, Error> {
+        let (querent, quesited) = asked.significators(fortitudes)?;
         let rules = asked.rules;
         let dignities = &fortitudes.dignities;
         let places = dignities
@@ -2667,7 +2681,7 @@ impl<'a> ChartArea<'a> {
             &timeline,
             querent,
             quesited,
-            &teistro_hellenistic::Standing::of(&fortitudes),
+            &teistro_hellenistic::Standing::of(fortitudes),
             &rules,
         )
     }

@@ -21,6 +21,7 @@ from typing import Any, Final, NamedTuple, Optional, Sequence
 from .catalogue import (
     Accident,
     Affliction,
+    ApplicationKind,
     AshtakavargaGoodFrom,
     AspectPhase,
     Astronomy,
@@ -79,6 +80,7 @@ from .catalogue import (
     HitKind,
     HoraReckoning,
     HouseSystem,
+    ImpedimentKind,
     Kaala,
     KakshyaLord,
     Karana,
@@ -155,6 +157,7 @@ from .catalogue import (
     Varna,
     VarsheshaChosen,
     VimshopakaScoring,
+    Way,
     YearYoga,
     Yoga,
     YogaCause,
@@ -257,7 +260,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 208,
+    "ts_chart_request": 216,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -287,7 +290,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 128,
+    "ts_chart_request": 136,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -695,6 +698,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("fortitudes_json", ctypes.c_char_p),
         ("lots_json", ctypes.c_char_p),
         ("considerations_json", ctypes.c_char_p),
+        ("perfection_json", ctypes.c_char_p),
     ]
 
 
@@ -2450,6 +2454,26 @@ class ChartRequest:
     Example: {"moonLateFromDeg":25}. May be null.
     """
 
+    perfection_json: Optional[str] = None
+    """Whether a horary matter is brought to pass (Lilly, *Christian
+    Astrology* pp. 107–113 and 125–127), as a JSON object:
+    `querent` and `quesited`, the two significators by key, or
+    `house`, the house of the matter, whose cusp's lord signifies the
+    quesited, the querent's being the Ascendant's lord unless named;
+    and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+    `horizonDays` (unset, until the swifter significator leaves its
+    sign, C232). The houses and dignities it weighs are
+    `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+    searched on the ephemeris. The relations come back in
+    `perfection`, `perfection_impediments`, `perfection_translations`
+    and `perfection_collections`, and the orbs applied in
+    `perfection_orbs`. Null for none, which costs nothing
+    (`03-design/hellenistic-perfection.md`). Refusals are named from
+    the record every binding calls `perfection`, as
+    `perfection.quesited`.
+    Example: {"house":7}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2524,6 +2548,9 @@ class ChartRequest:
         _considerations_json = None if self.considerations_json is None else self.considerations_json.encode("utf-8")
         owned.append(_considerations_json)
         raw.considerations_json = _considerations_json
+        _perfection_json = None if self.perfection_json is None else self.perfection_json.encode("utf-8")
+        owned.append(_perfection_json)
+        raw.perfection_json = _perfection_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2572,6 +2599,7 @@ class ChartRequest:
             fortitudes_json=_text(raw.fortitudes_json),
             lots_json=_text(raw.lots_json),
             considerations_json=_text(raw.considerations_json),
+            perfection_json=_text(raw.perfection_json),
         )
 
 

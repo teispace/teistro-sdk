@@ -612,6 +612,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_fortitude_sections(63))
         .chain(chart_lot_sections(67))
         .chain(chart_consideration_sections(69))
+        .chain(chart_perfection_sections(72))
         .collect(),
     }
 }
@@ -1142,6 +1143,261 @@ fn chart_consideration_sections(first: u32) -> [SectionSchema; 3] {
             )],
         ),
     ]
+}
+
+/// What a dignity bit set holds, for a column carrying one.
+const DIGNITY_BITS: &str = "as a bit set in `EssentialDignity`'s order: bit 0 house, 1 exaltation, 2 triplicity, 3 term, 4 face, 5 detriment, 6 fall";
+
+/// A column naming a graha by catalogue id.
+fn graha_column(name: &str, doc: &str) -> ColumnDef {
+    ColumnDef::new(name, Scalar::U16, doc).of_enum("Graha")
+}
+
+/// A column naming a Ptolemaic aspect.
+fn aspect_column(name: &str, doc: &str) -> ColumnDef {
+    ColumnDef::new(name, Scalar::U8, doc).of_enum("TsPtolemaicAspect")
+}
+
+/// A column holding a planet's essential dignities as a bit set.
+fn dignity_column(name: &str, doc: &str) -> ColumnDef {
+    ColumnDef::new(name, Scalar::U8, &format!("{doc}, {DIGNITY_BITS}."))
+}
+
+/// The five sections a perfection crosses as, from `first`: a row a chart,
+/// its impediments, translations and collections ragged under it, and the
+/// orbs it was read with (`03-design/hellenistic-perfection.md`).
+fn chart_perfection_sections(first: u32) -> [SectionSchema; 5] {
+    let empty = "Empty when `perfection_json` asked for none.";
+    [
+        perfection_section(first, empty),
+        SectionSchema::columns(
+            first + 1,
+            "perfection_impediments",
+            &format!(
+                "What stops or hinders the significators' application (pp. 110–113), concatenated in the `cast` section's order and **ragged** by `perfection.impediment_count`, each chart's in time order. {empty}"
+            ),
+            vec![
+                ColumnDef::new("kind", Scalar::U8, "What it is.").of_enum("TsImpedimentKind"),
+                graha_column(
+                    "significator",
+                    "The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations.",
+                ),
+                ColumnDef::new(
+                    "third_present",
+                    Scalar::U8,
+                    "1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.",
+                ),
+                graha_column("third", "The third planet."),
+                aspect_column("aspect", "The aspect the third is met by."),
+                ColumnDef::new(
+                    "days",
+                    Scalar::F64,
+                    "Days until it happens: the contact, or the station.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "perfection_translations",
+            &format!(
+                "Every translation of light between the significators (p. 111), concatenated in the `cast` section's order and **ragged** by `perfection.translation_count`. {empty}"
+            ),
+            vec![
+                graha_column("translator", "The lighter planet carrying the light."),
+                graha_column("from", "The significator it separates from."),
+                graha_column("to", "The significator it applies to next."),
+                aspect_column("separating_aspect", "The aspect it separates from."),
+                ColumnDef::new(
+                    "separating_past_deg",
+                    Scalar::F64,
+                    "How far past exact that separation is, degrees.",
+                ),
+                aspect_column("aspect", "The aspect it applies by."),
+                ColumnDef::new("days", Scalar::F64, "Days until that application is exact."),
+                dignity_column(
+                    "received",
+                    "The dignities of `from` the translator stands in: how it is received, by house, triplicity or term (p. 126)",
+                ),
+            ],
+        ),
+        perfection_collections_section(first + 3, empty),
+        SectionSchema::columns(
+            first + 4,
+            "perfection_orbs",
+            &format!(
+                "The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "orb_deg",
+                Scalar::F64,
+                "The planet's whole orb, degrees; half of it counts toward an application.",
+            )],
+        ),
+    ]
+}
+
+/// The `perfection_collections` section: every collection of light,
+/// ragged under the `perfection` row.
+fn perfection_collections_section(id: u32, empty: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "perfection_collections",
+        &format!(
+            "Every collection of light (p. 112): a heavier planet both significators apply to, concatenated in the `cast` section's order and **ragged** by `perfection.collection_count`. Who must receive whom is C233. {empty}"
+        ),
+        vec![
+            graha_column("collector", "The heavier planet."),
+            aspect_column(
+                "from_querent_aspect",
+                "The aspect the querent's significator applies by.",
+            ),
+            ColumnDef::new("from_querent_days", Scalar::F64, "Days until it is exact."),
+            aspect_column(
+                "from_quesited_aspect",
+                "The aspect the quesited's significator applies by.",
+            ),
+            ColumnDef::new("from_quesited_days", Scalar::F64, "Days until it is exact."),
+            dignity_column(
+                "collector_in_querent",
+                "The querent's significator's dignities the collector stands in",
+            ),
+            dignity_column(
+                "collector_in_quesited",
+                "The quesited's significator's dignities the collector stands in",
+            ),
+            dignity_column(
+                "querent_in_collector",
+                "The collector's dignities the querent's significator stands in",
+            ),
+            dignity_column(
+                "quesited_in_collector",
+                "The collector's dignities the quesited's significator stands in",
+            ),
+        ],
+    )
+}
+
+/// The `perfection` section: a row a chart, the significators'
+/// application, separation and standing, and the ways it holds.
+#[expect(
+    clippy::too_many_lines,
+    reason = "one declaration per fact Lilly weighs; splitting it would hide the shape it exists to show"
+)]
+fn perfection_section(id: u32, empty: &str) -> SectionSchema {
+    let flag = |name: &str, doc: &str| {
+        ColumnDef::new(name, Scalar::U8, &format!("1 when {doc}; 0 otherwise."))
+    };
+    let count = |name: &str, section: &str| {
+        ColumnDef::new(
+            name,
+            Scalar::U32,
+            &format!("How many rows of the `{section}` section belong to this chart."),
+        )
+    };
+    SectionSchema::columns(
+        id,
+        "perfection",
+        &format!(
+            "Whether a horary matter is brought to pass (Lilly, *Christian Astrology* pp. 107–113 and 125–127), a row a chart in the `cast` section's order: the significators' application and separation, where each stands, and which of the seven ways of perfection the figure holds, never a verdict. The future is the ephemeris searched from the chart's instant up to the horizon. {empty}"
+        ),
+        vec![
+            graha_column(
+                "querent",
+                "The querent's significator: the Ascendant's lord unless named.",
+            ),
+            graha_column(
+                "quesited",
+                "The quesited's significator: as named, or the lord of the asked house's cusp.",
+            ),
+            ColumnDef::new(
+                "horizon_days",
+                Scalar::F64,
+                "How far ahead the timeline was searched, days: the rules' horizon, or until the swifter significator leaves its sign (C232), at most ten years.",
+            ),
+            ColumnDef::new(
+                "horizon_rule_days",
+                Scalar::F64,
+                "`perfection_json.rules.horizonDays` as asked; NaN when unset.",
+            ),
+            ColumnDef::new(
+                "application_present",
+                Scalar::U8,
+                "1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN.",
+            ),
+            aspect_column("application_aspect", "The aspect they apply by."),
+            ColumnDef::new("application_days", Scalar::F64, "Days until it is exact."),
+            graha_column("applying", "The significator whose motion closes it."),
+            ColumnDef::new(
+                "application_kind",
+                Scalar::U8,
+                "Which of the three kinds (p. 107).",
+            )
+            .of_enum("TsApplicationKind"),
+            ColumnDef::new(
+                "gap_deg",
+                Scalar::F64,
+                "How far it is from exact now, degrees.",
+            ),
+            flag(
+                "within_moieties",
+                "the gap is already within the two planets' moieties of orb",
+            ),
+            ColumnDef::new(
+                "separation_present",
+                Scalar::U8,
+                "1 when the significators are separating within their moieties at the figure (p. 110); 0 otherwise, and then the separation's columns are 0 and NaN.",
+            ),
+            aspect_column("separation_aspect", "The aspect they separate from."),
+            ColumnDef::new(
+                "separation_past_deg",
+                Scalar::F64,
+                "How far past exact it is, degrees.",
+            ),
+            ColumnDef::new(
+                "querent_house",
+                Scalar::U8,
+                "The house the querent's significator is in, 1 to 12, under the fortitudes' houses.",
+            ),
+            dignity_column(
+                "querent_dignity",
+                "The querent's significator's essential dignities at its degree",
+            ),
+            ColumnDef::new(
+                "quesited_house",
+                Scalar::U8,
+                "The house the quesited's significator is in, 1 to 12.",
+            ),
+            dignity_column(
+                "quesited_dignity",
+                "The quesited's significator's essential dignities at its degree",
+            ),
+            flag(
+                "mutual_by_house",
+                "each significator stands in the other's house",
+            ),
+            ColumnDef::new(
+                "infortunes_between",
+                Scalar::U8,
+                "Saturn and Mars when among the thirds that come between the significators before they perfect, as a bit set: bit `n` is the graha with catalogue id `n`.",
+            ),
+            flag(
+                "moon_relays",
+                "the Moon, neither significator, separates from the quesited's and comes next to the querent's (p. 126, the opposition)",
+            ),
+            flag(
+                "quesited_in_ascendant",
+                "the quesited's significator is in the first house",
+            ),
+            ColumnDef::new(
+                "ways_held",
+                Scalar::U8,
+                "The ways of perfection the figure holds (pp. 125–127), as a bit set over `TsWay`: bit `n` is the member with code `n`. 0 when it holds none.",
+            ),
+            count("impediment_count", "perfection_impediments"),
+            count("translation_count", "perfection_translations"),
+            count("collection_count", "perfection_collections"),
+        ],
+    )
 }
 
 /// The `considerations` section: a row a chart, each clause with the

@@ -297,6 +297,7 @@ fn chart_request(
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1565,6 +1566,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1707,6 +1709,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1847,6 +1850,7 @@ fn a_chart_request_answers_the_transits() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2059,6 +2063,7 @@ fn a_chart_request_answers_the_hit_list() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2224,6 +2229,7 @@ fn a_chart_request_answers_sade_sati() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2331,6 +2337,7 @@ fn a_chart_request_answers_sade_sati() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2392,6 +2399,7 @@ fn a_chart_request_answers_sade_sati() {
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
+        perfection_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2457,6 +2465,7 @@ fn a_chart_request_answers_the_dignities() {
                 fortitudes_json: ptr::null(),
                 lots_json: ptr::null(),
                 considerations_json: ptr::null(),
+                perfection_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2727,6 +2736,7 @@ fn a_chart_request_answers_the_fortitudes() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3498,6 +3508,400 @@ fn a_chart_request_answers_the_considerations() {
     );
 }
 
+/// The perfection crosses: a request's `perfection_json` answers every
+/// chart's significators, application, separation and ways in
+/// `perfection`, its impediments, translations and collections ragged by
+/// that row's counts, and the orbs in `perfection_orbs`, each cell the
+/// façade's own to the bit, weighed on Lilly's fortitudes when none were
+/// asked; none asked is an empty section, and a request naming no
+/// quesited is refused by its field (`03-design/hellenistic-perfection.md`).
+#[test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "one assertion per column of five sections"
+)]
+fn a_chart_request_answers_the_perfection() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    // London, every eleven days over a year: the seventh's lord changes
+    // with the rising sign, and the slow planets turn.
+    let instants: Vec<f64> = (0..34)
+        .map(|k| 2_451_545.0 + 11.0 * f64::from(k) + f64::from(k % 5) / 7.0)
+        .collect();
+    let base = chart_request(&instants, (51.5, -0.12), 0);
+    let asked_text = r#"{"house":7}"#;
+    let asked_json = CString::new(asked_text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            perfection_json: asked_json.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("conformance-baseline")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5, -0.12, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(0).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::PerfectionRequest::from_json(asked_text).unwrap();
+    let lilly = teistro::FortitudeRequest::default();
+    let expected: Vec<teistro::Matter> = natal
+        .iter()
+        .map(|document| sdk.chart().perfection(document, &lilly, &asked).unwrap())
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let dignity = |d: teistro::EssentialDignity| -> i64 {
+        [
+            d.house,
+            d.exaltation,
+            d.triplicity,
+            d.term,
+            d.face,
+            d.detriment,
+            d.fall,
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(n, flag)| i64::from(flag) << n)
+        .sum()
+    };
+    let graha = |g: Graha| i64::from(g.id());
+    let aspect = |a: teistro::PtolemaicAspect| {
+        i64::from(teistro_ffi::chart::TsPtolemaicAspect::of(a).unwrap() as u8)
+    };
+    let flag = |value: bool| i64::from(value);
+    let each = |read: &dyn Fn(&teistro::Matter) -> i64| -> Vec<i64> {
+        expected.iter().map(read).collect()
+    };
+    let each_f = |read: &dyn Fn(&teistro::Matter) -> f64| -> Vec<u64> {
+        expected.iter().map(|one| read(one).to_bits()).collect()
+    };
+    let nan = f64::NAN;
+
+    // A row a chart.
+    assert_eq!(
+        ints("perfection", "querent"),
+        each(&|one| graha(one.querent))
+    );
+    assert_eq!(
+        ints("perfection", "quesited"),
+        each(&|one| graha(one.quesited))
+    );
+    assert_eq!(
+        bits("perfection", "horizon_days"),
+        each_f(&|one| one.horizon_days)
+    );
+    assert_eq!(bits("perfection", "horizon_rule_days"), each_f(&|_| nan));
+    assert_eq!(
+        ints("perfection", "application_present"),
+        each(&|one| flag(one.application.is_some()))
+    );
+    assert_eq!(
+        ints("perfection", "application_aspect"),
+        each(&|one| one.application.map_or(0, |a| aspect(a.aspect)))
+    );
+    assert_eq!(
+        bits("perfection", "application_days"),
+        each_f(&|one| one.application.map_or(nan, |a| a.days))
+    );
+    assert_eq!(
+        ints("perfection", "applying"),
+        each(&|one| one.application.map_or(0, |a| graha(a.applying)))
+    );
+    assert_eq!(
+        ints("perfection", "application_kind"),
+        each(&|one| {
+            one.application.map_or(0, |a| {
+                i64::from(teistro_ffi::chart::TsApplicationKind::of(a.kind).unwrap() as u8)
+            })
+        })
+    );
+    assert_eq!(
+        bits("perfection", "gap_deg"),
+        each_f(&|one| one.application.map_or(nan, |a| a.gap_deg))
+    );
+    assert_eq!(
+        ints("perfection", "within_moieties"),
+        each(&|one| one.application.map_or(0, |a| flag(a.within_moieties)))
+    );
+    assert_eq!(
+        ints("perfection", "separation_present"),
+        each(&|one| flag(one.separation.is_some()))
+    );
+    assert_eq!(
+        ints("perfection", "separation_aspect"),
+        each(&|one| one.separation.map_or(0, |a| aspect(a.aspect)))
+    );
+    assert_eq!(
+        bits("perfection", "separation_past_deg"),
+        each_f(&|one| one.separation.map_or(nan, |a| a.past_deg))
+    );
+    assert_eq!(
+        ints("perfection", "querent_house"),
+        each(&|one| i64::from(one.ways.querent.house.get()))
+    );
+    assert_eq!(
+        ints("perfection", "querent_dignity"),
+        each(&|one| dignity(one.ways.querent.dignity))
+    );
+    assert_eq!(
+        ints("perfection", "quesited_house"),
+        each(&|one| i64::from(one.ways.quesited.house.get()))
+    );
+    assert_eq!(
+        ints("perfection", "quesited_dignity"),
+        each(&|one| dignity(one.ways.quesited.dignity))
+    );
+    assert_eq!(
+        ints("perfection", "mutual_by_house"),
+        each(&|one| flag(one.ways.mutual_by_house))
+    );
+    assert_eq!(
+        ints("perfection", "infortunes_between"),
+        each(&|one| {
+            one.ways
+                .infortunes_between
+                .iter()
+                .map(|g| 1 << g.id())
+                .sum()
+        })
+    );
+    assert_eq!(
+        ints("perfection", "moon_relays"),
+        each(&|one| flag(one.ways.moon_relays))
+    );
+    assert_eq!(
+        ints("perfection", "quesited_in_ascendant"),
+        each(&|one| flag(one.ways.quesited_in_ascendant))
+    );
+    assert_eq!(
+        ints("perfection", "ways_held"),
+        each(&|one| {
+            one.ways
+                .held
+                .iter()
+                .map(|way| 1 << (teistro_ffi::chart::TsWay::of(*way).unwrap() as u8))
+                .sum()
+        })
+    );
+    for (column, read) in [
+        (
+            "impediment_count",
+            (|one: &teistro::Matter| one.impediments.len()) as fn(&teistro::Matter) -> usize,
+        ),
+        ("translation_count", |one| one.translations.len()),
+        ("collection_count", |one| one.collections.len()),
+    ] {
+        assert_eq!(
+            ints("perfection", column),
+            each(&|one| i64::try_from(read(one)).unwrap()),
+            "{column}"
+        );
+    }
+
+    // Ragged under the row: every chart's in turn.
+    let impediments: Vec<&teistro::Impediment> =
+        expected.iter().flat_map(|one| &one.impediments).collect();
+    let translations: Vec<&teistro::Translation> =
+        expected.iter().flat_map(|one| &one.translations).collect();
+    let collections: Vec<&teistro::Collection> =
+        expected.iter().flat_map(|one| &one.collections).collect();
+    assert!(
+        !impediments.is_empty() && !translations.is_empty(),
+        "the sweep reaches impediments and translations"
+    );
+    assert_eq!(
+        ints("perfection_impediments", "kind"),
+        impediments
+            .iter()
+            .map(|i| i64::from(teistro_ffi::chart::TsImpedimentKind::of(i.kind).unwrap() as u8))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("perfection_impediments", "significator"),
+        impediments
+            .iter()
+            .map(|i| graha(i.significator))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("perfection_impediments", "third_present"),
+        impediments
+            .iter()
+            .map(|i| flag(i.third.is_some()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("perfection_impediments", "third"),
+        impediments
+            .iter()
+            .map(|i| i.third.map_or(0, graha))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("perfection_impediments", "aspect"),
+        impediments
+            .iter()
+            .map(|i| aspect(i.aspect))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("perfection_impediments", "days"),
+        impediments
+            .iter()
+            .map(|i| i.days.to_bits())
+            .collect::<Vec<_>>()
+    );
+    for (column, read) in [
+        (
+            "translator",
+            &(|t: &teistro::Translation| graha(t.translator))
+                as &dyn Fn(&teistro::Translation) -> i64,
+        ),
+        ("from", &|t| graha(t.from)),
+        ("to", &|t| graha(t.to)),
+        ("separating_aspect", &|t| aspect(t.separating.aspect)),
+        ("aspect", &|t| aspect(t.aspect)),
+        ("received", &|t| dignity(t.received)),
+    ] {
+        assert_eq!(
+            ints("perfection_translations", column),
+            translations.iter().map(|t| read(t)).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+    assert_eq!(
+        bits("perfection_translations", "separating_past_deg"),
+        translations
+            .iter()
+            .map(|t| t.separating.past_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("perfection_translations", "days"),
+        translations
+            .iter()
+            .map(|t| t.days.to_bits())
+            .collect::<Vec<_>>()
+    );
+    for (column, read) in [
+        (
+            "collector",
+            &(|c: &teistro::Collection| graha(c.collector)) as &dyn Fn(&teistro::Collection) -> i64,
+        ),
+        ("from_querent_aspect", &|c| aspect(c.from_querent.aspect)),
+        ("from_quesited_aspect", &|c| aspect(c.from_quesited.aspect)),
+        ("collector_in_querent", &|c| dignity(c.collector_in_querent)),
+        ("collector_in_quesited", &|c| {
+            dignity(c.collector_in_quesited)
+        }),
+        ("querent_in_collector", &|c| dignity(c.querent_in_collector)),
+        ("quesited_in_collector", &|c| {
+            dignity(c.quesited_in_collector)
+        }),
+    ] {
+        assert_eq!(
+            ints("perfection_collections", column),
+            collections.iter().map(|c| read(c)).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+    for (column, read) in [
+        (
+            "from_querent_days",
+            (|c: &teistro::Collection| c.from_querent.days) as fn(&teistro::Collection) -> f64,
+        ),
+        ("from_quesited_days", |c| c.from_quesited.days),
+    ] {
+        assert_eq!(
+            bits("perfection_collections", column),
+            collections
+                .iter()
+                .map(|c| read(c).to_bits())
+                .collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+
+    // Seven orbs a chart, Lilly's.
+    assert_eq!(
+        bits("perfection_orbs", "orb_deg"),
+        expected
+            .iter()
+            .flat_map(|_| asked.rules.orbs_deg)
+            .map(f64::to_bits)
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is every section empty.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("perfection", "querent"),
+        ("perfection_impediments", "kind"),
+        ("perfection_translations", "translator"),
+        ("perfection_collections", "collector"),
+        ("perfection_orbs", "orb_deg"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A request naming no quesited is refused by the field it lacks.
+    let refused = CString::new("{}").unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            perfection_json: refused.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("perfection.quesited"));
+}
+
 /// The lots record also sets the rules releasing reads its lots under: a
 /// night birth whose Fortune moves sign under Lilly's rule releases from
 /// where Lilly puts it, as the façade's `with_lot_rules` does
@@ -3602,6 +4006,7 @@ fn a_chart_request_answers_kp() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3707,6 +4112,7 @@ fn a_chart_request_answers_kp() {
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
+        perfection_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -3720,6 +4126,7 @@ fn a_chart_request_answers_kp() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -3773,6 +4180,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3809,6 +4217,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
+        perfection_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -3866,6 +4275,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3998,6 +4408,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4135,6 +4546,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4903,6 +5315,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5008,6 +5421,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5182,6 +5596,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
+            perfection_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5460,6 +5875,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 fortitudes_json: ptr::null(),
                 lots_json: ptr::null(),
                 considerations_json: ptr::null(),
+                perfection_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );

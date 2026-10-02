@@ -5208,6 +5208,81 @@ typedef enum ts_ptolemaic_aspect {
 } ts_ptolemaic_aspect;
 
 /**
+ * Which of Lilly's three kinds an application is (p. 107,
+ * `03-design/hellenistic-perfection.md`).
+ */
+typedef enum ts_application_kind {
+    /**
+     * A swifter planet to a slower, both direct.
+     */
+    TS_APPLICATION_KIND_BOTH_DIRECT = 0,
+    /**
+     * Both retrograde, "an ill Application".
+     */
+    TS_APPLICATION_KIND_BOTH_RETROGRADE = 1,
+    /**
+     * One direct and one retrograde, meeting.
+     */
+    TS_APPLICATION_KIND_AGAINST_RETROGRADE = 2,
+} ts_application_kind;
+
+/**
+ * What stops or hinders two significators' application (pp. 110–113,
+ * `03-design/hellenistic-perfection.md`).
+ */
+typedef enum ts_impediment_kind {
+    /**
+     * A third planet comes to a significator first.
+     */
+    TS_IMPEDIMENT_KIND_PROHIBITION = 0,
+    /**
+     * A significator comes to a third planet first.
+     */
+    TS_IMPEDIMENT_KIND_FRUSTRATION = 1,
+    /**
+     * A significator stations before the perfection its motion promises.
+     */
+    TS_IMPEDIMENT_KIND_REFRANATION = 2,
+} ts_impediment_kind;
+
+/**
+ * One of Lilly's seven ways a matter is perfected (pp. 125–127,
+ * `03-design/hellenistic-perfection.md`); the ways a figure holds cross
+ * as a bit set, bit `n` the member with code `n`.
+ */
+typedef enum ts_way {
+    /**
+     * The significators' conjunction, unhindered.
+     */
+    TS_WAY_CONJUNCTION = 0,
+    /**
+     * Their sextile or trine, unhindered.
+     */
+    TS_WAY_SEXTILE_OR_TRINE = 1,
+    /**
+     * Their square, each in some dignity at its degree.
+     */
+    TS_WAY_SQUARE = 2,
+    /**
+     * Their opposition, with mutual reception by house and the Moon's
+     * relay.
+     */
+    TS_WAY_OPPOSITION = 3,
+    /**
+     * A translation of light, received by house, triplicity or term.
+     */
+    TS_WAY_TRANSLATION = 4,
+    /**
+     * A collection of light, the collector in a dignity of each.
+     */
+    TS_WAY_COLLECTION = 5,
+    /**
+     * The quesited's significator in the Ascendant, the Moon translating.
+     */
+    TS_WAY_DWELLING = 6,
+} ts_way;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -7574,6 +7649,26 @@ struct ts_chart_request {
      * Example: {"moonLateFromDeg":25}. May be null.
      */
     const char * considerations_json;
+    /**
+     * Whether a horary matter is brought to pass (Lilly, *Christian
+     * Astrology* pp. 107–113 and 125–127), as a JSON object:
+     * `querent` and `quesited`, the two significators by key, or
+     * `house`, the house of the matter, whose cusp's lord signifies the
+     * quesited, the querent's being the Ascendant's lord unless named;
+     * and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+     * `horizonDays` (unset, until the swifter significator leaves its
+     * sign, C232). The houses and dignities it weighs are
+     * `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+     * searched on the ephemeris. The relations come back in
+     * `perfection`, `perfection_impediments`, `perfection_translations`
+     * and `perfection_collections`, and the orbs applied in
+     * `perfection_orbs`. Null for none, which costs nothing
+     * (`03-design/hellenistic-perfection.md`). Refusals are named from
+     * the record every binding calls `perfection`, as
+     * `perfection.quesited`.
+     * Example: {"house":7}. May be null.
+     */
+    const char * perfection_json;
 };
 
 /**
@@ -8508,7 +8603,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 208, "ts_chart_request is 208 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 216, "ts_chart_request is 216 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

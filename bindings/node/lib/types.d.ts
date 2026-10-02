@@ -961,6 +961,27 @@ export interface ChartRequest {
    * @nullable
    */
   readonly considerationsJson?: string;
+  /**
+   * Whether a horary matter is brought to pass (Lilly, *Christian
+   * Astrology* pp. 107–113 and 125–127), as a JSON object:
+   * `querent` and `quesited`, the two significators by key, or
+   * `house`, the house of the matter, whose cusp's lord signifies the
+   * quesited, the querent's being the Ascendant's lord unless named;
+   * and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+   * `horizonDays` (unset, until the swifter significator leaves its
+   * sign, C232). The houses and dignities it weighs are
+   * `fortitudes_json`'s, or Lilly's when it is null; the timeline is
+   * searched on the ephemeris. The relations come back in
+   * `perfection`, `perfection_impediments`, `perfection_translations`
+   * and `perfection_collections`, and the orbs applied in
+   * `perfection_orbs`. Null for none, which costs nothing
+   * (`03-design/hellenistic-perfection.md`). Refusals are named from
+   * the record every binding calls `perfection`, as
+   * `perfection.quesited`.
+   * @example {"house":7}
+   * @nullable
+   */
+  readonly perfectionJson?: string;
 }
 
 /**
