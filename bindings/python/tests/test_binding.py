@@ -1631,6 +1631,75 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=instants[0], considerations=request, **london)  # type: ignore[arg-type]
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_perfection(self) -> None:
+        """Lilly's perfection crosses whole, members resolved: the
+        significators the asked house names, where each stands on the
+        chart's own fortitudes, the ways held agreeing with the application
+        they rest on, the rules read back and handed back, a batch the
+        charts one at a time, and refusals named in the record
+        (`03-design/hellenistic-perfection.md`)."""
+        from teistro import ImpedimentKind, PerfectionRequest, PerfectionRules, Way
+
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(-0.12), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        instants = [2451545 + 23 * k + k / 7 for k in range(12)]
+        lilly = (10.0, 12.0, 7.5, 17.0, 8.0, 7.0, 12.5)
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instants[0], **london).perfection)
+            applying = hindered = 0
+            for instant in instants:
+                chart = ctx.chart.found(instant=instant, perfection={"house": 7}, fortitudes={}, **london)
+                read = chart.perfection
+                assert read is not None and chart.fortitudes is not None
+                self.assertEqual(read.rules, PerfectionRules(lilly, None))
+                self.assertIsNot(read.querent, read.quesited)
+                houses = {at.planet: at.house for at in chart.fortitudes.planets}
+                self.assertEqual(read.ways.querent.house, houses[read.querent])
+                self.assertEqual(read.ways.quesited.house, houses[read.quesited])
+                if read.application is not None:
+                    applying += 1
+                    self.assertTrue(0 <= read.application.days <= read.horizon_days)
+                    self.assertIn(read.application.applying, (read.querent, read.quesited))
+                for way in (Way.CONJUNCTION, Way.SEXTILE_OR_TRINE, Way.SQUARE, Way.OPPOSITION):
+                    if way in read.ways.held:
+                        self.assertIsNotNone(read.application, way)
+                for impediment in read.impediments:
+                    hindered += 1
+                    self.assertEqual(impediment.third is None, impediment.kind is ImpedimentKind.REFRANATION)
+                for translation in read.translations:
+                    self.assertEqual({translation.from_, translation.to}, {read.querent, read.quesited})
+                # The answer's rules are a request as they stand.
+                fed_back = ctx.chart.found(
+                    instant=instant, perfection={"house": 7, "rules": read.rules}, fortitudes={}, **london
+                )
+                self.assertEqual(fed_back.perfection, read)
+            self.assertTrue(applying > 0 and hindered > 0, "the sweep applies and is hindered")
+
+            named: PerfectionRequest = {"querent": "VENUS", "quesited": "graha.MARS", "rules": {"horizonDays": 30}}
+            other = ctx.chart.found(instant=instants[0], perfection=named, **london).perfection
+            assert other is not None
+            self.assertEqual(
+                (other.querent, other.quesited, other.rules.horizon_days, other.horizon_days),
+                (Graha.VENUS, Graha.MARS, 30.0, 30.0),
+            )
+
+            batch = ctx.chart.found_many(instants=instants, perfection={"house": 7}, **london)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).perfection, ctx.chart.found(instant=instant, perfection={"house": 7}, **london).perfection
+                )
+            refusals: list[tuple[dict[str, Any], str]] = [
+                ({}, "perfection.quesited"),
+                ({"house": 7, "quesited": "MARS"}, "perfection.house"),
+                ({"house": 7, "rules": {"horizonDays": -1}}, "perfection.rules.horizonDays"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=instants[0], perfection=request, **london)  # type: ignore[arg-type]
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_lots(self) -> None:
         """Valens's lots cross whole, members resolved: the sect and the rules
         read back and handed back as a request, all fourteen in the

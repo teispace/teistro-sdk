@@ -88,11 +88,12 @@ class TheCatalogue(unittest.TestCase):
         # 141 since his fourteen `Lot`s, and as many since his time lords
         # added three `DashaSystem`s in two `DashaFamily`s, and the
         # firdaria and the decennials one of each; 143 since Lilly's
-        # considerations, `PtolemaicAspect` and `RadicalGround`.
-        self.assertEqual(len(every_enum()), 143)
+        # considerations, `PtolemaicAspect` and `RadicalGround`; 146 since
+        # his perfection, `ApplicationKind`, `ImpedimentKind` and `Way`.
+        self.assertEqual(len(every_enum()), 146)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2 + 2 + 3 + 14 + 5 + 2 + 2 + 5 + 3,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2 + 2 + 3 + 14 + 5 + 2 + 2 + 5 + 3 + 3 + 3 + 7,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

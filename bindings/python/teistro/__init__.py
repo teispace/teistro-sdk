@@ -163,6 +163,9 @@ from .catalogue import (
     Lot,
     PtolemaicAspect,
     RadicalGround,
+    ApplicationKind,
+    ImpedimentKind,
+    Way,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -471,6 +474,22 @@ __all__ = [
     "Considerations",
     "PtolemaicAspect",
     "RadicalGround",
+    # Lilly's perfection between two significators.
+    "PerfectionRequest",
+    "PerfectionRuleRequest",
+    "PerfectionRules",
+    "Application",
+    "Separation",
+    "Impediment",
+    "Translation",
+    "ContactAhead",
+    "Collection",
+    "SignificatorPlace",
+    "Ways",
+    "Matter",
+    "ApplicationKind",
+    "ImpedimentKind",
+    "Way",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1511,6 +1530,7 @@ class ChartArea(_Area):
         fortitudes: Optional[FortitudeRequest] = None,
         lots: Optional[Union[LotRequest, LotRules]] = None,
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
+        perfection: Optional[PerfectionRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1556,6 +1576,7 @@ class ChartArea(_Area):
             fortitudes=fortitudes,
             lots=lots,
             considerations=considerations,
+            perfection=perfection,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1591,6 +1612,7 @@ class ChartArea(_Area):
         fortitudes: Optional[FortitudeRequest] = None,
         lots: Optional[Union[LotRequest, LotRules]] = None,
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
+        perfection: Optional[PerfectionRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1657,6 +1679,7 @@ class ChartArea(_Area):
             fortitudes_json=_fortitudes_json(fortitudes),
             lots_json=_lots_json(lots),
             considerations_json=_considerations_json(considerations),
+            perfection_json=_perfection_json(perfection),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3455,6 +3478,192 @@ class Considerations:
     saturn_retrograde: bool
     ascendant_lord_combust: bool
     rules: ConsiderationRules
+
+
+class PerfectionRuleRequest(TypedDict, total=False):
+    """Lilly's rules a perfection is read under, every field optional:
+    `orbsDeg`, the seven whole orbs in the Chaldean order, his p. 107 by
+    default, and `horizonDays`, how far ahead to look, by default until the
+    swifter significator leaves its sign (C232). An answer's `rules`, a
+    `PerfectionRules`, may be handed back as it stands."""
+
+    orbsDeg: Sequence[float]
+    horizonDays: float
+
+
+@dataclass(frozen=True)
+class PerfectionRules:
+    """The rules a chart's perfection was read under."""
+
+    orbs_deg: Tuple[float, ...]
+    """The seven whole orbs in the Chaldean order (p. 107)."""
+
+    horizon_days: Optional[float]
+    """The horizon asked for; `None` when unset, until the swifter
+    significator leaves its sign (C232)."""
+
+
+class PerfectionRequest(TypedDict, total=False):
+    """Whether a horary matter is brought to pass
+    (`03-design/hellenistic-perfection.md`): name the quesited's
+    significator as `quesited`, or the house of the matter, 1 to 12, as
+    `house`, whose cusp's lord signifies it; the querent's is the
+    Ascendant's lord unless named.
+
+    >>> marriage: PerfectionRequest = {"house": 7}
+    >>> named: PerfectionRequest = {"querent": "VENUS", "quesited": "MARS", "rules": {"horizonDays": 30}}
+    """
+
+    querent: Union[Graha, str]
+    quesited: Union[Graha, str]
+    house: int
+    rules: Union[PerfectionRuleRequest, PerfectionRules]
+
+
+@dataclass(frozen=True)
+class Application:
+    """The significators coming to an aspect (p. 107)."""
+
+    aspect: PtolemaicAspect
+    days: float
+    """Days until it is exact."""
+
+    applying: Graha
+    """The significator whose motion closes it."""
+
+    kind: ApplicationKind
+    gap_deg: float
+    """How far it is from exact now, degrees."""
+
+    within_moieties: bool
+    """Whether the gap is already within the two planets' moieties of orb."""
+
+
+@dataclass(frozen=True)
+class Separation:
+    """Two planets past an aspect and still within their moieties (p. 110)."""
+
+    aspect: PtolemaicAspect
+    past_deg: float
+    """How far past exact, degrees."""
+
+
+@dataclass(frozen=True)
+class Impediment:
+    """What stops or hinders the application (pp. 110–113)."""
+
+    kind: ImpedimentKind
+    significator: Graha
+    """The significator it falls on."""
+
+    third: Optional[Graha]
+    """The third planet; `None` for a refranation."""
+
+    aspect: PtolemaicAspect
+    """The aspect the third perfects, or the one refrained from."""
+
+    days: float
+    """Days until the contact, or the station."""
+
+
+@dataclass(frozen=True)
+class Translation:
+    """A lighter planet carrying one significator's light to the other
+    (p. 111)."""
+
+    translator: Graha
+    from_: Graha
+    """The significator it separates from (`from` is Python's own word)."""
+
+    to: Graha
+    separating: Separation
+    aspect: PtolemaicAspect
+    """The aspect it applies to `to` by."""
+
+    days: float
+    received: EssentialDignity
+    """The dignities of `from_` the translator stands in: how it is received
+    (p. 126)."""
+
+
+@dataclass(frozen=True)
+class ContactAhead:
+    """A significator's application to a collector."""
+
+    aspect: PtolemaicAspect
+    days: float
+
+
+@dataclass(frozen=True)
+class Collection:
+    """A heavier planet both significators apply to (p. 112); who must
+    receive whom is C233."""
+
+    collector: Graha
+    from_querent: ContactAhead
+    from_quesited: ContactAhead
+    collector_in_querent: EssentialDignity
+    collector_in_quesited: EssentialDignity
+    querent_in_collector: EssentialDignity
+    quesited_in_collector: EssentialDignity
+
+
+@dataclass(frozen=True)
+class SignificatorPlace:
+    """Where a significator stands."""
+
+    planet: Graha
+    house: int
+    """1 to 12."""
+
+    dignity: EssentialDignity
+
+
+@dataclass(frozen=True)
+class Ways:
+    """The ways of perfection (pp. 125–127): what they weigh, and which
+    hold."""
+
+    querent: SignificatorPlace
+    quesited: SignificatorPlace
+    mutual_by_house: bool
+    """Each stands in the other's house."""
+
+    infortunes_between: Tuple[Graha, ...]
+    """Saturn and Mars among the thirds that come between the significators
+    before they perfect."""
+
+    moon_relays: bool
+    """The Moon, neither significator, separating from the quesited's and
+    coming next to the querent's."""
+
+    quesited_in_ascendant: bool
+    held: Tuple[Way, ...]
+    """The ways the figure holds, in `Way`'s order."""
+
+
+@dataclass(frozen=True)
+class Matter:
+    """Whether a horary matter is brought to pass: the relations between two
+    significators with the facts each rests on, never a verdict
+    (`03-design/hellenistic-perfection.md`).
+
+    >>> # chart = ctx.chart.found(..., perfection={"house": 7})
+    >>> # perfects = bool(chart.perfection.ways.held)
+    """
+
+    querent: Graha
+    quesited: Graha
+    application: Optional[Application]
+    separation: Optional[Separation]
+    impediments: Tuple[Impediment, ...]
+    translations: Tuple[Translation, ...]
+    collections: Tuple[Collection, ...]
+    ways: Ways
+    horizon_days: float
+    """How many days ahead it was read."""
+
+    rules: PerfectionRules
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -6051,6 +6260,15 @@ def _considerations_json(
     return _record_json(_written(considerations), "considerations", example)
 
 
+def _perfection_json(perfection: Optional[PerfectionRequest]) -> Optional[str]:
+    """The perfection as the JSON the boundary reads, or nothing for none;
+    the SDK refuses the rest, naming the field from `perfection`."""
+    example = "{'house': 7}"
+    if not isinstance(perfection, Mapping):
+        return _record_json(perfection, "perfection", example)
+    return _record_json(_written(perfection), "perfection", example)
+
+
 def _lots_json(lots: Optional[Union[LotRequest, LotRules]]) -> Optional[str]:
     """The lots as the JSON the boundary reads, or nothing for none; an
     answer's rules are written as a request writes them, and the SDK
@@ -6179,7 +6397,7 @@ def _written(value: Any) -> Any:
         return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
     if isinstance(value, (AccidentalRules, AccidentalScores)):
         return value._record()
-    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules, LotRules, ConsiderationRules)):
+    if isinstance(value, (MuhurtaPada, TaraReading, AlmutenRules, LotRules, ConsiderationRules, PerfectionRules)):
         return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
     if isinstance(value, Mapping):
         return {key: _written(inner) for key, inner in value.items()}
@@ -7571,6 +7789,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def perfection(self) -> Optional[Matter]:
+        """Whether a horary matter is brought to pass, weighed on the chart's
+        fortitudes and searched on the ephemeris; `None` unless
+        `perfection=` asked (`03-design/hellenistic-perfection.md`)."""
+        parsed = self.batch._perfections
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8019,6 +8245,134 @@ class ChartBatch:
                 rules=ConsiderationRules(
                     moon_late_from_deg=c.moon_late_from_deg[k],
                     orbs_deg=tuple(o.orb_deg[7 * k + n] for n in range(7)),
+                ),
+            )
+
+        return [read(k) for k in range(charts)]
+
+    @cached_property
+    def _perfections(self) -> list[Matter]:
+        """Every chart's perfection, decoded once; empty when none was asked
+        for. `perfection` holds a row a chart, its impediments,
+        translations and collections ragged by that row's counts, and
+        `perfection_orbs` seven a chart."""
+        m = self.decoded.perfection
+        i = self.decoded.perfection_impediments
+        t = self.decoded.perfection_translations
+        c = self.decoded.perfection_collections
+        o = self.decoded.perfection_orbs
+        charts = len(self.decoded.cast.instant)
+        if m.length == 0:
+            return []
+        if m.length != charts or o.length != 7 * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"perfection has {m.length} rows and perfection_orbs {o.length}"
+                f" for {charts} charts; they are one and seven a chart",
+            )
+        for name, section, counts in (
+            ("perfection_impediments", i, m.impediment_count),
+            ("perfection_translations", t, m.translation_count),
+            ("perfection_collections", c, m.collection_count),
+        ):
+            if section.length != sum(counts):
+                raise TeistroError(
+                    Status.INTERNAL,
+                    f"{name} has {section.length} rows and the charts count {sum(counts)}",
+                )
+
+        def dignity(bits: int) -> EssentialDignity:
+            return EssentialDignity(**{flag: bool(bits >> n & 1) for n, flag in enumerate(_DIGNITY_FLAGS)})
+
+        def impediment(at: int) -> Impediment:
+            return Impediment(
+                kind=ImpedimentKind(i.kind[at]),
+                significator=Graha(i.significator[at]),
+                third=Graha(i.third[at]) if i.third_present[at] == 1 else None,
+                aspect=PtolemaicAspect(i.aspect[at]),
+                days=i.days[at],
+            )
+
+        def translation(at: int) -> Translation:
+            return Translation(
+                translator=Graha(t.translator[at]),
+                from_=Graha(t.from_[at]),
+                to=Graha(t.to[at]),
+                separating=Separation(
+                    aspect=PtolemaicAspect(t.separating_aspect[at]),
+                    past_deg=t.separating_past_deg[at],
+                ),
+                aspect=PtolemaicAspect(t.aspect[at]),
+                days=t.days[at],
+                received=dignity(t.received[at]),
+            )
+
+        def collection(at: int) -> Collection:
+            return Collection(
+                collector=Graha(c.collector[at]),
+                from_querent=ContactAhead(
+                    aspect=PtolemaicAspect(c.from_querent_aspect[at]), days=c.from_querent_days[at]
+                ),
+                from_quesited=ContactAhead(
+                    aspect=PtolemaicAspect(c.from_quesited_aspect[at]), days=c.from_quesited_days[at]
+                ),
+                collector_in_querent=dignity(c.collector_in_querent[at]),
+                collector_in_quesited=dignity(c.collector_in_quesited[at]),
+                querent_in_collector=dignity(c.querent_in_collector[at]),
+                quesited_in_collector=dignity(c.quesited_in_collector[at]),
+            )
+
+        impediments = [0, *itertools.accumulate(m.impediment_count)]
+        translations = [0, *itertools.accumulate(m.translation_count)]
+        collections = [0, *itertools.accumulate(m.collection_count)]
+
+        def read(k: int) -> Matter:
+            application = None
+            if m.application_present[k] == 1:
+                application = Application(
+                    aspect=PtolemaicAspect(m.application_aspect[k]),
+                    days=m.application_days[k],
+                    applying=Graha(m.applying[k]),
+                    kind=ApplicationKind(m.application_kind[k]),
+                    gap_deg=m.gap_deg[k],
+                    within_moieties=m.within_moieties[k] == 1,
+                )
+            separation = None
+            if m.separation_present[k] == 1:
+                separation = Separation(
+                    aspect=PtolemaicAspect(m.separation_aspect[k]),
+                    past_deg=m.separation_past_deg[k],
+                )
+            horizon_rule = m.horizon_rule_days[k]
+            return Matter(
+                querent=Graha(m.querent[k]),
+                quesited=Graha(m.quesited[k]),
+                application=application,
+                separation=separation,
+                impediments=tuple(impediment(at) for at in range(impediments[k], impediments[k + 1])),
+                translations=tuple(translation(at) for at in range(translations[k], translations[k + 1])),
+                collections=tuple(collection(at) for at in range(collections[k], collections[k + 1])),
+                ways=Ways(
+                    querent=SignificatorPlace(
+                        planet=Graha(m.querent[k]),
+                        house=m.querent_house[k],
+                        dignity=dignity(m.querent_dignity[k]),
+                    ),
+                    quesited=SignificatorPlace(
+                        planet=Graha(m.quesited[k]),
+                        house=m.quesited_house[k],
+                        dignity=dignity(m.quesited_dignity[k]),
+                    ),
+                    mutual_by_house=m.mutual_by_house[k] == 1,
+                    infortunes_between=tuple(_members(m.infortunes_between[k], _SEVEN)),
+                    moon_relays=m.moon_relays[k] == 1,
+                    quesited_in_ascendant=m.quesited_in_ascendant[k] == 1,
+                    held=tuple(_members(m.ways_held[k], Way)),
+                ),
+                horizon_days=m.horizon_days[k],
+                rules=PerfectionRules(
+                    orbs_deg=tuple(o.orb_deg[7 * k + n] for n in range(7)),
+                    horizon_days=None if math.isnan(horizon_rule) else horizon_rule,
                 ),
             )
 
