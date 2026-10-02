@@ -155,8 +155,16 @@ own chapter.
   Mars's moieties together (10°). So the moieties call her void, as
   Lilly does, and the sign's end does not.
 
-  One figure of two supports the moieties, and neither supports the
-  sign's end. C230 stays open, and both readings are reported. The shipped reading is the modern one, and
+  His "A Lady, if marry the Gentleman desired?" (p. 385, Tuesday 16
+  June 1646 at 19h 26m after noon, so 7:26 the next morning in Saturn's
+  hour; recast to 52′ of his printed Moon) prints her "a vac: ad ☍ ☉".
+  The Sun's opposition is 8.2° ahead, inside their moieties (14¾°), but
+  perfects only after she leaves Sagittarius. Both readings call her
+  void, as Lilly does, and a moiety reading that ignored the sign's end
+  would not: the sign's end bounds both.
+
+  Of three figures, the Presbytery supports the moieties alone, the
+  Lady both, and the ship neither. C230 stays open, and both readings are reported. The shipped reading is the modern one, and
   `gap_deg` is reported so that another reading can be applied.
 
 ## What is not decided
@@ -168,8 +176,9 @@ own chapter.
   - One reading is no perfection before the sign ends (`void()`).
   - The other is none yet within Lilly's moieties of orb
     (`void_by_moieties()`).
-  - Both are reported. The Presbytery figure fits the moieties, and the
-    ship fits neither.
+  - Both are reported. The Presbytery figure fits the moieties, the
+    Lady both, and the ship neither; the Lady shows the sign's end
+    bounds the moieties too.
 - **C231: what afflicts a cusp.** The shipped reading is an infortune
   counted in the house (`infortunes_in_house`), not one in aspect to it.
 
