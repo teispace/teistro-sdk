@@ -18764,7 +18764,7 @@
             {
               "name": "third_present",
               "scalar": "u8",
-              "doc": "1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0."
+              "doc": "1 when a third planet takes part; 0 for a refranation, and then `third` is 0."
             },
             {
               "name": "third",
@@ -18775,7 +18775,7 @@
             {
               "name": "aspect",
               "scalar": "u8",
-              "doc": "The aspect the third is met by.",
+              "doc": "The aspect the third perfects, or the one refrained from.",
               "enum": "TsPtolemaicAspect"
             },
             {

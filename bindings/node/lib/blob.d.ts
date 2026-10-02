@@ -3167,7 +3167,7 @@ export interface ChartsPerfectionImpediments {
    */
   readonly significator: Uint16Array;
   /**
-   * 1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.
+   * 1 when a third planet takes part; 0 for a refranation, and then `third` is 0.
    */
   readonly thirdPresent: Uint8Array;
   /**
@@ -3176,7 +3176,7 @@ export interface ChartsPerfectionImpediments {
    */
   readonly third: Uint16Array;
   /**
-   * The aspect the third is met by.
+   * The aspect the third perfects, or the one refrained from.
    * The values are `PtolemaicAspect` ids.
    */
   readonly aspect: Uint8Array;
