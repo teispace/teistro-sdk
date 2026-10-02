@@ -617,6 +617,9 @@ pub enum TsFortuneRule {
     DayAndNight = 0,
     /// By night, the ascendant plus the Sun less the Moon.
     ReversedByNight = 1,
+    /// Valens's own: by night, reversed while the Moon is above the
+    /// horizon, and counted from the Sun once it has set.
+    ReversedWhileMoonUp = 2,
 }
 
 impl TsFortuneRule {
@@ -627,6 +630,7 @@ impl TsFortuneRule {
         match rule {
             teistro::FortuneRule::DayAndNight => Some(TsFortuneRule::DayAndNight),
             teistro::FortuneRule::ReversedByNight => Some(TsFortuneRule::ReversedByNight),
+            teistro::FortuneRule::ReversedWhileMoonUp => Some(TsFortuneRule::ReversedWhileMoonUp),
             _ => None,
         }
     }

@@ -7229,6 +7229,12 @@
           "value": 1,
           "doc": "By night, the ascendant plus the Sun less the Moon.",
           "key": "REVERSED_BY_NIGHT"
+        },
+        {
+          "name": "ReversedWhileMoonUp",
+          "value": 2,
+          "doc": "Valens's own: by night, reversed while the Moon is above the\nhorizon, and counted from the Sun once it has set.",
+          "key": "REVERSED_WHILE_MOON_UP"
         }
       ],
       "source": "crates/ffi/src/chart.rs"

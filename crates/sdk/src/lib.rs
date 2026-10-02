@@ -202,8 +202,9 @@ pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 pub use teistro_hellenistic as hellenistic;
 pub use teistro_hellenistic::{
     Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, Dignities,
-    DignityKind, DignityRequest, DignityRules, EssentialDignity, FortitudeRequest, Fortitudes,
-    FortuneRule, Partile, PlaceReading, PlanetAccidents, PlanetDignity, Reception, Scores, Sect,
+    DignityKind, DignityRequest, DignityRules, Distance, EssentialDignity, FortitudeRequest,
+    Fortitudes, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,
+    Partile, PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity, Reception, Scores, Sect,
     SectRule, Siege, Terms, TermsTable, Triplicities,
 };
 pub use teistro_interpret as interpret;

@@ -1765,6 +1765,14 @@ the astronomical numbers do not move. Nothing else computes yet.
     `fortitudes`, `fortitude_houses` and `fortitude_planets` sections gain
     the almuten columns and two enums (`TsPlaceReading`, `TsFortuneRule`),
     and every binding answers `fortitudes.almutens`.
+  - **The lots** (`hellenistic-lots.md`, C221–C222). Valens's fourteen,
+    from Fortune, Daimon and Basis to the crisis-producing place, each a
+    `LotFormula` of two `LotArc`s over `LotPoint`s, read by `lots` and
+    `ChartArea::lots`; a caller's own formula goes through `lot_place`.
+    `FortuneRule` gains `ReversedWhileMoonUp`, Valens's III.11 reading,
+    and `ChartSky` the Moon's altitude it reads; `part_of_fortune` now
+    takes whether Fortune is reversed, which `FortuneRule::reverses`
+    decides. `TsFortuneRule` gains the member at the C boundary.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

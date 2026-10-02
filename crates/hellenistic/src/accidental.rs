@@ -1060,6 +1060,7 @@ mod tests {
             mercury_deg,
             moon_deg,
             sun_altitude_deg: 30.0,
+            moon_altitude_deg: 10.0,
             daylight: true,
         };
         let read = FortitudeRequest::default()

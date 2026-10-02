@@ -11,8 +11,9 @@ use crate::dignity::{
 use crate::reception::{DignityKind, Reception, receptions};
 
 /// What a chart's dignities are read from: the seven planets' longitudes
-/// in the chart's zodiac, the Sun's geometric altitude, and whether the
-/// chart's instant falls between its sunrise and its sunset.
+/// in the chart's zodiac, the Sun's and the Moon's geometric altitudes,
+/// and whether the chart's instant falls between its sunrise and its
+/// sunset.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ChartSky {
     /// Saturn's longitude, in degrees.
@@ -32,6 +33,10 @@ pub struct ChartSky {
     /// The Sun's centre above the true horizon, in degrees, which
     /// [`SectRule::Horizon`] reads.
     pub sun_altitude_deg: f64,
+    /// The Moon's centre above the true horizon, in degrees, which
+    /// [`FortuneRule::ReversedWhileMoonUp`](crate::FortuneRule::ReversedWhileMoonUp)
+    /// reads.
+    pub moon_altitude_deg: f64,
     /// Whether the instant is between the chart's sunrise and its sunset,
     /// which [`SectRule::Daylight`] reads.
     pub daylight: bool,
@@ -51,9 +56,30 @@ impl ChartSky {
         ]
     }
 
+    /// Every longitude and both altitudes a finite number, naming the
+    /// first field that is not.
+    pub(crate) fn check(&self) -> Result<(), Error> {
+        let fields = CHALDEAN_ORDER
+            .into_iter()
+            .filter_map(|planet| self.of(planet).map(|(value, field)| (field, value)))
+            .chain([
+                ("sun_altitude_deg", self.sun_altitude_deg),
+                ("moon_altitude_deg", self.moon_altitude_deg),
+            ]);
+        for (field, value) in fields {
+            if !value.is_finite() {
+                return Err(
+                    Error::invalid_arg(format!("{value} is not a number of degrees"))
+                        .with_field(field),
+                );
+            }
+        }
+        Ok(())
+    }
+
     /// One of the seven's longitude and the field it is read from; `None`
     /// for a graha that holds no essential dignity.
-    fn of(&self, planet: Graha) -> Option<(f64, &'static str)> {
+    pub(crate) fn of(&self, planet: Graha) -> Option<(f64, &'static str)> {
         Some(match planet {
             Graha::Saturn => (self.saturn_deg, "saturn_deg"),
             Graha::Jupiter => (self.jupiter_deg, "jupiter_deg"),
@@ -188,7 +214,7 @@ impl DignityRequest {
     /// let sky = ChartSky {
     ///     saturn_deg: 285.0, jupiter_deg: 100.0, mars_deg: 5.0, sun_deg: 275.0,
     ///     venus_deg: 35.0, mercury_deg: 260.0, moon_deg: 33.0,
-    ///     sun_altitude_deg: 40.0, daylight: true,
+    ///     sun_altitude_deg: 40.0, moon_altitude_deg: -10.0, daylight: true,
     /// };
     /// let read = DignityRequest::default().read(&sky)?;
     /// assert_eq!(read.sect, Sect::Day);
@@ -202,13 +228,7 @@ impl DignityRequest {
     /// `INVALID_ARG` on a longitude or altitude that is not a finite
     /// number, naming its field.
     pub fn read(&self, sky: &ChartSky) -> Result<Dignities, Error> {
-        if !sky.sun_altitude_deg.is_finite() {
-            return Err(Error::invalid_arg(format!(
-                "a solar altitude of {}",
-                sky.sun_altitude_deg
-            ))
-            .with_field("sun_altitude_deg"));
-        }
+        sky.check()?;
         let sect = self.sect_rule.sect(sky.sun_altitude_deg, sky.daylight);
         let mut places = Vec::with_capacity(CHALDEAN_ORDER.len());
         let mut planets = Vec::with_capacity(CHALDEAN_ORDER.len());
@@ -334,6 +354,7 @@ mod tests {
         mercury_deg: 170.0,
         moon_deg: 33.0,
         sun_altitude_deg: -0.3,
+        moon_altitude_deg: 10.0,
         daylight: true,
     };
 
@@ -421,6 +442,12 @@ mod tests {
         };
         let why = DignityRequest::default().read(&sky).unwrap_err();
         assert_eq!(why.field(), Some("sun_altitude_deg"));
+        let sky = ChartSky {
+            moon_altitude_deg: f64::NAN,
+            ..DUSK
+        };
+        let why = DignityRequest::default().read(&sky).unwrap_err();
+        assert_eq!(why.field(), Some("moon_altitude_deg"));
     }
 
     /// The Egyptian table as a binding writes it, with the first term of
