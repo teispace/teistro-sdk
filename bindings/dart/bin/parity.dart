@@ -472,6 +472,7 @@ void main() {
       DashaSystem.kalachakra,
       DashaSystem.releasingFortune,
       DashaSystem.profection,
+      DashaSystem.firdaria,
       DashaSystem.registered('ACME_PARITY'),
     ],
     drawings: [

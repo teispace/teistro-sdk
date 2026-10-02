@@ -247,3 +247,120 @@ fn a_year_profects_from_any_point() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("point"));
 }
+
+/// London at `jd`, its firdaria asked for under `lots`.
+fn firdaria_under(sdk: &Context, jd: f64, lots: LotRequest) -> Document {
+    let place = Place::new(
+        Latitude::literal(51.5),
+        Longitude::literal(-0.12),
+        Altitude::literal(0.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::UTC)
+        .with_dashas([DashaSystem::Firdaria])
+        .with_lot_rules(lots);
+    sdk.chart()
+        .reading(JulianDay::<Utc>::literal(jd), &request)
+        .unwrap()
+        .value
+}
+
+/// The first-level lords a reading stores, in order.
+fn firdars(reading: &DashaReading) -> Vec<Graha> {
+    reading
+        .periods
+        .iter()
+        .filter(|row| row.level() == 1)
+        .map(|row| row.lord)
+        .collect()
+}
+
+/// The firdaria begin from the Sun by day and the Moon by night (al-Biruni
+/// §395), the sect read under the request's lot rules; each firdar is
+/// shared out in sevenths, two levels stored, and a stored document's
+/// cursor answers what its rows say.
+#[test]
+fn the_firdaria_begin_from_the_luminary_of_the_sect() {
+    use teistro::SectRule;
+    use teistro::dasha::{FIRDARIA_PERIODS, FIRDARIA_ROUNDS, firdar_years};
+
+    let sdk = tropical();
+    // 1 January 2000, 18:00 UTC: night in London.
+    let jd = 2_451_545.25;
+    let night = firdaria_under(&sdk, jd, LotRequest::VALENS);
+    let reading_of = |document: &Document| reading(document, DashaSystem::Firdaria).clone();
+    let stored = reading_of(&night);
+    assert_eq!(stored.first_lord, Graha::Moon);
+    let lords = firdars(&stored);
+    assert_eq!(lords.len(), FIRDARIA_PERIODS * FIRDARIA_ROUNDS);
+    assert_eq!(
+        lords[..FIRDARIA_PERIODS],
+        [
+            Graha::Moon,
+            Graha::Saturn,
+            Graha::Jupiter,
+            Graha::Mars,
+            Graha::Sun,
+            Graha::Venus,
+            Graha::Mercury,
+            Graha::Rahu,
+            Graha::Ketu,
+        ]
+    );
+    assert_eq!(stored.depth.get(), 2);
+    let year = stored.rules.year_length.days();
+    assert!((year - 365.25).abs() < 1e-9);
+    for row in stored.periods.iter().filter(|row| row.level() == 1) {
+        let years = f64::from(firdar_years(row.lord));
+        assert!((row.interval.days() - years * year).abs() < 1e-6, "{row:?}");
+    }
+    // The Moon's sevenths, from the Moon in descending order; the nodes'
+    // firdars are not shared.
+    let sevenths: Vec<_> = stored
+        .periods
+        .iter()
+        .filter(|row| row.path.starts_with("0/"))
+        .map(|row| row.lord)
+        .collect();
+    assert_eq!(sevenths[0], Graha::Moon);
+    assert_eq!(sevenths[1], Graha::Saturn);
+    assert_eq!(sevenths.len(), 7);
+    for node in ["7/", "8/"] {
+        assert!(!stored.periods.iter().any(|row| row.path.starts_with(node)));
+    }
+
+    // Forced to day, the same instant begins from the Sun.
+    let day = firdaria_under(&sdk, jd, LotRequest::VALENS.with_sect_rule(SectRule::Day));
+    assert_eq!(firdars(&reading_of(&day))[0], Graha::Sun);
+
+    // A cursor rebuilt from either document answers its rows.
+    for document in [&night, &day] {
+        let cursor = sdk.chart().dasha(document, DashaSystem::Firdaria).unwrap();
+        for row in &reading_of(document).periods {
+            let middle = f64::midpoint(row.interval.from.get(), row.interval.to.get());
+            let depth = Depth::try_new(u8::try_from(row.level()).unwrap()).unwrap();
+            let chain = cursor.at(JulianDay::literal(middle), depth);
+            assert_eq!(chain.iter().last().unwrap().lord, row.lord, "{row:?}");
+        }
+    }
+}
+
+/// C225's other reading: Bonatti's nodes after Mars by night, kept when a
+/// stored document is rebuilt under a context that says otherwise.
+#[test]
+fn the_nodes_can_follow_mars() {
+    let bonatti = tropical_with(r#"{"firdaria_nodes": "AFTER_MARS"}"#);
+    let document = firdaria_under(&bonatti, 2_451_545.25, LotRequest::VALENS);
+    let stored = reading(&document, DashaSystem::Firdaria);
+    assert_eq!(
+        firdars(stored)[3..6],
+        [Graha::Mars, Graha::Rahu, Graha::Ketu]
+    );
+    let cursor = tropical()
+        .chart()
+        .dasha(&document, DashaSystem::Firdaria)
+        .unwrap();
+    assert_eq!(
+        cursor.firdaria().unwrap().order(),
+        teistro::dasha::firdaria_order(Graha::Moon, teistro::settings::FirdariaNodes::AfterMars)
+    );
+}

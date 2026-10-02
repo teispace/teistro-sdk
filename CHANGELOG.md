@@ -1804,6 +1804,20 @@ the astronomical numbers do not move. Nothing else computes yet.
     `ChartArea::profection_from` profects the year from any `LotPoint`
     (IV.11's "every point"), and `ChartArea::point_place` says where one
     falls.
+  - **The firdaria** (`hellenistic-firdaria.md`, C225–C226). The Persian
+    time lords are a dasha: `FirdariaDasha` behind `Timeline`, named by
+    the new `FIRDARIA` member (43) in a new family. A day birth's run
+    from the Sun and a night birth's from the Moon (al-Biruni §395), the
+    sect read under the request's lot rules; each planet's firdar is
+    shared out in sevenths from its lord in descending order, and the
+    nodes' three and two years are not; after 75 years the round begins
+    again (Abu Ma'shar). A document stores two rounds, 150 years, to the
+    sevenths, and `ChartArea::dasha` rebuilds the cursor from the first
+    lord and the order the rows show. The dasha group's `firdaria_nodes`
+    (`END`, `AFTER_MARS`) decides C225, and the year is the calendar
+    one (C226). `time-lords-measured.md` finds one of the corpus's 55
+    births whose sect the horizon and daylight rules disagree on. Every
+    parity runner asks for `FIRDARIA`.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

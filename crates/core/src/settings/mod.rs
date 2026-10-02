@@ -35,15 +35,15 @@ pub use knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
     Cheshta, DayBoundary, DayLordDay, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
-    DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, GhatiReckoning, GrahaArudhaException,
-    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents,
-    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
-    NodeRulers, NodeVedha, OverridePolicy, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
-    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    DualLord, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes, GhatiReckoning,
+    GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth,
+    MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, ReleasingSharedSign,
+    RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SolarMonthStart, SunAyana,
+    Sunrise, SuryaSunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -587,6 +587,9 @@ group!(
         /// Where releasing from Daimon begins when Daimon shares Fortune's
         /// sign (crux C223).
         releasing_shared_sign: ReleasingSharedSign,
+        /// Where the nodes take their years in a night birth's firdaria
+        /// (crux C225).
+        firdaria_nodes: FirdariaNodes,
     }
 );
 

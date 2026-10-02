@@ -2358,6 +2358,10 @@ typedef enum ts_dasha_system {
      * The profected year from the Ascendant
      */
     TS_DASHA_SYSTEM_PROFECTION = 42,
+    /**
+     * The firdaria, the Persian periods of the seven and the nodes
+     */
+    TS_DASHA_SYSTEM_FIRDARIA = 43,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_SYSTEM_UNKNOWN = -1,
 } ts_dasha_system;
@@ -3162,6 +3166,10 @@ typedef enum ts_dasha_family {
      * Profection
      */
     TS_DASHA_FAMILY_PROFECTION = 7,
+    /**
+     * Firdaria
+     */
+    TS_DASHA_FAMILY_FIRDARIA = 8,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_DASHA_FAMILY_UNKNOWN = -1,
 } ts_dasha_family;

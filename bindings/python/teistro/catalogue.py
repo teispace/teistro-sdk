@@ -1825,6 +1825,9 @@ class DashaSystem(Catalogued):
     PROFECTION = 42
     """The profected year from the Ascendant"""
 
+    FIRDARIA = 43
+    """The firdaria, the Persian periods of the seven and the nodes"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -2493,6 +2496,9 @@ class DashaFamily(Catalogued):
 
     PROFECTION = 7
     """Profection"""
+
+    FIRDARIA = 8
+    """Firdaria"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -5548,6 +5554,7 @@ _KEYS: dict[str, dict[int, str]] = {
         40: "RELEASING_FORTUNE",
         41: "RELEASING_DAIMON",
         42: "PROFECTION",
+        43: "FIRDARIA",
         -1: "UNKNOWN",
     },
     "BalaScheme": {
@@ -5771,6 +5778,7 @@ _KEYS: dict[str, dict[int, str]] = {
         5: "OWN",
         6: "RELEASING",
         7: "PROFECTION",
+        8: "FIRDARIA",
         -1: "UNKNOWN",
     },
     "AvasthaJagradadi": {

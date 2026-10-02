@@ -1910,7 +1910,8 @@
             "VARSHA_YOGINI",
             "RELEASING_FORTUNE",
             "RELEASING_DAIMON",
-            "PROFECTION"
+            "PROFECTION",
+            "FIRDARIA"
           ],
           "type": "string"
         },
@@ -1959,7 +1960,8 @@
             "dasha_system.VARSHA_YOGINI",
             "dasha_system.RELEASING_FORTUNE",
             "dasha_system.RELEASING_DAIMON",
-            "dasha_system.PROFECTION"
+            "dasha_system.PROFECTION",
+            "dasha_system.FIRDARIA"
           ],
           "type": "string",
           "writeOnly": true

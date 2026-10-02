@@ -1,21 +1,22 @@
-//! Valens's time lords, measured (`hellenistic-time-lords.md` step 3,
-//! C223–C224): where each starts held on every birth, a stored document's
-//! reading rebuilt from its start sign, how often Daimon shares Fortune's
-//! sign, and whether a life reaches a loosing of the bond at the second
-//! level from every start.
+//! The Hellenistic time lords, measured (`hellenistic-time-lords.md` step
+//! 3, C223–C224; `hellenistic-firdaria.md`): where each starts held on
+//! every birth, a stored document's reading rebuilt, how often Daimon
+//! shares Fortune's sign, whether a life reaches a loosing of the bond at
+//! the second level from every start, and how many births the two sect
+//! rules put in different firdaria.
 //!
-//! Valens's worked nativities are the acceptance tests in
-//! `crates/dasha/src/releasing.rs`; this page counts how often the choices
-//! they leave open fall on real skies.
+//! Valens's worked nativities and al-Biruni's table are the acceptance
+//! tests in `crates/dasha`; this page counts how often the choices they
+//! leave open fall on real skies.
 
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro::catalogue::{DashaSystem, Rashi};
+use teistro::catalogue::{DashaSystem, Graha, Rashi};
 use teistro::dasha::{DashaReading, ReleasingDasha, TIME_LORDS, Timeline};
 use teistro::quantity::{JulianDay, Utc};
 use teistro::settings::YearLength;
-use teistro::{Context, Document, Lot};
+use teistro::{Context, Document, Lot, LotRequest, Sect, SectRule};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::fortitudes::tropical;
@@ -33,19 +34,30 @@ const JULIAN_YEAR_DAYS: f64 = 365.25;
 /// The signs a level runs through before it is loosed.
 const SIGNS: usize = 12;
 
-/// One birth founded with its three time lords, and the points they start
-/// from as the façade reads them.
+/// Every time lord the page founds: Valens's three and the firdaria.
+const SYSTEMS: [DashaSystem; 4] = [
+    DashaSystem::ReleasingFortune,
+    DashaSystem::ReleasingDaimon,
+    DashaSystem::Profection,
+    DashaSystem::Firdaria,
+];
+
+/// One birth founded with its time lords, and the points they start from
+/// as the façade reads them.
 struct Read {
     fortune: Rashi,
     daimon: Rashi,
     ascendant: Rashi,
+    /// The sect by the horizon (Valens's) and by daylight.
+    sect: Sect,
+    daylight: Sect,
     document: Document,
 }
 
 impl Read {
     fn of(sdk: &Context, birth: &Birth) -> Result<Read, String> {
         let why = |what: &str, err: teistro::Error| format!("{}: {what}: {err}", birth.name);
-        let request = birth.request().with_dashas(TIME_LORDS);
+        let request = birth.request().with_dashas(SYSTEMS);
         let document = sdk
             .chart()
             .reading(JulianDay::<Utc>::literal(birth.at()), &request)
@@ -67,10 +79,21 @@ impl Read {
             .angles(&document)
             .map_err(|err| why("reading its angles", err))?
             .ascendant_deg;
+        let daylight = sdk
+            .chart()
+            .lots_with_request(
+                &document,
+                &[],
+                LotRequest::VALENS.with_sect_rule(SectRule::Daylight),
+            )
+            .map_err(|err| why("reading its sect by daylight", err))?
+            .sect;
         Ok(Read {
             fortune: sign(Lot::Fortune)?,
             daimon: sign(Lot::Daimon)?,
             ascendant: Rashi::of_longitude(ascendant),
+            sect: lots.sect,
+            daylight,
             document,
         })
     }
@@ -111,24 +134,29 @@ fn first_loosing(dasha: &ReleasingDasha, birth: f64) -> Option<f64> {
         })
 }
 
-/// Whether the façade's cursor, rebuilt from `stored`'s start sign, gives
+/// The luminary the firdaria begin from in a sect (§395).
+fn luminary(sect: Sect) -> Graha {
+    match sect {
+        Sect::Day => Graha::Sun,
+        Sect::Night => Graha::Moon,
+    }
+}
+
+/// Whether the façade's cursor, rebuilt from what `stored` records, gives
 /// the stored reading back whole.
 fn rebuilds(sdk: &Context, read: &Read, system: DashaSystem, stored: &DashaReading) -> bool {
     let Ok(cursor) = sdk.chart().dasha(&read.document, system) else {
         return false;
     };
-    let again = match (cursor.releasing(), cursor.profection()) {
-        (Some(kernel), _) => DashaReading::of_time_lord(system, kernel, stored.rules, stored.depth),
-        (_, Some(kernel)) => DashaReading::of_time_lord(system, kernel, stored.rules, stored.depth),
-        _ => return false,
-    };
+    let again = DashaReading::of_time_lord(system, &cursor, stored.rules, stored.depth);
     again == *stored
 }
 
-/// Each time lord starts where Valens counts it, and a stored reading
-/// rebuilt from its start sign gives back every row it carries.
+/// Each time lord starts where its source counts it, and a stored reading
+/// rebuilt from what it records gives back every row it carries.
 fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
     let (mut start_wrong, mut rebuild_wrong) = ([0_usize; 3], 0);
+    let mut firdaria_wrong = 0;
     for read in reads {
         for (slot, system) in TIME_LORDS.into_iter().enumerate() {
             let stored = read.reading(system);
@@ -136,7 +164,14 @@ fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
             if let Some(wrong) = start_wrong.get_mut(slot) {
                 *wrong += usize::from(!starts);
             }
-            let rebuilt = stored.is_some_and(|stored| rebuilds(sdk, read, system, stored));
+        }
+        let firdaria = read.reading(DashaSystem::Firdaria);
+        let begins = firdaria.and_then(|stored| stored.periods.first().map(|row| row.lord));
+        firdaria_wrong += usize::from(begins != Some(luminary(read.sect)));
+        for system in SYSTEMS {
+            let rebuilt = read
+                .reading(system)
+                .is_some_and(|stored| rebuilds(sdk, read, system, stored));
             rebuild_wrong += usize::from(!rebuilt);
         }
     }
@@ -159,9 +194,14 @@ fn structural_claims(sdk: &Context, reads: &[Read]) -> Vec<Claim> {
             of,
         ),
         Claim::counted(
-            "a stored reading rebuilt from its start sign gives back every row it carries",
+            "the firdaria begin from the Sun by day and the Moon by night, the sect by Valens's horizon (al-Biruni §395)",
+            firdaria_wrong,
+            of,
+        ),
+        Claim::counted(
+            "a stored reading rebuilt from its start sign or first lord gives back every row it carries",
             rebuild_wrong,
-            of * TIME_LORDS.len(),
+            of * SYSTEMS.len(),
         ),
     ]
 }
@@ -198,6 +238,15 @@ fn open_claims(reads: &[Read]) -> Vec<Claim> {
     let note = latest.map_or_else(String::new, |(age, start)| {
         format!("the latest is released from {start:?}, at {age:.1} calendar years")
     });
+    let split = reads
+        .iter()
+        .filter(|read| read.sect != read.daylight)
+        .count();
+    claims.push(Claim::stated(
+        "births whose sect by the horizon and by daylight differ, so that the request's sect rule moves their whole firdaria",
+        Verdict::Holds,
+        format!("{} of {of}", count(split)),
+    ));
     claims.push(
         Claim::counted(
             "C224: releasing from any of the twelve signs reaches a second-level loosing before the age of 80, so its reading decides a period in every life",
@@ -214,7 +263,7 @@ fn open_claims(reads: &[Read]) -> Vec<Claim> {
 fn row_counts(reads: &[Read]) -> String {
     let mut out =
         String::from("| system | depth | rows, median | rows, most |\n|---|---|---|---|\n");
-    for system in TIME_LORDS {
+    for system in SYSTEMS {
         let readings: Vec<&DashaReading> = reads
             .iter()
             .filter_map(|read| read.reading(system))
@@ -248,23 +297,26 @@ fn page(root: &Path) -> Result<String, String> {
         .chain(open_claims(&reads))
         .collect();
     let mut out = String::from(
-        "# Valens's time lords, measured\n\n\
+        "# The Hellenistic time lords, measured\n\n\
          Status: `generated` by `cargo xtask time-lords` from the corpus's \
          recorded births, 2026-10-02. Do not edit: `check-time-lords` \
          regenerates this page and fails on any difference.\n\n\
          Releasing and the profected year (`hellenistic-time-lords.md`) \
          are held to Valens's worked nativities by the unit tests of \
-         `crates/dasha/src/releasing.rs`. Those give signs and years from \
-         a stated start, so they cannot say how often a real sky puts \
-         Daimon in Fortune's sign, or whether a life reaches the \
-         loosing of the bond; this page answers both. ",
+         `crates/dasha/src/releasing.rs`, and the firdaria \
+         (`hellenistic-firdaria.md`) to al-Biruni's table by those of \
+         `crates/dasha/src/firdaria.rs`. Those give signs, lords and years \
+         from a stated start, so they cannot say how often a real sky puts \
+         Daimon in Fortune's sign, whether a life reaches the loosing of \
+         the bond, or how many births the sect rule decides; this page \
+         answers all three. ",
     );
     let _ = write!(
         out,
         "It founds each of the corpus's {} births in the tropical zodiac \
-         with `RELEASING_FORTUNE`, `RELEASING_DAIMON` and `PROFECTION` \
-         asked for, and reads their lots through `ChartArea::lots` under \
-         Valens's rules.\n\n",
+         with `RELEASING_FORTUNE`, `RELEASING_DAIMON`, `PROFECTION` and \
+         `FIRDARIA` asked for, and reads their lots and sect through \
+         `ChartArea::lots` under Valens's rules.\n\n",
         count(reads.len())
     );
     out.push_str(&table(&claims));
@@ -272,18 +324,22 @@ fn page(root: &Path) -> Result<String, String> {
     out.push_str(&row_counts(&reads));
     out.push_str(
         "\n## What it means\n\n\
-         The first four rows hold what the façade must do on every birth: \
-         start each time lord where Valens counts it, and record enough \
-         that a stored chart rebuilds the same periods. The next counts \
-         the births C223 decides, where the activity count moves to the \
-         sign after Fortune's. The last asks the twelve start signs rather \
+         The first five rows hold what the façade must do on every birth: \
+         start each time lord where its source counts it, and record \
+         enough that a stored chart rebuilds the same periods. The next \
+         counts the births C223 decides, where the activity count moves \
+         to the sign after Fortune's, and the one after it the births \
+         whose Sun stands near enough the horizon that Valens's rule and \
+         the daylight one name different sects, and so different \
+         firdaria from birth. The last asks the twelve start signs rather \
          than the births, because whether a life meets the loosing at the \
          second level is arithmetic: it falls only in a sign whose years \
          outlast 17 years 7 months (Gemini, Cancer, Leo, Virgo, Capricorn \
          and Aquarius), one of them begins within any 80 years, and C224's \
          reading of the opposite sign then decides every period after it. \
-         A document carries the whole 211-year cycle to its depth, which \
-         the row counts above price.\n",
+         A document carries releasing's whole 211-year cycle to its \
+         depth, and the firdaria's two 75-year rounds to their sevenths, \
+         which the row counts above price.\n",
     );
     Ok(fill(&out))
 }

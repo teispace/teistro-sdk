@@ -851,7 +851,10 @@ the same machinery rather than new mechanisms:
   behind `Timeline`, measured in `time-lords-measured.md`, under the
   parity gate in every binding, their lot rules on the request and C223 a
   knob, and profection from any point through `profection_from`. The
-  firdaria and the decennials remain.
+  firdaria followed (`hellenistic-firdaria.md`, C225–C226): a
+  `DashaSystem` member from al-Biruni's table, its sect under the
+  request's lot rules, the nodes' place by night a knob. The decennials
+  remain.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the

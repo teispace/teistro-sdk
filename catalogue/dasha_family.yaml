@@ -59,3 +59,10 @@ members:
       - text: "hellenistic-time-lords"
         ref: "docs/03-design/hellenistic-time-lords.md"
     mark: V
+  - key: FIRDARIA
+    id: 8
+    doc: "Firdaria"
+    sources:
+      - text: "hellenistic-firdaria"
+        ref: "docs/03-design/hellenistic-firdaria.md"
+    mark: V

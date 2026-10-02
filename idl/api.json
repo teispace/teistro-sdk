@@ -3434,6 +3434,12 @@
           "value": 42,
           "doc": "The profected year from the Ascendant",
           "key": "PROFECTION"
+        },
+        {
+          "name": "Firdaria",
+          "value": 43,
+          "doc": "The firdaria, the Persian periods of the seven and the nodes",
+          "key": "FIRDARIA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4574,6 +4580,12 @@
           "value": 7,
           "doc": "Profection",
           "key": "PROFECTION"
+        },
+        {
+          "name": "Firdaria",
+          "value": 8,
+          "doc": "Firdaria",
+          "key": "FIRDARIA"
         }
       ],
       "source": "catalogue/catalogue.json"

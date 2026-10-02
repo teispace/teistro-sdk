@@ -2875,6 +2875,7 @@ export type DashaSystem =
   | 'dasha_system.RELEASING_FORTUNE'
   | 'dasha_system.RELEASING_DAIMON'
   | 'dasha_system.PROFECTION'
+  | 'dasha_system.FIRDARIA'
   | 'unknown';
 
 /** Every DashaSystem by name; the values are the strings the union accepts. */
@@ -3051,6 +3052,10 @@ export declare const DashaSystem: {
    * The profected year from the Ascendant
    */
   readonly Profection: 'dasha_system.PROFECTION';
+  /**
+   * The firdaria, the Persian periods of the seven and the nodes
+   */
+  readonly Firdaria: 'dasha_system.FIRDARIA';
 };
 
 /**
@@ -4104,6 +4109,7 @@ export type DashaFamily =
   | 'dasha_family.OWN'
   | 'dasha_family.RELEASING'
   | 'dasha_family.PROFECTION'
+  | 'dasha_family.FIRDARIA'
   | 'unknown';
 
 /** Every DashaFamily by name; the values are the strings the union accepts. */
@@ -4140,6 +4146,10 @@ export declare const DashaFamily: {
    * Profection
    */
   readonly Profection: 'dasha_family.PROFECTION';
+  /**
+   * Firdaria
+   */
+  readonly Firdaria: 'dasha_family.FIRDARIA';
 };
 
 /**

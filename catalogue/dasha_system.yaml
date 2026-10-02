@@ -352,3 +352,11 @@ members:
       - text: "hellenistic-time-lords"
         ref: "docs/03-design/hellenistic-time-lords.md"
     mark: V
+  - key: FIRDARIA
+    id: 43
+    doc: "The firdaria, the Persian periods of the seven and the nodes"
+    attributes: { family: FIRDARIA }
+    sources:
+      - text: "hellenistic-firdaria"
+        ref: "docs/03-design/hellenistic-firdaria.md"
+    mark: V

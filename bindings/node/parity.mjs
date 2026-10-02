@@ -312,6 +312,7 @@ const charts = geo.chart.foundMany({
     DashaSystem.Kalachakra,
     DashaSystem.ReleasingFortune,
     DashaSystem.Profection,
+    DashaSystem.Firdaria,
     'dasha_system.ACME_PARITY',
   ],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:
