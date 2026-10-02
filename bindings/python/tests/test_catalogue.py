@@ -81,11 +81,12 @@ class TheCatalogue(unittest.TestCase):
         # `SolarEclipseKind`'s four, each with its `UNKNOWN`,
         # and `Kind`'s three for them. 135 since the essential dignities'
         # `Sect`, two, `SectRule`, four, `Terms`, five, and `Triplicities`,
-        # two.
-        self.assertEqual(len(every_enum()), 135)
+        # two; 138 since the accidental fortitudes' `Accident`,
+        # twenty-four, and `Partile` and `Siege`, two each.
+        self.assertEqual(len(every_enum()), 138)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

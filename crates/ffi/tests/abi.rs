@@ -1503,6 +1503,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1642,6 +1643,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1779,6 +1781,7 @@ fn a_chart_request_answers_the_transits() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1988,6 +1991,7 @@ fn a_chart_request_answers_the_hit_list() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2150,6 +2154,7 @@ fn a_chart_request_answers_sade_sati() {
             sade_sati_json: json.as_ptr(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2254,6 +2259,7 @@ fn a_chart_request_answers_sade_sati() {
             sade_sati_json: text.as_ptr(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2312,6 +2318,7 @@ fn a_chart_request_answers_sade_sati() {
         sade_sati_json: ptr::null(),
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
+        fortitudes_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2374,6 +2381,7 @@ fn a_chart_request_answers_the_dignities() {
                 sade_sati_json: ptr::null(),
                 kp_json: ptr::null(),
                 dignities_json,
+                fortitudes_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2582,6 +2590,350 @@ fn a_chart_request_answers_the_dignities() {
     );
 }
 
+/// A value of a chart's fortitudes the `fortitudes` row carries, as
+/// `a_chart_request_answers_the_fortitudes` reads each column.
+type ReadsSky = fn(&teistro::Fortitudes) -> f64;
+
+/// A value of a planet's accidents the `fortitude_planets` row carries.
+type ReadsPlanet = fn(&teistro::PlanetAccidents) -> i64;
+
+/// The accidental fortitudes cross: a request's `fortitudes_json` answers
+/// the essential half in the dignity sections and the accidental half in
+/// `fortitudes`, `fortitude_houses`, `fortitude_planets` and
+/// `fortitude_accidents`, each cell the façade's own to the bit; asking
+/// for the dignities twice is refused, and so is a misspelt rule
+/// (`03-design/essential-dignities.md` §Accidental fortitudes).
+#[test]
+#[allow(clippy::too_many_lines, reason = "one request, every section it fills")]
+fn a_chart_request_answers_the_fortitudes() {
+    use teistro_ffi::chart::{TsAccident, TsPartile, TsSectRule, TsSiege};
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_460_676.5, 2_460_676.75];
+    let text = r#"{"dignities":{"sectRule":"DAYLIGHT"},"rules":{"beamsDeg":15,"partile":{"WITHIN":{"orbDeg":1}},"siege":{"WITHIN":{"spanDeg":30}}},"scores":{"regulus":5,"houses":[5,3,1,4,3,-2,4,-2,2,5,4,-5]}}"#;
+    let base = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 0.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
+            kp_json: ptr::null(),
+            dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let found = |asked: &TsChartRequest| {
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a valid request and a valid slot.
+        let status = unsafe { ts_chart_found(ctx.handle, asked, &raw mut blob) };
+        let bytes = (status == Status::Ok).then(|| {
+            // SAFETY: the library wrote `len` bytes.
+            unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec()
+        });
+        // SAFETY: a descriptor the library wrote, or the empty one.
+        unsafe { ts_blob_free(&raw mut blob) };
+        (status, bytes)
+    };
+    let json = CString::new(text).unwrap();
+    let (status, bytes) = found(&TsChartRequest {
+        fortitudes_json: json.as_ptr(),
+        ..base
+    });
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let bytes = bytes.unwrap();
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    // The façade's own reading of the same charts.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("conformance-baseline")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &instants.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::FortitudeRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::Fortitudes> = natal
+        .iter()
+        .map(|document| sdk.chart().fortitudes(document, &asked).unwrap())
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let code = |value: u8| i64::from(value);
+
+    // The essential half, in the dignity sections, from the fortitudes'
+    // own request.
+    assert_eq!(
+        ints("dignities", "sect_rule"),
+        vec![code(TsSectRule::Daylight as u8); 2]
+    );
+    let essential: Vec<&teistro::PlanetDignity> = expected
+        .iter()
+        .flat_map(|one| one.dignities.planets.iter())
+        .collect();
+    assert_eq!(
+        ints("dignity_planets", "score"),
+        essential
+            .iter()
+            .map(|at| i64::from(at.score))
+            .collect::<Vec<_>>()
+    );
+
+    // A row a chart: the sky as read and the rules as applied.
+    assert_eq!(
+        ints("fortitudes", "houses"),
+        expected
+            .iter()
+            .map(|one| i64::from(one.sky.houses.id()))
+            .collect::<Vec<_>>()
+    );
+    let sky: [(&str, ReadsSky); 9] = [
+        ("north_node", |one| one.sky.north_node_deg),
+        ("regulus", |one| one.sky.regulus_deg),
+        ("spica", |one| one.sky.spica_deg),
+        ("algol", |one| one.sky.algol_deg),
+        ("combustion_orb", |one| one.rules.combustion_deg),
+        ("beams_orb", |one| one.rules.beams_deg),
+        ("cazimi_orb", |one| one.rules.cazimi_deg),
+        ("cusp_orb", |one| one.rules.cusp_orb_deg),
+        ("star_orb", |one| one.rules.star_orb_deg),
+    ];
+    for (name, of) in sky {
+        assert_eq!(
+            bits("fortitudes", name),
+            expected
+                .iter()
+                .map(|one| of(one).to_bits())
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    assert_eq!(bits("fortitudes", "beams_orb"), vec![15.0_f64.to_bits(); 2]);
+    assert_eq!(ints("fortitudes", "combustion_in_sign"), [1, 1]);
+    assert_eq!(
+        ints("fortitudes", "partile"),
+        vec![code(TsPartile::Within as u8); 2]
+    );
+    assert_eq!(
+        bits("fortitudes", "partile_orb"),
+        vec![1.0_f64.to_bits(); 2]
+    );
+    assert_eq!(
+        ints("fortitudes", "siege"),
+        vec![code(TsSiege::Within as u8); 2]
+    );
+    assert_eq!(
+        bits("fortitudes", "siege_span"),
+        vec![30.0_f64.to_bits(); 2]
+    );
+    let lines = asked.scores();
+    for (name, worth) in [
+        ("score_direct", lines.direct),
+        ("score_superior_oriental", lines.superior_oriental),
+        ("score_inferior_oriental", lines.inferior_oriental),
+        ("score_under_beams", lines.under_beams),
+        ("score_square_malefic", lines.square_malefic),
+        ("score_regulus", 5),
+        ("score_algol", lines.algol),
+    ] {
+        assert_eq!(
+            ints("fortitudes", name),
+            vec![i64::from(worth); 2],
+            "{name}"
+        );
+    }
+    assert_eq!(ints("fortitudes", "score_regulus"), [5, 5], "asked for");
+    assert_eq!(
+        ints("fortitudes", "score_spica"),
+        [5, 5],
+        "Lilly's, left out"
+    );
+
+    // Twelve houses a chart.
+    assert_eq!(
+        bits("fortitude_houses", "cusp"),
+        expected
+            .iter()
+            .flat_map(|one| one.sky.cusps_deg.map(f64::to_bits))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("fortitude_houses", "score"),
+        expected
+            .iter()
+            .flat_map(|one| one.scores.houses.map(i64::from))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(&ints("fortitude_houses", "score")[..3], [5, 3, 1]);
+
+    // Seven planets a chart, and their accidents, ragged.
+    let planets: Vec<(&teistro::Fortitudes, usize, &teistro::PlanetAccidents)> = expected
+        .iter()
+        .flat_map(|one| {
+            one.planets
+                .iter()
+                .enumerate()
+                .map(move |(k, at)| (one, k, at))
+        })
+        .collect();
+    let planet = |name: &str| ints("fortitude_planets", name);
+    assert_eq!(
+        planet("planet"),
+        planets
+            .iter()
+            .map(|(_, _, at)| i64::from(at.planet.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("fortitude_planets", "speed"),
+        planets
+            .iter()
+            .map(|(one, k, _)| one.sky.speeds_deg_per_day[*k].to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("fortitude_planets", "mean_motion"),
+        planets
+            .iter()
+            .map(|(one, k, _)| one.rules.mean_motion_deg[*k].to_bits())
+            .collect::<Vec<_>>()
+    );
+    let per: [(&str, ReadsPlanet); 4] = [
+        ("house", |at| i64::from(at.house.get())),
+        ("fortitude", |at| i64::from(at.fortitude)),
+        ("debility", |at| i64::from(at.debility)),
+        ("accident_count", |at| {
+            i64::try_from(at.accidents.len()).unwrap()
+        }),
+    ];
+    for (name, of) in per {
+        assert_eq!(
+            planet(name),
+            planets.iter().map(|(_, _, at)| of(at)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    let accidents: Vec<(
+        &teistro::Fortitudes,
+        &teistro::PlanetAccidents,
+        teistro::Accident,
+    )> = planets
+        .iter()
+        .flat_map(|&(one, _, at)| at.accidents.iter().map(move |&line| (one, at, line)))
+        .collect();
+    assert!(!accidents.is_empty(), "two charts with no accident at all");
+    assert_eq!(
+        ints("fortitude_accidents", "accident"),
+        accidents
+            .iter()
+            .map(|(_, _, line)| code(TsAccident::of(*line).unwrap() as u8))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("fortitude_accidents", "points"),
+        accidents
+            .iter()
+            .map(|(one, at, line)| i64::from(one.scores.points(at.planet, *line)))
+            .collect::<Vec<_>>()
+    );
+
+    // None asked: every section empty.
+    let (status, bytes) = found(&base);
+    assert_eq!(status, Status::Ok);
+    let bytes = bytes.unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("fortitudes", "houses"),
+        ("fortitude_houses", "cusp"),
+        ("fortitude_planets", "planet"),
+        ("fortitude_accidents", "accident"),
+        ("dignity_planets", "planet"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // The essential dignities asked for twice are refused, by the record
+    // that should move.
+    let dignities = CString::new("{}").unwrap();
+    let (status, _) = found(&TsChartRequest {
+        dignities_json: dignities.as_ptr(),
+        fortitudes_json: json.as_ptr(),
+        ..base
+    });
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("dignities"));
+
+    // A refusal names the field the caller wrote, a misspelt one or one
+    // out of range.
+    for (text, field) in [
+        (r#"{"rules":{"beamDeg":15}}"#, "fortitudes.rules.beamDeg"),
+        (r#"{"rules":{"beamsDeg":-1}}"#, "fortitudes.rules.beamsDeg"),
+    ] {
+        let refused = CString::new(text).unwrap();
+        let (status, _) = found(&TsChartRequest {
+            fortitudes_json: refused.as_ptr(),
+            ..base
+        });
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field));
+    }
+}
+
 /// KP crosses: a request's `kp_json` answers every chart's reading as
 /// canonical JSON in the `kp` section, the façade's own reading on the
 /// chart request's clock unless the record names one, spelled as the
@@ -2622,6 +2974,7 @@ fn a_chart_request_answers_kp() {
             sade_sati_json: ptr::null(),
             kp_json: json.as_ptr(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2724,6 +3077,7 @@ fn a_chart_request_answers_kp() {
     let none = TsChartRequest {
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
+        fortitudes_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -2734,6 +3088,7 @@ fn a_chart_request_answers_kp() {
         let asked = TsChartRequest {
             kp_json: text.as_ptr(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2784,6 +3139,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             sade_sati_json: sade_sati.as_ptr(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2817,6 +3173,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         sade_sati_json: bad.as_ptr(),
         kp_json: ptr::null(),
         dignities_json: ptr::null(),
+        fortitudes_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -2871,6 +3228,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3000,6 +3358,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3134,6 +3493,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3899,6 +4259,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4001,6 +4362,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4172,6 +4534,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             sade_sati_json: ptr::null(),
             kp_json: ptr::null(),
             dignities_json: ptr::null(),
+            fortitudes_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4447,6 +4810,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 sade_sati_json: window.as_ptr(),
                 kp_json: ptr::null(),
                 dignities_json: ptr::null(),
+                fortitudes_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );

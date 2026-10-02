@@ -4893,6 +4893,139 @@ typedef enum ts_triplicities {
 } ts_triplicities;
 
 /**
+ * One of Lilly's accidental fortitudes or debilities (p. 115,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+typedef enum ts_accident {
+    /**
+     * Moving forward; void for the Sun and the Moon.
+     */
+    TS_ACCIDENT_DIRECT = 0,
+    /**
+     * Moving backward.
+     */
+    TS_ACCIDENT_RETROGRADE = 1,
+    /**
+     * Faster than its mean motion.
+     */
+    TS_ACCIDENT_SWIFT = 2,
+    /**
+     * Slower than its mean motion.
+     */
+    TS_ACCIDENT_SLOW = 3,
+    /**
+     * Rising before the Sun. Not read for the Moon.
+     */
+    TS_ACCIDENT_ORIENTAL = 4,
+    /**
+     * Setting after the Sun.
+     */
+    TS_ACCIDENT_OCCIDENTAL = 5,
+    /**
+     * The Moon from her conjunction with the Sun to the opposition.
+     */
+    TS_ACCIDENT_INCREASING = 6,
+    /**
+     * The Moon from the opposition to the conjunction.
+     */
+    TS_ACCIDENT_DECREASING = 7,
+    /**
+     * Clear of the Sun: neither combust, under his beams nor in cazimi.
+     */
+    TS_ACCIDENT_FREE_FROM_COMBUSTION = 8,
+    /**
+     * In the heart of the Sun.
+     */
+    TS_ACCIDENT_CAZIMI = 9,
+    /**
+     * Within the combustion orb of the Sun.
+     */
+    TS_ACCIDENT_COMBUST = 10,
+    /**
+     * Within the beams of the Sun, not combust.
+     */
+    TS_ACCIDENT_UNDER_BEAMS = 11,
+    /**
+     * In partile conjunction with Jupiter or Venus.
+     */
+    TS_ACCIDENT_CONJUNCT_BENEFIC = 12,
+    /**
+     * In partile conjunction with the North Node.
+     */
+    TS_ACCIDENT_CONJUNCT_NORTH_NODE = 13,
+    /**
+     * In partile trine to Jupiter or Venus.
+     */
+    TS_ACCIDENT_TRINE_BENEFIC = 14,
+    /**
+     * In partile sextile to Jupiter or Venus.
+     */
+    TS_ACCIDENT_SEXTILE_BENEFIC = 15,
+    /**
+     * In partile conjunction with Saturn or Mars.
+     */
+    TS_ACCIDENT_CONJUNCT_MALEFIC = 16,
+    /**
+     * In partile conjunction with the South Node.
+     */
+    TS_ACCIDENT_CONJUNCT_SOUTH_NODE = 17,
+    /**
+     * In partile opposition to Saturn or Mars.
+     */
+    TS_ACCIDENT_OPPOSED_MALEFIC = 18,
+    /**
+     * In partile square to Saturn or Mars.
+     */
+    TS_ACCIDENT_SQUARE_MALEFIC = 19,
+    /**
+     * Between the bodies of Saturn and Mars.
+     */
+    TS_ACCIDENT_BESIEGED = 20,
+    /**
+     * With Cor Leonis (Regulus).
+     */
+    TS_ACCIDENT_REGULUS = 21,
+    /**
+     * With Spica.
+     */
+    TS_ACCIDENT_SPICA = 22,
+    /**
+     * With Caput Algol.
+     */
+    TS_ACCIDENT_ALGOL = 23,
+} ts_accident;
+
+/**
+ * When two planets are in partile aspect (C216,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+typedef enum ts_partile {
+    /**
+     * Lilly's: the same degree of signs the aspect apart.
+     */
+    TS_PARTILE_SAME_DEGREE = 0,
+    /**
+     * Within an orb of the exact aspect.
+     */
+    TS_PARTILE_WITHIN = 1,
+} ts_partile;
+
+/**
+ * When a planet is besieged by Saturn and Mars (C215,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+typedef enum ts_siege {
+    /**
+     * Lilly's example: all three in one sign, the planet between the two.
+     */
+    TS_SIEGE_SAME_SIGN = 0,
+    /**
+     * On the shorter arc between the two, the arc no wider than a span.
+     */
+    TS_SIEGE_WITHIN = 1,
+} ts_siege;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -7208,6 +7341,27 @@ struct ts_chart_request {
      * Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
      */
     const char * dignities_json;
+    /**
+     * Every chart's accidental fortitudes beside its essential dignities
+     * (Lilly, p. 115), as a JSON object, every member optional:
+     * `dignities` (the record `dignities_json` takes), `rules`
+     * (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+     * `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+     * `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+     * `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+     * `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+     * twelve `houses` and each line by name), Lilly's by default. The
+     * essential half comes back in the sections `dignities_json` fills, so
+     * asking for both is refused; the accidental half in `fortitudes`,
+     * `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+     * The houses are Regiomontanus's unless a profile names another
+     * division for the `hellenistic` module. Null for none, which costs
+     * nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+     * Refusals are named from the record every binding calls
+     * `fortitudes`, as `fortitudes.rules.beamsDeg`.
+     * Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+     */
+    const char * fortitudes_json;
 };
 
 /**
@@ -8142,7 +8296,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 184, "ts_chart_request is 184 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 192, "ts_chart_request is 192 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

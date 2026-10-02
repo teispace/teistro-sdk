@@ -29,6 +29,9 @@ use crate::reading::{ChartSky, Dignities, DignityRequest};
 ///
 /// let typo = FortitudeRequest::from_json(r#"{"rules": {"beamDeg": 15}}"#).unwrap_err();
 /// assert_eq!(typo.field(), Some("fortitudes.rules.beamDeg"));
+///
+/// let negative = FortitudeRequest::from_json(r#"{"rules": {"beamsDeg": -1}}"#).unwrap_err();
+/// assert_eq!(negative.field(), Some("fortitudes.rules.beamsDeg"));
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -51,10 +54,17 @@ impl FortitudeRequest {
     ///
     /// # Errors
     ///
-    /// Text that is not the record, a member it does not know, or a value
-    /// that is not one, each named under `fortitudes`.
+    /// Text that is not the record, a member it does not know, a value
+    /// that is not one, or an orb or mean motion out of range, each named
+    /// under `fortitudes`, so a bad request is refused before a chart is
+    /// read.
     pub fn from_json(text: &str) -> Result<FortitudeRequest, Error> {
-        teistro_core::strict::read(text, FORTITUDES)
+        let request: FortitudeRequest = teistro_core::strict::read(text, FORTITUDES)?;
+        request
+            .rules
+            .check()
+            .map_err(|why| why.under(&format!("{FORTITUDES}.rules")))?;
+        Ok(request)
     }
 
     /// The same request, its essential dignities read otherwise.
@@ -103,8 +113,10 @@ impl FortitudeRequest {
     /// # Errors
     ///
     /// As [`DignityRequest::read`] and
-    /// [`accidental_dignities`](crate::accidental_dignities).
+    /// [`accidental_dignities`](crate::accidental_dignities); a rule out of
+    /// range is named under `rules`, as `rules.beamsDeg`.
     pub fn read(&self, chart: &ChartSky, sky: &AccidentalSky) -> Result<Fortitudes, Error> {
+        self.rules.check().map_err(|why| why.under("rules"))?;
         let dignities = self.dignities.read(chart)?;
         let planets = accidental_dignities(&chart.longitudes(), sky, &self.rules, &self.scores)?;
         Ok(Fortitudes {

@@ -399,6 +399,36 @@ for such charts. [`fortitudes-measured.md`](fortitudes-measured.md)
 reads the corpus in Lilly's tropical zodiac and counts what each crux's
 rival would move.
 
+**At the boundary**, a chart request's `fortitudes_json` is the
+`FortitudeRequest` record, read strictly by `FortitudeRequest::from_json`,
+so a misspelt key is refused at its path (`fortitudes.rules.beamDeg`).
+Its essential half answers in the sections `dignities_json` fills
+(`dignities`, `dignity_planets`, `dignity_receptions`), from the
+fortitudes' own `Dignities`. Asking for both is refused by name, because
+two requests for one table could disagree about it. Four sections carry
+the accidental half:
+
+- **`fortitudes`**, a row a chart: the house division (`HouseSystem`),
+  the North Node and the three stars as read, then every rule as applied.
+  These are the three solar orbs, the sign clause, the cusp and star orbs,
+  and the partile and siege readings as `TsPartile` and `TsSiege`, each
+  with its orb or span. Then the 26 line scores, as `i8`. A binding
+  never infers a rule it did not see.
+- **`fortitude_houses`**, twelve rows a chart: each cusp and the house's
+  score.
+- **`fortitude_planets`**, seven rows a chart in the Chaldean order: the
+  planet, its daily motion and the mean motion it was judged against,
+  its house, its fortitude and debility, and how many accidents it holds.
+  The mean motion sits here rather than on the chart row because it is
+  the planet's own.
+- **`fortitude_accidents`**, ragged by those counts: each accident as
+  `TsAccident` and the points it scored. The points are reported because
+  orientality scores by the planet (Saturn's +2 is Venus's −2), and a
+  binding should not need that rule to total a line.
+
+Lilly's net is not a column: each binding sums it as `Fortitudes::net`
+does, from the four values the sections already carry.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
@@ -426,8 +456,9 @@ rival would move.
    **Reception done** (§Reception, C210). **The accidental fortitudes'
    doctrine is done** (§Accidental fortitudes, C211–C217), held to two
    printed figures, and so is its façade (`ChartArea::fortitudes`,
-   `fortitudes-measured.md`). The boundary and the bindings come next,
-   as reception's did. Then the almuten, which needs both.
+   `fortitudes-measured.md`), and so is its boundary (§At the boundary:
+   sections 63–66 in every binding, under the parity gate). Next is the
+   almuten, which needs both halves.
 
 ## What is not decided
 

@@ -225,7 +225,7 @@ impl AccidentalRules {
 
     /// Every orb a finite, non-negative number and every mean motion a
     /// positive one, naming the field that is not.
-    fn check(&self) -> Result<(), Error> {
+    pub(crate) fn check(&self) -> Result<(), Error> {
         let partile = match self.partile {
             Partile::SameDegree => 0.0,
             Partile::Within { orb_deg } => orb_deg,

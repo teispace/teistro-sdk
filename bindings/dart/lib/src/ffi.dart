@@ -1050,6 +1050,26 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
   external ffi.Pointer<ffi.Char> dignitiesJson;
 
+  /// Every chart's accidental fortitudes beside its essential dignities
+  /// (Lilly, p. 115), as a JSON object, every member optional:
+  /// `dignities` (the record `dignities_json` takes), `rules`
+  /// (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+  /// `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+  /// `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+  /// `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+  /// `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+  /// twelve `houses` and each line by name), Lilly's by default. The
+  /// essential half comes back in the sections `dignities_json` fills, so
+  /// asking for both is refused; the accidental half in `fortitudes`,
+  /// `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+  /// The houses are Regiomontanus's unless a profile names another
+  /// division for the `hellenistic` module. Null for none, which costs
+  /// nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+  /// Refusals are named from the record every binding calls
+  /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
+  /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+  external ffi.Pointer<ffi.Char> fortitudesJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2939,7 +2959,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3135,6 +3155,26 @@ final class ChartRequest {
   /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
   final String? dignitiesJson;
 
+  /// Every chart's accidental fortitudes beside its essential dignities
+  /// (Lilly, p. 115), as a JSON object, every member optional:
+  /// `dignities` (the record `dignities_json` takes), `rules`
+  /// (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+  /// `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+  /// `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+  /// `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+  /// `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+  /// twelve `houses` and each line by name), Lilly's by default. The
+  /// essential half comes back in the sections `dignities_json` fills, so
+  /// asking for both is refused; the accidental half in `fortitudes`,
+  /// `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+  /// The houses are Regiomontanus's unless a profile names another
+  /// division for the `hellenistic` module. Null for none, which costs
+  /// nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+  /// Refusals are named from the record every binding calls
+  /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
+  /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+  final String? fortitudesJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3201,6 +3241,9 @@ final class ChartRequest {
     raw.dignitiesJson = dignitiesJson == null
         ? ffi.nullptr
         : dignitiesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.fortitudesJson = fortitudesJson == null
+        ? ffi.nullptr
+        : fortitudesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3253,6 +3296,9 @@ final class ChartRequest {
         dignitiesJson: raw.dignitiesJson == ffi.nullptr
             ? null
             : raw.dignitiesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        fortitudesJson: raw.fortitudesJson == ffi.nullptr
+            ? null
+            : raw.fortitudesJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

@@ -2281,7 +2281,7 @@ export interface ChartsSadeSatiVisits {
  * The `dignities` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+ * Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too.
  */
 export interface ChartsDignities {
   /**
@@ -2350,7 +2350,7 @@ export interface ChartsDignities {
  * The `dignity_planets` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+ * The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked.
  */
 export interface ChartsDignityPlanets {
   /**
@@ -2406,7 +2406,7 @@ export interface ChartsDignityPlanets {
  * The `dignity_receptions` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+ * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked.
  */
 export interface ChartsDignityReceptions {
   /**
@@ -2475,6 +2475,265 @@ export interface ChartsDignityReceptions {
    * 1 when `second` stands in `first`'s fall, else 0.
    */
   readonly secondInFall: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `fortitudes` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. Empty when `fortitudes_json` asked for none.
+ */
+export interface ChartsFortitudes {
+  /**
+   * The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module.
+   * The values are `HouseSystem` ids.
+   */
+  readonly houses: Uint16Array;
+  /**
+   * The North Node's longitude, in degrees of the chart's zodiac.
+   */
+  readonly northNode: Float64Array;
+  /**
+   * Regulus's apparent longitude of date, in degrees of the chart's zodiac.
+   */
+  readonly regulus: Float64Array;
+  /**
+   * Spica's, likewise.
+   */
+  readonly spica: Float64Array;
+  /**
+   * Algol's, likewise.
+   */
+  readonly algol: Float64Array;
+  /**
+   * Combust within this many degrees of the Sun, `fortitudes_json.rules.combustionDeg`.
+   */
+  readonly combustionOrb: Float64Array;
+  /**
+   * 1 when combustion also asks for the Sun's sign (C211), `fortitudes_json.rules.combustionInSign`, else 0.
+   */
+  readonly combustionInSign: Uint8Array;
+  /**
+   * Under the beams within this many degrees, `fortitudes_json.rules.beamsDeg` (C212).
+   */
+  readonly beamsOrb: Float64Array;
+  /**
+   * Cazimi within this many degrees, `fortitudes_json.rules.cazimiDeg`.
+   */
+  readonly cazimiOrb: Float64Array;
+  /**
+   * A planet this near the next cusp is in its house (p. 33), `fortitudes_json.rules.cuspOrbDeg` (C214).
+   */
+  readonly cuspOrb: Float64Array;
+  /**
+   * With a star within this many degrees, `fortitudes_json.rules.starOrbDeg`.
+   */
+  readonly starOrb: Float64Array;
+  /**
+   * When two planets are in partile aspect, `fortitudes_json.rules.partile` (C216).
+   * The values are `Partile` ids.
+   */
+  readonly partile: Uint8Array;
+  /**
+   * The orb of `WITHIN`; 0 for `SAME_DEGREE`.
+   */
+  readonly partileOrb: Float64Array;
+  /**
+   * When a planet is besieged, `fortitudes_json.rules.siege` (C215).
+   * The values are `Siege` ids.
+   */
+  readonly siege: Uint8Array;
+  /**
+   * The span of `WITHIN`; 0 for `SAME_SIGN`.
+   */
+  readonly siegeSpan: Float64Array;
+  /**
+   * What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreDirect: Int8Array;
+  /**
+   * What the line `retrograde` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreRetrograde: Int8Array;
+  /**
+   * What the line `swift` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSwift: Int8Array;
+  /**
+   * What the line `slow` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSlow: Int8Array;
+  /**
+   * What the line `superior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSuperiorOriental: Int8Array;
+  /**
+   * What the line `superior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSuperiorOccidental: Int8Array;
+  /**
+   * What the line `inferior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreInferiorOriental: Int8Array;
+  /**
+   * What the line `inferior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreInferiorOccidental: Int8Array;
+  /**
+   * What the line `increasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreIncreasing: Int8Array;
+  /**
+   * What the line `decreasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreDecreasing: Int8Array;
+  /**
+   * What the line `free_from_combustion` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreFreeFromCombustion: Int8Array;
+  /**
+   * What the line `cazimi` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreCazimi: Int8Array;
+  /**
+   * What the line `combust` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreCombust: Int8Array;
+  /**
+   * What the line `under_beams` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreUnderBeams: Int8Array;
+  /**
+   * What the line `conjunct_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreConjunctBenefic: Int8Array;
+  /**
+   * What the line `conjunct_north_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreConjunctNorthNode: Int8Array;
+  /**
+   * What the line `trine_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreTrineBenefic: Int8Array;
+  /**
+   * What the line `sextile_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSextileBenefic: Int8Array;
+  /**
+   * What the line `conjunct_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreConjunctMalefic: Int8Array;
+  /**
+   * What the line `conjunct_south_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreConjunctSouthNode: Int8Array;
+  /**
+   * What the line `opposed_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreOpposedMalefic: Int8Array;
+  /**
+   * What the line `square_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSquareMalefic: Int8Array;
+  /**
+   * What the line `besieged` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreBesieged: Int8Array;
+  /**
+   * What the line `regulus` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreRegulus: Int8Array;
+  /**
+   * What the line `spica` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreSpica: Int8Array;
+  /**
+   * What the line `algol` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default.
+   */
+  readonly scoreAlgol: Int8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `fortitude_houses` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none.
+ */
+export interface ChartsFortitudeHouses {
+  /**
+   * Where the house begins, in degrees of the chart's zodiac.
+   */
+  readonly cusp: Float64Array;
+  /**
+   * What a planet in the house scores, `fortitudes_json.scores.houses`.
+   */
+  readonly score: Int8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `fortitude_planets` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+ */
+export interface ChartsFortitudePlanets {
+  /**
+   * The planet.
+   * The values are `Graha` ids.
+   */
+  readonly planet: Uint16Array;
+  /**
+   * Its daily motion in longitude, in degrees; negative when retrograde.
+   */
+  readonly speed: Float64Array;
+  /**
+   * The mean daily motion its speed is judged swift or slow against, `fortitudes_json.rules.meanMotionDeg`.
+   */
+  readonly meanMotion: Float64Array;
+  /**
+   * Its house, 1 to 12, under the five-degree rule.
+   */
+  readonly house: Uint8Array;
+  /**
+   * The sum of its positive lines, its house's included.
+   */
+  readonly fortitude: Int16Array;
+  /**
+   * The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it.
+   */
+  readonly debility: Int16Array;
+  /**
+   * How many rows of the `fortitude_accidents` section belong to this planet.
+   *
+   * Ragged because which lines a planet meets depends on its sky.
+   */
+  readonly accidentCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `fortitude_accidents` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
+ */
+export interface ChartsFortitudeAccidents {
+  /**
+   * The line it meets.
+   * The values are `Accident` ids.
+   */
+  readonly accident: Uint8Array;
+  /**
+   * What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other.
+   */
+  readonly points: Int8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2884,17 +3143,33 @@ export interface Charts {
    */
   readonly kp: string;
   /**
-   * Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+   * Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too.
    */
   readonly dignities: ChartsDignities;
   /**
-   * The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+   * The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked.
    */
   readonly dignityPlanets: ChartsDignityPlanets;
   /**
-   * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+   * Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked.
    */
   readonly dignityReceptions: ChartsDignityReceptions;
+  /**
+   * Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. Empty when `fortitudes_json` asked for none.
+   */
+  readonly fortitudes: ChartsFortitudes;
+  /**
+   * Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none.
+   */
+  readonly fortitudeHouses: ChartsFortitudeHouses;
+  /**
+   * The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+   */
+  readonly fortitudePlanets: ChartsFortitudePlanets;
+  /**
+   * Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
+   */
+  readonly fortitudeAccidents: ChartsFortitudeAccidents;
 }
 
 /**

@@ -345,7 +345,11 @@ const charts = geo.chart.foundMany({
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
   sadeSati: { from: 2460676.5, to: 2464329, reckoning: 'DEGREE', spells: [4, 7, 8] },
   kp: { number: 74, anyAyanamsha: true },
-  dignities: { sectRule: 'DAYLIGHT', rules: { terms: 'EGYPTIAN', triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } },
+  fortitudes: {
+    dignities: { sectRule: 'DAYLIGHT', rules: { terms: 'EGYPTIAN', triplicities: 'PTOLEMY' }, scores: { peregrine: 0 } },
+    rules: { beamsDeg: 15, combustionInSign: false, partile: { WITHIN: { orbDeg: 1 } }, siege: { WITHIN: { spanDeg: 30 } } },
+    scores: { regulus: 5 },
+  },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -582,6 +586,30 @@ for (const chart of charts) {
     put(
       `chart-${i}-reception-${k}`,
       `${one.planets[0]} ${one.planets[1]} ${firstIn} ${secondIn} ${one.mutual.join(',') || '-'}`,
+    );
+  });
+  const ft = chart.fortitudes;
+  const withOrb = (reading) => (typeof reading === 'string' ? reading : `WITHIN:${number(Object.values(reading.WITHIN)[0])}`);
+  const numbers = (values) => values.map(number).join(',');
+  put(
+    `chart-${i}-fortitudes`,
+    `${ft.sky.houses} ${[ft.sky.northNodeDeg, ft.sky.regulusDeg, ft.sky.spicaDeg, ft.sky.algolDeg].map(number).join(' ')}`,
+  );
+  const fr = ft.rules;
+  put(
+    `chart-${i}-fortitude-rules`,
+    `${number(fr.combustionDeg)} ${fr.combustionInSign ? 1 : 0} ` +
+      `${[fr.beamsDeg, fr.cazimiDeg, fr.cuspOrbDeg, fr.starOrbDeg].map(number).join(' ')} ` +
+      `${withOrb(fr.partile)} ${withOrb(fr.siege)} ${numbers(fr.meanMotionDeg)}`,
+  );
+  const { houses: houseScores, ...lineScores } = ft.scores;
+  put(`chart-${i}-fortitude-scores`, `${houseScores.join(',')} ${Object.values(lineScores).join(',')}`);
+  put(`chart-${i}-fortitude-houses`, numbers(ft.sky.cuspsDeg));
+  ft.planets.forEach((at, k) => {
+    const lines = at.accidents.map((line) => `${line.accident}:${line.points}`);
+    put(
+      `chart-${i}-fortitude-${at.planet}`,
+      `${number(ft.sky.speedsDegPerDay[k])} ${at.house} ${lines.join(',') || '-'} ${at.fortitude} ${at.debility} ${at.net}`,
     );
   });
   put(

@@ -1698,6 +1698,55 @@ Who rules each triplicity (`03-design/essential-dignities.md`).
 | `TS_TRIPLICITIES_PTOLEMY` | 0 | Ptolemy's, Mars ruling water with Venus and the Moon. |
 | `TS_TRIPLICITIES_LILLY` | 1 | Lilly's, Mars ruling water alone. |
 
+## ts_accident
+
+One of Lilly's accidental fortitudes or debilities (p. 115, `03-design/essential-dignities.md` §Accidental fortitudes).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ACCIDENT_DIRECT` | 0 | Moving forward; void for the Sun and the Moon. |
+| `TS_ACCIDENT_RETROGRADE` | 1 | Moving backward. |
+| `TS_ACCIDENT_SWIFT` | 2 | Faster than its mean motion. |
+| `TS_ACCIDENT_SLOW` | 3 | Slower than its mean motion. |
+| `TS_ACCIDENT_ORIENTAL` | 4 | Rising before the Sun. Not read for the Moon. |
+| `TS_ACCIDENT_OCCIDENTAL` | 5 | Setting after the Sun. |
+| `TS_ACCIDENT_INCREASING` | 6 | The Moon from her conjunction with the Sun to the opposition. |
+| `TS_ACCIDENT_DECREASING` | 7 | The Moon from the opposition to the conjunction. |
+| `TS_ACCIDENT_FREE_FROM_COMBUSTION` | 8 | Clear of the Sun: neither combust, under his beams nor in cazimi. |
+| `TS_ACCIDENT_CAZIMI` | 9 | In the heart of the Sun. |
+| `TS_ACCIDENT_COMBUST` | 10 | Within the combustion orb of the Sun. |
+| `TS_ACCIDENT_UNDER_BEAMS` | 11 | Within the beams of the Sun, not combust. |
+| `TS_ACCIDENT_CONJUNCT_BENEFIC` | 12 | In partile conjunction with Jupiter or Venus. |
+| `TS_ACCIDENT_CONJUNCT_NORTH_NODE` | 13 | In partile conjunction with the North Node. |
+| `TS_ACCIDENT_TRINE_BENEFIC` | 14 | In partile trine to Jupiter or Venus. |
+| `TS_ACCIDENT_SEXTILE_BENEFIC` | 15 | In partile sextile to Jupiter or Venus. |
+| `TS_ACCIDENT_CONJUNCT_MALEFIC` | 16 | In partile conjunction with Saturn or Mars. |
+| `TS_ACCIDENT_CONJUNCT_SOUTH_NODE` | 17 | In partile conjunction with the South Node. |
+| `TS_ACCIDENT_OPPOSED_MALEFIC` | 18 | In partile opposition to Saturn or Mars. |
+| `TS_ACCIDENT_SQUARE_MALEFIC` | 19 | In partile square to Saturn or Mars. |
+| `TS_ACCIDENT_BESIEGED` | 20 | Between the bodies of Saturn and Mars. |
+| `TS_ACCIDENT_REGULUS` | 21 | With Cor Leonis (Regulus). |
+| `TS_ACCIDENT_SPICA` | 22 | With Spica. |
+| `TS_ACCIDENT_ALGOL` | 23 | With Caput Algol. |
+
+## ts_partile
+
+When two planets are in partile aspect (C216, `03-design/essential-dignities.md` §Accidental fortitudes).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PARTILE_SAME_DEGREE` | 0 | Lilly's: the same degree of signs the aspect apart. |
+| `TS_PARTILE_WITHIN` | 1 | Within an orb of the exact aspect. |
+
+## ts_siege
+
+When a planet is besieged by Saturn and Mars (C215, `03-design/essential-dignities.md` §Accidental fortitudes).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SIEGE_SAME_SIGN` | 0 | Lilly's example: all three in one sign, the planet between the two. |
+| `TS_SIEGE_WITHIN` | 1 | On the shorter arc between the two, the arc no wider than a span. |
+
 ## ts_hit_kind
 
 What a hit of the transit hit list was (`03-design/transit-hit-list.md`).

@@ -14,6 +14,7 @@ not that they agree with a literal written here.
 from __future__ import annotations
 
 import sys
+from dataclasses import fields as dataclass_fields
 from typing import Any, Iterable, Optional, Sequence, cast
 
 import json
@@ -509,10 +510,19 @@ def main() -> None:
             },
             sade_sati={"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]},
             kp={"number": 74, "anyAyanamsha": True},
-            dignities={
-                "sectRule": "DAYLIGHT",
-                "rules": {"terms": "EGYPTIAN", "triplicities": "PTOLEMY"},
-                "scores": {"peregrine": 0},
+            fortitudes={
+                "dignities": {
+                    "sectRule": "DAYLIGHT",
+                    "rules": {"terms": "EGYPTIAN", "triplicities": "PTOLEMY"},
+                    "scores": {"peregrine": 0},
+                },
+                "rules": {
+                    "beamsDeg": 15,
+                    "combustionInSign": False,
+                    "partile": {"WITHIN": {"orbDeg": 1}},
+                    "siege": {"WITHIN": {"spanDeg": 30}},
+                },
+                "scores": {"regulus": 5},
             },
             shadbala=True,
             bhava_bala=True,
@@ -877,6 +887,36 @@ def main() -> None:
                     f"chart-{i}-reception-{k}",
                     f"{reception.planets[0].full_key} {reception.planets[1].full_key} {sides[0]} {sides[1]} "
                     f"{','.join(reception.mutual) or '-'}",
+                )
+            ft = chart.fortitudes
+            assert ft is not None
+            put(
+                f"chart-{i}-fortitudes",
+                f"{ft.sky.houses.full_key} "
+                + " ".join(number(v) for v in (ft.sky.north_node_deg, ft.sky.regulus_deg, ft.sky.spica_deg, ft.sky.algol_deg)),
+            )
+            fr = ft.rules
+            partile = f"WITHIN:{number(fr.partile_orb_deg)}" if fr.partile.key == "WITHIN" else fr.partile.key
+            siege = f"WITHIN:{number(fr.siege_span_deg)}" if fr.siege.key == "WITHIN" else fr.siege.key
+            put(
+                f"chart-{i}-fortitude-rules",
+                f"{number(fr.combustion_deg)} {int(fr.combustion_in_sign)} "
+                + " ".join(number(v) for v in (fr.beams_deg, fr.cazimi_deg, fr.cusp_orb_deg, fr.star_orb_deg))
+                + f" {partile} {siege} "
+                + ",".join(number(v) for v in fr.mean_motion_deg),
+            )
+            lines_scored = [getattr(ft.scores, f.name) for f in dataclass_fields(ft.scores) if f.name != "houses"]
+            put(
+                f"chart-{i}-fortitude-scores",
+                ",".join(str(v) for v in ft.scores.houses) + " " + ",".join(str(v) for v in lines_scored),
+            )
+            put(f"chart-{i}-fortitude-houses", ",".join(number(v) for v in ft.sky.cusps_deg))
+            for k, planet_accidents in enumerate(ft.planets):
+                lines = ",".join(f"{line.accident.key}:{line.points}" for line in planet_accidents.accidents)
+                put(
+                    f"chart-{i}-fortitude-{planet_accidents.planet.full_key}",
+                    f"{number(ft.sky.speeds_deg_per_day[k])} {planet_accidents.house} {lines or '-'} "
+                    f"{planet_accidents.fortitude} {planet_accidents.debility} {planet_accidents.net}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

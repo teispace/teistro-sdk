@@ -676,6 +676,7 @@ final class ChartArea extends _Area {
     SadeSatiRequest? sadeSati,
     KpRequest? kp,
     DignityRequest? dignities,
+    FortitudeRequest? fortitudes,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -704,6 +705,7 @@ final class ChartArea extends _Area {
     sadeSati: sadeSati,
     kp: kp,
     dignities: dignities,
+    fortitudes: fortitudes,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -752,6 +754,7 @@ final class ChartArea extends _Area {
     SadeSatiRequest? sadeSati,
     KpRequest? kp,
     DignityRequest? dignities,
+    FortitudeRequest? fortitudes,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -802,6 +805,7 @@ final class ChartArea extends _Area {
             sadeSatiJson: sadeSati?._json,
             kpJson: kp?._json,
             dignitiesJson: dignities?._json,
+            fortitudesJson: fortitudes?._json,
           ),
         ),
       ),
@@ -3965,6 +3969,180 @@ List<Dignities> _decodeDignities(Charts batch) {
   );
 }
 
+final Expando<List<Fortitudes>> _fortitudes = Expando<List<Fortitudes>>(
+  'fortitudes',
+);
+
+List<Fortitudes> _fortitudesOf(Charts batch) =>
+    _fortitudes[batch] ??= _decodeFortitudes(batch);
+
+/// `fortitudes` holds a row a chart, or none when none was asked,
+/// `fortitude_houses` twelve a chart, `fortitude_planets` seven in the
+/// Chaldean order, and `fortitude_accidents` each planet's lines, ragged by
+/// its `accidentCount`. The essential half is the batch's dignities.
+List<Fortitudes> _decodeFortitudes(Charts batch) {
+  final c = batch.fortitudes;
+  final h = batch.fortitudeHouses;
+  final p = batch.fortitudePlanets;
+  final a = batch.fortitudeAccidents;
+  final charts = batch.cast.instant.length;
+  if (c.length == 0) return const <Fortitudes>[];
+  if (c.length != charts || h.length != 12 * charts || p.length != 7 * charts) {
+    throw StateError(
+      'fortitudes has ${c.length} rows, fortitude_houses ${h.length} and '
+      'fortitude_planets ${p.length} for $charts charts; they are one, '
+      'twelve and seven a chart',
+    );
+  }
+  final starts = [0];
+  for (var row = 0; row < p.length; row += 1) {
+    starts.add(starts.last + p.accidentCount[row]);
+  }
+  if (starts.last != a.length) {
+    throw StateError(
+      'fortitude_accidents has ${a.length} rows and the planets count '
+      '${starts.last}',
+    );
+  }
+  final essential = _dignitiesOf(batch);
+  List<T> rows<T>(int count, int chart, T Function(int row) at) =>
+      List<T>.unmodifiable([
+        for (var row = count * chart; row < count * chart + count; row += 1)
+          at(row),
+      ]);
+  final lines = [
+    c.scoreDirect,
+    c.scoreRetrograde,
+    c.scoreSwift,
+    c.scoreSlow,
+    c.scoreSuperiorOriental,
+    c.scoreSuperiorOccidental,
+    c.scoreInferiorOriental,
+    c.scoreInferiorOccidental,
+    c.scoreIncreasing,
+    c.scoreDecreasing,
+    c.scoreFreeFromCombustion,
+    c.scoreCazimi,
+    c.scoreCombust,
+    c.scoreUnderBeams,
+    c.scoreConjunctBenefic,
+    c.scoreConjunctNorthNode,
+    c.scoreTrineBenefic,
+    c.scoreSextileBenefic,
+    c.scoreConjunctMalefic,
+    c.scoreConjunctSouthNode,
+    c.scoreOpposedMalefic,
+    c.scoreSquareMalefic,
+    c.scoreBesieged,
+    c.scoreRegulus,
+    c.scoreSpica,
+    c.scoreAlgol,
+  ];
+  PlanetAccidents planet(int chart, int row) {
+    final own = essential[chart].planets[row - 7 * chart];
+    return PlanetAccidents(
+      planet: Graha.byId(p.planet[row]),
+      house: p.house[row],
+      accidents: List<AccidentLine>.unmodifiable([
+        for (var at = starts[row]; at < starts[row + 1]; at += 1)
+          AccidentLine(
+            accident: Accident.byId(a.accident[at]),
+            points: a.points[at],
+          ),
+      ]),
+      fortitude: p.fortitude[row],
+      debility: p.debility[row],
+      net: own.score + own.reception + p.fortitude[row] - p.debility[row],
+    );
+  }
+
+  return List<Fortitudes>.generate(charts, (chart) {
+    final [
+      direct,
+      retrograde,
+      swift,
+      slow,
+      superiorOriental,
+      superiorOccidental,
+      inferiorOriental,
+      inferiorOccidental,
+      increasing,
+      decreasing,
+      freeFromCombustion,
+      cazimi,
+      combust,
+      underBeams,
+      conjunctBenefic,
+      conjunctNorthNode,
+      trineBenefic,
+      sextileBenefic,
+      conjunctMalefic,
+      conjunctSouthNode,
+      opposedMalefic,
+      squareMalefic,
+      besieged,
+      regulus,
+      spica,
+      algol,
+    ] = [for (final line in lines) line[chart]];
+    return Fortitudes(
+      dignities: essential[chart],
+      sky: AccidentalSky(
+        houses: HouseSystem.byId(c.houses[chart]),
+        cuspsDeg: rows(12, chart, (row) => h.cusp[row]),
+        speedsDegPerDay: rows(7, chart, (row) => p.speed[row]),
+        northNodeDeg: c.northNode[chart],
+        regulusDeg: c.regulus[chart],
+        spicaDeg: c.spica[chart],
+        algolDeg: c.algol[chart],
+      ),
+      rules: AccidentalRules(
+        combustionDeg: c.combustionOrb[chart],
+        combustionInSign: c.combustionInSign[chart] == 1,
+        beamsDeg: c.beamsOrb[chart],
+        cazimiDeg: c.cazimiOrb[chart],
+        cuspOrbDeg: c.cuspOrb[chart],
+        starOrbDeg: c.starOrb[chart],
+        partile: Partile.byId(c.partile[chart]),
+        partileOrbDeg: c.partileOrb[chart],
+        siege: Siege.byId(c.siege[chart]),
+        siegeSpanDeg: c.siegeSpan[chart],
+        meanMotionDeg: rows(7, chart, (row) => p.meanMotion[row]),
+      ),
+      scores: AccidentalScores(
+        houses: rows(12, chart, (row) => h.score[row]),
+        direct: direct,
+        retrograde: retrograde,
+        swift: swift,
+        slow: slow,
+        superiorOriental: superiorOriental,
+        superiorOccidental: superiorOccidental,
+        inferiorOriental: inferiorOriental,
+        inferiorOccidental: inferiorOccidental,
+        increasing: increasing,
+        decreasing: decreasing,
+        freeFromCombustion: freeFromCombustion,
+        cazimi: cazimi,
+        combust: combust,
+        underBeams: underBeams,
+        conjunctBenefic: conjunctBenefic,
+        conjunctNorthNode: conjunctNorthNode,
+        trineBenefic: trineBenefic,
+        sextileBenefic: sextileBenefic,
+        conjunctMalefic: conjunctMalefic,
+        conjunctSouthNode: conjunctSouthNode,
+        opposedMalefic: opposedMalefic,
+        squareMalefic: squareMalefic,
+        besieged: besieged,
+        regulus: regulus,
+        spica: spica,
+        algol: algol,
+      ),
+      planets: rows(7, chart, (row) => planet(chart, row)),
+    );
+  });
+}
+
 final Expando<List<SadeSatiReport>> _sadeSatis = Expando<List<SadeSatiReport>>(
   'sadeSatis',
 );
@@ -4742,7 +4920,9 @@ final class DignityRequest {
   final Triplicities triplicities;
   final DignityScores scores;
 
-  String get _json => jsonEncode(<String, Object?>{
+  String get _json => jsonEncode(_record);
+
+  Map<String, Object?> get _record => <String, Object?>{
     'sectRule': sectRule.key,
     'rules': {
       'terms': switch (table) {
@@ -4756,7 +4936,7 @@ final class DignityRequest {
       'triplicities': triplicities.key,
     },
     'scores': scores._json,
-  });
+  };
 }
 
 /// The terms and triplicities a reading used; [Terms.table] for the
@@ -4925,6 +5105,379 @@ final class Dignities extends _Value {
     planets,
     receptions,
   ];
+}
+
+/// The orbs and limits Lilly's accidental fortitudes are judged by
+/// (`03-design/essential-dignities.md` §Accidental fortitudes); every one
+/// left out is Lilly's, so `AccidentalRules(beamsDeg: 15)` changes that one
+/// alone. An answer's rules are a request as they stand.
+final class AccidentalRules extends _Value {
+  const AccidentalRules({
+    this.combustionDeg = 8.5,
+    this.combustionInSign = true,
+    this.beamsDeg = 17,
+    this.cazimiDeg = 17 / 60,
+    this.cuspOrbDeg = 5,
+    this.starOrbDeg = 5,
+    this.partile = Partile.sameDegree,
+    this.partileOrbDeg = 0,
+    this.siege = Siege.sameSign,
+    this.siegeSpanDeg = 0,
+    this.meanMotionDeg = lillysMeanMotions,
+  });
+
+  /// Lilly's (pp. 113–115).
+  static const AccidentalRules lilly = AccidentalRules();
+
+  /// Lilly's mean daily motions, the seven in the Chaldean order: Saturn
+  /// 2′01″, Jupiter 4′59″, Mars 31′27″, the Sun, Venus and Mercury 59′08″,
+  /// the Moon 13°10′36″.
+  static const List<double> lillysMeanMotions = [
+    0.0 + 2 / 60 + 1 / 3600,
+    0.0 + 4 / 60 + 59 / 3600,
+    0.0 + 31 / 60 + 27 / 3600,
+    0.0 + 59 / 60 + 8 / 3600,
+    0.0 + 59 / 60 + 8 / 3600,
+    0.0 + 59 / 60 + 8 / 3600,
+    13.0 + 10 / 60 + 36 / 3600,
+  ];
+
+  /// Combust within this many degrees of the Sun.
+  final double combustionDeg;
+
+  /// Whether combustion also asks for the Sun's sign (C211).
+  final bool combustionInSign;
+
+  /// Under the beams within this many degrees (C212).
+  final double beamsDeg;
+
+  /// Cazimi within this many degrees.
+  final double cazimiDeg;
+
+  /// A planet this near the next cusp is in its house (p. 33, C214).
+  final double cuspOrbDeg;
+
+  /// With a star within this many degrees.
+  final double starOrbDeg;
+
+  /// By the same degree, Lilly's, or within [partileOrbDeg] of the exact
+  /// aspect (C216).
+  final Partile partile;
+
+  /// The orb of [Partile.within]; 0 for [Partile.sameDegree].
+  final double partileOrbDeg;
+
+  /// Within one sign, Lilly's example, or on an arc no wider than
+  /// [siegeSpanDeg] (C215).
+  final Siege siege;
+
+  /// The span of [Siege.within]; 0 for [Siege.sameSign].
+  final double siegeSpanDeg;
+
+  /// The mean daily motions swift and slow are judged against, the seven
+  /// in the Chaldean order.
+  final List<double> meanMotionDeg;
+
+  @override
+  List<Object?> get _fields => [
+    combustionDeg,
+    combustionInSign,
+    beamsDeg,
+    cazimiDeg,
+    cuspOrbDeg,
+    starOrbDeg,
+    partile,
+    partileOrbDeg,
+    siege,
+    siegeSpanDeg,
+    meanMotionDeg,
+  ];
+
+  Map<String, Object?> get _json => {
+    'combustionDeg': combustionDeg,
+    'combustionInSign': combustionInSign,
+    'beamsDeg': beamsDeg,
+    'cazimiDeg': cazimiDeg,
+    'cuspOrbDeg': cuspOrbDeg,
+    'starOrbDeg': starOrbDeg,
+    'partile':
+        partile == Partile.within
+            ? {
+              'WITHIN': {'orbDeg': partileOrbDeg},
+            }
+            : partile.key,
+    'siege':
+        siege == Siege.within
+            ? {
+              'WITHIN': {'spanDeg': siegeSpanDeg},
+            }
+            : siege.key,
+    'meanMotionDeg': meanMotionDeg,
+  };
+}
+
+/// What each of Lilly's accidental lines is worth (p. 115): positive for a
+/// fortitude, negative for a debility; every one left out is Lilly's. An
+/// answer's scores are a request as they stand.
+final class AccidentalScores extends _Value {
+  const AccidentalScores({
+    this.houses = const [5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5],
+    this.direct = 4,
+    this.retrograde = -5,
+    this.swift = 2,
+    this.slow = -2,
+    this.superiorOriental = 2,
+    this.superiorOccidental = -2,
+    this.inferiorOriental = -2,
+    this.inferiorOccidental = 2,
+    this.increasing = 2,
+    this.decreasing = -2,
+    this.freeFromCombustion = 5,
+    this.cazimi = 5,
+    this.combust = -5,
+    this.underBeams = -4,
+    this.conjunctBenefic = 5,
+    this.conjunctNorthNode = 4,
+    this.trineBenefic = 4,
+    this.sextileBenefic = 3,
+    this.conjunctMalefic = -5,
+    this.conjunctSouthNode = -4,
+    this.opposedMalefic = -4,
+    this.squareMalefic = -3,
+    this.besieged = -5,
+    this.regulus = 6,
+    this.spica = 5,
+    this.algol = -5,
+  });
+
+  /// Lilly's "ready Table" (p. 115).
+  static const AccidentalScores lilly = AccidentalScores();
+
+  /// The first house to the twelfth.
+  final List<int> houses;
+  final int direct;
+  final int retrograde;
+  final int swift;
+  final int slow;
+
+  /// Saturn, Jupiter or Mars oriental.
+  final int superiorOriental;
+
+  /// Saturn, Jupiter or Mars occidental.
+  final int superiorOccidental;
+
+  /// Venus or Mercury oriental.
+  final int inferiorOriental;
+
+  /// Venus or Mercury occidental.
+  final int inferiorOccidental;
+  final int increasing;
+  final int decreasing;
+  final int freeFromCombustion;
+  final int cazimi;
+  final int combust;
+  final int underBeams;
+  final int conjunctBenefic;
+  final int conjunctNorthNode;
+  final int trineBenefic;
+  final int sextileBenefic;
+  final int conjunctMalefic;
+  final int conjunctSouthNode;
+  final int opposedMalefic;
+  final int squareMalefic;
+  final int besieged;
+  final int regulus;
+  final int spica;
+  final int algol;
+
+  /// Each line by the name a request spells it, in Lilly's order.
+  Map<String, int> get lines => {
+    'direct': direct,
+    'retrograde': retrograde,
+    'swift': swift,
+    'slow': slow,
+    'superiorOriental': superiorOriental,
+    'superiorOccidental': superiorOccidental,
+    'inferiorOriental': inferiorOriental,
+    'inferiorOccidental': inferiorOccidental,
+    'increasing': increasing,
+    'decreasing': decreasing,
+    'freeFromCombustion': freeFromCombustion,
+    'cazimi': cazimi,
+    'combust': combust,
+    'underBeams': underBeams,
+    'conjunctBenefic': conjunctBenefic,
+    'conjunctNorthNode': conjunctNorthNode,
+    'trineBenefic': trineBenefic,
+    'sextileBenefic': sextileBenefic,
+    'conjunctMalefic': conjunctMalefic,
+    'conjunctSouthNode': conjunctSouthNode,
+    'opposedMalefic': opposedMalefic,
+    'squareMalefic': squareMalefic,
+    'besieged': besieged,
+    'regulus': regulus,
+    'spica': spica,
+    'algol': algol,
+  };
+
+  @override
+  List<Object?> get _fields => [houses, ...lines.values];
+
+  Map<String, Object?> get _json => {'houses': houses, ...lines};
+}
+
+/// How to read every chart's fortitudes, both halves of Lilly's table
+/// (`03-design/essential-dignities.md` §Accidental fortitudes). Each
+/// chart's come back as its `fortitudes`, and the essential half as its
+/// `dignities` too, so a request asks for one or the other: both are
+/// refused by `dignities`.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ fortitudes: const FortitudeRequest(
+///     rules: AccidentalRules(partile: Partile.within, partileOrbDeg: 1),
+///   ),
+/// );
+/// final strongest = chart.fortitudes?.planets
+///     .reduce((a, b) => a.net >= b.net ? a : b);
+/// ```
+final class FortitudeRequest {
+  const FortitudeRequest({
+    this.dignities = const DignityRequest(),
+    this.rules = AccidentalRules.lilly,
+    this.scores = AccidentalScores.lilly,
+  });
+
+  /// How the essential half is read.
+  final DignityRequest dignities;
+  final AccidentalRules rules;
+  final AccidentalScores scores;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'dignities': dignities._record,
+    'rules': rules._json,
+    'scores': scores._json,
+  });
+}
+
+/// What a chart's accidental fortitudes were read from, in the chart's
+/// zodiac.
+final class AccidentalSky extends _Value {
+  const AccidentalSky({
+    required this.houses,
+    required this.cuspsDeg,
+    required this.speedsDegPerDay,
+    required this.northNodeDeg,
+    required this.regulusDeg,
+    required this.spicaDeg,
+    required this.algolDeg,
+  });
+
+  /// Regiomontanus, Lilly's, unless a profile names another division for
+  /// the `hellenistic` module.
+  final HouseSystem houses;
+
+  /// The twelve cusps, the first to the twelfth.
+  final List<double> cuspsDeg;
+
+  /// The seven's daily motions in the Chaldean order, negative when
+  /// retrograde.
+  final List<double> speedsDegPerDay;
+
+  final double northNodeDeg;
+
+  /// The star's apparent place of date, as are Spica's and Algol's.
+  final double regulusDeg;
+  final double spicaDeg;
+  final double algolDeg;
+
+  @override
+  List<Object?> get _fields => [
+    houses,
+    cuspsDeg,
+    speedsDegPerDay,
+    northNodeDeg,
+    regulusDeg,
+    spicaDeg,
+    algolDeg,
+  ];
+}
+
+/// One accidental line a planet meets, and what it scores for that planet:
+/// orientality scores Saturn, Jupiter and Mars one way and Venus and
+/// Mercury the other.
+final class AccidentLine extends _Value {
+  const AccidentLine({required this.accident, required this.points});
+
+  final Accident accident;
+  final int points;
+
+  @override
+  List<Object?> get _fields => [accident, points];
+}
+
+/// One planet's accidental fortitudes and debilities.
+final class PlanetAccidents extends _Value {
+  const PlanetAccidents({
+    required this.planet,
+    required this.house,
+    required this.accidents,
+    required this.fortitude,
+    required this.debility,
+    required this.net,
+  });
+
+  final Graha planet;
+
+  /// Its house, 1 to 12, under the five-degree rule.
+  final int house;
+
+  /// Every line beyond its house, in Lilly's order.
+  final List<AccidentLine> accidents;
+
+  /// The sum of its fortitudes, its house's included.
+  final int fortitude;
+
+  /// The sum of its debilities, its house's included, as a positive number.
+  final int debility;
+
+  /// Lilly's net over the whole table: its essential `score + reception`
+  /// and `fortitude - debility`.
+  final int net;
+
+  @override
+  List<Object?> get _fields => [
+    planet,
+    house,
+    accidents,
+    fortitude,
+    debility,
+    net,
+  ];
+}
+
+/// Both halves of Lilly's table in one chart, with everything that made
+/// them (`03-design/essential-dignities.md` §Accidental fortitudes).
+final class Fortitudes extends _Value {
+  const Fortitudes({
+    required this.dignities,
+    required this.sky,
+    required this.rules,
+    required this.scores,
+    required this.planets,
+  });
+
+  /// The essential half, which the chart's `dignities` also reads.
+  final Dignities dignities;
+  final AccidentalSky sky;
+  final AccidentalRules rules;
+  final AccidentalScores scores;
+
+  /// The seven in the Chaldean order, Saturn first.
+  final List<PlanetAccidents> planets;
+
+  @override
+  List<Object?> get _fields => [dignities, sky, rules, scores, planets];
 }
 
 /// A KP reading to make of every chart of a request (`03-design/kp.md`),
@@ -10094,6 +10647,15 @@ final class Chart {
   /// (`03-design/essential-dignities.md`).
   Dignities? get dignities {
     final all = _dignitiesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Both halves of Lilly's table, the essential dignities and the
+  /// accidental fortitudes, with everything that made them; null unless
+  /// `fortitudes` asked for them (`03-design/essential-dignities.md`
+  /// §Accidental fortitudes).
+  Fortitudes? get fortitudes {
+    final all = _fortitudesOf(batch);
     return index < all.length ? all[index] : null;
   }
 

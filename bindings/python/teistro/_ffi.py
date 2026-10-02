@@ -19,6 +19,7 @@ from types import TracebackType
 from typing import Any, Final, NamedTuple, Optional, Sequence
 
 from .catalogue import (
+    Accident,
     Affliction,
     AshtakavargaGoodFrom,
     AspectPhase,
@@ -100,6 +101,7 @@ from .catalogue import (
     Paksha,
     Panchaka,
     Parity,
+    Partile,
     Point,
     PointFamily,
     PolarDayPolicy,
@@ -123,6 +125,7 @@ from .catalogue import (
     SectRule,
     Sex,
     Shodhana,
+    Siege,
     SolarEclipseKind,
     SpeedModel,
     Star,
@@ -249,7 +252,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 184,
+    "ts_chart_request": 192,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -684,6 +687,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("sade_sati_json", ctypes.c_char_p),
         ("kp_json", ctypes.c_char_p),
         ("dignities_json", ctypes.c_char_p),
+        ("fortitudes_json", ctypes.c_char_p),
     ]
 
 
@@ -2388,6 +2392,27 @@ class ChartRequest:
     Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
     """
 
+    fortitudes_json: Optional[str] = None
+    """Every chart's accidental fortitudes beside its essential dignities
+    (Lilly, p. 115), as a JSON object, every member optional:
+    `dignities` (the record `dignities_json` takes), `rules`
+    (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+    `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+    `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+    `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+    `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+    twelve `houses` and each line by name), Lilly's by default. The
+    essential half comes back in the sections `dignities_json` fills, so
+    asking for both is refused; the accidental half in `fortitudes`,
+    `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+    The houses are Regiomontanus's unless a profile names another
+    division for the `hellenistic` module. Null for none, which costs
+    nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+    Refusals are named from the record every binding calls
+    `fortitudes`, as `fortitudes.rules.beamsDeg`.
+    Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2453,6 +2478,9 @@ class ChartRequest:
         _dignities_json = None if self.dignities_json is None else self.dignities_json.encode("utf-8")
         owned.append(_dignities_json)
         raw.dignities_json = _dignities_json
+        _fortitudes_json = None if self.fortitudes_json is None else self.fortitudes_json.encode("utf-8")
+        owned.append(_fortitudes_json)
+        raw.fortitudes_json = _fortitudes_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2498,6 +2526,7 @@ class ChartRequest:
             sade_sati_json=_text(raw.sade_sati_json),
             kp_json=_text(raw.kp_json),
             dignities_json=_text(raw.dignities_json),
+            fortitudes_json=_text(raw.fortitudes_json),
         )
 
 

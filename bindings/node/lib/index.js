@@ -107,6 +107,9 @@ import {
   SectRuleById,
   TermsById,
   TriplicitiesById,
+  AccidentById,
+  PartileById,
+  SiegeById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -1023,6 +1026,24 @@ export class Chart {
    */
   get dignities() {
     return dignitiesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Both halves of Lilly's table (`fortitudes: { dignities, rules, scores
+   * }`): the essential dignities, which `dignities` also reads, and the
+   * accidental fortitudes; `null` unless asked for
+   * (`03-design/essential-dignities.md` §Accidental fortitudes).
+   *
+   * It is `{ dignities, sky, rules, scores, planets }`. `sky` is what the
+   * lines were read from, `{ houses, cuspsDeg, speedsDegPerDay,
+   * northNodeDeg, regulusDeg, spicaDeg, algolDeg }`; `rules` and `scores`
+   * are what was applied, each a request's own record. The planets are in
+   * the Chaldean order, each `{ planet, house, accidents, fortitude,
+   * debility, net }`, every accident `{ accident, points }`, and `net`
+   * Lilly's sum of both halves.
+   */
+  get fortitudes() {
+    return fortitudesOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2191,6 +2212,11 @@ export class ChartArea extends Area {
           'dignities',
           'a dignities request record, e.g. { sectRule: "HORIZON", rules: { terms: "EGYPTIAN" } }',
         ),
+        fortitudesJson: recordJson(
+          request.fortitudes,
+          'fortitudes',
+          'a fortitudes request record, e.g. { rules: { beamsDeg: 15 }, scores: { regulus: 6 } }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2916,6 +2942,135 @@ function dignitiesOf(batch) {
     }
   }
   DIGNITIES.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's fortitudes, decoded once however many charts read them. */
+const FORTITUDES = new WeakMap();
+
+/** Lilly's accidental lines, in the order the `fortitudes` section scores them. */
+const ACCIDENTAL_LINES = [
+  'direct',
+  'retrograde',
+  'swift',
+  'slow',
+  'superiorOriental',
+  'superiorOccidental',
+  'inferiorOriental',
+  'inferiorOccidental',
+  'increasing',
+  'decreasing',
+  'freeFromCombustion',
+  'cazimi',
+  'combust',
+  'underBeams',
+  'conjunctBenefic',
+  'conjunctNorthNode',
+  'trineBenefic',
+  'sextileBenefic',
+  'conjunctMalefic',
+  'conjunctSouthNode',
+  'opposedMalefic',
+  'squareMalefic',
+  'besieged',
+  'regulus',
+  'spica',
+  'algol',
+];
+
+/** A reading with an orb, as the request writes it: the bare name, or `{ WITHIN: { [field]: orb } }`. */
+function withOrb(name, field, orb) {
+  return name === 'WITHIN' ? Object.freeze({ WITHIN: Object.freeze({ [field]: orb }) }) : name;
+}
+
+/**
+ * Every chart's accidental fortitudes in a batch: `fortitudes` holds a row
+ * a chart, or none when none was asked, `fortitude_houses` twelve rows a
+ * chart, `fortitude_planets` seven in the Chaldean order, and
+ * `fortitude_accidents` each planet's lines, ragged by its `accidentCount`
+ * (`03-design/essential-dignities.md` §Accidental fortitudes). The
+ * essential half is the batch's dignities.
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function fortitudesOf(batch) {
+  let decoded = FORTITUDES.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const c = d.fortitudes;
+  const h = d.fortitudeHouses;
+  const p = d.fortitudePlanets;
+  const a = d.fortitudeAccidents;
+  if (c.houses.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    if (c.houses.length !== charts || h.cusp.length !== 12 * charts || p.planet.length !== 7 * charts) {
+      throw new Error(
+        `fortitudes has ${c.houses.length} rows, fortitude_houses ${h.cusp.length} and fortitude_planets ` +
+          `${p.planet.length} for ${charts} charts; they are one, twelve and seven a chart, or none`,
+      );
+    }
+    const essential = dignitiesOf(batch);
+    let line = 0;
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, chart) => {
+        const dignities = essential[chart];
+        const rows = (count) => Array.from({ length: count }, (_, k) => count * chart + k);
+        const planets = rows(7).map((row, k) => {
+          const accidents = Array.from({ length: p.accidentCount[row] }, () => {
+            const at = line++;
+            return Object.freeze({
+              accident: AccidentById.get(a.accident[at]) ?? 'unknown',
+              points: a.points[at],
+            });
+          });
+          const own = dignities.planets[k];
+          return Object.freeze({
+            planet: GrahaById.get(p.planet[row]) ?? 'unknown',
+            house: p.house[row],
+            accidents: Object.freeze(accidents),
+            fortitude: p.fortitude[row],
+            debility: p.debility[row],
+            net: own.score + own.reception + p.fortitude[row] - p.debility[row],
+          });
+        });
+        return Object.freeze({
+          dignities,
+          sky: Object.freeze({
+            houses: HouseSystemById.get(c.houses[chart]) ?? 'unknown',
+            cuspsDeg: Object.freeze(rows(12).map((row) => h.cusp[row])),
+            speedsDegPerDay: Object.freeze(rows(7).map((row) => p.speed[row])),
+            northNodeDeg: c.northNode[chart],
+            regulusDeg: c.regulus[chart],
+            spicaDeg: c.spica[chart],
+            algolDeg: c.algol[chart],
+          }),
+          rules: Object.freeze({
+            combustionDeg: c.combustionOrb[chart],
+            combustionInSign: c.combustionInSign[chart] === 1,
+            beamsDeg: c.beamsOrb[chart],
+            cazimiDeg: c.cazimiOrb[chart],
+            cuspOrbDeg: c.cuspOrb[chart],
+            starOrbDeg: c.starOrb[chart],
+            partile: withOrb(PartileById.get(c.partile[chart]) ?? 'unknown', 'orbDeg', c.partileOrb[chart]),
+            siege: withOrb(SiegeById.get(c.siege[chart]) ?? 'unknown', 'spanDeg', c.siegeSpan[chart]),
+            meanMotionDeg: Object.freeze(rows(7).map((row) => p.meanMotion[row])),
+          }),
+          scores: Object.freeze({
+            houses: Object.freeze(rows(12).map((row) => h.score[row])),
+            ...Object.fromEntries(ACCIDENTAL_LINES.map((name) => [name, c[`score${capitalised(name)}`][chart]])),
+          }),
+          planets: Object.freeze(planets),
+        });
+      }),
+    );
+    if (line !== a.accident.length) {
+      throw new Error(`fortitude_accidents has ${a.accident.length} rows and the planets count ${line}`);
+    }
+  }
+  FORTITUDES.set(batch, decoded);
   return decoded;
 }
 

@@ -443,6 +443,147 @@ impl TsTriplicities {
     }
 }
 
+/// One of Lilly's accidental fortitudes or debilities (p. 115,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsAccident {
+    /// Moving forward; void for the Sun and the Moon.
+    Direct = 0,
+    /// Moving backward.
+    Retrograde = 1,
+    /// Faster than its mean motion.
+    Swift = 2,
+    /// Slower than its mean motion.
+    Slow = 3,
+    /// Rising before the Sun. Not read for the Moon.
+    Oriental = 4,
+    /// Setting after the Sun.
+    Occidental = 5,
+    /// The Moon from her conjunction with the Sun to the opposition.
+    Increasing = 6,
+    /// The Moon from the opposition to the conjunction.
+    Decreasing = 7,
+    /// Clear of the Sun: neither combust, under his beams nor in cazimi.
+    FreeFromCombustion = 8,
+    /// In the heart of the Sun.
+    Cazimi = 9,
+    /// Within the combustion orb of the Sun.
+    Combust = 10,
+    /// Within the beams of the Sun, not combust.
+    UnderBeams = 11,
+    /// In partile conjunction with Jupiter or Venus.
+    ConjunctBenefic = 12,
+    /// In partile conjunction with the North Node.
+    ConjunctNorthNode = 13,
+    /// In partile trine to Jupiter or Venus.
+    TrineBenefic = 14,
+    /// In partile sextile to Jupiter or Venus.
+    SextileBenefic = 15,
+    /// In partile conjunction with Saturn or Mars.
+    ConjunctMalefic = 16,
+    /// In partile conjunction with the South Node.
+    ConjunctSouthNode = 17,
+    /// In partile opposition to Saturn or Mars.
+    OpposedMalefic = 18,
+    /// In partile square to Saturn or Mars.
+    SquareMalefic = 19,
+    /// Between the bodies of Saturn and Mars.
+    Besieged = 20,
+    /// With Cor Leonis (Regulus).
+    Regulus = 21,
+    /// With Spica.
+    Spica = 22,
+    /// With Caput Algol.
+    Algol = 23,
+}
+
+impl TsAccident {
+    /// The code an accident crosses as; `None` for one this boundary does
+    /// not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(accident: teistro::Accident) -> Option<TsAccident> {
+        use teistro::Accident as A;
+        Some(match accident {
+            A::Direct => TsAccident::Direct,
+            A::Retrograde => TsAccident::Retrograde,
+            A::Swift => TsAccident::Swift,
+            A::Slow => TsAccident::Slow,
+            A::Oriental => TsAccident::Oriental,
+            A::Occidental => TsAccident::Occidental,
+            A::Increasing => TsAccident::Increasing,
+            A::Decreasing => TsAccident::Decreasing,
+            A::FreeFromCombustion => TsAccident::FreeFromCombustion,
+            A::Cazimi => TsAccident::Cazimi,
+            A::Combust => TsAccident::Combust,
+            A::UnderBeams => TsAccident::UnderBeams,
+            A::ConjunctBenefic => TsAccident::ConjunctBenefic,
+            A::ConjunctNorthNode => TsAccident::ConjunctNorthNode,
+            A::TrineBenefic => TsAccident::TrineBenefic,
+            A::SextileBenefic => TsAccident::SextileBenefic,
+            A::ConjunctMalefic => TsAccident::ConjunctMalefic,
+            A::ConjunctSouthNode => TsAccident::ConjunctSouthNode,
+            A::OpposedMalefic => TsAccident::OpposedMalefic,
+            A::SquareMalefic => TsAccident::SquareMalefic,
+            A::Besieged => TsAccident::Besieged,
+            A::Regulus => TsAccident::Regulus,
+            A::Spica => TsAccident::Spica,
+            A::Algol => TsAccident::Algol,
+            _ => return None,
+        })
+    }
+}
+
+/// When two planets are in partile aspect (C216,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsPartile {
+    /// Lilly's: the same degree of signs the aspect apart.
+    SameDegree = 0,
+    /// Within an orb of the exact aspect.
+    Within = 1,
+}
+
+impl TsPartile {
+    /// The code a reading crosses as, with its orb (0 for
+    /// [`TsPartile::SameDegree`]); `None` for one this boundary does not
+    /// know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(partile: teistro::Partile) -> Option<(TsPartile, f64)> {
+        match partile {
+            teistro::Partile::SameDegree => Some((TsPartile::SameDegree, 0.0)),
+            teistro::Partile::Within { orb_deg } => Some((TsPartile::Within, orb_deg)),
+            _ => None,
+        }
+    }
+}
+
+/// When a planet is besieged by Saturn and Mars (C215,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSiege {
+    /// Lilly's example: all three in one sign, the planet between the two.
+    SameSign = 0,
+    /// On the shorter arc between the two, the arc no wider than a span.
+    Within = 1,
+}
+
+impl TsSiege {
+    /// The code a reading crosses as, with its span (0 for
+    /// [`TsSiege::SameSign`]); `None` for one this boundary does not know
+    /// yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(siege: teistro::Siege) -> Option<(TsSiege, f64)> {
+        match siege {
+            teistro::Siege::SameSign => Some((TsSiege::SameSign, 0.0)),
+            teistro::Siege::Within { span_deg } => Some((TsSiege::Within, span_deg)),
+            _ => None,
+        }
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1111,6 +1252,25 @@ pub struct TsChartRequest {
     /// record every binding calls `dignities`, as `dignities.sectRule`.
     /// `api: nullable example={"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}`
     pub dignities_json: *const c_char,
+    /// Every chart's accidental fortitudes beside its essential dignities
+    /// (Lilly, p. 115), as a JSON object, every member optional:
+    /// `dignities` (the record `dignities_json` takes), `rules`
+    /// (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+    /// `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+    /// `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+    /// `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+    /// `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+    /// twelve `houses` and each line by name), Lilly's by default. The
+    /// essential half comes back in the sections `dignities_json` fills, so
+    /// asking for both is refused; the accidental half in `fortitudes`,
+    /// `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+    /// The houses are Regiomontanus's unless a profile names another
+    /// division for the `hellenistic` module. Null for none, which costs
+    /// nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+    /// Refusals are named from the record every binding calls
+    /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
+    /// `api: nullable example={"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}`
+    pub fortitudes_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2112,26 +2272,24 @@ impl GocharColumns {
             }
             for (reading, at) in chart.iter().zip(instants) {
                 let rules = reading.rules;
-                let refused =
-                    |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
                 columns.instant.push(at.get());
                 columns.reference.push(reading.reference.sign.id());
                 columns.counted_from.push(
                     TsGocharFrom::of(reading.reference.from)
-                        .ok_or_else(|| refused("the gochar reference"))? as u8,
+                        .ok_or_else(|| no_code("the gochar reference"))? as u8,
                 );
                 columns.node_vedha.push(
                     TsNodeVedha::of(rules.node_vedha)
-                        .ok_or_else(|| refused("`gochar.node_vedha`"))? as u8,
+                        .ok_or_else(|| no_code("`gochar.node_vedha`"))? as u8,
                 );
                 columns.node_obstruction.push(
                     TsNodeObstruction::of(rules.node_obstruction)
-                        .ok_or_else(|| refused("`gochar.node_obstruction`"))?
+                        .ok_or_else(|| no_code("`gochar.node_obstruction`"))?
                         as u8,
                 );
                 columns.ashtakavarga_good_from.push(
                     TsAshtakavargaGoodFrom::of(rules.ashtakavarga_good_from)
-                        .ok_or_else(|| refused("`gochar.ashtakavarga_good_from`"))?
+                        .ok_or_else(|| no_code("`gochar.ashtakavarga_good_from`"))?
                         as u8,
                 );
                 for read in reading.ashtakavarga.iter().flatten() {
@@ -2360,18 +2518,16 @@ impl SadeSatiColumns {
                 reports.len()
             )));
         }
-        let refused =
-            |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
         let bound = |at: Option<JulianDay<Utc>>| at.map_or(f64::NAN, JulianDay::get);
         for (count, report) in columns.counts.iter_mut().zip(reports) {
             columns.reference.push(report.reference.sign.id());
             columns.counted_from.push(
                 TsGocharFrom::of(report.reference.from)
-                    .ok_or_else(|| refused("the Sade Sati reference"))? as u8,
+                    .ok_or_else(|| no_code("the Sade Sati reference"))? as u8,
             );
             columns.reckoning.push(
                 TsReckoning::of(report.reckoning)
-                    .ok_or_else(|| refused("the Sade Sati reckoning"))? as u8,
+                    .ok_or_else(|| no_code("the Sade Sati reckoning"))? as u8,
             );
             let periods = report
                 .sade_sati
@@ -2467,31 +2623,41 @@ struct DignityColumns {
     second_in: [Vec<u8>; 7],
 }
 
+/// A reading for each chart or for none: the boundary's check that a
+/// batch's readings line up with its charts.
+fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
+    if read == 0 || read == charts {
+        Ok(())
+    } else {
+        Err(Error::internal(format!(
+            "{read} readings of the {what} for {charts} charts"
+        )))
+    }
+}
+
+/// The refusal for a value the encoder has no code for yet.
+fn no_code(what: &str) -> Error {
+    Error::internal(format!("{what} has no code at the boundary yet"))
+}
+
 impl DignityColumns {
-    fn of(read: &[teistro::Dignities], charts: usize) -> Result<DignityColumns, Error> {
+    fn of<'a>(
+        read: impl ExactSizeIterator<Item = &'a teistro::Dignities>,
+        charts: usize,
+    ) -> Result<DignityColumns, Error> {
+        one_a_chart(read.len(), charts, "dignities")?;
         let mut columns = DignityColumns::default();
-        if read.is_empty() {
-            return Ok(columns);
-        }
-        if read.len() != charts {
-            return Err(Error::internal(format!(
-                "{} readings of the dignities for {charts} charts",
-                read.len()
-            )));
-        }
-        let refused =
-            |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
         for one in read {
             columns.sect.push(TsSect::from(one.sect) as u8);
             columns
                 .sect_rule
-                .push(TsSectRule::of(one.sect_rule).ok_or_else(|| refused("the sect rule"))? as u8);
+                .push(TsSectRule::of(one.sect_rule).ok_or_else(|| no_code("the sect rule"))? as u8);
             columns.terms.push(
-                TsTerms::of(&one.rules.terms).ok_or_else(|| refused("the system of terms"))? as u8,
+                TsTerms::of(&one.rules.terms).ok_or_else(|| no_code("the system of terms"))? as u8,
             );
             columns.triplicities.push(
                 TsTriplicities::of(one.rules.triplicities)
-                    .ok_or_else(|| refused("the triplicity scheme"))? as u8,
+                    .ok_or_else(|| no_code("the triplicity scheme"))? as u8,
             );
             let s = one.scores;
             let scores = [
@@ -2555,6 +2721,264 @@ impl DignityColumns {
                 .map(|column| ColumnData::U8(column)),
         );
         writer.columns("dignity_receptions", self.first.len(), &pairs)
+    }
+}
+
+/// Both halves of Lilly's table: the essential dignities, from
+/// `dignities_json` or from the fortitudes' own, and the accidental
+/// fortitudes.
+struct LillyColumns {
+    dignities: DignityColumns,
+    fortitudes: FortitudeColumns,
+}
+
+impl LillyColumns {
+    fn of(
+        dignities: &[teistro::Dignities],
+        fortitudes: &[teistro::Fortitudes],
+        charts: usize,
+    ) -> Result<LillyColumns, Error> {
+        let essential = if fortitudes.is_empty() {
+            DignityColumns::of(dignities.iter(), charts)?
+        } else {
+            DignityColumns::of(fortitudes.iter().map(|one| &one.dignities), charts)?
+        };
+        Ok(LillyColumns {
+            dignities: essential,
+            fortitudes: FortitudeColumns::of(fortitudes, charts)?,
+        })
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        self.dignities.write(writer)?;
+        self.fortitudes.write(writer)
+    }
+}
+
+/// Lilly's accidental lines as the `fortitudes` section's `score_*`
+/// columns carry them, in [`teistro::AccidentalScores`]' order after its
+/// houses; the schema names each column from this list.
+pub(crate) const ACCIDENTAL_LINES: [&str; 26] = [
+    "direct",
+    "retrograde",
+    "swift",
+    "slow",
+    "superior_oriental",
+    "superior_occidental",
+    "inferior_oriental",
+    "inferior_occidental",
+    "increasing",
+    "decreasing",
+    "free_from_combustion",
+    "cazimi",
+    "combust",
+    "under_beams",
+    "conjunct_benefic",
+    "conjunct_north_node",
+    "trine_benefic",
+    "sextile_benefic",
+    "conjunct_malefic",
+    "conjunct_south_node",
+    "opposed_malefic",
+    "square_malefic",
+    "besieged",
+    "regulus",
+    "spica",
+    "algol",
+];
+
+/// A table's line scores in [`ACCIDENTAL_LINES`]' order.
+const fn accidental_lines(s: &teistro::AccidentalScores) -> [i8; 26] {
+    [
+        s.direct,
+        s.retrograde,
+        s.swift,
+        s.slow,
+        s.superior_oriental,
+        s.superior_occidental,
+        s.inferior_oriental,
+        s.inferior_occidental,
+        s.increasing,
+        s.decreasing,
+        s.free_from_combustion,
+        s.cazimi,
+        s.combust,
+        s.under_beams,
+        s.conjunct_benefic,
+        s.conjunct_north_node,
+        s.trine_benefic,
+        s.sextile_benefic,
+        s.conjunct_malefic,
+        s.conjunct_south_node,
+        s.opposed_malefic,
+        s.square_malefic,
+        s.besieged,
+        s.regulus,
+        s.spica,
+        s.algol,
+    ]
+}
+
+/// Every chart's accidental fortitudes: a row a chart in `fortitudes`,
+/// twelve houses a chart in `fortitude_houses`, the seven planets a chart
+/// in `fortitude_planets`, in the Chaldean order, and their accidents in
+/// `fortitude_accidents`, ragged by `accident_count`; all empty when none
+/// was asked for. The essential half is [`DignityColumns`]'.
+#[derive(Default)]
+struct FortitudeColumns {
+    houses: Vec<u16>,
+    /// The North Node, Regulus, Spica and Algol.
+    points: [Vec<f64>; 4],
+    /// The combustion, beams, cazimi, cusp and star orbs.
+    orbs: [Vec<f64>; 5],
+    combustion_in_sign: Vec<u8>,
+    partile: Vec<u8>,
+    partile_orb: Vec<f64>,
+    siege: Vec<u8>,
+    siege_span: Vec<f64>,
+    /// The line scores, one column a line in [`ACCIDENTAL_LINES`]' order.
+    scores: Vec<Vec<i8>>,
+    /// The `fortitude_houses` section.
+    cusp: Vec<f64>,
+    house_score: Vec<i8>,
+    /// The `fortitude_planets` section.
+    planet: Vec<u16>,
+    speed: Vec<f64>,
+    mean_motion: Vec<f64>,
+    house: Vec<u8>,
+    fortitude: Vec<i16>,
+    debility: Vec<i16>,
+    accident_count: Vec<u8>,
+    /// The `fortitude_accidents` section.
+    accident: Vec<u8>,
+    accident_points: Vec<i8>,
+}
+
+impl FortitudeColumns {
+    fn of(read: &[teistro::Fortitudes], charts: usize) -> Result<FortitudeColumns, Error> {
+        one_a_chart(read.len(), charts, "fortitudes")?;
+        let mut columns = FortitudeColumns {
+            scores: vec![Vec::new(); ACCIDENTAL_LINES.len()],
+            ..FortitudeColumns::default()
+        };
+        for one in read {
+            let (sky, rules) = (&one.sky, &one.rules);
+            columns.houses.push(sky.houses.id());
+            let points = [
+                sky.north_node_deg,
+                sky.regulus_deg,
+                sky.spica_deg,
+                sky.algol_deg,
+            ];
+            for (column, value) in columns.points.iter_mut().zip(points) {
+                column.push(value);
+            }
+            let orbs = [
+                rules.combustion_deg,
+                rules.beams_deg,
+                rules.cazimi_deg,
+                rules.cusp_orb_deg,
+                rules.star_orb_deg,
+            ];
+            for (column, value) in columns.orbs.iter_mut().zip(orbs) {
+                column.push(value);
+            }
+            columns
+                .combustion_in_sign
+                .push(u8::from(rules.combustion_in_sign));
+            let (partile, orb) =
+                TsPartile::of(rules.partile).ok_or_else(|| no_code("the partile reading"))?;
+            columns.partile.push(partile as u8);
+            columns.partile_orb.push(orb);
+            let (siege, span) =
+                TsSiege::of(rules.siege).ok_or_else(|| no_code("the siege reading"))?;
+            columns.siege.push(siege as u8);
+            columns.siege_span.push(span);
+            for (column, value) in columns.scores.iter_mut().zip(accidental_lines(&one.scores)) {
+                column.push(value);
+            }
+            columns.cusp.extend(sky.cusps_deg);
+            columns.house_score.extend(one.scores.houses);
+            for ((at, speed), mean) in one
+                .planets
+                .iter()
+                .zip(sky.speeds_deg_per_day)
+                .zip(rules.mean_motion_deg)
+            {
+                columns.planet.push(at.planet.id());
+                columns.speed.push(speed);
+                columns.mean_motion.push(mean);
+                columns.house.push(at.house.get());
+                columns.fortitude.push(at.fortitude);
+                columns.debility.push(at.debility);
+                columns.accident_count.push(
+                    u8::try_from(at.accidents.len())
+                        .map_err(|_| Error::internal("more accidents than lines"))?,
+                );
+                for &accident in &at.accidents {
+                    columns.accident.push(
+                        TsAccident::of(accident).ok_or_else(|| no_code("the accident"))? as u8,
+                    );
+                    columns
+                        .accident_points
+                        .push(one.scores.points(at.planet, accident));
+                }
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let [north_node, regulus, spica, algol] = &self.points;
+        let [combustion, beams, cazimi, cusp_orb, star_orb] = &self.orbs;
+        let mut chart = vec![
+            ColumnData::U16(&self.houses),
+            ColumnData::F64(north_node),
+            ColumnData::F64(regulus),
+            ColumnData::F64(spica),
+            ColumnData::F64(algol),
+            ColumnData::F64(combustion),
+            ColumnData::U8(&self.combustion_in_sign),
+            ColumnData::F64(beams),
+            ColumnData::F64(cazimi),
+            ColumnData::F64(cusp_orb),
+            ColumnData::F64(star_orb),
+            ColumnData::U8(&self.partile),
+            ColumnData::F64(&self.partile_orb),
+            ColumnData::U8(&self.siege),
+            ColumnData::F64(&self.siege_span),
+        ];
+        chart.extend(self.scores.iter().map(|column| ColumnData::I8(column)));
+        writer.columns("fortitudes", self.houses.len(), &chart)?;
+        writer.columns(
+            "fortitude_houses",
+            self.cusp.len(),
+            &[
+                ColumnData::F64(&self.cusp),
+                ColumnData::I8(&self.house_score),
+            ],
+        )?;
+        writer.columns(
+            "fortitude_planets",
+            self.planet.len(),
+            &[
+                ColumnData::U16(&self.planet),
+                ColumnData::F64(&self.speed),
+                ColumnData::F64(&self.mean_motion),
+                ColumnData::U8(&self.house),
+                ColumnData::I16(&self.fortitude),
+                ColumnData::I16(&self.debility),
+                ColumnData::U8(&self.accident_count),
+            ],
+        )?;
+        writer.columns(
+            "fortitude_accidents",
+            self.accident.len(),
+            &[
+                ColumnData::U8(&self.accident),
+                ColumnData::I8(&self.accident_points),
+            ],
+        )
     }
 }
 
@@ -4039,6 +4463,11 @@ pub struct Composed<'a> {
     /// Every chart's essential dignities, in the batch's order
     /// (`essential-dignities.md`); empty when none was asked for.
     pub dignities: &'a [teistro::Dignities],
+    /// Every chart's accidental fortitudes with its essential dignities,
+    /// in the batch's order; empty when none was asked for, and when
+    /// given, `dignities` is empty and the dignity sections are filled
+    /// from these.
+    pub fortitudes: &'a [teistro::Fortitudes],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -4082,6 +4511,7 @@ pub fn encode(
         sade_sati,
         kp,
         dignities,
+        fortitudes,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -4099,7 +4529,7 @@ pub fn encode(
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
-    let dignities = DignityColumns::of(dignities, charts.len())?;
+    let lilly = LillyColumns::of(dignities, fortitudes, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -4160,7 +4590,7 @@ pub fn encode(
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
         writer.bytes("kp", kp.as_bytes())?;
-        dignities.write(&mut writer)?;
+        lilly.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -4917,6 +5347,37 @@ unsafe fn dignity_request_of(
         .transpose()
 }
 
+/// The fortitudes a request's `fortitudes_json` asks for, none for null;
+/// the crate reads the record ([`teistro::FortitudeRequest::from_json`]),
+/// naming a refusal from its root, `fortitudes.rules.beamsDeg`.
+///
+/// # Safety
+///
+/// `fortitudes_json` null or a NUL-terminated string.
+unsafe fn fortitude_request_of(
+    fortitudes_json: *const c_char,
+) -> Result<Option<teistro::FortitudeRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(fortitudes_json, "fortitudes_json") }?
+        .map(teistro::FortitudeRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's accidental fortitudes, none when none was asked for.
+fn fortitudes_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::FortitudeRequest>,
+) -> Result<Vec<teistro::Fortitudes>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .map(|document| sdk.chart().fortitudes(document, asked))
+        .collect()
+}
+
 /// Every chart's essential dignities, none when none was asked for.
 fn dignities_of(
     sdk: &teistro::Context,
@@ -5029,6 +5490,66 @@ impl Sections {
     }
 }
 
+/// The façade's request for what `asked` lists beside its instants: its
+/// sections, divisional charts, drawings and dasha systems, each refused
+/// by the field the caller wrote.
+///
+/// # Safety
+///
+/// `asked.vargas`, `asked.dashas` and `asked.drawings` each null with a
+/// zero count, or that many readable values.
+unsafe fn chart_request_of(
+    asked: &TsChartRequest,
+    place: Place,
+    kind: ChartKind,
+    clock: UtcOffset,
+) -> Result<ChartRequest, Error> {
+    // SAFETY: the caller's contract, for `varga_count` readable `u16`s.
+    let asked_vargas = unsafe { slice(asked.vargas, asked.varga_count, "vargas") }?;
+    let mut vargas = Vec::with_capacity(asked_vargas.len());
+    for id in asked_vargas {
+        vargas.push(Varga::from_id(*id).ok_or_else(|| {
+            Error::new(
+                Status::InvalidArg,
+                format!("no divisional chart with id {id}"),
+            )
+            .with_field("vargas")
+        })?);
+    }
+    // SAFETY: as above, for `dasha_count` readable `u16`s.
+    let asked_dashas = unsafe { slice(asked.dashas, asked.dasha_count, "dashas") }?;
+    let mut dashas = Vec::with_capacity(asked_dashas.len());
+    // A catalogued id or one the context registered; the façade refuses
+    // any other by its place, with the systems it can compute.
+    for id in asked_dashas {
+        dashas.push(KeyId::new(Kind::DashaSystem, *id));
+    }
+    // SAFETY: as above, for `drawing_count` readable `u32`s.
+    let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
+    let mut drawings = Vec::with_capacity(asked_drawings.len());
+    for (index, packed) in asked_drawings.iter().enumerate() {
+        let (layout, varga) = (packed >> 16, packed & 0xFFFF);
+        let varga = u16::try_from(varga)
+            .ok()
+            .and_then(Varga::from_id)
+            .ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "drawing {index} names divisional chart id {varga}, which is none"
+                ))
+                .with_field(format!("drawings[{index}]"))
+            })?;
+        let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
+        drawings.push((layout, varga));
+    }
+    Ok(sections_of(
+        asked.sections,
+        ChartRequest::at(place, clock).with_kind(kind),
+    )
+    .with_vargas(vargas)
+    .with_drawings(drawings)
+    .with_dashas(dashas))
+}
+
 /// Where a request casts its charts, of what kind, and against which
 /// clock — each refused by the field the caller wrote.
 fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset), Error> {
@@ -5127,6 +5648,7 @@ struct AskedRecords {
     sade_sati: Option<teistro::SadeSatiRequest>,
     kp: Option<teistro::KpRequest>,
     dignities: Option<teistro::DignityRequest>,
+    fortitudes: Option<teistro::FortitudeRequest>,
 }
 
 impl AskedRecords {
@@ -5153,8 +5675,26 @@ impl AskedRecords {
                 sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
                 kp: kp_request_of(asked.kp_json, clock)?,
                 dignities: dignity_request_of(asked.dignities_json)?,
+                fortitudes: fortitude_request_of(asked.fortitudes_json)?,
             })
+            .and_then(AskedRecords::one_table)
         }
+    }
+
+    /// The record with one request for the essential dignities: the
+    /// fortitudes carry their own, so a `dignities` record beside them is
+    /// refused rather than one of the two silently winning.
+    fn one_table(self) -> Result<AskedRecords, Error> {
+        if self.dignities.is_some() && self.fortitudes.is_some() {
+            return Err(Error::invalid_arg(
+                "the essential dignities asked for twice, by `dignities` and by `fortitudes`",
+            )
+            .with_field("dignities")
+            .with_hint(
+                "the fortitudes answer the essential dignities too: put this record under `fortitudes.dignities` and drop `dignities`",
+            ));
+        }
+        Ok(self)
     }
 }
 
@@ -5271,50 +5811,8 @@ pub unsafe extern "C" fn ts_chart_found(
                 .iter()
                 .map(|jd| JulianDay::<Utc>::literal(*jd))
                 .collect();
-        // SAFETY: as above, for `varga_count` readable `u16`s.
-        let asked_vargas = unsafe { slice(asked.vargas, asked.varga_count, "vargas") }?;
-        let mut vargas = Vec::with_capacity(asked_vargas.len());
-        for id in asked_vargas {
-            vargas.push(Varga::from_id(*id).ok_or_else(|| {
-                Error::new(
-                    Status::InvalidArg,
-                    format!("no divisional chart with id {id}"),
-                )
-                .with_field("vargas")
-            })?);
-        }
-        // SAFETY: as above, for `dasha_count` readable `u16`s.
-        let asked_dashas = unsafe { slice(asked.dashas, asked.dasha_count, "dashas") }?;
-        let mut dashas = Vec::with_capacity(asked_dashas.len());
-        // A catalogued id or one the context registered; the façade refuses
-        // any other by its place, with the systems it can compute.
-        for id in asked_dashas {
-            dashas.push(KeyId::new(Kind::DashaSystem, *id));
-        }
-        // SAFETY: as above, for `drawing_count` readable `u32`s.
-        let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
-        let mut drawings = Vec::with_capacity(asked_drawings.len());
-        for (index, packed) in asked_drawings.iter().enumerate() {
-            let (layout, varga) = (packed >> 16, packed & 0xFFFF);
-            let varga = u16::try_from(varga)
-                .ok()
-                .and_then(Varga::from_id)
-                .ok_or_else(|| {
-                    Error::invalid_arg(format!(
-                        "drawing {index} names divisional chart id {varga}, which is none"
-                    ))
-                    .with_field(format!("drawings[{index}]"))
-                })?;
-            let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
-            drawings.push((layout, varga));
-        }
-        let request = sections_of(
-            asked.sections,
-            ChartRequest::at(place, clock).with_kind(kind),
-        )
-        .with_vargas(vargas)
-        .with_drawings(drawings)
-        .with_dashas(dashas);
+        // SAFETY: the entry point's contract, for each list `asked` names.
+        let request = unsafe { chart_request_of(&asked, place, kind, clock) }?;
         // **The façade reads it**, which is what the dependency inversion
         // was for: `rust-consumer-surface.md` moved the SDK's
         // composition into `teistro` and had this crate depend on it, and
@@ -5356,6 +5854,7 @@ pub unsafe extern "C" fn ts_chart_found(
         let hits = hits_of(ctx.sdk(), &founded.value, records.hits.as_ref())?;
         let kp = kp_json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
         let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
+        let fortitudes = fortitudes_of(ctx.sdk(), &founded.value, records.fortitudes.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -5375,6 +5874,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 sade_sati: &sade_sati,
                 kp: &kp,
                 dignities: &dignities,
+                fortitudes: &fortitudes,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

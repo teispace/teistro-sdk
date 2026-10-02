@@ -6493,6 +6493,190 @@ export declare const Triplicities: {
 export declare const TriplicitiesById: ReadonlyMap<number, Triplicities>;
 
 /**
+ * One of Lilly's accidental fortitudes or debilities (p. 115,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+export type Accident =
+  | 'DIRECT'
+  | 'RETROGRADE'
+  | 'SWIFT'
+  | 'SLOW'
+  | 'ORIENTAL'
+  | 'OCCIDENTAL'
+  | 'INCREASING'
+  | 'DECREASING'
+  | 'FREE_FROM_COMBUSTION'
+  | 'CAZIMI'
+  | 'COMBUST'
+  | 'UNDER_BEAMS'
+  | 'CONJUNCT_BENEFIC'
+  | 'CONJUNCT_NORTH_NODE'
+  | 'TRINE_BENEFIC'
+  | 'SEXTILE_BENEFIC'
+  | 'CONJUNCT_MALEFIC'
+  | 'CONJUNCT_SOUTH_NODE'
+  | 'OPPOSED_MALEFIC'
+  | 'SQUARE_MALEFIC'
+  | 'BESIEGED'
+  | 'REGULUS'
+  | 'SPICA'
+  | 'ALGOL';
+
+/** Every Accident by name; the values are the strings the union accepts. */
+export declare const Accident: {
+  /**
+   * Moving forward; void for the Sun and the Moon.
+   */
+  readonly Direct: 'DIRECT';
+  /**
+   * Moving backward.
+   */
+  readonly Retrograde: 'RETROGRADE';
+  /**
+   * Faster than its mean motion.
+   */
+  readonly Swift: 'SWIFT';
+  /**
+   * Slower than its mean motion.
+   */
+  readonly Slow: 'SLOW';
+  /**
+   * Rising before the Sun. Not read for the Moon.
+   */
+  readonly Oriental: 'ORIENTAL';
+  /**
+   * Setting after the Sun.
+   */
+  readonly Occidental: 'OCCIDENTAL';
+  /**
+   * The Moon from her conjunction with the Sun to the opposition.
+   */
+  readonly Increasing: 'INCREASING';
+  /**
+   * The Moon from the opposition to the conjunction.
+   */
+  readonly Decreasing: 'DECREASING';
+  /**
+   * Clear of the Sun: neither combust, under his beams nor in cazimi.
+   */
+  readonly FreeFromCombustion: 'FREE_FROM_COMBUSTION';
+  /**
+   * In the heart of the Sun.
+   */
+  readonly Cazimi: 'CAZIMI';
+  /**
+   * Within the combustion orb of the Sun.
+   */
+  readonly Combust: 'COMBUST';
+  /**
+   * Within the beams of the Sun, not combust.
+   */
+  readonly UnderBeams: 'UNDER_BEAMS';
+  /**
+   * In partile conjunction with Jupiter or Venus.
+   */
+  readonly ConjunctBenefic: 'CONJUNCT_BENEFIC';
+  /**
+   * In partile conjunction with the North Node.
+   */
+  readonly ConjunctNorthNode: 'CONJUNCT_NORTH_NODE';
+  /**
+   * In partile trine to Jupiter or Venus.
+   */
+  readonly TrineBenefic: 'TRINE_BENEFIC';
+  /**
+   * In partile sextile to Jupiter or Venus.
+   */
+  readonly SextileBenefic: 'SEXTILE_BENEFIC';
+  /**
+   * In partile conjunction with Saturn or Mars.
+   */
+  readonly ConjunctMalefic: 'CONJUNCT_MALEFIC';
+  /**
+   * In partile conjunction with the South Node.
+   */
+  readonly ConjunctSouthNode: 'CONJUNCT_SOUTH_NODE';
+  /**
+   * In partile opposition to Saturn or Mars.
+   */
+  readonly OpposedMalefic: 'OPPOSED_MALEFIC';
+  /**
+   * In partile square to Saturn or Mars.
+   */
+  readonly SquareMalefic: 'SQUARE_MALEFIC';
+  /**
+   * Between the bodies of Saturn and Mars.
+   */
+  readonly Besieged: 'BESIEGED';
+  /**
+   * With Cor Leonis (Regulus).
+   */
+  readonly Regulus: 'REGULUS';
+  /**
+   * With Spica.
+   */
+  readonly Spica: 'SPICA';
+  /**
+   * With Caput Algol.
+   */
+  readonly Algol: 'ALGOL';
+};
+
+/**
+ * Every Accident by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AccidentById: ReadonlyMap<number, Accident>;
+
+/**
+ * When two planets are in partile aspect (C216,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+export type Partile = 'SAME_DEGREE' | 'WITHIN';
+
+/** Every Partile by name; the values are the strings the union accepts. */
+export declare const Partile: {
+  /**
+   * Lilly's: the same degree of signs the aspect apart.
+   */
+  readonly SameDegree: 'SAME_DEGREE';
+  /**
+   * Within an orb of the exact aspect.
+   */
+  readonly Within: 'WITHIN';
+};
+
+/**
+ * Every Partile by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PartileById: ReadonlyMap<number, Partile>;
+
+/**
+ * When a planet is besieged by Saturn and Mars (C215,
+ * `03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+export type Siege = 'SAME_SIGN' | 'WITHIN';
+
+/** Every Siege by name; the values are the strings the union accepts. */
+export declare const Siege: {
+  /**
+   * Lilly's example: all three in one sign, the planet between the two.
+   */
+  readonly SameSign: 'SAME_SIGN';
+  /**
+   * On the shorter arc between the two, the arc no wider than a span.
+   */
+  readonly Within: 'WITHIN';
+};
+
+/**
+ * Every Siege by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SiegeById: ReadonlyMap<number, Siege>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

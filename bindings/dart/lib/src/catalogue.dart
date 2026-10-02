@@ -5453,6 +5453,155 @@ enum Triplicities {
   }
 }
 
+/// One of Lilly's accidental fortitudes or debilities (p. 115,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+enum Accident {
+  /// Moving forward; void for the Sun and the Moon.
+  direct(0, 'DIRECT'),
+  /// Moving backward.
+  retrograde(1, 'RETROGRADE'),
+  /// Faster than its mean motion.
+  swift(2, 'SWIFT'),
+  /// Slower than its mean motion.
+  slow(3, 'SLOW'),
+  /// Rising before the Sun. Not read for the Moon.
+  oriental(4, 'ORIENTAL'),
+  /// Setting after the Sun.
+  occidental(5, 'OCCIDENTAL'),
+  /// The Moon from her conjunction with the Sun to the opposition.
+  increasing(6, 'INCREASING'),
+  /// The Moon from the opposition to the conjunction.
+  decreasing(7, 'DECREASING'),
+  /// Clear of the Sun: neither combust, under his beams nor in cazimi.
+  freeFromCombustion(8, 'FREE_FROM_COMBUSTION'),
+  /// In the heart of the Sun.
+  cazimi(9, 'CAZIMI'),
+  /// Within the combustion orb of the Sun.
+  combust(10, 'COMBUST'),
+  /// Within the beams of the Sun, not combust.
+  underBeams(11, 'UNDER_BEAMS'),
+  /// In partile conjunction with Jupiter or Venus.
+  conjunctBenefic(12, 'CONJUNCT_BENEFIC'),
+  /// In partile conjunction with the North Node.
+  conjunctNorthNode(13, 'CONJUNCT_NORTH_NODE'),
+  /// In partile trine to Jupiter or Venus.
+  trineBenefic(14, 'TRINE_BENEFIC'),
+  /// In partile sextile to Jupiter or Venus.
+  sextileBenefic(15, 'SEXTILE_BENEFIC'),
+  /// In partile conjunction with Saturn or Mars.
+  conjunctMalefic(16, 'CONJUNCT_MALEFIC'),
+  /// In partile conjunction with the South Node.
+  conjunctSouthNode(17, 'CONJUNCT_SOUTH_NODE'),
+  /// In partile opposition to Saturn or Mars.
+  opposedMalefic(18, 'OPPOSED_MALEFIC'),
+  /// In partile square to Saturn or Mars.
+  squareMalefic(19, 'SQUARE_MALEFIC'),
+  /// Between the bodies of Saturn and Mars.
+  besieged(20, 'BESIEGED'),
+  /// With Cor Leonis (Regulus).
+  regulus(21, 'REGULUS'),
+  /// With Spica.
+  spica(22, 'SPICA'),
+  /// With Caput Algol.
+  algol(23, 'ALGOL');
+
+  const Accident(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Accident byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Accident'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Accident? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// When two planets are in partile aspect (C216,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+enum Partile {
+  /// Lilly's: the same degree of signs the aspect apart.
+  sameDegree(0, 'SAME_DEGREE'),
+  /// Within an orb of the exact aspect.
+  within(1, 'WITHIN');
+
+  const Partile(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Partile byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Partile'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Partile? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// When a planet is besieged by Saturn and Mars (C215,
+/// `03-design/essential-dignities.md` §Accidental fortitudes).
+enum Siege {
+  /// Lilly's example: all three in one sign, the planet between the two.
+  sameSign(0, 'SAME_SIGN'),
+  /// On the shorter arc between the two, the arc no wider than a span.
+  within(1, 'WITHIN');
+
+  const Siege(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Siege byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Siege'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Siege? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

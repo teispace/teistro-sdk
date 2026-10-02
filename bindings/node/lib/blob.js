@@ -993,6 +993,82 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 63, 'fortitudes');
+    out.fortitudes = {
+      houses: column(blob, at, 0, 'u16', at.count),
+      northNode: column(blob, at, 1, 'f64', at.count),
+      regulus: column(blob, at, 2, 'f64', at.count),
+      spica: column(blob, at, 3, 'f64', at.count),
+      algol: column(blob, at, 4, 'f64', at.count),
+      combustionOrb: column(blob, at, 5, 'f64', at.count),
+      combustionInSign: column(blob, at, 6, 'u8', at.count),
+      beamsOrb: column(blob, at, 7, 'f64', at.count),
+      cazimiOrb: column(blob, at, 8, 'f64', at.count),
+      cuspOrb: column(blob, at, 9, 'f64', at.count),
+      starOrb: column(blob, at, 10, 'f64', at.count),
+      partile: column(blob, at, 11, 'u8', at.count),
+      partileOrb: column(blob, at, 12, 'f64', at.count),
+      siege: column(blob, at, 13, 'u8', at.count),
+      siegeSpan: column(blob, at, 14, 'f64', at.count),
+      scoreDirect: column(blob, at, 15, 'i8', at.count),
+      scoreRetrograde: column(blob, at, 16, 'i8', at.count),
+      scoreSwift: column(blob, at, 17, 'i8', at.count),
+      scoreSlow: column(blob, at, 18, 'i8', at.count),
+      scoreSuperiorOriental: column(blob, at, 19, 'i8', at.count),
+      scoreSuperiorOccidental: column(blob, at, 20, 'i8', at.count),
+      scoreInferiorOriental: column(blob, at, 21, 'i8', at.count),
+      scoreInferiorOccidental: column(blob, at, 22, 'i8', at.count),
+      scoreIncreasing: column(blob, at, 23, 'i8', at.count),
+      scoreDecreasing: column(blob, at, 24, 'i8', at.count),
+      scoreFreeFromCombustion: column(blob, at, 25, 'i8', at.count),
+      scoreCazimi: column(blob, at, 26, 'i8', at.count),
+      scoreCombust: column(blob, at, 27, 'i8', at.count),
+      scoreUnderBeams: column(blob, at, 28, 'i8', at.count),
+      scoreConjunctBenefic: column(blob, at, 29, 'i8', at.count),
+      scoreConjunctNorthNode: column(blob, at, 30, 'i8', at.count),
+      scoreTrineBenefic: column(blob, at, 31, 'i8', at.count),
+      scoreSextileBenefic: column(blob, at, 32, 'i8', at.count),
+      scoreConjunctMalefic: column(blob, at, 33, 'i8', at.count),
+      scoreConjunctSouthNode: column(blob, at, 34, 'i8', at.count),
+      scoreOpposedMalefic: column(blob, at, 35, 'i8', at.count),
+      scoreSquareMalefic: column(blob, at, 36, 'i8', at.count),
+      scoreBesieged: column(blob, at, 37, 'i8', at.count),
+      scoreRegulus: column(blob, at, 38, 'i8', at.count),
+      scoreSpica: column(blob, at, 39, 'i8', at.count),
+      scoreAlgol: column(blob, at, 40, 'i8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 64, 'fortitude_houses');
+    out.fortitudeHouses = {
+      cusp: column(blob, at, 0, 'f64', at.count),
+      score: column(blob, at, 1, 'i8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 65, 'fortitude_planets');
+    out.fortitudePlanets = {
+      planet: column(blob, at, 0, 'u16', at.count),
+      speed: column(blob, at, 1, 'f64', at.count),
+      meanMotion: column(blob, at, 2, 'f64', at.count),
+      house: column(blob, at, 3, 'u8', at.count),
+      fortitude: column(blob, at, 4, 'i16', at.count),
+      debility: column(blob, at, 5, 'i16', at.count),
+      accidentCount: column(blob, at, 6, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 66, 'fortitude_accidents');
+    out.fortitudeAccidents = {
+      accident: column(blob, at, 0, 'u8', at.count),
+      points: column(blob, at, 1, 'i8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

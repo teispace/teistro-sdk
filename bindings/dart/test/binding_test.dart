@@ -2302,6 +2302,129 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its accidental fortitudes', () {
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    const instants = [2460676.5, 2460676.75];
+    Chart found(
+      double instant, {
+      FortitudeRequest? fortitudes,
+      DignityRequest? dignities,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      fortitudes: fortitudes,
+      dignities: dignities,
+    );
+    expect(found(instants[0]).fortitudes, isNull);
+
+    final chart = found(instants[0], fortitudes: const FortitudeRequest());
+    final read = chart.fortitudes!;
+    expect(read.dignities, chart.dignities);
+    expect(read.sky.houses, HouseSystem.regiomontanus);
+    expect(read.sky.cuspsDeg, hasLength(12));
+    expect(read.sky.speedsDegPerDay, hasLength(7));
+    expect(read.rules, AccidentalRules.lilly);
+    expect(read.scores, AccidentalScores.lilly);
+    expect(
+      read.planets.map((at) => at.planet),
+      read.dignities.planets.map((at) => at.planet),
+    );
+    const solar = {
+      Accident.cazimi,
+      Accident.combust,
+      Accident.underBeams,
+      Accident.freeFromCombustion,
+    };
+    for (final (k, at) in read.planets.indexed) {
+      final own = read.dignities.planets[k];
+      final points = [
+        read.scores.houses[at.house - 1],
+        for (final line in at.accidents) line.points,
+      ];
+      expect(
+        at.fortitude,
+        points.where((n) => n > 0).fold<int>(0, (a, b) => a + b),
+        reason: '${at.planet}',
+      );
+      expect(
+        at.debility,
+        points.where((n) => n < 0).fold<int>(0, (a, b) => a - b),
+        reason: '${at.planet}',
+      );
+      expect(
+        at.net,
+        own.score + own.reception + at.fortitude - at.debility,
+        reason: '${at.planet}',
+      );
+      expect(
+        at.accidents.where((line) => solar.contains(line.accident)),
+        hasLength(at.planet == Graha.sun ? 0 : 1),
+        reason: '${at.planet}',
+      );
+    }
+
+    // The answer's rules and scores are a request as they stand, and one
+    // changed is obeyed.
+    expect(
+      found(
+        instants[0],
+        fortitudes: FortitudeRequest(rules: read.rules, scores: read.scores),
+      ).fortitudes,
+      read,
+    );
+    const asked = FortitudeRequest(
+      rules: AccidentalRules(
+        beamsDeg: 15,
+        partile: Partile.within,
+        partileOrbDeg: 1,
+        siege: Siege.within,
+        siegeSpanDeg: 30,
+      ),
+      scores: AccidentalScores(regulus: 5),
+    );
+    final other = found(instants[0], fortitudes: asked).fortitudes!;
+    expect(other.rules, asked.rules);
+    expect(other.scores, asked.scores);
+
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      fortitudes: const FortitudeRequest(),
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).fortitudes,
+        found(instant, fortitudes: const FortitudeRequest()).fortitudes,
+        reason: 'each alone',
+      );
+    }
+
+    for (final (fortitudes, dignities, field) in [
+      (
+        const FortitudeRequest(rules: AccidentalRules(beamsDeg: -1)),
+        null,
+        'fortitudes.rules.beamsDeg',
+      ),
+      (const FortitudeRequest(), const DignityRequest(), 'dignities'),
+    ]) {
+      expect(
+        () => found(instants[0], fortitudes: fortitudes, dignities: dignities),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

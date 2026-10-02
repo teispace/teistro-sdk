@@ -3876,6 +3876,108 @@ class Triplicities(Member):
     """Lilly's, Mars ruling water alone."""
 
 
+class Accident(Member):
+    """One of Lilly's accidental fortitudes or debilities (p. 115,
+    `03-design/essential-dignities.md` §Accidental fortitudes).
+    """
+
+    DIRECT = 0
+    """Moving forward; void for the Sun and the Moon."""
+
+    RETROGRADE = 1
+    """Moving backward."""
+
+    SWIFT = 2
+    """Faster than its mean motion."""
+
+    SLOW = 3
+    """Slower than its mean motion."""
+
+    ORIENTAL = 4
+    """Rising before the Sun. Not read for the Moon."""
+
+    OCCIDENTAL = 5
+    """Setting after the Sun."""
+
+    INCREASING = 6
+    """The Moon from her conjunction with the Sun to the opposition."""
+
+    DECREASING = 7
+    """The Moon from the opposition to the conjunction."""
+
+    FREE_FROM_COMBUSTION = 8
+    """Clear of the Sun: neither combust, under his beams nor in cazimi."""
+
+    CAZIMI = 9
+    """In the heart of the Sun."""
+
+    COMBUST = 10
+    """Within the combustion orb of the Sun."""
+
+    UNDER_BEAMS = 11
+    """Within the beams of the Sun, not combust."""
+
+    CONJUNCT_BENEFIC = 12
+    """In partile conjunction with Jupiter or Venus."""
+
+    CONJUNCT_NORTH_NODE = 13
+    """In partile conjunction with the North Node."""
+
+    TRINE_BENEFIC = 14
+    """In partile trine to Jupiter or Venus."""
+
+    SEXTILE_BENEFIC = 15
+    """In partile sextile to Jupiter or Venus."""
+
+    CONJUNCT_MALEFIC = 16
+    """In partile conjunction with Saturn or Mars."""
+
+    CONJUNCT_SOUTH_NODE = 17
+    """In partile conjunction with the South Node."""
+
+    OPPOSED_MALEFIC = 18
+    """In partile opposition to Saturn or Mars."""
+
+    SQUARE_MALEFIC = 19
+    """In partile square to Saturn or Mars."""
+
+    BESIEGED = 20
+    """Between the bodies of Saturn and Mars."""
+
+    REGULUS = 21
+    """With Cor Leonis (Regulus)."""
+
+    SPICA = 22
+    """With Spica."""
+
+    ALGOL = 23
+    """With Caput Algol."""
+
+
+class Partile(Member):
+    """When two planets are in partile aspect (C216,
+    `03-design/essential-dignities.md` §Accidental fortitudes).
+    """
+
+    SAME_DEGREE = 0
+    """Lilly's: the same degree of signs the aspect apart."""
+
+    WITHIN = 1
+    """Within an orb of the exact aspect."""
+
+
+class Siege(Member):
+    """When a planet is besieged by Saturn and Mars (C215,
+    `03-design/essential-dignities.md` §Accidental fortitudes).
+    """
+
+    SAME_SIGN = 0
+    """Lilly's example: all three in one sign, the planet between the two."""
+
+    WITHIN = 1
+    """On the shorter arc between the two, the arc no wider than a span."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -6024,6 +6126,40 @@ _KEYS: dict[str, dict[int, str]] = {
     "Triplicities": {
         0: "PTOLEMY",
         1: "LILLY",
+    },
+    "Accident": {
+        0: "DIRECT",
+        1: "RETROGRADE",
+        2: "SWIFT",
+        3: "SLOW",
+        4: "ORIENTAL",
+        5: "OCCIDENTAL",
+        6: "INCREASING",
+        7: "DECREASING",
+        8: "FREE_FROM_COMBUSTION",
+        9: "CAZIMI",
+        10: "COMBUST",
+        11: "UNDER_BEAMS",
+        12: "CONJUNCT_BENEFIC",
+        13: "CONJUNCT_NORTH_NODE",
+        14: "TRINE_BENEFIC",
+        15: "SEXTILE_BENEFIC",
+        16: "CONJUNCT_MALEFIC",
+        17: "CONJUNCT_SOUTH_NODE",
+        18: "OPPOSED_MALEFIC",
+        19: "SQUARE_MALEFIC",
+        20: "BESIEGED",
+        21: "REGULUS",
+        22: "SPICA",
+        23: "ALGOL",
+    },
+    "Partile": {
+        0: "SAME_DEGREE",
+        1: "WITHIN",
+    },
+    "Siege": {
+        0: "SAME_SIGN",
+        1: "WITHIN",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

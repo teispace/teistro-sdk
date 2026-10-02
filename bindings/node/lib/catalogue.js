@@ -3179,6 +3179,95 @@ export const TriplicitiesById = new Map([
   [1, 'LILLY'],
 ]);
 
+/** Every Accident by name. */
+export const Accident = Object.freeze({
+  Direct: 'DIRECT',
+  Retrograde: 'RETROGRADE',
+  Swift: 'SWIFT',
+  Slow: 'SLOW',
+  Oriental: 'ORIENTAL',
+  Occidental: 'OCCIDENTAL',
+  Increasing: 'INCREASING',
+  Decreasing: 'DECREASING',
+  FreeFromCombustion: 'FREE_FROM_COMBUSTION',
+  Cazimi: 'CAZIMI',
+  Combust: 'COMBUST',
+  UnderBeams: 'UNDER_BEAMS',
+  ConjunctBenefic: 'CONJUNCT_BENEFIC',
+  ConjunctNorthNode: 'CONJUNCT_NORTH_NODE',
+  TrineBenefic: 'TRINE_BENEFIC',
+  SextileBenefic: 'SEXTILE_BENEFIC',
+  ConjunctMalefic: 'CONJUNCT_MALEFIC',
+  ConjunctSouthNode: 'CONJUNCT_SOUTH_NODE',
+  OpposedMalefic: 'OPPOSED_MALEFIC',
+  SquareMalefic: 'SQUARE_MALEFIC',
+  Besieged: 'BESIEGED',
+  Regulus: 'REGULUS',
+  Spica: 'SPICA',
+  Algol: 'ALGOL',
+});
+
+/**
+ * Every Accident by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AccidentById = new Map([
+  [0, 'DIRECT'],
+  [1, 'RETROGRADE'],
+  [2, 'SWIFT'],
+  [3, 'SLOW'],
+  [4, 'ORIENTAL'],
+  [5, 'OCCIDENTAL'],
+  [6, 'INCREASING'],
+  [7, 'DECREASING'],
+  [8, 'FREE_FROM_COMBUSTION'],
+  [9, 'CAZIMI'],
+  [10, 'COMBUST'],
+  [11, 'UNDER_BEAMS'],
+  [12, 'CONJUNCT_BENEFIC'],
+  [13, 'CONJUNCT_NORTH_NODE'],
+  [14, 'TRINE_BENEFIC'],
+  [15, 'SEXTILE_BENEFIC'],
+  [16, 'CONJUNCT_MALEFIC'],
+  [17, 'CONJUNCT_SOUTH_NODE'],
+  [18, 'OPPOSED_MALEFIC'],
+  [19, 'SQUARE_MALEFIC'],
+  [20, 'BESIEGED'],
+  [21, 'REGULUS'],
+  [22, 'SPICA'],
+  [23, 'ALGOL'],
+]);
+
+/** Every Partile by name. */
+export const Partile = Object.freeze({
+  SameDegree: 'SAME_DEGREE',
+  Within: 'WITHIN',
+});
+
+/**
+ * Every Partile by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PartileById = new Map([
+  [0, 'SAME_DEGREE'],
+  [1, 'WITHIN'],
+]);
+
+/** Every Siege by name. */
+export const Siege = Object.freeze({
+  SameSign: 'SAME_SIGN',
+  Within: 'WITHIN',
+});
+
+/**
+ * Every Siege by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SiegeById = new Map([
+  [0, 'SAME_SIGN'],
+  [1, 'WITHIN'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

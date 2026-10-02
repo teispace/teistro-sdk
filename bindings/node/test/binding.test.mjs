@@ -704,8 +704,10 @@ test('every catalogue enum has a complete id table', () => {
   // the blackouts and the eclipses were named: `blackout_kind`'s twelve,
   // `lunar_eclipse_kind`'s three and `solar_eclipse_kind`'s four, each
   // with its UNKNOWN; 1205 since the essential dignities' `TsSect`, two,
-  // `TsSectRule`, four, `TsTerms`, five, and `TsTriplicities`, two.
-  assert.equal(entries, 1205, 'every member of every enum is in a table');
+  // `TsSectRule`, four, `TsTerms`, five, and `TsTriplicities`, two; 1233
+  // since the accidental fortitudes' `TsAccident`, twenty-four, and
+  // `TsPartile` and `TsSiege`, two each.
+  assert.equal(entries, 1233, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2086,6 +2088,86 @@ test('a chart carries its essential dignities', () => {
     );
   }
   assert.throws(() => ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: 'LILLY' }), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * The accidental fortitudes cross whole: the sky and every rule and score
+ * applied reported back as a request would write them, the seven with
+ * their lines, each line's points and Lilly's net, the essential half the
+ * chart's own dignities, and a refusal named in the record
+ * (`03-design/essential-dignities.md` §Accidental fortitudes).
+ */
+test('a chart carries its accidental fortitudes', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const kathmandu = { place: { latitude: 27.7172, longitude: 85.324, altitude: 0 }, utcOffsetSeconds: 20700 };
+  const instants = [2460676.5, 2460676.75];
+  assert.equal(ctx.chart.found({ instant: instants[0], ...kathmandu }).fortitudes, null);
+
+  const chart = ctx.chart.found({ instant: instants[0], ...kathmandu, fortitudes: {} });
+  const read = chart.fortitudes;
+  assert.equal(read.dignities, chart.dignities, 'the essential half is the chart\'s dignities');
+  assert.equal(read.sky.houses, 'house_system.REGIOMONTANUS');
+  assert.equal(read.sky.cuspsDeg.length, 12);
+  assert.equal(read.sky.speedsDegPerDay.length, 7);
+  assert.deepEqual(
+    { ...read.rules, meanMotionDeg: undefined },
+    {
+      combustionDeg: 8.5,
+      combustionInSign: true,
+      beamsDeg: 17,
+      cazimiDeg: 17 / 60,
+      cuspOrbDeg: 5,
+      starOrbDeg: 5,
+      partile: 'SAME_DEGREE',
+      siege: 'SAME_SIGN',
+      meanMotionDeg: undefined,
+    },
+  );
+  assert.deepEqual(read.scores.houses, [5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5]);
+  assert.equal(read.scores.regulus, 6);
+  assert.ok(Object.isFrozen(read.planets[0].accidents), 'frozen to its leaves');
+  assert.deepEqual(
+    read.planets.map((at) => at.planet),
+    read.dignities.planets.map((at) => at.planet),
+  );
+  for (const [k, at] of read.planets.entries()) {
+    const own = read.dignities.planets[k];
+    const house = read.scores.houses[at.house - 1];
+    const points = [house, ...at.accidents.map((line) => line.points)];
+    assert.equal(at.fortitude, points.filter((n) => n > 0).reduce((a, b) => a + b, 0), at.planet);
+    assert.equal(at.debility, points.filter((n) => n < 0).reduce((a, b) => a - b, 0), at.planet);
+    assert.equal(at.net, own.score + own.reception + at.fortitude - at.debility, at.planet);
+    const solar = at.accidents.filter((line) =>
+      ['CAZIMI', 'COMBUST', 'UNDER_BEAMS', 'FREE_FROM_COMBUSTION'].includes(line.accident),
+    );
+    assert.equal(solar.length, at.planet === 'graha.SUN' ? 0 : 1, at.planet);
+  }
+
+  // The answer's rules and scores are requests as they stand.
+  const asked = {
+    rules: { ...read.rules, beamsDeg: 15, partile: { WITHIN: { orbDeg: 1 } }, siege: { WITHIN: { spanDeg: 30 } } },
+    scores: { ...read.scores, regulus: 5 },
+  };
+  const again = ctx.chart.found({ instant: instants[0], ...kathmandu, fortitudes: asked }).fortitudes;
+  assert.deepEqual(again.rules, asked.rules);
+  assert.deepEqual(again.scores, asked.scores);
+
+  const batch = ctx.chart.foundMany({ instants, ...kathmandu, fortitudes: {} });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).fortitudes, ctx.chart.found({ instant, ...kathmandu, fortitudes: {} }).fortitudes),
+  );
+  for (const [request, field] of [
+    [{ fortitudes: { rules: { beamDeg: 15 } } }, 'fortitudes.rules.beamDeg'],
+    [{ fortitudes: { rules: { beamsDeg: -1 } } }, 'fortitudes.rules.beamsDeg'],
+    [{ fortitudes: {}, dignities: {} }, 'dignities'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: instants[0], ...kathmandu, ...request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
   ctx.dispose();
 });
 

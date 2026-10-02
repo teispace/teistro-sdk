@@ -1972,7 +1972,7 @@ class ChartsDignities:
     """The `dignities` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.
+    Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too.
     """
 
     sect: memoryview[int]
@@ -2026,7 +2026,7 @@ class ChartsDignityPlanets:
     """The `dignity_planets` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.
+    The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked.
     """
 
     planet: memoryview[int]
@@ -2071,7 +2071,7 @@ class ChartsDignityReceptions:
     """The `dignity_receptions` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.
+    Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked.
     """
 
     first: memoryview[int]
@@ -2121,6 +2121,213 @@ class ChartsDignityReceptions:
 
     second_in_fall: memoryview[int]
     """1 when `second` stands in `first`'s fall, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsFortitudes:
+    """The `fortitudes` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. Empty when `fortitudes_json` asked for none.
+    """
+
+    houses: memoryview[int]
+    """The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module."""
+
+    north_node: memoryview[float]
+    """The North Node's longitude, in degrees of the chart's zodiac."""
+
+    regulus: memoryview[float]
+    """Regulus's apparent longitude of date, in degrees of the chart's zodiac."""
+
+    spica: memoryview[float]
+    """Spica's, likewise."""
+
+    algol: memoryview[float]
+    """Algol's, likewise."""
+
+    combustion_orb: memoryview[float]
+    """Combust within this many degrees of the Sun, `fortitudes_json.rules.combustionDeg`."""
+
+    combustion_in_sign: memoryview[int]
+    """1 when combustion also asks for the Sun's sign (C211), `fortitudes_json.rules.combustionInSign`, else 0."""
+
+    beams_orb: memoryview[float]
+    """Under the beams within this many degrees, `fortitudes_json.rules.beamsDeg` (C212)."""
+
+    cazimi_orb: memoryview[float]
+    """Cazimi within this many degrees, `fortitudes_json.rules.cazimiDeg`."""
+
+    cusp_orb: memoryview[float]
+    """A planet this near the next cusp is in its house (p. 33), `fortitudes_json.rules.cuspOrbDeg` (C214)."""
+
+    star_orb: memoryview[float]
+    """With a star within this many degrees, `fortitudes_json.rules.starOrbDeg`."""
+
+    partile: memoryview[int]
+    """When two planets are in partile aspect, `fortitudes_json.rules.partile` (C216)."""
+
+    partile_orb: memoryview[float]
+    """The orb of `WITHIN`; 0 for `SAME_DEGREE`."""
+
+    siege: memoryview[int]
+    """When a planet is besieged, `fortitudes_json.rules.siege` (C215)."""
+
+    siege_span: memoryview[float]
+    """The span of `WITHIN`; 0 for `SAME_SIGN`."""
+
+    score_direct: memoryview[int]
+    """What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_retrograde: memoryview[int]
+    """What the line `retrograde` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_swift: memoryview[int]
+    """What the line `swift` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_slow: memoryview[int]
+    """What the line `slow` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_superior_oriental: memoryview[int]
+    """What the line `superior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_superior_occidental: memoryview[int]
+    """What the line `superior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_inferior_oriental: memoryview[int]
+    """What the line `inferior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_inferior_occidental: memoryview[int]
+    """What the line `inferior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_increasing: memoryview[int]
+    """What the line `increasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_decreasing: memoryview[int]
+    """What the line `decreasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_free_from_combustion: memoryview[int]
+    """What the line `free_from_combustion` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_cazimi: memoryview[int]
+    """What the line `cazimi` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_combust: memoryview[int]
+    """What the line `combust` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_under_beams: memoryview[int]
+    """What the line `under_beams` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_conjunct_benefic: memoryview[int]
+    """What the line `conjunct_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_conjunct_north_node: memoryview[int]
+    """What the line `conjunct_north_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_trine_benefic: memoryview[int]
+    """What the line `trine_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_sextile_benefic: memoryview[int]
+    """What the line `sextile_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_conjunct_malefic: memoryview[int]
+    """What the line `conjunct_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_conjunct_south_node: memoryview[int]
+    """What the line `conjunct_south_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_opposed_malefic: memoryview[int]
+    """What the line `opposed_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_square_malefic: memoryview[int]
+    """What the line `square_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_besieged: memoryview[int]
+    """What the line `besieged` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_regulus: memoryview[int]
+    """What the line `regulus` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_spica: memoryview[int]
+    """What the line `spica` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    score_algol: memoryview[int]
+    """What the line `algol` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsFortitudeHouses:
+    """The `fortitude_houses` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none.
+    """
+
+    cusp: memoryview[float]
+    """Where the house begins, in degrees of the chart's zodiac."""
+
+    score: memoryview[int]
+    """What a planet in the house scores, `fortitudes_json.scores.houses`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsFortitudePlanets:
+    """The `fortitude_planets` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.
+    """
+
+    planet: memoryview[int]
+    """The planet."""
+
+    speed: memoryview[float]
+    """Its daily motion in longitude, in degrees; negative when retrograde."""
+
+    mean_motion: memoryview[float]
+    """The mean daily motion its speed is judged swift or slow against, `fortitudes_json.rules.meanMotionDeg`."""
+
+    house: memoryview[int]
+    """Its house, 1 to 12, under the five-degree rule."""
+
+    fortitude: memoryview[int]
+    """The sum of its positive lines, its house's included."""
+
+    debility: memoryview[int]
+    """The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it."""
+
+    accident_count: memoryview[int]
+    """How many rows of the `fortitude_accidents` section belong to this planet.
+
+    Ragged because which lines a planet meets depends on its sky.
+    """
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsFortitudeAccidents:
+    """The `fortitude_accidents` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.
+    """
+
+    accident: memoryview[int]
+    """The line it meets."""
+
+    points: memoryview[int]
+    """What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other."""
 
     length: int
     """The number of rows every column holds."""
@@ -2428,13 +2635,25 @@ class Charts:
     """UTF-8 JSON, canonical: an array with one entry per chart, each `{chart, significators, ruling}` (`03-design/kp.md`). `chart` is `{system, cusps, planets}`, every cusp `{house, longitude, lords}` and every planet `{graha, longitude, retrograde, house, lords}`, a longitude in **nanoarcseconds** of the sidereal zodiac, exact, and `lords` `{sign, star, sub, subSub}`, each level below the sign `{lord, span: {start, end}}` in nanoarcseconds, half-open. For a horary number the cusps are the number's (C156). `significators` is `{houses, nodes}`: twelve `{house, inOccupantsStars, occupants, inLordsStar, lord, conjoined, aspected, intercepted}` in Reader VI's order, and each node's `{node, conjoined, starLord, aspecting, signLord}` (C155). `ruling` is `{rulers, rules}`, each ruler `{graha, reasons, retrograde, rejectedBy, rejectedBySub}` and each reason `{kind}`, an `AGENT`'s with the ruler it stands for, `of`, and `by`; the ruling planets are the moment's own, even for a horary number. Empty when `kp_json` asked for none."""
 
     dignities: ChartsDignities
-    """Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too."""
+    """Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too."""
 
     dignity_planets: ChartsDignityPlanets
-    """The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none."""
+    """The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked."""
 
     dignity_receptions: ChartsDignityReceptions
-    """Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none."""
+    """Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked."""
+
+    fortitudes: ChartsFortitudes
+    """Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. Empty when `fortitudes_json` asked for none."""
+
+    fortitude_houses: ChartsFortitudeHouses
+    """Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none."""
+
+    fortitude_planets: ChartsFortitudePlanets
+    """The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none."""
+
+    fortitude_accidents: ChartsFortitudeAccidents
+    """Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none."""
 
 
 def decode_charts(raw: bytes) -> Charts:
@@ -2507,6 +2726,10 @@ def decode_charts(raw: bytes) -> Charts:
     at_dignities = blob.section(60, "dignities")
     at_dignity_planets = blob.section(61, "dignity_planets")
     at_dignity_receptions = blob.section(62, "dignity_receptions")
+    at_fortitudes = blob.section(63, "fortitudes")
+    at_fortitude_houses = blob.section(64, "fortitude_houses")
+    at_fortitude_planets = blob.section(65, "fortitude_planets")
+    at_fortitude_accidents = blob.section(66, "fortitude_accidents")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3766,6 +3989,174 @@ def decode_charts(raw: bytes) -> Charts:
                 at_dignity_receptions, 15, 1, at_dignity_receptions.count
             ).cast("B"),
             length=at_dignity_receptions.count,
+        ),
+        fortitudes=ChartsFortitudes(
+            houses=blob.column(
+                at_fortitudes, 0, 2, at_fortitudes.count
+            ).cast("H"),
+            north_node=blob.column(
+                at_fortitudes, 1, 8, at_fortitudes.count
+            ).cast("d"),
+            regulus=blob.column(
+                at_fortitudes, 2, 8, at_fortitudes.count
+            ).cast("d"),
+            spica=blob.column(
+                at_fortitudes, 3, 8, at_fortitudes.count
+            ).cast("d"),
+            algol=blob.column(
+                at_fortitudes, 4, 8, at_fortitudes.count
+            ).cast("d"),
+            combustion_orb=blob.column(
+                at_fortitudes, 5, 8, at_fortitudes.count
+            ).cast("d"),
+            combustion_in_sign=blob.column(
+                at_fortitudes, 6, 1, at_fortitudes.count
+            ).cast("B"),
+            beams_orb=blob.column(
+                at_fortitudes, 7, 8, at_fortitudes.count
+            ).cast("d"),
+            cazimi_orb=blob.column(
+                at_fortitudes, 8, 8, at_fortitudes.count
+            ).cast("d"),
+            cusp_orb=blob.column(
+                at_fortitudes, 9, 8, at_fortitudes.count
+            ).cast("d"),
+            star_orb=blob.column(
+                at_fortitudes, 10, 8, at_fortitudes.count
+            ).cast("d"),
+            partile=blob.column(
+                at_fortitudes, 11, 1, at_fortitudes.count
+            ).cast("B"),
+            partile_orb=blob.column(
+                at_fortitudes, 12, 8, at_fortitudes.count
+            ).cast("d"),
+            siege=blob.column(
+                at_fortitudes, 13, 1, at_fortitudes.count
+            ).cast("B"),
+            siege_span=blob.column(
+                at_fortitudes, 14, 8, at_fortitudes.count
+            ).cast("d"),
+            score_direct=blob.column(
+                at_fortitudes, 15, 1, at_fortitudes.count
+            ).cast("b"),
+            score_retrograde=blob.column(
+                at_fortitudes, 16, 1, at_fortitudes.count
+            ).cast("b"),
+            score_swift=blob.column(
+                at_fortitudes, 17, 1, at_fortitudes.count
+            ).cast("b"),
+            score_slow=blob.column(
+                at_fortitudes, 18, 1, at_fortitudes.count
+            ).cast("b"),
+            score_superior_oriental=blob.column(
+                at_fortitudes, 19, 1, at_fortitudes.count
+            ).cast("b"),
+            score_superior_occidental=blob.column(
+                at_fortitudes, 20, 1, at_fortitudes.count
+            ).cast("b"),
+            score_inferior_oriental=blob.column(
+                at_fortitudes, 21, 1, at_fortitudes.count
+            ).cast("b"),
+            score_inferior_occidental=blob.column(
+                at_fortitudes, 22, 1, at_fortitudes.count
+            ).cast("b"),
+            score_increasing=blob.column(
+                at_fortitudes, 23, 1, at_fortitudes.count
+            ).cast("b"),
+            score_decreasing=blob.column(
+                at_fortitudes, 24, 1, at_fortitudes.count
+            ).cast("b"),
+            score_free_from_combustion=blob.column(
+                at_fortitudes, 25, 1, at_fortitudes.count
+            ).cast("b"),
+            score_cazimi=blob.column(
+                at_fortitudes, 26, 1, at_fortitudes.count
+            ).cast("b"),
+            score_combust=blob.column(
+                at_fortitudes, 27, 1, at_fortitudes.count
+            ).cast("b"),
+            score_under_beams=blob.column(
+                at_fortitudes, 28, 1, at_fortitudes.count
+            ).cast("b"),
+            score_conjunct_benefic=blob.column(
+                at_fortitudes, 29, 1, at_fortitudes.count
+            ).cast("b"),
+            score_conjunct_north_node=blob.column(
+                at_fortitudes, 30, 1, at_fortitudes.count
+            ).cast("b"),
+            score_trine_benefic=blob.column(
+                at_fortitudes, 31, 1, at_fortitudes.count
+            ).cast("b"),
+            score_sextile_benefic=blob.column(
+                at_fortitudes, 32, 1, at_fortitudes.count
+            ).cast("b"),
+            score_conjunct_malefic=blob.column(
+                at_fortitudes, 33, 1, at_fortitudes.count
+            ).cast("b"),
+            score_conjunct_south_node=blob.column(
+                at_fortitudes, 34, 1, at_fortitudes.count
+            ).cast("b"),
+            score_opposed_malefic=blob.column(
+                at_fortitudes, 35, 1, at_fortitudes.count
+            ).cast("b"),
+            score_square_malefic=blob.column(
+                at_fortitudes, 36, 1, at_fortitudes.count
+            ).cast("b"),
+            score_besieged=blob.column(
+                at_fortitudes, 37, 1, at_fortitudes.count
+            ).cast("b"),
+            score_regulus=blob.column(
+                at_fortitudes, 38, 1, at_fortitudes.count
+            ).cast("b"),
+            score_spica=blob.column(
+                at_fortitudes, 39, 1, at_fortitudes.count
+            ).cast("b"),
+            score_algol=blob.column(
+                at_fortitudes, 40, 1, at_fortitudes.count
+            ).cast("b"),
+            length=at_fortitudes.count,
+        ),
+        fortitude_houses=ChartsFortitudeHouses(
+            cusp=blob.column(
+                at_fortitude_houses, 0, 8, at_fortitude_houses.count
+            ).cast("d"),
+            score=blob.column(
+                at_fortitude_houses, 1, 1, at_fortitude_houses.count
+            ).cast("b"),
+            length=at_fortitude_houses.count,
+        ),
+        fortitude_planets=ChartsFortitudePlanets(
+            planet=blob.column(
+                at_fortitude_planets, 0, 2, at_fortitude_planets.count
+            ).cast("H"),
+            speed=blob.column(
+                at_fortitude_planets, 1, 8, at_fortitude_planets.count
+            ).cast("d"),
+            mean_motion=blob.column(
+                at_fortitude_planets, 2, 8, at_fortitude_planets.count
+            ).cast("d"),
+            house=blob.column(
+                at_fortitude_planets, 3, 1, at_fortitude_planets.count
+            ).cast("B"),
+            fortitude=blob.column(
+                at_fortitude_planets, 4, 2, at_fortitude_planets.count
+            ).cast("h"),
+            debility=blob.column(
+                at_fortitude_planets, 5, 2, at_fortitude_planets.count
+            ).cast("h"),
+            accident_count=blob.column(
+                at_fortitude_planets, 6, 1, at_fortitude_planets.count
+            ).cast("B"),
+            length=at_fortitude_planets.count,
+        ),
+        fortitude_accidents=ChartsFortitudeAccidents(
+            accident=blob.column(
+                at_fortitude_accidents, 0, 1, at_fortitude_accidents.count
+            ).cast("B"),
+            points=blob.column(
+                at_fortitude_accidents, 1, 1, at_fortitude_accidents.count
+            ).cast("b"),
+            length=at_fortitude_accidents.count,
         ),
     )
 

@@ -7002,6 +7002,198 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsAccident",
+      "doc": "One of Lilly's accidental fortitudes or debilities (p. 115,\n`03-design/essential-dignities.md` §Accidental fortitudes).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Direct",
+          "value": 0,
+          "doc": "Moving forward; void for the Sun and the Moon.",
+          "key": "DIRECT"
+        },
+        {
+          "name": "Retrograde",
+          "value": 1,
+          "doc": "Moving backward.",
+          "key": "RETROGRADE"
+        },
+        {
+          "name": "Swift",
+          "value": 2,
+          "doc": "Faster than its mean motion.",
+          "key": "SWIFT"
+        },
+        {
+          "name": "Slow",
+          "value": 3,
+          "doc": "Slower than its mean motion.",
+          "key": "SLOW"
+        },
+        {
+          "name": "Oriental",
+          "value": 4,
+          "doc": "Rising before the Sun. Not read for the Moon.",
+          "key": "ORIENTAL"
+        },
+        {
+          "name": "Occidental",
+          "value": 5,
+          "doc": "Setting after the Sun.",
+          "key": "OCCIDENTAL"
+        },
+        {
+          "name": "Increasing",
+          "value": 6,
+          "doc": "The Moon from her conjunction with the Sun to the opposition.",
+          "key": "INCREASING"
+        },
+        {
+          "name": "Decreasing",
+          "value": 7,
+          "doc": "The Moon from the opposition to the conjunction.",
+          "key": "DECREASING"
+        },
+        {
+          "name": "FreeFromCombustion",
+          "value": 8,
+          "doc": "Clear of the Sun: neither combust, under his beams nor in cazimi.",
+          "key": "FREE_FROM_COMBUSTION"
+        },
+        {
+          "name": "Cazimi",
+          "value": 9,
+          "doc": "In the heart of the Sun.",
+          "key": "CAZIMI"
+        },
+        {
+          "name": "Combust",
+          "value": 10,
+          "doc": "Within the combustion orb of the Sun.",
+          "key": "COMBUST"
+        },
+        {
+          "name": "UnderBeams",
+          "value": 11,
+          "doc": "Within the beams of the Sun, not combust.",
+          "key": "UNDER_BEAMS"
+        },
+        {
+          "name": "ConjunctBenefic",
+          "value": 12,
+          "doc": "In partile conjunction with Jupiter or Venus.",
+          "key": "CONJUNCT_BENEFIC"
+        },
+        {
+          "name": "ConjunctNorthNode",
+          "value": 13,
+          "doc": "In partile conjunction with the North Node.",
+          "key": "CONJUNCT_NORTH_NODE"
+        },
+        {
+          "name": "TrineBenefic",
+          "value": 14,
+          "doc": "In partile trine to Jupiter or Venus.",
+          "key": "TRINE_BENEFIC"
+        },
+        {
+          "name": "SextileBenefic",
+          "value": 15,
+          "doc": "In partile sextile to Jupiter or Venus.",
+          "key": "SEXTILE_BENEFIC"
+        },
+        {
+          "name": "ConjunctMalefic",
+          "value": 16,
+          "doc": "In partile conjunction with Saturn or Mars.",
+          "key": "CONJUNCT_MALEFIC"
+        },
+        {
+          "name": "ConjunctSouthNode",
+          "value": 17,
+          "doc": "In partile conjunction with the South Node.",
+          "key": "CONJUNCT_SOUTH_NODE"
+        },
+        {
+          "name": "OpposedMalefic",
+          "value": 18,
+          "doc": "In partile opposition to Saturn or Mars.",
+          "key": "OPPOSED_MALEFIC"
+        },
+        {
+          "name": "SquareMalefic",
+          "value": 19,
+          "doc": "In partile square to Saturn or Mars.",
+          "key": "SQUARE_MALEFIC"
+        },
+        {
+          "name": "Besieged",
+          "value": 20,
+          "doc": "Between the bodies of Saturn and Mars.",
+          "key": "BESIEGED"
+        },
+        {
+          "name": "Regulus",
+          "value": 21,
+          "doc": "With Cor Leonis (Regulus).",
+          "key": "REGULUS"
+        },
+        {
+          "name": "Spica",
+          "value": 22,
+          "doc": "With Spica.",
+          "key": "SPICA"
+        },
+        {
+          "name": "Algol",
+          "value": 23,
+          "doc": "With Caput Algol.",
+          "key": "ALGOL"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsPartile",
+      "doc": "When two planets are in partile aspect (C216,\n`03-design/essential-dignities.md` §Accidental fortitudes).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "SameDegree",
+          "value": 0,
+          "doc": "Lilly's: the same degree of signs the aspect apart.",
+          "key": "SAME_DEGREE"
+        },
+        {
+          "name": "Within",
+          "value": 1,
+          "doc": "Within an orb of the exact aspect.",
+          "key": "WITHIN"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSiege",
+      "doc": "When a planet is besieged by Saturn and Mars (C215,\n`03-design/essential-dignities.md` §Accidental fortitudes).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "SameSign",
+          "value": 0,
+          "doc": "Lilly's example: all three in one sign, the planet between the two.",
+          "key": "SAME_SIGN"
+        },
+        {
+          "name": "Within",
+          "value": 1,
+          "doc": "On the shorter arc between the two, the arc no wider than a span.",
+          "key": "WITHIN"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -11249,6 +11441,21 @@
           "doc": "Every chart's essential dignities, as a JSON object, every member\noptional: `sectRule` (`\"HORIZON\"`, the Sun's centre above the true\nhorizon and the default; `\"DAYLIGHT\"`, the chart's own sunrise to\nsunset; or `\"DAY\"` or `\"NIGHT\"` outright; C209), `rules`\n(`{terms, triplicities}`: the terms `\"PTOLEMAIC_LILLY\"`, the\ndefault, `\"EGYPTIAN\"`, `\"PTOLEMAIC_ASHMAND\"`, `\"CHALDEAN\"` or\n`{\"TABLE\": ...}`, twelve signs of five `{lord, end}` from Aries;\nthe triplicities `\"LILLY\"`, the default, or `\"PTOLEMY\"`; C208) and\n`scores` (`house`, `exaltation`, `triplicity`, `term`, `face`,\n`detriment`, `fall`, `peregrine`, Lilly's by default). The sect and\nwhat was applied come back in the `dignities` section and the seven\nplanets in `dignity_planets`. Null for none, which costs nothing\n(`03-design/essential-dignities.md`). Refusals are named from the\nrecord every binding calls `dignities`, as `dignities.sectRule`.",
           "meta": {
             "example": "{\"sectRule\":\"HORIZON\",\"rules\":{\"terms\":\"EGYPTIAN\"}}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "fortitudes_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's accidental fortitudes beside its essential dignities\n(Lilly, p. 115), as a JSON object, every member optional:\n`dignities` (the record `dignities_json` takes), `rules`\n(`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,\n`cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`\n`\"SAME_DEGREE\"` or `{\"WITHIN\": {\"orbDeg\": …}}` (C216), `siege`\n`\"SAME_SIGN\"` or `{\"WITHIN\": {\"spanDeg\": …}}` (C215) and\n`meanMotionDeg`, seven in the Chaldean order) and `scores` (the\ntwelve `houses` and each line by name), Lilly's by default. The\nessential half comes back in the sections `dignities_json` fills, so\nasking for both is refused; the accidental half in `fortitudes`,\n`fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.\nThe houses are Regiomontanus's unless a profile names another\ndivision for the `hellenistic` module. Null for none, which costs\nnothing (`03-design/essential-dignities.md` §Accidental fortitudes).\nRefusals are named from the record every binding calls\n`fortitudes`, as `fortitudes.rules.beamsDeg`.",
+          "meta": {
+            "example": "{\"rules\":{\"partile\":{\"WITHIN\":{\"orbDeg\":1}}},\"scores\":{\"regulus\":5}}",
             "nullable": true
           }
         }
@@ -17134,7 +17341,7 @@
         {
           "id": 60,
           "name": "dignities",
-          "doc": "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.",
+          "doc": "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too.",
           "kind": "columns",
           "fields": [
             {
@@ -17211,7 +17418,7 @@
         {
           "id": 61,
           "name": "dignity_planets",
-          "doc": "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.",
+          "doc": "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked.",
           "kind": "columns",
           "fields": [
             {
@@ -17275,7 +17482,7 @@
         {
           "id": 62,
           "name": "dignity_receptions",
-          "doc": "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.",
+          "doc": "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked.",
           "kind": "columns",
           "fields": [
             {
@@ -17359,6 +17566,303 @@
               "name": "second_in_fall",
               "scalar": "u8",
               "doc": "1 when `second` stands in `first`'s fall, else 0."
+            }
+          ]
+        },
+        {
+          "id": 63,
+          "name": "fortitudes",
+          "doc": "Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. Empty when `fortitudes_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "houses",
+              "scalar": "u16",
+              "doc": "The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "north_node",
+              "scalar": "f64",
+              "doc": "The North Node's longitude, in degrees of the chart's zodiac."
+            },
+            {
+              "name": "regulus",
+              "scalar": "f64",
+              "doc": "Regulus's apparent longitude of date, in degrees of the chart's zodiac."
+            },
+            {
+              "name": "spica",
+              "scalar": "f64",
+              "doc": "Spica's, likewise."
+            },
+            {
+              "name": "algol",
+              "scalar": "f64",
+              "doc": "Algol's, likewise."
+            },
+            {
+              "name": "combustion_orb",
+              "scalar": "f64",
+              "doc": "Combust within this many degrees of the Sun, `fortitudes_json.rules.combustionDeg`."
+            },
+            {
+              "name": "combustion_in_sign",
+              "scalar": "u8",
+              "doc": "1 when combustion also asks for the Sun's sign (C211), `fortitudes_json.rules.combustionInSign`, else 0."
+            },
+            {
+              "name": "beams_orb",
+              "scalar": "f64",
+              "doc": "Under the beams within this many degrees, `fortitudes_json.rules.beamsDeg` (C212)."
+            },
+            {
+              "name": "cazimi_orb",
+              "scalar": "f64",
+              "doc": "Cazimi within this many degrees, `fortitudes_json.rules.cazimiDeg`."
+            },
+            {
+              "name": "cusp_orb",
+              "scalar": "f64",
+              "doc": "A planet this near the next cusp is in its house (p. 33), `fortitudes_json.rules.cuspOrbDeg` (C214)."
+            },
+            {
+              "name": "star_orb",
+              "scalar": "f64",
+              "doc": "With a star within this many degrees, `fortitudes_json.rules.starOrbDeg`."
+            },
+            {
+              "name": "partile",
+              "scalar": "u8",
+              "doc": "When two planets are in partile aspect, `fortitudes_json.rules.partile` (C216).",
+              "enum": "TsPartile"
+            },
+            {
+              "name": "partile_orb",
+              "scalar": "f64",
+              "doc": "The orb of `WITHIN`; 0 for `SAME_DEGREE`."
+            },
+            {
+              "name": "siege",
+              "scalar": "u8",
+              "doc": "When a planet is besieged, `fortitudes_json.rules.siege` (C215).",
+              "enum": "TsSiege"
+            },
+            {
+              "name": "siege_span",
+              "scalar": "f64",
+              "doc": "The span of `WITHIN`; 0 for `SAME_SIGN`."
+            },
+            {
+              "name": "score_direct",
+              "scalar": "i8",
+              "doc": "What the line `direct` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_retrograde",
+              "scalar": "i8",
+              "doc": "What the line `retrograde` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_swift",
+              "scalar": "i8",
+              "doc": "What the line `swift` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_slow",
+              "scalar": "i8",
+              "doc": "What the line `slow` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_superior_oriental",
+              "scalar": "i8",
+              "doc": "What the line `superior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_superior_occidental",
+              "scalar": "i8",
+              "doc": "What the line `superior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_inferior_oriental",
+              "scalar": "i8",
+              "doc": "What the line `inferior_oriental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_inferior_occidental",
+              "scalar": "i8",
+              "doc": "What the line `inferior_occidental` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_increasing",
+              "scalar": "i8",
+              "doc": "What the line `increasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_decreasing",
+              "scalar": "i8",
+              "doc": "What the line `decreasing` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_free_from_combustion",
+              "scalar": "i8",
+              "doc": "What the line `free_from_combustion` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_cazimi",
+              "scalar": "i8",
+              "doc": "What the line `cazimi` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_combust",
+              "scalar": "i8",
+              "doc": "What the line `combust` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_under_beams",
+              "scalar": "i8",
+              "doc": "What the line `under_beams` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_conjunct_benefic",
+              "scalar": "i8",
+              "doc": "What the line `conjunct_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_conjunct_north_node",
+              "scalar": "i8",
+              "doc": "What the line `conjunct_north_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_trine_benefic",
+              "scalar": "i8",
+              "doc": "What the line `trine_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_sextile_benefic",
+              "scalar": "i8",
+              "doc": "What the line `sextile_benefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_conjunct_malefic",
+              "scalar": "i8",
+              "doc": "What the line `conjunct_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_conjunct_south_node",
+              "scalar": "i8",
+              "doc": "What the line `conjunct_south_node` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_opposed_malefic",
+              "scalar": "i8",
+              "doc": "What the line `opposed_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_square_malefic",
+              "scalar": "i8",
+              "doc": "What the line `square_malefic` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_besieged",
+              "scalar": "i8",
+              "doc": "What the line `besieged` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_regulus",
+              "scalar": "i8",
+              "doc": "What the line `regulus` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_spica",
+              "scalar": "i8",
+              "doc": "What the line `spica` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            },
+            {
+              "name": "score_algol",
+              "scalar": "i8",
+              "doc": "What the line `algol` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            }
+          ]
+        },
+        {
+          "id": 64,
+          "name": "fortitude_houses",
+          "doc": "Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. Empty when `fortitudes_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "cusp",
+              "scalar": "f64",
+              "doc": "Where the house begins, in degrees of the chart's zodiac."
+            },
+            {
+              "name": "score",
+              "scalar": "i8",
+              "doc": "What a planet in the house scores, `fortitudes_json.scores.houses`."
+            }
+          ]
+        },
+        {
+          "id": 65,
+          "name": "fortitude_planets",
+          "doc": "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. Empty when `fortitudes_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "planet",
+              "scalar": "u16",
+              "doc": "The planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "speed",
+              "scalar": "f64",
+              "doc": "Its daily motion in longitude, in degrees; negative when retrograde."
+            },
+            {
+              "name": "mean_motion",
+              "scalar": "f64",
+              "doc": "The mean daily motion its speed is judged swift or slow against, `fortitudes_json.rules.meanMotionDeg`."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "Its house, 1 to 12, under the five-degree rule."
+            },
+            {
+              "name": "fortitude",
+              "scalar": "i16",
+              "doc": "The sum of its positive lines, its house's included."
+            },
+            {
+              "name": "debility",
+              "scalar": "i16",
+              "doc": "The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it."
+            },
+            {
+              "name": "accident_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `fortitude_accidents` section belong to this planet.\n\nRagged because which lines a planet meets depends on its sky."
+            }
+          ]
+        },
+        {
+          "id": 66,
+          "name": "fortitude_accidents",
+          "doc": "Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. Empty when `fortitudes_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "accident",
+              "scalar": "u8",
+              "doc": "The line it meets.",
+              "enum": "TsAccident"
+            },
+            {
+              "name": "points",
+              "scalar": "i8",
+              "doc": "What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other."
             }
           ]
         }
