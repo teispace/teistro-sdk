@@ -163,8 +163,14 @@ own chapter.
   void, as Lilly does, and a moiety reading that ignored the sign's end
   would not: the sign's end bounds both.
 
-  Of three figures, the Presbytery supports the moieties alone, the
-  Lady both, and the ship neither. C230 stays open, and both readings are reported. The shipped reading is the modern one, and
+  Four more agree with both readings: the horse lost near Henley
+  (p. 467, "a □ ♄ ad Vac") is void, and the long-life question
+  (p. 135), the Parsonage (p. 437) and the escaped prisoner (p. 470)
+  each apply first, in her sign, to the aspect Lilly names.
+
+  Of seven figures the moieties read six as Lilly does and the sign's
+  end five. The Presbytery supports the moieties alone, and the ship
+  defeats both. C230 stays open, and both readings are reported. The shipped reading is the modern one, and
   `gap_deg` is reported so that another reading can be applied.
 
 ## What is not decided
@@ -176,9 +182,10 @@ own chapter.
   - One reading is no perfection before the sign ends (`void()`).
   - The other is none yet within Lilly's moieties of orb
     (`void_by_moieties()`).
-  - Both are reported. The Presbytery figure fits the moieties, the
-    Lady both, and the ship neither; the Lady shows the sign's end
-    bounds the moieties too.
+  - Both are reported. Of seven recast figures the moieties fit six
+    and the sign's end five: the Presbytery fits the moieties alone,
+    the ship neither, and the Lady shows the sign's end bounds the
+    moieties too.
 - **C231: what afflicts a cusp.** The shipped reading is an infortune
   counted in the house (`infortunes_in_house`), not one in aspect to it.
 
