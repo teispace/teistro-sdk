@@ -250,6 +250,17 @@ question, and need no ephemeris.
   seventh way hold: Mars sits in the Ascendant and the Moon translates.
   Lilly reads that as an estate coming "fomewhat eafily". This is the
   first of his own figures to hold a translation and the seventh way.
+- **Lilly's p. 452 figure translates by trine, on his printed places.**
+  "If Prince Rupert should get honour" (28 November 1642, 9h 23m a.m.)
+  recasts three minutes from the printed time, with every planet within
+  15′ of his except the Moon. She is 35′ behind his and has not yet
+  reached Jupiter's trine, so the figure is read on his own places at
+  the recast's motions. There "the ☽ transferres the influence of ♃ to
+  ♄" by trine, received in Jupiter's exaltation and term, so p. 126's way
+  holds, and Venus and Mars are past their square, "feparated" (p. 454).
+  The SDK also finds the Sun, 6° past Jupiter's square, translating to
+  Saturn's: a translation by p. 111's words that Lilly passes over for
+  the Moon's "forcible" one.
 
 ## What is not decided
 
@@ -287,4 +298,5 @@ question, and need no ephemeris.
    prohibition or collection, and test each against his judgement: p. 238
    done (an application by opposition, no way held), p. 385 (a sextile,
    the void Moon prohibiting nothing, C234), p. 437 (nothing perfects)
-   and p. 177 (the Moon translating, the seventh way held).
+   p. 177 (the Moon translating, the seventh way held) and p. 452 (the
+   Moon translating by trine, received, on the printed places).
