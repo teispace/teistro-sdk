@@ -471,7 +471,14 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
-            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA, DashaSystem.KALACHAKRA, "dasha_system.ACME_PARITY"],
+            dashas=[
+                DashaSystem.VIMSHOTTARI,
+                DashaSystem.CHARA,
+                DashaSystem.KALACHAKRA,
+                DashaSystem.RELEASING_FORTUNE,
+                DashaSystem.PROFECTION,
+                "dasha_system.ACME_PARITY",
+            ],
             drawings=[
                 (ChartLayout.NORTH_INDIAN, Varga.D1),
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),

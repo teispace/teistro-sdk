@@ -470,6 +470,8 @@ void main() {
       DashaSystem.vimshottari,
       DashaSystem.chara,
       DashaSystem.kalachakra,
+      DashaSystem.releasingFortune,
+      DashaSystem.profection,
       DashaSystem.registered('ACME_PARITY'),
     ],
     drawings: [

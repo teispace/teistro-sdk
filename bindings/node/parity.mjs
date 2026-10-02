@@ -306,7 +306,14 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
-  dashas: [DashaSystem.Vimshottari, DashaSystem.Chara, DashaSystem.Kalachakra, 'dasha_system.ACME_PARITY'],
+  dashas: [
+    DashaSystem.Vimshottari,
+    DashaSystem.Chara,
+    DashaSystem.Kalachakra,
+    DashaSystem.ReleasingFortune,
+    DashaSystem.Profection,
+    'dasha_system.ACME_PARITY',
+  ],
   // A grid of the founded chart, a grid of a divisional one, and the wheel:
   // straight edges, a divisional chart's own lagna, arcs, marks and the
   // rounded coordinates the wheel's trigonometry leaves.

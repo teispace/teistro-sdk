@@ -29,7 +29,7 @@ under Valens's rules.
 |---|---|---|---|
 | `RELEASING_FORTUNE` | 3 | 1966 | 1966 |
 | `RELEASING_DAIMON` | 3 | 1966 | 1966 |
-| `PROFECTION` | 1 | 12 | 12 |
+| `PROFECTION` | 1 | 120 | 120 |
 
 ## What it means
 

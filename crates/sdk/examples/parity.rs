@@ -1005,8 +1005,9 @@ fn parity_dasha() -> teistro::dasha::UduDefinition {
     serde_json::from_str(PARITY_DASHA).expect("the parity definition")
 }
 
-/// The request every runner makes: two divisional charts, four dashas (one
-/// the consumer's own), four drawings and every section.
+/// The request every runner makes: two divisional charts, six dashas (one
+/// a time lord of each Hellenistic kernel, one the consumer's own), four
+/// drawings and every section.
 fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartRequest {
     let kerala = geo
         .keys()
@@ -1026,6 +1027,8 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
             DashaSystem::Vimshottari.key_id(),
             DashaSystem::Chara.key_id(),
             DashaSystem::Kalachakra.key_id(),
+            DashaSystem::ReleasingFortune.key_id(),
+            DashaSystem::Profection.key_id(),
             own,
         ])
         .with_drawings([
