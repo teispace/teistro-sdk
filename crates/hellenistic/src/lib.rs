@@ -29,6 +29,7 @@
 pub const MODULE: &str = "hellenistic";
 
 mod accidental;
+mod almuten;
 mod dignity;
 mod fortitude;
 mod reading;
@@ -38,6 +39,9 @@ mod terms;
 pub use accidental::{
     Accident, AccidentalRules, AccidentalScores, AccidentalSky, Partile, PlanetAccidents, Siege,
     accidental_dignities, house_of,
+};
+pub use almuten::{
+    Almuten, FortuneRule, PlaceReading, almuten_of, almuten_of_places, part_of_fortune,
 };
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,

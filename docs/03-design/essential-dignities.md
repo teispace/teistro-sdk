@@ -429,6 +429,70 @@ the accidental half:
 Lilly's net is not a column: each binding sums it as `Fortitudes::net`
 does, from the four values the sections already carry.
 
+## The almuten (step 5)
+
+Lilly defines two almutens on one page (p. 49, Chapter VI's list of
+terms, read off the page image). That **of a house** is the planet "who
+hath most dignities in the Signe ascending or descending upon the
+Cusp". That **of a figure** is the planet "most powerfull in the whole
+Scheame" in essential and accidental dignities together. His merchant
+(Book III, p. 742, the second fortitudes figure) is called "Almuten of
+the Geniture" in Venus's name twice, and Venus has that figure's
+greatest net: 16 in his tally and 18 by his table (C217). That is the
+acceptance value.
+
+Chapter CV (pp. 530–532, read off the page images) reports a rival for
+the lord of the geniture. It sums the *essential* dignities over five
+places, the ascendant, the mid-heaven, the Sun, the Moon and the Part of
+Fortune, and calls the runner-up "partaker" in the judgment. Lilly
+calls it "rationall" and keeps his own. Both ship, because a consumer
+reading Ibn Ezra's school needs the second.
+
+```rust
+/// The seven's dignities at one place: what each would score there
+/// by its five dignities, debilities left out (a planet is not in a
+/// place it rules).
+pub struct Almuten { pub totals: [i16; 7] }   // Chaldean order
+impl Almuten {
+    pub fn total(&self, planet: Graha) -> Option<i16>;
+    pub fn almutens(&self) -> Vec<Graha>;      // every planet tied at the top
+}
+pub enum PlaceReading { Degree, Sign }        // C218
+pub fn almuten_of(longitude_deg, sect, &DignityRules, &Scores, PlaceReading) -> Result<Almuten>;
+pub fn almuten_of_places(&[f64], ...) -> Result<Almuten>;  // summed
+pub fn part_of_fortune(asc, sun, moon, FortuneRule) -> f64; // C220
+impl Fortitudes { pub fn almuten(&self) -> Almuten }       // the nets
+```
+
+- **A house's almuten** is the almuten of its cusp. By the degree
+  (`PlaceReading::Degree`, the default) it counts all five of Lilly's
+  dignities, two of which (term and face) only a degree has. By the
+  sign it counts the house, exaltation and triplicity alone (C218).
+- **The figure's almuten** is the greatest `net`, essential and
+  accidental, so it needs nothing the fortitudes do not already hold.
+- **The places' almuten** sums the essential dignities over a list of
+  places. Lilly's list is the five above, and the list is the caller's,
+  so a reader who adds the prenatal syzygy passes six. The ascendant and
+  mid-heaven are read from the angles, never from cusps, which are not
+  the angles under whole-sign or equal houses.
+- **The Part of Fortune** is Lilly's: ascendant + Moon − Sun, "by day
+  or night" (pp. 143–144). His worked example is the acceptance value:
+  the Moon at 21°18′ Virgo less the Sun at 4°18′ Aries is 5 signs 17°,
+  which added to 23°27′ Leo rising puts Fortune at 10°27′ Aquarius. He
+  reports the night reversal ("Some have used to take ⊗ in the night
+  from the ☽ to the ☉") and sets it aside for Ptolemy's rule, which
+  every practitioner of his day followed. So C220 is decided to the
+  text, and the reversal, which the Tajika Punya saham also uses,
+  ships as a knob.
+- **Ties** are reported, never broken (C219). Lilly gives no rule for
+  them; "posited best, and elevated most" (p. 532) is a judgment in
+  words, so it is not encoded as a score.
+
+The acceptance tests are the merchant's figure almuten (Venus) and the
+Part of Fortune's worked example (10°27′ Aquarius). A measured page counts how
+often the three almutens agree over the corpus, how often each is tied,
+and what each crux's rival moves, before anything reaches the façade.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
