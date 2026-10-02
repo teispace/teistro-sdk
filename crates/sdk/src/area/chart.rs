@@ -37,8 +37,9 @@ use teistro_dasha::{
 };
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
-    AccidentalSky, CHALDEAN_ORDER, ChartSky, Dignities, DignityRequest, FortitudeRequest,
-    Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading, LotRequest, LotSky, Sect,
+    AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
+    DignityRequest, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace, LotPoint, LotReading,
+    LotRequest, LotSky, Sect, considerations,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -2502,6 +2503,58 @@ impl<'a> ChartArea<'a> {
         request: &FortitudeRequest,
     ) -> Result<Fortitudes, Error> {
         request.read(&self.chart_sky(chart)?, &self.accidental_sky(chart)?)
+    }
+
+    /// Lilly's **considerations before judgement** of a horary figure
+    /// (*Christian Astrology* I.XIX): whether it is radical, the
+    /// Ascendant's and the Moon's degrees, the Moon's course to the end of
+    /// her sign, the seventh house and Alkindi's cautions, each reported as
+    /// the facts it rests on and none folded into a verdict
+    /// (`03-design/hellenistic-considerations.md`).
+    ///
+    /// The lord of the hour is the chart's own planetary hour, under the
+    /// settings' `hora_reckoning`; everything else is read from
+    /// [`ChartArea::fortitudes`] under `request`. Like it, it needs **no
+    /// ephemeris**: the Moon's course is projected from the chart's places
+    /// at their present speeds, within a hundredth of a degree over two
+    /// days of a geocentric chart. Read a figure geocentrically, as
+    /// Lilly's ephemerides were; a topocentric Moon swings with parallax
+    /// by up to a degree a day, which the projection does not follow.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::{ConsiderationRules, FortitudeRequest};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let london = Place::new(
+    ///     Latitude::literal(51.5),
+    ///     Longitude::literal(-0.12),
+    ///     Altitude::literal(20.0),
+    /// );
+    /// let request = ChartRequest::at(london, UtcOffset::literal(0, 0, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let read = sdk
+    ///     .chart()
+    ///     .considerations(&chart, &FortitudeRequest::default(), ConsiderationRules::LILLY)
+    ///     .unwrap();
+    /// // The figure is radical exactly when some ground holds.
+    /// assert_eq!(read.radicality.radical(), !read.radicality.grounds.is_empty());
+    /// // Void of course means no aspect perfects before she leaves her sign.
+    /// assert_eq!(read.moon.course.void(), read.moon.course.next.is_none());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::fortitudes`].
+    pub fn considerations(
+        self,
+        chart: &Document,
+        request: &FortitudeRequest,
+        rules: ConsiderationRules,
+    ) -> Result<Considerations, Error> {
+        let fortitudes = self.fortitudes(chart, request)?;
+        considerations(&fortitudes, chart.foundation.timing.hora.lord, rules)
     }
 
     /// The **lots** Valens gives, in a chart you founded: each the distance

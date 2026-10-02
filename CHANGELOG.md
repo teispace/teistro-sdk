@@ -1834,6 +1834,28 @@ the astronomical numbers do not move. Nothing else computes yet.
     of the seven (C227). A document stores two rounds to its depth, and
     the cursor rebuilds from the order and the division its rows show.
     Every parity runner asks for `DECENNIALS`.
+  - **The considerations before judgement** (`hellenistic-considerations.md`,
+    C229–C231). Lilly's *Christian Astrology* I.XIX as clauses, never a
+    verdict: `considerations(&Fortitudes, hour_lord, ConsiderationRules)`
+    and `sdk.chart().considerations(&chart, &FortitudeRequest,
+    ConsiderationRules)`, the hour the chart's own planetary hour. A
+    figure is radical by one lord, the triplicity or the `Temperament`,
+    each `RadicalGround` reported; the Ascendant early, late or in a sign
+    of short ascension; the Moon late (C229, `moon_late_from_deg`), in the
+    via combusta, and her course to the end of her sign (`moon_course`:
+    the first Ptolemaic perfection, its days and `gap_deg`, and the first
+    already within Lilly's moieties of orb (`orbs_deg`, p. 107), so void
+    by the sign's end and by the moieties are both reported, C230; the
+    eased signs); the seventh's cusp, lord and the infortunes in it
+    (C231); Saturn in the first or seventh and the Ascendant's lord
+    combust. Held to Lilly's radicality examples, the degrees at their
+    edges, a step-by-step walk of 200 skies and, in the SDK, the chart
+    cast at each promised perfection (0.007°, geocentric). Two of his
+    figures recast: "If Presbytery shall stand" is void by the moieties
+    as he says, while the ship at sea is void by neither reading, so C230
+    stays open with both reported. A topocentric
+    Moon swings by parallax beyond what the projection follows (2.3°), so
+    a horary figure is read geocentrically. Rust only so far.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
