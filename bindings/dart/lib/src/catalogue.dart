@@ -5643,7 +5643,10 @@ enum FortuneRule {
   /// Lilly's: the ascendant plus the Moon less the Sun, by day or night.
   dayAndNight(0, 'DAY_AND_NIGHT'),
   /// By night, the ascendant plus the Sun less the Moon.
-  reversedByNight(1, 'REVERSED_BY_NIGHT');
+  reversedByNight(1, 'REVERSED_BY_NIGHT'),
+  /// Valens's own: by night, reversed while the Moon is above the
+  /// horizon, and counted from the Sun once it has set.
+  reversedWhileMoonUp(2, 'REVERSED_WHILE_MOON_UP');
 
   const FortuneRule(this.id, this.key);
 

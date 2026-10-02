@@ -4001,6 +4001,11 @@ class FortuneRule(Member):
     REVERSED_BY_NIGHT = 1
     """By night, the ascendant plus the Sun less the Moon."""
 
+    REVERSED_WHILE_MOON_UP = 2
+    """Valens's own: by night, reversed while the Moon is above the
+    horizon, and counted from the Sun once it has set.
+    """
+
 
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
@@ -6192,6 +6197,7 @@ _KEYS: dict[str, dict[int, str]] = {
     "FortuneRule": {
         0: "DAY_AND_NIGHT",
         1: "REVERSED_BY_NIGHT",
+        2: "REVERSED_WHILE_MOON_UP",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

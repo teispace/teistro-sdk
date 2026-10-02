@@ -152,6 +152,7 @@ impl FortitudeRequest {
                 midheaven_deg: sky.midheaven_deg,
                 sun_deg: chart.sun_deg,
                 moon_deg: chart.moon_deg,
+                moon_altitude_deg: chart.moon_altitude_deg,
                 cusps_deg: &sky.cusps_deg,
                 sect: dignities.sect,
                 rules: &dignities.rules,

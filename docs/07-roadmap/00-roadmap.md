@@ -843,8 +843,9 @@ the same machinery rather than new mechanisms:
   Mutual reception (C210), Lilly's accidental fortitudes (C211–C217) and
   the almuten three ways (C218–C220) followed, each through the boundary
   and every binding: **the dignities are done** but for Ibn Ezra's
-  weights. The lots are next. Lilly's Part of Fortune is already the
-  almuten's (`part_of_fortune`), and the rest of the lots generalise it.
+  weights. Valens's fourteen lots followed (`hellenistic-lots.md`,
+  C221–C222) in Rust and the SDK; their measured page and the boundary
+  are next.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the

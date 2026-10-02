@@ -2,7 +2,9 @@
 //! Sun's altitude in every zodiac and at the poles, the chart's daylight as
 //! the named alternative, and every knob reported back; and the
 //! accidental fortitudes read from the chart's own houses, motions and
-//! stars (`docs/03-design/essential-dignities.md`, `sect-measured.md`).
+//! stars; and the lots, Fortune by night read off the Moon's own horizon
+//! (`docs/03-design/essential-dignities.md`, `sect-measured.md`,
+//! `hellenistic-lots.md`).
 
 #![allow(
     clippy::panic,
@@ -16,7 +18,8 @@ use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
     Accident, AccidentalRules, ChartRequest, Context, DignityRequest, DignityRules, Document,
-    Ephemeris, FortitudeRequest, Scores, Sect, SectRule, Terms, UtcOffset,
+    Ephemeris, FortitudeRequest, FortuneRule, Lot, LotRequest, Scores, Sect, SectRule, Terms,
+    UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -222,4 +225,60 @@ fn a_profile_names_the_division_the_fortitudes_count_houses_in() {
         .fortitudes(&london(&sdk), &FortitudeRequest::default())
         .unwrap();
     assert_eq!(read.sky.houses, HouseSystem::Placidus);
+}
+
+#[test]
+fn valens_own_fortune_follows_the_moon_across_one_night() {
+    // London, from 18:00 UTC on 1 January 2000 to 07:00 the next morning:
+    // a waning crescent Moon, below the horizon in the evening and risen
+    // before dawn, so the night holds both of III.11's cases.
+    let tropical = context(Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#));
+    let sidereal = context(None);
+    let valens = LotRequest::VALENS.with_fortune(FortuneRule::ReversedWhileMoonUp);
+    let lilly = LotRequest::VALENS.with_fortune(FortuneRule::DayAndNight);
+    let fortune = |sdk: &Context, natal: &Document, request| {
+        sdk.chart()
+            .lots_with_request(natal, &[Lot::Fortune], request)
+            .unwrap()
+    };
+    let mut seen = [false; 2];
+    for hour in 0..14 {
+        let jd = 2_451_545.25 + f64::from(hour) / 24.0;
+        let natal = chart(&tropical, 51.5, -0.12, jd);
+        let read = fortune(&tropical, &natal, valens);
+        assert_eq!(read.sect, Sect::Night, "hour {hour}");
+        let moon_up = read.fortune_reversed;
+        seen[usize::from(moon_up)] = true;
+        // Reversed while the Moon is up, Lilly's once it has set.
+        let rival = fortune(
+            &tropical,
+            &natal,
+            if moon_up { LotRequest::VALENS } else { lilly },
+        );
+        assert_eq!(read.lots[0].place, rival.lots[0].place, "hour {hour}");
+        // The horizon is the same in every zodiac.
+        let other = chart(&sidereal, 51.5, -0.12, jd);
+        assert_eq!(
+            fortune(&sidereal, &other, valens).fortune_reversed,
+            moon_up,
+            "hour {hour}"
+        );
+    }
+    assert_eq!(seen, [true, true], "the Moon both set and up in one night");
+}
+
+#[test]
+fn a_lot_the_caller_writes_is_read_as_the_catalogues() {
+    let sdk = context(None);
+    let natal = london(&sdk);
+    let read = sdk.chart().lots(&natal, &Lot::ALL).unwrap();
+    assert_eq!(read.lots.len(), Lot::ALL.len());
+    for placed in &read.lots {
+        let own = sdk
+            .chart()
+            .lot_place(&natal, &placed.lot.formula(), LotRequest::VALENS)
+            .unwrap();
+        // By day no lot's arc depends on Fortune's rule.
+        assert_eq!(own, placed.place, "{:?}", placed.lot);
+    }
 }

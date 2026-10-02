@@ -460,7 +460,7 @@ impl Almuten {
 pub enum PlaceReading { Degree, Sign }        // C218
 pub fn almuten_of(longitude_deg, sect, &DignityRules, &Scores, PlaceReading) -> Result<Almuten>;
 pub fn almuten_of_places(&[f64], ...) -> Result<Almuten>;  // summed
-pub fn part_of_fortune(asc, sun, moon, sect, FortuneRule) -> f64; // C220
+pub fn part_of_fortune(asc, sun, moon, reversed: bool) -> f64; // C220; `FortuneRule::reverses` decides, `hellenistic-lots.md`
 pub struct AlmutenRules { pub place: PlaceReading, pub fortune: FortuneRule }
 pub struct Almutens {                        // Fortitudes::almutens
     pub rules: AlmutenRules, pub fortune_deg: f64,

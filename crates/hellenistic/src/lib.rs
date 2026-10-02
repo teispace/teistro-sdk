@@ -32,6 +32,7 @@ mod accidental;
 mod almuten;
 mod dignity;
 mod fortitude;
+mod lot;
 mod reading;
 mod reception;
 mod terms;
@@ -40,15 +41,16 @@ pub use accidental::{
     Accident, AccidentalRules, AccidentalScores, AccidentalSky, Partile, PlanetAccidents, Siege,
     accidental_dignities, house_of,
 };
-pub use almuten::{
-    Almuten, AlmutenRules, Almutens, FortuneRule, PlaceReading, almuten_of, almuten_of_places,
-    part_of_fortune,
-};
+pub use almuten::{Almuten, AlmutenRules, Almutens, PlaceReading, almuten_of, almuten_of_places};
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,
 };
 pub use fortitude::{FortitudeRequest, Fortitudes};
+pub use lot::{
+    Distance, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,
+    LotSky, PlacedLot, lot_place, lots, part_of_fortune,
+};
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

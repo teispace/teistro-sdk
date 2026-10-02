@@ -36,7 +36,7 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, Dignities, DignityRequest, FortitudeRequest,
-    Fortitudes,
+    Fortitudes, Lot, LotFormula, LotPlace, LotReading, LotRequest, LotSky,
 };
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
@@ -2373,6 +2373,80 @@ impl<'a> ChartArea<'a> {
         request.read(&self.chart_sky(chart)?, &self.accidental_sky(chart)?)
     }
 
+    /// The **lots** Valens gives, in a chart you founded: each the distance
+    /// between two of its points counted from a third, the night's arc
+    /// taken in a night chart (`03-design/hellenistic-lots.md`).
+    ///
+    /// Read under Valens's rules: his horizon for the sect, and Fortune
+    /// reversed by night, as Daimon is counted the other way
+    /// ([`ChartArea::lots_with_request`] reads them otherwise). Each lot is
+    /// computed once however many read it, and each answer names its sign,
+    /// that sign's lord and its place counted in whole signs from the
+    /// ascendant. Like [`ChartArea::dignities`] it needs **no ephemeris**.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::{Lot, Sect};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let kathmandu = Place::new(
+    ///     Latitude::literal(27.7172),
+    ///     Longitude::literal(85.324),
+    ///     Altitude::literal(1400.0),
+    /// );
+    /// let request = ChartRequest::at(kathmandu, UtcOffset::literal(5, 45, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let read = sdk.chart().lots(&chart, &[Lot::Fortune, Lot::Daimon]).unwrap();
+    /// assert_eq!(read.sect, Sect::Night);
+    /// assert!(read.fortune_reversed);
+    /// // Daimon is Fortune reflected in the ascendant.
+    /// let ascendant = sdk.chart().angles(&chart).unwrap().ascendant_deg;
+    /// let (fortune, daimon) = (read.lots[0].place.longitude_deg, read.lots[1].place.longitude_deg);
+    /// let gap = (fortune + daimon - 2.0 * ascendant).rem_euclid(360.0);
+    /// assert!(gap < 1e-9 || gap > 360.0 - 1e-9);
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::dignities`].
+    pub fn lots(self, chart: &Document, which: &[Lot]) -> Result<LotReading, Error> {
+        self.lots_with_request(chart, which, LotRequest::VALENS)
+    }
+
+    /// The lots asked for, under a stated sect rule and Fortune's rule by
+    /// night: Lilly's, the same by day and night, or Valens's own at
+    /// *Anthologies* III.11, reversed while the Moon is up.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::lots`].
+    pub fn lots_with_request(
+        self,
+        chart: &Document,
+        which: &[Lot],
+        request: LotRequest,
+    ) -> Result<LotReading, Error> {
+        teistro_hellenistic::lots(&self.lot_sky(chart)?, which, request)
+    }
+
+    /// Where a lot of the caller's own falls: another author's, or one
+    /// Valens gives by the native rather than the sect, over the same
+    /// points and request.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::lots`]; and a planet outside the seven or an
+    /// unreadable fixed degree, named by the point it stands in.
+    pub fn lot_place(
+        self,
+        chart: &Document,
+        formula: &LotFormula,
+        request: LotRequest,
+    ) -> Result<LotPlace, Error> {
+        teistro_hellenistic::lot_place(&self.lot_sky(chart)?, formula, request)
+    }
+
     /// What a chart's dignities are read from: the seven's longitudes and
     /// the Sun's place about the horizon.
     fn chart_sky(self, chart: &Document) -> Result<ChartSky, Error> {
@@ -2385,7 +2459,8 @@ impl<'a> ChartArea<'a> {
             venus_deg: at(Graha::Venus)?,
             mercury_deg: at(Graha::Mercury)?,
             moon_deg: at(Graha::Moon)?,
-            sun_altitude_deg: self.sun_altitude_deg(chart)?,
+            sun_altitude_deg: self.altitude_deg(chart, Graha::Sun)?,
+            moon_altitude_deg: self.altitude_deg(chart, Graha::Moon)?,
             daylight: chart.foundation.day.part.is_daylight(),
         })
     }
@@ -2436,25 +2511,37 @@ impl<'a> ChartArea<'a> {
         })
     }
 
-    /// The Sun's centre above the true horizon, read from the chart's own
-    /// midheaven: the chart's zodiac is shifted back to the equinox by the
-    /// Sun's own two longitudes, so a sidereal chart reads the same sky.
-    fn sun_altitude_deg(self, chart: &Document) -> Result<f64, Error> {
-        let sun = chart
+    /// A body's centre above the true horizon, geocentric and geometric,
+    /// read from the chart's own midheaven: the chart's zodiac is shifted
+    /// back to the equinox by the body's own two longitudes, so a sidereal
+    /// chart reads the same sky.
+    fn altitude_deg(self, chart: &Document, body: Graha) -> Result<f64, Error> {
+        let placed = chart
             .foundation
-            .graha(Graha::Sun)
-            .ok_or_else(|| Error::internal("a founded chart places the Sun"))?;
+            .graha(body)
+            .ok_or_else(|| Error::internal(format!("a founded chart places {body:?}")))?;
         let angles = self.angles(chart)?;
-        let to_equinox = sun.tropical_deg - sun.longitude_deg;
+        let to_equinox = placed.tropical_deg - placed.longitude_deg;
         Ok(altitude_by_midheaven_deg(
             Spherical {
-                lon_deg: sun.tropical_deg,
-                lat_deg: sun.latitude_deg,
+                lon_deg: placed.tropical_deg,
+                lat_deg: placed.latitude_deg,
             },
             angles.midheaven_deg + to_equinox,
             angles.obliquity_deg,
             chart.foundation.place.latitude.get(),
         ))
+    }
+
+    /// What a chart's lots are read from: its seven and their altitudes,
+    /// and its angles.
+    fn lot_sky(self, chart: &Document) -> Result<LotSky, Error> {
+        let angles = self.angles(chart)?;
+        Ok(LotSky {
+            chart: self.chart_sky(chart)?,
+            ascendant_deg: angles.ascendant_deg,
+            midheaven_deg: angles.midheaven_deg,
+        })
     }
 
     /// What a saham is read from, off a founded chart: its midheaven

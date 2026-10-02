@@ -3287,6 +3287,7 @@ export const PlaceReadingById = new Map([
 export const FortuneRule = Object.freeze({
   DayAndNight: 'DAY_AND_NIGHT',
   ReversedByNight: 'REVERSED_BY_NIGHT',
+  ReversedWhileMoonUp: 'REVERSED_WHILE_MOON_UP',
 });
 
 /**
@@ -3296,6 +3297,7 @@ export const FortuneRule = Object.freeze({
 export const FortuneRuleById = new Map([
   [0, 'DAY_AND_NIGHT'],
   [1, 'REVERSED_BY_NIGHT'],
+  [2, 'REVERSED_WHILE_MOON_UP'],
 ]);
 
 /** Every HitKind by name. */

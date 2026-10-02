@@ -707,8 +707,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsSectRule`, four, `TsTerms`, five, and `TsTriplicities`, two; 1233
   // since the accidental fortitudes' `TsAccident`, twenty-four, and
   // `TsPartile` and `TsSiege`, two each; 1237 since the almuten's
-  // `TsPlaceReading` and `TsFortuneRule`, two each.
-  assert.equal(entries, 1237, 'every member of every enum is in a table');
+  // `TsPlaceReading` and `TsFortuneRule`, two each; 1238 since Valens's
+  // reading of Fortune by night.
+  assert.equal(entries, 1238, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

@@ -6704,7 +6704,7 @@ export declare const PlaceReadingById: ReadonlyMap<number, PlaceReading>;
  * How the Part of Fortune is taken by night (C220,
  * `03-design/essential-dignities.md` §The almuten).
  */
-export type FortuneRule = 'DAY_AND_NIGHT' | 'REVERSED_BY_NIGHT';
+export type FortuneRule = 'DAY_AND_NIGHT' | 'REVERSED_BY_NIGHT' | 'REVERSED_WHILE_MOON_UP';
 
 /** Every FortuneRule by name; the values are the strings the union accepts. */
 export declare const FortuneRule: {
@@ -6716,6 +6716,11 @@ export declare const FortuneRule: {
    * By night, the ascendant plus the Sun less the Moon.
    */
   readonly ReversedByNight: 'REVERSED_BY_NIGHT';
+  /**
+   * Valens's own: by night, reversed while the Moon is above the
+   * horizon, and counted from the Sun once it has set.
+   */
+  readonly ReversedWhileMoonUp: 'REVERSED_WHILE_MOON_UP';
 };
 
 /**

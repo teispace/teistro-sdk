@@ -5053,6 +5053,11 @@ typedef enum ts_fortune_rule {
      * By night, the ascendant plus the Sun less the Moon.
      */
     TS_FORTUNE_RULE_REVERSED_BY_NIGHT = 1,
+    /**
+     * Valens's own: by night, reversed while the Moon is above the
+     * horizon, and counted from the Sun once it has set.
+     */
+    TS_FORTUNE_RULE_REVERSED_WHILE_MOON_UP = 2,
 } ts_fortune_rule;
 
 /**

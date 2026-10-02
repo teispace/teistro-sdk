@@ -1,6 +1,5 @@
 //! The almuten: the planet with the most dignities at a place, over a
-//! list of places, or in the whole figure, and Lilly's Part of Fortune,
-//! one of the places a lord of the geniture is sought in
+//! list of places, or in the whole figure
 //! (`03-design/essential-dignities.md` §The almuten).
 
 use serde::{Deserialize, Serialize};
@@ -8,6 +7,7 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
 use crate::dignity::{CHALDEAN_ORDER, DignityRules, Scores, Sect, essential_dignity};
+use crate::lot::{FortuneRule, part_of_fortune};
 
 /// What of a place an almuten's dignities are counted from (crux C218).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -24,53 +24,6 @@ pub enum PlaceReading {
     /// sign holds whole. Lilly's wording for a house, "the Signe ... upon
     /// the Cusp" (p. 49).
     Sign,
-}
-
-/// How the Part of Fortune is taken by night (crux C220).
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[non_exhaustive]
-pub enum FortuneRule {
-    /// Lilly's (pp. 143–144): the ascendant plus the Moon less the Sun, by
-    /// day or night, which he gives as Ptolemy's. The default.
-    #[default]
-    DayAndNight,
-    /// The rule Lilly reports and sets aside: by night, the ascendant plus
-    /// the Sun less the Moon. The Tajika Punya saham reverses the same way.
-    ReversedByNight,
-}
-
-/// The Part of Fortune's longitude, in degrees in `[0, 360)`.
-///
-/// ```
-/// use teistro_hellenistic::{FortuneRule, Sect, part_of_fortune};
-///
-/// // Lilly, pp. 143–144: the Moon at 21°18′ Virgo, the Sun at 4°18′
-/// // Aries, 23°27′ Leo rising: Fortune at 10°27′ Aquarius.
-/// let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
-/// let fortune = part_of_fortune(
-///     at(4.0, 23.0, 27.0),
-///     at(0.0, 4.0, 18.0),
-///     at(5.0, 21.0, 18.0),
-///     Sect::Night,
-///     FortuneRule::DayAndNight,
-/// );
-/// assert!((fortune - at(10.0, 10.0, 27.0)).abs() < 1e-9);
-/// ```
-#[must_use]
-pub fn part_of_fortune(
-    ascendant_deg: f64,
-    sun_deg: f64,
-    moon_deg: f64,
-    sect: Sect,
-    rule: FortuneRule,
-) -> f64 {
-    let (from, to) = match (rule, sect) {
-        (FortuneRule::ReversedByNight, Sect::Night) => (moon_deg, sun_deg),
-        _ => (sun_deg, moon_deg),
-    };
-    (ascendant_deg + to - from).rem_euclid(360.0)
 }
 
 /// Each of the seven's total, and which hold the most.
@@ -275,6 +228,7 @@ pub(crate) struct AlmutenSky<'a> {
     pub(crate) midheaven_deg: f64,
     pub(crate) sun_deg: f64,
     pub(crate) moon_deg: f64,
+    pub(crate) moon_altitude_deg: f64,
     pub(crate) cusps_deg: &'a [f64; 12],
     pub(crate) sect: Sect,
     pub(crate) rules: &'a DignityRules,
@@ -289,8 +243,7 @@ impl AlmutenRules {
             sky.ascendant_deg,
             sky.sun_deg,
             sky.moon_deg,
-            sky.sect,
-            self.fortune,
+            self.fortune.reverses(sky.sect, sky.moon_altitude_deg),
         );
         let places = [
             sky.ascendant_deg,
@@ -320,32 +273,10 @@ mod tests {
 
     use teistro_core::catalogue::Graha;
 
-    use super::{
-        Almuten, FortuneRule, PlaceReading, almuten_of, almuten_of_places, part_of_fortune,
-    };
+    use super::{Almuten, PlaceReading, almuten_of, almuten_of_places};
     use crate::dignity::{DignityRules, Scores, Sect};
 
     const LILLY: (&DignityRules, &Scores) = (&DignityRules::LILLY, &Scores::LILLY);
-
-    #[test]
-    fn by_night_the_reversal_takes_the_suns_distance_from_the_moon() {
-        let (asc, sun, moon) = (100.0, 10.0, 40.0);
-        let lilly = |sect| part_of_fortune(asc, sun, moon, sect, FortuneRule::DayAndNight);
-        let reversed = |sect| part_of_fortune(asc, sun, moon, sect, FortuneRule::ReversedByNight);
-        assert_eq!(lilly(Sect::Day), 130.0);
-        assert_eq!(lilly(Sect::Night), 130.0);
-        assert_eq!(reversed(Sect::Day), 130.0);
-        assert_eq!(reversed(Sect::Night), 70.0);
-        // Lilly's check (p. 144): at the full Moon, Fortune in the seventh.
-        assert_eq!(
-            part_of_fortune(0.0, 0.0, 180.0, Sect::Day, FortuneRule::DayAndNight),
-            180.0
-        );
-        assert_eq!(
-            part_of_fortune(10.0, 350.0, 0.0, Sect::Day, FortuneRule::DayAndNight),
-            20.0
-        );
-    }
 
     #[test]
     fn a_tie_names_every_almuten_and_the_partakers_below() {
