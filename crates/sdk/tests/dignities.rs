@@ -13,13 +13,13 @@
     reason = "tests fail by panicking and index what they found"
 )]
 
-use teistro::catalogue::{Graha, HouseSystem};
+use teistro::catalogue::{Graha, HouseSystem, Rashi};
 use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    Accident, AccidentalRules, ChartRequest, Context, DignityRequest, DignityRules, Document,
-    Ephemeris, FortitudeRequest, FortuneRule, Lot, LotRequest, Scores, Sect, SectRule, Terms,
-    UtcOffset,
+    Accident, AccidentalRules, ChartRequest, ConsiderationRules, Context, DignityRequest,
+    DignityRules, Document, Ephemeris, FortitudeRequest, FortuneRule, Lot, LotRequest, Scores,
+    Sect, SectRule, Terms, UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -281,4 +281,50 @@ fn a_lot_the_caller_writes_is_read_as_the_catalogues() {
         // By day no lot's arc depends on Fortune's rule.
         assert_eq!(own, placed.place, "{:?}", placed.lot);
     }
+}
+
+/// The considerations read the chart's own hour and Ascendant, and the
+/// Moon's next perfection, read back in the chart cast at the moment it
+/// promises, finds her at that aspect within 0.01° (0.007° measured).
+/// Geocentric, as Lilly's ephemerides were: a topocentric Moon swings
+/// with parallax, and the same projection missed by 2.3°.
+#[test]
+fn the_moons_next_aspect_is_where_the_later_chart_finds_her() {
+    let sdk = context(Some(r#"{"frame": {"centre": "GEOCENTRIC"}}"#));
+    let mut worst: f64 = 0.0;
+    let mut perfections = 0;
+    for hour in 0..48 {
+        let jd = 2_451_545.0 + f64::from(hour) / 24.0;
+        let figure = chart(&sdk, 51.5, -0.12, jd);
+        let read = sdk
+            .chart()
+            .considerations(
+                &figure,
+                &FortitudeRequest::default(),
+                ConsiderationRules::LILLY,
+            )
+            .unwrap();
+        assert_eq!(
+            read.radicality.hour_lord,
+            figure.foundation.timing.hora.lord
+        );
+        let ascendant = sdk.chart().angles(&figure).unwrap().ascendant_deg;
+        assert_eq!(read.ascendant.sign, Rashi::of_longitude(ascendant));
+        let moon = figure.foundation.graha(Graha::Moon).unwrap().longitude_deg;
+        assert_eq!(read.moon.sign, Rashi::of_longitude(moon));
+        let Some(next) = read.moon.course.next else {
+            continue;
+        };
+        perfections += 1;
+        let later = chart(&sdk, 51.5, -0.12, jd + next.days);
+        let at = |graha| later.foundation.graha(graha).unwrap().longitude_deg;
+        let gap = at(Graha::Moon) - at(next.planet);
+        let off = [next.aspect.degrees(), -next.aspect.degrees()]
+            .into_iter()
+            .map(|side| ((gap - side + 180.0).rem_euclid(360.0) - 180.0).abs())
+            .fold(f64::INFINITY, f64::min);
+        worst = worst.max(off);
+    }
+    assert!(perfections > 0);
+    assert!(worst < 0.01, "worst {worst}");
 }

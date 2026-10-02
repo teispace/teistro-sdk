@@ -30,6 +30,7 @@ pub const MODULE: &str = "hellenistic";
 
 mod accidental;
 mod almuten;
+mod considerations;
 mod dignity;
 mod fortitude;
 mod lot;
@@ -42,6 +43,11 @@ pub use accidental::{
     accidental_dignities, house_of,
 };
 pub use almuten::{Almuten, AlmutenRules, Almutens, PlaceReading, almuten_of, almuten_of_places};
+pub use considerations::{
+    AscendantClause, ConsiderationRules, Considerations, MoonClause, MoonCourse, Perfection,
+    PtolemaicAspect, RadicalGround, Radicality, SeventhClause, Temperament, considerations,
+    moon_course, radical_grounds,
+};
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,

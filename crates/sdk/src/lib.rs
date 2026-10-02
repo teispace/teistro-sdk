@@ -201,11 +201,13 @@ pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 // them (`03-design/essential-dignities.md`).
 pub use teistro_hellenistic as hellenistic;
 pub use teistro_hellenistic::{
-    Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, Dignities,
-    DignityKind, DignityRequest, DignityRules, Distance, EssentialDignity, FortitudeRequest,
-    Fortitudes, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,
-    Partile, PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity, Reception, Scores, Sect,
-    SectRule, Siege, Terms, TermsTable, Triplicities,
+    Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, AscendantClause,
+    ConsiderationRules, Considerations, Dignities, DignityKind, DignityRequest, DignityRules,
+    Distance, EssentialDignity, FortitudeRequest, Fortitudes, FortuneRule, Lot, LotArc, LotFormula,
+    LotPlace, LotPoint, LotReading, LotRequest, MoonClause, MoonCourse, Partile, Perfection,
+    PlaceReading, PlacedLot, PlanetAccidents, PlanetDignity, PtolemaicAspect, RadicalGround,
+    Radicality, Reception, Scores, Sect, SectRule, SeventhClause, Siege, Temperament, Terms,
+    TermsTable, Triplicities,
 };
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
