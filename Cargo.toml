@@ -29,6 +29,7 @@ members = [
     "crates/interpret",
     "crates/tajika",
     "crates/hellenistic",
+    "crates/western",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",

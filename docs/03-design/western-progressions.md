@@ -1,7 +1,8 @@
 # Progressions and directions (the `western` module, step 1)
 
-Status: `design`, 2026-10-03 — written from Leo's text before any code,
-its worked figures recast with pyswisseph's Moshier series.
+Status: `building`, 2026-10-03 — written from Leo's text before any code,
+its worked figures recast with pyswisseph's Moshier series. Step 2 is
+built in `crates/western`.
 
 A progression reads the sky some days after birth as the native's life
 some years after it: the chart for the forty-sixth day is read as the
@@ -65,8 +66,8 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
      against his 14h 0m 56s.
 
    A day measured as a tropical year, the modern default, gives **21
-   October**, about 00.20 UT. That is a day and a half before Leo's 22nd
-   (C236).
+   October**, about 4.40 UT. That is a day and a half before Leo's 22nd
+   (C236). The Julian year gives the 21st too, at about 13h.
 5. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
    16 hours: 0.985647° a year, and 365.2422 days to the year.
 
@@ -116,6 +117,38 @@ without the others:
 - `life_at(birth, instant, rate, measure)`, the inverse;
 - `arc_to_years` and `years_to_arc` for each arc measure.
 
+## What building it found
+
+- **Leo's rule is a closed form.** Sidereal time at Greenwich noon comes
+  round once a tropical year, so his arithmetic (pp. 304–305) has a
+  closed form. `N` is the noon of the day of birth, `δ` the birth's
+  offset from it, and the instant of sky is `k` whole days and `f` of a
+  day past `N`. Then life = `N + k·Y + (f − δ)·(Y + 1)`. Each ephemeris
+  noon measures to one date, and the solar hours after it count as
+  sidereal hours, so a day of sky measures a year and a day.
+  - The consequence is that the last 3m 56s before each ephemeris noon
+    measure to dates the next noon reaches too. The inverse answers the
+    later instant of sky.
+  - It reproduces his "November 10th" for noon within 0.01 of a day of
+    his printed sidereal times.
+  - It reproduces his 22 October within the day. His tables put the
+    contact 0.23 of a day past noon, and the closed form puts it at 0.15.
+- **Birth by the rule.** The rule puts birth on the next day's noon for a
+  birth before noon, and on its own day's noon for one after. That is
+  the year and a day again. The day of birth is the Greenwich civil day,
+  and longitude does not enter, which agrees with Leo's London figure.
+  Keeping the birth's local sidereal time instead would move a New York
+  birth's anniversary by about 75 days.
+- **His p. 35 date is his approximate reckoning.** "5.49 a.m. 22/9/'60
+  measures to the year commencing August 8th, 1906" agrees with the
+  tropical year. His sidereal-time rule gives the 9th, the same
+  one-day correction he makes for noon on p. 305.
+- **The Julian year** gives his contact at 21 October about 13h, a day
+  and a half after the tropical year's 4.40 and still not his 22nd.
+- **Naibod's table** (p. 262) is the rate to within a day in the degree
+  rows, rounding some rows down and others up. It is within an hour in
+  most minute rows; the 40′ row is 1.03 hours from the rate.
+
 ## What is not decided
 
 - **C236, the year measure.** Leo's printed day is the sidereal-time
@@ -143,7 +176,7 @@ without the others:
 
 1. This page, and the crux rows C236 to C238.
 2. `crates/western`: the rate, the measure and the arc arithmetic, held
-   to tests 1 and 5 above.
+   to tests 4 and 5 above. **Built.**
 3. `ChartArea::progressed` and `directed`, held to tests 2 and 3.
 4. `progressed_contacts`, held to test 4 under both measures.
 5. The boundary and every binding, with the parity gate.
