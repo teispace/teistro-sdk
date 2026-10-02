@@ -912,10 +912,10 @@ def main() -> None:
             )
             put(f"chart-{i}-fortitude-houses", ",".join(number(v) for v in ft.sky.cusps_deg))
             for k, planet_accidents in enumerate(ft.planets):
-                lines = ",".join(f"{line.accident.key}:{line.points}" for line in planet_accidents.accidents)
+                met = ",".join(f"{line.accident.key}:{line.points}" for line in planet_accidents.accidents)
                 put(
                     f"chart-{i}-fortitude-{planet_accidents.planet.full_key}",
-                    f"{number(ft.sky.speeds_deg_per_day[k])} {planet_accidents.house} {lines or '-'} "
+                    f"{number(ft.sky.speeds_deg_per_day[k])} {planet_accidents.house} {met or '-'} "
                     f"{planet_accidents.fortitude} {planet_accidents.debility} {planet_accidents.net}",
                 )
             vs = chart.vimshopaka
