@@ -256,6 +256,7 @@ mod exercised;
 mod facade;
 mod festival;
 mod ffi;
+mod fortitudes;
 mod generated;
 mod gochar;
 mod hashes;
@@ -430,6 +431,11 @@ const PASSES: &[Pass] = &[
     ("terms", terms::generate, terms::check_generated),
     ("sect", sect::generate, sect::check_generated),
     ("reception", reception::generate, reception::check_generated),
+    (
+        "fortitudes",
+        fortitudes::generate,
+        fortitudes::check_generated,
+    ),
     (
         "kalachakra",
         kalachakra::generate,

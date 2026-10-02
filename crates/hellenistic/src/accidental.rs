@@ -12,7 +12,7 @@ use core::cmp::Ordering;
 
 use serde::{Deserialize, Serialize};
 use teistro_core::angle::difference_deg;
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::catalogue::{Graha, HouseSystem, Rashi};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 
@@ -83,7 +83,7 @@ pub enum Accident {
 /// When two planets are in partile aspect (crux C216).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE", rename_all_fields = "camelCase")]
 #[non_exhaustive]
 pub enum Partile {
     /// Lilly's (p. 106): "exactly so many degrees" apart, as Venus in 9
@@ -100,7 +100,7 @@ pub enum Partile {
 /// When a planet is besieged by Saturn and Mars (crux C215).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE", rename_all_fields = "camelCase")]
 #[non_exhaustive]
 pub enum Siege {
     /// Lilly's example (p. 114): all three in one sign, the planet between
@@ -389,24 +389,24 @@ impl AccidentalScores {
 }
 
 /// Where a planet is and how fast it moves.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
-pub struct Motion {
-    /// Its longitude, in degrees.
-    pub longitude_deg: f64,
-    /// Its daily motion in longitude, in degrees; negative when
-    /// retrograde.
-    pub speed_deg_per_day: f64,
+#[derive(Clone, Copy, Debug)]
+struct Motion {
+    longitude_deg: f64,
+    speed_deg_per_day: f64,
 }
 
-/// What a chart's accidental fortitudes are read from.
+/// What a chart's accidental fortitudes are read from beside the seven's
+/// longitudes: how they move, the houses, the Nodes and three stars, all
+/// in the chart's zodiac.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct AccidentalSky {
-    /// The seven, in the Chaldean order, Saturn first.
-    pub planets: [Motion; 7],
+    /// The seven's daily motions in longitude, in degrees, in the Chaldean
+    /// order, Saturn first; negative when retrograde.
+    pub speeds_deg_per_day: [f64; 7],
+    /// The division the cusps are of: Lilly's is Regiomontanus.
+    pub houses: HouseSystem,
     /// The twelve house cusps, first to twelfth, in degrees.
     pub cusps_deg: [f64; 12],
     /// The North Node's longitude; the South Node is opposite.
@@ -618,26 +618,26 @@ impl Reading<'_> {
 }
 
 /// The seven's accidental fortitudes and debilities, in the Chaldean
-/// order.
+/// order, from their longitudes in that order and the rest of the sky.
 ///
 /// ```
-/// use teistro_core::catalogue::Graha;
+/// use teistro_core::catalogue::{Graha, HouseSystem};
 /// use teistro_hellenistic::{
-///     Accident, AccidentalRules, AccidentalScores, AccidentalSky, Motion, accidental_dignities,
+///     Accident, AccidentalRules, AccidentalScores, AccidentalSky, accidental_dignities,
 /// };
 ///
-/// let at = |longitude_deg, speed_deg_per_day| Motion { longitude_deg, speed_deg_per_day };
+/// // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
+/// let longitudes = [200.0, 100.0, 300.0, 15.5, 15.42, 40.0, 130.0];
 /// let sky = AccidentalSky {
-///     // Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon.
-///     planets: [
-///         at(200.0, 0.1), at(100.0, 0.1), at(300.0, 0.6), at(15.5, 1.0),
-///         at(15.42, 1.2), at(40.0, 1.5), at(130.0, 13.0),
-///     ],
+///     speeds_deg_per_day: [0.1, 0.1, 0.6, 1.0, 1.2, 1.5, 13.0],
+///     houses: HouseSystem::Equal,
 ///     cusps_deg: std::array::from_fn(|k| k as f64 * 30.0),
 ///     north_node_deg: 250.0,
 ///     regulus_deg: 150.0, spica_deg: 204.0, algol_deg: 56.0,
 /// };
-/// let read = accidental_dignities(&sky, &AccidentalRules::LILLY, &AccidentalScores::LILLY)?;
+/// let read = accidental_dignities(
+///     &longitudes, &sky, &AccidentalRules::LILLY, &AccidentalScores::LILLY,
+/// )?;
 /// let venus = &read[4];
 /// assert_eq!(venus.planet, Graha::Venus);
 /// assert!(venus.accidents.contains(&Accident::Cazimi));
@@ -651,13 +651,14 @@ impl Reading<'_> {
 /// `INVALID_ARG` on a longitude, motion or cusp that is not a finite
 /// number, or an orb or mean motion out of range, naming its field.
 pub fn accidental_dignities(
+    longitudes_deg: &[f64; 7],
     sky: &AccidentalSky,
     rules: &AccidentalRules,
     scores: &AccidentalScores,
 ) -> Result<[PlanetAccidents; 7], Error> {
     rules.check()?;
-    check_sky(sky)?;
-    let [saturn, jupiter, mars, sun, venus, _, _] = sky.planets.map(|at| at.longitude_deg);
+    check_sky(longitudes_deg, sky)?;
+    let [saturn, jupiter, mars, sun, venus, _, _] = *longitudes_deg;
     let reading = Reading {
         rules,
         sky,
@@ -668,29 +669,35 @@ pub fn accidental_dignities(
     };
     let planets: Vec<PlanetAccidents> = CHALDEAN_ORDER
         .into_iter()
-        .zip(sky.planets)
+        .zip(longitudes_deg.iter().zip(sky.speeds_deg_per_day))
         .zip(rules.mean_motion_deg)
-        .map(|((planet, at), mean_deg)| {
-            let house = house_of(at.longitude_deg, &sky.cusps_deg, rules.cusp_orb_deg);
-            let accidents = reading.accidents(planet, at, mean_deg);
-            let points = core::iter::once(scores.house(house))
-                .chain(accidents.iter().map(|&one| scores.points(planet, one)));
-            let (fortitude, debility) = points.fold((0_i16, 0_i16), |(up, down), worth| {
-                let worth = i16::from(worth);
-                if worth > 0 {
-                    (up + worth, down)
-                } else {
-                    (up, down - worth)
+        .map(
+            |((planet, (&longitude_deg, speed_deg_per_day)), mean_deg)| {
+                let at = Motion {
+                    longitude_deg,
+                    speed_deg_per_day,
+                };
+                let house = house_of(at.longitude_deg, &sky.cusps_deg, rules.cusp_orb_deg);
+                let accidents = reading.accidents(planet, at, mean_deg);
+                let points = core::iter::once(scores.house(house))
+                    .chain(accidents.iter().map(|&one| scores.points(planet, one)));
+                let (fortitude, debility) = points.fold((0_i16, 0_i16), |(up, down), worth| {
+                    let worth = i16::from(worth);
+                    if worth > 0 {
+                        (up + worth, down)
+                    } else {
+                        (up, down - worth)
+                    }
+                });
+                PlanetAccidents {
+                    planet,
+                    house,
+                    accidents,
+                    fortitude,
+                    debility,
                 }
-            });
-            PlanetAccidents {
-                planet,
-                house,
-                accidents,
-                fortitude,
-                debility,
-            }
-        })
+            },
+        )
         .collect();
     planets
         .try_into()
@@ -699,19 +706,19 @@ pub fn accidental_dignities(
 
 /// Every longitude, motion and cusp a finite number, naming the one that
 /// is not.
-fn check_sky(sky: &AccidentalSky) -> Result<(), Error> {
+fn check_sky(longitudes_deg: &[f64; 7], sky: &AccidentalSky) -> Result<(), Error> {
     let names = [
         "saturn", "jupiter", "mars", "sun", "venus", "mercury", "moon",
     ];
-    let motions = names.into_iter().zip(sky.planets).flat_map(|(name, at)| {
-        [
-            (format!("planets.{name}.longitudeDeg"), at.longitude_deg),
-            (
-                format!("planets.{name}.speedDegPerDay"),
-                at.speed_deg_per_day,
-            ),
-        ]
-    });
+    let motions = names
+        .into_iter()
+        .zip(longitudes_deg.iter().zip(sky.speeds_deg_per_day))
+        .flat_map(|(name, (&longitude, speed))| {
+            [
+                (format!("longitudesDeg.{name}"), longitude),
+                (format!("speedsDegPerDay.{name}"), speed),
+            ]
+        });
     let cusps = sky
         .cusps_deg
         .iter()
@@ -743,14 +750,18 @@ mod tests {
     )]
 
     use super::{
-        Accident, AccidentalRules, AccidentalScores, AccidentalSky, Motion, Partile, Siege,
+        Accident, AccidentalRules, AccidentalScores, AccidentalSky, Partile, Siege,
         accidental_dignities, besieged, house_of, partile,
     };
-    use crate::{CHALDEAN_ORDER, DignityRules, Scores, Sect, essential_dignity};
+    use crate::{
+        CHALDEAN_ORDER, ChartSky, DignityRules, FortitudeRequest, Scores, Sect, essential_dignity,
+    };
     use Accident::{
         Cazimi, Combust, ConjunctBenefic, Decreasing, Direct, FreeFromCombustion, Increasing,
         Occidental, Oriental, Regulus, Retrograde, Slow, Spica, Swift, UnderBeams,
     };
+    use teistro_core::catalogue::Graha;
+    use teistro_core::catalogue::HouseSystem;
     use teistro_core::house::House;
 
     /// A longitude from a sign (Aries 0) and degrees and minutes in it.
@@ -770,17 +781,24 @@ mod tests {
         j2000_deg - (2000.0 - year) * 50.29 / 3600.0
     }
 
-    fn sky_of(planets: [(f64, f64); 7], cusps: [f64; 12], node: f64, year: f64) -> AccidentalSky {
-        AccidentalSky {
-            planets: planets.map(|(longitude_deg, speed_deg_per_day)| Motion {
-                longitude_deg,
-                speed_deg_per_day,
-            }),
-            cusps_deg: cusps,
-            north_node_deg: node,
-            regulus_deg: star_of(149.8298, year),
-            spica_deg: star_of(203.8410, year),
-            algol_deg: star_of(56.1667, year),
+    /// A figure: the seven's longitudes and their sky.
+    struct Figure {
+        longitudes: [f64; 7],
+        sky: AccidentalSky,
+    }
+
+    fn figure(planets: [(f64, f64); 7], cusps: [f64; 12], node: f64, year: f64) -> Figure {
+        Figure {
+            longitudes: planets.map(|(longitude, _)| longitude),
+            sky: AccidentalSky {
+                speeds_deg_per_day: planets.map(|(_, speed)| speed),
+                houses: HouseSystem::Regiomontanus,
+                cusps_deg: cusps,
+                north_node_deg: node,
+                regulus_deg: star_of(149.8298, year),
+                spica_deg: star_of(203.8410, year),
+                algol_deg: star_of(56.1667, year),
+            },
         }
     }
 
@@ -802,9 +820,9 @@ mod tests {
 
     /// Reads a figure and holds each planet to its printed tally, cell by
     /// cell, the listed differences apart.
-    fn holds(sky: &AccidentalSky, rules: &AccidentalRules, sect: Sect, printed: &[Printed; 7]) {
+    fn holds(figure: &Figure, rules: &AccidentalRules, sect: Sect, printed: &[Printed; 7]) {
         let scores = AccidentalScores::LILLY;
-        let read = accidental_dignities(sky, rules, &scores).unwrap();
+        let read = accidental_dignities(&figure.longitudes, &figure.sky, rules, &scores).unwrap();
         for ((planet, at), lilly) in CHALDEAN_ORDER.into_iter().zip(&read).zip(printed) {
             assert_eq!(at.planet, planet);
             assert_eq!(at.house.get(), lilly.house, "{planet:?}'s house");
@@ -823,8 +841,8 @@ mod tests {
                     .map(|&one| i16::from(scores.points(planet, one)))
                     .sum()
             };
-            let longitude = sky.planets[CHALDEAN_ORDER.iter().position(|&p| p == planet).unwrap()]
-                .longitude_deg;
+            let longitude =
+                figure.longitudes[CHALDEAN_ORDER.iter().position(|&p| p == planet).unwrap()];
             let essential = essential_dignity(planet, longitude, sect, &DignityRules::LILLY)
                 .unwrap()
                 .score(&Scores::LILLY);
@@ -851,7 +869,7 @@ mod tests {
     /// Leo by day holds its fire triplicity, unprinted (C217). With the
     /// stars of date the Moon is 5°36′ short of Regulus, outside the five
     /// degrees, as the tally has it (C213).
-    fn rich_or_poor() -> (AccidentalSky, [Printed; 7]) {
+    fn rich_or_poor() -> (Figure, [Printed; 7]) {
         let cusps = [
             at(6, 14.0, 13.0),
             at(7, 6.0, 35.0),
@@ -867,7 +885,7 @@ mod tests {
             at(5, 23.0, 9.0),
         ];
         let minutes = |m: f64| m / 60.0;
-        let sky = sky_of(
+        let sky = figure(
             [
                 (at(8, 15.0, 19.0), -minutes(2.0)),
                 (at(3, 17.0, 31.0), minutes(13.0)),
@@ -973,20 +991,9 @@ mod tests {
         holds(&sky, &rules, Sect::Day, &printed);
     }
 
-    /// Book III, Chapter CLXXV, an English merchant born 19 September 1616
-    /// at 2h 04m 30s after noon, latitude 53 (p. 742), and the table of
-    /// his planets' dignities (pp. 744–745), read off the page images. The
-    /// figure prints no motions, so each is set to the verdict the table
-    /// gives. A day chart.
-    ///
-    /// The stated rules give every printed line but these: the tally
-    /// charges the eighth house 4 where the table (p. 115) charges 2, for
-    /// the Sun, Venus and Mercury; and Mercury, combust at 3°34′ Libra, is
-    /// oriental and peregrine by day, neither printed (C217). Venus in
-    /// cazimi scores cazimi and not "free from combustion" as well, and the
-    /// Sun scores his partile conjunction with her.
-    #[test]
-    fn the_merchants_nativity_holds_to_its_tallies() {
+    /// Book III's English merchant (p. 742): Lilly prints no motions for
+    /// it, so each is set to the verdict his table gives.
+    fn merchant() -> Figure {
         let cusps = [
             at(9, 6.0, 37.0),
             at(10, 23.0, 30.0),
@@ -1001,7 +1008,7 @@ mod tests {
             at(8, 0.0, 0.0),
             at(8, 14.0, 49.0),
         ];
-        let sky = sky_of(
+        figure(
             [
                 (at(1, 9.0, 2.0), -0.02),
                 (at(8, 21.0, 55.0), 0.1),
@@ -1014,7 +1021,60 @@ mod tests {
             cusps,
             at(11, 5.0, 50.0),
             1616.7,
-        );
+        )
+    }
+
+    /// The merchant read through the request, both halves of the table:
+    /// each net is the printed one but for the listed cells, the eighth
+    /// house's 2 for the Sun and Venus.
+    #[test]
+    fn the_merchants_nets_through_the_request() {
+        let figure = merchant();
+        let [
+            saturn_deg,
+            jupiter_deg,
+            mars_deg,
+            sun_deg,
+            venus_deg,
+            mercury_deg,
+            moon_deg,
+        ] = figure.longitudes;
+        let chart = ChartSky {
+            saturn_deg,
+            jupiter_deg,
+            mars_deg,
+            sun_deg,
+            venus_deg,
+            mercury_deg,
+            moon_deg,
+            sun_altitude_deg: 30.0,
+            daylight: true,
+        };
+        let read = FortitudeRequest::default()
+            .read(&chart, &figure.sky)
+            .unwrap();
+        assert_eq!(read.dignities.sect, Sect::Day);
+        assert_eq!(read.sky.houses, HouseSystem::Regiomontanus);
+        assert_eq!(read.net(Graha::Venus), Some(16 + 2));
+        assert_eq!(read.net(Graha::Sun), Some(-6 + 2));
+        assert_eq!(read.net(Graha::Rahu), None);
+    }
+
+    /// Book III, Chapter CLXXV, an English merchant born 19 September 1616
+    /// at 2h 04m 30s after noon, latitude 53 (p. 742), and the table of
+    /// his planets' dignities (pp. 744–745), read off the page images. The
+    /// figure prints no motions, so each is set to the verdict the table
+    /// gives. A day chart.
+    ///
+    /// The stated rules give every printed line but these: the tally
+    /// charges the eighth house 4 where the table (p. 115) charges 2, for
+    /// the Sun, Venus and Mercury; and Mercury, combust at 3°34′ Libra, is
+    /// oriental and peregrine by day, neither printed (C217). Venus in
+    /// cazimi scores cazimi and not "free from combustion" as well, and the
+    /// Sun scores his partile conjunction with her.
+    #[test]
+    fn the_merchants_nativity_holds_to_its_tallies() {
+        let sky = merchant();
         holds(
             &sky,
             &AccidentalRules::LILLY,
@@ -1098,8 +1158,9 @@ mod tests {
             let mut planets = [(200.0, 0.1); 7];
             planets[1] = (planet, 0.1);
             planets[3] = (sun, 1.0);
-            let sky = sky_of(planets, equal(), 300.0, 2000.0);
-            accidental_dignities(&sky, &rules, &AccidentalScores::LILLY).unwrap()[1]
+            let sky = figure(planets, equal(), 300.0, 2000.0);
+            accidental_dignities(&sky.longitudes, &sky.sky, &rules, &AccidentalScores::LILLY)
+                .unwrap()[1]
                 .accidents
                 .clone()
         };
@@ -1156,14 +1217,20 @@ mod tests {
 
     #[test]
     fn a_bad_orb_or_longitude_is_named() {
-        let sky = sky_of([(10.0, 0.1); 7], [0.0; 12], 0.0, 2000.0);
+        let sky = figure([(10.0, 0.1); 7], [0.0; 12], 0.0, 2000.0);
         let bad = AccidentalRules::LILLY.with_solar_orbs(f64::NAN, 17.0, 0.3);
-        let why = accidental_dignities(&sky, &bad, &AccidentalScores::LILLY).unwrap_err();
-        assert_eq!(why.field(), Some("combustionDeg"));
-        let mut lost = sky;
-        lost.planets[5].speed_deg_per_day = f64::INFINITY;
-        let why = accidental_dignities(&lost, &AccidentalRules::LILLY, &AccidentalScores::LILLY)
+        let why = accidental_dignities(&sky.longitudes, &sky.sky, &bad, &AccidentalScores::LILLY)
             .unwrap_err();
-        assert_eq!(why.field(), Some("planets.mercury.speedDegPerDay"));
+        assert_eq!(why.field(), Some("combustionDeg"));
+        let mut lost = sky.sky;
+        lost.speeds_deg_per_day[5] = f64::INFINITY;
+        let why = accidental_dignities(
+            &sky.longitudes,
+            &lost,
+            &AccidentalRules::LILLY,
+            &AccidentalScores::LILLY,
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("speedsDegPerDay.mercury"));
     }
 }
