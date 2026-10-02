@@ -662,7 +662,102 @@ mod tests {
 
     /// The seven at `planets` (Chaldean order) moving at `speeds`.
     fn course(planets: [f64; 7], speeds: [f64; 7]) -> MoonCourse {
-        moon_course(&planets, &speeds, &ConsiderationRules::LILLY.orbs_deg).unwrap()
+        course_under(planets, speeds, &ConsiderationRules::LILLY.orbs_deg)
+    }
+
+    /// As [`course`], under the orbs `orbs_deg`.
+    fn course_under(planets: [f64; 7], speeds: [f64; 7], orbs_deg: &[f64; 7]) -> MoonCourse {
+        moon_course(&planets, &speeds, orbs_deg).unwrap()
+    }
+
+    /// Lilly's other column of orbs on p. 107, "According to others": he
+    /// uses "sometimes the one, and sometimes the other", and his own
+    /// worked separation on p. 110 takes this one (Saturn's and
+    /// Jupiter's halves 4°30′, the Sun's 7°30′, the Moon's 6°).
+    const ORBS_ACCORDING_TO_OTHERS: [f64; 7] = [9.0, 9.0, 7.0, 15.0, 7.0, 7.0, 12.0];
+
+    /// One of Lilly's dated horary figures at London, recast with the Swiss
+    /// Ephemeris's Moshier series: the seven in the Chaldean order, their
+    /// speeds, and whether Lilly calls the Moon void.
+    struct Figure {
+        name: &'static str,
+        planets: [f64; 7],
+        speeds: [f64; 7],
+        void: bool,
+    }
+
+    /// The ship at sea, p. 165: 9 March 1646/7 at 10h 15m, the Moon's hour.
+    const SHIP: Figure = Figure {
+        name: "ship",
+        planets: [44.82, 118.62, 115.23, 358.68, 6.33, 346.28, 160.48],
+        speeds: [0.103, -0.018, 0.166, 0.990, 1.242, 1.795, 14.834],
+        void: true,
+    };
+
+    /// "If Presbytery shall stand", p. 439: 11 March 1646/7 at 4h 45m PM,
+    /// Venus's hour.
+    const PRESBYTERY: Figure = Figure {
+        name: "presbytery",
+        planets: [45.07, 118.58, 115.65, 0.93, 9.15, 350.42, 193.78],
+        speeds: [0.105, -0.011, 0.187, 0.989, 1.241, 1.844, 14.386],
+        void: true,
+    };
+
+    /// "A Lady, if marry the Gentleman desired?", p. 385: Tuesday 16 June
+    /// 1646 at 19h 26m after noon, astronomical reckoning, so 7:26 the next
+    /// morning, Saturn's hour.
+    const LADY: Figure = Figure {
+        name: "lady",
+        planets: [44.61, 104.75, 47.72, 95.51, 50.35, 76.39, 267.29],
+        speeds: [0.097, 0.223, 0.714, 0.953, 0.860, 0.407, 11.842],
+        void: true,
+    };
+
+    /// The horse lost near Henley, p. 467: 11 January 1646/7 at 2h 59m PM,
+    /// Mars's hour, "a □ ♄ ad Vac".
+    const HORSE: Figure = Figure {
+        name: "horse",
+        planets: [41.16, 123.87, 124.18, 301.59, 295.32, 302.25, 132.08],
+        speeds: [0.018, -0.133, -0.4, 1.016, 1.255, -1.255, 15.231],
+        void: true,
+    };
+
+    /// The long-life question, p. 135: 14 March 1632/3 at 2h 15m PM, Mars's
+    /// hour; the Moon applies to Jupiter's trine, then Mars's opposition.
+    const LONG_LIFE: Figure = Figure {
+        name: "long life",
+        planets: [250.22, 54.1, 358.66, 4.18, 45.92, 344.93, 171.28],
+        speeds: [-0.009, 0.189, 0.775, 0.987, 1.142, 1.641, 12.985],
+        void: false,
+    };
+
+    /// The Parsonage, p. 437: 6 August 1644 at 8h 24m PM; the Moon applies
+    /// to Mercury's opposition.
+    const PARSONAGE: Figure = Figure {
+        name: "parsonage",
+        planets: [20.65, 59.61, 64.4, 144.32, 181.65, 129.32, 307.94],
+        speeds: [-0.026, 0.103, 0.606, 0.963, 0.392, 1.728, 13.992],
+        void: false,
+    };
+
+    /// The escaped prisoner, p. 470: 6 June 1647 at 8 PM; the Moon applies
+    /// to the Sun's opposition.
+    const PRISONER: Figure = Figure {
+        name: "prisoner",
+        planets: [55.8, 127.67, 152.22, 85.28, 115.62, 62.79, 261.62],
+        speeds: [0.119, 0.187, 0.553, 0.953, 1.198, 1.009, 12.496],
+        void: false,
+    };
+
+    /// Every recast figure.
+    const FIGURES: [Figure; 7] = [
+        SHIP, PRESBYTERY, LADY, HORSE, LONG_LIFE, PARSONAGE, PRISONER,
+    ];
+
+    impl Figure {
+        fn course(&self) -> MoonCourse {
+            course(self.planets, self.speeds)
+        }
     }
 
     /// p. 112: a Moon 10° behind Mars in Aries perfects the conjunction
@@ -688,20 +783,17 @@ mod tests {
         assert!(eased.void() && eased.eased);
     }
 
-    /// Lilly's ship at sea (p. 165, 9 March 1646/7 at 10h 15m in the
-    /// Moon's hour, London), recast with the Swiss Ephemeris's Moshier
-    /// series: the Moon at 10°29′ Virgo (his figure prints 10°44′) "lately
-    /// separated from a □ of" Saturn, which perfected 1.74 days before. He
-    /// calls her "voyd of course" at the question and has her "afterwards
-    /// first" apply to Saturn's trine and Mercury's opposition, both of
-    /// which perfect in Virgo within half a day. The shipped reading finds
-    /// that trine 4.3° away, so it does not call her void: C230's evidence
-    /// that his word is not the modern one, and why the gap is reported.
+    /// The ship: the Moon at 10°29′ Virgo (his figure prints 10°44′)
+    /// "lately separated from a □ of" Saturn, which perfected 1.74 days
+    /// before. He calls her "voyd of course" at the question and has her
+    /// "afterwards first" apply to Saturn's trine and Mercury's opposition,
+    /// both of which perfect in Virgo within half a day. The shipped
+    /// reading finds that trine 4.3° away, so it does not call her void:
+    /// C230's evidence that his word is not the modern one, and why the
+    /// gap is reported.
     #[test]
     fn lillys_ship_is_not_void_by_the_modern_reading() {
-        let planets = [44.82, 118.62, 115.23, 358.68, 6.33, 346.28, 160.48];
-        let speeds = [0.103, -0.018, 0.166, 0.990, 1.242, 1.795, 14.834];
-        let course = course(planets, speeds);
+        let course = SHIP.course();
         let next = course.next.unwrap();
         assert_eq!(
             (next.planet, next.aspect),
@@ -715,18 +807,15 @@ mod tests {
         assert!(!course.void_by_moieties());
     }
 
-    /// Lilly's "If Presbytery shall stand" (p. 439, 11 March 1646/7 at
-    /// 4h 45m PM in Venus's hour, London), recast as the ship was: the Moon
-    /// at 13°47′ Libra (his figure prints 13°37′), lately from Venus's
-    /// opposition, "after a little being voyd of course" runs to the
-    /// squares of Mars and Jupiter. Mars's is 11.9° ahead, beyond the
-    /// Moon's and his moieties together (10°): void by the moieties, not by
-    /// the sign's end — the reading this figure supports (C230).
+    /// The Presbytery: the Moon at 13°47′ Libra (his figure prints 13°37′),
+    /// lately from Venus's opposition, "after a little being voyd of
+    /// course" runs to the squares of Mars and Jupiter. Mars's is 11.9°
+    /// ahead, beyond the Moon's and his moieties together (10°): void by
+    /// the moieties, not by the sign's end — the reading this figure
+    /// supports (C230).
     #[test]
     fn lillys_presbytery_is_void_by_the_moieties() {
-        let planets = [45.07, 118.58, 115.65, 0.93, 9.15, 350.42, 193.78];
-        let speeds = [0.105, -0.011, 0.187, 0.989, 1.241, 1.844, 14.386];
-        let course = course(planets, speeds);
+        let course = PRESBYTERY.course();
         let next = course.next.unwrap();
         assert_eq!(
             (next.planet, next.aspect),
@@ -737,20 +826,16 @@ mod tests {
         assert!(course.void_by_moieties());
     }
 
-    /// Lilly's "A Lady, if marry the Gentleman desired?" (p. 385, Tuesday
-    /// 16 June 1646 at 19h 26m after noon, astronomical reckoning, so
-    /// 7:26 the next morning in Saturn's hour, London), recast as the ship
-    /// was: the Moon at 27°17′ Sagittarius (his figure prints 28°09′),
-    /// which the figure calls "a vac: ad ☍ ☉" and the text "voyd of
-    /// course, and applying to" the Sun's opposition. That opposition is
-    /// 8.2° ahead, inside the Moon's and the Sun's moieties together
-    /// (14¾°), but perfects only after she leaves her sign: void by both
-    /// readings, so a moiety reading must stop at the sign's end too (C230).
+    /// The Lady: the Moon at 27°17′ Sagittarius (his figure prints 28°09′),
+    /// which the figure calls "a vac: ad ☍ ☉" and the text "voyd of course,
+    /// and applying to" the Sun's opposition. That opposition is 8.2°
+    /// ahead, inside the Moon's and the Sun's moieties together (14¾°), but
+    /// perfects only after she leaves her sign: void by both readings, so a
+    /// moiety reading must stop at the sign's end too (C230).
     #[test]
     fn lillys_lady_is_void_by_both_readings() {
-        let planets = [44.61, 104.75, 47.72, 95.51, 50.35, 76.39, 267.29];
-        let speeds = [0.097, 0.223, 0.714, 0.953, 0.860, 0.407, 11.842];
-        let course = course(planets, speeds);
+        let (planets, speeds) = (LADY.planets, LADY.speeds);
+        let course = LADY.course();
         assert!(course.void());
         assert!(course.void_by_moieties());
         let to_the_sun = (planets[3] + 180.0 - planets[6]).rem_euclid(360.0);
@@ -759,51 +844,49 @@ mod tests {
         assert!(to_the_sun / (speeds[6] - speeds[3]) > course.days_in_sign);
     }
 
-    /// Four more of Lilly's dated figures, recast as the ship was, each with
-    /// the course he names: the horse lost near Henley (p. 467, 11 January
-    /// 1646/7 at 2h 59m PM, "a □ ♄ ad Vac") is void by both readings, and
-    /// three name the aspect she applies to, which both readings find
-    /// first in her sign: the long-life question (p. 135, 14 March
-    /// 1632/3 at 2h 15m PM) Jupiter's trine and then Mars's opposition,
-    /// the Parsonage (p. 437, 6 August 1644 at 8h 24m PM) Mercury's
-    /// opposition, and the escaped prisoner (p. 470, 6 June 1647 at 8 PM)
-    /// the Sun's opposition (C230).
+    /// The figures where Lilly names her next aspect find it first in her
+    /// sign under both readings, and the horse is void by both (C230).
     #[test]
     fn lillys_other_figures_read_as_he_reads_them() {
-        let figures = [
+        for (figure, applies) in [
+            (&HORSE, None),
+            (&LONG_LIFE, Some((Graha::Jupiter, PtolemaicAspect::Trine))),
             (
-                "horse",
-                [41.16, 123.87, 124.18, 301.59, 295.32, 302.25, 132.08],
-                [0.018, -0.133, -0.4, 1.016, 1.255, -1.255, 15.231],
-                None,
-            ),
-            (
-                "long life",
-                [250.22, 54.1, 358.66, 4.18, 45.92, 344.93, 171.28],
-                [-0.009, 0.189, 0.775, 0.987, 1.142, 1.641, 12.985],
-                Some((Graha::Jupiter, PtolemaicAspect::Trine)),
-            ),
-            (
-                "parsonage",
-                [20.65, 59.61, 64.4, 144.32, 181.65, 129.32, 307.94],
-                [-0.026, 0.103, 0.606, 0.963, 0.392, 1.728, 13.992],
+                &PARSONAGE,
                 Some((Graha::Mercury, PtolemaicAspect::Opposition)),
             ),
-            (
-                "prisoner",
-                [55.8, 127.67, 152.22, 85.28, 115.62, 62.79, 261.62],
-                [0.119, 0.187, 0.553, 0.953, 1.198, 1.009, 12.496],
-                Some((Graha::Sun, PtolemaicAspect::Opposition)),
-            ),
-        ];
-        for (name, planets, speeds, applies) in figures {
-            let course = course(planets, speeds);
-            let next = course.next.map(|at| (at.planet, at.aspect));
-            assert_eq!(next, applies, "{name}");
+            (&PRISONER, Some((Graha::Sun, PtolemaicAspect::Opposition))),
+        ] {
+            let course = figure.course();
+            let found = |at: Option<Perfection>| at.map(|at| (at.planet, at.aspect));
+            assert_eq!(found(course.next), applies, "{}", figure.name);
+            assert_eq!(found(course.within_orb), applies, "{}", figure.name);
+        }
+    }
+
+    /// C230's tally, which the crux row and the design page state: of the
+    /// seven figures the moieties read six as Lilly does and the sign's
+    /// end five, and both of Lilly's columns of orbs give every figure the
+    /// same verdicts.
+    #[test]
+    fn the_figures_tally_alike_under_both_of_lillys_orbs() {
+        let agree = |read: fn(&MoonCourse) -> bool| {
+            FIGURES
+                .iter()
+                .filter(|figure| read(&figure.course()) == figure.void)
+                .count()
+        };
+        assert_eq!(agree(MoonCourse::void_by_moieties), 6);
+        assert_eq!(agree(MoonCourse::void), 5);
+        for figure in &FIGURES {
+            let first = figure.course();
+            let other = course_under(figure.planets, figure.speeds, &ORBS_ACCORDING_TO_OTHERS);
+            assert_eq!(first.void(), other.void(), "{}", figure.name);
             assert_eq!(
-                course.within_orb.map(|at| (at.planet, at.aspect)),
-                applies,
-                "{name}"
+                first.void_by_moieties(),
+                other.void_by_moieties(),
+                "{}",
+                figure.name
             );
         }
     }
