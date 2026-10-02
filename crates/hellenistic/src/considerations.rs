@@ -737,6 +737,28 @@ mod tests {
         assert!(course.void_by_moieties());
     }
 
+    /// Lilly's "A Lady, if marry the Gentleman desired?" (p. 385, Tuesday
+    /// 16 June 1646 at 19h 26m after noon, astronomical reckoning, so
+    /// 7:26 the next morning in Saturn's hour, London), recast as the ship
+    /// was: the Moon at 27°17′ Sagittarius (his figure prints 28°09′),
+    /// which the figure calls "a vac: ad ☍ ☉" and the text "voyd of
+    /// course, and applying to" the Sun's opposition. That opposition is
+    /// 8.2° ahead, inside the Moon's and the Sun's moieties together
+    /// (14¾°), but perfects only after she leaves her sign: void by both
+    /// readings, so a moiety reading must stop at the sign's end too (C230).
+    #[test]
+    fn lillys_lady_is_void_by_both_readings() {
+        let planets = [44.61, 104.75, 47.72, 95.51, 50.35, 76.39, 267.29];
+        let speeds = [0.097, 0.223, 0.714, 0.953, 0.860, 0.407, 11.842];
+        let course = course(planets, speeds);
+        assert!(course.void());
+        assert!(course.void_by_moieties());
+        let to_the_sun = (planets[3] + 180.0 - planets[6]).rem_euclid(360.0);
+        assert!((to_the_sun - 8.22).abs() < 0.01, "{to_the_sun}");
+        assert!(to_the_sun < f64::midpoint(12.5, 17.0));
+        assert!(to_the_sun / (speeds[6] - speeds[3]) > course.days_in_sign);
+    }
+
     /// The rules read from JSON, every member optional, and refused out of
     /// range by name.
     #[test]
