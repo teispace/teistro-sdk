@@ -589,6 +589,52 @@ pub fn lot_place(
     Ok(reading.place(reading.arc(arc)))
 }
 
+/// Where one point a lot is counted from falls, with its sign, lord and
+/// whole-sign house: the start a time lord is counted from when it is not
+/// the Ascendant (Valens IV.11 profects from "every point": the Sun, the
+/// Moon, Fortune, Daimon). A lot named as the point is read under
+/// `request`, as [`lots`] reads it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_hellenistic::{
+///     ChartSky, Lot, LotPoint, LotRequest, LotSky, lots, point_place,
+/// };
+///
+/// let sky = LotSky {
+///     chart: ChartSky {
+///         saturn_deg: 300.0,
+///         jupiter_deg: 250.0,
+///         mars_deg: 100.0,
+///         sun_deg: 10.0,
+///         venus_deg: 40.0,
+///         mercury_deg: 20.0,
+///         moon_deg: 130.0,
+///         sun_altitude_deg: 30.0,
+///         daylight: true,
+///         moon_altitude_deg: 20.0,
+///     },
+///     ascendant_deg: 50.0,
+///     midheaven_deg: 320.0,
+/// };
+/// let moon = point_place(&sky, LotPoint::Planet(Graha::Moon), LotRequest::VALENS)?;
+/// assert_eq!(moon.sign, Rashi::Leo);
+/// let fortune = point_place(&sky, LotPoint::Lot(Lot::Fortune), LotRequest::VALENS)?;
+/// let read = lots(&sky, &[Lot::Fortune], LotRequest::VALENS)?;
+/// assert_eq!(fortune, read.lots[0].place);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`lots`], and `INVALID_ARG` for a planet outside the seven or a
+/// fixed degree that is not a number, named `point`.
+pub fn point_place(sky: &LotSky, point: LotPoint, request: LotRequest) -> Result<LotPlace, Error> {
+    let reading = Evaluation::of(sky, request)?;
+    check_point(sky, point).map_err(|why| why.with_field("point"))?;
+    Ok(reading.place(reading.point(point)))
+}
+
 /// A point the sky cannot supply, refused.
 fn check_point(sky: &LotSky, point: LotPoint) -> Result<(), Error> {
     match point {

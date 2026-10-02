@@ -49,7 +49,7 @@ pub use dignity::{
 pub use fortitude::{FortitudeRequest, Fortitudes};
 pub use lot::{
     Distance, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,
-    LotSky, PlacedLot, lot_place, lots, part_of_fortune,
+    LotSky, PlacedLot, lot_place, lots, part_of_fortune, point_place,
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};

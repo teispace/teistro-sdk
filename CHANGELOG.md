@@ -1801,6 +1801,9 @@ the astronomical numbers do not move. Nothing else computes yet.
     lots are read under (Valens's unless said), and a boundary request's
     `lots` record sets the same; the dasha group's
     `releasing_shared_sign` (`NEXT`, `SAME`) decides C223.
+    `ChartArea::profection_from` profects the year from any `LotPoint`
+    (IV.11's "every point"), and `ChartArea::point_place` says where one
+    falls.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

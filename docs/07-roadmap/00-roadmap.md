@@ -845,7 +845,13 @@ the same machinery rather than new mechanisms:
   and every binding: **the dignities are done** but for Ibn Ezra's
   weights. Valens's fourteen lots followed (`hellenistic-lots.md`,
   C221–C222), measured in `lots-measured.md` and carried through the
-  boundary into every binding.
+  boundary into every binding. Zodiacal releasing from Fortune and
+  Daimon and the profected year followed as dashas
+  (`hellenistic-time-lords.md`, C223–C224): three `DashaSystem` members
+  behind `Timeline`, measured in `time-lords-measured.md`, under the
+  parity gate in every binding, their lot rules on the request and C223 a
+  knob, and profection from any point through `profection_from`. The
+  firdaria and the decennials remain.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the
