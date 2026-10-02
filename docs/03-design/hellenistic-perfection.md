@@ -1,7 +1,8 @@
 # Perfection: whether a matter is brought to pass (the `hellenistic` module, step 11)
 
 Status: `designed`, 2026-10-02 — written from Lilly's text before any
-code; the building will correct it.
+code; the relations are built in `crates/hellenistic`, and the building
+has corrected the design below.
 
 A horary question names two significators, the querent's (the lord of
 the Ascendant) and the quesited's (the lord of the house of the thing
@@ -148,6 +149,26 @@ is the SDK's (`ChartArea::perfection`), because it needs the ephemeris.
 `moon_course` stays as it is: the considerations ask a different
 question, and need no ephemeris.
 
+## What building it found
+
+- **A separation needs no search behind the figure.** Lilly's
+  separation lasts "untill" the moieties are cleared (p. 110), so it is
+  read off the figure itself: the aspect the two are leaving, inside
+  their moieties and moving apart. Only what lies ahead is searched.
+- **Prohibition and frustration differ in who moves.** In Lilly's
+  prohibition (p. 111) the Sun, the third, comes to Mars; in his
+  frustration (p. 113) Mars, the significator, gets to Jupiter. So a
+  significator's contact with a third before the application is a
+  prohibition when the third's motion closes it, and a frustration when
+  the significator's does; both are reported with the contact.
+- **Refranation is the motions' promise broken.** A significator's
+  station before the perfection its motion of the moment promises, and
+  before any the timeline finds, is reported with or without an
+  application, since the station usually removes it.
+- **The ways of perfection wait for the houses.** The relations are
+  built; the seven ways, which weigh houses and dignity at the degree,
+  come with `ChartArea::perfection`, which has the figure's houses.
+
 ## What is not decided
 
 - **C232: does an application run past the sign?** Lilly defines void
@@ -167,7 +188,7 @@ question, and need no ephemeris.
    images.~~
 2. The timeline search in the SDK, held against a step-by-step walk of
    the ephemeris, as `moon_course` was.
-3. The clauses in `crates/hellenistic`, on hand-made timelines.
+3. ~~The relations in `crates/hellenistic`, on hand-made timelines.~~
 4. `ChartArea::perfection`, then the boundary and every binding.
 5. Recast the Book II figures where Lilly names a translation,
    prohibition or collection, and test each against his judgement.
