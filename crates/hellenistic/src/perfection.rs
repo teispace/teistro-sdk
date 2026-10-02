@@ -4,23 +4,23 @@
 //! `03-design/hellenistic-perfection.md`).
 //!
 //! Every relation is a statement about the **order** in which aspects
-//! perfect and planets station, so each is read off one [`Timeline`]: the
+//! perfect and planets station, so each is read off one [`AspectTimeline`]: the
 //! contacts (exact Ptolemaic aspects) and stations ahead of the figure. The
-//! SDK searches the ephemeris for it; [`Timeline::projected`] carries each
+//! SDK searches the ephemeris for it; [`AspectTimeline::projected`] carries each
 //! planet on at its motion of the moment, which sees no station. Nothing
 //! here is a verdict: [`Matter`] reports each relation that holds and the
 //! facts it rests on.
 //!
 //! ```
 //! use teistro_core::catalogue::Graha;
-//! use teistro_hellenistic::{DignityRules, PerfectionRules, Sect, Timeline, perfection};
+//! use teistro_hellenistic::{DignityRules, PerfectionRules, Sect, AspectTimeline, perfection};
 //!
 //! // Lilly p. 113: Mercury in 10° Aries, Mars 12°, Jupiter 13°. Mercury
 //! // strives to come to Mars, but Mars first gets to Jupiter.
 //! // The four others stand still where they meet none of the three.
 //! let places = [42.0, 13.0, 12.0, 162.0, 222.0, 10.0, 342.0];
 //! let speeds = [0.0, 0.2, 0.7, 0.0, 0.0, 1.4, 0.0];
-//! let sky = Timeline::projected(places, speeds, 3.0)?;
+//! let sky = AspectTimeline::projected(places, speeds, 3.0)?;
 //! let matter = perfection(&sky, Graha::Mercury, Graha::Mars, Sect::Day, &DignityRules::LILLY, &PerfectionRules::LILLY)?;
 //! let first = matter.impediments.first().expect("Mars meets Jupiter first");
 //! assert_eq!((first.significator, first.third), (Graha::Mars, Some(Graha::Jupiter)));
@@ -199,7 +199,7 @@ impl Station {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-pub struct Timeline {
+pub struct AspectTimeline {
     places: [f64; 7],
     speeds: [f64; 7],
     horizon_days: f64,
@@ -207,7 +207,7 @@ pub struct Timeline {
     stations: Vec<Station>,
 }
 
-impl Timeline {
+impl AspectTimeline {
     /// A timeline from a search: the seven's longitudes and daily motions
     /// in the Chaldean order at the figure, the horizon searched to, and
     /// what was found. Contacts and stations past the horizon are dropped,
@@ -225,7 +225,7 @@ impl Timeline {
         horizon_days: f64,
         mut contacts: Vec<Contact>,
         mut stations: Vec<Station>,
-    ) -> Result<Timeline, Error> {
+    ) -> Result<AspectTimeline, Error> {
         if places.iter().chain(&speeds).any(|value| !value.is_finite()) {
             return Err(
                 Error::invalid_arg("a planet's place or motion is not finite")
@@ -261,7 +261,7 @@ impl Timeline {
         }
         stations.retain(|station| station.days <= horizon_days);
         stations.sort_by(|a, b| a.days.total_cmp(&b.days));
-        Ok(Timeline {
+        Ok(AspectTimeline {
             places,
             speeds,
             horizon_days,
@@ -276,12 +276,12 @@ impl Timeline {
     ///
     /// ```
     /// use teistro_core::catalogue::Graha;
-    /// use teistro_hellenistic::{PtolemaicAspect, Timeline};
+    /// use teistro_hellenistic::{PtolemaicAspect, AspectTimeline};
     ///
     /// // Lilly p. 107: Mars in 10° Aries, Mercury in 5°, both direct.
     /// // The other five stand still where they meet neither.
     /// let places = [40.0, 160.0, 10.0, 220.0, 340.0, 5.0, 45.0];
-    /// let sky = Timeline::projected(places, [0.0, 0.0, 0.7, 0.0, 0.0, 1.5, 0.0], 7.0)?;
+    /// let sky = AspectTimeline::projected(places, [0.0, 0.0, 0.7, 0.0, 0.0, 1.5, 0.0], 7.0)?;
     /// let first = sky.contacts().first().expect("Mercury reaches Mars");
     /// assert_eq!((first.planets, first.aspect), ([Graha::Mars, Graha::Mercury], PtolemaicAspect::Conjunction));
     /// assert!((first.days - 5.0 / 0.8).abs() < 1e-9);
@@ -290,15 +290,15 @@ impl Timeline {
     ///
     /// # Errors
     ///
-    /// As [`Timeline::new`].
+    /// As [`AspectTimeline::new`].
     pub fn projected(
         places: [f64; 7],
         speeds: [f64; 7],
         horizon_days: f64,
-    ) -> Result<Timeline, Error> {
+    ) -> Result<AspectTimeline, Error> {
         // Checked before the walk, which a horizon or speed out of range
         // would never end.
-        Timeline::new(places, speeds, horizon_days, Vec::new(), Vec::new())?;
+        AspectTimeline::new(places, speeds, horizon_days, Vec::new(), Vec::new())?;
         let mut contacts = Vec::new();
         for (k, ((&first, &first_deg), &first_speed)) in
             CHALDEAN_ORDER.iter().zip(&places).zip(&speeds).enumerate()
@@ -316,7 +316,7 @@ impl Timeline {
                 }
             }
         }
-        Timeline::new(places, speeds, horizon_days, contacts, Vec::new())
+        AspectTimeline::new(places, speeds, horizon_days, contacts, Vec::new())
     }
 
     /// The contacts, in time order.
@@ -656,7 +656,7 @@ pub struct Matter {
 
 /// The arc between two planets at the figure and its rate of change: the
 /// first's longitude less the second's.
-fn arc_and_rate(timeline: &Timeline, first: Graha, second: Graha) -> Option<(f64, f64)> {
+fn arc_and_rate(timeline: &AspectTimeline, first: Graha, second: Graha) -> Option<(f64, f64)> {
     let (a, a_speed) = timeline.motion(first)?;
     let (b, b_speed) = timeline.motion(second)?;
     Some(((a - b).rem_euclid(360.0), a_speed - b_speed))
@@ -664,7 +664,7 @@ fn arc_and_rate(timeline: &Timeline, first: Graha, second: Graha) -> Option<(f64
 
 /// The one of two planets whose own motion closes the arc between them
 /// the faster.
-fn applier(timeline: &Timeline, first: Graha, second: Graha) -> Graha {
+fn applier(timeline: &AspectTimeline, first: Graha, second: Graha) -> Graha {
     let speed = |planet| timeline.motion(planet).map_or(0.0, |(_, speed)| speed);
     let (a, b) = (speed(first), speed(second));
     let toward = if a - b >= 0.0 { 1.0 } else { -1.0 };
@@ -678,7 +678,7 @@ fn applier(timeline: &Timeline, first: Graha, second: Graha) -> Graha {
 /// The aspect two planets are leaving and how far past it they are, when
 /// inside their moieties.
 fn separation_of(
-    timeline: &Timeline,
+    timeline: &AspectTimeline,
     rules: &PerfectionRules,
     first: Graha,
     second: Graha,
@@ -714,7 +714,7 @@ fn separation_of(
 /// [`PerfectionRules::from_json`] names them without the root; and a
 /// dignity the rules cannot read.
 pub fn perfection(
-    timeline: &Timeline,
+    timeline: &AspectTimeline,
     querent: Graha,
     quesited: Graha,
     sect: Sect,
@@ -770,7 +770,7 @@ pub fn perfection(
 
 /// One reading of two significators' relations, a method for each.
 struct Reader<'r> {
-    timeline: &'r Timeline,
+    timeline: &'r AspectTimeline,
     querent: Graha,
     quesited: Graha,
     sect: Sect,
@@ -921,7 +921,7 @@ fn gap_to(arc: f64, rate: f64, aspect: PtolemaicAspect) -> f64 {
 }
 
 /// Which of Lilly's three applications two planets' motions make.
-fn kind_of(timeline: &Timeline, first: Graha, second: Graha) -> ApplicationKind {
+fn kind_of(timeline: &AspectTimeline, first: Graha, second: Graha) -> ApplicationKind {
     let retrograde = |planet| {
         timeline
             .motion(planet)
@@ -937,7 +937,7 @@ fn kind_of(timeline: &Timeline, first: Graha, second: Graha) -> ApplicationKind 
 /// A significator's station before the perfection the motions of the
 /// moment promise, and before any the timeline finds.
 fn refranation(
-    timeline: &Timeline,
+    timeline: &AspectTimeline,
     querent: Graha,
     quesited: Graha,
     application: Option<Application>,
@@ -979,7 +979,7 @@ mod tests {
     /// first longitude (in whole degrees) where it meets none of them
     /// within the horizon, so his examples are read without a stranger
     /// interfering.
-    fn sky(movers: &[(Graha, f64, f64)], horizon_days: f64) -> Timeline {
+    fn sky(movers: &[(Graha, f64, f64)], horizon_days: f64) -> AspectTimeline {
         let mut places = [0.0; 7];
         let mut speeds = [0.0; 7];
         let mut named = Vec::new();
@@ -996,7 +996,7 @@ mod tests {
             let at = weight(planet).unwrap();
             let quiet = (0..360).map(f64::from).find(|&place| {
                 places[at] = place;
-                let trial = Timeline::projected(places, speeds, horizon_days).unwrap();
+                let trial = AspectTimeline::projected(places, speeds, horizon_days).unwrap();
                 !trial
                     .contacts()
                     .iter()
@@ -1005,15 +1005,15 @@ mod tests {
             places[at] = quiet.unwrap_or_else(|| panic!("nowhere quiet for {planet:?}"));
             named.push(planet);
         }
-        Timeline::projected(places, speeds, horizon_days).unwrap()
+        AspectTimeline::projected(places, speeds, horizon_days).unwrap()
     }
 
-    fn read(timeline: &Timeline, querent: Graha, quesited: Graha) -> Matter {
+    fn read(timeline: &AspectTimeline, querent: Graha, quesited: Graha) -> Matter {
         read_under(timeline, querent, quesited, &PerfectionRules::LILLY)
     }
 
     fn read_under(
-        timeline: &Timeline,
+        timeline: &AspectTimeline,
         querent: Graha,
         quesited: Graha,
         rules: &PerfectionRules,
@@ -1150,7 +1150,7 @@ mod tests {
         // The ephemeris finds no conjunction; Mars stations on the fourth
         // day, at about 9° 30′.
         let quiet = sky(&[(Mars, 7.0, 0.6), (Saturn, 12.0, 0.03)], 1.0);
-        let timeline = Timeline::new(
+        let timeline = AspectTimeline::new(
             quiet.places,
             quiet.speeds,
             30.0,
@@ -1170,8 +1170,8 @@ mod tests {
             )
         );
         // And a station after the perfection refrains from nothing.
-        let late = Timeline::projected(quiet.places, quiet.speeds, 30.0).unwrap();
-        let late = Timeline::new(
+        let late = AspectTimeline::projected(quiet.places, quiet.speeds, 30.0).unwrap();
+        let late = AspectTimeline::new(
             late.places,
             late.speeds,
             30.0,
@@ -1344,7 +1344,7 @@ mod tests {
         let wide =
             PerfectionRules::from_json(r#"{"orbsDeg": [1, 1, 1, 1, 1, 1, -1]}"#).unwrap_err();
         assert_eq!(wide.field(), Some("perfection.orbsDeg"));
-        let never = Timeline::projected([0.0; 7], [0.0; 7], f64::INFINITY).unwrap_err();
+        let never = AspectTimeline::projected([0.0; 7], [0.0; 7], f64::INFINITY).unwrap_err();
         assert_eq!(never.field(), Some("horizonDays"));
         assert_eq!(
             Contact::new(Mars, Mars, PtolemaicAspect::Trine, 1.0)

@@ -165,6 +165,14 @@ question, and need no ephemeris.
   station before the perfection its motion of the moment promises, and
   before any the timeline finds, is reported with or without an
   application, since the station usually removes it.
+- **Every promised contact is where the later chart finds it.** Over
+  twelve London figures two months apart and four pairs of
+  significators, geocentric, the chart cast at each of 12 applications
+  and 104 impediments' contacts stands at the aspect within 3.4 × 10⁻⁹°,
+  and each refranation's station is where the planet's motion turns.
+  The search scans each pair's separation once over a 30° lattice, so
+  `aspect_at` keeps the five aspects and drops the semisextiles and
+  quincunxes it also finds.
 - **The ways of perfection wait for the houses.** The relations are
   built; the seven ways, which weigh houses and dignity at the degree,
   come with `ChartArea::perfection`, which has the figure's houses.
@@ -186,9 +194,10 @@ question, and need no ephemeris.
 
 1. ~~Verify the quotations and the worked examples on the page
    images.~~
-2. The timeline search in the SDK, held against a step-by-step walk of
-   the ephemeris, as `moon_course` was.
+2. ~~The timeline search in the SDK (`Founder::contact_events`), read
+   back in the chart cast at each promised contact.~~
 3. ~~The relations in `crates/hellenistic`, on hand-made timelines.~~
-4. `ChartArea::perfection`, then the boundary and every binding.
+4. ~~`ChartArea::perfection`~~; the seven ways, then the boundary and
+   every binding.
 5. Recast the Book II figures where Lilly names a translation,
    prohibition or collection, and test each against his judgement.

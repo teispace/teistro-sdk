@@ -1781,7 +1781,7 @@ the astronomical numbers do not move. Nothing else computes yet.
     parity gate.
   - **Valens's time lords** (`hellenistic-time-lords.md`, C223–C224).
     Zodiacal releasing and the profected year are dashas: `ReleasingDasha`
-    and `ProfectionDasha` behind `Timeline`, named by three new
+    and `ProfectionDasha` behind `AspectTimeline`, named by three new
     `DashaSystem` members (`RELEASING_FORTUNE`, `RELEASING_DAIMON`,
     `PROFECTION`) in two new families. Releasing gives each sign its
     lord's minimum years (Capricorn 27, Aquarius 30), four levels deep,
@@ -1805,7 +1805,7 @@ the astronomical numbers do not move. Nothing else computes yet.
     (IV.11's "every point"), and `ChartArea::point_place` says where one
     falls.
   - **The firdaria** (`hellenistic-firdaria.md`, C225–C226). The Persian
-    time lords are a dasha: `FirdariaDasha` behind `Timeline`, named by
+    time lords are a dasha: `FirdariaDasha` behind `AspectTimeline`, named by
     the new `FIRDARIA` member (43) in a new family. A day birth's run
     from the Sun and a night birth's from the Moon (al-Biruni §395), the
     sect read under the request's lot rules; each planet's firdar is
@@ -1820,7 +1820,7 @@ the astronomical numbers do not move. Nothing else computes yet.
     parity runner asks for `FIRDARIA`.
   - **The decennials** (`hellenistic-decennials.md`, C227–C228). Valens's
     distribution of 10 years 9 months is a dasha: `DecennialDasha` behind
-    `Timeline`, named by the new `DECENNIALS` member (44) in a new family.
+    `AspectTimeline`, named by the new `DECENNIALS` member (44) in a new family.
     It begins from the luminary of the sect, read under the request's lot
     rules, and runs through the seven by longitude
     (`decennial_order`); each star's 129 months are shared by the
@@ -1868,9 +1868,9 @@ the astronomical numbers do not move. Nothing else computes yet.
     parity runner prints them.
   - **Perfection, the relations between two significators**
     (`hellenistic-perfection.md`, C232–C233), in `crates/hellenistic` so
-    far. A `Timeline` holds the contacts (exact Ptolemaic aspects) and
-    stations ahead of a figure, from a search or `Timeline::projected`
-    at the motions of the moment, and `perfection(&Timeline, querent,
+    far. A `AspectTimeline` holds the contacts (exact Ptolemaic aspects) and
+    stations ahead of a figure, from a search or `AspectTimeline::projected`
+    at the motions of the moment, and `perfection(&AspectTimeline, querent,
     quesited, Sect, &DignityRules, &PerfectionRules)` reads a `Matter` off
     it as clauses: the application and which of Lilly's three kinds it
     is, the separation while inside the moieties, each prohibition,
@@ -1880,6 +1880,13 @@ the astronomical numbers do not move. Nothing else computes yet.
     (`LILLY_ORBS_DEG`) with the considerations and sets the horizon,
     unset the swifter significator's sign (C232). Held to Lilly's worked
     examples on pp. 107–113, verified on the page images.
+    `sdk.chart().perfection(&chart, &FortitudeRequest, querent, quesited,
+    PerfectionRules)` searches the timeline on the ephemeris
+    (`Founder::contact_events`: each pair's separation over a 30°
+    lattice, and the significators' stations, sharing `transit_events`'
+    search source), so a refranation is seen where it happens; every
+    promised contact is read back in the chart cast at its instant within
+    3.4 × 10⁻⁹°.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

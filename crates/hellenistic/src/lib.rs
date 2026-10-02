@@ -59,9 +59,8 @@ pub use lot::{
     LotSky, PlacedLot, lot_place, lots, part_of_fortune, point_place,
 };
 pub use perfection::{
-    Application, ApplicationKind, Collection, Contact, Impediment, ImpedimentKind, Matter,
-    PerfectionRules, Separation, Station, Timeline, Translation, aspect_at, days_in_sign,
-    perfection,
+    Application, ApplicationKind, AspectTimeline, Collection, Contact, Impediment, ImpedimentKind,
+    Matter, PerfectionRules, Separation, Station, Translation, aspect_at, days_in_sign, perfection,
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};
