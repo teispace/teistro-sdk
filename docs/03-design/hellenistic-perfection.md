@@ -140,6 +140,11 @@ dignity score from `Fortitudes`), as the considerations report theirs.
   table type, so a consumer sets the orbs once.
 - `horizonDays`: how far forward the search runs, by default until the
   swifter significator leaves its sign (C232).
+- `withinSign`: whether a contact with a third planet counts only when
+  the planet applying perfects it before leaving its sign; true by
+  default (C234). It bounds the impediments, a translator's next contact
+  and a collector's contacts, not the significators' own application,
+  which the horizon bounds.
 
 ### Where it lives
 
@@ -213,6 +218,27 @@ question, and need no ephemeris.
   no way holds, where Lilly found "no one promising testimony". The
   built-in ephemeris starts in 1800, so the figure is read on its
   recast places in `crates/hellenistic`.
+- **A void Moon prohibits nothing.** Lilly's p. 385 figure, "A Lady, if
+  marry the Gentleman desired?", gives as its "first" reason that the
+  Sun and Saturn, the lords of the first and seventh, apply to a sextile.
+  Counted as first built, the Moon prohibited that sextile six times.
+  She is void, a quarter of a day from leaving Sagittarius, and every one
+  of those contacts comes after. Lilly instead reads her opposition to
+  the Sun as "another small argument" for the match, and Jupiter as
+  "meeting with no manner of prohibition" (p. 387). Lilly's void of
+  course bounds a planet's application by "his being in that Signe"
+  (p. 112), so a third planet's contact now counts only while the
+  applier is in its sign (`withinSign`, C234). The figure reads as he
+  judged it: the sextile in 10.6 days, nothing between, and the
+  sextile-or-trine way held.
+- **Lilly's p. 437 figure perfects nothing.** "If he should obtain the
+  Parsonage desired" is dated 6 August 1644, 8h 24m p.m. Recast at the
+  printed Ascendant, it lands two minutes from the printed time in local
+  apparent time, with every cusp within 8′. Mars and Jupiter have no
+  application. The Moon, leaving Mars's trine, meets Mercury's
+  opposition before Jupiter's square, so she translates nothing. Saturn
+  reaches neither significator. Lilly finds "no weighty Planet that
+  translates or collects", and the SDK finds no relation at all.
 
 ## What is not decided
 
@@ -227,6 +253,15 @@ question, and need no ephemeris.
   collector's dignities instead, and so does Lilly on p. 239, wishing
   for a collector that "had received ♄ or ☿". The report states the
   reception both ways, and the way follows p. 126.
+- **C235: a middle planet carrying light.** Lilly's "maine occasion" on
+  p. 387 is Jupiter: it applies "to ✶ of ♄", receives Saturn's virtue,
+  and "transferred" it to the Sun, whose conjunction it reaches on "the
+  29th of June" (the recast gives the same day). Jupiter is lighter than
+  Saturn and heavier than the Sun, so it is neither p. 111's translator,
+  lighter than both, nor p. 126's collector, heavier than both. On the
+  recast it is also 8′ past the sextile, where the printed places leave
+  it 13′ short. One figure does not make a rule, so nothing reports a
+  relay; each of the two contacts stands in the timeline.
 
 ## Order of work
 
@@ -239,4 +274,6 @@ question, and need no ephemeris.
    every binding.~~
 5. Recast the Book II figures where Lilly names a translation,
    prohibition or collection, and test each against his judgement: p. 238
-   done (an application by opposition, no way held).
+   done (an application by opposition, no way held), p. 385 (a sextile,
+   the void Moon prohibiting nothing, C234) and p. 437 (nothing
+   perfects).
