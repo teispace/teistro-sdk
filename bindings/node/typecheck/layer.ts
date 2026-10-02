@@ -32,9 +32,13 @@ import type {
   FollowingRule,
   HitRequest,
   SadeSatiRequest,
+  AccidentLine,
   Dignities,
   DignityKind,
   DignityRequest,
+  FortitudeRequest,
+  Fortitudes,
+  PlanetAccidents,
   GrahaName,
   KpLords,
   KpReading,
@@ -770,6 +774,48 @@ function theDignities(ctx: Context): string {
 }
 
 void theDignities;
+
+// The accidental fortitudes read all the way down, and a request in every
+// field, an answer's rules and scores fed back as they stand.
+function theFortitudes(ctx: Context): string {
+  const asked: FortitudeRequest = {
+    dignities: { sectRule: 'DAYLIGHT' },
+    rules: { beamsDeg: 15, combustionInSign: false, partile: { WITHIN: { orbDeg: 1 } }, siege: 'SAME_SIGN' },
+    scores: { regulus: 5, houses: [5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5] },
+  };
+  const read: Fortitudes | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    fortitudes: asked,
+  }).fortitudes;
+  if (read === null) return 'none';
+  const planets = read.planets.map((at: PlanetAccidents) => {
+    const lines = at.accidents.map((line: AccidentLine) => `${line.accident} ${line.points}`);
+    return `${at.planet} ${at.house} ${lines.join()} ${at.fortitude} ${at.debility} ${at.net}`;
+  });
+  const sky = read.sky;
+  const fedBack: FortitudeRequest = { rules: read.rules, scores: read.scores };
+  // @ts-expect-error an orb is written under `WITHIN`, as the answer reads it back
+  const bare: FortitudeRequest = { rules: { partile: 'WITHIN' } };
+  return [
+    read.dignities.sect,
+    sky.houses,
+    ...sky.cuspsDeg,
+    ...sky.speedsDegPerDay,
+    sky.northNodeDeg,
+    sky.regulusDeg,
+    sky.spicaDeg,
+    sky.algolDeg,
+    read.rules.combustionDeg,
+    read.scores.algol,
+    ...planets,
+    String(fedBack),
+    String(bare),
+  ].join();
+}
+
+void theFortitudes;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

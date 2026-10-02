@@ -1774,7 +1774,167 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_sade_sati(report, geo, index, document);
     the_kp(report, geo, index, document);
     the_dignities(report, geo, index, document);
+    the_fortitudes(report, geo, index, document);
 }
+
+/// The fortitudes every runner asks for: the dignities' own request as the
+/// essential half, which the other three ask through this one, and an
+/// accidental knob of each kind turned.
+fn fortitudes_json() -> String {
+    format!(
+        r#"{{"dignities":{DIGNITIES_JSON},"rules":{{"beamsDeg":15,"combustionInSign":false,"partile":{{"WITHIN":{{"orbDeg":1}}}},"siege":{{"WITHIN":{{"spanDeg":30}}}}}},"scores":{{"regulus":5}}}}"#
+    )
+}
+
+/// The accidental fortitudes as the other three print them: the sky, the
+/// rules and scores applied, the cusps, then each planet's speed, house,
+/// lines with their points, and totals.
+fn the_fortitudes(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::FortitudeRequest::from_json(&fortitudes_json()).expect("a valid request");
+    let read = sdk
+        .chart()
+        .fortitudes(document, &asked)
+        .expect("the test provider");
+    let numbers = |values: &[f64]| {
+        values
+            .iter()
+            .map(|v| number(*v))
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let sky = &read.sky;
+    put(
+        report,
+        &format!("chart-{index}-fortitudes"),
+        format!(
+            "{} {} {} {} {}",
+            sky.houses.full_key(),
+            number(sky.north_node_deg),
+            number(sky.regulus_deg),
+            number(sky.spica_deg),
+            number(sky.algol_deg)
+        ),
+    );
+    put(
+        report,
+        &format!("chart-{index}-fortitude-rules"),
+        fortitude_rules(&read.rules),
+    );
+    let lines = serde_json::to_value(read.scores).expect("scores serialise");
+    let worth: Vec<String> = ACCIDENTAL_LINES
+        .iter()
+        .map(|line| {
+            lines
+                .get(line)
+                .map_or_else(String::new, ToString::to_string)
+        })
+        .collect();
+    put(
+        report,
+        &format!("chart-{index}-fortitude-scores"),
+        format!(
+            "{} {}",
+            read.scores.houses.map(|one| one.to_string()).join(","),
+            worth.join(",")
+        ),
+    );
+    put(
+        report,
+        &format!("chart-{index}-fortitude-houses"),
+        numbers(&sky.cusps_deg),
+    );
+    for (at, speed) in read.planets.iter().zip(sky.speeds_deg_per_day) {
+        let accidents: Vec<String> = at
+            .accidents
+            .iter()
+            .map(|&line| {
+                format!(
+                    "{}:{}",
+                    wire_key(&line),
+                    read.scores.points(at.planet, line)
+                )
+            })
+            .collect();
+        put(
+            report,
+            &format!("chart-{index}-fortitude-{}", at.planet.full_key()),
+            format!(
+                "{} {} {} {} {} {}",
+                number(speed),
+                at.house.get(),
+                if accidents.is_empty() {
+                    String::from("-")
+                } else {
+                    accidents.join(",")
+                },
+                at.fortitude,
+                at.debility,
+                read.net(at.planet)
+                    .map_or_else(|| String::from("-"), |net| net.to_string())
+            ),
+        );
+    }
+}
+
+/// The accidental rules as every runner prints them: the orbs, the sign
+/// clause as 1 or 0, partile and siege with any orb, and the mean motions.
+fn fortitude_rules(r: &teistro::AccidentalRules) -> String {
+    let with_orb = |within: Option<f64>, key: String| {
+        within.map_or(key, |orb| format!("WITHIN:{}", number(orb)))
+    };
+    let partile = match r.partile {
+        teistro::Partile::Within { orb_deg } => Some(orb_deg),
+        _ => None,
+    };
+    let siege = match r.siege {
+        teistro::Siege::Within { span_deg } => Some(span_deg),
+        _ => None,
+    };
+    let means: Vec<String> = r.mean_motion_deg.iter().map(|v| number(*v)).collect();
+    format!(
+        "{} {} {} {} {} {} {} {} {}",
+        number(r.combustion_deg),
+        u8::from(r.combustion_in_sign),
+        number(r.beams_deg),
+        number(r.cazimi_deg),
+        number(r.cusp_orb_deg),
+        number(r.star_orb_deg),
+        with_orb(partile, wire_key(&r.partile)),
+        with_orb(siege, wire_key(&r.siege)),
+        means.join(",")
+    )
+}
+
+/// Lilly's accidental lines by the names a request spells them, in the
+/// order every runner prints their scores.
+const ACCIDENTAL_LINES: [&str; 26] = [
+    "direct",
+    "retrograde",
+    "swift",
+    "slow",
+    "superiorOriental",
+    "superiorOccidental",
+    "inferiorOriental",
+    "inferiorOccidental",
+    "increasing",
+    "decreasing",
+    "freeFromCombustion",
+    "cazimi",
+    "combust",
+    "underBeams",
+    "conjunctBenefic",
+    "conjunctNorthNode",
+    "trineBenefic",
+    "sextileBenefic",
+    "conjunctMalefic",
+    "conjunctSouthNode",
+    "opposedMalefic",
+    "squareMalefic",
+    "besieged",
+    "regulus",
+    "spica",
+    "algol",
+];
 
 /// The dignities every runner asks for, every knob turned from its default.
 const DIGNITIES_JSON: &str = r#"{"sectRule":"DAYLIGHT","rules":{"terms":"EGYPTIAN","triplicities":"PTOLEMY"},"scores":{"peregrine":0}}"#;

@@ -63,6 +63,9 @@ import type {
   SectRule,
   Terms,
   Triplicities,
+  Accident,
+  Partile,
+  Siege,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -985,6 +988,138 @@ export interface Dignities {
   readonly planets: readonly PlanetDignity[];
   /** Every pair in reception, in the Chaldean order of the first and then the second. */
   readonly receptions: readonly Reception[];
+}
+
+/**
+ * The orbs and limits Lilly's accidental fortitudes are judged by
+ * (`03-design/essential-dignities.md` §Accidental fortitudes); Lilly's for
+ * any left out.
+ */
+export interface AccidentalRules {
+  /** Combust within this many degrees of the Sun; 8°30′ by default. */
+  readonly combustionDeg: number;
+  /** Whether combustion also asks for the Sun's sign (C211); true by default. */
+  readonly combustionInSign: boolean;
+  /** Under the beams within this many degrees (C212); 17 by default. */
+  readonly beamsDeg: number;
+  /** Cazimi within this many degrees; 17′ by default. */
+  readonly cazimiDeg: number;
+  /** A planet this near the next cusp is in its house (p. 33, C214); 5 by default. */
+  readonly cuspOrbDeg: number;
+  /** With a star within this many degrees; 5 by default. */
+  readonly starOrbDeg: number;
+  /** Partile by the same degree, Lilly's, or within an orb of the exact aspect (C216). */
+  readonly partile: Exclude<Partile, 'WITHIN'> | { readonly WITHIN: { readonly orbDeg: number } };
+  /** Besieged within one sign, Lilly's example, or on an arc no wider than a span (C215). */
+  readonly siege: Exclude<Siege, 'WITHIN'> | { readonly WITHIN: { readonly spanDeg: number } };
+  /** The mean daily motions swift and slow are judged against, the seven in the Chaldean order. */
+  readonly meanMotionDeg: readonly number[];
+}
+
+/** What each of Lilly's accidental lines is worth (p. 115); his for any left out. */
+export interface AccidentalScores {
+  /** The first house to the twelfth. */
+  readonly houses: readonly number[];
+  readonly direct: number;
+  readonly retrograde: number;
+  readonly swift: number;
+  readonly slow: number;
+  /** Saturn, Jupiter or Mars oriental. */
+  readonly superiorOriental: number;
+  /** Saturn, Jupiter or Mars occidental. */
+  readonly superiorOccidental: number;
+  /** Venus or Mercury oriental. */
+  readonly inferiorOriental: number;
+  /** Venus or Mercury occidental. */
+  readonly inferiorOccidental: number;
+  readonly increasing: number;
+  readonly decreasing: number;
+  readonly freeFromCombustion: number;
+  readonly cazimi: number;
+  readonly combust: number;
+  readonly underBeams: number;
+  readonly conjunctBenefic: number;
+  readonly conjunctNorthNode: number;
+  readonly trineBenefic: number;
+  readonly sextileBenefic: number;
+  readonly conjunctMalefic: number;
+  readonly conjunctSouthNode: number;
+  readonly opposedMalefic: number;
+  readonly squareMalefic: number;
+  readonly besieged: number;
+  readonly regulus: number;
+  readonly spica: number;
+  readonly algol: number;
+}
+
+/**
+ * How to read every chart's fortitudes, both halves of Lilly's table
+ * (`03-design/essential-dignities.md` §Accidental fortitudes); every field
+ * is optional, and an absent one is Lilly's. An answer's `rules` and
+ * `scores` are requests as they stand.
+ *
+ * @example
+ * const asked: FortitudeRequest = { rules: { partile: { WITHIN: { orbDeg: 1 } } }, scores: { regulus: 5 } };
+ */
+export interface FortitudeRequest {
+  readonly dignities?: DignityRequest;
+  readonly rules?: Partial<AccidentalRules>;
+  readonly scores?: Partial<AccidentalScores>;
+}
+
+/** What a chart's accidental fortitudes were read from, in the chart's zodiac. */
+export interface AccidentalSky {
+  /** Regiomontanus, Lilly's, unless a profile names another division for the `hellenistic` module. */
+  readonly houses: HouseSystem;
+  /** The twelve cusps, the first to the twelfth, in degrees. */
+  readonly cuspsDeg: readonly number[];
+  /** The seven's daily motions in the Chaldean order, negative when retrograde. */
+  readonly speedsDegPerDay: readonly number[];
+  readonly northNodeDeg: number;
+  /** The star's apparent place of date, as are Spica's and Algol's. */
+  readonly regulusDeg: number;
+  readonly spicaDeg: number;
+  readonly algolDeg: number;
+}
+
+/** One accidental line a planet meets, and what it scores for that planet. */
+export interface AccidentLine {
+  readonly accident: Accident | 'unknown';
+  /** Orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other. */
+  readonly points: number;
+}
+
+/** One planet's accidental fortitudes and debilities. */
+export interface PlanetAccidents {
+  readonly planet: Graha;
+  /** Its house, 1 to 12, under the five-degree rule. */
+  readonly house: number;
+  /** Every line beyond its house, in Lilly's order. */
+  readonly accidents: readonly AccidentLine[];
+  /** The sum of its fortitudes, its house's included. */
+  readonly fortitude: number;
+  /** The sum of its debilities, its house's included, as a positive number. */
+  readonly debility: number;
+  /** Lilly's net over the whole table: its essential `score + reception` and `fortitude - debility`. */
+  readonly net: number;
+}
+
+/**
+ * Both halves of Lilly's table in one chart, with everything that made
+ * them.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, fortitudes: {} });
+ * const strongest = [...(chart.fortitudes?.planets ?? [])].sort((a, b) => b.net - a.net)[0];
+ */
+export interface Fortitudes {
+  /** The essential half, which the chart's `dignities` also reads. */
+  readonly dignities: Dignities;
+  readonly sky: AccidentalSky;
+  readonly rules: AccidentalRules;
+  readonly scores: AccidentalScores;
+  /** The seven in the Chaldean order, Saturn first. */
+  readonly planets: readonly PlanetAccidents[];
 }
 
 /**
@@ -2379,6 +2514,12 @@ export declare class Chart {
    */
   readonly dignities: Dignities | null;
   /**
+   * Both halves of Lilly's table, the essential dignities and the
+   * accidental fortitudes; `null` unless `fortitudes` asked
+   * (`03-design/essential-dignities.md` §Accidental fortitudes).
+   */
+  readonly fortitudes: Fortitudes | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -3464,6 +3605,14 @@ export interface ChartRequest {
    * None by default; `{}` is Valens's horizon and Lilly's tables.
    */
   readonly dignities?: DignityRequest;
+  /**
+   * Both halves of Lilly's table to read in every chart, read back as each
+   * chart's `fortitudes`, and its essential half as `dignities` too
+   * (`03-design/essential-dignities.md` §Accidental fortitudes). None by
+   * default; `{}` is Lilly's throughout. Asking for `dignities` as well is
+   * refused: put that record under `fortitudes.dignities`.
+   */
+  readonly fortitudes?: FortitudeRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

@@ -1471,6 +1471,79 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=instants[0], dignities=bad, **kathmandu)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_accidental_fortitudes(self) -> None:
+        """The accidental fortitudes cross whole, members resolved: the sky
+        and every rule and score applied reported back, the seven with their
+        lines, each line's points and Lilly's net, the essential half the
+        chart's own dignities, an answer's rules and scores handed back as a
+        request, and a refusal named in the record
+        (`03-design/essential-dignities.md` §Accidental fortitudes)."""
+        from teistro import Accident, FortitudeRequest, HouseSystem, Partile, Siege
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 20700,
+        }
+        instants = [2460676.5, 2460676.75]
+        solar = {Accident.CAZIMI, Accident.COMBUST, Accident.UNDER_BEAMS, Accident.FREE_FROM_COMBUSTION}
+        with self.teistro.context(profile="conformance-baseline", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instants[0], **kathmandu).fortitudes)
+            chart = ctx.chart.found(instant=instants[0], fortitudes={}, **kathmandu)
+            read = chart.fortitudes
+            assert read is not None
+            self.assertEqual(read.dignities, chart.dignities)
+            self.assertIs(read.sky.houses, HouseSystem.REGIOMONTANUS)
+            self.assertEqual((len(read.sky.cusps_deg), len(read.sky.speeds_deg_per_day)), (12, 7))
+            rules = read.rules
+            self.assertEqual(
+                (rules.combustion_deg, rules.combustion_in_sign, rules.beams_deg, rules.cusp_orb_deg),
+                (8.5, True, 17.0, 5.0),
+            )
+            self.assertIs(rules.partile, Partile.SAME_DEGREE)
+            self.assertIs(rules.siege, Siege.SAME_SIGN)
+            self.assertEqual(read.scores.houses, (5, 3, 1, 4, 3, -2, 4, -2, 2, 5, 4, -5))
+            self.assertEqual(read.scores.regulus, 6)
+            self.assertEqual([at.planet for at in read.planets], [at.planet for at in read.dignities.planets])
+            for own, at in zip(read.dignities.planets, read.planets):
+                points = [read.scores.houses[at.house - 1], *(line.points for line in at.accidents)]
+                self.assertEqual(at.fortitude, sum(n for n in points if n > 0), at.planet)
+                self.assertEqual(at.debility, -sum(n for n in points if n < 0), at.planet)
+                self.assertEqual(at.net, own.score + own.reception + at.fortitude - at.debility, at.planet)
+                held = [line.accident for line in at.accidents if line.accident in solar]
+                self.assertEqual(len(held), 0 if at.planet is Graha.SUN else 1, at.planet)
+
+            # The answer's rules and scores are a request as they stand, and
+            # one changed is obeyed.
+            fed_back = ctx.chart.found(
+                instant=instants[0], fortitudes={"rules": read.rules, "scores": read.scores}, **kathmandu
+            )
+            self.assertEqual(fed_back.fortitudes, read)
+            asked: FortitudeRequest = {
+                "rules": {"beamsDeg": 15, "partile": {"WITHIN": {"orbDeg": 1}}, "siege": {"WITHIN": {"spanDeg": 30}}},
+                "scores": {"regulus": 5},
+            }
+            other = ctx.chart.found(instant=instants[0], fortitudes=asked, **kathmandu).fortitudes
+            assert other is not None
+            self.assertEqual(other.rules.beams_deg, 15.0)
+            self.assertEqual((other.rules.partile, other.rules.partile_orb_deg), (Partile.WITHIN, 1.0))
+            self.assertEqual((other.rules.siege, other.rules.siege_span_deg), (Siege.WITHIN, 30.0))
+            self.assertEqual(other.scores.regulus, 5)
+
+            batch = ctx.chart.found_many(instants=instants, fortitudes={}, **kathmandu)
+            for k, instant in enumerate(instants):
+                alone = ctx.chart.found(instant=instant, fortitudes={}, **kathmandu).fortitudes
+                self.assertEqual(batch.at(k).fortitudes, alone)
+
+            refusals: list[tuple[dict[str, Any], str]] = [
+                ({"fortitudes": {"rules": {"beamDeg": 15}}}, "fortitudes.rules.beamDeg"),
+                ({"fortitudes": {"rules": {"beamsDeg": -1}}}, "fortitudes.rules.beamsDeg"),
+                ({"fortitudes": {}, "dignities": {}}, "dignities"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=instants[0], **bad, **kathmandu)
+                self.assertEqual(refused.exception.field, field)
+
     def test_an_almanac_carries_the_muhurta_search_it_was_asked_for(self) -> None:
         """A muhurta search crosses beside the days it judged
         (`03-design/muhurta-at-the-boundary.md`): its clauses a class a kind,

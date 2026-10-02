@@ -559,6 +559,53 @@ fn dignities(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The accidental fortitudes' enums. `TsPartile`'s and `TsSiege`'s
+/// `WITHIN` carry an orb, which serde writes as `{"WITHIN": {...}}` under
+/// the same key, held here apart since it is no unit variant.
+fn fortitudes(api: &Api) -> Vec<&'static str> {
+    use teistro_ffi::chart::{TsAccident, TsPartile, TsSiege};
+    let id = |value: u8| Some(i64::from(value));
+    let within = |value: serde_json::Value| {
+        assert!(
+            value
+                .get("WITHIN")
+                .is_some_and(serde_json::Value::is_object),
+            "an orb serialises under `WITHIN`: {value}"
+        );
+    };
+    within(serde_json::to_value(teistro::Partile::Within { orb_deg: 1.0 }).unwrap());
+    within(serde_json::to_value(teistro::Siege::Within { span_deg: 30.0 }).unwrap());
+    assert_eq!(
+        TsPartile::of(teistro::Partile::Within { orb_deg: 1.0 }),
+        Some((TsPartile::Within, 1.0))
+    );
+    assert_eq!(
+        TsSiege::of(teistro::Siege::Within { span_deg: 30.0 }),
+        Some((TsSiege::Within, 30.0))
+    );
+    vec![
+        unit(api, "TsAccident", |a: &teistro::Accident| {
+            TsAccident::of(*a).and_then(|a| id(a as u8))
+        }),
+        spelled_as(
+            api,
+            "TsPartile",
+            "",
+            &[teistro::Partile::SameDegree],
+            |p| TsPartile::of(*p).and_then(|(p, _)| id(p as u8)),
+            &["WITHIN"],
+        ),
+        spelled_as(
+            api,
+            "TsSiege",
+            "",
+            &[teistro::Siege::SameSign],
+            |s| TsSiege::of(*s).and_then(|(s, _)| id(s as u8)),
+            &["WITHIN"],
+        ),
+    ]
+}
+
 #[test]
 fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
     let api = api();
@@ -569,6 +616,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         gochar(&api),
         hits(&api),
         dignities(&api),
+        fortitudes(&api),
         time_and_calendar(&api),
     ]
     .concat();

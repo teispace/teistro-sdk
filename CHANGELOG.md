@@ -1735,6 +1735,18 @@ the astronomical numbers do not move. Nothing else computes yet.
     `houses.module_overrides.hellenistic`, and reads the three stars at
     their apparent places of date. `fortitudes-measured.md` counts every
     line over the corpus, along with what each crux's rival moves.
+    At the C boundary a chart request's `fortitudes_json` carries the
+    `FortitudeRequest`. Its essential half fills the dignity sections,
+    and four new sections carry the rest: 63 `fortitudes` (the sky as
+    read, every rule as applied and the 26 line scores), 64
+    `fortitude_houses`, 65 `fortitude_planets` and 66
+    `fortitude_accidents`, ragged by each planet's count. They come with
+    three new enums: `TsAccident`, `TsPartile` and `TsSiege`. Node,
+    Python and Dart answer `chart.fortitudes` with each planet's lines
+    and its `net`, and the parity gate holds them to the Rust runner.
+    Asking for `dignities_json` as well is refused (field `dignities`).
+    An orb out of range is refused when the request is read, at its
+    path (`fortitudes.rules.beamsDeg`), not later when the chart is.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

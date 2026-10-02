@@ -1970,6 +1970,25 @@ pub struct ChartRequest {
     /// record every binding calls `dignities`, as `dignities.sectRule`.
     /// Example: {"sectRule":"HORIZON","rules":{"terms":"EGYPTIAN"}}. May be null.
     pub dignities_json: Option<String>,
+    /// Every chart's accidental fortitudes beside its essential dignities
+    /// (Lilly, p. 115), as a JSON object, every member optional:
+    /// `dignities` (the record `dignities_json` takes), `rules`
+    /// (`combustionDeg` 8.5, `combustionInSign` true, `beamsDeg` 17,
+    /// `cazimiDeg` 17′, `cuspOrbDeg` 5, `starOrbDeg` 5, `partile`
+    /// `"SAME_DEGREE"` or `{"WITHIN": {"orbDeg": …}}` (C216), `siege`
+    /// `"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}` (C215) and
+    /// `meanMotionDeg`, seven in the Chaldean order) and `scores` (the
+    /// twelve `houses` and each line by name), Lilly's by default. The
+    /// essential half comes back in the sections `dignities_json` fills, so
+    /// asking for both is refused; the accidental half in `fortitudes`,
+    /// `fortitude_houses`, `fortitude_planets` and `fortitude_accidents`.
+    /// The houses are Regiomontanus's unless a profile names another
+    /// division for the `hellenistic` module. Null for none, which costs
+    /// nothing (`03-design/essential-dignities.md` §Accidental fortitudes).
+    /// Refusals are named from the record every binding calls
+    /// `fortitudes`, as `fortitudes.rules.beamsDeg`.
+    /// Example: {"rules":{"partile":{"WITHIN":{"orbDeg":1}}},"scores":{"regulus":5}}. May be null.
+    pub fortitudes_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1994,6 +2013,7 @@ pub struct HeldChartRequest {
     sade_sati_json: Option<std::ffi::CString>,
     kp_json: Option<std::ffi::CString>,
     dignities_json: Option<std::ffi::CString>,
+    fortitudes_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2040,6 +2060,10 @@ impl HeldChartRequest {
             kp_json: self.kp_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             dignities_json: self
                 .dignities_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            fortitudes_json: self
+                .fortitudes_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2109,6 +2133,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            fortitudes_json: self
+                .fortitudes_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2151,6 +2180,7 @@ impl ChartRequest {
             sade_sati_json: unsafe { lent_text(raw.sade_sati_json) },
             kp_json: unsafe { lent_text(raw.kp_json) },
             dignities_json: unsafe { lent_text(raw.dignities_json) },
+            fortitudes_json: unsafe { lent_text(raw.fortitudes_json) },
         }
     }
 }

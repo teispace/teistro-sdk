@@ -518,11 +518,22 @@ void main() {
       spells: [4, 7, 8],
     ),
     kp: const KpRequest(number: 74, anyAyanamsha: true),
-    dignities: const DignityRequest(
-      sectRule: SectRule.daylight,
-      terms: Terms.egyptian,
-      triplicities: Triplicities.ptolemy,
-      scores: DignityScores(peregrine: 0),
+    fortitudes: const FortitudeRequest(
+      dignities: DignityRequest(
+        sectRule: SectRule.daylight,
+        terms: Terms.egyptian,
+        triplicities: Triplicities.ptolemy,
+        scores: DignityScores(peregrine: 0),
+      ),
+      rules: AccidentalRules(
+        beamsDeg: 15,
+        combustionInSign: false,
+        partile: Partile.within,
+        partileOrbDeg: 1,
+        siege: Siege.within,
+        siegeSpanDeg: 30,
+      ),
+      scores: AccidentalScores(regulus: 5),
     ),
     shadbala: true,
     bhavaBala: true,
@@ -946,6 +957,43 @@ void main() {
             '${flagsHeld(one.firstIn).join(',')} '
             '${flagsHeld(one.secondIn).join(',')} '
             '${listed([for (final kind in one.mutual) kind.name])}',
+      );
+    }
+    final ft = chart.fortitudes!;
+    String numbers(List<double> values) => values.map(number).join(',');
+    put(
+      'chart-$i-fortitudes',
+      '${ft.sky.houses.fullKey} '
+          '${[ft.sky.northNodeDeg, ft.sky.regulusDeg, ft.sky.spicaDeg, ft.sky.algolDeg].map(number).join(' ')}',
+    );
+    final fr = ft.rules;
+    final partile =
+        fr.partile == Partile.within
+            ? 'WITHIN:${number(fr.partileOrbDeg)}'
+            : fr.partile.key;
+    final siege =
+        fr.siege == Siege.within
+            ? 'WITHIN:${number(fr.siegeSpanDeg)}'
+            : fr.siege.key;
+    put(
+      'chart-$i-fortitude-rules',
+      '${number(fr.combustionDeg)} ${fr.combustionInSign ? 1 : 0} '
+          '${[fr.beamsDeg, fr.cazimiDeg, fr.cuspOrbDeg, fr.starOrbDeg].map(number).join(' ')} '
+          '$partile $siege ${numbers(fr.meanMotionDeg)}',
+    );
+    put(
+      'chart-$i-fortitude-scores',
+      '${ft.scores.houses.join(',')} ${ft.scores.lines.values.join(',')}',
+    );
+    put('chart-$i-fortitude-houses', numbers(ft.sky.cuspsDeg));
+    for (final (k, at) in ft.planets.indexed) {
+      final lines = [
+        for (final line in at.accidents) '${line.accident.key}:${line.points}',
+      ];
+      put(
+        'chart-$i-fortitude-${at.planet.fullKey}',
+        '${number(ft.sky.speedsDegPerDay[k])} ${at.house} ${listed(lines)} '
+            '${at.fortitude} ${at.debility} ${at.net}',
       );
     }
     final vs = chart.vimshopaka!;

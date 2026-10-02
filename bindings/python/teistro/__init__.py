@@ -155,6 +155,9 @@ from .catalogue import (
     SectRule,
     Terms,
     Triplicities,
+    Accident,
+    Partile,
+    Siege,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -423,10 +426,21 @@ __all__ = [
     "PlanetDignity",
     "DignityKind",
     "Reception",
+    # Lilly's accidental fortitudes beside them.
+    "FortitudeRequest",
+    "AccidentalRules",
+    "AccidentalScores",
+    "AccidentalSky",
+    "AccidentLine",
+    "PlanetAccidents",
+    "Fortitudes",
     "Sect",
     "SectRule",
     "Terms",
     "Triplicities",
+    "Accident",
+    "Partile",
+    "Siege",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1464,6 +1478,7 @@ class ChartArea(_Area):
         sade_sati: Optional[SadeSatiRequest] = None,
         kp: Optional[KpRequest] = None,
         dignities: Optional[DignityRequest] = None,
+        fortitudes: Optional[FortitudeRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1506,6 +1521,7 @@ class ChartArea(_Area):
             sade_sati=sade_sati,
             kp=kp,
             dignities=dignities,
+            fortitudes=fortitudes,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1538,6 +1554,7 @@ class ChartArea(_Area):
         sade_sati: Optional[SadeSatiRequest] = None,
         kp: Optional[KpRequest] = None,
         dignities: Optional[DignityRequest] = None,
+        fortitudes: Optional[FortitudeRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1601,6 +1618,7 @@ class ChartArea(_Area):
             sade_sati_json=_sade_sati_json(sade_sati),
             kp_json=_kp_json(kp),
             dignities_json=_dignities_json(dignities),
+            fortitudes_json=_fortitudes_json(fortitudes),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2857,6 +2875,246 @@ class Dignities:
     receptions: Tuple[Reception, ...]
     """Every pair in reception, in the Chaldean order of the first and then
     the second."""
+
+
+_ACCIDENTAL_LINES = (
+    "direct",
+    "retrograde",
+    "swift",
+    "slow",
+    "superior_oriental",
+    "superior_occidental",
+    "inferior_oriental",
+    "inferior_occidental",
+    "increasing",
+    "decreasing",
+    "free_from_combustion",
+    "cazimi",
+    "combust",
+    "under_beams",
+    "conjunct_benefic",
+    "conjunct_north_node",
+    "trine_benefic",
+    "sextile_benefic",
+    "conjunct_malefic",
+    "conjunct_south_node",
+    "opposed_malefic",
+    "square_malefic",
+    "besieged",
+    "regulus",
+    "spica",
+    "algol",
+)
+"""Lilly's accidental lines, in the order the `fortitudes` section scores
+them."""
+
+
+@dataclass(frozen=True)
+class AccidentalRules:
+    """The orbs and limits Lilly's accidental fortitudes were judged by
+    (`03-design/essential-dignities.md` §Accidental fortitudes). Handed
+    back as a request's `rules`, it asks for the same again."""
+
+    combustion_deg: float
+    """Combust within this many degrees of the Sun."""
+
+    combustion_in_sign: bool
+    """Whether combustion also asks for the Sun's sign (C211)."""
+
+    beams_deg: float
+    """Under the beams within this many degrees (C212)."""
+
+    cazimi_deg: float
+    """Cazimi within this many degrees."""
+
+    cusp_orb_deg: float
+    """A planet this near the next cusp is in its house (p. 33, C214)."""
+
+    star_orb_deg: float
+    """With a star within this many degrees."""
+
+    partile: Partile
+    """By the same degree, Lilly's, or within `partile_orb_deg` of the exact
+    aspect (C216)."""
+
+    partile_orb_deg: float
+    """The orb of `Partile.WITHIN`; 0 for `SAME_DEGREE`."""
+
+    siege: Siege
+    """Within one sign, Lilly's example, or on an arc no wider than
+    `siege_span_deg` (C215)."""
+
+    siege_span_deg: float
+    """The span of `Siege.WITHIN`; 0 for `SAME_SIGN`."""
+
+    mean_motion_deg: Tuple[float, ...]
+    """The mean daily motions swift and slow are judged against, the seven
+    in the Chaldean order."""
+
+    def _record(self) -> Dict[str, Any]:
+        """The rules as a request writes them."""
+
+        def with_orb(member: Member, field: str, orb: float) -> Any:
+            return {"WITHIN": {field: orb}} if member.key == "WITHIN" else member.key
+
+        return {
+            "combustionDeg": self.combustion_deg,
+            "combustionInSign": self.combustion_in_sign,
+            "beamsDeg": self.beams_deg,
+            "cazimiDeg": self.cazimi_deg,
+            "cuspOrbDeg": self.cusp_orb_deg,
+            "starOrbDeg": self.star_orb_deg,
+            "partile": with_orb(self.partile, "orbDeg", self.partile_orb_deg),
+            "siege": with_orb(self.siege, "spanDeg", self.siege_span_deg),
+            "meanMotionDeg": list(self.mean_motion_deg),
+        }
+
+
+@dataclass(frozen=True)
+class AccidentalScores:
+    """What each of Lilly's accidental lines was worth (p. 115): positive
+    for a fortitude, negative for a debility. Handed back as a request's
+    `scores`, it asks for the same again."""
+
+    houses: Tuple[int, ...]
+    """The first house to the twelfth."""
+
+    direct: int
+    retrograde: int
+    swift: int
+    slow: int
+    superior_oriental: int
+    """Saturn, Jupiter or Mars oriental."""
+
+    superior_occidental: int
+    """Saturn, Jupiter or Mars occidental."""
+
+    inferior_oriental: int
+    """Venus or Mercury oriental."""
+
+    inferior_occidental: int
+    """Venus or Mercury occidental."""
+
+    increasing: int
+    decreasing: int
+    free_from_combustion: int
+    cazimi: int
+    combust: int
+    under_beams: int
+    conjunct_benefic: int
+    conjunct_north_node: int
+    trine_benefic: int
+    sextile_benefic: int
+    conjunct_malefic: int
+    conjunct_south_node: int
+    opposed_malefic: int
+    square_malefic: int
+    besieged: int
+    regulus: int
+    spica: int
+    algol: int
+
+    def _record(self) -> Dict[str, Any]:
+        """The scores as a request writes them."""
+        return {
+            "houses": list(self.houses),
+            **{_camel(line): getattr(self, line) for line in _ACCIDENTAL_LINES},
+        }
+
+
+class FortitudeRequest(TypedDict, total=False):
+    """How to read every chart's fortitudes, both halves of Lilly's table
+    (`03-design/essential-dignities.md` §Accidental fortitudes), every
+    field optional and Lilly's when absent: `dignities`, the essential
+    half's own request; `rules`, any of `combustionDeg`,
+    `combustionInSign`, `beamsDeg`, `cazimiDeg`, `cuspOrbDeg`,
+    `starOrbDeg`, `partile` (`"SAME_DEGREE"` or `{"WITHIN": {"orbDeg":
+    …}}`), `siege` (`"SAME_SIGN"` or `{"WITHIN": {"spanDeg": …}}`) and
+    `meanMotionDeg`; and `scores`, `houses` and any line by its camel-cased
+    name. An answer's `rules` and `scores` may be handed back as they stand.
+
+    >>> asked: FortitudeRequest = {"rules": {"partile": {"WITHIN": {"orbDeg": 1}}}, "scores": {"regulus": 5}}
+    """
+
+    dignities: DignityRequest
+    rules: Union[Mapping[str, Any], AccidentalRules]
+    scores: Union[Mapping[str, Any], AccidentalScores]
+
+
+@dataclass(frozen=True)
+class AccidentalSky:
+    """What a chart's accidental fortitudes were read from, in the chart's
+    zodiac."""
+
+    houses: HouseSystem
+    """Regiomontanus, Lilly's, unless a profile names another division for
+    the `hellenistic` module."""
+
+    cusps_deg: Tuple[float, ...]
+    """The twelve cusps, the first to the twelfth."""
+
+    speeds_deg_per_day: Tuple[float, ...]
+    """The seven's daily motions in the Chaldean order, negative when
+    retrograde."""
+
+    north_node_deg: float
+    regulus_deg: float
+    """The star's apparent place of date, as are Spica's and Algol's."""
+
+    spica_deg: float
+    algol_deg: float
+
+
+@dataclass(frozen=True)
+class AccidentLine:
+    """One accidental line a planet meets, and what it scores for that
+    planet: orientality scores Saturn, Jupiter and Mars one way and Venus
+    and Mercury the other."""
+
+    accident: Accident
+    points: int
+
+
+@dataclass(frozen=True)
+class PlanetAccidents:
+    """One planet's accidental fortitudes and debilities."""
+
+    planet: Graha
+    house: int
+    """Its house, 1 to 12, under the five-degree rule."""
+
+    accidents: Tuple[AccidentLine, ...]
+    """Every line beyond its house, in Lilly's order."""
+
+    fortitude: int
+    """The sum of its fortitudes, its house's included."""
+
+    debility: int
+    """The sum of its debilities, its house's included, as a positive
+    number."""
+
+    net: int
+    """Lilly's net over the whole table: its essential `score + reception`
+    and `fortitude - debility`."""
+
+
+@dataclass(frozen=True)
+class Fortitudes:
+    """Both halves of Lilly's table in one chart, with everything that made
+    them (`03-design/essential-dignities.md` §Accidental fortitudes).
+
+    >>> # chart = ctx.chart.found(..., fortitudes={})
+    >>> # strongest = max(chart.fortitudes.planets, key=lambda at: at.net)
+    """
+
+    dignities: Dignities
+    """The essential half, which the chart's `dignities` also reads."""
+
+    sky: AccidentalSky
+    rules: AccidentalRules
+    scores: AccidentalScores
+    planets: Tuple[PlanetAccidents, ...]
+    """The seven in the Chaldean order, Saturn first."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -5431,6 +5689,16 @@ def _dignities_json(dignities: Optional[DignityRequest]) -> Optional[str]:
     return _record_json(_written(dignities), "dignities", example)
 
 
+def _fortitudes_json(fortitudes: Optional[FortitudeRequest]) -> Optional[str]:
+    """The fortitudes as the JSON the boundary reads, or nothing for none;
+    an answer's rules and scores are written as a request writes them, and
+    the SDK refuses the rest, naming the field from `fortitudes`."""
+    example = "{'rules': {'beamsDeg': 15}, 'scores': {'regulus': 6}}"
+    if not isinstance(fortitudes, Mapping):
+        return _record_json(fortitudes, "fortitudes", example)
+    return _record_json(_written(fortitudes), "fortitudes", example)
+
+
 def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
     """A chart's KP reading from the `kp` section's JSON, its keys made
     members."""
@@ -5547,6 +5815,8 @@ def _written(value: Any) -> Any:
         return value.key
     if isinstance(value, MuhurtaClauseKind):
         return {"clause": value.CLAUSE, **{_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}}
+    if isinstance(value, (AccidentalRules, AccidentalScores)):
+        return value._record()
     if isinstance(value, (MuhurtaPada, TaraReading)):
         return {_camel(f.name): _written(getattr(value, f.name)) for f in dataclass_fields(value)}
     if isinstance(value, Mapping):
@@ -6914,6 +7184,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def fortitudes(self) -> Optional[Fortitudes]:
+        """Both halves of Lilly's table, the essential dignities and the
+        accidental fortitudes, with everything that made them; `None`
+        unless `fortitudes=` asked for them
+        (`03-design/essential-dignities.md` §Accidental fortitudes)."""
+        parsed = self.batch._fortitudes
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -7290,6 +7569,86 @@ class ChartBatch:
         for."""
         text = self.decoded.kp
         return [_kp_reading(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _fortitudes(self) -> list[Fortitudes]:
+        """Every chart's accidental fortitudes, decoded once; empty when none
+        were asked for. `fortitudes` holds a row a chart, `fortitude_houses`
+        twelve a chart, `fortitude_planets` seven in the Chaldean order, and
+        `fortitude_accidents` each planet's lines, ragged by its
+        `accident_count`. The essential half is the batch's dignities."""
+        c = self.decoded.fortitudes
+        h = self.decoded.fortitude_houses
+        p = self.decoded.fortitude_planets
+        a = self.decoded.fortitude_accidents
+        charts = len(self.decoded.cast.instant)
+        if c.length == 0:
+            return []
+        if c.length != charts or h.length != 12 * charts or p.length != 7 * charts:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"fortitudes has {c.length} rows, fortitude_houses {h.length} and fortitude_planets {p.length}"
+                f" for {charts} charts; they are one, twelve and seven a chart",
+            )
+        if sum(p.accident_count) != a.length:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"fortitude_accidents has {a.length} rows and the planets count {sum(p.accident_count)}",
+            )
+        starts = [0, *itertools.accumulate(p.accident_count)]
+        essential = self._dignities
+
+        def rows(count: int, chart: int) -> range:
+            return range(count * chart, count * chart + count)
+
+        def planet(chart: int, k: int) -> PlanetAccidents:
+            row = 7 * chart + k
+            own = essential[chart].planets[k]
+            return PlanetAccidents(
+                planet=Graha(p.planet[row]),
+                house=p.house[row],
+                accidents=tuple(
+                    AccidentLine(accident=Accident(a.accident[at]), points=a.points[at])
+                    for at in range(starts[row], starts[row + 1])
+                ),
+                fortitude=p.fortitude[row],
+                debility=p.debility[row],
+                net=own.score + own.reception + p.fortitude[row] - p.debility[row],
+            )
+
+        return [
+            Fortitudes(
+                dignities=essential[chart],
+                sky=AccidentalSky(
+                    houses=HouseSystem(c.houses[chart]),
+                    cusps_deg=tuple(h.cusp[row] for row in rows(12, chart)),
+                    speeds_deg_per_day=tuple(p.speed[row] for row in rows(7, chart)),
+                    north_node_deg=c.north_node[chart],
+                    regulus_deg=c.regulus[chart],
+                    spica_deg=c.spica[chart],
+                    algol_deg=c.algol[chart],
+                ),
+                rules=AccidentalRules(
+                    combustion_deg=c.combustion_orb[chart],
+                    combustion_in_sign=c.combustion_in_sign[chart] == 1,
+                    beams_deg=c.beams_orb[chart],
+                    cazimi_deg=c.cazimi_orb[chart],
+                    cusp_orb_deg=c.cusp_orb[chart],
+                    star_orb_deg=c.star_orb[chart],
+                    partile=Partile(c.partile[chart]),
+                    partile_orb_deg=c.partile_orb[chart],
+                    siege=Siege(c.siege[chart]),
+                    siege_span_deg=c.siege_span[chart],
+                    mean_motion_deg=tuple(p.mean_motion[row] for row in rows(7, chart)),
+                ),
+                scores=AccidentalScores(
+                    houses=tuple(h.score[row] for row in rows(12, chart)),
+                    **{line: getattr(c, f"score_{line}")[chart] for line in _ACCIDENTAL_LINES},
+                ),
+                planets=tuple(planet(chart, k) for k in range(7)),
+            )
+            for chart in range(charts)
+        ]
 
     @cached_property
     def _dignities(self) -> list[Dignities]:

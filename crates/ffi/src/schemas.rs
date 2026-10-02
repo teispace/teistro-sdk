@@ -609,6 +609,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_sade_sati_sections(57))
         .chain([chart_kp_section(59)])
         .chain(chart_dignity_sections(60))
+        .chain(chart_fortitude_sections(63))
         .collect(),
     }
 }
@@ -739,7 +740,7 @@ fn chart_dignity_sections(first: u32) -> [SectionSchema; 3] {
         SectionSchema::columns(
             first,
             "dignities",
-            "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Empty when `dignities_json` asked for none, and then `dignity_planets` is too.",
+            "Every chart's sect and the rules its dignities were read under, a row a chart in the `cast` section's order. Filled from `dignities_json`, or from `fortitudes_json`'s essential half; empty when neither asked, and then `dignity_planets` is too.",
             vec![
                 ColumnDef::new(
                     "sect",
@@ -783,7 +784,7 @@ fn chart_dignity_sections(first: u32) -> [SectionSchema; 3] {
         SectionSchema::columns(
             first + 1,
             "dignity_planets",
-            "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when `dignities_json` asked for none.",
+            "The seven planets' essential dignities, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order: Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon. A planet is peregrine when none of the first five flags is set. Empty when neither `dignities_json` nor `fortitudes_json` asked.",
             vec![
                 ColumnDef::new("planet", Scalar::U16, "The planet.").of_enum("Graha"),
                 ColumnDef::new(
@@ -817,6 +818,162 @@ fn chart_dignity_sections(first: u32) -> [SectionSchema; 3] {
     ]
 }
 
+/// The `fortitudes` section's columns: the accidental sky, the rules and
+/// a score a line.
+fn fortitude_chart_columns() -> Vec<ColumnDef> {
+    let degrees = |name: &'static str, what: &str| ColumnDef::new(name, Scalar::F64, what);
+    let mut chart = vec![
+        ColumnDef::new(
+            "houses",
+            Scalar::U16,
+            "The division the houses were counted in: Regiomontanus, Lilly's, unless a profile names another for the `hellenistic` module.",
+        )
+        .of_enum("HouseSystem"),
+        degrees("north_node", "The North Node's longitude, in degrees of the chart's zodiac."),
+        degrees("regulus", "Regulus's apparent longitude of date, in degrees of the chart's zodiac."),
+        degrees("spica", "Spica's, likewise."),
+        degrees("algol", "Algol's, likewise."),
+        degrees(
+            "combustion_orb",
+            "Combust within this many degrees of the Sun, `fortitudes_json.rules.combustionDeg`.",
+        ),
+        ColumnDef::new(
+            "combustion_in_sign",
+            Scalar::U8,
+            "1 when combustion also asks for the Sun's sign (C211), `fortitudes_json.rules.combustionInSign`, else 0.",
+        ),
+        degrees(
+            "beams_orb",
+            "Under the beams within this many degrees, `fortitudes_json.rules.beamsDeg` (C212).",
+        ),
+        degrees(
+            "cazimi_orb",
+            "Cazimi within this many degrees, `fortitudes_json.rules.cazimiDeg`.",
+        ),
+        degrees(
+            "cusp_orb",
+            "A planet this near the next cusp is in its house (p. 33), `fortitudes_json.rules.cuspOrbDeg` (C214).",
+        ),
+        degrees(
+            "star_orb",
+            "With a star within this many degrees, `fortitudes_json.rules.starOrbDeg`.",
+        ),
+        ColumnDef::new(
+            "partile",
+            Scalar::U8,
+            "When two planets are in partile aspect, `fortitudes_json.rules.partile` (C216).",
+        )
+        .of_enum("TsPartile"),
+        degrees("partile_orb", "The orb of `WITHIN`; 0 for `SAME_DEGREE`."),
+        ColumnDef::new(
+            "siege",
+            Scalar::U8,
+            "When a planet is besieged, `fortitudes_json.rules.siege` (C215).",
+        )
+        .of_enum("TsSiege"),
+        degrees("siege_span", "The span of `WITHIN`; 0 for `SAME_SIGN`."),
+    ];
+    chart.extend(crate::chart::ACCIDENTAL_LINES.map(|line| {
+        ColumnDef::new(
+            &format!("score_{line}"),
+            Scalar::I8,
+            &format!(
+                "What the line `{line}` scores, `fortitudes_json.scores`, Lilly's (p. 115) by default."
+            ),
+        )
+    }));
+    chart
+}
+
+/// Every chart's accidental fortitudes (`03-design/essential-dignities.md`
+/// §Accidental fortitudes): what was applied a chart, its twelve houses,
+/// the seven planets, then their accidents.
+fn chart_fortitude_sections(first: u32) -> [SectionSchema; 4] {
+    let degrees = |name: &'static str, what: &str| ColumnDef::new(name, Scalar::F64, what);
+    let empty = "Empty when `fortitudes_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "fortitudes",
+            &format!(
+                "Every chart's accidental sky and the rules and scores its fortitudes were read under, a row a chart in the `cast` section's order. The essential half is in `dignities`. {empty}"
+            ),
+            fortitude_chart_columns(),
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "fortitude_houses",
+            &format!(
+                "Every chart's twelve houses, **twelve rows a chart** in the `cast` section's order, the first to the twelfth. {empty}"
+            ),
+            vec![
+                degrees(
+                    "cusp",
+                    "Where the house begins, in degrees of the chart's zodiac.",
+                ),
+                ColumnDef::new(
+                    "score",
+                    Scalar::I8,
+                    "What a planet in the house scores, `fortitudes_json.scores.houses`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "fortitude_planets",
+            &format!(
+                "The seven planets' accidental fortitudes, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order. Lilly's net is `dignity_planets`' `score + reception` and this row's `fortitude - debility`. {empty}"
+            ),
+            vec![
+                ColumnDef::new("planet", Scalar::U16, "The planet.").of_enum("Graha"),
+                degrees(
+                    "speed",
+                    "Its daily motion in longitude, in degrees; negative when retrograde.",
+                ),
+                degrees(
+                    "mean_motion",
+                    "The mean daily motion its speed is judged swift or slow against, `fortitudes_json.rules.meanMotionDeg`.",
+                ),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "Its house, 1 to 12, under the five-degree rule.",
+                ),
+                ColumnDef::new(
+                    "fortitude",
+                    Scalar::I16,
+                    "The sum of its positive lines, its house's included.",
+                ),
+                ColumnDef::new(
+                    "debility",
+                    Scalar::I16,
+                    "The sum of its negative lines, its house's included, as a positive number, the way Lilly prints it.",
+                ),
+                ColumnDef::new(
+                    "accident_count",
+                    Scalar::U8,
+                    "How many rows of the `fortitude_accidents` section belong to this planet.\n\nRagged because which lines a planet meets depends on its sky.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 3,
+            "fortitude_accidents",
+            &format!(
+                "Every planet's accidental lines beyond its house, concatenated in `fortitude_planets`' order and **ragged** by its `accident_count`, each planet's in `TsAccident`'s order. {empty}"
+            ),
+            vec![
+                ColumnDef::new("accident", Scalar::U8, "The line it meets.").of_enum("TsAccident"),
+                ColumnDef::new(
+                    "points",
+                    Scalar::I8,
+                    "What the line scores for this planet: orientality scores Saturn, Jupiter and Mars one way and Venus and Mercury the other.",
+                ),
+            ],
+        ),
+    ]
+}
+
 /// Every chart's receptions, a row a pair (`essential-dignities.md`
 /// §Reception).
 fn dignity_receptions_section(id: u32) -> SectionSchema {
@@ -844,7 +1001,7 @@ fn dignity_receptions_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
         id,
         "dignity_receptions",
-        "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when `dignities_json` asked for none.",
+        "Every pair of the seven each standing in at least one of the other's five dignities (Lilly, p. 112), concatenated in the `cast` section's order and **ragged** by `dignities.reception_count`, each chart's in the Chaldean order of `first` and then `second`. Each side is reported whole, so a reception by the same dignity both ways (mutual) and one by different dignities (mixed) are read off the same row. Empty when neither `dignities_json` nor `fortitudes_json` asked.",
         {
             let mut columns = vec![
                 ColumnDef::new(
