@@ -7386,6 +7386,70 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsRadicalGround",
+      "doc": "Why a horary figure is radical (Lilly p. 121,\n`03-design/hellenistic-considerations.md`); a figure's grounds cross as\na bit set, bit `n` the member with code `n`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "OneLord",
+          "value": 0,
+          "doc": "The lord of the hour and the lord of the Ascendant are one planet.",
+          "key": "ONE_LORD"
+        },
+        {
+          "name": "Triplicity",
+          "value": 1,
+          "doc": "The lord of the hour rules the rising sign's triplicity.",
+          "key": "TRIPLICITY"
+        },
+        {
+          "name": "Nature",
+          "value": 2,
+          "doc": "The two lords share a temperament.",
+          "key": "NATURE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsPtolemaicAspect",
+      "doc": "A Ptolemaic aspect the Moon perfects before judgement\n(`03-design/hellenistic-considerations.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Conjunction",
+          "value": 0,
+          "doc": "0°.",
+          "key": "CONJUNCTION"
+        },
+        {
+          "name": "Sextile",
+          "value": 1,
+          "doc": "60°.",
+          "key": "SEXTILE"
+        },
+        {
+          "name": "Square",
+          "value": 2,
+          "doc": "90°.",
+          "key": "SQUARE"
+        },
+        {
+          "name": "Trine",
+          "value": 3,
+          "doc": "120°.",
+          "key": "TRINE"
+        },
+        {
+          "name": "Opposition",
+          "value": 4,
+          "doc": "180°.",
+          "key": "OPPOSITION"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -11663,6 +11727,21 @@
           "doc": "Every chart's lots, all fourteen Valens gives, as a JSON object,\nevery member optional: `sectRule` (the record `dignities_json`\nnames it in, Valens's `\"HORIZON\"` by default) and `fortune`, how\nthe Part of Fortune is taken by night: `\"REVERSED_BY_NIGHT\"`\n(Valens II.22, the default), `\"DAY_AND_NIGHT\"` (Lilly) or\n`\"REVERSED_WHILE_MOON_UP\"` (Valens III.11, C221). What was applied\ncomes back in the `lots` section and the fourteen in `lot_places`.\nNull for none, which costs nothing\n(`03-design/hellenistic-lots.md`). Refusals are named from the\nrecord every binding calls `lots`, as `lots.fortune`.",
           "meta": {
             "example": "{\"fortune\":\"REVERSED_WHILE_MOON_UP\"}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "considerations_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's considerations before judgement (Lilly, *Christian\nAstrology* I.XIX), as a JSON object, every member optional:\n`moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven\nwhole orbs in the Chaldean order whose halves make an application\n(Lilly's p. 107 by default, C230). The fortitudes they read are\n`fortitudes_json`'s, or Lilly's when it is null. The clauses come\nback in `considerations`, the Moon's two perfections in\n`consideration_perfections` and the orbs applied in\n`consideration_orbs`. Null for none, which costs nothing\n(`03-design/hellenistic-considerations.md`). Refusals are named from\nthe record every binding calls `considerations`, as\n`considerations.moonLateFromDeg`.",
+          "meta": {
+            "example": "{\"moonLateFromDeg\":25}",
             "nullable": true
           }
         }
@@ -18204,6 +18283,202 @@
               "name": "house",
               "scalar": "u8",
               "doc": "Its place, 1 to 12, counted in whole signs from the ascendant's sign."
+            }
+          ]
+        },
+        {
+          "id": 69,
+          "name": "considerations",
+          "doc": "Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "hour_lord",
+              "scalar": "u16",
+              "doc": "The lord of the chart's planetary hour, under the settings' `hora_reckoning`.",
+              "enum": "Graha"
+            },
+            {
+              "name": "ascendant_lord",
+              "scalar": "u16",
+              "doc": "The lord of the rising sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "radical_grounds",
+              "scalar": "u8",
+              "doc": "Why the figure is radical, as a bit set over `TsRadicalGround`: bit `n` is the member with code `n` (p. 122). 0 when it is not radical."
+            },
+            {
+              "name": "ascendant_sign",
+              "scalar": "u16",
+              "doc": "The rising sign.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "ascendant_degree",
+              "scalar": "f64",
+              "doc": "The Ascendant's degree within its sign, [0, 30)."
+            },
+            {
+              "name": "ascendant_early",
+              "scalar": "u8",
+              "doc": "1 when fewer than 3 degrees rise, too early to judge; 0 otherwise."
+            },
+            {
+              "name": "ascendant_late",
+              "scalar": "u8",
+              "doc": "1 when 27 degrees or more rise, too late to judge; 0 otherwise."
+            },
+            {
+              "name": "short_ascension",
+              "scalar": "u8",
+              "doc": "1 when the rising sign is one of short ascension, Capricorn to Gemini; 0 otherwise."
+            },
+            {
+              "name": "moon_sign",
+              "scalar": "u16",
+              "doc": "The Moon's sign.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "moon_degree",
+              "scalar": "f64",
+              "doc": "The Moon's degree within her sign, [0, 30)."
+            },
+            {
+              "name": "moon_late",
+              "scalar": "u8",
+              "doc": "1 when the Moon is in the later degrees of her sign, from `moon_late_from_deg` (C229); 0 otherwise."
+            },
+            {
+              "name": "moon_late_sign",
+              "scalar": "u8",
+              "doc": "1 when the Moon is in Gemini, Scorpio or Capricorn, where Lilly says lateness matters most; 0 otherwise."
+            },
+            {
+              "name": "via_combusta",
+              "scalar": "u8",
+              "doc": "1 when the Moon is in the via combusta, Libra 15° to Scorpio 15°; 0 otherwise."
+            },
+            {
+              "name": "days_in_sign",
+              "scalar": "f64",
+              "doc": "Days until the Moon leaves her sign, at her motion of the moment."
+            },
+            {
+              "name": "eased",
+              "scalar": "u8",
+              "doc": "1 when the Moon is in Taurus, Cancer, Sagittarius or Pisces, where void of course \"somewhat she performes\"; 0 otherwise."
+            },
+            {
+              "name": "seventh_cusp_deg",
+              "scalar": "f64",
+              "doc": "The seventh cusp, degrees of the chart's zodiac."
+            },
+            {
+              "name": "seventh_lord",
+              "scalar": "u16",
+              "doc": "The lord of the sign on the seventh cusp.",
+              "enum": "Graha"
+            },
+            {
+              "name": "seventh_infortunes",
+              "scalar": "u8",
+              "doc": "Saturn and Mars when counted in the seventh house, as a bit set: bit `n` is the graha with catalogue id `n` (C231)."
+            },
+            {
+              "name": "seventh_lord_retrograde",
+              "scalar": "u8",
+              "doc": "1 when the seventh's lord is retrograde; 0 otherwise."
+            },
+            {
+              "name": "seventh_lord_combust",
+              "scalar": "u8",
+              "doc": "1 when the seventh's lord is combust; 0 otherwise."
+            },
+            {
+              "name": "seventh_lord_in_fall",
+              "scalar": "u8",
+              "doc": "1 when the seventh's lord is in his fall; 0 otherwise."
+            },
+            {
+              "name": "seventh_lord_in_infortune_term",
+              "scalar": "u8",
+              "doc": "1 when the seventh's lord is in the terms of Saturn or Mars; 0 otherwise."
+            },
+            {
+              "name": "seventh_lord_net",
+              "scalar": "i16",
+              "doc": "The seventh's lord's net strength, his essential and accidental fortitudes less his debilities."
+            },
+            {
+              "name": "saturn_house",
+              "scalar": "u8",
+              "doc": "The house Saturn is counted in, 1 to 12, by the fortitudes' five-degree rule."
+            },
+            {
+              "name": "saturn_retrograde",
+              "scalar": "u8",
+              "doc": "1 when Saturn is retrograde; 0 otherwise."
+            },
+            {
+              "name": "ascendant_lord_combust",
+              "scalar": "u8",
+              "doc": "1 when the Ascendant's lord is combust; 0 otherwise."
+            },
+            {
+              "name": "moon_late_from_deg",
+              "scalar": "f64",
+              "doc": "The degree the Moon's lateness was counted from, `considerations_json.moonLateFromDeg`."
+            }
+          ]
+        },
+        {
+          "id": 70,
+          "name": "consideration_perfections",
+          "doc": "The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "present",
+              "scalar": "u8",
+              "doc": "1 when there is such a perfection; 0 when she is void by this reading, and then the other columns are 0 and NaN."
+            },
+            {
+              "name": "planet",
+              "scalar": "u16",
+              "doc": "The planet she perfects it with.",
+              "enum": "Graha"
+            },
+            {
+              "name": "aspect",
+              "scalar": "u8",
+              "doc": "The aspect.",
+              "enum": "TsPtolemaicAspect"
+            },
+            {
+              "name": "days",
+              "scalar": "f64",
+              "doc": "Days until it is exact, at the motions of the moment."
+            },
+            {
+              "name": "gap_deg",
+              "scalar": "f64",
+              "doc": "How far it is from exact now, degrees."
+            }
+          ]
+        },
+        {
+          "id": 71,
+          "name": "consideration_orbs",
+          "doc": "The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The planet's whole orb, degrees; half of it counts toward an application."
             }
           ]
         }

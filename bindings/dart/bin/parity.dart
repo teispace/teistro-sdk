@@ -541,6 +541,7 @@ void main() {
       almuten: AlmutenRules(fortune: FortuneRule.reversedByNight),
     ),
     lots: const LotRequest(fortune: FortuneRule.reversedWhileMoonUp),
+    considerations: const ConsiderationRules(moonLateFromDeg: 25),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -1031,6 +1032,49 @@ void main() {
             '${at.house}',
       );
     }
+    final cs = chart.considerations!;
+    int flag(bool value) => value ? 1 : 0;
+    String perfection(Perfection? found) =>
+        found == null
+            ? '-'
+            : '${found.planet.fullKey} ${found.aspect.key} ${number(found.days)} '
+                '${number(found.gapDeg)}';
+    final rd = cs.radicality;
+    final asc = cs.ascendant;
+    put(
+      'chart-$i-considerations',
+      '${rd.hourLord.fullKey} ${rd.ascendantLord.fullKey} '
+          '${listed([for (final g in rd.grounds) g.key])} ${asc.sign.fullKey} '
+          '${number(asc.degree)} ${flag(asc.early)} ${flag(asc.late)} '
+          '${flag(asc.shortAscension)}',
+    );
+    final mn = cs.moon;
+    put(
+      'chart-$i-considerations-moon',
+      '${mn.sign.fullKey} ${number(mn.degree)} ${flag(mn.late)} '
+          '${flag(mn.lateSign)} ${flag(mn.viaCombusta)} '
+          '${number(mn.course.daysInSign)} ${flag(mn.course.eased)}',
+    );
+    put('chart-$i-considerations-next', perfection(mn.course.next));
+    put('chart-$i-considerations-within', perfection(mn.course.withinOrb));
+    final sv = cs.seventh;
+    put(
+      'chart-$i-considerations-seventh',
+      '${number(sv.cuspDeg)} ${sv.lord.fullKey} '
+          '${listed([for (final g in sv.infortunesInHouse) g.fullKey])} '
+          '${flag(sv.lordRetrograde)} ${flag(sv.lordCombust)} '
+          '${flag(sv.lordInFall)} ${flag(sv.lordInInfortuneTerm)} ${sv.lordNet}',
+    );
+    put(
+      'chart-$i-considerations-saturn',
+      '${cs.saturnHouse} ${flag(cs.saturnRetrograde)} '
+          '${flag(cs.ascendantLordCombust)}',
+    );
+    put(
+      'chart-$i-considerations-rules',
+      '${number(cs.rules.moonLateFromDeg)} '
+          '${cs.rules.orbsDeg.map(number).join(',')}',
+    );
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {

@@ -1083,6 +1083,21 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
   external ffi.Pointer<ffi.Char> lotsJson;
 
+  /// Every chart's considerations before judgement (Lilly, *Christian
+  /// Astrology* I.XIX), as a JSON object, every member optional:
+  /// `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+  /// whole orbs in the Chaldean order whose halves make an application
+  /// (Lilly's p. 107 by default, C230). The fortitudes they read are
+  /// `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+  /// back in `considerations`, the Moon's two perfections in
+  /// `consideration_perfections` and the orbs applied in
+  /// `consideration_orbs`. Null for none, which costs nothing
+  /// (`03-design/hellenistic-considerations.md`). Refusals are named from
+  /// the record every binding calls `considerations`, as
+  /// `considerations.moonLateFromDeg`.
+  /// Example: {"moonLateFromDeg":25}. May be null.
+  external ffi.Pointer<ffi.Char> considerationsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2972,7 +2987,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3201,6 +3216,21 @@ final class ChartRequest {
   /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
   final String? lotsJson;
 
+  /// Every chart's considerations before judgement (Lilly, *Christian
+  /// Astrology* I.XIX), as a JSON object, every member optional:
+  /// `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+  /// whole orbs in the Chaldean order whose halves make an application
+  /// (Lilly's p. 107 by default, C230). The fortitudes they read are
+  /// `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+  /// back in `considerations`, the Moon's two perfections in
+  /// `consideration_perfections` and the orbs applied in
+  /// `consideration_orbs`. Null for none, which costs nothing
+  /// (`03-design/hellenistic-considerations.md`). Refusals are named from
+  /// the record every binding calls `considerations`, as
+  /// `considerations.moonLateFromDeg`.
+  /// Example: {"moonLateFromDeg":25}. May be null.
+  final String? considerationsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3273,6 +3303,9 @@ final class ChartRequest {
     raw.lotsJson = lotsJson == null
         ? ffi.nullptr
         : lotsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.considerationsJson = considerationsJson == null
+        ? ffi.nullptr
+        : considerationsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3331,6 +3364,9 @@ final class ChartRequest {
         lotsJson: raw.lotsJson == ffi.nullptr
             ? null
             : raw.lotsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        considerationsJson: raw.considerationsJson == ffi.nullptr
+            ? null
+            : raw.considerationsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

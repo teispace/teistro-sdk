@@ -2424,6 +2424,141 @@ class ChartsLotPlaces:
 
 
 @dataclass(frozen=True)
+class ChartsConsiderations:
+    """The `considerations` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.
+    """
+
+    hour_lord: memoryview[int]
+    """The lord of the chart's planetary hour, under the settings' `hora_reckoning`."""
+
+    ascendant_lord: memoryview[int]
+    """The lord of the rising sign."""
+
+    radical_grounds: memoryview[int]
+    """Why the figure is radical, as a bit set over `TsRadicalGround`: bit `n` is the member with code `n` (p. 122). 0 when it is not radical."""
+
+    ascendant_sign: memoryview[int]
+    """The rising sign."""
+
+    ascendant_degree: memoryview[float]
+    """The Ascendant's degree within its sign, [0, 30)."""
+
+    ascendant_early: memoryview[int]
+    """1 when fewer than 3 degrees rise, too early to judge; 0 otherwise."""
+
+    ascendant_late: memoryview[int]
+    """1 when 27 degrees or more rise, too late to judge; 0 otherwise."""
+
+    short_ascension: memoryview[int]
+    """1 when the rising sign is one of short ascension, Capricorn to Gemini; 0 otherwise."""
+
+    moon_sign: memoryview[int]
+    """The Moon's sign."""
+
+    moon_degree: memoryview[float]
+    """The Moon's degree within her sign, [0, 30)."""
+
+    moon_late: memoryview[int]
+    """1 when the Moon is in the later degrees of her sign, from `moon_late_from_deg` (C229); 0 otherwise."""
+
+    moon_late_sign: memoryview[int]
+    """1 when the Moon is in Gemini, Scorpio or Capricorn, where Lilly says lateness matters most; 0 otherwise."""
+
+    via_combusta: memoryview[int]
+    """1 when the Moon is in the via combusta, Libra 15° to Scorpio 15°; 0 otherwise."""
+
+    days_in_sign: memoryview[float]
+    """Days until the Moon leaves her sign, at her motion of the moment."""
+
+    eased: memoryview[int]
+    """1 when the Moon is in Taurus, Cancer, Sagittarius or Pisces, where void of course "somewhat she performes"; 0 otherwise."""
+
+    seventh_cusp_deg: memoryview[float]
+    """The seventh cusp, degrees of the chart's zodiac."""
+
+    seventh_lord: memoryview[int]
+    """The lord of the sign on the seventh cusp."""
+
+    seventh_infortunes: memoryview[int]
+    """Saturn and Mars when counted in the seventh house, as a bit set: bit `n` is the graha with catalogue id `n` (C231)."""
+
+    seventh_lord_retrograde: memoryview[int]
+    """1 when the seventh's lord is retrograde; 0 otherwise."""
+
+    seventh_lord_combust: memoryview[int]
+    """1 when the seventh's lord is combust; 0 otherwise."""
+
+    seventh_lord_in_fall: memoryview[int]
+    """1 when the seventh's lord is in his fall; 0 otherwise."""
+
+    seventh_lord_in_infortune_term: memoryview[int]
+    """1 when the seventh's lord is in the terms of Saturn or Mars; 0 otherwise."""
+
+    seventh_lord_net: memoryview[int]
+    """The seventh's lord's net strength, his essential and accidental fortitudes less his debilities."""
+
+    saturn_house: memoryview[int]
+    """The house Saturn is counted in, 1 to 12, by the fortitudes' five-degree rule."""
+
+    saturn_retrograde: memoryview[int]
+    """1 when Saturn is retrograde; 0 otherwise."""
+
+    ascendant_lord_combust: memoryview[int]
+    """1 when the Ascendant's lord is combust; 0 otherwise."""
+
+    moon_late_from_deg: memoryview[float]
+    """The degree the Moon's lateness was counted from, `considerations_json.moonLateFromDeg`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsConsiderationPerfections:
+    """The `consideration_perfections` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.
+    """
+
+    present: memoryview[int]
+    """1 when there is such a perfection; 0 when she is void by this reading, and then the other columns are 0 and NaN."""
+
+    planet: memoryview[int]
+    """The planet she perfects it with."""
+
+    aspect: memoryview[int]
+    """The aspect."""
+
+    days: memoryview[float]
+    """Days until it is exact, at the motions of the moment."""
+
+    gap_deg: memoryview[float]
+    """How far it is from exact now, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsConsiderationOrbs:
+    """The `consideration_orbs` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
+    """
+
+    orb_deg: memoryview[float]
+    """The planet's whole orb, degrees; half of it counts toward an application."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2751,6 +2886,15 @@ class Charts:
     lot_places: ChartsLotPlaces
     """Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none."""
 
+    considerations: ChartsConsiderations
+    """Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none."""
+
+    consideration_perfections: ChartsConsiderationPerfections
+    """The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none."""
+
+    consideration_orbs: ChartsConsiderationOrbs
+    """The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2828,6 +2972,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_fortitude_accidents = blob.section(66, "fortitude_accidents")
     at_lots = blob.section(67, "lots")
     at_lot_places = blob.section(68, "lot_places")
+    at_considerations = blob.section(69, "considerations")
+    at_consideration_perfections = blob.section(70, "consideration_perfections")
+    at_consideration_orbs = blob.section(71, "consideration_orbs")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -4321,6 +4468,114 @@ def decode_charts(raw: bytes) -> Charts:
                 at_lot_places, 4, 1, at_lot_places.count
             ).cast("B"),
             length=at_lot_places.count,
+        ),
+        considerations=ChartsConsiderations(
+            hour_lord=blob.column(
+                at_considerations, 0, 2, at_considerations.count
+            ).cast("H"),
+            ascendant_lord=blob.column(
+                at_considerations, 1, 2, at_considerations.count
+            ).cast("H"),
+            radical_grounds=blob.column(
+                at_considerations, 2, 1, at_considerations.count
+            ).cast("B"),
+            ascendant_sign=blob.column(
+                at_considerations, 3, 2, at_considerations.count
+            ).cast("H"),
+            ascendant_degree=blob.column(
+                at_considerations, 4, 8, at_considerations.count
+            ).cast("d"),
+            ascendant_early=blob.column(
+                at_considerations, 5, 1, at_considerations.count
+            ).cast("B"),
+            ascendant_late=blob.column(
+                at_considerations, 6, 1, at_considerations.count
+            ).cast("B"),
+            short_ascension=blob.column(
+                at_considerations, 7, 1, at_considerations.count
+            ).cast("B"),
+            moon_sign=blob.column(
+                at_considerations, 8, 2, at_considerations.count
+            ).cast("H"),
+            moon_degree=blob.column(
+                at_considerations, 9, 8, at_considerations.count
+            ).cast("d"),
+            moon_late=blob.column(
+                at_considerations, 10, 1, at_considerations.count
+            ).cast("B"),
+            moon_late_sign=blob.column(
+                at_considerations, 11, 1, at_considerations.count
+            ).cast("B"),
+            via_combusta=blob.column(
+                at_considerations, 12, 1, at_considerations.count
+            ).cast("B"),
+            days_in_sign=blob.column(
+                at_considerations, 13, 8, at_considerations.count
+            ).cast("d"),
+            eased=blob.column(
+                at_considerations, 14, 1, at_considerations.count
+            ).cast("B"),
+            seventh_cusp_deg=blob.column(
+                at_considerations, 15, 8, at_considerations.count
+            ).cast("d"),
+            seventh_lord=blob.column(
+                at_considerations, 16, 2, at_considerations.count
+            ).cast("H"),
+            seventh_infortunes=blob.column(
+                at_considerations, 17, 1, at_considerations.count
+            ).cast("B"),
+            seventh_lord_retrograde=blob.column(
+                at_considerations, 18, 1, at_considerations.count
+            ).cast("B"),
+            seventh_lord_combust=blob.column(
+                at_considerations, 19, 1, at_considerations.count
+            ).cast("B"),
+            seventh_lord_in_fall=blob.column(
+                at_considerations, 20, 1, at_considerations.count
+            ).cast("B"),
+            seventh_lord_in_infortune_term=blob.column(
+                at_considerations, 21, 1, at_considerations.count
+            ).cast("B"),
+            seventh_lord_net=blob.column(
+                at_considerations, 22, 2, at_considerations.count
+            ).cast("h"),
+            saturn_house=blob.column(
+                at_considerations, 23, 1, at_considerations.count
+            ).cast("B"),
+            saturn_retrograde=blob.column(
+                at_considerations, 24, 1, at_considerations.count
+            ).cast("B"),
+            ascendant_lord_combust=blob.column(
+                at_considerations, 25, 1, at_considerations.count
+            ).cast("B"),
+            moon_late_from_deg=blob.column(
+                at_considerations, 26, 8, at_considerations.count
+            ).cast("d"),
+            length=at_considerations.count,
+        ),
+        consideration_perfections=ChartsConsiderationPerfections(
+            present=blob.column(
+                at_consideration_perfections, 0, 1, at_consideration_perfections.count
+            ).cast("B"),
+            planet=blob.column(
+                at_consideration_perfections, 1, 2, at_consideration_perfections.count
+            ).cast("H"),
+            aspect=blob.column(
+                at_consideration_perfections, 2, 1, at_consideration_perfections.count
+            ).cast("B"),
+            days=blob.column(
+                at_consideration_perfections, 3, 8, at_consideration_perfections.count
+            ).cast("d"),
+            gap_deg=blob.column(
+                at_consideration_perfections, 4, 8, at_consideration_perfections.count
+            ).cast("d"),
+            length=at_consideration_perfections.count,
+        ),
+        consideration_orbs=ChartsConsiderationOrbs(
+            orb_deg=blob.column(
+                at_consideration_orbs, 0, 8, at_consideration_orbs.count
+            ).cast("d"),
+            length=at_consideration_orbs.count,
         ),
     )
 

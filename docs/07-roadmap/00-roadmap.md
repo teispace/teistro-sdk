@@ -858,8 +858,8 @@ the same machinery rather than new mechanisms:
   member from Valens VI.5–6, begun from the sect's luminary or any star
   through `decennials_from`, the third stage's division a knob. **The
   time lords are done.** Lilly's considerations before judgement followed
-  (`hellenistic-considerations.md`, C229–C231), reported as clauses in
-  Rust; their boundary and Ibn Ezra's weights remain.
+  (`hellenistic-considerations.md`, C229–C231), reported as clauses and
+  crossing the boundary to every binding; Ibn Ezra's weights remain.
 
 Exit: baseline golden vectors for each Vedic technique; the muhurta
 regression ranking matches; the KP profile enforces the KP ayanamsha; the

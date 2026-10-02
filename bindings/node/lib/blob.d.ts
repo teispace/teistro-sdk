@@ -2857,6 +2857,178 @@ export interface ChartsLotPlaces {
 }
 
 /**
+ * The `considerations` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.
+ */
+export interface ChartsConsiderations {
+  /**
+   * The lord of the chart's planetary hour, under the settings' `hora_reckoning`.
+   * The values are `Graha` ids.
+   */
+  readonly hourLord: Uint16Array;
+  /**
+   * The lord of the rising sign.
+   * The values are `Graha` ids.
+   */
+  readonly ascendantLord: Uint16Array;
+  /**
+   * Why the figure is radical, as a bit set over `TsRadicalGround`: bit `n` is the member with code `n` (p. 122). 0 when it is not radical.
+   */
+  readonly radicalGrounds: Uint8Array;
+  /**
+   * The rising sign.
+   * The values are `Rashi` ids.
+   */
+  readonly ascendantSign: Uint16Array;
+  /**
+   * The Ascendant's degree within its sign, [0, 30).
+   */
+  readonly ascendantDegree: Float64Array;
+  /**
+   * 1 when fewer than 3 degrees rise, too early to judge; 0 otherwise.
+   */
+  readonly ascendantEarly: Uint8Array;
+  /**
+   * 1 when 27 degrees or more rise, too late to judge; 0 otherwise.
+   */
+  readonly ascendantLate: Uint8Array;
+  /**
+   * 1 when the rising sign is one of short ascension, Capricorn to Gemini; 0 otherwise.
+   */
+  readonly shortAscension: Uint8Array;
+  /**
+   * The Moon's sign.
+   * The values are `Rashi` ids.
+   */
+  readonly moonSign: Uint16Array;
+  /**
+   * The Moon's degree within her sign, [0, 30).
+   */
+  readonly moonDegree: Float64Array;
+  /**
+   * 1 when the Moon is in the later degrees of her sign, from `moon_late_from_deg` (C229); 0 otherwise.
+   */
+  readonly moonLate: Uint8Array;
+  /**
+   * 1 when the Moon is in Gemini, Scorpio or Capricorn, where Lilly says lateness matters most; 0 otherwise.
+   */
+  readonly moonLateSign: Uint8Array;
+  /**
+   * 1 when the Moon is in the via combusta, Libra 15° to Scorpio 15°; 0 otherwise.
+   */
+  readonly viaCombusta: Uint8Array;
+  /**
+   * Days until the Moon leaves her sign, at her motion of the moment.
+   */
+  readonly daysInSign: Float64Array;
+  /**
+   * 1 when the Moon is in Taurus, Cancer, Sagittarius or Pisces, where void of course "somewhat she performes"; 0 otherwise.
+   */
+  readonly eased: Uint8Array;
+  /**
+   * The seventh cusp, degrees of the chart's zodiac.
+   */
+  readonly seventhCuspDeg: Float64Array;
+  /**
+   * The lord of the sign on the seventh cusp.
+   * The values are `Graha` ids.
+   */
+  readonly seventhLord: Uint16Array;
+  /**
+   * Saturn and Mars when counted in the seventh house, as a bit set: bit `n` is the graha with catalogue id `n` (C231).
+   */
+  readonly seventhInfortunes: Uint8Array;
+  /**
+   * 1 when the seventh's lord is retrograde; 0 otherwise.
+   */
+  readonly seventhLordRetrograde: Uint8Array;
+  /**
+   * 1 when the seventh's lord is combust; 0 otherwise.
+   */
+  readonly seventhLordCombust: Uint8Array;
+  /**
+   * 1 when the seventh's lord is in his fall; 0 otherwise.
+   */
+  readonly seventhLordInFall: Uint8Array;
+  /**
+   * 1 when the seventh's lord is in the terms of Saturn or Mars; 0 otherwise.
+   */
+  readonly seventhLordInInfortuneTerm: Uint8Array;
+  /**
+   * The seventh's lord's net strength, his essential and accidental fortitudes less his debilities.
+   */
+  readonly seventhLordNet: Int16Array;
+  /**
+   * The house Saturn is counted in, 1 to 12, by the fortitudes' five-degree rule.
+   */
+  readonly saturnHouse: Uint8Array;
+  /**
+   * 1 when Saturn is retrograde; 0 otherwise.
+   */
+  readonly saturnRetrograde: Uint8Array;
+  /**
+   * 1 when the Ascendant's lord is combust; 0 otherwise.
+   */
+  readonly ascendantLordCombust: Uint8Array;
+  /**
+   * The degree the Moon's lateness was counted from, `considerations_json.moonLateFromDeg`.
+   */
+  readonly moonLateFromDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `consideration_perfections` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.
+ */
+export interface ChartsConsiderationPerfections {
+  /**
+   * 1 when there is such a perfection; 0 when she is void by this reading, and then the other columns are 0 and NaN.
+   */
+  readonly present: Uint8Array;
+  /**
+   * The planet she perfects it with.
+   * The values are `Graha` ids.
+   */
+  readonly planet: Uint16Array;
+  /**
+   * The aspect.
+   * The values are `PtolemaicAspect` ids.
+   */
+  readonly aspect: Uint8Array;
+  /**
+   * Days until it is exact, at the motions of the moment.
+   */
+  readonly days: Float64Array;
+  /**
+   * How far it is from exact now, degrees.
+   */
+  readonly gapDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `consideration_orbs` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
+ */
+export interface ChartsConsiderationOrbs {
+  /**
+   * The planet's whole orb, degrees; half of it counts toward an application.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -3296,6 +3468,18 @@ export interface Charts {
    * Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
    */
   readonly lotPlaces: ChartsLotPlaces;
+  /**
+   * Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.
+   */
+  readonly considerations: ChartsConsiderations;
+  /**
+   * The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.
+   */
+  readonly considerationPerfections: ChartsConsiderationPerfections;
+  /**
+   * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
+   */
+  readonly considerationOrbs: ChartsConsiderationOrbs;
 }
 
 /**

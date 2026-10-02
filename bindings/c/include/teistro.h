@@ -5161,6 +5161,53 @@ typedef enum ts_lot {
 } ts_lot;
 
 /**
+ * Why a horary figure is radical (Lilly p. 121,
+ * `03-design/hellenistic-considerations.md`); a figure's grounds cross as
+ * a bit set, bit `n` the member with code `n`.
+ */
+typedef enum ts_radical_ground {
+    /**
+     * The lord of the hour and the lord of the Ascendant are one planet.
+     */
+    TS_RADICAL_GROUND_ONE_LORD = 0,
+    /**
+     * The lord of the hour rules the rising sign's triplicity.
+     */
+    TS_RADICAL_GROUND_TRIPLICITY = 1,
+    /**
+     * The two lords share a temperament.
+     */
+    TS_RADICAL_GROUND_NATURE = 2,
+} ts_radical_ground;
+
+/**
+ * A Ptolemaic aspect the Moon perfects before judgement
+ * (`03-design/hellenistic-considerations.md`).
+ */
+typedef enum ts_ptolemaic_aspect {
+    /**
+     * 0°.
+     */
+    TS_PTOLEMAIC_ASPECT_CONJUNCTION = 0,
+    /**
+     * 60°.
+     */
+    TS_PTOLEMAIC_ASPECT_SEXTILE = 1,
+    /**
+     * 90°.
+     */
+    TS_PTOLEMAIC_ASPECT_SQUARE = 2,
+    /**
+     * 120°.
+     */
+    TS_PTOLEMAIC_ASPECT_TRINE = 3,
+    /**
+     * 180°.
+     */
+    TS_PTOLEMAIC_ASPECT_OPPOSITION = 4,
+} ts_ptolemaic_aspect;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -7511,6 +7558,22 @@ struct ts_chart_request {
      * Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
      */
     const char * lots_json;
+    /**
+     * Every chart's considerations before judgement (Lilly, *Christian
+     * Astrology* I.XIX), as a JSON object, every member optional:
+     * `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+     * whole orbs in the Chaldean order whose halves make an application
+     * (Lilly's p. 107 by default, C230). The fortitudes they read are
+     * `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+     * back in `considerations`, the Moon's two perfections in
+     * `consideration_perfections` and the orbs applied in
+     * `consideration_orbs`. Null for none, which costs nothing
+     * (`03-design/hellenistic-considerations.md`). Refusals are named from
+     * the record every binding calls `considerations`, as
+     * `considerations.moonLateFromDeg`.
+     * Example: {"moonLateFromDeg":25}. May be null.
+     */
+    const char * considerations_json;
 };
 
 /**
@@ -8445,7 +8508,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 200, "ts_chart_request is 200 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 208, "ts_chart_request is 208 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

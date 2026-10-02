@@ -712,8 +712,9 @@ test('every catalogue enum has a complete id table', () => {
   // reading of Fortune by night; 1252 since his fourteen `TsLot`s; 1257
   // since his time lords, three `TsDashaSystem`s in two `TsDashaFamily`s;
   // 1259 since the firdaria, a `TsDashaSystem` in a `TsDashaFamily`, and
-  // 1261 since the decennials, the same.
-  assert.equal(entries, 1261, 'every member of every enum is in a table');
+  // 1261 since the decennials, the same; 1269 since Lilly's considerations,
+  // five `TsPtolemaicAspect`s and three `TsRadicalGround`s.
+  assert.equal(entries, 1269, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2094,6 +2095,58 @@ test('a chart carries its essential dignities', () => {
     );
   }
   assert.throws(() => ctx.chart.found({ instant: instants[0], ...kathmandu, dignities: 'LILLY' }), TypeError);
+  ctx.dispose();
+});
+
+/**
+ * Lilly's considerations cross whole: each clause read from the chart's
+ * own fortitudes, the Moon's two readings of her course, the rules read
+ * back as a request would write them, a batch the charts one at a time, and
+ * a refusal named in the record (`03-design/hellenistic-considerations.md`).
+ */
+test('a chart carries its considerations', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'conformance-baseline' });
+  const london = { place: { latitude: 51.5, longitude: -0.12, altitude: 0 }, utcOffsetSeconds: 0 };
+  const instants = Array.from({ length: 16 }, (_, k) => 2451545 + k / 8);
+  assert.equal(ctx.chart.found({ instant: instants[0], ...london }).considerations, null);
+
+  let voids = 0;
+  for (const instant of instants) {
+    const chart = ctx.chart.found({ instant, ...london, considerations: {}, fortitudes: {} });
+    const read = chart.considerations;
+    assert.deepEqual(read.rules, { moonLateFromDeg: 27, orbsDeg: [10, 12, 7.5, 17, 8, 7, 12.5] });
+    assert.ok(Object.isFrozen(read.moon.course), 'frozen to its leaves');
+    const sky = chart.fortitudes.sky;
+    assert.equal(read.ascendant.sign, RashiById.get(Math.floor(sky.ascendantDeg / 30)));
+    assert.equal(read.seventh.cuspDeg, sky.cuspsDeg[6]);
+    assert.equal(read.ascendant.early, read.ascendant.degree < 3);
+    const { next, withinOrb } = read.moon.course;
+    // A perfection within the moieties is one before the sign ends.
+    if (next === null) assert.equal(withinOrb, null);
+    if (withinOrb !== null) assert.ok(withinOrb.days >= next.days && withinOrb.days <= read.moon.course.daysInSign);
+    if (next === null || withinOrb === null) voids += 1;
+    for (const ground of read.radicality.grounds) assert.ok(['ONE_LORD', 'TRIPLICITY', 'NATURE'].includes(ground));
+    assert.equal(read.radicality.grounds.includes('ONE_LORD'), read.radicality.hourLord === read.radicality.ascendantLord);
+  }
+  assert.ok(voids > 0, 'a void Moon in the batch');
+
+  const asked = { moonLateFromDeg: 25, orbsDeg: [9, 9, 7, 15, 7, 7, 12] };
+  assert.deepEqual(ctx.chart.found({ instant: instants[0], ...london, considerations: asked }).considerations.rules, asked);
+
+  const batch = ctx.chart.foundMany({ instants, ...london, considerations: {} });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).considerations, ctx.chart.found({ instant, ...london, considerations: {} }).considerations),
+  );
+  for (const [request, field] of [
+    [{ considerations: { moonLateFromDeg: 31 } }, 'considerations.moonLateFromDeg'],
+    [{ considerations: { moonLate: 25 } }, 'considerations.moonLate'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: instants[0], ...london, ...request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
   ctx.dispose();
 });
 

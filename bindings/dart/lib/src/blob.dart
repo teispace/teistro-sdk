@@ -3024,6 +3024,177 @@ final class ChartsLotPlaces {
   final int length;
 }
 
+/// The `considerations` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.
+final class ChartsConsiderations {
+  const ChartsConsiderations({
+    required this.hourLord,
+    required this.ascendantLord,
+    required this.radicalGrounds,
+    required this.ascendantSign,
+    required this.ascendantDegree,
+    required this.ascendantEarly,
+    required this.ascendantLate,
+    required this.shortAscension,
+    required this.moonSign,
+    required this.moonDegree,
+    required this.moonLate,
+    required this.moonLateSign,
+    required this.viaCombusta,
+    required this.daysInSign,
+    required this.eased,
+    required this.seventhCuspDeg,
+    required this.seventhLord,
+    required this.seventhInfortunes,
+    required this.seventhLordRetrograde,
+    required this.seventhLordCombust,
+    required this.seventhLordInFall,
+    required this.seventhLordInInfortuneTerm,
+    required this.seventhLordNet,
+    required this.saturnHouse,
+    required this.saturnRetrograde,
+    required this.ascendantLordCombust,
+    required this.moonLateFromDeg,
+    required this.length,
+  });
+
+  /// The lord of the chart's planetary hour, under the settings' `hora_reckoning`.
+  final Uint16List hourLord;
+
+  /// The lord of the rising sign.
+  final Uint16List ascendantLord;
+
+  /// Why the figure is radical, as a bit set over `TsRadicalGround`: bit `n` is the member with code `n` (p. 122). 0 when it is not radical.
+  final Uint8List radicalGrounds;
+
+  /// The rising sign.
+  final Uint16List ascendantSign;
+
+  /// The Ascendant's degree within its sign, [0, 30).
+  final Float64List ascendantDegree;
+
+  /// 1 when fewer than 3 degrees rise, too early to judge; 0 otherwise.
+  final Uint8List ascendantEarly;
+
+  /// 1 when 27 degrees or more rise, too late to judge; 0 otherwise.
+  final Uint8List ascendantLate;
+
+  /// 1 when the rising sign is one of short ascension, Capricorn to Gemini; 0 otherwise.
+  final Uint8List shortAscension;
+
+  /// The Moon's sign.
+  final Uint16List moonSign;
+
+  /// The Moon's degree within her sign, [0, 30).
+  final Float64List moonDegree;
+
+  /// 1 when the Moon is in the later degrees of her sign, from `moon_late_from_deg` (C229); 0 otherwise.
+  final Uint8List moonLate;
+
+  /// 1 when the Moon is in Gemini, Scorpio or Capricorn, where Lilly says lateness matters most; 0 otherwise.
+  final Uint8List moonLateSign;
+
+  /// 1 when the Moon is in the via combusta, Libra 15° to Scorpio 15°; 0 otherwise.
+  final Uint8List viaCombusta;
+
+  /// Days until the Moon leaves her sign, at her motion of the moment.
+  final Float64List daysInSign;
+
+  /// 1 when the Moon is in Taurus, Cancer, Sagittarius or Pisces, where void of course "somewhat she performes"; 0 otherwise.
+  final Uint8List eased;
+
+  /// The seventh cusp, degrees of the chart's zodiac.
+  final Float64List seventhCuspDeg;
+
+  /// The lord of the sign on the seventh cusp.
+  final Uint16List seventhLord;
+
+  /// Saturn and Mars when counted in the seventh house, as a bit set: bit `n` is the graha with catalogue id `n` (C231).
+  final Uint8List seventhInfortunes;
+
+  /// 1 when the seventh's lord is retrograde; 0 otherwise.
+  final Uint8List seventhLordRetrograde;
+
+  /// 1 when the seventh's lord is combust; 0 otherwise.
+  final Uint8List seventhLordCombust;
+
+  /// 1 when the seventh's lord is in his fall; 0 otherwise.
+  final Uint8List seventhLordInFall;
+
+  /// 1 when the seventh's lord is in the terms of Saturn or Mars; 0 otherwise.
+  final Uint8List seventhLordInInfortuneTerm;
+
+  /// The seventh's lord's net strength, his essential and accidental fortitudes less his debilities.
+  final Int16List seventhLordNet;
+
+  /// The house Saturn is counted in, 1 to 12, by the fortitudes' five-degree rule.
+  final Uint8List saturnHouse;
+
+  /// 1 when Saturn is retrograde; 0 otherwise.
+  final Uint8List saturnRetrograde;
+
+  /// 1 when the Ascendant's lord is combust; 0 otherwise.
+  final Uint8List ascendantLordCombust;
+
+  /// The degree the Moon's lateness was counted from, `considerations_json.moonLateFromDeg`.
+  final Float64List moonLateFromDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `consideration_perfections` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.
+final class ChartsConsiderationPerfections {
+  const ChartsConsiderationPerfections({
+    required this.present,
+    required this.planet,
+    required this.aspect,
+    required this.days,
+    required this.gapDeg,
+    required this.length,
+  });
+
+  /// 1 when there is such a perfection; 0 when she is void by this reading, and then the other columns are 0 and NaN.
+  final Uint8List present;
+
+  /// The planet she perfects it with.
+  final Uint16List planet;
+
+  /// The aspect.
+  final Uint8List aspect;
+
+  /// Days until it is exact, at the motions of the moment.
+  final Float64List days;
+
+  /// How far it is from exact now, degrees.
+  final Float64List gapDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `consideration_orbs` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
+final class ChartsConsiderationOrbs {
+  const ChartsConsiderationOrbs({
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The planet's whole orb, degrees; half of it counts toward an application.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3204,6 +3375,9 @@ final class Charts {
     required this.fortitudeAccidents,
     required this.lots,
     required this.lotPlaces,
+    required this.considerations,
+    required this.considerationPerfections,
+    required this.considerationOrbs,
   });
 
   /// What kind of chart these are.
@@ -3454,6 +3628,15 @@ final class Charts {
   /// Every chart's fourteen lots, **fourteen rows a chart** in the `cast` section's order, each chart's in `TsLot`'s order. Empty when `lots_json` asked for none.
   final ChartsLotPlaces lotPlaces;
 
+  /// Every chart's considerations before judgement (Lilly, *Christian Astrology* I.XIX), a row a chart in the `cast` section's order: each clause with the facts it rests on, never a verdict. Empty when `considerations_json` asked for none.
+  final ChartsConsiderations considerations;
+
+  /// The Moon's course, **two rows a chart** in the `cast` section's order: the first Ptolemaic aspect she perfects with one of the other six before she leaves her sign, then the first already within the two planets' moieties of orb (C230). A row with `present` 0 says she is void by that reading. Empty when `considerations_json` asked for none.
+  final ChartsConsiderationPerfections considerationPerfections;
+
+  /// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `considerations_json.orbsDeg`. Empty when `considerations_json` asked for none.
+  final ChartsConsiderationOrbs considerationOrbs;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -3529,6 +3712,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atFortitudeAccidents = blob.section(66, 'fortitude_accidents');
   final atLots = blob.section(67, 'lots');
   final atLotPlaces = blob.section(68, 'lot_places');
+  final atConsiderations = blob.section(69, 'considerations');
+  final atConsiderationPerfections = blob.section(70, 'consideration_perfections');
+  final atConsiderationOrbs = blob.section(71, 'consideration_orbs');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -6264,6 +6450,180 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atLotPlaces, 4) + atLotPlaces.count * 1,
       ),
       length: atLotPlaces.count,
+    ),
+    considerations: ChartsConsiderations(
+      hourLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 0),
+        blob.columnOffset(atConsiderations, 0) + atConsiderations.count * 2,
+      ),
+      ascendantLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 1),
+        blob.columnOffset(atConsiderations, 1) + atConsiderations.count * 2,
+      ),
+      radicalGrounds: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 2),
+        blob.columnOffset(atConsiderations, 2) + atConsiderations.count * 1,
+      ),
+      ascendantSign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 3),
+        blob.columnOffset(atConsiderations, 3) + atConsiderations.count * 2,
+      ),
+      ascendantDegree: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 4),
+        blob.columnOffset(atConsiderations, 4) + atConsiderations.count * 8,
+      ),
+      ascendantEarly: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 5),
+        blob.columnOffset(atConsiderations, 5) + atConsiderations.count * 1,
+      ),
+      ascendantLate: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 6),
+        blob.columnOffset(atConsiderations, 6) + atConsiderations.count * 1,
+      ),
+      shortAscension: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 7),
+        blob.columnOffset(atConsiderations, 7) + atConsiderations.count * 1,
+      ),
+      moonSign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 8),
+        blob.columnOffset(atConsiderations, 8) + atConsiderations.count * 2,
+      ),
+      moonDegree: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 9),
+        blob.columnOffset(atConsiderations, 9) + atConsiderations.count * 8,
+      ),
+      moonLate: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 10),
+        blob.columnOffset(atConsiderations, 10) + atConsiderations.count * 1,
+      ),
+      moonLateSign: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 11),
+        blob.columnOffset(atConsiderations, 11) + atConsiderations.count * 1,
+      ),
+      viaCombusta: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 12),
+        blob.columnOffset(atConsiderations, 12) + atConsiderations.count * 1,
+      ),
+      daysInSign: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 13),
+        blob.columnOffset(atConsiderations, 13) + atConsiderations.count * 8,
+      ),
+      eased: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 14),
+        blob.columnOffset(atConsiderations, 14) + atConsiderations.count * 1,
+      ),
+      seventhCuspDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 15),
+        blob.columnOffset(atConsiderations, 15) + atConsiderations.count * 8,
+      ),
+      seventhLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 16),
+        blob.columnOffset(atConsiderations, 16) + atConsiderations.count * 2,
+      ),
+      seventhInfortunes: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 17),
+        blob.columnOffset(atConsiderations, 17) + atConsiderations.count * 1,
+      ),
+      seventhLordRetrograde: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 18),
+        blob.columnOffset(atConsiderations, 18) + atConsiderations.count * 1,
+      ),
+      seventhLordCombust: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 19),
+        blob.columnOffset(atConsiderations, 19) + atConsiderations.count * 1,
+      ),
+      seventhLordInFall: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 20),
+        blob.columnOffset(atConsiderations, 20) + atConsiderations.count * 1,
+      ),
+      seventhLordInInfortuneTerm: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 21),
+        blob.columnOffset(atConsiderations, 21) + atConsiderations.count * 1,
+      ),
+      seventhLordNet: Int16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 22),
+        blob.columnOffset(atConsiderations, 22) + atConsiderations.count * 2,
+      ),
+      saturnHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 23),
+        blob.columnOffset(atConsiderations, 23) + atConsiderations.count * 1,
+      ),
+      saturnRetrograde: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 24),
+        blob.columnOffset(atConsiderations, 24) + atConsiderations.count * 1,
+      ),
+      ascendantLordCombust: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 25),
+        blob.columnOffset(atConsiderations, 25) + atConsiderations.count * 1,
+      ),
+      moonLateFromDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderations, 26),
+        blob.columnOffset(atConsiderations, 26) + atConsiderations.count * 8,
+      ),
+      length: atConsiderations.count,
+    ),
+    considerationPerfections: ChartsConsiderationPerfections(
+      present: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationPerfections, 0),
+        blob.columnOffset(atConsiderationPerfections, 0) + atConsiderationPerfections.count * 1,
+      ),
+      planet: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationPerfections, 1),
+        blob.columnOffset(atConsiderationPerfections, 1) + atConsiderationPerfections.count * 2,
+      ),
+      aspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationPerfections, 2),
+        blob.columnOffset(atConsiderationPerfections, 2) + atConsiderationPerfections.count * 1,
+      ),
+      days: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationPerfections, 3),
+        blob.columnOffset(atConsiderationPerfections, 3) + atConsiderationPerfections.count * 8,
+      ),
+      gapDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationPerfections, 4),
+        blob.columnOffset(atConsiderationPerfections, 4) + atConsiderationPerfections.count * 8,
+      ),
+      length: atConsiderationPerfections.count,
+    ),
+    considerationOrbs: ChartsConsiderationOrbs(
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atConsiderationOrbs, 0),
+        blob.columnOffset(atConsiderationOrbs, 0) + atConsiderationOrbs.count * 8,
+      ),
+      length: atConsiderationOrbs.count,
     ),
   );
 }

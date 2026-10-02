@@ -2385,6 +2385,94 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its considerations', () {
+    final ctx = teistro.context(
+      profile: 'conformance-baseline',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(-0.12),
+      altitudeM: Altitude(0),
+    );
+    final instants = [for (var k = 0; k < 16; k += 1) 2451545 + k / 8];
+    Chart found(
+      double instant, {
+      ConsiderationRules? considerations,
+      FortitudeRequest? fortitudes,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: london,
+      utcOffsetSeconds: 0,
+      considerations: considerations,
+      fortitudes: fortitudes,
+    );
+    expect(found(instants[0]).considerations, isNull);
+
+    var voids = 0;
+    for (final instant in instants) {
+      final chart = found(
+        instant,
+        considerations: ConsiderationRules.lilly,
+        fortitudes: const FortitudeRequest(),
+      );
+      final read = chart.considerations!;
+      final sky = chart.fortitudes!.sky;
+      expect(read.rules, ConsiderationRules.lilly);
+      expect(read.ascendant.sign.id, sky.ascendantDeg ~/ 30);
+      expect(read.seventh.cuspDeg, sky.cuspsDeg[6]);
+      expect(read.ascendant.early, read.ascendant.degree < 3);
+      final course = read.moon.course;
+      if (course.next == null) expect(course.withinOrb, isNull);
+      if (course.next == null || course.withinOrb == null) voids += 1;
+      expect(
+        read.radicality.grounds.contains(RadicalGround.oneLord),
+        read.radicality.hourLord == read.radicality.ascendantLord,
+      );
+      // The answer's rules are a request as they stand.
+      expect(found(instant, considerations: read.rules).considerations, read);
+    }
+    expect(voids, greaterThan(0), reason: 'a void Moon in the batch');
+
+    const asked = ConsiderationRules(
+      moonLateFromDeg: 25,
+      orbsDeg: [9, 9, 7, 15, 7, 7, 12],
+    );
+    expect(
+      found(instants[0], considerations: asked).considerations!.rules,
+      asked,
+    );
+
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: london,
+      utcOffsetSeconds: 0,
+      considerations: ConsiderationRules.lilly,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).considerations,
+        found(instant, considerations: ConsiderationRules.lilly).considerations,
+      );
+    }
+    for (final (rules, field) in [
+      (
+        const ConsiderationRules(moonLateFromDeg: 31),
+        'considerations.moonLateFromDeg',
+      ),
+      (
+        const ConsiderationRules(orbsDeg: [10, 12, 7.5, 17, 8, 7, -1]),
+        'considerations.orbsDeg',
+      ),
+    ]) {
+      expect(
+        () => found(instants[0], considerations: rules),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its accidental fortitudes', () {
     final ctx = teistro.context(
       profile: 'conformance-baseline',

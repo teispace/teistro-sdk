@@ -2069,6 +2069,21 @@ pub struct ChartRequest {
     /// Example: {"fortune":"REVERSED_WHILE_MOON_UP"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lots_json: Option<String>,
+    /// Every chart's considerations before judgement (Lilly, *Christian
+    /// Astrology* I.XIX), as a JSON object, every member optional:
+    /// `moonLateFromDeg` (27 by default, C229) and `orbsDeg`, the seven
+    /// whole orbs in the Chaldean order whose halves make an application
+    /// (Lilly's p. 107 by default, C230). The fortitudes they read are
+    /// `fortitudes_json`'s, or Lilly's when it is null. The clauses come
+    /// back in `considerations`, the Moon's two perfections in
+    /// `consideration_perfections` and the orbs applied in
+    /// `consideration_orbs`. Null for none, which costs nothing
+    /// (`03-design/hellenistic-considerations.md`). Refusals are named from
+    /// the record every binding calls `considerations`, as
+    /// `considerations.moonLateFromDeg`.
+    /// Example: {"moonLateFromDeg":25}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub considerations_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2095,6 +2110,7 @@ pub struct HeldChartRequest {
     dignities_json: Option<std::ffi::CString>,
     fortitudes_json: Option<std::ffi::CString>,
     lots_json: Option<std::ffi::CString>,
+    considerations_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2148,6 +2164,10 @@ impl HeldChartRequest {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             lots_json: self.lots_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            considerations_json: self
+                .considerations_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2225,6 +2245,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            considerations_json: self
+                .considerations_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2269,6 +2294,7 @@ impl ChartRequest {
             dignities_json: unsafe { lent_text(raw.dignities_json) },
             fortitudes_json: unsafe { lent_text(raw.fortitudes_json) },
             lots_json: unsafe { lent_text(raw.lots_json) },
+            considerations_json: unsafe { lent_text(raw.considerations_json) },
         }
     }
 }

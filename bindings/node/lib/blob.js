@@ -1103,6 +1103,57 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 69, 'considerations');
+    out.considerations = {
+      hourLord: column(blob, at, 0, 'u16', at.count),
+      ascendantLord: column(blob, at, 1, 'u16', at.count),
+      radicalGrounds: column(blob, at, 2, 'u8', at.count),
+      ascendantSign: column(blob, at, 3, 'u16', at.count),
+      ascendantDegree: column(blob, at, 4, 'f64', at.count),
+      ascendantEarly: column(blob, at, 5, 'u8', at.count),
+      ascendantLate: column(blob, at, 6, 'u8', at.count),
+      shortAscension: column(blob, at, 7, 'u8', at.count),
+      moonSign: column(blob, at, 8, 'u16', at.count),
+      moonDegree: column(blob, at, 9, 'f64', at.count),
+      moonLate: column(blob, at, 10, 'u8', at.count),
+      moonLateSign: column(blob, at, 11, 'u8', at.count),
+      viaCombusta: column(blob, at, 12, 'u8', at.count),
+      daysInSign: column(blob, at, 13, 'f64', at.count),
+      eased: column(blob, at, 14, 'u8', at.count),
+      seventhCuspDeg: column(blob, at, 15, 'f64', at.count),
+      seventhLord: column(blob, at, 16, 'u16', at.count),
+      seventhInfortunes: column(blob, at, 17, 'u8', at.count),
+      seventhLordRetrograde: column(blob, at, 18, 'u8', at.count),
+      seventhLordCombust: column(blob, at, 19, 'u8', at.count),
+      seventhLordInFall: column(blob, at, 20, 'u8', at.count),
+      seventhLordInInfortuneTerm: column(blob, at, 21, 'u8', at.count),
+      seventhLordNet: column(blob, at, 22, 'i16', at.count),
+      saturnHouse: column(blob, at, 23, 'u8', at.count),
+      saturnRetrograde: column(blob, at, 24, 'u8', at.count),
+      ascendantLordCombust: column(blob, at, 25, 'u8', at.count),
+      moonLateFromDeg: column(blob, at, 26, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 70, 'consideration_perfections');
+    out.considerationPerfections = {
+      present: column(blob, at, 0, 'u8', at.count),
+      planet: column(blob, at, 1, 'u16', at.count),
+      aspect: column(blob, at, 2, 'u8', at.count),
+      days: column(blob, at, 3, 'f64', at.count),
+      gapDeg: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 71, 'consideration_orbs');
+    out.considerationOrbs = {
+      orbDeg: column(blob, at, 0, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

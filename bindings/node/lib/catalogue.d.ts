@@ -6862,6 +6862,71 @@ export declare const Lot: {
 export declare const LotById: ReadonlyMap<number, Lot>;
 
 /**
+ * Why a horary figure is radical (Lilly p. 121,
+ * `03-design/hellenistic-considerations.md`); a figure's grounds cross as
+ * a bit set, bit `n` the member with code `n`.
+ */
+export type RadicalGround = 'ONE_LORD' | 'TRIPLICITY' | 'NATURE';
+
+/** Every RadicalGround by name; the values are the strings the union accepts. */
+export declare const RadicalGround: {
+  /**
+   * The lord of the hour and the lord of the Ascendant are one planet.
+   */
+  readonly OneLord: 'ONE_LORD';
+  /**
+   * The lord of the hour rules the rising sign's triplicity.
+   */
+  readonly Triplicity: 'TRIPLICITY';
+  /**
+   * The two lords share a temperament.
+   */
+  readonly Nature: 'NATURE';
+};
+
+/**
+ * Every RadicalGround by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RadicalGroundById: ReadonlyMap<number, RadicalGround>;
+
+/**
+ * A Ptolemaic aspect the Moon perfects before judgement
+ * (`03-design/hellenistic-considerations.md`).
+ */
+export type PtolemaicAspect = 'CONJUNCTION' | 'SEXTILE' | 'SQUARE' | 'TRINE' | 'OPPOSITION';
+
+/** Every PtolemaicAspect by name; the values are the strings the union accepts. */
+export declare const PtolemaicAspect: {
+  /**
+   * 0°.
+   */
+  readonly Conjunction: 'CONJUNCTION';
+  /**
+   * 60°.
+   */
+  readonly Sextile: 'SEXTILE';
+  /**
+   * 90°.
+   */
+  readonly Square: 'SQUARE';
+  /**
+   * 120°.
+   */
+  readonly Trine: 'TRINE';
+  /**
+   * 180°.
+   */
+  readonly Opposition: 'OPPOSITION';
+};
+
+/**
+ * Every PtolemaicAspect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PtolemaicAspectById: ReadonlyMap<number, PtolemaicAspect>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

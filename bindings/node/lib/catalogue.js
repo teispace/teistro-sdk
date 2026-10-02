@@ -3357,6 +3357,44 @@ export const LotById = new Map([
   [13, 'CRISIS'],
 ]);
 
+/** Every RadicalGround by name. */
+export const RadicalGround = Object.freeze({
+  OneLord: 'ONE_LORD',
+  Triplicity: 'TRIPLICITY',
+  Nature: 'NATURE',
+});
+
+/**
+ * Every RadicalGround by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RadicalGroundById = new Map([
+  [0, 'ONE_LORD'],
+  [1, 'TRIPLICITY'],
+  [2, 'NATURE'],
+]);
+
+/** Every PtolemaicAspect by name. */
+export const PtolemaicAspect = Object.freeze({
+  Conjunction: 'CONJUNCTION',
+  Sextile: 'SEXTILE',
+  Square: 'SQUARE',
+  Trine: 'TRINE',
+  Opposition: 'OPPOSITION',
+});
+
+/**
+ * Every PtolemaicAspect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PtolemaicAspectById = new Map([
+  [0, 'CONJUNCTION'],
+  [1, 'SEXTILE'],
+  [2, 'SQUARE'],
+  [3, 'TRINE'],
+  [4, 'OPPOSITION'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

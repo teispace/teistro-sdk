@@ -5753,6 +5753,85 @@ enum Lot {
   }
 }
 
+/// Why a horary figure is radical (Lilly p. 121,
+/// `03-design/hellenistic-considerations.md`); a figure's grounds cross as
+/// a bit set, bit `n` the member with code `n`.
+enum RadicalGround {
+  /// The lord of the hour and the lord of the Ascendant are one planet.
+  oneLord(0, 'ONE_LORD'),
+  /// The lord of the hour rules the rising sign's triplicity.
+  triplicity(1, 'TRIPLICITY'),
+  /// The two lords share a temperament.
+  nature(2, 'NATURE');
+
+  const RadicalGround(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static RadicalGround byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a RadicalGround'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static RadicalGround? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A Ptolemaic aspect the Moon perfects before judgement
+/// (`03-design/hellenistic-considerations.md`).
+enum PtolemaicAspect {
+  /// 0°.
+  conjunction(0, 'CONJUNCTION'),
+  /// 60°.
+  sextile(1, 'SEXTILE'),
+  /// 90°.
+  square(2, 'SQUARE'),
+  /// 120°.
+  trine(3, 'TRINE'),
+  /// 180°.
+  opposition(4, 'OPPOSITION');
+
+  const PtolemaicAspect(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static PtolemaicAspect byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a PtolemaicAspect'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static PtolemaicAspect? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

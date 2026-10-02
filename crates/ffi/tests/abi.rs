@@ -296,6 +296,7 @@ fn chart_request(
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1563,6 +1564,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1704,6 +1706,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1843,6 +1846,7 @@ fn a_chart_request_answers_the_transits() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2054,6 +2058,7 @@ fn a_chart_request_answers_the_hit_list() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2218,6 +2223,7 @@ fn a_chart_request_answers_sade_sati() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2324,6 +2330,7 @@ fn a_chart_request_answers_sade_sati() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2384,6 +2391,7 @@ fn a_chart_request_answers_sade_sati() {
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
+        considerations_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2448,6 +2456,7 @@ fn a_chart_request_answers_the_dignities() {
                 dignities_json,
                 fortitudes_json: ptr::null(),
                 lots_json: ptr::null(),
+                considerations_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2717,6 +2726,7 @@ fn a_chart_request_answers_the_fortitudes() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3186,6 +3196,308 @@ fn a_chart_request_answers_the_lots() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("lots.fortuna"));
 }
 
+/// The considerations cross: a request's `considerations_json` answers
+/// every chart's clauses in `considerations`, the Moon's two perfections
+/// in `consideration_perfections` and the orbs in `consideration_orbs`,
+/// each cell the façade's own to the bit, read from the request's own
+/// fortitudes; none asked is an empty section, and a rule out of range is
+/// refused by its field (`03-design/hellenistic-considerations.md`).
+#[test]
+fn a_chart_request_answers_the_considerations() {
+    use teistro_ffi::chart::TsPtolemaicAspect;
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    // London, every three hours over two days of January 2000: the Moon
+    // both void and applying.
+    let instants: Vec<f64> = (0..16).map(|k| 2_451_545.0 + f64::from(k) / 8.0).collect();
+    let base = chart_request(&instants, (51.5, -0.12), 0);
+    let rules_text = r#"{"moonLateFromDeg":25}"#;
+    let fortitudes_text = r#"{"rules":{"combustionDeg":9}}"#;
+    let rules_json = CString::new(rules_text).unwrap();
+    let fortitudes_json = CString::new(fortitudes_text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            considerations_json: rules_json.as_ptr(),
+            fortitudes_json: fortitudes_json.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("conformance-baseline")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5, -0.12, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(0).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let rules = teistro::ConsiderationRules::from_json(rules_text).unwrap();
+    let fortitudes = teistro::FortitudeRequest::from_json(fortitudes_text).unwrap();
+    let expected: Vec<teistro::Considerations> = natal
+        .iter()
+        .map(|document| {
+            sdk.chart()
+                .considerations(document, &fortitudes, rules)
+                .unwrap()
+        })
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let each = |read: &dyn Fn(&teistro::Considerations) -> i64| -> Vec<i64> {
+        expected.iter().map(read).collect()
+    };
+    let each_f = |read: &dyn Fn(&teistro::Considerations) -> f64| -> Vec<u64> {
+        expected.iter().map(|one| read(one).to_bits()).collect()
+    };
+    let flag = |value: bool| i64::from(value);
+
+    // A row a chart.
+    assert_eq!(
+        ints("considerations", "hour_lord"),
+        each(&|one| i64::from(one.radicality.hour_lord.id()))
+    );
+    assert_eq!(
+        ints("considerations", "ascendant_lord"),
+        each(&|one| i64::from(one.radicality.ascendant_lord.id()))
+    );
+    assert_eq!(
+        ints("considerations", "radical_grounds"),
+        each(&|one| {
+            one.radicality
+                .grounds
+                .iter()
+                .map(|ground| {
+                    1_i64 << (teistro_ffi::chart::TsRadicalGround::of(*ground).unwrap() as u8)
+                })
+                .sum()
+        })
+    );
+    assert_eq!(
+        ints("considerations", "ascendant_sign"),
+        each(&|one| i64::from(one.ascendant.sign.id()))
+    );
+    assert_eq!(
+        bits("considerations", "ascendant_degree"),
+        each_f(&|one| one.ascendant.degree)
+    );
+    assert_eq!(
+        ints("considerations", "ascendant_early"),
+        each(&|one| flag(one.ascendant.early))
+    );
+    assert_eq!(
+        ints("considerations", "ascendant_late"),
+        each(&|one| flag(one.ascendant.late))
+    );
+    assert_eq!(
+        ints("considerations", "short_ascension"),
+        each(&|one| flag(one.ascendant.short_ascension))
+    );
+    assert_eq!(
+        ints("considerations", "moon_sign"),
+        each(&|one| i64::from(one.moon.sign.id()))
+    );
+    assert_eq!(
+        bits("considerations", "moon_degree"),
+        each_f(&|one| one.moon.degree)
+    );
+    assert_eq!(
+        ints("considerations", "moon_late"),
+        each(&|one| flag(one.moon.late))
+    );
+    assert_eq!(
+        ints("considerations", "moon_late_sign"),
+        each(&|one| flag(one.moon.late_sign))
+    );
+    assert_eq!(
+        ints("considerations", "via_combusta"),
+        each(&|one| flag(one.moon.via_combusta))
+    );
+    assert_eq!(
+        bits("considerations", "days_in_sign"),
+        each_f(&|one| one.moon.course.days_in_sign)
+    );
+    assert_eq!(
+        ints("considerations", "eased"),
+        each(&|one| flag(one.moon.course.eased))
+    );
+    assert_eq!(
+        bits("considerations", "seventh_cusp_deg"),
+        each_f(&|one| one.seventh.cusp_deg)
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord"),
+        each(&|one| i64::from(one.seventh.lord.id()))
+    );
+    assert_eq!(
+        ints("considerations", "seventh_infortunes"),
+        each(&|one| {
+            one.seventh
+                .infortunes_in_house
+                .iter()
+                .map(|graha| 1_i64 << graha.id())
+                .sum()
+        })
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord_retrograde"),
+        each(&|one| flag(one.seventh.lord_retrograde))
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord_combust"),
+        each(&|one| flag(one.seventh.lord_combust))
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord_in_fall"),
+        each(&|one| flag(one.seventh.lord_in_fall))
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord_in_infortune_term"),
+        each(&|one| flag(one.seventh.lord_in_infortune_term))
+    );
+    assert_eq!(
+        ints("considerations", "seventh_lord_net"),
+        each(&|one| i64::from(one.seventh.lord_net))
+    );
+    assert_eq!(
+        ints("considerations", "saturn_house"),
+        each(&|one| i64::from(one.saturn_house.get()))
+    );
+    assert_eq!(
+        ints("considerations", "saturn_retrograde"),
+        each(&|one| flag(one.saturn_retrograde))
+    );
+    assert_eq!(
+        ints("considerations", "ascendant_lord_combust"),
+        each(&|one| flag(one.ascendant_lord_combust))
+    );
+    assert_eq!(
+        bits("considerations", "moon_late_from_deg"),
+        vec![25.0_f64.to_bits(); instants.len()]
+    );
+
+    // Two perfections a chart, by the sign's end then within the moieties.
+    let perfections: Vec<Option<teistro::Perfection>> = expected
+        .iter()
+        .flat_map(|one| [one.moon.course.next, one.moon.course.within_orb])
+        .collect();
+    assert!(perfections.iter().any(Option::is_some));
+    assert!(
+        perfections.iter().any(Option::is_none),
+        "no void Moon in the batch"
+    );
+    assert_eq!(
+        ints("consideration_perfections", "present"),
+        perfections
+            .iter()
+            .map(|one| i64::from(one.is_some()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("consideration_perfections", "planet"),
+        perfections
+            .iter()
+            .map(|one| one.map_or(0, |found| i64::from(found.planet.id())))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("consideration_perfections", "aspect"),
+        perfections
+            .iter()
+            .map(|one| one.map_or(0, |found| i64::from(
+                TsPtolemaicAspect::of(found.aspect).unwrap() as u8
+            )))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("consideration_perfections", "days"),
+        perfections
+            .iter()
+            .map(|one| one.map_or(f64::NAN, |found| found.days).to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("consideration_perfections", "gap_deg"),
+        perfections
+            .iter()
+            .map(|one| one.map_or(f64::NAN, |found| found.gap_deg).to_bits())
+            .collect::<Vec<_>>()
+    );
+    // Seven orbs a chart, Lilly's.
+    assert_eq!(
+        bits("consideration_orbs", "orb_deg"),
+        expected
+            .iter()
+            .flat_map(|one| one.rules.orbs_deg.map(f64::to_bits))
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("considerations", "hour_lord"),
+        ("consideration_perfections", "present"),
+        ("consideration_orbs", "orb_deg"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A rule out of range is refused by the field the caller wrote.
+    let refused = CString::new(r#"{"moonLateFromDeg":31}"#).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            considerations_json: refused.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("considerations.moonLateFromDeg")
+    );
+}
+
 /// The lots record also sets the rules releasing reads its lots under: a
 /// night birth whose Fortune moves sign under Lilly's rule releases from
 /// where Lilly puts it, as the façade's `with_lot_rules` does
@@ -3289,6 +3601,7 @@ fn a_chart_request_answers_kp() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3393,6 +3706,7 @@ fn a_chart_request_answers_kp() {
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
+        considerations_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -3405,6 +3719,7 @@ fn a_chart_request_answers_kp() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -3457,6 +3772,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3492,6 +3808,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         dignities_json: ptr::null(),
         fortitudes_json: ptr::null(),
         lots_json: ptr::null(),
+        considerations_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -3548,6 +3865,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3679,6 +3997,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3815,6 +4134,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4582,6 +4902,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4686,6 +5007,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4859,6 +5181,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             dignities_json: ptr::null(),
             fortitudes_json: ptr::null(),
             lots_json: ptr::null(),
+            considerations_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5136,6 +5459,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 dignities_json: ptr::null(),
                 fortitudes_json: ptr::null(),
                 lots_json: ptr::null(),
+                considerations_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
