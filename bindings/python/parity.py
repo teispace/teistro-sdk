@@ -1004,7 +1004,7 @@ def main() -> None:
             pf = chart.perfection
             assert pf is not None
 
-            def held(dignity: EssentialDignity) -> str:
+            def dignities_held(dignity: EssentialDignity) -> str:
                 return commas(f.name for f in dataclass_fields(dignity) if getattr(dignity, f.name))
 
             put(
@@ -1025,7 +1025,7 @@ def main() -> None:
             wy = pf.ways
             put(
                 f"chart-{i}-perfection-ways",
-                f"{wy.querent.house} {held(wy.querent.dignity)} {wy.quesited.house} {held(wy.quesited.dignity)}"
+                f"{wy.querent.house} {dignities_held(wy.querent.dignity)} {wy.quesited.house} {dignities_held(wy.quesited.dignity)}"
                 f" {int(wy.mutual_by_house)} {commas(g.full_key for g in wy.infortunes_between)}"
                 f" {int(wy.moon_relays)} {int(wy.quesited_in_ascendant)} {commas(w.key for w in wy.held)}",
             )
@@ -1039,17 +1039,20 @@ def main() -> None:
                 put(
                     f"chart-{i}-perfection-translation-{n}",
                     f"{tr.translator.full_key} {tr.from_.full_key} {tr.to.full_key} {tr.separating.aspect.key}"
-                    f" {number(tr.separating.past_deg)} {tr.aspect.key} {number(tr.days)} {held(tr.received)}",
+                    f" {number(tr.separating.past_deg)} {tr.aspect.key} {number(tr.days)} {dignities_held(tr.received)}",
                 )
             for n, co in enumerate(pf.collections):
                 put(
                     f"chart-{i}-perfection-collection-{n}",
                     f"{co.collector.full_key} {co.from_querent.aspect.key} {number(co.from_querent.days)}"
                     f" {co.from_quesited.aspect.key} {number(co.from_quesited.days)}"
-                    f" {held(co.collector_in_querent)} {held(co.collector_in_quesited)}"
-                    f" {held(co.querent_in_collector)} {held(co.quesited_in_collector)}",
+                    f" {dignities_held(co.collector_in_querent)} {dignities_held(co.collector_in_quesited)}"
+                    f" {dignities_held(co.querent_in_collector)} {dignities_held(co.quesited_in_collector)}",
                 )
-            put(f"chart-{i}-perfection-rules", ",".join(number(orb) for orb in pf.rules.orbs_deg))
+            put(
+                f"chart-{i}-perfection-rules",
+                f"{','.join(number(orb) for orb in pf.rules.orbs_deg)} {int(pf.rules.within_sign)}",
+            )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)
