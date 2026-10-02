@@ -1824,4 +1824,70 @@ mod tests {
             Some("stations")
         );
     }
+
+    /// Lilly's "If the Querent should ever have Children?" (*Christian
+    /// Astrology* p. 238), "Die ♃ 11 June 1635" counted from noon, so the
+    /// morning of Friday 12 June (Julian) in London, recast by pyswisseph
+    /// (Moshier) at the printed Ascendant, Virgo 24°33′: Saturn, Mars and
+    /// the Sun stand within 5′ of the figure, and the houses are its
+    /// Regiomontanus cusps'. The judgement reads Mercury, lord of the
+    /// Ascendant, "going to ☍ of ♄", the fifth's lord, retrograde, and
+    /// finds "no one promising testimony". The opposition applies against
+    /// a retrograde, p. 107's third kind, before Mercury leaves Gemini,
+    /// nothing comes between, and no way holds: an opposition perfects
+    /// only with mutual reception by house and the Moon's relay (p. 126),
+    /// and nothing is heavier than Saturn to collect.
+    #[test]
+    fn lillys_children_figure_applies_by_opposition_and_holds_no_way() {
+        let places = [
+            269.4527, 125.1334, 78.5604, 90.5781, 50.7822, 85.2252, 180.6684,
+        ];
+        let speeds = [-0.0736, 0.1985, 0.6821, 0.9533, 1.1433, 2.1614, 11.8363];
+        let horizon = PerfectionRules::LILLY
+            .horizon_for(&places, &speeds, Mercury, Saturn)
+            .unwrap();
+        let timeline = AspectTimeline::projected(places, speeds, horizon).unwrap();
+        let house = |n| House::try_new(n).unwrap();
+        let standing = Standing {
+            houses: [
+                house(4),
+                house(11),
+                house(9),
+                house(10),
+                house(9),
+                house(10),
+                house(1),
+            ],
+            sect: Sect::Day,
+            dignities: &DignityRules::LILLY,
+        };
+        let matter = perfection(
+            &timeline,
+            Mercury,
+            Saturn,
+            &standing,
+            &PerfectionRules::LILLY,
+        )
+        .unwrap();
+        let application = matter.application.unwrap();
+        assert_eq!(
+            (application.aspect, application.applying, application.kind),
+            (
+                PtolemaicAspect::Opposition,
+                Mercury,
+                ApplicationKind::AgainstRetrograde
+            )
+        );
+        assert!(
+            (application.days - 1.89).abs() < 0.01,
+            "{}",
+            application.days
+        );
+        assert!(application.days < horizon);
+        assert_eq!(matter.impediments, []);
+        assert_eq!(matter.translations, []);
+        assert_eq!(matter.collections, []);
+        assert!(!matter.ways.mutual_by_house);
+        assert_eq!(matter.ways.held, []);
+    }
 }
