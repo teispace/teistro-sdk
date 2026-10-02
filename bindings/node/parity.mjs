@@ -362,6 +362,7 @@ const charts = geo.chart.foundMany({
   },
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
+  perfection: { house: 7, rules: { horizonDays: 120 } },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -660,6 +661,44 @@ for (const chart of charts) {
   );
   put(`chart-${i}-considerations-saturn`, `${cs.saturnHouse} ${flag(cs.saturnRetrograde)} ${flag(cs.ascendantLordCombust)}`);
   put(`chart-${i}-considerations-rules`, `${number(cs.rules.moonLateFromDeg)} ${cs.rules.orbsDeg.map(number).join(',')}`);
+  const pf = chart.perfection;
+  const held = (dignity) => list(Object.keys(dignity).filter((name) => dignity[name]));
+  put(
+    `chart-${i}-perfection`,
+    `${pf.querent} ${pf.quesited} ${number(pf.horizonDays)} ${pf.impediments.length} ${pf.translations.length} ${pf.collections.length}`,
+  );
+  const ap = pf.application;
+  put(
+    `chart-${i}-perfection-application`,
+    ap === null
+      ? '-'
+      : `${ap.aspect} ${number(ap.days)} ${ap.applying} ${ap.kind} ${number(ap.gapDeg)} ${flag(ap.withinMoieties)}`,
+  );
+  put(
+    `chart-${i}-perfection-separation`,
+    pf.separation === null ? '-' : `${pf.separation.aspect} ${number(pf.separation.pastDeg)}`,
+  );
+  const wy = pf.ways;
+  put(
+    `chart-${i}-perfection-ways`,
+    `${wy.querent.house} ${held(wy.querent.dignity)} ${wy.quesited.house} ${held(wy.quesited.dignity)} ${flag(wy.mutualByHouse)} ${list(wy.infortunesBetween)} ${flag(wy.moonRelays)} ${flag(wy.quesitedInAscendant)} ${list(wy.held)}`,
+  );
+  pf.impediments.forEach((at, n) =>
+    put(`chart-${i}-perfection-impediment-${n}`, `${at.kind} ${at.significator} ${at.third ?? '-'} ${at.aspect} ${number(at.days)}`),
+  );
+  pf.translations.forEach((at, n) =>
+    put(
+      `chart-${i}-perfection-translation-${n}`,
+      `${at.translator} ${at.from} ${at.to} ${at.separating.aspect} ${number(at.separating.pastDeg)} ${at.aspect} ${number(at.days)} ${held(at.received)}`,
+    ),
+  );
+  pf.collections.forEach((at, n) =>
+    put(
+      `chart-${i}-perfection-collection-${n}`,
+      `${at.collector} ${at.fromQuerent.aspect} ${number(at.fromQuerent.days)} ${at.fromQuesited.aspect} ${number(at.fromQuesited.days)} ${held(at.collectorInQuerent)} ${held(at.collectorInQuesited)} ${held(at.querentInCollector)} ${held(at.quesitedInCollector)}`,
+    ),
+  );
+  put(`chart-${i}-perfection-rules`, pf.rules.orbsDeg.map(number).join(','));
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

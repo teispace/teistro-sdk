@@ -542,6 +542,10 @@ void main() {
     ),
     lots: const LotRequest(fortune: FortuneRule.reversedWhileMoonUp),
     considerations: const ConsiderationRules(moonLateFromDeg: 25),
+    perfection: const PerfectionRequest.ofHouse(
+      7,
+      rules: PerfectionRules(horizonDays: 120),
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -1075,6 +1079,75 @@ void main() {
       '${number(cs.rules.moonLateFromDeg)} '
           '${cs.rules.orbsDeg.map(number).join(',')}',
     );
+    final pf = chart.perfection!;
+    String commas(Iterable<String> values) {
+      final joined = values.join(',');
+      return joined.isEmpty ? '-' : joined;
+    }
+
+    String held(EssentialDignity d) => commas([
+      if (d.house) 'house',
+      if (d.exaltation) 'exaltation',
+      if (d.triplicity) 'triplicity',
+      if (d.term) 'term',
+      if (d.face) 'face',
+      if (d.detriment) 'detriment',
+      if (d.fall) 'fall',
+    ]);
+    put(
+      'chart-$i-perfection',
+      '${pf.querent.fullKey} ${pf.quesited.fullKey} ${number(pf.horizonDays)} '
+          '${pf.impediments.length} ${pf.translations.length} '
+          '${pf.collections.length}',
+    );
+    final ap = pf.application;
+    put(
+      'chart-$i-perfection-application',
+      ap == null
+          ? '-'
+          : '${ap.aspect.key} ${number(ap.days)} ${ap.applying.fullKey} '
+              '${ap.kind.key} ${number(ap.gapDeg)} ${flag(ap.withinMoieties)}',
+    );
+    final sp = pf.separation;
+    put(
+      'chart-$i-perfection-separation',
+      sp == null ? '-' : '${sp.aspect.key} ${number(sp.pastDeg)}',
+    );
+    final wy = pf.ways;
+    put(
+      'chart-$i-perfection-ways',
+      '${wy.querent.house} ${held(wy.querent.dignity)} ${wy.quesited.house} '
+          '${held(wy.quesited.dignity)} ${flag(wy.mutualByHouse)} '
+          '${commas([for (final g in wy.infortunesBetween) g.fullKey])} '
+          '${flag(wy.moonRelays)} ${flag(wy.quesitedInAscendant)} '
+          '${commas([for (final w in wy.held) w.key])}',
+    );
+    for (final (n, at) in pf.impediments.indexed) {
+      put(
+        'chart-$i-perfection-impediment-$n',
+        '${at.kind.key} ${at.significator.fullKey} ${at.third?.fullKey ?? '-'} '
+            '${at.aspect.key} ${number(at.days)}',
+      );
+    }
+    for (final (n, at) in pf.translations.indexed) {
+      put(
+        'chart-$i-perfection-translation-$n',
+        '${at.translator.fullKey} ${at.from.fullKey} ${at.to.fullKey} '
+            '${at.separating.aspect.key} ${number(at.separating.pastDeg)} '
+            '${at.aspect.key} ${number(at.days)} ${held(at.received)}',
+      );
+    }
+    for (final (n, at) in pf.collections.indexed) {
+      put(
+        'chart-$i-perfection-collection-$n',
+        '${at.collector.fullKey} ${at.fromQuerent.aspect.key} '
+            '${number(at.fromQuerent.days)} ${at.fromQuesited.aspect.key} '
+            '${number(at.fromQuesited.days)} ${held(at.collectorInQuerent)} '
+            '${held(at.collectorInQuesited)} ${held(at.querentInCollector)} '
+            '${held(at.quesitedInCollector)}',
+      );
+    }
+    put('chart-$i-perfection-rules', pf.rules.orbsDeg.map(number).join(','));
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {

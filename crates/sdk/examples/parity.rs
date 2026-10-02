@@ -1785,6 +1785,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_fortitudes(report, geo, index, document);
     the_lots(report, geo, index, document);
     the_considerations(report, geo, index, document);
+    the_perfection(report, geo, index, document);
 }
 
 /// The lots every runner asks for: III.11's Fortune, the one that reads
@@ -1966,6 +1967,173 @@ fn the_considerations(
                 .join(",")
         ),
     );
+}
+
+/// The perfection every runner asks for: the matter of the seventh house
+/// over 120 days, long enough for the parity charts to apply and be
+/// hindered, weighed on the fortitudes every runner asks for.
+const PERFECTION_JSON: &str = r#"{"house":7,"rules":{"horizonDays":120}}"#;
+
+/// A planet's dignities as the runners print them: the flags it holds, in
+/// `EssentialDignity`'s order, or `-` for none.
+fn dignities_held(d: teistro::EssentialDignity) -> String {
+    let held: Vec<&str> = [
+        ("house", d.house),
+        ("exaltation", d.exaltation),
+        ("triplicity", d.triplicity),
+        ("term", d.term),
+        ("face", d.face),
+        ("detriment", d.detriment),
+        ("fall", d.fall),
+    ]
+    .into_iter()
+    .filter_map(|(name, holds)| holds.then_some(name))
+    .collect();
+    comma_listed(&held)
+}
+
+/// The perfection as the other three print them: the significators and
+/// counts, the application and separation, the ways, each impediment,
+/// translation and collection in turn, and the rules.
+fn the_perfection(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::PerfectionRequest::from_json(PERFECTION_JSON).expect("a valid request");
+    let fortitudes =
+        teistro::FortitudeRequest::from_json(&fortitudes_json()).expect("a valid request");
+    let read = sdk
+        .chart()
+        .perfection(document, &fortitudes, &asked)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-perfection{what}");
+    let flag = u8::from;
+    put(
+        report,
+        &key(""),
+        format!(
+            "{} {} {} {} {} {}",
+            read.querent.full_key(),
+            read.quesited.full_key(),
+            number(read.horizon_days),
+            read.impediments.len(),
+            read.translations.len(),
+            read.collections.len()
+        ),
+    );
+    put(
+        report,
+        &key("-application"),
+        read.application.map_or_else(
+            || String::from("-"),
+            |at| {
+                format!(
+                    "{} {} {} {} {} {}",
+                    wire_key(&at.aspect),
+                    number(at.days),
+                    at.applying.full_key(),
+                    wire_key(&at.kind),
+                    number(at.gap_deg),
+                    flag(at.within_moieties)
+                )
+            },
+        ),
+    );
+    put(
+        report,
+        &key("-separation"),
+        read.separation.map_or_else(
+            || String::from("-"),
+            |at| format!("{} {}", wire_key(&at.aspect), number(at.past_deg)),
+        ),
+    );
+    let ways = &read.ways;
+    let infortunes: Vec<&str> = ways
+        .infortunes_between
+        .iter()
+        .map(|g| g.full_key())
+        .collect();
+    let held: Vec<String> = ways.held.iter().map(wire_key).collect();
+    put(
+        report,
+        &key("-ways"),
+        format!(
+            "{} {} {} {} {} {} {} {} {}",
+            ways.querent.house.get(),
+            dignities_held(ways.querent.dignity),
+            ways.quesited.house.get(),
+            dignities_held(ways.quesited.dignity),
+            flag(ways.mutual_by_house),
+            comma_listed(&infortunes),
+            flag(ways.moon_relays),
+            flag(ways.quesited_in_ascendant),
+            comma_listed(&held.iter().map(String::as_str).collect::<Vec<_>>())
+        ),
+    );
+    the_perfection_rows(report, index, &read);
+    put(
+        report,
+        &key("-rules"),
+        asked
+            .rules
+            .orbs_deg
+            .iter()
+            .map(|orb| number(*orb))
+            .collect::<Vec<_>>()
+            .join(","),
+    );
+}
+
+/// A perfection's ragged rows as the runners print them: each impediment,
+/// translation and collection in turn.
+fn the_perfection_rows(report: &mut Report, index: usize, read: &teistro::Matter) {
+    let key = |what: &str| format!("chart-{index}-perfection{what}");
+    for (n, at) in read.impediments.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-impediment-{n}")),
+            format!(
+                "{} {} {} {} {}",
+                wire_key(&at.kind),
+                at.significator.full_key(),
+                at.third.map_or("-", |g| g.full_key()),
+                wire_key(&at.aspect),
+                number(at.days)
+            ),
+        );
+    }
+    for (n, at) in read.translations.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-translation-{n}")),
+            format!(
+                "{} {} {} {} {} {} {} {}",
+                at.translator.full_key(),
+                at.from.full_key(),
+                at.to.full_key(),
+                wire_key(&at.separating.aspect),
+                number(at.separating.past_deg),
+                wire_key(&at.aspect),
+                number(at.days),
+                dignities_held(at.received)
+            ),
+        );
+    }
+    for (n, at) in read.collections.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-collection-{n}")),
+            format!(
+                "{} {} {} {} {} {} {} {} {}",
+                at.collector.full_key(),
+                wire_key(&at.from_querent.aspect),
+                number(at.from_querent.days),
+                wire_key(&at.from_quesited.aspect),
+                number(at.from_quesited.days),
+                dignities_held(at.collector_in_querent),
+                dignities_held(at.collector_in_quesited),
+                dignities_held(at.querent_in_collector),
+                dignities_held(at.quesited_in_collector)
+            ),
+        );
+    }
 }
 
 /// The fortitudes every runner asks for: the dignities' own request as the

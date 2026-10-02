@@ -51,6 +51,7 @@ from teistro import (
     Latitude,
     Longitude,
     Observer,
+    EssentialDignity,
     Perfection,
     PlanItem,
     Scale,
@@ -538,6 +539,7 @@ def main() -> None:
             },
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
+            perfection={"house": 7, "rules": {"horizonDays": 120}},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -999,6 +1001,55 @@ def main() -> None:
                 f"chart-{i}-considerations-rules",
                 f"{number(cs.rules.moon_late_from_deg)} {','.join(number(orb) for orb in cs.rules.orbs_deg)}",
             )
+            pf = chart.perfection
+            assert pf is not None
+
+            def held(dignity: EssentialDignity) -> str:
+                return commas(f.name for f in dataclass_fields(dignity) if getattr(dignity, f.name))
+
+            put(
+                f"chart-{i}-perfection",
+                f"{pf.querent.full_key} {pf.quesited.full_key} {number(pf.horizon_days)}"
+                f" {len(pf.impediments)} {len(pf.translations)} {len(pf.collections)}",
+            )
+            ap = pf.application
+            put(
+                f"chart-{i}-perfection-application",
+                "-"
+                if ap is None
+                else f"{ap.aspect.key} {number(ap.days)} {ap.applying.full_key} {ap.kind.key}"
+                f" {number(ap.gap_deg)} {int(ap.within_moieties)}",
+            )
+            sp = pf.separation
+            put(f"chart-{i}-perfection-separation", "-" if sp is None else f"{sp.aspect.key} {number(sp.past_deg)}")
+            wy = pf.ways
+            put(
+                f"chart-{i}-perfection-ways",
+                f"{wy.querent.house} {held(wy.querent.dignity)} {wy.quesited.house} {held(wy.quesited.dignity)}"
+                f" {int(wy.mutual_by_house)} {commas(g.full_key for g in wy.infortunes_between)}"
+                f" {int(wy.moon_relays)} {int(wy.quesited_in_ascendant)} {commas(w.key for w in wy.held)}",
+            )
+            for n, im in enumerate(pf.impediments):
+                put(
+                    f"chart-{i}-perfection-impediment-{n}",
+                    f"{im.kind.key} {im.significator.full_key} {im.third.full_key if im.third else '-'}"
+                    f" {im.aspect.key} {number(im.days)}",
+                )
+            for n, tr in enumerate(pf.translations):
+                put(
+                    f"chart-{i}-perfection-translation-{n}",
+                    f"{tr.translator.full_key} {tr.from_.full_key} {tr.to.full_key} {tr.separating.aspect.key}"
+                    f" {number(tr.separating.past_deg)} {tr.aspect.key} {number(tr.days)} {held(tr.received)}",
+                )
+            for n, co in enumerate(pf.collections):
+                put(
+                    f"chart-{i}-perfection-collection-{n}",
+                    f"{co.collector.full_key} {co.from_querent.aspect.key} {number(co.from_querent.days)}"
+                    f" {co.from_quesited.aspect.key} {number(co.from_quesited.days)}"
+                    f" {held(co.collector_in_querent)} {held(co.collector_in_quesited)}"
+                    f" {held(co.querent_in_collector)} {held(co.quesited_in_collector)}",
+                )
+            put(f"chart-{i}-perfection-rules", ",".join(number(orb) for orb in pf.rules.orbs_deg))
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)
