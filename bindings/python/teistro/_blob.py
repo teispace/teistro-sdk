@@ -2663,13 +2663,13 @@ class ChartsPerfectionImpediments:
     """The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations."""
 
     third_present: memoryview[int]
-    """1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0."""
+    """1 when a third planet takes part; 0 for a refranation, and then `third` is 0."""
 
     third: memoryview[int]
     """The third planet."""
 
     aspect: memoryview[int]
-    """The aspect the third is met by."""
+    """The aspect the third perfects, or the one refrained from."""
 
     days: memoryview[float]
     """Days until it happens: the contact, or the station."""

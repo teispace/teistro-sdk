@@ -3333,13 +3333,13 @@ final class ChartsPerfectionImpediments {
   /// The significator it falls on: the one a prohibiting third reaches, the one that reaches a frustrating third, or the one that stations.
   final Uint16List significator;
 
-  /// 1 when a third planet takes part; 0 for a refranation, and then `third` and `aspect` are 0.
+  /// 1 when a third planet takes part; 0 for a refranation, and then `third` is 0.
   final Uint8List thirdPresent;
 
   /// The third planet.
   final Uint16List third;
 
-  /// The aspect the third is met by.
+  /// The aspect the third perfects, or the one refrained from.
   final Uint8List aspect;
 
   /// Days until it happens: the contact, or the station.
