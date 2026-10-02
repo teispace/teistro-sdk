@@ -464,5 +464,11 @@ fn a_perfection_refuses_one_planet_for_both_significators() {
             .perfection(&figure, &FortitudeRequest::default(), &asked)
             .unwrap();
         assert_eq!((matter.querent, matter.quesited), (querent, quesited));
+        // The fortitudes already read give the same matter.
+        let held = sdk
+            .chart()
+            .perfection_in(&figure, &fortitudes, &asked)
+            .unwrap();
+        assert_eq!(held, matter);
     }
 }
