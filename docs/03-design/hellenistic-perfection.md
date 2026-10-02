@@ -1,8 +1,8 @@
 # Perfection: whether a matter is brought to pass (the `hellenistic` module, step 11)
 
-Status: `designed`, 2026-10-02 — written from Lilly's text before any
-code; the relations are built in `crates/hellenistic`, and the building
-has corrected the design below.
+Status: `built`, 2026-10-03 — written from Lilly's text before any code
+and corrected by building it, and carried across the boundary into every
+binding.
 
 A horary question names two significators, the querent's (the lord of
 the Ascendant) and the quesited's (the lord of the house of the thing
@@ -188,6 +188,32 @@ question, and need no ephemeris.
   houses come from the fortitudes (`Standing::of`), as the accidental
   table counts them.
 
+- **Across the boundary** the chart request's nullable
+  `perfection_json` is a `PerfectionRequest`: `querent` and `quesited`
+  by key, or `house`, and `rules`, refused by `perfection.<member>`. The
+  answer is five sections: a row a chart (the significators, the
+  application and separation, `application_present` and
+  `separation_present` 0 where there is none, each
+  significator's house and dignities, the ways' facts and the ways held,
+  and three counts); the impediments, translations and collections
+  ragged by those counts; and the orbs seven a chart. Dignities cross as
+  a bit set in `EssentialDignity`'s order, the infortunes between and the
+  ways held as bit sets over the graha id and `TsWay`, and
+  `TsApplicationKind`, `TsImpedimentKind` and `TsWay` are boundary enums
+  every binding names. The houses and dignities are the fortitudes'
+  the request asked for, or Lilly's. The parity runners ask for the
+  seventh house over 120 days, so their charts apply and are hindered.
+- **Lilly's p. 238 figure reads as he judged it.** "If the Querent
+  should ever have Children?" is dated "Die ♃ 11 June 1635" counted from
+  noon, so the morning of 12 June (Julian); recast at the printed
+  Ascendant (Saturn, Mars and the Sun within 5′ of the figure), Mercury,
+  lord of the Ascendant, applies to the opposition of Saturn, the
+  fifth's lord, retrograde, before leaving Gemini: p. 107's third kind.
+  Nothing comes between, nothing is heavier than Saturn to collect, and
+  no way holds, where Lilly found "no one promising testimony". The
+  built-in ephemeris starts in 1800, so the figure is read on its
+  recast places in `crates/hellenistic`.
+
 ## What is not decided
 
 - **C232: does an application run past the sign?** Lilly defines void
@@ -198,8 +224,9 @@ question, and need no ephemeris.
 - **C233: who receives whom in collection.** Lilly's words are that the
   significators "both receive him" — the collector stands in *their*
   dignities. Later accounts often put the significators in the
-  collector's dignities instead. The report states the reception both
-  ways, and the way follows Lilly.
+  collector's dignities instead, and so does Lilly on p. 239, wishing
+  for a collector that "had received ♄ or ☿". The report states the
+  reception both ways, and the way follows p. 126.
 
 ## Order of work
 
@@ -208,7 +235,8 @@ question, and need no ephemeris.
 2. ~~The timeline search in the SDK (`Founder::contact_events`), read
    back in the chart cast at each promised contact.~~
 3. ~~The relations in `crates/hellenistic`, on hand-made timelines.~~
-4. ~~`ChartArea::perfection` and the seven ways~~; then the boundary and
-   every binding.
+4. ~~`ChartArea::perfection` and the seven ways; then the boundary and
+   every binding.~~
 5. Recast the Book II figures where Lilly names a translation,
-   prohibition or collection, and test each against his judgement.
+   prohibition or collection, and test each against his judgement: p. 238
+   done (an application by opposition, no way held).

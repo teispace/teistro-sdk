@@ -1867,31 +1867,40 @@ the astronomical numbers do not move. Nothing else computes yet.
     serde shape, an answer's `rules` handed back as a request, and every
     parity runner prints them.
   - **Perfection, the relations between two significators**
-    (`hellenistic-perfection.md`, C232–C233), in `crates/hellenistic` so
-    far. A `AspectTimeline` holds the contacts (exact Ptolemaic aspects) and
-    stations ahead of a figure, from a search or `AspectTimeline::projected`
-    at the motions of the moment, and `perfection(&AspectTimeline, querent,
-    quesited, Sect, &DignityRules, &PerfectionRules)` reads a `Matter` off
-    it as clauses: the application and which of Lilly's three kinds it
-    is, the separation while inside the moieties, each prohibition,
-    frustration and refranation before it, each translation with the
-    reception it carries, and each collection with the receptions both
-    ways (C233). `PerfectionRules` shares Lilly's orb table
-    (`LILLY_ORBS_DEG`) with the considerations and sets the horizon,
-    unset the swifter significator's sign (C232). Held to Lilly's worked
-    examples on pp. 107–113, verified on the page images.
-    `sdk.chart().perfection(&chart, &FortitudeRequest, querent, quesited,
-    PerfectionRules)` searches the timeline on the ephemeris
-    (`Founder::contact_events`: each pair's separation over a 30°
-    lattice, and the significators' stations, sharing `transit_events`'
-    search source), so a refranation is seen where it happens; every
-    promised contact is read back in the chart cast at its instant within
-    3.4 × 10⁻⁹°. `Matter::ways` reports what Lilly's seven ways weigh
-    (each significator's house and dignity at its degree, mutual
-    reception by house, the infortunes between, the Moon's relay, the
-    quesited's significator in the Ascendant) and `held`, the `Way`s whose
-    stated conditions hold; "good houses" and "well dignified" are left to
-    the reader.
+    (`hellenistic-perfection.md`, C232–C233). An `AspectTimeline` holds
+    the contacts (exact Ptolemaic aspects) and stations ahead of a
+    figure, from a search or `AspectTimeline::projected` at the motions
+    of the moment, and `perfection(&AspectTimeline, querent, quesited,
+    &Standing, &PerfectionRules)` reads a `Matter` off it as clauses: the
+    application and which of Lilly's three kinds it is, the separation
+    while inside the moieties, each prohibition, frustration and
+    refranation before it, each translation with the reception it
+    carries, and each collection with the receptions both ways (C233).
+    `PerfectionRules` shares Lilly's orb table (`LILLY_ORBS_DEG`) with the
+    considerations and sets the horizon, unset the swifter significator's
+    sign (C232). Held to Lilly's worked examples on pp. 107–113, verified
+    on the page images, and to his p. 238 figure recast.
+    `sdk.chart().perfection(&chart, &FortitudeRequest,
+    &PerfectionRequest)` names the significators (both, or the house of
+    the matter, whose cusp's lord signifies the quesited, the querent's
+    being the Ascendant's lord unless named) and searches the timeline on
+    the ephemeris (`Founder::contact_events`: each pair's separation over
+    a 30° lattice, and the significators' stations, sharing
+    `transit_events`' search source), so a refranation is seen where it
+    happens; every promised contact is read back in the chart cast at
+    its instant within 3.4 × 10⁻⁹°. `Matter::ways` reports what Lilly's
+    seven ways weigh (each significator's house and dignity at its
+    degree, mutual reception by house, the infortunes between, the
+    Moon's relay, the quesited's significator in the Ascendant) and
+    `held`, the `Way`s whose stated conditions hold; "good houses" and
+    "well dignified" are left to the reader. Across the boundary the
+    chart request's `perfection_json` is the request, and five sections
+    carry the answer (a row a chart; its impediments, translations and
+    collections ragged by that row's counts; the orbs seven a chart),
+    dignities as a bit set in `EssentialDignity`'s order and the ways
+    held over `TsWay`. Node, wasm, Python and Dart read it as
+    `chart.perfection`, whose `rules` a request takes back as they stand,
+    and the five runners agree on it value for value.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
