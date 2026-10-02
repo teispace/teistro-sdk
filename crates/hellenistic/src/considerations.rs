@@ -759,6 +759,55 @@ mod tests {
         assert!(to_the_sun / (speeds[6] - speeds[3]) > course.days_in_sign);
     }
 
+    /// Four more of Lilly's dated figures, recast as the ship was, each with
+    /// the course he names: the horse lost near Henley (p. 467, 11 January
+    /// 1646/7 at 2h 59m PM, "a □ ♄ ad Vac") is void by both readings, and
+    /// three name the aspect she applies to, which both readings find
+    /// first in her sign: the long-life question (p. 135, 14 March
+    /// 1632/3 at 2h 15m PM) Jupiter's trine and then Mars's opposition,
+    /// the Parsonage (p. 437, 6 August 1644 at 8h 24m PM) Mercury's
+    /// opposition, and the escaped prisoner (p. 470, 6 June 1647 at 8 PM)
+    /// the Sun's opposition (C230).
+    #[test]
+    fn lillys_other_figures_read_as_he_reads_them() {
+        let figures = [
+            (
+                "horse",
+                [41.16, 123.87, 124.18, 301.59, 295.32, 302.25, 132.08],
+                [0.018, -0.133, -0.4, 1.016, 1.255, -1.255, 15.231],
+                None,
+            ),
+            (
+                "long life",
+                [250.22, 54.1, 358.66, 4.18, 45.92, 344.93, 171.28],
+                [-0.009, 0.189, 0.775, 0.987, 1.142, 1.641, 12.985],
+                Some((Graha::Jupiter, PtolemaicAspect::Trine)),
+            ),
+            (
+                "parsonage",
+                [20.65, 59.61, 64.4, 144.32, 181.65, 129.32, 307.94],
+                [-0.026, 0.103, 0.606, 0.963, 0.392, 1.728, 13.992],
+                Some((Graha::Mercury, PtolemaicAspect::Opposition)),
+            ),
+            (
+                "prisoner",
+                [55.8, 127.67, 152.22, 85.28, 115.62, 62.79, 261.62],
+                [0.119, 0.187, 0.553, 0.953, 1.198, 1.009, 12.496],
+                Some((Graha::Sun, PtolemaicAspect::Opposition)),
+            ),
+        ];
+        for (name, planets, speeds, applies) in figures {
+            let course = course(planets, speeds);
+            let next = course.next.map(|at| (at.planet, at.aspect));
+            assert_eq!(next, applies, "{name}");
+            assert_eq!(
+                course.within_orb.map(|at| (at.planet, at.aspect)),
+                applies,
+                "{name}"
+            );
+        }
+    }
+
     /// The rules read from JSON, every member optional, and refused out of
     /// range by name.
     #[test]
