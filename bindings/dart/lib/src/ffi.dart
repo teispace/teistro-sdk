@@ -1103,9 +1103,10 @@ final class ChartRequestStruct extends ffi.Struct {
   /// `querent` and `quesited`, the two significators by key, or
   /// `house`, the house of the matter, whose cusp's lord signifies the
   /// quesited, the querent's being the Ascendant's lord unless named;
-  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107),
   /// `horizonDays` (unset, until the swifter significator leaves its
-  /// sign, C232). The houses and dignities it weighs are
+  /// sign, C232) and `withinSign` (true: a third planet's contact counts
+  /// only before the applier leaves its sign, C234). The houses and dignities it weighs are
   /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
   /// searched on the ephemeris. The relations come back in
   /// `perfection`, `perfection_impediments`, `perfection_translations`
@@ -3255,9 +3256,10 @@ final class ChartRequest {
   /// `querent` and `quesited`, the two significators by key, or
   /// `house`, the house of the matter, whose cusp's lord signifies the
   /// quesited, the querent's being the Ascendant's lord unless named;
-  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+  /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107),
   /// `horizonDays` (unset, until the swifter significator leaves its
-  /// sign, C232). The houses and dignities it weighs are
+  /// sign, C232) and `withinSign` (true: a third planet's contact counts
+  /// only before the applier leaves its sign, C234). The houses and dignities it weighs are
   /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
   /// searched on the ephemeris. The relations come back in
   /// `perfection`, `perfection_impediments`, `perfection_translations`

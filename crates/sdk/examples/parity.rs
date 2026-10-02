@@ -2071,13 +2071,17 @@ fn the_perfection(report: &mut Report, sdk: &Context, index: usize, document: &t
     put(
         report,
         &key("-rules"),
-        asked
-            .rules
-            .orbs_deg
-            .iter()
-            .map(|orb| number(*orb))
-            .collect::<Vec<_>>()
-            .join(","),
+        format!(
+            "{} {}",
+            asked
+                .rules
+                .orbs_deg
+                .iter()
+                .map(|orb| number(*orb))
+                .collect::<Vec<_>>()
+                .join(","),
+            flag(asked.rules.within_sign)
+        ),
     );
 }
 

@@ -2171,7 +2171,7 @@ test('a chart carries its perfection', () => {
     const chart = ctx.chart.found({ instant, ...london, perfection: { house: 7 }, fortitudes: {} });
     const read = chart.perfection;
     assert.ok(Object.isFrozen(read.ways.querent.dignity), 'frozen to its leaves');
-    assert.deepEqual(read.rules, { orbsDeg: [10, 12, 7.5, 17, 8, 7, 12.5], horizonDays: null });
+    assert.deepEqual(read.rules, { orbsDeg: [10, 12, 7.5, 17, 8, 7, 12.5], horizonDays: null, withinSign: true });
     assert.notEqual(read.querent, read.quesited);
     const houseOf = (planet) => chart.fortitudes.planets.find((at) => at.planet === planet).house;
     assert.equal(read.ways.querent.house, houseOf(read.querent));
@@ -2200,6 +2200,8 @@ test('a chart carries its perfection', () => {
   const named = { querent: 'VENUS', quesited: 'graha.MARS', rules: { horizonDays: 30 } };
   const read = ctx.chart.found({ instant: instants[0], ...london, perfection: named }).perfection;
   assert.deepEqual([read.querent, read.quesited, read.rules.horizonDays, read.horizonDays], ['graha.VENUS', 'graha.MARS', 30, 30]);
+  const every = ctx.chart.found({ instant: instants[0], ...london, perfection: { ...named, rules: { withinSign: false } } });
+  assert.equal(every.perfection.rules.withinSign, false);
 
   const batch = ctx.chart.foundMany({ instants, ...london, perfection: { house: 7 } });
   instants.forEach((instant, k) =>

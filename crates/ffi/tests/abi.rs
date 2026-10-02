@@ -3630,6 +3630,7 @@ fn a_chart_request_answers_the_perfection() {
         each_f(&|one| one.horizon_days)
     );
     assert_eq!(bits("perfection", "horizon_rule_days"), each_f(&|_| nan));
+    assert_eq!(ints("perfection", "within_sign_rule"), each(&|_| 1));
     assert_eq!(
         ints("perfection", "application_present"),
         each(&|one| flag(one.application.is_some()))
@@ -3870,6 +3871,34 @@ fn a_chart_request_answers_the_perfection() {
             .map(f64::to_bits)
             .collect::<Vec<_>>()
     );
+
+    // Every contact inside the horizon, as asked, is the flag cleared
+    // and no fewer impediments.
+    let every = CString::new(r#"{"house":7,"rules":{"withinSign":false}}"#).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            perfection_json: every.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap();
+    let wider = Reader::parse(&bytes, &schema).unwrap();
+    let column = |reader: &Reader<'_, '_>, name: &str| -> Vec<i64> {
+        reader
+            .column("perfection", name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    assert!(
+        column(&wider, "within_sign_rule")
+            .iter()
+            .all(|&flag| flag == 0)
+    );
+    let counted = |reader: &Reader<'_, '_>| column(reader, "impediment_count").iter().sum::<i64>();
+    assert!(counted(&wider) > counted(&reader), "{}", counted(&reader));
 
     // None asked is every section empty.
     let bytes = chart_blob(&ctx, &base).unwrap();

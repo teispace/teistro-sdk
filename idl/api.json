@@ -11856,7 +11856,7 @@
             },
             "mutable": false
           },
-          "doc": "Whether a horary matter is brought to pass (Lilly, *Christian\nAstrology* pp. 107–113 and 125–127), as a JSON object:\n`querent` and `quesited`, the two significators by key, or\n`house`, the house of the matter, whose cusp's lord signifies the\nquesited, the querent's being the Ascendant's lord unless named;\nand `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and\n`horizonDays` (unset, until the swifter significator leaves its\nsign, C232). The houses and dignities it weighs are\n`fortitudes_json`'s, or Lilly's when it is null; the timeline is\nsearched on the ephemeris. The relations come back in\n`perfection`, `perfection_impediments`, `perfection_translations`\nand `perfection_collections`, and the orbs applied in\n`perfection_orbs`. Null for none, which costs nothing\n(`03-design/hellenistic-perfection.md`). Refusals are named from\nthe record every binding calls `perfection`, as\n`perfection.quesited`.",
+          "doc": "Whether a horary matter is brought to pass (Lilly, *Christian\nAstrology* pp. 107–113 and 125–127), as a JSON object:\n`querent` and `quesited`, the two significators by key, or\n`house`, the house of the matter, whose cusp's lord signifies the\nquesited, the querent's being the Ascendant's lord unless named;\nand `rules`, every member optional: `orbsDeg` (Lilly's p. 107),\n`horizonDays` (unset, until the swifter significator leaves its\nsign, C232) and `withinSign` (true: a third planet's contact counts\nonly before the applier leaves its sign, C234). The houses and dignities it weighs are\n`fortitudes_json`'s, or Lilly's when it is null; the timeline is\nsearched on the ephemeris. The relations come back in\n`perfection`, `perfection_impediments`, `perfection_translations`\nand `perfection_collections`, and the orbs applied in\n`perfection_orbs`. Null for none, which costs nothing\n(`03-design/hellenistic-perfection.md`). Refusals are named from\nthe record every binding calls `perfection`, as\n`perfection.quesited`.",
           "meta": {
             "example": "{\"house\":7}",
             "nullable": true
@@ -18626,6 +18626,11 @@
               "name": "horizon_rule_days",
               "scalar": "f64",
               "doc": "`perfection_json.rules.horizonDays` as asked; NaN when unset."
+            },
+            {
+              "name": "within_sign_rule",
+              "scalar": "u8",
+              "doc": "1 when 1 when `perfection_json.rules.withinSign` held, as by default: a third planet's contact counted only before the applier left its sign (C234).; 0 otherwise."
             },
             {
               "name": "application_present",

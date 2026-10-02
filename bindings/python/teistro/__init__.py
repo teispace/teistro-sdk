@@ -3483,12 +3483,15 @@ class Considerations:
 class PerfectionRuleRequest(TypedDict, total=False):
     """Lilly's rules a perfection is read under, every field optional:
     `orbsDeg`, the seven whole orbs in the Chaldean order, his p. 107 by
-    default, and `horizonDays`, how far ahead to look, by default until the
-    swifter significator leaves its sign (C232). An answer's `rules`, a
-    `PerfectionRules`, may be handed back as it stands."""
+    default; `horizonDays`, how far ahead to look, by default until the
+    swifter significator leaves its sign (C232); and `withinSign`, whether a
+    third planet's contact counts only before the planet applying leaves its
+    sign, true by default (C234). An answer's `rules`, a `PerfectionRules`,
+    may be handed back as it stands."""
 
     orbsDeg: Sequence[float]
     horizonDays: float
+    withinSign: bool
 
 
 @dataclass(frozen=True)
@@ -3501,6 +3504,10 @@ class PerfectionRules:
     horizon_days: Optional[float]
     """The horizon asked for; `None` when unset, until the swifter
     significator leaves its sign (C232)."""
+
+    within_sign: bool
+    """Whether a third planet's contact counted only before the planet
+    applying left its sign (C234)."""
 
 
 class PerfectionRequest(TypedDict, total=False):
@@ -8373,6 +8380,7 @@ class ChartBatch:
                 rules=PerfectionRules(
                     orbs_deg=tuple(o.orb_deg[7 * k + n] for n in range(7)),
                     horizon_days=None if math.isnan(horizon_rule) else horizon_rule,
+                    within_sign=m.within_sign_rule[k] == 1,
                 ),
             )
 

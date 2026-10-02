@@ -1586,9 +1586,10 @@ pub struct TsChartRequest {
     /// `querent` and `quesited`, the two significators by key, or
     /// `house`, the house of the matter, whose cusp's lord signifies the
     /// quesited, the querent's being the Ascendant's lord unless named;
-    /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107) and
+    /// and `rules`, every member optional: `orbsDeg` (Lilly's p. 107),
     /// `horizonDays` (unset, until the swifter significator leaves its
-    /// sign, C232). The houses and dignities it weighs are
+    /// sign, C232) and `withinSign` (true: a third planet's contact counts
+    /// only before the applier leaves its sign, C234). The houses and dignities it weighs are
     /// `fortitudes_json`'s, or Lilly's when it is null; the timeline is
     /// searched on the ephemeris. The relations come back in
     /// `perfection`, `perfection_impediments`, `perfection_translations`
@@ -3123,6 +3124,7 @@ struct PerfectionColumns {
     quesited: Vec<u16>,
     horizon_days: Vec<f64>,
     horizon_rule_days: Vec<f64>,
+    within_sign_rule: Vec<u8>,
     application_present: Vec<u8>,
     application_aspect: Vec<u8>,
     application_days: Vec<f64>,
@@ -3191,6 +3193,7 @@ impl PerfectionColumns {
             columns
                 .horizon_rule_days
                 .push(rules.horizon_days.unwrap_or(f64::NAN));
+            columns.within_sign_rule.push(u8::from(rules.within_sign));
             columns.push_application(matter.application)?;
             columns.push_separation(matter.separation)?;
             columns.push_ways(&matter.ways)?;
@@ -3346,6 +3349,7 @@ impl PerfectionColumns {
                 ColumnData::U16(&self.quesited),
                 ColumnData::F64(&self.horizon_days),
                 ColumnData::F64(&self.horizon_rule_days),
+                ColumnData::U8(&self.within_sign_rule),
                 ColumnData::U8(&self.application_present),
                 ColumnData::U8(&self.application_aspect),
                 ColumnData::F64(&self.application_days),

@@ -2578,6 +2578,9 @@ class ChartsPerfection:
     horizon_rule_days: memoryview[float]
     """`perfection_json.rules.horizonDays` as asked; NaN when unset."""
 
+    within_sign_rule: memoryview[int]
+    """1 when 1 when `perfection_json.rules.withinSign` held, as by default: a third planet's contact counted only before the applier left its sign (C234).; 0 otherwise."""
+
     application_present: memoryview[int]
     """1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN."""
 
@@ -4820,71 +4823,74 @@ def decode_charts(raw: bytes) -> Charts:
             horizon_rule_days=blob.column(
                 at_perfection, 3, 8, at_perfection.count
             ).cast("d"),
-            application_present=blob.column(
+            within_sign_rule=blob.column(
                 at_perfection, 4, 1, at_perfection.count
             ).cast("B"),
-            application_aspect=blob.column(
+            application_present=blob.column(
                 at_perfection, 5, 1, at_perfection.count
             ).cast("B"),
+            application_aspect=blob.column(
+                at_perfection, 6, 1, at_perfection.count
+            ).cast("B"),
             application_days=blob.column(
-                at_perfection, 6, 8, at_perfection.count
+                at_perfection, 7, 8, at_perfection.count
             ).cast("d"),
             applying=blob.column(
-                at_perfection, 7, 2, at_perfection.count
+                at_perfection, 8, 2, at_perfection.count
             ).cast("H"),
             application_kind=blob.column(
-                at_perfection, 8, 1, at_perfection.count
+                at_perfection, 9, 1, at_perfection.count
             ).cast("B"),
             gap_deg=blob.column(
-                at_perfection, 9, 8, at_perfection.count
+                at_perfection, 10, 8, at_perfection.count
             ).cast("d"),
             within_moieties=blob.column(
-                at_perfection, 10, 1, at_perfection.count
-            ).cast("B"),
-            separation_present=blob.column(
                 at_perfection, 11, 1, at_perfection.count
             ).cast("B"),
-            separation_aspect=blob.column(
+            separation_present=blob.column(
                 at_perfection, 12, 1, at_perfection.count
             ).cast("B"),
+            separation_aspect=blob.column(
+                at_perfection, 13, 1, at_perfection.count
+            ).cast("B"),
             separation_past_deg=blob.column(
-                at_perfection, 13, 8, at_perfection.count
+                at_perfection, 14, 8, at_perfection.count
             ).cast("d"),
             querent_house=blob.column(
-                at_perfection, 14, 1, at_perfection.count
-            ).cast("B"),
-            querent_dignity=blob.column(
                 at_perfection, 15, 1, at_perfection.count
             ).cast("B"),
-            quesited_house=blob.column(
+            querent_dignity=blob.column(
                 at_perfection, 16, 1, at_perfection.count
             ).cast("B"),
-            quesited_dignity=blob.column(
+            quesited_house=blob.column(
                 at_perfection, 17, 1, at_perfection.count
             ).cast("B"),
-            mutual_by_house=blob.column(
+            quesited_dignity=blob.column(
                 at_perfection, 18, 1, at_perfection.count
             ).cast("B"),
-            infortunes_between=blob.column(
+            mutual_by_house=blob.column(
                 at_perfection, 19, 1, at_perfection.count
             ).cast("B"),
-            moon_relays=blob.column(
+            infortunes_between=blob.column(
                 at_perfection, 20, 1, at_perfection.count
             ).cast("B"),
-            quesited_in_ascendant=blob.column(
+            moon_relays=blob.column(
                 at_perfection, 21, 1, at_perfection.count
             ).cast("B"),
-            ways_held=blob.column(
+            quesited_in_ascendant=blob.column(
                 at_perfection, 22, 1, at_perfection.count
             ).cast("B"),
+            ways_held=blob.column(
+                at_perfection, 23, 1, at_perfection.count
+            ).cast("B"),
             impediment_count=blob.column(
-                at_perfection, 23, 4, at_perfection.count
-            ).cast("I"),
-            translation_count=blob.column(
                 at_perfection, 24, 4, at_perfection.count
             ).cast("I"),
-            collection_count=blob.column(
+            translation_count=blob.column(
                 at_perfection, 25, 4, at_perfection.count
+            ).cast("I"),
+            collection_count=blob.column(
+                at_perfection, 26, 4, at_perfection.count
             ).cast("I"),
             length=at_perfection.count,
         ),

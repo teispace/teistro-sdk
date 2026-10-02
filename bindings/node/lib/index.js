@@ -3421,6 +3421,7 @@ function perfectionsOf(batch) {
           rules: Object.freeze({
             orbsDeg: Object.freeze(Array.from(o.orbDeg.subarray(7 * k, 7 * k + 7))),
             horizonDays: Number.isNaN(m.horizonRuleDays[k]) ? null : m.horizonRuleDays[k],
+            withinSign: m.withinSignRule[k] === 1,
           }),
         }),
       ),

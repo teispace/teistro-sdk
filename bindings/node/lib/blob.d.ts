@@ -3054,6 +3054,10 @@ export interface ChartsPerfection {
    */
   readonly horizonRuleDays: Float64Array;
   /**
+   * 1 when 1 when `perfection_json.rules.withinSign` held, as by default: a third planet's contact counted only before the applier left its sign (C234).; 0 otherwise.
+   */
+  readonly withinSignRule: Uint8Array;
+  /**
    * 1 when the significators apply within the horizon; 0 otherwise, and then the application's columns are 0 and NaN.
    */
   readonly applicationPresent: Uint8Array;

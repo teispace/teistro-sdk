@@ -698,7 +698,7 @@ for (const chart of charts) {
       `${at.collector} ${at.fromQuerent.aspect} ${number(at.fromQuerent.days)} ${at.fromQuesited.aspect} ${number(at.fromQuesited.days)} ${held(at.collectorInQuerent)} ${held(at.collectorInQuesited)} ${held(at.querentInCollector)} ${held(at.quesitedInCollector)}`,
     ),
   );
-  put(`chart-${i}-perfection-rules`, pf.rules.orbsDeg.map(number).join(','));
+  put(`chart-${i}-perfection-rules`, `${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}`);
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

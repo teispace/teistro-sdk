@@ -1147,7 +1147,10 @@ void main() {
             '${held(at.quesitedInCollector)}',
       );
     }
-    put('chart-$i-perfection-rules', pf.rules.orbsDeg.map(number).join(','));
+    put(
+      'chart-$i-perfection-rules',
+      '${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}',
+    );
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {
