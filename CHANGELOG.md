@@ -1866,6 +1866,20 @@ the astronomical numbers do not move. Nothing else computes yet.
     and `PtolemaicAspect`; Node, wasm, Python and Dart read them into the
     serde shape, an answer's `rules` handed back as a request, and every
     parity runner prints them.
+  - **Perfection, the relations between two significators**
+    (`hellenistic-perfection.md`, C232–C233), in `crates/hellenistic` so
+    far. A `Timeline` holds the contacts (exact Ptolemaic aspects) and
+    stations ahead of a figure, from a search or `Timeline::projected`
+    at the motions of the moment, and `perfection(&Timeline, querent,
+    quesited, Sect, &DignityRules, &PerfectionRules)` reads a `Matter` off
+    it as clauses: the application and which of Lilly's three kinds it
+    is, the separation while inside the moieties, each prohibition,
+    frustration and refranation before it, each translation with the
+    reception it carries, and each collection with the receptions both
+    ways (C233). `PerfectionRules` shares Lilly's orb table
+    (`LILLY_ORBS_DEG`) with the considerations and sets the horizon,
+    unset the swifter significator's sign (C232). Held to Lilly's worked
+    examples on pp. 107–113, verified on the page images.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

@@ -1052,12 +1052,14 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: Lilly's perfection, step 1** — `hellenistic-perfection.md`
-   is designed (C232, C233): transcribe his worked prohibition,
-   refranation, translation and frustration examples (pp. 110–113) as
-   the first tests, then build the pairwise perfection search. The
-   considerations are built and cross to every binding, and C230 stands
-   at seven recast figures.
+0. **Next: Lilly's perfection in the SDK** — `hellenistic-perfection.md`
+   (C232, C233): the relations are built in `crates/hellenistic` and held
+   to his worked examples (pp. 107–113). Search the ephemeris for the
+   timeline (each pair's separation over a 30° lattice, kept by
+   `aspect_at`, and the significators' stations), add
+   `ChartArea::perfection` with the seven ways, which need the houses,
+   then the boundary. The considerations cross to every binding, and
+   C230 stands at seven recast figures.
    Ibn Ezra's almuten weights wait on a rank 1 reading, and C208 waits
    on the Greek.
 

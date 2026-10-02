@@ -34,6 +34,7 @@ mod considerations;
 mod dignity;
 mod fortitude;
 mod lot;
+mod perfection;
 mod reading;
 mod reception;
 mod terms;
@@ -44,9 +45,9 @@ pub use accidental::{
 };
 pub use almuten::{Almuten, AlmutenRules, Almutens, PlaceReading, almuten_of, almuten_of_places};
 pub use considerations::{
-    AscendantClause, ConsiderationRules, Considerations, MoonClause, MoonCourse, Perfection,
-    PtolemaicAspect, RadicalGround, Radicality, SeventhClause, Temperament, considerations,
-    moon_course, radical_grounds,
+    AscendantClause, ConsiderationRules, Considerations, LILLY_ORBS_DEG, MoonClause, MoonCourse,
+    Perfection, PtolemaicAspect, RadicalGround, Radicality, SeventhClause, Temperament,
+    considerations, moon_course, radical_grounds,
 };
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
@@ -56,6 +57,11 @@ pub use fortitude::{FortitudeRequest, Fortitudes};
 pub use lot::{
     Distance, FortuneRule, Lot, LotArc, LotFormula, LotPlace, LotPoint, LotReading, LotRequest,
     LotSky, PlacedLot, lot_place, lots, part_of_fortune, point_place,
+};
+pub use perfection::{
+    Application, ApplicationKind, Collection, Contact, Impediment, ImpedimentKind, Matter,
+    PerfectionRules, Separation, Station, Timeline, Translation, aspect_at, days_in_sign,
+    perfection,
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};

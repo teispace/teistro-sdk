@@ -245,7 +245,7 @@ pub fn moon_course(
     if moon_speed <= 0.0 {
         return Err(Error::invalid_arg("the Moon must move forward").with_field("moon"));
     }
-    let days_in_sign = (SIGN_DEG - moon.rem_euclid(SIGN_DEG)) / moon_speed;
+    let days_in_sign = crate::perfection::days_in_sign(moon, moon_speed);
     let mut next: Option<Perfection> = None;
     let mut within_orb: Option<Perfection> = None;
     let earlier =
@@ -316,7 +316,7 @@ impl ConsiderationRules {
     /// Lilly's, with C229 read by his late Ascendant.
     pub const LILLY: ConsiderationRules = ConsiderationRules {
         moon_late_from_deg: 27.0,
-        orbs_deg: [10.0, 12.0, 7.5, 17.0, 8.0, 7.0, 12.5],
+        orbs_deg: LILLY_ORBS_DEG,
     };
 
     /// Reads the rules from JSON, every member optional and Lilly's when
@@ -351,16 +351,26 @@ impl ConsiderationRules {
                 .with_field("moonLateFromDeg")
                 .with_hint("a degree of the sign, 0 to 30"));
         }
-        if let Some(orb) = self
-            .orbs_deg
-            .iter()
-            .find(|orb| !(orb.is_finite() && **orb >= 0.0))
-        {
-            return Err(Error::invalid_arg(format!("an orb of {orb}"))
-                .with_field("orbsDeg")
-                .with_hint("an orb is a finite number of degrees, zero or more"));
-        }
-        Ok(())
+        check_orbs(&self.orbs_deg)
+    }
+}
+
+/// The planets' whole orbs in the Chaldean order, the first of the two
+/// columns Lilly prints on p. 107: Saturn 10, Jupiter 12, Mars 7½, the
+/// Sun 17, Venus 8, Mercury 7, the Moon 12½.
+pub const LILLY_ORBS_DEG: [f64; 7] = [10.0, 12.0, 7.5, 17.0, 8.0, 7.0, 12.5];
+
+/// Every orb a finite number of degrees, zero or more, refused as
+/// `orbsDeg`.
+pub(crate) fn check_orbs(orbs_deg: &[f64; 7]) -> Result<(), Error> {
+    match orbs_deg
+        .iter()
+        .find(|orb| !(orb.is_finite() && **orb >= 0.0))
+    {
+        Some(orb) => Err(Error::invalid_arg(format!("an orb of {orb}"))
+            .with_field("orbsDeg")
+            .with_hint("an orb is a finite number of degrees, zero or more")),
+        None => Ok(()),
     }
 }
 
