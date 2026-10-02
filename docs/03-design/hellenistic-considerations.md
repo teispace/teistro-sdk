@@ -1,8 +1,8 @@
 # The considerations before judgement (the `hellenistic` module, step 10)
 
 Status: `built`, 2026-10-02 — written from Lilly's text before any code
-and corrected by building it; the boundary and the bindings are the next
-step.
+and corrected by building it, and carried across the boundary into every
+binding.
 
 Before a horary figure is judged, Lilly's astrologer asks whether it is
 "radicall and capable of judgment", and names the conditions that make a
