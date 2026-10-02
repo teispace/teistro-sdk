@@ -1,7 +1,8 @@
 //! The essential dignities through the façade: the sect read from the
 //! Sun's altitude in every zodiac and at the poles, the chart's daylight as
-//! the named alternative, and every knob reported back
-//! (`docs/03-design/essential-dignities.md`, `sect-measured.md`).
+//! the named alternative, and every knob reported back; and the
+//! accidental fortitudes read from the chart's own houses, motions and
+//! stars (`docs/03-design/essential-dignities.md`, `sect-measured.md`).
 
 #![allow(
     clippy::panic,
@@ -10,11 +11,12 @@
     reason = "tests fail by panicking and index what they found"
 )]
 
-use teistro::catalogue::Graha;
+use teistro::catalogue::{Graha, HouseSystem};
+use teistro::hellenistic::house_of;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRequest, Context, DignityRequest, DignityRules, Document, Ephemeris, Scores, Sect,
-    SectRule, Terms, UtcOffset,
+    Accident, AccidentalRules, ChartRequest, Context, DignityRequest, DignityRules, Document,
+    Ephemeris, FortitudeRequest, Scores, Sect, SectRule, Terms, UtcOffset,
 };
 
 fn context(patch: Option<&str>) -> Context {
@@ -136,4 +138,88 @@ fn every_knob_comes_back_and_moves_what_it_names() {
             .unwrap();
         assert!(!at.dignity.term, "{luminary:?}");
     }
+}
+
+/// London, 1 January 2000 at noon UTC.
+fn london(sdk: &Context) -> Document {
+    chart(sdk, 51.5, -0.12, 2_451_545.0)
+}
+
+#[test]
+fn the_fortitudes_read_the_charts_own_houses_and_motions() {
+    let sdk = context(Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#));
+    let natal = london(&sdk);
+    let read = sdk
+        .chart()
+        .fortitudes(&natal, &FortitudeRequest::default())
+        .unwrap();
+    assert_eq!(read.sky.houses, HouseSystem::Regiomontanus);
+    let rules = AccidentalRules::LILLY;
+    for (at, planet) in read.planets.iter().zip(read.dignities.planets) {
+        assert_eq!(at.planet, planet.planet);
+        let house = house_of(
+            planet.longitude_deg,
+            &read.sky.cusps_deg,
+            rules.cusp_orb_deg,
+        );
+        assert_eq!(at.house, house, "{:?}", at.planet);
+        let graha = natal.foundation.graha(at.planet).unwrap();
+        let backward = at.accidents.contains(&Accident::Retrograde);
+        assert_eq!(backward, graha.speed_deg_per_day < 0.0, "{:?}", at.planet);
+    }
+    // The tenth cusp is the chart's own midheaven.
+    let angles = sdk.chart().angles(&natal).unwrap();
+    assert!((read.sky.cusps_deg[9] - angles.midheaven_deg).abs() < 1e-9);
+    assert!((read.sky.cusps_deg[0] - angles.ascendant_deg).abs() < 1e-9);
+    // Each net is the essential score and reception with the accidental
+    // fortitudes less the debilities.
+    let sun = &read.dignities.planets[3];
+    let accidental = &read.planets[3];
+    assert_eq!(
+        read.net(Graha::Sun),
+        Some(sun.score + sun.reception + accidental.fortitude - accidental.debility)
+    );
+}
+
+#[test]
+fn the_stars_are_read_in_the_charts_zodiac() {
+    let tropical = context(Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#));
+    let sidereal = context(None);
+    let request = FortitudeRequest::default();
+    let one = tropical
+        .chart()
+        .fortitudes(&london(&tropical), &request)
+        .unwrap();
+    let other = sidereal
+        .chart()
+        .fortitudes(&london(&sidereal), &request)
+        .unwrap();
+    // Regulus at the end of Leo in 2000, tropically.
+    assert!(
+        (one.sky.regulus_deg - 149.86).abs() < 0.1,
+        "{}",
+        one.sky.regulus_deg
+    );
+    // Every star moves by the zodiac's offset, which the Sun shows.
+    let offset = one.dignities.planets[3].longitude_deg - other.dignities.planets[3].longitude_deg;
+    for (a, b) in [
+        (one.sky.regulus_deg, other.sky.regulus_deg),
+        (one.sky.spica_deg, other.sky.spica_deg),
+        (one.sky.algol_deg, other.sky.algol_deg),
+        (one.sky.north_node_deg, other.sky.north_node_deg),
+    ] {
+        assert!(((a - b).rem_euclid(360.0) - offset.rem_euclid(360.0)).abs() < 1e-6);
+    }
+}
+
+#[test]
+fn a_profile_names_the_division_the_fortitudes_count_houses_in() {
+    let sdk = context(Some(
+        r#"{"frame": {"zodiac": "TROPICAL"}, "houses": {"module_overrides": {"hellenistic": "PLACIDUS"}}}"#,
+    ));
+    let read = sdk
+        .chart()
+        .fortitudes(&london(&sdk), &FortitudeRequest::default())
+        .unwrap();
+    assert_eq!(read.sky.houses, HouseSystem::Placidus);
 }

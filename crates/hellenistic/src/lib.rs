@@ -23,20 +23,27 @@
 
 #![doc(html_no_source)]
 
+/// The module name the accidental fortitudes' house division is overridden
+/// under, `houses.module_overrides.hellenistic`; unset, Lilly's
+/// Regiomontanus.
+pub const MODULE: &str = "hellenistic";
+
 mod accidental;
 mod dignity;
+mod fortitude;
 mod reading;
 mod reception;
 mod terms;
 
 pub use accidental::{
-    Accident, AccidentalRules, AccidentalScores, AccidentalSky, Motion, Partile, PlanetAccidents,
-    Siege, accidental_dignities, house_of,
+    Accident, AccidentalRules, AccidentalScores, AccidentalSky, Partile, PlanetAccidents, Siege,
+    accidental_dignities, house_of,
 };
 pub use dignity::{
     CHALDEAN_ORDER, DignityRules, EssentialDignity, Scores, Sect, SectRule, Triplicities,
     essential_dignity, exaltation_degree, face_lord,
 };
+pub use fortitude::{FortitudeRequest, Fortitudes};
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

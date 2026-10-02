@@ -38,6 +38,19 @@ pub struct ChartSky {
 }
 
 impl ChartSky {
+    /// The seven's longitudes, in the Chaldean order.
+    pub(crate) const fn longitudes(&self) -> [f64; 7] {
+        [
+            self.saturn_deg,
+            self.jupiter_deg,
+            self.mars_deg,
+            self.sun_deg,
+            self.venus_deg,
+            self.mercury_deg,
+            self.moon_deg,
+        ]
+    }
+
     /// One of the seven's longitude and the field it is read from; `None`
     /// for a graha that holds no essential dignity.
     fn of(&self, planet: Graha) -> Option<(f64, &'static str)> {

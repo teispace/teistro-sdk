@@ -1716,9 +1716,9 @@ the astronomical numbers do not move. Nothing else computes yet.
     through `reception_count`, `dignity_planets.reception` and section 62
     (`dignity_receptions`).
   - **Accidental fortitudes** (§Accidental fortitudes, C211–C217
-    decided). `accidental_dignities` reads Lilly's p. 115 table from an
-    `AccidentalSky`: the seven's longitudes and motions, the cusps, the
-    North Node and three stars of date. Each planet gets a
+    decided). `accidental_dignities` reads Lilly's p. 115 table from the
+    seven's longitudes and an `AccidentalSky`: their motions, the cusps,
+    the North Node and three stars of date. Each planet gets a
     `PlanetAccidents` with its house by the five-degree rule
     (`house_of`), every other line it meets (`Accident`), and its
     fortitudes and debilities summed apart. Every orb is a field of
@@ -1728,12 +1728,21 @@ the astronomical numbers do not move. Nothing else computes yet.
     reproduced except ten listed cells. In three of them the tally
     ignores the beams, and `beams_deg` is the knob that reproduces them.
     The other seven are lines Lilly's own table gives that his tallies
-    leave out or score otherwise.
+    leave out or score otherwise. `ChartArea::fortitudes` reads both
+    halves of the table from a chart, through a `FortitudeRequest`, and
+    answers `Fortitudes` with `net(planet)`. It uses Lilly's
+    Regiomontanus houses unless a profile overrides them under
+    `houses.module_overrides.hellenistic`, and reads the three stars at
+    their apparent places of date. `fortitudes-measured.md` counts every
+    line over the corpus, along with what each crux's rival moves.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
   corpus's 55 births, 260 pairs receive each other and 170 of them are
-  mixed; 43 planets score by reception, 21 of them peregrine.
+  mixed; 43 planets score by reception, 21 of them peregrine. In Lilly's
+  tropical zodiac the five-degree rule moves 75 of the 385 planets, and
+  it never places a planet otherwise than "before the cusp only" does.
+  41 planets are under the beams.
 
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the

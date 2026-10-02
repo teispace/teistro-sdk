@@ -5,14 +5,16 @@ use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
 use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
+use teistro_astro::scale::tt_of;
 use teistro_astro::sky::{Spherical, altitude_by_midheaven_deg};
+use teistro_astro::stars::{Options as StarOptions, place_of};
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{
     ChartAngles, ChartFoundation, Founder, angles_of, cusps_of, cusps_raising,
 };
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
-    CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Vara, Varga,
+    CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Star, Vara, Varga,
 };
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
@@ -20,7 +22,7 @@ use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
-use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::settings::{CharaKarakas, DayLordDay};
 use teistro_core::time::UtcOffset;
@@ -32,7 +34,10 @@ use teistro_dasha::{
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
-use teistro_hellenistic::{ChartSky, Dignities, DignityRequest};
+use teistro_hellenistic::{
+    AccidentalSky, CHALDEAN_ORDER, ChartSky, Dignities, DignityRequest, FortitudeRequest,
+    Fortitudes,
+};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
 use teistro_kp::{
@@ -2311,8 +2316,63 @@ impl<'a> ChartArea<'a> {
     /// A chart that does not place one of the seven, or whatever
     /// [`ChartArea::angles`] refuses.
     pub fn dignities(self, chart: &Document, request: &DignityRequest) -> Result<Dignities, Error> {
+        request.read(&self.chart_sky(chart)?)
+    }
+
+    /// Both halves of Lilly's table in a chart you founded: the
+    /// **essential dignities** and the **accidental fortitudes** — the
+    /// house a planet is counted in, its motion, its place about the Sun,
+    /// its partile aspects, a siege and three fixed stars
+    /// (`03-design/essential-dignities.md` §Accidental fortitudes).
+    ///
+    /// The houses are Lilly's Regiomontanus unless the profile overrides
+    /// the division under `houses.module_overrides.hellenistic`, and the
+    /// answer carries the cusps and the division they are of, with
+    /// everything else it was read from (`Fortitudes::sky`). Regulus, Spica and Algol are read at
+    /// their apparent places of the chart's date, in its zodiac, by the
+    /// SDK's own star catalogue. Like [`ChartArea::dignities`] it needs
+    /// **no ephemeris**.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// use teistro::catalogue::{Graha, HouseSystem};
+    /// use teistro::FortitudeRequest;
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let london = Place::new(
+    ///     Latitude::literal(51.5),
+    ///     Longitude::literal(-0.12),
+    ///     Altitude::literal(20.0),
+    /// );
+    /// let request = ChartRequest::at(london, UtcOffset::literal(0, 0, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let read = sdk.chart().fortitudes(&chart, &FortitudeRequest::default()).unwrap();
+    /// assert_eq!(read.sky.houses, HouseSystem::Regiomontanus);
+    /// let sun = &read.planets[3];
+    /// assert_eq!(sun.planet, Graha::Sun);
+    /// assert!(read.net(Graha::Sun).is_some());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::dignities`]; a chart that does not place the North
+    /// Node; and `UNSUPPORTED` for a chart whose angles were its
+    /// provider's own reckoning, whose cusps the sphere does not
+    /// reproduce.
+    pub fn fortitudes(
+        self,
+        chart: &Document,
+        request: &FortitudeRequest,
+    ) -> Result<Fortitudes, Error> {
+        request.read(&self.chart_sky(chart)?, &self.accidental_sky(chart)?)
+    }
+
+    /// What a chart's dignities are read from: the seven's longitudes and
+    /// the Sun's place about the horizon.
+    fn chart_sky(self, chart: &Document) -> Result<ChartSky, Error> {
         let at = |graha: Graha| Self::longitude_of(chart, graha);
-        request.read(&ChartSky {
+        Ok(ChartSky {
             saturn_deg: at(Graha::Saturn)?,
             jupiter_deg: at(Graha::Jupiter)?,
             mars_deg: at(Graha::Mars)?,
@@ -2322,6 +2382,49 @@ impl<'a> ChartArea<'a> {
             moon_deg: at(Graha::Moon)?,
             sun_altitude_deg: self.sun_altitude_deg(chart)?,
             daylight: chart.foundation.day.part.is_daylight(),
+        })
+    }
+
+    /// What a chart's accidental fortitudes are read from beside its
+    /// longitudes: the seven's motions, the cusps of the module's
+    /// division, the North Node, and the three stars of date in the
+    /// chart's zodiac.
+    fn accidental_sky(self, chart: &Document) -> Result<AccidentalSky, Error> {
+        let foundation = &chart.foundation;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let system = override_of(settings, teistro_hellenistic::MODULE)
+            .unwrap_or(HouseSystem::Regiomontanus);
+        let (cusps_deg, houses) =
+            cusps_of(foundation, system, delta_t, settings.houses.polar_policy)?;
+        let mut speeds_deg_per_day = [0.0; 7];
+        for (speed, planet) in speeds_deg_per_day.iter_mut().zip(CHALDEAN_ORDER) {
+            *speed = foundation
+                .graha(planet)
+                .ok_or_else(|| Error::internal(format!("a founded chart places {planet:?}")))?
+                .speed_deg_per_day;
+        }
+        let north_node_deg = foundation
+            .graha(Graha::Rahu)
+            .ok_or_else(|| {
+                Error::invalid_arg("this chart does not place the North Node")
+                    .with_field("chart")
+                    .with_hint("found it with Rahu among its grahas")
+            })?
+            .longitude_deg;
+        let (tt, _) = tt_of(JulianDay::<Ut1>::literal(foundation.instant.get()), delta_t)?;
+        let star = |star: Star| -> Result<f64, Error> {
+            let place = place_of(star, tt, &StarOptions::APPARENT)?;
+            Ok(foundation.zodiac.of_tropical(place.lon_deg))
+        };
+        Ok(AccidentalSky {
+            speeds_deg_per_day,
+            houses,
+            cusps_deg,
+            north_node_deg,
+            regulus_deg: star(Star::Regulus)?,
+            spica_deg: star(Star::Spica)?,
+            algol_deg: star(Star::Algol)?,
         })
     }
 

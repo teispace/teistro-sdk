@@ -299,11 +299,12 @@ holds Lilly's examples and counts each kind over the corpus.
 Lilly's "ready Table" (p. 115) gives, beside the essential dignities, a
 planet's **accidental** fortitudes and debilities: its house, its
 motion, its place about the Sun, its partile aspects, a siege and three
-fixed stars. They are read in `accidental_dignities`, from an
-`AccidentalSky`:
+fixed stars. They are read in `accidental_dignities`, from the seven's
+longitudes (the same ones the essential dignities read, held once in
+`ChartSky`) and an `AccidentalSky`:
 
-- the seven's longitudes and daily motions;
-- the twelve cusps;
+- the seven's daily motions;
+- the twelve cusps and the division they are of;
 - the North Node;
 - Regulus, Spica and Algol at their places of date.
 
@@ -376,6 +377,28 @@ put the first figure's Moon (19°07′ Leo) within five degrees. Of date,
 Regulus stood near 24°43′, 5°36′ from her, and the tally gives her no
 Regulus.
 
+**At the façade**, `ChartArea::fortitudes(chart, &FortitudeRequest)`
+answers both halves of the table: `Fortitudes` holds the chart's
+`Dignities`, the accidental lines and `net(planet)`, Lilly's sum of
+the two. The request is the essential `DignityRequest` with the
+accidental rules and scores beside it, read strictly from
+`{"dignities": …, "rules": …, "scores": …}`. The chart fills the
+`AccidentalSky`, which the answer returns as read:
+
+- each planet's daily motion, from the chart;
+- the cusps of Lilly's Regiomontanus, or of the division a profile names
+  under `houses.module_overrides.hellenistic`, the KP mechanism;
+- the chart's own North Node;
+- Regulus, Spica and Algol at their apparent places of date, from the
+  SDK's star catalogue.
+
+Everything is in the chart's zodiac. Like the dignities it needs no
+ephemeris. A chart whose angles were its provider's own is refused,
+because the sphere cannot rebuild its cusps. `dignities` stays as it was
+for such charts. [`fortitudes-measured.md`](fortitudes-measured.md)
+reads the corpus in Lilly's tropical zodiac and counts what each crux's
+rival would move.
+
 ## The order of work
 
 1. `crates/hellenistic` with the types above. Unit tests:
@@ -402,10 +425,9 @@ Regulus.
    fortitudes (p. 115's second half), each a falsification pass first.
    **Reception done** (§Reception, C210). **The accidental fortitudes'
    doctrine is done** (§Accidental fortitudes, C211–C217), held to two
-   printed figures. Their façade comes next. It reads the chart's
-   motions, its Regiomontanus cusps (Lilly's division), the mean node
-   and the three stars of date into an `AccidentalSky`, and measures
-   the lines over the corpus. Then the almuten, which needs both.
+   printed figures, and so is its façade (`ChartArea::fortitudes`,
+   `fortitudes-measured.md`). The boundary and the bindings come next,
+   as reception's did. Then the almuten, which needs both.
 
 ## What is not decided
 
