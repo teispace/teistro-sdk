@@ -185,7 +185,9 @@ Four sections answer it:
   directed angles, the contact count and whether contacts were asked.
   A chart read without `at` writes NaN in the instants and angles.
 - `progressed_grahas`, a row a progressed graha: the longitude in the
-  chart's zodiac, the tropical longitude and the speed. The full
+  chart's zodiac, the tropical longitude and the speed. The nine, and
+  the outer three after them when the birth placed them
+  (`western-outer-planets.md`), the same number a chart. The full
   founded chart does not cross, since a consumer who needs it founds
   the instant of sky as an ordinary chart.
 - `directed_grahas`, a row a directed planet: its longitude.

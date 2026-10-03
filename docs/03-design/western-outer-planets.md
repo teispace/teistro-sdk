@@ -1,10 +1,11 @@
 # The outer planets in a chart (the `western` module)
 
 Status: `building`, 2026-10-03 — written from the corpus and the code
-before any change. Steps 2 and 3 are built: the chart layer and the
+before any change. Steps 2 to 4 are built: the chart layer and the
 SDK place the three when asked, held to the corpus in
-[`outer-planets-measured.md`](outer-planets-measured.md), and the
-transit search, the contacts and the later charts read them.
+[`outer-planets-measured.md`](outer-planets-measured.md); the transit
+search, the contacts and the later charts read them; and they cross
+the boundary into every binding.
 
 A chart places nine grahas: the seven planets and the two nodes. The
 catalogue names three more, Uranus, Neptune and Pluto, and the built-in
@@ -93,6 +94,20 @@ but the measured page states them per body instead of one figure.
   carries them, whatever the caller's request asks, so a contact or a
   direction never finds a body the birth had and the later chart lacks.
   The directed planets are twelve then, in the foundation's order.
+- **The boundary keeps one count a batch.** `TS_CHART_OUTER` (bit 4096)
+  asks for them, and section 81, `outer`, carries them in the columns
+  `grahas` has. The summary is unchanged: the section holds the same
+  number a chart, three or none, and a reader divides its rows by the
+  batch's charts, as the progressed planets already were read. The
+  encoder refuses a batch whose charts differ, which only the SDK
+  could build. `progressed_grahas` and `directed_grahas` carry the
+  outer three after the nine whenever the birth placed them, so the
+  two stay the same length.
+- **The test provider answers them.** Its elements covered the seven
+  and the mean node, so the parity runners could not ask for the three
+  at all. Each now has its heliocentric mean motion and its orbit's
+  equation of the centre as the one periodic term; no answer the
+  provider gave before changed.
 
 ## What this does not decide
 
@@ -117,6 +132,13 @@ but the measured page states them per body instead of one figure.
 3. The readers: a transit's hit list, a progression's contacts and a
    progressed chart accept the three where the birth carries them.
    Leo's Uranus contact on p. 41 becomes a test. **Built.**
-4. The boundary and every binding, with the parity gate.
+4. The boundary and every binding, with the parity gate: `outerPlanets`
+   in Node and Dart, `outer_planets` in Python, read back as
+   `chart.outer`, and `chart-{i}-outer-{j}` in all four runners.
+   **Built.**
 5. The wheel draws them (`render-svg.md`, "Outer planets on the
-   wheel").
+   wheel"). **Waits on names.** A wheel labels a body by its locale
+   form, and no strict locale names the three (`entity-names.md`; the
+   `UNNAMED` list in `xtask/src/intl.rs`). The baseline engine's tables
+   stop at the nine, so the Nepali names need a vetted source before
+   the wheel can say anything but the bare key.

@@ -1978,6 +1978,11 @@ the astronomical numbers do not move. Nothing else computes yet.
     (a natal point among them where the birth placed it), and a
     progressed or directed chart places them whenever its birth did.
     Leo's progressed Moon quincunx Uranus, April 1907 (p. 41), is a test.
+    They cross the boundary: `TS_CHART_OUTER` asks for them and section
+    81, `outer`, carries them in the grahas' columns, read back as
+    `chart.outer` in Node, Python and Dart (`outerPlanets` /
+    `outer_planets`), with parity across all four runners. The analytic
+    test provider answers the three as well.
   - **The progressed angles, measured** (`progressed-angles-measured.md`,
     C237 sized). Over 54 births to age 80, a method's midheaven stands
     at most 7.54° from Leo's map. `AngleMethod::ALL` lists the methods.

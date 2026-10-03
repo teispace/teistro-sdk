@@ -1052,14 +1052,16 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the outer planets in a chart** — `western-outer-planets.md`
-   step 4, the boundary and every binding, with the parity gate (a
-   `SECTION_BITS` entry for `outer`). Steps 2 and 3 are built
-   (`with_outer_planets`, held in `outer-planets-measured.md`, C239
-   measured under an arcsecond; the hit list, the contacts and the
-   later charts read the three, and Leo's quincunx Uranus of April 1907
-   is a test). Then the wheel; after them the aspects and
-   their orbs, which synastry and the composites read. Progressions are
+0. **Next: the Western aspects** — `western-aspects.md` step 2, Leo's
+   nine and the `OrbModel` (C240), Edward VII's four aspects as the
+   test; synastry and the composites read it after. The outer planets
+   are built to the boundary (`western-outer-planets.md` steps 2 to 4:
+   `with_outer_planets`, held in `outer-planets-measured.md`, C239
+   measured under an arcsecond; the hit list, the contacts and the later
+   charts read the three, and Leo's quincunx Uranus of April 1907 is a
+   test; `TS_CHART_OUTER` and section 81 carry them to every binding as
+   `chart.outer`, with parity). Their wheel (step 5) waits on vetted
+   names for the three in every strict locale. Progressions are
    built end to end (`western-progressions.md`, and
    `progressed-angles-measured.md` gives C237 its size). The year measure (C236), the progressed
    angles (C237) and the tertiary month (C238) ship as knobs. Contacts to
