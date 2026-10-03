@@ -181,6 +181,8 @@ jobs:
         run: cargo xtask check-composites
       - name: Western houses page (the corpus's planets in Placidus against six other divisions, the ascendant's reach of one sidereal hour, C249, C250)
         run: cargo xtask check-western-houses
+      - name: Matching page (the Ashta Koota over every pair of the 108 padas, its exceptions and what each knob moves, C259 to C264)
+        run: cargo xtask check-matching
       - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
         run: cargo xtask check-progressed-angles
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)

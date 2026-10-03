@@ -159,6 +159,14 @@ for the lists.
 - **`TaraReading` was taken.** Python and Dart already had a tarabala
   `TaraReading`, so each koota's reading is named for the koota:
   `VarnaKoota` to `NadiKoota`.
+- **A lift is a clause, not points.** The measured page proposed that
+  Bhakoot gives its 7 when a dosha is lifted, and the kernel said no on
+  3 790 pairs: *Daivajna-manohara* scores the signs' distance alone, and
+  the verse's exceptions say the bad Bhakoot is auspicious without
+  restoring a point. So the Bhakoot lift and the middle-nadi reading
+  change what the answer says and never a total, and the page counts
+  both. Garga's count is far stricter: it lifts 1.6% of the 6/8 doshas
+  where any one exception lifts 54.8%.
 - **A birth matched with itself is a fixed point.** One sign and one
   nakshatra give every koota but Nadi its whole points and the shared
   nadi none, 28 whatever the Moon. Each binding's test starts from it.
@@ -173,6 +181,8 @@ for the lists.
   Tara, Yoni, Maitri, Bhakoot and Nadi are symmetric in their points,
   while Varna and Gana change when bride and groom swap. A test swaps
   every pair of the 729 nakshatra pairs and holds both.
-- The total over all 27 × 27 nakshatra pairs, at a fixed pada, is a
-  measured page: the distribution of points, and how often each
-  exception lifts a dosha.
+- The total over every pair of the 108 padas, which fix all a koota
+  reads, is a measured page
+  ([`matching-measured.md`](matching-measured.md), held by
+  `check-matching`): the distribution of points, each koota's share, how
+  often each exception lifts a dosha, and what each knob moves.
