@@ -175,6 +175,8 @@ jobs:
         run: cargo xtask check-declinations
       - name: Antiscia page (Lilly's antiscia over the corpus under the moieties, Leo's orbs and 1°, and how many are parallels too, C244)
         run: cargo xtask check-antiscia
+      - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
+        run: cargo xtask check-midpoints
       - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
         run: cargo xtask check-progressed-angles
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)

@@ -274,6 +274,7 @@ mod lints;
 mod lots;
 mod lunisolar;
 mod measure;
+mod midpoints;
 mod moon;
 mod muhurta;
 mod muntha;
@@ -467,6 +468,7 @@ const PASSES: &[Pass] = &[
         declinations::check_generated,
     ),
     ("antiscia", antiscia::generate, antiscia::check_generated),
+    ("midpoints", midpoints::generate, midpoints::check_generated),
     (
         "time-lords",
         time_lords::generate,
