@@ -1104,6 +1104,24 @@ export class Chart {
   }
 
   /**
+   * The birth read through its progressions (`progressions: { at, rate,
+   * year, angles, direction, contacts }`, Leo's *The Progressed
+   * Horoscope*); `null` unless asked for
+   * (`03-design/western-progressions.md`).
+   *
+   * It is `{ progressed, directed, contacts }`. `progressed` is `{ life,
+   * sky, armcDeg, angles: { ascendantDeg, midheavenDeg }, grahas }`, the
+   * planets of the chart founded at the instant of sky; `directed` is `{
+   * life, arcDeg, ascendantDeg, midheavenDeg, planets }`; both are `null`
+   * when no `at` was asked. `contacts` lists each `{ life, sky, graha, to,
+   * angle, motion }` in the order they fall due, `to` spelled as a hit's,
+   * or is `null` when no window was asked.
+   */
+  get progressions() {
+    return progressionsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2289,6 +2307,11 @@ export class ChartArea extends Area {
           'perfection',
           'a perfection request record, e.g. { house: 7 } or { querent: "VENUS", quesited: "MARS" }',
         ),
+        progressionsJson: recordJson(
+          request.progressions,
+          'progressions',
+          'a progressions request record, e.g. { at: 2460676.5 } or { contacts: { from, to } }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2699,6 +2722,20 @@ function sadeSatisOf(batch) {
 }
 
 /**
+ * A natal point as the Rust `NatalPoint` spells it, from a `to_lagna` and a
+ * `to_graha` column's cells: `{ point: 'LAGNA' }` or `{ point: 'GRAHA', graha }`.
+ *
+ * @param {number} toLagna
+ * @param {number} toGraha
+ * @returns {object}
+ */
+function pointOf(toLagna, toGraha) {
+  return Object.freeze(
+    toLagna !== 0 ? { point: 'LAGNA' } : { point: 'GRAHA', graha: GrahaById.get(toGraha) ?? 'unknown' },
+  );
+}
+
+/**
  * One row of the `hits` section as the Rust `Hit` spells it: the event
  * tagged by `kind`, carrying only the fields its kind has.
  *
@@ -2723,11 +2760,7 @@ function hitOf(h, row) {
     case 'ASPECT':
       event = {
         kind,
-        to: Object.freeze(
-          h.toLagna[row] !== 0
-            ? { point: 'LAGNA' }
-            : { point: 'GRAHA', graha: GrahaById.get(h.toGraha[row]) ?? 'unknown' },
-        ),
+        to: pointOf(h.toLagna[row], h.toGraha[row]),
         angle: h.angle[row],
         phase: AspectPhaseById.get(h.phase[row]) ?? 'unknown',
         motion,
@@ -3298,6 +3331,97 @@ function considerationsOf(batch) {
     );
   }
   CONSIDERATIONS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's progressions, decoded once however many charts read them. */
+const PROGRESSIONS = new WeakMap();
+
+/**
+ * Every chart's progressions in a batch: `progressions` holds a row a
+ * chart, or none when none was asked; the progressed and directed planets
+ * are graha-count rows a chart when an instant was asked, and the contacts
+ * are ragged by the row's count (`03-design/western-progressions.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function progressionsOf(batch) {
+  let decoded = PROGRESSIONS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const p = d.progressions;
+  const g = d.progressedGrahas;
+  const m = d.directedGrahas;
+  const c = d.progressedContacts;
+  if (p.life.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    const asked = !Number.isNaN(p.life[0]);
+    const perChart = asked ? g.graha.length / charts : 0;
+    const starts = startsOf(p.contactCount);
+    if (
+      p.life.length !== charts ||
+      m.graha.length !== g.graha.length ||
+      (asked && !Number.isInteger(perChart)) ||
+      starts[charts] !== c.life.length
+    ) {
+      throw new Error(
+        `progressions has ${p.life.length} rows, progressed_grahas ${g.graha.length}, ` +
+          `directed_grahas ${m.graha.length} and progressed_contacts ${c.life.length} for ${charts} charts`,
+      );
+    }
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    const rows = (count, from, next) => Object.freeze(Array.from({ length: count }, (_, k) => next(from + k)));
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, k) =>
+        Object.freeze({
+          progressed: asked
+            ? Object.freeze({
+                life: p.life[k],
+                sky: p.sky[k],
+                armcDeg: p.armcDeg[k],
+                angles: Object.freeze({ ascendantDeg: p.ascendantDeg[k], midheavenDeg: p.midheavenDeg[k] }),
+                grahas: rows(perChart, k * perChart, (row) =>
+                  Object.freeze({
+                    graha: graha(g.graha[row]),
+                    longitudeDeg: g.longitudeDeg[row],
+                    tropicalDeg: g.tropicalDeg[row],
+                    speedDegPerDay: g.speedDegPerDay[row],
+                  }),
+                ),
+              })
+            : null,
+          directed: asked
+            ? Object.freeze({
+                life: p.life[k],
+                arcDeg: p.arcDeg[k],
+                ascendantDeg: p.directedAscendantDeg[k],
+                midheavenDeg: p.directedMidheavenDeg[k],
+                planets: rows(perChart, k * perChart, (row) =>
+                  Object.freeze({ graha: graha(m.graha[row]), longitudeDeg: m.longitudeDeg[row] }),
+                ),
+              })
+            : null,
+          contacts:
+            p.contactsAsked[k] === 1
+              ? rows(p.contactCount[k], starts[k], (row) =>
+                  Object.freeze({
+                    life: c.life[row],
+                    sky: c.sky[row],
+                    graha: graha(c.graha[row]),
+                    to: pointOf(c.toLagna[row], c.toGraha[row]),
+                    angle: c.angle[row],
+                    motion: MotionById.get(c.motion[row]) ?? 'unknown',
+                  }),
+                )
+              : null,
+        }),
+      ),
+    );
+  }
+  PROGRESSIONS.set(batch, decoded);
   return decoded;
 }
 

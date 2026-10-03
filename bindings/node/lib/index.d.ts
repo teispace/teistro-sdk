@@ -1328,6 +1328,108 @@ export interface Considerations {
   readonly rules: Required<ConsiderationRequest>;
 }
 
+/** A span of time a progression's rate is stated in. */
+export type ProgressionSpan = 'DAY' | 'SYNODIC_MONTH' | 'SIDEREAL_MONTH' | 'YEAR' | { readonly DAYS: number };
+
+/** How the progressed midheaven moves (C237). */
+export type AngleMethod =
+  | 'NAIBOD_RIGHT_ASCENSION'
+  | 'NAIBOD_LONGITUDE'
+  | 'SOLAR_ARC_LONGITUDE'
+  | 'SOLAR_ARC_RIGHT_ASCENSION'
+  | 'QUOTIDIAN';
+
+/**
+ * What to read every chart's birth through: the progressed chart and the
+ * direction at an instant of life (`at`), the contacts over a window
+ * (`contacts`), or both (`03-design/western-progressions.md`). Every other
+ * field is Leo's default when absent.
+ *
+ * @example
+ * const leo: ProgressionsRequest = { at: 2460676.5, year: 'NOON_SIDEREAL_TIME' };
+ * const moon: ProgressionsRequest = { contacts: { from: 2460676.5, to: 2461041.5, grahas: ['MOON'] } };
+ */
+export interface ProgressionsRequest {
+  /** The instant of life, a UTC Julian day. */
+  readonly at?: number;
+  /** How much sky measures how much life; a day for a year by default. */
+  readonly rate?: { readonly sky: ProgressionSpan; readonly life: ProgressionSpan };
+  /** How long a year of life is (C236); the tropical year by default. */
+  readonly year?: 'TROPICAL' | 'JULIAN' | 'NOON_SIDEREAL_TIME';
+  /** How the progressed midheaven moves; Leo's mean Sun in right ascension by default. */
+  readonly angles?: AngleMethod;
+  /** The direction's arc: the Sun's under the rate by default, or a measure's. */
+  readonly direction?: 'SOLAR' | 'NAIBOD' | 'PTOLEMY' | { readonly PER_YEAR: number };
+  /** A window of life to find the contacts in, spelled as a hit list spells them. */
+  readonly contacts?: {
+    readonly from: number;
+    readonly to: number;
+    /** The progressed planets; the seven by default. */
+    readonly grahas?: HitRequest['grahas'];
+    /** The radical points; the seven and the lagna by default. */
+    readonly points?: HitRequest['points'];
+    /** The aspects' angles, whole degrees to 180; Leo's table (p. 48) by default. */
+    readonly aspects?: HitRequest['aspects'];
+  };
+}
+
+/** A progressed or directed planet. */
+export interface ProgressedPlanet {
+  readonly graha: Graha | 'unknown';
+  /** Its longitude in the chart's zodiac, degrees. */
+  readonly longitudeDeg: number;
+}
+
+/** One exact aspect a progressed planet makes to a radical point. */
+export interface ProgressedContact {
+  /** The instant of life it falls due, a UTC Julian day. */
+  readonly life: number;
+  /** The instant of sky it is exact at, a UTC Julian day. */
+  readonly sky: number;
+  /** The progressed planet. */
+  readonly graha: Graha | 'unknown';
+  /** The radical point, spelled as a hit's `to`. */
+  readonly to: NatalPoint;
+  /** The aspect's angle, a whole degree 0 to 180. */
+  readonly angle: number;
+  readonly motion: Motion | 'unknown';
+}
+
+/**
+ * A birth read through its progressions (`03-design/western-progressions.md`).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, progressions: { at: 2460676.5 } });
+ * const moon = chart.progressions?.progressed?.grahas.find((g) => g.graha === 'graha.MOON');
+ */
+export interface Progressions {
+  /** The chart at the instant of sky that measures `at`; `null` without `at`. */
+  readonly progressed: {
+    readonly life: number;
+    readonly sky: number;
+    /** The progressed meridian's right ascension, degrees. */
+    readonly armcDeg: number;
+    /** The progressed angles, by the request's `angles`. */
+    readonly angles: { readonly ascendantDeg: number; readonly midheavenDeg: number };
+    readonly grahas: readonly (ProgressedPlanet & {
+      readonly tropicalDeg: number;
+      /** Degrees a day at the instant of sky; below zero when retrograde. */
+      readonly speedDegPerDay: number;
+    })[];
+  } | null;
+  /** The birth's points moved by one arc; `null` without `at`. */
+  readonly directed: {
+    readonly life: number;
+    /** The arc, degrees; a solar arc is signed. */
+    readonly arcDeg: number;
+    readonly ascendantDeg: number;
+    readonly midheavenDeg: number;
+    readonly planets: readonly ProgressedPlanet[];
+  } | null;
+  /** The contacts in the window, as they fall due; `null` without `contacts`. */
+  readonly contacts: readonly ProgressedContact[] | null;
+}
+
 /**
  * How to read every chart's perfection (`03-design/hellenistic-perfection.md`);
  * name the quesited's significator or the house of the matter, not both.
@@ -2891,6 +2993,11 @@ export declare class Chart {
    */
   readonly perfection: Matter | null;
   /**
+   * The birth read through its progressions; `null` unless `progressions`
+   * asked (`03-design/western-progressions.md`).
+   */
+  readonly progressions: Progressions | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4003,6 +4110,13 @@ export interface ChartRequest {
    * (`03-design/hellenistic-perfection.md`). None by default.
    */
   readonly perfection?: PerfectionRequest;
+  /**
+   * The progressions to read every chart's birth through, read back as each
+   * chart's `progressions`: the progressed chart and the direction at an
+   * instant of life, the contacts over a window, or both
+   * (`03-design/western-progressions.md`). None by default.
+   */
+  readonly progressions?: ProgressionsRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

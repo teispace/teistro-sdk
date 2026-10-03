@@ -2223,6 +2223,64 @@ test('a chart carries its perfection', () => {
 });
 
 /**
+ * Progressions cross whole on Leo's own birth: his progressed map's
+ * sidereal time, his Appendix V contact on the day each year measure gives,
+ * the planets and the direction a row a graha, a batch the charts one at a
+ * time, and refusals named in the record (`03-design/western-progressions.md`).
+ */
+test('a chart carries its progressions', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const london = { place: { latitude: 51.5, longitude: 0, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2400629.742361111;
+  assert.equal(ctx.chart.found({ instant: birth, ...london }).progressions, null);
+
+  // His forty-seventh year: the map at sidereal time 5h 54m 16s (p. 35).
+  const at = birth + 46 * 365.242189;
+  const read = ctx.chart.found({ instant: birth, ...london, progressions: { at } }).progressions;
+  assert.ok(Object.isFrozen(read.progressed.grahas[0]), 'frozen to its leaves');
+  assert.ok(Math.abs(read.progressed.sky - (birth + 46)) < 1e-9);
+  assert.ok(Math.abs(read.progressed.armcDeg / 15 - (5 + 54 / 60 + 16 / 3600)) < 2 / 3600);
+  assert.equal(read.progressed.grahas.length, read.directed.planets.length);
+  assert.equal(read.contacts, null);
+  const sun = read.progressed.grahas.find((g) => g.graha === 'graha.SUN');
+  const directedSun = read.directed.planets.find((g) => g.graha === 'graha.SUN');
+  assert.ok(Math.abs(sun.longitudeDeg - directedSun.longitudeDeg) < 1e-9, 'the solar arc moves the Sun to its progressed place');
+
+  // The Moon sesquiquadrate Mercury (p. 305): the 21st by a year, the 22nd by his rule.
+  const october = { from: 2417484.5, to: 2417515.5, grahas: ['MOON'], points: ['MERCURY'], aspects: [135] };
+  for (const [year, day] of [['TROPICAL', 21], ['NOON_SIDEREAL_TIME', 22]]) {
+    const found = ctx.chart.found({ instant: birth, ...london, progressions: { year, contacts: october } }).progressions;
+    assert.equal(found.progressed, null);
+    assert.equal(found.contacts.length, 1, year);
+    const [contact] = found.contacts;
+    assert.deepEqual([contact.graha, contact.to, contact.angle, contact.motion], ['graha.MOON', { point: 'GRAHA', graha: 'graha.MERCURY' }, 135, 'DIRECT']);
+    assert.equal(Math.floor(contact.life - 2417484.5) + 1, day, year);
+  }
+  const none = ctx.chart.found({ instant: birth, ...london, progressions: { contacts: { ...october, aspects: [90] } } });
+  assert.deepEqual(none.progressions.contacts, [], 'a window asked holding none is empty, not null');
+
+  const instants = [birth, birth + 3000.25, birth + 9000.5];
+  const asked = { at: 2430000.5, angles: 'SOLAR_ARC_LONGITUDE', direction: 'NAIBOD' };
+  const batch = ctx.chart.foundMany({ instants, ...london, progressions: asked });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).progressions, ctx.chart.found({ instant, ...london, progressions: asked }).progressions),
+  );
+  for (const [request, field] of [
+    [{}, 'progressions.at'],
+    [{ at, year: 'SIDEREAL' }, 'progressions.year'],
+    [{ at, direction: { PER_YEAR: 0 } }, 'progressions.direction'],
+    [{ contacts: { from: 2, to: 1 } }, 'progressions.contacts.to'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...london, progressions: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
+/**
  * Valens's lots cross whole: the sect and the rules read back as a request
  * would write them, all fourteen in the catalogue's order, Fortune where
  * its formula puts it and Daimon its mirror in the ascendant, a batch the
