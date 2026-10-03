@@ -36,6 +36,7 @@ mod arc;
 mod aspects;
 mod composite;
 mod declination;
+mod harmonic;
 mod houses;
 mod midpoint;
 mod progression;
@@ -54,6 +55,10 @@ pub use aspects::{
 pub use composite::{ChartPoints, Composite, composite};
 pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
+};
+pub use harmonic::{
+    ADDEY_HARMONIC_ORB_DEG, HarmonicChart, HarmonicPlaced, HarmonicPoint, HarmonicRequest,
+    HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG, harmonic_chart, harmonic_deg,
 };
 pub use houses::{
     ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
