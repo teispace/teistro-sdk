@@ -1588,6 +1588,46 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 111, 'matchings');
+    out.matchings = {
+      total: column(blob, at, 0, 'f64', at.count),
+      brideVarna: column(blob, at, 1, 'u16', at.count),
+      groomVarna: column(blob, at, 2, 'u16', at.count),
+      vashya: column(blob, at, 3, 'u8', at.count),
+      taraBrideToGroom: column(blob, at, 4, 'u8', at.count),
+      taraGroomToBride: column(blob, at, 5, 'u8', at.count),
+      brideYoni: column(blob, at, 6, 'u16', at.count),
+      groomYoni: column(blob, at, 7, 'u16', at.count),
+      yoni: column(blob, at, 8, 'u8', at.count),
+      brideLord: column(blob, at, 9, 'u16', at.count),
+      groomLord: column(blob, at, 10, 'u16', at.count),
+      maitri: column(blob, at, 11, 'u8', at.count),
+      brideGana: column(blob, at, 12, 'u16', at.count),
+      groomGana: column(blob, at, 13, 'u16', at.count),
+      bhakootApart: column(blob, at, 14, 'u8', at.count),
+      bhakootDosha: column(blob, at, 15, 'u8', at.count),
+      bhakootOneLord: column(blob, at, 16, 'u8', at.count),
+      bhakootLordsFriends: column(blob, at, 17, 'u8', at.count),
+      bhakootNavamshaLordsFriends: column(blob, at, 18, 'u8', at.count),
+      bhakootTaraPure: column(blob, at, 19, 'u8', at.count),
+      bhakootVashya: column(blob, at, 20, 'u8', at.count),
+      bhakootLifted: column(blob, at, 21, 'u8', at.count),
+      brideNadi: column(blob, at, 22, 'u16', at.count),
+      groomNadi: column(blob, at, 23, 'u16', at.count),
+      nadiDosha: column(blob, at, 24, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 112, 'matching_kootas');
+    out.matchingKootas = {
+      koota: column(blob, at, 0, 'u16', at.count),
+      points: column(blob, at, 1, 'f64', at.count),
+      maxPoints: column(blob, at, 2, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

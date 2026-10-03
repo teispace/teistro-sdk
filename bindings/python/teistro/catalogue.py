@@ -4789,6 +4789,95 @@ class TajikaRelation(Member):
     """An enemy."""
 
 
+class VashyaRelation(Member):
+    """How two signs stand in Vashya (`03-design/matching.md`, C260).
+
+    Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
+    match.
+    """
+
+    MUTUAL = 0
+    """Each is vashya to the other: 2."""
+
+    ONE_WAY = 1
+    """One is vashya to the other: 1."""
+
+    FOOD = 2
+    """One is vashya to the other and its food: ½."""
+
+    NEITHER = 3
+    """Neither: 0."""
+
+
+class YoniRelation(Member):
+    """How two yonis stand (`03-design/matching.md`, C261).
+
+    Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
+    match.
+    """
+
+    SAME = 0
+    """The same yoni: 4."""
+
+    NEUTRAL = 1
+    """Neither the same nor great enemies: 2."""
+
+    GREAT_ENEMY = 2
+    """One of the seven great enmities: 0."""
+
+
+class MaitriRelation(Member):
+    """How two sign lords stand by the natural friendships
+    (`03-design/matching.md`).
+
+    Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
+    match.
+    """
+
+    ONE_LORD = 0
+    """One lord rules both signs: 5."""
+
+    MUTUAL_FRIENDS = 1
+    """Each the other's friend: 5."""
+
+    FRIEND_NEUTRAL = 2
+    """A friend one way, neutral the other: 4."""
+
+    MUTUAL_NEUTRAL = 3
+    """Neutral both ways: 3."""
+
+    FRIEND_ENEMY = 4
+    """A friend one way, an enemy the other: 1."""
+
+    NEUTRAL_ENEMY = 5
+    """Neutral one way, an enemy the other: ½."""
+
+    MUTUAL_ENEMIES = 6
+    """Each the other's enemy: 0."""
+
+
+class BhakootDosha(Member):
+    """A bad Bhakoot by how far the signs stand apart, or none
+    (`03-design/matching.md`, VI.31).
+
+    Mirrors `Option<teistro::matching::BhakootDosha>` through an
+    **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
+    type spells.
+    """
+
+    NONE = 0
+    """The signs stand well."""
+
+    SIX_EIGHT = 1
+    """Sixth and eighth."""
+
+    FIVE_NINE = 2
+    """Fifth and ninth."""
+
+    TWO_TWELVE = 3
+    """Second and twelfth."""
+
+
 class HarshaGrade(Member):
     """What the source calls a planet by its Harsha bala
     (`03-design/tajika-harsha.md`).
@@ -6652,6 +6741,32 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "FRIEND",
         2: "NEUTRAL",
         3: "ENEMY",
+    },
+    "VashyaRelation": {
+        0: "MUTUAL",
+        1: "ONE_WAY",
+        2: "FOOD",
+        3: "NEITHER",
+    },
+    "YoniRelation": {
+        0: "SAME",
+        1: "NEUTRAL",
+        2: "GREAT_ENEMY",
+    },
+    "MaitriRelation": {
+        0: "ONE_LORD",
+        1: "MUTUAL_FRIENDS",
+        2: "FRIEND_NEUTRAL",
+        3: "MUTUAL_NEUTRAL",
+        4: "FRIEND_ENEMY",
+        5: "NEUTRAL_ENEMY",
+        6: "MUTUAL_ENEMIES",
+    },
+    "BhakootDosha": {
+        0: "NONE",
+        1: "SIX_EIGHT",
+        2: "FIVE_NINE",
+        3: "TWO_TWELVE",
     },
     "HarshaGrade": {
         0: "NIRBALA",

@@ -8617,6 +8617,146 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsVashyaRelation",
+      "doc": "How two signs stand in Vashya (`03-design/matching.md`, C260).\n\nMirrors `teistro::matching::VashyaRelation` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Mutual",
+          "value": 0,
+          "doc": "Each is vashya to the other: 2.",
+          "key": "MUTUAL"
+        },
+        {
+          "name": "OneWay",
+          "value": 1,
+          "doc": "One is vashya to the other: 1.",
+          "key": "ONE_WAY"
+        },
+        {
+          "name": "Food",
+          "value": 2,
+          "doc": "One is vashya to the other and its food: ½.",
+          "key": "FOOD"
+        },
+        {
+          "name": "Neither",
+          "value": 3,
+          "doc": "Neither: 0.",
+          "key": "NEITHER"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsYoniRelation",
+      "doc": "How two yonis stand (`03-design/matching.md`, C261).\n\nMirrors `teistro::matching::YoniRelation` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Same",
+          "value": 0,
+          "doc": "The same yoni: 4.",
+          "key": "SAME"
+        },
+        {
+          "name": "Neutral",
+          "value": 1,
+          "doc": "Neither the same nor great enemies: 2.",
+          "key": "NEUTRAL"
+        },
+        {
+          "name": "GreatEnemy",
+          "value": 2,
+          "doc": "One of the seven great enmities: 0.",
+          "key": "GREAT_ENEMY"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsMaitriRelation",
+      "doc": "How two sign lords stand by the natural friendships\n(`03-design/matching.md`).\n\nMirrors `teistro::matching::MaitriRelation` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "OneLord",
+          "value": 0,
+          "doc": "One lord rules both signs: 5.",
+          "key": "ONE_LORD"
+        },
+        {
+          "name": "MutualFriends",
+          "value": 1,
+          "doc": "Each the other's friend: 5.",
+          "key": "MUTUAL_FRIENDS"
+        },
+        {
+          "name": "FriendNeutral",
+          "value": 2,
+          "doc": "A friend one way, neutral the other: 4.",
+          "key": "FRIEND_NEUTRAL"
+        },
+        {
+          "name": "MutualNeutral",
+          "value": 3,
+          "doc": "Neutral both ways: 3.",
+          "key": "MUTUAL_NEUTRAL"
+        },
+        {
+          "name": "FriendEnemy",
+          "value": 4,
+          "doc": "A friend one way, an enemy the other: 1.",
+          "key": "FRIEND_ENEMY"
+        },
+        {
+          "name": "NeutralEnemy",
+          "value": 5,
+          "doc": "Neutral one way, an enemy the other: ½.",
+          "key": "NEUTRAL_ENEMY"
+        },
+        {
+          "name": "MutualEnemies",
+          "value": 6,
+          "doc": "Each the other's enemy: 0.",
+          "key": "MUTUAL_ENEMIES"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsBhakootDosha",
+      "doc": "A bad Bhakoot by how far the signs stand apart, or none\n(`03-design/matching.md`, VI.31).\n\nMirrors `Option<teistro::matching::BhakootDosha>` through an\n**exhaustive** match: `NONE` is the absence of a dosha, which no Rust\ntype spells.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "None",
+          "value": 0,
+          "doc": "The signs stand well.",
+          "key": "NONE"
+        },
+        {
+          "name": "SixEight",
+          "value": 1,
+          "doc": "Sixth and eighth.",
+          "key": "SIX_EIGHT"
+        },
+        {
+          "name": "FiveNine",
+          "value": 2,
+          "doc": "Fifth and ninth.",
+          "key": "FIVE_NINE"
+        },
+        {
+          "name": "TwoTwelve",
+          "value": 3,
+          "doc": "Second and twelfth.",
+          "key": "TWO_TWELVE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHarshaGrade",
       "doc": "What the source calls a planet by its Harsha bala\n(`03-design/tajika-harsha.md`).\n\nMirrors `teistro::HarshaGrade` through an **exhaustive** match.",
       "repr": "u8",
@@ -12048,6 +12188,21 @@
           "doc": "Every chart's harmonic chart, as a JSON object: `number`, the\nharmonic, a whole number from 1 to 360 every longitude is\nmultiplied by, and `orbDeg`, how close two points meet in it, 12°\nby default (C252), at most 30°. The planets, the ascendant and the\nmidheaven are multiplied in the chart's own zodiac (C253), each in\nits equal house from the harmonic ascendant (C254). The answers\ncome back in `harmonics`, `harmonic_points` and `harmonic_rows`.\nNull for none, which costs nothing\n(`03-design/western-harmonics.md`). Refusals are named from the\nrecord every binding calls `harmonic`, as `harmonic.number`.",
           "meta": {
             "example": "{\"number\":9}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "matching_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`). The answers come back in `matchings` and\n`matching_kootas`. Null for none, which costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
+          "meta": {
+            "example": "{\"partner\":{\"instant\":2447892.5,\"place\":{\"latitude\":27.7172,\"longitude\":85.324,\"altitude\":1400}},\"partnerRole\":\"BRIDE\"}",
             "nullable": true
           }
         }
@@ -20148,6 +20303,177 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the record allowed, degrees."
+            }
+          ]
+        },
+        {
+          "id": 111,
+          "name": "matchings",
+          "doc": "Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "total",
+              "scalar": "f64",
+              "doc": "The eight kootas' points, out of 36, a multiple of a half."
+            },
+            {
+              "name": "bride_varna",
+              "scalar": "u16",
+              "doc": "The bride's varna, by her or his Moon's sign (VI.22).",
+              "enum": "Varna"
+            },
+            {
+              "name": "groom_varna",
+              "scalar": "u16",
+              "doc": "The groom's varna, by her or his Moon's sign (VI.22).",
+              "enum": "Varna"
+            },
+            {
+              "name": "vashya",
+              "scalar": "u8",
+              "doc": "How the two Moon signs stand in Vashya (VI.23, C260).",
+              "enum": "TsVashyaRelation"
+            },
+            {
+              "name": "tara_bride_to_groom",
+              "scalar": "u8",
+              "doc": "The tara counted from the bride's nakshatra to the groom's, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad."
+            },
+            {
+              "name": "tara_groom_to_bride",
+              "scalar": "u8",
+              "doc": "The tara counted from the groom's nakshatra to the bride's, 1 to 9."
+            },
+            {
+              "name": "bride_yoni",
+              "scalar": "u16",
+              "doc": "The bride's yoni, by her or his Moon's nakshatra (VI.25–26).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "groom_yoni",
+              "scalar": "u16",
+              "doc": "The groom's yoni, by her or his Moon's nakshatra (VI.25–26).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "yoni",
+              "scalar": "u8",
+              "doc": "How the two yonis stand (C261).",
+              "enum": "TsYoniRelation"
+            },
+            {
+              "name": "bride_lord",
+              "scalar": "u16",
+              "doc": "The lord of the bride's Moon sign (VI.27–28).",
+              "enum": "Graha"
+            },
+            {
+              "name": "groom_lord",
+              "scalar": "u16",
+              "doc": "The lord of the groom's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "maitri",
+              "scalar": "u8",
+              "doc": "How the two lords stand by the natural friendships.",
+              "enum": "TsMaitriRelation"
+            },
+            {
+              "name": "bride_gana",
+              "scalar": "u16",
+              "doc": "The bride's gana, by her or his Moon's nakshatra (VI.29–30).",
+              "enum": "Gana"
+            },
+            {
+              "name": "groom_gana",
+              "scalar": "u16",
+              "doc": "The groom's gana, by her or his Moon's nakshatra (VI.29–30).",
+              "enum": "Gana"
+            },
+            {
+              "name": "bhakoot_apart",
+              "scalar": "u8",
+              "doc": "The groom's Moon sign counted from the bride's, 1 to 12 (VI.31)."
+            },
+            {
+              "name": "bhakoot_dosha",
+              "scalar": "u8",
+              "doc": "The bad Bhakoot the two signs stand at, or none.",
+              "enum": "TsBhakootDosha"
+            },
+            {
+              "name": "bhakoot_one_lord",
+              "scalar": "u8",
+              "doc": "1 when one lord rules both signs: the first exception of VI.32–33, reported whether or not there is a dosha."
+            },
+            {
+              "name": "bhakoot_lords_friends",
+              "scalar": "u8",
+              "doc": "1 when the two sign lords are each other's friends."
+            },
+            {
+              "name": "bhakoot_navamsha_lords_friends",
+              "scalar": "u8",
+              "doc": "1 when the lords of the two Moons' navamshas are one or each other's friends."
+            },
+            {
+              "name": "bhakoot_tara_pure",
+              "scalar": "u8",
+              "doc": "1 when the tara is pure both ways."
+            },
+            {
+              "name": "bhakoot_vashya",
+              "scalar": "u8",
+              "doc": "1 when one sign is vashya to the other."
+            },
+            {
+              "name": "bhakoot_lifted",
+              "scalar": "u8",
+              "doc": "1 when the exceptions lift the dosha under the record's `bhakootLift` (C263); 0 with no dosha."
+            },
+            {
+              "name": "bride_nadi",
+              "scalar": "u16",
+              "doc": "The bride's nadi, by her or his Moon's nakshatra (VI.34).",
+              "enum": "Nadi"
+            },
+            {
+              "name": "groom_nadi",
+              "scalar": "u16",
+              "doc": "The groom's nadi, by her or his Moon's nakshatra (VI.34).",
+              "enum": "Nadi"
+            },
+            {
+              "name": "nadi_dosha",
+              "scalar": "u8",
+              "doc": "1 when the shared nadi is a dosha under the record's `nadiDosha` (C264)."
+            }
+          ]
+        },
+        {
+          "id": 112,
+          "name": "matching_kootas",
+          "doc": "Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "koota",
+              "scalar": "u16",
+              "doc": "Which koota.",
+              "enum": "Koota"
+            },
+            {
+              "name": "points",
+              "scalar": "f64",
+              "doc": "Its points, a multiple of a half."
+            },
+            {
+              "name": "max_points",
+              "scalar": "f64",
+              "doc": "The most it gives, 1 for Varna to 8 for Nadi."
             }
           ]
         }

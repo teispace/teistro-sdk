@@ -6064,6 +6064,117 @@ typedef enum ts_tajika_relation {
 } ts_tajika_relation;
 
 /**
+ * How two signs stand in Vashya (`03-design/matching.md`, C260).
+ *
+ * Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
+ * match.
+ */
+typedef enum ts_vashya_relation {
+    /**
+     * Each is vashya to the other: 2.
+     */
+    TS_VASHYA_RELATION_MUTUAL = 0,
+    /**
+     * One is vashya to the other: 1.
+     */
+    TS_VASHYA_RELATION_ONE_WAY = 1,
+    /**
+     * One is vashya to the other and its food: ½.
+     */
+    TS_VASHYA_RELATION_FOOD = 2,
+    /**
+     * Neither: 0.
+     */
+    TS_VASHYA_RELATION_NEITHER = 3,
+} ts_vashya_relation;
+
+/**
+ * How two yonis stand (`03-design/matching.md`, C261).
+ *
+ * Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
+ * match.
+ */
+typedef enum ts_yoni_relation {
+    /**
+     * The same yoni: 4.
+     */
+    TS_YONI_RELATION_SAME = 0,
+    /**
+     * Neither the same nor great enemies: 2.
+     */
+    TS_YONI_RELATION_NEUTRAL = 1,
+    /**
+     * One of the seven great enmities: 0.
+     */
+    TS_YONI_RELATION_GREAT_ENEMY = 2,
+} ts_yoni_relation;
+
+/**
+ * How two sign lords stand by the natural friendships
+ * (`03-design/matching.md`).
+ *
+ * Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
+ * match.
+ */
+typedef enum ts_maitri_relation {
+    /**
+     * One lord rules both signs: 5.
+     */
+    TS_MAITRI_RELATION_ONE_LORD = 0,
+    /**
+     * Each the other's friend: 5.
+     */
+    TS_MAITRI_RELATION_MUTUAL_FRIENDS = 1,
+    /**
+     * A friend one way, neutral the other: 4.
+     */
+    TS_MAITRI_RELATION_FRIEND_NEUTRAL = 2,
+    /**
+     * Neutral both ways: 3.
+     */
+    TS_MAITRI_RELATION_MUTUAL_NEUTRAL = 3,
+    /**
+     * A friend one way, an enemy the other: 1.
+     */
+    TS_MAITRI_RELATION_FRIEND_ENEMY = 4,
+    /**
+     * Neutral one way, an enemy the other: ½.
+     */
+    TS_MAITRI_RELATION_NEUTRAL_ENEMY = 5,
+    /**
+     * Each the other's enemy: 0.
+     */
+    TS_MAITRI_RELATION_MUTUAL_ENEMIES = 6,
+} ts_maitri_relation;
+
+/**
+ * A bad Bhakoot by how far the signs stand apart, or none
+ * (`03-design/matching.md`, VI.31).
+ *
+ * Mirrors `Option<teistro::matching::BhakootDosha>` through an
+ * **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
+ * type spells.
+ */
+typedef enum ts_bhakoot_dosha {
+    /**
+     * The signs stand well.
+     */
+    TS_BHAKOOT_DOSHA_NONE = 0,
+    /**
+     * Sixth and eighth.
+     */
+    TS_BHAKOOT_DOSHA_SIX_EIGHT = 1,
+    /**
+     * Fifth and ninth.
+     */
+    TS_BHAKOOT_DOSHA_FIVE_NINE = 2,
+    /**
+     * Second and twelfth.
+     */
+    TS_BHAKOOT_DOSHA_TWO_TWELVE = 3,
+} ts_bhakoot_dosha;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *
@@ -7862,6 +7973,22 @@ struct ts_chart_request {
      * Example: {"number":9}. May be null.
      */
     const char * harmonic_json;
+    /**
+     * Every chart matched with one partner's birth by the Ashta Koota of
+     * *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+     * `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+     * "utcOffsetSeconds"}`, founded once under the context's sidereal
+     * profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+     * on the other side; and `rules`, every field optional: `equalVarna`
+     * (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+     * `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+     * `MIDDLE_ONLY`). The answers come back in `matchings` and
+     * `matching_kootas`. Null for none, which costs nothing
+     * (`03-design/matching.md`). Refusals are named from the record every
+     * binding calls `matching`, as `matching.partnerRole`.
+     * Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+     */
+    const char * matching_json;
 };
 
 /**
@@ -8796,7 +8923,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 280, "ts_chart_request is 280 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 288, "ts_chart_request is 288 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

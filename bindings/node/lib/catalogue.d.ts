@@ -8126,6 +8126,160 @@ export declare const TajikaRelation: {
 export declare const TajikaRelationById: ReadonlyMap<number, TajikaRelation>;
 
 /**
+ * How two signs stand in Vashya (`03-design/matching.md`, C260).
+ *
+ * Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
+ * match.
+ */
+export type VashyaRelation = 'MUTUAL' | 'ONE_WAY' | 'FOOD' | 'NEITHER';
+
+/** Every VashyaRelation by name; the values are the strings the union accepts. */
+export declare const VashyaRelation: {
+  /**
+   * Each is vashya to the other: 2.
+   */
+  readonly Mutual: 'MUTUAL';
+  /**
+   * One is vashya to the other: 1.
+   */
+  readonly OneWay: 'ONE_WAY';
+  /**
+   * One is vashya to the other and its food: ½.
+   */
+  readonly Food: 'FOOD';
+  /**
+   * Neither: 0.
+   */
+  readonly Neither: 'NEITHER';
+};
+
+/**
+ * Every VashyaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VashyaRelationById: ReadonlyMap<number, VashyaRelation>;
+
+/**
+ * How two yonis stand (`03-design/matching.md`, C261).
+ *
+ * Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
+ * match.
+ */
+export type YoniRelation = 'SAME' | 'NEUTRAL' | 'GREAT_ENEMY';
+
+/** Every YoniRelation by name; the values are the strings the union accepts. */
+export declare const YoniRelation: {
+  /**
+   * The same yoni: 4.
+   */
+  readonly Same: 'SAME';
+  /**
+   * Neither the same nor great enemies: 2.
+   */
+  readonly Neutral: 'NEUTRAL';
+  /**
+   * One of the seven great enmities: 0.
+   */
+  readonly GreatEnemy: 'GREAT_ENEMY';
+};
+
+/**
+ * Every YoniRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YoniRelationById: ReadonlyMap<number, YoniRelation>;
+
+/**
+ * How two sign lords stand by the natural friendships
+ * (`03-design/matching.md`).
+ *
+ * Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
+ * match.
+ */
+export type MaitriRelation =
+  | 'ONE_LORD'
+  | 'MUTUAL_FRIENDS'
+  | 'FRIEND_NEUTRAL'
+  | 'MUTUAL_NEUTRAL'
+  | 'FRIEND_ENEMY'
+  | 'NEUTRAL_ENEMY'
+  | 'MUTUAL_ENEMIES';
+
+/** Every MaitriRelation by name; the values are the strings the union accepts. */
+export declare const MaitriRelation: {
+  /**
+   * One lord rules both signs: 5.
+   */
+  readonly OneLord: 'ONE_LORD';
+  /**
+   * Each the other's friend: 5.
+   */
+  readonly MutualFriends: 'MUTUAL_FRIENDS';
+  /**
+   * A friend one way, neutral the other: 4.
+   */
+  readonly FriendNeutral: 'FRIEND_NEUTRAL';
+  /**
+   * Neutral both ways: 3.
+   */
+  readonly MutualNeutral: 'MUTUAL_NEUTRAL';
+  /**
+   * A friend one way, an enemy the other: 1.
+   */
+  readonly FriendEnemy: 'FRIEND_ENEMY';
+  /**
+   * Neutral one way, an enemy the other: ½.
+   */
+  readonly NeutralEnemy: 'NEUTRAL_ENEMY';
+  /**
+   * Each the other's enemy: 0.
+   */
+  readonly MutualEnemies: 'MUTUAL_ENEMIES';
+};
+
+/**
+ * Every MaitriRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MaitriRelationById: ReadonlyMap<number, MaitriRelation>;
+
+/**
+ * A bad Bhakoot by how far the signs stand apart, or none
+ * (`03-design/matching.md`, VI.31).
+ *
+ * Mirrors `Option<teistro::matching::BhakootDosha>` through an
+ * **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
+ * type spells.
+ */
+export type BhakootDosha = 'NONE' | 'SIX_EIGHT' | 'FIVE_NINE' | 'TWO_TWELVE';
+
+/** Every BhakootDosha by name; the values are the strings the union accepts. */
+export declare const BhakootDosha: {
+  /**
+   * The signs stand well.
+   */
+  readonly None: 'NONE';
+  /**
+   * Sixth and eighth.
+   */
+  readonly SixEight: 'SIX_EIGHT';
+  /**
+   * Fifth and ninth.
+   */
+  readonly FiveNine: 'FIVE_NINE';
+  /**
+   * Second and twelfth.
+   */
+  readonly TwoTwelve: 'TWO_TWELVE';
+};
+
+/**
+ * Every BhakootDosha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BhakootDoshaById: ReadonlyMap<number, BhakootDosha>;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *

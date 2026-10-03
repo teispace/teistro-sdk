@@ -4021,6 +4021,86 @@ export const TajikaRelationById = new Map([
   [3, 'ENEMY'],
 ]);
 
+/** Every VashyaRelation by name. */
+export const VashyaRelation = Object.freeze({
+  Mutual: 'MUTUAL',
+  OneWay: 'ONE_WAY',
+  Food: 'FOOD',
+  Neither: 'NEITHER',
+});
+
+/**
+ * Every VashyaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VashyaRelationById = new Map([
+  [0, 'MUTUAL'],
+  [1, 'ONE_WAY'],
+  [2, 'FOOD'],
+  [3, 'NEITHER'],
+]);
+
+/** Every YoniRelation by name. */
+export const YoniRelation = Object.freeze({
+  Same: 'SAME',
+  Neutral: 'NEUTRAL',
+  GreatEnemy: 'GREAT_ENEMY',
+});
+
+/**
+ * Every YoniRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YoniRelationById = new Map([
+  [0, 'SAME'],
+  [1, 'NEUTRAL'],
+  [2, 'GREAT_ENEMY'],
+]);
+
+/** Every MaitriRelation by name. */
+export const MaitriRelation = Object.freeze({
+  OneLord: 'ONE_LORD',
+  MutualFriends: 'MUTUAL_FRIENDS',
+  FriendNeutral: 'FRIEND_NEUTRAL',
+  MutualNeutral: 'MUTUAL_NEUTRAL',
+  FriendEnemy: 'FRIEND_ENEMY',
+  NeutralEnemy: 'NEUTRAL_ENEMY',
+  MutualEnemies: 'MUTUAL_ENEMIES',
+});
+
+/**
+ * Every MaitriRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MaitriRelationById = new Map([
+  [0, 'ONE_LORD'],
+  [1, 'MUTUAL_FRIENDS'],
+  [2, 'FRIEND_NEUTRAL'],
+  [3, 'MUTUAL_NEUTRAL'],
+  [4, 'FRIEND_ENEMY'],
+  [5, 'NEUTRAL_ENEMY'],
+  [6, 'MUTUAL_ENEMIES'],
+]);
+
+/** Every BhakootDosha by name. */
+export const BhakootDosha = Object.freeze({
+  None: 'NONE',
+  SixEight: 'SIX_EIGHT',
+  FiveNine: 'FIVE_NINE',
+  TwoTwelve: 'TWO_TWELVE',
+});
+
+/**
+ * Every BhakootDosha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BhakootDoshaById = new Map([
+  [0, 'NONE'],
+  [1, 'SIX_EIGHT'],
+  [2, 'FIVE_NINE'],
+  [3, 'TWO_TWELVE'],
+]);
+
 /** Every HarshaGrade by name. */
 export const HarshaGrade = Object.freeze({
   Nirbala: 'NIRBALA',

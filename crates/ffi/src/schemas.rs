@@ -634,6 +634,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_synastry_midpoint_sections(101))
         .chain(chart_western_house_sections(103))
         .chain(chart_harmonic_sections(108))
+        .chain(chart_matching_sections(111))
         .collect(),
     }
 }
@@ -1958,6 +1959,164 @@ fn chart_harmonic_sections(first: u32) -> [SectionSchema; 3] {
                     "orb_deg",
                     Scalar::F64,
                     "The orb the record allowed, degrees.",
+                ),
+            ],
+        ),
+    ]
+}
+
+/// The Bhakoot's columns in `matchings`: how far apart the signs stand,
+/// the dosha, its five exceptions as clauses and whether they lift it
+/// (VI.31–33).
+fn bhakoot_columns() -> [ColumnDef; 8] {
+    let flag = |name: &str, doc: &str| ColumnDef::new(name, Scalar::U8, doc);
+    [
+        flag(
+            "bhakoot_apart",
+            "The groom's Moon sign counted from the bride's, 1 to 12 (VI.31).",
+        ),
+        ColumnDef::new(
+            "bhakoot_dosha",
+            Scalar::U8,
+            "The bad Bhakoot the two signs stand at, or none.",
+        )
+        .of_enum("TsBhakootDosha"),
+        flag(
+            "bhakoot_one_lord",
+            "1 when one lord rules both signs: the first exception of VI.32–33, reported whether or not there is a dosha.",
+        ),
+        flag(
+            "bhakoot_lords_friends",
+            "1 when the two sign lords are each other's friends.",
+        ),
+        flag(
+            "bhakoot_navamsha_lords_friends",
+            "1 when the lords of the two Moons' navamshas are one or each other's friends.",
+        ),
+        flag("bhakoot_tara_pure", "1 when the tara is pure both ways."),
+        flag("bhakoot_vashya", "1 when one sign is vashya to the other."),
+        flag(
+            "bhakoot_lifted",
+            "1 when the exceptions lift the dosha under the record's `bhakootLift` (C263); 0 with no dosha.",
+        ),
+    ]
+}
+
+/// The `matchings` section's columns: the total, then each koota's reading
+/// in the verse's order (`03-design/matching.md`).
+fn matching_columns() -> Vec<ColumnDef> {
+    let flag = |name: &str, doc: &str| ColumnDef::new(name, Scalar::U8, doc);
+    let sides = |what: &str, kind: &str, doc: &str| {
+        [
+            ColumnDef::new(
+                &format!("bride_{what}"),
+                Scalar::U16,
+                &format!("The bride's {doc}."),
+            )
+            .of_enum(kind),
+            ColumnDef::new(
+                &format!("groom_{what}"),
+                Scalar::U16,
+                &format!("The groom's {doc}."),
+            )
+            .of_enum(kind),
+        ]
+    };
+    let mut columns = vec![ColumnDef::new(
+        "total",
+        Scalar::F64,
+        "The eight kootas' points, out of 36, a multiple of a half.",
+    )];
+    columns.extend(sides(
+        "varna",
+        "Varna",
+        "varna, by her or his Moon's sign (VI.22)",
+    ));
+    columns.push(
+        ColumnDef::new(
+            "vashya",
+            Scalar::U8,
+            "How the two Moon signs stand in Vashya (VI.23, C260).",
+        )
+        .of_enum("TsVashyaRelation"),
+    );
+    columns.extend([
+        flag(
+            "tara_bride_to_groom",
+            "The tara counted from the bride's nakshatra to the groom's, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad.",
+        ),
+        flag(
+            "tara_groom_to_bride",
+            "The tara counted from the groom's nakshatra to the bride's, 1 to 9.",
+        ),
+    ]);
+    columns.extend(sides(
+        "yoni",
+        "Yoni",
+        "yoni, by her or his Moon's nakshatra (VI.25–26)",
+    ));
+    columns.push(
+        ColumnDef::new("yoni", Scalar::U8, "How the two yonis stand (C261).")
+            .of_enum("TsYoniRelation"),
+    );
+    columns.extend([
+        graha_column(
+            "bride_lord",
+            "The lord of the bride's Moon sign (VI.27–28).",
+        ),
+        graha_column("groom_lord", "The lord of the groom's Moon sign."),
+        ColumnDef::new(
+            "maitri",
+            Scalar::U8,
+            "How the two lords stand by the natural friendships.",
+        )
+        .of_enum("TsMaitriRelation"),
+    ]);
+    columns.extend(sides(
+        "gana",
+        "Gana",
+        "gana, by her or his Moon's nakshatra (VI.29–30)",
+    ));
+    columns.extend(bhakoot_columns());
+    columns.extend(sides(
+        "nadi",
+        "Nadi",
+        "nadi, by her or his Moon's nakshatra (VI.34)",
+    ));
+    columns.push(flag(
+        "nadi_dosha",
+        "1 when the shared nadi is a dosha under the record's `nadiDosha` (C264).",
+    ));
+    columns
+}
+
+/// The two sections a match crosses as, from `first`: a row a chart, what
+/// each koota read, and each koota's points, eight rows a chart in the
+/// verse's order (`03-design/matching.md`).
+fn chart_matching_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `matching_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "matchings",
+            &format!(
+                "Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. {empty}"
+            ),
+            matching_columns(),
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "matching_kootas",
+            &format!(
+                "Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. {empty}"
+            ),
+            vec![
+                ColumnDef::new("koota", Scalar::U16, "Which koota.").of_enum("Koota"),
+                ColumnDef::new("points", Scalar::F64, "Its points, a multiple of a half."),
+                ColumnDef::new(
+                    "max_points",
+                    Scalar::F64,
+                    "The most it gives, 1 for Varna to 8 for Nadi.",
                 ),
             ],
         ),
