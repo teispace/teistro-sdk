@@ -227,6 +227,10 @@ name = "composites"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "harmonics"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "western_houses"
 required-features = ["builtin-ephemeris"]
 
