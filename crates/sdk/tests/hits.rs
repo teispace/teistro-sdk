@@ -288,7 +288,12 @@ fn an_aspect_or_an_orb_that_cannot_be_is_named() {
             .field()
             .map(String::from)
     };
-    assert_eq!(field(year().with_aspects([45])).as_deref(), Some("aspects"));
+    // Any whole degree is an aspect, but the orb must keep the windows of
+    // its lattice apart: lines 10° apart allow less than 5°.
+    assert_eq!(
+        field(year().with_aspects([0, 10]).with_orb(6.0)).as_deref(),
+        Some("orb_deg")
+    );
     assert_eq!(
         field(year().with_aspects([210])).as_deref(),
         Some("aspects")

@@ -8,8 +8,8 @@ use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::western::{Rate, YearMeasure};
 use teistro::{
-    AngleMethod, ArcMeasure, ChartRequest, Context, DirectionArc, Document, Ephemeris, Progression,
-    ProgressionRequest, UtcOffset,
+    AngleMethod, ArcMeasure, ChartRequest, ContactRequest, Context, DirectionArc, Document,
+    Ephemeris, NatalPoint, Progression, ProgressionRequest, UtcOffset,
 };
 
 /// 7 August 1860, 5.49 a.m. at London (p. 305). Leo reckons it as
@@ -252,4 +252,151 @@ fn a_refused_measure_is_named_under_the_call() {
         )
         .unwrap_err();
     assert_eq!(error.field(), Some("direction.arc"));
+}
+
+/// 0h UT on the first of a Gregorian month.
+fn first_of(year: i32, month: u8) -> f64 {
+    teistro_calendar::gregorian::fixed_from_gregorian(year, month, 1)
+        .jd_at_midnight()
+        .unwrap()
+        .get()
+}
+
+#[test]
+fn leos_contact_falls_due_on_each_measures_day() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let asked = ContactRequest::default()
+        .with_grahas([Graha::Moon])
+        .with_points([NatalPoint::Graha {
+            graha: Graha::Mercury,
+        }])
+        .with_aspects([135]);
+    // "The sesquiquadrate of the Moon to Mercury" (p. 305): the 21st of
+    // October 1906 by a tropical year, the 22nd by Leo's sidereal time.
+    for (progression, day) in [(Progression::SECONDARY, 21.0), (Progression::LEO, 22.0)] {
+        let found = sdk
+            .chart()
+            .progressed_contacts(
+                &born,
+                jd(first_of(1906, 10)),
+                jd(first_of(1906, 11)),
+                &asked.clone().with_progression(progression),
+            )
+            .unwrap();
+        let [contact] = found.as_slice() else {
+            panic!("{found:?}");
+        };
+        assert_eq!((contact.graha, contact.angle), (Graha::Moon, 135));
+        // The sky's instant is his 10.40 a.m. to within two minutes.
+        assert!(
+            (contact.sky.get() - CONTACT).abs() < 2.0 / 1440.0,
+            "{}",
+            contact.sky.get()
+        );
+        let into_month = contact.life.get() - first_of(1906, 10);
+        assert!(
+            (day - 1.0..day).contains(&into_month),
+            "{progression:?}: {into_month}"
+        );
+    }
+}
+
+#[test]
+fn leos_lunar_year_is_found_month_by_month() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let moon = ContactRequest::default().with_grahas([Graha::Moon]);
+    let found = sdk
+        .chart()
+        .progressed_contacts(&born, jd(first_of(1906, 10)), jd(first_of(1908, 1)), &moon)
+        .unwrap();
+    // His lunar list (p. 41), the contacts to the seven planets. He dates
+    // them by counting a month for each degree the Moon passes, which runs
+    // up to a month late: the exact contact falls in his month or in the
+    // month before (Saturn on 23 May, the Sun on 28 July).
+    let printed = [
+        (Graha::Mercury, 135, (1906, 10)),
+        (Graha::Jupiter, 150, (1907, 1)),
+        (Graha::Saturn, 135, (1907, 6)),
+        (Graha::Sun, 150, (1907, 8)),
+        (Graha::Venus, 180, (1907, 11)),
+    ];
+    for (graha, angle, (year, month)) in printed {
+        let contact = found
+            .iter()
+            .find(|c| c.to == NatalPoint::Graha { graha } && c.angle == angle)
+            .unwrap_or_else(|| panic!("{graha:?} {angle} in {found:?}"));
+        let next = if month == 12 {
+            (year + 1, 1)
+        } else {
+            (year, month + 1)
+        };
+        let before = if month == 1 {
+            (year - 1, 12)
+        } else {
+            (year, month - 1)
+        };
+        assert!(
+            (first_of(before.0, before.1)..first_of(next.0, next.1)).contains(&contact.life.get()),
+            "{graha:?} {angle} at {}",
+            contact.life.get()
+        );
+    }
+    // In his order, as each falls due.
+    assert!(found.windows(2).all(|pair| match pair {
+        [a, b] => a.life.get() <= b.life.get(),
+        _ => true,
+    }));
+}
+
+#[test]
+fn leos_solar_contacts_fall_in_his_forty_seventh_year() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let sun = NatalPoint::Graha { graha: Graha::Sun };
+    let asked = ContactRequest::default()
+        .with_grahas([Graha::Sun, Graha::Mercury])
+        .with_points([sun]);
+    // "☉ ∠ ☉" and "☿ ∠ ☉", progressed to radical (p. 41), in the year from
+    // his birthday in 1906.
+    let year = (BIRTH + 46.0 * 365.242_189, BIRTH + 47.0 * 365.242_189);
+    let found = sdk
+        .chart()
+        .progressed_contacts(&born, jd(year.0), jd(year.1), &asked)
+        .unwrap();
+    for graha in [Graha::Sun, Graha::Mercury] {
+        assert!(
+            found
+                .iter()
+                .any(|c| c.graha == graha && c.to == sun && c.angle == 45),
+            "{graha:?} in {found:?}"
+        );
+    }
+}
+
+#[test]
+fn a_contact_window_that_runs_backwards_is_named() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let error = sdk
+        .chart()
+        .progressed_contacts(
+            &born,
+            jd(first_of(1907, 1)),
+            jd(first_of(1906, 1)),
+            &ContactRequest::default(),
+        )
+        .unwrap_err();
+    assert_eq!(error.field(), Some("contacts.to"));
+    let error = sdk
+        .chart()
+        .progressed_contacts(
+            &born,
+            jd(first_of(1906, 1)),
+            jd(first_of(1907, 1)),
+            &ContactRequest::default().with_aspects([200]),
+        )
+        .unwrap_err();
+    assert_eq!(error.field(), Some("contacts.aspects"));
 }

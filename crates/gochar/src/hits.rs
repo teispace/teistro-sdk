@@ -225,6 +225,8 @@ pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
 /// assert_eq!(aspect_step_deg(&[0, 180]), 180.0);
 /// assert_eq!(aspect_step_deg(&[0]), 360.0);
 /// assert_eq!(aspect_step_deg(&[0, 60, 90, 120, 180]), 30.0);
+/// // Leo's table, with the semi-square and the sesquiquadrate.
+/// assert_eq!(aspect_step_deg(&[0, 30, 45, 60, 90, 120, 135, 150, 180]), 15.0);
 /// ```
 #[must_use]
 pub fn aspect_step_deg(angles: &[u16]) -> f64 {
@@ -260,12 +262,14 @@ pub fn aspect_hit(
         Edge::Past => orb_deg,
     };
     let from_natal = (boundary_deg - shift - natal_deg).rem_euclid(360.0);
+    // Every line is a whole degree from the natal point, so the crossing's
+    // separation rounds to it.
     #[allow(
         clippy::cast_possible_truncation,
         clippy::cast_sign_loss,
-        reason = "a separation over 30 rounds to a line index 0 to 12"
+        reason = "a separation in [0, 360) rounds to a whole degree 0 to 360"
     )]
-    let line = ((from_natal / 30.0).round() as u16 % 12) * 30;
+    let line = from_natal.round() as u16 % 360;
     let angle = if line > 180 { 360 - line } else { line };
     if !angles.contains(&angle) {
         return None;
@@ -356,6 +360,15 @@ mod tests {
         }
         // A square is no aspect unless asked for.
         assert!(at(190.0, Edge::Exact, Motion::Direct, &conj_opp).is_none());
+        // A sesquiquadrate is its own line, not the trine or the quincunx
+        // nearest it, from either side and a hair off the line.
+        let leo = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+        for boundary in [235.0 + 1e-7, 325.0 - 1e-7] {
+            match at(boundary, Edge::Exact, Motion::Direct, &leo) {
+                Some(HitEvent::Aspect { angle, .. }) => assert_eq!(angle, 135),
+                other => panic!("{other:?}"),
+            }
+        }
         // The orb's edges: 95° is before the conjunction's line, 105° past it.
         let phase = |boundary, edge, motion| match at(boundary, edge, motion, &conj_opp) {
             Some(HitEvent::Aspect { phase, .. }) => phase,

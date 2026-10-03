@@ -2436,8 +2436,9 @@ request (`03-design/transit-hit-list.md`): the window `from` and `to`, UTC
 Julian days, and optionally `grahas` (the nine by default; members or keys,
 bare or full), `kinds` (all four by default), `points` (the natal points
 aspected: a graha, `"LAGNA"` or a `NatalPoint`; the nine and the lagna by
-default), `aspects` (multiples of 30 to 180; 0 and 180 by default, C145) and
-`orbDeg` (more than 0 and under 15; exact only by default, C146). A
+default), `aspects` (whole degrees to 180; 0 and 180 by default, C145) and
+`orbDeg` (more than 0, under 15 and under half the step between the aspects'
+lines; exact only by default, C146). A
 functional `TypedDict` because `from` is a keyword, and the record is spelt as
 every binding spells it.
 

@@ -12,12 +12,14 @@ use teistro_core::catalogue::{Graha, HouseSystem};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_gochar::hits::{HitEvent, Motion, NatalPoint};
 use teistro_serial::Document;
 use teistro_western::{
     AngleMethod, ArcMeasure, Meridian, Progression, SunAt, YearMeasure, progressed_armc,
 };
 
 use crate::area::ChartArea;
+use crate::hit_request::{HitKind, HitRequest};
 use crate::reading::ChartRequest;
 
 /// What a progressed chart is asked with: the measure, and how the angles
@@ -131,6 +133,123 @@ pub struct Directed {
     pub midheaven_deg: f64,
     /// What it was asked with.
     pub arc: DirectionArc,
+}
+
+/// The seven planets, the Sun to Saturn: the progressed bodies and the
+/// radical points a contact search reads unless asked.
+const SEVEN: [Graha; 7] = [
+    Graha::Sun,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+];
+
+/// What a progressed chart's contacts are searched for: the measure, the
+/// progressed planets, the radical points and the aspects.
+///
+/// ```
+/// use teistro::catalogue::Graha;
+/// use teistro::gochar::hits::NatalPoint;
+/// use teistro::ContactRequest;
+///
+/// // The progressed Moon's sesquiquadrates and quincunxes to the radical Sun.
+/// let asked = ContactRequest::default()
+///     .with_grahas([Graha::Moon])
+///     .with_points([NatalPoint::Graha { graha: Graha::Sun }])
+///     .with_aspects([135, 150]);
+/// assert_eq!(asked.aspects, [135, 150]);
+/// // Leo's table of aspects unless asked.
+/// assert_eq!(ContactRequest::default().aspects, ContactRequest::LEO_ASPECTS);
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+pub struct ContactRequest {
+    /// The rate and the year: a day for a tropical year unless asked.
+    pub progression: Progression,
+    /// The progressed planets: the seven unless asked.
+    pub grahas: Vec<Graha>,
+    /// The radical points: the seven and the ascendant unless asked.
+    pub points: Vec<NatalPoint>,
+    /// The aspects' angles, whole degrees from 0 to 180: Leo's table
+    /// unless asked.
+    pub aspects: Vec<u16>,
+}
+
+impl ContactRequest {
+    /// The aspects of Leo's table (p. 48): the conjunction, and the
+    /// columns 30°, 45°, 60°, 90°, 120°, 135°, 150° and 180°.
+    pub const LEO_ASPECTS: [u16; 9] = [0, 30, 45, 60, 90, 120, 135, 150, 180];
+
+    /// The same request under another progression.
+    #[must_use]
+    pub fn with_progression(self, progression: Progression) -> ContactRequest {
+        ContactRequest {
+            progression,
+            ..self
+        }
+    }
+
+    /// The same request for these progressed planets.
+    #[must_use]
+    pub fn with_grahas(self, grahas: impl IntoIterator<Item = Graha>) -> ContactRequest {
+        ContactRequest {
+            grahas: grahas.into_iter().collect(),
+            ..self
+        }
+    }
+
+    /// The same request to these radical points.
+    #[must_use]
+    pub fn with_points(self, points: impl IntoIterator<Item = NatalPoint>) -> ContactRequest {
+        ContactRequest {
+            points: points.into_iter().collect(),
+            ..self
+        }
+    }
+
+    /// The same request at these aspects' angles.
+    #[must_use]
+    pub fn with_aspects(self, angles: impl IntoIterator<Item = u16>) -> ContactRequest {
+        ContactRequest {
+            aspects: angles.into_iter().collect(),
+            ..self
+        }
+    }
+}
+
+impl Default for ContactRequest {
+    fn default() -> ContactRequest {
+        ContactRequest {
+            progression: Progression::SECONDARY,
+            grahas: SEVEN.to_vec(),
+            points: SEVEN
+                .iter()
+                .map(|graha| NatalPoint::Graha { graha: *graha })
+                .chain([NatalPoint::Lagna])
+                .collect(),
+            aspects: ContactRequest::LEO_ASPECTS.to_vec(),
+        }
+    }
+}
+
+/// One contact: a progressed planet exactly in aspect to a radical point,
+/// and the instant of life it falls due.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ProgressedContact {
+    /// The instant of life the contact measures to.
+    pub life: JulianDay<Utc>,
+    /// The instant of sky the aspect is exact at.
+    pub sky: JulianDay<Utc>,
+    /// The progressed planet.
+    pub graha: Graha,
+    /// The radical point.
+    pub to: NatalPoint,
+    /// The aspect's angle, 0 to 180 degrees.
+    pub angle: u16,
+    /// Which way the progressed planet was moving.
+    pub motion: Motion,
 }
 
 impl ChartArea<'_> {
@@ -296,6 +415,102 @@ impl ChartArea<'_> {
             midheaven_deg: moved(natal.midheaven_deg),
             arc: *arc,
         })
+    }
+
+    /// A birth's **progressed contacts** between two instants of its life
+    /// (`03-design/western-progressions.md`, Leo's Appendix V): each
+    /// exact aspect a progressed planet makes to a radical point, with the
+    /// instant of life it falls due, in the order they fall due.
+    ///
+    /// The search is the transit hit list's over the sky the progression
+    /// matches to the window, so its aspects, points and refusals are the
+    /// hit list's.
+    ///
+    /// ```no_run
+    /// # use teistro::{ContactRequest, Context, Document, Ephemeris};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, from, to): (Document, JulianDay<Utc>, JulianDay<Utc>) = todo!();
+    /// for contact in sdk.chart().progressed_contacts(&birth, from, to, &ContactRequest::default())? {
+    ///     println!("{:?} {}° {:?} at {}", contact.graha, contact.angle, contact.to, contact.life.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A window that does not run forward, a progression
+    /// [`Progression::check`] refuses, and whatever the hit list refuses,
+    /// each named under `contacts`.
+    pub fn progressed_contacts(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<ProgressedContact>, Error> {
+        self.contacts_of(birth, from, to, asked)
+            .map_err(|error| error.under("contacts"))
+    }
+
+    fn contacts_of(
+        self,
+        birth: &Document,
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        asked: &ContactRequest,
+    ) -> Result<Vec<ProgressedContact>, Error> {
+        if to.get() <= from.get() {
+            return Err(Error::invalid_arg(format!(
+                "a contact window must run forward, and {} is not after {}",
+                to.get(),
+                from.get()
+            ))
+            .with_field("to"));
+        }
+        let born = birth.foundation.instant;
+        let progression = asked.progression;
+        // Leo's rule reaches the last minutes before each noon of sky twice,
+        // so an instant of life may be measured from two instants of sky, a
+        // day of life apart at most. Nothing of sky before the instant a
+        // day earlier in life measures into the window: the search starts
+        // there and the window's own bounds keep what falls inside.
+        let window = HitRequest::between(
+            progression.sky_at(born, from.plus_days(-1.0)?)?,
+            progression.sky_at(born, to)?,
+        )
+        .with_kinds([HitKind::Aspect])
+        .with_grahas(asked.grahas.iter().copied())
+        .with_points(asked.points.iter().copied())
+        .with_aspects(asked.aspects.iter().copied());
+        let mut contacts = Vec::new();
+        for hit in self.hits(birth, &window)?.value {
+            let HitEvent::Aspect {
+                to: point,
+                angle,
+                motion,
+                ..
+            } = hit.event
+            else {
+                continue;
+            };
+            let life = progression.life_at(born, hit.instant)?;
+            if (from.get()..=to.get()).contains(&life.get()) {
+                contacts.push(ProgressedContact {
+                    life,
+                    sky: hit.instant,
+                    graha: hit.graha,
+                    to: point,
+                    angle,
+                    motion,
+                });
+            }
+        }
+        // Stable, so contacts due together keep the hit list's order.
+        contacts.sort_by(|a, b| a.life.get().total_cmp(&b.life.get()));
+        Ok(contacts)
     }
 }
 

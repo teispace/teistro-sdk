@@ -108,8 +108,8 @@ impl HitRequest {
         self
     }
 
-    /// The same request, at these aspects' angles: multiples of 30 from 0
-    /// to 180, each meaning both sides (C145).
+    /// The same request, at these aspects' angles: whole degrees from 0 to
+    /// 180, each meaning both sides (C145).
     #[must_use]
     pub fn with_aspects(mut self, angles: impl IntoIterator<Item = u16>) -> HitRequest {
         self.aspects = angles.into_iter().collect();
@@ -211,20 +211,23 @@ impl HitRequest {
                 "points",
             )?;
             repeated(&self.aspects, "aspects")?;
-            if let Some(angle) = self.aspects.iter().find(|a| **a > 180 || **a % 30 != 0) {
+            if let Some(angle) = self.aspects.iter().find(|a| **a > 180) {
                 return Err(Error::invalid_arg(format!(
-                    "an aspect is a multiple of 30 degrees from 0 to 180, not {angle}"
+                    "an aspect is a whole degree from 0 to 180, not {angle}"
                 ))
                 .with_field("aspects")
                 .with_hint("the angle past 180 is the same aspect from the other side"));
             }
-            if let Some(orb) = self.orb_deg
-                && !(orb > 0.0 && orb < 15.0)
-            {
-                return Err(Error::invalid_arg(format!(
-                    "an orb is more than 0 and less than 15 degrees, so no two aspects' windows meet, not {orb}"
-                ))
-                .with_field("orb_deg"));
+            if let Some(orb) = self.orb_deg {
+                // Every line of the aspects' lattice opens a window, so two
+                // meet once the orb reaches half the step between lines.
+                let limit = (hits::aspect_step_deg(&self.aspects) / 2.0).min(15.0);
+                if !(orb > 0.0 && orb < limit) {
+                    return Err(Error::invalid_arg(format!(
+                        "an orb is more than 0 and less than {limit} degrees for these aspects, so no two aspects' windows meet, not {orb}"
+                    ))
+                    .with_field("orb_deg"));
+                }
             }
         }
         Ok(())
@@ -575,7 +578,8 @@ mod tests {
             (r#", "grahas": ["SUN", "SUN"]"#, "hits.grahas"),
             (r#", "grahas": []"#, "hits.grahas"),
             (r#", "aspects": [0, 0]"#, "hits.aspects"),
-            (r#", "aspects": [45]"#, "hits.aspects"),
+            (r#", "aspects": [181]"#, "hits.aspects"),
+            (r#", "aspects": [0, 10], "orbDeg": 6"#, "hits.orbDeg"),
             (r#", "orbDeg": 20"#, "hits.orbDeg"),
             (r#", "kinds": []"#, "hits.kinds"),
         ] {
