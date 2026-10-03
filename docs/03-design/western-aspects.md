@@ -1,6 +1,6 @@
 # The Western aspects and their orbs (the `western` module)
 
-Status: `building`, 2026-10-03, written from the sources before any
+Status: `built`, 2026-10-03, written from the sources before any
 code. Steps 2 and 3 are built: `sdk.chart().western_aspects`, held to
 Leo's reading of Edward VII and measured over the corpus in
 [`western-aspects-measured.md`](western-aspects-measured.md), and a
