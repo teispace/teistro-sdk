@@ -318,6 +318,7 @@ mod varshaphala;
 mod vimshopaka;
 mod vsop;
 mod wasm_binding;
+mod western_aspects;
 mod yogas;
 
 use std::env;
@@ -450,6 +451,11 @@ const PASSES: &[Pass] = &[
         "progressed-angles",
         progressed_angles::generate,
         progressed_angles::check_generated,
+    ),
+    (
+        "western-aspects",
+        western_aspects::generate,
+        western_aspects::check_generated,
     ),
     (
         "time-lords",
