@@ -4,7 +4,8 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::error::Error;
 use teistro_serial::Document;
 use teistro_western::{
-    Antiscia, AntisciaRequest, AntiscionRow, PlanetAt, SynastryRequest, antiscia, synastry_antiscia,
+    Antiscia, AntisciaRequest, AntiscionRow, HouseRequest, LILLY_HOUSE_SYSTEM, PlanetAt,
+    SynastryRequest, antiscia, antiscia_on_cusps, synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -17,6 +18,10 @@ impl ChartArea<'_> {
     /// within the request's orbs, read at the conjunction (Lilly's moieties
     /// by default, C244), closest first. The planets are reflected from
     /// their tropical longitude, so the chart's zodiac changes nothing.
+    /// Asked with `cusps`, each reflection is read on the cusps too, in
+    /// Lilly's Regiomontanus unless the request names another division:
+    /// a reflection upon a cusp's very degree, its sign and whole degree
+    /// (p. 165; C251).
     ///
     /// ```no_run
     /// # use teistro::{AntisciaRequest, ChartRequest, Context, Ephemeris};
@@ -36,9 +41,25 @@ impl ChartArea<'_> {
     ///
     /// # Errors
     ///
-    /// What [`AntisciaRequest::check`] refuses.
+    /// What [`AntisciaRequest::check`] refuses; with `cusps`, a chart whose
+    /// angles a provider supplied, or a place the polar policy refuses the
+    /// division at.
     pub fn antiscia(self, chart: &Document, request: &AntisciaRequest) -> Result<Antiscia, Error> {
-        antiscia(&reflected(&chart.foundation), request)
+        let bodies = reflected(&chart.foundation);
+        let mut read = antiscia(&bodies, request)?;
+        if let Some(houses) = request.cusps {
+            let (cusps, system) = self.western_cusps(
+                chart,
+                HouseRequest {
+                    system: Some(houses.system.unwrap_or(LILLY_HOUSE_SYSTEM)),
+                },
+            )?;
+            let zodiac = &chart.foundation.zodiac;
+            read.on_cusps =
+                antiscia_on_cusps(&bodies, &cusps.map(|cusp| zodiac.to_tropical(cusp)))?;
+            read.cusp_system = Some(system);
+        }
+        Ok(read)
     }
 
     /// The **antiscia across two charts**: every planet of `first` whose

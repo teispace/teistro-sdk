@@ -43,8 +43,8 @@ mod synastry;
 
 pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use antiscia::{
-    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, antiscia, antiscion_deg,
-    contrantiscion_deg, synastry_antiscia,
+    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, CuspAntiscion, antiscia, antiscia_on_cusps,
+    antiscion_deg, contrantiscion_deg, synastry_antiscia,
 };
 pub use arc::ArcMeasure;
 pub use aspects::{
@@ -56,8 +56,8 @@ pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };
 pub use houses::{
-    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM, MODULE,
-    WesternHouses, place_in_houses, rising_an_hour_before,
+    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
+    LILLY_HOUSE_SYSTEM, MODULE, WesternHouses, place_in_houses, rising_an_hour_before,
 };
 pub use midpoint::{
     DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow,

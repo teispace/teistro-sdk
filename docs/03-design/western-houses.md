@@ -1,9 +1,10 @@
 # A Western chart's houses (the `western` module)
 
 Status: `building`, 2026-10-03, written from the sources before any code.
-Steps 2 and 3 are built: `sdk.chart().western_houses` holds Leo's p. 150
+Steps 2 to 4 are built: `sdk.chart().western_houses` holds Leo's p. 150
 figure, and [`western-houses-measured.md`](western-houses-measured.md)
-reads the corpus's births.
+reads the corpus's births; a composite carries its cusps and the
+antiscia read the cusps when asked.
 
 The Western pages so far read the zodiac alone: aspects, parallels,
 antiscia, equal distances, the composite's planets. A founded chart's
@@ -81,11 +82,15 @@ kernel.
    `Composite` gains twelve cusps; the first and tenth are the lagna
    and midheaven it already carries, so the two never disagree. Each
    composite planet's house follows decision 2 on those cusps.
-6. **An antiscion may fall on a cusp.** `AntisciaRequest` gains the
-   cusps as points among the planets, each reflected. A cusp takes the
-   orb C242 gives the ascendant: a planet's under Leo's model, and under
-   Lilly's moieties none, so a cusp is read there only against a
-   planet's own moiety.
+6. **An antiscion may fall on a cusp (C251).** `AntisciaRequest` gains
+   `cusps`, the division to read them in, Lilly's Regiomontanus when it
+   names none, since the antiscia are his. A reflection falls on a cusp
+   when it stands "upon the very degree" (p. 165): the cusp's own sign
+   and whole degree, the grain he prints both to, so a cusp needs no orb
+   of its own and C242's question does not arise. His p. 177 figure,
+   recast at its printed Ascendant, has none, as he says ("none of them
+   fell exactly", p. 181). The answer names the division the cusps were
+   read in.
 7. **Across the boundary, a section of its own.** A chart request's
    `western_houses` record names the system; the answer is a row a
    chart (the division, the twelve cusps, the sidereal-hour degree) and
@@ -131,6 +136,9 @@ kernel.
   exist at Tromsø, and the conformance profile refuses rather than
   falls back, so the two births there are named and left out; a profile
   that falls back reads them, and the answer names the division used.
+- **The very degree is strict.** George V's Uranus reflects 0.63° past
+  his fourth Regiomontanus cusp, into the next degree, and falls on
+  none; Queen Mary's falls on her fifth Placidus cusp, 0.13° from it.
 - **One rule to count a house.** Lilly's `house_of` already counted a
   longitude by the cusps with an orb; it moved to `core::house`, and the
   `western` reading calls it with an orb of zero.
