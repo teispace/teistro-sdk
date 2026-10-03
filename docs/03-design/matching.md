@@ -21,7 +21,7 @@ doctrine: which table, which points, and which exceptions.
 is rank 1 for the Ashta Koota. It was read in the 1954 printing with the
 *Piyushadhara* commentary, on the Internet Archive's DLI scan
 `in.ernet.dli.2015.326601`, every verse on the page image (printed pp.
-245–260 = leaves n257–n272). The points are not in the verses. The
+245–261 = leaves n257–n273). The points are not in the verses. The
 commentary gives them from *Daivajna-manohara*, and both are rank 1 here.
 
 - **The eight and their weights** (v. 21, p. 245): Varna 1, Vashya 2,
@@ -69,6 +69,13 @@ commentary gives them from *Daivajna-manohara*, and both are rank 1 here.
   The nadi must be pure in every case. The commentary reports Garga:
   the 6/8 needs three of these, and the 2/12 and 5/9 two. It closes
   with "as tradition holds" (C263).
+- **The other doshas' exceptions** (v. 33, p. 257; v. 36, p. 261 =
+  leaf n273). A Rakshasa beside another gana is lifted when the sign
+  lords or the navamsha lords are friends, and the lords' enmity when
+  the Bhakoot is good (v. 33). One sign holding two stars, or one star
+  across two signs, lifts the nadi and the gana doshas; one star and
+  one sign in two padas lifts the nadi alone (v. 36). One pada is never
+  lifted (C283, C284).
 - **Nadi** (v. 34). Adi is Ashvini, Ardra, Punarvasu, Uttara Phalguni,
   Hasta, Jyeshtha, Mula, Shatabhisha and Purva Bhadrapada. Madhya is
   Bharani, Mrigashira, Pushya, Purva Phalguni, Chitra, Anuradha, Purva
@@ -266,6 +273,12 @@ the ten, a later step if a consumer asks.
   eight, so `matching_json` asks both and founds the partner once. The
   ten's knobs nest under `porutham`, so a typo is named
   `matching.porutham.deergha`.
+- **Every dosha carries its lift.** Graha Maitri, Gana and Nadi report
+  `lifted` beside their facts, and Gana its `dosha`, as Bhakoot already
+  did; none moves a point. The kernel reads the Bhakoot before the
+  lords, since a good Bhakoot is what lifts their enmity, and a lifted
+  nadi is pure for the Bhakoot's exceptions (C284). How often each is
+  lifted over the grid is measured in `matching-measured.md`.
 - **A birth matched with itself is a fixed point.** One sign and one
   nakshatra give every koota but Nadi its whole points and the shared
   nadi none, 28 whatever the Moon. Each binding's test starts from it.

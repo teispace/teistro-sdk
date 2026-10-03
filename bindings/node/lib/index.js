@@ -4038,8 +4038,13 @@ function matchingsOf(batch) {
       'koota.GRAHA_MAITRI': {
         ...sides(GrahaById, m.brideLord, m.groomLord, at),
         relation: of(MaitriRelationById, m.maitri[at]),
+        lifted: m.maitriLifted[at] === 1,
       },
-      'koota.GANA': sides(GanaById, m.brideGana, m.groomGana, at),
+      'koota.GANA': {
+        ...sides(GanaById, m.brideGana, m.groomGana, at),
+        dosha: m.ganaDosha[at] === 1,
+        lifted: m.ganaLifted[at] === 1,
+      },
       'koota.BHAKOOT': {
         apart: m.bhakootApart[at],
         dosha: dosha === 'NONE' ? null : dosha,
@@ -4052,7 +4057,11 @@ function matchingsOf(batch) {
         }),
         lifted: m.bhakootLifted[at] === 1,
       },
-      'koota.NADI': { ...sides(NadiById, m.brideNadi, m.groomNadi, at), dosha: m.nadiDosha[at] === 1 },
+      'koota.NADI': {
+        ...sides(NadiById, m.brideNadi, m.groomNadi, at),
+        dosha: m.nadiDosha[at] === 1,
+        lifted: m.nadiLifted[at] === 1,
+      },
     };
   };
   const eight = Array.from({ length: m.total.length }, () => 8);

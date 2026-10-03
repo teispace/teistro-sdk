@@ -17,7 +17,7 @@ use std::path::Path;
 use teistro::catalogue::Koota;
 use teistro::matching::{
     ASHTA_KOOTA, ASHTA_KOOTA_POINTS, AshtaKoota, BhakootDosha, BhakootLift, DevaBride, EqualVarna,
-    KootaReading, KootaRules, NadiDosha, Native, ashta_koota,
+    KootaReading, KootaRules, MaitriRelation, NadiDosha, Native, ashta_koota,
 };
 
 use crate::generated::{Output, check, write};
@@ -256,6 +256,64 @@ fn bhakoot(read: &[Pair], garga: &[Pair]) -> String {
     out
 }
 
+/// The other doshas and how often their exceptions lift them: the gana's
+/// and the nadi's (VI.33, VI.36), and the lords' enmity a good Bhakoot
+/// lifts (VI.33).
+fn lifts(read: &[Pair]) -> String {
+    let mut out = String::from("| dosha | pairs | lifted | share |\n|---|---|---|---|\n");
+    let mut row = |label: &str, held: &[bool]| {
+        let lifted = held.iter().filter(|lifted| **lifted).count();
+        let _ = writeln!(
+            out,
+            "| {label} | {} | {} | {} |",
+            count(held.len()),
+            count(lifted),
+            share(lifted, held.len()),
+        );
+    };
+    let reading = |koota: Koota| {
+        read.iter()
+            .filter_map(move |one| one.read.row(koota).map(|row| row.reading))
+    };
+    let gana: Vec<bool> = reading(Koota::Gana)
+        .filter_map(|reading| match reading {
+            KootaReading::Gana {
+                dosha: true,
+                lifted,
+                ..
+            } => Some(lifted),
+            _ => None,
+        })
+        .collect();
+    row("a Rakshasa beside another gana", &gana);
+    let enmity: Vec<bool> = reading(Koota::GrahaMaitri)
+        .filter_map(|reading| match reading {
+            KootaReading::GrahaMaitri {
+                relation:
+                    MaitriRelation::FriendEnemy
+                    | MaitriRelation::NeutralEnemy
+                    | MaitriRelation::MutualEnemies,
+                lifted,
+                ..
+            } => Some(lifted),
+            _ => None,
+        })
+        .collect();
+    row("an enmity between the sign lords", &enmity);
+    let nadi: Vec<bool> = reading(Koota::Nadi)
+        .filter_map(|reading| match reading {
+            KootaReading::Nadi {
+                dosha: true,
+                lifted,
+                ..
+            } => Some(lifted),
+            _ => None,
+        })
+        .collect();
+    row("one nadi", &nadi);
+    out
+}
+
 /// How many pairs each knob's alternative moves, and by how much at most.
 fn knobs(natives: &[Native], read: &[Pair]) -> String {
     let alternatives: [(&str, KootaRules); 4] = [
@@ -361,6 +419,16 @@ fn page() -> Result<String, String> {
          the 6/8 and two for the others (C263).\n\n",
     );
     out.push_str(&bhakoot(&read, &garga));
+    out.push_str(
+        "\n## The other doshas and their exceptions\n\n\
+         A Rakshasa beside another gana is lifted by the sign lords' or the \
+         navamsha lords' friendship (VI.33) or by one sign or one star \
+         between the two (VI.36); an enmity between the sign lords by a good \
+         Bhakoot (VI.33); one nadi by one sign with two stars, one star \
+         across two signs, or one star in two padas (VI.36). Each is a clause \
+         beside the points, which it never moves.\n\n",
+    );
+    out.push_str(&lifts(&read));
     out.push_str(
         "\n## What each knob moves\n\n\
          How many pairs change when one reading is swapped for its \

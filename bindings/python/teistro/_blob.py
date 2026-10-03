@@ -3670,11 +3670,20 @@ class ChartsMatchings:
     maitri: memoryview[int]
     """How the two lords stand by the natural friendships."""
 
+    maitri_lifted: memoryview[int]
+    """1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283)."""
+
     bride_gana: memoryview[int]
     """The bride's gana, by her or his Moon's nakshatra (VI.29–30)."""
 
     groom_gana: memoryview[int]
     """The groom's gana, by her or his Moon's nakshatra (VI.29–30)."""
+
+    gana_dosha: memoryview[int]
+    """1 when a Rakshasa stands beside another gana, the gana dosha."""
+
+    gana_lifted: memoryview[int]
+    """1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283)."""
 
     bhakoot_apart: memoryview[int]
     """The groom's Moon sign counted from the bride's, 1 to 12 (VI.31)."""
@@ -3708,6 +3717,9 @@ class ChartsMatchings:
 
     nadi_dosha: memoryview[int]
     """1 when the shared nadi is a dosha under the record's `nadiDosha` (C264)."""
+
+    nadi_lifted: memoryview[int]
+    """1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284)."""
 
     length: int
     """The number of rows every column holds."""
@@ -6765,44 +6777,56 @@ def decode_charts(raw: bytes) -> Charts:
             maitri=blob.column(
                 at_matchings, 11, 1, at_matchings.count
             ).cast("B"),
+            maitri_lifted=blob.column(
+                at_matchings, 12, 1, at_matchings.count
+            ).cast("B"),
             bride_gana=blob.column(
-                at_matchings, 12, 2, at_matchings.count
-            ).cast("H"),
-            groom_gana=blob.column(
                 at_matchings, 13, 2, at_matchings.count
             ).cast("H"),
-            bhakoot_apart=blob.column(
-                at_matchings, 14, 1, at_matchings.count
-            ).cast("B"),
-            bhakoot_dosha=blob.column(
+            groom_gana=blob.column(
+                at_matchings, 14, 2, at_matchings.count
+            ).cast("H"),
+            gana_dosha=blob.column(
                 at_matchings, 15, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_one_lord=blob.column(
+            gana_lifted=blob.column(
                 at_matchings, 16, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_lords_friends=blob.column(
+            bhakoot_apart=blob.column(
                 at_matchings, 17, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_navamsha_lords_friends=blob.column(
+            bhakoot_dosha=blob.column(
                 at_matchings, 18, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_tara_pure=blob.column(
+            bhakoot_one_lord=blob.column(
                 at_matchings, 19, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_vashya=blob.column(
+            bhakoot_lords_friends=blob.column(
                 at_matchings, 20, 1, at_matchings.count
             ).cast("B"),
-            bhakoot_lifted=blob.column(
+            bhakoot_navamsha_lords_friends=blob.column(
                 at_matchings, 21, 1, at_matchings.count
             ).cast("B"),
+            bhakoot_tara_pure=blob.column(
+                at_matchings, 22, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_vashya=blob.column(
+                at_matchings, 23, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_lifted=blob.column(
+                at_matchings, 24, 1, at_matchings.count
+            ).cast("B"),
             bride_nadi=blob.column(
-                at_matchings, 22, 2, at_matchings.count
+                at_matchings, 25, 2, at_matchings.count
             ).cast("H"),
             groom_nadi=blob.column(
-                at_matchings, 23, 2, at_matchings.count
+                at_matchings, 26, 2, at_matchings.count
             ).cast("H"),
             nadi_dosha=blob.column(
-                at_matchings, 24, 1, at_matchings.count
+                at_matchings, 27, 1, at_matchings.count
+            ).cast("B"),
+            nadi_lifted=blob.column(
+                at_matchings, 28, 1, at_matchings.count
             ).cast("B"),
             length=at_matchings.count,
         ),

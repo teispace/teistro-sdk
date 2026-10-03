@@ -31,6 +31,7 @@ from teistro import (
     VasyamPorutham,
     VedhaiPorutham,
     YoniPorutham,
+    GanaKoota,
     MaitriKoota,
     NadiKoota,
     TaraKoota,
@@ -107,15 +108,20 @@ def reading_text(reading: KootaReading) -> str:
         return reading.relation.key
     if isinstance(reading, TaraKoota):
         return f"{reading.bride_to_groom} {reading.groom_to_bride}"
-    if isinstance(reading, (YoniKoota, MaitriKoota)):
+    if isinstance(reading, YoniKoota):
         return f"{reading.bride.full_key} {reading.groom.full_key} {reading.relation.key}"
+    if isinstance(reading, MaitriKoota):
+        sides = f"{reading.bride.full_key} {reading.groom.full_key}"
+        return f"{sides} {reading.relation.key} {int(reading.lifted)}"
+    if isinstance(reading, GanaKoota):
+        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.dosha)} {int(reading.lifted)}"
     if isinstance(reading, BhakootKoota):
         e = reading.exceptions
         flags = (e.one_lord, e.lords_friends, e.navamsha_lords_friends, e.tara_pure, e.vashya, reading.lifted)
         dosha = "NONE" if reading.dosha is None else reading.dosha.key
         return " ".join([str(reading.apart), dosha, *(str(int(flag)) for flag in flags)])
     if isinstance(reading, NadiKoota):
-        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.dosha)}"
+        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.dosha)} {int(reading.lifted)}"
     return f"{reading.bride.full_key} {reading.groom.full_key}"
 
 

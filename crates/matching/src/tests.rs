@@ -374,7 +374,8 @@ fn a_shared_nadi_takes_its_points_and_the_middle_one_is_the_dosha_on_request() {
             KootaReading::Nadi {
                 bride: Nadi::Aadi,
                 groom: Nadi::Aadi,
-                dosha: true
+                dosha: true,
+                lifted: false
             }
         )
     );
@@ -388,7 +389,8 @@ fn a_shared_nadi_takes_its_points_and_the_middle_one_is_the_dosha_on_request() {
         KootaReading::Nadi {
             bride: Nadi::Aadi,
             groom: Nadi::Aadi,
-            dosha: false
+            dosha: false,
+            lifted: false
         }
     );
     let (_, read) = reading(N::Bharani, N::Pushya, Koota::Nadi, middle);
@@ -397,7 +399,89 @@ fn a_shared_nadi_takes_its_points_and_the_middle_one_is_the_dosha_on_request() {
         KootaReading::Nadi {
             bride: Nadi::Madhya,
             groom: Nadi::Madhya,
-            dosha: true
+            dosha: true,
+            lifted: false
         }
     );
+}
+
+/// A Moon at a nakshatra's pada, mid-arc.
+fn at(star: Nakshatra, pada: u16) -> Native {
+    let quarter = star.id() * 4 + pada - 1;
+    Native::of_moon((f64::from(quarter) + 0.5) * 360.0 / 108.0).unwrap()
+}
+
+#[test]
+fn one_sign_or_one_star_lifts_the_nadi_and_the_gana_by_vi36() {
+    let rules = KootaRules::default();
+    let nadi = |bride: Native, groom: Native| match ashta_koota(bride, groom, rules)
+        .row(Koota::Nadi)
+        .unwrap()
+        .reading
+    {
+        KootaReading::Nadi { dosha, lifted, .. } => (dosha, lifted),
+        _ => unreachable!(),
+    };
+    // Krittika and Rohini in Taurus, both Antya: Keshavarka's example.
+    assert_eq!(nadi(at(N::Krittika, 2), at(N::Rohini, 1)), (true, true));
+    // Krittika across Aries and Taurus: one star, two signs.
+    assert_eq!(nadi(at(N::Krittika, 1), at(N::Krittika, 3)), (true, true));
+    // Bharani's two padas in one sign, the commentary's example.
+    assert_eq!(nadi(at(N::Bharani, 1), at(N::Bharani, 2)), (true, true));
+    // One pada of one star: nothing to lift.
+    assert_eq!(nadi(at(N::Bharani, 1), at(N::Bharani, 1)), (true, false));
+    // Two signs, two stars: the dosha stands.
+    assert_eq!(nadi(at(N::Ashwini, 1), at(N::Ardra, 1)), (true, false));
+
+    let gana = |bride: Native, groom: Native| match ashta_koota(bride, groom, rules)
+        .row(Koota::Gana)
+        .unwrap()
+        .reading
+    {
+        KootaReading::Gana { dosha, lifted, .. } => (dosha, lifted),
+        _ => unreachable!(),
+    };
+    // Krittika (Rakshasa) and Rohini (Manushya) in one sign.
+    assert_eq!(gana(at(N::Krittika, 2), at(N::Rohini, 1)), (true, true));
+    // Ashvini (Deva, Aries) and Magha (Rakshasa, Leo): Mars and the Sun are
+    // friends both ways, the sign lords' friendship of VI.33.
+    assert_eq!(gana(at(N::Ashwini, 1), at(N::Magha, 1)), (true, true));
+    // The same gana is no dosha.
+    assert_eq!(gana(at(N::Ashwini, 1), at(N::Pushya, 1)), (false, false));
+}
+
+#[test]
+fn a_good_bhakoot_lifts_the_lords_enmity_by_vi33() {
+    let rules = KootaRules::default();
+    let maitri = |bride: Native, groom: Native| {
+        let read = ashta_koota(bride, groom, rules);
+        let good = matches!(
+            read.row(Koota::Bhakoot).unwrap().reading,
+            KootaReading::Bhakoot { dosha: None, .. }
+        );
+        match read.row(Koota::GrahaMaitri).unwrap().reading {
+            KootaReading::GrahaMaitri {
+                relation, lifted, ..
+            } => (relation, good, lifted),
+            _ => unreachable!(),
+        }
+    };
+    // Every pair of padas: lifted exactly when an enmity meets a good
+    // Bhakoot.
+    for bride in 0..108_u16 {
+        for groom in 0..108_u16 {
+            let (b, g) = (
+                at(Nakshatra::ALL[usize::from(bride / 4)], bride % 4 + 1),
+                at(Nakshatra::ALL[usize::from(groom / 4)], groom % 4 + 1),
+            );
+            let (relation, good, lifted) = maitri(b, g);
+            let enmity = matches!(
+                relation,
+                MaitriRelation::FriendEnemy
+                    | MaitriRelation::NeutralEnemy
+                    | MaitriRelation::MutualEnemies
+            );
+            assert_eq!(lifted, enmity && good);
+        }
+    }
 }

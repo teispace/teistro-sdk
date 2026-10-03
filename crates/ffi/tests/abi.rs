@@ -8855,14 +8855,23 @@ fn a_chart_request_answers_its_matching() {
                 bride,
                 groom,
                 relation,
+                lifted,
             } => {
                 put("bride_lord", i64::from(bride.id()));
                 put("groom_lord", i64::from(groom.id()));
                 put("maitri", TsMaitriRelation::from(relation) as i64);
+                put("maitri_lifted", i64::from(lifted));
             }
-            KootaReading::Gana { bride, groom } => {
+            KootaReading::Gana {
+                bride,
+                groom,
+                dosha,
+                lifted,
+            } => {
                 put("bride_gana", i64::from(bride.id()));
                 put("groom_gana", i64::from(groom.id()));
+                put("gana_dosha", i64::from(dosha));
+                put("gana_lifted", i64::from(lifted));
             }
             KootaReading::Bhakoot {
                 apart,
@@ -8886,14 +8895,16 @@ fn a_chart_request_answers_its_matching() {
                 bride,
                 groom,
                 dosha,
+                lifted,
             } => {
                 put("bride_nadi", i64::from(bride.id()));
                 put("groom_nadi", i64::from(groom.id()));
                 put("nadi_dosha", i64::from(dosha));
+                put("nadi_lifted", i64::from(lifted));
             }
         }
     }
-    assert_eq!(expected.len(), 24, "every reading column but the total");
+    assert_eq!(expected.len(), 28, "every reading column but the total");
     for (name, cells) in &expected {
         assert_eq!(&ints("matchings", name), cells, "{name}");
     }

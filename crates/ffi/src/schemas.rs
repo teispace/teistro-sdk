@@ -1968,6 +1968,21 @@ fn chart_harmonic_sections(first: u32) -> [SectionSchema; 3] {
 /// The Bhakoot's columns in `matchings`: how far apart the signs stand,
 /// the dosha, its five exceptions as clauses and whether they lift it
 /// (VI.31–33).
+/// The gana dosha and its lift, after the two ganas (VI.33, VI.36).
+fn gana_dosha_columns() -> [ColumnDef; 2] {
+    let flag = |name: &str, doc: &str| ColumnDef::new(name, Scalar::U8, doc);
+    [
+        flag(
+            "gana_dosha",
+            "1 when a Rakshasa stands beside another gana, the gana dosha.",
+        ),
+        flag(
+            "gana_lifted",
+            "1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283).",
+        ),
+    ]
+}
+
 fn bhakoot_columns() -> [ColumnDef; 8] {
     let flag = |name: &str, doc: &str| ColumnDef::new(name, Scalar::U8, doc);
     [
@@ -2071,12 +2086,17 @@ fn matching_columns() -> Vec<ColumnDef> {
             "How the two lords stand by the natural friendships.",
         )
         .of_enum("TsMaitriRelation"),
+        flag(
+            "maitri_lifted",
+            "1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283).",
+        ),
     ]);
     columns.extend(sides(
         "gana",
         "Gana",
         "gana, by her or his Moon's nakshatra (VI.29–30)",
     ));
+    columns.extend(gana_dosha_columns());
     columns.extend(bhakoot_columns());
     columns.extend(sides(
         "nadi",
@@ -2086,6 +2106,10 @@ fn matching_columns() -> Vec<ColumnDef> {
     columns.push(flag(
         "nadi_dosha",
         "1 when the shared nadi is a dosha under the record's `nadiDosha` (C264).",
+    ));
+    columns.push(flag(
+        "nadi_lifted",
+        "1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284).",
     ));
     columns
 }

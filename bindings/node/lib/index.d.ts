@@ -1620,8 +1620,22 @@ export type KootaReading =
       readonly bride: Graha | 'unknown';
       readonly groom: Graha | 'unknown';
       readonly relation: MaitriRelation | 'unknown';
+      /** Whether a good Bhakoot lifts the lords' enmity (VI.33); false with no enmity. */
+      readonly lifted: boolean;
     }
-  | { readonly koota: 'koota.GANA'; readonly bride: Gana; readonly groom: Gana }
+  | {
+      readonly koota: 'koota.GANA';
+      readonly bride: Gana;
+      readonly groom: Gana;
+      /** Whether a Rakshasa stands beside another gana. */
+      readonly dosha: boolean;
+      /**
+       * Whether the dosha is lifted: the sign lords or the navamsha lords
+       * befriended (VI.33), or one sign or one star between the two (VI.36);
+       * false with no dosha.
+       */
+      readonly lifted: boolean;
+    }
   | {
       readonly koota: 'koota.BHAKOOT';
       /** The groom's Moon sign counted from the bride's, 1 to 12. */
@@ -1638,6 +1652,11 @@ export type KootaReading =
       readonly groom: Nadi;
       /** Whether the shared nadi is a dosha under the rules. */
       readonly dosha: boolean;
+      /**
+       * Whether the dosha is lifted by one sign with two stars, one star across
+       * two signs or one star in two padas (VI.36); false with no dosha.
+       */
+      readonly lifted: boolean;
     }
   | { readonly koota: 'unknown' };
 

@@ -218,6 +218,9 @@ pub enum KootaReading {
         groom: Graha,
         /// How they stand.
         relation: MaitriRelation,
+        /// Whether a good Bhakoot lifts an enmity between them (VI.33);
+        /// `false` with none.
+        lifted: bool,
     },
     /// The two ganas (VI.29–30).
     Gana {
@@ -225,6 +228,12 @@ pub enum KootaReading {
         bride: Gana,
         /// The groom's.
         groom: Gana,
+        /// Whether they are a bad pair, a Rakshasa with another gana.
+        dosha: bool,
+        /// Whether the dosha is lifted: the sign lords or the navamsha
+        /// lords friends (VI.33), or one sign or one star between them
+        /// (VI.36); `false` with no dosha.
+        lifted: bool,
     },
     /// How far the groom's sign stands from the bride's (VI.31–33).
     Bhakoot {
@@ -246,6 +255,10 @@ pub enum KootaReading {
         groom: Nadi,
         /// Whether the shared nadi is a dosha under the rules asked for.
         dosha: bool,
+        /// Whether the dosha is lifted by one sign with two stars, one star
+        /// across two signs, or one star in two padas (VI.36); `false` with
+        /// no dosha.
+        lifted: bool,
     },
 }
 
@@ -332,6 +345,8 @@ pub fn ashta_koota(bride: Native, groom: Native, rules: KootaRules) -> AshtaKoot
     let tara = tara(bride, groom);
     let vashya = vashya_relation(bride.rashi, groom.rashi);
     let nadi = nadi(bride, groom, rules);
+    let bhakoot = bhakoot(bride, groom, rules, (tara.1, vashya, nadi.1));
+    let good_bhakoot = matches!(bhakoot.reading, KootaReading::Bhakoot { dosha: None, .. });
     let kootas = vec![
         varna(bride, groom, rules),
         KootaRow {
@@ -346,9 +361,9 @@ pub fn ashta_koota(bride: Native, groom: Native, rules: KootaRules) -> AshtaKoot
         },
         tara.0,
         yoni(bride, groom),
-        maitri(bride, groom),
+        maitri(bride, groom, good_bhakoot),
         gana(bride, groom, rules),
-        bhakoot(bride, groom, rules, (tara.1, vashya, nadi.1)),
+        bhakoot,
         nadi.0,
     ];
     let total = kootas.iter().map(|row| row.points).sum();
@@ -544,9 +559,36 @@ pub fn maitri_relation(a: Graha, b: Graha) -> MaitriRelation {
     }
 }
 
-fn maitri(bride: Native, groom: Native) -> KootaRow {
+/// Whether two lords are friends as the exceptions read it: one lord, or
+/// each the other's friend.
+fn befriended(a: Graha, b: Graha) -> bool {
+    matches!(
+        maitri_relation(a, b),
+        MaitriRelation::OneLord | MaitriRelation::MutualFriends
+    )
+}
+
+/// One Moon's place shared as VI.36 lifts the nadi's and the gana's dosha:
+/// one sign with two stars, one star across two signs, or one star and one
+/// sign in two padas.
+fn shared_apart(bride: Native, groom: Native) -> bool {
+    match (
+        bride.rashi == groom.rashi,
+        bride.nakshatra == groom.nakshatra,
+    ) {
+        (true, false) | (false, true) => true,
+        (true, true) => bride.pada != groom.pada,
+        (false, false) => false,
+    }
+}
+
+fn maitri(bride: Native, groom: Native, good_bhakoot: bool) -> KootaRow {
     let (b, g) = (bride.rashi.attributes().lord, groom.rashi.attributes().lord);
     let relation = maitri_relation(b, g);
+    let enmity = matches!(
+        relation,
+        MaitriRelation::FriendEnemy | MaitriRelation::NeutralEnemy | MaitriRelation::MutualEnemies
+    );
     KootaRow {
         points: match relation {
             MaitriRelation::OneLord | MaitriRelation::MutualFriends => 5.0,
@@ -561,6 +603,7 @@ fn maitri(bride: Native, groom: Native) -> KootaRow {
             bride: b,
             groom: g,
             relation,
+            lifted: enmity && good_bhakoot,
         },
     }
 }
@@ -581,10 +624,24 @@ fn gana(bride: Native, groom: Native, rules: KootaRules) -> KootaRow {
         (Gana::Manushya, Gana::Rakshasa) => 1.0,
         _ => 0.0,
     };
+    // The commentary's bad ganas: a Rakshasa beside either other.
+    let dosha = b != g && (b == Gana::Rakshasa || g == Gana::Rakshasa);
+    let lifted = dosha
+        && (befriended(bride.rashi.attributes().lord, groom.rashi.attributes().lord)
+            || befriended(
+                bride.navamsha.attributes().lord,
+                groom.navamsha.attributes().lord,
+            )
+            || shared_apart(bride, groom));
     KootaRow {
         points,
         max_points: 6.0,
-        reading: KootaReading::Gana { bride: b, groom: g },
+        reading: KootaReading::Gana {
+            bride: b,
+            groom: g,
+            dosha,
+            lifted,
+        },
     }
 }
 
@@ -655,7 +712,7 @@ fn bhakoot(
     }
 }
 
-/// The Nadi row, and whether the nadi is pure.
+/// The Nadi row, and whether the nadi is pure: no dosha, or one lifted.
 fn nadi(bride: Native, groom: Native, rules: KootaRules) -> (KootaRow, bool) {
     let (b, g) = (
         bride.nakshatra.attributes().nadi,
@@ -666,6 +723,7 @@ fn nadi(bride: Native, groom: Native, rules: KootaRules) -> (KootaRow, bool) {
             NadiDosha::Any => true,
             NadiDosha::MiddleOnly => b == Nadi::Madhya,
         };
+    let lifted = dosha && shared_apart(bride, groom);
     let row = KootaRow {
         points: if b == g { 0.0 } else { 8.0 },
         max_points: 8.0,
@@ -673,7 +731,10 @@ fn nadi(bride: Native, groom: Native, rules: KootaRules) -> (KootaRow, bool) {
             bride: b,
             groom: g,
             dosha,
+            lifted,
         },
     };
-    (row, !dosha)
+    // VI.36 says there is no nadi dosha, so a lifted one is pure for the
+    // Bhakoot's exceptions too (C284).
+    (row, !dosha || lifted)
 }

@@ -56,7 +56,22 @@ and two for the others (C263).
 |---|---|---|---|---|---|---|---|---|
 | 6/8 | 1944 | 16.7% | 8.3% | 38.6% | 22.8% | 83.3% | 54.8% | 1.6% |
 | 5/9 | 1944 | 0.0% | 66.7% | 40.7% | 87.7% | 66.7% | 70.0% | 61.3% |
-| 2/12 | 1944 | 8.3% | 41.7% | 38.6% | 22.8% | 58.3% | 70.2% | 34.1% |
+| 2/12 | 1944 | 8.3% | 41.7% | 38.6% | 22.8% | 58.3% | 73.3% | 36.2% |
+
+## The other doshas and their exceptions
+
+A Rakshasa beside another gana is lifted by the sign lords' or the
+navamsha lords' friendship (VI.33) or by one sign or one star between
+the two (VI.36); an enmity between the sign lords by a good Bhakoot
+(VI.33); one nadi by one sign with two stars, one star across two signs,
+or one star in two padas (VI.36). Each is a clause beside the points,
+which it never moves.
+
+| dosha | pairs | lifted | share |
+|---|---|---|---|
+| a Rakshasa beside another gana | 5184 | 3204 | 61.8% |
+| an enmity between the sign lords | 4212 | 3078 | 73.1% |
+| one nadi | 3888 | 468 | 12.0% |
 
 ## What each knob moves
 
@@ -70,5 +85,5 @@ is said without moving a total.
 |---|---|---|---|---|---|
 | an equal varna gives half (C259) | 2916 | 25.0% | 0.5 | 2916 | 25.0% |
 | a Deva bride with a Manushya groom gives 3 (C262) | 1296 | 11.1% | 1.0 | 1296 | 11.1% |
-| a bad Bhakoot is lifted by Garga's count (C263) | 0 | 0.0% | 0.0 | 1904 | 16.3% |
+| a bad Bhakoot is lifted by Garga's count (C263) | 0 | 0.0% | 0.0 | 1922 | 16.5% |
 | only the middle nadi is a dosha (C264) | 0 | 0.0% | 0.0 | 2592 | 22.2% |

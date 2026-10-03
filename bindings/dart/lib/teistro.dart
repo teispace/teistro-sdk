@@ -4673,10 +4673,13 @@ List<AshtaKoota> _decodeMatchings(Charts batch) {
         bride: Graha.byId(m.brideLord[at]),
         groom: Graha.byId(m.groomLord[at]),
         relation: MaitriRelation.byId(m.maitri[at]),
+        lifted: m.maitriLifted[at] == 1,
       ),
       GanaKoota(
         bride: Gana.byId(m.brideGana[at]),
         groom: Gana.byId(m.groomGana[at]),
+        dosha: m.ganaDosha[at] == 1,
+        lifted: m.ganaLifted[at] == 1,
       ),
       BhakootKoota(
         apart: m.bhakootApart[at],
@@ -4694,6 +4697,7 @@ List<AshtaKoota> _decodeMatchings(Charts batch) {
         bride: Nadi.byId(m.brideNadi[at]),
         groom: Nadi.byId(m.groomNadi[at]),
         dosha: m.nadiDosha[at] == 1,
+        lifted: m.nadiLifted[at] == 1,
       ),
     ];
     return {for (final one in read) one.koota: one};
@@ -7570,31 +7574,49 @@ final class MaitriKoota extends KootaReading {
     required this.bride,
     required this.groom,
     required this.relation,
+    required this.lifted,
   });
 
   final Graha bride;
   final Graha groom;
   final MaitriRelation relation;
 
+  /// Whether a good Bhakoot lifts the lords' enmity (VI.33); false with no
+  /// enmity.
+  final bool lifted;
+
   @override
   Koota get koota => Koota.grahaMaitri;
 
   @override
-  List<Object?> get _fields => [bride, groom, relation];
+  List<Object?> get _fields => [bride, groom, relation, lifted];
 }
 
 /// The two ganas (VI.29–30).
 final class GanaKoota extends KootaReading {
-  const GanaKoota({required this.bride, required this.groom});
+  const GanaKoota({
+    required this.bride,
+    required this.groom,
+    required this.dosha,
+    required this.lifted,
+  });
 
   final Gana bride;
   final Gana groom;
+
+  /// Whether a Rakshasa stands beside another gana.
+  final bool dosha;
+
+  /// Whether the dosha is lifted: the sign lords or the navamsha lords
+  /// befriended (VI.33), or one sign or one star between the two (VI.36);
+  /// false with no dosha.
+  final bool lifted;
 
   @override
   Koota get koota => Koota.gana;
 
   @override
-  List<Object?> get _fields => [bride, groom];
+  List<Object?> get _fields => [bride, groom, dosha, lifted];
 }
 
 /// How far the groom's Moon sign stands from the bride's (VI.31–33).
@@ -7631,6 +7653,7 @@ final class NadiKoota extends KootaReading {
     required this.bride,
     required this.groom,
     required this.dosha,
+    required this.lifted,
   });
 
   final Nadi bride;
@@ -7639,11 +7662,15 @@ final class NadiKoota extends KootaReading {
   /// Whether the shared nadi is a dosha under the rules.
   final bool dosha;
 
+  /// Whether the dosha is lifted by one sign with two stars, one star across
+  /// two signs or one star in two padas (VI.36); false with no dosha.
+  final bool lifted;
+
   @override
   Koota get koota => Koota.nadi;
 
   @override
-  List<Object?> get _fields => [bride, groom, dosha];
+  List<Object?> get _fields => [bride, groom, dosha, lifted];
 }
 
 /// One koota's points and what it read.

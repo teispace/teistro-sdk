@@ -68,10 +68,10 @@ String readingText(KootaReading reading) {
       '$brideToGroom $groomToBride',
     YoniKoota(:final bride, :final groom, :final relation) =>
       '${bride.fullKey} ${groom.fullKey} ${relation.key}',
-    MaitriKoota(:final bride, :final groom, :final relation) =>
-      '${bride.fullKey} ${groom.fullKey} ${relation.key}',
-    GanaKoota(:final bride, :final groom) =>
-      '${bride.fullKey} ${groom.fullKey}',
+    MaitriKoota(:final bride, :final groom, :final relation, :final lifted) =>
+      '${bride.fullKey} ${groom.fullKey} ${relation.key} ${flag(lifted)}',
+    GanaKoota(:final bride, :final groom, :final dosha, :final lifted) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(dosha)} ${flag(lifted)}',
     BhakootKoota(
       :final apart,
       :final dosha,
@@ -88,8 +88,8 @@ String readingText(KootaReading reading) {
         flag(exceptions.vashya),
         flag(lifted),
       ].join(' '),
-    NadiKoota(:final bride, :final groom, :final dosha) =>
-      '${bride.fullKey} ${groom.fullKey} ${flag(dosha)}',
+    NadiKoota(:final bride, :final groom, :final dosha, :final lifted) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(dosha)} ${flag(lifted)}',
   };
 }
 
