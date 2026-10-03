@@ -77,6 +77,12 @@ pub struct SynastryRequest {
     /// (`03-design/western-antiscia.md`). None by default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub antiscia: Option<AntisciaRequest>,
+    /// Whether the composite of the two charts is made too: each planet
+    /// and both angles at the near midpoint of the two charts', in the
+    /// request's zodiac (`03-design/western-composites.md`, C247). False
+    /// by default.
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
+    pub composite: bool,
 }
 
 /// [`SynastryRequest`] as it is read: the aspect table's fields laid
@@ -91,6 +97,7 @@ struct Asked {
     zodiac: SynastryZodiac,
     parallels: Option<ParallelRequest>,
     antiscia: Option<AntisciaRequest>,
+    composite: bool,
 }
 
 impl Default for Asked {
@@ -101,6 +108,7 @@ impl Default for Asked {
             zodiac,
             parallels,
             antiscia,
+            composite,
         } = SynastryRequest::default();
         Asked {
             aspects,
@@ -109,6 +117,7 @@ impl Default for Asked {
             zodiac,
             parallels,
             antiscia,
+            composite,
         }
     }
 }
@@ -124,6 +133,7 @@ impl From<Asked> for SynastryRequest {
             zodiac: asked.zodiac,
             parallels: asked.parallels,
             antiscia: asked.antiscia,
+            composite: asked.composite,
         }
     }
 }
@@ -136,6 +146,7 @@ impl Default for SynastryRequest {
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
             antiscia: None,
+            composite: false,
         }
     }
 }
@@ -151,6 +162,7 @@ impl SynastryRequest {
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
             antiscia: None,
+            composite: false,
         }
     }
 
@@ -165,6 +177,13 @@ impl SynastryRequest {
     #[must_use]
     pub fn with_antiscia(mut self, antiscia: AntisciaRequest) -> Self {
         self.antiscia = Some(antiscia);
+        self
+    }
+
+    /// Makes the composite of the two charts too, or not.
+    #[must_use]
+    pub const fn with_composite(mut self, composite: bool) -> Self {
+        self.composite = composite;
         self
     }
 
@@ -198,7 +217,8 @@ impl SynastryRequest {
 
     /// The request a binding sends, as JSON: the aspect table's `aspects`
     /// and `orbs` ([`AspectRequest::from_json`]), `lagna` (true when left
-    /// out) and `zodiac`, `"TROPICAL"` (the default) or `"CHARTS"`.
+    /// out), `zodiac`, `"TROPICAL"` (the default) or `"CHARTS"`,
+    /// `parallels`, `antiscia`, and `composite` (false when left out).
     ///
     /// ```
     /// use teistro_western::{SynastryRequest, SynastryZodiac, WesternAspect};
@@ -207,6 +227,8 @@ impl SynastryRequest {
     /// assert_eq!(asked.table.aspects, [WesternAspect::Trine]);
     /// assert!(asked.lagna);
     /// assert_eq!(asked.zodiac, SynastryZodiac::Charts);
+    /// assert!(!asked.composite);
+    /// assert!(SynastryRequest::from_json(r#"{"composite": true}"#)?.composite);
     /// // A key it does not read is refused by name, under the record's root.
     /// let typo = SynastryRequest::from_json(r#"{"lagnas": false}"#).unwrap_err();
     /// assert_eq!(typo.field(), Some("synastry.lagnas"));

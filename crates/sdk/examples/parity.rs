@@ -927,7 +927,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_antiscia(report, &geo, index, document);
         the_midpoints(report, &geo, index, document);
     }
-    the_synastry(report, &geo, &read.value);
+    the_synastry(report, &geo, &read.value, offset);
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
     // which is what the blob carries, and what made this row disagree
@@ -2091,20 +2091,32 @@ fn natal_key(point: teistro::NatalPoint) -> &'static str {
 /// The synastry every runner asks for: four aspects against a partner born
 /// in Sydney at J2000, in each chart's own zodiac, so the partner's own
 /// clock, the lagna and C241's sidereal reading all cross; the parallels
-/// across under a widened orb; and the antiscia across under Leo's orbs,
-/// which give every planet one.
-const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}}}"#;
+/// across under a widened orb; the antiscia across under Leo's orbs,
+/// which give every planet one; and the composite and the Davison birth,
+/// the partner's clock and the charts' meeting in it.
+const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}},"composite":true,"davison":true}"#;
 
 /// Every chart's synastry as the other three print it: its length, then
 /// each row's two points, aspect, arcs and orb; then the parallels across,
-/// each row's two points, side, gap and orb; then the antiscia across.
-fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
+/// each row's two points, side, gap and orb; then the antiscia across;
+/// then the composite, its angles and each planet's place and speed; then
+/// the Davison birth on the charts' clock.
+fn the_synastry(
+    report: &mut Report,
+    sdk: &Context,
+    documents: &[teistro::Document],
+    clock: UtcOffset,
+) {
     let asked = teistro::PartnerSynastry::from_json(SYNASTRY_JSON).expect("a valid request");
     let read = sdk
         .chart()
         .synastry_with(documents, &asked)
         .expect("one zodiac for both");
-    for (index, one) in read.iter().enumerate() {
+    let davisons = asked
+        .davisons(documents, clock)
+        .expect("valid births")
+        .expect("the record asks for them");
+    for ((index, one), davison) in read.iter().enumerate().zip(&davisons) {
         put(
             report,
             &format!("chart-{index}-synastry-count"),
@@ -2149,6 +2161,42 @@ fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
             report,
             &format!("chart-{index}-synastry-antiscia"),
             one.antiscia.as_deref().expect("the record asks for them"),
+        );
+        let composite = one.composite.as_ref().expect("the record asks for it");
+        put(
+            report,
+            &format!("chart-{index}-composite"),
+            format!(
+                "{} {} {} {}",
+                number(composite.lagna_deg),
+                number(composite.midheaven_deg),
+                u8::from(composite.lagna_turned),
+                composite.planets.len()
+            ),
+        );
+        for (n, at) in composite.planets.iter().enumerate() {
+            put(
+                report,
+                &format!("chart-{index}-composite-{n}"),
+                format!(
+                    "{} {} {}",
+                    at.graha.full_key(),
+                    number(at.longitude_deg),
+                    number(at.speed_deg_per_day)
+                ),
+            );
+        }
+        put(
+            report,
+            &format!("chart-{index}-davison"),
+            format!(
+                "{} {} {} {} {}",
+                number(davison.instant.get()),
+                number(davison.place.latitude.get()),
+                number(davison.place.longitude.get()),
+                number(davison.place.altitude.get()),
+                davison.utc_offset.seconds()
+            ),
         );
     }
 }

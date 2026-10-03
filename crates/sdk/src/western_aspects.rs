@@ -10,8 +10,9 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
-    AntiscionRow, AspectRequest, Placed, SynastryParallelRow, SynastryPoint, SynastryRequest,
-    SynastryRow, SynastryZodiac, WesternAspectRow, aspects, synastry, synastry_antiscia,
+    AntiscionRow, AspectRequest, Composite, Placed, SynastryParallelRow, SynastryPoint,
+    SynastryRequest, SynastryRow, SynastryZodiac, WesternAspectRow, aspects, synastry,
+    synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -45,13 +46,77 @@ pub struct PartnerSynastry {
     /// The aspects, orbs, lagna and zodiac.
     #[serde(flatten)]
     pub request: SynastryRequest,
+    /// Whether each chart's Davison birth with the partner is answered
+    /// too ([`PartnerSynastry::davisons`], C248). False by default.
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
+    pub davison: bool,
 }
 
 impl PartnerSynastry {
     /// A partner's synastry, under a request.
     #[must_use]
     pub const fn new(partner: Partner, request: SynastryRequest) -> PartnerSynastry {
-        PartnerSynastry { partner, request }
+        PartnerSynastry {
+            partner,
+            request,
+            davison: false,
+        }
+    }
+
+    /// Answers each chart's Davison birth with the partner too, or not.
+    #[must_use]
+    pub const fn with_davison(mut self, davison: bool) -> PartnerSynastry {
+        self.davison = davison;
+        self
+    }
+
+    /// Each chart's **Davison birth** with the partner ([`Partner::davison`],
+    /// C248), the chart's birth read on `clock`, one a chart in the order
+    /// given; `None` unless [`PartnerSynastry::davison`] asked. A document
+    /// does not keep the clock it was founded on, so the caller gives it,
+    /// as the boundary gives the batch's.
+    ///
+    /// ```
+    /// use teistro::{Partner, PartnerSynastry, SynastryRequest, UtcOffset};
+    /// use teistro::quantity::{JulianDay, Place, Utc};
+    ///
+    /// let hers = Partner {
+    ///     instant: JulianDay::<Utc>::literal(2_403_113.499_305_556),
+    ///     place: Place::try_from_degrees(51.5058, -0.1878, 0.0)?,
+    ///     utc_offset: UtcOffset::UTC,
+    /// };
+    /// let asked = PartnerSynastry::new(hers, SynastryRequest::default());
+    /// assert_eq!(asked.davisons(&[], UtcOffset::UTC)?, None);
+    /// assert_eq!(asked.with_davison(true).davisons(&[], UtcOffset::UTC)?, Some(vec![]));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`Partner::davison`] refuses, hinted with the chart's place in
+    /// the list.
+    pub fn davisons(
+        &self,
+        charts: &[Document],
+        clock: UtcOffset,
+    ) -> Result<Option<Vec<Partner>>, Error> {
+        if !self.davison {
+            return Ok(None);
+        }
+        charts
+            .iter()
+            .enumerate()
+            .map(|(at, chart)| {
+                Partner {
+                    instant: chart.foundation.instant,
+                    place: chart.foundation.place,
+                    utc_offset: clock,
+                }
+                .davison(&self.partner)
+                .map_err(|why| why.with_field("davison").with_hint(format!("chart {at}")))
+            })
+            .collect::<Result<_, _>>()
+            .map(Some)
     }
 
     /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
@@ -102,9 +167,15 @@ impl PartnerSynastry {
                 .with_field(at.clone())
                 .with_hint("give `partner`: its `instant` and `place`")
         })?;
+        let davison = given
+            .remove("davison")
+            .map(|davison| teistro_core::strict::read_value(&davison, &format!("{root}.davison")))
+            .transpose()?
+            .unwrap_or(false);
         Ok(PartnerSynastry {
             partner: teistro_core::strict::read_value(&partner, &at)?,
             request: teistro_core::strict::read_value(&Value::Object(given), root)?,
+            davison,
         })
     }
 }
@@ -274,10 +345,17 @@ impl ChartArea<'_> {
                             )
                         })
                         .transpose()?;
+                    let composite = asked
+                        .request
+                        .composite
+                        .then(|| self.composite(chart, &partner, asked.request.zodiac))
+                        .transpose()
+                        .map_err(|why| why.under("composite"))?;
                     Ok(PartnerReading {
                         aspects: self.synastry(chart, &partner, &asked.request)?,
                         parallels,
                         antiscia,
+                        composite,
                     })
                 };
                 read().map_err(|why| why.with_hint(format!("chart {at}")))
@@ -299,6 +377,9 @@ pub struct PartnerReading {
     /// The antiscia, the chart's planet first, closest first; `None`
     /// unless the request's `antiscia` asked.
     pub antiscia: Option<Vec<AntiscionRow>>,
+    /// The composite of the chart and the partner's, the chart first;
+    /// `None` unless the request's `composite` asked.
+    pub composite: Option<Composite>,
 }
 
 /// The planets a Western table reads: the seven, never the nodes, and the

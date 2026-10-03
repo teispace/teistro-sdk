@@ -427,3 +427,58 @@ fn the_antiscia_across_agree_with_the_recast() {
     .unwrap_err();
     assert_eq!(wide.field(), Some("synastry.antiscia.orbs.orbs"));
 }
+
+#[test]
+fn a_synastry_makes_the_composite_and_the_davison_birth_when_asked() {
+    let sdk = western();
+    let (george, mary) = (born(&sdk, GEORGE), born(&sdk, MARY));
+    let (jd, latitude, longitude) = MARY;
+    let record = |extra: &str| {
+        PartnerSynastry::from_json(&format!(
+            r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}{extra}}}"#
+        ))
+    };
+
+    // Neither unless asked.
+    let plain = record("").unwrap();
+    let read = sdk
+        .chart()
+        .synastry_with(std::slice::from_ref(&george), &plain)
+        .unwrap();
+    assert_eq!(read[0].composite, None);
+    assert_eq!(
+        plain
+            .davisons(std::slice::from_ref(&george), UtcOffset::UTC)
+            .unwrap(),
+        None
+    );
+
+    // Asked, the batch reads the composite as the area does, the chart first.
+    let asked = record(r#", "composite": true, "davison": true"#).unwrap();
+    let read = sdk
+        .chart()
+        .synastry_with(std::slice::from_ref(&george), &asked)
+        .unwrap();
+    let composite = sdk
+        .chart()
+        .composite(&george, &mary, SynastryZodiac::Tropical)
+        .unwrap();
+    assert_eq!(read[0].composite.as_ref(), Some(&composite));
+
+    // And the Davison birth as the partner gives it, on the batch's clock.
+    let george_birth = Partner {
+        instant: george.foundation.instant,
+        place: george.foundation.place,
+        utc_offset: UtcOffset::UTC,
+    };
+    assert_eq!(
+        asked.davisons(&[george], UtcOffset::UTC).unwrap(),
+        Some(vec![george_birth.davison(&asked.partner).unwrap()])
+    );
+
+    // A flag that is not a flag is named by its field.
+    let wrong = record(r#", "davison": "yes""#).unwrap_err();
+    assert_eq!(wrong.field(), Some("synastry.davison"));
+    let wrong = record(r#", "composite": 1"#).unwrap_err();
+    assert_eq!(wrong.field(), Some("synastry.composite"));
+}
