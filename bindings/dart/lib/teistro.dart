@@ -680,6 +680,7 @@ final class ChartArea extends _Area {
     LotRequest? lots,
     ConsiderationRules? considerations,
     PerfectionRequest? perfection,
+    ProgressionsRequest? progressions,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -712,6 +713,7 @@ final class ChartArea extends _Area {
     lots: lots,
     considerations: considerations,
     perfection: perfection,
+    progressions: progressions,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -764,6 +766,7 @@ final class ChartArea extends _Area {
     LotRequest? lots,
     ConsiderationRules? considerations,
     PerfectionRequest? perfection,
+    ProgressionsRequest? progressions,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -818,6 +821,7 @@ final class ChartArea extends _Area {
             lotsJson: lots?._json,
             considerationsJson: considerations?._json,
             perfectionJson: perfection?._json,
+            progressionsJson: progressions?._json,
           ),
         ),
       ),
@@ -3829,6 +3833,10 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
 }
 
 /// Each batch's transits, decoded once however many charts read them.
+/// A natal point from a `to_lagna` and a `to_graha` column's cells.
+NatalPoint _pointAt(int toLagna, int toGraha) =>
+    toLagna != 0 ? const NatalLagna() : NatalGraha(Graha.byId(toGraha));
+
 /// One row of the `hits` section as the Rust `Hit` spells it.
 Hit _hitAt(ChartsHits h, int row) {
   final motion = Motion.byId(h.motion[row]);
@@ -3843,10 +3851,7 @@ Hit _hitAt(ChartsHits h, int row) {
     ),
     HitKind.station => Station(turns: motion),
     HitKind.aspect => AspectHit(
-      to:
-          h.toLagna[row] != 0
-              ? const NatalLagna()
-              : NatalGraha(Graha.byId(h.toGraha[row])),
+      to: _pointAt(h.toLagna[row], h.toGraha[row]),
       angle: h.angle[row],
       phase: AspectPhase.byId(h.phase[row]),
       motion: motion,
@@ -4112,6 +4117,102 @@ List<Considerations> _decodeConsiderations(Charts batch) {
       ),
     ),
   );
+}
+
+final Expando<List<Progressions>> _progressions = Expando<List<Progressions>>(
+  'progressions',
+);
+
+List<Progressions> _progressionsOf(Charts batch) =>
+    _progressions[batch] ??= _decodeProgressions(batch);
+
+/// `progressions` holds a row a chart, or none when none was asked; the
+/// progressed and directed planets are graha-count rows a chart when an
+/// instant was asked, and the contacts are ragged by the row's count.
+List<Progressions> _decodeProgressions(Charts batch) {
+  final p = batch.progressions;
+  final g = batch.progressedGrahas;
+  final d = batch.directedGrahas;
+  final c = batch.progressedContacts;
+  final charts = batch.cast.instant.length;
+  if (p.length == 0) return const <Progressions>[];
+  final asked = !p.life[0].isNaN;
+  final perChart = asked ? g.length ~/ charts : 0;
+  final contacts = p.contactCount.fold<int>(0, (sum, n) => sum + n);
+  if (p.length != charts ||
+      d.length != g.length ||
+      g.length != perChart * charts ||
+      c.length != contacts) {
+    throw StateError(
+      'progressions has ${p.length} rows, progressed_grahas ${g.length}, '
+      'directed_grahas ${d.length} and progressed_contacts ${c.length} for '
+      '$charts charts',
+    );
+  }
+  var contact = 0;
+  return List<Progressions>.unmodifiable([
+    for (var k = 0; k < charts; k++)
+      () {
+        final first = contact;
+        contact += p.contactCount[k];
+        final planets = [
+          for (var at = k * perChart; at < (k + 1) * perChart; at++) at,
+        ];
+        return Progressions(
+          progressed:
+              asked
+                  ? Progressed(
+                    life: p.life[k],
+                    sky: p.sky[k],
+                    armcDeg: p.armcDeg[k],
+                    angles: ProgressedAngles(
+                      ascendantDeg: p.ascendantDeg[k],
+                      midheavenDeg: p.midheavenDeg[k],
+                    ),
+                    grahas: List<ProgressedPlanet>.unmodifiable([
+                      for (final at in planets)
+                        ProgressedPlanet(
+                          graha: Graha.byId(g.graha[at]),
+                          longitudeDeg: g.longitudeDeg[at],
+                          tropicalDeg: g.tropicalDeg[at],
+                          speedDegPerDay: g.speedDegPerDay[at],
+                        ),
+                    ]),
+                  )
+                  : null,
+          directed:
+              asked
+                  ? Directed(
+                    life: p.life[k],
+                    arcDeg: p.arcDeg[k],
+                    ascendantDeg: p.directedAscendantDeg[k],
+                    midheavenDeg: p.directedMidheavenDeg[k],
+                    planets: List<DirectedPlanet>.unmodifiable([
+                      for (final at in planets)
+                        DirectedPlanet(
+                          graha: Graha.byId(d.graha[at]),
+                          longitudeDeg: d.longitudeDeg[at],
+                        ),
+                    ]),
+                  )
+                  : null,
+          contacts:
+              p.contactsAsked[k] == 1
+                  ? List<ProgressedContact>.unmodifiable([
+                    for (var at = first; at < contact; at++)
+                      ProgressedContact(
+                        life: c.life[at],
+                        sky: c.sky[at],
+                        graha: Graha.byId(c.graha[at]),
+                        to: _pointAt(c.toLagna[at], c.toGraha[at]),
+                        angle: c.angle[at],
+                        motion: Motion.byId(c.motion[at]),
+                      ),
+                  ])
+                  : null,
+        );
+      }(),
+  ]);
 }
 
 final Expando<List<Matter>> _perfections = Expando<List<Matter>>('perfections');
@@ -6128,6 +6229,359 @@ final class PerfectionRules extends _Value {
 
   @override
   List<Object?> get _fields => [orbsDeg, horizonDays, withinSign];
+}
+
+/// A span of time a progression's rate is stated in.
+final class ProgressionSpan extends _Value {
+  const ProgressionSpan._(this._key) : days = null;
+
+  /// Any number of days, finite and above zero.
+  const ProgressionSpan.days(double this.days) : _key = null;
+
+  /// A day.
+  static const ProgressionSpan day = ProgressionSpan._('DAY');
+
+  /// A mean synodic month, new Moon to new Moon.
+  static const ProgressionSpan synodicMonth = ProgressionSpan._(
+    'SYNODIC_MONTH',
+  );
+
+  /// A mean sidereal month.
+  static const ProgressionSpan siderealMonth = ProgressionSpan._(
+    'SIDEREAL_MONTH',
+  );
+
+  /// A year, as long as the request's [YearMeasure] makes it.
+  static const ProgressionSpan year = ProgressionSpan._('YEAR');
+
+  final String? _key;
+
+  /// The days of a [ProgressionSpan.days] span; null for a named one.
+  final double? days;
+
+  Object get _record => _key ?? <String, Object?>{'DAYS': days};
+
+  @override
+  List<Object?> get _fields => [_key, days];
+}
+
+/// How much sky measures how much life.
+final class ProgressionRate extends _Value {
+  const ProgressionRate(this.sky, this.life);
+
+  /// A day for a year: Leo's progressed horoscope, the secondary progression.
+  static const ProgressionRate secondary = ProgressionRate(
+    ProgressionSpan.day,
+    ProgressionSpan.year,
+  );
+
+  /// A day for a synodic month: the tertiary progression (C238).
+  static const ProgressionRate tertiary = ProgressionRate(
+    ProgressionSpan.day,
+    ProgressionSpan.synodicMonth,
+  );
+
+  /// A synodic month for a year: the minor progression.
+  static const ProgressionRate minor = ProgressionRate(
+    ProgressionSpan.synodicMonth,
+    ProgressionSpan.year,
+  );
+
+  final ProgressionSpan sky;
+  final ProgressionSpan life;
+
+  Map<String, Object?> get _record => {
+    'sky': sky._record,
+    'life': life._record,
+  };
+
+  @override
+  List<Object?> get _fields => [sky, life];
+}
+
+/// How long a year of life is, against the calendar (C236).
+enum YearMeasure {
+  /// The mean tropical year, every modern implementation's.
+  tropical('TROPICAL'),
+
+  /// The Julian year of 365.25 days.
+  julian('JULIAN'),
+
+  /// Leo's rule by sidereal time at noon (Appendix V), a day for a year only.
+  noonSiderealTime('NOON_SIDEREAL_TIME');
+
+  const YearMeasure(this.key);
+
+  /// The key a request spells it with.
+  final String key;
+}
+
+/// How the progressed midheaven moves (C237).
+enum AngleMethod {
+  /// The mean Sun in right ascension: Leo's own map.
+  naibodRightAscension('NAIBOD_RIGHT_ASCENSION'),
+
+  /// The mean Sun along the ecliptic.
+  naibodLongitude('NAIBOD_LONGITUDE'),
+
+  /// The true Sun along the ecliptic: the solar arc.
+  solarArcLongitude('SOLAR_ARC_LONGITUDE'),
+
+  /// The true Sun in right ascension.
+  solarArcRightAscension('SOLAR_ARC_RIGHT_ASCENSION'),
+
+  /// The chart at the progressed instant itself.
+  quotidian('QUOTIDIAN');
+
+  const AngleMethod(this.key);
+
+  /// The key a request spells it with.
+  final String key;
+}
+
+/// The arc a direction moves every point by.
+final class DirectionArc extends _Value {
+  const DirectionArc._(this._key) : degreesPerYear = null;
+
+  /// Any degrees a year, finite and above zero.
+  const DirectionArc.perYear(double this.degreesPerYear) : _key = null;
+
+  /// The Sun's arc under the request's measure.
+  static const DirectionArc solar = DirectionArc._('SOLAR');
+
+  /// Naibod's measure, the mean Sun's daily motion a year.
+  static const DirectionArc naibod = DirectionArc._('NAIBOD');
+
+  /// Ptolemy's measure, a degree a year.
+  static const DirectionArc ptolemy = DirectionArc._('PTOLEMY');
+
+  final String? _key;
+
+  /// The degrees a year of a [DirectionArc.perYear] arc; null otherwise.
+  final double? degreesPerYear;
+
+  Object get _record => _key ?? <String, Object?>{'PER_YEAR': degreesPerYear};
+
+  @override
+  List<Object?> get _fields => [_key, degreesPerYear];
+}
+
+/// A window of life to find a birth's progressed contacts in, spelled as a
+/// [HitRequest] spells its planets, points and aspects.
+final class ProgressionContacts {
+  const ProgressionContacts({
+    required this.from,
+    required this.to,
+    this.grahas,
+    this.points,
+    this.aspects,
+  });
+
+  /// The window's start, an instant of life, a UTC Julian day.
+  final double from;
+
+  /// Its end, after the start.
+  final double to;
+
+  /// The progressed planets; the seven by default.
+  final List<Graha>? grahas;
+
+  /// The radical points; the seven and the lagna by default.
+  final List<NatalPoint>? points;
+
+  /// The aspects' angles, whole degrees to 180; Leo's table (p. 48) by
+  /// default.
+  final List<int>? aspects;
+
+  Map<String, Object?> get _record => {
+    'from': from,
+    'to': to,
+    if (grahas case final grahas?) 'grahas': [for (final g in grahas) g.key],
+    if (points case final points?) 'points': [for (final p in points) p._json],
+    if (aspects case final aspects?) 'aspects': aspects,
+  };
+}
+
+/// What to read every chart's birth through
+/// (`03-design/western-progressions.md`): the progressed chart and the
+/// direction at an instant of life [at], the [contacts] over a window, or
+/// both. Every field left out is Leo's default.
+///
+/// ```dart
+/// const leo = ProgressionsRequest(at: 2460676.5, year: YearMeasure.noonSiderealTime);
+/// ```
+final class ProgressionsRequest {
+  const ProgressionsRequest({
+    this.at,
+    this.rate = ProgressionRate.secondary,
+    this.year = YearMeasure.tropical,
+    this.angles = AngleMethod.naibodRightAscension,
+    this.direction = DirectionArc.solar,
+    this.contacts,
+  });
+
+  /// The instant of life, a UTC Julian day.
+  final double? at;
+  final ProgressionRate rate;
+  final YearMeasure year;
+  final AngleMethod angles;
+  final DirectionArc direction;
+  final ProgressionContacts? contacts;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (at case final at?) 'at': at,
+    'rate': rate._record,
+    'year': year.key,
+    'angles': angles.key,
+    'direction': direction._record,
+    if (contacts case final contacts?) 'contacts': contacts._record,
+  });
+}
+
+/// A planet of the progressed chart.
+final class ProgressedPlanet extends _Value {
+  const ProgressedPlanet({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.speedDegPerDay,
+  });
+
+  final Graha graha;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final double longitudeDeg;
+  final double tropicalDeg;
+
+  /// Degrees a day at the instant of sky; below zero when retrograde.
+  final double speedDegPerDay;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    longitudeDeg,
+    tropicalDeg,
+    speedDegPerDay,
+  ];
+}
+
+/// The progressed angles, by the request's [AngleMethod] (C237).
+final class ProgressedAngles extends _Value {
+  const ProgressedAngles({
+    required this.ascendantDeg,
+    required this.midheavenDeg,
+  });
+
+  final double ascendantDeg;
+  final double midheavenDeg;
+
+  @override
+  List<Object?> get _fields => [ascendantDeg, midheavenDeg];
+}
+
+/// The chart at the instant of sky that measures an instant of life.
+final class Progressed extends _Value {
+  const Progressed({
+    required this.life,
+    required this.sky,
+    required this.armcDeg,
+    required this.angles,
+    required this.grahas,
+  });
+
+  final double life;
+  final double sky;
+
+  /// The progressed meridian's right ascension, degrees.
+  final double armcDeg;
+  final ProgressedAngles angles;
+  final List<ProgressedPlanet> grahas;
+
+  @override
+  List<Object?> get _fields => [life, sky, armcDeg, angles, grahas];
+}
+
+/// A birth's planet moved by the direction's arc.
+final class DirectedPlanet extends _Value {
+  const DirectedPlanet({required this.graha, required this.longitudeDeg});
+
+  final Graha graha;
+  final double longitudeDeg;
+
+  @override
+  List<Object?> get _fields => [graha, longitudeDeg];
+}
+
+/// A birth's points moved by one arc.
+final class Directed extends _Value {
+  const Directed({
+    required this.life,
+    required this.arcDeg,
+    required this.ascendantDeg,
+    required this.midheavenDeg,
+    required this.planets,
+  });
+
+  final double life;
+
+  /// The arc, degrees; a solar arc is signed.
+  final double arcDeg;
+  final double ascendantDeg;
+  final double midheavenDeg;
+  final List<DirectedPlanet> planets;
+
+  @override
+  List<Object?> get _fields => [
+    life,
+    arcDeg,
+    ascendantDeg,
+    midheavenDeg,
+    planets,
+  ];
+}
+
+/// One exact aspect a progressed planet makes to a radical point.
+final class ProgressedContact extends _Value {
+  const ProgressedContact({
+    required this.life,
+    required this.sky,
+    required this.graha,
+    required this.to,
+    required this.angle,
+    required this.motion,
+  });
+
+  /// The instant of life it falls due, a UTC Julian day.
+  final double life;
+
+  /// The instant of sky it is exact at.
+  final double sky;
+  final Graha graha;
+  final NatalPoint to;
+
+  /// A whole degree 0 to 180.
+  final int angle;
+  final Motion motion;
+
+  @override
+  List<Object?> get _fields => [life, sky, graha, to, angle, motion];
+}
+
+/// A birth read through its progressions: [progressed] and [directed] are
+/// null without [ProgressionsRequest.at], [contacts] null without a window.
+final class Progressions extends _Value {
+  const Progressions({
+    required this.progressed,
+    required this.directed,
+    required this.contacts,
+  });
+
+  final Progressed? progressed;
+  final Directed? directed;
+  final List<ProgressedContact>? contacts;
+
+  @override
+  List<Object?> get _fields => [progressed, directed, contacts];
 }
 
 /// Whether a horary matter is brought to pass (Lilly, *Christian
@@ -11902,6 +12356,14 @@ final class Chart {
   /// asked (`03-design/hellenistic-perfection.md`).
   Matter? get perfection {
     final all = _perfectionsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The birth read through its progressions: the progressed chart and the
+  /// direction at [ProgressionsRequest.at], the contacts in its window;
+  /// null unless `progressions` asked (`03-design/western-progressions.md`).
+  Progressions? get progressions {
+    final all = _progressionsOf(batch);
     return index < all.length ? all[index] : null;
   }
 
