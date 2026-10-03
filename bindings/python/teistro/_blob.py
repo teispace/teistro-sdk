@@ -3175,6 +3175,12 @@ class ChartsAntiscia:
     pair_count: memoryview[int]
     """How many pairs are the chart's in `antiscion_rows`."""
 
+    cusp_count: memoryview[int]
+    """How many reflections upon a cusp are the chart's in `antiscion_cusp_rows`; 0 when the record asked for no `cusps`."""
+
+    cusp_system: memoryview[int]
+    """The division the cusps were read in, Lilly's Regiomontanus unless the record's `cusps` named another, or the one a polar policy fell back to; `0xFFFF` when the record asked for no `cusps`."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3340,6 +3346,9 @@ class ChartsSynastryComposites:
     count: memoryview[int]
     """How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`."""
 
+    cusp_count: memoryview[int]
+    """12 when both charts carry cusps in the `western` module's division, whose near midpoints the composite's cusps are in `synastry_composite_cusps`; 0 where the profile's polar policy refuses the division at either birthplace."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -3438,6 +3447,102 @@ class ChartsSynastryMidpointRows:
 
     orb_deg: memoryview[float]
     """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsWesternHouses:
+    """The `western_houses` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.
+    """
+
+    system: memoryview[int]
+    """The division the cusps are of: the record's `system`, else the profile's `houses.module_overrides.western`, else Placidus (C249); or the one a polar policy fell back to."""
+
+    ascendant_deg: memoryview[float]
+    """The ascendant, degrees: the first cusp in every quadrant division."""
+
+    reach_deg: memoryview[float]
+    """The degree that rose one sidereal hour before the birth, degrees: the limit of the ascendant's reach (Leo, p. 90; C250)."""
+
+    planet_count: memoryview[int]
+    """How many planets are counted; the chart's rows follow the earlier charts' in `western_house_planets`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsWesternHouseCusps:
+    """The `western_house_cusps` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.
+    """
+
+    cusp_deg: memoryview[float]
+    """The cusp, degrees of the chart's zodiac."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsWesternHousePlanets:
+    """The `western_house_planets` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    house: memoryview[int]
+    """The house whose cusp it has passed and whose next cusp it has not, 1 to 12."""
+
+    with_ascendant: memoryview[int]
+    """1 when Leo reads it with the ascendant: in the first house, or above the ascendant no further than `reach_deg`; 0 otherwise. The house is never moved for it."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryCompositeCusps:
+    """The `synastry_composite_cusps` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+    """
+
+    cusp_deg: memoryview[float]
+    """The cusp, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAntiscionCuspRows:
+    """The `antiscion_cusp_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    house: memoryview[int]
+    """The house whose cusp its reflection falls on, 1 to 12."""
+
+    contrary: memoryview[int]
+    """1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."""
 
     length: int
     """The number of rows every column holds."""
@@ -3873,6 +3978,21 @@ class Charts:
     synastry_midpoint_rows: ChartsSynastryMidpointRows
     """Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`."""
 
+    western_houses: ChartsWesternHouses
+    """Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none."""
+
+    western_house_cusps: ChartsWesternHouseCusps
+    """Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none."""
+
+    western_house_planets: ChartsWesternHousePlanets
+    """Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none."""
+
+    synastry_composite_cusps: ChartsSynastryCompositeCusps
+    """Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`."""
+
+    antiscion_cusp_rows: ChartsAntiscionCuspRows
+    """Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3984,6 +4104,11 @@ def decode_charts(raw: bytes) -> Charts:
     at_synastry_davisons = blob.section(100, "synastry_davisons")
     at_synastry_midpoints = blob.section(101, "synastry_midpoints")
     at_synastry_midpoint_rows = blob.section(102, "synastry_midpoint_rows")
+    at_western_houses = blob.section(103, "western_houses")
+    at_western_house_cusps = blob.section(104, "western_house_cusps")
+    at_western_house_planets = blob.section(105, "western_house_planets")
+    at_synastry_composite_cusps = blob.section(106, "synastry_composite_cusps")
+    at_antiscion_cusp_rows = blob.section(107, "antiscion_cusp_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6011,6 +6136,12 @@ def decode_charts(raw: bytes) -> Charts:
             pair_count=blob.column(
                 at_antiscia, 1, 4, at_antiscia.count
             ).cast("I"),
+            cusp_count=blob.column(
+                at_antiscia, 2, 4, at_antiscia.count
+            ).cast("I"),
+            cusp_system=blob.column(
+                at_antiscia, 3, 2, at_antiscia.count
+            ).cast("H"),
             length=at_antiscia.count,
         ),
         antiscion_points=ChartsAntiscionPoints(
@@ -6113,6 +6244,9 @@ def decode_charts(raw: bytes) -> Charts:
             count=blob.column(
                 at_synastry_composites, 3, 4, at_synastry_composites.count
             ).cast("I"),
+            cusp_count=blob.column(
+                at_synastry_composites, 4, 1, at_synastry_composites.count
+            ).cast("B"),
             length=at_synastry_composites.count,
         ),
         synastry_composite_rows=ChartsSynastryCompositeRows(
@@ -6177,6 +6311,57 @@ def decode_charts(raw: bytes) -> Charts:
                 at_synastry_midpoint_rows, 7, 8, at_synastry_midpoint_rows.count
             ).cast("d"),
             length=at_synastry_midpoint_rows.count,
+        ),
+        western_houses=ChartsWesternHouses(
+            system=blob.column(
+                at_western_houses, 0, 2, at_western_houses.count
+            ).cast("H"),
+            ascendant_deg=blob.column(
+                at_western_houses, 1, 8, at_western_houses.count
+            ).cast("d"),
+            reach_deg=blob.column(
+                at_western_houses, 2, 8, at_western_houses.count
+            ).cast("d"),
+            planet_count=blob.column(
+                at_western_houses, 3, 4, at_western_houses.count
+            ).cast("I"),
+            length=at_western_houses.count,
+        ),
+        western_house_cusps=ChartsWesternHouseCusps(
+            cusp_deg=blob.column(
+                at_western_house_cusps, 0, 8, at_western_house_cusps.count
+            ).cast("d"),
+            length=at_western_house_cusps.count,
+        ),
+        western_house_planets=ChartsWesternHousePlanets(
+            graha=blob.column(
+                at_western_house_planets, 0, 2, at_western_house_planets.count
+            ).cast("H"),
+            house=blob.column(
+                at_western_house_planets, 1, 1, at_western_house_planets.count
+            ).cast("B"),
+            with_ascendant=blob.column(
+                at_western_house_planets, 2, 1, at_western_house_planets.count
+            ).cast("B"),
+            length=at_western_house_planets.count,
+        ),
+        synastry_composite_cusps=ChartsSynastryCompositeCusps(
+            cusp_deg=blob.column(
+                at_synastry_composite_cusps, 0, 8, at_synastry_composite_cusps.count
+            ).cast("d"),
+            length=at_synastry_composite_cusps.count,
+        ),
+        antiscion_cusp_rows=ChartsAntiscionCuspRows(
+            graha=blob.column(
+                at_antiscion_cusp_rows, 0, 2, at_antiscion_cusp_rows.count
+            ).cast("H"),
+            house=blob.column(
+                at_antiscion_cusp_rows, 1, 1, at_antiscion_cusp_rows.count
+            ).cast("B"),
+            contrary=blob.column(
+                at_antiscion_cusp_rows, 2, 1, at_antiscion_cusp_rows.count
+            ).cast("B"),
+            length=at_antiscion_cusp_rows.count,
         ),
     )
 

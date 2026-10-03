@@ -12020,6 +12020,21 @@
             "example": "{\"orbDeg\":1}",
             "nullable": true
           }
+        },
+        {
+          "name": "western_houses_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's Western houses, as a JSON object, every field\noptional: `system`, the division (`\"KOCH\"`), else the profile's\n`houses.module_overrides.western`, else Placidus, the division\nLeo's figures are cast in (C249). Each planet is counted by the\ncusps alone, and flagged when Leo reads it with the ascendant, up\nto the degree that rose one sidereal hour before the birth (C250).\nThe answers come back in `western_houses`, `western_house_cusps`\nand `western_house_planets`. Null for none, which costs nothing\n(`03-design/western-houses.md`). Refusals are named from the\nrecord every binding calls `westernHouses`, as\n`westernHouses.system`.",
+          "meta": {
+            "example": "{\"system\":\"KOCH\"}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -19582,6 +19597,17 @@
               "name": "pair_count",
               "scalar": "u32",
               "doc": "How many pairs are the chart's in `antiscion_rows`."
+            },
+            {
+              "name": "cusp_count",
+              "scalar": "u32",
+              "doc": "How many reflections upon a cusp are the chart's in `antiscion_cusp_rows`; 0 when the record asked for no `cusps`."
+            },
+            {
+              "name": "cusp_system",
+              "scalar": "u16",
+              "doc": "The division the cusps were read in, Lilly's Regiomontanus unless the record's `cusps` named another, or the one a polar policy fell back to; `0xFFFF` when the record asked for no `cusps`.",
+              "enum": "HouseSystem"
             }
           ]
         },
@@ -19781,6 +19807,11 @@
               "name": "count",
               "scalar": "u32",
               "doc": "How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`."
+            },
+            {
+              "name": "cusp_count",
+              "scalar": "u8",
+              "doc": "12 when both charts carry cusps in the `western` module's division, whose near midpoints the composite's cusps are in `synastry_composite_cusps`; 0 where the profile's polar policy refuses the division at either birthplace."
             }
           ]
         },
@@ -19902,6 +19933,109 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the record allowed, degrees."
+            }
+          ]
+        },
+        {
+          "id": 103,
+          "name": "western_houses",
+          "doc": "Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "system",
+              "scalar": "u16",
+              "doc": "The division the cusps are of: the record's `system`, else the profile's `houses.module_overrides.western`, else Placidus (C249); or the one a polar policy fell back to.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "ascendant_deg",
+              "scalar": "f64",
+              "doc": "The ascendant, degrees: the first cusp in every quadrant division."
+            },
+            {
+              "name": "reach_deg",
+              "scalar": "f64",
+              "doc": "The degree that rose one sidereal hour before the birth, degrees: the limit of the ascendant's reach (Leo, p. 90; C250)."
+            },
+            {
+              "name": "planet_count",
+              "scalar": "u32",
+              "doc": "How many planets are counted; the chart's rows follow the earlier charts' in `western_house_planets`."
+            }
+          ]
+        },
+        {
+          "id": 104,
+          "name": "western_house_cusps",
+          "doc": "Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "cusp_deg",
+              "scalar": "f64",
+              "doc": "The cusp, degrees of the chart's zodiac."
+            }
+          ]
+        },
+        {
+          "id": 105,
+          "name": "western_house_planets",
+          "doc": "Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house whose cusp it has passed and whose next cusp it has not, 1 to 12."
+            },
+            {
+              "name": "with_ascendant",
+              "scalar": "u8",
+              "doc": "1 when Leo reads it with the ascendant: in the first house, or above the ascendant no further than `reach_deg`; 0 otherwise. The house is never moved for it."
+            }
+          ]
+        },
+        {
+          "id": 106,
+          "name": "synastry_composite_cusps",
+          "doc": "Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "cusp_deg",
+              "scalar": "f64",
+              "doc": "The cusp, degrees."
+            }
+          ]
+        },
+        {
+          "id": 107,
+          "name": "antiscion_cusp_rows",
+          "doc": "Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, \"the very degree\" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house whose cusp its reflection falls on, 1 to 12."
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."
             }
           ]
         }

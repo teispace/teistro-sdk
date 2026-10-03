@@ -46,7 +46,34 @@ impl HouseRequest {
         self.system = Some(system);
         self
     }
+
+    /// The request a binding sends, as JSON: `{}` for the module's
+    /// division, or `{"system": "KOCH"}`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::HouseSystem;
+    /// use teistro_western::HouseRequest;
+    ///
+    /// assert_eq!(HouseRequest::from_json("{}")?.system, None);
+    /// let koch = HouseRequest::from_json(r#"{"system": "KOCH"}"#)?;
+    /// assert_eq!(koch.system, Some(HouseSystem::Koch));
+    /// let typo = HouseRequest::from_json(r#"{"sistem": "KOCH"}"#).unwrap_err();
+    /// assert_eq!(typo.field(), Some("westernHouses.sistem"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record or a key it does not
+    /// read, named under `westernHouses`.
+    pub fn from_json(text: &str) -> Result<HouseRequest, Error> {
+        teistro_core::strict::read(text, ROOT)
+    }
 }
+
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const ROOT: &str = "westernHouses";
 
 /// Where a planet is counted.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
