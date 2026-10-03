@@ -1,6 +1,9 @@
 # The Western aspects and their orbs (the `western` module)
 
-Status: `design`, 2026-10-03, written from the sources before any code.
+Status: `building`, 2026-10-03, written from the sources before any
+code. Step 2 is built: `sdk.chart().western_aspects`, held to Leo's
+reading of Edward VII and measured over the corpus in
+[`western-aspects-measured.md`](western-aspects-measured.md).
 
 A chart's drishti are the Vedic relations, which are read by sign and
 house and have no orb (`aspect-and-drishti.md`). The Western aspect is a
@@ -72,11 +75,10 @@ under his orbs.
    number. A body with no orb under the
    chosen model, such as Uranus under Lilly's table, is refused by name
    rather than given zero.
-3. **The bodies are the chart's.** The default is the seven planets and
-   the outer three when the chart placed them. The nodes and the two
-   angles, the ascendant and the midheaven, are asked for by name. An
-   angle has no motion of its own in a natal chart, so an aspect to one
-   is neither applying nor separating.
+3. **The bodies are the chart's planets.** The seven, and the outer
+   three when the chart placed them. Leo's orbs speak of luminaries and
+   planets only, so the nodes and the angles are not read until a
+   source gives them an orb.
 4. **One row a pair and aspect.** Each row names the two bodies in the
    catalogue's order and the aspect. It gives the gap, the distance from
    exact, the orb allowed, and whether the faster body is closing. Rows
@@ -91,7 +93,31 @@ under his orbs.
    takes the request, and the document carries the rows. The boundary
    and the bindings follow as one step, with parity.
 
+## What building it found
+
+- **Edward VII's four hold, and closely.** Under Leo's orbs the Moon
+  squares Saturn 0.72° from exact, the Sun sextiles Mars at 1.68°,
+  squares Neptune at 2.58° and trines Uranus at 3.68°. Each is inside
+  its orb, and the table finds 23 more aspects Leo does not name.
+- **Neither model contains the other (C240).** Over the corpus's
+  births, Lilly's moieties find more Ptolemaic aspects among the seven
+  than Leo's orbs do, and Leo's find a few that Lilly's miss. The few
+  can only come from pairs whose moieties fall short of Leo's orb at
+  that aspect: Mercury, Venus and Mars with one another (7¼° to 7¾°,
+  under his 8°), and the Moon with Mercury at the conjunction or
+  opposition (9¾°, under his 10°). The counts are on the measured
+  page.
+- **Leo's orbs never overlap.** Each of his nine aspects, widened by
+  its orb, stops short of the next. The closest pair are the trine
+  (120° + 8°) and the sesquiquadrate (135° − 4°), 3° apart. So a pair
+  holds at most one of his aspects. The measured page counts this, and a
+  caller's own orbs may still overlap, which is why a row is kept for
+  each aspect.
+
 ## What this does not decide
+
+- **The nodes and the angles.** Leo gives them no orb. A model that
+  does, such as a caller's own, needs the request to name them.
 
 - **Synastry and composites**, which ask the same question of two
   charts. They get their own page once this one is built.
@@ -105,5 +131,5 @@ under his orbs.
 1. This page, and a crux for the orb model (C240).
 2. `western::aspects`: the set, the three models, and the table over a
    chart's bodies. Edward VII's four are the test, and a gate reports
-   how the two models differ over the corpus.
+   how the two models differ over the corpus. **Built.**
 3. The chart section, the boundary and every binding, with parity.

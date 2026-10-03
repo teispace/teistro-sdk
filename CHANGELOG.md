@@ -1966,6 +1966,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     batch's place and clock alone, not with every section the batch
     asked for. The parity runners print one record's answers for both
     charts, and the five bindings agree on all 17107 values.
+  - **The Western aspects** (`western-aspects.md`,
+    `western-aspects-measured.md`). `sdk.chart().western_aspects` finds
+    every pair of a chart's planets at one of Leo's nine aspects
+    (*How to Judge a Nativity*, pp. 43–47), inside the orb an `OrbModel`
+    allows: Leo's by aspect (the default), Lilly's moieties
+    (`AspectRequest::lilly`), or a caller's own. Rows come closest
+    first, and Leo's reading of Edward VII's nativity is a test. The
+    orb engine gains the semi-sextile, semi-square, sesquiquadrate and
+    quincunx.
   - **The outer planets in a chart** (`western-outer-planets.md`,
     `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
     places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside

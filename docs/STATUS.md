@@ -1052,9 +1052,12 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the Western aspects** — `western-aspects.md` step 2, Leo's
-   nine and the `OrbModel` (C240), Edward VII's four aspects as the
-   test; synastry and the composites read it after. The outer planets
+0. **Next: the Western aspects at the boundary** — `western-aspects.md`
+   step 3, a chart section and every binding, with parity. Step 2 is
+   built: `sdk.chart().western_aspects` reads Leo's nine under his
+   orbs or Lilly's five under his moieties (C240), Edward VII's four
+   aspects are a test, and `western-aspects-measured.md` measures where
+   the models part. Synastry and the composites read it after. The outer planets
    are built to the boundary (`western-outer-planets.md` steps 2 to 4:
    `with_outer_planets`, held in `outer-planets-measured.md`, C239
    measured under an arcsecond; the hit list, the contacts and the later
