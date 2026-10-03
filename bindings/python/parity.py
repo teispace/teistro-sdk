@@ -540,6 +540,19 @@ def main() -> None:
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
+            progressions={
+                "at": 2470000.5,
+                "year": "NOON_SIDEREAL_TIME",
+                "angles": "SOLAR_ARC_LONGITUDE",
+                "direction": "NAIBOD",
+                "contacts": {
+                    "from": 2462000.5,
+                    "to": 2465652.5,
+                    "grahas": ["MOON", "SUN"],
+                    "points": ["LAGNA", "MARS", "VENUS"],
+                    "aspects": [0, 45, 90, 135, 180],
+                },
+            },
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -1053,6 +1066,34 @@ def main() -> None:
                 f"chart-{i}-perfection-rules",
                 f"{','.join(number(orb) for orb in pf.rules.orbs_deg)} {int(pf.rules.within_sign)}",
             )
+            pr = chart.progressions
+            assert pr is not None and pr.progressed is not None and pr.directed is not None
+            assert pr.contacts is not None
+            pg, dr = pr.progressed, pr.directed
+            put(
+                f"chart-{i}-progressed",
+                f"{number(pg.life)} {number(pg.sky)} {number(pg.armc_deg)}"
+                f" {number(pg.angles.ascendant_deg)} {number(pg.angles.midheaven_deg)}",
+            )
+            for n, gr in enumerate(pg.grahas):
+                put(
+                    f"chart-{i}-progressed-graha-{n}",
+                    f"{gr.graha.full_key} {number(gr.longitude_deg)} {number(gr.tropical_deg)}"
+                    f" {number(gr.speed_deg_per_day)}",
+                )
+            put(
+                f"chart-{i}-directed",
+                f"{number(dr.arc_deg)} {number(dr.ascendant_deg)} {number(dr.midheaven_deg)}",
+            )
+            for n, directed in enumerate(dr.planets):
+                put(f"chart-{i}-directed-graha-{n}", f"{directed.graha.full_key} {number(directed.longitude_deg)}")
+            put(f"chart-{i}-progressed-contact-count", str(len(pr.contacts)))
+            for n, ct in enumerate(pr.contacts):
+                reached = "LAGNA" if ct.to.graha is None else ct.to.graha.full_key
+                put(
+                    f"chart-{i}-progressed-contact-{n}",
+                    f"{number(ct.life)} {number(ct.sky)} {ct.graha.full_key} {reached} {ct.angle} {ct.motion.key}",
+                )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)
