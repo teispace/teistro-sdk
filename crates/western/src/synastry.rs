@@ -54,7 +54,7 @@ pub enum SynastryZodiac {
 /// What a synastry is asked: the aspects and orbs a chart's own table
 /// reads, whether each chart's lagna joins its planets, and the zodiac.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", default)]
+#[serde(rename_all = "camelCase", from = "Asked")]
 pub struct SynastryRequest {
     /// The aspects, and the orbs they are read under: Leo's nine under his
     /// orbs unless a caller says otherwise (C240).
@@ -65,6 +65,47 @@ pub struct SynastryRequest {
     pub lagna: bool,
     /// The zodiac the two are compared in (C241).
     pub zodiac: SynastryZodiac,
+}
+
+/// [`SynastryRequest`] as it is read: the aspect table's fields laid
+/// flat, without `flatten`, which buffers what it reads and so names a
+/// refusal inside by the record alone, not by the field that failed.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+struct Asked {
+    aspects: Vec<WesternAspect>,
+    orbs: OrbModel,
+    lagna: bool,
+    zodiac: SynastryZodiac,
+}
+
+impl Default for Asked {
+    fn default() -> Asked {
+        let SynastryRequest {
+            table: AspectRequest { aspects, orbs },
+            lagna,
+            zodiac,
+        } = SynastryRequest::default();
+        Asked {
+            aspects,
+            orbs,
+            lagna,
+            zodiac,
+        }
+    }
+}
+
+impl From<Asked> for SynastryRequest {
+    fn from(asked: Asked) -> SynastryRequest {
+        SynastryRequest {
+            table: AspectRequest {
+                aspects: asked.aspects,
+                orbs: asked.orbs,
+            },
+            lagna: asked.lagna,
+            zodiac: asked.zodiac,
+        }
+    }
 }
 
 impl Default for SynastryRequest {
@@ -131,6 +172,9 @@ impl SynastryRequest {
     /// // A key it does not read is refused by name, under the record's root.
     /// let typo = SynastryRequest::from_json(r#"{"lagnas": false}"#).unwrap_err();
     /// assert_eq!(typo.field(), Some("synastry.lagnas"));
+    /// // And a value it cannot read, by the field that holds it.
+    /// let zodiac = SynastryRequest::from_json(r#"{"zodiac": "SIDEREAL"}"#).unwrap_err();
+    /// assert_eq!(zodiac.field(), Some("synastry.zodiac"));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
     ///
