@@ -13,8 +13,9 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint, Partner,
-    PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
+    AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint, ParallelRequest,
+    Partner, PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac, UtcOffset,
+    WesternAspect,
 };
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
@@ -290,18 +291,24 @@ fn a_batch_read_against_one_partner_is_each_chart_read_against_it() {
     let charts = [george.clone(), earlier.clone()];
     let read = sdk.chart().synastry_with(&charts, &asked).unwrap();
     let mary = born(&sdk, MARY);
-    for (chart, rows) in charts.iter().zip(&read) {
+    for (chart, one) in charts.iter().zip(&read) {
         assert_eq!(
-            rows,
-            &sdk.chart().synastry(chart, &mary, &asked.request).unwrap()
+            one.aspects,
+            sdk.chart().synastry(chart, &mary, &asked.request).unwrap()
         );
+        assert_eq!(one.parallels, None, "not asked");
     }
-    assert!(read[0].iter().any(|row| (row.first, row.aspect, row.second)
-        == (
-            graha(Graha::Mars),
-            WesternAspect::Opposition,
-            NatalPoint::Lagna
-        )));
+    assert!(
+        read[0]
+            .aspects
+            .iter()
+            .any(|row| (row.first, row.aspect, row.second)
+                == (
+                    graha(Graha::Mars),
+                    WesternAspect::Opposition,
+                    NatalPoint::Lagna
+                ))
+    );
     // A partner past the ephemeris is refused as the partner.
     let far = PartnerSynastry::new(
         Partner {
@@ -312,4 +319,60 @@ fn a_batch_read_against_one_partner_is_each_chart_read_against_it() {
     );
     let refused = sdk.chart().synastry_with(&charts, &far).unwrap_err();
     assert_eq!(refused.field(), Some("partner"), "{refused}");
+}
+
+#[test]
+fn the_parallels_across_agree_with_the_recast() {
+    // The pairs within 0.95° of one distance from the equator in the
+    // Moshier recast; the next, his lagna and her Pluto, stands at 0.98°,
+    // too near the orb's edge to pin.
+    let recast: [(NatalPoint, NatalPoint, bool, f64); 8] = [
+        (graha(Graha::Uranus), graha(Graha::Uranus), false, 0.049),
+        (graha(Graha::Mars), graha(Graha::Mercury), false, 0.439),
+        (graha(Graha::Saturn), graha(Graha::Moon), false, 0.609),
+        (graha(Graha::Jupiter), graha(Graha::Uranus), true, 0.661),
+        (graha(Graha::Pluto), graha(Graha::Pluto), false, 0.695),
+        (graha(Graha::Neptune), graha(Graha::Pluto), false, 0.831),
+        (graha(Graha::Moon), graha(Graha::Pluto), true, 0.854),
+        (graha(Graha::Mars), graha(Graha::Sun), false, 0.907),
+    ];
+    let sdk = western();
+    let (george, mary) = (born(&sdk, GEORGE), born(&sdk, MARY));
+    let asked = SynastryRequest::default().with_parallels(ParallelRequest::default());
+    let rows = sdk
+        .chart()
+        .synastry_parallels(&george, &mary, &asked)
+        .unwrap();
+    let close: Vec<_> = rows.iter().filter(|row| row.apart_deg < 0.95).collect();
+    assert_eq!(close.len(), recast.len(), "{close:#?}");
+    for ((first, second, contrary, apart_deg), row) in recast.iter().zip(&close) {
+        assert_eq!(
+            (row.first, row.second, row.contrary),
+            (*first, *second, *contrary)
+        );
+        assert!(
+            (row.apart_deg - apart_deg).abs() < 0.01,
+            "{row:?} against {apart_deg}"
+        );
+    }
+
+    // The batch reads them the same, beside the aspects.
+    let (jd, latitude, longitude) = MARY;
+    let partner = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "parallels": {{}}}}"#
+    ))
+    .unwrap();
+    let read = sdk.chart().synastry_with(&[george], &partner).unwrap();
+    assert_eq!(read[0].parallels.as_deref(), Some(rows.as_slice()));
+
+    // Without the lagna, no row names it.
+    let without = sdk
+        .chart()
+        .synastry_parallels(&born(&sdk, GEORGE), &mary, &asked.with_lagna(false))
+        .unwrap();
+    assert!(
+        without
+            .iter()
+            .all(|row| row.first != NatalPoint::Lagna && row.second != NatalPoint::Lagna)
+    );
 }

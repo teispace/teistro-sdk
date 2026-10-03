@@ -2001,24 +2001,26 @@ fn natal_key(point: teistro::NatalPoint) -> &'static str {
 
 /// The synastry every runner asks for: four aspects against a partner born
 /// in Sydney at J2000, in each chart's own zodiac, so the partner's own
-/// clock, the lagna and C241's sidereal reading all cross.
-const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS"}"#;
+/// clock, the lagna and C241's sidereal reading all cross; and the
+/// parallels across under a widened orb.
+const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5}}"#;
 
 /// Every chart's synastry as the other three print it: its length, then
-/// each row's two points, aspect, arcs and orb.
+/// each row's two points, aspect, arcs and orb; then the parallels across,
+/// each row's two points, side, gap and orb.
 fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
     let asked = teistro::PartnerSynastry::from_json(SYNASTRY_JSON).expect("a valid request");
     let read = sdk
         .chart()
         .synastry_with(documents, &asked)
         .expect("one zodiac for both");
-    for (index, rows) in read.iter().enumerate() {
+    for (index, one) in read.iter().enumerate() {
         put(
             report,
             &format!("chart-{index}-synastry-count"),
-            rows.len().to_string(),
+            one.aspects.len().to_string(),
         );
-        for (n, row) in rows.iter().enumerate() {
+        for (n, row) in one.aspects.iter().enumerate() {
             put(
                 report,
                 &format!("chart-{index}-synastry-{n}"),
@@ -2029,6 +2031,26 @@ fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
                     row.aspect.key(),
                     number(row.apart_deg),
                     number(row.from_exact_deg),
+                    number(row.orb_deg)
+                ),
+            );
+        }
+        let parallels = one.parallels.as_deref().expect("the record asks for them");
+        put(
+            report,
+            &format!("chart-{index}-synastry-parallel-count"),
+            parallels.len().to_string(),
+        );
+        for (n, row) in parallels.iter().enumerate() {
+            put(
+                report,
+                &format!("chart-{index}-synastry-parallel-{n}"),
+                format!(
+                    "{} {} {} {} {}",
+                    natal_key(row.first),
+                    natal_key(row.second),
+                    u8::from(row.contrary),
+                    number(row.apart_deg),
                     number(row.orb_deg)
                 ),
             );
