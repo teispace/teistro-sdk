@@ -544,21 +544,7 @@ pub fn charts() -> BlobSchema {
         id: 3,
         doc: "A batch of founded charts at one place: the grahas placed, the bhavas under both readings, the zodiac, the day and the timing. Every per-chart section runs charts outermost, and a batch of one is the ordinary case.".to_string(),
         sections: vec![
-            SectionSchema::fixed(
-                1,
-                "summary",
-                "What the batch decided once: where, what kind, and how many of what.",
-                vec![
-                    ColumnDef::new("kind", Scalar::U16, "What kind of chart these are.").of_enum("ChartKind"),
-                    ColumnDef::new("chart_count", Scalar::U32, "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."),
-                    ColumnDef::new("graha_count", Scalar::U32, "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."),
-                    ColumnDef::new("varga_count", Scalar::U32, "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."),
-                    ColumnDef::new("dasha_count", Scalar::U32, "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."),
-                    ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
-                    ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
-                    ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
-                ],
-            ),
+            chart_summary_section(1),
             chart_cast_section(2),
             chart_grahas_section(3),
             chart_readings_section(4),
@@ -637,8 +623,53 @@ pub fn charts() -> BlobSchema {
         .chain(chart_perfection_sections(72))
         .chain(chart_progression_sections(77))
         .chain([chart_outer_section(81)])
+        .chain(chart_western_aspect_sections(82))
         .collect(),
     }
+}
+
+/// What a chart batch decided once: where, what kind, and how many of what.
+fn chart_summary_section(id: u32) -> SectionSchema {
+    SectionSchema::fixed(
+        id,
+        "summary",
+        "What the batch decided once: where, what kind, and how many of what.",
+        vec![
+            ColumnDef::new("kind", Scalar::U16, "What kind of chart these are.")
+                .of_enum("ChartKind"),
+            ColumnDef::new(
+                "chart_count",
+                Scalar::U32,
+                "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold.",
+            ),
+            ColumnDef::new(
+                "graha_count",
+                Scalar::U32,
+                "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows.",
+            ),
+            ColumnDef::new(
+                "varga_count",
+                Scalar::U32,
+                "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.",
+            ),
+            ColumnDef::new(
+                "dasha_count",
+                Scalar::U32,
+                "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows.",
+            ),
+            ColumnDef::new(
+                "latitude_deg",
+                Scalar::F64,
+                "The place's latitude, degrees north.",
+            ),
+            ColumnDef::new(
+                "longitude_deg",
+                Scalar::F64,
+                "The place's longitude, degrees east.",
+            ),
+            ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
+        ],
+    )
 }
 
 /// The three sections a chart carries as text rather than columns, from
@@ -1259,6 +1290,62 @@ fn chart_perfection_sections(first: u32) -> [SectionSchema; 5] {
                 Scalar::F64,
                 "The planet's whole orb, degrees; half of it counts toward an application.",
             )],
+        ),
+    ]
+}
+
+/// The two sections the Western aspects cross as, from `first`: a row a
+/// chart saying how many it holds, and the aspects ragged under it
+/// (`03-design/western-aspects.md`).
+fn chart_western_aspect_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `western_aspects_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "western_aspects",
+            &format!(
+                "Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "How many aspects the chart's planets hold under the record's orbs; the chart's rows follow the earlier charts' in `western_aspect_rows`.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "western_aspect_rows",
+            &format!(
+                "Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). {empty}"
+            ),
+            vec![
+                graha_column(
+                    "first",
+                    "The first planet of the pair, in the catalogue's order.",
+                ),
+                graha_column("second", "The second."),
+                ColumnDef::new("aspect", Scalar::U8, "Which aspect.").of_enum("TsWesternAspect"),
+                ColumnDef::new(
+                    "apart_deg",
+                    Scalar::F64,
+                    "How far apart the two stand, degrees, 0 to 180.",
+                ),
+                ColumnDef::new(
+                    "from_exact_deg",
+                    Scalar::F64,
+                    "How far from exact, degrees; the smaller, the stronger.",
+                ),
+                ColumnDef::new(
+                    "orb_deg",
+                    Scalar::F64,
+                    "The orb the model allowed this pair at this aspect, degrees.",
+                ),
+                ColumnDef::new(
+                    "applying",
+                    Scalar::U8,
+                    "1 when the gap is closing on the aspect, 0 when it is leaving it.",
+                ),
+            ],
         ),
     ]
 }

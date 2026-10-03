@@ -4207,6 +4207,37 @@ class Motion(Member):
     """Backward."""
 
 
+class WesternAspect(Member):
+    """A Western aspect, one of Leo's nine (`03-design/western-aspects.md`)."""
+
+    CONJUNCTION = 0
+    """0°."""
+
+    SEMI_SEXTILE = 1
+    """30°."""
+
+    SEMI_SQUARE = 2
+    """45°."""
+
+    SEXTILE = 3
+    """60°."""
+
+    SQUARE = 4
+    """90°."""
+
+    TRINE = 5
+    """120°."""
+
+    SESQUIQUADRATE = 6
+    """135°."""
+
+    QUINCUNX = 7
+    """150°."""
+
+    OPPOSITION = 8
+    """180°."""
+
+
 class AspectPhase(Member):
     """Where in an aspect's window a hit falls (C146)."""
 
@@ -6438,6 +6469,17 @@ _KEYS: dict[str, dict[int, str]] = {
     "Motion": {
         0: "DIRECT",
         1: "RETROGRADE",
+    },
+    "WesternAspect": {
+        0: "CONJUNCTION",
+        1: "SEMI_SEXTILE",
+        2: "SEMI_SQUARE",
+        3: "SEXTILE",
+        4: "SQUARE",
+        5: "TRINE",
+        6: "SESQUIQUADRATE",
+        7: "QUINCUNX",
+        8: "OPPOSITION",
     },
     "AspectPhase": {
         0: "ENTERING",

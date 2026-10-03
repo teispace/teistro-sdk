@@ -7611,6 +7611,68 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsWesternAspect",
+      "doc": "A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Conjunction",
+          "value": 0,
+          "doc": "0°.",
+          "key": "CONJUNCTION"
+        },
+        {
+          "name": "SemiSextile",
+          "value": 1,
+          "doc": "30°.",
+          "key": "SEMI_SEXTILE"
+        },
+        {
+          "name": "SemiSquare",
+          "value": 2,
+          "doc": "45°.",
+          "key": "SEMI_SQUARE"
+        },
+        {
+          "name": "Sextile",
+          "value": 3,
+          "doc": "60°.",
+          "key": "SEXTILE"
+        },
+        {
+          "name": "Square",
+          "value": 4,
+          "doc": "90°.",
+          "key": "SQUARE"
+        },
+        {
+          "name": "Trine",
+          "value": 5,
+          "doc": "120°.",
+          "key": "TRINE"
+        },
+        {
+          "name": "Sesquiquadrate",
+          "value": 6,
+          "doc": "135°.",
+          "key": "SESQUIQUADRATE"
+        },
+        {
+          "name": "Quincunx",
+          "value": 7,
+          "doc": "150°.",
+          "key": "QUINCUNX"
+        },
+        {
+          "name": "Opposition",
+          "value": 8,
+          "doc": "180°.",
+          "key": "OPPOSITION"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsAspectPhase",
       "doc": "Where in an aspect's window a hit falls (C146).",
       "repr": "u8",
@@ -11881,6 +11943,21 @@
           "doc": "The progressions to read every chart's birth through, as a JSON\nobject, every field optional but one of `at` and `contacts`: `at`,\nthe instant of life (a UTC Julian day) the progressed chart and the\ndirection are read for; `rate` (`{\"sky\": \"DAY\", \"life\": \"YEAR\"}` by\ndefault; a span is `\"DAY\"`, `\"SYNODIC_MONTH\"`, `\"SIDEREAL_MONTH\"`,\n`\"YEAR\"` or `{\"DAYS\": n}`); `year` (`\"TROPICAL\"` by default,\n`\"JULIAN\"`, or Leo's `\"NOON_SIDEREAL_TIME\"`, C236); `angles` (how\nthe progressed midheaven moves, `\"NAIBOD_RIGHT_ASCENSION\"` by\ndefault, C237); `direction` (`\"SOLAR\"` by default, `\"NAIBOD\"`,\n`\"PTOLEMY\"` or `{\"PER_YEAR\": degrees}`); and `contacts`, a window of\nlife `{from, to}` with the progressed `grahas` (the seven by\ndefault), the radical `points` (the seven and the lagna) and the\n`aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.\nThe progressed chart is founded at the request's place. The answers\ncome back in `progressions`, `progressed_grahas`, `directed_grahas`\nand `progressed_contacts`. Null for none, which costs nothing\n(`03-design/western-progressions.md`). Refusals are named from the\nrecord every binding calls `progressions`, as `progressions.year`.",
           "meta": {
             "example": "{\"at\":2460676.5}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "western_aspects_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's Western aspect table, as a JSON object, every field\noptional: `aspects`, the keys looked for (`\"CONJUNCTION\"`,\n`\"SEMI_SEXTILE\"`, `\"SEMI_SQUARE\"`, `\"SEXTILE\"`, `\"SQUARE\"`,\n`\"TRINE\"`, `\"SESQUIQUADRATE\"`, `\"QUINCUNX\"`, `\"OPPOSITION\"`; Leo's\nnine when left out), and `orbs`, the model: `{\"model\": \"LEO\"}` by\ndefault (C240), `{\"model\": \"MOIETIES\", \"orbs\": [{\"graha\": \"SUN\",\n\"orbDeg\": 17}, …]}`, or `{\"model\": \"BY_ASPECT\", \"orbs\": [{\"aspect\":\n\"TRINE\", \"orbDeg\": 6}, …]}`. The pairs are the chart's planets: the\nseven, and the outer three when `TS_CHART_OUTER` placed them. The\nanswers come back in `western_aspects` and `western_aspect_rows`.\nNull for none, which costs nothing (`03-design/western-aspects.md`).\nRefusals are named from the record every binding calls\n`westernAspects`, as `westernAspects.orbs.orbs`.",
+          "meta": {
+            "example": "{\"aspects\":[\"TRINE\",\"SQUARE\"]}",
             "nullable": true
           }
         }
@@ -19163,6 +19240,65 @@
               "name": "placement_from_madhya_deg",
               "scalar": "f64",
               "doc": "Its distance from that bhava's madhya, degrees."
+            }
+          ]
+        },
+        {
+          "id": 82,
+          "name": "western_aspects",
+          "doc": "Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many aspects the chart's planets hold under the record's orbs; the chart's rows follow the earlier charts' in `western_aspect_rows`."
+            }
+          ]
+        },
+        {
+          "id": 83,
+          "name": "western_aspect_rows",
+          "doc": "Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet of the pair, in the catalogue's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "aspect",
+              "scalar": "u8",
+              "doc": "Which aspect.",
+              "enum": "TsWesternAspect"
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart the two stand, degrees, 0 to 180."
+            },
+            {
+              "name": "from_exact_deg",
+              "scalar": "f64",
+              "doc": "How far from exact, degrees; the smaller, the stronger."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the model allowed this pair at this aspect, degrees."
+            },
+            {
+              "name": "applying",
+              "scalar": "u8",
+              "doc": "1 when the gap is closing on the aspect, 0 when it is leaving it."
             }
           ]
         }

@@ -1140,6 +1140,22 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"at":2460676.5}. May be null.
   external ffi.Pointer<ffi.Char> progressionsJson;
 
+  /// Every chart's Western aspect table, as a JSON object, every field
+  /// optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+  /// `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+  /// `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+  /// nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+  /// default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+  /// "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+  /// "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+  /// seven, and the outer three when `TS_CHART_OUTER` placed them. The
+  /// answers come back in `western_aspects` and `western_aspect_rows`.
+  /// Null for none, which costs nothing (`03-design/western-aspects.md`).
+  /// Refusals are named from the record every binding calls
+  /// `westernAspects`, as `westernAspects.orbs.orbs`.
+  /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+  external ffi.Pointer<ffi.Char> westernAspectsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3029,7 +3045,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3315,6 +3331,22 @@ final class ChartRequest {
   /// Example: {"at":2460676.5}. May be null.
   final String? progressionsJson;
 
+  /// Every chart's Western aspect table, as a JSON object, every field
+  /// optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+  /// `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+  /// `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+  /// nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+  /// default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+  /// "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+  /// "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+  /// seven, and the outer three when `TS_CHART_OUTER` placed them. The
+  /// answers come back in `western_aspects` and `western_aspect_rows`.
+  /// Null for none, which costs nothing (`03-design/western-aspects.md`).
+  /// Refusals are named from the record every binding calls
+  /// `westernAspects`, as `westernAspects.orbs.orbs`.
+  /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+  final String? westernAspectsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3396,6 +3428,9 @@ final class ChartRequest {
     raw.progressionsJson = progressionsJson == null
         ? ffi.nullptr
         : progressionsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.westernAspectsJson = westernAspectsJson == null
+        ? ffi.nullptr
+        : westernAspectsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3463,6 +3498,9 @@ final class ChartRequest {
         progressionsJson: raw.progressionsJson == ffi.nullptr
             ? null
             : raw.progressionsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        westernAspectsJson: raw.westernAspectsJson == ffi.nullptr
+            ? null
+            : raw.westernAspectsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

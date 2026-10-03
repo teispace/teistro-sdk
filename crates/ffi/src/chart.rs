@@ -914,6 +914,52 @@ impl From<teistro::gochar::hits::Motion> for TsMotion {
     }
 }
 
+/// A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsWesternAspect {
+    /// 0°.
+    Conjunction = 0,
+    /// 30°.
+    SemiSextile = 1,
+    /// 45°.
+    SemiSquare = 2,
+    /// 60°.
+    Sextile = 3,
+    /// 90°.
+    Square = 4,
+    /// 120°.
+    Trine = 5,
+    /// 135°.
+    Sesquiquadrate = 6,
+    /// 150°.
+    Quincunx = 7,
+    /// 180°.
+    Opposition = 8,
+}
+
+impl TsWesternAspect {
+    /// The code an aspect crosses as, or none for a member added to the
+    /// non-exhaustive `WesternAspect` before it was given one here; the
+    /// spelling gate (`tests/keys.rs`) fails on that member until it is.
+    #[must_use]
+    pub const fn of(aspect: teistro::WesternAspect) -> Option<TsWesternAspect> {
+        use teistro::WesternAspect;
+        Some(match aspect {
+            WesternAspect::Conjunction => TsWesternAspect::Conjunction,
+            WesternAspect::SemiSextile => TsWesternAspect::SemiSextile,
+            WesternAspect::SemiSquare => TsWesternAspect::SemiSquare,
+            WesternAspect::Sextile => TsWesternAspect::Sextile,
+            WesternAspect::Square => TsWesternAspect::Square,
+            WesternAspect::Trine => TsWesternAspect::Trine,
+            WesternAspect::Sesquiquadrate => TsWesternAspect::Sesquiquadrate,
+            WesternAspect::Quincunx => TsWesternAspect::Quincunx,
+            WesternAspect::Opposition => TsWesternAspect::Opposition,
+            _ => return None,
+        })
+    }
+}
+
 /// Where in an aspect's window a hit falls (C146).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1621,6 +1667,21 @@ pub struct TsChartRequest {
     /// record every binding calls `progressions`, as `progressions.year`.
     /// `api: nullable example={"at":2460676.5}`
     pub progressions_json: *const c_char,
+    /// Every chart's Western aspect table, as a JSON object, every field
+    /// optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+    /// `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+    /// `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+    /// nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+    /// default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+    /// "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+    /// "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+    /// seven, and the outer three when `TS_CHART_OUTER` placed them. The
+    /// answers come back in `western_aspects` and `western_aspect_rows`.
+    /// Null for none, which costs nothing (`03-design/western-aspects.md`).
+    /// Refusals are named from the record every binding calls
+    /// `westernAspects`, as `westernAspects.orbs.orbs`.
+    /// `api: nullable example={"aspects":["TRINE","SQUARE"]}`
+    pub western_aspects_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3168,6 +3229,70 @@ struct ProgressionColumns {
     contact_to_graha: Vec<u16>,
     contact_angle: Vec<u16>,
     contact_motion: Vec<u8>,
+}
+
+/// Every chart's Western aspects (`western-aspects.md`): a row a chart in
+/// `western_aspects` with its count, and the rows ragged under it in
+/// `western_aspect_rows`.
+#[derive(Default)]
+struct WesternAspectColumns {
+    count: Vec<u32>,
+    first: Vec<u16>,
+    second: Vec<u16>,
+    aspect: Vec<u8>,
+    apart_deg: Vec<f64>,
+    from_exact_deg: Vec<f64>,
+    orb_deg: Vec<f64>,
+    applying: Vec<u8>,
+}
+
+impl WesternAspectColumns {
+    fn of(
+        read: &[Vec<teistro::WesternAspectRow>],
+        charts: usize,
+    ) -> Result<WesternAspectColumns, Error> {
+        one_a_chart(read.len(), charts, "western aspects")?;
+        let mut columns = WesternAspectColumns::default();
+        for rows in read {
+            columns.count.push(
+                u32::try_from(rows.len())
+                    .map_err(|_| Error::internal("more aspects than a section can count"))?,
+            );
+            for row in rows {
+                columns.first.push(row.first.id());
+                columns.second.push(row.second.id());
+                let aspect = TsWesternAspect::of(row.aspect)
+                    .ok_or_else(|| no_code(&format!("the aspect {}", row.aspect.key())))?;
+                columns.aspect.push(aspect as u8);
+                columns.apart_deg.push(row.apart_deg);
+                columns.from_exact_deg.push(row.from_exact_deg);
+                columns.orb_deg.push(row.orb_deg);
+                columns.applying.push(u8::from(row.applying));
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "western_aspects",
+            self.count.len(),
+            &[ColumnData::U32(&self.count)],
+        )?;
+        writer.columns(
+            "western_aspect_rows",
+            self.first.len(),
+            &[
+                ColumnData::U16(&self.first),
+                ColumnData::U16(&self.second),
+                ColumnData::U8(&self.aspect),
+                ColumnData::F64(&self.apart_deg),
+                ColumnData::F64(&self.from_exact_deg),
+                ColumnData::F64(&self.orb_deg),
+                ColumnData::U8(&self.applying),
+            ],
+        )
+    }
 }
 
 impl ProgressionColumns {
@@ -5627,6 +5752,9 @@ pub struct Composed<'a> {
     /// Every chart's progressions, in the batch's order
     /// (`western-progressions.md`); empty when none were asked for.
     pub progressions: &'a [teistro::Progressions],
+    /// Every chart's Western aspect table, in the batch's order
+    /// (`western-aspects.md`); empty when none was asked for.
+    pub western_aspects: &'a [Vec<teistro::WesternAspectRow>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5688,19 +5816,18 @@ pub fn encode(
     let searches = Searches::of(hits, sade_sati, charts.len())?;
     let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
     let progressions = ProgressionColumns::of(composed.progressions, charts.len())?;
+    let western = WesternAspectColumns::of(composed.western_aspects, charts.len())?;
+    let summary = summary_values(
+        place,
+        kind,
+        chart_count,
+        u32::try_from(graha_count).unwrap_or(u32::MAX),
+        by.vargas.count,
+        by.dashas.count,
+    );
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
-        writer.fixed(
-            "summary",
-            &summary_values(
-                place,
-                kind,
-                chart_count,
-                u32::try_from(graha_count).unwrap_or(u32::MAX),
-                by.vargas.count,
-                by.dashas.count,
-            ),
-        )?;
+        writer.fixed("summary", &summary)?;
         writer.rows(
             "cast",
             &chart_rows(
@@ -5751,6 +5878,7 @@ pub fn encode(
         hellenistic.write(&mut writer)?;
         progressions.write(&mut writer)?;
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
+        western.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -6598,6 +6726,31 @@ fn progressions_of(
         .collect()
 }
 
+/// Every chart's Western aspect table, none when none was asked for. A
+/// refusal is named under the record's root, as the request's own are.
+fn western_aspects_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::AspectRequest>,
+) -> Result<Vec<Vec<teistro::WesternAspectRow>>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            sdk.chart()
+                .western_aspects(document, asked)
+                .map_err(|error| {
+                    error
+                        .under("westernAspects")
+                        .with_hint(format!("chart {at}"))
+                })
+        })
+        .collect()
+}
+
 /// The perfection a request's `perfection_json` asks for, none for null;
 /// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
 /// naming a refusal from its root, `perfection.quesited`.
@@ -6980,6 +7133,7 @@ struct AskedRecords {
     considerations: Option<teistro::ConsiderationRules>,
     perfection: Option<teistro::PerfectionRequest>,
     progressions: Option<teistro::ProgressionsRequest>,
+    western_aspects: Option<teistro::AspectRequest>,
 }
 
 impl AskedRecords {
@@ -7011,6 +7165,9 @@ impl AskedRecords {
                 considerations: consideration_rules_of(asked.considerations_json)?,
                 perfection: perfection_request_of(asked.perfection_json)?,
                 progressions: progressions_request_of(asked.progressions_json)?,
+                western_aspects: optional_text(asked.western_aspects_json, "western_aspects_json")?
+                    .map(teistro::AspectRequest::from_json)
+                    .transpose()?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -7211,6 +7368,8 @@ pub unsafe extern "C" fn ts_chart_found(
             records.progressions.as_ref(),
             &ChartRequest::at(place, clock).with_kind(kind),
         )?;
+        let western_aspects =
+            western_aspects_of(ctx.sdk(), &founded.value, records.western_aspects.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -7235,6 +7394,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 considerations: &considerations,
                 perfections: &perfections,
                 progressions: &progressions,
+                western_aspects: &western_aspects,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

@@ -3494,6 +3494,35 @@ export const MotionById = new Map([
   [1, 'RETROGRADE'],
 ]);
 
+/** Every WesternAspect by name. */
+export const WesternAspect = Object.freeze({
+  Conjunction: 'CONJUNCTION',
+  SemiSextile: 'SEMI_SEXTILE',
+  SemiSquare: 'SEMI_SQUARE',
+  Sextile: 'SEXTILE',
+  Square: 'SQUARE',
+  Trine: 'TRINE',
+  Sesquiquadrate: 'SESQUIQUADRATE',
+  Quincunx: 'QUINCUNX',
+  Opposition: 'OPPOSITION',
+});
+
+/**
+ * Every WesternAspect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const WesternAspectById = new Map([
+  [0, 'CONJUNCTION'],
+  [1, 'SEMI_SEXTILE'],
+  [2, 'SEMI_SQUARE'],
+  [3, 'SEXTILE'],
+  [4, 'SQUARE'],
+  [5, 'TRINE'],
+  [6, 'SESQUIQUADRATE'],
+  [7, 'QUINCUNX'],
+  [8, 'OPPOSITION'],
+]);
+
 /** Every AspectPhase by name. */
 export const AspectPhase = Object.freeze({
   Entering: 'ENTERING',
