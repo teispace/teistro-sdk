@@ -490,6 +490,16 @@ __all__ = [
     "ApplicationKind",
     "ImpedimentKind",
     "Way",
+    # Leo's progressions and directions.
+    "ProgressionsRequest",
+    "ProgressionContacts",
+    "Progressions",
+    "Progressed",
+    "ProgressedAngles",
+    "ProgressedPlanet",
+    "Directed",
+    "DirectedPlanet",
+    "ProgressedContact",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1531,6 +1541,7 @@ class ChartArea(_Area):
         lots: Optional[Union[LotRequest, LotRules]] = None,
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         perfection: Optional[PerfectionRequest] = None,
+        progressions: Optional[ProgressionsRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1577,6 +1588,7 @@ class ChartArea(_Area):
             lots=lots,
             considerations=considerations,
             perfection=perfection,
+            progressions=progressions,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1613,6 +1625,7 @@ class ChartArea(_Area):
         lots: Optional[Union[LotRequest, LotRules]] = None,
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         perfection: Optional[PerfectionRequest] = None,
+        progressions: Optional[ProgressionsRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1680,6 +1693,7 @@ class ChartArea(_Area):
             lots_json=_lots_json(lots),
             considerations_json=_considerations_json(considerations),
             perfection_json=_perfection_json(perfection),
+            progressions_json=_progressions_json(progressions),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3672,6 +3686,140 @@ class Matter:
     """How many days ahead it was read."""
 
     rules: PerfectionRules
+
+
+ProgressionContacts = TypedDict(
+    "ProgressionContacts",
+    {
+        "from": Required[float],
+        "to": Required[float],
+        "grahas": Sequence[Union[Graha, str]],
+        "points": Sequence[Union["NatalPoint", Graha, str]],
+        "aspects": Sequence[int],
+    },
+    total=False,
+)
+ProgressionContacts.__doc__ = """A window of life to find a birth's
+progressed contacts in: `from` and `to`, UTC Julian days, and optionally the
+progressed `grahas` (the seven by default), the radical `points` (the seven
+and the lagna) and the `aspects` (whole degrees to 180; Leo's table, p. 48),
+spelled as a `HitRequest` spells them. A functional `TypedDict` because
+`from` is a keyword.
+"""
+
+
+class ProgressionsRequest(TypedDict, total=False):
+    """What to read every chart's birth through
+    (`03-design/western-progressions.md`): the progressed chart and the
+    direction at an instant of life `at`, the `contacts` over a window, or
+    both. `rate` is `{"sky": span, "life": span}`, a span `"DAY"`,
+    `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`, `"YEAR"` or `{"DAYS": n}`; every
+    absent field is Leo's default.
+
+    >>> leo: ProgressionsRequest = {"at": 2460676.5, "year": "NOON_SIDEREAL_TIME"}
+    >>> moon: ProgressionsRequest = {"contacts": {"from": 2460676.5, "to": 2461041.5, "grahas": ["MOON"]}}
+    """
+
+    at: float
+    rate: Mapping[str, Any]
+    year: Literal["TROPICAL", "JULIAN", "NOON_SIDEREAL_TIME"]
+    angles: Literal[
+        "NAIBOD_RIGHT_ASCENSION",
+        "NAIBOD_LONGITUDE",
+        "SOLAR_ARC_LONGITUDE",
+        "SOLAR_ARC_RIGHT_ASCENSION",
+        "QUOTIDIAN",
+    ]
+    direction: Union[Literal["SOLAR", "NAIBOD", "PTOLEMY"], Mapping[str, float]]
+    contacts: ProgressionContacts
+
+
+@dataclass(frozen=True)
+class ProgressedPlanet:
+    """A planet of the progressed chart."""
+
+    graha: Graha
+    longitude_deg: float
+    """Its longitude in the chart's zodiac."""
+
+    tropical_deg: float
+    speed_deg_per_day: float
+    """Degrees a day at the instant of sky; below zero when retrograde."""
+
+
+@dataclass(frozen=True)
+class ProgressedAngles:
+    """The progressed angles, by the request's `angles` (C237)."""
+
+    ascendant_deg: float
+    midheaven_deg: float
+
+
+@dataclass(frozen=True)
+class Progressed:
+    """The chart at the instant of sky that measures an instant of life."""
+
+    life: float
+    sky: float
+    armc_deg: float
+    """The progressed meridian's right ascension."""
+
+    angles: ProgressedAngles
+    grahas: Tuple[ProgressedPlanet, ...]
+
+
+@dataclass(frozen=True)
+class DirectedPlanet:
+    """A birth's planet moved by the direction's arc."""
+
+    graha: Graha
+    longitude_deg: float
+
+
+@dataclass(frozen=True)
+class Directed:
+    """A birth's points moved by one arc."""
+
+    life: float
+    arc_deg: float
+    """The arc; a solar arc is signed."""
+
+    ascendant_deg: float
+    midheaven_deg: float
+    planets: Tuple[DirectedPlanet, ...]
+
+
+@dataclass(frozen=True)
+class ProgressedContact:
+    """One exact aspect a progressed planet makes to a radical point."""
+
+    life: float
+    """The instant of life it falls due, a UTC Julian day."""
+
+    sky: float
+    """The instant of sky it is exact at."""
+
+    graha: Graha
+    to: "NatalPoint"
+    angle: int
+    """A whole degree 0 to 180."""
+
+    motion: Motion
+
+
+@dataclass(frozen=True)
+class Progressions:
+    """A birth read through its progressions
+    (`03-design/western-progressions.md`): `progressed` and `directed` are
+    `None` without `at`, `contacts` `None` without a window.
+
+    >>> # chart = ctx.chart.found(..., progressions={"at": 2460676.5})
+    >>> # moon = next(g for g in chart.progressions.progressed.grahas if g.graha is Graha.MOON)
+    """
+
+    progressed: Optional[Progressed]
+    directed: Optional[Directed]
+    contacts: Optional[Tuple[ProgressedContact, ...]]
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -6191,6 +6339,11 @@ def _gochar_json(gochar: Optional[GocharRequest]) -> Optional[str]:
     return _record_json(written, "gochar", "{'instants': [2460676.5], 'from': 'MOON'}")
 
 
+def _point_at(to_lagna: int, to_graha: int) -> NatalPoint:
+    """A natal point from a `to_lagna` and a `to_graha` column's cells."""
+    return NatalPoint("LAGNA") if to_lagna else NatalPoint("GRAHA", Graha(to_graha))
+
+
 def _hit_at(columns: Any, row: int) -> Hit:
     """One row of the `hits` section as the Rust `Hit` spells it."""
     kind = HitKind(columns.kind[row])
@@ -6203,11 +6356,7 @@ def _hit_at(columns: Any, row: int) -> Hit:
     elif kind is HitKind.STATION:
         event = Station(turns=motion)
     else:
-        to = (
-            NatalPoint("LAGNA")
-            if columns.to_lagna[row]
-            else NatalPoint("GRAHA", Graha(columns.to_graha[row]))
-        )
+        to = _point_at(columns.to_lagna[row], columns.to_graha[row])
         event = AspectHit(to=to, angle=columns.angle[row], phase=AspectPhase(columns.phase[row]), motion=motion)
     return Hit(instant=columns.instant[row], graha=Graha(columns.graha[row]), event=event)
 
@@ -6708,6 +6857,13 @@ def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
     example = "{'from': 2460676.5, 'to': 2461041.5, 'grahas': ['SATURN']}"
     if not isinstance(hits, Mapping):
         return _record_json(hits, "hits", example)
+    return _record_json(_keyed(hits), "hits", example)
+
+
+def _keyed(record: Mapping[str, Any]) -> Dict[str, Any]:
+    """A hit list's record with every list's members written as their keys
+    and a `NatalPoint` as the answer's `to`, so a caller can hand back what
+    it was given."""
 
     def key(value: Any) -> Any:
         if isinstance(value, NatalPoint):
@@ -6719,12 +6875,26 @@ def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
         return value
 
     written: Dict[str, Any] = {}
-    for name, value in hits.items():
+    for name, value in record.items():
         if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
             written[name] = [key(one) for one in value]
         else:
             written[name] = value
-    return _record_json(written, "hits", example)
+    return written
+
+
+def _progressions_json(progressions: Optional[ProgressionsRequest]) -> Optional[str]:
+    """The progressions as the JSON the boundary reads, or nothing for none;
+    the contacts' members are written as the hit list writes them, and the
+    SDK refuses the rest, naming the field from `progressions`."""
+    example = "{'at': 2460676.5, 'year': 'NOON_SIDEREAL_TIME'}"
+    if not isinstance(progressions, Mapping):
+        return _record_json(progressions, "progressions", example)
+    written: Dict[str, Any] = dict(progressions)
+    contacts = written.get("contacts")
+    if isinstance(contacts, Mapping):
+        written["contacts"] = _keyed(contacts)
+    return _record_json(written, "progressions", example)
 
 
 def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
@@ -7805,6 +7975,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def progressions(self) -> Optional[Progressions]:
+        """The birth read through its progressions: the progressed chart and
+        the direction at `at`, the contacts in the window; `None` unless
+        `progressions=` asked (`03-design/western-progressions.md`)."""
+        parsed = self.batch._progressions
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8257,6 +8435,87 @@ class ChartBatch:
             )
 
         return [read(k) for k in range(charts)]
+
+    @cached_property
+    def _progressions(self) -> list[Progressions]:
+        """Every chart's progressions, decoded once; empty when none were
+        asked for. `progressions` holds a row a chart, the progressed and
+        directed planets graha-count rows a chart when an instant was asked,
+        and the contacts are ragged by the row's count."""
+        p = self.decoded.progressions
+        g = self.decoded.progressed_grahas
+        d = self.decoded.directed_grahas
+        c = self.decoded.progressed_contacts
+        charts = len(self.decoded.cast.instant)
+        if p.length == 0:
+            return []
+        asked = not math.isnan(p.life[0])
+        per_chart = g.length // charts if asked else 0
+        if (
+            p.length != charts
+            or d.length != g.length
+            or g.length != per_chart * charts
+            or c.length != sum(p.contact_count)
+        ):
+            raise TeistroError(
+                Status.INTERNAL,
+                f"progressions has {p.length} rows, progressed_grahas {g.length},"
+                f" directed_grahas {d.length} and progressed_contacts {c.length} for {charts} charts",
+            )
+        read: list[Progressions] = []
+        contact = 0
+        for k in range(charts):
+            planets = range(k * per_chart, (k + 1) * per_chart)
+            contacts: Optional[Tuple[ProgressedContact, ...]] = None
+            if p.contacts_asked[k] == 1:
+                rows = range(contact, contact + p.contact_count[k])
+                contacts = tuple(
+                    ProgressedContact(
+                        life=c.life[at],
+                        sky=c.sky[at],
+                        graha=Graha(c.graha[at]),
+                        to=_point_at(c.to_lagna[at], c.to_graha[at]),
+                        angle=c.angle[at],
+                        motion=Motion(c.motion[at]),
+                    )
+                    for at in rows
+                )
+            contact += p.contact_count[k]
+            read.append(
+                Progressions(
+                    progressed=Progressed(
+                        life=p.life[k],
+                        sky=p.sky[k],
+                        armc_deg=p.armc_deg[k],
+                        angles=ProgressedAngles(ascendant_deg=p.ascendant_deg[k], midheaven_deg=p.midheaven_deg[k]),
+                        grahas=tuple(
+                            ProgressedPlanet(
+                                graha=Graha(g.graha[at]),
+                                longitude_deg=g.longitude_deg[at],
+                                tropical_deg=g.tropical_deg[at],
+                                speed_deg_per_day=g.speed_deg_per_day[at],
+                            )
+                            for at in planets
+                        ),
+                    )
+                    if asked
+                    else None,
+                    directed=Directed(
+                        life=p.life[k],
+                        arc_deg=p.arc_deg[k],
+                        ascendant_deg=p.directed_ascendant_deg[k],
+                        midheaven_deg=p.directed_midheaven_deg[k],
+                        planets=tuple(
+                            DirectedPlanet(graha=Graha(d.graha[at]), longitude_deg=d.longitude_deg[at])
+                            for at in planets
+                        ),
+                    )
+                    if asked
+                    else None,
+                    contacts=contacts,
+                )
+            )
+        return read
 
     @cached_property
     def _perfections(self) -> list[Matter]:
