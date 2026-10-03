@@ -61,6 +61,7 @@ mod gochar_request;
 mod harmonics;
 mod hit_request;
 mod kp_request;
+mod matching_chart;
 mod midpoints;
 mod muhurta_request;
 mod plan_request;
@@ -282,6 +283,9 @@ pub use teistro_western::{
     ADDEY_HARMONIC_ORB_DEG, HarmonicChart, HarmonicPlaced, HarmonicPoint, HarmonicRequest,
     HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG,
 };
+// Matching: the Ashta Koota of two charts' Moons (`03-design/matching.md`).
+pub use teistro_matching as matching;
+pub use teistro_matching::{AshtaKoota, KootaReading, KootaRow, KootaRules, Native};
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).
 pub use crate::returns::BodyReturn;

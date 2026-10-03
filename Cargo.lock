@@ -1561,6 +1561,7 @@ dependencies = [
  "teistro-interpret",
  "teistro-intl",
  "teistro-kp",
+ "teistro-matching",
  "teistro-muhurta",
  "teistro-panchanga",
  "teistro-points",
