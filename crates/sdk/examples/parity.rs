@@ -637,6 +637,22 @@ fn one_chart_placements(
             graha.placement.bhava.to_string(),
         );
     }
+    // Uranus, Neptune and Pluto, which the request asks beside the nine.
+    for (at, outer) in chart.outer.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-outer-{at}"),
+            format!(
+                "{} {} {} {} {} {}",
+                outer.graha.full_key(),
+                number(outer.longitude_deg),
+                number(outer.latitude_deg),
+                number(outer.speed_deg_per_day),
+                outer.house.bhava,
+                outer.placement.bhava
+            ),
+        );
+    }
     for at in 0..12_usize {
         let Some((madhya, sandhi)) = chart.houses.madhya.get(at).zip(chart.houses.sandhi.get(at))
         else {
@@ -1053,6 +1069,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
         .with_vaiseshikamsa()
         .with_dasha_phala()
         .with_jaimini()
+        .with_outer_planets()
         .with_shadbala()
         .with_bhava_bala()
         .with_state()
@@ -1826,7 +1843,8 @@ fn the_progressions(
             number(progressed.angles.midheaven_deg)
         ),
     );
-    for (n, at) in progressed.chart.value.foundation.grahas.iter().enumerate() {
+    let later = &progressed.chart.value.foundation;
+    for (n, at) in later.grahas.iter().chain(&later.outer).enumerate() {
         put(
             report,
             &key(&format!("progressed-graha-{n}")),
