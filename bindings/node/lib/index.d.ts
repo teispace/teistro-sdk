@@ -820,9 +820,9 @@ export interface HitRequest {
     | 'LAGNA'
     | GrahaName
   )[];
-  /** The aspects' angles, multiples of 30 from 0 to 180; the conjunction and opposition by default (C145). */
+  /** The aspects' angles, whole degrees from 0 to 180; the conjunction and opposition by default (C145). */
   readonly aspects?: readonly number[];
-  /** An orb in degrees, more than 0 and under 15, for each window's opening and closing; exact only by default (C146). */
+  /** An orb in degrees, more than 0, under 15 and under half the step between the aspects' lines, for each window's opening and closing; exact only by default (C146). */
   readonly orbDeg?: number;
 }
 

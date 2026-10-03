@@ -1,9 +1,9 @@
 # Progressions and directions (the `western` module, step 1)
 
 Status: `building`, 2026-10-03 — written from Leo's text before any code,
-its worked figures recast with pyswisseph's Moshier series. Steps 2 and
-3 are built: the measures in `crates/western`, the charts in the SDK's
-chart area.
+its worked figures recast with pyswisseph's Moshier series. Steps 2 to
+4 are built: the measures in `crates/western`, the charts and the
+contacts in the SDK's chart area.
 
 A progression reads the sky some days after birth as the native's life
 some years after it: the chart for the forty-sixth day is read as the
@@ -210,6 +210,30 @@ without the others:
   midheaven read back differs from the birth's plus the arc by about
   3e-6°.
 
+- **The contacts fall where Leo dates them.** His Appendix V contact
+  falls on 21 October 1906 under the tropical year and on the 22nd under
+  his rule, its instant of sky within two minutes of his 10.40 a.m. In
+  his lunar year (p. 41) the contacts to Mercury, Jupiter and Venus fall
+  in his printed months. Those to Saturn (23 May) and the Sun (28 July)
+  fall about a week before his June and August. He dates the list by
+  counting a month for each degree the Moon passes. Measured from his
+  first contact, the Moon has moved 3.2° to Jupiter, 7.4° to Saturn,
+  9.7° to the Sun and 13.2° to Venus. Rounded, these give his months
+  for Jupiter, the Sun and Venus, but Saturn's 7.4° gives May against
+  his June. His counting cannot be rebuilt without his own radical
+  places, so the test holds each contact to his month or the month
+  before.
+- **His solar list holds.** The progressed Sun and Mercury are each
+  semisquare the radical Sun in his forty-seventh year: Mercury on 16
+  October 1906, the Sun on 23 January 1907.
+- **The search finds what his list leaves out.** The progressed Moon is
+  sesquiquadrate the ascendant on 10 May 1907 and square the radical
+  Moon on 10 August. His list names neither, and he does not say why.
+- **The hit list rounded every line to 30°.** `aspect_hit` named a
+  crossing by its nearest multiple of 30°, so a sesquiquadrate would
+  have been reported as a trine or a quincunx. It now rounds to the
+  whole degree, which every line of its lattice is.
+
 ## What is not decided
 
 - **C236, the year measure.** Leo's printed day is the sidereal-time
@@ -241,7 +265,7 @@ without the others:
 3. `ChartArea::progressed` and `directed`, held to tests 1 to 3.
    **Built.**
 4. `progressed_contacts`, held to test 4 under both measures and to
-   test 5's year.
+   test 5's year. **Built.**
 5. The boundary and every binding, with the parity gate.
 6. A measured page over the corpus's births: each angle method's
    midheaven against the others by age, so the size of C237 is stated in

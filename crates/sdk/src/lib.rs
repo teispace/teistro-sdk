@@ -215,7 +215,8 @@ pub use teistro_hellenistic::{
 // Progressions and directions, the modern Western measures held to Leo's
 // *The Progressed Horoscope* (`03-design/western-progressions.md`).
 pub use crate::progressed::{
-    Directed, DirectedPlanet, DirectionArc, Progressed, ProgressionRequest,
+    ContactRequest, Directed, DirectedPlanet, DirectionArc, Progressed, ProgressedContact,
+    ProgressionRequest,
 };
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};

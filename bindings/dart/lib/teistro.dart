@@ -9331,11 +9331,12 @@ final class HitRequest {
   /// The natal points aspected; the nine grahas and the lagna by default.
   final List<NatalPoint>? points;
 
-  /// The aspects' angles, multiples of 30 from 0 to 180; 0 and 180 by default.
+  /// The aspects' angles, whole degrees from 0 to 180; 0 and 180 by default.
   final List<int>? aspects;
 
-  /// An orb in degrees, more than 0 and under 15, for each window's opening
-  /// and closing; exact only by default.
+  /// An orb in degrees, more than 0, under 15 and under half the step
+  /// between the aspects' lines, for each window's opening and closing;
+  /// exact only by default.
   final double? orbDeg;
 
   String get _json => jsonEncode(<String, Object?>{

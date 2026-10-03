@@ -1936,6 +1936,23 @@ the astronomical numbers do not move. Nothing else computes yet.
     his progressed map's 5h 54m 16s to two seconds. `teistro-astro`'s
     `Obliquity::new` is now public, so `circle_point` can be called from
     outside the crate.
+  - **Progressed contacts** (`western-progressions.md` step 4).
+    `ChartArea::progressed_contacts` answers each exact aspect a
+    progressed planet makes to a radical point between two instants of
+    life, with the instant it falls due. It runs the transit hit list
+    over the sky the progression matches to the window. A
+    `ContactRequest` defaults to the seven planets, the seven and the
+    ascendant, and Leo's table of aspects (p. 48), which adds the
+    semi-square and the sesquiquadrate. Leo's Appendix V contact falls
+    on 21 October 1906 under a tropical year and on the 22nd under his
+    rule. His lunar year (p. 41) is found contact by contact, each in
+    his month or the one before.
+
+    **Changed:** the hit list's aspects may be any whole degree to 180,
+    no longer only multiples of 30°. An orb must also be under half the
+    step between the aspects' lines. Every request valid before is
+    valid now. `aspect_hit` names a crossing by its whole degree, where
+    it had named it by the nearest multiple of 30°.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
