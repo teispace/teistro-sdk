@@ -1993,7 +1993,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     formula, now shared with the Shadbala's ayana bala. A
     `parallels_json` record crosses the boundary in sections 86 to 88,
     and Node, Python and Dart read `chart.declinations` and
-    `chart.parallels`, with parity across all four runners.
+    `chart.parallels`, with parity across all four runners. A
+    synastry's `parallels` reads the parallels across two charts, each
+    chart's planets and lagna against the partner's
+    (`sdk.chart().synastry_parallels`, `SynastryParallelRow`);
+    `ChartArea::synastry_with` now answers a `PartnerReading` of the
+    aspects and those parallels. They cross in sections 89 and 90, and
+    every binding reads `chart.synastryParallels`
+    (`synastry_parallels`), Dart's `SynastryRequest` taking
+    `parallels`.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect

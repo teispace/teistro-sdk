@@ -1,12 +1,14 @@
 # Declinations and parallels (the `western` module)
 
-Status: `building`, 2026-10-03, written from the sources before any code.
-Steps 2 to 4 are built: `sdk.chart().declinations` and
+Status: `built`, 2026-10-03, written from the sources before any code.
+Every step is built: `sdk.chart().declinations` and
 `sdk.chart().parallels`, held to George V against a recast, measured
 over the corpus's births in
 [`declinations-measured.md`](declinations-measured.md), and crossing to
 every binding as `chart.declinations` and `chart.parallels`, with
-parity. Step 5, the parallels across two charts, remains.
+parity; and the parallels across two charts, George V against Queen
+Mary, as `sdk.chart().synastry_parallels` and every binding's
+`chart.synastryParallels`.
 
 [`western-aspects.md`](western-aspects.md) reads the aspects along the
 ecliptic. Leo adds one aspect that is not an angle there: two bodies the
@@ -79,8 +81,18 @@ not need to ask its ephemeris for anything new.
    record on the chart request (`{"orbDeg": 1}`) asks every chart of
    the batch. One section carries each chart's declinations, and the
    parallels go ragged under a count section, as the Western aspects
-   do. Synastry's parallels are a later step, read on the same engine
-   across two charts.
+   do.
+8. **Across two charts, on the synastry's record.** A synastry's
+   `parallels` (`{"partner": …, "parallels": {}}`) asks for the
+   parallels between each chart and the partner on the same engine:
+   every point of the chart against every point of the partner's, the
+   lagna joining as the synastry's `lagna` says, since Leo gives the
+   ascendant a declination (p. 141). The zodiac changes none, so the
+   synastry's `zodiac` is not read. The partner's declinations are read
+   once for the whole batch. The counts cross in a section of their own
+   (89, `synastry_parallels`), not as a column of the synastry's, so a
+   record that asked for none (an empty section, `null` in a binding)
+   reads apart from a chart that holds none (an empty list).
 
 ## Order of work
 
@@ -114,6 +126,15 @@ not need to ask its ephemeris for anything new.
   from the same planets' rows, so a batch never turns a planet twice.
   Sections 86 to 88 grew the wasm module by 24 kB raw, and its budget
   was re-measured.
+- **George V and Queen Mary hold eight parallels under 0.95°.** Against
+  the Moshier recast, the closest is Uranus with Uranus (0.049°), and two
+  are contrary: Jupiter with Uranus and the Moon with Pluto. The SDK's
+  test holds all eight to the recast.
+- **"None asked" and "none found" need two sections.** The first wire
+  put the parallels' count beside the aspects' in the `synastry`
+  section, where a record that asked for no parallels read as a chart
+  holding none. A count section of its own, empty when unasked, keeps
+  the convention every other ragged table follows.
 - **A Sun past the obliquity is the frame, not a defect.** One birth's
   Sun stands 7.65″ past the obliquity. Under the profile's topocentric
   frame the Sun has a latitude of up to its 8.8″ parallax, and the
