@@ -60,6 +60,7 @@ mod kp_request;
 mod muhurta_request;
 mod plan_request;
 mod progressed;
+mod progressions_request;
 mod rule_request;
 mod rules_bridge;
 mod sade_sati_request;
@@ -218,6 +219,7 @@ pub use crate::progressed::{
     ContactRequest, Directed, DirectedPlanet, DirectionArc, Progressed, ProgressedContact,
     ProgressionRequest,
 };
+pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsRequest};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_kp as kp;

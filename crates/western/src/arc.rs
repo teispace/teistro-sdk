@@ -1,12 +1,15 @@
 //! Arc measures: degrees of a direction turned into years of life, and back
 //! (Leo, *The Progressed Horoscope*, pp. 260–262).
 
+use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
 use crate::progression::TROPICAL_YEAR_DAYS;
 
-/// How many degrees of arc measure a year of life.
-#[derive(Clone, Copy, Debug, PartialEq)]
+/// How many degrees of arc measure a year of life, spelled `"NAIBOD"`,
+/// `"PTOLEMY"` or `{"PER_YEAR": 1.0}` in a request.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ArcMeasure {
     /// Ptolemy's: a degree for a year (p. 260).
     Ptolemy,

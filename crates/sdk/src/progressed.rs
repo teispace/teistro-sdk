@@ -219,6 +219,18 @@ impl ContactRequest {
     }
 }
 
+impl ContactRequest {
+    /// The hit list that finds these contacts over a window of sky: its
+    /// aspects alone, by these planets to these points.
+    pub(crate) fn hits_between(&self, from: JulianDay<Utc>, to: JulianDay<Utc>) -> HitRequest {
+        HitRequest::between(from, to)
+            .with_kinds([HitKind::Aspect])
+            .with_grahas(self.grahas.iter().copied())
+            .with_points(self.points.iter().copied())
+            .with_aspects(self.aspects.iter().copied())
+    }
+}
+
 impl Default for ContactRequest {
     fn default() -> ContactRequest {
         ContactRequest {
@@ -477,14 +489,10 @@ impl ChartArea<'_> {
         // day of life apart at most. Nothing of sky before the instant a
         // day earlier in life measures into the window: the search starts
         // there and the window's own bounds keep what falls inside.
-        let window = HitRequest::between(
+        let window = asked.hits_between(
             progression.sky_at(born, from.plus_days(-1.0)?)?,
             progression.sky_at(born, to)?,
-        )
-        .with_kinds([HitKind::Aspect])
-        .with_grahas(asked.grahas.iter().copied())
-        .with_points(asked.points.iter().copied())
-        .with_aspects(asked.aspects.iter().copied());
+        );
         let mut contacts = Vec::new();
         for hit in self.hits(birth, &window)?.value {
             let HitEvent::Aspect {

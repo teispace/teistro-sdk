@@ -156,6 +156,40 @@ without the others:
 - `life_at(birth, instant, rate, measure)`, the inverse;
 - `arc_to_years` and `years_to_arc` for each arc measure.
 
+### Across the boundary (step 5)
+
+A batch's chart request gains one record, `progressions_json`, the way
+the perfection crossed. The batch applies it to every chart, because a
+consumer asks one question of many births: where each one stands at an
+instant of life, or what falls due in a window. Everything in the record
+is optional, and a section the record does not ask for costs nothing.
+
+- `at`, a UTC Julian day: the instant of life the progressed chart and
+  the direction are read for;
+- `rate`, `year` and `angles`: the measure (C236, C238) and the angle
+  method (C237), spelled as their Rust members, with Leo's defaults;
+- `direction`: `"SOLAR"` or an arc measure (`"NAIBOD"`, `"PTOLEMY"`, or
+  `{"perYear": degrees}`);
+- `contacts`: `{from, to, grahas, points, aspects}`, spelled as the hit
+  list spells them.
+
+Three sections answer it:
+- `progressed`, a row a chart: the instants of life and sky, the
+  progressed meridian, ascendant and midheaven. Its planets come in
+  `progressed_grahas`, a row a graha with the longitude in the chart's
+  zodiac, the tropical longitude and the speed. The full founded chart
+  does not cross, since a consumer who needs it founds the instant of
+  sky as an ordinary chart.
+- `directed`, a row a chart: the arc and the directed angles. Its
+  planets come in `directed_grahas`.
+- `progressed_contacts`, ragged by the chart's contact count: the
+  instants of life and sky, the planet, the point, the angle and the
+  motion, as the hit list's columns spell them.
+
+Node, wasm, Python and Dart read these as `chart.progressed`,
+`chart.directed` and `chart.progressedContacts`. The parity runners
+print Leo's birth under both year measures.
+
 ## What building it found
 
 - **Leo's rule is a closed form.** Sidereal time at Greenwich noon comes
