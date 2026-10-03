@@ -3,11 +3,11 @@
 
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::near_midpoint_deg;
-use teistro_core::error::Error;
+use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
-use teistro_western::{ChartPoints, Composite, Placed, SynastryZodiac, composite};
+use teistro_western::{ChartPoints, Composite, HouseRequest, Placed, SynastryZodiac, composite};
 
 use crate::area::ChartArea;
 use crate::western_aspects::{Partner, angle_in, planets_in};
@@ -17,8 +17,11 @@ impl ChartArea<'_> {
     /// planet at the near midpoint of its two places and the mean of its
     /// two speeds, the midheaven at the near midpoint of the two, and the
     /// lagna at the near midpoint of the two, turned by 180° when that
-    /// stands before the midheaven. Read in the tropical zodiac, or each
-    /// chart's own (C241).
+    /// stands before the midheaven. Its cusps are the near midpoints of
+    /// the two charts' in the `western` module's division, each turned the
+    /// same way (`western-houses.md`), and none where the profile's polar
+    /// policy refuses that division at either birthplace. Read in the
+    /// tropical zodiac, or each chart's own (C241).
     ///
     /// ```no_run
     /// # use teistro::{ChartRequest, Context, Ephemeris, SynastryZodiac};
@@ -55,6 +58,11 @@ impl ChartArea<'_> {
                     .collect(),
                 lagna_deg: angle_in(foundation, zodiac, angles.ascendant_deg),
                 midheaven_deg: angle_in(foundation, zodiac, angles.midheaven_deg),
+                cusps_deg: match self.western_cusps(chart, HouseRequest::default()) {
+                    Ok((cusps, _)) => Some(cusps.map(|cusp| angle_in(foundation, zodiac, cusp))),
+                    Err(why) if why.status == Status::Unsupported => None,
+                    Err(why) => return Err(why),
+                },
             })
         };
         composite(

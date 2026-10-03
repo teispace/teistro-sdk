@@ -1,6 +1,7 @@
 //! A founded chart's Western houses (`03-design/western-houses.md`).
 
 use teistro_chart::foundation::cusps_of;
+use teistro_core::catalogue::HouseSystem;
 use teistro_core::error::Error;
 use teistro_houses::system::override_of;
 use teistro_serial::Document;
@@ -48,17 +49,7 @@ impl ChartArea<'_> {
         request: &HouseRequest,
     ) -> Result<WesternHouses, Error> {
         let foundation = &chart.foundation;
-        let settings = self.context().settings();
-        let system = request
-            .system
-            .or_else(|| override_of(settings, MODULE))
-            .unwrap_or(LEO_HOUSE_SYSTEM);
-        let (cusps_deg, system) = cusps_of(
-            foundation,
-            system,
-            self.context().delta_t(),
-            settings.houses.polar_policy,
-        )?;
+        let (cusps_deg, system) = self.western_cusps(chart, *request)?;
         let angles = self.angles(chart)?;
         let zodiac = &foundation.zodiac;
         let armc_deg = right_ascension(
@@ -82,5 +73,25 @@ impl ChartArea<'_> {
             planets: place_in_houses(&frame, &bodies)?,
             frame,
         })
+    }
+
+    /// A chart's cusps in the division `request` names, else the
+    /// module's, in its own zodiac, with the division they are of.
+    pub(crate) fn western_cusps(
+        self,
+        chart: &Document,
+        request: HouseRequest,
+    ) -> Result<([f64; 12], HouseSystem), Error> {
+        let settings = self.context().settings();
+        let system = request
+            .system
+            .or_else(|| override_of(settings, MODULE))
+            .unwrap_or(LEO_HOUSE_SYSTEM);
+        cusps_of(
+            &chart.foundation,
+            system,
+            self.context().delta_t(),
+            settings.houses.polar_policy,
+        )
     }
 }
