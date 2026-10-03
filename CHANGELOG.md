@@ -2002,6 +2002,14 @@ the astronomical numbers do not move. Nothing else computes yet.
     every binding reads `chart.synastryParallels`
     (`synastry_parallels`), Dart's `SynastryRequest` taking
     `parallels`.
+  - **Equal distances** (`western-midpoints.md`,
+    `midpoints-measured.md`). `sdk.chart().midpoints` finds every planet
+    equally distant from two others along the zodiac (Leo, *How to Judge
+    a Nativity*, pp. 47–48): within the orb of the axis through their
+    midpoint, 0.5° by default (C245), on the shorter arc's midpoint or
+    opposite it (C246), Leo's own example standing on the far point. A
+    `midpoints_json` record crosses the boundary in sections 96 and 97,
+    and Node, Python and Dart read `chart.midpoints`, with parity.
   - **Antiscia** (`western-antiscia.md`, `antiscia-measured.md`).
     `sdk.chart().antiscia` gives each planet's reflection about the
     solstices and about the equinoxes (Lilly, *Christian Astrology*,
