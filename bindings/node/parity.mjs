@@ -374,6 +374,11 @@ const charts = geo.chart.foundMany({
       ].map(([graha, orbDeg]) => ({ graha, orbDeg })),
     },
   },
+  synastry: {
+    partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
+    aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
+    zodiac: 'CHARTS',
+  },
   progressions: {
     at: 2470000.5,
     year: 'NOON_SIDEREAL_TIME',
@@ -749,6 +754,15 @@ for (const chart of charts) {
     put(
       `chart-${i}-western-aspect-${n}`,
       `${at.first} ${at.second} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)} ${at.applying ? 1 : 0}`,
+    ),
+  );
+  const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
+  const synastry = chart.synastry;
+  put(`chart-${i}-synastry-count`, `${synastry.length}`);
+  synastry.forEach((at, n) =>
+    put(
+      `chart-${i}-synastry-${n}`,
+      `${point(at.first)} ${point(at.second)} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)}`,
     ),
   );
   put(

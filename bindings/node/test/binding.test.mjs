@@ -2348,6 +2348,60 @@ test('a chart carries its Western aspects', () => {
   ctx.dispose();
 });
 
+test('a chart carries its synastry with a partner', () => {
+  // King George V and Queen Mary (Leo, How to Judge a Nativity, p. 130),
+  // whose cross contacts the SDK's test holds against a Moshier recast.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2402390.554166667;
+  const partner = { instant: 2403113.499305556, place: { latitude: 51.5058, longitude: -0.1878, altitude: 0 } };
+  assert.equal(ctx.chart.found({ instant: birth, ...george }).synastry, null);
+
+  const rows = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, synastry: { partner } }).synastry;
+  assert.ok(Object.isFrozen(rows[0]) && Object.isFrozen(rows[0].first), 'frozen to its leaves');
+  const find = (first, aspect, second) =>
+    rows.find(
+      (row) =>
+        row.aspect === aspect &&
+        JSON.stringify([row.first, row.second]) === JSON.stringify([first, second]),
+    );
+  const mars = { point: 'GRAHA', graha: 'graha.MARS' };
+  for (const [first, aspect, second, fromExactDeg] of [
+    [mars, 'OPPOSITION', { point: 'LAGNA' }, 0.32],
+    [mars, 'SEXTILE', { point: 'GRAHA', graha: 'graha.SUN' }, 0.39],
+    [{ point: 'GRAHA', graha: 'graha.PLUTO' }, 'CONJUNCTION', { point: 'GRAHA', graha: 'graha.PLUTO' }, 1.69],
+  ]) {
+    const row = find(first, aspect, second);
+    assert.ok(row, `${JSON.stringify(first)} ${aspect} ${JSON.stringify(second)}`);
+    assert.ok(Math.abs(row.fromExactDeg - fromExactDeg) < 0.01, `${row.fromExactDeg} against ${fromExactDeg}`);
+  }
+  assert.ok(rows.every((row, n) => row.fromExactDeg <= row.orbDeg && (n === 0 || rows[n - 1].fromExactDeg <= row.fromExactDeg)));
+
+  const without = ctx.chart.found({ instant: birth, ...george, synastry: { partner, lagna: false } }).synastry;
+  assert.ok(without.every((row) => row.first.point === 'GRAHA' && row.second.point === 'GRAHA'));
+
+  const instants = [birth, birth - 3000.25];
+  const asked = { partner, aspects: ['SEXTILE', 'OPPOSITION'] };
+  const batch = ctx.chart.foundMany({ instants, ...george, synastry: asked });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).synastry, ctx.chart.found({ instant, ...george, synastry: asked }).synastry),
+  );
+  const north = { ...partner, place: { ...partner.place, latitude: 95 } };
+  for (const [request, field] of [
+    [{ partner: north }, 'synastry.partner.place.latitude'],
+    [{ partner, zodiac: 'SIDEREAL' }, 'synastry.zodiac'],
+    [{ partner, orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }] } }, 'synastry.lagna'],
+    [{ lagna: false }, 'synastry.partner'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...george, synastry: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 /**
  * The outer planets cross when asked: none unless `outerPlanets`, then
  * Uranus, Neptune and Pluto in the grahas' shape with the nine unmoved,

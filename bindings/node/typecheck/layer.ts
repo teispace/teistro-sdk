@@ -5,6 +5,10 @@
 
 import type {
   Air,
+  SynastryRequest,
+  SynastryRow,
+  WesternAspectRequest,
+  WesternAspectRow,
   Almanac,
   BlackoutKind,
   LunarEclipseKind,
@@ -986,6 +990,47 @@ function theProgressions(ctx: Context): string {
 }
 
 void theProgressions;
+
+// A chart's Western aspects and its synastry with a partner, read all the
+// way down; the synastry takes the table's own fields beside the partner.
+function theWesternAspects(ctx: Context): string {
+  const table: WesternAspectRequest = {
+    aspects: ['TRINE', 'SQUARE'],
+    orbs: { model: 'BY_ASPECT', orbs: [{ aspect: 'TRINE', orbDeg: 6 }] },
+  };
+  const asked: SynastryRequest = {
+    ...table,
+    partner: { instant: 2403113.4993, place: { latitude: 51.5058, longitude: -0.1878, altitude: 0 } },
+    lagna: false,
+    zodiac: 'CHARTS',
+  };
+  const chart = ctx.chart.found({
+    instant: 2402390.5542,
+    place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 },
+    utcOffsetSeconds: 0,
+    westernAspects: table,
+    synastry: asked,
+  });
+  // @ts-expect-error a synastry is asked against a partner
+  const alone: SynastryRequest = { lagna: false };
+  // @ts-expect-error the zodiac is tropical or each chart's own
+  const sidereal: SynastryRequest = { ...asked, zodiac: 'SIDEREAL' };
+  const own: WesternAspectRow | undefined = chart.westernAspects?.[0];
+  const across: SynastryRow | undefined = chart.synastry?.[0];
+  const theirs: NatalPoint | undefined = across?.second;
+  return [
+    own?.first ?? 'none',
+    own?.applying ?? false,
+    across?.first.point ?? 'none',
+    theirs?.point === 'GRAHA' ? theirs.graha : 'LAGNA',
+    across?.aspect ?? 'none',
+    across?.fromExactDeg ?? Number.NaN,
+    String(alone),
+    String(sidereal),
+  ].join();
+}
+
+void theWesternAspects;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them
