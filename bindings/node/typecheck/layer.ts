@@ -5,6 +5,9 @@
 
 import type {
   Air,
+  Declinations,
+  ParallelRequest,
+  ParallelRow,
   SynastryRequest,
   SynastryRow,
   WesternAspectRequest,
@@ -1031,6 +1034,31 @@ function theWesternAspects(ctx: Context): string {
 }
 
 void theWesternAspects;
+
+// A chart's declinations and parallels, read all the way down.
+function theParallels(ctx: Context): string {
+  const asked: ParallelRequest = { orbDeg: 1.5 };
+  const chart = ctx.chart.found({
+    instant: 2402390.5542,
+    place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 },
+    utcOffsetSeconds: 0,
+    parallels: asked,
+  });
+  // @ts-expect-error the orb is a number of degrees
+  const misread: ParallelRequest = { orbDeg: '1' };
+  const read: Declinations | null = chart.declinations;
+  const row: ParallelRow | undefined = chart.parallels?.[0];
+  return [
+    read?.obliquityDeg ?? Number.NaN,
+    read?.grahas[0]?.graha ?? 'none',
+    read?.lagnaDeg ?? Number.NaN,
+    row?.contrary ?? false,
+    row?.apartDeg ?? Number.NaN,
+    String(misread),
+  ].join();
+}
+
+void theParallels;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

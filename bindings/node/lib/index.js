@@ -1152,6 +1152,31 @@ export class Chart {
   }
 
   /**
+   * The chart's distances from the equator (`parallels: { orbDeg }` asks
+   * for them with the parallels); `null` unless asked for
+   * (`03-design/western-declinations.md`).
+   *
+   * `{ obliquityDeg, grahas, lagnaDeg, midheavenDeg }`, each degrees north:
+   * the planets as `{ graha, declinationDeg }` in the catalogue's order,
+   * and the angles as the Sun's at their degree (Leo, p. 141).
+   */
+  get declinations() {
+    return declinationsOf(this.#batch).declinations[this.#index] ?? null;
+  }
+
+  /**
+   * The parallels among the chart's planets, closest first: each pair the
+   * same distance from the equator within the orb (Leo's 1° by default), on
+   * either side of it (C243); `null` unless `parallels` asked.
+   *
+   * Each row is `{ first, second, contrary, apartDeg, orbDeg }`, `contrary`
+   * true when the two stand on opposite sides of the equator.
+   */
+  get parallels() {
+    return declinationsOf(this.#batch).parallels[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2367,6 +2392,11 @@ export class ChartArea extends Area {
           'westernAspects',
           'a western aspects request record, e.g. {} or { aspects: ["TRINE", "SQUARE"] }',
         ),
+        parallelsJson: recordJson(
+          request.parallels,
+          'parallels',
+          'a parallels request record, e.g. {} or { orbDeg: 1 }',
+        ),
         synastryJson: recordJson(
           request.synastry,
           'synastry',
@@ -3479,6 +3509,56 @@ function synastriesOf(batch) {
     }),
   );
   SYNASTRIES.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's declinations and parallels, decoded once however many charts read them. */
+const DECLINATIONS = new WeakMap();
+
+/**
+ * Every chart's declinations and parallels in a batch: `declinations`
+ * holds a row a chart, or none when none was asked, and
+ * `declination_rows` and `parallel_rows` are ragged by its two counts
+ * (`03-design/western-declinations.md`).
+ *
+ * @param {Charts} batch
+ * @returns {{ declinations: readonly (object|null)[], parallels: readonly (readonly object[]|null)[] }}
+ */
+function declinationsOf(batch) {
+  let decoded = DECLINATIONS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const row = d.declinations;
+  const rows = d.declinationRows;
+  const p = d.parallelRows;
+  const graha = (id) => GrahaById.get(id) ?? 'unknown';
+  const grahas = raggedOf(batch, row.grahaCount, rows.graha.length, 'declinations and declination_rows', (at) =>
+    Object.freeze({ graha: graha(rows.graha[at]), declinationDeg: rows.declinationDeg[at] }),
+  );
+  decoded = Object.freeze({
+    declinations: Object.freeze(
+      grahas.map((planets, k) =>
+        planets === null
+          ? null
+          : Object.freeze({
+              obliquityDeg: row.obliquityDeg[k],
+              grahas: planets,
+              lagnaDeg: row.lagnaDeg[k],
+              midheavenDeg: row.midheavenDeg[k],
+            }),
+      ),
+    ),
+    parallels: raggedOf(batch, row.parallelCount, p.first.length, 'declinations and parallel_rows', (at) =>
+      Object.freeze({
+        first: graha(p.first[at]),
+        second: graha(p.second[at]),
+        contrary: p.contrary[at] !== 0,
+        apartDeg: p.apartDeg[at],
+        orbDeg: p.orbDeg[at],
+      }),
+    ),
+  });
+  DECLINATIONS.set(batch, decoded);
   return decoded;
 }
 

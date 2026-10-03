@@ -374,6 +374,7 @@ const charts = geo.chart.foundMany({
       ].map(([graha, orbDeg]) => ({ graha, orbDeg })),
     },
   },
+  parallels: { orbDeg: 1.5 },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -754,6 +755,20 @@ for (const chart of charts) {
     put(
       `chart-${i}-western-aspect-${n}`,
       `${at.first} ${at.second} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)} ${at.applying ? 1 : 0}`,
+    ),
+  );
+  const declined = chart.declinations;
+  put(
+    `chart-${i}-declinations`,
+    `${number(declined.obliquityDeg)} ${number(declined.lagnaDeg)} ${number(declined.midheavenDeg)}`,
+  );
+  declined.grahas.forEach((at) => put(`chart-${i}-declination-${at.graha}`, number(at.declinationDeg)));
+  const parallels = chart.parallels;
+  put(`chart-${i}-parallel-count`, `${parallels.length}`);
+  parallels.forEach((at, n) =>
+    put(
+      `chart-${i}-parallel-${n}`,
+      `${at.first} ${at.second} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
     ),
   );
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
