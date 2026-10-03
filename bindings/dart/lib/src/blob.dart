@@ -4640,6 +4640,136 @@ final class ChartsMatchingKootas {
   final int length;
 }
 
+/// The `poruthams` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. Empty when `matching_json` asked for none.
+final class ChartsPoruthams {
+  const ChartsPoruthams({
+    required this.agreeing,
+    required this.chiefAgreeing,
+    required this.oneLord,
+    required this.lordsFriendly,
+    required this.opposite,
+    required this.count,
+    required this.dhinamRule,
+    required this.brideGana,
+    required this.groomGana,
+    required this.ganaDiminished,
+    required this.brideYoni,
+    required this.groomYoni,
+    required this.yoniHostile,
+    required this.apart,
+    required this.brideLord,
+    required this.groomLord,
+    required this.brideCallsFriend,
+    required this.groomCallsFriend,
+    required this.brideToGroom,
+    required this.groomToBride,
+    required this.brideRajju,
+    required this.groomRajju,
+    required this.pierced,
+    required this.length,
+  });
+
+  /// How many of the ten agree, a lift included; the chapter asks "at least five" (p. 76).
+  final Uint8List agreeing;
+
+  /// How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju.
+  final Uint8List chiefAgreeing;
+
+  /// 1 when one lord rules both Moon signs: the p. 76 exception's first clause (C277).
+  final Uint8List oneLord;
+
+  /// 1 when the two sign lords are friendly on the chapter's own table, as the record's `lordsFriendship` reads it (C273).
+  final Uint8List lordsFriendly;
+
+  /// 1 when the two Moon signs are opposite.
+  final Uint8List opposite;
+
+  /// The groom's nakshatra counted from the bride's, 1 to 27, which Dhinam, Mahendra and Sthree-Dheergham read.
+  final Uint8List count;
+
+  /// Which of the chapter's rules decided Dhinam (pp. 69–72).
+  final Uint8List dhinamRule;
+
+  /// The bride's gana, by her or his Moon's nakshatra (p. 72).
+  final Uint16List brideGana;
+
+  /// The groom's gana, by her or his Moon's nakshatra (p. 72).
+  final Uint16List groomGana;
+
+  /// 1 when a Rakshasa stands beside another gana and the bride's star is beyond the 14th from the groom's: the evil "diminishes", the disagreement stands (C279).
+  final Uint8List ganaDiminished;
+
+  /// The bride's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).
+  final Uint16List brideYoni;
+
+  /// The groom's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).
+  final Uint16List groomYoni;
+
+  /// 1 when the two yonis are among the chapter's eight enmities.
+  final Uint8List yoniHostile;
+
+  /// The groom's Moon sign counted from the bride's, 1 to 12, which Rasi reads (pp. 73–74).
+  final Uint8List apart;
+
+  /// The lord of the bride's Moon sign.
+  final Uint16List brideLord;
+
+  /// The lord of the groom's Moon sign.
+  final Uint16List groomLord;
+
+  /// 1 when the bride's lord calls the groom's a friend on the chapter's own table (pp. 74–75); a lord is its own.
+  final Uint8List brideCallsFriend;
+
+  /// 1 when the groom's lord calls the bride's a friend.
+  final Uint8List groomCallsFriend;
+
+  /// 1 when the bride's Moon sign is concordant to the groom's on p. 75's Vasyam table, never a sign to itself (C274).
+  final Uint8List brideToGroom;
+
+  /// 1 when the groom's Moon sign is concordant to the bride's.
+  final Uint8List groomToBride;
+
+  /// The bride's Rajju division, by her or his Moon's nakshatra (p. 75, C275).
+  final Uint8List brideRajju;
+
+  /// The groom's Rajju division, by her or his Moon's nakshatra (p. 75, C275).
+  final Uint8List groomRajju;
+
+  /// 1 when the two nakshatras are a Vedhai pair of p. 76 (C276).
+  final Uint8List pierced;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `porutham_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
+final class ChartsPoruthamRows {
+  const ChartsPoruthamRows({
+    required this.koota,
+    required this.agrees,
+    required this.lifted,
+    required this.length,
+  });
+
+  /// Which consideration, a catalogue koota (C282).
+  final Uint16List koota;
+
+  /// 1 when it agrees, a lift included.
+  final Uint8List agrees;
+
+  /// 1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277).
+  final Uint8List lifted;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4864,6 +4994,8 @@ final class Charts {
     required this.harmonicRows,
     required this.matchings,
     required this.matchingKootas,
+    required this.poruthams,
+    required this.poruthamRows,
   });
 
   /// What kind of chart these are.
@@ -5246,6 +5378,12 @@ final class Charts {
   /// Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.
   final ChartsMatchingKootas matchingKootas;
 
+  /// Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. Empty when `matching_json` asked for none.
+  final ChartsPoruthams poruthams;
+
+  /// Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
+  final ChartsPoruthamRows poruthamRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5365,6 +5503,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atHarmonicRows = blob.section(110, 'harmonic_rows');
   final atMatchings = blob.section(111, 'matchings');
   final atMatchingKootas = blob.section(112, 'matching_kootas');
+  final atPoruthams = blob.section(113, 'poruthams');
+  final atPoruthamRows = blob.section(114, 'porutham_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9537,6 +9677,142 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atMatchingKootas, 2) + atMatchingKootas.count * 8,
       ),
       length: atMatchingKootas.count,
+    ),
+    poruthams: ChartsPoruthams(
+      agreeing: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 0),
+        blob.columnOffset(atPoruthams, 0) + atPoruthams.count * 1,
+      ),
+      chiefAgreeing: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 1),
+        blob.columnOffset(atPoruthams, 1) + atPoruthams.count * 1,
+      ),
+      oneLord: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 2),
+        blob.columnOffset(atPoruthams, 2) + atPoruthams.count * 1,
+      ),
+      lordsFriendly: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 3),
+        blob.columnOffset(atPoruthams, 3) + atPoruthams.count * 1,
+      ),
+      opposite: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 4),
+        blob.columnOffset(atPoruthams, 4) + atPoruthams.count * 1,
+      ),
+      count: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 5),
+        blob.columnOffset(atPoruthams, 5) + atPoruthams.count * 1,
+      ),
+      dhinamRule: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 6),
+        blob.columnOffset(atPoruthams, 6) + atPoruthams.count * 1,
+      ),
+      brideGana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 7),
+        blob.columnOffset(atPoruthams, 7) + atPoruthams.count * 2,
+      ),
+      groomGana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 8),
+        blob.columnOffset(atPoruthams, 8) + atPoruthams.count * 2,
+      ),
+      ganaDiminished: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 9),
+        blob.columnOffset(atPoruthams, 9) + atPoruthams.count * 1,
+      ),
+      brideYoni: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 10),
+        blob.columnOffset(atPoruthams, 10) + atPoruthams.count * 2,
+      ),
+      groomYoni: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 11),
+        blob.columnOffset(atPoruthams, 11) + atPoruthams.count * 2,
+      ),
+      yoniHostile: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 12),
+        blob.columnOffset(atPoruthams, 12) + atPoruthams.count * 1,
+      ),
+      apart: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 13),
+        blob.columnOffset(atPoruthams, 13) + atPoruthams.count * 1,
+      ),
+      brideLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 14),
+        blob.columnOffset(atPoruthams, 14) + atPoruthams.count * 2,
+      ),
+      groomLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 15),
+        blob.columnOffset(atPoruthams, 15) + atPoruthams.count * 2,
+      ),
+      brideCallsFriend: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 16),
+        blob.columnOffset(atPoruthams, 16) + atPoruthams.count * 1,
+      ),
+      groomCallsFriend: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 17),
+        blob.columnOffset(atPoruthams, 17) + atPoruthams.count * 1,
+      ),
+      brideToGroom: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 18),
+        blob.columnOffset(atPoruthams, 18) + atPoruthams.count * 1,
+      ),
+      groomToBride: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 19),
+        blob.columnOffset(atPoruthams, 19) + atPoruthams.count * 1,
+      ),
+      brideRajju: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 20),
+        blob.columnOffset(atPoruthams, 20) + atPoruthams.count * 1,
+      ),
+      groomRajju: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 21),
+        blob.columnOffset(atPoruthams, 21) + atPoruthams.count * 1,
+      ),
+      pierced: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthams, 22),
+        blob.columnOffset(atPoruthams, 22) + atPoruthams.count * 1,
+      ),
+      length: atPoruthams.count,
+    ),
+    poruthamRows: ChartsPoruthamRows(
+      koota: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthamRows, 0),
+        blob.columnOffset(atPoruthamRows, 0) + atPoruthamRows.count * 2,
+      ),
+      agrees: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthamRows, 1),
+        blob.columnOffset(atPoruthamRows, 1) + atPoruthamRows.count * 1,
+      ),
+      lifted: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPoruthamRows, 2),
+        blob.columnOffset(atPoruthamRows, 2) + atPoruthamRows.count * 1,
+      ),
+      length: atPoruthamRows.count,
     ),
   );
 }

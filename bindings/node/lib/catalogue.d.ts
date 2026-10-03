@@ -8280,6 +8280,117 @@ export declare const BhakootDosha: {
 export declare const BhakootDoshaById: ReadonlyMap<number, BhakootDosha>;
 
 /**
+ * Which of *Kalaprakasika*'s rules decided Dhinam
+ * (`03-design/matching.md`, pp. 69–72).
+ *
+ * Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
+ * match.
+ */
+export type DhinamRule =
+  | 'COUNT'
+  | 'SECOND_ROUND_QUARTER'
+  | 'VADHA_VAINASIKA'
+  | 'TWENTY_SEVENTH'
+  | 'COMMON_EXCELLENT'
+  | 'COMMON_NEUTRAL'
+  | 'COMMON_AVOID'
+  | 'TWO_SIGNS'
+  | 'SAME_SIGN'
+  | 'NEXT_STAR'
+  | 'HAPPY_PAIR';
+
+/** Every DhinamRule by name; the values are the strings the union accepts. */
+export declare const DhinamRule: {
+  /**
+   * The count alone: the 3rd, 5th and 7th of the first nine disagree.
+   */
+  readonly Count: 'COUNT';
+  /**
+   * A quarter of the second nine, the groom's star's.
+   */
+  readonly SecondRoundQuarter: 'SECOND_ROUND_QUARTER';
+  /**
+   * The 22nd, *Vadha-Vainasika*.
+   */
+  readonly VadhaVainasika: 'VADHA_VAINASIKA';
+  /**
+   * The 27th, in two signs.
+   */
+  readonly TwentySeventh: 'TWENTY_SEVENTH';
+  /**
+   * One star for both, among the excellent.
+   */
+  readonly CommonExcellent: 'COMMON_EXCELLENT';
+  /**
+   * One star for both, among the neutral.
+   */
+  readonly CommonNeutral: 'COMMON_NEUTRAL';
+  /**
+   * One star for both, among those to avoid.
+   */
+  readonly CommonAvoid: 'COMMON_AVOID';
+  /**
+   * One star for both across two signs, by whose quarter comes first.
+   */
+  readonly TwoSigns: 'TWO_SIGNS';
+  /**
+   * Two stars in one sign: the groom's must be prior.
+   */
+  readonly SameSign: 'SAME_SIGN';
+  /**
+   * Two stars in one sign, the groom's next after one the chapter names.
+   */
+  readonly NextStar: 'NEXT_STAR';
+  /**
+   * One of the four happy pairs, either way round.
+   */
+  readonly HappyPair: 'HAPPY_PAIR';
+};
+
+/**
+ * Every DhinamRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DhinamRuleById: ReadonlyMap<number, DhinamRule>;
+
+/**
+ * A Rajju division, foot to head (`03-design/matching.md`, p. 75).
+ *
+ * Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+ */
+export type Rajju = 'PADHA' | 'OORU' | 'NABHI' | 'KANTA' | 'SIRO';
+
+/** Every Rajju by name; the values are the strings the union accepts. */
+export declare const Rajju: {
+  /**
+   * The foot.
+   */
+  readonly Padha: 'PADHA';
+  /**
+   * The thigh.
+   */
+  readonly Ooru: 'OORU';
+  /**
+   * The navel.
+   */
+  readonly Nabhi: 'NABHI';
+  /**
+   * The neck.
+   */
+  readonly Kanta: 'KANTA';
+  /**
+   * The head.
+   */
+  readonly Siro: 'SIRO';
+};
+
+/**
+ * Every Rajju by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RajjuById: ReadonlyMap<number, Rajju>;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *

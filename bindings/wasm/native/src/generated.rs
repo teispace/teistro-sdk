@@ -2241,15 +2241,21 @@ pub struct ChartRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub harmonic_json: Option<String>,
     /// Every chart matched with one partner's birth by the Ashta Koota of
-    /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+    /// *Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON
+    /// object: `partner`,
     /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
     /// "utcOffsetSeconds"}`, founded once under the context's sidereal
     /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
     /// on the other side; and `rules`, every field optional: `equalVarna`
     /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
     /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
-    /// `MIDDLE_ONLY`). The answers come back in `matchings` and
-    /// `matching_kootas`. Null for none, which costs nothing
+    /// `MIDDLE_ONLY`); and `porutham`, the ten considerations of
+    /// *Kalaprakasika* XIII, every field optional: `twoSignStar`
+    /// (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
+    /// (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or
+    /// `ONE_WAY`). The answers come back in `matchings`,
+    /// `matching_kootas`, `poruthams` and `porutham_rows`. Null for none,
+    /// which costs nothing
     /// (`03-design/matching.md`). Refusals are named from the record every
     /// binding calls `matching`, as `matching.partnerRole`.
     /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.

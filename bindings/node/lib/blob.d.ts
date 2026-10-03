@@ -4458,6 +4458,142 @@ export interface ChartsMatchingKootas {
 }
 
 /**
+ * The `poruthams` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. Empty when `matching_json` asked for none.
+ */
+export interface ChartsPoruthams {
+  /**
+   * How many of the ten agree, a lift included; the chapter asks "at least five" (p. 76).
+   */
+  readonly agreeing: Uint8Array;
+  /**
+   * How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju.
+   */
+  readonly chiefAgreeing: Uint8Array;
+  /**
+   * 1 when one lord rules both Moon signs: the p. 76 exception's first clause (C277).
+   */
+  readonly oneLord: Uint8Array;
+  /**
+   * 1 when the two sign lords are friendly on the chapter's own table, as the record's `lordsFriendship` reads it (C273).
+   */
+  readonly lordsFriendly: Uint8Array;
+  /**
+   * 1 when the two Moon signs are opposite.
+   */
+  readonly opposite: Uint8Array;
+  /**
+   * The groom's nakshatra counted from the bride's, 1 to 27, which Dhinam, Mahendra and Sthree-Dheergham read.
+   */
+  readonly count: Uint8Array;
+  /**
+   * Which of the chapter's rules decided Dhinam (pp. 69–72).
+   * The values are `DhinamRule` ids.
+   */
+  readonly dhinamRule: Uint8Array;
+  /**
+   * The bride's gana, by her or his Moon's nakshatra (p. 72).
+   * The values are `Gana` ids.
+   */
+  readonly brideGana: Uint16Array;
+  /**
+   * The groom's gana, by her or his Moon's nakshatra (p. 72).
+   * The values are `Gana` ids.
+   */
+  readonly groomGana: Uint16Array;
+  /**
+   * 1 when a Rakshasa stands beside another gana and the bride's star is beyond the 14th from the groom's: the evil "diminishes", the disagreement stands (C279).
+   */
+  readonly ganaDiminished: Uint8Array;
+  /**
+   * The bride's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).
+   * The values are `Yoni` ids.
+   */
+  readonly brideYoni: Uint16Array;
+  /**
+   * The groom's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).
+   * The values are `Yoni` ids.
+   */
+  readonly groomYoni: Uint16Array;
+  /**
+   * 1 when the two yonis are among the chapter's eight enmities.
+   */
+  readonly yoniHostile: Uint8Array;
+  /**
+   * The groom's Moon sign counted from the bride's, 1 to 12, which Rasi reads (pp. 73–74).
+   */
+  readonly apart: Uint8Array;
+  /**
+   * The lord of the bride's Moon sign.
+   * The values are `Graha` ids.
+   */
+  readonly brideLord: Uint16Array;
+  /**
+   * The lord of the groom's Moon sign.
+   * The values are `Graha` ids.
+   */
+  readonly groomLord: Uint16Array;
+  /**
+   * 1 when the bride's lord calls the groom's a friend on the chapter's own table (pp. 74–75); a lord is its own.
+   */
+  readonly brideCallsFriend: Uint8Array;
+  /**
+   * 1 when the groom's lord calls the bride's a friend.
+   */
+  readonly groomCallsFriend: Uint8Array;
+  /**
+   * 1 when the bride's Moon sign is concordant to the groom's on p. 75's Vasyam table, never a sign to itself (C274).
+   */
+  readonly brideToGroom: Uint8Array;
+  /**
+   * 1 when the groom's Moon sign is concordant to the bride's.
+   */
+  readonly groomToBride: Uint8Array;
+  /**
+   * The bride's Rajju division, by her or his Moon's nakshatra (p. 75, C275).
+   * The values are `Rajju` ids.
+   */
+  readonly brideRajju: Uint8Array;
+  /**
+   * The groom's Rajju division, by her or his Moon's nakshatra (p. 75, C275).
+   * The values are `Rajju` ids.
+   */
+  readonly groomRajju: Uint8Array;
+  /**
+   * 1 when the two nakshatras are a Vedhai pair of p. 76 (C276).
+   */
+  readonly pierced: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `porutham_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
+ */
+export interface ChartsPoruthamRows {
+  /**
+   * Which consideration, a catalogue koota (C282).
+   * The values are `Koota` ids.
+   */
+  readonly koota: Uint16Array;
+  /**
+   * 1 when it agrees, a lift included.
+   */
+  readonly agrees: Uint8Array;
+  /**
+   * 1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277).
+   */
+  readonly lifted: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5073,6 +5209,14 @@ export interface Charts {
    * Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.
    */
   readonly matchingKootas: ChartsMatchingKootas;
+  /**
+   * Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. Empty when `matching_json` asked for none.
+   */
+  readonly poruthams: ChartsPoruthams;
+  /**
+   * Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
+   */
+  readonly poruthamRows: ChartsPoruthamRows;
 }
 
 /**

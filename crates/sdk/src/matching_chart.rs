@@ -4,7 +4,9 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
-use teistro_matching::{AshtaKoota, KootaRules, Native, ashta_koota};
+use teistro_matching::{
+    AshtaKoota, KootaRules, Native, Porutham, PoruthamRules, ashta_koota, porutham,
+};
 use teistro_serial::Document;
 
 use crate::area::ChartArea;
@@ -47,7 +49,7 @@ impl MatchRole {
 
 /// A match against a partner's birth, as a binding asks it: the partner,
 /// the side the partner stands on, every chart of the batch on the other,
-/// and the rules.
+/// and the rules of each system.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PartnerMatching {
@@ -59,13 +61,28 @@ pub struct PartnerMatching {
     /// left out.
     #[serde(default)]
     pub rules: KootaRules,
+    /// The readings the ten considerations are computed under; the
+    /// chapter's own when left out.
+    #[serde(default)]
+    pub porutham: PoruthamRules,
+}
+
+/// One chart matched with a partner under both systems.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Matched {
+    /// The North's eight kootas, out of 36.
+    pub ashta_koota: AshtaKoota,
+    /// The South's ten considerations.
+    pub porutham: Porutham,
 }
 
 impl PartnerMatching {
     /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
     /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
-    /// `partnerRole`, `"BRIDE"` or `"GROOM"`, and `rules`, the
-    /// [`KootaRules`] with every field optional.
+    /// `partnerRole`, `"BRIDE"` or `"GROOM"`, `rules`, the [`KootaRules`]
+    /// with every field optional, and `porutham`, the [`PoruthamRules`]
+    /// likewise.
     ///
     /// ```
     /// use teistro::{MatchRole, PartnerMatching};
@@ -142,8 +159,45 @@ impl ChartArea<'_> {
         ))
     }
 
-    /// Each chart matched with a partner's birth ([`ChartArea::matching`]),
-    /// one [`AshtaKoota`] a chart in the order given: the partner on
+    /// The **ten considerations** of a bride's chart and a groom's
+    /// (*Kalaprakasika* XIII): whether each agrees and what it read, how
+    /// many agree, how many of the chief five, and the p. 76 exception's
+    /// clauses. Never a verdict: the chapter's "at least five" is the
+    /// reader's to apply (`03-design/matching.md`).
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, PoruthamRules};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (bride, groom): (Document, Document) = todo!();
+    /// let ten = sdk.chart().porutham(&bride, &groom, PoruthamRules::default())?;
+    /// for row in &ten.considerations {
+    ///     println!("{:?}: agrees {}", row.reading, row.agrees);
+    /// }
+    /// println!("{} of 10 agree", ten.agreeing);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`ChartArea::matching`] refuses.
+    pub fn porutham(
+        self,
+        bride: &Document,
+        groom: &Document,
+        rules: PoruthamRules,
+    ) -> Result<Porutham, Error> {
+        Ok(porutham(
+            native(bride, MatchRole::Bride.field())?,
+            native(groom, MatchRole::Groom.field())?,
+            rules,
+        ))
+    }
+
+    /// Each chart matched with a partner's birth under both systems
+    /// ([`ChartArea::matching`] and [`ChartArea::porutham`]), one
+    /// [`Matched`] a chart in the order given: the partner on
     /// [`PartnerMatching::partner_role`]'s side, every chart on the other.
     /// The partner is founded once, under this context's profile, which
     /// must be sidereal.
@@ -157,7 +211,7 @@ impl ChartArea<'_> {
         self,
         charts: &[Document],
         asked: &PartnerMatching,
-    ) -> Result<Vec<AshtaKoota>, Error> {
+    ) -> Result<Vec<Matched>, Error> {
         let Partner {
             instant,
             place,
@@ -175,9 +229,13 @@ impl ChartArea<'_> {
             .map(|(at, chart)| {
                 let ours = native(chart, role.field())
                     .map_err(|why| why.with_hint(format!("chart {at}")))?;
-                Ok(match role {
-                    MatchRole::Bride => ashta_koota(ours, theirs, asked.rules),
-                    MatchRole::Groom => ashta_koota(theirs, ours, asked.rules),
+                let (bride, groom) = match role {
+                    MatchRole::Bride => (ours, theirs),
+                    MatchRole::Groom => (theirs, ours),
+                };
+                Ok(Matched {
+                    ashta_koota: ashta_koota(bride, groom, asked.rules),
+                    porutham: porutham(bride, groom, asked.porutham),
                 })
             })
             .collect()

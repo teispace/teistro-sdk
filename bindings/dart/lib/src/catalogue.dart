@@ -7217,6 +7217,104 @@ enum BhakootDosha {
   }
 }
 
+/// Which of *Kalaprakasika*'s rules decided Dhinam
+/// (`03-design/matching.md`, pp. 69–72).
+///
+/// Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
+/// match.
+enum DhinamRule {
+  /// The count alone: the 3rd, 5th and 7th of the first nine disagree.
+  count(0, 'COUNT'),
+  /// A quarter of the second nine, the groom's star's.
+  secondRoundQuarter(1, 'SECOND_ROUND_QUARTER'),
+  /// The 22nd, *Vadha-Vainasika*.
+  vadhaVainasika(2, 'VADHA_VAINASIKA'),
+  /// The 27th, in two signs.
+  twentySeventh(3, 'TWENTY_SEVENTH'),
+  /// One star for both, among the excellent.
+  commonExcellent(4, 'COMMON_EXCELLENT'),
+  /// One star for both, among the neutral.
+  commonNeutral(5, 'COMMON_NEUTRAL'),
+  /// One star for both, among those to avoid.
+  commonAvoid(6, 'COMMON_AVOID'),
+  /// One star for both across two signs, by whose quarter comes first.
+  twoSigns(7, 'TWO_SIGNS'),
+  /// Two stars in one sign: the groom's must be prior.
+  sameSign(8, 'SAME_SIGN'),
+  /// Two stars in one sign, the groom's next after one the chapter names.
+  nextStar(9, 'NEXT_STAR'),
+  /// One of the four happy pairs, either way round.
+  happyPair(10, 'HAPPY_PAIR');
+
+  const DhinamRule(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DhinamRule byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DhinamRule'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DhinamRule? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A Rajju division, foot to head (`03-design/matching.md`, p. 75).
+///
+/// Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+enum Rajju {
+  /// The foot.
+  padha(0, 'PADHA'),
+  /// The thigh.
+  ooru(1, 'OORU'),
+  /// The navel.
+  nabhi(2, 'NABHI'),
+  /// The neck.
+  kanta(3, 'KANTA'),
+  /// The head.
+  siro(4, 'SIRO');
+
+  const Rajju(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Rajju byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Rajju'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Rajju? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What the source calls a planet by its Harsha bala
 /// (`03-design/tajika-harsha.md`).
 ///

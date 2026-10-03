@@ -8757,6 +8757,118 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsDhinamRule",
+      "doc": "Which of *Kalaprakasika*'s rules decided Dhinam\n(`03-design/matching.md`, pp. 69–72).\n\nMirrors `teistro::matching::DhinamRule` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Count",
+          "value": 0,
+          "doc": "The count alone: the 3rd, 5th and 7th of the first nine disagree.",
+          "key": "COUNT"
+        },
+        {
+          "name": "SecondRoundQuarter",
+          "value": 1,
+          "doc": "A quarter of the second nine, the groom's star's.",
+          "key": "SECOND_ROUND_QUARTER"
+        },
+        {
+          "name": "VadhaVainasika",
+          "value": 2,
+          "doc": "The 22nd, *Vadha-Vainasika*.",
+          "key": "VADHA_VAINASIKA"
+        },
+        {
+          "name": "TwentySeventh",
+          "value": 3,
+          "doc": "The 27th, in two signs.",
+          "key": "TWENTY_SEVENTH"
+        },
+        {
+          "name": "CommonExcellent",
+          "value": 4,
+          "doc": "One star for both, among the excellent.",
+          "key": "COMMON_EXCELLENT"
+        },
+        {
+          "name": "CommonNeutral",
+          "value": 5,
+          "doc": "One star for both, among the neutral.",
+          "key": "COMMON_NEUTRAL"
+        },
+        {
+          "name": "CommonAvoid",
+          "value": 6,
+          "doc": "One star for both, among those to avoid.",
+          "key": "COMMON_AVOID"
+        },
+        {
+          "name": "TwoSigns",
+          "value": 7,
+          "doc": "One star for both across two signs, by whose quarter comes first.",
+          "key": "TWO_SIGNS"
+        },
+        {
+          "name": "SameSign",
+          "value": 8,
+          "doc": "Two stars in one sign: the groom's must be prior.",
+          "key": "SAME_SIGN"
+        },
+        {
+          "name": "NextStar",
+          "value": 9,
+          "doc": "Two stars in one sign, the groom's next after one the chapter names.",
+          "key": "NEXT_STAR"
+        },
+        {
+          "name": "HappyPair",
+          "value": 10,
+          "doc": "One of the four happy pairs, either way round.",
+          "key": "HAPPY_PAIR"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsRajju",
+      "doc": "A Rajju division, foot to head (`03-design/matching.md`, p. 75).\n\nMirrors `teistro::matching::Rajju` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Padha",
+          "value": 0,
+          "doc": "The foot.",
+          "key": "PADHA"
+        },
+        {
+          "name": "Ooru",
+          "value": 1,
+          "doc": "The thigh.",
+          "key": "OORU"
+        },
+        {
+          "name": "Nabhi",
+          "value": 2,
+          "doc": "The navel.",
+          "key": "NABHI"
+        },
+        {
+          "name": "Kanta",
+          "value": 3,
+          "doc": "The neck.",
+          "key": "KANTA"
+        },
+        {
+          "name": "Siro",
+          "value": 4,
+          "doc": "The head.",
+          "key": "SIRO"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHarshaGrade",
       "doc": "What the source calls a planet by its Harsha bala\n(`03-design/tajika-harsha.md`).\n\nMirrors `teistro::HarshaGrade` through an **exhaustive** match.",
       "repr": "u8",
@@ -12200,7 +12312,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`). The answers come back in `matchings` and\n`matching_kootas`. Null for none, which costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
+          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON\nobject: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`); and `porutham`, the ten considerations of\n*Kalaprakasika* XIII, every field optional: `twoSignStar`\n(`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`\n(`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or\n`ONE_WAY`). The answers come back in `matchings`,\n`matching_kootas`, `poruthams` and `porutham_rows`. Null for none,\nwhich costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2447892.5,\"place\":{\"latitude\":27.7172,\"longitude\":85.324,\"altitude\":1400}},\"partnerRole\":\"BRIDE\"}",
             "nullable": true
@@ -20474,6 +20586,162 @@
               "name": "max_points",
               "scalar": "f64",
               "doc": "The most it gives, 1 for Varna to 8 for Nadi."
+            }
+          ]
+        },
+        {
+          "id": 113,
+          "name": "poruthams",
+          "doc": "Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "agreeing",
+              "scalar": "u8",
+              "doc": "How many of the ten agree, a lift included; the chapter asks \"at least five\" (p. 76)."
+            },
+            {
+              "name": "chief_agreeing",
+              "scalar": "u8",
+              "doc": "How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju."
+            },
+            {
+              "name": "one_lord",
+              "scalar": "u8",
+              "doc": "1 when one lord rules both Moon signs: the p. 76 exception's first clause (C277)."
+            },
+            {
+              "name": "lords_friendly",
+              "scalar": "u8",
+              "doc": "1 when the two sign lords are friendly on the chapter's own table, as the record's `lordsFriendship` reads it (C273)."
+            },
+            {
+              "name": "opposite",
+              "scalar": "u8",
+              "doc": "1 when the two Moon signs are opposite."
+            },
+            {
+              "name": "count",
+              "scalar": "u8",
+              "doc": "The groom's nakshatra counted from the bride's, 1 to 27, which Dhinam, Mahendra and Sthree-Dheergham read."
+            },
+            {
+              "name": "dhinam_rule",
+              "scalar": "u8",
+              "doc": "Which of the chapter's rules decided Dhinam (pp. 69–72).",
+              "enum": "TsDhinamRule"
+            },
+            {
+              "name": "bride_gana",
+              "scalar": "u16",
+              "doc": "The bride's gana, by her or his Moon's nakshatra (p. 72).",
+              "enum": "Gana"
+            },
+            {
+              "name": "groom_gana",
+              "scalar": "u16",
+              "doc": "The groom's gana, by her or his Moon's nakshatra (p. 72).",
+              "enum": "Gana"
+            },
+            {
+              "name": "gana_diminished",
+              "scalar": "u8",
+              "doc": "1 when a Rakshasa stands beside another gana and the bride's star is beyond the 14th from the groom's: the evil \"diminishes\", the disagreement stands (C279)."
+            },
+            {
+              "name": "bride_yoni",
+              "scalar": "u16",
+              "doc": "The bride's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "groom_yoni",
+              "scalar": "u16",
+              "doc": "The groom's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "yoni_hostile",
+              "scalar": "u8",
+              "doc": "1 when the two yonis are among the chapter's eight enmities."
+            },
+            {
+              "name": "apart",
+              "scalar": "u8",
+              "doc": "The groom's Moon sign counted from the bride's, 1 to 12, which Rasi reads (pp. 73–74)."
+            },
+            {
+              "name": "bride_lord",
+              "scalar": "u16",
+              "doc": "The lord of the bride's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "groom_lord",
+              "scalar": "u16",
+              "doc": "The lord of the groom's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "bride_calls_friend",
+              "scalar": "u8",
+              "doc": "1 when the bride's lord calls the groom's a friend on the chapter's own table (pp. 74–75); a lord is its own."
+            },
+            {
+              "name": "groom_calls_friend",
+              "scalar": "u8",
+              "doc": "1 when the groom's lord calls the bride's a friend."
+            },
+            {
+              "name": "bride_to_groom",
+              "scalar": "u8",
+              "doc": "1 when the bride's Moon sign is concordant to the groom's on p. 75's Vasyam table, never a sign to itself (C274)."
+            },
+            {
+              "name": "groom_to_bride",
+              "scalar": "u8",
+              "doc": "1 when the groom's Moon sign is concordant to the bride's."
+            },
+            {
+              "name": "bride_rajju",
+              "scalar": "u8",
+              "doc": "The bride's Rajju division, by her or his Moon's nakshatra (p. 75, C275).",
+              "enum": "TsRajju"
+            },
+            {
+              "name": "groom_rajju",
+              "scalar": "u8",
+              "doc": "The groom's Rajju division, by her or his Moon's nakshatra (p. 75, C275).",
+              "enum": "TsRajju"
+            },
+            {
+              "name": "pierced",
+              "scalar": "u8",
+              "doc": "1 when the two nakshatras are a Vedhai pair of p. 76 (C276)."
+            }
+          ]
+        },
+        {
+          "id": 114,
+          "name": "porutham_rows",
+          "doc": "Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "koota",
+              "scalar": "u16",
+              "doc": "Which consideration, a catalogue koota (C282).",
+              "enum": "Koota"
+            },
+            {
+              "name": "agrees",
+              "scalar": "u8",
+              "doc": "1 when it agrees, a lift included."
+            },
+            {
+              "name": "lifted",
+              "scalar": "u8",
+              "doc": "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277)."
             }
           ]
         }

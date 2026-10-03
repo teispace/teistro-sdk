@@ -8731,8 +8731,10 @@ fn a_chart_request_answers_its_harmonic() {
 /// a refusal is named by its field (`03-design/matching.md`).
 #[test]
 fn a_chart_request_answers_its_matching() {
-    use teistro::KootaReading;
-    use teistro_ffi::chart::{TsBhakootDosha, TsMaitriRelation, TsVashyaRelation, TsYoniRelation};
+    use teistro::{KootaReading, PoruthamReading};
+    use teistro_ffi::chart::{
+        TsBhakootDosha, TsDhinamRule, TsMaitriRelation, TsRajju, TsVashyaRelation, TsYoniRelation,
+    };
 
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
     let instants = [2_451_545.0, 2_451_552.5, 2_451_561.25];
@@ -8794,10 +8796,13 @@ fn a_chart_request_answers_its_matching() {
         bits("matchings", "total"),
         matched
             .iter()
-            .map(|one| one.total.to_bits())
+            .map(|one| one.ashta_koota.total.to_bits())
             .collect::<Vec<_>>()
     );
-    let rows: Vec<&teistro::KootaRow> = matched.iter().flat_map(|one| &one.kootas).collect();
+    let rows: Vec<&teistro::KootaRow> = matched
+        .iter()
+        .flat_map(|one| &one.ashta_koota.kootas)
+        .collect();
     assert_eq!(rows.len(), 8 * instants.len());
     assert_eq!(
         ints("matching_kootas", "koota"),
@@ -8893,10 +8898,105 @@ fn a_chart_request_answers_its_matching() {
         assert_eq!(&ints("matchings", name), cells, "{name}");
     }
 
+    // The ten considerations, the same way.
+    let mut expected = std::collections::BTreeMap::<&str, Vec<i64>>::new();
+    let mut put = |name: &'static str, value: i64| expected.entry(name).or_default().push(value);
+    for ten in matched.iter().map(|one| &one.porutham) {
+        put("agreeing", i64::from(ten.agreeing));
+        put("chief_agreeing", i64::from(ten.chief_agreeing));
+        put("one_lord", i64::from(ten.exception.one_lord));
+        put("lords_friendly", i64::from(ten.exception.lords_friendly));
+        put("opposite", i64::from(ten.exception.opposite));
+        for row in &ten.considerations {
+            match row.reading {
+                PoruthamReading::Tara { count, rule } => {
+                    put("count", i64::from(count));
+                    put("dhinam_rule", TsDhinamRule::from(rule) as i64);
+                }
+                PoruthamReading::Gana {
+                    bride,
+                    groom,
+                    diminished,
+                } => {
+                    put("bride_gana", i64::from(bride.id()));
+                    put("groom_gana", i64::from(groom.id()));
+                    put("gana_diminished", i64::from(diminished));
+                }
+                PoruthamReading::Mahendra { .. } | PoruthamReading::StreeDeergha { .. } => {}
+                PoruthamReading::Yoni {
+                    bride,
+                    groom,
+                    hostile,
+                } => {
+                    put("bride_yoni", i64::from(bride.id()));
+                    put("groom_yoni", i64::from(groom.id()));
+                    put("yoni_hostile", i64::from(hostile));
+                }
+                PoruthamReading::Bhakoot { apart } => put("apart", i64::from(apart)),
+                PoruthamReading::GrahaMaitri {
+                    bride,
+                    groom,
+                    bride_calls_friend,
+                    groom_calls_friend,
+                } => {
+                    put("bride_lord", i64::from(bride.id()));
+                    put("groom_lord", i64::from(groom.id()));
+                    put("bride_calls_friend", i64::from(bride_calls_friend));
+                    put("groom_calls_friend", i64::from(groom_calls_friend));
+                }
+                PoruthamReading::Vashya {
+                    bride_to_groom,
+                    groom_to_bride,
+                } => {
+                    put("bride_to_groom", i64::from(bride_to_groom));
+                    put("groom_to_bride", i64::from(groom_to_bride));
+                }
+                PoruthamReading::Rajju { bride, groom } => {
+                    put("bride_rajju", TsRajju::from(bride) as i64);
+                    put("groom_rajju", TsRajju::from(groom) as i64);
+                }
+                PoruthamReading::Vedha { pierced } => put("pierced", i64::from(pierced)),
+            }
+        }
+    }
+    assert_eq!(expected.len(), 23, "every column of the row a chart");
+    for (name, cells) in &expected {
+        assert_eq!(&ints("poruthams", name), cells, "{name}");
+    }
+    let tens: Vec<&teistro::PoruthamRow> = matched
+        .iter()
+        .flat_map(|one| &one.porutham.considerations)
+        .collect();
+    assert_eq!(tens.len(), 10 * instants.len());
+    for (column, cell) in [
+        (
+            "koota",
+            &(|row: &teistro::PoruthamRow| i64::from(row.reading.koota().id()))
+                as &dyn Fn(&teistro::PoruthamRow) -> i64,
+        ),
+        ("agrees", &|row: &teistro::PoruthamRow| {
+            i64::from(row.agrees)
+        }),
+        ("lifted", &|row: &teistro::PoruthamRow| {
+            i64::from(row.lifted)
+        }),
+    ] {
+        assert_eq!(
+            ints("porutham_rows", column),
+            tens.iter().map(|row| cell(row)).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+
     // None asked is empty sections; a refusal is named by its field.
     let bytes = chart_blob(&ctx, &base).unwrap();
     let reader = Reader::parse(&bytes, &schema).unwrap();
-    for (section, column) in [("matchings", "total"), ("matching_kootas", "koota")] {
+    for (section, column) in [
+        ("matchings", "total"),
+        ("matching_kootas", "koota"),
+        ("poruthams", "agreeing"),
+        ("porutham_rows", "koota"),
+    ] {
         assert_eq!(
             reader.column(section, column).unwrap().len(),
             0,

@@ -6175,6 +6175,88 @@ typedef enum ts_bhakoot_dosha {
 } ts_bhakoot_dosha;
 
 /**
+ * Which of *Kalaprakasika*'s rules decided Dhinam
+ * (`03-design/matching.md`, pp. 69–72).
+ *
+ * Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
+ * match.
+ */
+typedef enum ts_dhinam_rule {
+    /**
+     * The count alone: the 3rd, 5th and 7th of the first nine disagree.
+     */
+    TS_DHINAM_RULE_COUNT = 0,
+    /**
+     * A quarter of the second nine, the groom's star's.
+     */
+    TS_DHINAM_RULE_SECOND_ROUND_QUARTER = 1,
+    /**
+     * The 22nd, *Vadha-Vainasika*.
+     */
+    TS_DHINAM_RULE_VADHA_VAINASIKA = 2,
+    /**
+     * The 27th, in two signs.
+     */
+    TS_DHINAM_RULE_TWENTY_SEVENTH = 3,
+    /**
+     * One star for both, among the excellent.
+     */
+    TS_DHINAM_RULE_COMMON_EXCELLENT = 4,
+    /**
+     * One star for both, among the neutral.
+     */
+    TS_DHINAM_RULE_COMMON_NEUTRAL = 5,
+    /**
+     * One star for both, among those to avoid.
+     */
+    TS_DHINAM_RULE_COMMON_AVOID = 6,
+    /**
+     * One star for both across two signs, by whose quarter comes first.
+     */
+    TS_DHINAM_RULE_TWO_SIGNS = 7,
+    /**
+     * Two stars in one sign: the groom's must be prior.
+     */
+    TS_DHINAM_RULE_SAME_SIGN = 8,
+    /**
+     * Two stars in one sign, the groom's next after one the chapter names.
+     */
+    TS_DHINAM_RULE_NEXT_STAR = 9,
+    /**
+     * One of the four happy pairs, either way round.
+     */
+    TS_DHINAM_RULE_HAPPY_PAIR = 10,
+} ts_dhinam_rule;
+
+/**
+ * A Rajju division, foot to head (`03-design/matching.md`, p. 75).
+ *
+ * Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+ */
+typedef enum ts_rajju {
+    /**
+     * The foot.
+     */
+    TS_RAJJU_PADHA = 0,
+    /**
+     * The thigh.
+     */
+    TS_RAJJU_OORU = 1,
+    /**
+     * The navel.
+     */
+    TS_RAJJU_NABHI = 2,
+    /**
+     * The neck.
+     */
+    TS_RAJJU_KANTA = 3,
+    /**
+     * The head.
+     */
+    TS_RAJJU_SIRO = 4,
+} ts_rajju;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *
@@ -7975,15 +8057,21 @@ struct ts_chart_request {
     const char * harmonic_json;
     /**
      * Every chart matched with one partner's birth by the Ashta Koota of
-     * *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+     * *Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON
+     * object: `partner`,
      * `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
      * "utcOffsetSeconds"}`, founded once under the context's sidereal
      * profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
      * on the other side; and `rules`, every field optional: `equalVarna`
      * (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
      * `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
-     * `MIDDLE_ONLY`). The answers come back in `matchings` and
-     * `matching_kootas`. Null for none, which costs nothing
+     * `MIDDLE_ONLY`); and `porutham`, the ten considerations of
+     * *Kalaprakasika* XIII, every field optional: `twoSignStar`
+     * (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
+     * (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or
+     * `ONE_WAY`). The answers come back in `matchings`,
+     * `matching_kootas`, `poruthams` and `porutham_rows`. Null for none,
+     * which costs nothing
      * (`03-design/matching.md`). Refusals are named from the record every
      * binding calls `matching`, as `matching.partnerRole`.
      * Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.

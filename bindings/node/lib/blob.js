@@ -1628,6 +1628,44 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 113, 'poruthams');
+    out.poruthams = {
+      agreeing: column(blob, at, 0, 'u8', at.count),
+      chiefAgreeing: column(blob, at, 1, 'u8', at.count),
+      oneLord: column(blob, at, 2, 'u8', at.count),
+      lordsFriendly: column(blob, at, 3, 'u8', at.count),
+      opposite: column(blob, at, 4, 'u8', at.count),
+      count: column(blob, at, 5, 'u8', at.count),
+      dhinamRule: column(blob, at, 6, 'u8', at.count),
+      brideGana: column(blob, at, 7, 'u16', at.count),
+      groomGana: column(blob, at, 8, 'u16', at.count),
+      ganaDiminished: column(blob, at, 9, 'u8', at.count),
+      brideYoni: column(blob, at, 10, 'u16', at.count),
+      groomYoni: column(blob, at, 11, 'u16', at.count),
+      yoniHostile: column(blob, at, 12, 'u8', at.count),
+      apart: column(blob, at, 13, 'u8', at.count),
+      brideLord: column(blob, at, 14, 'u16', at.count),
+      groomLord: column(blob, at, 15, 'u16', at.count),
+      brideCallsFriend: column(blob, at, 16, 'u8', at.count),
+      groomCallsFriend: column(blob, at, 17, 'u8', at.count),
+      brideToGroom: column(blob, at, 18, 'u8', at.count),
+      groomToBride: column(blob, at, 19, 'u8', at.count),
+      brideRajju: column(blob, at, 20, 'u8', at.count),
+      groomRajju: column(blob, at, 21, 'u8', at.count),
+      pierced: column(blob, at, 22, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 114, 'porutham_rows');
+    out.poruthamRows = {
+      koota: column(blob, at, 0, 'u16', at.count),
+      agrees: column(blob, at, 1, 'u8', at.count),
+      lifted: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 
