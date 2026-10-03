@@ -31,6 +31,7 @@ use teistro_core::error::Error;
 use teistro_gochar::hits::NatalPoint;
 
 use crate::aspects::{AspectRequest, OrbModel, Station, WesternAspect, holding, refuse_repeats};
+use crate::declination::{ParallelRequest, paired, refuse_past_a_pole};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -65,6 +66,11 @@ pub struct SynastryRequest {
     pub lagna: bool,
     /// The zodiac the two are compared in (C241).
     pub zodiac: SynastryZodiac,
+    /// The parallels across the two charts, when asked: each point of one
+    /// the same distance from the equator as a point of the other
+    /// (`03-design/western-declinations.md`). None by default.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parallels: Option<ParallelRequest>,
 }
 
 /// [`SynastryRequest`] as it is read: the aspect table's fields laid
@@ -77,6 +83,7 @@ struct Asked {
     orbs: OrbModel,
     lagna: bool,
     zodiac: SynastryZodiac,
+    parallels: Option<ParallelRequest>,
 }
 
 impl Default for Asked {
@@ -85,12 +92,14 @@ impl Default for Asked {
             table: AspectRequest { aspects, orbs },
             lagna,
             zodiac,
+            parallels,
         } = SynastryRequest::default();
         Asked {
             aspects,
             orbs,
             lagna,
             zodiac,
+            parallels,
         }
     }
 }
@@ -104,6 +113,7 @@ impl From<Asked> for SynastryRequest {
             },
             lagna: asked.lagna,
             zodiac: asked.zodiac,
+            parallels: asked.parallels,
         }
     }
 }
@@ -114,6 +124,7 @@ impl Default for SynastryRequest {
             table: AspectRequest::default(),
             lagna: true,
             zodiac: SynastryZodiac::Tropical,
+            parallels: None,
         }
     }
 }
@@ -127,7 +138,15 @@ impl SynastryRequest {
             table: AspectRequest::lilly(),
             lagna: false,
             zodiac: SynastryZodiac::Tropical,
+            parallels: None,
         }
+    }
+
+    /// Reads the parallels across the two charts too, under this request.
+    #[must_use]
+    pub const fn with_parallels(mut self, parallels: ParallelRequest) -> Self {
+        self.parallels = Some(parallels);
+        self
     }
 
     /// Looks for these aspects only.
@@ -203,6 +222,9 @@ impl SynastryRequest {
                 .with_field("lagna")
                 .with_hint("ask with `lagna: false`, or read the lagna under Leo's orbs"));
         }
+        if let Some(parallels) = &self.parallels {
+            parallels.check().map_err(|why| why.under("parallels"))?;
+        }
         Ok(())
     }
 }
@@ -238,10 +260,7 @@ impl SynastryPoint {
 
     /// Its key, for a refusal: `SUN`, or `LAGNA`.
     const fn key(self) -> &'static str {
-        match self.point {
-            NatalPoint::Graha { graha } => graha.key(),
-            NatalPoint::Lagna => "LAGNA",
-        }
+        point_key(self.point)
     }
 }
 
@@ -304,6 +323,114 @@ pub fn synastry(
             orb_deg: held.orb_deg,
         })
         .collect())
+}
+
+/// A point of one chart as a synastry's parallels read it: its distance
+/// from the equator.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeclinedPoint {
+    /// Which: a planet, or the lagna.
+    pub point: NatalPoint,
+    /// Its declination, degrees, north positive.
+    pub declination_deg: f64,
+}
+
+impl DeclinedPoint {
+    /// A planet at a declination.
+    #[must_use]
+    pub const fn graha(graha: Graha, declination_deg: f64) -> DeclinedPoint {
+        DeclinedPoint {
+            point: NatalPoint::Graha { graha },
+            declination_deg,
+        }
+    }
+
+    /// The lagna at a declination.
+    #[must_use]
+    pub const fn lagna(declination_deg: f64) -> DeclinedPoint {
+        DeclinedPoint {
+            point: NatalPoint::Lagna,
+            declination_deg,
+        }
+    }
+}
+
+/// A point of one chart and a point of the other the same distance from
+/// the equator, within the orb.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynastryParallelRow {
+    /// The first chart's point.
+    pub first: NatalPoint,
+    /// The second chart's.
+    pub second: NatalPoint,
+    /// Whether the two stand on opposite sides of the equator (C243).
+    pub contrary: bool,
+    /// How far apart their distances from the equator are, degrees.
+    pub apart_deg: f64,
+    /// The orb the request allowed, degrees.
+    pub orb_deg: f64,
+}
+
+/// Every point of `first` the same distance from the equator as a point of
+/// `second`, within the orb, closest first: the parallels across two
+/// charts (`03-design/western-declinations.md`).
+///
+/// ```
+/// use teistro_gochar::hits::NatalPoint;
+/// use teistro_western::{DeclinedPoint, ParallelRequest, synastry_parallels};
+/// use teistro_core::catalogue::Graha;
+///
+/// let his = [DeclinedPoint::graha(Graha::Sun, 22.3)];
+/// let hers = [DeclinedPoint::graha(Graha::Moon, -21.8), DeclinedPoint::lagna(5.0)];
+/// let found = synastry_parallels(&his, &hers, &ParallelRequest::default())?;
+/// assert_eq!(found.len(), 1);
+/// assert_eq!(found[0].second, NatalPoint::Graha { graha: Graha::Moon });
+/// assert!(found[0].contrary);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// What [`ParallelRequest::check`] refuses; a point given twice on one
+/// side (`first` or `second`); a declination past a pole.
+pub fn synastry_parallels(
+    first: &[DeclinedPoint],
+    second: &[DeclinedPoint],
+    request: &ParallelRequest,
+) -> Result<Vec<SynastryParallelRow>, Error> {
+    request.check()?;
+    for (side, points) in [("first", first), ("second", second)] {
+        refuse_repeats(points.iter().map(|one| point_key(one.point)), "a point")
+            .map_err(|why| why.with_field(side))?;
+        refuse_past_a_pole(points.iter().map(|one| one.declination_deg), |at| {
+            format!("{side}[{at}].declinationDeg")
+        })?;
+    }
+    let pairs = first.iter().flat_map(|a| {
+        second
+            .iter()
+            .map(move |b| ((a.point, a.declination_deg), (b.point, b.declination_deg)))
+    });
+    Ok(paired(pairs, request.orb_deg)
+        .into_iter()
+        .map(|pair| SynastryParallelRow {
+            first: pair.first,
+            second: pair.second,
+            contrary: pair.contrary,
+            apart_deg: pair.apart_deg,
+            orb_deg: request.orb_deg,
+        })
+        .collect())
+}
+
+/// A natal point's key, for a refusal: `SUN`, or `LAGNA`.
+const fn point_key(point: NatalPoint) -> &'static str {
+    match point {
+        NatalPoint::Graha { graha } => graha.key(),
+        NatalPoint::Lagna => "LAGNA",
+    }
 }
 
 #[cfg(test)]
@@ -431,5 +558,54 @@ mod tests {
         let again: SynastryRequest =
             teistro_core::strict::read(&serde_json::to_string(&asked).unwrap(), ROOT).unwrap();
         assert_eq!(again, asked);
+    }
+
+    #[test]
+    fn the_parallels_are_asked_in_the_record_and_named_under_it() {
+        let asked = SynastryRequest::from_json(r#"{"parallels": {}}"#).unwrap();
+        assert_eq!(asked.parallels, Some(ParallelRequest::default()));
+        assert_eq!(SynastryRequest::from_json("{}").unwrap().parallels, None);
+        let wide = SynastryRequest::from_json(r#"{"parallels": {"orbDeg": 20}}"#).unwrap_err();
+        assert_eq!(wide.field(), Some("synastry.parallels.orbDeg"));
+        let typo = SynastryRequest::from_json(r#"{"parallels": {"orb": 1}}"#).unwrap_err();
+        assert_eq!(typo.field(), Some("synastry.parallels.orb"));
+    }
+
+    #[test]
+    fn the_parallels_across_read_every_point_against_every_point() {
+        let his = [
+            DeclinedPoint::graha(Graha::Sun, 10.0),
+            DeclinedPoint::lagna(-4.0),
+        ];
+        let hers = [
+            DeclinedPoint::graha(Graha::Sun, -10.5),
+            DeclinedPoint::graha(Graha::Moon, 4.2),
+        ];
+        let found = synastry_parallels(&his, &hers, &ParallelRequest::default()).unwrap();
+        let pairs: Vec<(NatalPoint, NatalPoint, bool)> = found
+            .iter()
+            .map(|row| (row.first, row.second, row.contrary))
+            .collect();
+        assert_eq!(
+            pairs,
+            [
+                (
+                    NatalPoint::Lagna,
+                    NatalPoint::Graha { graha: Graha::Moon },
+                    true
+                ),
+                (
+                    NatalPoint::Graha { graha: Graha::Sun },
+                    NatalPoint::Graha { graha: Graha::Sun },
+                    true
+                ),
+            ]
+        );
+        let twice = [DeclinedPoint::lagna(1.0), DeclinedPoint::lagna(2.0)];
+        let refused = synastry_parallels(&his, &twice, &ParallelRequest::default()).unwrap_err();
+        assert_eq!(refused.field(), Some("second"));
+        let past = [DeclinedPoint::lagna(95.0)];
+        let refused = synastry_parallels(&past, &hers, &ParallelRequest::default()).unwrap_err();
+        assert_eq!(refused.field(), Some("first[0].declinationDeg"));
     }
 }

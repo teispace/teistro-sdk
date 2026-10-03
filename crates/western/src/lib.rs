@@ -49,4 +49,7 @@ pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,
     YearMeasure,
 };
-pub use synastry::{SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac, synastry};
+pub use synastry::{
+    DeclinedPoint, SynastryParallelRow, SynastryPoint, SynastryRequest, SynastryRow,
+    SynastryZodiac, synastry, synastry_parallels,
+};
