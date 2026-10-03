@@ -506,6 +506,10 @@ __all__ = [
     # The Western aspects.
     "WesternAspectRequest",
     "WesternAspectRow",
+    "Declinations",
+    "Declined",
+    "ParallelRequest",
+    "ParallelRow",
     "SynastryPartner",
     "SynastryRequest",
     "SynastryRow",
@@ -1553,6 +1557,7 @@ class ChartArea(_Area):
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
         synastry: Optional[SynastryRequest] = None,
+        parallels: Optional[ParallelRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1603,6 +1608,7 @@ class ChartArea(_Area):
             progressions=progressions,
             western_aspects=western_aspects,
             synastry=synastry,
+            parallels=parallels,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1643,6 +1649,7 @@ class ChartArea(_Area):
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
         synastry: Optional[SynastryRequest] = None,
+        parallels: Optional[ParallelRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1715,6 +1722,7 @@ class ChartArea(_Area):
             progressions_json=_progressions_json(progressions),
             western_aspects_json=_western_aspects_json(western_aspects),
             synastry_json=_synastry_json(synastry),
+            parallels_json=_record_json(parallels, "parallels", "{'orbDeg': 1}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3878,6 +3886,66 @@ class WesternAspectRow:
 
     applying: bool
     """Whether the faster planet is closing on the exact angle."""
+
+
+class ParallelRequest(TypedDict, total=False):
+    """How close two distances from the equator must stand to be a parallel
+    (`03-design/western-declinations.md`): `orbDeg`, Leo's 1° (*How to
+    Judge a Nativity*, p. 47) when absent, at most 10°.
+
+    >>> leo: ParallelRequest = {}
+    >>> wider: ParallelRequest = {"orbDeg": 1.5}
+    """
+
+    orbDeg: float
+
+
+@dataclass(frozen=True)
+class Declined:
+    """A planet's distance from the equator."""
+
+    graha: Graha
+    declination_deg: float
+    """Degrees north of the equator."""
+
+
+@dataclass(frozen=True)
+class Declinations:
+    """A chart's distances from the equator, degrees north
+    (`03-design/western-declinations.md`)."""
+
+    obliquity_deg: float
+    """The true obliquity at the chart's instant, which turned every one."""
+
+    grahas: Tuple[Declined, ...]
+    """The planets, in the catalogue's order."""
+
+    lagna_deg: float
+    """The lagna's: the Sun's at that degree (Leo, p. 141)."""
+
+    midheaven_deg: float
+    """The midheaven's, read the same way."""
+
+    def graha(self, graha: Graha) -> Optional[float]:
+        """One planet's declination, when the chart placed it."""
+        return next((one.declination_deg for one in self.grahas if one.graha == graha), None)
+
+
+@dataclass(frozen=True)
+class ParallelRow:
+    """One pair of planets the same distance from the equator within the
+    orb, the pair in catalogue order."""
+
+    first: Graha
+    second: Graha
+    contrary: bool
+    """Whether the two stand on opposite sides of the equator (C243)."""
+
+    apart_deg: float
+    """How far apart their distances from the equator are, degrees."""
+
+    orb_deg: float
+    """The orb the request allowed, degrees."""
 
 
 class SynastryPartner(TypedDict, total=False):
@@ -8160,6 +8228,23 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def declinations(self) -> Optional[Declinations]:
+        """The chart's distances from the equator, its planets' and its
+        angles'; `None` unless `parallels=` asked
+        (`03-design/western-declinations.md`)."""
+        parsed = self.batch._declinations[0]
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def parallels(self) -> Optional[Tuple[ParallelRow, ...]]:
+        """The parallels among the chart's planets, closest first: each pair
+        the same distance from the equator within the orb (Leo's 1° by
+        default), on either side of it (C243); `None` unless `parallels=`
+        asked."""
+        parsed = self.batch._declinations[1]
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def synastry(self) -> Optional[Tuple[SynastryRow, ...]]:
         """The Western aspects between this chart and the partner's, closest
         first; `None` unless `synastry=` asked
@@ -8723,18 +8808,18 @@ class ChartBatch:
             )
         return read
 
-    def _ragged(self, counts: Any, rows: int, names: str, read: Callable[[int], T]) -> list[Tuple[T, ...]]:
-        """A per-chart table from a count section and the rows it is ragged
-        by: each chart's rows, or none at all when the count section is
-        empty because nothing was asked."""
+    def _ragged(self, counts: Sequence[int], rows: int, names: str, read: Callable[[int], T]) -> list[Tuple[T, ...]]:
+        """A per-chart table from a count column and the rows it is ragged
+        by: each chart's rows, or none at all when the column is empty
+        because nothing was asked."""
         charts = len(self.decoded.cast.instant)
-        if counts.length == 0:
+        if len(counts) == 0:
             return []
-        if counts.length != charts or rows != sum(counts.count):
-            raise TeistroError(Status.INTERNAL, f"{names}: {counts.length} counts and {rows} rows for {charts} charts")
+        if len(counts) != charts or rows != sum(counts):
+            raise TeistroError(Status.INTERNAL, f"{names}: {len(counts)} counts and {rows} rows for {charts} charts")
         tables: list[Tuple[T, ...]] = []
         start = 0
-        for count in counts.count:
+        for count in counts:
             tables.append(tuple(read(at) for at in range(start, start + count)))
             start += count
         return tables
@@ -8746,7 +8831,7 @@ class ChartBatch:
         `western_aspect_rows` is ragged by its count."""
         r = self.decoded.western_aspect_rows
         return self._ragged(
-            self.decoded.western_aspects,
+            self.decoded.western_aspects.count,
             r.length,
             "western_aspects and western_aspect_rows",
             lambda at: WesternAspectRow(
@@ -8767,7 +8852,7 @@ class ChartBatch:
         `synastry_rows` is ragged by its count."""
         r = self.decoded.synastry_rows
         return self._ragged(
-            self.decoded.synastry,
+            self.decoded.synastry.count,
             r.length,
             "synastry and synastry_rows",
             lambda at: SynastryRow(
@@ -8779,6 +8864,44 @@ class ChartBatch:
                 orb_deg=r.orb_deg[at],
             ),
         )
+
+    @cached_property
+    def _declinations(self) -> Tuple[list[Declinations], list[Tuple[ParallelRow, ...]]]:
+        """Every chart's declinations and parallels, decoded once; both empty
+        when none were asked for. `declinations` holds a row a chart, and
+        `declination_rows` and `parallel_rows` are ragged by its two
+        counts."""
+        row = self.decoded.declinations
+        rows = self.decoded.declination_rows
+        p = self.decoded.parallel_rows
+        grahas = self._ragged(
+            row.graha_count,
+            rows.length,
+            "declinations and declination_rows",
+            lambda at: Declined(graha=Graha(rows.graha[at]), declination_deg=rows.declination_deg[at]),
+        )
+        declinations = [
+            Declinations(
+                obliquity_deg=row.obliquity_deg[k],
+                grahas=planets,
+                lagna_deg=row.lagna_deg[k],
+                midheaven_deg=row.midheaven_deg[k],
+            )
+            for k, planets in enumerate(grahas)
+        ]
+        parallels = self._ragged(
+            row.parallel_count,
+            p.length,
+            "declinations and parallel_rows",
+            lambda at: ParallelRow(
+                first=Graha(p.first[at]),
+                second=Graha(p.second[at]),
+                contrary=p.contrary[at] == 1,
+                apart_deg=p.apart_deg[at],
+                orb_deg=p.orb_deg[at],
+            ),
+        )
+        return declinations, parallels
 
     @cached_property
     def _perfections(self) -> list[Matter]:
