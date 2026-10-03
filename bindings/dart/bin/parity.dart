@@ -19,6 +19,13 @@ final Map<String, String> report = {};
 
 /// A number as every binding spells it: nine decimals, never an exponent,
 /// and an integer value written plainly.
+/// A natal point as every runner prints it: `LAGNA`, or the graha's full
+/// key.
+String natalKey(NatalPoint point) => switch (point) {
+  NatalLagna() => 'LAGNA',
+  NatalGraha(:final graha) => graha.fullKey,
+};
+
 String number(num value) {
   if (value is int) return value.toString();
   final double d = value.toDouble();
@@ -569,6 +576,26 @@ void main() {
         Graha.pluto: 5,
       }),
     ),
+    synastry: SynastryRequest(
+      Partner(
+        instant: 2451545.25,
+        place: Observer(
+          latitudeDeg: Latitude(-33.87),
+          longitudeDeg: Longitude(151.21),
+          altitudeM: Altitude(0),
+        ),
+        utcOffsetSeconds: 36000,
+      ),
+      table: const WesternAspectRequest(
+        aspects: [
+          WesternAspect.conjunction,
+          WesternAspect.square,
+          WesternAspect.trine,
+          WesternAspect.opposition,
+        ],
+      ),
+      zodiac: SynastryZodiac.charts,
+    ),
     progressions: const ProgressionsRequest(
       at: 2470000.5,
       year: YearMeasure.noonSiderealTime,
@@ -891,10 +918,7 @@ void main() {
         AspectHit(:final to, :final angle, :final phase, :final motion) => (
           '-',
           motion.key,
-          switch (to) {
-            NatalLagna() => 'LAGNA',
-            NatalGraha(:final graha) => graha.fullKey,
-          },
+          natalKey(to),
           '$angle',
           phase.key,
         ),
@@ -1215,13 +1239,9 @@ void main() {
     }
     put('chart-$i-progressed-contact-count', '${contacts.length}');
     for (final (n, c) in contacts.indexed) {
-      final point = switch (c.to) {
-        NatalLagna() => 'LAGNA',
-        NatalGraha(:final graha) => graha.fullKey,
-      };
       put(
         'chart-$i-progressed-contact-$n',
-        '${number(c.life)} ${number(c.sky)} ${c.graha.fullKey} $point '
+        '${number(c.life)} ${number(c.sky)} ${c.graha.fullKey} ${natalKey(c.to)} '
             '${c.angle} ${c.motion.key}',
       );
     }
@@ -1233,6 +1253,16 @@ void main() {
         '${row.first.fullKey} ${row.second.fullKey} ${row.aspect.key} '
             '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
             '${number(row.orbDeg)} ${row.applying ? 1 : 0}',
+      );
+    }
+    final synastry = chart.synastry!;
+    put('chart-$i-synastry-count', '${synastry.length}');
+    for (final (n, row) in synastry.indexed) {
+      put(
+        'chart-$i-synastry-$n',
+        '${natalKey(row.first)} ${natalKey(row.second)} ${row.aspect.key} '
+            '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
+            '${number(row.orbDeg)}',
       );
     }
     final vs = chart.vimshopaka!;

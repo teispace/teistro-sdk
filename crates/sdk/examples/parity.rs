@@ -924,6 +924,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_progressions(report, &geo, index, document, &bare);
         the_western_aspects(report, &geo, index, document);
     }
+    the_synastry(report, &geo, &read.value);
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
     // which is what the blob carries, and what made this row disagree
@@ -1891,10 +1892,7 @@ fn the_progressions(
                 number(at.life.get()),
                 number(at.sky.get()),
                 at.graha.full_key(),
-                match at.to {
-                    teistro::NatalPoint::Lagna => "LAGNA",
-                    teistro::NatalPoint::Graha { graha } => graha.full_key(),
-                },
+                natal_key(at.to),
                 at.angle,
                 wire_key(&at.motion)
             ),
@@ -1940,6 +1938,52 @@ fn the_western_aspects(
                 u8::from(row.applying)
             ),
         );
+    }
+}
+
+/// A natal point as every runner prints it: `LAGNA`, or the graha's full
+/// key.
+fn natal_key(point: teistro::NatalPoint) -> &'static str {
+    match point {
+        teistro::NatalPoint::Lagna => "LAGNA",
+        teistro::NatalPoint::Graha { graha } => graha.full_key(),
+    }
+}
+
+/// The synastry every runner asks for: four aspects against a partner born
+/// in Sydney at J2000, in each chart's own zodiac, so the partner's own
+/// clock, the lagna and C241's sidereal reading all cross.
+const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS"}"#;
+
+/// Every chart's synastry as the other three print it: its length, then
+/// each row's two points, aspect, arcs and orb.
+fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
+    let asked = teistro::PartnerSynastry::from_json(SYNASTRY_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .synastry_with(documents, &asked)
+        .expect("one zodiac for both");
+    for (index, rows) in read.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-synastry-count"),
+            rows.len().to_string(),
+        );
+        for (n, row) in rows.iter().enumerate() {
+            put(
+                report,
+                &format!("chart-{index}-synastry-{n}"),
+                format!(
+                    "{} {} {} {} {} {}",
+                    natal_key(row.first),
+                    natal_key(row.second),
+                    row.aspect.key(),
+                    number(row.apart_deg),
+                    number(row.from_exact_deg),
+                    number(row.orb_deg)
+                ),
+            );
+        }
     }
 }
 
@@ -2803,10 +2847,7 @@ fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro
             } => (
                 dash(),
                 wire_key(&motion),
-                match to {
-                    teistro::NatalPoint::Lagna => "LAGNA".to_owned(),
-                    teistro::NatalPoint::Graha { graha } => graha.full_key().to_owned(),
-                },
+                natal_key(to).to_owned(),
                 angle.to_string(),
                 wire_key(&phase),
             ),
