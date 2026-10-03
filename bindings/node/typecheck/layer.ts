@@ -9,6 +9,8 @@ import type {
   AntisciaRequest,
   AntiscionRow,
   Declinations,
+  MidpointRequest,
+  MidpointRow,
   ParallelRequest,
   ParallelRow,
   SynastryRequest,
@@ -1095,6 +1097,29 @@ function theAntiscia(ctx: Context): string {
 }
 
 void theAntiscia;
+
+// A chart's equal distances, read all the way down.
+function theMidpoints(ctx: Context): string {
+  const asked: MidpointRequest = { orbDeg: 1 };
+  const chart = ctx.chart.found({
+    instant: 2402390.5542,
+    place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 },
+    utcOffsetSeconds: 0,
+    midpoints: asked,
+  });
+  // @ts-expect-error the orb is a number of degrees
+  const misread: MidpointRequest = { orbDeg: '1' };
+  const row: MidpointRow | undefined = chart.midpoints?.[0];
+  return [
+    row?.middle ?? 'none',
+    row?.far ?? false,
+    row?.distanceDeg ?? Number.NaN,
+    row?.fromAxisDeg ?? Number.NaN,
+    String(misread),
+  ].join();
+}
+
+void theMidpoints;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them

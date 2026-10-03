@@ -584,6 +584,7 @@ def main() -> None:
             },
             parallels={"orbDeg": 1.5},
             antiscia={},
+            midpoints={"orbDeg": 1.5},
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1186,6 +1187,15 @@ def main() -> None:
                 ",".join(one.full_key for one in reflected.unpaired) or "-",
             )
             put_antiscion_rows(f"chart-{i}-antiscia", reflected.pairs)
+            between = chart.midpoints
+            assert between is not None
+            put(f"chart-{i}-midpoint-count", str(len(between)))
+            for n, equal in enumerate(between):
+                put(
+                    f"chart-{i}-midpoint-{n}",
+                    f"{equal.first.full_key} {equal.second.full_key} {equal.middle.full_key} {int(equal.far)} "
+                    f"{number(equal.distance_deg)} {number(equal.from_axis_deg)} {number(equal.orb_deg)}",
+                )
             synastry = chart.synastry
             assert synastry is not None
             put(f"chart-{i}-synastry-count", str(len(synastry)))

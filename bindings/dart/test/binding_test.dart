@@ -2921,6 +2921,68 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its equal distances', () {
+    // King George V (Leo, *How to Judge a Nativity*, p. 130): his recast's
+    // one under the default, Pluto on the far point of the Moon and
+    // Jupiter, eight at 1.5°, and refusals named in the record
+    // (`03-design/western-midpoints.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final george = Observer(
+      latitudeDeg: Latitude(51.5045),
+      longitudeDeg: Longitude(-0.1366),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2402390.554166667;
+    Chart found(double instant, {MidpointRequest? asked}) => ctx.chart.found(
+      instant: instant,
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      midpoints: asked,
+    );
+    expect(found(birth).midpoints, isNull);
+
+    final rows = found(birth, asked: const MidpointRequest()).midpoints!;
+    expect(rows, hasLength(1));
+    final row = rows.single;
+    expect(
+      (row.first, row.second, row.middle, row.far),
+      (Graha.moon, Graha.jupiter, Graha.pluto, true),
+    );
+    expect(row.fromAxisDeg, closeTo(0.052, 0.01));
+    expect(row.distanceDeg, closeTo(137.69, 0.01));
+    expect(row.orbDeg, 0.5);
+
+    const wide = MidpointRequest(orbDeg: 1.5);
+    final eight = found(birth, asked: wide).midpoints!;
+    expect(eight, hasLength(8));
+    for (final (n, at) in eight.indexed.skip(1)) {
+      expect(eight[n - 1].fromAxisDeg, lessThanOrEqualTo(at.fromAxisDeg));
+    }
+    final batch = ctx.chart.foundMany(
+      instants: [birth, birth - 3000.25],
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      midpoints: wide,
+    );
+    expect(batch.at(0).midpoints, found(birth, asked: wide).midpoints);
+    expect(
+      () => found(birth, asked: const MidpointRequest(orbDeg: 11)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'midpoints.orbDeg',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its antiscia', () {
     // King George V (Leo, *How to Judge a Nativity*, p. 130): his recast's
     // one pair under Lilly's moieties, the outer three unpaired, Leo's orbs

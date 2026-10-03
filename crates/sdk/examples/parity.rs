@@ -925,6 +925,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_western_aspects(report, &geo, index, document);
         the_parallels(report, &geo, index, document);
         the_antiscia(report, &geo, index, document);
+        the_midpoints(report, &geo, index, document);
     }
     the_synastry(report, &geo, &read.value);
     // **One call, as the other three make one.** The foundations are the
@@ -2021,6 +2022,40 @@ fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &tei
         },
     );
     put_antiscion_rows(report, &format!("chart-{index}-antiscia"), &read.pairs);
+}
+
+/// The equal distances as the other three print them, at the 1.5° every
+/// runner asks: their count, then each row's pair, planet between, side,
+/// distance, distance from the axis and orb.
+fn the_midpoints(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let rows = sdk
+        .chart()
+        .midpoints(
+            document,
+            &teistro::MidpointRequest::default().with_orb_deg(1.5),
+        )
+        .expect("a valid request");
+    put(
+        report,
+        &format!("chart-{index}-midpoint-count"),
+        rows.len().to_string(),
+    );
+    for (n, row) in rows.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-midpoint-{n}"),
+            format!(
+                "{} {} {} {} {} {} {}",
+                row.first.full_key(),
+                row.second.full_key(),
+                row.middle.full_key(),
+                u8::from(row.far),
+                number(row.distance_deg),
+                number(row.from_axis_deg),
+                number(row.orb_deg)
+            ),
+        );
+    }
 }
 
 /// Pairs in antiscion as every runner prints them, a chart's own or
