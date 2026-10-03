@@ -242,6 +242,7 @@ mod chalit;
 mod chebyshev;
 mod classical;
 mod classical_chart;
+mod composites;
 mod consumer;
 mod dart_binding;
 mod dasha_coverage;
@@ -469,6 +470,11 @@ const PASSES: &[Pass] = &[
     ),
     ("antiscia", antiscia::generate, antiscia::check_generated),
     ("midpoints", midpoints::generate, midpoints::check_generated),
+    (
+        "composites",
+        composites::generate,
+        composites::check_generated,
+    ),
     (
         "time-lords",
         time_lords::generate,

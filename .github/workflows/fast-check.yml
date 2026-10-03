@@ -177,6 +177,8 @@ jobs:
         run: cargo xtask check-antiscia
       - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
         run: cargo xtask check-midpoints
+      - name: Composites page (every pair of the corpus's births made one chart both ways, the turned lagna and the composite against the Davison, C247, C248)
+        run: cargo xtask check-composites
       - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
         run: cargo xtask check-progressed-angles
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)

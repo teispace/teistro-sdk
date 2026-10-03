@@ -1,6 +1,10 @@
 # Composite and Davison charts (the `western` module)
 
-Status: `designed`, 2026-10-03, written from the sources before any code.
+Status: `in progress`, 2026-10-03, written from the sources before any
+code. Steps 2 and 3 are built: `sdk.chart().composite` and
+`Partner::davison`, held to a recast of George V and Queen Mary, and
+measured over the corpus's pairs of births in
+[`composites-measured.md`](composites-measured.md).
 
 [`western-synastry.md`](western-synastry.md) reads two charts against
 each other. A relationship chart makes **one** chart of two: the
@@ -48,9 +52,10 @@ the example is read for its place alone.
 
 1. **A composite planet is the near midpoint (Townley, Astrolog).** Each
    planet of one chart is paired with the same planet of the other, and
-   placed at the midpoint of the shorter arc between them. Two planets
-   exactly opposite have no shorter arc; the midpoint is then taken 90°
-   ahead of the first chart's, so the answer is fixed. Its speed is the
+   placed at the midpoint of the shorter arc between them, the same
+   whichever chart is first. Two planets exactly opposite have no
+   shorter arc; they then meet at the mean of their two longitudes, so
+   the answer is fixed either way round. Its speed is the
    mean of the two, so a composite's aspect table reads applying and
    separating, as Astrolog's does.
 2. **The angles are midpoints, the lagna kept east of the midheaven
@@ -82,6 +87,16 @@ the example is read for its place alone.
    as a `Partner`, so any chart request, under any profile, founds it,
    and every reading a natal chart takes, a Davison takes.
 
+6. **Across the boundary, in the synastry record.** A composite and a
+   Davison birth are each made of a chart and its partner, which the
+   `synastry` record already pairs. `"composite": true` answers each
+   chart's composite with the partner: a row a chart (lagna, midheaven,
+   whether turned, and how many planets) and its planets ragged under
+   it. `"davison": true` answers each chart's Davison birth with the
+   partner, a row a chart (instant, place and clock), which the caller
+   founds with any chart request as it founds a birth. The arithmetic
+   stays in one place, the SDK, and no new export is needed.
+
 ## Order of work
 
 1. This page, and the cruxes C247 and C248.
@@ -94,6 +109,27 @@ the example is read for its place alone.
    composite lagna is turned (C247), and how far the composite and the
    Davison charts' planets stand apart.
 4. The boundary records and every binding, with parity.
+
+## What building it found
+
+- **The recast agrees.** George V's and Queen Mary's composite holds
+  every planet within 0.01° of the midpoints of a Moshier recast, its
+  lagna not turned; and a chart cast at their Davison birth agrees with
+  the recast cast there. Read in each chart's own zodiac, every point
+  moves by the mean of the two ayanamshas, as decision 4 says.
+- **A midpoint must not care which comes first.** The first measure
+  found the Davison birth of a pair differing from the pair's reverse
+  in 725 of 1485 pairs, in the last bit: `a + (b − a)/2` rounds
+  differently from `b + (a − b)/2`. The near midpoint is now the mean of
+  the two and, across the wrap, the point opposite it, which is the
+  same either way round to the bit, the exactly opposite pair included.
+- **The turn is rare and needed.** 72 of the 1485 pairs (4.8%) have the
+  lagnas' near midpoint before the composite midheaven (C247).
+- **The Sun parts the methods by the years between.** The Davison Sun
+  stands near the composite's when the births are an even number of
+  years apart and opposite it when odd, since it made that many whole
+  turns between them; every other planet parts further, the Moon by a
+  median of 166°.
 
 ## What this does not decide
 
