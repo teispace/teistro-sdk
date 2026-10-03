@@ -2139,6 +2139,7 @@ dependencies = [
  "teistro-aspect",
  "teistro-astro",
  "teistro-core",
+ "teistro-gochar",
 ]
 
 [[package]]

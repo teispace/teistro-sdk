@@ -29,6 +29,7 @@ use serde::{Deserialize, Serialize};
 use teistro_aspect::orb::{Angle, Moving, WIDEST_ORB_DEG, hits};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
+use teistro_gochar::hits::NatalPoint;
 
 /// An aspect Leo lists, by the angle between the two bodies.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -182,10 +183,36 @@ impl OrbModel {
         first: Graha,
         second: Graha,
     ) -> Result<f64, Error> {
+        self.point_orb_deg(
+            aspect,
+            NatalPoint::Graha { graha: first },
+            NatalPoint::Graha { graha: second },
+        )
+    }
+
+    /// The orb an aspect between two points is allowed, degrees: as
+    /// [`OrbModel::orb_deg`], with the lagna standing as a planet in Leo's
+    /// rule (10° beside a luminary at the conjunction and opposition, 8°
+    /// beside a planet) and given none among the moieties (C242).
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming the point or aspect the model has no orb for.
+    pub fn point_orb_deg(
+        &self,
+        aspect: WesternAspect,
+        first: NatalPoint,
+        second: NatalPoint,
+    ) -> Result<f64, Error> {
         match self {
             OrbModel::Leo => Ok(leo_orb_deg(aspect, first, second)),
             OrbModel::Moieties { orbs } => {
-                let of = |graha: Graha| {
+                let of = |point: NatalPoint| {
+                    let NatalPoint::Graha { graha } = point else {
+                        return Err(Error::invalid_arg("the moieties give the lagna no orb")
+                            .with_field("orbs.orbs")
+                            .with_hint("leave the lagna out, or read it under Leo's orbs"));
+                    };
                     orbs.iter()
                         .find(|one| one.graha == graha)
                         .map(|one| one.orb_deg)
@@ -246,7 +273,7 @@ impl OrbModel {
 }
 
 /// Leo's orb (p. 47).
-const fn leo_orb_deg(aspect: WesternAspect, first: Graha, second: Graha) -> f64 {
+const fn leo_orb_deg(aspect: WesternAspect, first: NatalPoint, second: NatalPoint) -> f64 {
     match aspect {
         WesternAspect::Conjunction | WesternAspect::Opposition => {
             match (is_luminary(first), is_luminary(second)) {
@@ -262,13 +289,21 @@ const fn leo_orb_deg(aspect: WesternAspect, first: Graha, second: Graha) -> f64 
     }
 }
 
-/// The Sun or the Moon.
-const fn is_luminary(graha: Graha) -> bool {
-    matches!(graha, Graha::Sun | Graha::Moon)
+/// The Sun or the Moon; the lagna is neither (C242).
+const fn is_luminary(point: NatalPoint) -> bool {
+    matches!(
+        point,
+        NatalPoint::Graha {
+            graha: Graha::Sun | Graha::Moon
+        }
+    )
 }
 
 /// Refuses a list naming one member twice, by its key.
-fn refuse_repeats(members: impl Iterator<Item = &'static str>, what: &str) -> Result<(), Error> {
+pub(crate) fn refuse_repeats(
+    members: impl Iterator<Item = &'static str>,
+    what: &str,
+) -> Result<(), Error> {
     let seen: Vec<&str> = members.collect();
     for (at, one) in seen.iter().enumerate() {
         if seen.iter().skip(at + 1).any(|other| other == one) {
@@ -437,27 +472,78 @@ pub fn aspects(bodies: &[Placed], request: &AspectRequest) -> Result<Vec<Western
     request.check()?;
     refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
         .map_err(|why| why.with_field("bodies"))?;
+    let stations: Vec<Station<Graha>> = bodies
+        .iter()
+        .map(|one| Station {
+            label: one.graha,
+            point: NatalPoint::Graha { graha: one.graha },
+            moving: Moving::new(one.longitude_deg, one.speed_deg_per_day),
+        })
+        .collect();
+    let pairs = stations.iter().enumerate().flat_map(|(at, first)| {
+        stations
+            .iter()
+            .skip(at + 1)
+            .map(move |second| (*first, *second))
+    });
+    Ok(holding(pairs, request)?
+        .into_iter()
+        .map(|held| WesternAspectRow {
+            first: held.first,
+            second: held.second,
+            aspect: held.aspect,
+            apart_deg: held.apart_deg,
+            from_exact_deg: held.from_exact_deg,
+            orb_deg: held.orb_deg,
+            applying: held.applying,
+        })
+        .collect())
+}
+
+/// A point as the engine reads it: the label a row names it by, the point
+/// its orb is looked up by, and where it stands and how it moves.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Station<K> {
+    pub(crate) label: K,
+    pub(crate) point: NatalPoint,
+    pub(crate) moving: Moving,
+}
+
+/// One aspect a pair holds, labelled as its stations were.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct Held<K> {
+    pub(crate) first: K,
+    pub(crate) second: K,
+    pub(crate) aspect: WesternAspect,
+    pub(crate) apart_deg: f64,
+    pub(crate) from_exact_deg: f64,
+    pub(crate) orb_deg: f64,
+    pub(crate) applying: bool,
+}
+
+/// Every aspect each pair holds under the request, closest first: the one
+/// engine a chart's own table and a synastry both read, so an orb is
+/// chosen and a gap measured in one place.
+pub(crate) fn holding<K: Copy>(
+    pairs: impl IntoIterator<Item = (Station<K>, Station<K>)>,
+    request: &AspectRequest,
+) -> Result<Vec<Held<K>>, Error> {
     let mut rows = Vec::new();
-    for (at, first) in bodies.iter().enumerate() {
-        for second in bodies.iter().skip(at + 1) {
-            for &aspect in &request.aspects {
-                let orb_deg = request.orbs.orb_deg(aspect, first.graha, second.graha)?;
-                let found = hits(
-                    Moving::new(first.longitude_deg, first.speed_deg_per_day),
-                    Moving::new(second.longitude_deg, second.speed_deg_per_day),
-                    &[aspect.angle()],
-                    orb_deg,
-                )?;
-                rows.extend(found.into_iter().map(|hit| WesternAspectRow {
-                    first: first.graha,
-                    second: second.graha,
-                    aspect,
-                    apart_deg: hit.apart_deg,
-                    from_exact_deg: hit.from_exact_deg,
-                    orb_deg,
-                    applying: hit.applying,
-                }));
-            }
+    for (first, second) in pairs {
+        for &aspect in &request.aspects {
+            let orb_deg = request
+                .orbs
+                .point_orb_deg(aspect, first.point, second.point)?;
+            let found = hits(first.moving, second.moving, &[aspect.angle()], orb_deg)?;
+            rows.extend(found.into_iter().map(|hit| Held {
+                first: first.label,
+                second: second.label,
+                aspect,
+                apart_deg: hit.apart_deg,
+                from_exact_deg: hit.from_exact_deg,
+                orb_deg,
+                applying: hit.applying,
+            }));
         }
     }
     rows.sort_by(|a, b| a.from_exact_deg.total_cmp(&b.from_exact_deg));
