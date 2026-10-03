@@ -231,36 +231,13 @@ pub struct Antiscia {
 /// longitude that is not a finite number.
 pub fn antiscia(bodies: &[Reflected], request: &AntisciaRequest) -> Result<Antiscia, Error> {
     request.check()?;
-    refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
-        .map_err(|why| why.with_field("bodies"))?;
-    if let Some(at) = bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
-        return Err(
-            Error::invalid_arg("a longitude is a finite number of degrees")
-                .with_field(format!("bodies[{at}].longitudeDeg")),
-        );
-    }
-    let mut pairs = Vec::new();
-    for (at, first) in bodies.iter().enumerate() {
-        for second in bodies.iter().skip(at + 1) {
-            let Some(orb_deg) = request.orb_deg(first.graha, second.graha)? else {
-                continue;
-            };
-            let sum = first.longitude_deg + second.longitude_deg;
-            for (contrary, mirror) in [(false, 180.0), (true, 0.0)] {
-                let apart_deg = difference_deg(sum, mirror).abs();
-                if apart_deg <= orb_deg {
-                    pairs.push(AntiscionRow {
-                        first: first.graha,
-                        second: second.graha,
-                        contrary,
-                        apart_deg,
-                        orb_deg,
-                    });
-                }
-            }
-        }
-    }
-    pairs.sort_by(|a, b| a.apart_deg.total_cmp(&b.apart_deg));
+    refuse_unreadable(bodies, "bodies")?;
+    let pairs = bodies.iter().enumerate().flat_map(|(at, first)| {
+        bodies
+            .iter()
+            .skip(at + 1)
+            .map(move |second| (first, second))
+    });
     Ok(Antiscia {
         points: bodies
             .iter()
@@ -270,13 +247,96 @@ pub fn antiscia(bodies: &[Reflected], request: &AntisciaRequest) -> Result<Antis
                 contrantiscion_deg: contrantiscion_deg(one.longitude_deg),
             })
             .collect(),
-        pairs,
+        pairs: reflected(pairs, request)?,
         unpaired: bodies
             .iter()
             .map(|one| one.graha)
             .filter(|&graha| !request.pairs(graha))
             .collect(),
     })
+}
+
+/// The **antiscia across two charts**: every planet of `first` whose
+/// reflection falls within the orb of a planet of `second`, closest first,
+/// the chart's planet `first` in each row and the partner's `second`. A
+/// planet the orbs give none stands in no pair, as in one chart.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{AntisciaRequest, Reflected, synastry_antiscia};
+///
+/// // His Sun in 10° Taurus reflects onto her Sun in 20° Leo (Lilly, p. 90).
+/// let rows = synastry_antiscia(
+///     &[Reflected::new(Graha::Sun, 40.0)],
+///     &[Reflected::new(Graha::Sun, 140.0)],
+///     &AntisciaRequest::default(),
+/// )?;
+/// assert!(!rows[0].contrary && rows[0].apart_deg < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// What [`AntisciaRequest::check`] refuses; a planet given twice on one
+/// side; a longitude that is not a finite number.
+pub fn synastry_antiscia(
+    first: &[Reflected],
+    second: &[Reflected],
+    request: &AntisciaRequest,
+) -> Result<Vec<AntiscionRow>, Error> {
+    request.check()?;
+    refuse_unreadable(first, "first")?;
+    refuse_unreadable(second, "second")?;
+    reflected(
+        first
+            .iter()
+            .flat_map(|a| second.iter().map(move |b| (a, b))),
+        request,
+    )
+}
+
+/// Refuses a side naming a planet twice, or a longitude that is not a
+/// finite number, naming the side.
+fn refuse_unreadable(bodies: &[Reflected], side: &str) -> Result<(), Error> {
+    refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
+        .map_err(|why| why.with_field(side))?;
+    match bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
+        Some(at) => Err(
+            Error::invalid_arg("a longitude is a finite number of degrees")
+                .with_field(format!("{side}[{at}].longitudeDeg")),
+        ),
+        None => Ok(()),
+    }
+}
+
+/// Every pair whose longitudes sum to 180° (the antiscion) or 0° (the
+/// contrantiscion) within the orb the request reads at the conjunction,
+/// closest first; pairs equally close keep the order given.
+fn reflected<'a>(
+    pairs: impl Iterator<Item = (&'a Reflected, &'a Reflected)>,
+    request: &AntisciaRequest,
+) -> Result<Vec<AntiscionRow>, Error> {
+    let mut rows = Vec::new();
+    for (first, second) in pairs {
+        let Some(orb_deg) = request.orb_deg(first.graha, second.graha)? else {
+            continue;
+        };
+        let sum = first.longitude_deg + second.longitude_deg;
+        for (contrary, mirror) in [(false, 180.0), (true, 0.0)] {
+            let apart_deg = difference_deg(sum, mirror).abs();
+            if apart_deg <= orb_deg {
+                rows.push(AntiscionRow {
+                    first: first.graha,
+                    second: second.graha,
+                    contrary,
+                    apart_deg,
+                    orb_deg,
+                });
+            }
+        }
+    }
+    rows.sort_by(|a, b| a.apart_deg.total_cmp(&b.apart_deg));
+    Ok(rows)
 }
 
 #[cfg(test)]
@@ -376,6 +436,34 @@ mod tests {
             (Graha::Saturn, Graha::Uranus, false)
         );
         assert!(exact.apart_deg < 1e-9);
+    }
+
+    #[test]
+    fn the_same_engine_reads_across_two_charts() {
+        let figure = figure();
+        let (saturn, rest) = figure.split_first().unwrap();
+        // Across, as within: Saturn's contrantiscion on Jupiter.
+        let across = synastry_antiscia(&[*saturn], rest, &AntisciaRequest::default()).unwrap();
+        let within = antiscia(&figure, &AntisciaRequest::default()).unwrap();
+        assert_eq!(across, within.pairs);
+        // A planet meets its own kind across: Saturn on the partner's Saturn
+        // reflected.
+        let mirror = [Reflected::new(
+            Graha::Saturn,
+            antiscion_deg(saturn.longitude_deg),
+        )];
+        let rows = synastry_antiscia(&[*saturn], &mirror, &AntisciaRequest::default()).unwrap();
+        assert_eq!(
+            (rows[0].first, rows[0].second),
+            (Graha::Saturn, Graha::Saturn)
+        );
+        assert!(rows[0].apart_deg < 1e-9);
+        assert_eq!(
+            synastry_antiscia(&[*saturn, *saturn], &mirror, &AntisciaRequest::default())
+                .unwrap_err()
+                .field(),
+            Some("first")
+        );
     }
 
     #[test]
