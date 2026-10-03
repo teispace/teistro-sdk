@@ -681,6 +681,7 @@ final class ChartArea extends _Area {
     ConsiderationRules? considerations,
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
+    WesternAspectRequest? westernAspects,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -715,6 +716,7 @@ final class ChartArea extends _Area {
     considerations: considerations,
     perfection: perfection,
     progressions: progressions,
+    westernAspects: westernAspects,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -769,6 +771,7 @@ final class ChartArea extends _Area {
     ConsiderationRules? considerations,
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
+    WesternAspectRequest? westernAspects,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -826,6 +829,7 @@ final class ChartArea extends _Area {
             considerationsJson: considerations?._json,
             perfectionJson: perfection?._json,
             progressionsJson: progressions?._json,
+            westernAspectsJson: westernAspects?._json,
           ),
         ),
       ),
@@ -4220,6 +4224,48 @@ List<Progressions> _decodeProgressions(Charts batch) {
   ]);
 }
 
+final Expando<List<List<WesternAspectRow>>> _westernAspects =
+    Expando<List<List<WesternAspectRow>>>('westernAspects');
+
+List<List<WesternAspectRow>> _westernAspectsOf(Charts batch) =>
+    _westernAspects[batch] ??= _decodeWesternAspects(batch);
+
+/// `western_aspects` holds a row a chart, or none when none was asked, and
+/// `western_aspect_rows` is ragged by its count.
+List<List<WesternAspectRow>> _decodeWesternAspects(Charts batch) {
+  final counts = batch.westernAspects;
+  final r = batch.westernAspectRows;
+  final charts = batch.cast.instant.length;
+  if (counts.length == 0) return const <List<WesternAspectRow>>[];
+  final rows = counts.count.fold<int>(0, (sum, n) => sum + n);
+  if (counts.length != charts || r.length != rows) {
+    throw StateError(
+      'western_aspects has ${counts.length} rows and western_aspect_rows '
+      '${r.length} for $charts charts',
+    );
+  }
+  var start = 0;
+  return List<List<WesternAspectRow>>.unmodifiable([
+    for (var k = 0; k < charts; k++)
+      () {
+        final first = start;
+        start += counts.count[k];
+        return List<WesternAspectRow>.unmodifiable([
+          for (var at = first; at < start; at++)
+            WesternAspectRow(
+              first: Graha.byId(r.first[at]),
+              second: Graha.byId(r.second[at]),
+              aspect: WesternAspect.byId(r.aspect[at]),
+              apartDeg: r.apartDeg[at],
+              fromExactDeg: r.fromExactDeg[at],
+              orbDeg: r.orbDeg[at],
+              applying: r.applying[at] == 1,
+            ),
+        ]);
+      }(),
+  ]);
+}
+
 final Expando<List<Matter>> _perfections = Expando<List<Matter>>('perfections');
 
 List<Matter> _perfectionsOf(Charts batch) =>
@@ -6441,6 +6487,148 @@ final class ProgressionsRequest {
     'direction': direction._record,
     if (contacts case final contacts?) 'contacts': contacts._record,
   });
+}
+
+/// The orbs a Western aspect table is read under
+/// (`03-design/western-aspects.md`, C240): Leo's by aspect, a moiety a
+/// planet, or a caller's own orb an aspect.
+///
+/// ```dart
+/// const tight = OrbModel.byAspect({WesternAspect.trine: 6, WesternAspect.square: 6});
+/// ```
+final class OrbModel extends _Value {
+  const OrbModel._(this._model) : moieties = null, byAspect = null;
+
+  /// Each planet's whole orb; a pair is within half the sum of theirs.
+  const OrbModel.moieties(Map<Graha, double> this.moieties)
+    : _model = 'MOIETIES',
+      byAspect = null;
+
+  /// Each aspect's orb, whatever the pair.
+  const OrbModel.byAspect(Map<WesternAspect, double> this.byAspect)
+    : _model = 'BY_ASPECT',
+      moieties = null;
+
+  /// Leo's orbs by aspect, the luminaries' wider (*How to Judge a
+  /// Nativity*, pp. 43–47); the default.
+  static const OrbModel leo = OrbModel._('LEO');
+
+  /// Lilly's moieties (*Christian Astrology*, p. 107), which give the outer
+  /// three no orb.
+  static const OrbModel lilly = OrbModel.moieties({
+    Graha.saturn: 10,
+    Graha.jupiter: 12,
+    Graha.mars: 7.5,
+    Graha.sun: 17,
+    Graha.venus: 8,
+    Graha.mercury: 7,
+    Graha.moon: 12.5,
+  });
+
+  final String _model;
+
+  /// The moieties of an [OrbModel.moieties]; null otherwise.
+  final Map<Graha, double>? moieties;
+
+  /// The orbs of an [OrbModel.byAspect]; null otherwise.
+  final Map<WesternAspect, double>? byAspect;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'model': _model,
+    if (moieties case final moieties?)
+      'orbs': [
+        for (final MapEntry(:key, :value) in moieties.entries)
+          <String, Object?>{'graha': key.key, 'orbDeg': value},
+      ],
+    if (byAspect case final byAspect?)
+      'orbs': [
+        for (final MapEntry(:key, :value) in byAspect.entries)
+          <String, Object?>{'aspect': key.key, 'orbDeg': value},
+      ],
+  };
+
+  @override
+  List<Object?> get _fields => [
+    _model,
+    ...?moieties?.keys,
+    ...?moieties?.values,
+    ...?byAspect?.keys,
+    ...?byAspect?.values,
+  ];
+}
+
+/// Which Western aspects to look for in every chart, and under which
+/// [orbs] (`03-design/western-aspects.md`); Leo's nine under his orbs by
+/// default (C240).
+///
+/// ```dart
+/// const two = WesternAspectRequest(aspects: [WesternAspect.trine, WesternAspect.square]);
+/// ```
+final class WesternAspectRequest {
+  const WesternAspectRequest({this.aspects, this.orbs = OrbModel.leo});
+
+  /// Lilly's reading: the Ptolemaic five under his moieties.
+  static const WesternAspectRequest lilly = WesternAspectRequest(
+    aspects: [
+      WesternAspect.conjunction,
+      WesternAspect.sextile,
+      WesternAspect.square,
+      WesternAspect.trine,
+      WesternAspect.opposition,
+    ],
+    orbs: OrbModel.lilly,
+  );
+
+  /// The aspects looked for, each once; Leo's nine when null.
+  final List<WesternAspect>? aspects;
+  final OrbModel orbs;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (aspects case final aspects?)
+      'aspects': [for (final a in aspects) a.key],
+    'orbs': orbs._record,
+  });
+}
+
+/// One pair of planets within an aspect's orb, the pair in catalogue
+/// order (`03-design/western-aspects.md`).
+final class WesternAspectRow extends _Value {
+  const WesternAspectRow({
+    required this.first,
+    required this.second,
+    required this.aspect,
+    required this.apartDeg,
+    required this.fromExactDeg,
+    required this.orbDeg,
+    required this.applying,
+  });
+
+  final Graha first;
+  final Graha second;
+  final WesternAspect aspect;
+
+  /// The shorter arc between them, degrees 0 to 180.
+  final double apartDeg;
+
+  /// How far that arc is from the aspect's exact angle, degrees.
+  final double fromExactDeg;
+
+  /// The orb the model allowed the pair at this aspect, degrees.
+  final double orbDeg;
+
+  /// Whether the faster planet is closing on the exact angle.
+  final bool applying;
+
+  @override
+  List<Object?> get _fields => [
+    first,
+    second,
+    aspect,
+    apartDeg,
+    fromExactDeg,
+    orbDeg,
+    applying,
+  ];
 }
 
 /// A planet of the progressed chart.
@@ -12369,6 +12557,14 @@ final class Chart {
   /// null unless `progressions` asked (`03-design/western-progressions.md`).
   Progressions? get progressions {
     final all = _progressionsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Western aspect table, closest first: Leo's nine under his orbs by
+  /// default (C240); null unless `westernAspects` asked
+  /// (`03-design/western-aspects.md`).
+  List<WesternAspectRow>? get westernAspects {
+    final all = _westernAspectsOf(batch);
     return index < all.length ? all[index] : null;
   }
 
