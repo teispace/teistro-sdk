@@ -8,6 +8,9 @@ import type {
   Antiscia,
   AntisciaRequest,
   AntiscionRow,
+  Composite,
+  CompositePlanet,
+  DavisonBirth,
   Declinations,
   MidpointRequest,
   MidpointRow,
@@ -1014,6 +1017,8 @@ function theWesternAspects(ctx: Context): string {
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
     antiscia: { orbs: { model: 'LEO' } },
+    composite: true,
+    davison: true,
   };
   const chart = ctx.chart.found({
     instant: 2402390.5542,
@@ -1031,6 +1036,10 @@ function theWesternAspects(ctx: Context): string {
   const theirs: NatalPoint | undefined = across?.second;
   const level: SynastryParallelRow | undefined = chart.synastryParallels?.[0];
   const reflected: AntiscionRow | undefined = chart.synastryAntiscia?.[0];
+  const composite: Composite | null = chart.synastryComposite;
+  const middle: CompositePlanet | undefined = composite?.planets[0];
+  const davison: DavisonBirth | null = chart.synastryDavison;
+  const between: Chart | null = davison === null ? null : ctx.chart.found({ ...davison });
   return [
     own?.first ?? 'none',
     own?.applying ?? false,
@@ -1041,6 +1050,11 @@ function theWesternAspects(ctx: Context): string {
     level?.second.point ?? 'none',
     level?.contrary ?? false,
     reflected?.second ?? 'none',
+    middle?.graha ?? 'none',
+    middle?.speedDegPerDay ?? Number.NaN,
+    composite?.lagnaTurned ?? false,
+    davison?.place.longitude ?? Number.NaN,
+    between?.instant ?? Number.NaN,
     String(alone),
     String(sidereal),
   ].join();

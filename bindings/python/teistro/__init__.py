@@ -516,6 +516,9 @@ __all__ = [
     "AntisciaRequest",
     "Antiscion",
     "AntiscionRow",
+    "Composite",
+    "CompositePlanet",
+    "DavisonBirth",
     "MidpointRequest",
     "MidpointRow",
     "SynastryPartner",
@@ -4080,11 +4083,15 @@ class SynastryRequest(WesternAspectRequest, total=False):
     (`Chart.synastry_parallels`, `03-design/western-declinations.md`), the
     lagna joining as `lagna` says; `antiscia` for the antiscia across them
     (`Chart.synastry_antiscia`, `03-design/western-antiscia.md`), Lilly's
-    moieties when `{}` (C244).
+    moieties when `{}` (C244); `composite`, the composite of the two
+    charts (`Chart.synastry_composite`, C247); and `davison`, each chart's
+    Davison birth with the partner (`Chart.synastry_davison`, C248), both
+    false when left out (`03-design/western-composites.md`).
 
     >>> asked: SynastryRequest = {"partner": mary, "aspects": [WesternAspect.TRINE], "lagna": False}
     >>> level: SynastryRequest = {"partner": mary, "parallels": {}}
     >>> mirrored: SynastryRequest = {"partner": mary, "antiscia": {"orbs": {"model": "LEO"}}}
+    >>> one_chart: SynastryRequest = {"partner": mary, "composite": True, "davison": True}
     """
 
     partner: Required[SynastryPartner]
@@ -4092,6 +4099,49 @@ class SynastryRequest(WesternAspectRequest, total=False):
     zodiac: Literal["TROPICAL", "CHARTS"]
     parallels: ParallelRequest
     antiscia: AntisciaRequest
+    composite: bool
+    davison: bool
+
+
+@dataclass(frozen=True)
+class CompositePlanet:
+    """A planet of a composite chart: the near midpoint of its two places,
+    degrees in the synastry's zodiac, moving at the mean of its two
+    speeds, degrees a day, negative when retrograde."""
+
+    graha: Graha
+    longitude_deg: float
+    speed_deg_per_day: float
+
+
+@dataclass(frozen=True)
+class Composite:
+    """The composite of a chart and a synastry's partner
+    (`03-design/western-composites.md`, C247): its planets in the chart's
+    order, the midheaven at the near midpoint of the two, and the lagna at
+    the near midpoint of the two lagnas, turned by 180° when that stood
+    before the midheaven, as `lagna_turned` says."""
+
+    planets: Tuple[CompositePlanet, ...]
+    lagna_deg: float
+    midheaven_deg: float
+    lagna_turned: bool
+
+
+@dataclass(frozen=True)
+class DavisonBirth:
+    """The Davison birth of a chart and a synastry's partner (C248): the
+    mean instant, the mean place, its longitude the shorter way round, and
+    the mean of the two clocks, which names only the civil day. Its fields
+    are the ones `found` takes, so it founds a chart as a birth does:
+
+    >>> between = ctx.chart.found(  # doctest: +SKIP
+    ...     instant=davison.instant, place=davison.place, utc_offset_seconds=davison.utc_offset_seconds)
+    """
+
+    instant: float
+    place: Observer
+    utc_offset_seconds: int
 
 
 @dataclass(frozen=True)
@@ -8450,6 +8500,27 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def synastry_composite(self) -> Optional[Composite]:
+        """The composite of this chart and the partner's: each planet at the
+        near midpoint of its two places, moving at the mean of its two
+        speeds, the midheaven at the near midpoint of the two, and the
+        lagna at theirs, turned by 180° when it stood before the midheaven
+        (C247), in the synastry's zodiac; `None` unless `synastry=` asked
+        for `composite` (`03-design/western-composites.md`)."""
+        parsed = self.batch._synastry_composites
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def synastry_davison(self) -> Optional[DavisonBirth]:
+        """The Davison birth of this chart and the partner: the mean of the
+        two instants, of the two latitudes and altitudes, of the two
+        longitudes the shorter way round, and of the two clocks, this
+        chart's read on the request's (C248); `None` unless `synastry=`
+        asked for `davison` (`03-design/western-composites.md`)."""
+        parsed = self.batch._synastry_davisons
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -9121,6 +9192,56 @@ class ChartBatch:
             "synastry_antiscia and synastry_antiscion_rows",
             lambda at: _antiscion_row(r, at),
         )
+
+    @cached_property
+    def _synastry_composites(self) -> list[Composite]:
+        """Every chart's composite with the partner, decoded once; empty
+        when none was asked for. `synastry_composites` holds a row a chart
+        and `synastry_composite_rows` is ragged by its count."""
+        c = self.decoded.synastry_composites
+        r = self.decoded.synastry_composite_rows
+        planets = self._ragged(
+            c.count,
+            r.length,
+            "synastry_composites and synastry_composite_rows",
+            lambda at: CompositePlanet(
+                graha=Graha(r.graha[at]),
+                longitude_deg=r.longitude_deg[at],
+                speed_deg_per_day=r.speed_deg_per_day[at],
+            ),
+        )
+        return [
+            Composite(
+                planets=rows,
+                lagna_deg=c.lagna_deg[k],
+                midheaven_deg=c.midheaven_deg[k],
+                lagna_turned=c.lagna_turned[k] == 1,
+            )
+            for k, rows in enumerate(planets)
+        ]
+
+    @cached_property
+    def _synastry_davisons(self) -> list[DavisonBirth]:
+        """Every chart's Davison birth with the partner, decoded once; empty
+        when none was asked for, and a row a chart otherwise."""
+        b = self.decoded.synastry_davisons
+        charts = len(self.decoded.cast.instant)
+        if b.length not in (0, charts):
+            raise TeistroError(
+                Status.INTERNAL, f"synastry_davisons has {b.length} rows for {charts} charts; it is one a chart or none"
+            )
+        return [
+            DavisonBirth(
+                instant=b.instant[k],
+                place=Observer(
+                    latitude_deg=Latitude(b.latitude_deg[k]),
+                    longitude_deg=Longitude(b.longitude_deg[k]),
+                    altitude_m=Altitude(b.altitude_m[k]),
+                ),
+                utc_offset_seconds=b.utc_offset_seconds[k],
+            )
+            for k in range(b.length)
+        ]
 
     @cached_property
     def _synastry_parallels(self) -> list[Tuple[SynastryParallelRow, ...]]:

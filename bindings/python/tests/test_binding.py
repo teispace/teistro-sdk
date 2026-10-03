@@ -2073,6 +2073,62 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, synastry=request, **george)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_synastry_makes_the_composite_and_the_davison_birth(self) -> None:
+        """The composite and the Davison birth cross on King George V and
+        Queen Mary against the SDK test's Moshier recast; the Davison birth
+        founds a chart as a birth does (`03-design/western-composites.md`)."""
+        from teistro import Composite, DavisonBirth, SynastryPartner, SynastryRequest
+
+        george: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2402390.554166667
+        mary: SynastryPartner = {
+            "instant": 2403113.499305556,
+            "observer": Observer(latitude_deg=Latitude(51.5058), longitude_deg=Longitude(-0.1878), altitude_m=Altitude(0)),
+        }
+
+        def near(a: float, b: float) -> bool:
+            return abs((a - b + 540.0) % 360.0 - 180.0) < 0.01
+
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            plain = ctx.chart.found(instant=birth, outer_planets=True, synastry={"partner": mary}, **george)
+            self.assertIsNone(plain.synastry_composite)
+            self.assertIsNone(plain.synastry_davison)
+
+            asked: SynastryRequest = {"partner": mary, "composite": True, "davison": True}
+            chart = ctx.chart.found(instant=birth, outer_planets=True, synastry=asked, **george)
+            composite = chart.synastry_composite
+            assert isinstance(composite, Composite)
+            self.assertEqual(len(composite.planets), 10)
+            for graha, longitude in [(Graha.SUN, 68.8193), (Graha.MOON, 259.7289), (Graha.MARS, 130.5171), (Graha.PLUTO, 44.2555)]:
+                at = next(one for one in composite.planets if one.graha == graha)
+                self.assertTrue(near(at.longitude_deg, longitude), f"{graha} {at.longitude_deg}")
+            self.assertTrue(near(composite.midheaven_deg, 258.1797), composite.midheaven_deg)
+            self.assertTrue(near(composite.lagna_deg, 334.007), composite.lagna_deg)
+            self.assertFalse(composite.lagna_turned)
+
+            davison = chart.synastry_davison
+            assert isinstance(davison, DavisonBirth)
+            self.assertAlmostEqual(davison.instant, 2402752.026736111, delta=1e-8)
+            self.assertAlmostEqual(float(davison.place.longitude_deg), -0.1622, delta=1e-9)
+            self.assertEqual(davison.utc_offset_seconds, 0)
+            between = ctx.chart.found(
+                instant=davison.instant, place=davison.place, utc_offset_seconds=davison.utc_offset_seconds
+            )
+            mars = next(one for one in between.grahas if one.graha == Graha.MARS)
+            self.assertTrue(near(mars.tropical_deg, 20.1267), mars.tropical_deg)
+
+            refusals: list[tuple[Any, str]] = [
+                ({"partner": mary, "composite": "yes"}, "synastry.composite"),
+                ({"partner": mary, "davison": 1}, "synastry.davison"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, synastry=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_the_outer_planets_when_asked(self) -> None:
         """The outer planets cross when asked: none unless `outer_planets`,
         then Uranus, Neptune and Pluto in the grahas' shape with the nine

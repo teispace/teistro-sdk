@@ -613,6 +613,8 @@ void main() {
       zodiac: SynastryZodiac.charts,
       parallels: const ParallelRequest(orbDeg: 1.5),
       antiscia: const AntisciaRequest(orbs: OrbModel.leo),
+      composite: true,
+      davison: true,
     ),
     progressions: const ProgressionsRequest(
       at: 2470000.5,
@@ -1340,6 +1342,25 @@ void main() {
       );
     }
     putAntiscionRows('chart-$i-synastry-antiscia', chart.synastryAntiscia!);
+    final composite = chart.synastryComposite!;
+    put(
+      'chart-$i-composite',
+      '${number(composite.lagnaDeg)} ${number(composite.midheavenDeg)} '
+          '${composite.lagnaTurned ? 1 : 0} ${composite.planets.length}',
+    );
+    for (final (n, at) in composite.planets.indexed) {
+      put(
+        'chart-$i-composite-$n',
+        '${at.graha.fullKey} ${number(at.longitudeDeg)} ${number(at.speedDegPerDay)}',
+      );
+    }
+    final davison = chart.synastryDavison!;
+    put(
+      'chart-$i-davison',
+      '${number(davison.instant)} ${number(davison.place.latitudeDeg)} '
+          '${number(davison.place.longitudeDeg)} ${number(davison.place.altitudeM)} '
+          '${davison.utcOffsetSeconds}',
+    );
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {
