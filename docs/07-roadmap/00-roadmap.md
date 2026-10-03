@@ -830,6 +830,9 @@ the same machinery rather than new mechanisms:
   parts, secondary and tertiary progressions, solar arc directions, solar
   and lunar returns, synastry, composite and Davison, declinations and
   parallels, harmonics.
+  **The `western` list is done 2026-10-04**: the returns were the last
+  item (`western-returns.md`), the solar return being the Tajika
+  pravesha's `Tropical` reading.
 - **`hellenistic`** — sect, terms and faces, dignity scores and almutens,
   lots, zodiacal releasing, annual profections, firdaria, decennials,
   horary considerations. Its time lords register in the same time-lord

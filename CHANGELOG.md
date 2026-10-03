@@ -2075,6 +2075,17 @@ the astronomical numbers do not move. Nothing else computes yet.
     sign. Churchill's 9th harmonic reads as Addey read it. A
     `harmonic_json` record crosses in sections 108 to 110, and Node,
     Python and Dart read `chart.harmonic`, with parity.
+  - **Returns** (`western-returns.md`). `sdk.chart().returns` answers
+    the instants a graha comes back to its own natal longitude: the
+    Moon's is the lunar return after Morin (*Astrologia Gallica* XXIII),
+    the Sun's the solar, and a retrograde planet's each crossing. It is
+    read in the chart's own zodiac (C256), on the settings' centre
+    (C257), and erected wherever the caller founds the chart (C258). It
+    is the hit list asked for the 0° aspect to the body's own place
+    (`HitRequest::returns`), so Node and wasm (`returnsRequest`), Python
+    (`returns_request`) and Dart (`HitRequest.returns`) build it with no
+    new section. The Sun's return equals the Tajika pravesha to the
+    second.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect

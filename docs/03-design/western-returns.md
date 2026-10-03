@@ -1,6 +1,10 @@
 # A body's returns: the lunar return (the `western` module)
 
-Status: `designed`, 2026-10-04, written from the source before any code.
+Status: `built`, 2026-10-04, written from the source before any code.
+`sdk.chart().returns` answers each graha's returns. `HitRequest::returns`
+is the same question as a hit list, and every binding builds it with its
+own constructor: `returnsRequest` in Node and wasm, `returns_request` in
+Python, `HitRequest.returns` in Dart.
 
 The roadmap's `western` list names the solar and the lunar return. The
 solar return is built: it is the Tajika pravesha's `Tropical` reading
@@ -136,3 +140,21 @@ for free. On a sidereal chart, `returns` for the Sun must give the Tajika
 pravesha's `Sidereal` instant, and on a tropical chart its `Tropical`
 instant, each to the second. Two searches, written for two traditions,
 must find one instant.
+
+## What building it found
+
+- **The question was already answerable.** The hit list crossed every
+  binding before this page, and a return is one of its questions. So the
+  return added a constructor in each binding and no ABI section. Its
+  search sits under the hit list's parity, and each binding's test
+  checks the constructor's record and a cast with it.
+- **The built-in ephemeris begins in 1800**, after Morin's figures. The
+  page's recast holds his definition. The SDK's test holds the SDK to
+  the recast's engine at a date both reach: three lunar returns within
+  ten seconds of Moshier's.
+- **Two searches, one instant.** On a sidereal chart the Sun's return is
+  the Tajika pravesha's `Sidereal` instant, and on a tropical chart its
+  `Tropical` one, under a second over three years each. C46's questions,
+  whether a return chart is precession-corrected and whether it is
+  relocated, are C256 and C258: the chart's own zodiac, and the caller's
+  place.
