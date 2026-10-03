@@ -258,7 +258,7 @@ fn reading(
         .ok_or_else(|| Error::new(Status::Provider, format!("no cell for {}", body.key())))?;
     if !cell.is_ok() {
         return Err(Error::new(
-            Status::Provider,
+            cell.status.status(),
             format!("{} at JD {}: {:?}", body.key(), ut1.get(), cell.status),
         ));
     }

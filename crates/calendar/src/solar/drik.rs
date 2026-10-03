@@ -11,7 +11,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use teistro_astro::rise_set::Solver;
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
-use teistro_core::error::{Error, Status};
+use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::{OverridePolicy, SunriseConvention};
 use teistro_port_ephemeris::{
@@ -166,7 +166,7 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
             .ok_or_else(|| Error::internal("a one-cell grid has a cell"))?;
         if !cell.is_ok() {
             return Err(Error::new(
-                Status::Provider,
+                cell.status.status(),
                 format!(
                     "the Sun at JD {jd_ut}: the provider answered {:?}",
                     cell.status
@@ -232,6 +232,7 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
+    use teistro_core::error::Status;
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
     use teistro_core::settings::Sunrise;
     use teistro_port_ephemeris::{

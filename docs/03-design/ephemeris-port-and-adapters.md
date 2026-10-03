@@ -36,7 +36,9 @@ with its reason:
 - The port's C codes and the SDK's status codes are two numberings at
   two boundaries: a `ProviderError` maps to `UNSUPPORTED`,
   `OUT_OF_RANGE`, `INVALID_ARG` or `PROVIDER`, with the provider's own
-  code and message carried.
+  code and message carried. A single refused cell maps the same way
+  (`CellStatus::status`): an instant past the coverage is `OUT_OF_RANGE`
+  whether one cell or the whole request was refused for it.
 - The vtable module is the one place outside the future `ffi` crate
   that holds `unsafe` code, `deny` rather than `forbid` at the crate
   with one SAFETY comment per block (`04-implementation/README.md`).
