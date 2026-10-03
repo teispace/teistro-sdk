@@ -524,6 +524,11 @@ __all__ = [
     "DavisonBirth",
     "MidpointRequest",
     "WesternHousePlacement",
+    "HarmonicChart",
+    "HarmonicPlaced",
+    "HarmonicPoint",
+    "HarmonicRequest",
+    "HarmonicRow",
     "WesternHouseRequest",
     "WesternHouses",
     "MidpointRow",
@@ -1580,6 +1585,7 @@ class ChartArea(_Area):
         antiscia: Optional[AntisciaRequest] = None,
         midpoints: Optional[MidpointRequest] = None,
         western_houses: Optional[WesternHouseRequest] = None,
+        harmonic: Optional[HarmonicRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1634,6 +1640,7 @@ class ChartArea(_Area):
             antiscia=antiscia,
             midpoints=midpoints,
             western_houses=western_houses,
+            harmonic=harmonic,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1678,6 +1685,7 @@ class ChartArea(_Area):
         antiscia: Optional[AntisciaRequest] = None,
         midpoints: Optional[MidpointRequest] = None,
         western_houses: Optional[WesternHouseRequest] = None,
+        harmonic: Optional[HarmonicRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1758,6 +1766,7 @@ class ChartArea(_Area):
                 "western_houses",
                 "{'system': HouseSystem.KOCH}",
             ),
+            harmonic_json=_record_json(harmonic, "harmonic", "{'number': 9}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -4025,6 +4034,75 @@ class WesternHousePlacement:
     """Whether Leo counts it with the ascendant (C250): in the first house,
     or above the ascendant no further than the degree that rose one
     sidereal hour before; its house is never moved for it."""
+
+
+class HarmonicRequest(TypedDict, total=False):
+    """What a chart's harmonic is asked (`03-design/western-harmonics.md`):
+    `number`, a whole number from 1 to 360 every longitude is multiplied
+    by (Addey), and `orbDeg`, how close two points meet in the harmonic
+    chart, 12° when absent (C252), at most 30°.
+
+    >>> ninth: HarmonicRequest = {"number": 9}
+    >>> tight: HarmonicRequest = {"number": 5, "orbDeg": 3}
+    """
+
+    number: int
+    orbDeg: float
+
+
+@dataclass(frozen=True)
+class HarmonicPoint:
+    """A point of a harmonic chart: a planet, the ascendant or the
+    midheaven."""
+
+    point: Literal["GRAHA", "ASCENDANT", "MIDHEAVEN"]
+    graha: Optional[Graha] = None
+    """Which planet, for a `"GRAHA"` point; `None` for an angle."""
+
+
+@dataclass(frozen=True)
+class HarmonicPlaced:
+    """A point's place in a harmonic chart."""
+
+    point: HarmonicPoint
+    longitude_deg: float
+    """Its longitude multiplied by the harmonic, degrees in `[0, 360)`."""
+
+    house: int
+    """Its equal house from the harmonic ascendant, 1 to 12 (C254)."""
+
+
+@dataclass(frozen=True)
+class HarmonicRow:
+    """Two points meeting in a harmonic chart, within the orb of each other
+    there: the planets in the catalogue's order first, then the ascendant,
+    then the midheaven."""
+
+    first: HarmonicPoint
+    second: HarmonicPoint
+    apart_deg: float
+    """How far apart they stand in the harmonic chart, degrees."""
+
+    multiple: int
+    """Which multiple k of the harmonic's aspect, k × 360° / n, they stand
+    at in the chart itself."""
+
+    orb_deg: float
+    """The orb the request allowed, degrees."""
+
+
+@dataclass(frozen=True)
+class HarmonicChart:
+    """A chart's harmonic chart (Addey, *Harmonics in Astrology*), in the
+    chart's own zodiac (C253)."""
+
+    harmonic: int
+    points: Tuple[HarmonicPlaced, ...]
+    """The planets in the catalogue's order, then the ascendant and the
+    midheaven."""
+
+    rows: Tuple[HarmonicRow, ...]
+    """The pairs meeting within the orb, closest first."""
 
 
 @dataclass(frozen=True)
@@ -6914,6 +6992,15 @@ def _midpoint_cells(
     )
 
 
+_HARMONIC_ANGLES: Tuple[HarmonicPoint, HarmonicPoint] = (HarmonicPoint("ASCENDANT"), HarmonicPoint("MIDHEAVEN"))
+
+
+def _harmonic_point(angle: int, graha: int) -> HarmonicPoint:
+    """A harmonic chart's point from its two cells: 0 and a graha's id for
+    a planet, 1 for the ascendant and 2 for the midheaven."""
+    return HarmonicPoint("GRAHA", Graha(graha)) if angle == 0 else _HARMONIC_ANGLES[angle - 1]
+
+
 _NO_HOUSE_SYSTEM = 0xFFFF
 """`antiscia.cusp_system` where no cusps were asked."""
 
@@ -8589,6 +8676,16 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def harmonic(self) -> Optional[HarmonicChart]:
+        """The chart's harmonic chart: each planet, the ascendant and the
+        midheaven at its longitude multiplied, in its equal house from the
+        harmonic ascendant (C254), and every pair meeting within the orb,
+        12° by default (C252), closest first; `None` unless `harmonic=`
+        asked (`03-design/western-harmonics.md`)."""
+        parsed = self.batch._harmonics
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def western_houses(self) -> Optional[WesternHouses]:
         """The chart's Western houses: the cusps of the asked division,
         else the profile's for the module, else Placidus (C249), and each
@@ -9310,6 +9407,40 @@ class ChartBatch:
                 cusp_system=None if row.cusp_system[k] == _NO_HOUSE_SYSTEM else HouseSystem(row.cusp_system[k]),
             )
             for k, rows in enumerate(points)
+        ]
+
+    @cached_property
+    def _harmonics(self) -> list[HarmonicChart]:
+        """Every chart's harmonic chart, decoded once; empty when none was
+        asked for. `harmonics` holds a row a chart, and `harmonic_points`
+        and `harmonic_rows` are ragged by its two counts."""
+        h = self.decoded.harmonics
+        p = self.decoded.harmonic_points
+        r = self.decoded.harmonic_rows
+        points = self._ragged(
+            h.point_count,
+            p.length,
+            "harmonics and harmonic_points",
+            lambda at: HarmonicPlaced(
+                point=_harmonic_point(p.angle[at], p.graha[at]),
+                longitude_deg=p.longitude_deg[at],
+                house=p.house[at],
+            ),
+        )
+        rows = self._ragged(
+            h.row_count,
+            r.length,
+            "harmonics and harmonic_rows",
+            lambda at: HarmonicRow(
+                first=_harmonic_point(r.first_angle[at], r.first_graha[at]),
+                second=_harmonic_point(r.second_angle[at], r.second_graha[at]),
+                apart_deg=r.apart_deg[at],
+                multiple=r.multiple[at],
+                orb_deg=r.orb_deg[at],
+            ),
+        )
+        return [
+            HarmonicChart(harmonic=h.number[k], points=placed, rows=rows[k]) for k, placed in enumerate(points)
         ]
 
     @cached_property

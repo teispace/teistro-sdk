@@ -687,6 +687,7 @@ final class ChartArea extends _Area {
     AntisciaRequest? antiscia,
     MidpointRequest? midpoints,
     WesternHouseRequest? westernHouses,
+    HarmonicRequest? harmonic,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -727,6 +728,7 @@ final class ChartArea extends _Area {
     antiscia: antiscia,
     midpoints: midpoints,
     westernHouses: westernHouses,
+    harmonic: harmonic,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -787,6 +789,7 @@ final class ChartArea extends _Area {
     AntisciaRequest? antiscia,
     MidpointRequest? midpoints,
     WesternHouseRequest? westernHouses,
+    HarmonicRequest? harmonic,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -850,6 +853,7 @@ final class ChartArea extends _Area {
             antisciaJson: antiscia?._json,
             midpointsJson: midpoints?._json,
             westernHousesJson: westernHouses?._json,
+            harmonicJson: harmonic?._json,
           ),
         ),
       ),
@@ -4631,6 +4635,57 @@ List<Antiscia> _decodeAntiscia(Charts batch) {
 /// `antiscia.cusp_system` where no cusps were asked.
 const int _noHouseSystem = 0xFFFF;
 
+final Expando<List<HarmonicChart>> _harmonics = Expando<List<HarmonicChart>>(
+  'harmonics',
+);
+
+List<HarmonicChart> _harmonicsOf(Charts batch) =>
+    _harmonics[batch] ??= _decodeHarmonics(batch);
+
+/// A harmonic chart's point from its two cells: 0 and a graha's id for a
+/// planet, 1 for the ascendant and 2 for the midheaven.
+HarmonicPoint _harmonicPoint(int angle, int graha) => switch (angle) {
+  1 => HarmonicPoint.ascendant,
+  2 => HarmonicPoint.midheaven,
+  _ => HarmonicGraha(Graha.byId(graha)),
+};
+
+/// `harmonics` holds a row a chart, or none when none was asked, and
+/// `harmonic_points` and `harmonic_rows` are ragged by its two counts.
+List<HarmonicChart> _decodeHarmonics(Charts batch) {
+  final h = batch.harmonics;
+  final p = batch.harmonicPoints;
+  final r = batch.harmonicRows;
+  final points = _ragged(
+    batch,
+    h.pointCount,
+    p.length,
+    'harmonics and harmonic_points',
+    (at) => HarmonicPlaced(
+      point: _harmonicPoint(p.angle[at], p.graha[at]),
+      longitudeDeg: p.longitudeDeg[at],
+      house: p.house[at],
+    ),
+  );
+  final rows = _ragged(
+    batch,
+    h.rowCount,
+    r.length,
+    'harmonics and harmonic_rows',
+    (at) => HarmonicRow(
+      first: _harmonicPoint(r.firstAngle[at], r.firstGraha[at]),
+      second: _harmonicPoint(r.secondAngle[at], r.secondGraha[at]),
+      apartDeg: r.apartDeg[at],
+      multiple: r.multiple[at],
+      orbDeg: r.orbDeg[at],
+    ),
+  );
+  return List<HarmonicChart>.unmodifiable([
+    for (final (k, placed) in points.indexed)
+      HarmonicChart(harmonic: h.number[k], points: placed, rows: rows[k]),
+  ]);
+}
+
 final Expando<List<WesternHouses>> _westernHouses =
     Expando<List<WesternHouses>>('western houses');
 
@@ -7023,6 +7078,142 @@ final class WesternAspectRequest {
   };
 
   String get _json => jsonEncode(_record);
+}
+
+/// What a chart's harmonic is asked (`03-design/western-harmonics.md`):
+/// [number], a whole number from 1 to 360 every longitude is multiplied by
+/// (Addey), and [orbDeg], how close two points meet in the harmonic chart,
+/// 12° by default (C252), at most 30°.
+///
+/// ```dart
+/// const ninth = HarmonicRequest(9);
+/// const tight = HarmonicRequest(5, orbDeg: 3);
+/// ```
+final class HarmonicRequest {
+  const HarmonicRequest(this.number, {this.orbDeg = 12});
+
+  /// Which harmonic.
+  final int number;
+
+  /// The orb of a meeting in the harmonic chart, degrees.
+  final double orbDeg;
+
+  Map<String, Object?> get _record => {'number': number, 'orbDeg': orbDeg};
+
+  String get _json => jsonEncode(_record);
+}
+
+/// A point of a harmonic chart: a planet ([HarmonicGraha]), or the
+/// ascendant or midheaven ([HarmonicPoint.ascendant],
+/// [HarmonicPoint.midheaven]).
+sealed class HarmonicPoint extends _Value {
+  const HarmonicPoint();
+
+  /// The ascendant.
+  static const HarmonicPoint ascendant = HarmonicAngle._('ASCENDANT');
+
+  /// The midheaven.
+  static const HarmonicPoint midheaven = HarmonicAngle._('MIDHEAVEN');
+
+  /// `'GRAHA'`, `'ASCENDANT'` or `'MIDHEAVEN'`, as every binding spells it.
+  String get point;
+}
+
+/// A planet, as a point of a harmonic chart.
+final class HarmonicGraha extends HarmonicPoint {
+  const HarmonicGraha(this.graha);
+
+  /// Which.
+  final Graha graha;
+
+  @override
+  String get point => 'GRAHA';
+
+  @override
+  List<Object?> get _fields => [graha];
+}
+
+/// The ascendant or the midheaven, as a point of a harmonic chart.
+final class HarmonicAngle extends HarmonicPoint {
+  const HarmonicAngle._(this.point);
+
+  @override
+  final String point;
+
+  @override
+  List<Object?> get _fields => [point];
+}
+
+/// A point's place in a harmonic chart.
+final class HarmonicPlaced extends _Value {
+  const HarmonicPlaced({
+    required this.point,
+    required this.longitudeDeg,
+    required this.house,
+  });
+
+  final HarmonicPoint point;
+
+  /// Its longitude multiplied by the harmonic, degrees in `[0, 360)`.
+  final double longitudeDeg;
+
+  /// Its equal house from the harmonic ascendant, 1 to 12 (C254).
+  final int house;
+
+  @override
+  List<Object?> get _fields => [point, longitudeDeg, house];
+}
+
+/// Two points meeting in a harmonic chart, within the orb of each other
+/// there: the planets in the catalogue's order first, then the ascendant,
+/// then the midheaven.
+final class HarmonicRow extends _Value {
+  const HarmonicRow({
+    required this.first,
+    required this.second,
+    required this.apartDeg,
+    required this.multiple,
+    required this.orbDeg,
+  });
+
+  final HarmonicPoint first;
+  final HarmonicPoint second;
+
+  /// How far apart they stand in the harmonic chart, degrees.
+  final double apartDeg;
+
+  /// Which multiple k of the harmonic's aspect, k × 360° / n, they stand at
+  /// in the chart itself.
+  final int multiple;
+
+  /// The orb the request allowed, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [first, second, apartDeg, multiple, orbDeg];
+}
+
+/// A chart's harmonic chart (Addey, *Harmonics in Astrology*), in the
+/// chart's own zodiac (C253).
+final class HarmonicChart extends _Value {
+  const HarmonicChart({
+    required this.harmonic,
+    required this.points,
+    required this.rows,
+  });
+
+  /// Which harmonic.
+  final int harmonic;
+
+  /// The planets in the catalogue's order, then the ascendant and the
+  /// midheaven.
+  final List<HarmonicPlaced> points;
+
+  /// The pairs meeting within the orb, closest first.
+  final List<HarmonicRow> rows;
+
+  @override
+  List<Object?> get _fields => [harmonic, ...points, null, ...rows];
 }
 
 /// What a chart's Western houses are asked (`03-design/western-houses.md`):
@@ -13689,6 +13880,16 @@ final class Chart {
   /// (`03-design/western-antiscia.md`).
   Antiscia? get antiscia {
     final all = _antisciaOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's harmonic chart: each planet, the ascendant and the
+  /// midheaven at its longitude multiplied, in its equal house from the
+  /// harmonic ascendant (C254), and every pair meeting within the orb, 12°
+  /// by default (C252), closest first; null unless `harmonic` asked
+  /// (`03-design/western-harmonics.md`).
+  HarmonicChart? get harmonic {
+    final all = _harmonicsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

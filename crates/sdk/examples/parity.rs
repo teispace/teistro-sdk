@@ -926,6 +926,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_parallels(report, &geo, index, document);
         the_antiscia(report, &geo, index, document);
         the_western_houses(report, &geo, index, document);
+        the_harmonic(report, &geo, index, document);
         the_midpoints(report, &geo, index, document);
     }
     the_synastry(report, &geo, &read.value, offset);
@@ -2044,6 +2045,52 @@ fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &tei
                 at.graha.full_key(),
                 at.house.get(),
                 u8::from(at.contrary)
+            ),
+        );
+    }
+}
+
+/// The 5th harmonic as the other three print them, under Addey's 12°
+/// orb: its number and counts, each point's harmonic longitude and house,
+/// then each meeting's pair, arc, multiple and orb.
+fn the_harmonic(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let key = |point: teistro::HarmonicPoint| match point {
+        teistro::HarmonicPoint::Graha { graha } => graha.full_key(),
+        teistro::HarmonicPoint::Ascendant => "ASCENDANT",
+        teistro::HarmonicPoint::Midheaven => "MIDHEAVEN",
+    };
+    let fifth = sdk
+        .chart()
+        .harmonic(document, &teistro::HarmonicRequest::of(5))
+        .expect("a valid request");
+    put(
+        report,
+        &format!("chart-{index}-harmonic"),
+        format!(
+            "{} {} {}",
+            fifth.harmonic,
+            fifth.points.len(),
+            fifth.rows.len()
+        ),
+    );
+    for at in &fifth.points {
+        put(
+            report,
+            &format!("chart-{index}-harmonic-{}", key(at.point)),
+            format!("{} {}", number(at.longitude_deg), at.house.get()),
+        );
+    }
+    for (n, at) in fifth.rows.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-harmonic-row-{n}"),
+            format!(
+                "{} {} {} {} {}",
+                key(at.first),
+                key(at.second),
+                number(at.apart_deg),
+                at.multiple,
+                number(at.orb_deg)
             ),
         );
     }

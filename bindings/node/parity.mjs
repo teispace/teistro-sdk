@@ -378,6 +378,7 @@ const charts = geo.chart.foundMany({
   antiscia: { cusps: {} },
   midpoints: { orbDeg: 1.5 },
   westernHouses: {},
+  harmonic: { number: 5 },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -803,6 +804,16 @@ for (const chart of charts) {
   houses.cuspsDeg.forEach((at, n) => put(`chart-${i}-western-cusp-${n + 1}`, number(at)));
   houses.planets.forEach((at) =>
     put(`chart-${i}-western-house-${at.graha}`, `${at.house} ${at.withAscendant ? 1 : 0}`),
+  );
+  const fifth = chart.harmonic;
+  const pointKey = (one) => (one.point === 'GRAHA' ? one.graha : one.point);
+  put(`chart-${i}-harmonic`, `${fifth.harmonic} ${fifth.points.length} ${fifth.rows.length}`);
+  fifth.points.forEach((at) => put(`chart-${i}-harmonic-${pointKey(at.point)}`, `${number(at.longitudeDeg)} ${at.house}`));
+  fifth.rows.forEach((at, n) =>
+    put(
+      `chart-${i}-harmonic-row-${n}`,
+      `${pointKey(at.first)} ${pointKey(at.second)} ${number(at.apartDeg)} ${at.multiple} ${number(at.orbDeg)}`,
+    ),
   );
   const between = chart.midpoints;
   put(`chart-${i}-midpoint-count`, `${between.length}`);
