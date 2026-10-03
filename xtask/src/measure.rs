@@ -134,6 +134,22 @@ pub(crate) fn seconds(value: f64) -> String {
     }
 }
 
+/// An arcsecond figure at the precision the measurement has: three
+/// significant places, and four decimals under a hundredth.
+pub(crate) fn arcsec(value: f64) -> String {
+    if value >= 100.0 {
+        format!("{value:.0}")
+    } else if value >= 10.0 {
+        format!("{value:.1}")
+    } else if value >= 1.0 {
+        format!("{value:.2}")
+    } else if value >= 0.01 {
+        format!("{value:.3}")
+    } else {
+        format!("{value:.4}")
+    }
+}
+
 /// A count, with a space every three digits from five digits up: the
 /// house style for a number a reader has to take in at a glance.
 pub(crate) fn count(value: usize) -> String {

@@ -28,7 +28,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, Verdict, count, spaced, spelled, verdict_of};
+use crate::measure::{Claim, Verdict, arcsec, count, spaced, spelled, verdict_of};
 
 const PAGE: &str = "docs/03-design/completion-measured.md";
 
@@ -209,20 +209,6 @@ fn outputs(root: &Path) -> Result<Vec<Output>, i32> {
 /// column wants; the JD itself is in the recorded file.
 fn year_of(jd: f64) -> String {
     format!("{:.0}", 2000.0 + (jd - 2_451_545.0) / 365.25)
-}
-
-/// An arcsecond figure, three significant places and no more precision
-/// than the measurement has.
-fn arcsec(value: f64) -> String {
-    if value >= 100.0 {
-        format!("{value:.0}")
-    } else if value >= 10.0 {
-        format!("{value:.1}")
-    } else if value >= 1.0 {
-        format!("{value:.2}")
-    } else {
-        format!("{value:.3}")
-    }
 }
 
 /// Writes the page.

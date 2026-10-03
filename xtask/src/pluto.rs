@@ -26,7 +26,7 @@ use std::path::Path;
 use serde::Deserialize;
 
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, count, spelled, table};
+use crate::measure::{Claim, arcsec, count, spelled, table};
 
 /// Where the fit is recorded. The number, not the code that produced it.
 const SOURCE: &str = "crates/ephemeris-builtin/data/pluto-fit.json";
@@ -100,19 +100,6 @@ fn recorded(root: &Path) -> Result<Option<Fit>, String> {
                 path.display()
             )
         })
-}
-
-/// An arcsecond figure at a readable precision.
-fn arcsec(value: f64) -> String {
-    if value >= 10.0 {
-        format!("{value:.1}")
-    } else if value >= 1.0 {
-        format!("{value:.2}")
-    } else if value >= 0.01 {
-        format!("{value:.3}")
-    } else {
-        format!("{value:.4}")
-    }
 }
 
 /// Bytes as kilobytes, which is the unit a tier budget is stated in.
