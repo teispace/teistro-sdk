@@ -58,6 +58,7 @@ mod antiscia;
 mod declinations;
 mod festival_request;
 mod gochar_request;
+mod harmonics;
 mod hit_request;
 mod kp_request;
 mod midpoints;
@@ -273,6 +274,12 @@ pub use teistro_western::{
 pub use teistro_western::{
     ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
     LILLY_HOUSE_SYSTEM, WesternHouses,
+};
+// A chart's harmonics after Addey: every point multiplied by a whole
+// number, and the points meeting in it (`03-design/western-harmonics.md`).
+pub use teistro_western::{
+    ADDEY_HARMONIC_ORB_DEG, HarmonicChart, HarmonicPlaced, HarmonicPoint, HarmonicRequest,
+    HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG,
 };
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
