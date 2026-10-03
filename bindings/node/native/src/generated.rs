@@ -2100,6 +2100,20 @@ pub struct ChartRequest {
     /// `parallels`, as `parallels.orbDeg`.
     /// Example: {"orbDeg":1}. May be null.
     pub parallels_json: Option<String>,
+    /// Every chart's antiscia, as a JSON object, every field optional:
+    /// `orbs`, as `western_aspects_json` spells them, read at the
+    /// conjunction, Lilly's moieties by default (C244). Each planet is
+    /// reflected about the solstices and the equinoxes from its tropical
+    /// longitude, and a pair whose longitudes sum to 180° or 0° within the
+    /// orb stands in antiscion or contrantiscion. The planets are the
+    /// seven, and the outer three when `TS_CHART_OUTER` placed them; one
+    /// the orbs give none is reflected and stands in no pair. The answers
+    /// come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+    /// Null for none, which costs nothing
+    /// (`03-design/western-antiscia.md`). Refusals are named from the
+    /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+    /// Example: {"orbs":{"model":"LEO"}}. May be null.
+    pub antiscia_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2132,6 +2146,7 @@ pub struct HeldChartRequest {
     western_aspects_json: Option<std::ffi::CString>,
     synastry_json: Option<std::ffi::CString>,
     parallels_json: Option<std::ffi::CString>,
+    antiscia_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2207,6 +2222,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             parallels_json: self
                 .parallels_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            antiscia_json: self
+                .antiscia_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2316,6 +2335,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            antiscia_json: self
+                .antiscia_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2366,6 +2390,7 @@ impl ChartRequest {
             western_aspects_json: unsafe { lent_text(raw.western_aspects_json) },
             synastry_json: unsafe { lent_text(raw.synastry_json) },
             parallels_json: unsafe { lent_text(raw.parallels_json) },
+            antiscia_json: unsafe { lent_text(raw.antiscia_json) },
         }
     }
 }

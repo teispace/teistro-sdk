@@ -7792,6 +7792,22 @@ struct ts_chart_request {
      * Example: {"orbDeg":1}. May be null.
      */
     const char * parallels_json;
+    /**
+     * Every chart's antiscia, as a JSON object, every field optional:
+     * `orbs`, as `western_aspects_json` spells them, read at the
+     * conjunction, Lilly's moieties by default (C244). Each planet is
+     * reflected about the solstices and the equinoxes from its tropical
+     * longitude, and a pair whose longitudes sum to 180° or 0° within the
+     * orb stands in antiscion or contrantiscion. The planets are the
+     * seven, and the outer three when `TS_CHART_OUTER` placed them; one
+     * the orbs give none is reflected and stands in no pair. The answers
+     * come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+     * Null for none, which costs nothing
+     * (`03-design/western-antiscia.md`). Refusals are named from the
+     * record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+     * Example: {"orbs":{"model":"LEO"}}. May be null.
+     */
+    const char * antiscia_json;
 };
 
 /**
@@ -8726,7 +8742,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 248, "ts_chart_request is 248 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 256, "ts_chart_request is 256 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

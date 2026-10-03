@@ -11990,6 +11990,21 @@
             "example": "{\"orbDeg\":1}",
             "nullable": true
           }
+        },
+        {
+          "name": "antiscia_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's antiscia, as a JSON object, every field optional:\n`orbs`, as `western_aspects_json` spells them, read at the\nconjunction, Lilly's moieties by default (C244). Each planet is\nreflected about the solstices and the equinoxes from its tropical\nlongitude, and a pair whose longitudes sum to 180° or 0° within the\norb stands in antiscion or contrantiscion. The planets are the\nseven, and the outer three when `TS_CHART_OUTER` placed them; one\nthe orbs give none is reflected and stands in no pair. The answers\ncome back in `antiscia`, `antiscion_points` and `antiscion_rows`.\nNull for none, which costs nothing\n(`03-design/western-antiscia.md`). Refusals are named from the\nrecord every binding calls `antiscia`, as `antiscia.orbs.orbs`.",
+          "meta": {
+            "example": "{\"orbs\":{\"model\":\"LEO\"}}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -19534,6 +19549,88 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the record allowed, degrees."
+            }
+          ]
+        },
+        {
+          "id": 91,
+          "name": "antiscia",
+          "doc": "Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. Empty when `antiscia_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "point_count",
+              "scalar": "u32",
+              "doc": "How many planets' reflections are the chart's in `antiscion_points`."
+            },
+            {
+              "name": "pair_count",
+              "scalar": "u32",
+              "doc": "How many pairs are the chart's in `antiscion_rows`."
+            }
+          ]
+        },
+        {
+          "id": 92,
+          "name": "antiscion_points",
+          "doc": "Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). Empty when `antiscia_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "antiscion_deg",
+              "scalar": "f64",
+              "doc": "Its antiscion, the reflection about the solstices: 180° less its tropical longitude, degrees."
+            },
+            {
+              "name": "contrantiscion_deg",
+              "scalar": "f64",
+              "doc": "Its contrantiscion, the reflection about the equinoxes: 360° less it, degrees."
+            },
+            {
+              "name": "paired",
+              "scalar": "u8",
+              "doc": "1 when the record's orbs give the planet one, so it can stand in a pair; 0 when they give it none, as Lilly's moieties give the outer three."
+            }
+          ]
+        },
+        {
+          "id": 93,
+          "name": "antiscion_rows",
+          "doc": "Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet of the pair, in the catalogue's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far the one's reflection stands from the other, degrees."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed the pair, degrees."
             }
           ]
         }
