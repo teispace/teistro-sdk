@@ -2,8 +2,8 @@
 
 Status: `building`, 2026-10-03 — written from Leo's text before any code,
 its worked figures recast with pyswisseph's Moshier series. Steps 2 to
-4 are built: the measures in `crates/western`, the charts and the
-contacts in the SDK's chart area.
+5 are built: the measures in `crates/western`, the charts and the
+contacts in the SDK's chart area, and the boundary with every binding.
 
 A progression reads the sky some days after birth as the native's life
 some years after it: the chart for the forty-sixth day is read as the
@@ -169,26 +169,40 @@ is optional, and a section the record does not ask for costs nothing.
 - `rate`, `year` and `angles`: the measure (C236, C238) and the angle
   method (C237), spelled as their Rust members, with Leo's defaults;
 - `direction`: `"SOLAR"` or an arc measure (`"NAIBOD"`, `"PTOLEMY"`, or
-  `{"perYear": degrees}`);
+  `{"PER_YEAR": degrees}`);
 - `contacts`: `{from, to, grahas, points, aspects}`, spelled as the hit
   list spells them.
 
-Three sections answer it:
-- `progressed`, a row a chart: the instants of life and sky, the
-  progressed meridian, ascendant and midheaven. Its planets come in
-  `progressed_grahas`, a row a graha with the longitude in the chart's
-  zodiac, the tropical longitude and the speed. The full founded chart
-  does not cross, since a consumer who needs it founds the instant of
-  sky as an ordinary chart.
-- `directed`, a row a chart: the arc and the directed angles. Its
-  planets come in `directed_grahas`.
+A record with neither `at` nor `contacts` is refused under
+`progressions.at`, and every refusal is named from the record's root
+(`progressions.contacts.points[0]`, `progressions.direction`).
+
+Four sections answer it:
+- `progressions`, a row a chart: the instants of life and sky, the
+  progressed meridian, ascendant and midheaven, the direction's arc and
+  directed angles, the contact count and whether contacts were asked.
+  A chart read without `at` writes NaN in the instants and angles.
+- `progressed_grahas`, a row a progressed graha: the longitude in the
+  chart's zodiac, the tropical longitude and the speed. The full
+  founded chart does not cross, since a consumer who needs it founds
+  the instant of sky as an ordinary chart.
+- `directed_grahas`, a row a directed planet: its longitude.
 - `progressed_contacts`, ragged by the chart's contact count: the
   instants of life and sky, the planet, the point, the angle and the
   motion, as the hit list's columns spell them.
 
-Node, wasm, Python and Dart read these as `chart.progressed`,
-`chart.directed` and `chart.progressedContacts`. The parity runners
-print Leo's birth under both year measures.
+The boundary founds a progressed chart on the batch's foundation alone
+(its place, clock and kind). It writes the grahas and angles and nothing
+else, so the sections the batch asked for would only cost; the ABI test
+asks every section and still matches the façade's bare request cell for
+cell.
+
+Node, wasm, Python and Dart read these as one value, `chart.progressions`
+(`{progressed, directed, contacts}`, each null when not asked). The
+parity runners ask the same record of both their charts: a life in 2050
+under the noon sidereal year, the solar arc in longitude, Naibod's
+direction, and ten years of the Moon's and the Sun's contacts to the
+lagna, Mars and Venus.
 
 ## What building it found
 
@@ -300,7 +314,7 @@ print Leo's birth under both year measures.
    **Built.**
 4. `progressed_contacts`, held to test 4 under both measures and to
    test 5's year. **Built.**
-5. The boundary and every binding, with the parity gate.
+5. The boundary and every binding, with the parity gate. **Built.**
 6. A measured page over the corpus's births: each angle method's
    midheaven against the others by age, so the size of C237 is stated in
    degrees rather than argued.
