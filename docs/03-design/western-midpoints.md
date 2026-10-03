@@ -1,9 +1,10 @@
 # Equal distances (the `western` module)
 
-Status: `in progress`, 2026-10-03, written from the source before any
-code. Steps 1 to 3 are built: `sdk.chart().midpoints`, held to Leo's
-p. 47 configuration and to a recast of George V, and measured over the
-corpus's births in [`midpoints-measured.md`](midpoints-measured.md).
+Status: `built`, 2026-10-03, written from the source before any code.
+Every step is built: `sdk.chart().midpoints`, held to Leo's p. 47
+configuration and to a recast of George V, measured over the corpus's
+births in [`midpoints-measured.md`](midpoints-measured.md), and crossing
+to every binding as `chart.midpoints`, with parity.
 
 [`western-declinations.md`](western-declinations.md) reads two bodies
 the same distance from the equator, and
@@ -86,6 +87,10 @@ example holds only if both points of the axis count.
    `distance_deg`, the mean of its two distances; `from_axis_deg`, how
    far it stands from the nearer point of the axis; and `orb_deg`.
    Rows come closest first.
+8. **Across the boundary, as the parallels cross.** A `midpoints`
+   record on the chart request (`{}` for the default, or `orbDeg`) asks
+   every chart of the batch. A row a chart counts its equal distances,
+   and they go ragged under it (sections 96 and 97).
 
 ## Order of work
 
@@ -111,6 +116,10 @@ example holds only if both points of the axis count.
   between in an aspect to one of the two under Leo's table, where he
   reads the aspect instead (p. 48). The rest stand in none, which is
   what the equal distance adds to the aspect table.
+- **One pattern for a table a chart.** The aspect table, the antiscia
+  and now the equal distances each read one table a chart and name a
+  refusal under their record and the chart; the boundary had written
+  that loop twice, so the third made it one function.
 - **A planet at a longitude is one type.** The antiscia's input was a
   planet and its tropical longitude, which the equal distances need
   too, so it became `PlanetAt`, beside the aspect table's `Placed`.
