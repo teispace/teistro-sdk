@@ -2735,6 +2735,112 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its Western aspects', () {
+    // King Edward VII's nativity: Leo's four (*How to Judge a Nativity*,
+    // pp. 295–296) under his orbs, Lilly's moieties refusing the outer
+    // three, a batch the charts one at a time, and refusals named in the
+    // record (`03-design/western-aspects.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final palace = Observer(
+      latitudeDeg: Latitude(51.501),
+      longitudeDeg: Longitude(-0.142),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2393783.95;
+    Chart found(
+      double instant, {
+      WesternAspectRequest? asked,
+      bool outerPlanets = false,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: palace,
+      utcOffsetSeconds: 0,
+      outerPlanets: outerPlanets,
+      westernAspects: asked,
+    );
+    expect(found(birth).westernAspects, isNull);
+
+    final rows =
+        found(
+          birth,
+          asked: const WesternAspectRequest(),
+          outerPlanets: true,
+        ).westernAspects!;
+    final held = {
+      for (final row in rows) ({row.first, row.second}, row.aspect),
+    };
+    bool holds(Graha a, WesternAspect aspect, Graha b) =>
+        held.any((h) => h.$2 == aspect && h.$1.containsAll({a, b}));
+    for (final (a, aspect, b) in [
+      (Graha.sun, WesternAspect.trine, Graha.uranus),
+      (Graha.sun, WesternAspect.sextile, Graha.mars),
+      (Graha.sun, WesternAspect.square, Graha.neptune),
+      (Graha.moon, WesternAspect.square, Graha.saturn),
+    ]) {
+      expect(holds(a, aspect, b), isTrue, reason: '$a $aspect $b');
+    }
+    expect(rows.every((row) => row.fromExactDeg <= row.orbDeg), isTrue);
+
+    // Lilly's moieties over the seven: the Moon (12½) and Saturn (10)
+    // square within 11¼.
+    final square = found(
+      birth,
+      asked: WesternAspectRequest.lilly,
+    ).westernAspects!.firstWhere(
+      (row) => row.first == Graha.moon && row.second == Graha.saturn,
+    );
+    expect((square.aspect, square.orbDeg), (WesternAspect.square, 11.25));
+
+    final instants = [birth, birth + 3000.25, birth + 9000.5];
+    const two = WesternAspectRequest(
+      aspects: [WesternAspect.trine, WesternAspect.square],
+    );
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: palace,
+      utcOffsetSeconds: 0,
+      westernAspects: two,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).westernAspects,
+        found(instant, asked: two).westernAspects,
+      );
+    }
+    for (final (asked, field, outer) in [
+      (
+        const WesternAspectRequest(aspects: []),
+        'westernAspects.aspects',
+        false,
+      ),
+      (
+        const WesternAspectRequest(
+          aspects: [WesternAspect.trine, WesternAspect.trine],
+        ),
+        'westernAspects.aspects',
+        false,
+      ),
+      (
+        const WesternAspectRequest(
+          aspects: [WesternAspect.trine],
+          orbs: OrbModel.byAspect({WesternAspect.trine: 91}),
+        ),
+        'westernAspects.orbs.orbs',
+        false,
+      ),
+      (WesternAspectRequest.lilly, 'westernAspects.orbs.orbs', true),
+    ]) {
+      expect(
+        () => found(birth, asked: asked, outerPlanets: outer),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries the outer planets when asked', () {
     final ctx = teistro.context(
       profile: 'western-tropical-default',
