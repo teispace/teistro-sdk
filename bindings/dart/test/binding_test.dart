@@ -3193,6 +3193,120 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its match with a partner', () {
+    // A birth matched with itself: one sign and one nakshatra, so every
+    // koota but Nadi takes its whole points and the shared nadi none, 28,
+    // whatever the Moon (*Muhurta Chintamani* VI.21–34,
+    // `03-design/matching.md`).
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const birth = 2451545.0;
+    Chart found(double instant, {MatchingRequest? asked}) => ctx.chart.found(
+      instant: instant,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      matching: asked,
+    );
+    expect(found(birth).matching, isNull);
+
+    final itself =
+        found(
+          birth,
+          asked: MatchingRequest(
+            Partner(instant: birth, place: kathmandu, utcOffsetSeconds: 20700),
+            partnerRole: MatchRole.bride,
+          ),
+        ).matching!;
+    expect(itself.total, 28);
+    expect(
+      [for (final row in itself.kootas) row.reading.koota],
+      [
+        Koota.varna,
+        Koota.vashya,
+        Koota.tara,
+        Koota.yoni,
+        Koota.grahaMaitri,
+        Koota.gana,
+        Koota.bhakoot,
+        Koota.nadi,
+      ],
+    );
+    expect(
+      [for (final row in itself.kootas) row.maxPoints],
+      [1, 2, 3, 4, 5, 6, 7, 8],
+    );
+    expect(itself.kootas[1].reading, const VashyaKoota(VashyaRelation.mutual));
+    expect(
+      itself.kootas[2].reading,
+      const TaraKoota(brideToGroom: 1, groomToBride: 1),
+    );
+    final bhakoot = itself.kootas[6].reading as BhakootKoota;
+    expect(
+      (
+        bhakoot.apart,
+        bhakoot.dosha,
+        bhakoot.lifted,
+        bhakoot.exceptions.oneLord,
+      ),
+      (1, null, false, true),
+    );
+    final nadi = itself.kootas[7].reading as NadiKoota;
+    expect((nadi.dosha, nadi.bride == nadi.groom), (true, true));
+
+    final asked = MatchingRequest(
+      Partner(instant: 2447892.5, place: kathmandu, utcOffsetSeconds: 20700),
+      partnerRole: MatchRole.groom,
+      rules: const KootaRules(nadiDosha: NadiDosha.middleOnly),
+    );
+    final instants = [birth, birth + 9.5, birth + 17.25];
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      matching: asked,
+    );
+    for (final (k, instant) in instants.indexed) {
+      final alone = found(instant, asked: asked).matching!;
+      expect(batch.at(k).matching, alone);
+      final swapped =
+          found(
+            instant,
+            asked: MatchingRequest(asked.partner, partnerRole: MatchRole.bride),
+          ).matching!;
+      final ours = alone.kootas.first.reading as VarnaKoota;
+      final theirs = swapped.kootas.first.reading as VarnaKoota;
+      expect((theirs.bride, theirs.groom), (ours.groom, ours.bride));
+    }
+    ctx.dispose();
+
+    final western = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    expect(
+      () => western.chart.found(
+        instant: birth,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        matching: asked,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'matching.partner',
+        ),
+      ),
+    );
+    western.dispose();
+  });
+
   test('a chart carries its Western houses', () {
     // Leo's own illustration (*How to Judge a Nativity*, p. 150), "a female
     // born at 2.42 A.M. 13th December, 1835, London", against the SDK

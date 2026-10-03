@@ -929,7 +929,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_harmonic(report, &geo, index, document);
         the_midpoints(report, &geo, index, document);
     }
-    the_synastry(report, &geo, &read.value, offset);
+    the_partners(report, &geo, &read.value, offset);
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
     // which is what the blob carries, and what made this row disagree
@@ -2208,6 +2208,108 @@ fn natal_key(point: teistro::NatalPoint) -> &'static str {
 /// which give every planet one; the equal distances across under a
 /// widened orb; and the composite and the Davison birth,
 /// the partner's clock and the charts' meeting in it.
+/// Every chart read against a partner's birth: the synastry, then the
+/// match.
+fn the_partners(
+    report: &mut Report,
+    sdk: &Context,
+    documents: &[teistro::Document],
+    clock: UtcOffset,
+) {
+    the_synastry(report, sdk, documents, clock);
+    the_matching(report, sdk, documents);
+}
+
+const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"partnerRole":"BRIDE","rules":{"bhakootLift":"GARGA"}}"#;
+
+/// Every chart's match as the other three print it: the total, then each
+/// koota by its full key with its points, its most and what it read, the
+/// fields in serde's order, a flag as 0 or 1 and no dosha as `NONE`.
+fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
+    use teistro::KootaReading;
+    let asked = teistro::PartnerMatching::from_json(MATCHING_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .matching_with(documents, &asked)
+        .expect("sidereal charts");
+    for (index, one) in read.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-matching"),
+            number(one.total),
+        );
+        for row in &one.kootas {
+            let reading = match row.reading {
+                KootaReading::Varna { bride, groom } => {
+                    format!("{} {}", bride.full_key(), groom.full_key())
+                }
+                KootaReading::Vashya { relation } => wire_key(&relation),
+                KootaReading::Tara {
+                    bride_to_groom,
+                    groom_to_bride,
+                } => format!("{bride_to_groom} {groom_to_bride}"),
+                KootaReading::Yoni {
+                    bride,
+                    groom,
+                    relation,
+                } => format!(
+                    "{} {} {}",
+                    bride.full_key(),
+                    groom.full_key(),
+                    wire_key(&relation)
+                ),
+                KootaReading::GrahaMaitri {
+                    bride,
+                    groom,
+                    relation,
+                } => format!(
+                    "{} {} {}",
+                    bride.full_key(),
+                    groom.full_key(),
+                    wire_key(&relation)
+                ),
+                KootaReading::Gana { bride, groom } => {
+                    format!("{} {}", bride.full_key(), groom.full_key())
+                }
+                KootaReading::Bhakoot {
+                    apart,
+                    dosha,
+                    exceptions,
+                    lifted,
+                } => format!(
+                    "{apart} {} {} {} {} {} {} {}",
+                    dosha.map_or_else(|| "NONE".to_owned(), |dosha| wire_key(&dosha)),
+                    u8::from(exceptions.one_lord),
+                    u8::from(exceptions.lords_friends),
+                    u8::from(exceptions.navamsha_lords_friends),
+                    u8::from(exceptions.tara_pure),
+                    u8::from(exceptions.vashya),
+                    u8::from(lifted)
+                ),
+                KootaReading::Nadi {
+                    bride,
+                    groom,
+                    dosha,
+                } => format!(
+                    "{} {} {}",
+                    bride.full_key(),
+                    groom.full_key(),
+                    u8::from(dosha)
+                ),
+            };
+            put(
+                report,
+                &format!("chart-{index}-matching-{}", row.reading.koota().full_key()),
+                format!(
+                    "{} {} {reading}",
+                    number(row.points),
+                    number(row.max_points)
+                ),
+            );
+        }
+    }
+}
+
 const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}},"midpoints":{"orbDeg":1.5},"composite":true,"davison":true}"#;
 
 /// Every chart's synastry as the other three print it: its length, then

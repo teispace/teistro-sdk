@@ -717,8 +717,10 @@ test('every catalogue enum has a complete id table', () => {
   // five `TsPtolemaicAspect`s and three `TsRadicalGround`s; 1282 since
   // Lilly's perfection, three `TsApplicationKind`s, three
   // `TsImpedimentKind`s and seven `TsWay`s; 1291 since the Western
-  // aspects, nine `TsWesternAspect`s.
-  assert.equal(entries, 1291, 'every member of every enum is in a table');
+  // aspects, nine `TsWesternAspect`s; 1309 since the matching's
+  // `TsVashyaRelation`, four, `TsYoniRelation`, three, `TsMaitriRelation`,
+  // seven, and `TsBhakootDosha`, four.
+  assert.equal(entries, 1309, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2593,6 +2595,64 @@ test('a chart carries its harmonic', () => {
       (error) => error instanceof TeistroError && error.field === field,
     );
   }
+  ctx.dispose();
+});
+
+test('a chart carries its match with a partner', () => {
+  // A birth matched with itself: one sign and one nakshatra, so every
+  // koota but Nadi takes its whole points and the shared nadi none, 28,
+  // whatever the Moon (Muhurta Chintamani VI.21-34).
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const kathmandu = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const birth = 2451545.0;
+  assert.equal(ctx.chart.found({ instant: birth, ...kathmandu }).matching, null);
+
+  const partner = { instant: birth, ...kathmandu };
+  const self = ctx.chart.found({ instant: birth, ...kathmandu, matching: { partner, partnerRole: 'BRIDE' } }).matching;
+  assert.ok(Object.isFrozen(self) && Object.isFrozen(self.kootas[6].reading.exceptions), 'frozen to its leaves');
+  assert.equal(self.total, 28);
+  assert.deepEqual(
+    self.kootas.map((row) => row.reading.koota),
+    ['VARNA', 'VASHYA', 'TARA', 'YONI', 'GRAHA_MAITRI', 'GANA', 'BHAKOOT', 'NADI'].map((koota) => `koota.${koota}`),
+  );
+  assert.deepEqual(
+    self.kootas.map((row) => row.maxPoints),
+    [1, 2, 3, 4, 5, 6, 7, 8],
+  );
+  const [, vashya, tara, yoni, maitri, , bhakoot, nadi] = self.kootas.map((row) => row.reading);
+  assert.deepEqual([vashya.relation, yoni.relation, maitri.relation], ['MUTUAL', 'SAME', 'ONE_LORD']);
+  assert.deepEqual([tara.brideToGroom, tara.groomToBride], [1, 1]);
+  assert.deepEqual([bhakoot.apart, bhakoot.dosha, bhakoot.lifted, bhakoot.exceptions.oneLord], [1, null, false, true]);
+  assert.ok(nadi.dosha && nadi.bride === nadi.groom && nadi.bride.startsWith('nadi.'));
+
+  // A batch reads each chart as alone; the sides swap Varna and Gana's
+  // reading; a refusal is named by its field.
+  const instants = [birth, birth + 9.5, birth + 17.25];
+  const matching = { partner: { instant: 2447892.5, ...kathmandu }, partnerRole: 'GROOM', rules: { nadiDosha: 'MIDDLE_ONLY' } };
+  const batch = ctx.chart.foundMany({ instants, ...kathmandu, matching });
+  instants.forEach((instant, k) => {
+    const alone = ctx.chart.found({ instant, ...kathmandu, matching }).matching;
+    assert.deepEqual(batch.at(k).matching, alone);
+    const swapped = ctx.chart.found({ instant, ...kathmandu, matching: { ...matching, partnerRole: 'BRIDE' } }).matching;
+    const varna = (one) => one.kootas[0].reading;
+    assert.deepEqual([varna(swapped).bride, varna(swapped).groom], [varna(alone).groom, varna(alone).bride]);
+  });
+  for (const [request, field] of [
+    [{ ...matching, partnerRole: 'UNCLE' }, 'matching.partnerRole'],
+    [{ ...matching, rules: { nadi: 'ANY' } }, 'matching.rules.nadi'],
+    [{ partner: matching.partner }, 'matching'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...kathmandu, matching: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+    );
+  }
+  const western = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  assert.throws(
+    () => western.chart.found({ instant: birth, ...kathmandu, matching }),
+    (error) => error instanceof TeistroError && error.field === 'matching.partner',
+  );
+  western.dispose();
   ctx.dispose();
 });
 

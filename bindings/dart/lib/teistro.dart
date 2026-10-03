@@ -688,6 +688,7 @@ final class ChartArea extends _Area {
     MidpointRequest? midpoints,
     WesternHouseRequest? westernHouses,
     HarmonicRequest? harmonic,
+    MatchingRequest? matching,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -729,6 +730,7 @@ final class ChartArea extends _Area {
     midpoints: midpoints,
     westernHouses: westernHouses,
     harmonic: harmonic,
+    matching: matching,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -790,6 +792,7 @@ final class ChartArea extends _Area {
     MidpointRequest? midpoints,
     WesternHouseRequest? westernHouses,
     HarmonicRequest? harmonic,
+    MatchingRequest? matching,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -854,6 +857,7 @@ final class ChartArea extends _Area {
             midpointsJson: midpoints?._json,
             westernHousesJson: westernHouses?._json,
             harmonicJson: harmonic?._json,
+            matchingJson: matching?._json,
           ),
         ),
       ),
@@ -4635,6 +4639,89 @@ List<Antiscia> _decodeAntiscia(Charts batch) {
 /// `antiscia.cusp_system` where no cusps were asked.
 const int _noHouseSystem = 0xFFFF;
 
+final Expando<List<AshtaKoota>> _matchings = Expando<List<AshtaKoota>>(
+  'matchings',
+);
+
+List<AshtaKoota> _matchingsOf(Charts batch) =>
+    _matchings[batch] ??= _decodeMatchings(batch);
+
+/// `matchings` holds a row a chart with what each koota read, or none when
+/// none was asked, and `matching_kootas` eight rows a chart, each koota's
+/// points in the verse's order (`03-design/matching.md`).
+List<AshtaKoota> _decodeMatchings(Charts batch) {
+  final m = batch.matchings;
+  final k = batch.matchingKootas;
+  Map<Koota, KootaReading> readings(int at) {
+    final dosha = BhakootDosha.byId(m.bhakootDosha[at]);
+    final read = <KootaReading>[
+      VarnaKoota(
+        bride: Varna.byId(m.brideVarna[at]),
+        groom: Varna.byId(m.groomVarna[at]),
+      ),
+      VashyaKoota(VashyaRelation.byId(m.vashya[at])),
+      TaraKoota(
+        brideToGroom: m.taraBrideToGroom[at],
+        groomToBride: m.taraGroomToBride[at],
+      ),
+      YoniKoota(
+        bride: Yoni.byId(m.brideYoni[at]),
+        groom: Yoni.byId(m.groomYoni[at]),
+        relation: YoniRelation.byId(m.yoni[at]),
+      ),
+      MaitriKoota(
+        bride: Graha.byId(m.brideLord[at]),
+        groom: Graha.byId(m.groomLord[at]),
+        relation: MaitriRelation.byId(m.maitri[at]),
+      ),
+      GanaKoota(
+        bride: Gana.byId(m.brideGana[at]),
+        groom: Gana.byId(m.groomGana[at]),
+      ),
+      BhakootKoota(
+        apart: m.bhakootApart[at],
+        dosha: dosha == BhakootDosha.none ? null : dosha,
+        exceptions: BhakootExceptions(
+          oneLord: m.bhakootOneLord[at] == 1,
+          lordsFriends: m.bhakootLordsFriends[at] == 1,
+          navamshaLordsFriends: m.bhakootNavamshaLordsFriends[at] == 1,
+          taraPure: m.bhakootTaraPure[at] == 1,
+          vashya: m.bhakootVashya[at] == 1,
+        ),
+        lifted: m.bhakootLifted[at] == 1,
+      ),
+      NadiKoota(
+        bride: Nadi.byId(m.brideNadi[at]),
+        groom: Nadi.byId(m.groomNadi[at]),
+        dosha: m.nadiDosha[at] == 1,
+      ),
+    ];
+    return {for (final one in read) one.koota: one};
+  }
+
+  final kootas = _ragged(
+    batch,
+    List<int>.filled(m.total.length, 8),
+    k.length,
+    'matchings and matching_kootas',
+    (row) => (Koota.byId(k.koota[row]), k.points[row], k.maxPoints[row]),
+  );
+  return List<AshtaKoota>.unmodifiable([
+    for (final (at, rows) in kootas.indexed)
+      AshtaKoota(
+        kootas: List<KootaRow>.unmodifiable([
+          for (final (koota, points, most) in rows)
+            KootaRow(
+              points: points,
+              maxPoints: most,
+              reading: readings(at)[koota]!,
+            ),
+        ]),
+        total: m.total[at],
+      ),
+  ]);
+}
+
 final Expando<List<HarmonicChart>> _harmonics = Expando<List<HarmonicChart>>(
   'harmonics',
 );
@@ -7078,6 +7165,365 @@ final class WesternAspectRequest {
   };
 
   String get _json => jsonEncode(_record);
+}
+
+/// The side of a match a birth stands on: Varna and Gana read differently
+/// when the two swap (`03-design/matching.md`).
+enum MatchRole {
+  /// The bride's birth.
+  bride('BRIDE'),
+
+  /// The groom's birth.
+  groom('GROOM');
+
+  const MatchRole(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The point an equal varna earns (C259).
+enum EqualVarna {
+  /// One point, the verse's own; the default.
+  whole('WHOLE'),
+
+  /// Half a point.
+  half('HALF');
+
+  const EqualVarna(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The points a Deva bride and a Manushya groom earn in Gana (C262).
+enum DevaBride {
+  /// Four; the default.
+  four('FOUR'),
+
+  /// Three.
+  three('THREE');
+
+  const DevaBride(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// How a bad Bhakoot is lifted (C263).
+enum BhakootLift {
+  /// Any one of the five exceptions, the nadi pure; the default.
+  anyOne('ANY_ONE'),
+
+  /// Garga's count.
+  garga('GARGA');
+
+  const BhakootLift(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// Which shared nadi is a dosha (C264).
+enum NadiDosha {
+  /// Any of the three; the default.
+  any('ANY'),
+
+  /// The middle nadi only.
+  middleOnly('MIDDLE_ONLY');
+
+  const NadiDosha(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The readings an Ashta Koota is computed under; each default is the
+/// source's own (`03-design/matching.md`).
+///
+/// ```dart
+/// const middle = KootaRules(nadiDosha: NadiDosha.middleOnly);
+/// ```
+final class KootaRules {
+  const KootaRules({
+    this.equalVarna = EqualVarna.whole,
+    this.devaBride = DevaBride.four,
+    this.bhakootLift = BhakootLift.anyOne,
+    this.nadiDosha = NadiDosha.any,
+  });
+
+  final EqualVarna equalVarna;
+  final DevaBride devaBride;
+  final BhakootLift bhakootLift;
+  final NadiDosha nadiDosha;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'equalVarna': equalVarna.key,
+    'devaBride': devaBride.key,
+    'bhakootLift': bhakootLift.key,
+    'nadiDosha': nadiDosha.key,
+  };
+}
+
+/// A match with a partner's birth (`03-design/matching.md`): the
+/// [partner], founded once for the whole batch under the context's
+/// sidereal profile; [partnerRole], the side the partner stands on, every
+/// chart standing on the other; and the [rules].
+///
+/// ```dart
+/// final asked = MatchingRequest(
+///   Partner(instant: 2447892.5, place: kathmandu, utcOffsetSeconds: 20700),
+///   partnerRole: MatchRole.bride,
+/// );
+/// ```
+final class MatchingRequest {
+  const MatchingRequest(
+    this.partner, {
+    required this.partnerRole,
+    this.rules = const KootaRules(),
+  });
+
+  /// Whose birth every chart is matched with.
+  final Partner partner;
+
+  /// The side the partner stands on.
+  final MatchRole partnerRole;
+
+  /// The readings the kootas are computed under.
+  final KootaRules rules;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'partner': partner._record,
+    'partnerRole': partnerRole.key,
+    'rules': rules._record,
+  };
+
+  String get _json => jsonEncode(_record);
+}
+
+/// The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause
+/// that holds or not.
+final class BhakootExceptions extends _Value {
+  const BhakootExceptions({
+    required this.oneLord,
+    required this.lordsFriends,
+    required this.navamshaLordsFriends,
+    required this.taraPure,
+    required this.vashya,
+  });
+
+  /// One lord rules both signs.
+  final bool oneLord;
+
+  /// The sign lords are each other's friends.
+  final bool lordsFriends;
+
+  /// The navamsha lords are one or each other's friends.
+  final bool navamshaLordsFriends;
+
+  /// The tara is pure both ways.
+  final bool taraPure;
+
+  /// One sign is vashya to the other.
+  final bool vashya;
+
+  @override
+  List<Object?> get _fields => [
+    oneLord,
+    lordsFriends,
+    navamshaLordsFriends,
+    taraPure,
+    vashya,
+  ];
+}
+
+/// What a koota read, one class a koota, each naming its [koota].
+sealed class KootaReading extends _Value {
+  const KootaReading();
+
+  /// The koota this is the reading of.
+  Koota get koota;
+}
+
+/// The varnas of the two Moon signs (VI.22).
+final class VarnaKoota extends KootaReading {
+  const VarnaKoota({required this.bride, required this.groom});
+
+  final Varna bride;
+  final Varna groom;
+
+  @override
+  Koota get koota => Koota.varna;
+
+  @override
+  List<Object?> get _fields => [bride, groom];
+}
+
+/// How the two Moon signs stand in Vashya (VI.23, C260).
+final class VashyaKoota extends KootaReading {
+  const VashyaKoota(this.relation);
+
+  final VashyaRelation relation;
+
+  @override
+  Koota get koota => Koota.vashya;
+
+  @override
+  List<Object?> get _fields => [relation];
+}
+
+/// The taras each way, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad.
+final class TaraKoota extends KootaReading {
+  const TaraKoota({required this.brideToGroom, required this.groomToBride});
+
+  /// Counted from the bride's nakshatra to the groom's.
+  final int brideToGroom;
+
+  /// Counted from the groom's nakshatra to the bride's.
+  final int groomToBride;
+
+  @override
+  Koota get koota => Koota.tara;
+
+  @override
+  List<Object?> get _fields => [brideToGroom, groomToBride];
+}
+
+/// The two yonis and how they stand (VI.25–26, C261).
+final class YoniKoota extends KootaReading {
+  const YoniKoota({
+    required this.bride,
+    required this.groom,
+    required this.relation,
+  });
+
+  final Yoni bride;
+  final Yoni groom;
+  final YoniRelation relation;
+
+  @override
+  Koota get koota => Koota.yoni;
+
+  @override
+  List<Object?> get _fields => [bride, groom, relation];
+}
+
+/// The two Moon signs' lords and how they stand by the natural
+/// friendships (VI.27–28).
+final class MaitriKoota extends KootaReading {
+  const MaitriKoota({
+    required this.bride,
+    required this.groom,
+    required this.relation,
+  });
+
+  final Graha bride;
+  final Graha groom;
+  final MaitriRelation relation;
+
+  @override
+  Koota get koota => Koota.grahaMaitri;
+
+  @override
+  List<Object?> get _fields => [bride, groom, relation];
+}
+
+/// The two ganas (VI.29–30).
+final class GanaKoota extends KootaReading {
+  const GanaKoota({required this.bride, required this.groom});
+
+  final Gana bride;
+  final Gana groom;
+
+  @override
+  Koota get koota => Koota.gana;
+
+  @override
+  List<Object?> get _fields => [bride, groom];
+}
+
+/// How far the groom's Moon sign stands from the bride's (VI.31–33).
+final class BhakootKoota extends KootaReading {
+  const BhakootKoota({
+    required this.apart,
+    required this.dosha,
+    required this.exceptions,
+    required this.lifted,
+  });
+
+  /// The groom's sign counted from the bride's, 1 to 12.
+  final int apart;
+
+  /// The bad Bhakoot the signs stand at, or null.
+  final BhakootDosha? dosha;
+
+  final BhakootExceptions exceptions;
+
+  /// Whether the exceptions lift the dosha under the rules; false with no
+  /// dosha.
+  final bool lifted;
+
+  @override
+  Koota get koota => Koota.bhakoot;
+
+  @override
+  List<Object?> get _fields => [apart, dosha, exceptions, lifted];
+}
+
+/// The two nadis (VI.34).
+final class NadiKoota extends KootaReading {
+  const NadiKoota({
+    required this.bride,
+    required this.groom,
+    required this.dosha,
+  });
+
+  final Nadi bride;
+  final Nadi groom;
+
+  /// Whether the shared nadi is a dosha under the rules.
+  final bool dosha;
+
+  @override
+  Koota get koota => Koota.nadi;
+
+  @override
+  List<Object?> get _fields => [bride, groom, dosha];
+}
+
+/// One koota's points and what it read.
+final class KootaRow extends _Value {
+  const KootaRow({
+    required this.points,
+    required this.maxPoints,
+    required this.reading,
+  });
+
+  /// Its points, a multiple of a half.
+  final double points;
+
+  /// The most it gives, 1 for Varna to 8 for Nadi.
+  final double maxPoints;
+
+  final KootaReading reading;
+
+  @override
+  List<Object?> get _fields => [points, maxPoints, reading];
+}
+
+/// The Ashta Koota of a bride and a groom (*Muhurta Chintamani* VI.21–34).
+/// Never a verdict: the doshas and their exceptions are clauses.
+final class AshtaKoota extends _Value {
+  const AshtaKoota({required this.kootas, required this.total});
+
+  /// The eight, in the verse's order.
+  final List<KootaRow> kootas;
+
+  /// Their points, out of 36.
+  final double total;
+
+  @override
+  List<Object?> get _fields => [...kootas, total];
 }
 
 /// What a chart's harmonic is asked (`03-design/western-harmonics.md`):
@@ -13912,6 +14358,17 @@ final class Chart {
   /// harmonic ascendant (C254), and every pair meeting within the orb, 12°
   /// by default (C252), closest first; null unless `harmonic` asked
   /// (`03-design/western-harmonics.md`).
+  /// The chart matched with a partner's birth by the Ashta Koota of
+  /// *Muhurta Chintamani* VI.21–34 (`matching` asks for it, the chart on
+  /// the side the partner leaves): each koota's points and what it read, in
+  /// the verse's order, and the total out of 36. Never a verdict: the
+  /// doshas and their exceptions are clauses; null unless asked
+  /// (`03-design/matching.md`).
+  AshtaKoota? get matching {
+    final all = _matchingsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
   HarmonicChart? get harmonic {
     final all = _harmonicsOf(batch);
     return index < all.length ? all[index] : null;

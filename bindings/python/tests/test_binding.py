@@ -2068,6 +2068,81 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, western_houses=request, **london)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_match(self) -> None:
+        """A birth matched with itself: one sign and one nakshatra, so every
+        koota but Nadi takes its whole points and the shared nadi none, 28,
+        whatever the Moon (*Muhurta Chintamani* VI.21–34); a batch the
+        charts one at a time, the sides swapping Varna's reading, and
+        refusals named by field (`03-design/matching.md`)."""
+        from teistro import (
+            AshtaKoota,
+            BhakootKoota,
+            Koota,
+            MaitriRelation,
+            MatchingRequest,
+            NadiKoota,
+            SynastryPartner,
+            TaraKoota,
+            VarnaKoota,
+            VashyaKoota,
+            VashyaRelation,
+        )
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)),
+            "utc_offset_seconds": 20700,
+        }
+        birth = 2451545.0
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).matching)
+            partner: SynastryPartner = {"instant": birth, "observer": kathmandu["place"], "utc_offset_seconds": 20700}
+            itself: MatchingRequest = {"partner": partner, "partnerRole": "BRIDE"}
+            matched = ctx.chart.found(instant=birth, matching=itself, **kathmandu).matching
+            assert isinstance(matched, AshtaKoota)
+            self.assertEqual(matched.total, 28)
+            self.assertEqual(
+                [row.reading.koota for row in matched.kootas],
+                [Koota.VARNA, Koota.VASHYA, Koota.TARA, Koota.YONI, Koota.GRAHA_MAITRI, Koota.GANA, Koota.BHAKOOT, Koota.NADI],
+            )
+            self.assertEqual([row.max_points for row in matched.kootas], [1, 2, 3, 4, 5, 6, 7, 8])
+            vashya, tara, maitri = (matched.kootas[n].reading for n in (1, 2, 4))
+            assert isinstance(vashya, VashyaKoota) and isinstance(tara, TaraKoota)
+            self.assertEqual((vashya.relation, tara.bride_to_groom, tara.groom_to_bride), (VashyaRelation.MUTUAL, 1, 1))
+            self.assertEqual(getattr(maitri, "relation"), MaitriRelation.ONE_LORD)
+            bhakoot, nadi = matched.kootas[6].reading, matched.kootas[7].reading
+            assert isinstance(bhakoot, BhakootKoota) and isinstance(nadi, NadiKoota)
+            self.assertEqual((bhakoot.apart, bhakoot.dosha, bhakoot.lifted, bhakoot.exceptions.one_lord), (1, None, False, True))
+            self.assertTrue(nadi.dosha and nadi.bride == nadi.groom)
+
+            asked: MatchingRequest = {
+                "partner": {"instant": 2447892.5, "observer": kathmandu["place"], "utc_offset_seconds": 20700},
+                "partnerRole": "GROOM",
+                "rules": {"nadiDosha": "MIDDLE_ONLY"},
+            }
+            instants = [birth, birth + 9.5, birth + 17.25]
+            batch = ctx.chart.found_many(instants=instants, matching=asked, **kathmandu)
+            for k, instant in enumerate(instants):
+                alone = ctx.chart.found(instant=instant, matching=asked, **kathmandu).matching
+                self.assertEqual(batch.at(k).matching, alone)
+                swapped = ctx.chart.found(instant=instant, matching={**asked, "partnerRole": "BRIDE"}, **kathmandu).matching
+                assert alone is not None and swapped is not None
+                ours, theirs = alone.kootas[0].reading, swapped.kootas[0].reading
+                assert isinstance(ours, VarnaKoota) and isinstance(theirs, VarnaKoota)
+                self.assertEqual((theirs.bride, theirs.groom), (ours.groom, ours.bride))
+            refusals: list[tuple[Any, str]] = [
+                ({**asked, "partnerRole": "UNCLE"}, "matching.partnerRole"),
+                ({**asked, "rules": {"nadi": "ANY"}}, "matching.rules.nadi"),
+                ({"partner": asked["partner"]}, "matching"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, matching=request, **kathmandu)
+                self.assertEqual(caught.exception.field, field)
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as western:
+            with self.assertRaises(TeistroError) as caught:
+                western.chart.found(instant=birth, matching=asked, **kathmandu)
+            self.assertEqual(caught.exception.field, "matching.partner")
+
     def test_a_chart_carries_its_harmonic(self) -> None:
         """Churchill's 9th harmonic as Addey reads it (*Harmonics in
         Astrology*, pp. 97–98): the Moon on Saturn in the third, Venus
