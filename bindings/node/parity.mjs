@@ -379,6 +379,7 @@ const charts = geo.chart.foundMany({
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
     zodiac: 'CHARTS',
+    parallels: { orbDeg: 1.5 },
   },
   progressions: {
     at: 2470000.5,
@@ -778,6 +779,14 @@ for (const chart of charts) {
     put(
       `chart-${i}-synastry-${n}`,
       `${point(at.first)} ${point(at.second)} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)}`,
+    ),
+  );
+  const levelled = chart.synastryParallels;
+  put(`chart-${i}-synastry-parallel-count`, `${levelled.length}`);
+  levelled.forEach((at, n) =>
+    put(
+      `chart-${i}-synastry-parallel-${n}`,
+      `${point(at.first)} ${point(at.second)} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
     ),
   );
   put(
