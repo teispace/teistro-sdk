@@ -12035,6 +12035,21 @@
             "example": "{\"system\":\"KOCH\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "harmonic_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's harmonic chart, as a JSON object: `number`, the\nharmonic, a whole number from 1 to 360 every longitude is\nmultiplied by, and `orbDeg`, how close two points meet in it, 12°\nby default (C252), at most 30°. The planets, the ascendant and the\nmidheaven are multiplied in the chart's own zodiac (C253), each in\nits equal house from the harmonic ascendant (C254). The answers\ncome back in `harmonics`, `harmonic_points` and `harmonic_rows`.\nNull for none, which costs nothing\n(`03-design/western-harmonics.md`). Refusals are named from the\nrecord every binding calls `harmonic`, as `harmonic.number`.",
+          "meta": {
+            "example": "{\"number\":9}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -20036,6 +20051,103 @@
               "name": "contrary",
               "scalar": "u8",
               "doc": "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."
+            }
+          ]
+        },
+        {
+          "id": 108,
+          "name": "harmonics",
+          "doc": "Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "number",
+              "scalar": "u16",
+              "doc": "Which harmonic, 1 to 360: the number every longitude is multiplied by."
+            },
+            {
+              "name": "point_count",
+              "scalar": "u32",
+              "doc": "How many points the harmonic chart places; the chart's rows follow the earlier charts' in `harmonic_points`."
+            },
+            {
+              "name": "row_count",
+              "scalar": "u32",
+              "doc": "How many pairs meet in it; the chart's rows follow the earlier charts' in `harmonic_rows`."
+            }
+          ]
+        },
+        {
+          "id": 109,
+          "name": "harmonic_points",
+          "doc": "Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "angle",
+              "scalar": "u8",
+              "doc": "Which point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."
+            },
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The planet when the angle beside it is 0; 0 for an angle.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its longitude multiplied by the harmonic, degrees in `[0, 360)`."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "Its equal house from the harmonic ascendant, 1 to 12 (C254)."
+            }
+          ]
+        },
+        {
+          "id": 110,
+          "name": "harmonic_rows",
+          "doc": "Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first_angle",
+              "scalar": "u8",
+              "doc": "Which earlier point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."
+            },
+            {
+              "name": "first_graha",
+              "scalar": "u16",
+              "doc": "The planet when the angle beside it is 0; 0 for an angle.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second_angle",
+              "scalar": "u8",
+              "doc": "Which later point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."
+            },
+            {
+              "name": "second_graha",
+              "scalar": "u16",
+              "doc": "The planet when the angle beside it is 0; 0 for an angle.",
+              "enum": "Graha"
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart they stand in the harmonic chart, degrees."
+            },
+            {
+              "name": "multiple",
+              "scalar": "u16",
+              "doc": "Which multiple of the harmonic's aspect they stand at in the chart itself: k for k × 360° / n, 0 to half the harmonic."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed, degrees."
             }
           ]
         }

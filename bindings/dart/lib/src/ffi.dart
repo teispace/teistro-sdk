@@ -1241,6 +1241,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"system":"KOCH"}. May be null.
   external ffi.Pointer<ffi.Char> westernHousesJson;
 
+  /// Every chart's harmonic chart, as a JSON object: `number`, the
+  /// harmonic, a whole number from 1 to 360 every longitude is
+  /// multiplied by, and `orbDeg`, how close two points meet in it, 12°
+  /// by default (C252), at most 30°. The planets, the ascendant and the
+  /// midheaven are multiplied in the chart's own zodiac (C253), each in
+  /// its equal house from the harmonic ascendant (C254). The answers
+  /// come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+  /// Null for none, which costs nothing
+  /// (`03-design/western-harmonics.md`). Refusals are named from the
+  /// record every binding calls `harmonic`, as `harmonic.number`.
+  /// Example: {"number":9}. May be null.
+  external ffi.Pointer<ffi.Char> harmonicJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3130,7 +3143,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3517,6 +3530,19 @@ final class ChartRequest {
   /// Example: {"system":"KOCH"}. May be null.
   final String? westernHousesJson;
 
+  /// Every chart's harmonic chart, as a JSON object: `number`, the
+  /// harmonic, a whole number from 1 to 360 every longitude is
+  /// multiplied by, and `orbDeg`, how close two points meet in it, 12°
+  /// by default (C252), at most 30°. The planets, the ascendant and the
+  /// midheaven are multiplied in the chart's own zodiac (C253), each in
+  /// its equal house from the harmonic ascendant (C254). The answers
+  /// come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+  /// Null for none, which costs nothing
+  /// (`03-design/western-harmonics.md`). Refusals are named from the
+  /// record every binding calls `harmonic`, as `harmonic.number`.
+  /// Example: {"number":9}. May be null.
+  final String? harmonicJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3616,6 +3642,9 @@ final class ChartRequest {
     raw.westernHousesJson = westernHousesJson == null
         ? ffi.nullptr
         : westernHousesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.harmonicJson = harmonicJson == null
+        ? ffi.nullptr
+        : harmonicJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3701,6 +3730,9 @@ final class ChartRequest {
         westernHousesJson: raw.westernHousesJson == ffi.nullptr
             ? null
             : raw.westernHousesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        harmonicJson: raw.harmonicJson == ffi.nullptr
+            ? null
+            : raw.harmonicJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

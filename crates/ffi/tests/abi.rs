@@ -305,6 +305,7 @@ fn chart_request(
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1581,6 +1582,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1731,6 +1733,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1879,6 +1882,7 @@ fn a_chart_request_answers_the_transits() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2099,6 +2103,7 @@ fn a_chart_request_answers_the_hit_list() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2272,6 +2277,7 @@ fn a_chart_request_answers_sade_sati() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2387,6 +2393,7 @@ fn a_chart_request_answers_sade_sati() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2456,6 +2463,7 @@ fn a_chart_request_answers_sade_sati() {
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
+        harmonic_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2529,6 +2537,7 @@ fn a_chart_request_answers_the_dignities() {
                 antiscia_json: ptr::null(),
                 midpoints_json: ptr::null(),
                 western_houses_json: ptr::null(),
+                harmonic_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2807,6 +2816,7 @@ fn a_chart_request_answers_the_fortitudes() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4113,6 +4123,7 @@ fn a_chart_request_answers_kp() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4226,6 +4237,7 @@ fn a_chart_request_answers_kp() {
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
+        harmonic_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4247,6 +4259,7 @@ fn a_chart_request_answers_kp() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4308,6 +4321,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4352,6 +4366,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
+        harmonic_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4417,6 +4432,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4557,6 +4573,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4702,6 +4719,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5478,6 +5496,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5591,6 +5610,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5773,6 +5793,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
+            harmonic_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6059,6 +6080,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 antiscia_json: ptr::null(),
                 midpoints_json: ptr::null(),
                 western_houses_json: ptr::null(),
+                harmonic_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -8516,4 +8538,168 @@ fn a_chart_request_answers_the_western_houses_and_what_reads_the_cusps() {
     .unwrap_err();
     assert_eq!(status, Status::InvalidArg);
     assert_eq!(ctx.last_error().2.as_deref(), Some("westernHouses.system"));
+}
+
+/// A chart's harmonic crosses whole: every cell of the three sections
+/// equals the façade's bit for bit over a batch, the points' two cells
+/// naming a planet or an angle, and a refusal is named by its field
+/// (`03-design/western-harmonics.md`).
+#[test]
+fn a_chart_request_answers_its_harmonic() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_405_857.564_892, 2_402_390.554_166_667];
+    let base = chart_request(&instants, (51.8414, -1.3611), 0);
+    let text = r#"{"number": 9, "orbDeg": 6}"#;
+    let harmonic_json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            harmonic_json: harmonic_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.8414, -1.3611, 0.0).unwrap();
+    let asked = teistro::HarmonicRequest::from_json(text).unwrap();
+    let harmonics: Vec<teistro::HarmonicChart> = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, teistro::UtcOffset::UTC).with_outer_planets(),
+        )
+        .unwrap()
+        .value
+        .iter()
+        .map(|chart| sdk.chart().harmonic(chart, &asked).unwrap())
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let cells = |point: teistro::HarmonicPoint| -> (i64, i64) {
+        match point {
+            teistro::HarmonicPoint::Graha { graha } => (0, i64::from(graha.id())),
+            teistro::HarmonicPoint::Ascendant => (1, 0),
+            teistro::HarmonicPoint::Midheaven => (2, 0),
+        }
+    };
+    let count = |len: usize| i64::try_from(len).unwrap();
+
+    assert_eq!(ints("harmonics", "number"), [9, 9]);
+    assert_eq!(
+        ints("harmonics", "point_count"),
+        harmonics
+            .iter()
+            .map(|one| count(one.points.len()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("harmonics", "row_count"),
+        harmonics
+            .iter()
+            .map(|one| count(one.rows.len()))
+            .collect::<Vec<_>>()
+    );
+    let points: Vec<&teistro::HarmonicPlaced> =
+        harmonics.iter().flat_map(|one| &one.points).collect();
+    let (angle, graha): (Vec<i64>, Vec<i64>) = points.iter().map(|one| cells(one.point)).unzip();
+    assert_eq!(ints("harmonic_points", "angle"), angle);
+    assert_eq!(ints("harmonic_points", "graha"), graha);
+    assert_eq!(
+        bits("harmonic_points", "longitude_deg"),
+        points
+            .iter()
+            .map(|one| one.longitude_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("harmonic_points", "house"),
+        points
+            .iter()
+            .map(|one| i64::from(one.house.get()))
+            .collect::<Vec<_>>()
+    );
+    let rows: Vec<&teistro::HarmonicRow> = harmonics.iter().flat_map(|one| &one.rows).collect();
+    assert!(!rows.is_empty(), "a 6° orb in the 9th meets somewhere");
+    let (first_angle, first_graha): (Vec<i64>, Vec<i64>) =
+        rows.iter().map(|one| cells(one.first)).unzip();
+    let (second_angle, second_graha): (Vec<i64>, Vec<i64>) =
+        rows.iter().map(|one| cells(one.second)).unzip();
+    assert_eq!(ints("harmonic_rows", "first_angle"), first_angle);
+    assert_eq!(ints("harmonic_rows", "first_graha"), first_graha);
+    assert_eq!(ints("harmonic_rows", "second_angle"), second_angle);
+    assert_eq!(ints("harmonic_rows", "second_graha"), second_graha);
+    assert_eq!(
+        bits("harmonic_rows", "apart_deg"),
+        rows.iter()
+            .map(|one| one.apart_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("harmonic_rows", "multiple"),
+        rows.iter()
+            .map(|one| i64::from(one.multiple))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("harmonic_rows", "orb_deg"),
+        [6.0_f64.to_bits()].repeat(rows.len())
+    );
+
+    // None asked is empty sections; a refusal is named by its field.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("harmonics", "number"),
+        ("harmonic_points", "angle"),
+        ("harmonic_rows", "apart_deg"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+    let wide = CString::new(r#"{"number": 361}"#).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            harmonic_json: wide.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("harmonic.number"));
 }

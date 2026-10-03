@@ -4217,6 +4217,98 @@ export interface ChartsAntiscionCuspRows {
 }
 
 /**
+ * The `harmonics` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.
+ */
+export interface ChartsHarmonics {
+  /**
+   * Which harmonic, 1 to 360: the number every longitude is multiplied by.
+   */
+  readonly number: Uint16Array;
+  /**
+   * How many points the harmonic chart places; the chart's rows follow the earlier charts' in `harmonic_points`.
+   */
+  readonly pointCount: Uint32Array;
+  /**
+   * How many pairs meet in it; the chart's rows follow the earlier charts' in `harmonic_rows`.
+   */
+  readonly rowCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `harmonic_points` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.
+ */
+export interface ChartsHarmonicPoints {
+  /**
+   * Which point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+   */
+  readonly angle: Uint8Array;
+  /**
+   * The planet when the angle beside it is 0; 0 for an angle.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its longitude multiplied by the harmonic, degrees in `[0, 360)`.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * Its equal house from the harmonic ascendant, 1 to 12 (C254).
+   */
+  readonly house: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `harmonic_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
+ */
+export interface ChartsHarmonicRows {
+  /**
+   * Which earlier point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+   */
+  readonly firstAngle: Uint8Array;
+  /**
+   * The planet when the angle beside it is 0; 0 for an angle.
+   * The values are `Graha` ids.
+   */
+  readonly firstGraha: Uint16Array;
+  /**
+   * Which later point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+   */
+  readonly secondAngle: Uint8Array;
+  /**
+   * The planet when the angle beside it is 0; 0 for an angle.
+   * The values are `Graha` ids.
+   */
+  readonly secondGraha: Uint16Array;
+  /**
+   * How far apart they stand in the harmonic chart, degrees.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * Which multiple of the harmonic's aspect they stand at in the chart itself: k for k × 360° / n, 0 to half the harmonic.
+   */
+  readonly multiple: Uint16Array;
+  /**
+   * The orb the record allowed, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4812,6 +4904,18 @@ export interface Charts {
    * Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
    */
   readonly antiscionCuspRows: ChartsAntiscionCuspRows;
+  /**
+   * Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.
+   */
+  readonly harmonics: ChartsHarmonics;
+  /**
+   * Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.
+   */
+  readonly harmonicPoints: ChartsHarmonicPoints;
+  /**
+   * Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
+   */
+  readonly harmonicRows: ChartsHarmonicRows;
 }
 
 /**

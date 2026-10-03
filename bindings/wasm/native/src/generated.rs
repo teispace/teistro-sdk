@@ -2227,6 +2227,19 @@ pub struct ChartRequest {
     /// Example: {"system":"KOCH"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub western_houses_json: Option<String>,
+    /// Every chart's harmonic chart, as a JSON object: `number`, the
+    /// harmonic, a whole number from 1 to 360 every longitude is
+    /// multiplied by, and `orbDeg`, how close two points meet in it, 12°
+    /// by default (C252), at most 30°. The planets, the ascendant and the
+    /// midheaven are multiplied in the chart's own zodiac (C253), each in
+    /// its equal house from the harmonic ascendant (C254). The answers
+    /// come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+    /// Null for none, which costs nothing
+    /// (`03-design/western-harmonics.md`). Refusals are named from the
+    /// record every binding calls `harmonic`, as `harmonic.number`.
+    /// Example: {"number":9}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub harmonic_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2262,6 +2275,7 @@ pub struct HeldChartRequest {
     antiscia_json: Option<std::ffi::CString>,
     midpoints_json: Option<std::ffi::CString>,
     western_houses_json: Option<std::ffi::CString>,
+    harmonic_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2349,6 +2363,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             western_houses_json: self
                 .western_houses_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            harmonic_json: self
+                .harmonic_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2473,6 +2491,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            harmonic_json: self
+                .harmonic_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2526,6 +2549,7 @@ impl ChartRequest {
             antiscia_json: unsafe { lent_text(raw.antiscia_json) },
             midpoints_json: unsafe { lent_text(raw.midpoints_json) },
             western_houses_json: unsafe { lent_text(raw.western_houses_json) },
+            harmonic_json: unsafe { lent_text(raw.harmonic_json) },
         }
     }
 }
