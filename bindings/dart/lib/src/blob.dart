@@ -4502,6 +4502,144 @@ final class ChartsHarmonicRows {
   final int length;
 }
 
+/// The `matchings` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. Empty when `matching_json` asked for none.
+final class ChartsMatchings {
+  const ChartsMatchings({
+    required this.total,
+    required this.brideVarna,
+    required this.groomVarna,
+    required this.vashya,
+    required this.taraBrideToGroom,
+    required this.taraGroomToBride,
+    required this.brideYoni,
+    required this.groomYoni,
+    required this.yoni,
+    required this.brideLord,
+    required this.groomLord,
+    required this.maitri,
+    required this.brideGana,
+    required this.groomGana,
+    required this.bhakootApart,
+    required this.bhakootDosha,
+    required this.bhakootOneLord,
+    required this.bhakootLordsFriends,
+    required this.bhakootNavamshaLordsFriends,
+    required this.bhakootTaraPure,
+    required this.bhakootVashya,
+    required this.bhakootLifted,
+    required this.brideNadi,
+    required this.groomNadi,
+    required this.nadiDosha,
+    required this.length,
+  });
+
+  /// The eight kootas' points, out of 36, a multiple of a half.
+  final Float64List total;
+
+  /// The bride's varna, by her or his Moon's sign (VI.22).
+  final Uint16List brideVarna;
+
+  /// The groom's varna, by her or his Moon's sign (VI.22).
+  final Uint16List groomVarna;
+
+  /// How the two Moon signs stand in Vashya (VI.23, C260).
+  final Uint8List vashya;
+
+  /// The tara counted from the bride's nakshatra to the groom's, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad.
+  final Uint8List taraBrideToGroom;
+
+  /// The tara counted from the groom's nakshatra to the bride's, 1 to 9.
+  final Uint8List taraGroomToBride;
+
+  /// The bride's yoni, by her or his Moon's nakshatra (VI.25–26).
+  final Uint16List brideYoni;
+
+  /// The groom's yoni, by her or his Moon's nakshatra (VI.25–26).
+  final Uint16List groomYoni;
+
+  /// How the two yonis stand (C261).
+  final Uint8List yoni;
+
+  /// The lord of the bride's Moon sign (VI.27–28).
+  final Uint16List brideLord;
+
+  /// The lord of the groom's Moon sign.
+  final Uint16List groomLord;
+
+  /// How the two lords stand by the natural friendships.
+  final Uint8List maitri;
+
+  /// The bride's gana, by her or his Moon's nakshatra (VI.29–30).
+  final Uint16List brideGana;
+
+  /// The groom's gana, by her or his Moon's nakshatra (VI.29–30).
+  final Uint16List groomGana;
+
+  /// The groom's Moon sign counted from the bride's, 1 to 12 (VI.31).
+  final Uint8List bhakootApart;
+
+  /// The bad Bhakoot the two signs stand at, or none.
+  final Uint8List bhakootDosha;
+
+  /// 1 when one lord rules both signs: the first exception of VI.32–33, reported whether or not there is a dosha.
+  final Uint8List bhakootOneLord;
+
+  /// 1 when the two sign lords are each other's friends.
+  final Uint8List bhakootLordsFriends;
+
+  /// 1 when the lords of the two Moons' navamshas are one or each other's friends.
+  final Uint8List bhakootNavamshaLordsFriends;
+
+  /// 1 when the tara is pure both ways.
+  final Uint8List bhakootTaraPure;
+
+  /// 1 when one sign is vashya to the other.
+  final Uint8List bhakootVashya;
+
+  /// 1 when the exceptions lift the dosha under the record's `bhakootLift` (C263); 0 with no dosha.
+  final Uint8List bhakootLifted;
+
+  /// The bride's nadi, by her or his Moon's nakshatra (VI.34).
+  final Uint16List brideNadi;
+
+  /// The groom's nadi, by her or his Moon's nakshatra (VI.34).
+  final Uint16List groomNadi;
+
+  /// 1 when the shared nadi is a dosha under the record's `nadiDosha` (C264).
+  final Uint8List nadiDosha;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `matching_kootas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.
+final class ChartsMatchingKootas {
+  const ChartsMatchingKootas({
+    required this.koota,
+    required this.points,
+    required this.maxPoints,
+    required this.length,
+  });
+
+  /// Which koota.
+  final Uint16List koota;
+
+  /// Its points, a multiple of a half.
+  final Float64List points;
+
+  /// The most it gives, 1 for Varna to 8 for Nadi.
+  final Float64List maxPoints;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4724,6 +4862,8 @@ final class Charts {
     required this.harmonics,
     required this.harmonicPoints,
     required this.harmonicRows,
+    required this.matchings,
+    required this.matchingKootas,
   });
 
   /// What kind of chart these are.
@@ -5100,6 +5240,12 @@ final class Charts {
   /// Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
   final ChartsHarmonicRows harmonicRows;
 
+  /// Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. Empty when `matching_json` asked for none.
+  final ChartsMatchings matchings;
+
+  /// Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.
+  final ChartsMatchingKootas matchingKootas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5217,6 +5363,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atHarmonics = blob.section(108, 'harmonics');
   final atHarmonicPoints = blob.section(109, 'harmonic_points');
   final atHarmonicRows = blob.section(110, 'harmonic_rows');
+  final atMatchings = blob.section(111, 'matchings');
+  final atMatchingKootas = blob.section(112, 'matching_kootas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9243,6 +9391,152 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atHarmonicRows, 6) + atHarmonicRows.count * 8,
       ),
       length: atHarmonicRows.count,
+    ),
+    matchings: ChartsMatchings(
+      total: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 0),
+        blob.columnOffset(atMatchings, 0) + atMatchings.count * 8,
+      ),
+      brideVarna: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 1),
+        blob.columnOffset(atMatchings, 1) + atMatchings.count * 2,
+      ),
+      groomVarna: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 2),
+        blob.columnOffset(atMatchings, 2) + atMatchings.count * 2,
+      ),
+      vashya: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 3),
+        blob.columnOffset(atMatchings, 3) + atMatchings.count * 1,
+      ),
+      taraBrideToGroom: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 4),
+        blob.columnOffset(atMatchings, 4) + atMatchings.count * 1,
+      ),
+      taraGroomToBride: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 5),
+        blob.columnOffset(atMatchings, 5) + atMatchings.count * 1,
+      ),
+      brideYoni: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 6),
+        blob.columnOffset(atMatchings, 6) + atMatchings.count * 2,
+      ),
+      groomYoni: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 7),
+        blob.columnOffset(atMatchings, 7) + atMatchings.count * 2,
+      ),
+      yoni: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 8),
+        blob.columnOffset(atMatchings, 8) + atMatchings.count * 1,
+      ),
+      brideLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 9),
+        blob.columnOffset(atMatchings, 9) + atMatchings.count * 2,
+      ),
+      groomLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 10),
+        blob.columnOffset(atMatchings, 10) + atMatchings.count * 2,
+      ),
+      maitri: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 11),
+        blob.columnOffset(atMatchings, 11) + atMatchings.count * 1,
+      ),
+      brideGana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 12),
+        blob.columnOffset(atMatchings, 12) + atMatchings.count * 2,
+      ),
+      groomGana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 13),
+        blob.columnOffset(atMatchings, 13) + atMatchings.count * 2,
+      ),
+      bhakootApart: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 14),
+        blob.columnOffset(atMatchings, 14) + atMatchings.count * 1,
+      ),
+      bhakootDosha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 15),
+        blob.columnOffset(atMatchings, 15) + atMatchings.count * 1,
+      ),
+      bhakootOneLord: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 16),
+        blob.columnOffset(atMatchings, 16) + atMatchings.count * 1,
+      ),
+      bhakootLordsFriends: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 17),
+        blob.columnOffset(atMatchings, 17) + atMatchings.count * 1,
+      ),
+      bhakootNavamshaLordsFriends: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 18),
+        blob.columnOffset(atMatchings, 18) + atMatchings.count * 1,
+      ),
+      bhakootTaraPure: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 19),
+        blob.columnOffset(atMatchings, 19) + atMatchings.count * 1,
+      ),
+      bhakootVashya: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 20),
+        blob.columnOffset(atMatchings, 20) + atMatchings.count * 1,
+      ),
+      bhakootLifted: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 21),
+        blob.columnOffset(atMatchings, 21) + atMatchings.count * 1,
+      ),
+      brideNadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 22),
+        blob.columnOffset(atMatchings, 22) + atMatchings.count * 2,
+      ),
+      groomNadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 23),
+        blob.columnOffset(atMatchings, 23) + atMatchings.count * 2,
+      ),
+      nadiDosha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 24),
+        blob.columnOffset(atMatchings, 24) + atMatchings.count * 1,
+      ),
+      length: atMatchings.count,
+    ),
+    matchingKootas: ChartsMatchingKootas(
+      koota: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchingKootas, 0),
+        blob.columnOffset(atMatchingKootas, 0) + atMatchingKootas.count * 2,
+      ),
+      points: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchingKootas, 1),
+        blob.columnOffset(atMatchingKootas, 1) + atMatchingKootas.count * 8,
+      ),
+      maxPoints: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchingKootas, 2),
+        blob.columnOffset(atMatchingKootas, 2) + atMatchingKootas.count * 8,
+      ),
+      length: atMatchingKootas.count,
     ),
   );
 }

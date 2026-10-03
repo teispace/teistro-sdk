@@ -1774,6 +1774,20 @@ pub struct TsChartRequest {
     /// record every binding calls `harmonic`, as `harmonic.number`.
     /// `api: nullable example={"number":9}`
     pub harmonic_json: *const c_char,
+    /// Every chart matched with one partner's birth by the Ashta Koota of
+    /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+    /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+    /// "utcOffsetSeconds"}`, founded once under the context's sidereal
+    /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+    /// on the other side; and `rules`, every field optional: `equalVarna`
+    /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+    /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+    /// `MIDDLE_ONLY`). The answers come back in `matchings` and
+    /// `matching_kootas`. Null for none, which costs nothing
+    /// (`03-design/matching.md`). Refusals are named from the record every
+    /// binding calls `matching`, as `matching.partnerRole`.
+    /// `api: nullable example={"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}`
+    pub matching_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3143,6 +3157,185 @@ struct DignityColumns {
 
 /// A reading for each chart or for none: the boundary's check that a
 /// batch's readings line up with its charts.
+/// `matchings` and `matching_kootas`: each chart matched with the record's
+/// partner, what every koota read, and each koota's points
+/// (`matching.md`).
+#[derive(Default)]
+struct MatchingColumns {
+    total: Vec<f64>,
+    bride_varna: Vec<u16>,
+    groom_varna: Vec<u16>,
+    vashya: Vec<u8>,
+    tara_bride_to_groom: Vec<u8>,
+    tara_groom_to_bride: Vec<u8>,
+    bride_yoni: Vec<u16>,
+    groom_yoni: Vec<u16>,
+    yoni: Vec<u8>,
+    bride_lord: Vec<u16>,
+    groom_lord: Vec<u16>,
+    maitri: Vec<u8>,
+    bride_gana: Vec<u16>,
+    groom_gana: Vec<u16>,
+    bhakoot_apart: Vec<u8>,
+    bhakoot_dosha: Vec<u8>,
+    bhakoot_one_lord: Vec<u8>,
+    bhakoot_lords_friends: Vec<u8>,
+    bhakoot_navamsha_lords_friends: Vec<u8>,
+    bhakoot_tara_pure: Vec<u8>,
+    bhakoot_vashya: Vec<u8>,
+    bhakoot_lifted: Vec<u8>,
+    bride_nadi: Vec<u16>,
+    groom_nadi: Vec<u16>,
+    nadi_dosha: Vec<u8>,
+    koota: Vec<u16>,
+    points: Vec<f64>,
+    max_points: Vec<f64>,
+}
+
+impl MatchingColumns {
+    fn of(read: &[teistro::AshtaKoota], charts: usize) -> Result<MatchingColumns, Error> {
+        use teistro::KootaReading;
+
+        one_a_chart(read.len(), charts, "matching")?;
+        let mut columns = MatchingColumns::default();
+        for one in read {
+            // Every column takes one cell a chart only when the eight are
+            // read in the verse's order.
+            let ordered = one.kootas.len() == teistro::matching::ASHTA_KOOTA.len()
+                && one
+                    .kootas
+                    .iter()
+                    .zip(teistro::matching::ASHTA_KOOTA)
+                    .all(|(row, koota)| row.reading.koota() == koota);
+            if !ordered {
+                return Err(Error::internal(
+                    "a matching's kootas are not the eight in the verse's order",
+                ));
+            }
+            columns.total.push(one.total);
+            for (row, koota) in one.kootas.iter().zip(teistro::matching::ASHTA_KOOTA) {
+                columns.koota.push(koota.id());
+                columns.points.push(row.points);
+                columns.max_points.push(row.max_points);
+                match row.reading {
+                    KootaReading::Varna { bride, groom } => {
+                        columns.bride_varna.push(bride.id());
+                        columns.groom_varna.push(groom.id());
+                    }
+                    KootaReading::Vashya { relation } => {
+                        columns.vashya.push(TsVashyaRelation::from(relation) as u8);
+                    }
+                    KootaReading::Tara {
+                        bride_to_groom,
+                        groom_to_bride,
+                    } => {
+                        columns.tara_bride_to_groom.push(bride_to_groom);
+                        columns.tara_groom_to_bride.push(groom_to_bride);
+                    }
+                    KootaReading::Yoni {
+                        bride,
+                        groom,
+                        relation,
+                    } => {
+                        columns.bride_yoni.push(bride.id());
+                        columns.groom_yoni.push(groom.id());
+                        columns.yoni.push(TsYoniRelation::from(relation) as u8);
+                    }
+                    KootaReading::GrahaMaitri {
+                        bride,
+                        groom,
+                        relation,
+                    } => {
+                        columns.bride_lord.push(bride.id());
+                        columns.groom_lord.push(groom.id());
+                        columns.maitri.push(TsMaitriRelation::from(relation) as u8);
+                    }
+                    KootaReading::Gana { bride, groom } => {
+                        columns.bride_gana.push(bride.id());
+                        columns.groom_gana.push(groom.id());
+                    }
+                    KootaReading::Bhakoot {
+                        apart,
+                        dosha,
+                        exceptions,
+                        lifted,
+                    } => {
+                        columns.bhakoot_apart.push(apart);
+                        columns
+                            .bhakoot_dosha
+                            .push(TsBhakootDosha::from(dosha) as u8);
+                        columns.bhakoot_one_lord.push(u8::from(exceptions.one_lord));
+                        columns
+                            .bhakoot_lords_friends
+                            .push(u8::from(exceptions.lords_friends));
+                        columns
+                            .bhakoot_navamsha_lords_friends
+                            .push(u8::from(exceptions.navamsha_lords_friends));
+                        columns
+                            .bhakoot_tara_pure
+                            .push(u8::from(exceptions.tara_pure));
+                        columns.bhakoot_vashya.push(u8::from(exceptions.vashya));
+                        columns.bhakoot_lifted.push(u8::from(lifted));
+                    }
+                    KootaReading::Nadi {
+                        bride,
+                        groom,
+                        dosha,
+                    } => {
+                        columns.bride_nadi.push(bride.id());
+                        columns.groom_nadi.push(groom.id());
+                        columns.nadi_dosha.push(u8::from(dosha));
+                    }
+                }
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "matchings",
+            self.total.len(),
+            &[
+                ColumnData::F64(&self.total),
+                ColumnData::U16(&self.bride_varna),
+                ColumnData::U16(&self.groom_varna),
+                ColumnData::U8(&self.vashya),
+                ColumnData::U8(&self.tara_bride_to_groom),
+                ColumnData::U8(&self.tara_groom_to_bride),
+                ColumnData::U16(&self.bride_yoni),
+                ColumnData::U16(&self.groom_yoni),
+                ColumnData::U8(&self.yoni),
+                ColumnData::U16(&self.bride_lord),
+                ColumnData::U16(&self.groom_lord),
+                ColumnData::U8(&self.maitri),
+                ColumnData::U16(&self.bride_gana),
+                ColumnData::U16(&self.groom_gana),
+                ColumnData::U8(&self.bhakoot_apart),
+                ColumnData::U8(&self.bhakoot_dosha),
+                ColumnData::U8(&self.bhakoot_one_lord),
+                ColumnData::U8(&self.bhakoot_lords_friends),
+                ColumnData::U8(&self.bhakoot_navamsha_lords_friends),
+                ColumnData::U8(&self.bhakoot_tara_pure),
+                ColumnData::U8(&self.bhakoot_vashya),
+                ColumnData::U8(&self.bhakoot_lifted),
+                ColumnData::U16(&self.bride_nadi),
+                ColumnData::U16(&self.groom_nadi),
+                ColumnData::U8(&self.nadi_dosha),
+            ],
+        )?;
+        writer.columns(
+            "matching_kootas",
+            self.koota.len(),
+            &[
+                ColumnData::U16(&self.koota),
+                ColumnData::F64(&self.points),
+                ColumnData::F64(&self.max_points),
+            ],
+        )
+    }
+}
+
 fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
     if read == 0 || read == charts {
         Ok(())
@@ -3321,7 +3514,7 @@ struct ProgressionColumns {
 
 /// The Western aspect tables a batch was asked for, written together since
 /// their sections stand together: each chart's own, and each chart's with
-/// the record's partner.
+/// the record's partner; and last, each chart's match with its partner.
 struct AspectTables {
     own: WesternAspectColumns,
     across: SynastryColumns,
@@ -3331,6 +3524,7 @@ struct AspectTables {
     davisons: DavisonColumns,
     houses: WesternHouseColumns,
     harmonics: HarmonicColumns,
+    matchings: MatchingColumns,
 }
 
 impl AspectTables {
@@ -3344,6 +3538,7 @@ impl AspectTables {
             davisons: DavisonColumns::of(composed.davisons, charts)?,
             houses: WesternHouseColumns::of(composed.western_houses, charts)?,
             harmonics: HarmonicColumns::of(composed.harmonics, charts)?,
+            matchings: MatchingColumns::of(composed.matchings, charts)?,
         })
     }
 
@@ -3361,7 +3556,8 @@ impl AspectTables {
         self.houses.write(writer)?;
         self.across.write_composite_cusps(writer)?;
         self.reflected.write_cusps(writer)?;
-        self.harmonics.write(writer)
+        self.harmonics.write(writer)?;
+        self.matchings.write(writer)
     }
 }
 
@@ -6708,6 +6904,9 @@ pub struct Composed<'a> {
     /// Every chart's harmonic chart, in the batch's order
     /// (`western-harmonics.md`); empty when none was asked for.
     pub harmonics: &'a [teistro::HarmonicChart],
+    /// Every chart matched with the record's partner, in the batch's order
+    /// (`matching.md`); empty when none was asked for.
+    pub matchings: &'a [teistro::AshtaKoota],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7287,6 +7486,131 @@ impl From<teistro::TajikaRelation> for TsTajikaRelation {
     }
 }
 
+/// How two signs stand in Vashya (`03-design/matching.md`, C260).
+///
+/// Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
+/// match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsVashyaRelation {
+    /// Each is vashya to the other: 2.
+    Mutual = 0,
+    /// One is vashya to the other: 1.
+    OneWay = 1,
+    /// One is vashya to the other and its food: ½.
+    Food = 2,
+    /// Neither: 0.
+    Neither = 3,
+}
+
+impl From<teistro::matching::VashyaRelation> for TsVashyaRelation {
+    fn from(relation: teistro::matching::VashyaRelation) -> TsVashyaRelation {
+        use teistro::matching::VashyaRelation;
+        match relation {
+            VashyaRelation::Mutual => TsVashyaRelation::Mutual,
+            VashyaRelation::OneWay => TsVashyaRelation::OneWay,
+            VashyaRelation::Food => TsVashyaRelation::Food,
+            VashyaRelation::Neither => TsVashyaRelation::Neither,
+        }
+    }
+}
+
+/// How two yonis stand (`03-design/matching.md`, C261).
+///
+/// Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
+/// match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsYoniRelation {
+    /// The same yoni: 4.
+    Same = 0,
+    /// Neither the same nor great enemies: 2.
+    Neutral = 1,
+    /// One of the seven great enmities: 0.
+    GreatEnemy = 2,
+}
+
+impl From<teistro::matching::YoniRelation> for TsYoniRelation {
+    fn from(relation: teistro::matching::YoniRelation) -> TsYoniRelation {
+        use teistro::matching::YoniRelation;
+        match relation {
+            YoniRelation::Same => TsYoniRelation::Same,
+            YoniRelation::Neutral => TsYoniRelation::Neutral,
+            YoniRelation::GreatEnemy => TsYoniRelation::GreatEnemy,
+        }
+    }
+}
+
+/// How two sign lords stand by the natural friendships
+/// (`03-design/matching.md`).
+///
+/// Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
+/// match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsMaitriRelation {
+    /// One lord rules both signs: 5.
+    OneLord = 0,
+    /// Each the other's friend: 5.
+    MutualFriends = 1,
+    /// A friend one way, neutral the other: 4.
+    FriendNeutral = 2,
+    /// Neutral both ways: 3.
+    MutualNeutral = 3,
+    /// A friend one way, an enemy the other: 1.
+    FriendEnemy = 4,
+    /// Neutral one way, an enemy the other: ½.
+    NeutralEnemy = 5,
+    /// Each the other's enemy: 0.
+    MutualEnemies = 6,
+}
+
+impl From<teistro::matching::MaitriRelation> for TsMaitriRelation {
+    fn from(relation: teistro::matching::MaitriRelation) -> TsMaitriRelation {
+        use teistro::matching::MaitriRelation;
+        match relation {
+            MaitriRelation::OneLord => TsMaitriRelation::OneLord,
+            MaitriRelation::MutualFriends => TsMaitriRelation::MutualFriends,
+            MaitriRelation::FriendNeutral => TsMaitriRelation::FriendNeutral,
+            MaitriRelation::MutualNeutral => TsMaitriRelation::MutualNeutral,
+            MaitriRelation::FriendEnemy => TsMaitriRelation::FriendEnemy,
+            MaitriRelation::NeutralEnemy => TsMaitriRelation::NeutralEnemy,
+            MaitriRelation::MutualEnemies => TsMaitriRelation::MutualEnemies,
+        }
+    }
+}
+
+/// A bad Bhakoot by how far the signs stand apart, or none
+/// (`03-design/matching.md`, VI.31).
+///
+/// Mirrors `Option<teistro::matching::BhakootDosha>` through an
+/// **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
+/// type spells.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBhakootDosha {
+    /// The signs stand well.
+    None = 0,
+    /// Sixth and eighth.
+    SixEight = 1,
+    /// Fifth and ninth.
+    FiveNine = 2,
+    /// Second and twelfth.
+    TwoTwelve = 3,
+}
+
+impl From<Option<teistro::matching::BhakootDosha>> for TsBhakootDosha {
+    fn from(dosha: Option<teistro::matching::BhakootDosha>) -> TsBhakootDosha {
+        use teistro::matching::BhakootDosha;
+        match dosha {
+            None => TsBhakootDosha::None,
+            Some(BhakootDosha::SixEight) => TsBhakootDosha::SixEight,
+            Some(BhakootDosha::FiveNine) => TsBhakootDosha::FiveNine,
+            Some(BhakootDosha::TwoTwelve) => TsBhakootDosha::TwoTwelve,
+        }
+    }
+}
+
 /// What the source calls a planet by its Harsha bala
 /// (`03-design/tajika-harsha.md`).
 ///
@@ -7677,6 +8001,24 @@ fn progressions_of(
                 .map_err(|error| error.with_hint(format!("chart {at}")))
         })
         .collect()
+}
+
+/// Every chart matched with the record's partner, the partner founded once
+/// (`matching.md`); none when the record was null. A refusal is named under
+/// `matching`.
+fn matchings_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::PartnerMatching>,
+) -> Result<Vec<teistro::AshtaKoota>, Error> {
+    asked.map_or_else(
+        || Ok(Vec::new()),
+        |asked| {
+            sdk.chart()
+                .matching_with(documents, asked)
+                .map_err(|error| error.under("matching"))
+        },
+    )
 }
 
 /// The Western tables a batch was asked for, read once: each chart's own
@@ -8192,6 +8534,7 @@ struct AskedRecords {
     midpoints: Option<teistro::MidpointRequest>,
     western_houses: Option<teistro::HouseRequest>,
     harmonic: Option<teistro::HarmonicRequest>,
+    matching: Option<teistro::PartnerMatching>,
 }
 
 impl AskedRecords {
@@ -8243,6 +8586,9 @@ impl AskedRecords {
                     .transpose()?,
                 harmonic: optional_text(asked.harmonic_json, "harmonic_json")?
                     .map(teistro::HarmonicRequest::from_json)
+                    .transpose()?,
+                matching: optional_text(asked.matching_json, "matching_json")?
+                    .map(teistro::PartnerMatching::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -8445,6 +8791,7 @@ pub unsafe extern "C" fn ts_chart_found(
             &ChartRequest::at(place, clock).with_kind(kind),
         )?;
         let western = WesternTables::of(ctx.sdk(), &founded.value, &records, clock)?;
+        let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -8478,6 +8825,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 davisons: &western.davisons,
                 western_houses: &western.houses,
                 harmonics: &western.harmonics,
+                matchings: &matchings,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

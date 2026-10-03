@@ -2186,6 +2186,60 @@ Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
 | `TS_TAJIKA_RELATION_NEUTRAL` | 2 | Neither. |
 | `TS_TAJIKA_RELATION_ENEMY` | 3 | An enemy. |
 
+## ts_vashya_relation
+
+How two signs stand in Vashya (`03-design/matching.md`, C260).
+
+Mirrors `teistro::matching::VashyaRelation` through an **exhaustive** match.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VASHYA_RELATION_MUTUAL` | 0 | Each is vashya to the other: 2. |
+| `TS_VASHYA_RELATION_ONE_WAY` | 1 | One is vashya to the other: 1. |
+| `TS_VASHYA_RELATION_FOOD` | 2 | One is vashya to the other and its food: ½. |
+| `TS_VASHYA_RELATION_NEITHER` | 3 | Neither: 0. |
+
+## ts_yoni_relation
+
+How two yonis stand (`03-design/matching.md`, C261).
+
+Mirrors `teistro::matching::YoniRelation` through an **exhaustive** match.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_YONI_RELATION_SAME` | 0 | The same yoni: 4. |
+| `TS_YONI_RELATION_NEUTRAL` | 1 | Neither the same nor great enemies: 2. |
+| `TS_YONI_RELATION_GREAT_ENEMY` | 2 | One of the seven great enmities: 0. |
+
+## ts_maitri_relation
+
+How two sign lords stand by the natural friendships (`03-design/matching.md`).
+
+Mirrors `teistro::matching::MaitriRelation` through an **exhaustive** match.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MAITRI_RELATION_ONE_LORD` | 0 | One lord rules both signs: 5. |
+| `TS_MAITRI_RELATION_MUTUAL_FRIENDS` | 1 | Each the other's friend: 5. |
+| `TS_MAITRI_RELATION_FRIEND_NEUTRAL` | 2 | A friend one way, neutral the other: 4. |
+| `TS_MAITRI_RELATION_MUTUAL_NEUTRAL` | 3 | Neutral both ways: 3. |
+| `TS_MAITRI_RELATION_FRIEND_ENEMY` | 4 | A friend one way, an enemy the other: 1. |
+| `TS_MAITRI_RELATION_NEUTRAL_ENEMY` | 5 | Neutral one way, an enemy the other: ½. |
+| `TS_MAITRI_RELATION_MUTUAL_ENEMIES` | 6 | Each the other's enemy: 0. |
+
+## ts_bhakoot_dosha
+
+A bad Bhakoot by how far the signs stand apart, or none (`03-design/matching.md`, VI.31).
+
+Mirrors `Option<teistro::matching::BhakootDosha>` through an **exhaustive** match: `NONE` is the absence of a dosha, which no Rust type spells.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BHAKOOT_DOSHA_NONE` | 0 | The signs stand well. |
+| `TS_BHAKOOT_DOSHA_SIX_EIGHT` | 1 | Sixth and eighth. |
+| `TS_BHAKOOT_DOSHA_FIVE_NINE` | 2 | Fifth and ninth. |
+| `TS_BHAKOOT_DOSHA_TWO_TWELVE` | 3 | Second and twelfth. |
+
 ## ts_harsha_grade
 
 What the source calls a planet by its Harsha bala (`03-design/tajika-harsha.md`).

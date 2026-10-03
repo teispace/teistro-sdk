@@ -306,6 +306,7 @@ fn chart_request(
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1583,6 +1584,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1734,6 +1736,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1883,6 +1886,7 @@ fn a_chart_request_answers_the_transits() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2104,6 +2108,7 @@ fn a_chart_request_answers_the_hit_list() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2278,6 +2283,7 @@ fn a_chart_request_answers_sade_sati() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2394,6 +2400,7 @@ fn a_chart_request_answers_sade_sati() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2464,6 +2471,7 @@ fn a_chart_request_answers_sade_sati() {
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
         harmonic_json: ptr::null(),
+        matching_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2538,6 +2546,7 @@ fn a_chart_request_answers_the_dignities() {
                 midpoints_json: ptr::null(),
                 western_houses_json: ptr::null(),
                 harmonic_json: ptr::null(),
+                matching_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2817,6 +2826,7 @@ fn a_chart_request_answers_the_fortitudes() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4124,6 +4134,7 @@ fn a_chart_request_answers_kp() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4238,6 +4249,7 @@ fn a_chart_request_answers_kp() {
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
         harmonic_json: ptr::null(),
+        matching_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4260,6 +4272,7 @@ fn a_chart_request_answers_kp() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4322,6 +4335,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4367,6 +4381,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         midpoints_json: ptr::null(),
         western_houses_json: ptr::null(),
         harmonic_json: ptr::null(),
+        matching_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4433,6 +4448,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4574,6 +4590,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4720,6 +4737,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5497,6 +5515,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5611,6 +5630,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5794,6 +5814,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             midpoints_json: ptr::null(),
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
+            matching_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6081,6 +6102,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 midpoints_json: ptr::null(),
                 western_houses_json: ptr::null(),
                 harmonic_json: ptr::null(),
+                matching_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -8702,4 +8724,197 @@ fn a_chart_request_answers_its_harmonic() {
     .unwrap_err();
     assert_eq!(status, Status::InvalidArg);
     assert_eq!(ctx.last_error().2.as_deref(), Some("harmonic.number"));
+}
+
+/// A match crosses whole: every cell of the two sections equals the
+/// façade's over a batch, each chart on the side the partner leaves it, and
+/// a refusal is named by its field (`03-design/matching.md`).
+#[test]
+fn a_chart_request_answers_its_matching() {
+    use teistro::KootaReading;
+    use teistro_ffi::chart::{TsBhakootDosha, TsMaitriRelation, TsVashyaRelation, TsYoniRelation};
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_451_545.0, 2_451_552.5, 2_451_561.25];
+    let base = chart_request(&instants, (27.7172, 85.324), 20_700);
+    let text = r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7172, "longitude": 85.324, "altitude": 1400}, "utcOffsetSeconds": 20700}, "partnerRole": "GROOM", "rules": {"bhakootLift": "GARGA"}}"#;
+    let matching_json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            matching_json: matching_json.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            ),
+        )
+        .unwrap()
+        .value;
+    let matched = sdk
+        .chart()
+        .matching_with(&charts, &teistro::PartnerMatching::from_json(text).unwrap())
+        .unwrap();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+
+    assert_eq!(
+        bits("matchings", "total"),
+        matched
+            .iter()
+            .map(|one| one.total.to_bits())
+            .collect::<Vec<_>>()
+    );
+    let rows: Vec<&teistro::KootaRow> = matched.iter().flat_map(|one| &one.kootas).collect();
+    assert_eq!(rows.len(), 8 * instants.len());
+    assert_eq!(
+        ints("matching_kootas", "koota"),
+        rows.iter()
+            .map(|row| i64::from(row.reading.koota().id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("matching_kootas", "points"),
+        rows.iter()
+            .map(|row| row.points.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("matching_kootas", "max_points"),
+        rows.iter()
+            .map(|row| row.max_points.to_bits())
+            .collect::<Vec<_>>()
+    );
+
+    // Every reading's cells, column by column, as the façade read them.
+    let mut expected = std::collections::BTreeMap::<&str, Vec<i64>>::new();
+    let mut put = |name: &'static str, value: i64| expected.entry(name).or_default().push(value);
+    for row in &rows {
+        match row.reading {
+            KootaReading::Varna { bride, groom } => {
+                put("bride_varna", i64::from(bride.id()));
+                put("groom_varna", i64::from(groom.id()));
+            }
+            KootaReading::Vashya { relation } => {
+                put("vashya", TsVashyaRelation::from(relation) as i64);
+            }
+            KootaReading::Tara {
+                bride_to_groom,
+                groom_to_bride,
+            } => {
+                put("tara_bride_to_groom", i64::from(bride_to_groom));
+                put("tara_groom_to_bride", i64::from(groom_to_bride));
+            }
+            KootaReading::Yoni {
+                bride,
+                groom,
+                relation,
+            } => {
+                put("bride_yoni", i64::from(bride.id()));
+                put("groom_yoni", i64::from(groom.id()));
+                put("yoni", TsYoniRelation::from(relation) as i64);
+            }
+            KootaReading::GrahaMaitri {
+                bride,
+                groom,
+                relation,
+            } => {
+                put("bride_lord", i64::from(bride.id()));
+                put("groom_lord", i64::from(groom.id()));
+                put("maitri", TsMaitriRelation::from(relation) as i64);
+            }
+            KootaReading::Gana { bride, groom } => {
+                put("bride_gana", i64::from(bride.id()));
+                put("groom_gana", i64::from(groom.id()));
+            }
+            KootaReading::Bhakoot {
+                apart,
+                dosha,
+                exceptions,
+                lifted,
+            } => {
+                put("bhakoot_apart", i64::from(apart));
+                put("bhakoot_dosha", TsBhakootDosha::from(dosha) as i64);
+                put("bhakoot_one_lord", i64::from(exceptions.one_lord));
+                put("bhakoot_lords_friends", i64::from(exceptions.lords_friends));
+                put(
+                    "bhakoot_navamsha_lords_friends",
+                    i64::from(exceptions.navamsha_lords_friends),
+                );
+                put("bhakoot_tara_pure", i64::from(exceptions.tara_pure));
+                put("bhakoot_vashya", i64::from(exceptions.vashya));
+                put("bhakoot_lifted", i64::from(lifted));
+            }
+            KootaReading::Nadi {
+                bride,
+                groom,
+                dosha,
+            } => {
+                put("bride_nadi", i64::from(bride.id()));
+                put("groom_nadi", i64::from(groom.id()));
+                put("nadi_dosha", i64::from(dosha));
+            }
+        }
+    }
+    assert_eq!(expected.len(), 24, "every reading column but the total");
+    for (name, cells) in &expected {
+        assert_eq!(&ints("matchings", name), cells, "{name}");
+    }
+
+    // None asked is empty sections; a refusal is named by its field.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [("matchings", "total"), ("matching_kootas", "koota")] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+    let unsided = CString::new(
+        r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7, "longitude": 85.3, "altitude": 0}}, "partnerRole": "UNCLE"}"#,
+    )
+    .unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            matching_json: unsided.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("matching.partnerRole"));
 }

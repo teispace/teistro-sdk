@@ -7046,6 +7046,177 @@ enum TajikaRelation {
   }
 }
 
+/// How two signs stand in Vashya (`03-design/matching.md`, C260).
+///
+/// Mirrors `teistro::matching::VashyaRelation` through an **exhaustive**
+/// match.
+enum VashyaRelation {
+  /// Each is vashya to the other: 2.
+  mutual(0, 'MUTUAL'),
+  /// One is vashya to the other: 1.
+  oneWay(1, 'ONE_WAY'),
+  /// One is vashya to the other and its food: ½.
+  food(2, 'FOOD'),
+  /// Neither: 0.
+  neither(3, 'NEITHER');
+
+  const VashyaRelation(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static VashyaRelation byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a VashyaRelation'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VashyaRelation? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How two yonis stand (`03-design/matching.md`, C261).
+///
+/// Mirrors `teistro::matching::YoniRelation` through an **exhaustive**
+/// match.
+enum YoniRelation {
+  /// The same yoni: 4.
+  same(0, 'SAME'),
+  /// Neither the same nor great enemies: 2.
+  neutral(1, 'NEUTRAL'),
+  /// One of the seven great enmities: 0.
+  greatEnemy(2, 'GREAT_ENEMY');
+
+  const YoniRelation(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static YoniRelation byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a YoniRelation'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static YoniRelation? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How two sign lords stand by the natural friendships
+/// (`03-design/matching.md`).
+///
+/// Mirrors `teistro::matching::MaitriRelation` through an **exhaustive**
+/// match.
+enum MaitriRelation {
+  /// One lord rules both signs: 5.
+  oneLord(0, 'ONE_LORD'),
+  /// Each the other's friend: 5.
+  mutualFriends(1, 'MUTUAL_FRIENDS'),
+  /// A friend one way, neutral the other: 4.
+  friendNeutral(2, 'FRIEND_NEUTRAL'),
+  /// Neutral both ways: 3.
+  mutualNeutral(3, 'MUTUAL_NEUTRAL'),
+  /// A friend one way, an enemy the other: 1.
+  friendEnemy(4, 'FRIEND_ENEMY'),
+  /// Neutral one way, an enemy the other: ½.
+  neutralEnemy(5, 'NEUTRAL_ENEMY'),
+  /// Each the other's enemy: 0.
+  mutualEnemies(6, 'MUTUAL_ENEMIES');
+
+  const MaitriRelation(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static MaitriRelation byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a MaitriRelation'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MaitriRelation? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A bad Bhakoot by how far the signs stand apart, or none
+/// (`03-design/matching.md`, VI.31).
+///
+/// Mirrors `Option<teistro::matching::BhakootDosha>` through an
+/// **exhaustive** match: `NONE` is the absence of a dosha, which no Rust
+/// type spells.
+enum BhakootDosha {
+  /// The signs stand well.
+  none(0, 'NONE'),
+  /// Sixth and eighth.
+  sixEight(1, 'SIX_EIGHT'),
+  /// Fifth and ninth.
+  fiveNine(2, 'FIVE_NINE'),
+  /// Second and twelfth.
+  twoTwelve(3, 'TWO_TWELVE');
+
+  const BhakootDosha(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static BhakootDosha byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a BhakootDosha'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BhakootDosha? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What the source calls a planet by its Harsha bala
 /// (`03-design/tajika-harsha.md`).
 ///

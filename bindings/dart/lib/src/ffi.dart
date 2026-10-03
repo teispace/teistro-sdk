@@ -1254,6 +1254,21 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"number":9}. May be null.
   external ffi.Pointer<ffi.Char> harmonicJson;
 
+  /// Every chart matched with one partner's birth by the Ashta Koota of
+  /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+  /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+  /// "utcOffsetSeconds"}`, founded once under the context's sidereal
+  /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+  /// on the other side; and `rules`, every field optional: `equalVarna`
+  /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+  /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+  /// `MIDDLE_ONLY`). The answers come back in `matchings` and
+  /// `matching_kootas`. Null for none, which costs nothing
+  /// (`03-design/matching.md`). Refusals are named from the record every
+  /// binding calls `matching`, as `matching.partnerRole`.
+  /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+  external ffi.Pointer<ffi.Char> matchingJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3143,7 +3158,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3543,6 +3558,21 @@ final class ChartRequest {
   /// Example: {"number":9}. May be null.
   final String? harmonicJson;
 
+  /// Every chart matched with one partner's birth by the Ashta Koota of
+  /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+  /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+  /// "utcOffsetSeconds"}`, founded once under the context's sidereal
+  /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+  /// on the other side; and `rules`, every field optional: `equalVarna`
+  /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+  /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+  /// `MIDDLE_ONLY`). The answers come back in `matchings` and
+  /// `matching_kootas`. Null for none, which costs nothing
+  /// (`03-design/matching.md`). Refusals are named from the record every
+  /// binding calls `matching`, as `matching.partnerRole`.
+  /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+  final String? matchingJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3645,6 +3675,9 @@ final class ChartRequest {
     raw.harmonicJson = harmonicJson == null
         ? ffi.nullptr
         : harmonicJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.matchingJson = matchingJson == null
+        ? ffi.nullptr
+        : matchingJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3733,6 +3766,9 @@ final class ChartRequest {
         harmonicJson: raw.harmonicJson == ffi.nullptr
             ? null
             : raw.harmonicJson.cast<pkg_ffi.Utf8>().toDartString(),
+        matchingJson: raw.matchingJson == ffi.nullptr
+            ? null
+            : raw.matchingJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

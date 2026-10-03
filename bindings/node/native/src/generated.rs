@@ -2162,6 +2162,20 @@ pub struct ChartRequest {
     /// record every binding calls `harmonic`, as `harmonic.number`.
     /// Example: {"number":9}. May be null.
     pub harmonic_json: Option<String>,
+    /// Every chart matched with one partner's birth by the Ashta Koota of
+    /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+    /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+    /// "utcOffsetSeconds"}`, founded once under the context's sidereal
+    /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+    /// on the other side; and `rules`, every field optional: `equalVarna`
+    /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+    /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+    /// `MIDDLE_ONLY`). The answers come back in `matchings` and
+    /// `matching_kootas`. Null for none, which costs nothing
+    /// (`03-design/matching.md`). Refusals are named from the record every
+    /// binding calls `matching`, as `matching.partnerRole`.
+    /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+    pub matching_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2198,6 +2212,7 @@ pub struct HeldChartRequest {
     midpoints_json: Option<std::ffi::CString>,
     western_houses_json: Option<std::ffi::CString>,
     harmonic_json: Option<std::ffi::CString>,
+    matching_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2289,6 +2304,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             harmonic_json: self
                 .harmonic_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            matching_json: self
+                .matching_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2418,6 +2437,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            matching_json: self
+                .matching_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2472,6 +2496,7 @@ impl ChartRequest {
             midpoints_json: unsafe { lent_text(raw.midpoints_json) },
             western_houses_json: unsafe { lent_text(raw.western_houses_json) },
             harmonic_json: unsafe { lent_text(raw.harmonic_json) },
+            matching_json: unsafe { lent_text(raw.matching_json) },
         }
     }
 }

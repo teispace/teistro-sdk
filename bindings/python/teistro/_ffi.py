@@ -37,6 +37,7 @@ from .catalogue import (
     AyanamshaCategory,
     BalaScheme,
     Balance,
+    BhakootDosha,
     BlackoutKind,
     Body,
     BodyClass,
@@ -89,6 +90,7 @@ from .catalogue import (
     Lot,
     LunarEclipseKind,
     LunarMonth,
+    MaitriRelation,
     Masa,
     Member,
     Modality,
@@ -156,6 +158,7 @@ from .catalogue import (
     Varga,
     Varna,
     VarsheshaChosen,
+    VashyaRelation,
     VimshopakaScoring,
     Way,
     WesternAspect,
@@ -163,6 +166,7 @@ from .catalogue import (
     Yoga,
     YogaCause,
     Yoni,
+    YoniRelation,
     ZoneEra,
     ZoneKind,
     ZoneSource,
@@ -265,7 +269,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 280,
+    "ts_chart_request": 288,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -712,6 +716,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("midpoints_json", ctypes.c_char_p),
         ("western_houses_json", ctypes.c_char_p),
         ("harmonic_json", ctypes.c_char_p),
+        ("matching_json", ctypes.c_char_p),
     ]
 
 
@@ -2632,6 +2637,22 @@ class ChartRequest:
     Example: {"number":9}. May be null.
     """
 
+    matching_json: Optional[str] = None
+    """Every chart matched with one partner's birth by the Ashta Koota of
+    *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+    `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
+    "utcOffsetSeconds"}`, founded once under the context's sidereal
+    profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
+    on the other side; and `rules`, every field optional: `equalVarna`
+    (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
+    `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
+    `MIDDLE_ONLY`). The answers come back in `matchings` and
+    `matching_kootas`. Null for none, which costs nothing
+    (`03-design/matching.md`). Refusals are named from the record every
+    binding calls `matching`, as `matching.partnerRole`.
+    Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2733,6 +2754,9 @@ class ChartRequest:
         _harmonic_json = None if self.harmonic_json is None else self.harmonic_json.encode("utf-8")
         owned.append(_harmonic_json)
         raw.harmonic_json = _harmonic_json
+        _matching_json = None if self.matching_json is None else self.matching_json.encode("utf-8")
+        owned.append(_matching_json)
+        raw.matching_json = _matching_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2790,6 +2814,7 @@ class ChartRequest:
             midpoints_json=_text(raw.midpoints_json),
             western_houses_json=_text(raw.western_houses_json),
             harmonic_json=_text(raw.harmonic_json),
+            matching_json=_text(raw.matching_json),
         )
 
 

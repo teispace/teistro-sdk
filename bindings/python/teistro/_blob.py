@@ -3627,6 +3627,114 @@ class ChartsHarmonicRows:
 
 
 @dataclass(frozen=True)
+class ChartsMatchings:
+    """The `matchings` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. Empty when `matching_json` asked for none.
+    """
+
+    total: memoryview[float]
+    """The eight kootas' points, out of 36, a multiple of a half."""
+
+    bride_varna: memoryview[int]
+    """The bride's varna, by her or his Moon's sign (VI.22)."""
+
+    groom_varna: memoryview[int]
+    """The groom's varna, by her or his Moon's sign (VI.22)."""
+
+    vashya: memoryview[int]
+    """How the two Moon signs stand in Vashya (VI.23, C260)."""
+
+    tara_bride_to_groom: memoryview[int]
+    """The tara counted from the bride's nakshatra to the groom's, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad."""
+
+    tara_groom_to_bride: memoryview[int]
+    """The tara counted from the groom's nakshatra to the bride's, 1 to 9."""
+
+    bride_yoni: memoryview[int]
+    """The bride's yoni, by her or his Moon's nakshatra (VI.25–26)."""
+
+    groom_yoni: memoryview[int]
+    """The groom's yoni, by her or his Moon's nakshatra (VI.25–26)."""
+
+    yoni: memoryview[int]
+    """How the two yonis stand (C261)."""
+
+    bride_lord: memoryview[int]
+    """The lord of the bride's Moon sign (VI.27–28)."""
+
+    groom_lord: memoryview[int]
+    """The lord of the groom's Moon sign."""
+
+    maitri: memoryview[int]
+    """How the two lords stand by the natural friendships."""
+
+    bride_gana: memoryview[int]
+    """The bride's gana, by her or his Moon's nakshatra (VI.29–30)."""
+
+    groom_gana: memoryview[int]
+    """The groom's gana, by her or his Moon's nakshatra (VI.29–30)."""
+
+    bhakoot_apart: memoryview[int]
+    """The groom's Moon sign counted from the bride's, 1 to 12 (VI.31)."""
+
+    bhakoot_dosha: memoryview[int]
+    """The bad Bhakoot the two signs stand at, or none."""
+
+    bhakoot_one_lord: memoryview[int]
+    """1 when one lord rules both signs: the first exception of VI.32–33, reported whether or not there is a dosha."""
+
+    bhakoot_lords_friends: memoryview[int]
+    """1 when the two sign lords are each other's friends."""
+
+    bhakoot_navamsha_lords_friends: memoryview[int]
+    """1 when the lords of the two Moons' navamshas are one or each other's friends."""
+
+    bhakoot_tara_pure: memoryview[int]
+    """1 when the tara is pure both ways."""
+
+    bhakoot_vashya: memoryview[int]
+    """1 when one sign is vashya to the other."""
+
+    bhakoot_lifted: memoryview[int]
+    """1 when the exceptions lift the dosha under the record's `bhakootLift` (C263); 0 with no dosha."""
+
+    bride_nadi: memoryview[int]
+    """The bride's nadi, by her or his Moon's nakshatra (VI.34)."""
+
+    groom_nadi: memoryview[int]
+    """The groom's nadi, by her or his Moon's nakshatra (VI.34)."""
+
+    nadi_dosha: memoryview[int]
+    """1 when the shared nadi is a dosha under the record's `nadiDosha` (C264)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsMatchingKootas:
+    """The `matching_kootas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none.
+    """
+
+    koota: memoryview[int]
+    """Which koota."""
+
+    points: memoryview[float]
+    """Its points, a multiple of a half."""
+
+    max_points: memoryview[float]
+    """The most it gives, 1 for Varna to 8 for Nadi."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4080,6 +4188,12 @@ class Charts:
     harmonic_rows: ChartsHarmonicRows
     """Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none."""
 
+    matchings: ChartsMatchings
+    """Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. Empty when `matching_json` asked for none."""
+
+    matching_kootas: ChartsMatchingKootas
+    """Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. Empty when `matching_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4199,6 +4313,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_harmonics = blob.section(108, "harmonics")
     at_harmonic_points = blob.section(109, "harmonic_points")
     at_harmonic_rows = blob.section(110, "harmonic_rows")
+    at_matchings = blob.section(111, "matchings")
+    at_matching_kootas = blob.section(112, "matching_kootas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6503,6 +6619,94 @@ def decode_charts(raw: bytes) -> Charts:
                 at_harmonic_rows, 6, 8, at_harmonic_rows.count
             ).cast("d"),
             length=at_harmonic_rows.count,
+        ),
+        matchings=ChartsMatchings(
+            total=blob.column(
+                at_matchings, 0, 8, at_matchings.count
+            ).cast("d"),
+            bride_varna=blob.column(
+                at_matchings, 1, 2, at_matchings.count
+            ).cast("H"),
+            groom_varna=blob.column(
+                at_matchings, 2, 2, at_matchings.count
+            ).cast("H"),
+            vashya=blob.column(
+                at_matchings, 3, 1, at_matchings.count
+            ).cast("B"),
+            tara_bride_to_groom=blob.column(
+                at_matchings, 4, 1, at_matchings.count
+            ).cast("B"),
+            tara_groom_to_bride=blob.column(
+                at_matchings, 5, 1, at_matchings.count
+            ).cast("B"),
+            bride_yoni=blob.column(
+                at_matchings, 6, 2, at_matchings.count
+            ).cast("H"),
+            groom_yoni=blob.column(
+                at_matchings, 7, 2, at_matchings.count
+            ).cast("H"),
+            yoni=blob.column(at_matchings, 8, 1, at_matchings.count).cast("B"),
+            bride_lord=blob.column(
+                at_matchings, 9, 2, at_matchings.count
+            ).cast("H"),
+            groom_lord=blob.column(
+                at_matchings, 10, 2, at_matchings.count
+            ).cast("H"),
+            maitri=blob.column(
+                at_matchings, 11, 1, at_matchings.count
+            ).cast("B"),
+            bride_gana=blob.column(
+                at_matchings, 12, 2, at_matchings.count
+            ).cast("H"),
+            groom_gana=blob.column(
+                at_matchings, 13, 2, at_matchings.count
+            ).cast("H"),
+            bhakoot_apart=blob.column(
+                at_matchings, 14, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_dosha=blob.column(
+                at_matchings, 15, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_one_lord=blob.column(
+                at_matchings, 16, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_lords_friends=blob.column(
+                at_matchings, 17, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_navamsha_lords_friends=blob.column(
+                at_matchings, 18, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_tara_pure=blob.column(
+                at_matchings, 19, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_vashya=blob.column(
+                at_matchings, 20, 1, at_matchings.count
+            ).cast("B"),
+            bhakoot_lifted=blob.column(
+                at_matchings, 21, 1, at_matchings.count
+            ).cast("B"),
+            bride_nadi=blob.column(
+                at_matchings, 22, 2, at_matchings.count
+            ).cast("H"),
+            groom_nadi=blob.column(
+                at_matchings, 23, 2, at_matchings.count
+            ).cast("H"),
+            nadi_dosha=blob.column(
+                at_matchings, 24, 1, at_matchings.count
+            ).cast("B"),
+            length=at_matchings.count,
+        ),
+        matching_kootas=ChartsMatchingKootas(
+            koota=blob.column(
+                at_matching_kootas, 0, 2, at_matching_kootas.count
+            ).cast("H"),
+            points=blob.column(
+                at_matching_kootas, 1, 8, at_matching_kootas.count
+            ).cast("d"),
+            max_points=blob.column(
+                at_matching_kootas, 2, 8, at_matching_kootas.count
+            ).cast("d"),
+            length=at_matching_kootas.count,
         ),
     )
 

@@ -627,6 +627,42 @@ fn fortitudes(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The matching's enums (`03-design/matching.md`): a bhakoot's `NONE` is
+/// the absence of a dosha, which no Rust type spells.
+fn matching(api: &Api) -> Vec<&'static str> {
+    use teistro::matching::{BhakootDosha, MaitriRelation, VashyaRelation, YoniRelation};
+    use teistro_ffi::chart::{TsBhakootDosha, TsMaitriRelation, TsVashyaRelation, TsYoniRelation};
+    let id = |value: u8| Some(i64::from(value));
+    vec![
+        unit(api, "TsVashyaRelation", |r: &VashyaRelation| {
+            id(TsVashyaRelation::from(*r) as u8)
+        }),
+        unit(api, "TsYoniRelation", |r: &YoniRelation| {
+            id(TsYoniRelation::from(*r) as u8)
+        }),
+        unit(api, "TsMaitriRelation", |r: &MaitriRelation| {
+            id(TsMaitriRelation::from(*r) as u8)
+        }),
+        {
+            let samples: Vec<BhakootDosha> = enum_def(api, "TsBhakootDosha")
+                .values
+                .iter()
+                .filter(|member| member.key != "NONE")
+                .map(|member| serde_json::from_value(serde_json::Value::from(member.key.as_str())))
+                .collect::<Result<_, _>>()
+                .unwrap_or_else(|e| panic!("`TsBhakootDosha`'s doshas are `BhakootDosha`'s: {e}"));
+            spelled_as(
+                api,
+                "TsBhakootDosha",
+                "",
+                &samples,
+                |dosha| id(TsBhakootDosha::from(Some(*dosha)) as u8),
+                &["NONE"],
+            )
+        },
+    ]
+}
+
 /// The perfection's enums (`03-design/hellenistic-perfection.md`).
 fn perfection(api: &Api) -> Vec<&'static str> {
     use teistro_ffi::chart::{TsApplicationKind, TsImpedimentKind, TsWay};
@@ -656,6 +692,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         dignities(&api),
         fortitudes(&api),
         perfection(&api),
+        matching(&api),
         time_and_calendar(&api),
     ]
     .concat();
