@@ -1938,7 +1938,7 @@ class AnEngine(WithLibrary):
         the outer three unpaired, Leo's orbs pairing them, a batch the
         charts one at a time, and refusals named in the record
         (`03-design/western-antiscia.md`)."""
-        from teistro import AntisciaRequest
+        from teistro import AntisciaRequest, HouseSystem
 
         george: dict[str, Any] = {
             "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
@@ -1957,6 +1957,17 @@ class AnEngine(WithLibrary):
             self.assertEqual((pair.first, pair.second, pair.contrary), (Graha.MARS, Graha.MERCURY, False))
             self.assertAlmostEqual(pair.apart_deg, 5.935, delta=0.02)
             self.assertEqual(read.unpaired, (Graha.URANUS, Graha.NEPTUNE, Graha.PLUTO))
+            self.assertEqual((read.on_cusps, read.cusp_system), ((), None), "no cusps unless asked")
+
+            # On the cusps, Lilly's Regiomontanus unless named: his Uranus
+            # reflects 0.63° past the fourth cusp, into the next degree.
+            on = ctx.chart.found(instant=birth, outer_planets=True, antiscia={"cusps": {}}, **george).antiscia
+            assert on is not None
+            self.assertEqual((on.on_cusps, on.cusp_system), ((), HouseSystem.REGIOMONTANUS))
+            placidus: AntisciaRequest = {"cusps": {"system": HouseSystem.PLACIDUS}}
+            named = ctx.chart.found(instant=birth, antiscia=placidus, **george).antiscia
+            assert named is not None
+            self.assertEqual(named.cusp_system, HouseSystem.PLACIDUS)
 
             leo: AntisciaRequest = {"orbs": {"model": "LEO"}}
             wide = ctx.chart.found(instant=birth, outer_planets=True, antiscia=leo, **george).antiscia
@@ -1969,11 +1980,63 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[Any, str]] = [
                 ({"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": "TRINE", "orbDeg": 3}]}}, "antiscia.orbs.orbs"),
                 ({"orb": 1}, "antiscia.orb"),
+                ({"cusps": {"system": "NOWHERE"}}, "antiscia.cusps.system"),
                 ([], "antiscia"),
             ]
             for request, field in refusals:
                 with self.assertRaises(TeistroError) as caught:
                     ctx.chart.found(instant=birth, antiscia=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
+    def test_a_chart_carries_its_western_houses(self) -> None:
+        """Leo's own illustration (*How to Judge a Nativity*, p. 150), "a
+        female born at 2.42 A.M. 13th December, 1835, London", against the
+        SDK test's Moshier recast: Placidus, Saturn rising; another
+        division by name, a batch the charts one at a time, and a refusal
+        named by its field (`03-design/western-houses.md`)."""
+        from teistro import HouseSystem, WesternHouseRequest, WesternHouses
+
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(-0.1), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2391625.6125
+
+        def near(a: float, b: float) -> bool:
+            return abs((a - b + 540.0) % 360.0 - 180.0) < 0.01
+
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **london).western_houses)
+            houses = ctx.chart.found(instant=birth, outer_planets=True, western_houses={}, **london).western_houses
+            assert isinstance(houses, WesternHouses)
+            self.assertEqual(houses.system, HouseSystem.PLACIDUS)
+            self.assertEqual(len(houses.cusps_deg), 12)
+            self.assertTrue(near(houses.cusps_deg[0], 202.1436) and near(houses.cusps_deg[9], 119.3147), houses.cusps_deg)
+            self.assertTrue(near(houses.reach_deg, 191.6089), houses.reach_deg)
+            placed = {one.graha: (one.house, one.with_ascendant) for one in houses.planets}
+            self.assertEqual(placed[Graha.SATURN], (1, True))
+            self.assertEqual(placed[Graha.SUN], (2, False))
+            self.assertEqual(placed[Graha.MARS][0], 3)
+
+            for system in (HouseSystem.KOCH, "house_system.KOCH", "KOCH"):
+                koch: WesternHouseRequest = {"system": system}
+                named = ctx.chart.found(instant=birth, western_houses=koch, **london).western_houses
+                assert named is not None
+                self.assertEqual(named.system, HouseSystem.KOCH)
+            instants = [birth, birth + 100.5]
+            batch = ctx.chart.found_many(instants=instants, western_houses={}, **london)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).western_houses, ctx.chart.found(instant=instant, western_houses={}, **london).western_houses
+                )
+            refusals: list[tuple[Any, str]] = [
+                ({"system": "NOWHERE"}, "westernHouses.system"),
+                ({"sistem": "KOCH"}, "westernHouses.sistem"),
+                ([], "western_houses"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, western_houses=request, **london)
                 self.assertEqual(caught.exception.field, field)
 
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
@@ -2108,6 +2171,16 @@ class AnEngine(WithLibrary):
             self.assertTrue(near(composite.midheaven_deg, 258.1797), composite.midheaven_deg)
             self.assertTrue(near(composite.lagna_deg, 334.007), composite.lagna_deg)
             self.assertFalse(composite.lagna_turned)
+            # Its Placidus cusps, the near midpoints of the two charts', the
+            # first and tenth its lagna and midheaven.
+            assert composite.cusps_deg is not None
+            self.assertEqual(len(composite.cusps_deg), 12)
+            self.assertTrue(near(composite.cusps_deg[2], 57.8601), composite.cusps_deg[2])
+            self.assertEqual((composite.cusps_deg[0], composite.cusps_deg[9]), (composite.lagna_deg, composite.midheaven_deg))
+            # Cusps are one chart's, so a synastry's antiscia refuses them.
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.found(instant=birth, synastry={"partner": mary, "antiscia": {"cusps": {}}}, **george)
+            self.assertEqual(caught.exception.field, "synastry.antiscia.cusps")
 
             davison = chart.synastry_davison
             assert isinstance(davison, DavisonBirth)

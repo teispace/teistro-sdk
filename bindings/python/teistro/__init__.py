@@ -520,8 +520,12 @@ __all__ = [
     "AntiscionRow",
     "Composite",
     "CompositePlanet",
+    "CuspAntiscion",
     "DavisonBirth",
     "MidpointRequest",
+    "WesternHousePlacement",
+    "WesternHouseRequest",
+    "WesternHouses",
     "MidpointRow",
     "SynastryMidpointRow",
     "SynastryPartner",
@@ -1575,6 +1579,7 @@ class ChartArea(_Area):
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
         midpoints: Optional[MidpointRequest] = None,
+        western_houses: Optional[WesternHouseRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1628,6 +1633,7 @@ class ChartArea(_Area):
             parallels=parallels,
             antiscia=antiscia,
             midpoints=midpoints,
+            western_houses=western_houses,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1671,6 +1677,7 @@ class ChartArea(_Area):
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
         midpoints: Optional[MidpointRequest] = None,
+        western_houses: Optional[WesternHouseRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1746,6 +1753,11 @@ class ChartArea(_Area):
             parallels_json=_record_json(parallels, "parallels", "{'orbDeg': 1}"),
             antiscia_json=_antiscia_json(antiscia),
             midpoints_json=_record_json(midpoints, "midpoints", "{'orbDeg': 1}"),
+            western_houses_json=_record_json(
+                _written(western_houses) if isinstance(western_houses, Mapping) else western_houses,
+                "western_houses",
+                "{'system': HouseSystem.KOCH}",
+            ),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3911,17 +3923,33 @@ class WesternAspectRow:
     """Whether the faster planet is closing on the exact angle."""
 
 
+class WesternHouseRequest(TypedDict, total=False):
+    """What a chart's Western houses are asked (`03-design/western-houses.md`):
+    `system`, the division, a `HouseSystem` or its key; the profile's
+    `houses.module_overrides.western` when absent, else Placidus, the
+    division Leo's figures are cast in (C249).
+
+    >>> leo: WesternHouseRequest = {}
+    >>> koch: WesternHouseRequest = {"system": HouseSystem.KOCH}
+    """
+
+    system: Union[HouseSystem, str]
+
+
 class AntisciaRequest(TypedDict, total=False):
     """What the antiscia are asked (`03-design/western-antiscia.md`):
     `orbs`, an orb model as `WesternAspectRequest` spells it, read at the
     conjunction; Lilly's moieties when absent (C244), which give the outer
-    three none.
+    three none. `cusps`, the houses whose cusps a reflection is read upon
+    at its very degree (C251), Lilly's Regiomontanus when `{}`.
 
     >>> lilly: AntisciaRequest = {}
     >>> leo: AntisciaRequest = {"orbs": {"model": "LEO"}}
+    >>> on_cusps: AntisciaRequest = {"cusps": {}}
     """
 
     orbs: Mapping[str, Any]
+    cusps: WesternHouseRequest
 
 
 @dataclass(frozen=True)
@@ -3964,6 +3992,58 @@ class Antiscia:
     points: Tuple[Antiscion, ...]
     pairs: Tuple[AntiscionRow, ...]
     unpaired: Tuple[Graha, ...]
+    on_cusps: Tuple[CuspAntiscion, ...]
+    """The reflections upon a cusp's very degree (C251); empty unless the
+    request asked `cusps`."""
+
+    cusp_system: Optional[HouseSystem]
+    """The division `on_cusps` was read in; `None` unless asked."""
+
+
+@dataclass(frozen=True)
+class CuspAntiscion:
+    """A planet's reflection upon a cusp's very degree, its own sign and
+    whole degree (Lilly, *Christian Astrology*, p. 165; C251)."""
+
+    graha: Graha
+    house: int
+    """The house whose cusp it falls upon, 1 to 12."""
+
+    contrary: bool
+    """Whether it is the contrantiscion, the reflection about the equinoxes."""
+
+
+@dataclass(frozen=True)
+class WesternHousePlacement:
+    """Where a planet is counted among a chart's Western houses."""
+
+    graha: Graha
+    house: int
+    """The house whose cusp it has passed and whose next cusp it has not."""
+
+    with_ascendant: bool
+    """Whether Leo counts it with the ascendant (C250): in the first house,
+    or above the ascendant no further than the degree that rose one
+    sidereal hour before; its house is never moved for it."""
+
+
+@dataclass(frozen=True)
+class WesternHouses:
+    """A chart's Western houses (`03-design/western-houses.md`), in the
+    chart's own zodiac."""
+
+    system: HouseSystem
+    """The division the cusps are of: the one asked, or the one a polar
+    policy fell back to."""
+
+    cusps_deg: Tuple[float, ...]
+    """The twelve cusps, first to twelfth, degrees."""
+
+    ascendant_deg: float
+    reach_deg: float
+    """The degree that rose one sidereal hour before the birth (C250)."""
+
+    planets: Tuple[WesternHousePlacement, ...]
 
 
 class ParallelRequest(TypedDict, total=False):
@@ -4142,6 +4222,11 @@ class Composite:
     lagna_deg: float
     midheaven_deg: float
     lagna_turned: bool
+    cusps_deg: Optional[Tuple[float, ...]]
+    """The twelve composite cusps, each the near midpoint of the two
+    charts' same cusp, turned when more than 90° from where the midheaven
+    puts it (Astrolog); `None` when either chart's cusps could not be
+    read, as at a polar place."""
 
 
 @dataclass(frozen=True)
@@ -6829,6 +6914,10 @@ def _midpoint_cells(
     )
 
 
+_NO_HOUSE_SYSTEM = 0xFFFF
+"""`antiscia.cusp_system` where no cusps were asked."""
+
+
 def _antiscion_row(rows: Union[ChartsAntiscionRows, ChartsSynastryAntiscionRows], at: int) -> AntiscionRow:
     """One pair in antiscion, a chart's own (`antiscion_rows`) or across a
     synastry (`synastry_antiscion_rows`): the two sections share columns."""
@@ -6848,7 +6937,10 @@ def _antiscia_json(asked: Optional[AntisciaRequest]) -> Optional[str]:
     example = "{'orbs': {'model': 'LEO'}}"
     if not isinstance(asked, Mapping):
         return _record_json(asked, "antiscia", example)
-    return _record_json(_aspect_table(asked), "antiscia", example)
+    written = _aspect_table(asked)
+    if "cusps" in written:
+        written["cusps"] = _written(written["cusps"])
+    return _record_json(written, "antiscia", example)
 
 
 def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
@@ -8497,6 +8589,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def western_houses(self) -> Optional[WesternHouses]:
+        """The chart's Western houses: the cusps of the asked division,
+        else the profile's for the module, else Placidus (C249), and each
+        planet's house and whether Leo reads it with the ascendant (C250);
+        `None` unless `western_houses=` asked (`03-design/western-houses.md`)."""
+        parsed = self.batch._western_houses
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def midpoints(self) -> Optional[Tuple[MidpointRow, ...]]:
         """The chart's equal distances, closest first: each planet within
         the orb of the axis through two others' midpoint, 0.5° by default
@@ -9186,6 +9287,13 @@ class ChartBatch:
         r = self.decoded.antiscion_rows
         points = self._ragged(row.point_count, p.length, "antiscia and antiscion_points", lambda at: at)
         pairs = self._ragged(row.pair_count, r.length, "antiscia and antiscion_rows", lambda at: _antiscion_row(r, at))
+        c = self.decoded.antiscion_cusp_rows
+        on_cusps = self._ragged(
+            row.cusp_count,
+            c.length,
+            "antiscia and antiscion_cusp_rows",
+            lambda at: CuspAntiscion(graha=Graha(c.graha[at]), house=c.house[at], contrary=c.contrary[at] == 1),
+        )
         return [
             Antiscia(
                 points=tuple(
@@ -9198,8 +9306,42 @@ class ChartBatch:
                 ),
                 pairs=pairs[k],
                 unpaired=tuple(Graha(p.graha[at]) for at in rows if p.paired[at] == 0),
+                on_cusps=on_cusps[k] if on_cusps else (),
+                cusp_system=None if row.cusp_system[k] == _NO_HOUSE_SYSTEM else HouseSystem(row.cusp_system[k]),
             )
             for k, rows in enumerate(points)
+        ]
+
+    @cached_property
+    def _western_houses(self) -> list[WesternHouses]:
+        """Every chart's Western houses, decoded once; empty when none were
+        asked for. `western_houses` holds a row a chart, `western_house_cusps`
+        twelve a chart, and `western_house_planets` is ragged by its count."""
+        h = self.decoded.western_houses
+        g = self.decoded.western_house_planets
+        cusps = self._ragged(
+            [12] * h.length,
+            self.decoded.western_house_cusps.length,
+            "western_houses and western_house_cusps",
+            lambda at: self.decoded.western_house_cusps.cusp_deg[at],
+        )
+        planets = self._ragged(
+            h.planet_count,
+            g.length,
+            "western_houses and western_house_planets",
+            lambda at: WesternHousePlacement(
+                graha=Graha(g.graha[at]), house=g.house[at], with_ascendant=g.with_ascendant[at] == 1
+            ),
+        )
+        return [
+            WesternHouses(
+                system=HouseSystem(h.system[k]),
+                cusps_deg=cusps[k],
+                ascendant_deg=h.ascendant_deg[k],
+                reach_deg=h.reach_deg[k],
+                planets=rows,
+            )
+            for k, rows in enumerate(planets)
         ]
 
     @cached_property
@@ -9258,12 +9400,17 @@ class ChartBatch:
                 speed_deg_per_day=r.speed_deg_per_day[at],
             ),
         )
+        u = self.decoded.synastry_composite_cusps
+        cusps = self._ragged(
+            c.cusp_count, u.length, "synastry_composites and synastry_composite_cusps", lambda at: u.cusp_deg[at]
+        )
         return [
             Composite(
                 planets=rows,
                 lagna_deg=c.lagna_deg[k],
                 midheaven_deg=c.midheaven_deg[k],
                 lagna_turned=c.lagna_turned[k] == 1,
+                cusps_deg=cusps[k] or None,
             )
             for k, rows in enumerate(planets)
         ]

@@ -1421,6 +1421,60 @@ export type WesternOrbModel =
  */
 export interface AntisciaRequest {
   readonly orbs?: WesternOrbModel;
+  /**
+   * Reads each reflection on the cusps too, in the division named, Lilly's
+   * Regiomontanus when `{}` (`03-design/western-houses.md`, C251). None by
+   * default.
+   */
+  readonly cusps?: WesternHouseRequest;
+}
+
+/**
+ * What a chart's Western houses are asked (`03-design/western-houses.md`):
+ * the division, else the profile's `houses.module_overrides.western`, else
+ * Placidus, the division Leo's figures are cast in (C249).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, westernHouses: {} });
+ * for (const planet of chart.westernHouses?.planets ?? []) console.log(planet.graha, planet.house);
+ */
+export interface WesternHouseRequest {
+  readonly system?: HouseSystem;
+}
+
+/** Where a planet is counted in a chart's Western houses. */
+export interface WesternHousePlacement {
+  readonly graha: Graha | 'unknown';
+  /** The house whose cusp it has passed and whose next cusp it has not, 1 to 12. */
+  readonly house: number;
+  /**
+   * Whether Leo reads it with the ascendant (C250): in the first house, or
+   * above the ascendant no further than `reachDeg`. The house is never moved.
+   */
+  readonly withAscendant: boolean;
+}
+
+/** A chart's Western houses, in its own zodiac. */
+export interface WesternHouses {
+  /** The division the cusps are of: the one asked, or the one a polar policy fell back to. */
+  readonly system: HouseSystem | 'unknown';
+  /** The twelve cusps, first to twelfth, degrees. */
+  readonly cuspsDeg: readonly number[];
+  /** The ascendant, degrees. */
+  readonly ascendantDeg: number;
+  /** The degree that rose one sidereal hour before the birth, degrees (Leo, p. 90). */
+  readonly reachDeg: number;
+  /** Each planet's house, in the catalogue's order. */
+  readonly planets: readonly WesternHousePlacement[];
+}
+
+/** A planet's reflection upon a cusp's very degree (Lilly, p. 165; C251). */
+export interface CuspAntiscion {
+  readonly graha: Graha | 'unknown';
+  /** The house whose cusp its reflection falls on, 1 to 12. */
+  readonly house: number;
+  /** Whether it is the contrantiscion; false for the antiscion. */
+  readonly contrary: boolean;
 }
 
 /** A planet's two reflections, tropical degrees. */
@@ -1493,6 +1547,10 @@ export interface Antiscia {
   readonly pairs: readonly AntiscionRow[];
   /** The planets the orbs give none, which stand in no pair. */
   readonly unpaired: readonly (Graha | 'unknown')[];
+  /** The reflections upon a cusp's very degree; empty unless `cusps` asked. */
+  readonly onCusps: readonly CuspAntiscion[];
+  /** The division the cusps were read in; `null` unless `cusps` asked. */
+  readonly cuspSystem: HouseSystem | 'unknown' | null;
 }
 
 /** One pair of planets within an aspect's orb. */
@@ -1599,6 +1657,12 @@ export interface Composite {
   readonly midheavenDeg: number;
   /** Whether the lagnas' near midpoint stood before the midheaven and was turned by 180°. */
   readonly lagnaTurned: boolean;
+  /**
+   * Its twelve cusps, first to twelfth: each the near midpoint of the two
+   * charts', turned as the lagna is; `null` where the profile refuses the
+   * `western` module's division at either birthplace.
+   */
+  readonly cuspsDeg: readonly number[] | null;
 }
 
 /**
@@ -3377,6 +3441,11 @@ export declare class Chart {
    */
   readonly midpoints: readonly MidpointRow[] | null;
   /**
+   * The chart's Western houses: the division's cusps and each planet's
+   * house; `null` unless `westernHouses` asked (`03-design/western-houses.md`).
+   */
+  readonly westernHouses: WesternHouses | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4523,6 +4592,11 @@ export interface ChartRequest {
    * chart's `midpoints`: 0.5° from the axis when `{}`. None by default.
    */
   readonly midpoints?: MidpointRequest;
+  /**
+   * A chart's Western houses (`03-design/western-houses.md`), read as each
+   * chart's `westernHouses`: Placidus when `{}`. None by default.
+   */
+  readonly westernHouses?: WesternHouseRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */
