@@ -1776,6 +1776,65 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, progressions=request, **london)  # type: ignore[arg-type]
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_western_aspects(self) -> None:
+        """The Western aspects cross whole on King Edward VII's nativity:
+        Leo's four (*How to Judge a Nativity*, pp. 295–296) under his orbs,
+        Lilly's moieties refusing the outer three they give no orb, a batch
+        the charts one at a time, and refusals named in the record
+        (`03-design/western-aspects.md`)."""
+        from teistro import WesternAspect, WesternAspectRequest
+
+        palace: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.501), longitude_deg=Longitude(-0.142), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2393783.95
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **palace).western_aspects)
+
+            rows = ctx.chart.found(instant=birth, outer_planets=True, western_aspects={}, **palace).western_aspects
+            assert rows is not None
+            held = {(frozenset((row.first, row.second)), row.aspect) for row in rows}
+            for a, aspect, b in (
+                (Graha.SUN, WesternAspect.TRINE, Graha.URANUS),
+                (Graha.SUN, WesternAspect.SEXTILE, Graha.MARS),
+                (Graha.SUN, WesternAspect.SQUARE, Graha.NEPTUNE),
+                (Graha.MOON, WesternAspect.SQUARE, Graha.SATURN),
+            ):
+                self.assertIn((frozenset((a, b)), aspect), held)
+            self.assertTrue(all(row.from_exact_deg <= row.orb_deg for row in rows))
+
+            # Lilly's moieties over the seven: the Moon (12½) and Saturn (10) square within 11¼.
+            moieties = (("SUN", 17), (Graha.MOON, 12.5), ("MERCURY", 7), ("VENUS", 8), ("MARS", 7.5), ("JUPITER", 12), ("SATURN", 10))
+            lilly: WesternAspectRequest = {
+                "aspects": [WesternAspect.CONJUNCTION, "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"],
+                "orbs": {"model": "MOIETIES", "orbs": [{"graha": graha, "orbDeg": orb} for graha, orb in moieties]},
+            }
+            seven = ctx.chart.found(instant=birth, western_aspects=lilly, **palace).western_aspects
+            assert seven is not None
+            square = next(row for row in seven if (row.first, row.second) == (Graha.MOON, Graha.SATURN))
+            self.assertEqual((square.aspect, square.orb_deg), (WesternAspect.SQUARE, 11.25))
+
+            instants = [birth, birth + 3000.25, birth + 9000.5]
+            two: WesternAspectRequest = {"aspects": ["TRINE", "SQUARE"]}
+            batch = ctx.chart.found_many(instants=instants, western_aspects=two, **palace)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).western_aspects,
+                    ctx.chart.found(instant=instant, western_aspects=two, **palace).western_aspects,
+                )
+            refusals: list[tuple[Any, str, bool]] = [
+                ({"aspects": []}, "westernAspects.aspects", False),
+                ({"aspects": ["TRINE", "TRINE"]}, "westernAspects.aspects", False),
+                ({"aspects": ["QUINTILE"]}, "westernAspects.aspects[0]", False),
+                (lilly, "westernAspects.orbs.orbs", True),
+                ([], "westernAspects", False),
+            ]
+            for request, field, outer in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, outer_planets=outer, western_aspects=request, **palace)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_the_outer_planets_when_asked(self) -> None:
         """The outer planets cross when asked: none unless `outer_planets`,
         then Uranus, Neptune and Pluto in the grahas' shape with the nine
