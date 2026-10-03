@@ -250,7 +250,13 @@ fn a_symmetric_koota_is_symmetric_over_every_pair() {
                 );
             }
             assert!(there.total <= ASHTA_KOOTA_POINTS);
-            assert_eq!(there.kootas.len(), ASHTA_KOOTA.len());
+            assert!(
+                there
+                    .kootas
+                    .iter()
+                    .map(|row| row.reading.koota())
+                    .eq(ASHTA_KOOTA)
+            );
             let maxima: f64 = there.kootas.iter().map(|row| row.max_points).sum();
             assert_eq!(maxima, ASHTA_KOOTA_POINTS);
         }

@@ -12,7 +12,8 @@ use teistro::catalogue::{Graha, Koota};
 use teistro::matching::ashta_koota;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, KootaReading, KootaRules, Native, UtcOffset,
+    ChartRequest, Context, Document, Ephemeris, KootaReading, KootaRules, MatchRole, Native,
+    Partner, PartnerMatching, UtcOffset,
 };
 
 fn context(profile: Option<&str>) -> Context {
@@ -25,19 +26,30 @@ fn context(profile: Option<&str>) -> Context {
     .unwrap()
 }
 
-fn founded(sdk: &Context, instant: f64) -> Document {
-    let kathmandu = Place::new(
+fn kathmandu() -> Place {
+    Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
-    );
+    )
+}
+
+fn founded(sdk: &Context, instant: f64) -> Document {
     sdk.chart()
         .reading(
             JulianDay::<Utc>::try_new(instant).unwrap(),
-            &ChartRequest::at(kathmandu, UtcOffset::UTC),
+            &ChartRequest::at(kathmandu(), UtcOffset::UTC),
         )
         .unwrap()
         .value
+}
+
+fn partner(instant: f64) -> Partner {
+    Partner {
+        instant: JulianDay::<Utc>::try_new(instant).unwrap(),
+        place: kathmandu(),
+        utc_offset: UtcOffset::UTC,
+    }
 }
 
 fn moon(chart: &Document) -> Native {
@@ -86,4 +98,61 @@ fn a_tropical_chart_is_refused_by_its_role() {
         .matching(&tropical, &sidereal, KootaRules::default())
         .unwrap_err();
     assert_eq!(refused.field(), Some("bride"));
+}
+
+#[test]
+fn a_batch_stands_on_the_side_the_partner_does_not() {
+    let sdk = context(None);
+    let hers = founded(&sdk, 2_447_892.5);
+    let charts: Vec<Document> = (0..5)
+        .map(|day| founded(&sdk, 2_451_545.0 + 5.0 * f64::from(day)))
+        .collect();
+    let rules = KootaRules {
+        nadi_dosha: teistro::matching::NadiDosha::MiddleOnly,
+        ..KootaRules::default()
+    };
+    for role in [MatchRole::Bride, MatchRole::Groom] {
+        let asked = PartnerMatching {
+            partner: partner(2_447_892.5),
+            partner_role: role,
+            rules,
+        };
+        let matched = sdk.chart().matching_with(&charts, &asked).unwrap();
+        assert_eq!(matched.len(), charts.len());
+        for (chart, koota) in charts.iter().zip(&matched) {
+            let alone = match role {
+                MatchRole::Bride => sdk.chart().matching(&hers, chart, rules),
+                MatchRole::Groom => sdk.chart().matching(chart, &hers, rules),
+            };
+            assert_eq!(*koota, alone.unwrap());
+        }
+    }
+}
+
+#[test]
+fn a_tropical_partner_is_refused_as_the_partner() {
+    let western = context(Some("western-tropical-default"));
+    let asked = PartnerMatching {
+        partner: partner(2_447_892.5),
+        partner_role: MatchRole::Groom,
+        rules: KootaRules::default(),
+    };
+    let refused = western.chart().matching_with(&[], &asked).unwrap_err();
+    assert_eq!(refused.field(), Some("partner"));
+}
+
+#[test]
+fn a_record_reads_back_what_it_wrote() {
+    let asked = PartnerMatching {
+        partner: partner(2_447_892.5),
+        partner_role: MatchRole::Bride,
+        rules: KootaRules::default(),
+    };
+    let text = serde_json::to_string(&asked).unwrap();
+    assert_eq!(PartnerMatching::from_json(&text).unwrap(), asked);
+    let north = PartnerMatching::from_json(
+        r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 95, "longitude": 0, "altitude": 0}}, "partnerRole": "BRIDE"}"#,
+    )
+    .unwrap_err();
+    assert_eq!(north.field(), Some("matching.partner.place.latitude"));
 }

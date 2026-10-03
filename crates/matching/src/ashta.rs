@@ -249,6 +249,31 @@ pub enum KootaReading {
     },
 }
 
+impl KootaReading {
+    /// The koota this is the reading of.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Koota;
+    /// use teistro_matching::KootaReading;
+    ///
+    /// let tara = KootaReading::Tara { bride_to_groom: 2, groom_to_bride: 9 };
+    /// assert_eq!(tara.koota(), Koota::Tara);
+    /// ```
+    #[must_use]
+    pub const fn koota(&self) -> Koota {
+        match self {
+            KootaReading::Varna { .. } => Koota::Varna,
+            KootaReading::Vashya { .. } => Koota::Vashya,
+            KootaReading::Tara { .. } => Koota::Tara,
+            KootaReading::Yoni { .. } => Koota::Yoni,
+            KootaReading::GrahaMaitri { .. } => Koota::GrahaMaitri,
+            KootaReading::Gana { .. } => Koota::Gana,
+            KootaReading::Bhakoot { .. } => Koota::Bhakoot,
+            KootaReading::Nadi { .. } => Koota::Nadi,
+        }
+    }
+}
+
 /// One koota's points and what it read.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
