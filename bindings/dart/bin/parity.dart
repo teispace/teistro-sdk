@@ -547,6 +547,28 @@ void main() {
       7,
       rules: PerfectionRules(horizonDays: 120),
     ),
+    westernAspects: const WesternAspectRequest(
+      aspects: [
+        WesternAspect.conjunction,
+        WesternAspect.sextile,
+        WesternAspect.square,
+        WesternAspect.trine,
+        WesternAspect.quincunx,
+        WesternAspect.opposition,
+      ],
+      orbs: OrbModel.moieties({
+        Graha.sun: 17,
+        Graha.moon: 12.5,
+        Graha.mercury: 7,
+        Graha.venus: 8,
+        Graha.mars: 7.5,
+        Graha.jupiter: 12,
+        Graha.saturn: 10,
+        Graha.uranus: 5,
+        Graha.neptune: 5,
+        Graha.pluto: 5,
+      }),
+    ),
     progressions: const ProgressionsRequest(
       at: 2470000.5,
       year: YearMeasure.noonSiderealTime,
@@ -1201,6 +1223,16 @@ void main() {
         'chart-$i-progressed-contact-$n',
         '${number(c.life)} ${number(c.sky)} ${c.graha.fullKey} $point '
             '${c.angle} ${c.motion.key}',
+      );
+    }
+    final western = chart.westernAspects!;
+    put('chart-$i-western-aspect-count', '${western.length}');
+    for (final (n, row) in western.indexed) {
+      put(
+        'chart-$i-western-aspect-$n',
+        '${row.first.fullKey} ${row.second.fullKey} ${row.aspect.key} '
+            '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
+            '${number(row.orbDeg)} ${row.applying ? 1 : 0}',
       );
     }
     final vs = chart.vimshopaka!;

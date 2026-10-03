@@ -541,6 +541,27 @@ def main() -> None:
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
+            western_aspects={
+                "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
+                "orbs": {
+                    "model": "MOIETIES",
+                    "orbs": [
+                        {"graha": graha, "orbDeg": orb}
+                        for graha, orb in (
+                            ("SUN", 17),
+                            ("MOON", 12.5),
+                            ("MERCURY", 7),
+                            ("VENUS", 8),
+                            ("MARS", 7.5),
+                            ("JUPITER", 12),
+                            ("SATURN", 10),
+                            ("URANUS", 5),
+                            ("NEPTUNE", 5),
+                            ("PLUTO", 5),
+                        )
+                    ],
+                },
+            },
             progressions={
                 "at": 2470000.5,
                 "year": "NOON_SIDEREAL_TIME",
@@ -1094,6 +1115,15 @@ def main() -> None:
                 put(
                     f"chart-{i}-progressed-contact-{n}",
                     f"{number(ct.life)} {number(ct.sky)} {ct.graha.full_key} {reached} {ct.angle} {ct.motion.key}",
+                )
+            western = chart.western_aspects
+            assert western is not None
+            put(f"chart-{i}-western-aspect-count", str(len(western)))
+            for n, row in enumerate(western):
+                put(
+                    f"chart-{i}-western-aspect-{n}",
+                    f"{row.first.full_key} {row.second.full_key} {row.aspect.key} {number(row.apart_deg)} "
+                    f"{number(row.from_exact_deg)} {number(row.orb_deg)} {int(row.applying)}",
                 )
             vs = chart.vimshopaka
             assert vs is not None
