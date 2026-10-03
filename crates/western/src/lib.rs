@@ -34,6 +34,7 @@ mod angles;
 mod arc;
 mod aspects;
 mod progression;
+mod synastry;
 
 pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use arc::ArcMeasure;
@@ -44,3 +45,4 @@ pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,
     YearMeasure,
 };
+pub use synastry::{SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac, synastry};
