@@ -1,6 +1,9 @@
 # A Western chart's houses (the `western` module)
 
-Status: `designed`, 2026-10-03, written from the sources before any code.
+Status: `building`, 2026-10-03, written from the sources before any code.
+Steps 2 and 3 are built: `sdk.chart().western_houses` holds Leo's p. 150
+figure, and [`western-houses-measured.md`](western-houses-measured.md)
+reads the corpus's births.
 
 The Western pages so far read the zodiac alone: aspects, parallels,
 antiscia, equal distances, the composite's planets. A founded chart's
@@ -100,6 +103,37 @@ kernel.
    latitude.
 4. The composite's cusps and the antiscia on cusps.
 5. The boundary record and every binding, with parity.
+
+## What building it found
+
+- **Leo's figure reads as he cast it.** Under the default every recast
+  cusp of the p. 150 figure is within 0.01° of pyswisseph's and every
+  printed one within his half degree, each planet stands in the house
+  the recast puts it in, and Saturn, in the first, is the only planet
+  with the ascendant. Its glyph on the page reads like Virgo; the recast
+  puts it at ♏2, so it is Scorpio's.
+- **A reader's division moves planets.** Over the corpus, Regiomontanus
+  counts 6.2% of the planets in another house than Placidus, and 41.5%
+  of births have one moved; whole signs move half of them. C249 is not
+  a rounding question.
+- **The hour is not always in the twelfth.** Leo takes the degree that
+  rose an hour before to be "found in the twelfth house, of course".
+  Where the signs about the ascendant rise quickly, Placidus's twelfth
+  is narrower than the hour, and at 2 of 53 births the reach passes its
+  cusp. The flag follows the degree, as the footnote does.
+- **The zodiac moves no house; a profile can.** The births founded
+  again under `western-tropical-default` count every planet in the same
+  house but one: the Moon at Kabul, which `conformance-baseline` places
+  topocentrically, 0.56° from its geocentric place and on the eleventh
+  cusp. The measured page holds the claim that the zodiac alone moves
+  nothing.
+- **Inside the polar circles a profile decides.** Placidus does not
+  exist at Tromsø, and the conformance profile refuses rather than
+  falls back, so the two births there are named and left out; a profile
+  that falls back reads them, and the answer names the division used.
+- **One rule to count a house.** Lilly's `house_of` already counted a
+  longitude by the cusps with an orb; it moved to `core::house`, and the
+  `western` reading calls it with an orb of zero.
 
 ## What this does not decide
 

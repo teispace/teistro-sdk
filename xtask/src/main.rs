@@ -324,6 +324,7 @@ mod vimshopaka;
 mod vsop;
 mod wasm_binding;
 mod western_aspects;
+mod western_houses;
 mod yogas;
 
 use std::env;
@@ -474,6 +475,11 @@ const PASSES: &[Pass] = &[
         "composites",
         composites::generate,
         composites::check_generated,
+    ),
+    (
+        "western-houses",
+        western_houses::generate,
+        western_houses::check_generated,
     ),
     (
         "time-lords",
