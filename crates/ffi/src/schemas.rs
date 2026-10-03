@@ -628,6 +628,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_declination_sections(86))
         .chain(chart_synastry_parallel_sections(89))
         .chain(chart_antiscia_sections(91))
+        .chain(chart_synastry_antiscia_sections(94))
         .collect(),
     }
 }
@@ -1516,23 +1517,58 @@ fn chart_antiscia_sections(first: u32) -> [SectionSchema; 3] {
             &format!(
                 "Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). {empty}"
             ),
-            vec![
-                graha_column(
-                    "first",
-                    "The first planet of the pair, in the catalogue's order.",
-                ),
-                graha_column("second", "The second."),
-                ColumnDef::new(
-                    "contrary",
-                    Scalar::U8,
-                    "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.",
-                ),
-                degrees(
-                    "apart_deg",
-                    "How far the one's reflection stands from the other, degrees.",
-                ),
-                degrees("orb_deg", "The orb the record allowed the pair, degrees."),
-            ],
+            antiscion_row_columns(
+                "The first planet of the pair, in the catalogue's order.",
+                "The second.",
+            ),
+        ),
+    ]
+}
+
+/// The columns of a pair in antiscion, one chart's own or across two.
+fn antiscion_row_columns(first: &str, second: &str) -> Vec<ColumnDef> {
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    vec![
+        graha_column("first", first),
+        graha_column("second", second),
+        ColumnDef::new(
+            "contrary",
+            Scalar::U8,
+            "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.",
+        ),
+        degrees(
+            "apart_deg",
+            "How far the one's reflection stands from the other, degrees.",
+        ),
+        degrees("orb_deg", "The orb the record allowed the pair, degrees."),
+    ]
+}
+
+/// The two sections the antiscia across a chart and the synastry's
+/// partner cross as, from `first`: a row a chart, and the pairs ragged
+/// under it (`03-design/western-antiscia.md`).
+fn chart_synastry_antiscia_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `synastry_json` asked for no `antiscia`.";
+    [
+        SectionSchema::columns(
+            first,
+            "synastry_antiscia",
+            &format!(
+                "Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "How many pairs stand in antiscion between the chart's planets and the partner's; the chart's rows follow the earlier charts' in `synastry_antiscion_rows`.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "synastry_antiscion_rows",
+            &format!(
+                "Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). {empty}"
+            ),
+            antiscion_row_columns("The chart's planet.", "The partner's planet."),
         ),
     ]
 }

@@ -3850,6 +3850,54 @@ export interface ChartsAntiscionRows {
 }
 
 /**
+ * The `synastry_antiscia` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. Empty when `synastry_json` asked for no `antiscia`.
+ */
+export interface ChartsSynastryAntiscia {
+  /**
+   * How many pairs stand in antiscion between the chart's planets and the partner's; the chart's rows follow the earlier charts' in `synastry_antiscion_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_antiscion_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.
+ */
+export interface ChartsSynastryAntiscionRows {
+  /**
+   * The chart's planet.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The partner's planet.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * 1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.
+   */
+  readonly contrary: Uint8Array;
+  /**
+   * How far the one's reflection stands from the other, degrees.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * The orb the record allowed the pair, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4389,6 +4437,14 @@ export interface Charts {
    * Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.
    */
   readonly antiscionRows: ChartsAntiscionRows;
+  /**
+   * Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. Empty when `synastry_json` asked for no `antiscia`.
+   */
+  readonly synastryAntiscia: ChartsSynastryAntiscia;
+  /**
+   * Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.
+   */
+  readonly synastryAntiscionRows: ChartsSynastryAntiscionRows;
 }
 
 /**

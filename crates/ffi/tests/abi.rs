@@ -7089,8 +7089,8 @@ fn a_chart_request_answers_the_western_aspects() {
 }
 
 /// Every chart's synastry with one partner crosses whole: each cell of
-/// `synastry`, `synastry_rows` and the parallels' two sections is the
-/// facade's own, bit for bit, with
+/// `synastry`, `synastry_rows` and the parallels' and antiscia's two
+/// sections each is the facade's own, bit for bit, with
 /// George V's birth (Leo, *How to Judge a Nativity*, p. 130) and another
 /// read against Queen Mary's; none asked is empty sections, and a refusal
 /// is named from the record's root (`03-design/western-synastry.md`).
@@ -7099,6 +7099,8 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
     use teistro_ffi::chart::TsWesternAspect;
     /// A parallel row's cell, by its column's name.
     type Cell<T> = (&'static str, fn(&teistro::SynastryParallelRow) -> T);
+    /// A pair in antiscion's cell, by its column's name.
+    type Reflection<T> = (&'static str, fn(&teistro::AntiscionRow) -> T);
 
     let ctx = Ctx::with_ephemeris(
         0,
@@ -7110,7 +7112,7 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
     .unwrap();
     let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
     let base = chart_request(&instants, (51.5045, -0.1366), 0);
-    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"], "parallels": {}}"#;
+    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"], "parallels": {}, "antiscia": {}}"#;
     let asked_json = CString::new(text).unwrap();
     let bytes = chart_blob(
         &ctx,
@@ -7270,9 +7272,56 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         );
     }
 
-    // A synastry without parallels counts none for no chart: the
-    // sections are empty, not rows of 0.
-    let aspects_only = CString::new(text.replace(r#", "parallels": {}"#, "")).unwrap();
+    // The antiscia across, counted and listed in sections of their own.
+    let reflected: Vec<&teistro::AntiscionRow> = expected
+        .iter()
+        .flat_map(|one| one.antiscia.as_deref().unwrap_or_default())
+        .collect();
+    assert!(!reflected.is_empty(), "the antiscia cross too");
+    assert_eq!(
+        ints("synastry_antiscia", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.antiscia.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let reflection: [Reflection<i64>; 3] = [
+        ("first", |row| i64::from(row.first.id())),
+        ("second", |row| i64::from(row.second.id())),
+        ("contrary", |row| i64::from(row.contrary)),
+    ];
+    for (name, read) in reflection {
+        assert_eq!(
+            ints("synastry_antiscion_rows", name),
+            reflected.iter().map(|row| read(row)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    let reflected_measures: [Reflection<f64>; 2] = [
+        ("apart_deg", |row| row.apart_deg),
+        ("orb_deg", |row| row.orb_deg),
+    ];
+    for (name, read) in reflected_measures {
+        let cells: Vec<u64> = reader
+            .column("synastry_antiscion_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect();
+        assert_eq!(
+            cells,
+            reflected
+                .iter()
+                .map(|row| read(row).to_bits())
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+
+    // A synastry without parallels or antiscia counts neither for any
+    // chart: the sections are empty, not rows of 0.
+    let aspects_only =
+        CString::new(text.replace(r#", "parallels": {}, "antiscia": {}"#, "")).unwrap();
     let bytes = chart_blob(
         &ctx,
         &TsChartRequest {
@@ -7287,10 +7336,13 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         reader.column("synastry", "count").unwrap().len(),
         instants.len()
     );
-    assert_eq!(
-        reader.column("synastry_parallels", "count").unwrap().len(),
-        0
-    );
+    for section in ["synastry_parallels", "synastry_antiscia"] {
+        assert_eq!(
+            reader.column(section, "count").unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
 
     // None asked is empty sections.
     let bytes = chart_blob(&ctx, &base).unwrap();
@@ -7300,6 +7352,8 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         ("synastry_rows", "first_lagna"),
         ("synastry_parallels", "count"),
         ("synastry_parallel_rows", "contrary"),
+        ("synastry_antiscia", "count"),
+        ("synastry_antiscion_rows", "first"),
     ] {
         assert_eq!(
             reader.column(section, column).unwrap().len(),
@@ -7321,6 +7375,10 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         (
             r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}, "zodiac": "SIDEREAL"}"#,
             "synastry.zodiac",
+        ),
+        (
+            r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}, "antiscia": {"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": "TRINE", "orbDeg": 3}]}}}"#,
+            "synastry.antiscia.orbs.orbs",
         ),
         (r#"{"lagna": false}"#, "synastry.partner"),
     ] {
