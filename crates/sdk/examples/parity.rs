@@ -870,6 +870,8 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         JulianDay::<Utc>::literal(2_460_600.25),
     ];
     let asked = the_chart_request(place, offset, &geo);
+    // The foundation alone, as the boundary founds a progressed chart.
+    let bare = ChartRequest::at(place, offset).with_kind(ChartKind::Natal);
     // The text-written rules and the longevity readings, as the other three
     // ask for them, so the four agree on what every chart answers by rule.
     let rules = teistro::RuleRequest::shipped([teistro::ShippedRules::Nabhasas])
@@ -903,6 +905,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     the_plans(report, &geo, &read.value, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
         one_document(report, &geo, index, document);
+        the_progressions(report, &geo, index, document, &bare);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -1786,6 +1789,98 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lots(report, geo, index, document);
     the_considerations(report, geo, index, document);
     the_perfection(report, geo, index, document);
+}
+
+/// The progressions every runner asks for: a life in 2050 under the noon
+/// sidereal year, the angles by the solar arc in longitude and Naibod's
+/// direction, and ten years of the Moon's and the Sun's contacts.
+const PROGRESSIONS_JSON: &str = r#"{"at":2470000.5,"year":"NOON_SIDEREAL_TIME","angles":"SOLAR_ARC_LONGITUDE","direction":"NAIBOD","contacts":{"from":2462000.5,"to":2465652.5,"grahas":["MOON","SUN"],"points":["LAGNA","MARS","VENUS"],"aspects":[0,45,90,135,180]}}"#;
+
+/// The progressions as the other three print them: the progressed chart's
+/// instants and angles, each of its grahas, the direction, and each
+/// contact in turn.
+fn the_progressions(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+    request: &ChartRequest,
+) {
+    let asked =
+        teistro::ProgressionsRequest::from_json(PROGRESSIONS_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .progressions(document, &asked, request)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-{what}");
+    let progressed = read.progressed.expect("asked at an instant");
+    put(
+        report,
+        &key("progressed"),
+        format!(
+            "{} {} {} {} {}",
+            number(progressed.life.get()),
+            number(progressed.sky.get()),
+            number(progressed.armc_deg),
+            number(progressed.angles.ascendant_deg),
+            number(progressed.angles.midheaven_deg)
+        ),
+    );
+    for (n, at) in progressed.chart.value.foundation.grahas.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("progressed-graha-{n}")),
+            format!(
+                "{} {} {} {}",
+                at.graha.full_key(),
+                number(at.longitude_deg),
+                number(at.tropical_deg),
+                number(at.speed_deg_per_day)
+            ),
+        );
+    }
+    let directed = read.directed.expect("asked at an instant");
+    put(
+        report,
+        &key("directed"),
+        format!(
+            "{} {} {}",
+            number(directed.arc_deg),
+            number(directed.ascendant_deg),
+            number(directed.midheaven_deg)
+        ),
+    );
+    for (n, at) in directed.planets.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("directed-graha-{n}")),
+            format!("{} {}", at.graha.full_key(), number(at.longitude_deg)),
+        );
+    }
+    let contacts = read.contacts.expect("asked over a window");
+    put(
+        report,
+        &key("progressed-contact-count"),
+        contacts.len().to_string(),
+    );
+    for (n, at) in contacts.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("progressed-contact-{n}")),
+            format!(
+                "{} {} {} {} {} {}",
+                number(at.life.get()),
+                number(at.sky.get()),
+                at.graha.full_key(),
+                match at.to {
+                    teistro::NatalPoint::Lagna => "LAGNA",
+                    teistro::NatalPoint::Graha { graha } => graha.full_key(),
+                },
+                at.angle,
+                wire_key(&at.motion)
+            ),
+        );
+    }
 }
 
 /// The lots every runner asks for: III.11's Fortune, the one that reads

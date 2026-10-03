@@ -546,6 +546,19 @@ void main() {
       7,
       rules: PerfectionRules(horizonDays: 120),
     ),
+    progressions: const ProgressionsRequest(
+      at: 2470000.5,
+      year: YearMeasure.noonSiderealTime,
+      angles: AngleMethod.solarArcLongitude,
+      direction: DirectionArc.naibod,
+      contacts: ProgressionContacts(
+        from: 2462000.5,
+        to: 2465652.5,
+        grahas: [Graha.moon, Graha.sun],
+        points: [NatalLagna(), NatalGraha(Graha.mars), NatalGraha(Graha.venus)],
+        aspects: [0, 45, 90, 135, 180],
+      ),
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -1151,6 +1164,44 @@ void main() {
       'chart-$i-perfection-rules',
       '${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}',
     );
+    final pr = chart.progressions!;
+    final pg = pr.progressed!;
+    final dr = pr.directed!;
+    final contacts = pr.contacts!;
+    put(
+      'chart-$i-progressed',
+      '${number(pg.life)} ${number(pg.sky)} ${number(pg.armcDeg)} '
+          '${number(pg.angles.ascendantDeg)} ${number(pg.angles.midheavenDeg)}',
+    );
+    for (final (n, g) in pg.grahas.indexed) {
+      put(
+        'chart-$i-progressed-graha-$n',
+        '${g.graha.fullKey} ${number(g.longitudeDeg)} ${number(g.tropicalDeg)} '
+            '${number(g.speedDegPerDay)}',
+      );
+    }
+    put(
+      'chart-$i-directed',
+      '${number(dr.arcDeg)} ${number(dr.ascendantDeg)} ${number(dr.midheavenDeg)}',
+    );
+    for (final (n, p) in dr.planets.indexed) {
+      put(
+        'chart-$i-directed-graha-$n',
+        '${p.graha.fullKey} ${number(p.longitudeDeg)}',
+      );
+    }
+    put('chart-$i-progressed-contact-count', '${contacts.length}');
+    for (final (n, c) in contacts.indexed) {
+      final point = switch (c.to) {
+        NatalLagna() => 'LAGNA',
+        NatalGraha(:final graha) => graha.fullKey,
+      };
+      put(
+        'chart-$i-progressed-contact-$n',
+        '${number(c.life)} ${number(c.sky)} ${c.graha.fullKey} $point '
+            '${c.angle} ${c.motion.key}',
+      );
+    }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {

@@ -363,6 +363,19 @@ const charts = geo.chart.foundMany({
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
+  progressions: {
+    at: 2470000.5,
+    year: 'NOON_SIDEREAL_TIME',
+    angles: 'SOLAR_ARC_LONGITUDE',
+    direction: 'NAIBOD',
+    contacts: {
+      from: 2462000.5,
+      to: 2465652.5,
+      grahas: ['MOON', 'SUN'],
+      points: ['LAGNA', 'MARS', 'VENUS'],
+      aspects: [0, 45, 90, 135, 180],
+    },
+  },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -699,6 +712,26 @@ for (const chart of charts) {
     ),
   );
   put(`chart-${i}-perfection-rules`, `${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}`);
+  const { progressed: pg, directed: dr, contacts } = chart.progressions;
+  put(
+    `chart-${i}-progressed`,
+    `${number(pg.life)} ${number(pg.sky)} ${number(pg.armcDeg)} ${number(pg.angles.ascendantDeg)} ${number(pg.angles.midheavenDeg)}`,
+  );
+  pg.grahas.forEach((at, n) =>
+    put(
+      `chart-${i}-progressed-graha-${n}`,
+      `${at.graha} ${number(at.longitudeDeg)} ${number(at.tropicalDeg)} ${number(at.speedDegPerDay)}`,
+    ),
+  );
+  put(`chart-${i}-directed`, `${number(dr.arcDeg)} ${number(dr.ascendantDeg)} ${number(dr.midheavenDeg)}`);
+  dr.planets.forEach((at, n) => put(`chart-${i}-directed-graha-${n}`, `${at.graha} ${number(at.longitudeDeg)}`));
+  put(`chart-${i}-progressed-contact-count`, `${contacts.length}`);
+  contacts.forEach((at, n) =>
+    put(
+      `chart-${i}-progressed-contact-${n}`,
+      `${number(at.life)} ${number(at.sky)} ${at.graha} ${at.to.point === 'LAGNA' ? 'LAGNA' : at.to.graha} ${at.angle} ${at.motion}`,
+    ),
+  );
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,
