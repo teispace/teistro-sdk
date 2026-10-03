@@ -3259,6 +3259,44 @@ void _engineTests() {
     final nadi = itself.kootas[7].reading as NadiKoota;
     expect((nadi.dosha, nadi.bride == nadi.groom), (true, true));
 
+    // The ten considerations ride on the same request: one star in one
+    // sign shares its Rajju, which the one lord lifts.
+    final ten =
+        found(
+          birth,
+          asked: MatchingRequest(
+            Partner(instant: birth, place: kathmandu, utcOffsetSeconds: 20700),
+            partnerRole: MatchRole.bride,
+          ),
+        ).porutham!;
+    expect(
+      [for (final row in ten.considerations) row.reading.koota],
+      [
+        Koota.tara,
+        Koota.gana,
+        Koota.mahendra,
+        Koota.streeDeergha,
+        Koota.yoni,
+        Koota.bhakoot,
+        Koota.grahaMaitri,
+        Koota.vashya,
+        Koota.rajju,
+        Koota.vedha,
+      ],
+    );
+    final dhinam = ten.considerations.first.reading as DhinamPorutham;
+    expect(dhinam.count, 1);
+    expect(dhinam.rule.key, startsWith('COMMON_'));
+    final rajju = ten.considerations[8];
+    final divisions = rajju.reading as RajjuPorutham;
+    expect(
+      (divisions.bride == divisions.groom, rajju.agrees, rajju.lifted),
+      (true, true, true),
+    );
+    expect((ten.exception.oneLord, ten.exception.opposite), (true, false));
+    expect(ten.agreeing, ten.considerations.where((row) => row.agrees).length);
+    expect(found(birth).porutham, isNull);
+
     final asked = MatchingRequest(
       Partner(instant: 2447892.5, place: kathmandu, utcOffsetSeconds: 20700),
       partnerRole: MatchRole.groom,
@@ -3272,8 +3310,10 @@ void _engineTests() {
       matching: asked,
     );
     for (final (k, instant) in instants.indexed) {
-      final alone = found(instant, asked: asked).matching!;
+      final one = found(instant, asked: asked);
+      final alone = one.matching!;
       expect(batch.at(k).matching, alone);
+      expect(batch.at(k).porutham, one.porutham);
       final swapped =
           found(
             instant,

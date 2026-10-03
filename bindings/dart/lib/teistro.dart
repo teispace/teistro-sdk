@@ -4722,6 +4722,85 @@ List<AshtaKoota> _decodeMatchings(Charts batch) {
   ]);
 }
 
+final Expando<List<Porutham>> _poruthams = Expando<List<Porutham>>('poruthams');
+
+List<Porutham> _poruthamsOf(Charts batch) =>
+    _poruthams[batch] ??= _decodePoruthams(batch);
+
+/// `poruthams` holds a row a chart with what each of the ten
+/// considerations read, or none when none was asked, and `porutham_rows`
+/// ten rows a chart, whether each agrees in the chapter's order
+/// (`03-design/matching.md`).
+List<Porutham> _decodePoruthams(Charts batch) {
+  final p = batch.poruthams;
+  final r = batch.poruthamRows;
+  Map<Koota, PoruthamReading> readings(int at) {
+    final read = <PoruthamReading>[
+      DhinamPorutham(
+        count: p.count[at],
+        rule: DhinamRule.byId(p.dhinamRule[at]),
+      ),
+      GanamPorutham(
+        bride: Gana.byId(p.brideGana[at]),
+        groom: Gana.byId(p.groomGana[at]),
+        diminished: p.ganaDiminished[at] == 1,
+      ),
+      MahendraPorutham(p.count[at]),
+      DeerghaPorutham(p.count[at]),
+      YoniPorutham(
+        bride: Yoni.byId(p.brideYoni[at]),
+        groom: Yoni.byId(p.groomYoni[at]),
+        hostile: p.yoniHostile[at] == 1,
+      ),
+      RasiPorutham(p.apart[at]),
+      RasyadhipathiPorutham(
+        bride: Graha.byId(p.brideLord[at]),
+        groom: Graha.byId(p.groomLord[at]),
+        brideCallsFriend: p.brideCallsFriend[at] == 1,
+        groomCallsFriend: p.groomCallsFriend[at] == 1,
+      ),
+      VasyamPorutham(
+        brideToGroom: p.brideToGroom[at] == 1,
+        groomToBride: p.groomToBride[at] == 1,
+      ),
+      RajjuPorutham(
+        bride: Rajju.byId(p.brideRajju[at]),
+        groom: Rajju.byId(p.groomRajju[at]),
+      ),
+      VedhaiPorutham(pierced: p.pierced[at] == 1),
+    ];
+    return {for (final one in read) one.koota: one};
+  }
+
+  final rows = _ragged(
+    batch,
+    List<int>.filled(p.agreeing.length, 10),
+    r.length,
+    'poruthams and porutham_rows',
+    (row) => (Koota.byId(r.koota[row]), r.agrees[row] == 1, r.lifted[row] == 1),
+  );
+  return List<Porutham>.unmodifiable([
+    for (final (at, ten) in rows.indexed)
+      Porutham(
+        considerations: List<PoruthamRow>.unmodifiable([
+          for (final (koota, agrees, lifted) in ten)
+            PoruthamRow(
+              agrees: agrees,
+              lifted: lifted,
+              reading: readings(at)[koota]!,
+            ),
+        ]),
+        agreeing: p.agreeing[at],
+        chiefAgreeing: p.chiefAgreeing[at],
+        exception: PoruthamException(
+          oneLord: p.oneLord[at] == 1,
+          lordsFriendly: p.lordsFriendly[at] == 1,
+          opposite: p.opposite[at] == 1,
+        ),
+      ),
+  ]);
+}
+
 final Expando<List<HarmonicChart>> _harmonics = Expando<List<HarmonicChart>>(
   'harmonics',
 );
@@ -7265,10 +7344,81 @@ final class KootaRules {
   };
 }
 
+/// Whose quarter comes first when one star, spanning two signs, is both
+/// natives' (C270).
+enum TwoSignStar {
+  /// The groom's quarter is the earlier (p. 71); the default.
+  groomEarlier('GROOM_EARLIER'),
+
+  /// For a star with one quarter in the first sign, that quarter is the
+  /// bride's (pp. 71–72).
+  brideFirstSign('BRIDE_FIRST_SIGN');
+
+  const TwoSignStar(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// How far the groom's star must stand from the bride's for
+/// Sthree-Dheergham (C272).
+enum DeerghaBeyond {
+  /// Beyond the 13th (p. 72); the default.
+  thirteenth('THIRTEENTH'),
+
+  /// Beyond the 7th, as "some writers hold".
+  seventh('SEVENTH');
+
+  const DeerghaBeyond(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// Which friendship of the lords agrees on Rasyadhipathi and lifts by the
+/// p. 76 exception (C273).
+enum LordsFriendship {
+  /// Each lord calls the other a friend; the default.
+  mutual('MUTUAL'),
+
+  /// Either calls the other a friend.
+  oneWay('ONE_WAY');
+
+  const LordsFriendship(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The readings the ten considerations are computed under; each default
+/// is the chapter's own (`03-design/matching.md`).
+///
+/// ```dart
+/// const seventh = PoruthamRules(deerghaBeyond: DeerghaBeyond.seventh);
+/// ```
+final class PoruthamRules {
+  const PoruthamRules({
+    this.twoSignStar = TwoSignStar.groomEarlier,
+    this.deerghaBeyond = DeerghaBeyond.thirteenth,
+    this.lordsFriendship = LordsFriendship.mutual,
+  });
+
+  final TwoSignStar twoSignStar;
+  final DeerghaBeyond deerghaBeyond;
+  final LordsFriendship lordsFriendship;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'twoSignStar': twoSignStar.key,
+    'deerghaBeyond': deerghaBeyond.key,
+    'lordsFriendship': lordsFriendship.key,
+  };
+}
+
 /// A match with a partner's birth (`03-design/matching.md`): the
 /// [partner], founded once for the whole batch under the context's
 /// sidereal profile; [partnerRole], the side the partner stands on, every
-/// chart standing on the other; and the [rules].
+/// chart standing on the other; the Ashta Koota's [rules]; and the ten
+/// considerations' [porutham] rules.
 ///
 /// ```dart
 /// final asked = MatchingRequest(
@@ -7281,6 +7431,7 @@ final class MatchingRequest {
     this.partner, {
     required this.partnerRole,
     this.rules = const KootaRules(),
+    this.porutham = const PoruthamRules(),
   });
 
   /// Whose birth every chart is matched with.
@@ -7292,10 +7443,14 @@ final class MatchingRequest {
   /// The readings the kootas are computed under.
   final KootaRules rules;
 
+  /// The readings the ten considerations are computed under.
+  final PoruthamRules porutham;
+
   Map<String, Object?> get _record => <String, Object?>{
     'partner': partner._record,
     'partnerRole': partnerRole.key,
     'rules': rules._record,
+    'porutham': porutham._record,
   };
 
   String get _json => jsonEncode(_record);
@@ -7524,6 +7679,260 @@ final class AshtaKoota extends _Value {
 
   @override
   List<Object?> get _fields => [...kootas, total];
+}
+
+/// What one of the ten considerations read, one class each, each naming
+/// its catalogue [koota] (C282).
+sealed class PoruthamReading extends _Value {
+  const PoruthamReading();
+
+  /// The catalogue koota this consideration is.
+  Koota get koota;
+}
+
+/// Dhinam: the count and the rule of *Kalaprakasika* XIII that decided it
+/// (pp. 69–72).
+final class DhinamPorutham extends PoruthamReading {
+  const DhinamPorutham({required this.count, required this.rule});
+
+  /// The groom's nakshatra counted from the bride's, 1 to 27.
+  final int count;
+  final DhinamRule rule;
+
+  @override
+  Koota get koota => Koota.tara;
+
+  @override
+  List<Object?> get _fields => [count, rule];
+}
+
+/// Ganam: the two ganas (p. 72).
+final class GanamPorutham extends PoruthamReading {
+  const GanamPorutham({
+    required this.bride,
+    required this.groom,
+    required this.diminished,
+  });
+
+  final Gana bride;
+  final Gana groom;
+
+  /// A Rakshasa beside another gana, the bride's star beyond the 14th from
+  /// the groom's: the evil "diminishes", the disagreement stands (C279).
+  final bool diminished;
+
+  @override
+  Koota get koota => Koota.gana;
+
+  @override
+  List<Object?> get _fields => [bride, groom, diminished];
+}
+
+/// Mahendra: the count, which agrees at the 4th, 7th and every third to
+/// the 25th (p. 72).
+final class MahendraPorutham extends PoruthamReading {
+  const MahendraPorutham(this.count);
+
+  final int count;
+
+  @override
+  Koota get koota => Koota.mahendra;
+
+  @override
+  List<Object?> get _fields => [count];
+}
+
+/// Sthree-Dheergham: the count, which agrees beyond the 13th (p. 72,
+/// C272).
+final class DeerghaPorutham extends PoruthamReading {
+  const DeerghaPorutham(this.count);
+
+  final int count;
+
+  @override
+  Koota get koota => Koota.streeDeergha;
+
+  @override
+  List<Object?> get _fields => [count];
+}
+
+/// Yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).
+final class YoniPorutham extends PoruthamReading {
+  const YoniPorutham({
+    required this.bride,
+    required this.groom,
+    required this.hostile,
+  });
+
+  final Yoni bride;
+  final Yoni groom;
+
+  /// Whether they are among the chapter's eight enmities.
+  final bool hostile;
+
+  @override
+  Koota get koota => Koota.yoni;
+
+  @override
+  List<Object?> get _fields => [bride, groom, hostile];
+}
+
+/// Rasi: how far the groom's Moon sign stands from the bride's (pp.
+/// 73–74).
+final class RasiPorutham extends PoruthamReading {
+  const RasiPorutham(this.apart);
+
+  /// The groom's sign counted from the bride's, 1 to 12.
+  final int apart;
+
+  @override
+  Koota get koota => Koota.bhakoot;
+
+  @override
+  List<Object?> get _fields => [apart];
+}
+
+/// Rasyadhipathi: the two Moon signs' lords on the chapter's own
+/// friendships (pp. 74–75).
+final class RasyadhipathiPorutham extends PoruthamReading {
+  const RasyadhipathiPorutham({
+    required this.bride,
+    required this.groom,
+    required this.brideCallsFriend,
+    required this.groomCallsFriend,
+  });
+
+  final Graha bride;
+  final Graha groom;
+
+  /// Whether the bride's lord calls the groom's a friend; a lord is its
+  /// own.
+  final bool brideCallsFriend;
+  final bool groomCallsFriend;
+
+  @override
+  Koota get koota => Koota.grahaMaitri;
+
+  @override
+  List<Object?> get _fields => [
+    bride,
+    groom,
+    brideCallsFriend,
+    groomCallsFriend,
+  ];
+}
+
+/// Vasyam on p. 75's table, never a sign to itself (C274).
+final class VasyamPorutham extends PoruthamReading {
+  const VasyamPorutham({
+    required this.brideToGroom,
+    required this.groomToBride,
+  });
+
+  /// Whether the bride's sign is concordant to the groom's.
+  final bool brideToGroom;
+  final bool groomToBride;
+
+  @override
+  Koota get koota => Koota.vashya;
+
+  @override
+  List<Object?> get _fields => [brideToGroom, groomToBride];
+}
+
+/// Rajju: the two divisions (p. 75, C275).
+final class RajjuPorutham extends PoruthamReading {
+  const RajjuPorutham({required this.bride, required this.groom});
+
+  final Rajju bride;
+  final Rajju groom;
+
+  @override
+  Koota get koota => Koota.rajju;
+
+  @override
+  List<Object?> get _fields => [bride, groom];
+}
+
+/// Vedhai: whether the two nakshatras pierce each other (p. 76, C276).
+final class VedhaiPorutham extends PoruthamReading {
+  const VedhaiPorutham({required this.pierced});
+
+  final bool pierced;
+
+  @override
+  Koota get koota => Koota.vedha;
+
+  @override
+  List<Object?> get _fields => [pierced];
+}
+
+/// One consideration: whether it agrees, and what it read.
+final class PoruthamRow extends _Value {
+  const PoruthamRow({
+    required this.agrees,
+    required this.lifted,
+    required this.reading,
+  });
+
+  /// Whether it agrees, a lift included.
+  final bool agrees;
+
+  /// Whether it agrees only by the p. 76 exception.
+  final bool lifted;
+
+  final PoruthamReading reading;
+
+  @override
+  List<Object?> get _fields => [agrees, lifted, reading];
+}
+
+/// The p. 76 exception's clauses, any one of which lifts Ganam, Rasi,
+/// Rajju and Vedhai (C277).
+final class PoruthamException extends _Value {
+  const PoruthamException({
+    required this.oneLord,
+    required this.lordsFriendly,
+    required this.opposite,
+  });
+
+  final bool oneLord;
+  final bool lordsFriendly;
+  final bool opposite;
+
+  @override
+  List<Object?> get _fields => [oneLord, lordsFriendly, opposite];
+}
+
+/// The ten considerations of a bride and a groom (*Kalaprakasika* XIII).
+/// Never a verdict: "at least five" is the reader's to apply.
+final class Porutham extends _Value {
+  const Porutham({
+    required this.considerations,
+    required this.agreeing,
+    required this.chiefAgreeing,
+    required this.exception,
+  });
+
+  /// The ten, in the chapter's order.
+  final List<PoruthamRow> considerations;
+
+  /// How many agree.
+  final int agreeing;
+
+  /// How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and
+  /// Rajju.
+  final int chiefAgreeing;
+
+  final PoruthamException exception;
+
+  @override
+  List<Object?> get _fields => [
+    ...considerations,
+    agreeing,
+    chiefAgreeing,
+    exception,
+  ];
 }
 
 /// What a chart's harmonic is asked (`03-design/western-harmonics.md`):
@@ -14353,11 +14762,6 @@ final class Chart {
     return index < all.length ? all[index] : null;
   }
 
-  /// The chart's harmonic chart: each planet, the ascendant and the
-  /// midheaven at its longitude multiplied, in its equal house from the
-  /// harmonic ascendant (C254), and every pair meeting within the orb, 12°
-  /// by default (C252), closest first; null unless `harmonic` asked
-  /// (`03-design/western-harmonics.md`).
   /// The chart matched with a partner's birth by the Ashta Koota of
   /// *Muhurta Chintamani* VI.21–34 (`matching` asks for it, the chart on
   /// the side the partner leaves): each koota's points and what it read, in
@@ -14369,6 +14773,22 @@ final class Chart {
     return index < all.length ? all[index] : null;
   }
 
+  /// The chart matched with the same partner by the ten considerations of
+  /// *Kalaprakasika* XIII (`matching` asks for both systems): whether each
+  /// agrees and what it read, in the chapter's order, how many agree, how
+  /// many of the chief five, and the p. 76 exception's clauses. Never a
+  /// verdict: "at least five" is the reader's to apply; null unless asked
+  /// (`03-design/matching.md`).
+  Porutham? get porutham {
+    final all = _poruthamsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's harmonic chart: each planet, the ascendant and the
+  /// midheaven at its longitude multiplied, in its equal house from the
+  /// harmonic ascendant (C254), and every pair meeting within the orb, 12°
+  /// by default (C252), closest first; null unless `harmonic` asked
+  /// (`03-design/western-harmonics.md`).
   HarmonicChart? get harmonic {
     final all = _harmonicsOf(batch);
     return index < all.length ? all[index] : null;

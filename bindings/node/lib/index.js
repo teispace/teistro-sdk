@@ -145,6 +145,8 @@ import {
   YoniRelationById,
   MaitriRelationById,
   BhakootDoshaById,
+  DhinamRuleById,
+  RajjuById,
 } from './catalogue.js';
 import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
@@ -1332,6 +1334,20 @@ export class Chart {
    */
   get matching() {
     return matchingsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The chart matched with the same partner by the ten considerations of
+   * *Kalaprakasika* XIII (`matching` asks for both systems): whether each
+   * agrees and what it read, in the chapter's order, how many agree, how
+   * many of the chief five, and the p. 76 exception's clauses. Never a
+   * verdict: "at least five" is the reader's to apply; `null` unless asked
+   * (`03-design/matching.md`).
+   *
+   * @returns {object|null}
+   */
+  get porutham() {
+    return poruthamsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -4061,6 +4077,73 @@ function matchingsOf(batch) {
     });
   });
   MATCHINGS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's ten considerations, decoded once however many charts read them. */
+const PORUTHAMS = new WeakMap();
+
+/**
+ * Every chart's ten considerations with the record's partner in a batch:
+ * `poruthams` holds a row a chart with what each read, or none when none
+ * was asked, and `porutham_rows` ten rows a chart, whether each agrees in
+ * the chapter's order (`03-design/matching.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function poruthamsOf(batch) {
+  let decoded = PORUTHAMS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const p = d.poruthams;
+  const r = d.poruthamRows;
+  const of = (byId, id) => byId.get(id) ?? 'unknown';
+  const sides = (byId, bride, groom, at) => ({ bride: of(byId, bride[at]), groom: of(byId, groom[at]) });
+  const readings = (at) => ({
+    'koota.TARA': { count: p.count[at], rule: of(DhinamRuleById, p.dhinamRule[at]) },
+    'koota.GANA': { ...sides(GanaById, p.brideGana, p.groomGana, at), diminished: p.ganaDiminished[at] === 1 },
+    'koota.MAHENDRA': { count: p.count[at] },
+    'koota.STREE_DEERGHA': { count: p.count[at] },
+    'koota.YONI': { ...sides(YoniById, p.brideYoni, p.groomYoni, at), hostile: p.yoniHostile[at] === 1 },
+    'koota.BHAKOOT': { apart: p.apart[at] },
+    'koota.GRAHA_MAITRI': {
+      ...sides(GrahaById, p.brideLord, p.groomLord, at),
+      brideCallsFriend: p.brideCallsFriend[at] === 1,
+      groomCallsFriend: p.groomCallsFriend[at] === 1,
+    },
+    'koota.VASHYA': { brideToGroom: p.brideToGroom[at] === 1, groomToBride: p.groomToBride[at] === 1 },
+    'koota.RAJJU': sides(RajjuById, p.brideRajju, p.groomRajju, at),
+    'koota.VEDHA': { pierced: p.pierced[at] === 1 },
+  });
+  const ten = Array.from({ length: p.agreeing.length }, () => 10);
+  const rows = raggedOf(batch, ten, r.koota.length, 'poruthams and porutham_rows', (row) => ({
+    koota: of(KootaById, r.koota[row]),
+    agrees: r.agrees[row] === 1,
+    lifted: r.lifted[row] === 1,
+  }));
+  decoded = rowAChartOf(batch, p.agreeing.length, 'poruthams', (at) => {
+    const read = readings(at);
+    return Object.freeze({
+      considerations: Object.freeze(
+        rows[at].map((row) =>
+          Object.freeze({
+            agrees: row.agrees,
+            lifted: row.lifted,
+            reading: Object.freeze({ koota: row.koota, ...read[row.koota] }),
+          }),
+        ),
+      ),
+      agreeing: p.agreeing[at],
+      chiefAgreeing: p.chiefAgreeing[at],
+      exception: Object.freeze({
+        oneLord: p.oneLord[at] === 1,
+        lordsFriendly: p.lordsFriendly[at] === 1,
+        opposite: p.opposite[at] === 1,
+      }),
+    });
+  });
+  PORUTHAMS.set(batch, decoded);
   return decoded;
 }
 

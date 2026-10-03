@@ -383,6 +383,7 @@ const charts = geo.chart.foundMany({
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     partnerRole: 'BRIDE',
     rules: { bhakootLift: 'GARGA' },
+    porutham: { lordsFriendship: 'ONE_WAY' },
   },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
@@ -856,6 +857,38 @@ for (const chart of charts) {
       `chart-${i}-matching-${row.reading.koota}`,
       `${number(row.points)} ${number(row.maxPoints)} ${readingText(row.reading)}`,
     ),
+  );
+  const ten = chart.porutham;
+  const e = ten.exception;
+  put(
+    `chart-${i}-porutham`,
+    `${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} ${flag(e.lordsFriendly)} ${flag(e.opposite)}`,
+  );
+  const tenText = (r) => {
+    switch (r.koota) {
+      case 'koota.TARA':
+        return `${r.count} ${r.rule}`;
+      case 'koota.GANA':
+        return `${r.bride} ${r.groom} ${flag(r.diminished)}`;
+      case 'koota.MAHENDRA':
+      case 'koota.STREE_DEERGHA':
+        return `${r.count}`;
+      case 'koota.YONI':
+        return `${r.bride} ${r.groom} ${flag(r.hostile)}`;
+      case 'koota.BHAKOOT':
+        return `${r.apart}`;
+      case 'koota.GRAHA_MAITRI':
+        return `${r.bride} ${r.groom} ${flag(r.brideCallsFriend)} ${flag(r.groomCallsFriend)}`;
+      case 'koota.VASHYA':
+        return `${flag(r.brideToGroom)} ${flag(r.groomToBride)}`;
+      case 'koota.VEDHA':
+        return `${flag(r.pierced)}`;
+      default:
+        return `${r.bride} ${r.groom}`;
+    }
+  };
+  ten.considerations.forEach((row) =>
+    put(`chart-${i}-porutham-${row.reading.koota}`, `${flag(row.agrees)} ${flag(row.lifted)} ${tenText(row.reading)}`),
   );
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;

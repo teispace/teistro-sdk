@@ -1,10 +1,11 @@
 # Matching: the Ashta Koota and the ten considerations (the `matching` module)
 
-Status: the Ashta Koota `built`, 2026-10-04; the ten considerations
-`designed`. Written from the sources before any code.
-`sdk.chart().matching` answers two charts' Ashta Koota, and
-`matching_with` a batch against one partner's birth. Every binding reads
-it as `chart.matching`.
+Status: the Ashta Koota and the ten considerations `built`, 2026-10-04.
+Written from the sources before any code. `sdk.chart().matching`
+answers two charts' Ashta Koota and `sdk.chart().porutham` their ten
+considerations; `matching_with` matches a batch against one partner's
+birth under both. Every binding reads them as `chart.matching` and
+`chart.porutham`.
 
 Phase 8 opens with matching, P0 in `01-research/feature-universe/10-matching.md`.
 Two charts are compared through the Moon's nakshatra, pada and sign at
@@ -193,18 +194,23 @@ the ten, a later step if a consumer asks.
   by `Native::of_moon`; `ashta_koota(bride, groom, KootaRules) ->
   AshtaKoota`, each row's `reading` naming its koota; and
   `porutham(bride, groom, PoruthamRules) -> Porutham`, ten rows of
-  `{ koota, agrees, lifted, reading }`. `PoruthamRules` holds the three
-  knobs (C270, C272, C273).
-- `sdk.chart().matching(&bride, &groom, KootaRules)` on two founded
+  `{ agrees, lifted, reading }`, each reading naming its koota.
+  `PoruthamRules` holds the three knobs (C270, C272, C273).
+- `sdk.chart().matching(&bride, &groom, KootaRules)` and
+  `sdk.chart().porutham(&bride, &groom, PoruthamRules)` on two founded
   charts. `sdk.chart().matching_with(&charts, &PartnerMatching)` matches
-  a batch with one partner's birth, founded once.
+  a batch with one partner's birth, founded once, and answers a `Matched`
+  a chart: both systems.
 - At the boundary, `matching_json` is `{"partner", "partnerRole",
-  "rules"}`. The partner is synastry's record. `partnerRole` is
-  `BRIDE` or `GROOM`, and every chart of the batch stands on the other
-  side. The answer crosses in `matchings`, a row a chart with every
+  "rules", "porutham"}`. The partner is synastry's record. `partnerRole`
+  is `BRIDE` or `GROOM`, and every chart of the batch stands on the other
+  side. The Ashta Koota crosses in `matchings`, a row a chart with every
   koota's reading, and `matching_kootas`, eight rows a chart with the
-  points. Every binding reads `chart.matching`, with parity across the
-  five runners.
+  points; the ten in `poruthams`, a row a chart with the counts, the
+  exception's clauses and every reading, and `porutham_rows`, ten rows
+  a chart with whether each agrees and was lifted. Every binding reads
+  `chart.matching` and `chart.porutham`, with parity across the five
+  runners.
 
 ## What building it found
 
@@ -233,6 +239,33 @@ the ten, a later step if a consumer asks.
   change what the answer says and never a total, and the page counts
   both. Garga's count is far stricter: it lifts 1.6% of the 6/8 doshas
   where any one exception lifts 54.8%.
+- **The South's system is named Porutham.** "Dasha Koota" would sit
+  beside `DashaSystem` and read as the periods, so the kernel's
+  `porutham`, its `Porutham` answer and the binding's `chart.porutham`
+  take the South's own word. Each reading class is named for the
+  consideration (`DhinamPorutham` to `VedhaiPorutham`) and carries its
+  catalogue koota, as the Ashta Koota's do.
+- **Vasyam is not `is_vashya`.** The Ashta Koota's table takes the
+  human signs and Leo from VI.23 and makes a sign vashya to itself.
+  Read whole, p. 75's own table is neither, so the ten read it alone,
+  as C266 asks of every table.
+- **The same-sign rules are Dhinam's.** p. 71's "the groom's star
+  prior" is the 26th or 27th count inside one sign, which the third
+  round's "27th unless the signs are one" already excuses. Rasi is
+  silent on one sign (C280), so reading the rule in Dhinam keeps both
+  pages' clauses in one place.
+- **Rasi's two exceptions are one rule.** The groom's 2nd is even
+  exactly when the bride's sign is odd, and p. 74's six felicitous 6ths
+  are every odd bride's sign. A test holds the printed pairs against
+  the rule (C281).
+- **The research's Rajju names were not the text's.** The feature list
+  had Pada, Kati, Udara, Kantha and Shira; Kalaprakasika prints Padha,
+  Ooroo, Nabhi, Kanta and Siro, and the boundary enum `TsRajju` spells
+  the printed five.
+- **One request, both systems.** The ten read the same Moons as the
+  eight, so `matching_json` asks both and founds the partner once. The
+  ten's knobs nest under `porutham`, so a typo is named
+  `matching.porutham.deergha`.
 - **A birth matched with itself is a fixed point.** One sign and one
   nakshatra give every koota but Nadi its whole points and the shared
   nadi none, 28 whatever the Moon. Each binding's test starts from it.
@@ -247,6 +280,13 @@ the ten, a later step if a consumer asks.
   Tara, Yoni, Maitri, Bhakoot and Nadi are symmetric in their points,
   while Varna and Gana change when bride and groom swap. A test swaps
   every pair of the 729 nakshatra pairs and holds both.
+- The ten against Kalaprakasika's printed lists: the Rajju rule star
+  for star, the Vedhai pairs both ways and only as printed, the
+  chapter's yoni (three cows, no mongoose), every lord's friendship
+  line and the Vasyam table; Dhinam's rounds, quarters, common stars,
+  two-sign stars and same-sign stars on hand-placed Moons; p. 70's six
+  unhappy pairs disagreeing and four happy pairs agreeing both ways;
+  the exception lifting four and saying so.
 - The total over every pair of the 108 padas, which fix all a koota
   reads, is a measured page
   ([`matching-measured.md`](matching-measured.md), held by

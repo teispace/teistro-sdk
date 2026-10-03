@@ -28,6 +28,8 @@ import type {
   WesternHouses,
   AshtaKoota,
   KootaReading,
+  Porutham,
+  PoruthamReading,
   MatchingRequest,
   HarmonicChart,
   HarmonicPlaced,
@@ -1195,6 +1197,7 @@ function theMatching(ctx: Context): string {
     partner: { instant: 2447892.5, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 } },
     partnerRole: 'BRIDE',
     rules: { nadiDosha: 'MIDDLE_ONLY' },
+    porutham: { deerghaBeyond: 'SEVENTH' },
   };
   const chart = ctx.chart.found({
     instant: 2451545.0,
@@ -1210,7 +1213,19 @@ function theMatching(ctx: Context): string {
   const reading: KootaReading | undefined = read?.kootas[6]?.reading;
   const bhakoot = reading?.koota === 'koota.BHAKOOT' ? `${reading.apart} ${reading.dosha ?? 'NONE'} ${reading.exceptions.taraPure}` : '';
   const nadi = read?.kootas[7]?.reading;
+  // @ts-expect-error a porutham rule takes only its own members
+  const misreach: MatchingRequest = { ...asked, porutham: { deerghaBeyond: 'NINTH' } };
+  const ten: Porutham | null = chart.porutham;
+  const dhinam: PoruthamReading | undefined = ten?.considerations[0]?.reading;
+  const rajju = ten?.considerations[8]?.reading;
   return [
+    ten?.agreeing ?? 0,
+    ten?.chiefAgreeing ?? 0,
+    ten?.exception.opposite ?? false,
+    ten?.considerations[0]?.lifted ?? false,
+    dhinam?.koota === 'koota.TARA' ? `${dhinam.count} ${dhinam.rule}` : '',
+    rajju?.koota === 'koota.RAJJU' ? `${rajju.bride} ${rajju.groom}` : '',
+    String(misreach),
     read?.total ?? 0,
     read?.kootas[0]?.maxPoints ?? 0,
     bhakoot,

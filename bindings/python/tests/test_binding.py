@@ -2077,10 +2077,13 @@ class AnEngine(WithLibrary):
         from teistro import (
             AshtaKoota,
             BhakootKoota,
+            DhinamPorutham,
             Koota,
             MaitriRelation,
             MatchingRequest,
             NadiKoota,
+            Porutham,
+            RajjuPorutham,
             SynastryPartner,
             TaraKoota,
             VarnaKoota,
@@ -2114,6 +2117,34 @@ class AnEngine(WithLibrary):
             self.assertEqual((bhakoot.apart, bhakoot.dosha, bhakoot.lifted, bhakoot.exceptions.one_lord), (1, None, False, True))
             self.assertTrue(nadi.dosha and nadi.bride == nadi.groom)
 
+            # The ten considerations ride on the same request: one star in
+            # one sign shares its Rajju, which the one lord lifts.
+            ten = ctx.chart.found(instant=birth, matching=itself, **kathmandu).porutham
+            assert isinstance(ten, Porutham)
+            self.assertEqual(
+                [row.reading.koota for row in ten.considerations],
+                [
+                    Koota.TARA,
+                    Koota.GANA,
+                    Koota.MAHENDRA,
+                    Koota.STREE_DEERGHA,
+                    Koota.YONI,
+                    Koota.BHAKOOT,
+                    Koota.GRAHA_MAITRI,
+                    Koota.VASHYA,
+                    Koota.RAJJU,
+                    Koota.VEDHA,
+                ],
+            )
+            dhinam, rajju = ten.considerations[0], ten.considerations[8]
+            assert isinstance(dhinam.reading, DhinamPorutham) and isinstance(rajju.reading, RajjuPorutham)
+            self.assertEqual(dhinam.reading.count, 1)
+            self.assertTrue(dhinam.reading.rule.key.startswith("COMMON_"))
+            self.assertEqual((rajju.reading.bride == rajju.reading.groom, rajju.agrees, rajju.lifted), (True, True, True))
+            self.assertEqual((ten.exception.one_lord, ten.exception.opposite), (True, False))
+            self.assertEqual(ten.agreeing, sum(row.agrees for row in ten.considerations))
+            self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).porutham)
+
             asked: MatchingRequest = {
                 "partner": {"instant": 2447892.5, "observer": kathmandu["place"], "utc_offset_seconds": 20700},
                 "partnerRole": "GROOM",
@@ -2122,8 +2153,10 @@ class AnEngine(WithLibrary):
             instants = [birth, birth + 9.5, birth + 17.25]
             batch = ctx.chart.found_many(instants=instants, matching=asked, **kathmandu)
             for k, instant in enumerate(instants):
-                alone = ctx.chart.found(instant=instant, matching=asked, **kathmandu).matching
+                one = ctx.chart.found(instant=instant, matching=asked, **kathmandu)
+                alone = one.matching
                 self.assertEqual(batch.at(k).matching, alone)
+                self.assertEqual(batch.at(k).porutham, one.porutham)
                 swapped = ctx.chart.found(instant=instant, matching={**asked, "partnerRole": "BRIDE"}, **kathmandu).matching
                 assert alone is not None and swapped is not None
                 ours, theirs = alone.kootas[0].reading, swapped.kootas[0].reading
@@ -2132,6 +2165,7 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[Any, str]] = [
                 ({**asked, "partnerRole": "UNCLE"}, "matching.partnerRole"),
                 ({**asked, "rules": {"nadi": "ANY"}}, "matching.rules.nadi"),
+                ({**asked, "porutham": {"deergha": "SEVENTH"}}, "matching.porutham.deergha"),
                 ({"partner": asked["partner"]}, "matching"),
             ]
             for request, field in refusals:

@@ -2142,6 +2142,25 @@ the astronomical numbers do not move. Nothing else computes yet.
   it never places a planet otherwise than "before the cusp only" does.
   41 planets are under the beams.
 
+- **Matching, the ten considerations of the South** (`matching.md`,
+  C267 to C282). `porutham(bride, groom, PoruthamRules)` reads
+  Kalaprakasika XIII's ten, Dhinam to Vedhai, each a catalogue koota,
+  on the chapter's own tables: whether each agrees and what it read,
+  how many agree, how many of the chief five, and the p. 76 exception's
+  three clauses, which lift Ganam, Rasi, Rajju and Vedhai and say so.
+  It is never a verdict: "at least five" is the reader's. The readings
+  the page leaves open are knobs with its own as the default: whose
+  quarter comes first in a star across two signs (C270),
+  Sthree-Dheergham's reach (C272) and the lords' friendship one way
+  (C273). `sdk.chart().porutham` reads two charts, `matching_with` now
+  answers both systems a chart, and `matching_json` takes `porutham`
+  beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
+  and `TsRajju` held to serde, and Node, Python and Dart read
+  `chart.porutham`, the five runners agreeing on every value.
+- **The Ashta Koota, measured** (`matching-measured.md`): every pair of
+  the 108 padas, five claims held, the totals' spread, each koota's
+  mean, each Bhakoot exception and what each knob moves, held by
+  `check-matching` in fast-check.
 - **Matching, the Ashta Koota, Phase 8's first step** (`matching.md`).
   The new `teistro-matching` crate reads the eight kootas of *Muhurta
   Chintamani* VI.21–34, with the points *Daivajna-manohara* gives each
