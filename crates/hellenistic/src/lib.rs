@@ -41,7 +41,7 @@ mod terms;
 
 pub use accidental::{
     Accident, AccidentalRules, AccidentalScores, AccidentalSky, Partile, PlanetAccidents, Siege,
-    accidental_dignities, house_of,
+    accidental_dignities,
 };
 pub use almuten::{Almuten, AlmutenRules, Almutens, PlaceReading, almuten_of, almuten_of_places};
 pub use considerations::{
@@ -65,4 +65,7 @@ pub use perfection::{
 };
 pub use reading::{ChartSky, Dignities, DignityRequest, PlanetDignity};
 pub use reception::{DignityKind, Reception};
+/// Counting a longitude into a house by cusps lives in `core`, which the
+/// `western` reading shares; it is named here too, where it was first.
+pub use teistro_core::house::house_of;
 pub use terms::{TERM_LORDS, TERMS_PER_SIGN, Term, Terms, TermsTable};

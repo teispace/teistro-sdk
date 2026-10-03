@@ -539,7 +539,7 @@ impl ChartArea<'_> {
 }
 
 /// The right ascension of an ecliptic point, degrees.
-fn right_ascension(longitude_deg: f64, obliquity_deg: f64) -> f64 {
+pub(crate) fn right_ascension(longitude_deg: f64, obliquity_deg: f64) -> f64 {
     ecliptic_to_equatorial(
         Spherical {
             lon_deg: longitude_deg,

@@ -15,6 +15,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::angle::difference_deg;
 use crate::catalogue::Rashi;
 use crate::error::Error;
 
@@ -156,6 +157,42 @@ impl From<House> for u8 {
     fn from(house: House) -> u8 {
         house.0
     }
+}
+
+/// The house a longitude is counted in: a planet within `orb_deg` of a
+/// cusp, before or after it, is in the house of the nearest such cusp, "his
+/// vertue shall be assigned to that house to whose Cusp he is neerest"
+/// (Lilly, p. 33); otherwise the house whose cusp it last passed. An orb
+/// of zero counts by the cusps alone, as Leo does.
+///
+/// ```
+/// use teistro_core::house::{House, house_of};
+///
+/// // Twelve houses of 30° from 0° Aries.
+/// let cusps = std::array::from_fn(|k| k as f64 * 30.0);
+/// assert_eq!(house_of(27.0, &cusps, 5.0), House::try_new(2)?);
+/// assert_eq!(house_of(27.0, &cusps, 0.0), House::try_new(1)?);
+/// assert_eq!(house_of(357.0, &cusps, 5.0), House::try_new(1)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[must_use]
+pub fn house_of(longitude_deg: f64, cusps_deg: &[f64; 12], orb_deg: f64) -> House {
+    let past = |cusp: f64| (longitude_deg - cusp).rem_euclid(360.0);
+    let near = |cusp: f64| difference_deg(longitude_deg, cusp).abs();
+    let by_orb = cusps_deg
+        .iter()
+        .enumerate()
+        .filter(|&(_, &cusp)| near(cusp) <= orb_deg)
+        .min_by(|(_, a), (_, b)| near(**a).total_cmp(&near(**b)));
+    let (index, _) = by_orb
+        .or_else(|| {
+            cusps_deg
+                .iter()
+                .enumerate()
+                .min_by(|(_, a), (_, b)| past(**a).total_cmp(&past(**b)))
+        })
+        .unwrap_or((0, &0.0));
+    House::ALL.get(index).copied().unwrap_or(House::ALL[0])
 }
 
 #[cfg(test)]

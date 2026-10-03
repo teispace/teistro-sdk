@@ -583,8 +583,9 @@ def main() -> None:
                 },
             },
             parallels={"orbDeg": 1.5},
-            antiscia={},
+            antiscia={"cusps": {}},
             midpoints={"orbDeg": 1.5},
+            western_houses={},
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1190,6 +1191,20 @@ def main() -> None:
                 ",".join(one.full_key for one in reflected.unpaired) or "-",
             )
             put_antiscion_rows(f"chart-{i}-antiscia", reflected.pairs)
+            assert reflected.cusp_system is not None
+            put(f"chart-{i}-antiscia-cusps", f"{reflected.cusp_system.full_key} {len(reflected.on_cusps)}")
+            for n, upon in enumerate(reflected.on_cusps):
+                put(f"chart-{i}-antiscia-cusp-{n}", f"{upon.graha.full_key} {upon.house} {int(upon.contrary)}")
+            houses = chart.western_houses
+            assert houses is not None
+            put(
+                f"chart-{i}-western-houses",
+                f"{houses.system.full_key} {number(houses.ascendant_deg)} {number(houses.reach_deg)} {len(houses.planets)}",
+            )
+            for n, western_cusp in enumerate(houses.cusps_deg, start=1):
+                put(f"chart-{i}-western-cusp-{n}", number(western_cusp))
+            for counted in houses.planets:
+                put(f"chart-{i}-western-house-{counted.graha.full_key}", f"{counted.house} {int(counted.with_ascendant)}")
             between = chart.midpoints
             assert between is not None
             put(f"chart-{i}-midpoint-count", str(len(between)))
@@ -1242,6 +1257,10 @@ def main() -> None:
                     f"chart-{i}-composite-{n}",
                     f"{middle.graha.full_key} {number(middle.longitude_deg)} {number(middle.speed_deg_per_day)}",
                 )
+            put(
+                f"chart-{i}-composite-cusps",
+                "-" if composite.cusps_deg is None else " ".join(number(degree) for degree in composite.cusps_deg),
+            )
             davison = chart.synastry_davison
             assert davison is not None
             put(

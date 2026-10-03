@@ -590,8 +590,9 @@ void main() {
       }),
     ),
     parallels: const ParallelRequest(orbDeg: 1.5),
-    antiscia: const AntisciaRequest(),
+    antiscia: const AntisciaRequest(cusps: WesternHouseRequest()),
     midpoints: const MidpointRequest(orbDeg: 1.5),
+    westernHouses: const WesternHouseRequest(),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1312,6 +1313,31 @@ void main() {
           : reflected.unpaired.map((one) => one.fullKey).join(','),
     );
     putAntiscionRows('chart-$i-antiscia', reflected.pairs);
+    put(
+      'chart-$i-antiscia-cusps',
+      '${reflected.cuspSystem!.fullKey} ${reflected.onCusps.length}',
+    );
+    for (final (n, at) in reflected.onCusps.indexed) {
+      put(
+        'chart-$i-antiscia-cusp-$n',
+        '${at.graha.fullKey} ${at.house} ${at.contrary ? 1 : 0}',
+      );
+    }
+    final counted = chart.westernHouses!;
+    put(
+      'chart-$i-western-houses',
+      '${counted.system.fullKey} ${number(counted.ascendantDeg)} '
+          '${number(counted.reachDeg)} ${counted.planets.length}',
+    );
+    for (final (n, at) in counted.cuspsDeg.indexed) {
+      put('chart-$i-western-cusp-${n + 1}', number(at));
+    }
+    for (final at in counted.planets) {
+      put(
+        'chart-$i-western-house-${at.graha.fullKey}',
+        '${at.house} ${at.withAscendant ? 1 : 0}',
+      );
+    }
     final between = chart.midpoints!;
     put('chart-$i-midpoint-count', '${between.length}');
     for (final (n, row) in between.indexed) {
@@ -1366,6 +1392,10 @@ void main() {
         '${at.graha.fullKey} ${number(at.longitudeDeg)} ${number(at.speedDegPerDay)}',
       );
     }
+    put(
+      'chart-$i-composite-cusps',
+      composite.cuspsDeg?.map(number).join(' ') ?? '-',
+    );
     final davison = chart.synastryDavison!;
     put(
       'chart-$i-davison',

@@ -271,8 +271,9 @@ impl SynastryRequest {
     }
 
     /// Refuses a request no synastry could answer, by field: what
-    /// [`AspectRequest::check`] refuses, and a lagna asked under moieties,
-    /// which give it no orb (C242).
+    /// [`AspectRequest::check`] refuses, a lagna asked under moieties,
+    /// which give it no orb (C242), and antiscia asked on cusps, which are
+    /// one chart's.
     ///
     /// # Errors
     ///
@@ -289,6 +290,13 @@ impl SynastryRequest {
         }
         if let Some(antiscia) = &self.antiscia {
             antiscia.check().map_err(|why| why.under("antiscia"))?;
+            if antiscia.cusps.is_some() {
+                return Err(Error::invalid_arg(
+                    "a synastry reflects one chart's planets onto the other's, not onto cusps",
+                )
+                .with_field("antiscia.cusps")
+                .with_hint("ask the chart's own antiscia with `cusps`"));
+            }
         }
         if let Some(midpoints) = &self.midpoints {
             midpoints.check().map_err(|why| why.under("midpoints"))?;
@@ -621,6 +629,11 @@ mod tests {
             field(r#"{"orbs": {"model": "MOIETIES", "orbs": [{"graha": "SUN", "orbDeg": 17}]}}"#)
                 .as_deref(),
             Some("synastry.lagna")
+        );
+        // Cusps are one chart's; across two they would be read by nobody.
+        assert_eq!(
+            field(r#"{"antiscia": {"cusps": {}}}"#).as_deref(),
+            Some("synastry.antiscia.cusps")
         );
         // The record round-trips as it was read.
         let again: SynastryRequest =

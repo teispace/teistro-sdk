@@ -1749,6 +1749,19 @@ pub struct TsChartRequest {
     /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
     /// `api: nullable example={"orbDeg":1}`
     pub midpoints_json: *const c_char,
+    /// Every chart's Western houses, as a JSON object, every field
+    /// optional: `system`, the division (`"KOCH"`), else the profile's
+    /// `houses.module_overrides.western`, else Placidus, the division
+    /// Leo's figures are cast in (C249). Each planet is counted by the
+    /// cusps alone, and flagged when Leo reads it with the ascendant, up
+    /// to the degree that rose one sidereal hour before the birth (C250).
+    /// The answers come back in `western_houses`, `western_house_cusps`
+    /// and `western_house_planets`. Null for none, which costs nothing
+    /// (`03-design/western-houses.md`). Refusals are named from the
+    /// record every binding calls `westernHouses`, as
+    /// `westernHouses.system`.
+    /// `api: nullable example={"system":"KOCH"}`
+    pub western_houses_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3304,6 +3317,7 @@ struct AspectTables {
     reflected: AntisciaColumns,
     between: MidpointColumns,
     davisons: DavisonColumns,
+    houses: WesternHouseColumns,
 }
 
 impl AspectTables {
@@ -3315,6 +3329,7 @@ impl AspectTables {
             reflected: AntisciaColumns::of(composed.antiscia, charts)?,
             between: MidpointColumns::of(composed.midpoints, charts)?,
             davisons: DavisonColumns::of(composed.davisons, charts)?,
+            houses: WesternHouseColumns::of(composed.western_houses, charts)?,
         })
     }
 
@@ -3328,7 +3343,72 @@ impl AspectTables {
         self.between.write(writer)?;
         self.across.write_composites(writer)?;
         self.davisons.write(writer)?;
-        self.across.write_midpoints(writer)
+        self.across.write_midpoints(writer)?;
+        self.houses.write(writer)?;
+        self.across.write_composite_cusps(writer)?;
+        self.reflected.write_cusps(writer)
+    }
+}
+
+/// `western_houses`, `western_house_cusps` and `western_house_planets`:
+/// each chart's Western division, its twelve cusps and its planets'
+/// houses (`western-houses.md`).
+#[derive(Default)]
+struct WesternHouseColumns {
+    system: Vec<u16>,
+    ascendant_deg: Vec<f64>,
+    reach_deg: Vec<f64>,
+    planet_count: Vec<u32>,
+    cusp_deg: Vec<f64>,
+    graha: Vec<u16>,
+    house: Vec<u8>,
+    with_ascendant: Vec<u8>,
+}
+
+impl WesternHouseColumns {
+    fn of(read: &[teistro::WesternHouses], charts: usize) -> Result<WesternHouseColumns, Error> {
+        one_a_chart(read.len(), charts, "westernHouses")?;
+        let mut columns = WesternHouseColumns::default();
+        for one in read {
+            columns.system.push(one.system.id());
+            columns.ascendant_deg.push(one.frame.ascendant_deg);
+            columns.reach_deg.push(one.frame.reach_deg);
+            columns.planet_count.push(row_count(one.planets.len())?);
+            columns.cusp_deg.extend(one.frame.cusps_deg);
+            for placed in &one.planets {
+                columns.graha.push(placed.graha.id());
+                columns.house.push(placed.house.get());
+                columns.with_ascendant.push(u8::from(placed.with_ascendant));
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "western_houses",
+            self.system.len(),
+            &[
+                ColumnData::U16(&self.system),
+                ColumnData::F64(&self.ascendant_deg),
+                ColumnData::F64(&self.reach_deg),
+                ColumnData::U32(&self.planet_count),
+            ],
+        )?;
+        writer.columns(
+            "western_house_cusps",
+            self.cusp_deg.len(),
+            &[ColumnData::F64(&self.cusp_deg)],
+        )?;
+        writer.columns(
+            "western_house_planets",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.house),
+                ColumnData::U8(&self.with_ascendant),
+            ],
+        )
     }
 }
 
@@ -3477,6 +3557,11 @@ struct AntisciaColumns {
     contrantiscion_deg: Vec<f64>,
     paired: Vec<u8>,
     pairs: AntiscionRowColumns,
+    cusp_count: Vec<u32>,
+    cusp_system: Vec<u16>,
+    cusp_graha: Vec<u16>,
+    cusp_house: Vec<u8>,
+    cusp_contrary: Vec<u8>,
 }
 
 /// The pairs in antiscion, one chart's own or across two, as the row
@@ -3536,8 +3621,32 @@ impl AntisciaColumns {
             for row in &one.pairs {
                 columns.pairs.push(row);
             }
+            columns.cusp_count.push(row_count(one.on_cusps.len())?);
+            columns.cusp_system.push(
+                one.cusp_system
+                    .map_or(u16::MAX, teistro_core::catalogue::Catalogued::id),
+            );
+            for row in &one.on_cusps {
+                columns.cusp_graha.push(row.graha.id());
+                columns.cusp_house.push(row.house.get());
+                columns.cusp_contrary.push(u8::from(row.contrary));
+            }
         }
         Ok(columns)
+    }
+
+    /// `antiscion_cusp_rows`, the reflections upon a cusp's very degree,
+    /// written after every section before it.
+    fn write_cusps(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "antiscion_cusp_rows",
+            self.cusp_graha.len(),
+            &[
+                ColumnData::U16(&self.cusp_graha),
+                ColumnData::U8(&self.cusp_house),
+                ColumnData::U8(&self.cusp_contrary),
+            ],
+        )
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -3547,6 +3656,8 @@ impl AntisciaColumns {
             &[
                 ColumnData::U32(&self.point_count),
                 ColumnData::U32(&self.pair_count),
+                ColumnData::U32(&self.cusp_count),
+                ColumnData::U16(&self.cusp_system),
             ],
         )?;
         writer.columns(
@@ -3734,6 +3845,8 @@ struct SynastryColumns {
     composite_graha: Vec<u16>,
     composite_longitude_deg: Vec<f64>,
     composite_speed_deg_per_day: Vec<f64>,
+    composite_cusp_count: Vec<u8>,
+    composite_cusp_deg: Vec<f64>,
 }
 
 impl SynastryColumns {
@@ -3775,6 +3888,14 @@ impl SynastryColumns {
                 columns
                     .composite_count
                     .push(row_count(composite.planets.len())?);
+                let cusps = composite
+                    .cusps_deg
+                    .as_ref()
+                    .map_or(&[][..], |cusps| &cusps[..]);
+                columns
+                    .composite_cusp_count
+                    .push(u8::from(composite.cusps_deg.is_some()) * 12);
+                columns.composite_cusp_deg.extend_from_slice(cusps);
                 for at in &composite.planets {
                     columns.composite_graha.push(at.graha.id());
                     columns.composite_longitude_deg.push(at.longitude_deg);
@@ -3883,6 +4004,7 @@ impl SynastryColumns {
                 ColumnData::F64(&self.composite_midheaven_deg),
                 ColumnData::U8(&self.composite_lagna_turned),
                 ColumnData::U32(&self.composite_count),
+                ColumnData::U8(&self.composite_cusp_count),
             ],
         )?;
         writer.columns(
@@ -3893,6 +4015,19 @@ impl SynastryColumns {
                 ColumnData::F64(&self.composite_longitude_deg),
                 ColumnData::F64(&self.composite_speed_deg_per_day),
             ],
+        )
+    }
+
+    /// `synastry_composite_cusps`, each composite's twelve cusps when it
+    /// has them, written after the Western houses.
+    fn write_composite_cusps(
+        &self,
+        writer: &mut Writer<'_>,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_composite_cusps",
+            self.composite_cusp_deg.len(),
+            &[ColumnData::F64(&self.composite_cusp_deg)],
         )
     }
 }
@@ -6446,6 +6581,9 @@ pub struct Composed<'a> {
     /// batch's order (`western-composites.md`); empty when none was asked
     /// for.
     pub davisons: &'a [teistro::Partner],
+    /// Every chart's Western houses, in the batch's order
+    /// (`western-houses.md`); empty when none were asked for.
+    pub western_houses: &'a [teistro::WesternHouses],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7429,6 +7567,7 @@ struct WesternTables {
     antiscia: Vec<teistro::Antiscia>,
     midpoints: Vec<Vec<teistro::MidpointRow>>,
     davisons: Vec<teistro::Partner>,
+    houses: Vec<teistro::WesternHouses>,
 }
 
 impl WesternTables {
@@ -7501,6 +7640,12 @@ impl WesternTables {
                 .map_err(|error| error.under("synastry"))?
                 .flatten()
                 .unwrap_or_default(),
+            houses: chart_by_chart(
+                records.western_houses.as_ref(),
+                documents,
+                "westernHouses",
+                |document, asked| sdk.chart().western_houses(document, asked),
+            )?,
         })
     }
 }
@@ -7914,6 +8059,7 @@ struct AskedRecords {
     parallels: Option<teistro::ParallelRequest>,
     antiscia: Option<teistro::AntisciaRequest>,
     midpoints: Option<teistro::MidpointRequest>,
+    western_houses: Option<teistro::HouseRequest>,
 }
 
 impl AskedRecords {
@@ -7959,6 +8105,9 @@ impl AskedRecords {
                     .transpose()?,
                 midpoints: optional_text(asked.midpoints_json, "midpoints_json")?
                     .map(teistro::MidpointRequest::from_json)
+                    .transpose()?,
+                western_houses: optional_text(asked.western_houses_json, "western_houses_json")?
+                    .map(teistro::HouseRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -8192,6 +8341,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 antiscia: &western.antiscia,
                 midpoints: &western.midpoints,
                 davisons: &western.davisons,
+                western_houses: &western.houses,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

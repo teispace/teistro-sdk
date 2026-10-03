@@ -139,11 +139,11 @@ the example is read for its place alone.
 
 ## What this does not decide
 
-- **The composite's cusps.** Townley sets the composite in a wheel of
-  cusp midpoints, and Astrolog turns each by the midheaven. The
-  foundation carries its bhavas in the profile's chalit, not a Western
-  house system, so the cusps wait on one; the lagna and midheaven are
-  the two every system shares.
+- **The composite's cusps** were decided with the Western houses
+  ([`western-houses.md`](western-houses.md)): each the near midpoint of
+  the two charts' same cusp, turned as Astrolog turns it by the
+  midheaven, in the module's division; none at a place where either
+  chart's division is refused.
 - **Weighted and multi-person composites.** Astrolog weights a composite
   or a Davison chart toward one of the two, and composes more than two
   charts. No source read here uses either.

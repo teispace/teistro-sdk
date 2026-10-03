@@ -3784,6 +3784,15 @@ export interface ChartsAntiscia {
    * How many pairs are the chart's in `antiscion_rows`.
    */
   readonly pairCount: Uint32Array;
+  /**
+   * How many reflections upon a cusp are the chart's in `antiscion_cusp_rows`; 0 when the record asked for no `cusps`.
+   */
+  readonly cuspCount: Uint32Array;
+  /**
+   * The division the cusps were read in, Lilly's Regiomontanus unless the record's `cusps` named another, or the one a polar policy fell back to; `0xFFFF` when the record asked for no `cusps`.
+   * The values are `HouseSystem` ids.
+   */
+  readonly cuspSystem: Uint16Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3977,6 +3986,10 @@ export interface ChartsSynastryComposites {
    * How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.
    */
   readonly count: Uint32Array;
+  /**
+   * 12 when both charts carry cusps in the `western` module's division, whose near midpoints the composite's cusps are in `synastry_composite_cusps`; 0 where the profile's polar policy refuses the division at either birthplace.
+   */
+  readonly cuspCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -4093,6 +4106,112 @@ export interface ChartsSynastryMidpointRows {
    * The orb the record allowed, degrees.
    */
   readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `western_houses` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.
+ */
+export interface ChartsWesternHouses {
+  /**
+   * The division the cusps are of: the record's `system`, else the profile's `houses.module_overrides.western`, else Placidus (C249); or the one a polar policy fell back to.
+   * The values are `HouseSystem` ids.
+   */
+  readonly system: Uint16Array;
+  /**
+   * The ascendant, degrees: the first cusp in every quadrant division.
+   */
+  readonly ascendantDeg: Float64Array;
+  /**
+   * The degree that rose one sidereal hour before the birth, degrees: the limit of the ascendant's reach (Leo, p. 90; C250).
+   */
+  readonly reachDeg: Float64Array;
+  /**
+   * How many planets are counted; the chart's rows follow the earlier charts' in `western_house_planets`.
+   */
+  readonly planetCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `western_house_cusps` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.
+ */
+export interface ChartsWesternHouseCusps {
+  /**
+   * The cusp, degrees of the chart's zodiac.
+   */
+  readonly cuspDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `western_house_planets` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
+ */
+export interface ChartsWesternHousePlanets {
+  /**
+   * Which planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The house whose cusp it has passed and whose next cusp it has not, 1 to 12.
+   */
+  readonly house: Uint8Array;
+  /**
+   * 1 when Leo reads it with the ascendant: in the first house, or above the ascendant no further than `reach_deg`; 0 otherwise. The house is never moved for it.
+   */
+  readonly withAscendant: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_composite_cusps` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+ */
+export interface ChartsSynastryCompositeCusps {
+  /**
+   * The cusp, degrees.
+   */
+  readonly cuspDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `antiscion_cusp_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
+ */
+export interface ChartsAntiscionCuspRows {
+  /**
+   * Which planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The house whose cusp its reflection falls on, 1 to 12.
+   */
+  readonly house: Uint8Array;
+  /**
+   * 1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.
+   */
+  readonly contrary: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -4673,6 +4792,26 @@ export interface Charts {
    * Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
    */
   readonly synastryMidpointRows: ChartsSynastryMidpointRows;
+  /**
+   * Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.
+   */
+  readonly westernHouses: ChartsWesternHouses;
+  /**
+   * Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.
+   */
+  readonly westernHouseCusps: ChartsWesternHouseCusps;
+  /**
+   * Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
+   */
+  readonly westernHousePlanets: ChartsWesternHousePlanets;
+  /**
+   * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+   */
+  readonly synastryCompositeCusps: ChartsSynastryCompositeCusps;
+  /**
+   * Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
+   */
+  readonly antiscionCuspRows: ChartsAntiscionCuspRows;
 }
 
 /**

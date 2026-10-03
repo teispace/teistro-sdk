@@ -1286,6 +1286,19 @@ export class Chart {
   }
 
   /**
+   * The chart's Western houses (`westernHouses: {}` asks for them): the
+   * cusps of Placidus, the division Leo's figures are cast in, unless the
+   * request or the profile names another (C249), and each planet's house,
+   * flagged when Leo reads it with the ascendant (C250); `null` unless
+   * asked (`03-design/western-houses.md`).
+   *
+   * @returns {object|null}
+   */
+  get westernHouses() {
+    return westernHousesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2511,6 +2524,11 @@ export class ChartArea extends Area {
           'antiscia',
           'an antiscia request record, e.g. {} or { orbs: { model: "LEO" } }',
         ),
+        westernHousesJson: recordJson(
+          request.westernHouses,
+          'westernHouses',
+          "a Western houses request record, e.g. {} or { system: 'house_system.KOCH' }",
+        ),
         midpointsJson: recordJson(
           request.midpoints,
           'midpoints',
@@ -3670,13 +3688,18 @@ function synastriesOf(batch) {
   );
   const c = d.synastryComposites;
   const cr = d.synastryCompositeRows;
-  const composites = raggedOf(batch, c.count, cr.graha.length, 'synastry_composites and synastry_composite_rows', (row) =>
+  const compositePlanets = raggedOf(batch, c.count, cr.graha.length, 'synastry_composites and synastry_composite_rows', (row) =>
     Object.freeze({
       graha: GrahaById.get(cr.graha[row]) ?? 'unknown',
       longitudeDeg: cr.longitudeDeg[row],
       speedDegPerDay: cr.speedDegPerDay[row],
     }),
-  ).map((planets, k) =>
+  );
+  const cc = d.synastryCompositeCusps;
+  const compositeCusps = raggedOf(batch, c.cuspCount, cc.cuspDeg.length, 'synastry_composites and synastry_composite_cusps', (row) =>
+    cc.cuspDeg[row],
+  );
+  const composites = compositePlanets.map((planets, k) =>
     planets === null
       ? null
       : Object.freeze({
@@ -3684,6 +3707,7 @@ function synastriesOf(batch) {
           lagnaDeg: c.lagnaDeg[k],
           midheavenDeg: c.midheavenDeg[k],
           lagnaTurned: c.lagnaTurned[k] !== 0,
+          cuspsDeg: compositeCusps[k].length === 12 ? compositeCusps[k] : null,
         }),
   );
   const b = d.synastryDavisons;
@@ -3792,6 +3816,10 @@ function antisciaOf(batch) {
   const pairs = raggedOf(batch, d.antiscia.pairCount, r.first.length, 'antiscia and antiscion_rows', (at) =>
     antiscionRowOf(r, at),
   );
+  const c = d.antiscionCuspRows;
+  const onCusps = raggedOf(batch, d.antiscia.cuspCount, c.graha.length, 'antiscia and antiscion_cusp_rows', (at) =>
+    Object.freeze({ graha: graha(c.graha[at]), house: c.house[at], contrary: c.contrary[at] !== 0 }),
+  );
   decoded = Object.freeze(
     points.map((rows, k) =>
       rows === null
@@ -3808,10 +3836,60 @@ function antisciaOf(batch) {
             ),
             pairs: pairs[k],
             unpaired: Object.freeze(rows.filter((at) => p.paired[at] === 0).map((at) => graha(p.graha[at]))),
+            onCusps: onCusps[k],
+            cuspSystem:
+              d.antiscia.cuspSystem[k] === NO_HOUSE_SYSTEM
+                ? null
+                : (HouseSystemById.get(d.antiscia.cuspSystem[k]) ?? 'unknown'),
           }),
     ),
   );
   ANTISCIA.set(batch, decoded);
+  return decoded;
+}
+
+/** The `0xFFFF` a house-system column holds where no division was read. */
+const NO_HOUSE_SYSTEM = 0xffff;
+
+/** Each batch's Western houses, decoded once however many charts read them. */
+const WESTERN_HOUSES = new WeakMap();
+
+/**
+ * Every chart's Western houses in a batch: `western_houses` holds a row a
+ * chart, or none when none was asked, `western_house_cusps` twelve rows a
+ * chart, and `western_house_planets` is ragged by its count
+ * (`03-design/western-houses.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function westernHousesOf(batch) {
+  let decoded = WESTERN_HOUSES.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const h = d.westernHouses;
+  const c = d.westernHouseCusps.cuspDeg;
+  const p = d.westernHousePlanets;
+  if (c.length !== 12 * h.system.length) {
+    throw new Error(`western_house_cusps has ${c.length} rows for ${h.system.length} charts; it is twelve a chart`);
+  }
+  const planets = raggedOf(batch, h.planetCount, p.graha.length, 'western_houses and western_house_planets', (at) =>
+    Object.freeze({
+      graha: GrahaById.get(p.graha[at]) ?? 'unknown',
+      house: p.house[at],
+      withAscendant: p.withAscendant[at] !== 0,
+    }),
+  );
+  decoded = rowAChartOf(batch, h.system.length, 'western_houses', (k) =>
+    Object.freeze({
+      system: HouseSystemById.get(h.system[k]) ?? 'unknown',
+      cuspsDeg: Object.freeze(Array.from(c.slice(12 * k, 12 * k + 12))),
+      ascendantDeg: h.ascendantDeg[k],
+      reachDeg: h.reachDeg[k],
+      planets: planets[k],
+    }),
+  );
+  WESTERN_HOUSES.set(batch, decoded);
   return decoded;
 }
 

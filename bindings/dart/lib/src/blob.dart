@@ -3950,6 +3950,8 @@ final class ChartsAntiscia {
   const ChartsAntiscia({
     required this.pointCount,
     required this.pairCount,
+    required this.cuspCount,
+    required this.cuspSystem,
     required this.length,
   });
 
@@ -3958,6 +3960,12 @@ final class ChartsAntiscia {
 
   /// How many pairs are the chart's in `antiscion_rows`.
   final Uint32List pairCount;
+
+  /// How many reflections upon a cusp are the chart's in `antiscion_cusp_rows`; 0 when the record asked for no `cusps`.
+  final Uint32List cuspCount;
+
+  /// The division the cusps were read in, Lilly's Regiomontanus unless the record's `cusps` named another, or the one a polar policy fell back to; `0xFFFF` when the record asked for no `cusps`.
+  final Uint16List cuspSystem;
 
   /// The number of rows every column holds.
   final int length;
@@ -4143,6 +4151,7 @@ final class ChartsSynastryComposites {
     required this.midheavenDeg,
     required this.lagnaTurned,
     required this.count,
+    required this.cuspCount,
     required this.length,
   });
 
@@ -4157,6 +4166,9 @@ final class ChartsSynastryComposites {
 
   /// How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.
   final Uint32List count;
+
+  /// 12 when both charts carry cusps in the `western` module's division, whose near midpoints the composite's cusps are in `synastry_composite_cusps`; 0 where the profile's polar policy refuses the division at either birthplace.
+  final Uint8List cuspCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -4277,6 +4289,119 @@ final class ChartsSynastryMidpointRows {
 
   /// The orb the record allowed, degrees.
   final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `western_houses` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.
+final class ChartsWesternHouses {
+  const ChartsWesternHouses({
+    required this.system,
+    required this.ascendantDeg,
+    required this.reachDeg,
+    required this.planetCount,
+    required this.length,
+  });
+
+  /// The division the cusps are of: the record's `system`, else the profile's `houses.module_overrides.western`, else Placidus (C249); or the one a polar policy fell back to.
+  final Uint16List system;
+
+  /// The ascendant, degrees: the first cusp in every quadrant division.
+  final Float64List ascendantDeg;
+
+  /// The degree that rose one sidereal hour before the birth, degrees: the limit of the ascendant's reach (Leo, p. 90; C250).
+  final Float64List reachDeg;
+
+  /// How many planets are counted; the chart's rows follow the earlier charts' in `western_house_planets`.
+  final Uint32List planetCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `western_house_cusps` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.
+final class ChartsWesternHouseCusps {
+  const ChartsWesternHouseCusps({
+    required this.cuspDeg,
+    required this.length,
+  });
+
+  /// The cusp, degrees of the chart's zodiac.
+  final Float64List cuspDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `western_house_planets` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
+final class ChartsWesternHousePlanets {
+  const ChartsWesternHousePlanets({
+    required this.graha,
+    required this.house,
+    required this.withAscendant,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// The house whose cusp it has passed and whose next cusp it has not, 1 to 12.
+  final Uint8List house;
+
+  /// 1 when Leo reads it with the ascendant: in the first house, or above the ascendant no further than `reach_deg`; 0 otherwise. The house is never moved for it.
+  final Uint8List withAscendant;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_composite_cusps` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+final class ChartsSynastryCompositeCusps {
+  const ChartsSynastryCompositeCusps({
+    required this.cuspDeg,
+    required this.length,
+  });
+
+  /// The cusp, degrees.
+  final Float64List cuspDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `antiscion_cusp_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
+final class ChartsAntiscionCuspRows {
+  const ChartsAntiscionCuspRows({
+    required this.graha,
+    required this.house,
+    required this.contrary,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// The house whose cusp its reflection falls on, 1 to 12.
+  final Uint8List house;
+
+  /// 1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.
+  final Uint8List contrary;
 
   /// The number of rows every column holds.
   final int length;
@@ -4496,6 +4621,11 @@ final class Charts {
     required this.synastryDavisons,
     required this.synastryMidpoints,
     required this.synastryMidpointRows,
+    required this.westernHouses,
+    required this.westernHouseCusps,
+    required this.westernHousePlanets,
+    required this.synastryCompositeCusps,
+    required this.antiscionCuspRows,
   });
 
   /// What kind of chart these are.
@@ -4848,6 +4978,21 @@ final class Charts {
   /// Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
   final ChartsSynastryMidpointRows synastryMidpointRows;
 
+  /// Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. Empty when `western_houses_json` asked for none.
+  final ChartsWesternHouses westernHouses;
+
+  /// Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. Empty when `western_houses_json` asked for none.
+  final ChartsWesternHouseCusps westernHouseCusps;
+
+  /// Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
+  final ChartsWesternHousePlanets westernHousePlanets;
+
+  /// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+  final ChartsSynastryCompositeCusps synastryCompositeCusps;
+
+  /// Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
+  final ChartsAntiscionCuspRows antiscionCuspRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4957,6 +5102,11 @@ Charts decodeCharts(Uint8List bytes) {
   final atSynastryDavisons = blob.section(100, 'synastry_davisons');
   final atSynastryMidpoints = blob.section(101, 'synastry_midpoints');
   final atSynastryMidpointRows = blob.section(102, 'synastry_midpoint_rows');
+  final atWesternHouses = blob.section(103, 'western_houses');
+  final atWesternHouseCusps = blob.section(104, 'western_house_cusps');
+  final atWesternHousePlanets = blob.section(105, 'western_house_planets');
+  final atSynastryCompositeCusps = blob.section(106, 'synastry_composite_cusps');
+  final atAntiscionCuspRows = blob.section(107, 'antiscion_cusp_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8560,6 +8710,16 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAntiscia, 1),
         blob.columnOffset(atAntiscia, 1) + atAntiscia.count * 4,
       ),
+      cuspCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscia, 2),
+        blob.columnOffset(atAntiscia, 2) + atAntiscia.count * 4,
+      ),
+      cuspSystem: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscia, 3),
+        blob.columnOffset(atAntiscia, 3) + atAntiscia.count * 2,
+      ),
       length: atAntiscia.count,
     ),
     antiscionPoints: ChartsAntiscionPoints(
@@ -8716,6 +8876,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSynastryComposites, 3),
         blob.columnOffset(atSynastryComposites, 3) + atSynastryComposites.count * 4,
       ),
+      cuspCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryComposites, 4),
+        blob.columnOffset(atSynastryComposites, 4) + atSynastryComposites.count * 1,
+      ),
       length: atSynastryComposites.count,
     ),
     synastryCompositeRows: ChartsSynastryCompositeRows(
@@ -8814,6 +8979,81 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSynastryMidpointRows, 7) + atSynastryMidpointRows.count * 8,
       ),
       length: atSynastryMidpointRows.count,
+    ),
+    westernHouses: ChartsWesternHouses(
+      system: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHouses, 0),
+        blob.columnOffset(atWesternHouses, 0) + atWesternHouses.count * 2,
+      ),
+      ascendantDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHouses, 1),
+        blob.columnOffset(atWesternHouses, 1) + atWesternHouses.count * 8,
+      ),
+      reachDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHouses, 2),
+        blob.columnOffset(atWesternHouses, 2) + atWesternHouses.count * 8,
+      ),
+      planetCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHouses, 3),
+        blob.columnOffset(atWesternHouses, 3) + atWesternHouses.count * 4,
+      ),
+      length: atWesternHouses.count,
+    ),
+    westernHouseCusps: ChartsWesternHouseCusps(
+      cuspDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHouseCusps, 0),
+        blob.columnOffset(atWesternHouseCusps, 0) + atWesternHouseCusps.count * 8,
+      ),
+      length: atWesternHouseCusps.count,
+    ),
+    westernHousePlanets: ChartsWesternHousePlanets(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHousePlanets, 0),
+        blob.columnOffset(atWesternHousePlanets, 0) + atWesternHousePlanets.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHousePlanets, 1),
+        blob.columnOffset(atWesternHousePlanets, 1) + atWesternHousePlanets.count * 1,
+      ),
+      withAscendant: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternHousePlanets, 2),
+        blob.columnOffset(atWesternHousePlanets, 2) + atWesternHousePlanets.count * 1,
+      ),
+      length: atWesternHousePlanets.count,
+    ),
+    synastryCompositeCusps: ChartsSynastryCompositeCusps(
+      cuspDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryCompositeCusps, 0),
+        blob.columnOffset(atSynastryCompositeCusps, 0) + atSynastryCompositeCusps.count * 8,
+      ),
+      length: atSynastryCompositeCusps.count,
+    ),
+    antiscionCuspRows: ChartsAntiscionCuspRows(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionCuspRows, 0),
+        blob.columnOffset(atAntiscionCuspRows, 0) + atAntiscionCuspRows.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionCuspRows, 1),
+        blob.columnOffset(atAntiscionCuspRows, 1) + atAntiscionCuspRows.count * 1,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionCuspRows, 2),
+        blob.columnOffset(atAntiscionCuspRows, 2) + atAntiscionCuspRows.count * 1,
+      ),
+      length: atAntiscionCuspRows.count,
     ),
   );
 }
