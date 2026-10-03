@@ -36,6 +36,7 @@ mod arc;
 mod aspects;
 mod composite;
 mod declination;
+mod houses;
 mod midpoint;
 mod progression;
 mod synastry;
@@ -53,6 +54,10 @@ pub use aspects::{
 pub use composite::{ChartPoints, Composite, composite};
 pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
+};
+pub use houses::{
+    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM, MODULE,
+    WesternHouses, place_in_houses, rising_an_hour_before,
 };
 pub use midpoint::{
     DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow,

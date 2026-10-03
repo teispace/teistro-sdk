@@ -70,6 +70,7 @@ mod rules_bridge;
 mod sade_sati_request;
 mod varsha;
 mod western_aspects;
+mod western_houses;
 
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
@@ -265,6 +266,11 @@ pub use teistro_western::{
 // point of their midpoint axis (`03-design/western-midpoints.md`).
 pub use teistro_western::{
     DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow, SynastryMidpointRow,
+};
+// A chart's Western houses: Placidus unless asked, and Leo's ascendant
+// reaching one sidereal hour above it (`03-design/western-houses.md`).
+pub use teistro_western::{
+    ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM, WesternHouses,
 };
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
