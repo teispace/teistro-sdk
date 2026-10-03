@@ -1227,6 +1227,20 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"orbDeg":1}. May be null.
   external ffi.Pointer<ffi.Char> midpointsJson;
 
+  /// Every chart's Western houses, as a JSON object, every field
+  /// optional: `system`, the division (`"KOCH"`), else the profile's
+  /// `houses.module_overrides.western`, else Placidus, the division
+  /// Leo's figures are cast in (C249). Each planet is counted by the
+  /// cusps alone, and flagged when Leo reads it with the ascendant, up
+  /// to the degree that rose one sidereal hour before the birth (C250).
+  /// The answers come back in `western_houses`, `western_house_cusps`
+  /// and `western_house_planets`. Null for none, which costs nothing
+  /// (`03-design/western-houses.md`). Refusals are named from the
+  /// record every binding calls `westernHouses`, as
+  /// `westernHouses.system`.
+  /// Example: {"system":"KOCH"}. May be null.
+  external ffi.Pointer<ffi.Char> westernHousesJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3116,7 +3130,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3489,6 +3503,20 @@ final class ChartRequest {
   /// Example: {"orbDeg":1}. May be null.
   final String? midpointsJson;
 
+  /// Every chart's Western houses, as a JSON object, every field
+  /// optional: `system`, the division (`"KOCH"`), else the profile's
+  /// `houses.module_overrides.western`, else Placidus, the division
+  /// Leo's figures are cast in (C249). Each planet is counted by the
+  /// cusps alone, and flagged when Leo reads it with the ascendant, up
+  /// to the degree that rose one sidereal hour before the birth (C250).
+  /// The answers come back in `western_houses`, `western_house_cusps`
+  /// and `western_house_planets`. Null for none, which costs nothing
+  /// (`03-design/western-houses.md`). Refusals are named from the
+  /// record every binding calls `westernHouses`, as
+  /// `westernHouses.system`.
+  /// Example: {"system":"KOCH"}. May be null.
+  final String? westernHousesJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3585,6 +3613,9 @@ final class ChartRequest {
     raw.midpointsJson = midpointsJson == null
         ? ffi.nullptr
         : midpointsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.westernHousesJson = westernHousesJson == null
+        ? ffi.nullptr
+        : westernHousesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3667,6 +3698,9 @@ final class ChartRequest {
         midpointsJson: raw.midpointsJson == ffi.nullptr
             ? null
             : raw.midpointsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        westernHousesJson: raw.westernHousesJson == ffi.nullptr
+            ? null
+            : raw.westernHousesJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

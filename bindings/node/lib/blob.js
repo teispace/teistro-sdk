@@ -1398,6 +1398,8 @@ export function decodeCharts(bytes) {
     out.antiscia = {
       pointCount: column(blob, at, 0, 'u32', at.count),
       pairCount: column(blob, at, 1, 'u32', at.count),
+      cuspCount: column(blob, at, 2, 'u32', at.count),
+      cuspSystem: column(blob, at, 3, 'u16', at.count),
       length: at.count,
     };
   }
@@ -1467,6 +1469,7 @@ export function decodeCharts(bytes) {
       midheavenDeg: column(blob, at, 1, 'f64', at.count),
       lagnaTurned: column(blob, at, 2, 'u8', at.count),
       count: column(blob, at, 3, 'u32', at.count),
+      cuspCount: column(blob, at, 4, 'u8', at.count),
       length: at.count,
     };
   }
@@ -1508,6 +1511,48 @@ export function decodeCharts(bytes) {
       distanceDeg: column(blob, at, 5, 'f64', at.count),
       fromAxisDeg: column(blob, at, 6, 'f64', at.count),
       orbDeg: column(blob, at, 7, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 103, 'western_houses');
+    out.westernHouses = {
+      system: column(blob, at, 0, 'u16', at.count),
+      ascendantDeg: column(blob, at, 1, 'f64', at.count),
+      reachDeg: column(blob, at, 2, 'f64', at.count),
+      planetCount: column(blob, at, 3, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 104, 'western_house_cusps');
+    out.westernHouseCusps = {
+      cuspDeg: column(blob, at, 0, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 105, 'western_house_planets');
+    out.westernHousePlanets = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      house: column(blob, at, 1, 'u8', at.count),
+      withAscendant: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 106, 'synastry_composite_cusps');
+    out.synastryCompositeCusps = {
+      cuspDeg: column(blob, at, 0, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 107, 'antiscion_cusp_rows');
+    out.antiscionCuspRows = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      house: column(blob, at, 1, 'u8', at.count),
+      contrary: column(blob, at, 2, 'u8', at.count),
       length: at.count,
     };
   }

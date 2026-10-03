@@ -304,6 +304,7 @@ fn chart_request(
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1579,6 +1580,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1728,6 +1730,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1875,6 +1878,7 @@ fn a_chart_request_answers_the_transits() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2094,6 +2098,7 @@ fn a_chart_request_answers_the_hit_list() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2266,6 +2271,7 @@ fn a_chart_request_answers_sade_sati() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2380,6 +2386,7 @@ fn a_chart_request_answers_sade_sati() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2448,6 +2455,7 @@ fn a_chart_request_answers_sade_sati() {
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
+        western_houses_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2520,6 +2528,7 @@ fn a_chart_request_answers_the_dignities() {
                 parallels_json: ptr::null(),
                 antiscia_json: ptr::null(),
                 midpoints_json: ptr::null(),
+                western_houses_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2797,6 +2806,7 @@ fn a_chart_request_answers_the_fortitudes() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4102,6 +4112,7 @@ fn a_chart_request_answers_kp() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4214,6 +4225,7 @@ fn a_chart_request_answers_kp() {
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
+        western_houses_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4234,6 +4246,7 @@ fn a_chart_request_answers_kp() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4294,6 +4307,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4337,6 +4351,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
         midpoints_json: ptr::null(),
+        western_houses_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4401,6 +4416,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4540,6 +4556,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4684,6 +4701,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5459,6 +5477,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5571,6 +5590,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5752,6 +5772,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
             midpoints_json: ptr::null(),
+            western_houses_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6037,6 +6058,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 parallels_json: ptr::null(),
                 antiscia_json: ptr::null(),
                 midpoints_json: ptr::null(),
+                western_houses_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -8274,4 +8296,224 @@ fn a_chart_request_answers_a_synastrys_equal_distances() {
         ctx.last_error().2.as_deref(),
         Some("synastry.midpoints.orbDeg")
     );
+}
+
+#[test]
+fn a_chart_request_answers_the_western_houses_and_what_reads_the_cusps() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    let base = chart_request(&instants, (51.5045, -0.1366), 0);
+    let houses_json = CString::new("{}").unwrap();
+    let antiscia_text = r#"{"cusps": {"system": "PLACIDUS"}}"#;
+    let antiscia_json = CString::new(antiscia_text).unwrap();
+    let synastry_text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "composite": true}"#;
+    let synastry_json = CString::new(synastry_text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            western_houses_json: houses_json.as_ptr(),
+            antiscia_json: antiscia_json.as_ptr(),
+            synastry_json: synastry_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, teistro::UtcOffset::UTC).with_outer_planets(),
+        )
+        .unwrap()
+        .value;
+    let houses: Vec<teistro::WesternHouses> = charts
+        .iter()
+        .map(|chart| {
+            sdk.chart()
+                .western_houses(chart, &teistro::HouseRequest::default())
+                .unwrap()
+        })
+        .collect();
+    let antiscia: Vec<teistro::Antiscia> = charts
+        .iter()
+        .map(|chart| {
+            sdk.chart()
+                .antiscia(
+                    chart,
+                    &teistro::AntisciaRequest::from_json(antiscia_text).unwrap(),
+                )
+                .unwrap()
+        })
+        .collect();
+    let synastry = sdk
+        .chart()
+        .synastry_with(
+            &charts,
+            &teistro::PartnerSynastry::from_json(synastry_text).unwrap(),
+        )
+        .unwrap();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let id = |value: u16| i64::from(value);
+
+    // The houses: a row a chart, twelve cusps a chart, the planets ragged.
+    assert_eq!(
+        ints("western_houses", "system"),
+        houses
+            .iter()
+            .map(|one| id(one.system.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("western_houses", "reach_deg"),
+        houses
+            .iter()
+            .map(|one| one.frame.reach_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("western_house_cusps", "cusp_deg"),
+        houses
+            .iter()
+            .flat_map(|one| one.frame.cusps_deg)
+            .map(f64::to_bits)
+            .collect::<Vec<_>>()
+    );
+    let planets: Vec<&teistro::HousePlacement> =
+        houses.iter().flat_map(|one| &one.planets).collect();
+    assert_eq!(
+        ints("western_houses", "planet_count"),
+        houses
+            .iter()
+            .map(|one| i64::try_from(one.planets.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("western_house_planets", "house"),
+        planets
+            .iter()
+            .map(|one| i64::from(one.house.get()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("western_house_planets", "with_ascendant"),
+        planets
+            .iter()
+            .map(|one| i64::from(one.with_ascendant))
+            .collect::<Vec<_>>()
+    );
+
+    // The composite's cusps, twelve a chart here.
+    let composites: Vec<&teistro::Composite> = synastry
+        .iter()
+        .map(|one| one.composite.as_ref().unwrap())
+        .collect();
+    assert_eq!(ints("synastry_composites", "cusp_count"), [12, 12]);
+    assert_eq!(
+        bits("synastry_composite_cusps", "cusp_deg"),
+        composites
+            .iter()
+            .flat_map(|one| one.cusps_deg.unwrap())
+            .map(f64::to_bits)
+            .collect::<Vec<_>>()
+    );
+
+    // The antiscia upon the cusps, in the division asked.
+    assert_eq!(
+        ints("antiscia", "cusp_system"),
+        [id(teistro::catalogue::HouseSystem::Placidus.id()); 2]
+    );
+    let on_cusps: Vec<&teistro::CuspAntiscion> =
+        antiscia.iter().flat_map(|one| &one.on_cusps).collect();
+    assert_eq!(
+        ints("antiscia", "cusp_count"),
+        antiscia
+            .iter()
+            .map(|one| i64::try_from(one.on_cusps.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("antiscion_cusp_rows", "house"),
+        on_cusps
+            .iter()
+            .map(|one| i64::from(one.house.get()))
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections and no cusp division; a refusal is
+    // named by its field.
+    let plain = CString::new("{}").unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            antiscia_json: plain.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("western_houses", "system"),
+        ("western_house_cusps", "cusp_deg"),
+        ("western_house_planets", "graha"),
+        ("antiscion_cusp_rows", "graha"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+    let unasked: Vec<i64> = reader
+        .column("antiscia", "cusp_system")
+        .unwrap()
+        .into_iter()
+        .map(ScalarValue::as_i64)
+        .collect();
+    assert_eq!(unasked, [i64::from(u16::MAX); 2]);
+    let typo = CString::new(r#"{"system": "NOWHERE"}"#).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            western_houses_json: typo.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("westernHouses.system"));
 }

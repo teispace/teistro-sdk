@@ -632,6 +632,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_midpoint_sections(96))
         .chain(chart_composite_sections(98))
         .chain(chart_synastry_midpoint_sections(101))
+        .chain(chart_western_house_sections(103))
         .collect(),
     }
 }
@@ -1489,6 +1490,17 @@ fn chart_antiscia_sections(first: u32) -> [SectionSchema; 3] {
                     Scalar::U32,
                     "How many pairs are the chart's in `antiscion_rows`.",
                 ),
+                ColumnDef::new(
+                    "cusp_count",
+                    Scalar::U32,
+                    "How many reflections upon a cusp are the chart's in `antiscion_cusp_rows`; 0 when the record asked for no `cusps`.",
+                ),
+                ColumnDef::new(
+                    "cusp_system",
+                    Scalar::U16,
+                    "The division the cusps were read in, Lilly's Regiomontanus unless the record's `cusps` named another, or the one a polar policy fell back to; `0xFFFF` when the record asked for no `cusps`.",
+                )
+                .of_enum("HouseSystem"),
             ],
         ),
         SectionSchema::columns(
@@ -1709,6 +1721,11 @@ fn chart_composite_sections(first: u32) -> [SectionSchema; 3] {
                     Scalar::U32,
                     "How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.",
                 ),
+                ColumnDef::new(
+                    "cusp_count",
+                    Scalar::U8,
+                    "12 when both charts carry cusps in the `western` module's division, whose near midpoints the composite's cusps are in `synastry_composite_cusps`; 0 where the profile's polar policy refuses the division at either birthplace.",
+                ),
             ],
         ),
         SectionSchema::columns(
@@ -1752,6 +1769,97 @@ fn chart_composite_sections(first: u32) -> [SectionSchema; 3] {
                     "utc_offset_seconds",
                     Scalar::I32,
                     "The mean of the two clocks, seconds east of UTC: it names only the civil day.",
+                ),
+            ],
+        ),
+    ]
+}
+
+/// The sections a Western chart's houses add, from `first`: a row a chart,
+/// its twelve cusps and its planets' houses, then the composite's cusps
+/// and the antiscia upon a cusp, which read them
+/// (`03-design/western-houses.md`).
+fn chart_western_house_sections(first: u32) -> [SectionSchema; 5] {
+    let empty = "Empty when `western_houses_json` asked for none.";
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    [
+        SectionSchema::columns(
+            first,
+            "western_houses",
+            &format!(
+                "Every chart's Western houses, a row a chart in the `cast` section's order, in the chart's zodiac: the division, the ascendant, the degree that rose one sidereal hour before the birth, and how many rows of `western_house_planets` are its. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "system",
+                    Scalar::U16,
+                    "The division the cusps are of: the record's `system`, else the profile's `houses.module_overrides.western`, else Placidus (C249); or the one a polar policy fell back to.",
+                )
+                .of_enum("HouseSystem"),
+                degrees(
+                    "ascendant_deg",
+                    "The ascendant, degrees: the first cusp in every quadrant division.",
+                ),
+                degrees(
+                    "reach_deg",
+                    "The degree that rose one sidereal hour before the birth, degrees: the limit of the ascendant's reach (Leo, p. 90; C250).",
+                ),
+                ColumnDef::new(
+                    "planet_count",
+                    Scalar::U32,
+                    "How many planets are counted; the chart's rows follow the earlier charts' in `western_house_planets`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "western_house_cusps",
+            &format!(
+                "Every chart's twelve cusps, charts outermost: row `i * 12 + j` is chart `i`, cusp `j`, first to twelfth. {empty}"
+            ),
+            vec![degrees("cusp_deg", "The cusp, degrees of the chart's zodiac.")],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "western_house_planets",
+            &format!(
+                "Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. {empty}"
+            ),
+            vec![
+                graha_column("graha", "Which planet."),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "The house whose cusp it has passed and whose next cusp it has not, 1 to 12.",
+                ),
+                ColumnDef::new(
+                    "with_ascendant",
+                    Scalar::U8,
+                    "1 when Leo reads it with the ascendant: in the first house, or above the ascendant no further than `reach_deg`; 0 otherwise. The house is never moved for it.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 3,
+            "synastry_composite_cusps",
+            "Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.",
+            vec![degrees("cusp_deg", "The cusp, degrees.")],
+        ),
+        SectionSchema::columns(
+            first + 4,
+            "antiscion_cusp_rows",
+            "Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, \"the very degree\" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.",
+            vec![
+                graha_column("graha", "Which planet."),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "The house whose cusp its reflection falls on, 1 to 12.",
+                ),
+                ColumnDef::new(
+                    "contrary",
+                    Scalar::U8,
+                    "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.",
                 ),
             ],
         ),
