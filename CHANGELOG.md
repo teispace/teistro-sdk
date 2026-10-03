@@ -1981,6 +1981,19 @@ the astronomical numbers do not move. Nothing else computes yet.
     `chart.westernAspects` (`western_aspects`), Dart with a typed
     `OrbModel` and `WesternAspectRequest.lilly`, with parity across all
     four runners.
+  - **Declinations and parallels** (`western-declinations.md`,
+    `declinations-measured.md`). `sdk.chart().declinations` gives each
+    planet's distance from the equator, from its tropical longitude,
+    ecliptic latitude and the true obliquity, and the lagna's and
+    midheaven's as the Sun's at their degree (Leo, p. 141).
+    `sdk.chart().parallels` reads Leo's parallel of declination (pp. 42,
+    47): two distances within 1°, or the caller's orb up to 10°, on
+    either side of the equator, each row saying whether the pair is
+    `contrary` (C243). `core::angle::declination_deg` is the one
+    formula, now shared with the Shadbala's ayana bala. A
+    `parallels_json` record crosses the boundary in sections 86 to 88,
+    and Node, Python and Dart read `chart.declinations` and
+    `chart.parallels`, with parity across all four runners.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
