@@ -59,6 +59,7 @@ mod festival_request;
 mod gochar_request;
 mod hit_request;
 mod kp_request;
+mod midpoints;
 mod muhurta_request;
 mod plan_request;
 mod progressed;
@@ -257,9 +258,11 @@ pub use teistro_western::{
 // Each planet's reflections about the solstices and the equinoxes, and the
 // pairs standing in one (`03-design/western-antiscia.md`).
 pub use teistro_western::{
-    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, Reflected, antiscion_deg,
-    contrantiscion_deg,
+    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, PlanetAt, antiscion_deg, contrantiscion_deg,
 };
+// A planet equally distant from two others along the zodiac, on either
+// point of their midpoint axis (`03-design/western-midpoints.md`).
+pub use teistro_western::{DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).
