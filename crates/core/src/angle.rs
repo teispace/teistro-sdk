@@ -57,6 +57,32 @@ pub fn difference_deg(a: f64, b: f64) -> f64 {
     if d > 180.0 { d - 360.0 } else { d }
 }
 
+/// The **near midpoint** of two angles in degrees, in `[0, 360)`: the
+/// middle of the shorter arc between them. It is the same whichever angle
+/// comes first, to the last bit, and two angles exactly opposite, which
+/// have no shorter arc, meet at the mean of the two as written in
+/// `[0, 360)`.
+///
+/// ```
+/// use teistro_core::angle::near_midpoint_deg;
+///
+/// assert_eq!(near_midpoint_deg(350.0, 10.0), 0.0);
+/// assert_eq!(near_midpoint_deg(0.0, 190.0), 275.0);
+/// assert_eq!(near_midpoint_deg(0.0, 180.0), 90.0);
+/// assert_eq!(near_midpoint_deg(180.0, 0.0), 90.0);
+/// assert_eq!(near_midpoint_deg(-10.0, 700.0), 345.0);
+/// ```
+#[must_use]
+pub fn near_midpoint_deg(a: f64, b: f64) -> f64 {
+    let (a, b) = (normalise_deg(a), normalise_deg(b));
+    let mean = f64::midpoint(a, b);
+    if (a - b).abs() > 180.0 {
+        normalise_deg(mean + 180.0)
+    } else {
+        mean
+    }
+}
+
 /// The declination of a point given in ecliptic coordinates, degrees north
 /// of the equator: `sin δ = sin β cos ε + cos β sin ε sin λ`, from a
 /// tropical longitude `λ`, an ecliptic latitude `β` and the obliquity `ε`,
