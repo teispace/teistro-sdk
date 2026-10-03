@@ -1,9 +1,11 @@
 # The Western aspects and their orbs (the `western` module)
 
 Status: `building`, 2026-10-03, written from the sources before any
-code. Step 2 is built: `sdk.chart().western_aspects`, held to Leo's
-reading of Edward VII and measured over the corpus in
-[`western-aspects-measured.md`](western-aspects-measured.md).
+code. Steps 2 and 3 are built: `sdk.chart().western_aspects`, held to
+Leo's reading of Edward VII and measured over the corpus in
+[`western-aspects-measured.md`](western-aspects-measured.md), and a
+`westernAspects` record that every binding reads back as
+`chart.westernAspects`.
 
 A chart's drishti are the Vedic relations, which are read by sign and
 house and have no orb (`aspect-and-drishti.md`). The Western aspect is a
@@ -133,3 +135,14 @@ under his orbs.
    chart's bodies. Edward VII's four are the test, and a gate reports
    how the two models differ over the corpus. **Built.**
 3. The chart section, the boundary and every binding, with parity.
+   **Built.** `western_aspects_json` is a record read by
+   `AspectRequest::from_json`, refused under `westernAspects`. Sections
+   82 (`western_aspects`, a count a chart) and 83
+   (`western_aspect_rows`, ragged by it) carry the rows, the aspect as
+   `TsWesternAspect`. Node, Python and Dart read `chart.westernAspects`
+   (`western_aspects` in Python). Dart types the model as `OrbModel`
+   with `leo`, `lilly`, `moieties` and `byAspect`, and
+   `WesternAspectRequest.lilly` is Lilly's reading. The parity runners
+   ask six aspects under moieties over the ten planets, so a model
+   other than the default and a non-Ptolemaic aspect both cross; the
+   five bindings agree on all 17169 values.
