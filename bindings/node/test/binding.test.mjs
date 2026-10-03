@@ -2281,6 +2281,48 @@ test('a chart carries its progressions', () => {
 });
 
 /**
+ * The outer planets cross when asked: none unless `outerPlanets`, then
+ * Uranus, Neptune and Pluto in the grahas' shape with the nine unmoved,
+ * a progression's later charts carrying them, and Leo's progressed Moon
+ * quincunx Uranus in April 1907 (p. 41) (`03-design/western-outer-planets.md`).
+ */
+test('a chart carries the outer planets when asked', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const london = { place: { latitude: 51.5, longitude: 0, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2400629.742361111;
+  const bare = ctx.chart.found({ instant: birth, ...london });
+  assert.deepEqual(bare.outer, []);
+  const asked = ctx.chart.found({ instant: birth, ...london, outerPlanets: true });
+  assert.deepEqual(
+    asked.outer.map((at) => at.graha),
+    ['graha.URANUS', 'graha.NEPTUNE', 'graha.PLUTO'],
+  );
+  assert.deepEqual(asked.grahas, bare.grahas, 'the nine are unmoved');
+  for (const at of asked.outer) {
+    assert.ok(at.distanceAu > 15 && at.house.bhava >= 1 && at.house.bhava <= 12, at.graha);
+  }
+
+  const at = birth + 46 * 365.242189;
+  const later = ctx.chart.found({ instant: birth, ...london, outerPlanets: true, progressions: { at } }).progressions;
+  assert.equal(later.progressed.grahas.length, 12);
+  assert.equal(later.directed.planets.length, 12);
+  assert.equal(later.progressed.grahas[11].graha, 'graha.PLUTO');
+
+  const contacts = { from: 2417484.5, to: 2417941.5, grahas: ['MOON'], points: ['URANUS'] };
+  const found = ctx.chart.found({ instant: birth, ...london, outerPlanets: true, progressions: { contacts } }).progressions;
+  assert.equal(found.contacts.length, 1);
+  const [contact] = found.contacts;
+  assert.deepEqual([contact.to, contact.angle], [{ point: 'GRAHA', graha: 'graha.URANUS' }, 150]);
+  assert.ok(contact.life >= 2417635.5 && contact.life < 2417696.5, `${contact.life}: March or April 1907`);
+  assert.throws(
+    () => ctx.chart.found({ instant: birth, ...london, progressions: { contacts } }),
+    (error) => error instanceof TeistroError,
+    'a birth that did not place Uranus has no Uranus to reach',
+  );
+  ctx.dispose();
+});
+
+/**
  * Valens's lots cross whole: the sect and the rules read back as a request
  * would write them, all fourteen in the catalogue's order, Fortune where
  * its formula puts it and Daimon its mirror in the ascendant, a batch the

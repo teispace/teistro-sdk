@@ -350,6 +350,7 @@ const charts = geo.chart.foundMany({
   vaiseshikamsa: true,
   dashaPhala: true,
   jaimini: true,
+  outerPlanets: true,
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
   sadeSati: { from: 2460676.5, to: 2464329, reckoning: 'DEGREE', spells: [4, 7, 8] },
@@ -787,6 +788,13 @@ for (const chart of charts) {
     put(`chart-${i}-graha-${j}-house-method`, graha.house.method);
     put(`chart-${i}-graha-${j}-placement`, graha.placement.bhava);
   });
+  // Uranus, Neptune and Pluto, which the request asks beside the nine.
+  chart.outer.forEach((at, j) =>
+    put(
+      `chart-${i}-outer-${j}`,
+      `${at.graha} ${number(at.longitudeDeg)} ${number(at.latitudeDeg)} ${number(at.speedDegPerDay)} ${at.house.bhava} ${at.placement.bhava}`,
+    ),
+  );
   chart.houses.forEach((bhava, k) => {
     put(`chart-${i}-house-${k}-madhya`, bhava.madhyaDeg);
     put(`chart-${i}-house-${k}-sandhi`, bhava.sandhiDeg);
