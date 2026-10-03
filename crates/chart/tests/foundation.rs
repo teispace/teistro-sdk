@@ -473,7 +473,7 @@ fn every_shipped_profile_founds_a_chart_from_a_place() {
             ChartKind::Natal,
         ) {
             Ok(chart) => chart,
-            // The analytic test provider answers eight bodies and no true
+            // The analytic test provider answers eleven bodies and no true
             // node, so `kp-default` cannot be founded over it. That is a
             // provider's coverage and not the centre's doing, and the
             // difference is the point: the refusal must name a body.
