@@ -45,6 +45,11 @@ import type {
   Perfection,
   PerfectionRequest,
   Matter,
+  ProgressionsRequest,
+  Progressions,
+  ProgressedContact,
+  NatalPoint,
+  Motion,
   Application,
   ApplicationKind,
   Impediment,
@@ -945,6 +950,42 @@ function thePerfection(ctx: Context): string {
 }
 
 void thePerfection;
+
+// Progressions read all the way down, a request naming both an instant
+// and a window.
+function theProgressions(ctx: Context): string {
+  const asked: ProgressionsRequest = {
+    at: 2417505.5,
+    year: 'NOON_SIDEREAL_TIME',
+    angles: 'SOLAR_ARC_LONGITUDE',
+    direction: { PER_YEAR: 1 },
+    contacts: { from: 2417484.5, to: 2417941.5, grahas: ['MOON'], points: ['LAGNA', 'MERCURY'], aspects: [135] },
+  };
+  const read: Progressions | null = ctx.chart.found({
+    instant: 2400629.742361111,
+    place: { latitude: 51.5, longitude: 0, altitude: 0 },
+    utcOffsetSeconds: 0,
+    progressions: asked,
+  }).progressions;
+  if (read === null) return 'none';
+  // @ts-expect-error a year is a measure's name, not a number of days
+  const misread: ProgressionsRequest = { year: 365.25 };
+  const contact: ProgressedContact | undefined = read.contacts?.[0];
+  const to: NatalPoint | undefined = contact?.to;
+  return [
+    read.progressed?.armcDeg ?? Number.NaN,
+    read.progressed?.angles.midheavenDeg ?? Number.NaN,
+    read.progressed?.grahas[0]?.speedDegPerDay ?? Number.NaN,
+    read.directed?.arcDeg ?? Number.NaN,
+    read.directed?.planets[0]?.longitudeDeg ?? Number.NaN,
+    contact?.life ?? Number.NaN,
+    contact?.motion satisfies Motion | 'unknown' | undefined,
+    to?.point ?? 'none',
+    String(misread),
+  ].join();
+}
+
+void theProgressions;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them
