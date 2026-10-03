@@ -4,7 +4,9 @@ Status: `built`, 2026-10-03, written from the sources before any code.
 Every step is built: `sdk.chart().antiscia`, held to Lilly's p. 181
 table and to a recast of George V, measured over the corpus's births in
 [`antiscia-measured.md`](antiscia-measured.md), and crossing to every
-binding as `chart.antiscia`, with parity.
+binding as `chart.antiscia`, with parity; and the antiscia across two
+charts, George V against Queen Mary, as `sdk.chart().synastry_antiscia`
+and every binding's `chart.synastryAntiscia`.
 
 [`western-declinations.md`](western-declinations.md) reads two bodies
 the same distance from the equator. Lilly reads the same equality along
@@ -89,6 +91,14 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
    it (sections 91 to 93). An unpaired planet crosses as a `paired` flag
    on its point, so a binding rebuilds the list without a second
    section.
+7. **Across two charts, on the same engine.** A synastry's `antiscia`
+   (the same record) pairs every planet of the chart with every planet
+   of the partner's, the chart's first, so a planet may pair with its
+   own namesake. The partner's planets are reflected once for the
+   batch, and the pairs cross in sections of their own (94, a count a
+   chart, and 95, ragged by it), empty when not asked, as the
+   synastry's parallels do. The lagna does not join: the moieties give
+   it no orb, and an antiscion on an angle waits with the cusps (below).
 
 ## Order of work
 
@@ -100,6 +110,8 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
    under the moieties and under Leo's orbs, and how many share their
    pair with a parallel of declination.
 4. The boundary record and every binding, with parity.
+5. The antiscia across two charts in a synastry, held to a recast of
+   George V against Queen Mary.
 
 ## What building it found
 
@@ -117,6 +129,17 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
   degree of longitude moves a declination by at most 0.4°; the planets'
   latitudes part the rest. So the two tables answer different
   questions, and neither is derived from the other.
+- **George V and Queen Mary hold seven pairs across.** Under the
+  moieties his Saturn's antiscion falls 0.09° from her Jupiter, and six
+  more pairs stand within the orb out to his Mars on her Sun at 10.80°,
+  one of them a contrantiscion (his Mars on her Saturn). All seven agree
+  with the Moshier recast to 0.01°, and a batch's reading equals the
+  direct one.
+- **One pair's columns, two tables.** A chart's own pairs and the pairs
+  across carry the same five columns, so the boundary writes both from
+  one column set and every binding decodes both with one function; only
+  the reading of `first` differs, the earlier in catalogue order in one
+  and the chart's in the other.
 - **An unpaired planet is a column, not a section.** The answer's
   `unpaired` list is a fact about each point, so it crosses as a flag
   beside the point's reflections; every binding reads the list back in
@@ -138,5 +161,3 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
   a sextile or trine and a contrantiscion as a square or opposition.
   The row says which relation holds and leaves the weighing to the
   reader, as the aspect table does.
-- **Antiscia in a synastry.** Read on the same engine across two
-  charts, a later step, as the parallels were.
