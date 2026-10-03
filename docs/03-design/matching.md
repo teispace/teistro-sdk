@@ -123,12 +123,78 @@ for the lists.
   reported, so a consumer with another table sees which cells it
   differs on.
 
+## The ten considerations, decided
+
+Each consideration is a catalogue `koota` member (C282), in
+Kalaprakasika's order, and each answers whether it agrees and the facts
+it read. `n` is the count from the bride's star to the groom's, the
+bride's counting 1.
+
+1. **Dhinam** (`TARA`, pp. 69–72). The 3rd, 5th and 7th of the first
+   nine disagree (C267). In the second nine only a quarter of the
+   groom's star disagrees: the 1st of the 12th, the 4th of the 14th
+   and the 3rd of the 16th (C268). The third nine agrees except the
+   22nd, *Vadha-Vainasika*, and the 27th unless the signs are one.
+   - One star for both is read by p. 71's lists: excellent and neutral
+     agree, the eight to avoid disagree. A star across two signs
+     agrees when the groom's quarter is the earlier (C270).
+   - Two stars in one sign agree when the groom's is prior. His may
+     be the next one when hers is Ashvini, Krittika, Mrigashira,
+     Magha, Hasta, Swati, Purva Ashadha or Shatabhisha. Bharani with
+     Krittika, Dhanishtha with Shatabhisha and Pushya with Ashlesha
+     are left out of the rule and read by the count.
+   - The four happy pairs agree whoever is the bride (C269). The six
+     unhappy pairs of p. 70 are all 7th counts, and a test holds that
+     they disagree.
+2. **Ganam** (`GANA`, p. 72). The same gana agrees, and Deva with
+   Manushya either way round (C271). Deva with Rakshasa and Manushya
+   with Rakshasa disagree. The reading says when the bride's star
+   stands beyond the 14th from the groom's, which "diminishes" the
+   Rakshasa and does not lift it (C279). The nine Manushya are v. 29's
+   (C265).
+3. **Mahendra** (p. 72): `n` is 4, 7, 10 and so on to 25.
+4. **Sthree-Dheergham** (`STREE_DEERGHA`, p. 72): `n` beyond the
+   13th; beyond the 7th is a knob (C272).
+5. **Yoni** (p. 73) on Kalaprakasika's own table and eight enmities
+   (C278): an enmity disagrees, the same yoni or any other agrees.
+6. **Rasi** (`BHAKOOT`, pp. 73–74), the groom's sign counted from the
+   bride's. The 7th, 8th to 12th and the 1st agree (C280); the 2nd to
+   the 6th disagree. Two exceptions: the 2nd agrees when the groom's
+   sign is even, and the 6th when the bride's is odd. Both read the
+   bride's sign odd (C281).
+7. **Rasyadhipathi** (`GRAHA_MAITRI`, pp. 74–75) on the chapter's own
+   friendships. It agrees on one lord, or when each lord calls the
+   other a friend. One way is a knob (C273).
+8. **Vasyam** (`VASHYA`, p. 75) agrees when either sign is concordant
+   to the other on p. 75's own table (C266). That table is not the
+   Ashta Koota's `is_vashya`, which takes the human signs and Leo from
+   the verse and makes a sign vashya to itself. A shared sign does not
+   agree (C274).
+9. **Rajju** (p. 75): the same division disagrees, and the reading
+   names it. Each star's division is the folded rule (C275).
+10. **Vedhai** (`VEDHA`, p. 76): a listed pair, or two stars of the
+    Mrigashira–Chitra–Dhanishtha triple, disagree (C276).
+
+**The exception** (p. 76, C277). One lord, friendly lords, or opposite
+signs lift Rajju, Vedhai, Ganam and Rasi. Each of the three is reported,
+and a lifted consideration agrees and says it was lifted.
+
+**The answer** carries the ten rows, the count that agree, and the
+chief five marked: Dhinam, Ganam, Yoni, Rasi and Rajju. The text's
+"at least five" stays the reader's to apply, as the 36 points do.
+
+**Not built here:** the p. 70 fruits of named pairs, and p. 77's sex
+of the stars, gotra and the signs' castes. They are judgments beyond
+the ten, a later step if a consumer asks.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
   by `Native::of_moon`; `ashta_koota(bride, groom, KootaRules) ->
-  AshtaKoota`, each row's `reading` naming its koota; and, still to come,
-  `dasha_koota(bride, groom) -> TenConsiderations`.
+  AshtaKoota`, each row's `reading` naming its koota; and
+  `porutham(bride, groom, PoruthamRules) -> Porutham`, ten rows of
+  `{ koota, agrees, lifted, reading }`. `PoruthamRules` holds the three
+  knobs (C270, C272, C273).
 - `sdk.chart().matching(&bride, &groom, KootaRules)` on two founded
   charts. `sdk.chart().matching_with(&charts, &PartnerMatching)` matches
   a batch with one partner's birth, founded once.
