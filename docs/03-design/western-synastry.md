@@ -162,5 +162,6 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
   Venus, Saturn on Venus) and gives no score. The rows carry the
   distance from exact and the orb, and leave any weighting to the
   reader, as the single chart's table does.
-- **The parallels.** They wait on the declinations, as they do for one
-  chart.
+- **The parallels.** They are read on the declinations' page
+  ([`western-declinations.md`](western-declinations.md), decision 8): a
+  synastry's `parallels` asks for them beside the aspects.
