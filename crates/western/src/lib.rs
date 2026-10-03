@@ -31,6 +31,7 @@
 #![doc(html_no_source)]
 
 mod angles;
+mod antiscia;
 mod arc;
 mod aspects;
 mod declination;
@@ -38,6 +39,10 @@ mod progression;
 mod synastry;
 
 pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
+pub use antiscia::{
+    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, Reflected, antiscia, antiscion_deg,
+    contrantiscion_deg,
+};
 pub use arc::ArcMeasure;
 pub use aspects::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, Placed, WesternAspect, WesternAspectRow, aspects,

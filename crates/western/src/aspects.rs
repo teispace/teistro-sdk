@@ -244,7 +244,7 @@ impl OrbModel {
 
     /// Every orb the model states is a finite angle from 0 to 90°, and
     /// no body or aspect is listed twice.
-    fn check(&self) -> Result<(), Error> {
+    pub(crate) fn check(&self) -> Result<(), Error> {
         let orbs: Vec<f64> = match self {
             OrbModel::Leo => return Ok(()),
             OrbModel::Moieties { orbs } => {
