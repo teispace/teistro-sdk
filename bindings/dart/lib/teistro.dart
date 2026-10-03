@@ -682,6 +682,7 @@ final class ChartArea extends _Area {
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
+    SynastryRequest? synastry,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -717,6 +718,7 @@ final class ChartArea extends _Area {
     perfection: perfection,
     progressions: progressions,
     westernAspects: westernAspects,
+    synastry: synastry,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -772,6 +774,7 @@ final class ChartArea extends _Area {
     PerfectionRequest? perfection,
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
+    SynastryRequest? synastry,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -830,6 +833,7 @@ final class ChartArea extends _Area {
             perfectionJson: perfection?._json,
             progressionsJson: progressions?._json,
             westernAspectsJson: westernAspects?._json,
+            synastryJson: synastry?._json,
           ),
         ),
       ),
@@ -4230,40 +4234,81 @@ final Expando<List<List<WesternAspectRow>>> _westernAspects =
 List<List<WesternAspectRow>> _westernAspectsOf(Charts batch) =>
     _westernAspects[batch] ??= _decodeWesternAspects(batch);
 
+/// A per-chart table from a count section's [counts] and the [rows] it is
+/// ragged by: each chart's rows, or none at all when nothing was asked.
+List<List<T>> _ragged<T>(
+  Charts batch,
+  List<int> counts,
+  int rows,
+  String names,
+  T Function(int at) read,
+) {
+  final charts = batch.cast.instant.length;
+  if (counts.isEmpty) return List<List<T>>.unmodifiable(const []);
+  final total = counts.fold<int>(0, (sum, n) => sum + n);
+  if (counts.length != charts || rows != total) {
+    throw StateError(
+      '$names: ${counts.length} counts and $rows rows for $charts charts',
+    );
+  }
+  final tables = <List<T>>[];
+  var start = 0;
+  for (final count in counts) {
+    tables.add(
+      List<T>.unmodifiable([
+        for (var at = start; at < start + count; at++) read(at),
+      ]),
+    );
+    start += count;
+  }
+  return List<List<T>>.unmodifiable(tables);
+}
+
 /// `western_aspects` holds a row a chart, or none when none was asked, and
 /// `western_aspect_rows` is ragged by its count.
 List<List<WesternAspectRow>> _decodeWesternAspects(Charts batch) {
-  final counts = batch.westernAspects;
   final r = batch.westernAspectRows;
-  final charts = batch.cast.instant.length;
-  if (counts.length == 0) return const <List<WesternAspectRow>>[];
-  final rows = counts.count.fold<int>(0, (sum, n) => sum + n);
-  if (counts.length != charts || r.length != rows) {
-    throw StateError(
-      'western_aspects has ${counts.length} rows and western_aspect_rows '
-      '${r.length} for $charts charts',
-    );
-  }
-  var start = 0;
-  return List<List<WesternAspectRow>>.unmodifiable([
-    for (var k = 0; k < charts; k++)
-      () {
-        final first = start;
-        start += counts.count[k];
-        return List<WesternAspectRow>.unmodifiable([
-          for (var at = first; at < start; at++)
-            WesternAspectRow(
-              first: Graha.byId(r.first[at]),
-              second: Graha.byId(r.second[at]),
-              aspect: WesternAspect.byId(r.aspect[at]),
-              apartDeg: r.apartDeg[at],
-              fromExactDeg: r.fromExactDeg[at],
-              orbDeg: r.orbDeg[at],
-              applying: r.applying[at] == 1,
-            ),
-        ]);
-      }(),
-  ]);
+  return _ragged(
+    batch,
+    batch.westernAspects.count,
+    r.length,
+    'western_aspects and western_aspect_rows',
+    (at) => WesternAspectRow(
+      first: Graha.byId(r.first[at]),
+      second: Graha.byId(r.second[at]),
+      aspect: WesternAspect.byId(r.aspect[at]),
+      apartDeg: r.apartDeg[at],
+      fromExactDeg: r.fromExactDeg[at],
+      orbDeg: r.orbDeg[at],
+      applying: r.applying[at] == 1,
+    ),
+  );
+}
+
+final Expando<List<List<SynastryRow>>> _synastries =
+    Expando<List<List<SynastryRow>>>('synastries');
+
+List<List<SynastryRow>> _synastriesOf(Charts batch) =>
+    _synastries[batch] ??= _decodeSynastries(batch);
+
+/// `synastry` holds a row a chart, or none when none was asked, and
+/// `synastry_rows` is ragged by its count.
+List<List<SynastryRow>> _decodeSynastries(Charts batch) {
+  final r = batch.synastryRows;
+  return _ragged(
+    batch,
+    batch.synastry.count,
+    r.length,
+    'synastry and synastry_rows',
+    (at) => SynastryRow(
+      first: _pointAt(r.firstLagna[at], r.firstGraha[at]),
+      second: _pointAt(r.secondLagna[at], r.secondGraha[at]),
+      aspect: WesternAspect.byId(r.aspect[at]),
+      apartDeg: r.apartDeg[at],
+      fromExactDeg: r.fromExactDeg[at],
+      orbDeg: r.orbDeg[at],
+    ),
+  );
 }
 
 final Expando<List<Matter>> _perfections = Expando<List<Matter>>('perfections');
@@ -6583,11 +6628,13 @@ final class WesternAspectRequest {
   final List<WesternAspect>? aspects;
   final OrbModel orbs;
 
-  String get _json => jsonEncode(<String, Object?>{
+  Map<String, Object?> get _record => <String, Object?>{
     if (aspects case final aspects?)
       'aspects': [for (final a in aspects) a.key],
     'orbs': orbs._record,
-  });
+  };
+
+  String get _json => jsonEncode(_record);
 }
 
 /// One pair of planets within an aspect's orb, the pair in catalogue
@@ -6628,6 +6675,141 @@ final class WesternAspectRow extends _Value {
     fromExactDeg,
     orbDeg,
     applying,
+  ];
+}
+
+/// The birth every chart of a batch is read against in a synastry: its
+/// instant, where it happened and the clock kept there.
+///
+/// ```dart
+/// final mary = Partner(
+///   instant: 2403113.4993,
+///   place: Observer(latitudeDeg: Latitude(51.5058), longitudeDeg: Longitude(-0.1878), altitudeM: Altitude(0)),
+/// );
+/// ```
+final class Partner {
+  const Partner({
+    required this.instant,
+    required this.place,
+    this.utcOffsetSeconds = 0,
+  });
+
+  /// The birth's instant, a Julian day in UTC.
+  final double instant;
+
+  /// Where it happened.
+  final Observer place;
+
+  /// The partner's clock, seconds east of UTC; UTC by default.
+  final int utcOffsetSeconds;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'instant': instant,
+    'place': <String, Object?>{
+      'latitude': place.latitudeDeg,
+      'longitude': place.longitudeDeg,
+      'altitude': place.altitudeM,
+    },
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+}
+
+/// Which zodiac a synastry compares two charts in (C241).
+enum SynastryZodiac {
+  /// Both charts' tropical longitudes, Leo's frame; the default.
+  tropical('TROPICAL'),
+
+  /// Each chart's longitudes as founded, for a sidereal reader; two charts
+  /// founded in different zodiacs are refused.
+  charts('CHARTS');
+
+  const SynastryZodiac(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// A synastry: every chart of a batch read against one [partner]'s birth
+/// (`03-design/western-synastry.md`), under the aspects and orbs a chart's
+/// own [table] reads, each chart's [lagna] beside its planets, in a
+/// [zodiac]: Leo's nine under his orbs, the lagna read, tropically by
+/// default (C240–C242).
+///
+/// ```dart
+/// final asked = SynastryRequest(mary, lagna: false);
+/// final lilly = SynastryRequest.lilly(mary);
+/// ```
+final class SynastryRequest {
+  const SynastryRequest(
+    this.partner, {
+    this.table = const WesternAspectRequest(),
+    this.lagna = true,
+    this.zodiac = SynastryZodiac.tropical,
+  });
+
+  /// Lilly's reading: the Ptolemaic five under his moieties, which give the
+  /// lagna no orb, so it is left out.
+  const SynastryRequest.lilly(
+    this.partner, {
+    this.zodiac = SynastryZodiac.tropical,
+  }) : table = WesternAspectRequest.lilly,
+       lagna = false;
+
+  /// Whose birth every chart is read against.
+  final Partner partner;
+
+  /// The aspects, and the orbs they are read under.
+  final WesternAspectRequest table;
+
+  /// Whether each chart's lagna joins its planets; it stands as a planet in
+  /// Leo's orbs (C242), and the moieties give it none.
+  final bool lagna;
+
+  /// The zodiac the two are compared in.
+  final SynastryZodiac zodiac;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'partner': partner._record,
+    ...table._record,
+    'lagna': lagna,
+    'zodiac': zodiac.key,
+  });
+}
+
+/// One point of a chart and one of the partner's within an aspect's orb
+/// (`03-design/western-synastry.md`): [first] is the chart's, [second] the
+/// partner's.
+final class SynastryRow extends _Value {
+  const SynastryRow({
+    required this.first,
+    required this.second,
+    required this.aspect,
+    required this.apartDeg,
+    required this.fromExactDeg,
+    required this.orbDeg,
+  });
+
+  final NatalPoint first;
+  final NatalPoint second;
+  final WesternAspect aspect;
+
+  /// The shorter arc between them, degrees 0 to 180.
+  final double apartDeg;
+
+  /// How far that arc is from the aspect's exact angle, degrees.
+  final double fromExactDeg;
+
+  /// The orb the model allowed the pair at this aspect, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [
+    first,
+    second,
+    aspect,
+    apartDeg,
+    fromExactDeg,
+    orbDeg,
   ];
 }
 
@@ -12565,6 +12747,13 @@ final class Chart {
   /// (`03-design/western-aspects.md`).
   List<WesternAspectRow>? get westernAspects {
     final all = _westernAspectsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Western aspects between this chart and the partner's, closest
+  /// first; null unless `synastry` asked (`03-design/western-synastry.md`).
+  List<SynastryRow>? get synastry {
+    final all = _synastriesOf(batch);
     return index < all.length ? all[index] : null;
   }
 
