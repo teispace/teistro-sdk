@@ -1989,7 +1989,9 @@ the astronomical numbers do not move. Nothing else computes yet.
     lagna stands as a planet in Leo's orbs and has none among Lilly's
     moieties (C242). Leo's George V and Queen Mary (*How to Judge a
     Nativity*, p. 130) are a test. `OrbModel::point_orb_deg` gives the
-    orb between any two `NatalPoint`s.
+    orb between any two `NatalPoint`s, and `NatalPoint` is ordered and
+    hashable. `synastry-measured.md` reads every pair of the corpus's
+    births both ways and sizes C241.
   - **The outer planets in a chart** (`western-outer-planets.md`,
     `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
     places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside

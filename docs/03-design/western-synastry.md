@@ -1,9 +1,10 @@
 # Synastry: the Western aspects between two charts (the `western` module)
 
 Status: `building`, 2026-10-03, written from the sources before any
-code. Step 2 is built: `western::synastry` on the engine a chart's own
-table reads, and `sdk.chart().synastry`, held to George V and Queen
-Mary.
+code. Steps 2 and 3 are built: `western::synastry` on the engine a
+chart's own table reads, and `sdk.chart().synastry`, held to George V
+and Queen Mary, and measured over every pair of the corpus's births in
+[`synastry-measured.md`](synastry-measured.md).
 
 [`western-aspects.md`](western-aspects.md) answers *which aspects does
 this chart hold?* Synastry asks the same of two charts: which of one
@@ -121,6 +122,13 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
   difference to 1e-9° when read in each chart's own zodiac. That is
   C241's whole size for this pair; it grows by about 50″ a year of age
   gap.
+- **C241 is small for a couple and large across centuries.** Over the
+  1485 pairs of the corpus's births, the two readings part on 1.2% of
+  the contacts either finds when the births are under ten years apart,
+  and on 42.6% when they are a century or more apart; the measured page
+  gates that the share grows band by band. A synastry between
+  contemporaries barely depends on C241; one between a person and a
+  historical chart does.
 - **The lagna beside a luminary.** The first test expected the lagna 9°
   from the other's Sun to hold nothing, reading "a planet's orb" as 8°.
   Leo's rule widens any luminary–planet pair to 10°, so it holds; the
