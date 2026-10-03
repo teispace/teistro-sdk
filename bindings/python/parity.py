@@ -570,6 +570,7 @@ def main() -> None:
                 },
             },
             parallels={"orbDeg": 1.5},
+            antiscia={},
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1158,6 +1159,24 @@ def main() -> None:
                     f"chart-{i}-parallel-{n}",
                     f"{pair.first.full_key} {pair.second.full_key} {int(pair.contrary)} "
                     f"{number(pair.apart_deg)} {number(pair.orb_deg)}",
+                )
+            reflected = chart.antiscia
+            assert reflected is not None
+            for reflection in reflected.points:
+                put(
+                    f"chart-{i}-antiscion-{reflection.graha.full_key}",
+                    f"{number(reflection.antiscion_deg)} {number(reflection.contrantiscion_deg)}",
+                )
+            put(
+                f"chart-{i}-antiscia-unpaired",
+                ",".join(one.full_key for one in reflected.unpaired) or "-",
+            )
+            put(f"chart-{i}-antiscia-count", str(len(reflected.pairs)))
+            for n, reflected_pair in enumerate(reflected.pairs):
+                put(
+                    f"chart-{i}-antiscia-{n}",
+                    f"{reflected_pair.first.full_key} {reflected_pair.second.full_key} "
+                    f"{int(reflected_pair.contrary)} {number(reflected_pair.apart_deg)} {number(reflected_pair.orb_deg)}",
                 )
             synastry = chart.synastry
             assert synastry is not None

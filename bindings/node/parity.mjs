@@ -375,6 +375,7 @@ const charts = geo.chart.foundMany({
     },
   },
   parallels: { orbDeg: 1.5 },
+  antiscia: {},
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -769,6 +770,18 @@ for (const chart of charts) {
   parallels.forEach((at, n) =>
     put(
       `chart-${i}-parallel-${n}`,
+      `${at.first} ${at.second} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
+    ),
+  );
+  const reflected = chart.antiscia;
+  reflected.points.forEach((at) =>
+    put(`chart-${i}-antiscion-${at.graha}`, `${number(at.antiscionDeg)} ${number(at.contrantiscionDeg)}`),
+  );
+  put(`chart-${i}-antiscia-unpaired`, reflected.unpaired.join(',') || '-');
+  put(`chart-${i}-antiscia-count`, `${reflected.pairs.length}`);
+  reflected.pairs.forEach((at, n) =>
+    put(
+      `chart-${i}-antiscia-${n}`,
       `${at.first} ${at.second} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
     ),
   );
