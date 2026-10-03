@@ -1434,8 +1434,12 @@ export interface Antiscion {
 
 /** Two planets in antiscion within the orb. */
 export interface AntiscionRow {
-  /** The earlier planet of the pair, in catalogue order. */
+  /**
+   * The first planet: in a chart's own pair the earlier in catalogue
+   * order, across a synastry the chart's.
+   */
   readonly first: Graha | 'unknown';
+  /** The second: across a synastry, the partner's. */
   readonly second: Graha | 'unknown';
   /** Whether it is the contrantiscion, the reflection about the equinoxes. */
   readonly contrary: boolean;
@@ -1510,6 +1514,13 @@ export interface SynastryRequest extends WesternAspectRequest {
    * it (C243). The lagna joins as `lagna` says.
    */
   readonly parallels?: ParallelRequest;
+  /**
+   * The antiscia across the two charts too (`chart.synastryAntiscia`):
+   * each planet of the chart whose reflection about the solstices or the
+   * equinoxes falls on one of the partner's, within the orb read at the
+   * conjunction (Lilly's moieties when `{}`, C244).
+   */
+  readonly antiscia?: AntisciaRequest;
 }
 
 /**
@@ -3228,6 +3239,12 @@ export declare class Chart {
    * (`03-design/western-declinations.md`).
    */
   readonly synastryParallels: readonly SynastryParallelRow[] | null;
+  /**
+   * The antiscia between this chart and the partner's, closest first;
+   * `null` unless `synastry` asked for `antiscia`
+   * (`03-design/western-antiscia.md`).
+   */
+  readonly synastryAntiscia: readonly AntiscionRow[] | null;
   /**
    * The chart's distances from the equator; `null` unless `parallels`
    * asked (`03-design/western-declinations.md`).

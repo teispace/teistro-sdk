@@ -1166,6 +1166,21 @@ export class Chart {
   }
 
   /**
+   * The antiscia between this chart and the partner's
+   * (`synastry: { partner, antiscia: {} }`), closest first: a planet of
+   * this chart whose tropical longitude and one of the partner's sum to
+   * 180°, or 0° for the contrantiscion, within the orb read at the
+   * conjunction, Lilly's moieties by default (C244); `null` unless the
+   * synastry record asked for them (`03-design/western-antiscia.md`).
+   *
+   * Each row is `{ first, second, contrary, apartDeg, orbDeg }`, `first`
+   * this chart's planet and `second` the partner's.
+   */
+  get synastryAntiscia() {
+    return synastriesOf(this.#batch).antiscia[this.#index] ?? null;
+  }
+
+  /**
    * The chart's distances from the equator (`parallels: { orbDeg }` asks
    * for them with the parallels); `null` unless asked for
    * (`03-design/western-declinations.md`).
@@ -3517,17 +3532,18 @@ function westernAspectsOf(batch) {
   return decoded;
 }
 
-/** Each batch's synastries, their aspects and parallels, decoded once however many charts read them. */
+/** Each batch's synastries, their aspects, parallels and antiscia, decoded once however many charts read them. */
 const SYNASTRIES = new WeakMap();
 
 /**
  * Every chart's synastry with the partner in a batch: `synastry` holds a
  * row a chart, or none when none was asked, and `synastry_rows` is ragged
  * by its count (`03-design/western-synastry.md`); `synastry_parallels` and
- * its rows the same for the parallels across the two.
+ * `synastry_antiscia` and their rows the same for the parallels and the
+ * antiscia across the two.
  *
  * @param {Charts} batch
- * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[] }}
+ * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[], antiscia: readonly (readonly object[]|null)[] }}
  */
 function synastriesOf(batch) {
   let decoded = SYNASTRIES.get(batch);
@@ -3559,7 +3575,11 @@ function synastriesOf(batch) {
         orbDeg: p.orbDeg[row],
       }),
   );
-  decoded = Object.freeze({ aspects, parallels });
+  const a = d.synastryAntiscionRows;
+  const antiscia = raggedOf(batch, d.synastryAntiscia.count, a.first.length, 'synastry and synastry_antiscion_rows', (row) =>
+    antiscionRowOf(a, row),
+  );
+  decoded = Object.freeze({ aspects, parallels, antiscia });
   SYNASTRIES.set(batch, decoded);
   return decoded;
 }
@@ -3614,6 +3634,23 @@ function declinationsOf(batch) {
   return decoded;
 }
 
+/**
+ * One pair in antiscion, a chart's own (`antiscion_rows`) or across a
+ * synastry (`synastry_antiscion_rows`): the two sections share columns.
+ *
+ * @param {{ first: ArrayLike<number>, second: ArrayLike<number>, contrary: ArrayLike<number>, apartDeg: ArrayLike<number>, orbDeg: ArrayLike<number> }} r
+ * @param {number} at
+ */
+function antiscionRowOf(r, at) {
+  return Object.freeze({
+    first: GrahaById.get(r.first[at]) ?? 'unknown',
+    second: GrahaById.get(r.second[at]) ?? 'unknown',
+    contrary: r.contrary[at] !== 0,
+    apartDeg: r.apartDeg[at],
+    orbDeg: r.orbDeg[at],
+  });
+}
+
 /** Each batch's antiscia, decoded once however many charts read them. */
 const ANTISCIA = new WeakMap();
 
@@ -3634,13 +3671,7 @@ function antisciaOf(batch) {
   const graha = (id) => GrahaById.get(id) ?? 'unknown';
   const points = raggedOf(batch, d.antiscia.pointCount, p.graha.length, 'antiscia and antiscion_points', (at) => at);
   const pairs = raggedOf(batch, d.antiscia.pairCount, r.first.length, 'antiscia and antiscion_rows', (at) =>
-    Object.freeze({
-      first: graha(r.first[at]),
-      second: graha(r.second[at]),
-      contrary: r.contrary[at] !== 0,
-      apartDeg: r.apartDeg[at],
-      orbDeg: r.orbDeg[at],
-    }),
+    antiscionRowOf(r, at),
   );
   decoded = Object.freeze(
     points.map((rows, k) =>

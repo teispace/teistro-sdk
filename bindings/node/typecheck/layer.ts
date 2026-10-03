@@ -1011,6 +1011,7 @@ function theWesternAspects(ctx: Context): string {
     lagna: false,
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
+    antiscia: { orbs: { model: 'LEO' } },
   };
   const chart = ctx.chart.found({
     instant: 2402390.5542,
@@ -1027,6 +1028,7 @@ function theWesternAspects(ctx: Context): string {
   const across: SynastryRow | undefined = chart.synastry?.[0];
   const theirs: NatalPoint | undefined = across?.second;
   const level: SynastryParallelRow | undefined = chart.synastryParallels?.[0];
+  const reflected: AntiscionRow | undefined = chart.synastryAntiscia?.[0];
   return [
     own?.first ?? 'none',
     own?.applying ?? false,
@@ -1036,6 +1038,7 @@ function theWesternAspects(ctx: Context): string {
     across?.fromExactDeg ?? Number.NaN,
     level?.second.point ?? 'none',
     level?.contrary ?? false,
+    reflected?.second ?? 'none',
     String(alone),
     String(sidereal),
   ].join();
