@@ -3520,7 +3520,7 @@ final class ChartsProgressions {
 /// The `progressed_grahas` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+/// The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
 final class ChartsProgressedGrahas {
   const ChartsProgressedGrahas({
     required this.graha,
@@ -3549,7 +3549,7 @@ final class ChartsProgressedGrahas {
 /// The `directed_grahas` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+/// The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
 final class ChartsDirectedGrahas {
   const ChartsDirectedGrahas({
     required this.graha,
@@ -3603,6 +3603,75 @@ final class ChartsProgressedContacts {
 
   /// Which way the progressed planet was moving.
   final Uint8List motion;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `outer` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
+final class ChartsOuter {
+  const ChartsOuter({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.latitudeDeg,
+    required this.distanceAu,
+    required this.speedDegPerDay,
+    required this.houseBhava,
+    required this.houseMethod,
+    required this.houseThrough,
+    required this.houseFromMadhyaDeg,
+    required this.placementBhava,
+    required this.placementMethod,
+    required this.placementThrough,
+    required this.placementFromMadhyaDeg,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Its longitude in the chart's zodiac, degrees.
+  final Float64List longitudeDeg;
+
+  /// Its longitude in the tropical zodiac, degrees.
+  final Float64List tropicalDeg;
+
+  /// Its latitude, degrees.
+  final Float64List latitudeDeg;
+
+  /// Its distance in astronomical units; zero for a point that has none.
+  final Float64List distanceAu;
+
+  /// Its longitude speed, degrees per day; negative when retrograde.
+  final Float64List speedDegPerDay;
+
+  /// The bhava it stands in, 1 to 12.
+  final Uint8List houseBhava;
+
+  /// The house system that produced that bhava.
+  final Uint16List houseMethod;
+
+  /// How far through the bhava it stands, 0 to 1.
+  final Float64List houseThrough;
+
+  /// Its distance from the bhava's madhya, degrees.
+  final Float64List houseFromMadhyaDeg;
+
+  /// The bhava of the chart's chalit it stands in, 1 to 12.
+  final Uint8List placementBhava;
+
+  /// The house system that produced the chalit.
+  final Uint16List placementMethod;
+
+  /// How far through that bhava it stands, 0 to 1.
+  final Float64List placementThrough;
+
+  /// Its distance from that bhava's madhya, degrees.
+  final Float64List placementFromMadhyaDeg;
 
   /// The number of rows every column holds.
   final int length;
@@ -3800,6 +3869,7 @@ final class Charts {
     required this.progressedGrahas,
     required this.directedGrahas,
     required this.progressedContacts,
+    required this.outer,
   });
 
   /// What kind of chart these are.
@@ -4077,14 +4147,17 @@ final class Charts {
   /// Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
   final ChartsProgressions progressions;
 
-  /// The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+  /// The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
   final ChartsProgressedGrahas progressedGrahas;
 
-  /// The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+  /// The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
   final ChartsDirectedGrahas directedGrahas;
 
   /// Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
   final ChartsProgressedContacts progressedContacts;
+
+  /// Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
+  final ChartsOuter outer;
 
 }
 
@@ -4173,6 +4246,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atProgressedGrahas = blob.section(78, 'progressed_grahas');
   final atDirectedGrahas = blob.section(79, 'directed_grahas');
   final atProgressedContacts = blob.section(80, 'progressed_contacts');
+  final atOuter = blob.section(81, 'outer');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7479,6 +7553,79 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atProgressedContacts, 6) + atProgressedContacts.count * 1,
       ),
       length: atProgressedContacts.count,
+    ),
+    outer: ChartsOuter(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 0),
+        blob.columnOffset(atOuter, 0) + atOuter.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 1),
+        blob.columnOffset(atOuter, 1) + atOuter.count * 8,
+      ),
+      tropicalDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 2),
+        blob.columnOffset(atOuter, 2) + atOuter.count * 8,
+      ),
+      latitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 3),
+        blob.columnOffset(atOuter, 3) + atOuter.count * 8,
+      ),
+      distanceAu: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 4),
+        blob.columnOffset(atOuter, 4) + atOuter.count * 8,
+      ),
+      speedDegPerDay: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 5),
+        blob.columnOffset(atOuter, 5) + atOuter.count * 8,
+      ),
+      houseBhava: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 6),
+        blob.columnOffset(atOuter, 6) + atOuter.count * 1,
+      ),
+      houseMethod: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 7),
+        blob.columnOffset(atOuter, 7) + atOuter.count * 2,
+      ),
+      houseThrough: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 8),
+        blob.columnOffset(atOuter, 8) + atOuter.count * 8,
+      ),
+      houseFromMadhyaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 9),
+        blob.columnOffset(atOuter, 9) + atOuter.count * 8,
+      ),
+      placementBhava: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 10),
+        blob.columnOffset(atOuter, 10) + atOuter.count * 1,
+      ),
+      placementMethod: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 11),
+        blob.columnOffset(atOuter, 11) + atOuter.count * 2,
+      ),
+      placementThrough: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 12),
+        blob.columnOffset(atOuter, 12) + atOuter.count * 8,
+      ),
+      placementFromMadhyaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atOuter, 13),
+        blob.columnOffset(atOuter, 13) + atOuter.count * 8,
+      ),
+      length: atOuter.count,
     ),
   );
 }

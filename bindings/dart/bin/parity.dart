@@ -504,6 +504,7 @@ void main() {
     vaiseshikamsa: true,
     dashaPhala: true,
     jaimini: true,
+    outerPlanets: true,
     gochar: const GocharRequest(
       instants: [2460676.5, 2460736.5],
       ashtakavarga: true,
@@ -1276,6 +1277,17 @@ void main() {
       put('chart-$i-graha-$j-house', graha.house.bhava);
       put('chart-$i-graha-$j-house-method', graha.house.method.fullKey);
       put('chart-$i-graha-$j-placement', graha.placement.bhava);
+    }
+    // Uranus, Neptune and Pluto, which the request asks beside the nine.
+    final outer = chart.outer;
+    for (var j = 0; j < outer.length; j += 1) {
+      final at = outer[j];
+      put(
+        'chart-$i-outer-$j',
+        '${at.graha.fullKey} ${number(at.longitudeDeg)} '
+            '${number(at.latitudeDeg)} ${number(at.speedDegPerDay)} '
+            '${at.house.bhava} ${at.placement.bhava}',
+      );
     }
     final houses = chart.houses;
     for (var k = 0; k < houses.length; k += 1) {
