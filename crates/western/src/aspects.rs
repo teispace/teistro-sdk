@@ -280,6 +280,10 @@ fn refuse_repeats(members: impl Iterator<Item = &'static str>, what: &str) -> Re
     Ok(())
 }
 
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const ROOT: &str = "westernAspects";
+
 /// What an aspect table is asked: which aspects, under which orbs.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
@@ -324,6 +328,37 @@ impl AspectRequest {
             aspects: WesternAspect::PTOLEMAIC.to_vec(),
             orbs: OrbModel::lilly(),
         }
+    }
+
+    /// The request a binding sends, as JSON: `aspects`, a list of
+    /// [`WesternAspect`] keys (Leo's nine when left out), and `orbs`,
+    /// `{"model": "LEO"}` (the default), `{"model": "MOIETIES", "orbs":
+    /// [{"graha": "SUN", "orbDeg": 17}, …]}` or `{"model": "BY_ASPECT",
+    /// "orbs": [{"aspect": "TRINE", "orbDeg": 6}, …]}`.
+    ///
+    /// ```
+    /// use teistro_western::{AspectRequest, WesternAspect};
+    ///
+    /// let asked = AspectRequest::from_json(r#"{"aspects": ["TRINE", "SQUARE"]}"#)?;
+    /// assert_eq!(asked.aspects, [WesternAspect::Trine, WesternAspect::Square]);
+    /// // A refusal names the field the caller wrote, under the record's root.
+    /// let wide = AspectRequest::from_json(
+    ///     r#"{"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": "TRINE", "orbDeg": 91}]}}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(wide.field(), Some("westernAspects.orbs.orbs"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, and whatever [`AspectRequest::check`] refuses, each named
+    /// under `westernAspects`.
+    pub fn from_json(text: &str) -> Result<AspectRequest, Error> {
+        let asked: AspectRequest = teistro_core::strict::read(text, ROOT)?;
+        asked.check().map_err(|why| why.under(ROOT))?;
+        Ok(asked)
     }
 
     /// Refuses a request no table could answer, by field.
