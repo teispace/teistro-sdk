@@ -48,7 +48,7 @@ after stands in the sign the event says it left and entered.
 
 | crux | question | readings | default | why |
 |---|---|---|---|---|
-| C145 | which aspects a hit list reports | the conjunction and opposition, which every tradition counts; the Western five (0, 60, 90, 120, 180); any set of multiples of 30° | **conjunction and opposition**, the request naming others | a Vedic aspect is a sign's (graha drishti) and not a degree's; degree-exact hits beyond the two both traditions share are the caller's choice, not the SDK's |
+| C145 | which aspects a hit list reports | the conjunction and opposition, which every tradition counts; the Western five (0, 60, 90, 120, 180); any set of multiples of 30° | **conjunction and opposition**, the request naming others, any whole degree to 180 | a Vedic aspect is a sign's (graha drishti) and not a degree's; degree-exact hits beyond the two both traditions share are the caller's choice, not the SDK's. The request took multiples of 30° until the progressed contacts needed Leo's semi-square and sesquiquadrate (`western-progressions.md`) |
 | C146 | the orb of an aspect's window | none (exact only); a fixed orb; an orb per body | **exact only**, the request naming an orb | no text read here sets one; the research page's hit lists (Kala, Solar Fire) take it as a setting |
 
 ## 4. The design
