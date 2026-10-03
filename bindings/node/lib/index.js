@@ -1137,6 +1137,21 @@ export class Chart {
   }
 
   /**
+   * The Western aspects between this chart and the partner's
+   * (`synastry: { partner: { instant, place, utcOffsetSeconds }, aspects,
+   * orbs, lagna, zodiac }`, Leo's nine under his orbs in the tropical
+   * zodiac by default); `null` unless asked for
+   * (`03-design/western-synastry.md`).
+   *
+   * Each row is `{ first, second, aspect, apartDeg, fromExactDeg, orbDeg }`,
+   * closest first: `first` a point of this chart and `second` one of the
+   * partner's, each `{ point: 'GRAHA', graha }` or `{ point: 'LAGNA' }`.
+   */
+  get synastry() {
+    return synastriesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2352,6 +2367,11 @@ export class ChartArea extends Area {
           'westernAspects',
           'a western aspects request record, e.g. {} or { aspects: ["TRINE", "SQUARE"] }',
         ),
+        synastryJson: recordJson(
+          request.synastry,
+          'synastry',
+          'a synastry request record, e.g. { partner: { instant: 2460676.5, place: { latitude, longitude, altitude } } }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -3374,6 +3394,32 @@ function considerationsOf(batch) {
   return decoded;
 }
 
+/**
+ * A per-chart table read from a count section and the rows it is ragged by:
+ * each chart's rows, or `null` for every chart when the count section is
+ * empty because none was asked.
+ *
+ * @param {Charts} batch
+ * @param {ArrayLike<number>} counts the count section's column
+ * @param {number} rows how many rows the ragged section holds
+ * @param {string} names the two sections, for the refusal of a torn blob
+ * @param {(row: number) => object} read one row, by its index in the ragged section
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function raggedOf(batch, counts, rows, names, read) {
+  const charts = batch.decoded.cast.instant.length;
+  if (counts.length === 0) return Object.freeze(Array.from({ length: charts }, () => null));
+  const starts = startsOf(counts);
+  if (counts.length !== charts || starts[charts] !== rows) {
+    throw new Error(`${names}: ${counts.length} counts and ${rows} rows for ${charts} charts`);
+  }
+  return Object.freeze(
+    Array.from({ length: charts }, (_, k) =>
+      Object.freeze(Array.from({ length: counts[k] }, (_, n) => read(starts[k] + n))),
+    ),
+  );
+}
+
 /** Each batch's Western aspect tables, decoded once however many charts read them. */
 const WESTERN_ASPECTS = new WeakMap();
 
@@ -3389,39 +3435,50 @@ function westernAspectsOf(batch) {
   let decoded = WESTERN_ASPECTS.get(batch);
   if (decoded !== undefined) return decoded;
   const d = batch.decoded;
-  const charts = d.cast.instant.length;
-  const counts = d.westernAspects.count;
   const r = d.westernAspectRows;
-  if (counts.length === 0) {
-    decoded = Object.freeze(Array.from({ length: charts }, () => null));
-  } else {
-    const starts = startsOf(counts);
-    if (counts.length !== charts || starts[charts] !== r.first.length) {
-      throw new Error(
-        `western_aspects has ${counts.length} rows and western_aspect_rows ${r.first.length} for ${charts} charts`,
-      );
-    }
-    const graha = (id) => GrahaById.get(id) ?? 'unknown';
-    decoded = Object.freeze(
-      Array.from({ length: charts }, (_, k) =>
-        Object.freeze(
-          Array.from({ length: counts[k] }, (_, n) => {
-            const row = starts[k] + n;
-            return Object.freeze({
-              first: graha(r.first[row]),
-              second: graha(r.second[row]),
-              aspect: WesternAspectById.get(r.aspect[row]) ?? 'unknown',
-              apartDeg: r.apartDeg[row],
-              fromExactDeg: r.fromExactDeg[row],
-              orbDeg: r.orbDeg[row],
-              applying: r.applying[row] !== 0,
-            });
-          }),
-        ),
-      ),
-    );
-  }
+  const graha = (id) => GrahaById.get(id) ?? 'unknown';
+  decoded = raggedOf(batch, d.westernAspects.count, r.first.length, 'western_aspects and western_aspect_rows', (row) =>
+    Object.freeze({
+      first: graha(r.first[row]),
+      second: graha(r.second[row]),
+      aspect: WesternAspectById.get(r.aspect[row]) ?? 'unknown',
+      apartDeg: r.apartDeg[row],
+      fromExactDeg: r.fromExactDeg[row],
+      orbDeg: r.orbDeg[row],
+      applying: r.applying[row] !== 0,
+    }),
+  );
   WESTERN_ASPECTS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's synastries, decoded once however many charts read them. */
+const SYNASTRIES = new WeakMap();
+
+/**
+ * Every chart's synastry with the partner in a batch: `synastry` holds a
+ * row a chart, or none when none was asked, and `synastry_rows` is ragged
+ * by its count (`03-design/western-synastry.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function synastriesOf(batch) {
+  let decoded = SYNASTRIES.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const r = d.synastryRows;
+  decoded = raggedOf(batch, d.synastry.count, r.firstLagna.length, 'synastry and synastry_rows', (row) =>
+    Object.freeze({
+      first: pointOf(r.firstLagna[row], r.firstGraha[row]),
+      second: pointOf(r.secondLagna[row], r.secondGraha[row]),
+      aspect: WesternAspectById.get(r.aspect[row]) ?? 'unknown',
+      apartDeg: r.apartDeg[row],
+      fromExactDeg: r.fromExactDeg[row],
+      orbDeg: r.orbDeg[row],
+    }),
+  );
+  SYNASTRIES.set(batch, decoded);
   return decoded;
 }
 

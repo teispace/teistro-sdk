@@ -1420,6 +1420,55 @@ export interface WesternAspectRow {
   readonly applying: boolean;
 }
 
+/**
+ * A synastry: every chart of the batch read against one partner's birth
+ * (`03-design/western-synastry.md`). The aspect table's fields ask the
+ * same as `westernAspects`; Leo's nine under his orbs, the lagna read, in
+ * the tropical zodiac when every one is absent (C240–C242).
+ *
+ * @example
+ * const chart = ctx.chart.found({
+ *   instant, place, utcOffsetSeconds,
+ *   synastry: { partner: { instant: 2403113.4993, place: { latitude: 51.5058, longitude: -0.1878, altitude: 0 } } },
+ * });
+ * for (const row of chart.synastry ?? []) console.log(row.first, row.aspect, row.second);
+ */
+export interface SynastryRequest extends WesternAspectRequest {
+  /** The partner's birth, founded once for the whole batch. */
+  readonly partner: {
+    readonly instant: number;
+    readonly place: ChartPlace;
+    /** The partner's clock, seconds east of UTC; 0 when absent. */
+    readonly utcOffsetSeconds?: number;
+  };
+  /**
+   * Whether each chart's lagna joins its planets; true by default. It
+   * stands as a planet in Leo's orbs (C242); Lilly's moieties give it none,
+   * so they need `lagna: false`.
+   */
+  readonly lagna?: boolean;
+  /**
+   * `'TROPICAL'` (the default, Leo's frame) or `'CHARTS'`, each chart's
+   * own zodiac, which refuses two charts founded in different ones (C241).
+   */
+  readonly zodiac?: 'TROPICAL' | 'CHARTS';
+}
+
+/** One point of a chart and one of the partner's within an aspect's orb. */
+export interface SynastryRow {
+  /** The chart's point. */
+  readonly first: NatalPoint;
+  /** The partner's point. */
+  readonly second: NatalPoint;
+  readonly aspect: WesternAspect | 'unknown';
+  /** The shorter arc between them, degrees 0 to 180. */
+  readonly apartDeg: number;
+  /** How far that arc is from the aspect's exact angle, degrees. */
+  readonly fromExactDeg: number;
+  /** The orb the model allowed the pair at this aspect, degrees. */
+  readonly orbDeg: number;
+}
+
 /** A progressed or directed planet. */
 export interface ProgressedPlanet {
   readonly graha: Graha | 'unknown';
@@ -3059,6 +3108,11 @@ export declare class Chart {
    */
   readonly westernAspects: readonly WesternAspectRow[] | null;
   /**
+   * The Western aspects between this chart and the partner's, closest
+   * first; `null` unless `synastry` asked (`03-design/western-synastry.md`).
+   */
+  readonly synastry: readonly SynastryRow[] | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4184,6 +4238,11 @@ export interface ChartRequest {
    * default.
    */
   readonly westernAspects?: WesternAspectRequest;
+  /**
+   * The partner every chart is read against, read back as each chart's
+   * `synastry`. None by default.
+   */
+  readonly synastry?: SynastryRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */
