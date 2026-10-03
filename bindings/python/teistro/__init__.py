@@ -510,6 +510,10 @@ __all__ = [
     "Declined",
     "ParallelRequest",
     "ParallelRow",
+    "Antiscia",
+    "AntisciaRequest",
+    "Antiscion",
+    "AntiscionRow",
     "SynastryPartner",
     "SynastryParallelRow",
     "SynastryRequest",
@@ -1559,6 +1563,7 @@ class ChartArea(_Area):
         western_aspects: Optional[WesternAspectRequest] = None,
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
+        antiscia: Optional[AntisciaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1610,6 +1615,7 @@ class ChartArea(_Area):
             western_aspects=western_aspects,
             synastry=synastry,
             parallels=parallels,
+            antiscia=antiscia,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1651,6 +1657,7 @@ class ChartArea(_Area):
         western_aspects: Optional[WesternAspectRequest] = None,
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
+        antiscia: Optional[AntisciaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1724,6 +1731,7 @@ class ChartArea(_Area):
             western_aspects_json=_western_aspects_json(western_aspects),
             synastry_json=_synastry_json(synastry),
             parallels_json=_record_json(parallels, "parallels", "{'orbDeg': 1}"),
+            antiscia_json=_antiscia_json(antiscia),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3887,6 +3895,60 @@ class WesternAspectRow:
 
     applying: bool
     """Whether the faster planet is closing on the exact angle."""
+
+
+class AntisciaRequest(TypedDict, total=False):
+    """What the antiscia are asked (`03-design/western-antiscia.md`):
+    `orbs`, an orb model as `WesternAspectRequest` spells it, read at the
+    conjunction; Lilly's moieties when absent (C244), which give the outer
+    three none.
+
+    >>> lilly: AntisciaRequest = {}
+    >>> leo: AntisciaRequest = {"orbs": {"model": "LEO"}}
+    """
+
+    orbs: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
+class Antiscion:
+    """A planet's two reflections, tropical degrees
+    (`03-design/western-antiscia.md`)."""
+
+    graha: Graha
+    antiscion_deg: float
+    """Its reflection about the solstices: 180° less its longitude."""
+
+    contrantiscion_deg: float
+    """Its reflection about the equinoxes: 360° less its longitude."""
+
+
+@dataclass(frozen=True)
+class AntiscionRow:
+    """Two planets in antiscion within the orb, the pair in catalogue
+    order."""
+
+    first: Graha
+    second: Graha
+    contrary: bool
+    """Whether it is the contrantiscion, the reflection about the equinoxes."""
+
+    apart_deg: float
+    """How far the one's reflection stands from the other, degrees."""
+
+    orb_deg: float
+    """The orb the request allowed the pair, degrees."""
+
+
+@dataclass(frozen=True)
+class Antiscia:
+    """A chart's antiscia (Lilly, *Christian Astrology*, pp. 90–92):
+    each planet's reflections, the pairs within the orb closest first, and
+    the planets the orbs give none."""
+
+    points: Tuple[Antiscion, ...]
+    pairs: Tuple[AntiscionRow, ...]
+    unpaired: Tuple[Graha, ...]
 
 
 class ParallelRequest(TypedDict, total=False):
@@ -6635,6 +6697,16 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     return _record_json(_aspect_table(asked), "westernAspects", example)
 
 
+def _antiscia_json(asked: Optional[AntisciaRequest]) -> Optional[str]:
+    """The antiscia as the JSON the boundary reads, or nothing for none; an
+    orb model's members are written as their keys, as the aspect table's
+    are, and the SDK refuses the rest, naming the field from `antiscia`."""
+    example = "{'orbs': {'model': 'LEO'}}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "antiscia", example)
+    return _record_json(_aspect_table(asked), "antiscia", example)
+
+
 def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
     """The synastry as the JSON the boundary reads, or nothing for none:
     the partner's observer as the place a chart is founded at, and the
@@ -8269,6 +8341,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def antiscia(self) -> Optional[Antiscia]:
+        """The chart's antiscia: each planet's reflection about the
+        solstices and the equinoxes, and the pairs standing in one within
+        the orbs, Lilly's moieties by default (C244); `None` unless
+        `antiscia=` asked (`03-design/western-antiscia.md`)."""
+        parsed = self.batch._antiscia
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def synastry(self) -> Optional[Tuple[SynastryRow, ...]]:
         """The Western aspects between this chart and the partner's, closest
         first; `None` unless `synastry=` asked
@@ -8896,6 +8977,43 @@ class ChartBatch:
                 orb_deg=r.orb_deg[at],
             ),
         )
+
+    @cached_property
+    def _antiscia(self) -> list[Antiscia]:
+        """Every chart's antiscia, decoded once; empty when none were asked
+        for. `antiscia` holds a row a chart, and `antiscion_points` and
+        `antiscion_rows` are ragged by its two counts."""
+        row = self.decoded.antiscia
+        p = self.decoded.antiscion_points
+        r = self.decoded.antiscion_rows
+        points = self._ragged(row.point_count, p.length, "antiscia and antiscion_points", lambda at: at)
+        pairs = self._ragged(
+            row.pair_count,
+            r.length,
+            "antiscia and antiscion_rows",
+            lambda at: AntiscionRow(
+                first=Graha(r.first[at]),
+                second=Graha(r.second[at]),
+                contrary=r.contrary[at] == 1,
+                apart_deg=r.apart_deg[at],
+                orb_deg=r.orb_deg[at],
+            ),
+        )
+        return [
+            Antiscia(
+                points=tuple(
+                    Antiscion(
+                        graha=Graha(p.graha[at]),
+                        antiscion_deg=p.antiscion_deg[at],
+                        contrantiscion_deg=p.contrantiscion_deg[at],
+                    )
+                    for at in rows
+                ),
+                pairs=pairs[k],
+                unpaired=tuple(Graha(p.graha[at]) for at in rows if p.paired[at] == 0),
+            )
+            for k, rows in enumerate(points)
+        ]
 
     @cached_property
     def _synastry_parallels(self) -> list[Tuple[SynastryParallelRow, ...]]:
