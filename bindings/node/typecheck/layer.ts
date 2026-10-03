@@ -26,6 +26,9 @@ import type {
   WesternHousePlacement,
   WesternHouseRequest,
   WesternHouses,
+  AshtaKoota,
+  KootaReading,
+  MatchingRequest,
   HarmonicChart,
   HarmonicPlaced,
   HarmonicRequest,
@@ -1185,6 +1188,39 @@ function theHarmonic(ctx: Context): string {
 }
 
 void theHarmonic;
+
+// A chart's match, read all the way down to a koota's own fields.
+function theMatching(ctx: Context): string {
+  const asked: MatchingRequest = {
+    partner: { instant: 2447892.5, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 } },
+    partnerRole: 'BRIDE',
+    rules: { nadiDosha: 'MIDDLE_ONLY' },
+  };
+  const chart = ctx.chart.found({
+    instant: 2451545.0,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    matching: asked,
+  });
+  // @ts-expect-error the partner's side is required
+  const unsided: MatchingRequest = { partner: asked.partner };
+  // @ts-expect-error a rule takes only its own members
+  const misruled: MatchingRequest = { ...asked, rules: { nadiDosha: 'MIDDLE' } };
+  const read: AshtaKoota | null = chart.matching;
+  const reading: KootaReading | undefined = read?.kootas[6]?.reading;
+  const bhakoot = reading?.koota === 'koota.BHAKOOT' ? `${reading.apart} ${reading.dosha ?? 'NONE'} ${reading.exceptions.taraPure}` : '';
+  const nadi = read?.kootas[7]?.reading;
+  return [
+    read?.total ?? 0,
+    read?.kootas[0]?.maxPoints ?? 0,
+    bhakoot,
+    nadi?.koota === 'koota.NADI' ? `${nadi.bride} ${nadi.dosha}` : '',
+    String(unsided),
+    String(misruled),
+  ].join();
+}
+
+void theMatching;
 
 // A lunar and a solar return, asked through the hit list.
 function theReturns(ctx: Context): string {

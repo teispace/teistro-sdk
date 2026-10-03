@@ -20,6 +20,13 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    BhakootKoota,
+    KootaReading,
+    MaitriKoota,
+    NadiKoota,
+    TaraKoota,
+    VashyaKoota,
+    YoniKoota,
     Almuten,
     HarmonicPoint,
     AntiscionRow,
@@ -81,6 +88,26 @@ def harmonic_key(point: HarmonicPoint) -> str:
     """A harmonic point as every runner prints it: a graha's full key, or
     the angle's name."""
     return point.point if point.graha is None else point.graha.full_key
+
+
+def reading_text(reading: KootaReading) -> str:
+    """A koota's reading as every runner prints it: its fields in serde's
+    order, a member by its full key, a flag as 0 or 1 and no dosha as
+    `NONE`."""
+    if isinstance(reading, VashyaKoota):
+        return reading.relation.key
+    if isinstance(reading, TaraKoota):
+        return f"{reading.bride_to_groom} {reading.groom_to_bride}"
+    if isinstance(reading, (YoniKoota, MaitriKoota)):
+        return f"{reading.bride.full_key} {reading.groom.full_key} {reading.relation.key}"
+    if isinstance(reading, BhakootKoota):
+        e = reading.exceptions
+        flags = (e.one_lord, e.lords_friends, e.navamsha_lords_friends, e.tara_pure, e.vashya, reading.lifted)
+        dosha = "NONE" if reading.dosha is None else reading.dosha.key
+        return " ".join([str(reading.apart), dosha, *(str(int(flag)) for flag in flags)])
+    if isinstance(reading, NadiKoota):
+        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.dosha)}"
+    return f"{reading.bride.full_key} {reading.groom.full_key}"
 
 
 def number(value: float | int) -> str:
@@ -594,6 +621,15 @@ def main() -> None:
             midpoints={"orbDeg": 1.5},
             western_houses={},
             harmonic={"number": 5},
+            matching={
+                "partner": {
+                    "instant": 2451545.25,
+                    "observer": Observer(latitude_deg=Latitude(-33.87), longitude_deg=Longitude(151.21), altitude_m=Altitude(0)),
+                    "utc_offset_seconds": 36000,
+                },
+                "partnerRole": "BRIDE",
+                "rules": {"bhakootLift": "GARGA"},
+            },
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1213,6 +1249,14 @@ def main() -> None:
                 put(f"chart-{i}-western-cusp-{n}", number(western_cusp))
             for counted in houses.planets:
                 put(f"chart-{i}-western-house-{counted.graha.full_key}", f"{counted.house} {int(counted.with_ascendant)}")
+            matched = chart.matching
+            assert matched is not None
+            put(f"chart-{i}-matching", number(matched.total))
+            for koota in matched.kootas:
+                put(
+                    f"chart-{i}-matching-{koota.reading.koota.full_key}",
+                    f"{number(koota.points)} {number(koota.max_points)} {reading_text(koota.reading)}",
+                )
             fifth = chart.harmonic
             assert fifth is not None
             put(f"chart-{i}-harmonic", f"{fifth.harmonic} {len(fifth.points)} {len(fifth.rows)}")

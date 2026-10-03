@@ -138,6 +138,10 @@ from .catalogue import (
     SahamWeak,
     HarshaGrade,
     TajikaRelation,
+    VashyaRelation,
+    YoniRelation,
+    MaitriRelation,
+    BhakootDosha,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -532,6 +536,20 @@ __all__ = [
     "HarmonicRow",
     "WesternHouseRequest",
     "WesternHouses",
+    "MatchingRequest",
+    "KootaRules",
+    "BhakootExceptions",
+    "VarnaKoota",
+    "VashyaKoota",
+    "TaraKoota",
+    "YoniKoota",
+    "MaitriKoota",
+    "GanaKoota",
+    "BhakootKoota",
+    "NadiKoota",
+    "KootaReading",
+    "KootaRow",
+    "AshtaKoota",
     "MidpointRow",
     "SynastryMidpointRow",
     "SynastryPartner",
@@ -691,6 +709,10 @@ __all__ = [
     "SahamSeven",
     "SahamStrengthReadings",
     "HarshaGrade",
+    "VashyaRelation",
+    "YoniRelation",
+    "MaitriRelation",
+    "BhakootDosha",
     "HarshaRules",
     "HarshaBala",
     "TajikaRelation",
@@ -1587,6 +1609,7 @@ class ChartArea(_Area):
         midpoints: Optional[MidpointRequest] = None,
         western_houses: Optional[WesternHouseRequest] = None,
         harmonic: Optional[HarmonicRequest] = None,
+        matching: Optional[MatchingRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1642,6 +1665,7 @@ class ChartArea(_Area):
             midpoints=midpoints,
             western_houses=western_houses,
             harmonic=harmonic,
+            matching=matching,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1687,6 +1711,7 @@ class ChartArea(_Area):
         midpoints: Optional[MidpointRequest] = None,
         western_houses: Optional[WesternHouseRequest] = None,
         harmonic: Optional[HarmonicRequest] = None,
+        matching: Optional[MatchingRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1768,6 +1793,7 @@ class ChartArea(_Area):
                 "{'system': HouseSystem.KOCH}",
             ),
             harmonic_json=_record_json(harmonic, "harmonic", "{'number': 9}"),
+            matching_json=_matching_json(matching),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -4129,6 +4155,189 @@ class HarmonicChart:
 
     rows: Tuple[HarmonicRow, ...]
     """The pairs meeting within the orb, closest first."""
+
+
+class KootaRules(TypedDict, total=False):
+    """The readings an Ashta Koota is computed under, each the source's own
+    when absent (`03-design/matching.md`): `equalVarna`, `"WHOLE"` or
+    `"HALF"` (C259); `devaBride`, `"FOUR"` or `"THREE"` (C262);
+    `bhakootLift`, `"ANY_ONE"` or `"GARGA"` (C263); and `nadiDosha`,
+    `"ANY"` or `"MIDDLE_ONLY"` (C264).
+
+    >>> middle: KootaRules = {"nadiDosha": "MIDDLE_ONLY"}
+    """
+
+    equalVarna: Literal["WHOLE", "HALF"]
+    devaBride: Literal["FOUR", "THREE"]
+    bhakootLift: Literal["ANY_ONE", "GARGA"]
+    nadiDosha: Literal["ANY", "MIDDLE_ONLY"]
+
+
+class MatchingRequest(TypedDict, total=False):
+    """A match with a partner's birth (`03-design/matching.md`): the
+    partner, founded once for the whole batch under the context's sidereal
+    profile; `partnerRole`, the side the partner stands on, every chart
+    standing on the other, since Varna and Gana read differently when the
+    two swap; and the `rules`.
+
+    >>> asked: MatchingRequest = {"partner": {"instant": 2447892.5, "observer": Observer(
+    ...     latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))},
+    ...     "partnerRole": "BRIDE"}
+    """
+
+    partner: Required[SynastryPartner]
+    partnerRole: Required[Literal["BRIDE", "GROOM"]]
+    rules: KootaRules
+
+
+@dataclass(frozen=True)
+class BhakootExceptions:
+    """The five exceptions of VI.32–33 that lift a bad Bhakoot, each a
+    clause that holds or not."""
+
+    one_lord: bool
+    """One lord rules both signs."""
+
+    lords_friends: bool
+    """The sign lords are each other's friends."""
+
+    navamsha_lords_friends: bool
+    """The navamsha lords are one or each other's friends."""
+
+    tara_pure: bool
+    """The tara is pure both ways."""
+
+    vashya: bool
+    """One sign is vashya to the other."""
+
+
+@dataclass(frozen=True)
+class VarnaKoota:
+    """The varnas of the two Moon signs (VI.22)."""
+
+    bride: Varna
+    groom: Varna
+    koota: Koota = Koota.VARNA
+
+
+@dataclass(frozen=True)
+class VashyaKoota:
+    """How the two Moon signs stand in Vashya (VI.23, C260)."""
+
+    relation: VashyaRelation
+    koota: Koota = Koota.VASHYA
+
+
+@dataclass(frozen=True)
+class TaraKoota:
+    """The taras each way, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad."""
+
+    bride_to_groom: int
+    """Counted from the bride's nakshatra to the groom's."""
+
+    groom_to_bride: int
+    """Counted from the groom's nakshatra to the bride's."""
+
+    koota: Koota = Koota.TARA
+
+
+@dataclass(frozen=True)
+class YoniKoota:
+    """The two yonis and how they stand (VI.25–26, C261)."""
+
+    bride: Yoni
+    groom: Yoni
+    relation: YoniRelation
+    koota: Koota = Koota.YONI
+
+
+@dataclass(frozen=True)
+class MaitriKoota:
+    """The two Moon signs' lords and how they stand by the natural
+    friendships (VI.27–28)."""
+
+    bride: Graha
+    groom: Graha
+    relation: MaitriRelation
+    koota: Koota = Koota.GRAHA_MAITRI
+
+
+@dataclass(frozen=True)
+class GanaKoota:
+    """The two ganas (VI.29–30)."""
+
+    bride: Gana
+    groom: Gana
+    koota: Koota = Koota.GANA
+
+
+@dataclass(frozen=True)
+class BhakootKoota:
+    """How far the groom's Moon sign stands from the bride's (VI.31–33)."""
+
+    apart: int
+    """The groom's sign counted from the bride's, 1 to 12."""
+
+    dosha: Optional[BhakootDosha]
+    """The bad Bhakoot the signs stand at, or `None`."""
+
+    exceptions: BhakootExceptions
+    lifted: bool
+    """Whether the exceptions lift the dosha under the rules; false with no
+    dosha."""
+
+    koota: Koota = Koota.BHAKOOT
+
+
+@dataclass(frozen=True)
+class NadiKoota:
+    """The two nadis (VI.34)."""
+
+    bride: Nadi
+    groom: Nadi
+    dosha: bool
+    """Whether the shared nadi is a dosha under the rules."""
+
+    koota: Koota = Koota.NADI
+
+
+KootaReading = Union[
+    VarnaKoota,
+    VashyaKoota,
+    TaraKoota,
+    YoniKoota,
+    MaitriKoota,
+    GanaKoota,
+    BhakootKoota,
+    NadiKoota,
+]
+"""What a koota read, one class a koota, each carrying its `koota`."""
+
+
+@dataclass(frozen=True)
+class KootaRow:
+    """One koota's points and what it read."""
+
+    points: float
+    """Its points, a multiple of a half."""
+
+    max_points: float
+    """The most it gives, 1 for Varna to 8 for Nadi."""
+
+    reading: KootaReading
+
+
+@dataclass(frozen=True)
+class AshtaKoota:
+    """The Ashta Koota of a bride and a groom (*Muhurta Chintamani*
+    VI.21–34). Never a verdict: the doshas and their exceptions are
+    clauses."""
+
+    kootas: Tuple[KootaRow, ...]
+    """The eight, in the verse's order."""
+
+    total: float
+    """Their points, out of 36."""
 
 
 @dataclass(frozen=True)
@@ -7070,20 +7279,40 @@ def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
         written["antiscia"] = _aspect_table(antiscia)
     partner = asked.get("partner")
     if isinstance(partner, Mapping):
-        rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds")}
-        observer = partner.get("observer")
-        if not isinstance(observer, Observer):
-            raise TypeError("synastry['partner']['observer']: expected an Observer")
-        written["partner"] = {
-            **rest,
-            "place": {
-                "latitude": float(observer.latitude_deg),
-                "longitude": float(observer.longitude_deg),
-                "altitude": float(observer.altitude_m),
-            },
-            "utcOffsetSeconds": partner.get("utc_offset_seconds", 0),
-        }
+        written["partner"] = _partner_wire(partner, "synastry")
     return _record_json(written, "synastry", example)
+
+
+def _partner_wire(partner: Mapping[str, Any], root: str) -> Dict[str, Any]:
+    """A partner's birth as the boundary reads it: the observer as the
+    place a chart is founded at, and the clock as `utcOffsetSeconds`."""
+    rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds")}
+    observer = partner.get("observer")
+    if not isinstance(observer, Observer):
+        raise TypeError(f"{root}['partner']['observer']: expected an Observer")
+    return {
+        **rest,
+        "place": {
+            "latitude": float(observer.latitude_deg),
+            "longitude": float(observer.longitude_deg),
+            "altitude": float(observer.altitude_m),
+        },
+        "utcOffsetSeconds": partner.get("utc_offset_seconds", 0),
+    }
+
+
+def _matching_json(asked: Optional[MatchingRequest]) -> Optional[str]:
+    """The match as the JSON the boundary reads, or nothing for none: the
+    partner as `_partner_wire` writes it; the SDK refuses the rest, naming
+    the field from `matching`."""
+    example = "{'partner': {'instant': 2447892.5, 'observer': Observer(...)}, 'partnerRole': 'BRIDE'}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "matching", example)
+    written: Dict[str, Any] = dict(asked)
+    partner = asked.get("partner")
+    if isinstance(partner, Mapping):
+        written["partner"] = _partner_wire(partner, "matching")
+    return _record_json(written, "matching", example)
 
 
 def _aspect_table(asked: Mapping[str, Any]) -> Dict[str, Any]:
@@ -8702,6 +8931,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def matching(self) -> Optional[AshtaKoota]:
+        """The chart matched with a partner's birth by the Ashta Koota of
+        *Muhurta Chintamani* VI.21–34 (`matching={"partner": ...,
+        "partnerRole": "BRIDE"}` asks for it, the chart on the other side):
+        each koota's points and what it read, in the verse's order, and the
+        total out of 36. Never a verdict: the doshas and their exceptions
+        are clauses; `None` unless asked (`03-design/matching.md`)."""
+        parsed = self.batch._matchings
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def harmonic(self) -> Optional[HarmonicChart]:
         """The chart's harmonic chart: each planet, the ascendant and the
         midheaven at its longitude multiplied, in its equal house from the
@@ -9434,6 +9674,60 @@ class ChartBatch:
             )
             for k, rows in enumerate(points)
         ]
+
+    @cached_property
+    def _matchings(self) -> list[AshtaKoota]:
+        """Every chart's match with the record's partner, decoded once;
+        empty when none was asked for. `matchings` holds a row a chart with
+        what each koota read, and `matching_kootas` eight rows a chart,
+        each koota's points in the verse's order."""
+        m = self.decoded.matchings
+        k = self.decoded.matching_kootas
+
+        def readings(at: int) -> Dict[Koota, KootaReading]:
+            dosha = BhakootDosha(m.bhakoot_dosha[at])
+            read: Tuple[KootaReading, ...] = (
+                VarnaKoota(Varna(m.bride_varna[at]), Varna(m.groom_varna[at])),
+                VashyaKoota(VashyaRelation(m.vashya[at])),
+                TaraKoota(m.tara_bride_to_groom[at], m.tara_groom_to_bride[at]),
+                YoniKoota(Yoni(m.bride_yoni[at]), Yoni(m.groom_yoni[at]), YoniRelation(m.yoni[at])),
+                MaitriKoota(Graha(m.bride_lord[at]), Graha(m.groom_lord[at]), MaitriRelation(m.maitri[at])),
+                GanaKoota(Gana(m.bride_gana[at]), Gana(m.groom_gana[at])),
+                BhakootKoota(
+                    apart=m.bhakoot_apart[at],
+                    dosha=None if dosha == BhakootDosha.NONE else dosha,
+                    exceptions=BhakootExceptions(
+                        one_lord=m.bhakoot_one_lord[at] == 1,
+                        lords_friends=m.bhakoot_lords_friends[at] == 1,
+                        navamsha_lords_friends=m.bhakoot_navamsha_lords_friends[at] == 1,
+                        tara_pure=m.bhakoot_tara_pure[at] == 1,
+                        vashya=m.bhakoot_vashya[at] == 1,
+                    ),
+                    lifted=m.bhakoot_lifted[at] == 1,
+                ),
+                NadiKoota(Nadi(m.bride_nadi[at]), Nadi(m.groom_nadi[at]), m.nadi_dosha[at] == 1),
+            )
+            return {one.koota: one for one in read}
+
+        charts = len(m.total)
+        kootas = self._ragged(
+            [8] * charts,
+            k.length,
+            "matchings and matching_kootas",
+            lambda row: (Koota(k.koota[row]), k.points[row], k.max_points[row]),
+        )
+        matched: list[AshtaKoota] = []
+        for at, rows in enumerate(kootas):
+            read = readings(at)
+            matched.append(
+                AshtaKoota(
+                    kootas=tuple(
+                        KootaRow(points=points, max_points=most, reading=read[koota]) for koota, points, most in rows
+                    ),
+                    total=m.total[at],
+                )
+            )
+        return matched
 
     @cached_property
     def _harmonics(self) -> list[HarmonicChart]:

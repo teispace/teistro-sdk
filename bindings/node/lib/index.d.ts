@@ -107,6 +107,13 @@ import type {
   BlackoutKind,
   LunarEclipseKind,
   SolarEclipseKind,
+  Varna,
+  Yoni,
+  Gana,
+  Nadi,
+  VashyaRelation,
+  YoniRelation,
+  MaitriRelation,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -1523,6 +1530,118 @@ export interface HarmonicChart {
   readonly points: readonly HarmonicPlaced[];
   /** The pairs meeting within the orb, closest first. */
   readonly rows: readonly HarmonicRow[];
+}
+
+/**
+ * A match with a partner's birth (`03-design/matching.md`): the partner,
+ * founded once for the whole batch under the context's sidereal profile;
+ * the side the partner stands on, every chart standing on the other; and
+ * the rules, each the source's own when absent.
+ *
+ * @example
+ * const chart = ctx.chart.found({
+ *   instant, place, utcOffsetSeconds,
+ *   matching: { partner: { instant: 2447892.5, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 } }, partnerRole: 'BRIDE' },
+ * });
+ * for (const row of chart.matching?.kootas ?? []) console.log(row.reading.koota, row.points, row.maxPoints);
+ */
+export interface MatchingRequest {
+  /** The partner's birth. */
+  readonly partner: {
+    readonly instant: number;
+    readonly place: ChartPlace;
+    /** The partner's clock, seconds east of UTC; 0 when absent. */
+    readonly utcOffsetSeconds?: number;
+  };
+  /** The side the partner stands on: Varna and Gana read differently when the two swap. */
+  readonly partnerRole: 'BRIDE' | 'GROOM';
+  readonly rules?: KootaRules;
+}
+
+/** The readings an Ashta Koota is computed under; each default is the source's own. */
+export interface KootaRules {
+  /** The point of an equal varna: `'WHOLE'` (the default) or `'HALF'` (C259). */
+  readonly equalVarna?: 'WHOLE' | 'HALF';
+  /** The points of a Deva bride and a Manushya groom: `'FOUR'` (the default) or `'THREE'` (C262). */
+  readonly devaBride?: 'FOUR' | 'THREE';
+  /** How a bad Bhakoot is lifted: `'ANY_ONE'` exception (the default) or `'GARGA'`'s count (C263). */
+  readonly bhakootLift?: 'ANY_ONE' | 'GARGA';
+  /** Which shared nadi is a dosha: `'ANY'` (the default) or `'MIDDLE_ONLY'` (C264). */
+  readonly nadiDosha?: 'ANY' | 'MIDDLE_ONLY';
+}
+
+/** The five exceptions of VI.32–33 that lift a bad Bhakoot, each a clause that holds or not. */
+export interface BhakootExceptions {
+  /** One lord rules both signs. */
+  readonly oneLord: boolean;
+  /** The sign lords are each other's friends. */
+  readonly lordsFriends: boolean;
+  /** The navamsha lords are one or each other's friends. */
+  readonly navamshaLordsFriends: boolean;
+  /** The tara is pure both ways. */
+  readonly taraPure: boolean;
+  /** One sign is vashya to the other. */
+  readonly vashya: boolean;
+}
+
+/** What a koota read, tagged by the koota. */
+export type KootaReading =
+  | { readonly koota: 'koota.VARNA'; readonly bride: Varna; readonly groom: Varna }
+  | { readonly koota: 'koota.VASHYA'; readonly relation: VashyaRelation | 'unknown' }
+  | {
+      readonly koota: 'koota.TARA';
+      /** Counted from the bride's nakshatra to the groom's, 1 to 9; the 3rd, 5th and 7th are bad. */
+      readonly brideToGroom: number;
+      readonly groomToBride: number;
+    }
+  | {
+      readonly koota: 'koota.YONI';
+      readonly bride: Yoni;
+      readonly groom: Yoni;
+      readonly relation: YoniRelation | 'unknown';
+    }
+  | {
+      readonly koota: 'koota.GRAHA_MAITRI';
+      /** The lord of the bride's Moon sign. */
+      readonly bride: Graha | 'unknown';
+      readonly groom: Graha | 'unknown';
+      readonly relation: MaitriRelation | 'unknown';
+    }
+  | { readonly koota: 'koota.GANA'; readonly bride: Gana; readonly groom: Gana }
+  | {
+      readonly koota: 'koota.BHAKOOT';
+      /** The groom's Moon sign counted from the bride's, 1 to 12. */
+      readonly apart: number;
+      /** The bad Bhakoot the signs stand at, or `null`. */
+      readonly dosha: 'SIX_EIGHT' | 'FIVE_NINE' | 'TWO_TWELVE' | 'unknown' | null;
+      readonly exceptions: BhakootExceptions;
+      /** Whether the exceptions lift the dosha under the rules; false with no dosha. */
+      readonly lifted: boolean;
+    }
+  | {
+      readonly koota: 'koota.NADI';
+      readonly bride: Nadi;
+      readonly groom: Nadi;
+      /** Whether the shared nadi is a dosha under the rules. */
+      readonly dosha: boolean;
+    }
+  | { readonly koota: 'unknown' };
+
+/** One koota's points and what it read. */
+export interface KootaRow {
+  /** Its points, a multiple of a half. */
+  readonly points: number;
+  /** The most it gives, 1 for Varna to 8 for Nadi. */
+  readonly maxPoints: number;
+  readonly reading: KootaReading;
+}
+
+/** The Ashta Koota of a bride and a groom. */
+export interface AshtaKoota {
+  /** The eight, in the verse's order. */
+  readonly kootas: readonly KootaRow[];
+  /** Their points, out of 36. */
+  readonly total: number;
 }
 
 /** A chart's Western houses, in its own zodiac. */
@@ -3522,6 +3641,11 @@ export declare class Chart {
    */
   readonly harmonic: HarmonicChart | null;
   /**
+   * The chart matched with the record's partner by the Ashta Koota; `null`
+   * unless `matching` asked (`03-design/matching.md`).
+   */
+  readonly matching: AshtaKoota | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4678,6 +4802,11 @@ export interface ChartRequest {
    * chart's `harmonic`: `{ number: 9 }` for the 9th. None by default.
    */
   readonly harmonic?: HarmonicRequest;
+  /**
+   * A match with a partner's birth (`03-design/matching.md`), read as each
+   * chart's `matching`. None by default.
+   */
+  readonly matching?: MatchingRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

@@ -26,6 +26,44 @@ String natalKey(NatalPoint point) => switch (point) {
   NatalGraha(:final graha) => graha.fullKey,
 };
 
+/// A koota's reading as every runner prints it: its fields in serde's
+/// order, a member by its full key, a flag as 0 or 1 and no dosha as
+/// `NONE`.
+String readingText(KootaReading reading) {
+  String flag(bool value) => value ? '1' : '0';
+  return switch (reading) {
+    VarnaKoota(:final bride, :final groom) =>
+      '${bride.fullKey} ${groom.fullKey}',
+    VashyaKoota(:final relation) => relation.key,
+    TaraKoota(:final brideToGroom, :final groomToBride) =>
+      '$brideToGroom $groomToBride',
+    YoniKoota(:final bride, :final groom, :final relation) =>
+      '${bride.fullKey} ${groom.fullKey} ${relation.key}',
+    MaitriKoota(:final bride, :final groom, :final relation) =>
+      '${bride.fullKey} ${groom.fullKey} ${relation.key}',
+    GanaKoota(:final bride, :final groom) =>
+      '${bride.fullKey} ${groom.fullKey}',
+    BhakootKoota(
+      :final apart,
+      :final dosha,
+      :final exceptions,
+      :final lifted,
+    ) =>
+      [
+        '$apart',
+        dosha?.key ?? 'NONE',
+        flag(exceptions.oneLord),
+        flag(exceptions.lordsFriends),
+        flag(exceptions.navamshaLordsFriends),
+        flag(exceptions.taraPure),
+        flag(exceptions.vashya),
+        flag(lifted),
+      ].join(' '),
+    NadiKoota(:final bride, :final groom, :final dosha) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(dosha)}',
+  };
+}
+
 String number(num value) {
   if (value is int) return value.toString();
   final double d = value.toDouble();
@@ -594,6 +632,19 @@ void main() {
     midpoints: const MidpointRequest(orbDeg: 1.5),
     westernHouses: const WesternHouseRequest(),
     harmonic: const HarmonicRequest(5),
+    matching: MatchingRequest(
+      Partner(
+        instant: 2451545.25,
+        place: Observer(
+          latitudeDeg: Latitude(-33.87),
+          longitudeDeg: Longitude(151.21),
+          altitudeM: Altitude(0),
+        ),
+        utcOffsetSeconds: 36000,
+      ),
+      partnerRole: MatchRole.bride,
+      rules: const KootaRules(bhakootLift: BhakootLift.garga),
+    ),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1337,6 +1388,15 @@ void main() {
       put(
         'chart-$i-western-house-${at.graha.fullKey}',
         '${at.house} ${at.withAscendant ? 1 : 0}',
+      );
+    }
+    final matched = chart.matching!;
+    put('chart-$i-matching', number(matched.total));
+    for (final row in matched.kootas) {
+      put(
+        'chart-$i-matching-${row.reading.koota.fullKey}',
+        '${number(row.points)} ${number(row.maxPoints)} '
+            '${readingText(row.reading)}',
       );
     }
     final fifth = chart.harmonic!;

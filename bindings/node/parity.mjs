@@ -379,6 +379,11 @@ const charts = geo.chart.foundMany({
   midpoints: { orbDeg: 1.5 },
   westernHouses: {},
   harmonic: { number: 5 },
+  matching: {
+    partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
+    partnerRole: 'BRIDE',
+    rules: { bhakootLift: 'GARGA' },
+  },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -821,6 +826,35 @@ for (const chart of charts) {
     put(
       `chart-${i}-midpoint-${n}`,
       `${at.first} ${at.second} ${at.middle} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
+    ),
+  );
+  const matched = chart.matching;
+  const readingText = (r) => {
+    switch (r.koota) {
+      case 'koota.VASHYA':
+        return r.relation;
+      case 'koota.TARA':
+        return `${r.brideToGroom} ${r.groomToBride}`;
+      case 'koota.YONI':
+      case 'koota.GRAHA_MAITRI':
+        return `${r.bride} ${r.groom} ${r.relation}`;
+      case 'koota.BHAKOOT': {
+        const e = r.exceptions;
+        return [r.apart, r.dosha ?? 'NONE', e.oneLord, e.lordsFriends, e.navamshaLordsFriends, e.taraPure, e.vashya, r.lifted]
+          .map((cell) => (typeof cell === 'boolean' ? flag(cell) : cell))
+          .join(' ');
+      }
+      case 'koota.NADI':
+        return `${r.bride} ${r.groom} ${flag(r.dosha)}`;
+      default:
+        return `${r.bride} ${r.groom}`;
+    }
+  };
+  put(`chart-${i}-matching`, number(matched.total));
+  matched.kootas.forEach((row) =>
+    put(
+      `chart-${i}-matching-${row.reading.koota}`,
+      `${number(row.points)} ${number(row.maxPoints)} ${readingText(row.reading)}`,
     ),
   );
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);

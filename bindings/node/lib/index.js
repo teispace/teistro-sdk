@@ -136,6 +136,15 @@ import {
   VaraById,
   YogaById,
   Ephemeris,
+  KootaById,
+  VarnaById,
+  YoniById,
+  GanaById,
+  NadiById,
+  VashyaRelationById,
+  YoniRelationById,
+  MaitriRelationById,
+  BhakootDoshaById,
 } from './catalogue.js';
 import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
@@ -1309,6 +1318,20 @@ export class Chart {
    */
   get harmonic() {
     return harmonicsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The chart matched with a partner's birth by the Ashta Koota of *Muhurta
+   * Chintamani* VI.21–34 (`matching: { partner, partnerRole: 'BRIDE' }`
+   * asks for it, the chart on the other side): each koota's points and
+   * what it read, in the verse's order, and the total out of 36. Never a
+   * verdict: the doshas and their exceptions are clauses; `null` unless
+   * asked (`03-design/matching.md`).
+   *
+   * @returns {object|null}
+   */
+  get matching() {
+    return matchingsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2543,6 +2566,11 @@ export class ChartArea extends Area {
           "a Western houses request record, e.g. {} or { system: 'house_system.KOCH' }",
         ),
         harmonicJson: recordJson(request.harmonic, 'harmonic', 'a harmonic request record, e.g. { number: 9 }'),
+        matchingJson: recordJson(
+          request.matching,
+          'matching',
+          "a matching request record, e.g. { partner: { instant: 2447892.5, place: { latitude, longitude, altitude } }, partnerRole: 'BRIDE' }",
+        ),
         midpointsJson: recordJson(
           request.midpoints,
           'midpoints',
@@ -3961,6 +3989,78 @@ function harmonicsOf(batch) {
     Object.freeze({ harmonic: h.number[k], points: points[k], rows: rows[k] }),
   );
   HARMONICS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's matchings, decoded once however many charts read them. */
+const MATCHINGS = new WeakMap();
+
+/**
+ * Every chart's match with the record's partner in a batch: `matchings`
+ * holds a row a chart with what each koota read, or none when none was
+ * asked, and `matching_kootas` eight rows a chart, each koota's points in
+ * the verse's order (`03-design/matching.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function matchingsOf(batch) {
+  let decoded = MATCHINGS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const m = d.matchings;
+  const k = d.matchingKootas;
+  const of = (byId, id) => byId.get(id) ?? 'unknown';
+  const sides = (byId, bride, groom, at) => ({ bride: of(byId, bride[at]), groom: of(byId, groom[at]) });
+  const readings = (at) => {
+    const dosha = of(BhakootDoshaById, m.bhakootDosha[at]);
+    return {
+      'koota.VARNA': sides(VarnaById, m.brideVarna, m.groomVarna, at),
+      'koota.VASHYA': { relation: of(VashyaRelationById, m.vashya[at]) },
+      'koota.TARA': { brideToGroom: m.taraBrideToGroom[at], groomToBride: m.taraGroomToBride[at] },
+      'koota.YONI': { ...sides(YoniById, m.brideYoni, m.groomYoni, at), relation: of(YoniRelationById, m.yoni[at]) },
+      'koota.GRAHA_MAITRI': {
+        ...sides(GrahaById, m.brideLord, m.groomLord, at),
+        relation: of(MaitriRelationById, m.maitri[at]),
+      },
+      'koota.GANA': sides(GanaById, m.brideGana, m.groomGana, at),
+      'koota.BHAKOOT': {
+        apart: m.bhakootApart[at],
+        dosha: dosha === 'NONE' ? null : dosha,
+        exceptions: Object.freeze({
+          oneLord: m.bhakootOneLord[at] === 1,
+          lordsFriends: m.bhakootLordsFriends[at] === 1,
+          navamshaLordsFriends: m.bhakootNavamshaLordsFriends[at] === 1,
+          taraPure: m.bhakootTaraPure[at] === 1,
+          vashya: m.bhakootVashya[at] === 1,
+        }),
+        lifted: m.bhakootLifted[at] === 1,
+      },
+      'koota.NADI': { ...sides(NadiById, m.brideNadi, m.groomNadi, at), dosha: m.nadiDosha[at] === 1 },
+    };
+  };
+  const eight = Array.from({ length: m.total.length }, () => 8);
+  const kootas = raggedOf(batch, eight, k.koota.length, 'matchings and matching_kootas', (row) => ({
+    koota: of(KootaById, k.koota[row]),
+    points: k.points[row],
+    maxPoints: k.maxPoints[row],
+  }));
+  decoded = rowAChartOf(batch, m.total.length, 'matchings', (at) => {
+    const read = readings(at);
+    return Object.freeze({
+      kootas: Object.freeze(
+        kootas[at].map((row) =>
+          Object.freeze({
+            points: row.points,
+            maxPoints: row.maxPoints,
+            reading: Object.freeze({ koota: row.koota, ...read[row.koota] }),
+          }),
+        ),
+      ),
+      total: m.total[at],
+    });
+  });
+  MATCHINGS.set(batch, decoded);
   return decoded;
 }
 
