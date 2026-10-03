@@ -214,6 +214,10 @@ required-features = ["builtin-ephemeris"]
 name = "declinations"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "antiscia"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]
