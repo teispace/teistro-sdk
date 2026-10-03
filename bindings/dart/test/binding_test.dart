@@ -3027,6 +3027,27 @@ void _engineTests() {
     );
     expect(pair.apartDeg, closeTo(5.935, 0.02));
     expect(read.unpaired, [Graha.uranus, Graha.neptune, Graha.pluto]);
+    expect(read.onCusps, isEmpty, reason: 'no cusps unless asked');
+    expect(read.cuspSystem, isNull);
+
+    // On the cusps, Lilly's Regiomontanus unless named: his Uranus
+    // reflects 0.63° past the fourth cusp, into the next degree.
+    final on =
+        found(
+          birth,
+          asked: const AntisciaRequest(cusps: WesternHouseRequest()),
+          outerPlanets: true,
+        ).antiscia!;
+    expect(on.onCusps, isEmpty);
+    expect(on.cuspSystem, HouseSystem.regiomontanus);
+    final named =
+        found(
+          birth,
+          asked: const AntisciaRequest(
+            cusps: WesternHouseRequest(system: HouseSystem.placidus),
+          ),
+        ).antiscia!;
+    expect(named.cuspSystem, HouseSystem.placidus);
 
     const leo = AntisciaRequest(orbs: OrbModel.leo);
     expect(
@@ -3058,6 +3079,82 @@ void _engineTests() {
         ),
       ),
     );
+    ctx.dispose();
+  });
+
+  test('a chart carries its Western houses', () {
+    // Leo's own illustration (*How to Judge a Nativity*, p. 150), "a female
+    // born at 2.42 A.M. 13th December, 1835, London", against the SDK
+    // test's Moshier recast: Placidus, Saturn rising
+    // (`03-design/western-houses.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(-0.1),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2391625.6125;
+    bool near(double a, double b) => ((a - b + 540) % 360 - 180).abs() < 0.01;
+    Chart found(double instant, {WesternHouseRequest? asked}) =>
+        ctx.chart.found(
+          instant: instant,
+          place: london,
+          utcOffsetSeconds: 0,
+          outerPlanets: true,
+          westernHouses: asked,
+        );
+    expect(found(birth).westernHouses, isNull);
+
+    final houses =
+        found(birth, asked: const WesternHouseRequest()).westernHouses!;
+    expect(houses.system, HouseSystem.placidus);
+    expect(houses.cuspsDeg, hasLength(12));
+    expect(
+      near(houses.cuspsDeg[0], 202.1436),
+      isTrue,
+      reason: '${houses.cuspsDeg}',
+    );
+    expect(
+      near(houses.cuspsDeg[9], 119.3147),
+      isTrue,
+      reason: '${houses.cuspsDeg}',
+    );
+    expect(
+      near(houses.reachDeg, 191.6089),
+      isTrue,
+      reason: '${houses.reachDeg}',
+    );
+    WesternHousePlacement placed(Graha graha) =>
+        houses.planets.firstWhere((one) => one.graha == graha);
+    expect(
+      (placed(Graha.saturn).house, placed(Graha.saturn).withAscendant),
+      (1, true),
+    );
+    expect(
+      (placed(Graha.sun).house, placed(Graha.sun).withAscendant),
+      (2, false),
+    );
+    expect(placed(Graha.mars).house, 3);
+
+    const koch = WesternHouseRequest(system: HouseSystem.koch);
+    expect(found(birth, asked: koch).westernHouses!.system, HouseSystem.koch);
+    final instants = [birth, birth + 100.5];
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: london,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      westernHouses: const WesternHouseRequest(),
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).westernHouses,
+        found(instant, asked: const WesternHouseRequest()).westernHouses,
+      );
+    }
     ctx.dispose();
   });
 
@@ -3220,6 +3317,13 @@ void _engineTests() {
         ),
         'synastry.antiscia.orbs.orbs',
       ),
+      (
+        SynastryRequest(
+          mary,
+          antiscia: const AntisciaRequest(cusps: WesternHouseRequest()),
+        ),
+        'synastry.antiscia.cusps',
+      ),
     ]) {
       expect(
         () => found(birth, asked: asked),
@@ -3321,6 +3425,15 @@ void _engineTests() {
         reason: '${composite.lagnaDeg}',
       );
       expect(composite.lagnaTurned, isFalse);
+      // Its Placidus cusps, the near midpoints of the two charts', the first
+      // and tenth its lagna and midheaven.
+      final cusps = composite.cuspsDeg!;
+      expect(cusps, hasLength(12));
+      expect(near(cusps[2], 57.8601), isTrue, reason: '${cusps[2]}');
+      expect(
+        (cusps[0], cusps[9]),
+        (composite.lagnaDeg, composite.midheavenDeg),
+      );
 
       // The Davison birth is a Partner, so it founds a chart as a birth does.
       final davison = chart.synastryDavison!;

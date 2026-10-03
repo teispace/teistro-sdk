@@ -686,6 +686,7 @@ final class ChartArea extends _Area {
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
     MidpointRequest? midpoints,
+    WesternHouseRequest? westernHouses,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -725,6 +726,7 @@ final class ChartArea extends _Area {
     parallels: parallels,
     antiscia: antiscia,
     midpoints: midpoints,
+    westernHouses: westernHouses,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -784,6 +786,7 @@ final class ChartArea extends _Area {
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
     MidpointRequest? midpoints,
+    WesternHouseRequest? westernHouses,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -846,6 +849,7 @@ final class ChartArea extends _Area {
             parallelsJson: parallels?._json,
             antisciaJson: antiscia?._json,
             midpointsJson: midpoints?._json,
+            westernHousesJson: westernHouses?._json,
           ),
         ),
       ),
@@ -4511,6 +4515,14 @@ List<Composite> _decodeSynastryComposites(Charts batch) {
       speedDegPerDay: r.speedDegPerDay[at],
     ),
   );
+  final u = batch.synastryCompositeCusps;
+  final cusps = _ragged(
+    batch,
+    c.cuspCount,
+    u.length,
+    'synastry_composites and synastry_composite_cusps',
+    (at) => u.cuspDeg[at],
+  );
   return List<Composite>.unmodifiable([
     for (final (k, rows) in planets.indexed)
       Composite(
@@ -4518,6 +4530,7 @@ List<Composite> _decodeSynastryComposites(Charts batch) {
         lagnaDeg: c.lagnaDeg[k],
         midheavenDeg: c.midheavenDeg[k],
         lagnaTurned: c.lagnaTurned[k] == 1,
+        cuspsDeg: cusps[k].isEmpty ? null : cusps[k],
       ),
   ]);
 }
@@ -4578,6 +4591,18 @@ List<Antiscia> _decodeAntiscia(Charts batch) {
     'antiscia and antiscion_rows',
     _antiscionRows(r.first, r.second, r.contrary, r.apartDeg, r.orbDeg),
   );
+  final c = batch.antiscionCuspRows;
+  final onCusps = _ragged(
+    batch,
+    row.cuspCount,
+    c.length,
+    'antiscia and antiscion_cusp_rows',
+    (at) => CuspAntiscion(
+      graha: Graha.byId(c.graha[at]),
+      house: c.house[at],
+      contrary: c.contrary[at] == 1,
+    ),
+  );
   return [
     for (final (k, rows) in points.indexed)
       Antiscia(
@@ -4594,8 +4619,59 @@ List<Antiscia> _decodeAntiscia(Charts batch) {
           for (final at in rows)
             if (p.paired[at] == 0) Graha.byId(p.graha[at]),
         ],
+        onCusps: onCusps[k],
+        cuspSystem:
+            row.cuspSystem[k] == _noHouseSystem
+                ? null
+                : HouseSystem.byId(row.cuspSystem[k]),
       ),
   ];
+}
+
+/// `antiscia.cusp_system` where no cusps were asked.
+const int _noHouseSystem = 0xFFFF;
+
+final Expando<List<WesternHouses>> _westernHouses =
+    Expando<List<WesternHouses>>('western houses');
+
+List<WesternHouses> _westernHousesOf(Charts batch) =>
+    _westernHouses[batch] ??= _decodeWesternHouses(batch);
+
+/// `western_houses` holds a row a chart, or none when none was asked,
+/// `western_house_cusps` twelve a chart, and `western_house_planets` is
+/// ragged by its count.
+List<WesternHouses> _decodeWesternHouses(Charts batch) {
+  final h = batch.westernHouses;
+  final u = batch.westernHouseCusps;
+  final g = batch.westernHousePlanets;
+  final cusps = _ragged(
+    batch,
+    List<int>.filled(h.length, 12),
+    u.length,
+    'western_houses and western_house_cusps',
+    (at) => u.cuspDeg[at],
+  );
+  final planets = _ragged(
+    batch,
+    h.planetCount,
+    g.length,
+    'western_houses and western_house_planets',
+    (at) => WesternHousePlacement(
+      graha: Graha.byId(g.graha[at]),
+      house: g.house[at],
+      withAscendant: g.withAscendant[at] == 1,
+    ),
+  );
+  return List<WesternHouses>.unmodifiable([
+    for (final (k, rows) in planets.indexed)
+      WesternHouses(
+        system: HouseSystem.byId(h.system[k]),
+        cuspsDeg: cusps[k],
+        ascendantDeg: h.ascendantDeg[k],
+        reachDeg: h.reachDeg[k],
+        planets: rows,
+      ),
+  ]);
 }
 
 final Expando<List<List<SynastryParallelRow>>> _synastryParallels =
@@ -6949,19 +7025,46 @@ final class WesternAspectRequest {
   String get _json => jsonEncode(_record);
 }
 
+/// What a chart's Western houses are asked (`03-design/western-houses.md`):
+/// the division, [system]; the profile's `houses.module_overrides.western`
+/// when null, else Placidus, the division Leo's figures are cast in (C249).
+///
+/// ```dart
+/// const leo = WesternHouseRequest();
+/// const koch = WesternHouseRequest(system: HouseSystem.koch);
+/// ```
+final class WesternHouseRequest {
+  const WesternHouseRequest({this.system});
+
+  final HouseSystem? system;
+
+  Map<String, Object?> get _record => {
+    if (system case final system?) 'system': system.fullKey,
+  };
+
+  String get _json => jsonEncode(_record);
+}
+
 /// What the antiscia are asked (`03-design/western-antiscia.md`): the
 /// [orbs] a pair is read under, at the conjunction; Lilly's moieties by
-/// default (C244), which give the outer three none.
+/// default (C244), which give the outer three none. [cusps], the houses
+/// whose cusps a reflection is read upon at its very degree (C251),
+/// Lilly's Regiomontanus unless it names another division.
 ///
 /// ```dart
 /// const leo = AntisciaRequest(orbs: OrbModel.leo);
+/// const onCusps = AntisciaRequest(cusps: WesternHouseRequest());
 /// ```
 final class AntisciaRequest {
-  const AntisciaRequest({this.orbs = OrbModel.lilly});
+  const AntisciaRequest({this.orbs = OrbModel.lilly, this.cusps});
 
   final OrbModel orbs;
+  final WesternHouseRequest? cusps;
 
-  Map<String, Object?> get _record => {'orbs': orbs._record};
+  Map<String, Object?> get _record => {
+    'orbs': orbs._record,
+    if (cusps case final cusps?) 'cusps': cusps._record,
+  };
 
   String get _json => jsonEncode(_record);
 }
@@ -7023,14 +7126,110 @@ final class Antiscia extends _Value {
     required this.points,
     required this.pairs,
     required this.unpaired,
+    this.onCusps = const [],
+    this.cuspSystem,
   });
 
   final List<Antiscion> points;
   final List<AntiscionRow> pairs;
   final List<Graha> unpaired;
 
+  /// The reflections upon a cusp's very degree (C251); empty unless the
+  /// request asked [AntisciaRequest.cusps].
+  final List<CuspAntiscion> onCusps;
+
+  /// The division [onCusps] was read in; null unless asked.
+  final HouseSystem? cuspSystem;
+
   @override
-  List<Object?> get _fields => [...points, null, ...pairs, null, ...unpaired];
+  List<Object?> get _fields => [
+    ...points,
+    null,
+    ...pairs,
+    null,
+    ...unpaired,
+    null,
+    ...onCusps,
+    cuspSystem,
+  ];
+}
+
+/// A planet's reflection upon a cusp's very degree, its own sign and whole
+/// degree (Lilly, *Christian Astrology*, p. 165; C251).
+final class CuspAntiscion extends _Value {
+  const CuspAntiscion({
+    required this.graha,
+    required this.house,
+    required this.contrary,
+  });
+
+  final Graha graha;
+
+  /// The house whose cusp it falls upon, 1 to 12.
+  final int house;
+
+  /// Whether it is the contrantiscion, the reflection about the equinoxes.
+  final bool contrary;
+
+  @override
+  List<Object?> get _fields => [graha, house, contrary];
+}
+
+/// Where a planet is counted among a chart's Western houses.
+final class WesternHousePlacement extends _Value {
+  const WesternHousePlacement({
+    required this.graha,
+    required this.house,
+    required this.withAscendant,
+  });
+
+  final Graha graha;
+
+  /// The house whose cusp it has passed and whose next cusp it has not.
+  final int house;
+
+  /// Whether Leo counts it with the ascendant (C250): in the first house,
+  /// or above the ascendant no further than the degree that rose one
+  /// sidereal hour before; its house is never moved for it.
+  final bool withAscendant;
+
+  @override
+  List<Object?> get _fields => [graha, house, withAscendant];
+}
+
+/// A chart's Western houses (`03-design/western-houses.md`), in the
+/// chart's own zodiac.
+final class WesternHouses extends _Value {
+  const WesternHouses({
+    required this.system,
+    required this.cuspsDeg,
+    required this.ascendantDeg,
+    required this.reachDeg,
+    required this.planets,
+  });
+
+  /// The division the cusps are of: the one asked, or the one a polar
+  /// policy fell back to.
+  final HouseSystem system;
+
+  /// The twelve cusps, first to twelfth, degrees.
+  final List<double> cuspsDeg;
+
+  final double ascendantDeg;
+
+  /// The degree that rose one sidereal hour before the birth (C250).
+  final double reachDeg;
+
+  final List<WesternHousePlacement> planets;
+
+  @override
+  List<Object?> get _fields => [
+    system,
+    ...cuspsDeg,
+    ascendantDeg,
+    reachDeg,
+    ...planets,
+  ];
 }
 
 /// One pair of planets within an aspect's orb, the pair in catalogue
@@ -7444,6 +7643,7 @@ final class Composite extends _Value {
     required this.lagnaDeg,
     required this.midheavenDeg,
     required this.lagnaTurned,
+    this.cuspsDeg,
   });
 
   final List<CompositePlanet> planets;
@@ -7458,8 +7658,20 @@ final class Composite extends _Value {
   /// turned by 180°.
   final bool lagnaTurned;
 
+  /// The twelve composite cusps, each the near midpoint of the two charts'
+  /// same cusp, turned when more than 90° from where the midheaven puts it
+  /// (Astrolog); null when either chart's cusps could not be read, as at a
+  /// polar place.
+  final List<double>? cuspsDeg;
+
   @override
-  List<Object?> get _fields => [planets, lagnaDeg, midheavenDeg, lagnaTurned];
+  List<Object?> get _fields => [
+    planets,
+    lagnaDeg,
+    midheavenDeg,
+    lagnaTurned,
+    cuspsDeg,
+  ];
 }
 
 /// One point of a chart and one of the partner's within an aspect's orb
@@ -13477,6 +13689,15 @@ final class Chart {
   /// (`03-design/western-antiscia.md`).
   Antiscia? get antiscia {
     final all = _antisciaOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's Western houses: the cusps of the asked division, else the
+  /// profile's for the module, else Placidus (C249), and each planet's
+  /// house and whether Leo reads it with the ascendant (C250); null unless
+  /// `westernHouses` asked (`03-design/western-houses.md`).
+  WesternHouses? get westernHouses {
+    final all = _westernHousesOf(batch);
     return index < all.length ? all[index] : null;
   }
 

@@ -925,6 +925,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_western_aspects(report, &geo, index, document);
         the_parallels(report, &geo, index, document);
         the_antiscia(report, &geo, index, document);
+        the_western_houses(report, &geo, index, document);
         the_midpoints(report, &geo, index, document);
     }
     the_synastry(report, &geo, &read.value, offset);
@@ -1994,11 +1995,14 @@ fn the_parallels(report: &mut Report, sdk: &Context, index: usize, document: &te
 
 /// The antiscia as the other three print them: each planet's two
 /// reflections, the planets left unpaired, then each pair under Lilly's
-/// moieties, the default every runner asks with `{}`.
+/// moieties, the default every runner asks with `{}`, then the
+/// reflections on Lilly's cusps, which every runner asks with
+/// `cusps: {}`.
 fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::AntisciaRequest::default().with_cusps(teistro::HouseRequest::default());
     let read = sdk
         .chart()
-        .antiscia(document, &teistro::AntisciaRequest::default())
+        .antiscia(document, &asked)
         .expect("a valid request");
     for at in &read.points {
         put(
@@ -2022,6 +2026,68 @@ fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &tei
         },
     );
     put_antiscion_rows(report, &format!("chart-{index}-antiscia"), &read.pairs);
+    put(
+        report,
+        &format!("chart-{index}-antiscia-cusps"),
+        format!(
+            "{} {}",
+            read.cusp_system.expect("cusps were asked").full_key(),
+            read.on_cusps.len()
+        ),
+    );
+    for (n, at) in read.on_cusps.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-antiscia-cusp-{n}"),
+            format!(
+                "{} {} {}",
+                at.graha.full_key(),
+                at.house.get(),
+                u8::from(at.contrary)
+            ),
+        );
+    }
+}
+
+/// The Western houses as the other three print them, in the module's own
+/// division every runner asks with `{}`: the division, ascendant, reach
+/// and planet count, then each cusp, then each planet's house and whether
+/// it is read with the ascendant.
+fn the_western_houses(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let houses = sdk
+        .chart()
+        .western_houses(document, &teistro::HouseRequest::default())
+        .expect("a valid request");
+    put(
+        report,
+        &format!("chart-{index}-western-houses"),
+        format!(
+            "{} {} {} {}",
+            houses.system.full_key(),
+            number(houses.frame.ascendant_deg),
+            number(houses.frame.reach_deg),
+            houses.planets.len()
+        ),
+    );
+    for (n, cusp) in (1..).zip(houses.frame.cusps_deg) {
+        put(
+            report,
+            &format!("chart-{index}-western-cusp-{n}"),
+            number(cusp),
+        );
+    }
+    for at in &houses.planets {
+        put(
+            report,
+            &format!("chart-{index}-western-house-{}", at.graha.full_key()),
+            format!("{} {}", at.house.get(), u8::from(at.with_ascendant)),
+        );
+    }
 }
 
 /// The equal distances as the other three print them, at the 1.5° every
@@ -2241,6 +2307,13 @@ fn put_one_chart(
             ),
         );
     }
+    put(
+        report,
+        &format!("chart-{index}-composite-cusps"),
+        composite
+            .cusps_deg
+            .map_or_else(|| String::from("-"), |cusps| cusps.map(number).join(" ")),
+    );
     put(
         report,
         &format!("chart-{index}-davison"),

@@ -10,6 +10,7 @@ import type {
   AntiscionRow,
   Composite,
   CompositePlanet,
+  CuspAntiscion,
   DavisonBirth,
   Declinations,
   MidpointRequest,
@@ -22,6 +23,9 @@ import type {
   SynastryRow,
   WesternAspectRequest,
   WesternAspectRow,
+  WesternHousePlacement,
+  WesternHouseRequest,
+  WesternHouses,
   Almanac,
   BlackoutKind,
   LunarEclipseKind,
@@ -1058,6 +1062,7 @@ function theWesternAspects(ctx: Context): string {
     middle?.graha ?? 'none',
     middle?.speedDegPerDay ?? Number.NaN,
     composite?.lagnaTurned ?? false,
+    composite?.cuspsDeg?.[0] ?? Number.NaN,
     davison?.place.longitude ?? Number.NaN,
     between?.instant ?? Number.NaN,
     String(alone),
@@ -1106,7 +1111,13 @@ function theAntiscia(ctx: Context): string {
   const misread: AntisciaRequest = { orbs: { model: 'WIDE' } };
   const read: Antiscia | null = chart.antiscia;
   const row: AntiscionRow | undefined = read?.pairs[0];
+  const onCusp: CuspAntiscion | undefined = read?.onCusps[0];
+  const lilly: AntisciaRequest = { cusps: {} };
   return [
+    onCusp?.house ?? 0,
+    onCusp?.contrary ?? false,
+    read?.cuspSystem ?? 'none',
+    String(lilly),
     read?.points[0]?.antiscionDeg ?? Number.NaN,
     read?.unpaired[0] ?? 'none',
     row?.contrary ?? false,
@@ -1116,6 +1127,33 @@ function theAntiscia(ctx: Context): string {
 }
 
 void theAntiscia;
+
+// A chart's Western houses, read all the way down; the request names a
+// catalogued division.
+function theWesternHouses(ctx: Context): string {
+  const asked: WesternHouseRequest = { system: 'house_system.KOCH' };
+  const chart = ctx.chart.found({
+    instant: 2391625.6125,
+    place: { latitude: 51.5, longitude: -0.1, altitude: 0 },
+    utcOffsetSeconds: 0,
+    westernHouses: asked,
+  });
+  // @ts-expect-error a division is a catalogued house system
+  const misread: WesternHouseRequest = { system: 'KOCHISH' };
+  const read: WesternHouses | null = chart.westernHouses;
+  const placed: WesternHousePlacement | undefined = read?.planets[0];
+  return [
+    read?.system ?? 'none',
+    read?.cuspsDeg[11] ?? Number.NaN,
+    read?.reachDeg ?? Number.NaN,
+    placed?.graha ?? 'none',
+    placed?.house ?? 0,
+    placed?.withAscendant ?? false,
+    String(misread),
+  ].join();
+}
+
+void theWesternHouses;
 
 // A chart's equal distances, read all the way down.
 function theMidpoints(ctx: Context): string {

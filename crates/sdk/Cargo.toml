@@ -226,6 +226,10 @@ required-features = ["builtin-ephemeris"]
 name = "composites"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "western_houses"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]

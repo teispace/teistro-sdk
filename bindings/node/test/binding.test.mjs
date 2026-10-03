@@ -2457,6 +2457,12 @@ test('a chart carries its antiscia', () => {
   assert.deepEqual([pair.first, pair.second, pair.contrary], ['graha.MARS', 'graha.MERCURY', false]);
   assert.ok(Math.abs(pair.apartDeg - 5.935) < 0.02, `${pair.apartDeg}`);
   assert.deepEqual(read.unpaired, ['graha.URANUS', 'graha.NEPTUNE', 'graha.PLUTO']);
+  assert.deepEqual([read.onCusps, read.cuspSystem], [[], null], 'no cusps unless asked');
+
+  // On the cusps, Lilly's Regiomontanus unless named: his Uranus reflects
+  // 0.63° past the fourth cusp, into the next degree, so on none.
+  const cusps = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, antiscia: { cusps: {} } }).antiscia;
+  assert.deepEqual([cusps.onCusps, cusps.cuspSystem], [[], 'house_system.REGIOMONTANUS']);
 
   const leo = { orbs: { model: 'LEO' } };
   const wide = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, antiscia: leo }).antiscia;
@@ -2476,6 +2482,43 @@ test('a chart carries its antiscia', () => {
       field,
     );
   }
+  ctx.dispose();
+});
+
+test('a chart carries its Western houses', () => {
+  // Leo's own illustration (How to Judge a Nativity, p. 150), "a female
+  // born at 2.42 A.M. 13th December, 1835, London", against the SDK test's
+  // Moshier recast: Placidus, Saturn rising.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const london = { place: { latitude: 51.5, longitude: -0.1, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2391625.6125;
+  assert.equal(ctx.chart.found({ instant: birth, ...london }).westernHouses, null);
+
+  const houses = ctx.chart.found({ instant: birth, ...london, outerPlanets: true, westernHouses: {} }).westernHouses;
+  assert.ok(Object.isFrozen(houses) && Object.isFrozen(houses.planets[0]), 'frozen to its leaves');
+  assert.equal(houses.system, 'house_system.PLACIDUS');
+  const near = (a, b) => Math.abs(((a - b + 540) % 360) - 180) < 0.01;
+  assert.equal(houses.cuspsDeg.length, 12);
+  assert.ok(near(houses.cuspsDeg[0], 202.1436) && near(houses.cuspsDeg[9], 119.3147), `${houses.cuspsDeg}`);
+  assert.ok(near(houses.reachDeg, 191.6089), `${houses.reachDeg}`);
+  const placed = (graha) => houses.planets.find((one) => one.graha === graha);
+  assert.deepEqual([placed('graha.SATURN').house, placed('graha.SATURN').withAscendant], [1, true]);
+  assert.deepEqual([placed('graha.SUN').house, placed('graha.SUN').withAscendant], [2, false]);
+  assert.equal(placed('graha.MARS').house, 3);
+
+  // Another division by name, a batch reading each chart as alone, and a
+  // refusal named by its field.
+  const koch = ctx.chart.found({ instant: birth, ...london, westernHouses: { system: 'house_system.KOCH' } });
+  assert.equal(koch.westernHouses.system, 'house_system.KOCH');
+  const instants = [birth, birth + 100.5];
+  const batch = ctx.chart.foundMany({ instants, ...london, westernHouses: {} });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).westernHouses, ctx.chart.found({ instant, ...london, westernHouses: {} }).westernHouses),
+  );
+  assert.throws(
+    () => ctx.chart.found({ instant: birth, ...london, westernHouses: { system: 'NOWHERE' } }),
+    (error) => error instanceof TeistroError && error.field === 'westernHouses.system',
+  );
   ctx.dispose();
 });
 
@@ -2559,6 +2602,7 @@ test('a chart carries its synastry with a partner', () => {
     [{ partner: north }, 'synastry.partner.place.latitude'],
     [{ partner, parallels: { orbDeg: 11 } }, 'synastry.parallels.orbDeg'],
     [{ partner, antiscia: { orbs: { model: 'BY_ASPECT', orbs: [{ aspect: 'TRINE', orbDeg: 3 }] } } }, 'synastry.antiscia.orbs.orbs'],
+    [{ partner, antiscia: { cusps: {} } }, 'synastry.antiscia.cusps'],
     [{ partner, zodiac: 'SIDEREAL' }, 'synastry.zodiac'],
     [{ partner, orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }] } }, 'synastry.lagna'],
     [{ lagna: false }, 'synastry.partner'],
@@ -2610,6 +2654,11 @@ test('a synastry reads the equal distances across and makes the composite and th
   assert.ok(near(composite.midheavenDeg, 258.1797), `${composite.midheavenDeg}`);
   assert.ok(near(composite.lagnaDeg, 334.007), `${composite.lagnaDeg}`);
   assert.equal(composite.lagnaTurned, false);
+  // Its Placidus cusps, the near midpoints of the two charts', the first
+  // and tenth its lagna and midheaven.
+  assert.equal(composite.cuspsDeg.length, 12);
+  assert.ok(near(composite.cuspsDeg[2], 57.8601), `${composite.cuspsDeg[2]}`);
+  assert.deepEqual([composite.cuspsDeg[0], composite.cuspsDeg[9]], [composite.lagnaDeg, composite.midheavenDeg]);
 
   // The Davison birth founds a chart as a birth does.
   const davison = chart.synastryDavison;

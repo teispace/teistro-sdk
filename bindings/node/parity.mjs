@@ -375,8 +375,9 @@ const charts = geo.chart.foundMany({
     },
   },
   parallels: { orbDeg: 1.5 },
-  antiscia: {},
+  antiscia: { cusps: {} },
   midpoints: { orbDeg: 1.5 },
+  westernHouses: {},
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -790,6 +791,19 @@ for (const chart of charts) {
     );
   };
   putAntiscionRows(`chart-${i}-antiscia`, reflected.pairs);
+  put(`chart-${i}-antiscia-cusps`, `${reflected.cuspSystem} ${reflected.onCusps.length}`);
+  reflected.onCusps.forEach((at, n) =>
+    put(`chart-${i}-antiscia-cusp-${n}`, `${at.graha} ${at.house} ${at.contrary ? 1 : 0}`),
+  );
+  const houses = chart.westernHouses;
+  put(
+    `chart-${i}-western-houses`,
+    `${houses.system} ${number(houses.ascendantDeg)} ${number(houses.reachDeg)} ${houses.planets.length}`,
+  );
+  houses.cuspsDeg.forEach((at, n) => put(`chart-${i}-western-cusp-${n + 1}`, number(at)));
+  houses.planets.forEach((at) =>
+    put(`chart-${i}-western-house-${at.graha}`, `${at.house} ${at.withAscendant ? 1 : 0}`),
+  );
   const between = chart.midpoints;
   put(`chart-${i}-midpoint-count`, `${between.length}`);
   between.forEach((at, n) =>
@@ -832,6 +846,7 @@ for (const chart of charts) {
   composite.planets.forEach((at, n) =>
     put(`chart-${i}-composite-${n}`, `${at.graha} ${number(at.longitudeDeg)} ${number(at.speedDegPerDay)}`),
   );
+  put(`chart-${i}-composite-cusps`, composite.cuspsDeg === null ? '-' : composite.cuspsDeg.map(number).join(' '));
   const davison = chart.synastryDavison;
   put(
     `chart-${i}-davison`,
