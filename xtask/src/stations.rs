@@ -28,7 +28,7 @@ use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_port_ephemeris::{Body, Centre, EphemerisProvider, Frame};
 
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, Verdict, count, spelled, table, verdict_of};
+use crate::measure::{Claim, Verdict, count, share, spelled, table, verdict_of};
 
 const PAGE: &str = "docs/03-design/station-runs-measured.md";
 
@@ -366,16 +366,6 @@ fn days(value: f64) -> String {
     } else {
         String::from("—")
     }
-}
-
-fn share(part: usize, whole: usize) -> String {
-    if whole == 0 {
-        return String::from("—");
-    }
-    // Counts of instants, far inside an f64's integers.
-    #[allow(clippy::cast_precision_loss, reason = "counts of instants")]
-    let percent = 100.0 * part as f64 / whole as f64;
-    format!("{percent:.1}%")
 }
 
 /// What the pass decides.

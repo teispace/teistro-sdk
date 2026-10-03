@@ -335,6 +335,16 @@ pub(crate) fn listed(names: &[String]) -> String {
     }
 }
 
+/// A share as a percentage to one place; a dash for none.
+pub(crate) fn share(part: usize, whole: usize) -> String {
+    if whole == 0 {
+        return String::from("—");
+    }
+    let ratio = f64::from(u32::try_from(part).unwrap_or(u32::MAX))
+        / f64::from(u32::try_from(whole).unwrap_or(u32::MAX));
+    format!("{:.1}%", 100.0 * ratio)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Claim, Verdict, count, fill, listed, seconds, table, worst, wrapped};

@@ -225,6 +225,7 @@ mod absence;
 mod accuracy;
 mod agreement;
 mod almanac;
+mod antiscia;
 mod areas;
 mod arudhas;
 mod ashtakavarga;
@@ -465,6 +466,7 @@ const PASSES: &[Pass] = &[
         declinations::generate,
         declinations::check_generated,
     ),
+    ("antiscia", antiscia::generate, antiscia::check_generated),
     (
         "time-lords",
         time_lords::generate,
