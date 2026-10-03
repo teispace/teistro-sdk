@@ -516,6 +516,8 @@ __all__ = [
     "AntisciaRequest",
     "Antiscion",
     "AntiscionRow",
+    "MidpointRequest",
+    "MidpointRow",
     "SynastryPartner",
     "SynastryParallelRow",
     "SynastryRequest",
@@ -1566,6 +1568,7 @@ class ChartArea(_Area):
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
+        midpoints: Optional[MidpointRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1618,6 +1621,7 @@ class ChartArea(_Area):
             synastry=synastry,
             parallels=parallels,
             antiscia=antiscia,
+            midpoints=midpoints,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1660,6 +1664,7 @@ class ChartArea(_Area):
         synastry: Optional[SynastryRequest] = None,
         parallels: Optional[ParallelRequest] = None,
         antiscia: Optional[AntisciaRequest] = None,
+        midpoints: Optional[MidpointRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1734,6 +1739,7 @@ class ChartArea(_Area):
             synastry_json=_synastry_json(synastry),
             parallels_json=_record_json(parallels, "parallels", "{'orbDeg': 1}"),
             antiscia_json=_antiscia_json(antiscia),
+            midpoints_json=_record_json(midpoints, "midpoints", "{'orbDeg': 1}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3964,6 +3970,42 @@ class ParallelRequest(TypedDict, total=False):
     """
 
     orbDeg: float
+
+
+class MidpointRequest(TypedDict, total=False):
+    """How far from the axis through two planets' midpoint a third may
+    stand to be equally distant from them (`03-design/western-midpoints.md`):
+    `orbDeg`, 0.5° when absent (C245), at most 10°.
+
+    >>> default: MidpointRequest = {}
+    >>> wider: MidpointRequest = {"orbDeg": 1.5}
+    """
+
+    orbDeg: float
+
+
+@dataclass(frozen=True)
+class MidpointRow:
+    """A planet equally distant from two others (Leo, *How to Judge a
+    Nativity*, pp. 47–48), within the orb of the axis through their
+    midpoint: the pair in catalogue order, and the planet between."""
+
+    first: Graha
+    second: Graha
+    middle: Graha
+    far: bool
+    """Whether it stands opposite the midpoint of the pair's shorter arc,
+    on the longer arc's midpoint (C246)."""
+
+    distance_deg: float
+    """How far it stands from each of the two, the mean of the two arcs,
+    degrees."""
+
+    from_axis_deg: float
+    """How far it stands from the nearer point of the axis, degrees."""
+
+    orb_deg: float
+    """The orb the request allowed, degrees."""
 
 
 @dataclass(frozen=True)
@@ -8372,6 +8414,15 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def midpoints(self) -> Optional[Tuple[MidpointRow, ...]]:
+        """The chart's equal distances, closest first: each planet within
+        the orb of the axis through two others' midpoint, 0.5° by default
+        (C245), on the shorter arc's midpoint or opposite it (C246);
+        `None` unless `midpoints=` asked (`03-design/western-midpoints.md`)."""
+        parsed = self.batch._midpoints
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def synastry(self) -> Optional[Tuple[SynastryRow, ...]]:
         """The Western aspects between this chart and the partner's, closest
         first; `None` unless `synastry=` asked
@@ -9036,6 +9087,27 @@ class ChartBatch:
             )
             for k, rows in enumerate(points)
         ]
+
+    @cached_property
+    def _midpoints(self) -> list[Tuple[MidpointRow, ...]]:
+        """Every chart's equal distances, decoded once; empty when none were
+        asked for. `midpoints` holds a row a chart and `midpoint_rows` is
+        ragged by its count."""
+        r = self.decoded.midpoint_rows
+        return self._ragged(
+            self.decoded.midpoints.count,
+            r.length,
+            "midpoints and midpoint_rows",
+            lambda at: MidpointRow(
+                first=Graha(r.first[at]),
+                second=Graha(r.second[at]),
+                middle=Graha(r.middle[at]),
+                far=r.far[at] == 1,
+                distance_deg=r.distance_deg[at],
+                from_axis_deg=r.from_axis_deg[at],
+                orb_deg=r.orb_deg[at],
+            ),
+        )
 
     @cached_property
     def _synastry_antiscia(self) -> list[Tuple[AntiscionRow, ...]]:

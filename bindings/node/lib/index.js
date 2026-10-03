@@ -1222,6 +1222,22 @@ export class Chart {
   }
 
   /**
+   * The chart's equal distances (`midpoints: {}` asks for them): each
+   * planet within the orb of the axis through two others' midpoint, 0.5°
+   * by default (C245), so equally distant from the two, on the shorter
+   * arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*,
+   * pp. 47–48); closest first, `null` unless asked
+   * (`03-design/western-midpoints.md`).
+   *
+   * Each row is `{ first, second, middle, far, distanceDeg, fromAxisDeg,
+   * orbDeg }`: the pair in catalogue order, the planet between, `far` true
+   * on the point opposite the shorter arc's midpoint.
+   */
+  get midpoints() {
+    return midpointsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2446,6 +2462,11 @@ export class ChartArea extends Area {
           request.antiscia,
           'antiscia',
           'an antiscia request record, e.g. {} or { orbs: { model: "LEO" } }',
+        ),
+        midpointsJson: recordJson(
+          request.midpoints,
+          'midpoints',
+          'a midpoints request record, e.g. {} or { orbDeg: 1 }',
         ),
         synastryJson: recordJson(
           request.synastry,
@@ -3693,6 +3714,38 @@ function antisciaOf(batch) {
     ),
   );
   ANTISCIA.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's equal distances, decoded once however many charts read them. */
+const MIDPOINTS = new WeakMap();
+
+/**
+ * Every chart's equal distances in a batch: `midpoints` holds a row a
+ * chart, or none when none was asked, and `midpoint_rows` is ragged by its
+ * count (`03-design/western-midpoints.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function midpointsOf(batch) {
+  let decoded = MIDPOINTS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const r = d.midpointRows;
+  const graha = (id) => GrahaById.get(id) ?? 'unknown';
+  decoded = raggedOf(batch, d.midpoints.count, r.first.length, 'midpoints and midpoint_rows', (at) =>
+    Object.freeze({
+      first: graha(r.first[at]),
+      second: graha(r.second[at]),
+      middle: graha(r.middle[at]),
+      far: r.far[at] !== 0,
+      distanceDeg: r.distanceDeg[at],
+      fromAxisDeg: r.fromAxisDeg[at],
+      orbDeg: r.orbDeg[at],
+    }),
+  );
+  MIDPOINTS.set(batch, decoded);
   return decoded;
 }
 

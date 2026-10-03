@@ -1449,6 +1449,36 @@ export interface AntiscionRow {
   readonly orbDeg: number;
 }
 
+/**
+ * What the equal distances are asked (`03-design/western-midpoints.md`):
+ * how far from the axis through two planets' midpoint a third may stand,
+ * 0.5° when absent (C245), at most 10°.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, midpoints: {} });
+ * for (const row of chart.midpoints ?? []) console.log(row.middle, 'between', row.first, 'and', row.second);
+ */
+export interface MidpointRequest {
+  readonly orbDeg?: number;
+}
+
+/** A planet equally distant from two others, within the orb of their axis. */
+export interface MidpointRow {
+  /** The earlier planet of the pair, in catalogue order. */
+  readonly first: Graha | 'unknown';
+  readonly second: Graha | 'unknown';
+  /** The planet equally distant from the two. */
+  readonly middle: Graha | 'unknown';
+  /** Whether it stands opposite the midpoint of the pair's shorter arc (C246). */
+  readonly far: boolean;
+  /** How far it stands from each of the two, the mean of the two arcs, degrees. */
+  readonly distanceDeg: number;
+  /** How far it stands from the nearer point of the axis, degrees. */
+  readonly fromAxisDeg: number;
+  /** The orb the request allowed, degrees. */
+  readonly orbDeg: number;
+}
+
 /** A chart's antiscia. */
 export interface Antiscia {
   /** Each planet's reflections, in the catalogue's order. */
@@ -3261,6 +3291,11 @@ export declare class Chart {
    */
   readonly antiscia: Antiscia | null;
   /**
+   * The chart's equal distances, closest first; `null` unless `midpoints`
+   * asked (`03-design/western-midpoints.md`).
+   */
+  readonly midpoints: readonly MidpointRow[] | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4402,6 +4437,11 @@ export interface ChartRequest {
    * chart's `antiscia`: his moieties when `{}`. None by default.
    */
   readonly antiscia?: AntisciaRequest;
+  /**
+   * Leo's equal distances (`03-design/western-midpoints.md`), read as each
+   * chart's `midpoints`: 0.5° from the axis when `{}`. None by default.
+   */
+  readonly midpoints?: MidpointRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

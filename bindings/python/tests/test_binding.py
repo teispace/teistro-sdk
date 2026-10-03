@@ -1889,6 +1889,49 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, parallels=request, **george)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_equal_distances(self) -> None:
+        """The equal distances cross whole on King George V (Leo, *How to
+        Judge a Nativity*, p. 130): his recast's one under the default,
+        Pluto on the far point of the Moon and Jupiter, eight at 1.5°, a
+        batch the charts one at a time, and refusals named in the record
+        (`03-design/western-midpoints.md`)."""
+        from teistro import MidpointRequest
+
+        george: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2402390.554166667
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **george).midpoints)
+            rows = ctx.chart.found(instant=birth, outer_planets=True, midpoints={}, **george).midpoints
+            assert rows is not None
+            self.assertEqual(len(rows), 1)
+            row = rows[0]
+            self.assertEqual((row.first, row.second, row.middle, row.far), (Graha.MOON, Graha.JUPITER, Graha.PLUTO, True))
+            self.assertAlmostEqual(row.from_axis_deg, 0.052, delta=0.01)
+            self.assertAlmostEqual(row.distance_deg, 137.69, delta=0.01)
+            self.assertEqual(row.orb_deg, 0.5)
+
+            wide: MidpointRequest = {"orbDeg": 1.5}
+            eight = ctx.chart.found(instant=birth, outer_planets=True, midpoints=wide, **george).midpoints
+            assert eight is not None
+            self.assertEqual(len(eight), 8)
+            self.assertEqual([at.from_axis_deg for at in eight], sorted(at.from_axis_deg for at in eight))
+            instants = [birth, birth - 3000.25]
+            batch = ctx.chart.found_many(instants=instants, midpoints=wide, **george)
+            for k, instant in enumerate(instants):
+                self.assertEqual(batch.at(k).midpoints, ctx.chart.found(instant=instant, midpoints=wide, **george).midpoints)
+            refusals: list[tuple[Any, str]] = [
+                ({"orbDeg": 11}, "midpoints.orbDeg"),
+                ({"orb": 1}, "midpoints.orb"),
+                ([], "midpoints"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, midpoints=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_antiscia(self) -> None:
         """The antiscia cross whole on King George V (Leo, *How to Judge a
         Nativity*, p. 130): his recast's one pair under Lilly's moieties,

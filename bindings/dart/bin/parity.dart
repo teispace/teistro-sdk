@@ -591,6 +591,7 @@ void main() {
     ),
     parallels: const ParallelRequest(orbDeg: 1.5),
     antiscia: const AntisciaRequest(),
+    midpoints: const MidpointRequest(orbDeg: 1.5),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1308,6 +1309,16 @@ void main() {
           : reflected.unpaired.map((one) => one.fullKey).join(','),
     );
     putAntiscionRows('chart-$i-antiscia', reflected.pairs);
+    final between = chart.midpoints!;
+    put('chart-$i-midpoint-count', '${between.length}');
+    for (final (n, row) in between.indexed) {
+      put(
+        'chart-$i-midpoint-$n',
+        '${row.first.fullKey} ${row.second.fullKey} ${row.middle.fullKey} '
+            '${row.far ? 1 : 0} ${number(row.distanceDeg)} '
+            '${number(row.fromAxisDeg)} ${number(row.orbDeg)}',
+      );
+    }
     final synastry = chart.synastry!;
     put('chart-$i-synastry-count', '${synastry.length}');
     for (final (n, row) in synastry.indexed) {

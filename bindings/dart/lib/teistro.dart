@@ -685,6 +685,7 @@ final class ChartArea extends _Area {
     SynastryRequest? synastry,
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
+    MidpointRequest? midpoints,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -723,6 +724,7 @@ final class ChartArea extends _Area {
     synastry: synastry,
     parallels: parallels,
     antiscia: antiscia,
+    midpoints: midpoints,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -781,6 +783,7 @@ final class ChartArea extends _Area {
     SynastryRequest? synastry,
     ParallelRequest? parallels,
     AntisciaRequest? antiscia,
+    MidpointRequest? midpoints,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -842,6 +845,7 @@ final class ChartArea extends _Area {
             synastryJson: synastry?._json,
             parallelsJson: parallels?._json,
             antisciaJson: antiscia?._json,
+            midpointsJson: midpoints?._json,
           ),
         ),
       ),
@@ -4406,6 +4410,33 @@ List<List<AntiscionRow>> _decodeSynastryAntiscia(Charts batch) {
   );
 }
 
+final Expando<List<List<MidpointRow>>> _midpoints =
+    Expando<List<List<MidpointRow>>>('midpoints');
+
+List<List<MidpointRow>> _midpointsOf(Charts batch) =>
+    _midpoints[batch] ??= _decodeMidpoints(batch);
+
+/// `midpoints` holds a row a chart, or none when none was asked, and
+/// `midpoint_rows` is ragged by its count.
+List<List<MidpointRow>> _decodeMidpoints(Charts batch) {
+  final r = batch.midpointRows;
+  return _ragged(
+    batch,
+    batch.midpoints.count,
+    r.length,
+    'midpoints and midpoint_rows',
+    (at) => MidpointRow(
+      first: Graha.byId(r.first[at]),
+      second: Graha.byId(r.second[at]),
+      middle: Graha.byId(r.middle[at]),
+      far: r.far[at] == 1,
+      distanceDeg: r.distanceDeg[at],
+      fromAxisDeg: r.fromAxisDeg[at],
+      orbDeg: r.orbDeg[at],
+    ),
+  );
+}
+
 final Expando<List<Antiscia>> _antiscia = Expando<List<Antiscia>>('antiscia');
 
 List<Antiscia> _antisciaOf(Charts batch) =>
@@ -6944,6 +6975,69 @@ final class ParallelRequest {
   Map<String, Object?> get _record => <String, Object?>{'orbDeg': orbDeg};
 
   String get _json => jsonEncode(_record);
+}
+
+/// How far from the axis through two planets' midpoint a third may stand
+/// to be equally distant from them (`03-design/western-midpoints.md`):
+/// 0.5° by default (C245), at most 10°.
+///
+/// ```dart
+/// const standard = MidpointRequest();
+/// const wider = MidpointRequest(orbDeg: 1.5);
+/// ```
+final class MidpointRequest {
+  const MidpointRequest({this.orbDeg = 0.5});
+
+  /// The orb from the nearer point of the axis, degrees.
+  final double orbDeg;
+
+  String get _json => jsonEncode(<String, Object?>{'orbDeg': orbDeg});
+}
+
+/// A planet equally distant from two others (Leo, *How to Judge a
+/// Nativity*, pp. 47–48), within the orb of the axis through their
+/// midpoint: the pair in catalogue order, and the planet between.
+final class MidpointRow extends _Value {
+  const MidpointRow({
+    required this.first,
+    required this.second,
+    required this.middle,
+    required this.far,
+    required this.distanceDeg,
+    required this.fromAxisDeg,
+    required this.orbDeg,
+  });
+
+  final Graha first;
+  final Graha second;
+
+  /// The planet equally distant from the two.
+  final Graha middle;
+
+  /// Whether it stands opposite the midpoint of the pair's shorter arc, on
+  /// the longer arc's midpoint (C246).
+  final bool far;
+
+  /// How far it stands from each of the two, the mean of the two arcs,
+  /// degrees.
+  final double distanceDeg;
+
+  /// How far it stands from the nearer point of the axis, degrees.
+  final double fromAxisDeg;
+
+  /// The orb the request allowed, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [
+    first,
+    second,
+    middle,
+    far,
+    distanceDeg,
+    fromAxisDeg,
+    orbDeg,
+  ];
 }
 
 /// A planet's distance from the equator.
@@ -13149,9 +13243,6 @@ final class Chart {
     return index < all.length ? all[index] : null;
   }
 
-  /// The parallels among the chart's planets, closest first: each pair the
-  /// same distance from the equator within the orb (Leo's 1° by default),
-  /// on either side of it (C243); null unless `parallels` asked.
   /// The chart's antiscia: each planet's reflection about the solstices
   /// and the equinoxes, and the pairs standing in one within the orbs,
   /// Lilly's moieties by default (C244); null unless `antiscia` asked
@@ -13161,6 +13252,18 @@ final class Chart {
     return index < all.length ? all[index] : null;
   }
 
+  /// The chart's equal distances, closest first: each planet within the
+  /// orb of the axis through two others' midpoint, 0.5° by default (C245),
+  /// on the shorter arc's midpoint or opposite it (C246); null unless
+  /// `midpoints` asked (`03-design/western-midpoints.md`).
+  List<MidpointRow>? get midpoints {
+    final all = _midpointsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The parallels among the chart's planets, closest first: each pair the
+  /// same distance from the equator within the orb (Leo's 1° by default),
+  /// on either side of it (C243); null unless `parallels` asked.
   List<ParallelRow>? get parallels {
     final all = _declinationsOf(batch).$2;
     return index < all.length ? all[index] : null;

@@ -2398,6 +2398,46 @@ test('a chart carries its declinations and parallels', () => {
   ctx.dispose();
 });
 
+test('a chart carries its equal distances', () => {
+  // King George V (Leo, How to Judge a Nativity, p. 130), whose equal
+  // distances the SDK's test holds against a Moshier recast: under the
+  // default 0.5°, Pluto on the far point of the Moon and Jupiter.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2402390.554166667;
+  assert.equal(ctx.chart.found({ instant: birth, ...george }).midpoints, null);
+
+  const rows = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, midpoints: {} }).midpoints;
+  assert.ok(Object.isFrozen(rows) && Object.isFrozen(rows[0]), 'frozen to its leaves');
+  assert.equal(rows.length, 1);
+  const [row] = rows;
+  assert.deepEqual([row.first, row.second, row.middle, row.far], ['graha.MOON', 'graha.JUPITER', 'graha.PLUTO', true]);
+  assert.ok(Math.abs(row.fromAxisDeg - 0.052) < 0.01, `${row.fromAxisDeg}`);
+  assert.ok(Math.abs(row.distanceDeg - 137.69) < 0.01, `${row.distanceDeg}`);
+  assert.equal(row.orbDeg, 0.5);
+
+  const wide = { orbDeg: 1.5 };
+  const eight = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, midpoints: wide }).midpoints;
+  assert.equal(eight.length, 8);
+  assert.ok(eight.every((at, n) => at.fromAxisDeg <= at.orbDeg && (n === 0 || eight[n - 1].fromAxisDeg <= at.fromAxisDeg)));
+  const instants = [birth, birth - 3000.25];
+  const batch = ctx.chart.foundMany({ instants, ...george, midpoints: wide });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).midpoints, ctx.chart.found({ instant, ...george, midpoints: wide }).midpoints),
+  );
+  for (const [request, field] of [
+    [{ orbDeg: 11 }, 'midpoints.orbDeg'],
+    [{ orb: 1 }, 'midpoints.orb'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...george, midpoints: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries its antiscia', () => {
   // King George V (Leo, How to Judge a Nativity, p. 130), whose antiscia
   // the SDK's test holds against a Moshier recast: under Lilly's moieties

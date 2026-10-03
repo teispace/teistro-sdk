@@ -376,6 +376,7 @@ const charts = geo.chart.foundMany({
   },
   parallels: { orbDeg: 1.5 },
   antiscia: {},
+  midpoints: { orbDeg: 1.5 },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
@@ -786,6 +787,14 @@ for (const chart of charts) {
     );
   };
   putAntiscionRows(`chart-${i}-antiscia`, reflected.pairs);
+  const between = chart.midpoints;
+  put(`chart-${i}-midpoint-count`, `${between.length}`);
+  between.forEach((at, n) =>
+    put(
+      `chart-${i}-midpoint-${n}`,
+      `${at.first} ${at.second} ${at.middle} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
+    ),
+  );
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;
   put(`chart-${i}-synastry-count`, `${synastry.length}`);
