@@ -1172,6 +1172,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
   external ffi.Pointer<ffi.Char> synastryJson;
 
+  /// Every chart's declinations and the parallels among its planets, as
+  /// a JSON object, every field optional: `orbDeg`, how close two
+  /// distances from the equator must stand, Leo's 1° by default and at
+  /// most 10°. A pair on either side of the equator is a parallel
+  /// (C243). The pairs are the chart's planets: the seven, and the outer
+  /// three when `TS_CHART_OUTER` placed them. The answers come back in
+  /// `declinations`, `declination_rows` and `parallel_rows`. Null for
+  /// none, which costs nothing (`03-design/western-declinations.md`).
+  /// Refusals are named from the record every binding calls
+  /// `parallels`, as `parallels.orbDeg`.
+  /// Example: {"orbDeg":1}. May be null.
+  external ffi.Pointer<ffi.Char> parallelsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3061,7 +3074,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3379,6 +3392,19 @@ final class ChartRequest {
   /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
   final String? synastryJson;
 
+  /// Every chart's declinations and the parallels among its planets, as
+  /// a JSON object, every field optional: `orbDeg`, how close two
+  /// distances from the equator must stand, Leo's 1° by default and at
+  /// most 10°. A pair on either side of the equator is a parallel
+  /// (C243). The pairs are the chart's planets: the seven, and the outer
+  /// three when `TS_CHART_OUTER` placed them. The answers come back in
+  /// `declinations`, `declination_rows` and `parallel_rows`. Null for
+  /// none, which costs nothing (`03-design/western-declinations.md`).
+  /// Refusals are named from the record every binding calls
+  /// `parallels`, as `parallels.orbDeg`.
+  /// Example: {"orbDeg":1}. May be null.
+  final String? parallelsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3466,6 +3492,9 @@ final class ChartRequest {
     raw.synastryJson = synastryJson == null
         ? ffi.nullptr
         : synastryJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.parallelsJson = parallelsJson == null
+        ? ffi.nullptr
+        : parallelsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3539,6 +3568,9 @@ final class ChartRequest {
         synastryJson: raw.synastryJson == ffi.nullptr
             ? null
             : raw.synastryJson.cast<pkg_ffi.Utf8>().toDartString(),
+        parallelsJson: raw.parallelsJson == ffi.nullptr
+            ? null
+            : raw.parallelsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

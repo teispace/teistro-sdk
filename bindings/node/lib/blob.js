@@ -1343,6 +1343,36 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 86, 'declinations');
+    out.declinations = {
+      obliquityDeg: column(blob, at, 0, 'f64', at.count),
+      lagnaDeg: column(blob, at, 1, 'f64', at.count),
+      midheavenDeg: column(blob, at, 2, 'f64', at.count),
+      grahaCount: column(blob, at, 3, 'u32', at.count),
+      parallelCount: column(blob, at, 4, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 87, 'declination_rows');
+    out.declinationRows = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      declinationDeg: column(blob, at, 1, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 88, 'parallel_rows');
+    out.parallelRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      contrary: column(blob, at, 2, 'u8', at.count),
+      apartDeg: column(blob, at, 3, 'f64', at.count),
+      orbDeg: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

@@ -625,6 +625,7 @@ pub fn charts() -> BlobSchema {
         .chain([chart_outer_section(81)])
         .chain(chart_western_aspect_sections(82))
         .chain(chart_synastry_sections(84))
+        .chain(chart_declination_sections(86))
         .collect(),
     }
 }
@@ -1407,6 +1408,82 @@ fn chart_synastry_sections(first: u32) -> [SectionSchema; 2] {
                 .chain(point_columns("second", "the partner's"))
                 .chain(western_aspect_measures())
                 .collect(),
+        ),
+    ]
+}
+
+/// The three sections the declinations and the parallels cross as, from
+/// `first`: a row a chart, each planet's declination, and the parallels,
+/// both ragged under the row (`03-design/western-declinations.md`).
+fn chart_declination_sections(first: u32) -> [SectionSchema; 3] {
+    let empty = "Empty when `parallels_json` asked for none.";
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    [
+        SectionSchema::columns(
+            first,
+            "declinations",
+            &format!(
+                "Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. {empty}"
+            ),
+            vec![
+                degrees(
+                    "obliquity_deg",
+                    "The true obliquity at the chart's instant, degrees.",
+                ),
+                degrees(
+                    "lagna_deg",
+                    "The lagna's declination, degrees north: the Sun's at that degree (Leo, p. 141).",
+                ),
+                degrees(
+                    "midheaven_deg",
+                    "The midheaven's declination, degrees north, read the same way.",
+                ),
+                ColumnDef::new(
+                    "graha_count",
+                    Scalar::U32,
+                    "How many planets' declinations are the chart's in `declination_rows`.",
+                ),
+                ColumnDef::new(
+                    "parallel_count",
+                    Scalar::U32,
+                    "How many parallels are the chart's in `parallel_rows`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "declination_rows",
+            &format!(
+                "Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. {empty}"
+            ),
+            vec![
+                graha_column("graha", "Which planet."),
+                degrees("declination_deg", "Its declination, degrees north."),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "parallel_rows",
+            &format!(
+                "Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). {empty}"
+            ),
+            vec![
+                graha_column(
+                    "first",
+                    "The first planet of the pair, in the catalogue's order.",
+                ),
+                graha_column("second", "The second."),
+                ColumnDef::new(
+                    "contrary",
+                    Scalar::U8,
+                    "1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.",
+                ),
+                degrees(
+                    "apart_deg",
+                    "How far apart their distances from the equator are, degrees.",
+                ),
+                degrees("orb_deg", "The orb the record allowed, degrees."),
+            ],
         ),
     ]
 }

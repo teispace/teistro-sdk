@@ -3797,6 +3797,93 @@ final class ChartsSynastryRows {
   final int length;
 }
 
+/// The `declinations` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.
+final class ChartsDeclinations {
+  const ChartsDeclinations({
+    required this.obliquityDeg,
+    required this.lagnaDeg,
+    required this.midheavenDeg,
+    required this.grahaCount,
+    required this.parallelCount,
+    required this.length,
+  });
+
+  /// The true obliquity at the chart's instant, degrees.
+  final Float64List obliquityDeg;
+
+  /// The lagna's declination, degrees north: the Sun's at that degree (Leo, p. 141).
+  final Float64List lagnaDeg;
+
+  /// The midheaven's declination, degrees north, read the same way.
+  final Float64List midheavenDeg;
+
+  /// How many planets' declinations are the chart's in `declination_rows`.
+  final Uint32List grahaCount;
+
+  /// How many parallels are the chart's in `parallel_rows`.
+  final Uint32List parallelCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `declination_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.
+final class ChartsDeclinationRows {
+  const ChartsDeclinationRows({
+    required this.graha,
+    required this.declinationDeg,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// Its declination, degrees north.
+  final Float64List declinationDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `parallel_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
+final class ChartsParallelRows {
+  const ChartsParallelRows({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The first planet of the pair, in the catalogue's order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// 1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.
+  final Uint8List contrary;
+
+  /// How far apart their distances from the equator are, degrees.
+  final Float64List apartDeg;
+
+  /// The orb the record allowed, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3994,6 +4081,9 @@ final class Charts {
     required this.westernAspectRows,
     required this.synastry,
     required this.synastryRows,
+    required this.declinations,
+    required this.declinationRows,
+    required this.parallelRows,
   });
 
   /// What kind of chart these are.
@@ -4295,6 +4385,15 @@ final class Charts {
   /// Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
   final ChartsSynastryRows synastryRows;
 
+  /// Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.
+  final ChartsDeclinations declinations;
+
+  /// Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.
+  final ChartsDeclinationRows declinationRows;
+
+  /// Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
+  final ChartsParallelRows parallelRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4387,6 +4486,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atWesternAspectRows = blob.section(83, 'western_aspect_rows');
   final atSynastry = blob.section(84, 'synastry');
   final atSynastryRows = blob.section(85, 'synastry_rows');
+  final atDeclinations = blob.section(86, 'declinations');
+  final atDeclinationRows = blob.section(87, 'declination_rows');
+  final atParallelRows = blob.section(88, 'parallel_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7863,6 +7965,75 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSynastryRows, 7) + atSynastryRows.count * 8,
       ),
       length: atSynastryRows.count,
+    ),
+    declinations: ChartsDeclinations(
+      obliquityDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinations, 0),
+        blob.columnOffset(atDeclinations, 0) + atDeclinations.count * 8,
+      ),
+      lagnaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinations, 1),
+        blob.columnOffset(atDeclinations, 1) + atDeclinations.count * 8,
+      ),
+      midheavenDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinations, 2),
+        blob.columnOffset(atDeclinations, 2) + atDeclinations.count * 8,
+      ),
+      grahaCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinations, 3),
+        blob.columnOffset(atDeclinations, 3) + atDeclinations.count * 4,
+      ),
+      parallelCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinations, 4),
+        blob.columnOffset(atDeclinations, 4) + atDeclinations.count * 4,
+      ),
+      length: atDeclinations.count,
+    ),
+    declinationRows: ChartsDeclinationRows(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinationRows, 0),
+        blob.columnOffset(atDeclinationRows, 0) + atDeclinationRows.count * 2,
+      ),
+      declinationDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDeclinationRows, 1),
+        blob.columnOffset(atDeclinationRows, 1) + atDeclinationRows.count * 8,
+      ),
+      length: atDeclinationRows.count,
+    ),
+    parallelRows: ChartsParallelRows(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atParallelRows, 0),
+        blob.columnOffset(atParallelRows, 0) + atParallelRows.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atParallelRows, 1),
+        blob.columnOffset(atParallelRows, 1) + atParallelRows.count * 2,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atParallelRows, 2),
+        blob.columnOffset(atParallelRows, 2) + atParallelRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atParallelRows, 3),
+        blob.columnOffset(atParallelRows, 3) + atParallelRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atParallelRows, 4),
+        blob.columnOffset(atParallelRows, 4) + atParallelRows.count * 8,
+      ),
+      length: atParallelRows.count,
     ),
   );
 }

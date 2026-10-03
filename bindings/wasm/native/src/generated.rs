@@ -2158,6 +2158,19 @@ pub struct ChartRequest {
     /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub synastry_json: Option<String>,
+    /// Every chart's declinations and the parallels among its planets, as
+    /// a JSON object, every field optional: `orbDeg`, how close two
+    /// distances from the equator must stand, Leo's 1° by default and at
+    /// most 10°. A pair on either side of the equator is a parallel
+    /// (C243). The pairs are the chart's planets: the seven, and the outer
+    /// three when `TS_CHART_OUTER` placed them. The answers come back in
+    /// `declinations`, `declination_rows` and `parallel_rows`. Null for
+    /// none, which costs nothing (`03-design/western-declinations.md`).
+    /// Refusals are named from the record every binding calls
+    /// `parallels`, as `parallels.orbDeg`.
+    /// Example: {"orbDeg":1}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parallels_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2189,6 +2202,7 @@ pub struct HeldChartRequest {
     progressions_json: Option<std::ffi::CString>,
     western_aspects_json: Option<std::ffi::CString>,
     synastry_json: Option<std::ffi::CString>,
+    parallels_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2260,6 +2274,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             synastry_json: self
                 .synastry_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            parallels_json: self
+                .parallels_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2364,6 +2382,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            parallels_json: self
+                .parallels_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2413,6 +2436,7 @@ impl ChartRequest {
             progressions_json: unsafe { lent_text(raw.progressions_json) },
             western_aspects_json: unsafe { lent_text(raw.western_aspects_json) },
             synastry_json: unsafe { lent_text(raw.synastry_json) },
+            parallels_json: unsafe { lent_text(raw.parallels_json) },
         }
     }
 }

@@ -3042,6 +3042,78 @@ class ChartsSynastryRows:
 
 
 @dataclass(frozen=True)
+class ChartsDeclinations:
+    """The `declinations` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.
+    """
+
+    obliquity_deg: memoryview[float]
+    """The true obliquity at the chart's instant, degrees."""
+
+    lagna_deg: memoryview[float]
+    """The lagna's declination, degrees north: the Sun's at that degree (Leo, p. 141)."""
+
+    midheaven_deg: memoryview[float]
+    """The midheaven's declination, degrees north, read the same way."""
+
+    graha_count: memoryview[int]
+    """How many planets' declinations are the chart's in `declination_rows`."""
+
+    parallel_count: memoryview[int]
+    """How many parallels are the chart's in `parallel_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDeclinationRows:
+    """The `declination_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    declination_deg: memoryview[float]
+    """Its declination, degrees north."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsParallelRows:
+    """The `parallel_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
+    """
+
+    first: memoryview[int]
+    """The first planet of the pair, in the catalogue's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    contrary: memoryview[int]
+    """1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side."""
+
+    apart_deg: memoryview[float]
+    """How far apart their distances from the equator are, degrees."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3420,6 +3492,15 @@ class Charts:
     synastry_rows: ChartsSynastryRows
     """Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none."""
 
+    declinations: ChartsDeclinations
+    """Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none."""
+
+    declination_rows: ChartsDeclinationRows
+    """Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none."""
+
+    parallel_rows: ChartsParallelRows
+    """Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3514,6 +3595,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_western_aspect_rows = blob.section(83, "western_aspect_rows")
     at_synastry = blob.section(84, "synastry")
     at_synastry_rows = blob.section(85, "synastry_rows")
+    at_declinations = blob.section(86, "declinations")
+    at_declination_rows = blob.section(87, "declination_rows")
+    at_parallel_rows = blob.section(88, "parallel_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5458,6 +5542,51 @@ def decode_charts(raw: bytes) -> Charts:
                 at_synastry_rows, 7, 8, at_synastry_rows.count
             ).cast("d"),
             length=at_synastry_rows.count,
+        ),
+        declinations=ChartsDeclinations(
+            obliquity_deg=blob.column(
+                at_declinations, 0, 8, at_declinations.count
+            ).cast("d"),
+            lagna_deg=blob.column(
+                at_declinations, 1, 8, at_declinations.count
+            ).cast("d"),
+            midheaven_deg=blob.column(
+                at_declinations, 2, 8, at_declinations.count
+            ).cast("d"),
+            graha_count=blob.column(
+                at_declinations, 3, 4, at_declinations.count
+            ).cast("I"),
+            parallel_count=blob.column(
+                at_declinations, 4, 4, at_declinations.count
+            ).cast("I"),
+            length=at_declinations.count,
+        ),
+        declination_rows=ChartsDeclinationRows(
+            graha=blob.column(
+                at_declination_rows, 0, 2, at_declination_rows.count
+            ).cast("H"),
+            declination_deg=blob.column(
+                at_declination_rows, 1, 8, at_declination_rows.count
+            ).cast("d"),
+            length=at_declination_rows.count,
+        ),
+        parallel_rows=ChartsParallelRows(
+            first=blob.column(
+                at_parallel_rows, 0, 2, at_parallel_rows.count
+            ).cast("H"),
+            second=blob.column(
+                at_parallel_rows, 1, 2, at_parallel_rows.count
+            ).cast("H"),
+            contrary=blob.column(
+                at_parallel_rows, 2, 1, at_parallel_rows.count
+            ).cast("B"),
+            apart_deg=blob.column(
+                at_parallel_rows, 3, 8, at_parallel_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_parallel_rows, 4, 8, at_parallel_rows.count
+            ).cast("d"),
+            length=at_parallel_rows.count,
         ),
     )
 

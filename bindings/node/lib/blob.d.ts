@@ -3632,6 +3632,90 @@ export interface ChartsSynastryRows {
 }
 
 /**
+ * The `declinations` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.
+ */
+export interface ChartsDeclinations {
+  /**
+   * The true obliquity at the chart's instant, degrees.
+   */
+  readonly obliquityDeg: Float64Array;
+  /**
+   * The lagna's declination, degrees north: the Sun's at that degree (Leo, p. 141).
+   */
+  readonly lagnaDeg: Float64Array;
+  /**
+   * The midheaven's declination, degrees north, read the same way.
+   */
+  readonly midheavenDeg: Float64Array;
+  /**
+   * How many planets' declinations are the chart's in `declination_rows`.
+   */
+  readonly grahaCount: Uint32Array;
+  /**
+   * How many parallels are the chart's in `parallel_rows`.
+   */
+  readonly parallelCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `declination_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.
+ */
+export interface ChartsDeclinationRows {
+  /**
+   * Which planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its declination, degrees north.
+   */
+  readonly declinationDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `parallel_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
+ */
+export interface ChartsParallelRows {
+  /**
+   * The first planet of the pair, in the catalogue's order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * 1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.
+   */
+  readonly contrary: Uint8Array;
+  /**
+   * How far apart their distances from the equator are, degrees.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * The orb the record allowed, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4139,6 +4223,18 @@ export interface Charts {
    * Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
    */
   readonly synastryRows: ChartsSynastryRows;
+  /**
+   * Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.
+   */
+  readonly declinations: ChartsDeclinations;
+  /**
+   * Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.
+   */
+  readonly declinationRows: ChartsDeclinationRows;
+  /**
+   * Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
+   */
+  readonly parallelRows: ChartsParallelRows;
 }
 
 /**
