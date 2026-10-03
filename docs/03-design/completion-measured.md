@@ -21,9 +21,9 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | SUN | 5.45 | 1.16 | 0.164 | 0.206 | 0.516 | 1.17 | 1.7e-5 | 1844 |
 | MOON | 14.6 | 2.33 | 1.29 | 1.63 | 4.27 | 11.0 | 1.3e-4 | 1864 |
 | MERCURY | 8.32 | 1.40 | 2.29 | 0.958 | 2.03 | 2.60 | 2.2e-4 | 2350 |
-| VENUS | 21.4 | 1.67 | 1.42 | 0.376 | 0.008 | 6.09 | 1.7e-4 | 2209 |
+| VENUS | 21.4 | 1.67 | 1.42 | 0.376 | 0.0077 | 6.09 | 1.7e-4 | 2209 |
 | MARS | 21.1 | 1.40 | 0.331 | 4.04 | 1.51 | 4.33 | 9.8e-5 | 2224 |
-| JUPITER | 2.61 | 0.516 | 0.063 | 1.02 | 0.002 | 0.817 | 1.7e-5 | 2119 |
+| JUPITER | 2.61 | 0.516 | 0.063 | 1.02 | 0.0024 | 0.817 | 1.7e-5 | 2119 |
 | SATURN | 1.59 | 0.418 | 0.970 | 0.084 | 0.977 | 0.672 | 8.9e-6 | 2301 |
 | URANUS | 4.85 | 1.02 | 0.892 | 0.058 | 3.88 | 0.317 | 1.1e-5 | 2334 |
 | NEPTUNE | 6.76 | 2.59 | 1.98 | 2.27 | 6.71 | 0.169 | 4.3e-6 | 2399 |
@@ -44,7 +44,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | MERCURY | 8.35 | 1.40 | 2.25 | 0.938 | 2.06 | 2.56 | 2.2e-4 | 2350 |
 | VENUS | 21.5 | 1.67 | 1.60 | 0.229 | 0.026 | 6.05 | 1.7e-4 | 2209 |
 | MARS | 21.1 | 1.40 | 0.470 | 4.20 | 1.47 | 4.24 | 9.8e-5 | 2224 |
-| JUPITER | 2.72 | 0.527 | 0.007 | 1.25 | 0.137 | 0.812 | 1.7e-5 | 2119 |
+| JUPITER | 2.72 | 0.527 | 0.0073 | 1.25 | 0.137 | 0.812 | 1.7e-5 | 2119 |
 | SATURN | 1.66 | 0.440 | 0.831 | 0.301 | 0.908 | 0.673 | 8.9e-6 | 2302 |
 | URANUS | 5.02 | 1.04 | 1.15 | 0.292 | 3.92 | 0.377 | 1.1e-5 | 2330 |
 | NEPTUNE | 6.89 | 2.60 | 1.78 | 2.53 | 6.87 | 0.271 | 4.3e-6 | 2395 |
@@ -70,7 +70,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | URANUS | 5.19 | 2.71 |
 | NEPTUNE | 1.57 | 0.942 |
 | PLUTO | 0.562 | 0.660 |
-| MEAN_NODE | 0.001 | — |
+| MEAN_NODE | 0.0005 | — |
 | TRUE_NODE | 102 | — |
 | MEAN_APOGEE | 2.39 | — |
 | OSCULATING_APOGEE | 732 | 1999 |
@@ -140,7 +140,7 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | SATURN | 0.834 | 0.327 | 0.170 | 0.339 | 0.696 | 0.060 | 5.5e-6 | 2399 |
 | URANUS | 4.97 | 1.04 | 0.761 | 0.057 | 3.91 | 0.081 | 1.1e-5 | 2332 |
 | NEPTUNE | 6.76 | 2.58 | 2.00 | 2.31 | 6.75 | 0.176 | 4.0e-6 | 2399 |
-| PLUTO | 0.926 | 0.210 | 0.024 | 0.004 | 0.088 | 0.186 | 8.1e-6 | 1987 |
+| PLUTO | 0.926 | 0.210 | 0.024 | 0.0040 | 0.088 | 0.186 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 | MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
@@ -154,14 +154,14 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | SUN | 0.201 | 0.061 | 0.137 | 0.047 | 0.076 | 0.148 | 1.6e-6 | 1830 |
 | MOON | 117 | 23.1 | 1.44 | 18.3 | 95.1 | 53.9 | 5.7e-4 | 2395 |
-| MERCURY | 0.334 | 0.076 | 0.228 | 0.061 | 0.007 | 0.164 | 2.0e-4 | 1856 |
+| MERCURY | 0.334 | 0.076 | 0.228 | 0.061 | 0.0069 | 0.164 | 2.0e-4 | 1856 |
 | VENUS | 0.770 | 0.112 | 0.301 | 0.079 | 0.070 | 0.451 | 1.2e-4 | 2310 |
 | MARS | 4.06 | 0.315 | 0.165 | 0.307 | 0.472 | 0.305 | 6.6e-5 | 2367 |
 | JUPITER | 1.13 | 0.429 | 0.325 | 0.633 | 0.470 | 0.358 | 1.1e-5 | 2364 |
 | SATURN | 1.03 | 0.358 | 0.031 | 0.556 | 0.627 | 0.155 | 5.5e-6 | 2399 |
 | URANUS | 5.10 | 1.06 | 1.02 | 0.177 | 3.95 | 0.184 | 1.1e-5 | 2329 |
 | NEPTUNE | 6.91 | 2.59 | 1.80 | 2.57 | 6.91 | 0.275 | 4.0e-6 | 2398 |
-| PLUTO | 1.20 | 0.276 | 0.194 | 0.205 | 0.001 | 0.294 | 8.1e-6 | 1987 |
+| PLUTO | 1.20 | 0.276 | 0.194 | 0.205 | 0.0015 | 0.294 | 8.1e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 119 | 38.6 | 68.2 | 8.35 | 65.0 | — | — | 2392 |
 | MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
@@ -173,7 +173,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 
 | body | longitude ("/day) | latitude ("/day) |
 |---|---:|---:|
-| SUN | 0.014 | 0.004 |
+| SUN | 0.014 | 0.0045 |
 | MOON | 2.94 | 2.36 |
 | MERCURY | 3.23 | 2.00 |
 | VENUS | 0.328 | 0.095 |
@@ -183,7 +183,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | URANUS | 5.19 | 2.70 |
 | NEPTUNE | 1.57 | 0.945 |
 | PLUTO | 0.502 | 0.660 |
-| MEAN_NODE | 0.001 | — |
+| MEAN_NODE | 0.0005 | — |
 | TRUE_NODE | 30.5 | — |
 | MEAN_APOGEE | 2.39 | — |
 | OSCULATING_APOGEE | 243 | 1999 |
@@ -253,7 +253,7 @@ So both centres are recorded, and the pair is the point. **Geocentric isolates t
 | SATURN | 0.842 | 0.327 | 0.169 | 0.338 | 0.701 | 0.055 | 5.5e-6 | 2397 |
 | URANUS | 4.97 | 1.04 | 0.764 | 0.058 | 3.91 | 0.081 | 1.1e-5 | 2332 |
 | NEPTUNE | 6.77 | 2.58 | 2.00 | 2.31 | 6.76 | 0.176 | 4.0e-6 | 2399 |
-| PLUTO | 0.006 | 0.001 | 0.003 | 0.000 | 0.002 | 0.001 | 4.5e-6 | 1987 |
+| PLUTO | 0.0062 | 0.0014 | 0.0026 | 0.0004 | 0.0015 | 0.0013 | 4.5e-6 | 1987 |
 | MEAN_NODE | 0.987 | 0.326 | 0.328 | 0.182 | 0.987 | — | — | 2400 |
 | TRUE_NODE | 118 | 38.6 | 67.6 | 8.83 | 64.3 | — | — | 2392 |
 | MEAN_APOGEE | 417 | 265 | 172 | 260 | 329 | — | — | 1805 |
@@ -286,7 +286,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 
 | body | longitude ("/day) | latitude ("/day) |
 |---|---:|---:|
-| SUN | 0.007 | 0.001 |
+| SUN | 0.0065 | 0.0011 |
 | MOON | 2.93 | 2.35 |
 | MERCURY | 3.22 | 2.00 |
 | VENUS | 0.311 | 0.091 |
@@ -296,7 +296,7 @@ Arcseconds of ecliptic longitude, the shortest way round the circle, except the 
 | URANUS | 5.19 | 2.70 |
 | NEPTUNE | 1.57 | 0.945 |
 | PLUTO | 0.502 | 0.660 |
-| MEAN_NODE | 0.001 | — |
+| MEAN_NODE | 0.0005 | — |
 | TRUE_NODE | 26.5 | — |
 | MEAN_APOGEE | 2.39 | — |
 | OSCULATING_APOGEE | 238 | 1999 |
@@ -355,10 +355,10 @@ The first column is the check that makes the rest mean anything: **how far the e
 
 | correction | engine moves the Sun | Sun | Moon | Mars |
 |---|---:|---:|---:|---:|
-| geometric (of date) | 0.000 | 0.227 | 2.75 | 3.98 |
+| geometric (of date) | 0.0000 | 0.227 | 2.75 | 3.98 |
 | light time only | 0.011 | 0.227 | 2.75 | 3.98 |
-| deflection only | 0.000 | 0.228 | 2.75 | 3.98 |
-| aberration only | 0.000 | 20.9 | 23.3 | 21.3 |
+| deflection only | 0.0000 | 0.228 | 2.75 | 3.98 |
+| aberration only | 0.0000 | 20.9 | 23.3 | 21.3 |
 | nutation only | 18.9 | 0.225 | 2.74 | 3.97 |
 | apparent, tropical | 39.6 | 0.226 | 2.74 | 3.97 |
 | apparent, sidereal | 106035 | 0.228 | 2.75 | 3.98 |
