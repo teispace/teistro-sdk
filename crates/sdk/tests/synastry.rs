@@ -13,8 +13,8 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint, SynastryRequest,
-    SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
+    AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint, Partner,
+    PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
 };
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
@@ -273,4 +273,43 @@ fn each_charts_own_zodiac_parts_from_the_tropical_by_the_precession_between() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("zodiac"));
     assert!(sdk.chart().synastry(&george, &tropical, &request).is_ok());
+}
+
+#[test]
+fn a_batch_read_against_one_partner_is_each_chart_read_against_it() {
+    // The partner is founded once, with the outer planets the charts
+    // carry, and each chart is read against it as two charts are.
+    let sdk = western();
+    let (jd, latitude, longitude) = MARY;
+    let asked = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "aspects": ["SEXTILE", "OPPOSITION"]}}"#
+    ))
+    .unwrap();
+    let george = born(&sdk, GEORGE);
+    let earlier = born(&sdk, (GEORGE.0 - 3000.25, GEORGE.1, GEORGE.2));
+    let charts = [george.clone(), earlier.clone()];
+    let read = sdk.chart().synastry_with(&charts, &asked).unwrap();
+    let mary = born(&sdk, MARY);
+    for (chart, rows) in charts.iter().zip(&read) {
+        assert_eq!(
+            rows,
+            &sdk.chart().synastry(chart, &mary, &asked.request).unwrap()
+        );
+    }
+    assert!(read[0].iter().any(|row| (row.first, row.aspect, row.second)
+        == (
+            graha(Graha::Mars),
+            WesternAspect::Opposition,
+            NatalPoint::Lagna
+        )));
+    // A partner past the ephemeris is refused as the partner.
+    let far = PartnerSynastry::new(
+        Partner {
+            instant: JulianDay::<Utc>::try_new(9_000_000.0).unwrap(),
+            ..asked.partner
+        },
+        asked.request.clone(),
+    );
+    let refused = sdk.chart().synastry_with(&charts, &far).unwrap_err();
+    assert_eq!(refused.field(), Some("partner"), "{refused}");
 }
