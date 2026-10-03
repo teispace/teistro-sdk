@@ -1,10 +1,12 @@
 # A Western chart's houses (the `western` module)
 
-Status: `building`, 2026-10-03, written from the sources before any code.
-Steps 2 to 4 are built: `sdk.chart().western_houses` holds Leo's p. 150
-figure, and [`western-houses-measured.md`](western-houses-measured.md)
-reads the corpus's births; a composite carries its cusps and the
-antiscia read the cusps when asked.
+Status: `built`, 2026-10-04, written from the sources before any code.
+`sdk.chart().western_houses` holds Leo's p. 150 figure,
+[`western-houses-measured.md`](western-houses-measured.md) reads the
+corpus's births, a composite carries its cusps and the antiscia read the
+cusps when asked; a `western_houses_json` record crosses in sections 103
+to 107, and Node, wasm, Python and Dart read `chart.westernHouses`, with
+parity.
 
 The Western pages so far read the zodiac alone: aspects, parallels,
 antiscia, equal distances, the composite's planets. A founded chart's
