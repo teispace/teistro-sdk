@@ -364,6 +364,16 @@ const charts = geo.chart.foundMany({
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
+  westernAspects: {
+    aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
+    orbs: {
+      model: 'MOIETIES',
+      orbs: [
+        ['SUN', 17], ['MOON', 12.5], ['MERCURY', 7], ['VENUS', 8], ['MARS', 7.5],
+        ['JUPITER', 12], ['SATURN', 10], ['URANUS', 5], ['NEPTUNE', 5], ['PLUTO', 5],
+      ].map(([graha, orbDeg]) => ({ graha, orbDeg })),
+    },
+  },
   progressions: {
     at: 2470000.5,
     year: 'NOON_SIDEREAL_TIME',
@@ -731,6 +741,14 @@ for (const chart of charts) {
     put(
       `chart-${i}-progressed-contact-${n}`,
       `${number(at.life)} ${number(at.sky)} ${at.graha} ${at.to.point === 'LAGNA' ? 'LAGNA' : at.to.graha} ${at.angle} ${at.motion}`,
+    ),
+  );
+  const western = chart.westernAspects;
+  put(`chart-${i}-western-aspect-count`, `${western.length}`);
+  western.forEach((at, n) =>
+    put(
+      `chart-${i}-western-aspect-${n}`,
+      `${at.first} ${at.second} ${at.aspect} ${number(at.apartDeg)} ${number(at.fromExactDeg)} ${number(at.orbDeg)} ${at.applying ? 1 : 0}`,
     ),
   );
   put(

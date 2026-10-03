@@ -922,6 +922,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     for (index, document) in read.value.iter().enumerate() {
         one_document(report, &geo, index, document);
         the_progressions(report, &geo, index, document, &bare);
+        the_western_aspects(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -1896,6 +1897,47 @@ fn the_progressions(
                 },
                 at.angle,
                 wire_key(&at.motion)
+            ),
+        );
+    }
+}
+
+/// The Western aspects every runner asks for: six of the nine under
+/// moieties over the ten planets, so a model other than the default and an
+/// aspect beyond Ptolemy's both cross.
+const WESTERN_ASPECTS_JSON: &str = r#"{"aspects":["CONJUNCTION","SEXTILE","SQUARE","TRINE","QUINCUNX","OPPOSITION"],"orbs":{"model":"MOIETIES","orbs":[{"graha":"SUN","orbDeg":17},{"graha":"MOON","orbDeg":12.5},{"graha":"MERCURY","orbDeg":7},{"graha":"VENUS","orbDeg":8},{"graha":"MARS","orbDeg":7.5},{"graha":"JUPITER","orbDeg":12},{"graha":"SATURN","orbDeg":10},{"graha":"URANUS","orbDeg":5},{"graha":"NEPTUNE","orbDeg":5},{"graha":"PLUTO","orbDeg":5}]}}"#;
+
+/// The Western aspect table as the other three print it: its length, then
+/// each row's pair, aspect, arcs, orb and whether it applies.
+fn the_western_aspects(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+) {
+    let asked = teistro::AspectRequest::from_json(WESTERN_ASPECTS_JSON).expect("a valid request");
+    let rows = sdk
+        .chart()
+        .western_aspects(document, &asked)
+        .expect("the outer planets placed");
+    put(
+        report,
+        &format!("chart-{index}-western-aspect-count"),
+        rows.len().to_string(),
+    );
+    for (n, row) in rows.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-western-aspect-{n}"),
+            format!(
+                "{} {} {} {} {} {} {}",
+                row.first.full_key(),
+                row.second.full_key(),
+                row.aspect.key(),
+                number(row.apart_deg),
+                number(row.from_exact_deg),
+                number(row.orb_deg),
+                u8::from(row.applying)
             ),
         );
     }
