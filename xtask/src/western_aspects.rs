@@ -41,14 +41,7 @@ fn measure(root: &Path, sdk: &Context) -> Result<Measured, String> {
     };
     for birth in &births {
         let named = |why: teistro::Error| format!("{}: {why}", birth.name);
-        let chart = sdk
-            .chart()
-            .reading(
-                birth.document.foundation.instant,
-                &birth.request().with_outer_planets(),
-            )
-            .map_err(named)?
-            .value;
+        let chart = birth.with_outer_planets(sdk)?;
         let leo = sdk
             .chart()
             .western_aspects(&chart, &AspectRequest::default())

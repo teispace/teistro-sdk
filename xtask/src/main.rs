@@ -309,6 +309,7 @@ mod state;
 mod state_readings;
 mod stations;
 mod surface;
+mod synastry;
 mod terms;
 mod time;
 mod time_lords;
@@ -457,6 +458,7 @@ const PASSES: &[Pass] = &[
         western_aspects::generate,
         western_aspects::check_generated,
     ),
+    ("synastry", synastry::generate, synastry::check_generated),
     (
         "time-lords",
         time_lords::generate,
