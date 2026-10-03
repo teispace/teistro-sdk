@@ -34,6 +34,7 @@ mod angles;
 mod antiscia;
 mod arc;
 mod aspects;
+mod composite;
 mod declination;
 mod midpoint;
 mod progression;
@@ -49,6 +50,7 @@ pub use aspects::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, Placed, PlanetAt, WesternAspect, WesternAspectRow,
     aspects,
 };
+pub use composite::{ChartPoints, Composite, composite};
 pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };

@@ -222,6 +222,10 @@ required-features = ["builtin-ephemeris"]
 name = "midpoints"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "composites"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]

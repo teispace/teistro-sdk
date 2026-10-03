@@ -197,13 +197,7 @@ impl ChartArea<'_> {
     ) -> Result<Vec<SynastryRow>, Error> {
         request.check()?;
         let (a, b) = (&first.foundation, &second.foundation);
-        if request.zodiac == SynastryZodiac::Charts && a.zodiac.ayanamsha != b.zodiac.ayanamsha {
-            return Err(Error::invalid_arg(
-                "the two charts were founded in different zodiacs, so their longitudes do not compare",
-            )
-            .with_field("zodiac")
-            .with_hint("found both under one zodiac, or compare them in the tropical one"));
-        }
+        crate::composites::refuse_mixed_zodiacs(a, b, request.zodiac)?;
         synastry(&points(a, request), &points(b, request), request)
     }
 }

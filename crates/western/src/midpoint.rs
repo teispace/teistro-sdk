@@ -3,7 +3,7 @@
 //! Nativity*, pp. 47–48; `03-design/western-midpoints.md`, C245, C246).
 
 use serde::{Deserialize, Serialize};
-use teistro_core::angle::difference_deg;
+use teistro_core::angle::{difference_deg, near_midpoint_deg};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
@@ -160,8 +160,7 @@ pub fn midpoints(
     let mut rows = Vec::new();
     for (at, first) in bodies.iter().enumerate() {
         for second in bodies.iter().skip(at + 1) {
-            let near = first.longitude_deg
-                + difference_deg(second.longitude_deg, first.longitude_deg) / 2.0;
+            let near = near_midpoint_deg(first.longitude_deg, second.longitude_deg);
             for middle in bodies {
                 if middle.graha == first.graha || middle.graha == second.graha {
                     continue;
