@@ -1889,6 +1889,50 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, parallels=request, **george)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_antiscia(self) -> None:
+        """The antiscia cross whole on King George V (Leo, *How to Judge a
+        Nativity*, p. 130): his recast's one pair under Lilly's moieties,
+        the outer three unpaired, Leo's orbs pairing them, a batch the
+        charts one at a time, and refusals named in the record
+        (`03-design/western-antiscia.md`)."""
+        from teistro import AntisciaRequest
+
+        george: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2402390.554166667
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **george).antiscia)
+            read = ctx.chart.found(instant=birth, outer_planets=True, antiscia={}, **george).antiscia
+            assert read is not None
+            sun = next(at for at in read.points if at.graha == Graha.SUN)
+            self.assertAlmostEqual(sun.antiscion_deg, 107.5685, delta=0.01)
+            self.assertAlmostEqual((sun.contrantiscion_deg - sun.antiscion_deg) % 360.0, 180.0, delta=1e-9)
+            self.assertEqual(len(read.pairs), 1)
+            pair = read.pairs[0]
+            self.assertEqual((pair.first, pair.second, pair.contrary), (Graha.MARS, Graha.MERCURY, False))
+            self.assertAlmostEqual(pair.apart_deg, 5.935, delta=0.02)
+            self.assertEqual(read.unpaired, (Graha.URANUS, Graha.NEPTUNE, Graha.PLUTO))
+
+            leo: AntisciaRequest = {"orbs": {"model": "LEO"}}
+            wide = ctx.chart.found(instant=birth, outer_planets=True, antiscia=leo, **george).antiscia
+            assert wide is not None
+            self.assertEqual(wide.unpaired, ())
+            instants = [birth, birth - 3000.25]
+            batch = ctx.chart.found_many(instants=instants, antiscia=leo, **george)
+            for k, instant in enumerate(instants):
+                self.assertEqual(batch.at(k).antiscia, ctx.chart.found(instant=instant, antiscia=leo, **george).antiscia)
+            refusals: list[tuple[Any, str]] = [
+                ({"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": "TRINE", "orbDeg": 3}]}}, "antiscia.orbs.orbs"),
+                ({"orb": 1}, "antiscia.orb"),
+                ([], "antiscia"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, antiscia=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,
