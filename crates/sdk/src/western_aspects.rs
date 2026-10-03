@@ -10,8 +10,8 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
-    AspectRequest, Placed, SynastryParallelRow, SynastryPoint, SynastryRequest, SynastryRow,
-    SynastryZodiac, WesternAspectRow, aspects, synastry,
+    AntiscionRow, AspectRequest, Placed, SynastryParallelRow, SynastryPoint, SynastryRequest,
+    SynastryRow, SynastryZodiac, WesternAspectRow, aspects, synastry, synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -246,6 +246,7 @@ impl ChartArea<'_> {
             .reading(instant, &request)
             .map_err(|why| why.with_field("partner"))?
             .value;
+        let reflections = crate::antiscia::reflected(&partner.foundation);
         let theirs = asked
             .request
             .parallels
@@ -267,9 +268,22 @@ impl ChartArea<'_> {
                         }
                         _ => None,
                     };
+                    let antiscia = asked
+                        .request
+                        .antiscia
+                        .as_ref()
+                        .map(|orbs| {
+                            synastry_antiscia(
+                                &crate::antiscia::reflected(&chart.foundation),
+                                &reflections,
+                                orbs,
+                            )
+                        })
+                        .transpose()?;
                     Ok(PartnerReading {
                         aspects: self.synastry(chart, &partner, &asked.request)?,
                         parallels,
+                        antiscia,
                     })
                 };
                 read().map_err(|why| why.with_hint(format!("chart {at}")))
@@ -279,7 +293,7 @@ impl ChartArea<'_> {
 }
 
 /// One chart read against a partner: the aspects across the two, and the
-/// parallels across them when the request asked.
+/// parallels and the antiscia across them when the request asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PartnerReading {
@@ -288,6 +302,9 @@ pub struct PartnerReading {
     /// The parallels, the chart's point first, closest first; `None`
     /// unless the request's `parallels` asked.
     pub parallels: Option<Vec<SynastryParallelRow>>,
+    /// The antiscia, the chart's planet first, closest first; `None`
+    /// unless the request's `antiscia` asked.
+    pub antiscia: Option<Vec<AntiscionRow>>,
 }
 
 /// The planets a Western table reads: the seven, never the nodes, and the

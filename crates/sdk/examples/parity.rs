@@ -2020,15 +2020,18 @@ fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &tei
             unpaired.join(",")
         },
     );
-    put(
-        report,
-        &format!("chart-{index}-antiscia-count"),
-        read.pairs.len().to_string(),
-    );
-    for (n, row) in read.pairs.iter().enumerate() {
+    put_antiscion_rows(report, &format!("chart-{index}-antiscia"), &read.pairs);
+}
+
+/// Pairs in antiscion as every runner prints them, a chart's own or
+/// across a synastry: their count, then each pair's planets, side, gap
+/// and orb.
+fn put_antiscion_rows(report: &mut Report, key: &str, rows: &[teistro::AntiscionRow]) {
+    put(report, &format!("{key}-count"), rows.len().to_string());
+    for (n, row) in rows.iter().enumerate() {
         put(
             report,
-            &format!("chart-{index}-antiscia-{n}"),
+            &format!("{key}-{n}"),
             format!(
                 "{} {} {} {} {}",
                 row.first.full_key(),
@@ -2052,13 +2055,14 @@ fn natal_key(point: teistro::NatalPoint) -> &'static str {
 
 /// The synastry every runner asks for: four aspects against a partner born
 /// in Sydney at J2000, in each chart's own zodiac, so the partner's own
-/// clock, the lagna and C241's sidereal reading all cross; and the
-/// parallels across under a widened orb.
-const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5}}"#;
+/// clock, the lagna and C241's sidereal reading all cross; the parallels
+/// across under a widened orb; and the antiscia across under Leo's orbs,
+/// which give every planet one.
+const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}}}"#;
 
 /// Every chart's synastry as the other three print it: its length, then
 /// each row's two points, aspect, arcs and orb; then the parallels across,
-/// each row's two points, side, gap and orb.
+/// each row's two points, side, gap and orb; then the antiscia across.
 fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
     let asked = teistro::PartnerSynastry::from_json(SYNASTRY_JSON).expect("a valid request");
     let read = sdk
@@ -2106,6 +2110,11 @@ fn the_synastry(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
                 ),
             );
         }
+        put_antiscion_rows(
+            report,
+            &format!("chart-{index}-synastry-antiscia"),
+            one.antiscia.as_deref().expect("the record asks for them"),
+        );
     }
 }
 

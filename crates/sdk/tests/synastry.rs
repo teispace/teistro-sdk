@@ -13,9 +13,9 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint, ParallelRequest,
-    Partner, PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac, UtcOffset,
-    WesternAspect,
+    AntisciaRequest, AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint,
+    ParallelRequest, Partner, PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac,
+    UtcOffset, WesternAspect,
 };
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
@@ -375,4 +375,55 @@ fn the_parallels_across_agree_with_the_recast() {
             .iter()
             .all(|row| row.first != NatalPoint::Lagna && row.second != NatalPoint::Lagna)
     );
+}
+
+#[test]
+fn the_antiscia_across_agree_with_the_recast() {
+    // Every pair across under Lilly's moieties in the Moshier recast, his
+    // planet first; the outer three, which the moieties give no orb, stand
+    // in none.
+    let recast: [(Graha, Graha, bool, f64); 7] = [
+        (Graha::Saturn, Graha::Jupiter, false, 0.089),
+        (Graha::Saturn, Graha::Moon, false, 2.462),
+        (Graha::Mercury, Graha::Mars, false, 3.914),
+        (Graha::Mars, Graha::Saturn, true, 4.701),
+        (Graha::Venus, Graha::Mars, false, 4.923),
+        (Graha::Mars, Graha::Mercury, false, 4.940),
+        (Graha::Mars, Graha::Sun, false, 10.800),
+    ];
+    let sdk = western();
+    let (george, mary) = (born(&sdk, GEORGE), born(&sdk, MARY));
+    let asked = SynastryRequest::default().with_antiscia(AntisciaRequest::default());
+    let rows = sdk
+        .chart()
+        .synastry_antiscia(&george, &mary, &asked)
+        .unwrap();
+    assert_eq!(rows.len(), recast.len(), "{rows:#?}");
+    for ((first, second, contrary, apart_deg), row) in recast.iter().zip(&rows) {
+        assert_eq!(
+            (row.first, row.second, row.contrary),
+            (*first, *second, *contrary)
+        );
+        assert!(
+            (row.apart_deg - apart_deg).abs() < 0.02,
+            "{row:?} against {apart_deg}"
+        );
+    }
+
+    // The batch reads them the same, beside the aspects.
+    let (jd, latitude, longitude) = MARY;
+    let partner = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "antiscia": {{}}}}"#
+    ))
+    .unwrap();
+    let read = sdk.chart().synastry_with(&[george], &partner).unwrap();
+    assert_eq!(read[0].antiscia.as_deref(), Some(rows.as_slice()));
+    assert_eq!(read[0].parallels, None);
+
+    // A refusal inside the record is named by its field.
+    let wide = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "antiscia": {{"orbs": {{"model": "BY_ASPECT", "orbs": [{{"aspect": "TRINE", "orbDeg": 3}}]}}}}}}"#
+    ))
+    .unwrap_err();
+    assert_eq!(wide.field(), Some("synastry.antiscia.orbs.orbs"));
 }
