@@ -1,6 +1,10 @@
 # A Western chart's harmonics (the `western` module)
 
-Status: `designed`, 2026-10-04, written from the source before any code.
+Status: `built`, 2026-10-04, written from the source before any code.
+`sdk.chart().harmonic` holds Churchill's 9th harmonic as Addey reads it
+and reads every sidereal 9th harmonic back as the SDK's own navamsa; a
+`harmonic_json` record crosses in sections 108 to 110, and Node, wasm,
+Python and Dart read `chart.harmonic`, with parity.
 
 The roadmap's `western` list ends with harmonics, the one item no other
 page reaches. A harmonic chart is not a new sky: it is the chart's own
@@ -117,6 +121,20 @@ Libra; Pluto (♋12.8) in the tenth.
    default sidereal profile.
 4. The boundary and the bindings, with parity.
 5. A measured page if building it finds something to measure.
+
+## What building it found
+
+- **The navamsa identity is exact, not approximate.** Forty sidereal
+  charts at Kathmandu read every graha's and the lagna's 9th-harmonic
+  sign back as the D9 sign `teistro_vargas` gives, and a sweep of
+  longitudes in steps of 0.37° holds it against Parashara's own count,
+  (sign × 9 + part) mod 12.
+- **A measured page would measure nothing.** The chart is a
+  multiplication and its meetings a comparison; the only judgement is
+  the orb, which is the caller's. Step 5 is not built.
+- **A request's field cannot share its record's name.** `harmonic` inside
+  `harmonic` would be refused as `harmonic.harmonic`, so the field is
+  `number`.
 
 ## What this does not decide
 

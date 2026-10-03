@@ -2064,6 +2064,17 @@ the astronomical numbers do not move. Nothing else computes yet.
     antiscia and composite sections gaining their cusp columns, and
     Node, Python and Dart read `chart.westernHouses`, `onCusps`,
     `cuspSystem` and a composite's `cuspsDeg`, with parity.
+  - **Harmonics** (`western-harmonics.md`). `sdk.chart().harmonic`
+    multiplies each planet, the ascendant and the midheaven by a whole
+    number from 1 to 360 (John Addey, *Harmonics in Astrology*), counts
+    each into its equal house from the harmonic ascendant (C254), and
+    lists every pair meeting within the orb, 12° by default (C252),
+    with the multiple of the harmonic's aspect it stands at in the chart
+    itself. It is read in the chart's own zodiac (C253), so a sidereal
+    chart's 9th harmonic is its navamsa, which a test reads back sign for
+    sign. Churchill's 9th harmonic reads as Addey read it. A
+    `harmonic_json` record crosses in sections 108 to 110, and Node,
+    Python and Dart read `chart.harmonic`, with parity.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
