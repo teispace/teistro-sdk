@@ -1148,7 +1148,21 @@ export class Chart {
    * partner's, each `{ point: 'GRAHA', graha }` or `{ point: 'LAGNA' }`.
    */
   get synastry() {
-    return synastriesOf(this.#batch)[this.#index] ?? null;
+    return synastriesOf(this.#batch).aspects[this.#index] ?? null;
+  }
+
+  /**
+   * The parallels between this chart and the partner's
+   * (`synastry: { partner, parallels: { orbDeg } }`), closest first;
+   * `null` unless the synastry record asked for them
+   * (`03-design/western-declinations.md`).
+   *
+   * Each row is `{ first, second, contrary, apartDeg, orbDeg }`, each side
+   * `{ point: 'GRAHA', graha }` or `{ point: 'LAGNA' }`, `contrary` true when
+   * the two stand on opposite sides of the equator (C243).
+   */
+  get synastryParallels() {
+    return synastriesOf(this.#batch).parallels[this.#index] ?? null;
   }
 
   /**
@@ -3482,23 +3496,25 @@ function westernAspectsOf(batch) {
   return decoded;
 }
 
-/** Each batch's synastries, decoded once however many charts read them. */
+/** Each batch's synastries, their aspects and parallels, decoded once however many charts read them. */
 const SYNASTRIES = new WeakMap();
 
 /**
  * Every chart's synastry with the partner in a batch: `synastry` holds a
  * row a chart, or none when none was asked, and `synastry_rows` is ragged
- * by its count (`03-design/western-synastry.md`).
+ * by its count (`03-design/western-synastry.md`); `synastry_parallels` and
+ * its rows the same for the parallels across the two.
  *
  * @param {Charts} batch
- * @returns {readonly (readonly object[]|null)[]}
+ * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[] }}
  */
 function synastriesOf(batch) {
   let decoded = SYNASTRIES.get(batch);
   if (decoded !== undefined) return decoded;
   const d = batch.decoded;
   const r = d.synastryRows;
-  decoded = raggedOf(batch, d.synastry.count, r.firstLagna.length, 'synastry and synastry_rows', (row) =>
+  const p = d.synastryParallelRows;
+  const aspects = raggedOf(batch, d.synastry.count, r.firstLagna.length, 'synastry and synastry_rows', (row) =>
     Object.freeze({
       first: pointOf(r.firstLagna[row], r.firstGraha[row]),
       second: pointOf(r.secondLagna[row], r.secondGraha[row]),
@@ -3508,6 +3524,21 @@ function synastriesOf(batch) {
       orbDeg: r.orbDeg[row],
     }),
   );
+  const parallels = raggedOf(
+    batch,
+    d.synastryParallels.count,
+    p.contrary.length,
+    'synastry and synastry_parallel_rows',
+    (row) =>
+      Object.freeze({
+        first: pointOf(p.firstLagna[row], p.firstGraha[row]),
+        second: pointOf(p.secondLagna[row], p.secondGraha[row]),
+        contrary: p.contrary[row] !== 0,
+        apartDeg: p.apartDeg[row],
+        orbDeg: p.orbDeg[row],
+      }),
+  );
+  decoded = Object.freeze({ aspects, parallels });
   SYNASTRIES.set(batch, decoded);
   return decoded;
 }

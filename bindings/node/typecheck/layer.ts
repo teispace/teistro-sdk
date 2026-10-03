@@ -9,6 +9,7 @@ import type {
   ParallelRequest,
   ParallelRow,
   SynastryRequest,
+  SynastryParallelRow,
   SynastryRow,
   WesternAspectRequest,
   WesternAspectRow,
@@ -1006,6 +1007,7 @@ function theWesternAspects(ctx: Context): string {
     partner: { instant: 2403113.4993, place: { latitude: 51.5058, longitude: -0.1878, altitude: 0 } },
     lagna: false,
     zodiac: 'CHARTS',
+    parallels: { orbDeg: 1.5 },
   };
   const chart = ctx.chart.found({
     instant: 2402390.5542,
@@ -1021,6 +1023,7 @@ function theWesternAspects(ctx: Context): string {
   const own: WesternAspectRow | undefined = chart.westernAspects?.[0];
   const across: SynastryRow | undefined = chart.synastry?.[0];
   const theirs: NatalPoint | undefined = across?.second;
+  const level: SynastryParallelRow | undefined = chart.synastryParallels?.[0];
   return [
     own?.first ?? 'none',
     own?.applying ?? false,
@@ -1028,6 +1031,8 @@ function theWesternAspects(ctx: Context): string {
     theirs?.point === 'GRAHA' ? theirs.graha : 'LAGNA',
     across?.aspect ?? 'none',
     across?.fromExactDeg ?? Number.NaN,
+    level?.second.point ?? 'none',
+    level?.contrary ?? false,
     String(alone),
     String(sidereal),
   ].join();

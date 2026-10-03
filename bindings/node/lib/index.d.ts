@@ -1452,6 +1452,13 @@ export interface SynastryRequest extends WesternAspectRequest {
    * own zodiac, which refuses two charts founded in different ones (C241).
    */
   readonly zodiac?: 'TROPICAL' | 'CHARTS';
+  /**
+   * The parallels across the two charts too (`chart.synastryParallels`):
+   * each point of the chart the same distance from the equator as one of
+   * the partner's, within the orb (Leo's 1° when `{}`), on either side of
+   * it (C243). The lagna joins as `lagna` says.
+   */
+  readonly parallels?: ParallelRequest;
 }
 
 /**
@@ -1504,6 +1511,20 @@ export interface SynastryRow {
   /** How far that arc is from the aspect's exact angle, degrees. */
   readonly fromExactDeg: number;
   /** The orb the model allowed the pair at this aspect, degrees. */
+  readonly orbDeg: number;
+}
+
+/** One point of a chart and one of the partner's the same distance from the equator, within the orb. */
+export interface SynastryParallelRow {
+  /** The chart's point. */
+  readonly first: NatalPoint;
+  /** The partner's point. */
+  readonly second: NatalPoint;
+  /** Whether the two stand on opposite sides of the equator (C243). */
+  readonly contrary: boolean;
+  /** How far apart their distances from the equator are, degrees. */
+  readonly apartDeg: number;
+  /** The orb the request allowed, degrees. */
   readonly orbDeg: number;
 }
 
@@ -3150,6 +3171,12 @@ export declare class Chart {
    * first; `null` unless `synastry` asked (`03-design/western-synastry.md`).
    */
   readonly synastry: readonly SynastryRow[] | null;
+  /**
+   * The parallels between this chart and the partner's, closest first;
+   * `null` unless `synastry` asked for `parallels`
+   * (`03-design/western-declinations.md`).
+   */
+  readonly synastryParallels: readonly SynastryParallelRow[] | null;
   /**
    * The chart's distances from the equator; `null` unless `parallels`
    * asked (`03-design/western-declinations.md`).
