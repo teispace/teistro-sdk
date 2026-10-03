@@ -1052,11 +1052,15 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the rest of the `western` module** — progressions are built
-   end to end (`western-progressions.md`, every step, and
-   `progressed-angles-measured.md` gives C237 its size). Choose the next
-   Western piece by research: the aspects and their orbs, midpoints,
-   solar and lunar returns or synastry. The year measure (C236), the progressed
+0. **Next: the outer planets in a chart** — `western-outer-planets.md`
+   step 2: `body_of`, the founder asking for Uranus, Neptune and Pluto
+   in the nine's grid, `ChartFoundation::outer` and
+   `ChartRequest::with_outer_planets()`, held to the corpus's
+   `positions.outer` (C239 open). Then the readers (Leo's two Uranus
+   contacts), the boundary and the wheel; after them the aspects and
+   their orbs, which synastry and the composites read. Progressions are
+   built end to end (`western-progressions.md`, and
+   `progressed-angles-measured.md` gives C237 its size). The year measure (C236), the progressed
    angles (C237) and the tertiary month (C238) ship as knobs. Contacts to
    the radical midheaven and the outer planets, and the parallels, are
    not covered.
