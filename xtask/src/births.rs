@@ -42,6 +42,18 @@ impl Birth {
     pub(crate) fn request(&self) -> ChartRequest {
         ChartRequest::at(self.document.foundation.place, self.offset)
     }
+
+    /// The birth founded again with Uranus, Neptune and Pluto placed, as
+    /// the Western passes read it.
+    pub(crate) fn with_outer_planets(&self, sdk: &Context) -> Result<Document, String> {
+        sdk.chart()
+            .reading(
+                self.document.foundation.instant,
+                &self.request().with_outer_planets(),
+            )
+            .map(|read| read.value)
+            .map_err(|why| format!("{}: {why}", self.name))
+    }
 }
 
 /// The context the corpus was recorded under, on the built-in ephemeris;
