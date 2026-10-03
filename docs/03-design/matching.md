@@ -1,7 +1,10 @@
 # Matching: the Ashta Koota and the ten considerations (the `matching` module)
 
-Status: `designed`, 2026-10-04, written from the sources before any
-code.
+Status: the Ashta Koota `built`, 2026-10-04; the ten considerations
+`designed`. Written from the sources before any code.
+`sdk.chart().matching` answers two charts' Ashta Koota, and
+`matching_with` a batch against one partner's birth. Every binding reads
+it as `chart.matching`.
 
 Phase 8 opens with matching, P0 in `01-research/feature-universe/10-matching.md`.
 Two charts are compared through the Moon's nakshatra, pada and sign at
@@ -122,14 +125,43 @@ for the lists.
 
 ## The surface
 
-- `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`,
-  `ashta_koota(bride, groom, &KootaRules) -> AshtaKoota`, and
+- `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
+  by `Native::of_moon`; `ashta_koota(bride, groom, KootaRules) ->
+  AshtaKoota`, each row's `reading` naming its koota; and, still to come,
   `dasha_koota(bride, groom) -> TenConsiderations`.
-- `sdk.chart().matching(&bride, &groom, &MatchingRequest)` on two
-  founded charts.
-- At the boundary, `matching_json` names the partner chart and the role
-  of each chart in the batch, as `synastry_json` does. Every binding
-  reads `chart.matching`, with parity.
+- `sdk.chart().matching(&bride, &groom, KootaRules)` on two founded
+  charts. `sdk.chart().matching_with(&charts, &PartnerMatching)` matches
+  a batch with one partner's birth, founded once.
+- At the boundary, `matching_json` is `{"partner", "partnerRole",
+  "rules"}`. The partner is synastry's record. `partnerRole` is
+  `BRIDE` or `GROOM`, and every chart of the batch stands on the other
+  side. The answer crosses in `matchings`, a row a chart with every
+  koota's reading, and `matching_kootas`, eight rows a chart with the
+  points. Every binding reads `chart.matching`, with parity across the
+  five runners.
+
+## What building it found
+
+- **The record names the partner's side, never the chart's.** A batch's
+  charts all stand on one side, so one word says both. The side is
+  required: a match with no `partnerRole` is refused rather than
+  assuming the partner is the bride.
+- **The rules nest under `rules`.** Laid flat beside the partner, a
+  misspelt rule would be named by the record alone, as `flatten` names
+  it. Nested, `matching.rules.nadi` names the typo.
+- **A reading names its koota.** The encoder checks the eight against
+  the verse's order before writing, so every reading column holds one
+  cell a chart. A kernel that read them out of order fails as an
+  internal error, never as shifted columns.
+- **No dosha is a member at the boundary.** `TsBhakootDosha` carries
+  `NONE`, held to serde with the other three as `TsBrahmaOutcome`'s
+  `FOUND` is, and every binding reads it back as null.
+- **`TaraReading` was taken.** Python and Dart already had a tarabala
+  `TaraReading`, so each koota's reading is named for the koota:
+  `VarnaKoota` to `NadiKoota`.
+- **A birth matched with itself is a fixed point.** One sign and one
+  nakshatra give every koota but Nadi its whole points and the shared
+  nadi none, 28 whatever the Moon. Each binding's test starts from it.
 
 ## The acceptance tests
 

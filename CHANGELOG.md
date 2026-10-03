@@ -2142,6 +2142,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   it never places a planet otherwise than "before the cusp only" does.
   41 planets are under the beams.
 
+- **Matching, the Ashta Koota, Phase 8's first step** (`matching.md`).
+  The new `teistro-matching` crate reads the eight kootas of *Muhurta
+  Chintamani* VI.21–34, with the points *Daivajna-manohara* gives each
+  as the *Piyushadhara* commentary cites it, from each native's Moon
+  (`Native::of_moon`: nakshatra, pada, sign and navamsha).
+  `ashta_koota(bride, groom, KootaRules)` answers each koota's points,
+  its most and what it read, and the total out of 36. It is never a
+  verdict: Bhakoot's dosha carries its five exceptions as clauses, and
+  Nadi's dosha says whether the rules make it one. Every reading the
+  sources differ on is a `KootaRules` knob with the verse's own as the
+  default: an equal varna (C259), a Deva bride's gana (C262), how a
+  bad Bhakoot is lifted, by any exception or by Garga's count (C263),
+  and which shared nadi is a dosha (C264). The gana, nadi, yoni, great
+  enmities and friendships are tested against the verses, and symmetry
+  is tested over all 729 nakshatra pairs. `sdk.chart().matching` reads
+  two sidereal charts' Moons and refuses a tropical chart by its role.
+  `matching_with` matches a batch with one partner's birth
+  (`PartnerMatching`: the partner, `partnerRole` and the rules). A
+  `matching_json` record crosses in sections 111 and 112, the relations
+  as boundary enums held to serde. Node, Python and Dart read
+  `chart.matching`, each reading its own type, and the five runners
+  agree on every value.
+
 - **The upakarma, and the `NEPAL` pack keeps a rite of the daylight
   on its sunrise tithi** (`festival-rules.md` §9.5, C197 decided for the
   pack, C200 registered).
