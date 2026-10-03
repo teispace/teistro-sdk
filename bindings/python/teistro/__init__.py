@@ -38,7 +38,9 @@ from ._blob import (
     BlobError,
     Charts,
     ChartsAntiscionRows,
+    ChartsMidpointRows,
     ChartsSynastryAntiscionRows,
+    ChartsSynastryMidpointRows,
     IntlRender,
     Panchanga,
     Positions,
@@ -521,6 +523,7 @@ __all__ = [
     "DavisonBirth",
     "MidpointRequest",
     "MidpointRow",
+    "SynastryMidpointRow",
     "SynastryPartner",
     "SynastryParallelRow",
     "SynastryRequest",
@@ -4012,6 +4015,16 @@ class MidpointRow:
 
 
 @dataclass(frozen=True)
+class SynastryMidpointRow(MidpointRow):
+    """An equal distance across a synastry
+    (`03-design/western-midpoints.md`, decision 9): a planet of one chart
+    on the axis through two of the other's. `partners_pair` is true when
+    the pair is the partner's and `middle` the chart's planet."""
+
+    partners_pair: bool
+
+
+@dataclass(frozen=True)
 class Declined:
     """A planet's distance from the equator."""
 
@@ -4083,7 +4096,9 @@ class SynastryRequest(WesternAspectRequest, total=False):
     (`Chart.synastry_parallels`, `03-design/western-declinations.md`), the
     lagna joining as `lagna` says; `antiscia` for the antiscia across them
     (`Chart.synastry_antiscia`, `03-design/western-antiscia.md`), Lilly's
-    moieties when `{}` (C244); `composite`, the composite of the two
+    moieties when `{}` (C244); `midpoints`, the equal distances across
+    them (`Chart.synastry_midpoints`, `03-design/western-midpoints.md`),
+    0.5° when `{}`; `composite`, the composite of the two
     charts (`Chart.synastry_composite`, C247); and `davison`, each chart's
     Davison birth with the partner (`Chart.synastry_davison`, C248), both
     false when left out (`03-design/western-composites.md`).
@@ -4099,6 +4114,7 @@ class SynastryRequest(WesternAspectRequest, total=False):
     zodiac: Literal["TROPICAL", "CHARTS"]
     parallels: ParallelRequest
     antiscia: AntisciaRequest
+    midpoints: MidpointRequest
     composite: bool
     davison: bool
 
@@ -6796,6 +6812,23 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     return _record_json(_aspect_table(asked), "westernAspects", example)
 
 
+def _midpoint_cells(
+    rows: Union[ChartsMidpointRows, ChartsSynastryMidpointRows], at: int
+) -> Tuple[Graha, Graha, Graha, bool, float, float, float]:
+    """One equal distance's cells in `MidpointRow`'s order, a chart's own
+    (`midpoint_rows`) or across a synastry (`synastry_midpoint_rows`): the
+    two sections share these columns."""
+    return (
+        Graha(rows.first[at]),
+        Graha(rows.second[at]),
+        Graha(rows.middle[at]),
+        rows.far[at] == 1,
+        rows.distance_deg[at],
+        rows.from_axis_deg[at],
+        rows.orb_deg[at],
+    )
+
+
 def _antiscion_row(rows: Union[ChartsAntiscionRows, ChartsSynastryAntiscionRows], at: int) -> AntiscionRow:
     """One pair in antiscion, a chart's own (`antiscion_rows`) or across a
     synastry (`synastry_antiscion_rows`): the two sections share columns."""
@@ -8500,6 +8533,16 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def synastry_midpoints(self) -> Optional[Tuple[SynastryMidpointRow, ...]]:
+        """The equal distances between this chart and the partner's, closest
+        first: a planet of one chart within the orb of the axis through two
+        of the other's, on the shorter arc's midpoint or opposite it, 0.5°
+        by default (C245, C246); `None` unless `synastry=` asked for
+        `midpoints` (`03-design/western-midpoints.md`)."""
+        parsed = self.batch._synastry_midpoints
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def synastry_composite(self) -> Optional[Composite]:
         """The composite of this chart and the partner's: each planet at the
         near midpoint of its two places, moving at the mean of its two
@@ -9169,15 +9212,20 @@ class ChartBatch:
             self.decoded.midpoints.count,
             r.length,
             "midpoints and midpoint_rows",
-            lambda at: MidpointRow(
-                first=Graha(r.first[at]),
-                second=Graha(r.second[at]),
-                middle=Graha(r.middle[at]),
-                far=r.far[at] == 1,
-                distance_deg=r.distance_deg[at],
-                from_axis_deg=r.from_axis_deg[at],
-                orb_deg=r.orb_deg[at],
-            ),
+            lambda at: MidpointRow(*_midpoint_cells(r, at)),
+        )
+
+    @cached_property
+    def _synastry_midpoints(self) -> list[Tuple[SynastryMidpointRow, ...]]:
+        """Every chart's equal distances with the partner, decoded once;
+        empty when none were asked for. `synastry_midpoints` holds a row a
+        chart and `synastry_midpoint_rows` is ragged by its count."""
+        r = self.decoded.synastry_midpoint_rows
+        return self._ragged(
+            self.decoded.synastry_midpoints.count,
+            r.length,
+            "synastry_midpoints and synastry_midpoint_rows",
+            lambda at: SynastryMidpointRow(*_midpoint_cells(r, at), partners_pair=r.partners_pair[at] == 1),
         )
 
     @cached_property

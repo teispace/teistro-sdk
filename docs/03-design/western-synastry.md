@@ -158,6 +158,10 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
   ([`western-composites.md`](western-composites.md), decision 6), from
   Townley's own account and Astrolog's source: a synastry's `composite`
   and `davison` ask for them beside the aspects.
+- **The equal distances across.** They are read on their own page
+  ([`western-midpoints.md`](western-midpoints.md), decision 9): a
+  synastry's `midpoints` reads each chart's pairs against the other
+  chart's planets, in the synastry's zodiac.
 - **Weighting.** Leo reads a contact by the planets' natures (Mars on
   Venus, Saturn on Venus) and gives no score. The rows carry the
   distance from exact and the orb, and leave any weighting to the

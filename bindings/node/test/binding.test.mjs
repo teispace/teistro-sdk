@@ -2578,7 +2578,7 @@ test('a chart carries its synastry with a partner', () => {
  * a progression's later charts carrying them, and Leo's progressed Moon
  * quincunx Uranus in April 1907 (p. 41) (`03-design/western-outer-planets.md`).
  */
-test('a synastry makes the composite and the Davison birth', () => {
+test('a synastry reads the equal distances across and makes the composite and the Davison birth', () => {
   // King George V and Queen Mary, against the SDK test's Moshier recast.
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
   const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
@@ -2620,7 +2620,25 @@ test('a synastry makes the composite and the Davison birth', () => {
   const mars = between.grahas.find((one) => one.graha === 'graha.MARS');
   assert.ok(near(mars.tropicalDeg, 20.1267), `${mars.tropicalDeg}`);
 
+  // The equal distances across: none unless asked, then the SDK test's
+  // recast within 1°, her Venus on his Sun and Neptune the closest.
+  assert.equal(plain.synastryMidpoints, null);
+  const equal = ctx.chart.found({
+    instant: birth,
+    ...george,
+    outerPlanets: true,
+    synastry: { partner, midpoints: { orbDeg: 1 } },
+  }).synastryMidpoints;
+  assert.equal(equal.length, 10);
+  assert.deepEqual(
+    [equal[0].first, equal[0].second, equal[0].middle, equal[0].partnersPair, equal[0].far],
+    ['graha.SUN', 'graha.NEPTUNE', 'graha.VENUS', true, false],
+  );
+  assert.ok(Math.abs(equal[0].fromAxisDeg - 0.14) < 0.01, `${equal[0].fromAxisDeg}`);
+  assert.ok(Object.isFrozen(equal[0]), 'frozen');
+
   for (const [request, field] of [
+    [{ partner, midpoints: { orbDeg: 11 } }, 'synastry.midpoints.orbDeg'],
     [{ partner, composite: 'yes' }, 'synastry.composite'],
     [{ partner, davison: 1 }, 'synastry.davison'],
   ]) {

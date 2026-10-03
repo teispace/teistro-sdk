@@ -1479,6 +1479,12 @@ export interface MidpointRow {
   readonly orbDeg: number;
 }
 
+/** An equal distance across a synastry: a planet of one chart on the axis of two of the other's. */
+export interface SynastryMidpointRow extends MidpointRow {
+  /** True when the pair is the partner's and `middle` the chart's; false when the pair is the chart's. */
+  readonly partnersPair: boolean;
+}
+
 /** A chart's antiscia. */
 export interface Antiscia {
   /** Each planet's reflections, in the catalogue's order. */
@@ -1551,6 +1557,12 @@ export interface SynastryRequest extends WesternAspectRequest {
    * conjunction (Lilly's moieties when `{}`, C244).
    */
   readonly antiscia?: AntisciaRequest;
+  /**
+   * The equal distances across the two charts too
+   * (`chart.synastryMidpoints`): each planet of one chart on the axis
+   * through two of the other's, within the orb (0.5° when `{}`, C245).
+   */
+  readonly midpoints?: MidpointRequest;
   /**
    * The composite of the two charts too (`chart.synastryComposite`): each
    * planet and both angles at the near midpoint of the two charts', in
@@ -3328,6 +3340,12 @@ export declare class Chart {
    * (`03-design/western-antiscia.md`).
    */
   readonly synastryAntiscia: readonly AntiscionRow[] | null;
+  /**
+   * The equal distances between this chart and the partner's, closest
+   * first; `null` unless `synastry` asked for `midpoints`
+   * (`03-design/western-midpoints.md`).
+   */
+  readonly synastryMidpoints: readonly SynastryMidpointRow[] | null;
   /**
    * The composite of this chart and the partner's; `null` unless
    * `synastry` asked for `composite` (`03-design/western-composites.md`).

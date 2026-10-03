@@ -129,6 +129,12 @@ example holds only if both points of the axis count.
   and now the equal distances each read one table a chart and name a
   refusal under their record and the chart; the boundary had written
   that loop twice, so the third made it one function.
+- **Across two charts it is the same reading twice.** One function
+  reads a set of pairs against a set of planets; a chart's own table
+  passes the same chart twice and skips the planet that is one of its
+  pair, and the synastry passes each chart against the other with the
+  skip off. George V and Queen Mary hold ten within 1°, all within
+  0.01° of the recast.
 - **A planet at a longitude is one type.** The antiscia's input was a
   planet and its tropical longitude, which the equal distances need
   too, so it became `PlanetAt`, beside the aspect table's `Placed`.

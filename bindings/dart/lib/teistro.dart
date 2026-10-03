@@ -4425,15 +4425,66 @@ List<List<MidpointRow>> _decodeMidpoints(Charts batch) {
     batch.midpoints.count,
     r.length,
     'midpoints and midpoint_rows',
-    (at) => MidpointRow(
-      first: Graha.byId(r.first[at]),
-      second: Graha.byId(r.second[at]),
-      middle: Graha.byId(r.middle[at]),
-      far: r.far[at] == 1,
-      distanceDeg: r.distanceDeg[at],
-      fromAxisDeg: r.fromAxisDeg[at],
-      orbDeg: r.orbDeg[at],
+    _midpointRows(
+      r.first,
+      r.second,
+      r.middle,
+      r.far,
+      r.distanceDeg,
+      r.fromAxisDeg,
+      r.orbDeg,
     ),
+  );
+}
+
+/// The equal distances read off their columns, a chart's own
+/// (`midpoint_rows`) or across a synastry (`synastry_midpoint_rows`): the
+/// two sections share these columns.
+MidpointRow Function(int) _midpointRows(
+  Uint16List first,
+  Uint16List second,
+  Uint16List middle,
+  Uint8List far,
+  Float64List distanceDeg,
+  Float64List fromAxisDeg,
+  Float64List orbDeg,
+) =>
+    (at) => MidpointRow(
+      first: Graha.byId(first[at]),
+      second: Graha.byId(second[at]),
+      middle: Graha.byId(middle[at]),
+      far: far[at] == 1,
+      distanceDeg: distanceDeg[at],
+      fromAxisDeg: fromAxisDeg[at],
+      orbDeg: orbDeg[at],
+    );
+
+final Expando<List<List<SynastryMidpointRow>>> _synastryMidpoints =
+    Expando<List<List<SynastryMidpointRow>>>('synastry midpoints');
+
+List<List<SynastryMidpointRow>> _synastryMidpointsOf(Charts batch) =>
+    _synastryMidpoints[batch] ??= _decodeSynastryMidpoints(batch);
+
+/// `synastry_midpoints` holds a row a chart, or none when none was asked,
+/// and `synastry_midpoint_rows` is ragged by its count.
+List<List<SynastryMidpointRow>> _decodeSynastryMidpoints(Charts batch) {
+  final r = batch.synastryMidpointRows;
+  final row = _midpointRows(
+    r.first,
+    r.second,
+    r.middle,
+    r.far,
+    r.distanceDeg,
+    r.fromAxisDeg,
+    r.orbDeg,
+  );
+  return _ragged(
+    batch,
+    batch.synastryMidpoints.count,
+    r.length,
+    'synastry_midpoints and synastry_midpoint_rows',
+    (at) =>
+        SynastryMidpointRow._of(row(at), partnersPair: r.partnersPair[at] == 1),
   );
 }
 
@@ -7056,7 +7107,9 @@ final class MidpointRequest {
   /// The orb from the nearer point of the axis, degrees.
   final double orbDeg;
 
-  String get _json => jsonEncode(<String, Object?>{'orbDeg': orbDeg});
+  Map<String, Object?> get _record => {'orbDeg': orbDeg};
+
+  String get _json => jsonEncode(_record);
 }
 
 /// A planet equally distant from two others (Leo, *How to Judge a
@@ -7103,6 +7156,41 @@ final class MidpointRow extends _Value {
     fromAxisDeg,
     orbDeg,
   ];
+}
+
+/// An equal distance across a synastry (`03-design/western-midpoints.md`,
+/// decision 9): a planet of one chart on the axis through two of the
+/// other's. [partnersPair] is true when the pair is the partner's and
+/// [middle] the chart's planet.
+final class SynastryMidpointRow extends MidpointRow {
+  const SynastryMidpointRow({
+    required super.first,
+    required super.second,
+    required super.middle,
+    required this.partnersPair,
+    required super.far,
+    required super.distanceDeg,
+    required super.fromAxisDeg,
+    required super.orbDeg,
+  });
+
+  SynastryMidpointRow._of(MidpointRow row, {required this.partnersPair})
+    : super(
+        first: row.first,
+        second: row.second,
+        middle: row.middle,
+        far: row.far,
+        distanceDeg: row.distanceDeg,
+        fromAxisDeg: row.fromAxisDeg,
+        orbDeg: row.orbDeg,
+      );
+
+  /// Whether the pair is the partner's and the planet between it the
+  /// chart's.
+  final bool partnersPair;
+
+  @override
+  List<Object?> get _fields => [...super._fields, partnersPair];
 }
 
 /// A planet's distance from the equator.
@@ -7243,7 +7331,9 @@ enum SynastryZodiac {
 /// charts too ([Chart.synastryParallels],
 /// `03-design/western-declinations.md`), [antiscia] the antiscia across
 /// them ([Chart.synastryAntiscia], `03-design/western-antiscia.md`),
-/// [composite] the composite of the two ([Chart.synastryComposite], C247)
+/// [midpoints] the equal distances across them ([Chart.synastryMidpoints],
+/// `03-design/western-midpoints.md`), [composite] the composite of the two
+/// ([Chart.synastryComposite], C247)
 /// and [davison] each chart's Davison birth with the partner
 /// ([Chart.synastryDavison], C248; `03-design/western-composites.md`).
 ///
@@ -7262,6 +7352,7 @@ final class SynastryRequest {
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
     this.antiscia,
+    this.midpoints,
     this.composite = false,
     this.davison = false,
   });
@@ -7273,6 +7364,7 @@ final class SynastryRequest {
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
     this.antiscia,
+    this.midpoints,
     this.composite = false,
     this.davison = false,
   }) : table = WesternAspectRequest.lilly,
@@ -7297,6 +7389,10 @@ final class SynastryRequest {
   /// The orbs the antiscia across are read under; none are read when null.
   final AntisciaRequest? antiscia;
 
+  /// The orb the equal distances across are read under; none are read when
+  /// null.
+  final MidpointRequest? midpoints;
+
   /// Whether the composite of the two charts is made too.
   final bool composite;
 
@@ -7310,6 +7406,7 @@ final class SynastryRequest {
     'zodiac': zodiac.key,
     if (parallels case final asked?) 'parallels': asked._record,
     if (antiscia case final asked?) 'antiscia': asked._record,
+    if (midpoints case final asked?) 'midpoints': asked._record,
     if (composite) 'composite': true,
     if (davison) 'davison': true,
   });
@@ -13423,6 +13520,16 @@ final class Chart {
   /// (`03-design/western-antiscia.md`).
   List<AntiscionRow>? get synastryAntiscia {
     final all = _synastryAntisciaOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The equal distances between this chart and the partner's, closest
+  /// first: a planet of one chart within the orb of the axis through two of
+  /// the other's, on the shorter arc's midpoint or opposite it, 0.5° by
+  /// default (C245, C246); null unless `synastry` asked for `midpoints`
+  /// (`03-design/western-midpoints.md`).
+  List<SynastryMidpointRow>? get synastryMidpoints {
+    final all = _synastryMidpointsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

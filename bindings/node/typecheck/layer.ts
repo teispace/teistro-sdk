@@ -16,6 +16,7 @@ import type {
   MidpointRow,
   ParallelRequest,
   ParallelRow,
+  SynastryMidpointRow,
   SynastryRequest,
   SynastryParallelRow,
   SynastryRow,
@@ -1017,6 +1018,7 @@ function theWesternAspects(ctx: Context): string {
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
     antiscia: { orbs: { model: 'LEO' } },
+    midpoints: { orbDeg: 1 },
     composite: true,
     davison: true,
   };
@@ -1036,6 +1038,7 @@ function theWesternAspects(ctx: Context): string {
   const theirs: NatalPoint | undefined = across?.second;
   const level: SynastryParallelRow | undefined = chart.synastryParallels?.[0];
   const reflected: AntiscionRow | undefined = chart.synastryAntiscia?.[0];
+  const equal: SynastryMidpointRow | undefined = chart.synastryMidpoints?.[0];
   const composite: Composite | null = chart.synastryComposite;
   const middle: CompositePlanet | undefined = composite?.planets[0];
   const davison: DavisonBirth | null = chart.synastryDavison;
@@ -1050,6 +1053,8 @@ function theWesternAspects(ctx: Context): string {
     level?.second.point ?? 'none',
     level?.contrary ?? false,
     reflected?.second ?? 'none',
+    equal?.partnersPair ?? false,
+    equal?.middle ?? 'none',
     middle?.graha ?? 'none',
     middle?.speedDegPerDay ?? Number.NaN,
     composite?.lagnaTurned ?? false,
