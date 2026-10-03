@@ -1393,6 +1393,35 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 91, 'antiscia');
+    out.antiscia = {
+      pointCount: column(blob, at, 0, 'u32', at.count),
+      pairCount: column(blob, at, 1, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 92, 'antiscion_points');
+    out.antiscionPoints = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      antiscionDeg: column(blob, at, 1, 'f64', at.count),
+      contrantiscionDeg: column(blob, at, 2, 'f64', at.count),
+      paired: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 93, 'antiscion_rows');
+    out.antiscionRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      contrary: column(blob, at, 2, 'u8', at.count),
+      apartDeg: column(blob, at, 3, 'f64', at.count),
+      orbDeg: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

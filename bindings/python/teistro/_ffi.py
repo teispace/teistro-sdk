@@ -265,7 +265,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 248,
+    "ts_chart_request": 256,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -708,6 +708,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("western_aspects_json", ctypes.c_char_p),
         ("synastry_json", ctypes.c_char_p),
         ("parallels_json", ctypes.c_char_p),
+        ("antiscia_json", ctypes.c_char_p),
     ]
 
 
@@ -2558,6 +2559,22 @@ class ChartRequest:
     Example: {"orbDeg":1}. May be null.
     """
 
+    antiscia_json: Optional[str] = None
+    """Every chart's antiscia, as a JSON object, every field optional:
+    `orbs`, as `western_aspects_json` spells them, read at the
+    conjunction, Lilly's moieties by default (C244). Each planet is
+    reflected about the solstices and the equinoxes from its tropical
+    longitude, and a pair whose longitudes sum to 180° or 0° within the
+    orb stands in antiscion or contrantiscion. The planets are the
+    seven, and the outer three when `TS_CHART_OUTER` placed them; one
+    the orbs give none is reflected and stands in no pair. The answers
+    come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+    Null for none, which costs nothing
+    (`03-design/western-antiscia.md`). Refusals are named from the
+    record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+    Example: {"orbs":{"model":"LEO"}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2647,6 +2664,9 @@ class ChartRequest:
         _parallels_json = None if self.parallels_json is None else self.parallels_json.encode("utf-8")
         owned.append(_parallels_json)
         raw.parallels_json = _parallels_json
+        _antiscia_json = None if self.antiscia_json is None else self.antiscia_json.encode("utf-8")
+        owned.append(_antiscia_json)
+        raw.antiscia_json = _antiscia_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2700,6 +2720,7 @@ class ChartRequest:
             western_aspects_json=_text(raw.western_aspects_json),
             synastry_json=_text(raw.synastry_json),
             parallels_json=_text(raw.parallels_json),
+            antiscia_json=_text(raw.antiscia_json),
         )
 
 

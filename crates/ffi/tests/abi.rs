@@ -302,6 +302,7 @@ fn chart_request(
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1575,6 +1576,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1722,6 +1724,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1867,6 +1870,7 @@ fn a_chart_request_answers_the_transits() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2084,6 +2088,7 @@ fn a_chart_request_answers_the_hit_list() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2254,6 +2259,7 @@ fn a_chart_request_answers_sade_sati() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2366,6 +2372,7 @@ fn a_chart_request_answers_sade_sati() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2432,6 +2439,7 @@ fn a_chart_request_answers_sade_sati() {
         western_aspects_json: ptr::null(),
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
+        antiscia_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2502,6 +2510,7 @@ fn a_chart_request_answers_the_dignities() {
                 western_aspects_json: ptr::null(),
                 synastry_json: ptr::null(),
                 parallels_json: ptr::null(),
+                antiscia_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2777,6 +2786,7 @@ fn a_chart_request_answers_the_fortitudes() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4080,6 +4090,7 @@ fn a_chart_request_answers_kp() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4190,6 +4201,7 @@ fn a_chart_request_answers_kp() {
         western_aspects_json: ptr::null(),
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
+        antiscia_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4208,6 +4220,7 @@ fn a_chart_request_answers_kp() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4266,6 +4279,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4307,6 +4321,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         western_aspects_json: ptr::null(),
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
+        antiscia_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4369,6 +4384,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4506,6 +4522,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4648,6 +4665,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5421,6 +5439,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5531,6 +5550,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5710,6 +5730,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             western_aspects_json: ptr::null(),
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
+            antiscia_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5993,6 +6014,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 western_aspects_json: ptr::null(),
                 synastry_json: ptr::null(),
                 parallels_json: ptr::null(),
+                antiscia_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -7495,6 +7517,202 @@ fn a_chart_request_answers_the_declinations_and_parallels() {
             &ctx,
             &TsChartRequest {
                 parallels_json: refused.as_ptr(),
+                ..base
+            },
+        )
+        .unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
+    }
+}
+
+/// Every chart's antiscia cross whole: each cell of `antiscia`,
+/// `antiscion_points` and `antiscion_rows` is the facade's own, bit for
+/// bit, on George V's birth and another, under Lilly's moieties so the
+/// outer three cross unpaired; none asked is empty sections, and a refusal
+/// is named from the record's root (`03-design/western-antiscia.md`).
+#[test]
+fn a_chart_request_answers_the_antiscia() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    let base = chart_request(&instants, (51.5045, -0.1366), 0);
+    let asked_json = CString::new("{}").unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            antiscia_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap())
+            .with_outer_planets();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &request,
+        )
+        .unwrap()
+        .value;
+    let expected: Vec<teistro::Antiscia> = charts
+        .iter()
+        .map(|chart| {
+            sdk.chart()
+                .antiscia(chart, &teistro::AntisciaRequest::default())
+                .unwrap()
+        })
+        .collect();
+    let rows: Vec<&teistro::AntiscionRow> = expected.iter().flat_map(|one| &one.pairs).collect();
+    assert!(!rows.is_empty(), "a pair crosses");
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let count = |n: usize| i64::try_from(n).unwrap();
+    assert_eq!(
+        ints("antiscia", "point_count"),
+        expected
+            .iter()
+            .map(|one| count(one.points.len()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("antiscia", "pair_count"),
+        expected
+            .iter()
+            .map(|one| count(one.pairs.len()))
+            .collect::<Vec<_>>()
+    );
+    let points: Vec<(&teistro::Antiscion, bool)> = expected
+        .iter()
+        .flat_map(|one| {
+            one.points
+                .iter()
+                .map(|point| (point, !one.unpaired.contains(&point.graha)))
+        })
+        .collect();
+    assert!(
+        points.iter().any(|&(_, paired)| !paired),
+        "the outer three cross unpaired"
+    );
+    assert_eq!(
+        ints("antiscion_points", "graha"),
+        points
+            .iter()
+            .map(|(point, _)| i64::from(point.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("antiscion_points", "paired"),
+        points
+            .iter()
+            .map(|&(_, paired)| i64::from(paired))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("antiscion_points", "antiscion_deg"),
+        points
+            .iter()
+            .map(|(point, _)| point.antiscion_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("antiscion_points", "contrantiscion_deg"),
+        points
+            .iter()
+            .map(|(point, _)| point.contrantiscion_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    let int_of = |read: &dyn Fn(&teistro::AntiscionRow) -> i64| -> Vec<i64> {
+        rows.iter().map(|row| read(row)).collect()
+    };
+    assert_eq!(
+        ints("antiscion_rows", "first"),
+        int_of(&|row| i64::from(row.first.id()))
+    );
+    assert_eq!(
+        ints("antiscion_rows", "second"),
+        int_of(&|row| i64::from(row.second.id()))
+    );
+    assert_eq!(
+        ints("antiscion_rows", "contrary"),
+        int_of(&|row| i64::from(row.contrary))
+    );
+    assert_eq!(
+        bits("antiscion_rows", "apart_deg"),
+        rows.iter()
+            .map(|row| row.apart_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("antiscion_rows", "orb_deg"),
+        rows.iter()
+            .map(|row| row.orb_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("antiscia", "point_count"),
+        ("antiscion_points", "graha"),
+        ("antiscion_rows", "first"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A refusal is named by the field the caller wrote, under the record.
+    for (text, field) in [
+        (
+            r#"{"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": "TRINE", "orbDeg": 3}]}}"#,
+            "antiscia.orbs.orbs",
+        ),
+        (r#"{"orb": 1}"#, "antiscia.orb"),
+    ] {
+        let refused = CString::new(text).unwrap();
+        let status = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                antiscia_json: refused.as_ptr(),
                 ..base
             },
         )

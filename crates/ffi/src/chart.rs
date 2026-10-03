@@ -1712,6 +1712,20 @@ pub struct TsChartRequest {
     /// `parallels`, as `parallels.orbDeg`.
     /// `api: nullable example={"orbDeg":1}`
     pub parallels_json: *const c_char,
+    /// Every chart's antiscia, as a JSON object, every field optional:
+    /// `orbs`, as `western_aspects_json` spells them, read at the
+    /// conjunction, Lilly's moieties by default (C244). Each planet is
+    /// reflected about the solstices and the equinoxes from its tropical
+    /// longitude, and a pair whose longitudes sum to 180° or 0° within the
+    /// orb stands in antiscion or contrantiscion. The planets are the
+    /// seven, and the outer three when `TS_CHART_OUTER` placed them; one
+    /// the orbs give none is reflected and stands in no pair. The answers
+    /// come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+    /// Null for none, which costs nothing
+    /// (`03-design/western-antiscia.md`). Refusals are named from the
+    /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+    /// `api: nullable example={"orbs":{"model":"LEO"}}`
+    pub antiscia_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3264,6 +3278,7 @@ struct AspectTables {
     own: WesternAspectColumns,
     across: SynastryColumns,
     declined: DeclinationColumns,
+    reflected: AntisciaColumns,
 }
 
 impl AspectTables {
@@ -3272,6 +3287,7 @@ impl AspectTables {
             own: WesternAspectColumns::of(composed.western_aspects, charts)?,
             across: SynastryColumns::of(composed.synastry, charts)?,
             declined: DeclinationColumns::of(composed.declinations, composed.parallels, charts)?,
+            reflected: AntisciaColumns::of(composed.antiscia, charts)?,
         })
     }
 
@@ -3279,7 +3295,85 @@ impl AspectTables {
         self.own.write(writer)?;
         self.across.write(writer)?;
         self.declined.write(writer)?;
-        self.across.write_parallels(writer)
+        self.across.write_parallels(writer)?;
+        self.reflected.write(writer)
+    }
+}
+
+/// `antiscia`, `antiscion_points` and `antiscion_rows`: each chart's
+/// planets reflected about the solstices and the equinoxes, and the pairs
+/// standing in one (`western-antiscia.md`).
+#[derive(Default)]
+struct AntisciaColumns {
+    point_count: Vec<u32>,
+    pair_count: Vec<u32>,
+    graha: Vec<u16>,
+    antiscion_deg: Vec<f64>,
+    contrantiscion_deg: Vec<f64>,
+    paired: Vec<u8>,
+    first: Vec<u16>,
+    second: Vec<u16>,
+    contrary: Vec<u8>,
+    apart_deg: Vec<f64>,
+    orb_deg: Vec<f64>,
+}
+
+impl AntisciaColumns {
+    fn of(read: &[teistro::Antiscia], charts: usize) -> Result<AntisciaColumns, Error> {
+        one_a_chart(read.len(), charts, "antiscia")?;
+        let mut columns = AntisciaColumns::default();
+        for one in read {
+            columns.point_count.push(row_count(one.points.len())?);
+            columns.pair_count.push(row_count(one.pairs.len())?);
+            for point in &one.points {
+                columns.graha.push(point.graha.id());
+                columns.antiscion_deg.push(point.antiscion_deg);
+                columns.contrantiscion_deg.push(point.contrantiscion_deg);
+                columns
+                    .paired
+                    .push(u8::from(!one.unpaired.contains(&point.graha)));
+            }
+            for row in &one.pairs {
+                columns.first.push(row.first.id());
+                columns.second.push(row.second.id());
+                columns.contrary.push(u8::from(row.contrary));
+                columns.apart_deg.push(row.apart_deg);
+                columns.orb_deg.push(row.orb_deg);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "antiscia",
+            self.point_count.len(),
+            &[
+                ColumnData::U32(&self.point_count),
+                ColumnData::U32(&self.pair_count),
+            ],
+        )?;
+        writer.columns(
+            "antiscion_points",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::F64(&self.antiscion_deg),
+                ColumnData::F64(&self.contrantiscion_deg),
+                ColumnData::U8(&self.paired),
+            ],
+        )?;
+        writer.columns(
+            "antiscion_rows",
+            self.first.len(),
+            &[
+                ColumnData::U16(&self.first),
+                ColumnData::U16(&self.second),
+                ColumnData::U8(&self.contrary),
+                ColumnData::F64(&self.apart_deg),
+                ColumnData::F64(&self.orb_deg),
+            ],
+        )
     }
 }
 
@@ -6063,6 +6157,9 @@ pub struct Composed<'a> {
     /// Every chart's parallels, in the batch's order; empty when none were
     /// asked for.
     pub parallels: &'a [Vec<teistro::ParallelRow>],
+    /// Every chart's antiscia, in the batch's order
+    /// (`western-antiscia.md`); empty when none were asked for.
+    pub antiscia: &'a [teistro::Antiscia],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7035,14 +7132,15 @@ fn progressions_of(
 }
 
 /// The Western tables a batch was asked for, read once: each chart's own
-/// aspects, its synastry with the record's partner, and its declinations
-/// with the parallels among its planets. Each is empty when its record
-/// was null.
+/// aspects, its synastry with the record's partner, its declinations with
+/// the parallels among its planets, and its antiscia. Each is empty when
+/// its record was null.
 struct WesternTables {
     aspects: Vec<Vec<teistro::WesternAspectRow>>,
     synastry: Vec<teistro::PartnerReading>,
     declinations: Vec<teistro::Declinations>,
     parallels: Vec<Vec<teistro::ParallelRow>>,
+    antiscia: Vec<teistro::Antiscia>,
 }
 
 impl WesternTables {
@@ -7096,11 +7194,26 @@ impl WesternTables {
                 .into_iter()
                 .unzip(),
         };
+        let antiscia = records.antiscia.as_ref().map_or_else(
+            || Ok(Vec::new()),
+            |asked| {
+                documents
+                    .iter()
+                    .enumerate()
+                    .map(|(at, document)| {
+                        sdk.chart()
+                            .antiscia(document, asked)
+                            .map_err(|error| each("antiscia")(at, error))
+                    })
+                    .collect()
+            },
+        )?;
         Ok(WesternTables {
             aspects,
             synastry,
             declinations,
             parallels,
+            antiscia,
         })
     }
 }
@@ -7490,6 +7603,7 @@ struct AskedRecords {
     western_aspects: Option<teistro::AspectRequest>,
     synastry: Option<teistro::PartnerSynastry>,
     parallels: Option<teistro::ParallelRequest>,
+    antiscia: Option<teistro::AntisciaRequest>,
 }
 
 impl AskedRecords {
@@ -7529,6 +7643,9 @@ impl AskedRecords {
                     .transpose()?,
                 parallels: optional_text(asked.parallels_json, "parallels_json")?
                     .map(teistro::ParallelRequest::from_json)
+                    .transpose()?,
+                antiscia: optional_text(asked.antiscia_json, "antiscia_json")?
+                    .map(teistro::AntisciaRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -7759,6 +7876,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 synastry: &western.synastry,
                 declinations: &western.declinations,
                 parallels: &western.parallels,
+                antiscia: &western.antiscia,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

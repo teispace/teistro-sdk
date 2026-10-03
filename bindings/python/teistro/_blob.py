@@ -3162,6 +3162,75 @@ class ChartsSynastryParallelRows:
 
 
 @dataclass(frozen=True)
+class ChartsAntiscia:
+    """The `antiscia` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. Empty when `antiscia_json` asked for none.
+    """
+
+    point_count: memoryview[int]
+    """How many planets' reflections are the chart's in `antiscion_points`."""
+
+    pair_count: memoryview[int]
+    """How many pairs are the chart's in `antiscion_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAntiscionPoints:
+    """The `antiscion_points` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). Empty when `antiscia_json` asked for none.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    antiscion_deg: memoryview[float]
+    """Its antiscion, the reflection about the solstices: 180° less its tropical longitude, degrees."""
+
+    contrantiscion_deg: memoryview[float]
+    """Its contrantiscion, the reflection about the equinoxes: 360° less it, degrees."""
+
+    paired: memoryview[int]
+    """1 when the record's orbs give the planet one, so it can stand in a pair; 0 when they give it none, as Lilly's moieties give the outer three."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAntiscionRows:
+    """The `antiscion_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.
+    """
+
+    first: memoryview[int]
+    """The first planet of the pair, in the catalogue's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    contrary: memoryview[int]
+    """1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."""
+
+    apart_deg: memoryview[float]
+    """How far the one's reflection stands from the other, degrees."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed the pair, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3555,6 +3624,15 @@ class Charts:
     synastry_parallel_rows: ChartsSynastryParallelRows
     """Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`."""
 
+    antiscia: ChartsAntiscia
+    """Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. Empty when `antiscia_json` asked for none."""
+
+    antiscion_points: ChartsAntiscionPoints
+    """Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). Empty when `antiscia_json` asked for none."""
+
+    antiscion_rows: ChartsAntiscionRows
+    """Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3654,6 +3732,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_parallel_rows = blob.section(88, "parallel_rows")
     at_synastry_parallels = blob.section(89, "synastry_parallels")
     at_synastry_parallel_rows = blob.section(90, "synastry_parallel_rows")
+    at_antiscia = blob.section(91, "antiscia")
+    at_antiscion_points = blob.section(92, "antiscion_points")
+    at_antiscion_rows = blob.section(93, "antiscion_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5673,6 +5754,48 @@ def decode_charts(raw: bytes) -> Charts:
                 at_synastry_parallel_rows, 6, 8, at_synastry_parallel_rows.count
             ).cast("d"),
             length=at_synastry_parallel_rows.count,
+        ),
+        antiscia=ChartsAntiscia(
+            point_count=blob.column(
+                at_antiscia, 0, 4, at_antiscia.count
+            ).cast("I"),
+            pair_count=blob.column(
+                at_antiscia, 1, 4, at_antiscia.count
+            ).cast("I"),
+            length=at_antiscia.count,
+        ),
+        antiscion_points=ChartsAntiscionPoints(
+            graha=blob.column(
+                at_antiscion_points, 0, 2, at_antiscion_points.count
+            ).cast("H"),
+            antiscion_deg=blob.column(
+                at_antiscion_points, 1, 8, at_antiscion_points.count
+            ).cast("d"),
+            contrantiscion_deg=blob.column(
+                at_antiscion_points, 2, 8, at_antiscion_points.count
+            ).cast("d"),
+            paired=blob.column(
+                at_antiscion_points, 3, 1, at_antiscion_points.count
+            ).cast("B"),
+            length=at_antiscion_points.count,
+        ),
+        antiscion_rows=ChartsAntiscionRows(
+            first=blob.column(
+                at_antiscion_rows, 0, 2, at_antiscion_rows.count
+            ).cast("H"),
+            second=blob.column(
+                at_antiscion_rows, 1, 2, at_antiscion_rows.count
+            ).cast("H"),
+            contrary=blob.column(
+                at_antiscion_rows, 2, 1, at_antiscion_rows.count
+            ).cast("B"),
+            apart_deg=blob.column(
+                at_antiscion_rows, 3, 8, at_antiscion_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_antiscion_rows, 4, 8, at_antiscion_rows.count
+            ).cast("d"),
+            length=at_antiscion_rows.count,
         ),
     )
 

@@ -627,6 +627,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_synastry_sections(84))
         .chain(chart_declination_sections(86))
         .chain(chart_synastry_parallel_sections(89))
+        .chain(chart_antiscia_sections(91))
         .collect(),
     }
 }
@@ -1456,6 +1457,82 @@ fn chart_synastry_parallel_sections(first: u32) -> [SectionSchema; 2] {
                 ColumnDef::new("orb_deg", Scalar::F64, "The orb the record allowed, degrees."),
             ])
             .collect(),
+        ),
+    ]
+}
+
+/// The three sections the antiscia cross as, from `first`: a row a chart,
+/// each planet's reflections, and the pairs, both ragged under the row
+/// (`03-design/western-antiscia.md`).
+fn chart_antiscia_sections(first: u32) -> [SectionSchema; 3] {
+    let empty = "Empty when `antiscia_json` asked for none.";
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    [
+        SectionSchema::columns(
+            first,
+            "antiscia",
+            &format!(
+                "Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "point_count",
+                    Scalar::U32,
+                    "How many planets' reflections are the chart's in `antiscion_points`.",
+                ),
+                ColumnDef::new(
+                    "pair_count",
+                    Scalar::U32,
+                    "How many pairs are the chart's in `antiscion_rows`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "antiscion_points",
+            &format!(
+                "Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). {empty}"
+            ),
+            vec![
+                graha_column("graha", "Which planet."),
+                degrees(
+                    "antiscion_deg",
+                    "Its antiscion, the reflection about the solstices: 180° less its tropical longitude, degrees.",
+                ),
+                degrees(
+                    "contrantiscion_deg",
+                    "Its contrantiscion, the reflection about the equinoxes: 360° less it, degrees.",
+                ),
+                ColumnDef::new(
+                    "paired",
+                    Scalar::U8,
+                    "1 when the record's orbs give the planet one, so it can stand in a pair; 0 when they give it none, as Lilly's moieties give the outer three.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "antiscion_rows",
+            &format!(
+                "Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). {empty}"
+            ),
+            vec![
+                graha_column(
+                    "first",
+                    "The first planet of the pair, in the catalogue's order.",
+                ),
+                graha_column("second", "The second."),
+                ColumnDef::new(
+                    "contrary",
+                    Scalar::U8,
+                    "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.",
+                ),
+                degrees(
+                    "apart_deg",
+                    "How far the one's reflection stands from the other, degrees.",
+                ),
+                degrees("orb_deg", "The orb the record allowed the pair, degrees."),
+            ],
         ),
     ]
 }

@@ -1188,6 +1188,21 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"orbDeg":1}. May be null.
   external ffi.Pointer<ffi.Char> parallelsJson;
 
+  /// Every chart's antiscia, as a JSON object, every field optional:
+  /// `orbs`, as `western_aspects_json` spells them, read at the
+  /// conjunction, Lilly's moieties by default (C244). Each planet is
+  /// reflected about the solstices and the equinoxes from its tropical
+  /// longitude, and a pair whose longitudes sum to 180° or 0° within the
+  /// orb stands in antiscion or contrantiscion. The planets are the
+  /// seven, and the outer three when `TS_CHART_OUTER` placed them; one
+  /// the orbs give none is reflected and stands in no pair. The answers
+  /// come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+  /// Null for none, which costs nothing
+  /// (`03-design/western-antiscia.md`). Refusals are named from the
+  /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+  /// Example: {"orbs":{"model":"LEO"}}. May be null.
+  external ffi.Pointer<ffi.Char> antisciaJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3077,7 +3092,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3411,6 +3426,21 @@ final class ChartRequest {
   /// Example: {"orbDeg":1}. May be null.
   final String? parallelsJson;
 
+  /// Every chart's antiscia, as a JSON object, every field optional:
+  /// `orbs`, as `western_aspects_json` spells them, read at the
+  /// conjunction, Lilly's moieties by default (C244). Each planet is
+  /// reflected about the solstices and the equinoxes from its tropical
+  /// longitude, and a pair whose longitudes sum to 180° or 0° within the
+  /// orb stands in antiscion or contrantiscion. The planets are the
+  /// seven, and the outer three when `TS_CHART_OUTER` placed them; one
+  /// the orbs give none is reflected and stands in no pair. The answers
+  /// come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+  /// Null for none, which costs nothing
+  /// (`03-design/western-antiscia.md`). Refusals are named from the
+  /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+  /// Example: {"orbs":{"model":"LEO"}}. May be null.
+  final String? antisciaJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3501,6 +3531,9 @@ final class ChartRequest {
     raw.parallelsJson = parallelsJson == null
         ? ffi.nullptr
         : parallelsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.antisciaJson = antisciaJson == null
+        ? ffi.nullptr
+        : antisciaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3577,6 +3610,9 @@ final class ChartRequest {
         parallelsJson: raw.parallelsJson == ffi.nullptr
             ? null
             : raw.parallelsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        antisciaJson: raw.antisciaJson == ffi.nullptr
+            ? null
+            : raw.antisciaJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

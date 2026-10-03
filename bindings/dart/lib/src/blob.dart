@@ -3942,6 +3942,89 @@ final class ChartsSynastryParallelRows {
   final int length;
 }
 
+/// The `antiscia` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. Empty when `antiscia_json` asked for none.
+final class ChartsAntiscia {
+  const ChartsAntiscia({
+    required this.pointCount,
+    required this.pairCount,
+    required this.length,
+  });
+
+  /// How many planets' reflections are the chart's in `antiscion_points`.
+  final Uint32List pointCount;
+
+  /// How many pairs are the chart's in `antiscion_rows`.
+  final Uint32List pairCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `antiscion_points` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). Empty when `antiscia_json` asked for none.
+final class ChartsAntiscionPoints {
+  const ChartsAntiscionPoints({
+    required this.graha,
+    required this.antiscionDeg,
+    required this.contrantiscionDeg,
+    required this.paired,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// Its antiscion, the reflection about the solstices: 180° less its tropical longitude, degrees.
+  final Float64List antiscionDeg;
+
+  /// Its contrantiscion, the reflection about the equinoxes: 360° less it, degrees.
+  final Float64List contrantiscionDeg;
+
+  /// 1 when the record's orbs give the planet one, so it can stand in a pair; 0 when they give it none, as Lilly's moieties give the outer three.
+  final Uint8List paired;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `antiscion_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.
+final class ChartsAntiscionRows {
+  const ChartsAntiscionRows({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The first planet of the pair, in the catalogue's order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// 1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.
+  final Uint8List contrary;
+
+  /// How far the one's reflection stands from the other, degrees.
+  final Float64List apartDeg;
+
+  /// The orb the record allowed the pair, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4144,6 +4227,9 @@ final class Charts {
     required this.parallelRows,
     required this.synastryParallels,
     required this.synastryParallelRows,
+    required this.antiscia,
+    required this.antiscionPoints,
+    required this.antiscionRows,
   });
 
   /// What kind of chart these are.
@@ -4460,6 +4546,15 @@ final class Charts {
   /// Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
   final ChartsSynastryParallelRows synastryParallelRows;
 
+  /// Every chart's antiscia, a row a chart in the `cast` section's order: how many rows of `antiscion_points` and of `antiscion_rows` are its. Empty when `antiscia_json` asked for none.
+  final ChartsAntiscia antiscia;
+
+  /// Every chart's planets reflected, concatenated in the `cast` section's order and **ragged** by `antiscia.point_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, each from its tropical longitude (Lilly, *Christian Astrology*, pp. 90–92). Empty when `antiscia_json` asked for none.
+  final ChartsAntiscionPoints antiscionPoints;
+
+  /// Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.
+  final ChartsAntiscionRows antiscionRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4557,6 +4652,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atParallelRows = blob.section(88, 'parallel_rows');
   final atSynastryParallels = blob.section(89, 'synastry_parallels');
   final atSynastryParallelRows = blob.section(90, 'synastry_parallel_rows');
+  final atAntiscia = blob.section(91, 'antiscia');
+  final atAntiscionPoints = blob.section(92, 'antiscion_points');
+  final atAntiscionRows = blob.section(93, 'antiscion_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8148,6 +8246,70 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSynastryParallelRows, 6) + atSynastryParallelRows.count * 8,
       ),
       length: atSynastryParallelRows.count,
+    ),
+    antiscia: ChartsAntiscia(
+      pointCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscia, 0),
+        blob.columnOffset(atAntiscia, 0) + atAntiscia.count * 4,
+      ),
+      pairCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscia, 1),
+        blob.columnOffset(atAntiscia, 1) + atAntiscia.count * 4,
+      ),
+      length: atAntiscia.count,
+    ),
+    antiscionPoints: ChartsAntiscionPoints(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionPoints, 0),
+        blob.columnOffset(atAntiscionPoints, 0) + atAntiscionPoints.count * 2,
+      ),
+      antiscionDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionPoints, 1),
+        blob.columnOffset(atAntiscionPoints, 1) + atAntiscionPoints.count * 8,
+      ),
+      contrantiscionDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionPoints, 2),
+        blob.columnOffset(atAntiscionPoints, 2) + atAntiscionPoints.count * 8,
+      ),
+      paired: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionPoints, 3),
+        blob.columnOffset(atAntiscionPoints, 3) + atAntiscionPoints.count * 1,
+      ),
+      length: atAntiscionPoints.count,
+    ),
+    antiscionRows: ChartsAntiscionRows(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionRows, 0),
+        blob.columnOffset(atAntiscionRows, 0) + atAntiscionRows.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionRows, 1),
+        blob.columnOffset(atAntiscionRows, 1) + atAntiscionRows.count * 2,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionRows, 2),
+        blob.columnOffset(atAntiscionRows, 2) + atAntiscionRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionRows, 3),
+        blob.columnOffset(atAntiscionRows, 3) + atAntiscionRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAntiscionRows, 4),
+        blob.columnOffset(atAntiscionRows, 4) + atAntiscionRows.count * 8,
+      ),
+      length: atAntiscionRows.count,
     ),
   );
 }
