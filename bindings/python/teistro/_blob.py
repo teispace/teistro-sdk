@@ -2818,7 +2818,7 @@ class ChartsProgressedGrahas:
     """The `progressed_grahas` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+    The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
     """
 
     graha: memoryview[int]
@@ -2842,7 +2842,7 @@ class ChartsDirectedGrahas:
     """The `directed_grahas` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+    The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
     """
 
     graha: memoryview[int]
@@ -2883,6 +2883,60 @@ class ChartsProgressedContacts:
 
     motion: memoryview[int]
     """Which way the progressed planet was moving."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsOuter:
+    """The `outer` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    longitude_deg: memoryview[float]
+    """Its longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: memoryview[float]
+    """Its longitude in the tropical zodiac, degrees."""
+
+    latitude_deg: memoryview[float]
+    """Its latitude, degrees."""
+
+    distance_au: memoryview[float]
+    """Its distance in astronomical units; zero for a point that has none."""
+
+    speed_deg_per_day: memoryview[float]
+    """Its longitude speed, degrees per day; negative when retrograde."""
+
+    house_bhava: memoryview[int]
+    """The bhava it stands in, 1 to 12."""
+
+    house_method: memoryview[int]
+    """The house system that produced that bhava."""
+
+    house_through: memoryview[float]
+    """How far through the bhava it stands, 0 to 1."""
+
+    house_from_madhya_deg: memoryview[float]
+    """Its distance from the bhava's madhya, degrees."""
+
+    placement_bhava: memoryview[int]
+    """The bhava of the chart's chalit it stands in, 1 to 12."""
+
+    placement_method: memoryview[int]
+    """The house system that produced the chalit."""
+
+    placement_through: memoryview[float]
+    """How far through that bhava it stands, 0 to 1."""
+
+    placement_from_madhya_deg: memoryview[float]
+    """Its distance from that bhava's madhya, degrees."""
 
     length: int
     """The number of rows every column holds."""
@@ -3244,13 +3298,16 @@ class Charts:
     """Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none."""
 
     progressed_grahas: ChartsProgressedGrahas
-    """The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
+    """The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
 
     directed_grahas: ChartsDirectedGrahas
-    """The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
+    """The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
 
     progressed_contacts: ChartsProgressedContacts
     """Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none."""
+
+    outer: ChartsOuter
+    """Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre."""
 
 
 def decode_charts(raw: bytes) -> Charts:
@@ -3341,6 +3398,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_progressed_grahas = blob.section(78, "progressed_grahas")
     at_directed_grahas = blob.section(79, "directed_grahas")
     at_progressed_contacts = blob.section(80, "progressed_contacts")
+    at_outer = blob.section(81, "outer")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5191,6 +5249,39 @@ def decode_charts(raw: bytes) -> Charts:
                 at_progressed_contacts, 6, 1, at_progressed_contacts.count
             ).cast("B"),
             length=at_progressed_contacts.count,
+        ),
+        outer=ChartsOuter(
+            graha=blob.column(at_outer, 0, 2, at_outer.count).cast("H"),
+            longitude_deg=blob.column(
+                at_outer, 1, 8, at_outer.count
+            ).cast("d"),
+            tropical_deg=blob.column(at_outer, 2, 8, at_outer.count).cast("d"),
+            latitude_deg=blob.column(at_outer, 3, 8, at_outer.count).cast("d"),
+            distance_au=blob.column(at_outer, 4, 8, at_outer.count).cast("d"),
+            speed_deg_per_day=blob.column(
+                at_outer, 5, 8, at_outer.count
+            ).cast("d"),
+            house_bhava=blob.column(at_outer, 6, 1, at_outer.count).cast("B"),
+            house_method=blob.column(at_outer, 7, 2, at_outer.count).cast("H"),
+            house_through=blob.column(
+                at_outer, 8, 8, at_outer.count
+            ).cast("d"),
+            house_from_madhya_deg=blob.column(
+                at_outer, 9, 8, at_outer.count
+            ).cast("d"),
+            placement_bhava=blob.column(
+                at_outer, 10, 1, at_outer.count
+            ).cast("B"),
+            placement_method=blob.column(
+                at_outer, 11, 2, at_outer.count
+            ).cast("H"),
+            placement_through=blob.column(
+                at_outer, 12, 8, at_outer.count
+            ).cast("d"),
+            placement_from_madhya_deg=blob.column(
+                at_outer, 13, 8, at_outer.count
+            ).cast("d"),
+            length=at_outer.count,
         ),
     )
 

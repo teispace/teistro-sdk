@@ -512,6 +512,7 @@ def main() -> None:
             vaiseshikamsa=True,
             dasha_phala=True,
             jaimini=True,
+            outer_planets=True,
             gochar={"instants": [2460676.5, 2460736.5], "ashtakavarga": True},
             hits={
                 "from": 2460676.5,
@@ -1153,6 +1154,13 @@ def main() -> None:
                 put(f"chart-{i}-graha-{j}-house", graha.house.bhava)
                 put(f"chart-{i}-graha-{j}-house-method", graha.house.method.full_key)
                 put(f"chart-{i}-graha-{j}-placement", graha.placement.bhava)
+            # Uranus, Neptune and Pluto, which the request asks beside the nine.
+            for j, outer in enumerate(chart.outer):
+                put(
+                    f"chart-{i}-outer-{j}",
+                    f"{outer.graha.full_key} {number(outer.longitude_deg)} {number(outer.latitude_deg)} "
+                    f"{number(outer.speed_deg_per_day)} {outer.house.bhava} {outer.placement.bhava}",
+                )
             for k, bhava in enumerate(chart.houses):
                 put(f"chart-{i}-house-{k}-madhya", bhava.madhya_deg)
                 put(f"chart-{i}-house-{k}-sandhi", bhava.sandhi_deg)
