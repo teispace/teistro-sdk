@@ -29,6 +29,35 @@ String natalKey(NatalPoint point) => switch (point) {
 /// A koota's reading as every runner prints it: its fields in serde's
 /// order, a member by its full key, a flag as 0 or 1 and no dosha as
 /// `NONE`.
+/// A consideration's reading as every runner prints it: its fields in
+/// serde's order, a member by its full key (a boundary enum by its key)
+/// and a flag as 0 or 1.
+String poruthamText(PoruthamReading reading) {
+  String flag(bool held) => held ? '1' : '0';
+  return switch (reading) {
+    DhinamPorutham(:final count, :final rule) => '$count ${rule.key}',
+    GanamPorutham(:final bride, :final groom, :final diminished) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(diminished)}',
+    MahendraPorutham(:final count) => '$count',
+    DeerghaPorutham(:final count) => '$count',
+    YoniPorutham(:final bride, :final groom, :final hostile) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(hostile)}',
+    RasiPorutham(:final apart) => '$apart',
+    RasyadhipathiPorutham(
+      :final bride,
+      :final groom,
+      :final brideCallsFriend,
+      :final groomCallsFriend,
+    ) =>
+      '${bride.fullKey} ${groom.fullKey} ${flag(brideCallsFriend)} '
+          '${flag(groomCallsFriend)}',
+    VasyamPorutham(:final brideToGroom, :final groomToBride) =>
+      '${flag(brideToGroom)} ${flag(groomToBride)}',
+    RajjuPorutham(:final bride, :final groom) => '${bride.key} ${groom.key}',
+    VedhaiPorutham(:final pierced) => flag(pierced),
+  };
+}
+
 String readingText(KootaReading reading) {
   String flag(bool value) => value ? '1' : '0';
   return switch (reading) {
@@ -644,6 +673,7 @@ void main() {
       ),
       partnerRole: MatchRole.bride,
       rules: const KootaRules(bhakootLift: BhakootLift.garga),
+      porutham: const PoruthamRules(lordsFriendship: LordsFriendship.oneWay),
     ),
     synastry: SynastryRequest(
       Partner(
@@ -1397,6 +1427,20 @@ void main() {
         'chart-$i-matching-${row.reading.koota.fullKey}',
         '${number(row.points)} ${number(row.maxPoints)} '
             '${readingText(row.reading)}',
+      );
+    }
+    final ten = chart.porutham!;
+    final e = ten.exception;
+    put(
+      'chart-$i-porutham',
+      '${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} '
+          '${flag(e.lordsFriendly)} ${flag(e.opposite)}',
+    );
+    for (final row in ten.considerations) {
+      put(
+        'chart-$i-porutham-${row.reading.koota.fullKey}',
+        '${flag(row.agrees)} ${flag(row.lifted)} '
+            '${poruthamText(row.reading)}',
       );
     }
     final fifth = chart.harmonic!;

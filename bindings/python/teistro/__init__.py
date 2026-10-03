@@ -142,6 +142,8 @@ from .catalogue import (
     YoniRelation,
     MaitriRelation,
     BhakootDosha,
+    DhinamRule,
+    Rajju,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -550,6 +552,21 @@ __all__ = [
     "KootaReading",
     "KootaRow",
     "AshtaKoota",
+    "PoruthamRules",
+    "DhinamPorutham",
+    "GanamPorutham",
+    "MahendraPorutham",
+    "DeerghaPorutham",
+    "YoniPorutham",
+    "RasiPorutham",
+    "RasyadhipathiPorutham",
+    "VasyamPorutham",
+    "RajjuPorutham",
+    "VedhaiPorutham",
+    "PoruthamReading",
+    "PoruthamRow",
+    "PoruthamException",
+    "Porutham",
     "MidpointRow",
     "SynastryMidpointRow",
     "SynastryPartner",
@@ -713,6 +730,8 @@ __all__ = [
     "YoniRelation",
     "MaitriRelation",
     "BhakootDosha",
+    "DhinamRule",
+    "Rajju",
     "HarshaRules",
     "HarshaBala",
     "TajikaRelation",
@@ -4173,12 +4192,28 @@ class KootaRules(TypedDict, total=False):
     nadiDosha: Literal["ANY", "MIDDLE_ONLY"]
 
 
+class PoruthamRules(TypedDict, total=False):
+    """The readings the ten considerations are computed under, each the
+    chapter's own when absent (`03-design/matching.md`): `twoSignStar`,
+    `"GROOM_EARLIER"` or `"BRIDE_FIRST_SIGN"` (C270); `deerghaBeyond`,
+    `"THIRTEENTH"` or `"SEVENTH"` (C272); and `lordsFriendship`,
+    `"MUTUAL"` or `"ONE_WAY"` (C273).
+
+    >>> seventh: PoruthamRules = {"deerghaBeyond": "SEVENTH"}
+    """
+
+    twoSignStar: Literal["GROOM_EARLIER", "BRIDE_FIRST_SIGN"]
+    deerghaBeyond: Literal["THIRTEENTH", "SEVENTH"]
+    lordsFriendship: Literal["MUTUAL", "ONE_WAY"]
+
+
 class MatchingRequest(TypedDict, total=False):
     """A match with a partner's birth (`03-design/matching.md`): the
     partner, founded once for the whole batch under the context's sidereal
     profile; `partnerRole`, the side the partner stands on, every chart
     standing on the other, since Varna and Gana read differently when the
-    two swap; and the `rules`.
+    two swap; the Ashta Koota's `rules`; and the ten considerations'
+    `porutham` rules.
 
     >>> asked: MatchingRequest = {"partner": {"instant": 2447892.5, "observer": Observer(
     ...     latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))},
@@ -4188,6 +4223,7 @@ class MatchingRequest(TypedDict, total=False):
     partner: Required[SynastryPartner]
     partnerRole: Required[Literal["BRIDE", "GROOM"]]
     rules: KootaRules
+    porutham: PoruthamRules
 
 
 @dataclass(frozen=True)
@@ -4338,6 +4374,175 @@ class AshtaKoota:
 
     total: float
     """Their points, out of 36."""
+
+
+@dataclass(frozen=True)
+class DhinamPorutham:
+    """Dhinam: the count and the rule of *Kalaprakasika* XIII that decided
+    it (pp. 69–72)."""
+
+    count: int
+    """The groom's nakshatra counted from the bride's, 1 to 27."""
+
+    rule: DhinamRule
+    koota: Koota = Koota.TARA
+
+
+@dataclass(frozen=True)
+class GanamPorutham:
+    """Ganam: the two ganas (p. 72)."""
+
+    bride: Gana
+    groom: Gana
+    diminished: bool
+    """A Rakshasa beside another gana, the bride's star beyond the 14th
+    from the groom's: the evil "diminishes", the disagreement stands
+    (C279)."""
+
+    koota: Koota = Koota.GANA
+
+
+@dataclass(frozen=True)
+class MahendraPorutham:
+    """Mahendra: the count, which agrees at the 4th, 7th and every third to
+    the 25th (p. 72)."""
+
+    count: int
+    koota: Koota = Koota.MAHENDRA
+
+
+@dataclass(frozen=True)
+class DeerghaPorutham:
+    """Sthree-Dheergham: the count, which agrees beyond the 13th (p. 72,
+    C272)."""
+
+    count: int
+    koota: Koota = Koota.STREE_DEERGHA
+
+
+@dataclass(frozen=True)
+class YoniPorutham:
+    """Yoni on the chapter's own table, Uttarashadha the cow (p. 73,
+    C278)."""
+
+    bride: Yoni
+    groom: Yoni
+    hostile: bool
+    """Whether they are among the chapter's eight enmities."""
+
+    koota: Koota = Koota.YONI
+
+
+@dataclass(frozen=True)
+class RasiPorutham:
+    """Rasi: how far the groom's Moon sign stands from the bride's (pp.
+    73–74)."""
+
+    apart: int
+    """The groom's sign counted from the bride's, 1 to 12."""
+
+    koota: Koota = Koota.BHAKOOT
+
+
+@dataclass(frozen=True)
+class RasyadhipathiPorutham:
+    """Rasyadhipathi: the two Moon signs' lords on the chapter's own
+    friendships (pp. 74–75)."""
+
+    bride: Graha
+    groom: Graha
+    bride_calls_friend: bool
+    """Whether the bride's lord calls the groom's a friend; a lord is its
+    own."""
+
+    groom_calls_friend: bool
+    koota: Koota = Koota.GRAHA_MAITRI
+
+
+@dataclass(frozen=True)
+class VasyamPorutham:
+    """Vasyam on p. 75's table, never a sign to itself (C274)."""
+
+    bride_to_groom: bool
+    """Whether the bride's sign is concordant to the groom's."""
+
+    groom_to_bride: bool
+    koota: Koota = Koota.VASHYA
+
+
+@dataclass(frozen=True)
+class RajjuPorutham:
+    """Rajju: the two divisions (p. 75, C275)."""
+
+    bride: Rajju
+    groom: Rajju
+    koota: Koota = Koota.RAJJU
+
+
+@dataclass(frozen=True)
+class VedhaiPorutham:
+    """Vedhai: whether the two nakshatras pierce each other (p. 76,
+    C276)."""
+
+    pierced: bool
+    koota: Koota = Koota.VEDHA
+
+
+PoruthamReading = Union[
+    DhinamPorutham,
+    GanamPorutham,
+    MahendraPorutham,
+    DeerghaPorutham,
+    YoniPorutham,
+    RasiPorutham,
+    RasyadhipathiPorutham,
+    VasyamPorutham,
+    RajjuPorutham,
+    VedhaiPorutham,
+]
+"""What one of the ten considerations read, one class each, each carrying
+its catalogue `koota` (C282)."""
+
+
+@dataclass(frozen=True)
+class PoruthamRow:
+    """One consideration: whether it agrees, and what it read."""
+
+    agrees: bool
+    """Whether it agrees, a lift included."""
+
+    lifted: bool
+    """Whether it agrees only by the p. 76 exception."""
+
+    reading: PoruthamReading
+
+
+@dataclass(frozen=True)
+class PoruthamException:
+    """The p. 76 exception's clauses, any one of which lifts Ganam, Rasi,
+    Rajju and Vedhai (C277)."""
+
+    one_lord: bool
+    lords_friendly: bool
+    opposite: bool
+
+
+@dataclass(frozen=True)
+class Porutham:
+    """The ten considerations of a bride and a groom (*Kalaprakasika*
+    XIII). Never a verdict: "at least five" is the reader's to apply."""
+
+    considerations: Tuple[PoruthamRow, ...]
+    """The ten, in the chapter's order."""
+
+    agreeing: int
+    """How many agree."""
+
+    chief_agreeing: int
+    """How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and
+    Rajju."""
+
+    exception: PoruthamException
 
 
 @dataclass(frozen=True)
@@ -8942,6 +9147,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def porutham(self) -> Optional[Porutham]:
+        """The chart matched with the same partner by the ten
+        considerations of *Kalaprakasika* XIII (`matching=` asks for both
+        systems): whether each agrees and what it read, in the chapter's
+        order, how many agree, how many of the chief five, and the p. 76
+        exception's clauses. Never a verdict; `None` unless asked
+        (`03-design/matching.md`)."""
+        parsed = self.batch._poruthams
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def harmonic(self) -> Optional[HarmonicChart]:
         """The chart's harmonic chart: each planet, the ascendant and the
         midheaven at its longitude multiplied, in its equal house from the
@@ -9725,6 +9941,61 @@ class ChartBatch:
                         KootaRow(points=points, max_points=most, reading=read[koota]) for koota, points, most in rows
                     ),
                     total=m.total[at],
+                )
+            )
+        return matched
+
+    @cached_property
+    def _poruthams(self) -> list[Porutham]:
+        """Every chart's ten considerations with the record's partner,
+        decoded once; empty when none was asked for. `poruthams` holds a
+        row a chart with what each read, and `porutham_rows` ten rows a
+        chart, whether each agrees in the chapter's order."""
+        p = self.decoded.poruthams
+        r = self.decoded.porutham_rows
+
+        def readings(at: int) -> Dict[Koota, PoruthamReading]:
+            read: Tuple[PoruthamReading, ...] = (
+                DhinamPorutham(p.count[at], DhinamRule(p.dhinam_rule[at])),
+                GanamPorutham(Gana(p.bride_gana[at]), Gana(p.groom_gana[at]), p.gana_diminished[at] == 1),
+                MahendraPorutham(p.count[at]),
+                DeerghaPorutham(p.count[at]),
+                YoniPorutham(Yoni(p.bride_yoni[at]), Yoni(p.groom_yoni[at]), p.yoni_hostile[at] == 1),
+                RasiPorutham(p.apart[at]),
+                RasyadhipathiPorutham(
+                    Graha(p.bride_lord[at]),
+                    Graha(p.groom_lord[at]),
+                    p.bride_calls_friend[at] == 1,
+                    p.groom_calls_friend[at] == 1,
+                ),
+                VasyamPorutham(p.bride_to_groom[at] == 1, p.groom_to_bride[at] == 1),
+                RajjuPorutham(Rajju(p.bride_rajju[at]), Rajju(p.groom_rajju[at])),
+                VedhaiPorutham(p.pierced[at] == 1),
+            )
+            return {one.koota: one for one in read}
+
+        charts = len(p.agreeing)
+        rows = self._ragged(
+            [10] * charts,
+            r.length,
+            "poruthams and porutham_rows",
+            lambda row: (Koota(r.koota[row]), r.agrees[row] == 1, r.lifted[row] == 1),
+        )
+        matched: list[Porutham] = []
+        for at, ten in enumerate(rows):
+            read = readings(at)
+            matched.append(
+                Porutham(
+                    considerations=tuple(
+                        PoruthamRow(agrees=agrees, lifted=lifted, reading=read[koota]) for koota, agrees, lifted in ten
+                    ),
+                    agreeing=p.agreeing[at],
+                    chief_agreeing=p.chief_agreeing[at],
+                    exception=PoruthamException(
+                        one_lord=p.one_lord[at] == 1,
+                        lords_friendly=p.lords_friendly[at] == 1,
+                        opposite=p.opposite[at] == 1,
+                    ),
                 )
             )
         return matched

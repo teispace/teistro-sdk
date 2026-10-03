@@ -112,6 +112,8 @@ import type {
   Gana,
   Nadi,
   VashyaRelation,
+  DhinamRule,
+  Rajju,
   YoniRelation,
   MaitriRelation,
 } from './catalogue.js';
@@ -1556,6 +1558,18 @@ export interface MatchingRequest {
   /** The side the partner stands on: Varna and Gana read differently when the two swap. */
   readonly partnerRole: 'BRIDE' | 'GROOM';
   readonly rules?: KootaRules;
+  /** The readings the ten considerations are computed under. */
+  readonly porutham?: PoruthamRules;
+}
+
+/** The readings the ten considerations are computed under; each default is the chapter's own. */
+export interface PoruthamRules {
+  /** Whose quarter comes first in one star across two signs: `'GROOM_EARLIER'` (the default) or `'BRIDE_FIRST_SIGN'` (C270). */
+  readonly twoSignStar?: 'GROOM_EARLIER' | 'BRIDE_FIRST_SIGN';
+  /** How far Sthree-Dheergham asks: beyond the `'THIRTEENTH'` (the default) or the `'SEVENTH'` (C272). */
+  readonly deerghaBeyond?: 'THIRTEENTH' | 'SEVENTH';
+  /** Which friendship of the lords agrees: `'MUTUAL'` (the default) or `'ONE_WAY'` (C273). */
+  readonly lordsFriendship?: 'MUTUAL' | 'ONE_WAY';
 }
 
 /** The readings an Ashta Koota is computed under; each default is the source's own. */
@@ -1642,6 +1656,82 @@ export interface AshtaKoota {
   readonly kootas: readonly KootaRow[];
   /** Their points, out of 36. */
   readonly total: number;
+}
+
+/** What one of the ten considerations read, tagged by its catalogue koota (C282). */
+export type PoruthamReading =
+  | {
+      readonly koota: 'koota.TARA';
+      /** Dhinam: the groom's nakshatra counted from the bride's, 1 to 27. */
+      readonly count: number;
+      /** The chapter's rule that decided it. */
+      readonly rule: DhinamRule | 'unknown';
+    }
+  | {
+      readonly koota: 'koota.GANA';
+      readonly bride: Gana;
+      readonly groom: Gana;
+      /** A Rakshasa's evil "diminishes" by the bride's star beyond the 14th from the groom's (C279). */
+      readonly diminished: boolean;
+    }
+  | { readonly koota: 'koota.MAHENDRA'; readonly count: number }
+  | { readonly koota: 'koota.STREE_DEERGHA'; readonly count: number }
+  | {
+      readonly koota: 'koota.YONI';
+      /** On the chapter's own table: Uttarashadha the cow (C278). */
+      readonly bride: Yoni;
+      readonly groom: Yoni;
+      readonly hostile: boolean;
+    }
+  | {
+      readonly koota: 'koota.BHAKOOT';
+      /** Rasi: the groom's Moon sign counted from the bride's, 1 to 12. */
+      readonly apart: number;
+    }
+  | {
+      readonly koota: 'koota.GRAHA_MAITRI';
+      /** Rasyadhipathi: the lord of the bride's Moon sign. */
+      readonly bride: Graha | 'unknown';
+      readonly groom: Graha | 'unknown';
+      /** On the chapter's own friendships; a lord is its own friend. */
+      readonly brideCallsFriend: boolean;
+      readonly groomCallsFriend: boolean;
+    }
+  | {
+      readonly koota: 'koota.VASHYA';
+      /** Vasyam, on p. 75's table: the bride's sign concordant to the groom's. */
+      readonly brideToGroom: boolean;
+      readonly groomToBride: boolean;
+    }
+  | { readonly koota: 'koota.RAJJU'; readonly bride: Rajju | 'unknown'; readonly groom: Rajju | 'unknown' }
+  | { readonly koota: 'koota.VEDHA'; readonly pierced: boolean }
+  | { readonly koota: 'unknown' };
+
+/** One consideration: whether it agrees, and what it read. */
+export interface PoruthamRow {
+  /** Whether it agrees, a lift included. */
+  readonly agrees: boolean;
+  /** Whether it agrees only by the p. 76 exception. */
+  readonly lifted: boolean;
+  readonly reading: PoruthamReading;
+}
+
+/** The p. 76 exception's clauses, any one of which lifts Ganam, Rasi, Rajju and Vedhai (C277). */
+export interface PoruthamException {
+  readonly oneLord: boolean;
+  readonly lordsFriendly: boolean;
+  readonly opposite: boolean;
+}
+
+/** The ten considerations of a bride and a groom (*Kalaprakasika* XIII). */
+export interface Porutham {
+  /** The ten, in the chapter's order. */
+  readonly considerations: readonly PoruthamRow[];
+  /** How many agree; the chapter asks "at least five". */
+  readonly agreeing: number;
+  /** How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju. */
+  readonly chiefAgreeing: number;
+  readonly exception: PoruthamException;
 }
 
 /** A chart's Western houses, in its own zodiac. */
@@ -3645,6 +3735,11 @@ export declare class Chart {
    * unless `matching` asked (`03-design/matching.md`).
    */
   readonly matching: AshtaKoota | null;
+  /**
+   * The chart matched with the same partner by the ten considerations of
+   * *Kalaprakasika* XIII; `null` unless `matching` asked (`03-design/matching.md`).
+   */
+  readonly porutham: Porutham | null;
   /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.

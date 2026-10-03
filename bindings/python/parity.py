@@ -21,7 +21,16 @@ import json
 
 from teistro import (
     BhakootKoota,
+    DhinamPorutham,
+    GanamPorutham,
     KootaReading,
+    PoruthamReading,
+    RajjuPorutham,
+    RasiPorutham,
+    RasyadhipathiPorutham,
+    VasyamPorutham,
+    VedhaiPorutham,
+    YoniPorutham,
     MaitriKoota,
     NadiKoota,
     TaraKoota,
@@ -108,6 +117,32 @@ def reading_text(reading: KootaReading) -> str:
     if isinstance(reading, NadiKoota):
         return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.dosha)}"
     return f"{reading.bride.full_key} {reading.groom.full_key}"
+
+
+def porutham_text(reading: PoruthamReading) -> str:
+    """A consideration's reading as every runner prints it: its fields in
+    serde's order, a member by its full key (a boundary enum by its key)
+    and a flag as 0 or 1."""
+    if isinstance(reading, DhinamPorutham):
+        return f"{reading.count} {reading.rule.key}"
+    if isinstance(reading, GanamPorutham):
+        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.diminished)}"
+    if isinstance(reading, YoniPorutham):
+        return f"{reading.bride.full_key} {reading.groom.full_key} {int(reading.hostile)}"
+    if isinstance(reading, RasiPorutham):
+        return str(reading.apart)
+    if isinstance(reading, RasyadhipathiPorutham):
+        return (
+            f"{reading.bride.full_key} {reading.groom.full_key} "
+            f"{int(reading.bride_calls_friend)} {int(reading.groom_calls_friend)}"
+        )
+    if isinstance(reading, VasyamPorutham):
+        return f"{int(reading.bride_to_groom)} {int(reading.groom_to_bride)}"
+    if isinstance(reading, RajjuPorutham):
+        return f"{reading.bride.key} {reading.groom.key}"
+    if isinstance(reading, VedhaiPorutham):
+        return str(int(reading.pierced))
+    return str(reading.count)
 
 
 def number(value: float | int) -> str:
@@ -629,6 +664,7 @@ def main() -> None:
                 },
                 "partnerRole": "BRIDE",
                 "rules": {"bhakootLift": "GARGA"},
+                "porutham": {"lordsFriendship": "ONE_WAY"},
             },
             synastry={
                 "partner": {
@@ -1256,6 +1292,19 @@ def main() -> None:
                 put(
                     f"chart-{i}-matching-{koota.reading.koota.full_key}",
                     f"{number(koota.points)} {number(koota.max_points)} {reading_text(koota.reading)}",
+                )
+            ten = chart.porutham
+            assert ten is not None
+            clauses = ten.exception
+            put(
+                f"chart-{i}-porutham",
+                f"{ten.agreeing} {ten.chief_agreeing} {int(clauses.one_lord)} "
+                f"{int(clauses.lords_friendly)} {int(clauses.opposite)}",
+            )
+            for consideration in ten.considerations:
+                put(
+                    f"chart-{i}-porutham-{consideration.reading.koota.full_key}",
+                    f"{int(consideration.agrees)} {int(consideration.lifted)} {porutham_text(consideration.reading)}",
                 )
             fifth = chart.harmonic
             assert fifth is not None
