@@ -576,10 +576,15 @@ fn western_tropical_default() -> Profile {
     patch.houses.chalit_system = Some(HouseSystem::Placidus);
     patch.houses.polar_policy = Some(PolarPolicy::FallbackPorphyry);
     patch.day.day_boundary = Some(DayBoundary::Midnight);
+    // Its day runs from midnight, so a polar day is reckoned the same
+    // way: under the base's UNDEFINED no chart could be founded inside a
+    // polar day or night at all, though nothing Western reads a sunrise
+    // to found one (`progressed-angles-measured.md`, Tromsø).
+    patch.day.polar_day_policy = Some(PolarDayPolicy::CivilMidnight);
     patch.calendars.eras = Some(BTreeSet::new());
     Profile {
         id: ProfileId::new("western-tropical-default"),
-        version: 1,
+        version: 2,
         base: None,
         patch,
         sources: vec![Citation::new(

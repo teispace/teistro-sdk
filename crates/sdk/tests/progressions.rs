@@ -444,3 +444,34 @@ fn one_request_answers_what_the_three_calls_do() {
         )
     );
 }
+
+/// A Western chart is founded inside a polar day and progressed through
+/// it: Tromsø at midsummer, whose Sun does not set for weeks either side.
+/// Under the base profile's UNDEFINED polar day no chart there could be
+/// founded at all.
+#[test]
+fn a_chart_inside_a_polar_day_is_founded_and_progressed() {
+    let sdk = context();
+    let tromso = ChartRequest::at(
+        Place::new(
+            Latitude::literal(69.6492),
+            Longitude::literal(18.9553),
+            Altitude::literal(10.0),
+        ),
+        UtcOffset::try_from_seconds(7200).unwrap(),
+    );
+    // 21 June 1988, 10.00 local time.
+    let born = sdk
+        .chart()
+        .reading(jd(2_447_333.833_333_333), &tromso)
+        .unwrap()
+        .value;
+    for years in [10.0, 30.0] {
+        let life = jd(born.foundation.instant.get() + years * teistro::western::TROPICAL_YEAR_DAYS);
+        let progressed = sdk
+            .chart()
+            .progressed(&born, life, &ProgressionRequest::default(), &tromso)
+            .unwrap();
+        assert!(progressed.sky.get() > born.foundation.instant.get());
+    }
+}
