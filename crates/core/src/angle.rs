@@ -20,6 +20,7 @@ use core::fmt;
 use core::ops::{Add, Sub};
 
 use crate::catalogue::{Nakshatra, Rashi};
+use crate::math;
 use crate::quantity::{Degrees, InvalidValue, NakshatraIndex, PadaIndex, SignIndex};
 
 /// Degrees into `[0, 360)`: the floating-point companion of [`Nas::new`]
@@ -54,6 +55,29 @@ pub fn normalise_deg(deg: f64) -> f64 {
 pub fn difference_deg(a: f64, b: f64) -> f64 {
     let d = (a - b).rem_euclid(360.0);
     if d > 180.0 { d - 360.0 } else { d }
+}
+
+/// The declination of a point given in ecliptic coordinates, degrees north
+/// of the equator: `sin δ = sin β cos ε + cos β sin ε sin λ`, from a
+/// tropical longitude `λ`, an ecliptic latitude `β` and the obliquity `ε`,
+/// all degrees. A degree of the ecliptic itself, such as an angle, has no
+/// latitude (`03-design/western-declinations.md`).
+///
+/// ```
+/// use teistro_core::angle::declination_deg;
+///
+/// // The solstice stands the obliquity north; the equinox on the equator.
+/// assert!((declination_deg(90.0, 0.0, 23.44) - 23.44).abs() < 1e-12);
+/// assert!(declination_deg(0.0, 0.0, 23.44).abs() < 1e-12);
+/// // A latitude north of the ecliptic lifts the point north at the equinox.
+/// assert!((declination_deg(0.0, 5.0, 23.44) - 5.0 * 23.44_f64.to_radians().cos()).abs() < 0.01);
+/// ```
+#[must_use]
+pub fn declination_deg(longitude_deg: f64, latitude_deg: f64, obliquity_deg: f64) -> f64 {
+    let (sl, _) = math::sin_cos(longitude_deg.to_radians());
+    let (sb, cb) = math::sin_cos(latitude_deg.to_radians());
+    let (se, ce) = math::sin_cos(obliquity_deg.to_radians());
+    math::asin(sb * ce + cb * se * sl).to_degrees()
 }
 
 /// A canonical angle in nanoarcseconds, `0 ..< CIRCLE`. Exact, ordered,
