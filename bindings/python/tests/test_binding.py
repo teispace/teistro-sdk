@@ -1835,6 +1835,60 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, outer_planets=outer, western_aspects=request, **palace)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_declinations_and_parallels(self) -> None:
+        """The declinations and parallels cross whole on King George V (Leo,
+        *How to Judge a Nativity*, p. 130): the recast's declinations, his
+        four parallels, a batch the charts one at a time, and refusals named
+        in the record (`03-design/western-declinations.md`)."""
+        from teistro import ParallelRequest
+
+        george: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2402390.554166667
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            bare = ctx.chart.found(instant=birth, **george)
+            self.assertIsNone(bare.declinations)
+            self.assertIsNone(bare.parallels)
+
+            chart = ctx.chart.found(instant=birth, outer_planets=True, parallels={}, **george)
+            read = chart.declinations
+            assert read is not None
+            self.assertEqual(len(read.grahas), 10, "the nodes are not read")
+            self.assertAlmostEqual(read.graha(Graha.SUN) or 0.0, 22.2997, delta=0.01)
+            self.assertAlmostEqual(read.lagna_deg, 0.8366, delta=0.01)
+            self.assertAlmostEqual(read.midheaven_deg, -23.452, delta=0.01)
+            rows = chart.parallels
+            assert rows is not None
+            self.assertEqual(
+                [(row.first, row.second, row.contrary) for row in rows],
+                [
+                    (Graha.MOON, Graha.NEPTUNE, True),
+                    (Graha.SUN, Graha.JUPITER, True),
+                    (Graha.JUPITER, Graha.URANUS, True),
+                    (Graha.MERCURY, Graha.VENUS, False),
+                ],
+            )
+
+            instants = [birth, birth - 3000.25]
+            asked: ParallelRequest = {"orbDeg": 1.5}
+            batch = ctx.chart.found_many(instants=instants, parallels=asked, **george)
+            for k, instant in enumerate(instants):
+                one = ctx.chart.found(instant=instant, parallels=asked, **george)
+                self.assertEqual(batch.at(k).parallels, one.parallels)
+                self.assertEqual(batch.at(k).declinations, one.declinations)
+            refusals: list[tuple[Any, str]] = [
+                ({"orbDeg": 0}, "parallels.orbDeg"),
+                ({"orbDeg": 11}, "parallels.orbDeg"),
+                ({"orb": 1}, "parallels.orb"),
+                ([], "parallels"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, parallels=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,
