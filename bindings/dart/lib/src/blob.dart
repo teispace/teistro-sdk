@@ -3884,6 +3884,64 @@ final class ChartsParallelRows {
   final int length;
 }
 
+/// The `synastry_parallels` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.
+final class ChartsSynastryParallels {
+  const ChartsSynastryParallels({
+    required this.count,
+    required this.length,
+  });
+
+  /// How many parallels stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_parallel_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_parallel_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
+final class ChartsSynastryParallelRows {
+  const ChartsSynastryParallelRows({
+    required this.firstLagna,
+    required this.firstGraha,
+    required this.secondLagna,
+    required this.secondGraha,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// 1 when the chart's point is the lagna, 0 when it is a graha.
+  final Uint8List firstLagna;
+
+  /// Which graha the chart's point is (a `Graha` id); 0 for the lagna.
+  final Uint16List firstGraha;
+
+  /// 1 when the partner's point is the lagna, 0 when it is a graha.
+  final Uint8List secondLagna;
+
+  /// Which graha the partner's point is (a `Graha` id); 0 for the lagna.
+  final Uint16List secondGraha;
+
+  /// 1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.
+  final Uint8List contrary;
+
+  /// How far apart their distances from the equator are, degrees.
+  final Float64List apartDeg;
+
+  /// The orb the record allowed, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4084,6 +4142,8 @@ final class Charts {
     required this.declinations,
     required this.declinationRows,
     required this.parallelRows,
+    required this.synastryParallels,
+    required this.synastryParallelRows,
   });
 
   /// What kind of chart these are.
@@ -4394,6 +4454,12 @@ final class Charts {
   /// Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
   final ChartsParallelRows parallelRows;
 
+  /// Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.
+  final ChartsSynastryParallels synastryParallels;
+
+  /// Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
+  final ChartsSynastryParallelRows synastryParallelRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4489,6 +4555,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atDeclinations = blob.section(86, 'declinations');
   final atDeclinationRows = blob.section(87, 'declination_rows');
   final atParallelRows = blob.section(88, 'parallel_rows');
+  final atSynastryParallels = blob.section(89, 'synastry_parallels');
+  final atSynastryParallelRows = blob.section(90, 'synastry_parallel_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8034,6 +8102,52 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atParallelRows, 4) + atParallelRows.count * 8,
       ),
       length: atParallelRows.count,
+    ),
+    synastryParallels: ChartsSynastryParallels(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallels, 0),
+        blob.columnOffset(atSynastryParallels, 0) + atSynastryParallels.count * 4,
+      ),
+      length: atSynastryParallels.count,
+    ),
+    synastryParallelRows: ChartsSynastryParallelRows(
+      firstLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 0),
+        blob.columnOffset(atSynastryParallelRows, 0) + atSynastryParallelRows.count * 1,
+      ),
+      firstGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 1),
+        blob.columnOffset(atSynastryParallelRows, 1) + atSynastryParallelRows.count * 2,
+      ),
+      secondLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 2),
+        blob.columnOffset(atSynastryParallelRows, 2) + atSynastryParallelRows.count * 1,
+      ),
+      secondGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 3),
+        blob.columnOffset(atSynastryParallelRows, 3) + atSynastryParallelRows.count * 2,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 4),
+        blob.columnOffset(atSynastryParallelRows, 4) + atSynastryParallelRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 5),
+        blob.columnOffset(atSynastryParallelRows, 5) + atSynastryParallelRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryParallelRows, 6),
+        blob.columnOffset(atSynastryParallelRows, 6) + atSynastryParallelRows.count * 8,
+      ),
+      length: atSynastryParallelRows.count,
     ),
   );
 }

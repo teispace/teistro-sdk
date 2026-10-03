@@ -1688,10 +1688,13 @@ pub struct TsChartRequest {
     /// the context's settings with the outer planets when
     /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
     /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
-    /// (true: each side's lagna is read beside its planets, C242) and
-    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
-    /// chart is read against the partner, the chart's point first. The
-    /// answers come back in `synastry` and `synastry_rows`. Null for none,
+    /// (true: each side's lagna is read beside its planets, C242),
+    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241) and
+    /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
+    /// parallels across the two, none when left out). Each chart is read
+    /// against the partner, the chart's point first. The answers come back
+    /// in `synastry`, `synastry_rows` and `synastry_parallel_rows`. Null
+    /// for none,
     /// which costs nothing (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
@@ -3275,7 +3278,8 @@ impl AspectTables {
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         self.own.write(writer)?;
         self.across.write(writer)?;
-        self.declined.write(writer)
+        self.declined.write(writer)?;
+        self.across.write_parallels(writer)
     }
 }
 
@@ -3421,23 +3425,41 @@ impl WesternAspectColumns {
     }
 }
 
-/// `synastry` and `synastry_rows`: each chart's contacts with the
-/// record's partner (`western-synastry.md`).
+/// `synastry` and `synastry_rows`: each chart's contacts with the record's
+/// partner (`western-synastry.md`); `synastry_parallels` and
+/// `synastry_parallel_rows`: the parallels across the two, when asked
+/// (`western-declinations.md`).
 #[derive(Default)]
 struct SynastryColumns {
     count: Vec<u32>,
+    parallel_count: Vec<u32>,
     first: PointCells,
     second: PointCells,
     measures: AspectMeasures,
+    parallel_first: PointCells,
+    parallel_second: PointCells,
+    contrary: Vec<u8>,
+    parallel_apart_deg: Vec<f64>,
+    parallel_orb_deg: Vec<f64>,
 }
 
 impl SynastryColumns {
-    fn of(read: &[Vec<teistro::SynastryRow>], charts: usize) -> Result<SynastryColumns, Error> {
+    fn of(read: &[teistro::PartnerReading], charts: usize) -> Result<SynastryColumns, Error> {
         one_a_chart(read.len(), charts, "synastries")?;
         let mut columns = SynastryColumns::default();
-        for rows in read {
-            columns.count.push(row_count(rows.len())?);
-            for row in rows {
+        for one in read {
+            columns.count.push(row_count(one.aspects.len())?);
+            if let Some(parallels) = &one.parallels {
+                columns.parallel_count.push(row_count(parallels.len())?);
+            }
+            for row in one.parallels.iter().flatten() {
+                columns.parallel_first.push(row.first);
+                columns.parallel_second.push(row.second);
+                columns.contrary.push(u8::from(row.contrary));
+                columns.parallel_apart_deg.push(row.apart_deg);
+                columns.parallel_orb_deg.push(row.orb_deg);
+            }
+            for row in &one.aspects {
                 columns.first.push(row.first);
                 columns.second.push(row.second);
                 columns.measures.push(
@@ -3472,6 +3494,31 @@ impl SynastryColumns {
                 apart,
                 from_exact,
                 orb,
+            ],
+        )
+    }
+
+    /// `synastry_parallels` and `synastry_parallel_rows`, after the
+    /// declinations'.
+    fn write_parallels(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_parallels",
+            self.parallel_count.len(),
+            &[ColumnData::U32(&self.parallel_count)],
+        )?;
+        let [first_lagna, first_graha] = self.parallel_first.columns();
+        let [second_lagna, second_graha] = self.parallel_second.columns();
+        writer.columns(
+            "synastry_parallel_rows",
+            self.contrary.len(),
+            &[
+                first_lagna,
+                first_graha,
+                second_lagna,
+                second_graha,
+                ColumnData::U8(&self.contrary),
+                ColumnData::F64(&self.parallel_apart_deg),
+                ColumnData::F64(&self.parallel_orb_deg),
             ],
         )
     }
@@ -6008,7 +6055,7 @@ pub struct Composed<'a> {
     pub western_aspects: &'a [Vec<teistro::WesternAspectRow>],
     /// Every chart's synastry with the record's partner, in the batch's
     /// order (`western-synastry.md`); empty when none was asked for.
-    pub synastry: &'a [Vec<teistro::SynastryRow>],
+    pub synastry: &'a [teistro::PartnerReading],
     /// Every chart's declinations, in the batch's order
     /// (`western-declinations.md`); empty when no parallels were asked
     /// for.
@@ -6993,7 +7040,7 @@ fn progressions_of(
 /// was null.
 struct WesternTables {
     aspects: Vec<Vec<teistro::WesternAspectRow>>,
-    synastry: Vec<Vec<teistro::SynastryRow>>,
+    synastry: Vec<teistro::PartnerReading>,
     declinations: Vec<teistro::Declinations>,
     parallels: Vec<Vec<teistro::ParallelRow>>,
 }

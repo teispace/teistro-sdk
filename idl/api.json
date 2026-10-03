@@ -11970,7 +11970,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242) and\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241). Each\nchart is read against the partner, the chart's point first. The\nanswers come back in `synastry` and `synastry_rows`. Null for none,\nwhich costs nothing (`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
+          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out). Each chart is read\nagainst the partner, the chart's point first. The answers come back\nin `synastry`, `synastry_rows` and `synastry_parallel_rows`. Null\nfor none,\nwhich costs nothing (`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
             "nullable": true
@@ -19463,6 +19463,62 @@
               "scalar": "u16",
               "doc": "The second.",
               "enum": "Graha"
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart their distances from the equator are, degrees."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed, degrees."
+            }
+          ]
+        },
+        {
+          "id": 89,
+          "name": "synastry_parallels",
+          "doc": "Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many parallels stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_parallel_rows`."
+            }
+          ]
+        },
+        {
+          "id": 90,
+          "name": "synastry_parallel_rows",
+          "doc": "Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first_lagna",
+              "scalar": "u8",
+              "doc": "1 when the chart's point is the lagna, 0 when it is a graha."
+            },
+            {
+              "name": "first_graha",
+              "scalar": "u16",
+              "doc": "Which graha the chart's point is (a `Graha` id); 0 for the lagna."
+            },
+            {
+              "name": "second_lagna",
+              "scalar": "u8",
+              "doc": "1 when the partner's point is the lagna, 0 when it is a graha."
+            },
+            {
+              "name": "second_graha",
+              "scalar": "u16",
+              "doc": "Which graha the partner's point is (a `Graha` id); 0 for the lagna."
             },
             {
               "name": "contrary",
