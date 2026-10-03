@@ -460,17 +460,25 @@ fn a_chart_inside_a_polar_day_is_founded_and_progressed() {
         ),
         UtcOffset::try_from_seconds(7200).unwrap(),
     );
-    // 21 June 1988, 10.00 local time.
+    // 21 June 1988, 12.00 local time, as the corpus records it (c028).
     let born = sdk
         .chart()
-        .reading(jd(2_447_333.833_333_333), &tromso)
+        .reading(jd(2_447_333.916_666_666_5), &tromso)
         .unwrap()
         .value;
-    for years in [10.0, 30.0] {
+    // Thirty and a half years is midnight on the morning the polar day
+    // ends, which once fell between the last polar day and the first real
+    // one; the quotidian chart is founded at the progressed instant itself.
+    for years in [10.0, 30.0, 30.5] {
         let life = jd(born.foundation.instant.get() + years * teistro::western::TROPICAL_YEAR_DAYS);
         let progressed = sdk
             .chart()
-            .progressed(&born, life, &ProgressionRequest::default(), &tromso)
+            .progressed(
+                &born,
+                life,
+                &ProgressionRequest::default().with_angles(AngleMethod::Quotidian),
+                &tromso,
+            )
             .unwrap();
         assert!(progressed.sky.get() > born.foundation.instant.get());
     }

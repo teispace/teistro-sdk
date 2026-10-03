@@ -225,13 +225,23 @@ pub fn local_day(
                 DayState::Polar { kind, policy },
             )
         }
-        (polar, _) => {
+        (polar, next) => {
             let kind = polar_kind(polar);
             let bounds = synthesised(model, clock, place, day, kind, policy)?;
+            // The last day of a polar season under `CIVIL_MIDNIGHT` runs to
+            // the first real sunrise, not to midnight: the real day begins
+            // at that sunrise, so ending at midnight left the small hours
+            // between in no day at all. The first day of a season needs no
+            // such care, since its predecessor's next sunrise is this day's
+            // synthesised midnight.
+            let next_sunrise = match (policy, next) {
+                (PolarDayPolicy::CivilMidnight, DayLight::Arc(arc)) => arc.sunrise,
+                _ => bounds.next_sunrise,
+            };
             (
                 bounds.sunrise,
                 bounds.sunset,
-                bounds.next_sunrise,
+                next_sunrise,
                 DayState::Polar { kind, policy },
             )
         }
