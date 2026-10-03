@@ -58,6 +58,19 @@ String listed(Iterable<String> items) {
   return joined.isEmpty ? 'none' : joined;
 }
 
+/// Pairs in antiscion as every runner prints them, a chart's own or across
+/// a synastry: their count, then each pair's planets, side, gap and orb.
+void putAntiscionRows(String key, List<AntiscionRow> rows) {
+  put('$key-count', '${rows.length}');
+  for (final (n, row) in rows.indexed) {
+    put(
+      '$key-$n',
+      '${row.first.fullKey} ${row.second.fullKey} ${row.contrary ? 1 : 0} '
+          '${number(row.apartDeg)} ${number(row.orbDeg)}',
+    );
+  }
+}
+
 /// A festival answer's counts, hash, every observance and every Ekadashi
 /// fast, as every runner prints them.
 void putFestivals(String prefix, FestivalAnswer answer) {
@@ -598,6 +611,7 @@ void main() {
       ),
       zodiac: SynastryZodiac.charts,
       parallels: const ParallelRequest(orbDeg: 1.5),
+      antiscia: const AntisciaRequest(orbs: OrbModel.leo),
     ),
     progressions: const ProgressionsRequest(
       at: 2470000.5,
@@ -1293,14 +1307,7 @@ void main() {
           ? '-'
           : reflected.unpaired.map((one) => one.fullKey).join(','),
     );
-    put('chart-$i-antiscia-count', '${reflected.pairs.length}');
-    for (final (n, row) in reflected.pairs.indexed) {
-      put(
-        'chart-$i-antiscia-$n',
-        '${row.first.fullKey} ${row.second.fullKey} ${row.contrary ? 1 : 0} '
-            '${number(row.apartDeg)} ${number(row.orbDeg)}',
-      );
-    }
+    putAntiscionRows('chart-$i-antiscia', reflected.pairs);
     final synastry = chart.synastry!;
     put('chart-$i-synastry-count', '${synastry.length}');
     for (final (n, row) in synastry.indexed) {
@@ -1321,6 +1328,7 @@ void main() {
             '${number(row.orbDeg)}',
       );
     }
+    putAntiscionRows('chart-$i-synastry-antiscia', chart.synastryAntiscia!);
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {
