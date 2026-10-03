@@ -1460,6 +1460,36 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 98, 'synastry_composites');
+    out.synastryComposites = {
+      lagnaDeg: column(blob, at, 0, 'f64', at.count),
+      midheavenDeg: column(blob, at, 1, 'f64', at.count),
+      lagnaTurned: column(blob, at, 2, 'u8', at.count),
+      count: column(blob, at, 3, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 99, 'synastry_composite_rows');
+    out.synastryCompositeRows = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      speedDegPerDay: column(blob, at, 2, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 100, 'synastry_davisons');
+    out.synastryDavisons = {
+      instant: column(blob, at, 0, 'f64', at.count),
+      latitudeDeg: column(blob, at, 1, 'f64', at.count),
+      longitudeDeg: column(blob, at, 2, 'f64', at.count),
+      altitudeM: column(blob, at, 3, 'f64', at.count),
+      utcOffsetSeconds: column(blob, at, 4, 'i32', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

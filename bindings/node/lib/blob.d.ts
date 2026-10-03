@@ -3955,6 +3955,88 @@ export interface ChartsMidpointRows {
 }
 
 /**
+ * The `synastry_composites` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
+ */
+export interface ChartsSynastryComposites {
+  /**
+   * The composite lagna, degrees: the near midpoint of the two lagnas, turned by 180° when `lagna_turned` says.
+   */
+  readonly lagnaDeg: Float64Array;
+  /**
+   * The composite midheaven, degrees: the near midpoint of the two midheavens.
+   */
+  readonly midheavenDeg: Float64Array;
+  /**
+   * 1 when the near midpoint of the two lagnas stood before the midheaven and was turned by 180° to stand after it, as a lagna does; 0 otherwise.
+   */
+  readonly lagnaTurned: Uint8Array;
+  /**
+   * How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_composite_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+ */
+export interface ChartsSynastryCompositeRows {
+  /**
+   * The planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its composite longitude, degrees, in the record's zodiac.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * The mean of its two speeds, degrees a day; negative when retrograde.
+   */
+  readonly speedDegPerDay: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_davisons` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
+ */
+export interface ChartsSynastryDavisons {
+  /**
+   * The mean instant, a Julian day on the UTC scale.
+   */
+  readonly instant: Float64Array;
+  /**
+   * The mean latitude, degrees north.
+   */
+  readonly latitudeDeg: Float64Array;
+  /**
+   * The mean longitude the shorter way round, degrees east.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * The mean altitude, metres.
+   */
+  readonly altitudeM: Float64Array;
+  /**
+   * The mean of the two clocks, seconds east of UTC: it names only the civil day.
+   */
+  readonly utcOffsetSeconds: Int32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4510,6 +4592,18 @@ export interface Charts {
    * Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.
    */
   readonly midpointRows: ChartsMidpointRows;
+  /**
+   * Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
+   */
+  readonly synastryComposites: ChartsSynastryComposites;
+  /**
+   * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+   */
+  readonly synastryCompositeRows: ChartsSynastryCompositeRows;
+  /**
+   * Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
+   */
+  readonly synastryDavisons: ChartsSynastryDavisons;
 }
 
 /**

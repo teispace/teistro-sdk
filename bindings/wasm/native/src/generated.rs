@@ -2153,10 +2153,15 @@ pub struct ChartRequest {
     /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
     /// parallels across the two, none when left out) and `antiscia`
     /// (`{"orbs": {"model": "LEO"}}` as `antiscia_json` spells it: the antiscia
-    /// across the two, none when left out). Each chart is read against the
+    /// across the two, none when left out), `composite` (true: each chart's
+    /// composite with the partner, C247) and `davison` (true: each chart's
+    /// Davison birth with the partner, the chart's read on this request's
+    /// clock, C248). Each chart is read against the
     /// partner, the chart's point first. The answers come back in
-    /// `synastry`, `synastry_rows`, `synastry_parallel_rows` and
-    /// `synastry_antiscion_rows`. Null for none, which costs nothing
+    /// `synastry`, `synastry_rows`, `synastry_parallel_rows`,
+    /// `synastry_antiscion_rows`, `synastry_composites`,
+    /// `synastry_composite_rows` and `synastry_davisons`. Null for none,
+    /// which costs nothing
     /// (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
