@@ -1,8 +1,12 @@
 //! A founded chart's antiscia (`03-design/western-antiscia.md`).
 
+use teistro_chart::foundation::ChartFoundation;
 use teistro_core::error::Error;
 use teistro_serial::Document;
-use teistro_western::{Antiscia, AntisciaRequest, Reflected, antiscia};
+use teistro_western::{
+    Antiscia, AntisciaRequest, AntiscionRow, Reflected, SynastryRequest, antiscia,
+    synastry_antiscia,
+};
 
 use crate::area::ChartArea;
 use crate::western_aspects::planets;
@@ -35,9 +39,54 @@ impl ChartArea<'_> {
     ///
     /// What [`AntisciaRequest::check`] refuses.
     pub fn antiscia(self, chart: &Document, request: &AntisciaRequest) -> Result<Antiscia, Error> {
-        let bodies: Vec<Reflected> = planets(&chart.foundation)
-            .map(|at| Reflected::new(at.graha, at.tropical_deg))
-            .collect();
-        antiscia(&bodies, request)
+        antiscia(&reflected(&chart.foundation), request)
     }
+
+    /// The **antiscia across two charts**: every planet of `first` whose
+    /// reflection falls within the orb of a planet of `second`, under the
+    /// request's `antiscia` (Lilly's moieties when it names none), closest
+    /// first, the chart's planet first in each row. The planets are
+    /// reflected from their tropical longitude, so neither the charts'
+    /// zodiacs nor the request's `zodiac` change anything.
+    ///
+    /// ```no_run
+    /// # use teistro::{AntisciaRequest, ChartRequest, Context, Ephemeris, SynastryRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
+    /// let first = sdk.chart().reading(his.0, &his.1)?.value;
+    /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;
+    /// let asked = SynastryRequest::default().with_antiscia(AntisciaRequest::default());
+    /// for row in sdk.chart().synastry_antiscia(&first, &second, &asked)? {
+    ///     println!("{:?} and {:?}, {:.2}° apart", row.first, row.second, row.apart_deg);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`SynastryRequest::check`] refuses.
+    pub fn synastry_antiscia(
+        self,
+        first: &Document,
+        second: &Document,
+        request: &SynastryRequest,
+    ) -> Result<Vec<AntiscionRow>, Error> {
+        request.check()?;
+        synastry_antiscia(
+            &reflected(&first.foundation),
+            &reflected(&second.foundation),
+            &request.antiscia.clone().unwrap_or_default(),
+        )
+    }
+}
+
+/// A chart's planets as the antiscia read them: each at its tropical
+/// longitude.
+pub(crate) fn reflected(foundation: &ChartFoundation) -> Vec<Reflected> {
+    planets(foundation)
+        .map(|at| Reflected::new(at.graha, at.tropical_deg))
+        .collect()
 }
