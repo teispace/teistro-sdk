@@ -1953,6 +1953,19 @@ the astronomical numbers do not move. Nothing else computes yet.
     step between the aspects' lines. Every request valid before is
     valid now. `aspect_hit` names a crossing by its whole degree, where
     it had named it by the nearest multiple of 30°.
+  - **Progressions across the boundary** (`western-progressions.md`
+    step 5). One record, `ProgressionsRequest` (Rust `from_json`, the C
+    request's `progressions_json`), asks a batch's births for their
+    progressed chart and direction at an instant of life and their
+    contacts in a window. It is answered in four sections:
+    `progressions`, `progressed_grahas`, `directed_grahas` and
+    `progressed_contacts`. Node, wasm, Python and Dart read it as
+    `chart.progressions`; the measures cross under their Rust spellings
+    (`"NOON_SIDEREAL_TIME"`, `{"PER_YEAR": 1.5}`), and a refusal is
+    named from the record's root. A progressed chart is founded on the
+    batch's place and clock alone, not with every section the batch
+    asked for. The parity runners print one record's answers for both
+    charts, and the five bindings agree on all 17107 values.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the
