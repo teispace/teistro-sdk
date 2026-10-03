@@ -358,6 +358,6 @@ mod tests {
         assert_eq!(counted.calls().total(), 2);
         counted.reset();
         assert_eq!(counted.calls(), ProviderCalls::default());
-        assert_eq!(counted.inner().capabilities().bodies.len(), 8);
+        assert_eq!(counted.inner().capabilities().bodies.len(), 11);
     }
 }

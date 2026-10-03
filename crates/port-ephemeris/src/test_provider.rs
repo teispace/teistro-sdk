@@ -47,7 +47,7 @@ impl TestProvider {
     pub const JD_RANGE: (f64, f64) = (1_721_057.5, 2_816_787.5);
 
     /// The bodies the elements cover, in port order.
-    pub const BODIES: [Body; 8] = [
+    pub const BODIES: [Body; 11] = [
         Body::Sun,
         Body::Moon,
         Body::Mercury,
@@ -56,12 +56,19 @@ impl TestProvider {
         Body::Jupiter,
         Body::Saturn,
         Body::MeanNode,
+        Body::Uranus,
+        Body::Neptune,
+        Body::Pluto,
     ];
 
     /// The elements: mean longitudes and motions of the order of the real
     /// ones, with one periodic term each, so the grid looks like a sky
     /// without being one.
-    const ELEMENTS: [Elements; 8] = [
+    ///
+    /// The outer three take their heliocentric mean motions and each
+    /// orbit's equation of the centre as the term, so that a chart asked
+    /// for them crosses every layer with no engine present.
+    const ELEMENTS: [Elements; 11] = [
         Elements {
             body: Body::Sun,
             longitude_at_j2000: 280.46,
@@ -109,6 +116,24 @@ impl TestProvider {
             longitude_at_j2000: 125.04,
             rate: -0.052_954,
             amplitude: 0.0,
+        },
+        Elements {
+            body: Body::Uranus,
+            longitude_at_j2000: 314.06,
+            rate: 0.011_731,
+            amplitude: 5.36,
+        },
+        Elements {
+            body: Body::Neptune,
+            longitude_at_j2000: 304.35,
+            rate: 0.005_981,
+            amplitude: 0.99,
+        },
+        Elements {
+            body: Body::Pluto,
+            longitude_at_j2000: 238.93,
+            rate: 0.003_975,
+            amplitude: 28.5,
         },
     ];
 

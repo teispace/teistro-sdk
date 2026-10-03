@@ -569,7 +569,7 @@ mod tests {
         let undeclared = ask_positions(
             &recording,
             &capabilities,
-            &PositionRequest::new(&inside, TimeScale::Ut1, &[Body::Pluto], Frame::CANONICAL),
+            &PositionRequest::new(&inside, TimeScale::Ut1, &[Body::TrueNode], Frame::CANONICAL),
         );
         assert!(matches!(undeclared, Err(ProviderError::Unsupported { .. })));
         assert!(recording.1.lock().unwrap().is_empty());
@@ -594,9 +594,10 @@ mod tests {
         let placed = request.from_place(place);
         assert_eq!(placed.frame.centre, Centre::Topocentric);
         assert!(validate(&capabilities, &placed).is_ok());
-        let pluto = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Pluto], Frame::CANONICAL);
+        let true_node =
+            PositionRequest::new(&jds, TimeScale::Ut1, &[Body::TrueNode], Frame::CANONICAL);
         assert!(matches!(
-            validate(&capabilities, &pluto),
+            validate(&capabilities, &true_node),
             Err(ProviderError::Unsupported { .. })
         ));
         let nan = [f64::NAN];
