@@ -2002,6 +2002,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     every binding reads `chart.synastryParallels`
     (`synastry_parallels`), Dart's `SynastryRequest` taking
     `parallels`.
+  - **Antiscia** (`western-antiscia.md`, `antiscia-measured.md`).
+    `sdk.chart().antiscia` gives each planet's reflection about the
+    solstices and about the equinoxes (Lilly, *Christian Astrology*,
+    pp. 90–92), from its tropical longitude, and every pair standing in
+    antiscion or contrantiscion, read at the conjunction's orb: Lilly's
+    moieties by default, Leo's or a caller's own instead (C244). A planet
+    the moieties give no orb is listed as unpaired rather than refused.
+    `antiscion_deg` and `contrantiscion_deg` are the two reflections.
+    Lilly's p. 181 table is a test, every antiscion to the minute.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
