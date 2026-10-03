@@ -8,14 +8,24 @@
     reason = "tests fail by panicking"
 )]
 
-use teistro::catalogue::Graha;
+use teistro::catalogue::{Graha, HouseSystem};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{AntisciaRequest, ChartRequest, Context, Document, Ephemeris, OrbModel, UtcOffset};
+use teistro::{
+    AntisciaRequest, ChartRequest, Context, CuspAntiscion, Document, Ephemeris, House,
+    HouseRequest, OrbModel, UtcOffset,
+};
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
 const GEORGE: (f64, f64, f64) = (2_402_390.554_166_667, 51.5045, -0.1366);
 
+/// "born 11-59 p.m., 26th May, 1867, London", at Kensington Palace.
+const MARY: (f64, f64, f64) = (2_403_113.499_305_556, 51.5058, -0.1878);
+
 fn george(profile: Option<&str>) -> (Context, Document) {
+    born(GEORGE, profile)
+}
+
+fn born((jd, latitude, longitude): (f64, f64, f64), profile: Option<&str>) -> (Context, Document) {
     let builder = Context::builder().ephemeris([Ephemeris::Builtin]);
     let sdk = match profile {
         Some(profile) => builder.profile(profile),
@@ -23,7 +33,6 @@ fn george(profile: Option<&str>) -> (Context, Document) {
     }
     .build()
     .unwrap();
-    let (jd, latitude, longitude) = GEORGE;
     let place = Place::new(
         Latitude::literal(latitude),
         Longitude::literal(longitude),
@@ -117,4 +126,44 @@ fn a_refusal_names_its_field() {
         AntisciaRequest::from_json(r#"{"orbs": {"model": "MOIETIES", "orbs": []}, "x": 1}"#)
             .unwrap_err();
     assert_eq!(refused.field(), Some("antiscia.x"));
+}
+
+#[test]
+fn a_reflection_on_a_cusp_is_read_on_its_very_degree() {
+    // George V in Lilly's Regiomontanus: his Uranus's antiscion stands
+    // 0.63° past the fourth cusp, in the next degree, so on none.
+    let (sdk, chart) = george(None);
+    let asked = AntisciaRequest::default().with_cusps(HouseRequest::default());
+    let read = sdk.chart().antiscia(&chart, &asked).unwrap();
+    assert_eq!(read.cusp_system, Some(HouseSystem::Regiomontanus));
+    assert_eq!(read.on_cusps, []);
+    // Queen Mary in Placidus: her Uranus's antiscion in 23°27′ Gemini on
+    // the fifth cusp's 23°19′, and so its contrantiscion on the eleventh.
+    let (sdk, chart) = born(MARY, None);
+    let asked = AntisciaRequest::default()
+        .with_cusps(HouseRequest::default().with_system(HouseSystem::Placidus));
+    let read = sdk.chart().antiscia(&chart, &asked).unwrap();
+    assert_eq!(read.cusp_system, Some(HouseSystem::Placidus));
+    let house = |n| House::try_new(n).unwrap();
+    assert_eq!(
+        read.on_cusps,
+        [
+            CuspAntiscion {
+                graha: Graha::Uranus,
+                house: house(5),
+                contrary: false
+            },
+            CuspAntiscion {
+                graha: Graha::Uranus,
+                house: house(11),
+                contrary: true
+            },
+        ]
+    );
+    // Not asked, none are read.
+    let plain = sdk
+        .chart()
+        .antiscia(&chart, &AntisciaRequest::default())
+        .unwrap();
+    assert_eq!((plain.on_cusps.len(), plain.cusp_system), (0, None));
 }

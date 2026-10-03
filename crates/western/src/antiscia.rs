@@ -4,10 +4,12 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::angle::{difference_deg, normalise_deg};
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, HouseSystem};
 use teistro_core::error::Error;
+use teistro_core::house::House;
 
 use crate::aspects::{OrbModel, PlanetAt, WesternAspect, refuse_unreadable};
+use crate::houses::HouseRequest;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -44,19 +46,26 @@ pub fn contrantiscion_deg(longitude_deg: f64) -> f64 {
     normalise_deg(-longitude_deg)
 }
 
-/// What the antiscia are asked: the orbs a pair is read under.
+/// What the antiscia are asked: the orbs a pair is read under, and whether
+/// a reflection is read on the cusps.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct AntisciaRequest {
     /// How wide a pair may be, read at the conjunction: Lilly's moieties
     /// unless a caller says otherwise (C244).
     pub orbs: OrbModel,
+    /// The cusps a reflection is read on, in the division named, else
+    /// Lilly's [`crate::LILLY_HOUSE_SYSTEM`]; `None` reads none
+    /// (`western-houses.md`, decision 6).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cusps: Option<HouseRequest>,
 }
 
 impl Default for AntisciaRequest {
     fn default() -> AntisciaRequest {
         AntisciaRequest {
             orbs: OrbModel::lilly(),
+            cusps: None,
         }
     }
 }
@@ -66,6 +75,14 @@ impl AntisciaRequest {
     #[must_use]
     pub fn with_orbs(mut self, orbs: OrbModel) -> AntisciaRequest {
         self.orbs = orbs;
+        self
+    }
+
+    /// Reads each reflection on the cusps too, in `houses`' division, or
+    /// Lilly's Regiomontanus when it names none.
+    #[must_use]
+    pub fn with_cusps(mut self, houses: HouseRequest) -> AntisciaRequest {
+        self.cusps = Some(houses);
         self
     }
 
@@ -152,6 +169,73 @@ pub struct Antiscion {
     pub contrantiscion_deg: f64,
 }
 
+/// A planet's reflection upon "the very degree" of a cusp (Lilly, p. 165;
+/// C251): in the cusp's own sign and whole degree.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CuspAntiscion {
+    /// Which planet.
+    pub graha: Graha,
+    /// The house whose cusp its reflection falls on.
+    pub house: House,
+    /// Whether it is the contrantiscion; false for the antiscion.
+    pub contrary: bool,
+}
+
+/// Every planet whose antiscion or contrantiscion falls upon "the very
+/// degree" of a cusp (Lilly, p. 165; C251): in the same sign and the same
+/// whole degree, the degree Lilly prints a cusp and a reflection to, in
+/// the planets' order and then the houses'. The cusps are tropical, as the
+/// reflections are.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{PlanetAt, antiscia_on_cusps};
+///
+/// // The Sun in 10°20′ Taurus reflects onto 19°40′ Leo, the very degree
+/// // of a cusp at 19°05′ Leo, the fourth here.
+/// let mut cusps = [45.0, 75.0, 105.0, 0.0, 165.0, 195.0, 225.0, 255.0, 285.0, 315.0, 345.0, 15.0];
+/// cusps[3] = 139.0 + 5.0 / 60.0;
+/// let rows = antiscia_on_cusps(&[PlanetAt::new(Graha::Sun, 40.0 + 20.0 / 60.0)], &cusps)?;
+/// assert_eq!(rows.len(), 1);
+/// assert_eq!((rows[0].house.get(), rows[0].contrary), (4, false));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// A planet given twice or at a longitude that is not finite, named under
+/// `bodies`; a cusp that is not finite, named by its index.
+pub fn antiscia_on_cusps(
+    bodies: &[PlanetAt],
+    cusps_deg: &[f64; 12],
+) -> Result<Vec<CuspAntiscion>, Error> {
+    refuse_unreadable(bodies, "bodies")?;
+    if let Some(at) = cusps_deg.iter().position(|cusp| !cusp.is_finite()) {
+        return Err(Error::invalid_arg("a cusp is a finite number of degrees")
+            .with_field(format!("cuspsDeg[{at}]")));
+    }
+    let degree = |at: f64| normalise_deg(at).floor();
+    let mut rows = Vec::new();
+    for body in bodies {
+        for (contrary, reflection) in [
+            (false, antiscion_deg(body.longitude_deg)),
+            (true, contrantiscion_deg(body.longitude_deg)),
+        ] {
+            for (house, cusp) in House::ALL.into_iter().zip(cusps_deg) {
+                if degree(reflection).total_cmp(&degree(*cusp)).is_eq() {
+                    rows.push(CuspAntiscion {
+                        graha: body.graha,
+                        house,
+                        contrary,
+                    });
+                }
+            }
+        }
+    }
+    Ok(rows)
+}
+
 /// Two planets in antiscion: one's antiscion within the orb of the other,
 /// which is the other's within the orb of the first.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -182,6 +266,14 @@ pub struct Antiscia {
     /// The planets the orbs give none, so they stand in no pair: under
     /// Lilly's moieties, the outer three (decision 5).
     pub unpaired: Vec<Graha>,
+    /// The reflections upon a cusp's very degree, when the request asks
+    /// for the cusps.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub on_cusps: Vec<CuspAntiscion>,
+    /// The division the cusps were read in, when the request asks for
+    /// them: the one named, or the one a polar policy fell back to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cusp_system: Option<HouseSystem>,
 }
 
 /// A chart's antiscia (Lilly, pp. 90–92, C244): each planet's antiscion
@@ -232,6 +324,8 @@ pub fn antiscia(bodies: &[PlanetAt], request: &AntisciaRequest) -> Result<Antisc
             .map(|one| one.graha)
             .filter(|&graha| !request.pairs(graha))
             .collect(),
+        on_cusps: Vec::new(),
+        cusp_system: None,
     })
 }
 
@@ -375,6 +469,46 @@ mod tests {
             "the moieties of 10° and 12°"
         );
         assert_eq!(read.unpaired, []);
+    }
+
+    /// The figure's Regiomontanus cusps, first to twelfth, recast by
+    /// pyswisseph (Moshier) at the printed Ascendant, Libra 14°13′, at
+    /// London on 16 July 1634 (Old Style).
+    const CUSPS: [f64; 12] = [
+        194.222, 216.954, 247.568, 288.638, 326.164, 352.742, 14.222, 36.954, 67.568, 108.638,
+        146.164, 172.742,
+    ];
+
+    #[test]
+    fn no_reflection_of_the_figure_falls_upon_a_cusp() {
+        // "None of them fell exactly" (p. 181): the nearest is Venus's
+        // antiscion, 2.47° short of the eighth cusp.
+        assert_eq!(antiscia_on_cusps(&figure(), &CUSPS).unwrap(), []);
+    }
+
+    #[test]
+    fn the_very_degree_is_the_cusps_sign_and_whole_degree() {
+        // A reflection in 19°59′ Leo is on a cusp in 19°00′ Leo and not on
+        // one in 20°00′ Leo, a minute away.
+        let sun = [PlanetAt::new(Graha::Sun, 180.0 - (139.0 + 59.0 / 60.0))];
+        let mut cusps = CUSPS;
+        cusps[3] = 139.0;
+        let rows = antiscia_on_cusps(&sun, &cusps).unwrap();
+        assert_eq!(
+            rows,
+            [CuspAntiscion {
+                graha: Graha::Sun,
+                house: House::try_new(4).unwrap(),
+                contrary: false,
+            }]
+        );
+        cusps[3] = 140.0;
+        assert_eq!(antiscia_on_cusps(&sun, &cusps).unwrap(), []);
+        cusps[5] = f64::NAN;
+        assert_eq!(
+            antiscia_on_cusps(&sun, &cusps).unwrap_err().field(),
+            Some("cuspsDeg[5]")
+        );
     }
 
     #[test]

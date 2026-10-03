@@ -19,6 +19,10 @@ pub const MODULE: &str = "western";
 /// fits Placidus at every printed cusp within 0.5°.
 pub const LEO_HOUSE_SYSTEM: HouseSystem = HouseSystem::Placidus;
 
+/// Lilly's division (*Christian Astrology*), which his antiscia on the
+/// cusps are read in unless asked otherwise.
+pub const LILLY_HOUSE_SYSTEM: HouseSystem = HouseSystem::Regiomontanus;
+
 /// How far above the ascendant Leo's first house reaches, in right
 /// ascension of the meridian, degrees: one sidereal hour, "15° of
 /// Oblique Ascension" (p. 90, C250).
