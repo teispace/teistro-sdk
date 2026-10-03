@@ -1422,6 +1422,24 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 94, 'synastry_antiscia');
+    out.synastryAntiscia = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 95, 'synastry_antiscion_rows');
+    out.synastryAntiscionRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      contrary: column(blob, at, 2, 'u8', at.count),
+      apartDeg: column(blob, at, 3, 'f64', at.count),
+      orbDeg: column(blob, at, 4, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

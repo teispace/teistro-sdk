@@ -11970,7 +11970,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out). Each chart is read\nagainst the partner, the chart's point first. The answers come back\nin `synastry`, `synastry_rows` and `synastry_parallel_rows`. Null\nfor none,\nwhich costs nothing (`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
+          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out) and `antiscia`\n(`{\"orbs\": {\"model\": \"LEO\"}}` as `antiscia_json` spells it: the antiscia\nacross the two, none when left out). Each chart is read against the\npartner, the chart's point first. The answers come back in\n`synastry`, `synastry_rows`, `synastry_parallel_rows` and\n`synastry_antiscion_rows`. Null for none, which costs nothing\n(`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
             "nullable": true
@@ -19615,6 +19615,54 @@
               "name": "second",
               "scalar": "u16",
               "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far the one's reflection stands from the other, degrees."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed the pair, degrees."
+            }
+          ]
+        },
+        {
+          "id": 94,
+          "name": "synastry_antiscia",
+          "doc": "Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. Empty when `synastry_json` asked for no `antiscia`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many pairs stand in antiscion between the chart's planets and the partner's; the chart's rows follow the earlier charts' in `synastry_antiscion_rows`."
+            }
+          ]
+        },
+        {
+          "id": 95,
+          "name": "synastry_antiscion_rows",
+          "doc": "Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The chart's planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The partner's planet.",
               "enum": "Graha"
             },
             {

@@ -1691,11 +1691,13 @@ pub struct TsChartRequest {
     /// (true: each side's lagna is read beside its planets, C242),
     /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241) and
     /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
-    /// parallels across the two, none when left out). Each chart is read
-    /// against the partner, the chart's point first. The answers come back
-    /// in `synastry`, `synastry_rows` and `synastry_parallel_rows`. Null
-    /// for none,
-    /// which costs nothing (`03-design/western-synastry.md`). Refusals are
+    /// parallels across the two, none when left out) and `antiscia`
+    /// (`{"orbs": {"model": "LEO"}}` as `antiscia_json` spells it: the antiscia
+    /// across the two, none when left out). Each chart is read against the
+    /// partner, the chart's point first. The answers come back in
+    /// `synastry`, `synastry_rows`, `synastry_parallel_rows` and
+    /// `synastry_antiscion_rows`. Null for none, which costs nothing
+    /// (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
     /// `api: nullable example={"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}`
@@ -3296,7 +3298,8 @@ impl AspectTables {
         self.across.write(writer)?;
         self.declined.write(writer)?;
         self.across.write_parallels(writer)?;
-        self.reflected.write(writer)
+        self.reflected.write(writer)?;
+        self.across.write_antiscia(writer)
     }
 }
 
@@ -3311,11 +3314,46 @@ struct AntisciaColumns {
     antiscion_deg: Vec<f64>,
     contrantiscion_deg: Vec<f64>,
     paired: Vec<u8>,
+    pairs: AntiscionRowColumns,
+}
+
+/// The pairs in antiscion, one chart's own or across two, as the row
+/// sections cross them.
+#[derive(Default)]
+struct AntiscionRowColumns {
     first: Vec<u16>,
     second: Vec<u16>,
     contrary: Vec<u8>,
     apart_deg: Vec<f64>,
     orb_deg: Vec<f64>,
+}
+
+impl AntiscionRowColumns {
+    fn push(&mut self, row: &teistro::AntiscionRow) {
+        self.first.push(row.first.id());
+        self.second.push(row.second.id());
+        self.contrary.push(u8::from(row.contrary));
+        self.apart_deg.push(row.apart_deg);
+        self.orb_deg.push(row.orb_deg);
+    }
+
+    fn write(
+        &self,
+        writer: &mut Writer<'_>,
+        section: &str,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            section,
+            self.first.len(),
+            &[
+                ColumnData::U16(&self.first),
+                ColumnData::U16(&self.second),
+                ColumnData::U8(&self.contrary),
+                ColumnData::F64(&self.apart_deg),
+                ColumnData::F64(&self.orb_deg),
+            ],
+        )
+    }
 }
 
 impl AntisciaColumns {
@@ -3334,11 +3372,7 @@ impl AntisciaColumns {
                     .push(u8::from(!one.unpaired.contains(&point.graha)));
             }
             for row in &one.pairs {
-                columns.first.push(row.first.id());
-                columns.second.push(row.second.id());
-                columns.contrary.push(u8::from(row.contrary));
-                columns.apart_deg.push(row.apart_deg);
-                columns.orb_deg.push(row.orb_deg);
+                columns.pairs.push(row);
             }
         }
         Ok(columns)
@@ -3363,17 +3397,7 @@ impl AntisciaColumns {
                 ColumnData::U8(&self.paired),
             ],
         )?;
-        writer.columns(
-            "antiscion_rows",
-            self.first.len(),
-            &[
-                ColumnData::U16(&self.first),
-                ColumnData::U16(&self.second),
-                ColumnData::U8(&self.contrary),
-                ColumnData::F64(&self.apart_deg),
-                ColumnData::F64(&self.orb_deg),
-            ],
-        )
+        self.pairs.write(writer, "antiscion_rows")
     }
 }
 
@@ -3522,7 +3546,9 @@ impl WesternAspectColumns {
 /// `synastry` and `synastry_rows`: each chart's contacts with the record's
 /// partner (`western-synastry.md`); `synastry_parallels` and
 /// `synastry_parallel_rows`: the parallels across the two, when asked
-/// (`western-declinations.md`).
+/// (`western-declinations.md`); `synastry_antiscia` and
+/// `synastry_antiscion_rows`: the antiscia across the two, when asked
+/// (`western-antiscia.md`).
 #[derive(Default)]
 struct SynastryColumns {
     count: Vec<u32>,
@@ -3535,6 +3561,8 @@ struct SynastryColumns {
     contrary: Vec<u8>,
     parallel_apart_deg: Vec<f64>,
     parallel_orb_deg: Vec<f64>,
+    antiscion_count: Vec<u32>,
+    antiscia: AntiscionRowColumns,
 }
 
 impl SynastryColumns {
@@ -3552,6 +3580,12 @@ impl SynastryColumns {
                 columns.contrary.push(u8::from(row.contrary));
                 columns.parallel_apart_deg.push(row.apart_deg);
                 columns.parallel_orb_deg.push(row.orb_deg);
+            }
+            if let Some(antiscia) = &one.antiscia {
+                columns.antiscion_count.push(row_count(antiscia.len())?);
+            }
+            for row in one.antiscia.iter().flatten() {
+                columns.antiscia.push(row);
             }
             for row in &one.aspects {
                 columns.first.push(row.first);
@@ -3615,6 +3649,17 @@ impl SynastryColumns {
                 ColumnData::F64(&self.parallel_orb_deg),
             ],
         )
+    }
+
+    /// `synastry_antiscia` and `synastry_antiscion_rows`, after the
+    /// antiscia's.
+    fn write_antiscia(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_antiscia",
+            self.antiscion_count.len(),
+            &[ColumnData::U32(&self.antiscion_count)],
+        )?;
+        self.antiscia.write(writer, "synastry_antiscion_rows")
     }
 }
 

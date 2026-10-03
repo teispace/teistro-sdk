@@ -4025,6 +4025,56 @@ final class ChartsAntiscionRows {
   final int length;
 }
 
+/// The `synastry_antiscia` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. Empty when `synastry_json` asked for no `antiscia`.
+final class ChartsSynastryAntiscia {
+  const ChartsSynastryAntiscia({
+    required this.count,
+    required this.length,
+  });
+
+  /// How many pairs stand in antiscion between the chart's planets and the partner's; the chart's rows follow the earlier charts' in `synastry_antiscion_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_antiscion_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.
+final class ChartsSynastryAntiscionRows {
+  const ChartsSynastryAntiscionRows({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The chart's planet.
+  final Uint16List first;
+
+  /// The partner's planet.
+  final Uint16List second;
+
+  /// 1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.
+  final Uint8List contrary;
+
+  /// How far the one's reflection stands from the other, degrees.
+  final Float64List apartDeg;
+
+  /// The orb the record allowed the pair, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4230,6 +4280,8 @@ final class Charts {
     required this.antiscia,
     required this.antiscionPoints,
     required this.antiscionRows,
+    required this.synastryAntiscia,
+    required this.synastryAntiscionRows,
   });
 
   /// What kind of chart these are.
@@ -4555,6 +4607,12 @@ final class Charts {
   /// Every chart's pairs in antiscion, concatenated in the `cast` section's order and **ragged** by `antiscia.pair_count`, each chart's closest first: two planets whose longitudes sum to 180°, or to 0° for the contrantiscion, within the record's orb read at the conjunction (Lilly's moieties by default, C244). Empty when `antiscia_json` asked for none.
   final ChartsAntiscionRows antiscionRows;
 
+  /// Every chart's antiscia with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_antiscion_rows` are its. Empty when `synastry_json` asked for no `antiscia`.
+  final ChartsSynastryAntiscia synastryAntiscia;
+
+  /// Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.
+  final ChartsSynastryAntiscionRows synastryAntiscionRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4655,6 +4713,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atAntiscia = blob.section(91, 'antiscia');
   final atAntiscionPoints = blob.section(92, 'antiscion_points');
   final atAntiscionRows = blob.section(93, 'antiscion_rows');
+  final atSynastryAntiscia = blob.section(94, 'synastry_antiscia');
+  final atSynastryAntiscionRows = blob.section(95, 'synastry_antiscion_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8310,6 +8370,42 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAntiscionRows, 4) + atAntiscionRows.count * 8,
       ),
       length: atAntiscionRows.count,
+    ),
+    synastryAntiscia: ChartsSynastryAntiscia(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscia, 0),
+        blob.columnOffset(atSynastryAntiscia, 0) + atSynastryAntiscia.count * 4,
+      ),
+      length: atSynastryAntiscia.count,
+    ),
+    synastryAntiscionRows: ChartsSynastryAntiscionRows(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscionRows, 0),
+        blob.columnOffset(atSynastryAntiscionRows, 0) + atSynastryAntiscionRows.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscionRows, 1),
+        blob.columnOffset(atSynastryAntiscionRows, 1) + atSynastryAntiscionRows.count * 2,
+      ),
+      contrary: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscionRows, 2),
+        blob.columnOffset(atSynastryAntiscionRows, 2) + atSynastryAntiscionRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscionRows, 3),
+        blob.columnOffset(atSynastryAntiscionRows, 3) + atSynastryAntiscionRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryAntiscionRows, 4),
+        blob.columnOffset(atSynastryAntiscionRows, 4) + atSynastryAntiscionRows.count * 8,
+      ),
+      length: atSynastryAntiscionRows.count,
     ),
   );
 }
