@@ -1,6 +1,9 @@
 # Equal distances (the `western` module)
 
-Status: `designed`, 2026-10-03, written from the source before any code.
+Status: `in progress`, 2026-10-03, written from the source before any
+code. Steps 1 to 3 are built: `sdk.chart().midpoints`, held to Leo's
+p. 47 configuration and to a recast of George V, and measured over the
+corpus's births in [`midpoints-measured.md`](midpoints-measured.md).
 
 [`western-declinations.md`](western-declinations.md) reads two bodies
 the same distance from the equator, and
@@ -94,6 +97,23 @@ example holds only if both points of the axis count.
    of their three planets also stand in an aspect, which Leo reads
    instead.
 4. The boundary record and every binding, with parity.
+
+## What building it found
+
+- **George V holds one under the default.** Pluto stands 0.05° from the
+  far point of the Moon and Jupiter, 137.7° from each. At 1.5° there
+  are eight, and all eight agree with the Moshier recast to 0.01°; a
+  sidereal chart of the birth gives the same rows.
+- **The far point is a third of them.** Over the corpus, 40 of the 120
+  equal distances under the default stand on the far point, so reading
+  only the shorter arc's midpoint would lose a third (C246).
+- **An aspect is beside about half.** 66 of the 120 have the planet
+  between in an aspect to one of the two under Leo's table, where he
+  reads the aspect instead (p. 48). The rest stand in none, which is
+  what the equal distance adds to the aspect table.
+- **A planet at a longitude is one type.** The antiscia's input was a
+  planet and its tropical longitude, which the equal distances need
+  too, so it became `PlanetAt`, beside the aspect table's `Placed`.
 
 ## What this does not decide
 
