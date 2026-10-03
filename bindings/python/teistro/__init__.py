@@ -411,6 +411,7 @@ __all__ = [
     "JaiminiReading",
     # The transit hit list, and its names.
     "HitRequest",
+    "returns_request",
     "Hit",
     "NatalPoint",
     "SignIngress",
@@ -2532,6 +2533,31 @@ every binding spells it.
 >>> asked: HitRequest = {"from": 2460676.5, "to": 2461041.5, "grahas": ["SATURN"], "orbDeg": 2}
 """
 
+
+
+def returns_request(
+    start: float, end: float, *, grahas: Sequence[Union[Graha, str]] = (Graha.MOON,)
+) -> HitRequest:
+    """The hit list that is each graha's returns: its conjunction, at 0°, with
+    its own natal place (`03-design/western-returns.md`), the Moon's by
+    default (the lunar return); the Sun's is the solar. Asked for several
+    grahas, the list also holds each one's crossing of another's natal place,
+    its `to` naming the place.
+
+    >>> returns_request(2451546, 2451911.25)["aspects"]
+    [0]
+
+    The figure is a chart founded at a return's `instant`, wherever the native
+    is (C258): `ctx.chart.found(instant=hit.instant, place=..., ...)`."""
+    named = list(grahas)
+    return {
+        "from": start,
+        "to": end,
+        "grahas": named,
+        "kinds": [HitKind.ASPECT],
+        "points": list(named),
+        "aspects": [0],
+    }
 
 @dataclass(frozen=True)
 class NatalPoint:

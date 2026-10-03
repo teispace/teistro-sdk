@@ -168,6 +168,24 @@ export declare function at(
  */
 export declare function whenUnknown(day: CalendarDate): CivilDateTime;
 
+/**
+ * The hit list that is each graha's returns: its conjunction, at 0°, with
+ * its own natal place (`03-design/western-returns.md`): the Moon's by
+ * default, the lunar return; the Sun's is the solar. Asked for several
+ * grahas, the list also holds each one's crossing of another's natal
+ * place, its `to` naming the place.
+ *
+ * @example
+ * const lunar = ctx.chart.found({ ...birth, hits: returnsRequest(from, to) }).hits;
+ * // Each return's chart, erected where the native is (C258).
+ * const figure = ctx.chart.found({ instant: lunar[0].instant, place, utcOffsetSeconds });
+ */
+export declare function returnsRequest(
+  from: number,
+  to: number,
+  grahas?: readonly GrahaName[],
+): HitRequest;
+
 /** A zone of the embedded database, by its IANA name. */
 export declare function ianaZone(name: string): ZoneSpec;
 

@@ -25,6 +25,7 @@ import {
   at,
   date,
   ianaZone,
+  returnsRequest,
   latitude,
   longitude,
   whenUnknown,
@@ -1949,6 +1950,39 @@ test('a chart carries its hit list, the sky once for the batch', () => {
       field,
     );
   }
+  ctx.dispose();
+});
+
+/**
+ * A body's returns are the hit list asked for its conjunction with its own
+ * natal place (`03-design/western-returns.md`): the Moon's thirteen a year,
+ * a sidereal month apart, and nothing else.
+ */
+test('a lunar return is the Moon back on her own natal place', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 48.8534, longitude: 2.3488, altitude: 0 }, utcOffsetSeconds: 0 };
+  assert.deepEqual(returnsRequest(2451546, 2451911.25), {
+    from: 2451546,
+    to: 2451911.25,
+    grahas: ['MOON'],
+    kinds: ['ASPECT'],
+    points: ['MOON'],
+    aspects: [0],
+  });
+  const lunar = ctx.chart.found({ instant: 2451545, ...at, hits: returnsRequest(2451546, 2451911.25) }).hits;
+  assert.equal(lunar.length, 13);
+  lunar.forEach((hit, k) => {
+    assert.equal(hit.graha, 'graha.MOON');
+    assert.deepEqual(hit.event, { kind: 'ASPECT', to: { point: 'GRAHA', graha: 'graha.MOON' }, angle: 0, phase: 'EXACT', motion: 'DIRECT' });
+    if (k > 0) {
+      const month = hit.instant - lunar[k - 1].instant;
+      assert.ok(month > 27 && month < 27.7, `${month}`);
+    }
+  });
+  // The figure: a chart founded at the return, its Moon on the radical one.
+  const radical = ctx.chart.found({ instant: 2451545, ...at }).grahas.find((g) => g.graha === 'graha.MOON');
+  const figure = ctx.chart.found({ instant: lunar[0].instant, ...at }).grahas.find((g) => g.graha === 'graha.MOON');
+  assert.ok(Math.abs(figure.longitudeDeg - radical.longitudeDeg) < 1 / 3600);
   ctx.dispose();
 });
 

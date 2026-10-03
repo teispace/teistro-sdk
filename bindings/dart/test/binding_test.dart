@@ -1346,6 +1346,44 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a lunar return is the Moon back on her own natal place', () {
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final paris = Observer(
+      latitudeDeg: Latitude(48.8534),
+      longitudeDeg: Longitude(2.3488),
+      altitudeM: Altitude(0),
+    );
+    final asked = HitRequest.returns(from: 2451546, to: 2451911.25);
+    expect(asked.grahas, [Graha.moon]);
+    expect(asked.kinds, [HitKind.aspect]);
+    expect(asked.points, [const NatalGraha(Graha.moon)]);
+    expect(asked.aspects, [0]);
+    Chart at(double instant, {HitRequest? hits}) => ctx.chart.found(
+      instant: instant,
+      place: paris,
+      utcOffsetSeconds: 0,
+      hits: hits,
+    );
+    final lunar = at(2451545, hits: asked).hits;
+    expect(lunar, hasLength(13));
+    for (final (k, hit) in lunar.indexed) {
+      expect(hit.graha, Graha.moon);
+      final event = hit.event as AspectHit;
+      expect(event.to, const NatalGraha(Graha.moon));
+      expect(event.angle, 0);
+      if (k > 0) {
+        expect(hit.instant - lunar[k - 1].instant, inInclusiveRange(27, 27.7));
+      }
+    }
+    double moon(Chart chart) =>
+        chart.grahas.firstWhere((g) => g.graha == Graha.moon).longitudeDeg;
+    expect(moon(at(lunar.first.instant)), closeTo(moon(at(2451545)), 1 / 3600));
+    ctx.dispose();
+  });
+
   test('a chart carries its Sade Sati, each period whole', () {
     final ctx = teistro.context(
       profile: 'nepali-default',

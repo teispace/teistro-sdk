@@ -5637,6 +5637,24 @@ export const localMeanZone = (longitudeDeg) => ({
   longitudeDeg,
 });
 
+/**
+ * The hit list that is each graha's returns: its conjunction, at 0°, with
+ * its own natal place (`03-design/western-returns.md`). The Moon's is the
+ * lunar return, the Sun's the solar. Asked for several grahas, the list
+ * also holds each one's crossing of another's natal place, its `to` naming
+ * the place.
+ *
+ * @example ctx.chart.found({ ...birth, hits: returnsRequest(from, to) }).hits
+ */
+export const returnsRequest = (from, to, grahas = ['MOON']) => ({
+  from,
+  to,
+  grahas,
+  kinds: ['ASPECT'],
+  points: grahas,
+  aspects: [0],
+});
+
 export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';
