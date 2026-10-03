@@ -2436,9 +2436,28 @@ test('a chart carries its synastry with a partner', () => {
   instants.forEach((instant, k) =>
     assert.deepEqual(batch.at(k).synastry, ctx.chart.found({ instant, ...george, synastry: asked }).synastry),
   );
+
+  // The parallels across: none unless asked, then the recast's closest
+  // (Uranus with Uranus, 0.05°), and a contrary pair within 0.95°.
+  assert.equal(ctx.chart.found({ instant: birth, ...george, synastry: { partner } }).synastryParallels, null);
+  const parallels = ctx.chart.found({
+    instant: birth,
+    ...george,
+    outerPlanets: true,
+    synastry: { partner, parallels: {} },
+  }).synastryParallels;
+  const uranus = { point: 'GRAHA', graha: 'graha.URANUS' };
+  assert.deepEqual([parallels[0].first, parallels[0].second], [uranus, uranus]);
+  assert.ok(Math.abs(parallels[0].apartDeg - 0.049) < 0.005, `${parallels[0].apartDeg}`);
+  assert.ok(parallels.some((row) => row.contrary && row.apartDeg < 0.95));
+  assert.ok(parallels.every((row, n) => row.apartDeg <= row.orbDeg && row.orbDeg === 1 && (n === 0 || parallels[n - 1].apartDeg <= row.apartDeg)));
+  const none = ctx.chart.found({ instant: birth, ...george, synastry: { partner, parallels: { orbDeg: 0.000001 } } });
+  assert.deepEqual(none.synastryParallels, [], 'asked and none within the orb is an empty list');
+
   const north = { ...partner, place: { ...partner.place, latitude: 95 } };
   for (const [request, field] of [
     [{ partner: north }, 'synastry.partner.place.latitude'],
+    [{ partner, parallels: { orbDeg: 11 } }, 'synastry.parallels.orbDeg'],
     [{ partner, zodiac: 'SIDEREAL' }, 'synastry.zodiac'],
     [{ partner, orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }] } }, 'synastry.lagna'],
     [{ lagna: false }, 'synastry.partner'],
