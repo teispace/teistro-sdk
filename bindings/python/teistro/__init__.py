@@ -511,6 +511,7 @@ __all__ = [
     "ParallelRequest",
     "ParallelRow",
     "SynastryPartner",
+    "SynastryParallelRow",
     "SynastryRequest",
     "SynastryRow",
     "MuhurtaRequest",
@@ -3967,14 +3968,19 @@ class SynastryRequest(WesternAspectRequest, total=False):
     `WesternAspectRequest` does; `lagna`, true by default, keeps each
     chart's lagna beside its planets (it stands as a planet in Leo's orbs,
     C242, and Lilly's moieties need it left out); `zodiac` is `"TROPICAL"`,
-    the default, or `"CHARTS"`, each chart's own (C241).
+    the default, or `"CHARTS"`, each chart's own (C241); `parallels` asks
+    for the parallels across the two charts too
+    (`Chart.synastry_parallels`, `03-design/western-declinations.md`), the
+    lagna joining as `lagna` says.
 
     >>> asked: SynastryRequest = {"partner": mary, "aspects": [WesternAspect.TRINE], "lagna": False}
+    >>> level: SynastryRequest = {"partner": mary, "parallels": {}}
     """
 
     partner: Required[SynastryPartner]
     lagna: bool
     zodiac: Literal["TROPICAL", "CHARTS"]
+    parallels: ParallelRequest
 
 
 @dataclass(frozen=True)
@@ -3994,6 +4000,24 @@ class SynastryRow:
 
     orb_deg: float
     """The orb the model allowed the pair at this aspect, degrees."""
+
+
+@dataclass(frozen=True)
+class SynastryParallelRow:
+    """One point of a chart and one of the partner's the same distance from
+    the equator within the orb (`03-design/western-declinations.md`):
+    `first` is the chart's, `second` the partner's."""
+
+    first: NatalPoint
+    second: NatalPoint
+    contrary: bool
+    """Whether the two stand on opposite sides of the equator (C243)."""
+
+    apart_deg: float
+    """How far apart their distances from the equator are, degrees."""
+
+    orb_deg: float
+    """The orb the request allowed, degrees."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -8253,6 +8277,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def synastry_parallels(self) -> Optional[Tuple[SynastryParallelRow, ...]]:
+        """The parallels between this chart and the partner's, closest
+        first; `None` unless `synastry=` asked for `parallels`
+        (`03-design/western-declinations.md`)."""
+        parsed = self.batch._synastry_parallels
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8861,6 +8893,25 @@ class ChartBatch:
                 aspect=WesternAspect(r.aspect[at]),
                 apart_deg=r.apart_deg[at],
                 from_exact_deg=r.from_exact_deg[at],
+                orb_deg=r.orb_deg[at],
+            ),
+        )
+
+    @cached_property
+    def _synastry_parallels(self) -> list[Tuple[SynastryParallelRow, ...]]:
+        """Every chart's parallels with the partner, decoded once; empty when
+        none were asked for. `synastry_parallels` holds a row a chart and
+        `synastry_parallel_rows` is ragged by its count."""
+        r = self.decoded.synastry_parallel_rows
+        return self._ragged(
+            self.decoded.synastry_parallels.count,
+            r.length,
+            "synastry_parallels and synastry_parallel_rows",
+            lambda at: SynastryParallelRow(
+                first=_point_at(r.first_lagna[at], r.first_graha[at]),
+                second=_point_at(r.second_lagna[at], r.second_graha[at]),
+                contrary=r.contrary[at] == 1,
+                apart_deg=r.apart_deg[at],
                 orb_deg=r.orb_deg[at],
             ),
         )

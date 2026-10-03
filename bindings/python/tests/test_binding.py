@@ -1933,11 +1933,27 @@ class AnEngine(WithLibrary):
                     batch.at(k).synastry,
                     ctx.chart.found(instant=instant, synastry=asked, **george).synastry,
                 )
+
+            # The parallels across: none unless asked, then the recast's
+            # closest (Uranus with Uranus, 0.05°) and a contrary pair.
+            self.assertIsNone(ctx.chart.found(instant=birth, synastry={"partner": mary}, **george).synastry_parallels)
+            level: SynastryRequest = {"partner": mary, "parallels": {}}
+            parallels = ctx.chart.found(instant=birth, outer_planets=True, synastry=level, **george).synastry_parallels
+            assert parallels is not None
+            uranus = NatalPoint("GRAHA", Graha.URANUS)
+            self.assertEqual((parallels[0].first, parallels[0].second), (uranus, uranus))
+            self.assertAlmostEqual(parallels[0].apart_deg, 0.049, delta=0.005)
+            self.assertTrue(any(row.contrary and row.apart_deg < 0.95 for row in parallels))
+            self.assertTrue(all(row.apart_deg <= row.orb_deg == 1 for row in parallels))
+            self.assertEqual([row.apart_deg for row in parallels], sorted(row.apart_deg for row in parallels))
+            narrow: SynastryRequest = {"partner": mary, "parallels": {"orbDeg": 0.000001}}
+            self.assertEqual(ctx.chart.found(instant=birth, synastry=narrow, **george).synastry_parallels, ())
             refusals: list[tuple[Any, str]] = [
                 ({"partner": {**mary, "born": "London"}}, "synastry.partner.born"),
                 ({"partner": mary, "zodiac": "SIDEREAL"}, "synastry.zodiac"),
                 ({"partner": mary, "orbs": {"model": "MOIETIES", "orbs": [{"graha": Graha.SUN, "orbDeg": 17}]}}, "synastry.lagna"),
                 ({"lagna": False}, "synastry.partner"),
+                ({"partner": mary, "parallels": {"orbDeg": 11}}, "synastry.parallels.orbDeg"),
                 ([], "synastry"),
             ]
             for request, field in refusals:
