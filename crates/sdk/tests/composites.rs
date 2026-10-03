@@ -33,6 +33,12 @@ const COMPOSITE: [(Graha, f64, f64); 10] = [
     (Graha::Pluto, 44.2555, 0.020_83),
 ];
 
+/// The recast's composite Placidus cusps, first to twelfth, tropical.
+const CUSPS: [f64; 12] = [
+    334.007, 27.5378, 57.8601, 78.1797, 96.1916, 117.375, 154.007, 207.5378, 237.8601, 258.1797,
+    276.1916, 297.375,
+];
+
 /// The recast cast at the Davison birth, tropical. Mars is where the two
 /// methods part most: the composite's 130.5° is the midpoint of two
 /// places, the Davison's 20.1° is where Mars stood.
@@ -108,6 +114,15 @@ fn the_composite_holds_the_recasts_midpoints() {
     // whose near midpoint stands 75.8° after the midheaven: not turned.
     assert!(near(both.midheaven_deg, 258.1797), "{}", both.midheaven_deg);
     assert!(near(both.lagna_deg, 334.007), "{}", both.lagna_deg);
+    // Each Placidus cusp at the near midpoint of the two, turned as the
+    // lagna is; the first and tenth are the lagna and the midheaven.
+    let cusps = both.cusps_deg.unwrap();
+    for (cusp, recast) in cusps.iter().zip(CUSPS) {
+        assert!(near(*cusp, recast), "{cusp} against {recast}");
+    }
+    assert_eq!((cusps[0], cusps[9]), (both.lagna_deg, both.midheaven_deg));
+    // The composite Sun at 68.8° stands in the third house.
+    assert_eq!(both.house_of(Graha::Sun).unwrap().get(), 3);
     assert!(!both.lagna_turned);
 }
 

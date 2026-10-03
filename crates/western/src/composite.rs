@@ -4,7 +4,9 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::angle::{difference_deg, near_midpoint_deg, normalise_deg};
+use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
+use teistro_core::house::{House, house_of};
 
 use crate::aspects::Placed;
 
@@ -19,6 +21,10 @@ pub struct ChartPoints {
     pub lagna_deg: f64,
     /// Its midheaven, degrees.
     pub midheaven_deg: f64,
+    /// Its twelve house cusps, first to twelfth, degrees, when its
+    /// division is defined at its birthplace.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cusps_deg: Option<[f64; 12]>,
 }
 
 /// A composite chart: every planet and both angles at the near midpoint of
@@ -38,6 +44,24 @@ pub struct Composite {
     /// the midheaven's eastern quadrature, and was turned by 180° to stand
     /// after the midheaven, as a lagna does (C247).
     pub lagna_turned: bool,
+    /// The twelve cusps, first to twelfth, degrees, when both charts carry
+    /// theirs: each the near midpoint of the two charts' same cusp, turned
+    /// by 180° when it falls more than 90° from where the midheaven puts
+    /// it, the midheaven plus 30° a house from the tenth (Astrolog;
+    /// `western-houses.md`, decision 5).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cusps_deg: Option<[f64; 12]>,
+}
+
+impl Composite {
+    /// The house a composite planet stands in by its cusps, or `None`
+    /// when the composite has no cusps or places no such planet.
+    #[must_use]
+    pub fn house_of(&self, graha: Graha) -> Option<House> {
+        let cusps = self.cusps_deg.as_ref()?;
+        let at = self.planets.iter().find(|one| one.graha == graha)?;
+        Some(house_of(at.longitude_deg, cusps, 0.0))
+    }
 }
 
 /// The **composite** of two charts (Townley; Astrolog, C247): each planet
@@ -56,11 +80,13 @@ pub struct Composite {
 ///     planets: vec![Placed::new(Graha::Sun, 350.0, 1.0)],
 ///     lagna_deg: 10.0,
 ///     midheaven_deg: 0.0,
+///     cusps_deg: None,
 /// };
 /// let hers = ChartPoints {
 ///     planets: vec![Placed::new(Graha::Sun, 20.0, 0.96)],
 ///     lagna_deg: 340.0,
 ///     midheaven_deg: 170.0,
+///     cusps_deg: None,
 /// };
 /// let both = composite(&his, &hers)?;
 /// assert_eq!(both.planets[0].longitude_deg, 5.0);
@@ -100,7 +126,21 @@ pub fn composite(first: &ChartPoints, second: &ChartPoints) -> Result<Composite,
     }
     let midheaven_deg = near_midpoint_deg(first.midheaven_deg, second.midheaven_deg);
     let lagna = near_midpoint_deg(first.lagna_deg, second.lagna_deg);
-    let lagna_turned = difference_deg(lagna, midheaven_deg + 90.0).abs() > 90.0;
+    let lagna_turned = turned(lagna, midheaven_deg, 1);
+    let cusps_deg = first
+        .cusps_deg
+        .zip(second.cusps_deg)
+        .map(|(mut cusps, theirs)| {
+            for ((cusp, other), house) in cusps.iter_mut().zip(theirs).zip(1..) {
+                let between = near_midpoint_deg(*cusp, other);
+                *cusp = if turned(between, midheaven_deg, house) {
+                    normalise_deg(between + 180.0)
+                } else {
+                    between
+                };
+            }
+            cusps
+        });
     Ok(Composite {
         planets,
         lagna_deg: if lagna_turned {
@@ -110,7 +150,15 @@ pub fn composite(first: &ChartPoints, second: &ChartPoints) -> Result<Composite,
         },
         midheaven_deg,
         lagna_turned,
+        cusps_deg,
     })
+}
+
+/// Whether a composite point standing for house `house`'s cusp falls more
+/// than 90° from where the midheaven puts that cusp, 30° a house from the
+/// tenth, and so is turned by 180° (C247, Astrolog).
+fn turned(at: f64, midheaven_deg: f64, house: i32) -> bool {
+    difference_deg(at, midheaven_deg + 30.0 * f64::from(house - 10)).abs() > 90.0
 }
 
 /// A refusal of two charts that do not place the same planets.
@@ -143,6 +191,13 @@ fn refuse_unreadable(points: &ChartPoints) -> Result<(), Error> {
                     .with_field(format!("planets[{at}]")),
             );
         }
+    }
+    if let Some(at) = points
+        .cusps_deg
+        .and_then(|cusps| cusps.iter().position(|cusp| !cusp.is_finite()))
+    {
+        return Err(Error::invalid_arg("a cusp is a finite number of degrees")
+            .with_field(format!("cuspsDeg[{at}]")));
     }
     for (field, value) in [
         ("lagnaDeg", points.lagna_deg),
@@ -177,7 +232,77 @@ mod tests {
                 .collect(),
             lagna_deg,
             midheaven_deg,
+            cusps_deg: None,
         }
+    }
+
+    /// A chart with quadrant-like cusps: the lagna first, the midheaven
+    /// tenth, each quadrant cut in three.
+    fn housed(planets: &[(Graha, f64, f64)], lagna_deg: f64, midheaven_deg: f64) -> ChartPoints {
+        let east = (lagna_deg - midheaven_deg).rem_euclid(360.0) / 3.0;
+        let west = 60.0 - east;
+        let mut cusps = [0.0; 12];
+        for (at, cusp) in cusps.iter_mut().enumerate() {
+            // Houses 10, 11, 12 span `east` each, 1, 2, 3 span `west`,
+            // and the opposite six mirror them.
+            let steps = [
+                0.0,
+                west,
+                2.0 * west,
+                3.0 * west,
+                3.0 * west + east,
+                3.0 * west + 2.0 * east,
+            ];
+            let from_lagna = steps[at % 6] + if at >= 6 { 180.0 } else { 0.0 };
+            *cusp = normalise_deg(lagna_deg + from_lagna);
+        }
+        ChartPoints {
+            cusps_deg: Some(cusps),
+            ..chart(planets, lagna_deg, midheaven_deg)
+        }
+    }
+
+    #[test]
+    fn the_composite_cusps_are_the_near_midpoints_and_hold_its_angles() {
+        let his = housed(&[(Graha::Sun, 20.0, 1.0)], 100.0, 10.0);
+        let hers = housed(&[(Graha::Sun, 60.0, 1.0)], 140.0, 50.0);
+        let both = composite(&his, &hers).unwrap();
+        let cusps = both.cusps_deg.unwrap();
+        for (at, cusp) in cusps.iter().enumerate() {
+            let expected =
+                near_midpoint_deg(his.cusps_deg.unwrap()[at], hers.cusps_deg.unwrap()[at]);
+            assert!((cusp - expected).abs() < 1e-9, "house {}: {cusp}", at + 1);
+        }
+        // The first and tenth are its lagna and midheaven.
+        assert_eq!((cusps[0], cusps[9]), (both.lagna_deg, both.midheaven_deg));
+        // The Sun at 40° stands between the tenth cusp (30°) and the
+        // eleventh.
+        assert_eq!(both.house_of(Graha::Sun).unwrap().get(), 10);
+        assert_eq!(both.house_of(Graha::Mars), None);
+    }
+
+    #[test]
+    fn a_cusp_far_from_its_quadrant_place_is_turned_as_the_lagna_is() {
+        // The pair the lagna test turns: every cusp's midpoint lands on the
+        // wrong side, and every one is turned with the lagna.
+        let his = housed(&[], 10.0, 0.0);
+        let hers = housed(&[], 340.0, 170.0);
+        let both = composite(&his, &hers).unwrap();
+        let cusps = both.cusps_deg.unwrap();
+        assert!(both.lagna_turned);
+        assert!((cusps[0] - both.lagna_deg).abs() < 1e-9);
+        for (at, cusp) in cusps.iter().enumerate() {
+            let house = f64::from(u8::try_from(at).unwrap()) + 1.0;
+            let place = both.midheaven_deg + 30.0 * (house - 10.0);
+            assert!(
+                difference_deg(*cusp, place).abs() <= 90.0,
+                "house {house}: {cusp}"
+            );
+        }
+        // Without both charts' cusps there are none.
+        let bare = composite(&chart(&[], 10.0, 0.0), &hers).unwrap();
+        assert_eq!(bare.cusps_deg, None);
+        assert_eq!(bare.house_of(Graha::Sun), None);
     }
 
     #[test]
