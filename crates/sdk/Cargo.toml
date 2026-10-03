@@ -198,6 +198,10 @@ required-features = ["builtin-ephemeris"]
 name = "progressions"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "outer_planets"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]

@@ -15,6 +15,7 @@
 //! it a setter and its getter want the same word, and the codebase ends
 //! up with `kind` beside `chart_kind` for no reason a reader can see.
 
+use teistro_chart::OuterPlanets;
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
 use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
@@ -65,6 +66,8 @@ impl Sections {
     pub(crate) const DASHA_PHALA: Sections = Sections(1 << 10);
     /// Jaimini's significators.
     pub(crate) const JAIMINI: Sections = Sections(1 << 11);
+    /// Uranus, Neptune and Pluto beside the nine, in the foundation.
+    pub(crate) const OUTER: Sections = Sections(1 << 12);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -410,6 +413,43 @@ impl ChartRequest {
     pub const fn with_jaimini(mut self) -> ChartRequest {
         self.sections = self.sections.with(Sections::JAIMINI);
         self
+    }
+
+    /// Uranus, Neptune and Pluto, placed beside the nine in the
+    /// foundation's `outer` and asked for in the same request to the
+    /// ephemeris (`03-design/western-outer-planets.md`). Left out, the
+    /// foundation is what it always was, to the byte.
+    ///
+    /// ```
+    /// use teistro::catalogue::Graha;
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    ///
+    /// let sdk = Context::builder()
+    ///     .profile("western-tropical-default")
+    ///     .ephemeris([Ephemeris::Builtin])
+    ///     .build()?;
+    /// let london = Place::new(Latitude::try_new(51.5)?, Longitude::try_new(0.0)?, Altitude::try_new(0.0)?);
+    /// let request = ChartRequest::at(london, UtcOffset::UTC).with_outer_planets();
+    /// let chart = sdk.chart().reading(JulianDay::try_new(2_451_545.0)?, &request)?.value;
+    /// let uranus = chart.foundation.graha(Graha::Uranus).expect("asked for");
+    /// assert!((314.0..316.0).contains(&uranus.longitude_deg));
+    /// assert_eq!(chart.foundation.grahas.len(), 9);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_outer_planets(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::OUTER);
+        self
+    }
+
+    /// Whether the outer planets are asked for, as the founder takes it.
+    pub(crate) const fn outer_planets(&self) -> OuterPlanets {
+        if self.sections.has(Sections::OUTER) {
+            OuterPlanets::Placed
+        } else {
+            OuterPlanets::Left
+        }
     }
 
     /// The charts to draw, each a layout and which chart to place in it,

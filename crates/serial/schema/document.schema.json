@@ -1375,6 +1375,13 @@
           "format": "double",
           "type": "number"
         },
+        "outer": {
+          "description": "Uranus, Neptune and Pluto, in the catalogue's order, when the chart was asked to place them (`OuterPlanets::Placed`); empty, and left out of the document, when it was not (`03-design/western-outer-planets.md`). Beside the nine rather than among them, because every reader of `ChartFoundation::grahas` counts nine.",
+          "items": {
+            "$ref": "#/$defs/GrahaPosition"
+          },
+          "type": "array"
+        },
         "place": {
           "$ref": "#/$defs/Place",
           "description": "The place."
