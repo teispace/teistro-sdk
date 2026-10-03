@@ -1835,6 +1835,62 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, outer_planets=outer, western_aspects=request, **palace)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
+        """A synastry crosses whole on King George V and Queen Mary (Leo,
+        *How to Judge a Nativity*, p. 130): the recast's closest contacts,
+        the lagna left out on request, a batch the charts one at a time,
+        and refusals named in the record (`03-design/western-synastry.md`)."""
+        from teistro import NatalPoint, SynastryPartner, SynastryRequest, WesternAspect
+
+        george: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5045), longitude_deg=Longitude(-0.1366), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2402390.554166667
+        mary: SynastryPartner = {
+            "instant": 2403113.499305556,
+            "observer": Observer(latitude_deg=Latitude(51.5058), longitude_deg=Longitude(-0.1878), altitude_m=Altitude(0)),
+        }
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **george).synastry)
+
+            rows = ctx.chart.found(instant=birth, outer_planets=True, synastry={"partner": mary}, **george).synastry
+            assert rows is not None
+            mars = NatalPoint("GRAHA", Graha.MARS)
+            for first, aspect, second, from_exact_deg in (
+                (mars, WesternAspect.OPPOSITION, NatalPoint("LAGNA"), 0.32),
+                (mars, WesternAspect.SEXTILE, NatalPoint("GRAHA", Graha.SUN), 0.39),
+                (NatalPoint("GRAHA", Graha.PLUTO), WesternAspect.CONJUNCTION, NatalPoint("GRAHA", Graha.PLUTO), 1.69),
+            ):
+                row = next(row for row in rows if (row.first, row.aspect, row.second) == (first, aspect, second))
+                self.assertAlmostEqual(row.from_exact_deg, from_exact_deg, delta=0.01)
+            self.assertTrue(all(row.from_exact_deg <= row.orb_deg for row in rows))
+            self.assertEqual([row.from_exact_deg for row in rows], sorted(row.from_exact_deg for row in rows))
+
+            without = ctx.chart.found(instant=birth, synastry={"partner": mary, "lagna": False}, **george).synastry
+            assert without is not None
+            self.assertTrue(all(row.first.graha is not None and row.second.graha is not None for row in without))
+
+            instants = [birth, birth - 3000.25]
+            asked: SynastryRequest = {"partner": mary, "aspects": [WesternAspect.SEXTILE, "OPPOSITION"]}
+            batch = ctx.chart.found_many(instants=instants, synastry=asked, **george)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).synastry,
+                    ctx.chart.found(instant=instant, synastry=asked, **george).synastry,
+                )
+            refusals: list[tuple[Any, str]] = [
+                ({"partner": {**mary, "born": "London"}}, "synastry.partner.born"),
+                ({"partner": mary, "zodiac": "SIDEREAL"}, "synastry.zodiac"),
+                ({"partner": mary, "orbs": {"model": "MOIETIES", "orbs": [{"graha": Graha.SUN, "orbDeg": 17}]}}, "synastry.lagna"),
+                ({"lagna": False}, "synastry.partner"),
+                ([], "synastry"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, synastry=request, **george)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_the_outer_planets_when_asked(self) -> None:
         """The outer planets cross when asked: none unless `outer_planets`,
         then Uranus, Neptune and Pluto in the grahas' shape with the nine
