@@ -1705,6 +1705,77 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=instants[0], perfection=request, **london)  # type: ignore[arg-type]
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_progressions(self) -> None:
+        """Progressions cross whole on Leo's own birth: his progressed map's
+        sidereal time, his Appendix V contact on the day each year measure
+        gives, the planets and the direction a row a graha, a batch the
+        charts one at a time, and refusals named in the record
+        (`03-design/western-progressions.md`)."""
+        from teistro import Motion, NatalPoint, ProgressionContacts, ProgressionsRequest
+
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(0), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2400629.742361111
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **london).progressions)
+
+            # His forty-seventh year: the map at sidereal time 5h 54m 16s (p. 35).
+            at = birth + 46 * 365.242189
+            read = ctx.chart.found(instant=birth, progressions={"at": at}, **london).progressions
+            assert read is not None and read.progressed is not None and read.directed is not None
+            self.assertAlmostEqual(read.progressed.sky, birth + 46, delta=1e-9)
+            self.assertAlmostEqual(read.progressed.armc_deg / 15, 5 + 54 / 60 + 16 / 3600, delta=2 / 3600)
+            self.assertEqual(len(read.progressed.grahas), len(read.directed.planets))
+            self.assertIsNone(read.contacts)
+            sun = next(g for g in read.progressed.grahas if g.graha is Graha.SUN)
+            directed_sun = next(g for g in read.directed.planets if g.graha is Graha.SUN)
+            self.assertAlmostEqual(sun.longitude_deg, directed_sun.longitude_deg, delta=1e-9)
+
+            # The Moon sesquiquadrate Mercury (p. 305): the 21st by a year, the 22nd by his rule.
+            october: ProgressionContacts = {
+                "from": 2417484.5,
+                "to": 2417515.5,
+                "grahas": ["MOON"],
+                "points": [Graha.MERCURY],
+                "aspects": [135],
+            }
+            for year, day in (("TROPICAL", 21), ("NOON_SIDEREAL_TIME", 22)):
+                asked: ProgressionsRequest = {"year": year, "contacts": october}  # type: ignore[typeddict-item]
+                found = ctx.chart.found(instant=birth, progressions=asked, **london).progressions
+                assert found is not None and found.contacts is not None
+                self.assertIsNone(found.progressed)
+                (contact,) = found.contacts
+                self.assertEqual(
+                    (contact.graha, contact.to, contact.angle, contact.motion),
+                    (Graha.MOON, NatalPoint("GRAHA", Graha.MERCURY), 135, Motion.DIRECT),
+                )
+                self.assertEqual(int(contact.life - 2417484.5) + 1, day, year)
+            none = ctx.chart.found(
+                instant=birth, progressions={"contacts": {**october, "aspects": [90]}}, **london
+            ).progressions
+            assert none is not None
+            self.assertEqual(none.contacts, (), "a window asked holding none is empty, not None")
+
+            instants = [birth, birth + 3000.25, birth + 9000.5]
+            many: ProgressionsRequest = {"at": 2430000.5, "angles": "SOLAR_ARC_LONGITUDE", "direction": "NAIBOD"}
+            batch = ctx.chart.found_many(instants=instants, progressions=many, **london)
+            for k, instant in enumerate(instants):
+                self.assertEqual(
+                    batch.at(k).progressions, ctx.chart.found(instant=instant, progressions=many, **london).progressions
+                )
+            refusals: list[tuple[dict[str, Any], str]] = [
+                ({}, "progressions.at"),
+                ({"at": at, "year": "SIDEREAL"}, "progressions.year"),
+                ({"at": at, "direction": {"PER_YEAR": 0}}, "progressions.direction"),
+                ({"contacts": {"from": 2, "to": 1}}, "progressions.contacts.to"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, progressions=request, **london)  # type: ignore[arg-type]
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_lots(self) -> None:
         """Valens's lots cross whole, members resolved: the sect and the rules
         read back and handed back as a request, all fourteen in the
