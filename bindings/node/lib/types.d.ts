@@ -1025,6 +1025,24 @@ export interface ChartRequest {
    * @nullable
    */
   readonly westernAspectsJson?: string;
+  /**
+   * Every chart's synastry with one partner, as a JSON object:
+   * `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+   * "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+   * the context's settings with the outer planets when
+   * `TS_CHART_OUTER` placed them; and beside it, every field optional,
+   * `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+   * (true: each side's lagna is read beside its planets, C242) and
+   * `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+   * chart is read against the partner, the chart's point first. The
+   * answers come back in `synastry` and `synastry_rows`. Null for none,
+   * which costs nothing (`03-design/western-synastry.md`). Refusals are
+   * named from the record every binding calls `synastry`, as
+   * `synastry.partner.place.latitude`.
+   * @example {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}
+   * @nullable
+   */
+  readonly synastryJson?: string;
 }
 
 /**

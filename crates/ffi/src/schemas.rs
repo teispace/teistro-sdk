@@ -624,6 +624,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_progression_sections(77))
         .chain([chart_outer_section(81)])
         .chain(chart_western_aspect_sections(82))
+        .chain(chart_synastry_sections(84))
         .collect(),
     }
 }
@@ -1324,28 +1325,88 @@ fn chart_western_aspect_sections(first: u32) -> [SectionSchema; 2] {
                     "The first planet of the pair, in the catalogue's order.",
                 ),
                 graha_column("second", "The second."),
-                ColumnDef::new("aspect", Scalar::U8, "Which aspect.").of_enum("TsWesternAspect"),
-                ColumnDef::new(
-                    "apart_deg",
-                    Scalar::F64,
-                    "How far apart the two stand, degrees, 0 to 180.",
-                ),
-                ColumnDef::new(
-                    "from_exact_deg",
-                    Scalar::F64,
-                    "How far from exact, degrees; the smaller, the stronger.",
-                ),
-                ColumnDef::new(
-                    "orb_deg",
-                    Scalar::F64,
-                    "The orb the model allowed this pair at this aspect, degrees.",
-                ),
-                ColumnDef::new(
-                    "applying",
-                    Scalar::U8,
-                    "1 when the gap is closing on the aspect, 0 when it is leaving it.",
-                ),
-            ],
+            ]
+            .into_iter()
+            .chain(western_aspect_measures())
+            .chain([ColumnDef::new(
+                "applying",
+                Scalar::U8,
+                "1 when the gap is closing on the aspect, 0 when it is leaving it.",
+            )])
+            .collect(),
+        ),
+    ]
+}
+
+/// The four columns a Western aspect row measures, whichever two points
+/// stand at it: the aspect, the gap, the distance from exact and the orb.
+fn western_aspect_measures() -> [ColumnDef; 4] {
+    [
+        ColumnDef::new("aspect", Scalar::U8, "Which aspect.").of_enum("TsWesternAspect"),
+        ColumnDef::new(
+            "apart_deg",
+            Scalar::F64,
+            "How far apart the two stand, degrees, 0 to 180.",
+        ),
+        ColumnDef::new(
+            "from_exact_deg",
+            Scalar::F64,
+            "How far from exact, degrees; the smaller, the stronger.",
+        ),
+        ColumnDef::new(
+            "orb_deg",
+            Scalar::F64,
+            "The orb the model allowed this pair at this aspect, degrees.",
+        ),
+    ]
+}
+
+/// The two columns a natal point crosses as, named for `side`: whether it
+/// is the lagna, and which graha when it is not.
+fn point_columns(side: &str, whose: &str) -> [ColumnDef; 2] {
+    [
+        ColumnDef::new(
+            &format!("{side}_lagna"),
+            Scalar::U8,
+            &format!("1 when {whose} point is the lagna, 0 when it is a graha."),
+        ),
+        ColumnDef::new(
+            &format!("{side}_graha"),
+            Scalar::U16,
+            &format!("Which graha {whose} point is (a `Graha` id); 0 for the lagna."),
+        ),
+    ]
+}
+
+/// The two sections a synastry with a partner crosses as, from `first`: a
+/// row a chart, and the contacts ragged under it
+/// (`03-design/western-synastry.md`).
+fn chart_synastry_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `synastry_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "synastry",
+            &format!(
+                "Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "How many aspects stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_rows`.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "synastry_rows",
+            &format!(
+                "Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). {empty}"
+            ),
+            point_columns("first", "the chart's")
+                .into_iter()
+                .chain(point_columns("second", "the partner's"))
+                .chain(western_aspect_measures())
+                .collect(),
         ),
     ]
 }

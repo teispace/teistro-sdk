@@ -2142,6 +2142,22 @@ pub struct ChartRequest {
     /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub western_aspects_json: Option<String>,
+    /// Every chart's synastry with one partner, as a JSON object:
+    /// `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+    /// "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+    /// the context's settings with the outer planets when
+    /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
+    /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+    /// (true: each side's lagna is read beside its planets, C242) and
+    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+    /// chart is read against the partner, the chart's point first. The
+    /// answers come back in `synastry` and `synastry_rows`. Null for none,
+    /// which costs nothing (`03-design/western-synastry.md`). Refusals are
+    /// named from the record every binding calls `synastry`, as
+    /// `synastry.partner.place.latitude`.
+    /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub synastry_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2172,6 +2188,7 @@ pub struct HeldChartRequest {
     perfection_json: Option<std::ffi::CString>,
     progressions_json: Option<std::ffi::CString>,
     western_aspects_json: Option<std::ffi::CString>,
+    synastry_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2239,6 +2256,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             western_aspects_json: self
                 .western_aspects_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            synastry_json: self
+                .synastry_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2338,6 +2359,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            synastry_json: self
+                .synastry_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2386,6 +2412,7 @@ impl ChartRequest {
             perfection_json: unsafe { lent_text(raw.perfection_json) },
             progressions_json: unsafe { lent_text(raw.progressions_json) },
             western_aspects_json: unsafe { lent_text(raw.western_aspects_json) },
+            synastry_json: unsafe { lent_text(raw.synastry_json) },
         }
     }
 }

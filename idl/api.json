@@ -11960,6 +11960,21 @@
             "example": "{\"aspects\":[\"TRINE\",\"SQUARE\"]}",
             "nullable": true
           }
+        },
+        {
+          "name": "synastry_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242) and\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241). Each\nchart is read against the partner, the chart's point first. The\nanswers come back in `synastry` and `synastry_rows`. Null for none,\nwhich costs nothing (`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
+          "meta": {
+            "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -19299,6 +19314,68 @@
               "name": "applying",
               "scalar": "u8",
               "doc": "1 when the gap is closing on the aspect, 0 when it is leaving it."
+            }
+          ]
+        },
+        {
+          "id": 84,
+          "name": "synastry",
+          "doc": "Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many aspects stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_rows`."
+            }
+          ]
+        },
+        {
+          "id": 85,
+          "name": "synastry_rows",
+          "doc": "Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first_lagna",
+              "scalar": "u8",
+              "doc": "1 when the chart's point is the lagna, 0 when it is a graha."
+            },
+            {
+              "name": "first_graha",
+              "scalar": "u16",
+              "doc": "Which graha the chart's point is (a `Graha` id); 0 for the lagna."
+            },
+            {
+              "name": "second_lagna",
+              "scalar": "u8",
+              "doc": "1 when the partner's point is the lagna, 0 when it is a graha."
+            },
+            {
+              "name": "second_graha",
+              "scalar": "u16",
+              "doc": "Which graha the partner's point is (a `Graha` id); 0 for the lagna."
+            },
+            {
+              "name": "aspect",
+              "scalar": "u8",
+              "doc": "Which aspect.",
+              "enum": "TsWesternAspect"
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart the two stand, degrees, 0 to 180."
+            },
+            {
+              "name": "from_exact_deg",
+              "scalar": "f64",
+              "doc": "How far from exact, degrees; the smaller, the stronger."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the model allowed this pair at this aspect, degrees."
             }
           ]
         }

@@ -265,7 +265,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 232,
+    "ts_chart_request": 240,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -706,6 +706,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("perfection_json", ctypes.c_char_p),
         ("progressions_json", ctypes.c_char_p),
         ("western_aspects_json", ctypes.c_char_p),
+        ("synastry_json", ctypes.c_char_p),
     ]
 
 
@@ -2522,6 +2523,23 @@ class ChartRequest:
     Example: {"aspects":["TRINE","SQUARE"]}. May be null.
     """
 
+    synastry_json: Optional[str] = None
+    """Every chart's synastry with one partner, as a JSON object:
+    `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+    "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+    the context's settings with the outer planets when
+    `TS_CHART_OUTER` placed them; and beside it, every field optional,
+    `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+    (true: each side's lagna is read beside its planets, C242) and
+    `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+    chart is read against the partner, the chart's point first. The
+    answers come back in `synastry` and `synastry_rows`. Null for none,
+    which costs nothing (`03-design/western-synastry.md`). Refusals are
+    named from the record every binding calls `synastry`, as
+    `synastry.partner.place.latitude`.
+    Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2605,6 +2623,9 @@ class ChartRequest:
         _western_aspects_json = None if self.western_aspects_json is None else self.western_aspects_json.encode("utf-8")
         owned.append(_western_aspects_json)
         raw.western_aspects_json = _western_aspects_json
+        _synastry_json = None if self.synastry_json is None else self.synastry_json.encode("utf-8")
+        owned.append(_synastry_json)
+        raw.synastry_json = _synastry_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2656,6 +2677,7 @@ class ChartRequest:
             perfection_json=_text(raw.perfection_json),
             progressions_json=_text(raw.progressions_json),
             western_aspects_json=_text(raw.western_aspects_json),
+            synastry_json=_text(raw.synastry_json),
         )
 
 

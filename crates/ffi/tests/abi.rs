@@ -300,6 +300,7 @@ fn chart_request(
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1571,6 +1572,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1716,6 +1718,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1859,6 +1862,7 @@ fn a_chart_request_answers_the_transits() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2074,6 +2078,7 @@ fn a_chart_request_answers_the_hit_list() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2242,6 +2247,7 @@ fn a_chart_request_answers_sade_sati() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2352,6 +2358,7 @@ fn a_chart_request_answers_sade_sati() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2416,6 +2423,7 @@ fn a_chart_request_answers_sade_sati() {
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
         western_aspects_json: ptr::null(),
+        synastry_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2484,6 +2492,7 @@ fn a_chart_request_answers_the_dignities() {
                 perfection_json: ptr::null(),
                 progressions_json: ptr::null(),
                 western_aspects_json: ptr::null(),
+                synastry_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2757,6 +2766,7 @@ fn a_chart_request_answers_the_fortitudes() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4058,6 +4068,7 @@ fn a_chart_request_answers_kp() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4166,6 +4177,7 @@ fn a_chart_request_answers_kp() {
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
         western_aspects_json: ptr::null(),
+        synastry_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4182,6 +4194,7 @@ fn a_chart_request_answers_kp() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4238,6 +4251,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4277,6 +4291,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
         western_aspects_json: ptr::null(),
+        synastry_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4337,6 +4352,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4472,6 +4488,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4612,6 +4629,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5383,6 +5401,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5491,6 +5510,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5668,6 +5688,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
             western_aspects_json: ptr::null(),
+            synastry_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5949,6 +5970,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 perfection_json: ptr::null(),
                 progressions_json: ptr::null(),
                 western_aspects_json: ptr::null(),
+                synastry_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -7013,6 +7035,168 @@ fn a_chart_request_answers_the_western_aspects() {
             &TsChartRequest {
                 western_aspects_json: refused.as_ptr(),
                 sections,
+                ..base
+            },
+        )
+        .unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
+    }
+}
+
+/// Every chart's synastry with one partner crosses whole: each cell of
+/// `synastry` and `synastry_rows` is the facade's own, bit for bit, with
+/// George V's birth (Leo, *How to Judge a Nativity*, p. 130) and another
+/// read against Queen Mary's; none asked is empty sections, and a refusal
+/// is named from the record's root (`03-design/western-synastry.md`).
+#[test]
+fn a_chart_request_answers_a_synastry_with_a_partner() {
+    use teistro_ffi::chart::TsWesternAspect;
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    let base = chart_request(&instants, (51.5045, -0.1366), 0);
+    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"]}"#;
+    let asked_json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            synastry_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap())
+            .with_outer_planets();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &request,
+        )
+        .unwrap()
+        .value;
+    let expected = sdk
+        .chart()
+        .synastry_with(&charts, &teistro::PartnerSynastry::from_json(text).unwrap())
+        .unwrap();
+    let rows: Vec<&teistro::SynastryRow> = expected.iter().flatten().collect();
+    assert!(
+        rows.iter()
+            .any(|row| row.second == teistro::NatalPoint::Lagna),
+        "the partner's lagna is among the points"
+    );
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |name: &str| -> Vec<u64> {
+        reader
+            .column("synastry_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    assert_eq!(
+        ints("synastry", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let int_of = |read: &dyn Fn(&teistro::SynastryRow) -> i64| -> Vec<i64> {
+        rows.iter().map(|row| read(row)).collect()
+    };
+    let bits_of = |read: &dyn Fn(&teistro::SynastryRow) -> f64| -> Vec<u64> {
+        rows.iter().map(|row| read(row).to_bits()).collect()
+    };
+    let lagna = |point: teistro::NatalPoint| i64::from(point == teistro::NatalPoint::Lagna);
+    let graha = |point: teistro::NatalPoint| match point {
+        teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
+        teistro::NatalPoint::Lagna => 0,
+    };
+    assert_eq!(
+        ints("synastry_rows", "first_lagna"),
+        int_of(&|row| lagna(row.first))
+    );
+    assert_eq!(
+        ints("synastry_rows", "first_graha"),
+        int_of(&|row| graha(row.first))
+    );
+    assert_eq!(
+        ints("synastry_rows", "second_lagna"),
+        int_of(&|row| lagna(row.second))
+    );
+    assert_eq!(
+        ints("synastry_rows", "second_graha"),
+        int_of(&|row| graha(row.second))
+    );
+    assert_eq!(
+        ints("synastry_rows", "aspect"),
+        int_of(&|row| i64::from(TsWesternAspect::of(row.aspect).unwrap() as u8))
+    );
+    assert_eq!(bits("apart_deg"), bits_of(&|row| row.apart_deg));
+    assert_eq!(bits("from_exact_deg"), bits_of(&|row| row.from_exact_deg));
+    assert_eq!(bits("orb_deg"), bits_of(&|row| row.orb_deg));
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [("synastry", "count"), ("synastry_rows", "first_lagna")] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A refusal is named by the field the caller wrote, under the record.
+    for (text, field) in [
+        (
+            r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 95, "longitude": 0, "altitude": 0}}}"#,
+            "synastry.partner.place.latitude",
+        ),
+        (
+            r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}, "orbs": {"model": "MOIETIES", "orbs": [{"graha": "SUN", "orbDeg": 17}]}}"#,
+            "synastry.lagna",
+        ),
+        (
+            r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}, "zodiac": "SIDEREAL"}"#,
+            "synastry.zodiac",
+        ),
+        (r#"{"lagna": false}"#, "synastry.partner"),
+    ] {
+        let refused = CString::new(text).unwrap();
+        let status = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                synastry_json: refused.as_ptr(),
                 ..base
             },
         )

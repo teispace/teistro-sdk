@@ -1682,6 +1682,21 @@ pub struct TsChartRequest {
     /// `westernAspects`, as `westernAspects.orbs.orbs`.
     /// `api: nullable example={"aspects":["TRINE","SQUARE"]}`
     pub western_aspects_json: *const c_char,
+    /// Every chart's synastry with one partner, as a JSON object:
+    /// `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+    /// "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+    /// the context's settings with the outer planets when
+    /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
+    /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+    /// (true: each side's lagna is read beside its planets, C242) and
+    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+    /// chart is read against the partner, the chart's point first. The
+    /// answers come back in `synastry` and `synastry_rows`. Null for none,
+    /// which costs nothing (`03-design/western-synastry.md`). Refusals are
+    /// named from the record every binding calls `synastry`, as
+    /// `synastry.partner.place.latitude`.
+    /// `api: nullable example={"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}`
+    pub synastry_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2856,13 +2871,9 @@ impl HitColumns {
             columns.kind.push(TsHitKind::from(&hit.event) as u8);
             columns.into.push(into);
             columns.motion.push(TsMotion::from(motion) as u8);
-            columns
-                .to_lagna
-                .push(u8::from(to == Some(teistro::NatalPoint::Lagna)));
-            columns.to_graha.push(match to {
-                Some(teistro::NatalPoint::Graha { graha }) => graha.id(),
-                _ => 0,
-            });
+            let (to_lagna, to_graha) = point_cells(to);
+            columns.to_lagna.push(to_lagna);
+            columns.to_graha.push(to_graha);
             columns.angle.push(angle);
             columns.phase.push(phase);
         }
@@ -3231,6 +3242,28 @@ struct ProgressionColumns {
     contact_motion: Vec<u8>,
 }
 
+/// The Western aspect tables a batch was asked for, written together since
+/// their sections stand together: each chart's own, and each chart's with
+/// the record's partner.
+struct AspectTables {
+    own: WesternAspectColumns,
+    across: SynastryColumns,
+}
+
+impl AspectTables {
+    fn of(composed: &Composed<'_>, charts: usize) -> Result<AspectTables, Error> {
+        Ok(AspectTables {
+            own: WesternAspectColumns::of(composed.western_aspects, charts)?,
+            across: SynastryColumns::of(composed.synastry, charts)?,
+        })
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        self.own.write(writer)?;
+        self.across.write(writer)
+    }
+}
+
 /// Every chart's Western aspects (`western-aspects.md`): a row a chart in
 /// `western_aspects` with its count, and the rows ragged under it in
 /// `western_aspect_rows`.
@@ -3239,10 +3272,7 @@ struct WesternAspectColumns {
     count: Vec<u32>,
     first: Vec<u16>,
     second: Vec<u16>,
-    aspect: Vec<u8>,
-    apart_deg: Vec<f64>,
-    from_exact_deg: Vec<f64>,
-    orb_deg: Vec<f64>,
+    measures: AspectMeasures,
     applying: Vec<u8>,
 }
 
@@ -3254,19 +3284,16 @@ impl WesternAspectColumns {
         one_a_chart(read.len(), charts, "western aspects")?;
         let mut columns = WesternAspectColumns::default();
         for rows in read {
-            columns.count.push(
-                u32::try_from(rows.len())
-                    .map_err(|_| Error::internal("more aspects than a section can count"))?,
-            );
+            columns.count.push(aspect_count(rows.len())?);
             for row in rows {
                 columns.first.push(row.first.id());
                 columns.second.push(row.second.id());
-                let aspect = TsWesternAspect::of(row.aspect)
-                    .ok_or_else(|| no_code(&format!("the aspect {}", row.aspect.key())))?;
-                columns.aspect.push(aspect as u8);
-                columns.apart_deg.push(row.apart_deg);
-                columns.from_exact_deg.push(row.from_exact_deg);
-                columns.orb_deg.push(row.orb_deg);
+                columns.measures.push(
+                    row.aspect,
+                    row.apart_deg,
+                    row.from_exact_deg,
+                    row.orb_deg,
+                )?;
                 columns.applying.push(u8::from(row.applying));
             }
         }
@@ -3279,19 +3306,148 @@ impl WesternAspectColumns {
             self.count.len(),
             &[ColumnData::U32(&self.count)],
         )?;
+        let [aspect, apart, from_exact, orb] = self.measures.columns();
         writer.columns(
             "western_aspect_rows",
             self.first.len(),
             &[
                 ColumnData::U16(&self.first),
                 ColumnData::U16(&self.second),
-                ColumnData::U8(&self.aspect),
-                ColumnData::F64(&self.apart_deg),
-                ColumnData::F64(&self.from_exact_deg),
-                ColumnData::F64(&self.orb_deg),
+                aspect,
+                apart,
+                from_exact,
+                orb,
                 ColumnData::U8(&self.applying),
             ],
         )
+    }
+}
+
+/// `synastry` and `synastry_rows`: each chart's contacts with the
+/// record's partner (`western-synastry.md`).
+#[derive(Default)]
+struct SynastryColumns {
+    count: Vec<u32>,
+    first: PointCells,
+    second: PointCells,
+    measures: AspectMeasures,
+}
+
+impl SynastryColumns {
+    fn of(read: &[Vec<teistro::SynastryRow>], charts: usize) -> Result<SynastryColumns, Error> {
+        one_a_chart(read.len(), charts, "synastries")?;
+        let mut columns = SynastryColumns::default();
+        for rows in read {
+            columns.count.push(aspect_count(rows.len())?);
+            for row in rows {
+                columns.first.push(row.first);
+                columns.second.push(row.second);
+                columns.measures.push(
+                    row.aspect,
+                    row.apart_deg,
+                    row.from_exact_deg,
+                    row.orb_deg,
+                )?;
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry",
+            self.count.len(),
+            &[ColumnData::U32(&self.count)],
+        )?;
+        let [first_lagna, first_graha] = self.first.columns();
+        let [second_lagna, second_graha] = self.second.columns();
+        let [aspect, apart, from_exact, orb] = self.measures.columns();
+        writer.columns(
+            "synastry_rows",
+            self.measures.aspect.len(),
+            &[
+                first_lagna,
+                first_graha,
+                second_lagna,
+                second_graha,
+                aspect,
+                apart,
+                from_exact,
+                orb,
+            ],
+        )
+    }
+}
+
+/// How many aspects a chart's rows hold, as a section counts them.
+fn aspect_count(rows: usize) -> Result<u32, Error> {
+    u32::try_from(rows).map_err(|_| Error::internal("more aspects than a section can count"))
+}
+
+/// The four cells a Western aspect row measures, whichever two points
+/// stand at it, in the order the schema's `western_aspect_measures` lists.
+#[derive(Default)]
+struct AspectMeasures {
+    aspect: Vec<u8>,
+    apart_deg: Vec<f64>,
+    from_exact_deg: Vec<f64>,
+    orb_deg: Vec<f64>,
+}
+
+impl AspectMeasures {
+    fn push(
+        &mut self,
+        aspect: teistro::WesternAspect,
+        apart_deg: f64,
+        from_exact_deg: f64,
+        orb_deg: f64,
+    ) -> Result<(), Error> {
+        let code = TsWesternAspect::of(aspect)
+            .ok_or_else(|| no_code(&format!("the aspect {}", aspect.key())))?;
+        self.aspect.push(code as u8);
+        self.apart_deg.push(apart_deg);
+        self.from_exact_deg.push(from_exact_deg);
+        self.orb_deg.push(orb_deg);
+        Ok(())
+    }
+
+    fn columns(&self) -> [ColumnData<'_>; 4] {
+        [
+            ColumnData::U8(&self.aspect),
+            ColumnData::F64(&self.apart_deg),
+            ColumnData::F64(&self.from_exact_deg),
+            ColumnData::F64(&self.orb_deg),
+        ]
+    }
+}
+
+/// A natal point as two cells a row, as the schema's `point_columns`
+/// names them.
+#[derive(Default)]
+struct PointCells {
+    lagna: Vec<u8>,
+    graha: Vec<u16>,
+}
+
+impl PointCells {
+    fn push(&mut self, point: teistro::NatalPoint) {
+        let (lagna, graha) = point_cells(Some(point));
+        self.lagna.push(lagna);
+        self.graha.push(graha);
+    }
+
+    fn columns(&self) -> [ColumnData<'_>; 2] {
+        [ColumnData::U8(&self.lagna), ColumnData::U16(&self.graha)]
+    }
+}
+
+/// A natal point as the boundary carries it: 1 and 0 for the lagna, 0 and
+/// the graha's id for a graha, and 0 and 0 for none.
+fn point_cells(point: Option<teistro::NatalPoint>) -> (u8, u16) {
+    match point {
+        Some(teistro::NatalPoint::Lagna) => (1, 0),
+        Some(teistro::NatalPoint::Graha { graha }) => (0, graha.id()),
+        None => (0, 0),
     }
 }
 
@@ -3352,13 +3508,9 @@ impl ProgressionColumns {
                 columns.contact_life.push(contact.life.get());
                 columns.contact_sky.push(contact.sky.get());
                 columns.contact_graha.push(contact.graha.id());
-                columns
-                    .contact_to_lagna
-                    .push(u8::from(contact.to == teistro::NatalPoint::Lagna));
-                columns.contact_to_graha.push(match contact.to {
-                    teistro::NatalPoint::Graha { graha } => graha.id(),
-                    teistro::NatalPoint::Lagna => 0,
-                });
+                let (to_lagna, to_graha) = point_cells(Some(contact.to));
+                columns.contact_to_lagna.push(to_lagna);
+                columns.contact_to_graha.push(to_graha);
                 columns.contact_angle.push(contact.angle);
                 columns
                     .contact_motion
@@ -5755,6 +5907,9 @@ pub struct Composed<'a> {
     /// Every chart's Western aspect table, in the batch's order
     /// (`western-aspects.md`); empty when none was asked for.
     pub western_aspects: &'a [Vec<teistro::WesternAspectRow>],
+    /// Every chart's synastry with the record's partner, in the batch's
+    /// order (`western-synastry.md`); empty when none was asked for.
+    pub synastry: &'a [Vec<teistro::SynastryRow>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5816,7 +5971,7 @@ pub fn encode(
     let searches = Searches::of(hits, sade_sati, charts.len())?;
     let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
     let progressions = ProgressionColumns::of(composed.progressions, charts.len())?;
-    let western = WesternAspectColumns::of(composed.western_aspects, charts.len())?;
+    let tables = AspectTables::of(&composed, charts.len())?;
     let summary = summary_values(
         place,
         kind,
@@ -5878,7 +6033,7 @@ pub fn encode(
         hellenistic.write(&mut writer)?;
         progressions.write(&mut writer)?;
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
-        western.write(&mut writer)?;
+        tables.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -6751,6 +6906,23 @@ fn western_aspects_of(
         .collect()
 }
 
+/// Every chart's synastry with the record's partner, none when the record
+/// is null; a refusal is named under `synastry`.
+fn synastry_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::PartnerSynastry>,
+) -> Result<Vec<Vec<teistro::SynastryRow>>, Error> {
+    asked.map_or_else(
+        || Ok(Vec::new()),
+        |asked| {
+            sdk.chart()
+                .synastry_with(documents, asked)
+                .map_err(|error| error.under("synastry"))
+        },
+    )
+}
+
 /// The perfection a request's `perfection_json` asks for, none for null;
 /// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
 /// naming a refusal from its root, `perfection.quesited`.
@@ -7134,6 +7306,7 @@ struct AskedRecords {
     perfection: Option<teistro::PerfectionRequest>,
     progressions: Option<teistro::ProgressionsRequest>,
     western_aspects: Option<teistro::AspectRequest>,
+    synastry: Option<teistro::PartnerSynastry>,
 }
 
 impl AskedRecords {
@@ -7167,6 +7340,9 @@ impl AskedRecords {
                 progressions: progressions_request_of(asked.progressions_json)?,
                 western_aspects: optional_text(asked.western_aspects_json, "western_aspects_json")?
                     .map(teistro::AspectRequest::from_json)
+                    .transpose()?,
+                synastry: optional_text(asked.synastry_json, "synastry_json")?
+                    .map(teistro::PartnerSynastry::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -7370,6 +7546,7 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let western_aspects =
             western_aspects_of(ctx.sdk(), &founded.value, records.western_aspects.as_ref())?;
+        let synastry = synastry_of(ctx.sdk(), &founded.value, records.synastry.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -7395,6 +7572,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 perfections: &perfections,
                 progressions: &progressions,
                 western_aspects: &western_aspects,
+                synastry: &synastry,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

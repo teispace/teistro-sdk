@@ -2991,6 +2991,57 @@ class ChartsWesternAspectRows:
 
 
 @dataclass(frozen=True)
+class ChartsSynastry:
+    """The `synastry` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.
+    """
+
+    count: memoryview[int]
+    """How many aspects stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryRows:
+    """The `synastry_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
+    """
+
+    first_lagna: memoryview[int]
+    """1 when the chart's point is the lagna, 0 when it is a graha."""
+
+    first_graha: memoryview[int]
+    """Which graha the chart's point is (a `Graha` id); 0 for the lagna."""
+
+    second_lagna: memoryview[int]
+    """1 when the partner's point is the lagna, 0 when it is a graha."""
+
+    second_graha: memoryview[int]
+    """Which graha the partner's point is (a `Graha` id); 0 for the lagna."""
+
+    aspect: memoryview[int]
+    """Which aspect."""
+
+    apart_deg: memoryview[float]
+    """How far apart the two stand, degrees, 0 to 180."""
+
+    from_exact_deg: memoryview[float]
+    """How far from exact, degrees; the smaller, the stronger."""
+
+    orb_deg: memoryview[float]
+    """The orb the model allowed this pair at this aspect, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3363,6 +3414,12 @@ class Charts:
     western_aspect_rows: ChartsWesternAspectRows
     """Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none."""
 
+    synastry: ChartsSynastry
+    """Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none."""
+
+    synastry_rows: ChartsSynastryRows
+    """Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3455,6 +3512,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_outer = blob.section(81, "outer")
     at_western_aspects = blob.section(82, "western_aspects")
     at_western_aspect_rows = blob.section(83, "western_aspect_rows")
+    at_synastry = blob.section(84, "synastry")
+    at_synastry_rows = blob.section(85, "synastry_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5368,6 +5427,37 @@ def decode_charts(raw: bytes) -> Charts:
                 at_western_aspect_rows, 6, 1, at_western_aspect_rows.count
             ).cast("B"),
             length=at_western_aspect_rows.count,
+        ),
+        synastry=ChartsSynastry(
+            count=blob.column(at_synastry, 0, 4, at_synastry.count).cast("I"),
+            length=at_synastry.count,
+        ),
+        synastry_rows=ChartsSynastryRows(
+            first_lagna=blob.column(
+                at_synastry_rows, 0, 1, at_synastry_rows.count
+            ).cast("B"),
+            first_graha=blob.column(
+                at_synastry_rows, 1, 2, at_synastry_rows.count
+            ).cast("H"),
+            second_lagna=blob.column(
+                at_synastry_rows, 2, 1, at_synastry_rows.count
+            ).cast("B"),
+            second_graha=blob.column(
+                at_synastry_rows, 3, 2, at_synastry_rows.count
+            ).cast("H"),
+            aspect=blob.column(
+                at_synastry_rows, 4, 1, at_synastry_rows.count
+            ).cast("B"),
+            apart_deg=blob.column(
+                at_synastry_rows, 5, 8, at_synastry_rows.count
+            ).cast("d"),
+            from_exact_deg=blob.column(
+                at_synastry_rows, 6, 8, at_synastry_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_synastry_rows, 7, 8, at_synastry_rows.count
+            ).cast("d"),
+            length=at_synastry_rows.count,
         ),
     )
 
