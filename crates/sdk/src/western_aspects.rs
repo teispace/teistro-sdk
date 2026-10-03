@@ -10,9 +10,9 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
-    AntiscionRow, AspectRequest, Composite, Placed, SynastryParallelRow, SynastryPoint,
-    SynastryRequest, SynastryRow, SynastryZodiac, WesternAspectRow, aspects, synastry,
-    synastry_antiscia,
+    AntiscionRow, AspectRequest, Composite, Placed, SynastryMidpointRow, SynastryParallelRow,
+    SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac, WesternAspectRow, aspects,
+    synastry, synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -345,6 +345,11 @@ impl ChartArea<'_> {
                             )
                         })
                         .transpose()?;
+                    let midpoints = asked
+                        .request
+                        .midpoints
+                        .map(|_| self.synastry_midpoints(chart, &partner, &asked.request))
+                        .transpose()?;
                     let composite = asked
                         .request
                         .composite
@@ -355,6 +360,7 @@ impl ChartArea<'_> {
                         aspects: self.synastry(chart, &partner, &asked.request)?,
                         parallels,
                         antiscia,
+                        midpoints,
                         composite,
                     })
                 };
@@ -377,6 +383,9 @@ pub struct PartnerReading {
     /// The antiscia, the chart's planet first, closest first; `None`
     /// unless the request's `antiscia` asked.
     pub antiscia: Option<Vec<AntiscionRow>>,
+    /// The equal distances, closest first; `None` unless the request's
+    /// `midpoints` asked.
+    pub midpoints: Option<Vec<SynastryMidpointRow>>,
     /// The composite of the chart and the partner's, the chart first;
     /// `None` unless the request's `composite` asked.
     pub composite: Option<Composite>,
@@ -395,25 +404,40 @@ pub(crate) fn planets(foundation: &ChartFoundation) -> impl Iterator<Item = &Gra
 /// One chart's points for a synastry, in the zodiac the request compares
 /// them in, its lagna last when asked.
 fn points(foundation: &ChartFoundation, request: &SynastryRequest) -> Vec<SynastryPoint> {
-    let tropical = request.zodiac == SynastryZodiac::Tropical;
-    let lagna = request.lagna.then(|| {
-        SynastryPoint::lagna(if tropical {
-            foundation.zodiac.to_tropical(foundation.lagna_deg)
-        } else {
-            foundation.lagna_deg
-        })
-    });
-    planets(foundation)
-        .map(|at| {
-            SynastryPoint::graha(
-                at.graha,
-                if tropical {
-                    at.tropical_deg
-                } else {
-                    at.longitude_deg
-                },
-            )
-        })
+    let lagna = request
+        .lagna
+        .then(|| SynastryPoint::lagna(angle_in(foundation, request.zodiac, foundation.lagna_deg)));
+    planets_in(foundation, request.zodiac)
+        .map(|(at, longitude)| SynastryPoint::graha(at.graha, longitude))
         .chain(lagna)
         .collect()
+}
+
+/// A chart's Western planets, each with its longitude in the zodiac two
+/// charts are compared in (C241): tropical, or the chart's own.
+pub(crate) fn planets_in(
+    foundation: &ChartFoundation,
+    zodiac: SynastryZodiac,
+) -> impl Iterator<Item = (&GrahaPosition, f64)> {
+    let tropical = zodiac == SynastryZodiac::Tropical;
+    planets(foundation).map(move |at| {
+        (
+            at,
+            if tropical {
+                at.tropical_deg
+            } else {
+                at.longitude_deg
+            },
+        )
+    })
+}
+
+/// A point the chart gives in its own zodiac, an angle, in the zodiac two
+/// charts are compared in.
+pub(crate) fn angle_in(foundation: &ChartFoundation, zodiac: SynastryZodiac, deg: f64) -> f64 {
+    if zodiac == SynastryZodiac::Tropical {
+        foundation.zodiac.to_tropical(deg)
+    } else {
+        deg
+    }
 }
