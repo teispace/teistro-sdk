@@ -6589,8 +6589,12 @@ fn a_chart_request_answers_the_progressions() {
     let asked_json = CString::new(asked_text).unwrap();
     let bytes = chart_blob(
         &ctx,
+        // Every section the batch can ask for, so the façade's bare
+        // request below holds that a progressed chart is founded on the
+        // batch's foundation alone: the sections cost, and change nothing.
         &TsChartRequest {
             progressions_json: asked_json.as_ptr(),
+            sections: u32::MAX,
             ..base
         },
     )

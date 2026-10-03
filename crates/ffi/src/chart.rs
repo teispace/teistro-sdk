@@ -6549,6 +6549,12 @@ unsafe fn progressions_request_of(
 
 /// Every chart's progressions, none when none was asked for: each birth
 /// read through the request, its progressed chart founded by `request`.
+///
+/// `request` is the batch's **foundation only** (its place, clock and
+/// kind): the boundary writes a progressed chart's grahas and angles and
+/// nothing else, so founding it with every section the batch asked for
+/// would compute drawings, strengths and dashas no column carries, twice
+/// per birth (the progressed chart and the solar arc's).
 fn progressions_of(
     sdk: &teistro::Context,
     documents: &[Document],
@@ -7180,7 +7186,7 @@ pub unsafe extern "C" fn ts_chart_found(
             ctx.sdk(),
             &founded.value,
             records.progressions.as_ref(),
-            &request,
+            &ChartRequest::at(place, clock).with_kind(kind),
         )?;
         let encoded = encode(
             &founded.value,
