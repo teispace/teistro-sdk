@@ -1702,8 +1702,13 @@ pub const TS_CHART_DASHA_PHALA: u32 = 1024;
 ///
 /// `api: constant`
 pub const TS_CHART_JAIMINI: u32 = 2048;
+/// A chart request's `sections` bit: Uranus, Neptune and Pluto beside
+/// the nine, in the `outer` section (`03-design/western-outer-planets.md`).
+///
+/// `api: constant`
+pub const TS_CHART_OUTER: u32 = 4096;
 
-const SECTION_BITS: [SectionBit; 12] = [
+const SECTION_BITS: [SectionBit; 13] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -1716,6 +1721,7 @@ const SECTION_BITS: [SectionBit; 12] = [
     (TS_CHART_VAISESHIKAMSA, ChartRequest::with_vaiseshikamsa),
     (TS_CHART_DASHA_PHALA, ChartRequest::with_dasha_phala),
     (TS_CHART_JAIMINI, ChartRequest::with_jaimini),
+    (TS_CHART_OUTER, ChartRequest::with_outer_planets),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1821,12 +1827,15 @@ struct GrahaColumns {
 }
 
 impl GrahaColumns {
-    /// The columns of every chart's grahas, charts outermost: row
-    /// `chart * graha_count + g` is graha `g` of chart `chart`, the same
+    /// The columns of every chart's bodies in one list, charts outermost:
+    /// row `chart * count + g` is body `g` of chart `chart`, the same
     /// order the positions blob puts its cells in.
-    fn of(charts: &[&ChartFoundation]) -> GrahaColumns {
+    fn of(
+        charts: &[&ChartFoundation],
+        pick: fn(&ChartFoundation) -> &[teistro_chart::foundation::GrahaPosition],
+    ) -> GrahaColumns {
         let rows: Vec<&teistro_chart::foundation::GrahaPosition> =
-            charts.iter().flat_map(|c| c.grahas.iter()).collect();
+            charts.iter().flat_map(|c| pick(c)).collect();
         GrahaColumns {
             ids: rows.iter().map(|g| g.graha.id()).collect(),
             longitudes: rows.iter().map(|g| g.longitude_deg).collect(),
@@ -1877,19 +1886,29 @@ fn summary_values(
 /// batch that mixes sizes.
 ///
 /// The blob's layout is one count for the batch, and only this crate
-/// could have built a value that disagrees with itself.
+/// could have built a value that disagrees with itself. The outer planets
+/// are held to one count too: the request asks them of every chart, and
+/// a reader divides the `outer` section by the batch.
 fn one_size(charts: &[&ChartFoundation]) -> Result<usize, Error> {
-    let graha_count = charts.first().map_or(0, |c| c.grahas.len());
-    if let Some(odd) = charts.iter().find(|c| c.grahas.len() != graha_count) {
-        return Err(Error::new(
-            Status::Internal,
-            format!(
-                "the batch mixes chart sizes: {graha_count} grahas and {}, though every chart is the same kind",
-                odd.grahas.len()
-            ),
-        ));
+    for (what, count) in [
+        (
+            "grahas",
+            (|c: &ChartFoundation| c.grahas.len()) as fn(&ChartFoundation) -> usize,
+        ),
+        ("outer planets", |c: &ChartFoundation| c.outer.len()),
+    ] {
+        let first = charts.first().map_or(0, |c| count(c));
+        if let Some(odd) = charts.iter().find(|c| count(c) != first) {
+            return Err(Error::new(
+                Status::Internal,
+                format!(
+                    "the batch mixes chart sizes: {first} {what} and {}, though every chart is the same kind",
+                    count(odd)
+                ),
+            ));
+        }
     }
-    Ok(graha_count)
+    Ok(charts.first().map_or(0, |c| c.grahas.len()))
 }
 
 /// The drishti of a batch, as the section carries them.
@@ -3190,7 +3209,11 @@ impl ProgressionColumns {
                 u32::try_from(contacts.len())
                     .map_err(|_| Error::internal("more contacts than a section can count"))?,
             );
-            for at in progressed.map_or(&[][..], |p| p.chart.value.foundation.grahas.as_slice()) {
+            let placed = progressed.map(|p| &p.chart.value.foundation);
+            for at in placed
+                .into_iter()
+                .flat_map(|f| f.grahas.iter().chain(&f.outer))
+            {
                 columns.progressed_graha.push(at.graha.id());
                 columns.progressed_longitude_deg.push(at.longitude_deg);
                 columns.progressed_tropical_deg.push(at.tropical_deg);
@@ -5656,7 +5679,6 @@ pub fn encode(
     let mut writer = Writer::new(&schema);
     let chart_count = u32::try_from(charts.len()).unwrap_or(u32::MAX);
     let graha_count = one_size(charts)?;
-    let columns = GrahaColumns::of(charts);
     let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day.day)).collect();
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
@@ -5691,7 +5713,7 @@ pub fn encode(
                 &searches.sade_sati.counts,
             ),
         )?;
-        columns.write(&mut writer, charts.len() * graha_count)?;
+        GrahaColumns::of(charts, |c| &c.grahas).write(&mut writer, "grahas")?;
         writer.fixed("readings", &once.readings)?;
         write_bhavas(&mut writer, "houses", charts, |c| &c.houses)?;
         write_bhavas(&mut writer, "chalit", charts, |c| &c.chalit)?;
@@ -5728,6 +5750,7 @@ pub fn encode(
         writer.bytes("kp", kp.as_bytes())?;
         hellenistic.write(&mut writer)?;
         progressions.write(&mut writer)?;
+        GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -6719,11 +6742,11 @@ impl GrahaColumns {
     fn write(
         &self,
         writer: &mut Writer<'_>,
-        rows: usize,
+        name: &str,
     ) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
-            "grahas",
-            rows,
+            name,
+            self.ids.len(),
             &[
                 ColumnData::U16(&self.ids),
                 ColumnData::F64(&self.longitudes),

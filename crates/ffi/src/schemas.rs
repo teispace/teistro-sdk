@@ -244,10 +244,32 @@ pub fn intl_render() -> BlobSchema {
 /// One row per graha per chart, charts outermost.
 #[must_use]
 fn chart_grahas_section(id: u32) -> SectionSchema {
-    SectionSchema::columns(
+    chart_placed_section(
         id,
         "grahas",
         "One row per graha per chart, charts outermost: row `i * graha_count + j` is chart `i`, graha `j`, grahas in the catalogue's order. `house_*` is the bhava for \"which house is it in\"; `placement_*` is the chart's chalit, which is a different question and often a different answer.",
+    )
+}
+
+/// Uranus, Neptune and Pluto, where the request asked for them, in the
+/// shape of the nine (`03-design/western-outer-planets.md`).
+#[must_use]
+fn chart_outer_section(id: u32) -> SectionSchema {
+    chart_placed_section(
+        id,
+        "outer",
+        "Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.",
+    )
+}
+
+/// A section of placed bodies, a row a body: the columns `grahas` and
+/// `outer` share.
+#[must_use]
+fn chart_placed_section(id: u32, name: &str, doc: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        name,
+        doc,
         vec![
             ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
             ColumnDef::new(
@@ -614,6 +636,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_consideration_sections(69))
         .chain(chart_perfection_sections(72))
         .chain(chart_progression_sections(77))
+        .chain([chart_outer_section(81)])
         .collect(),
     }
 }
@@ -1251,7 +1274,7 @@ fn chart_progression_sections(first: u32) -> [SectionSchema; 4] {
             first + 1,
             "progressed_grahas",
             &format!(
-                "The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. {empty}"
+                "The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. {empty}"
             ),
             vec![
                 graha_column("graha", "Which planet."),
@@ -1276,7 +1299,7 @@ fn chart_progression_sections(first: u32) -> [SectionSchema; 4] {
             first + 2,
             "directed_grahas",
             &format!(
-                "The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. {empty}"
+                "The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. {empty}"
             ),
             vec![
                 graha_column("graha", "Which planet."),

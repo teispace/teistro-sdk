@@ -100,6 +100,12 @@ extern "C" {
 #define TS_CHART_JAIMINI ((uint32_t)2048)
 
 /**
+ * A chart request's `sections` bit: Uranus, Neptune and Pluto beside
+ * the nine, in the `outer` section (`03-design/western-outer-planets.md`).
+ */
+#define TS_CHART_OUTER ((uint32_t)4096)
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *

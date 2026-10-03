@@ -6592,6 +6592,8 @@ fn a_chart_request_answers_the_progressions() {
         // Every section the batch can ask for, so the façade's bare
         // request below holds that a progressed chart is founded on the
         // batch's foundation alone: the sections cost, and change nothing.
+        // The one exception is the outer planets, which the birth then
+        // carries and its later charts place too.
         &TsChartRequest {
             progressions_json: asked_json.as_ptr(),
             sections: u32::MAX,
@@ -6617,7 +6619,7 @@ fn a_chart_request_answers_the_progressions() {
                 .iter()
                 .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
                 .collect::<Vec<_>>(),
-            &request,
+            &request.clone().with_outer_planets(),
         )
         .unwrap()
         .value;
@@ -6701,19 +6703,16 @@ fn a_chart_request_answers_the_progressions() {
         vec![1; instants.len()]
     );
 
-    // The planets, graha-count rows a chart.
+    // The planets, the same number a chart: every section asked, so the
+    // nine and then the outer three.
     let grahas: Vec<&teistro_chart::foundation::GrahaPosition> = expected
         .iter()
         .flat_map(|one| {
-            &one.progressed
-                .as_ref()
-                .unwrap()
-                .chart
-                .value
-                .foundation
-                .grahas
+            let later = &one.progressed.as_ref().unwrap().chart.value.foundation;
+            later.grahas.iter().chain(&later.outer)
         })
         .collect();
+    assert_eq!(grahas.len(), instants.len() * 12);
     assert_eq!(
         ints("progressed_grahas", "graha"),
         grahas
