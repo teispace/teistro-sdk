@@ -715,8 +715,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1261 since the decennials, the same; 1269 since Lilly's considerations,
   // five `TsPtolemaicAspect`s and three `TsRadicalGround`s; 1282 since
   // Lilly's perfection, three `TsApplicationKind`s, three
-  // `TsImpedimentKind`s and seven `TsWay`s.
-  assert.equal(entries, 1282, 'every member of every enum is in a table');
+  // `TsImpedimentKind`s and seven `TsWay`s; 1291 since the Western
+  // aspects, nine `TsWesternAspect`s.
+  assert.equal(entries, 1291, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2277,6 +2278,73 @@ test('a chart carries its progressions', () => {
       field,
     );
   }
+  ctx.dispose();
+});
+
+/**
+ * The Western aspects cross whole on King Edward VII's nativity: Leo's
+ * four (*How to Judge a Nativity*, pp. 295–296) under his orbs, Lilly's
+ * moieties refusing the outer three they give no orb, a batch the charts
+ * one at a time, and refusals named in the record
+ * (`03-design/western-aspects.md`).
+ */
+test('a chart carries its Western aspects', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const palace = { place: { latitude: 51.501, longitude: -0.142, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2393783.95;
+  assert.equal(ctx.chart.found({ instant: birth, ...palace }).westernAspects, null);
+
+  const rows = ctx.chart.found({ instant: birth, ...palace, outerPlanets: true, westernAspects: {} }).westernAspects;
+  assert.ok(Object.isFrozen(rows[0]), 'frozen to its leaves');
+  const holds = (a, aspect, b) =>
+    rows.some((row) => row.aspect === aspect && [row.first, row.second].sort().join() === [a, b].sort().join());
+  for (const [a, aspect, b] of [
+    ['graha.SUN', 'TRINE', 'graha.URANUS'],
+    ['graha.SUN', 'SEXTILE', 'graha.MARS'],
+    ['graha.SUN', 'SQUARE', 'graha.NEPTUNE'],
+    ['graha.MOON', 'SQUARE', 'graha.SATURN'],
+  ]) {
+    assert.ok(holds(a, aspect, b), `${a} ${aspect} ${b}`);
+  }
+  assert.ok(rows.every((row) => row.fromExactDeg <= row.orbDeg && typeof row.applying === 'boolean'));
+
+  // Lilly's moieties over the seven: the Moon (12½) and Saturn (10) square within 11¼.
+  const lilly = {
+    aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'OPPOSITION'],
+    orbs: {
+      model: 'MOIETIES',
+      orbs: [
+        ['SUN', 17], ['MOON', 12.5], ['MERCURY', 7], ['VENUS', 8], ['MARS', 7.5], ['JUPITER', 12], ['SATURN', 10],
+      ].map(([graha, orbDeg]) => ({ graha, orbDeg })),
+    },
+  };
+  const square = ctx.chart
+    .found({ instant: birth, ...palace, westernAspects: lilly })
+    .westernAspects.find((row) => row.first === 'graha.MOON' && row.second === 'graha.SATURN');
+  assert.equal(square.aspect, 'SQUARE');
+  assert.equal(square.orbDeg, 11.25);
+
+  const instants = [birth, birth + 3000.25, birth + 9000.5];
+  const batch = ctx.chart.foundMany({ instants, ...palace, westernAspects: { aspects: ['TRINE', 'SQUARE'] } });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(
+      batch.at(k).westernAspects,
+      ctx.chart.found({ instant, ...palace, westernAspects: { aspects: ['TRINE', 'SQUARE'] } }).westernAspects,
+    ),
+  );
+  for (const [request, field, outer] of [
+    [{ aspects: [] }, 'westernAspects.aspects', false],
+    [{ aspects: ['TRINE', 'TRINE'] }, 'westernAspects.aspects', false],
+    [{ aspects: ['QUINTILE'] }, 'westernAspects.aspects[0]', false],
+    [lilly, 'westernAspects.orbs.orbs', true],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...palace, outerPlanets: outer, westernAspects: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: birth, ...palace, westernAspects: [] }), TypeError);
   ctx.dispose();
 });
 

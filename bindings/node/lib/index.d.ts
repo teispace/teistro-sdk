@@ -75,6 +75,7 @@ import type {
   ImpedimentKind,
   Way,
   Motion,
+  WesternAspect,
   AspectPhase,
   GocharVerdict,
   NodeObstruction,
@@ -1371,6 +1372,52 @@ export interface ProgressionsRequest {
     /** The aspects' angles, whole degrees to 180; Leo's table (p. 48) by default. */
     readonly aspects?: HitRequest['aspects'];
   };
+}
+
+/**
+ * Which Western aspects to look for, and under which orbs
+ * (`03-design/western-aspects.md`). Leo's nine under his orbs (*How to
+ * Judge a Nativity*, pp. 43–47) when every field is absent (C240).
+ *
+ * @example
+ * const leo: WesternAspectRequest = {};
+ * const lilly: WesternAspectRequest = {
+ *   aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'OPPOSITION'],
+ *   orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }, { graha: 'MOON', orbDeg: 12.5 }] },
+ * };
+ */
+export interface WesternAspectRequest {
+  /** The aspects looked for, each once; Leo's nine by default. */
+  readonly aspects?: readonly WesternAspect[];
+  /** The orb model; Leo's by default. */
+  readonly orbs?:
+    | { readonly model: 'LEO' }
+    | {
+        readonly model: 'MOIETIES';
+        /** Each planet's whole orb; a pair is within half the sum of theirs. */
+        readonly orbs: readonly { readonly graha: GrahaName; readonly orbDeg: number }[];
+      }
+    | {
+        readonly model: 'BY_ASPECT';
+        /** Each aspect's orb, whatever the pair. */
+        readonly orbs: readonly { readonly aspect: WesternAspect; readonly orbDeg: number }[];
+      };
+}
+
+/** One pair of planets within an aspect's orb. */
+export interface WesternAspectRow {
+  /** The earlier planet of the pair, in catalogue order. */
+  readonly first: Graha | 'unknown';
+  readonly second: Graha | 'unknown';
+  readonly aspect: WesternAspect | 'unknown';
+  /** The shorter arc between them, degrees 0 to 180. */
+  readonly apartDeg: number;
+  /** How far that arc is from the aspect's exact angle, degrees. */
+  readonly fromExactDeg: number;
+  /** The orb the model allowed the pair at this aspect, degrees. */
+  readonly orbDeg: number;
+  /** Whether the faster planet is closing on the exact angle. */
+  readonly applying: boolean;
 }
 
 /** A progressed or directed planet. */
@@ -3007,6 +3054,11 @@ export declare class Chart {
    */
   readonly progressions: Progressions | null;
   /**
+   * The Western aspect table; `null` unless `westernAspects` asked
+   * (`03-design/western-aspects.md`).
+   */
+  readonly westernAspects: readonly WesternAspectRow[] | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4126,6 +4178,12 @@ export interface ChartRequest {
    * (`03-design/western-progressions.md`). None by default.
    */
   readonly progressions?: ProgressionsRequest;
+  /**
+   * The Western aspects to read in every chart, read back as each chart's
+   * `westernAspects`: Leo's nine under his orbs when `{}` (C240). None by
+   * default.
+   */
+  readonly westernAspects?: WesternAspectRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */
