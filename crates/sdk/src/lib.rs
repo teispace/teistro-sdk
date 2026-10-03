@@ -245,6 +245,7 @@ pub use teistro_western::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, SynastryRequest, SynastryRow, SynastryZodiac,
     WesternAspect, WesternAspectRow,
 };
+pub use western_aspects::{Partner, PartnerSynastry};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).

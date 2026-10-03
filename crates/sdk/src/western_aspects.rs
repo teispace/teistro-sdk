@@ -1,9 +1,13 @@
 //! The Western aspects a founded chart holds (`03-design/western-aspects.md`),
 //! and those between two charts (`03-design/western-synastry.md`).
 
+use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
+use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
     AspectRequest, Placed, SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac,
@@ -11,6 +15,107 @@ use teistro_western::{
 };
 
 use crate::area::ChartArea;
+use crate::reading::ChartRequest;
+
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const SYNASTRY: &str = "synastry";
+
+/// A second birth, which every chart of a batch is read against.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Partner {
+    /// The birth's instant.
+    pub instant: JulianDay<Utc>,
+    /// Where it happened.
+    pub place: Place,
+    /// Its civil clock, which a chart's day is reckoned by; UTC when left
+    /// out.
+    #[serde(rename = "utcOffsetSeconds", default)]
+    pub utc_offset: UtcOffset,
+}
+
+/// A synastry against a partner's birth, as a binding asks it: the
+/// partner, and the [`SynastryRequest`] laid flat beside it.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", try_from = "Map<String, Value>")]
+pub struct PartnerSynastry {
+    /// Whose chart every chart is read against.
+    pub partner: Partner,
+    /// The aspects, orbs, lagna and zodiac.
+    #[serde(flatten)]
+    pub request: SynastryRequest,
+}
+
+impl PartnerSynastry {
+    /// A partner's synastry, under a request.
+    #[must_use]
+    pub const fn new(partner: Partner, request: SynastryRequest) -> PartnerSynastry {
+        PartnerSynastry { partner, request }
+    }
+
+    /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
+    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
+    /// and every field of [`SynastryRequest::from_json`] beside it.
+    ///
+    /// ```
+    /// use teistro::PartnerSynastry;
+    ///
+    /// let asked = PartnerSynastry::from_json(
+    ///     r#"{"partner": {"instant": 2403113.4993, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "lagna": false}"#,
+    /// )?;
+    /// assert!(!asked.request.lagna);
+    /// // A partner's place is held to the same bounds as any place.
+    /// let north = PartnerSynastry::from_json(
+    ///     r#"{"partner": {"instant": 2403113.4993, "place": {"latitude": 95, "longitude": 0, "altitude": 0}}}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(north.field(), Some("synastry.partner.place.latitude"));
+    /// // A request field is named as the caller wrote it, beside the partner.
+    /// let zodiac = PartnerSynastry::from_json(
+    ///     r#"{"partner": {"instant": 2403113.4993, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}, "zodiac": "SIDEREAL"}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(zodiac.field(), Some("synastry.zodiac"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, a value out of its bounds, and whatever
+    /// [`SynastryRequest::check`] refuses, each named under `synastry`.
+    pub fn from_json(text: &str) -> Result<PartnerSynastry, Error> {
+        let given: Map<String, Value> = teistro_core::strict::read(text, SYNASTRY)?;
+        let asked = PartnerSynastry::split(given, SYNASTRY)?;
+        asked.request.check().map_err(|why| why.under(SYNASTRY))?;
+        Ok(asked)
+    }
+
+    /// The partner taken out, and the rest read as the request, each by
+    /// its own path under `root`: `flatten` would buffer the request and
+    /// name a refusal inside it by the record alone.
+    fn split(mut given: Map<String, Value>, root: &str) -> Result<PartnerSynastry, Error> {
+        let at = format!("{root}.partner");
+        let partner = given.remove("partner").ok_or_else(|| {
+            Error::invalid_arg("a synastry needs the partner's birth")
+                .with_field(at.clone())
+                .with_hint("give `partner`: its `instant` and `place`")
+        })?;
+        Ok(PartnerSynastry {
+            partner: teistro_core::strict::read_value(&partner, &at)?,
+            request: teistro_core::strict::read_value(&Value::Object(given), root)?,
+        })
+    }
+}
+
+impl TryFrom<Map<String, Value>> for PartnerSynastry {
+    type Error = Error;
+
+    fn try_from(given: Map<String, Value>) -> Result<PartnerSynastry, Error> {
+        PartnerSynastry::split(given, SYNASTRY)
+    }
+}
 
 impl ChartArea<'_> {
     /// The **Western aspects** a chart holds: every pair of its planets
@@ -100,6 +205,52 @@ impl ChartArea<'_> {
             .with_hint("found both under one zodiac, or compare them in the tropical one"));
         }
         synastry(&points(a, request), &points(b, request), request)
+    }
+}
+
+impl ChartArea<'_> {
+    /// Every chart's **synastry with one partner**: the partner's birth is
+    /// founded once, with the outer planets when any chart placed them,
+    /// and each chart is read against it as [`ChartArea::synastry`] reads
+    /// two, the chart first. One list a chart, in the order given.
+    ///
+    /// # Errors
+    ///
+    /// What [`SynastryRequest::check`] refuses, a partner that cannot be
+    /// founded, and what [`ChartArea::synastry`] refuses, hinted with the
+    /// chart's place in the list.
+    pub fn synastry_with(
+        self,
+        charts: &[Document],
+        asked: &PartnerSynastry,
+    ) -> Result<Vec<Vec<SynastryRow>>, Error> {
+        asked.request.check()?;
+        let Partner {
+            instant,
+            place,
+            utc_offset,
+        } = asked.partner;
+        let request = ChartRequest::at(place, utc_offset);
+        let request = if charts
+            .iter()
+            .any(|chart| !chart.foundation.outer.is_empty())
+        {
+            request.with_outer_planets()
+        } else {
+            request
+        };
+        let partner = self
+            .reading(instant, &request)
+            .map_err(|why| why.with_field("partner"))?
+            .value;
+        charts
+            .iter()
+            .enumerate()
+            .map(|(at, chart)| {
+                self.synastry(chart, &partner, &asked.request)
+                    .map_err(|why| why.with_hint(format!("chart {at}")))
+            })
+            .collect()
     }
 }
 
