@@ -5,14 +5,17 @@
 //! ecliptic; the ascendant is then the one the turned meridian rises with
 //! at the birthplace. The quotidian is the chart at the instant itself.
 
+use serde::{Deserialize, Serialize};
 use teistro_astro::houses::{Obliquity, circle_point};
 use teistro_astro::sky::{Spherical, ecliptic_to_equatorial};
 use teistro_core::error::Error;
 
 use crate::progression::TROPICAL_YEAR_DAYS;
 
-/// How the progressed midheaven moves (C237).
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+/// How the progressed midheaven moves (C237), spelled as its member in a
+/// request: `"NAIBOD_RIGHT_ASCENSION"`, `"SOLAR_ARC_LONGITUDE"`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AngleMethod {
     /// The mean Sun's motion in right ascension: the chart cast for the
     /// birth's clock time on the progressed day, Leo's own map (p. 35),

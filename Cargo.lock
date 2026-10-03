@@ -2134,6 +2134,8 @@ dependencies = [
 name = "teistro-western"
 version = "0.0.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "teistro-astro",
  "teistro-core",
 ]

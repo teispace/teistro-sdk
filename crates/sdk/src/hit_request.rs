@@ -322,7 +322,7 @@ struct Asked {
 /// bare, a graha's key or `"LAGNA"`.
 #[derive(Serialize)]
 #[serde(transparent)]
-struct PointAsked(NatalPoint);
+pub(crate) struct PointAsked(NatalPoint);
 
 impl<'de> Deserialize<'de> for PointAsked {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {

@@ -9,7 +9,7 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::western::{Rate, YearMeasure};
 use teistro::{
     AngleMethod, ArcMeasure, ChartRequest, ContactRequest, Context, DirectionArc, Document,
-    Ephemeris, NatalPoint, Progression, ProgressionRequest, UtcOffset,
+    Ephemeris, NatalPoint, Progression, ProgressionRequest, ProgressionsRequest, UtcOffset,
 };
 
 /// 7 August 1860, 5.49 a.m. at London (p. 305). Leo reckons it as
@@ -399,4 +399,48 @@ fn a_contact_window_that_runs_backwards_is_named() {
         )
         .unwrap_err();
     assert_eq!(error.field(), Some("contacts.aspects"));
+}
+
+#[test]
+fn one_request_answers_what_the_three_calls_do() {
+    let sdk = context();
+    let born = birth(&sdk);
+    let asked = ProgressionsRequest::from_json(&format!(
+        r#"{{"at": {}, "year": "NOON_SIDEREAL_TIME", "contacts": {{"from": {}, "to": {}, "grahas": ["MOON"]}}}}"#,
+        BIRTH + 46.5 * 365.25,
+        first_of(1906, 10),
+        first_of(1908, 1),
+    ))
+    .unwrap();
+    let at = asked.at.unwrap();
+    let all = sdk.chart().progressions(&born, &asked, &request()).unwrap();
+    let leo = ProgressionRequest::default().with_year(YearMeasure::NoonSiderealTime);
+    assert_eq!(
+        all.progressed,
+        Some(sdk.chart().progressed(&born, at, &leo, &request()).unwrap())
+    );
+    assert_eq!(
+        all.directed,
+        Some(
+            sdk.chart()
+                .directed(
+                    &born,
+                    at,
+                    &DirectionArc::Solar(Progression::LEO),
+                    &request()
+                )
+                .unwrap()
+        )
+    );
+    let moon = ContactRequest::default()
+        .with_progression(Progression::LEO)
+        .with_grahas([Graha::Moon]);
+    assert_eq!(
+        all.contacts,
+        Some(
+            sdk.chart()
+                .progressed_contacts(&born, jd(first_of(1906, 10)), jd(first_of(1908, 1)), &moon)
+                .unwrap()
+        )
+    );
 }

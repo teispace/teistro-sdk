@@ -3,6 +3,7 @@
 //! Leo's "one day measures a year" (*The Progressed Horoscope*, Appendix
 //! IV, p. 303), his lunar rates (p. 311) and the year measures C236 weighs.
 
+use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 
@@ -21,8 +22,10 @@ pub const SYNODIC_MONTH_DAYS: f64 = 29.530_588_9;
 /// the tertiary progression (C238).
 pub const SIDEREAL_MONTH_DAYS: f64 = 27.321_661_5;
 
-/// One span of time a rate is stated in.
-#[derive(Clone, Copy, Debug, PartialEq)]
+/// One span of time a rate is stated in, spelled `"DAY"`, `"YEAR"` or
+/// `{"DAYS": 2.5}` in a request.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Span {
     /// A day.
     Day,
@@ -50,8 +53,8 @@ impl Span {
 }
 
 /// A rate: one `sky` span of the ephemeris measures one `life` span of the
-/// native's life.
-#[derive(Clone, Copy, Debug, PartialEq)]
+/// native's life, spelled `{"sky": "DAY", "life": "YEAR"}` in a request.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Rate {
     /// The span of the sky's time.
     pub sky: Span,
@@ -85,11 +88,20 @@ impl Rate {
     };
 }
 
+impl Default for Rate {
+    /// A day for a year.
+    fn default() -> Rate {
+        Rate::SECONDARY
+    }
+}
+
 /// How long a year of life is, against the calendar (C236).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum YearMeasure {
     /// The mean tropical year, [`TROPICAL_YEAR_DAYS`]: what the mean Sun
     /// takes to come back, and every modern implementation's year.
+    #[default]
     Tropical,
     /// The Julian year of 365.25 days.
     Julian,
@@ -297,6 +309,30 @@ mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use super::*;
+
+    #[test]
+    fn the_measures_spell_as_a_request_writes_them() {
+        assert_eq!(
+            serde_json::to_string(&Rate::MINOR).unwrap(),
+            r#"{"sky":"SYNODIC_MONTH","life":"YEAR"}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&Span::Days(2.5)).unwrap(),
+            r#"{"DAYS":2.5}"#
+        );
+        assert_eq!(
+            serde_json::to_string(&YearMeasure::NoonSiderealTime).unwrap(),
+            r#""NOON_SIDEREAL_TIME""#
+        );
+        assert_eq!(
+            serde_json::to_string(&crate::AngleMethod::SolarArcRightAscension).unwrap(),
+            r#""SOLAR_ARC_RIGHT_ASCENSION""#
+        );
+        assert_eq!(
+            serde_json::to_string(&crate::ArcMeasure::PerYear(1.5)).unwrap(),
+            r#"{"PER_YEAR":1.5}"#
+        );
+    }
 
     /// Leo's birth: London, 7 August 1860, 5.49 a.m. (p. 305), which is
     /// Greenwich time to the half minute.
