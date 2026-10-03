@@ -4369,6 +4369,43 @@ List<List<SynastryRow>> _decodeSynastries(Charts batch) {
   );
 }
 
+/// The pairs in antiscion read off their columns, a chart's own
+/// (`antiscion_rows`) or across a synastry (`synastry_antiscion_rows`):
+/// the two sections share columns.
+AntiscionRow Function(int) _antiscionRows(
+  Uint16List first,
+  Uint16List second,
+  Uint8List contrary,
+  Float64List apartDeg,
+  Float64List orbDeg,
+) =>
+    (at) => AntiscionRow(
+      first: Graha.byId(first[at]),
+      second: Graha.byId(second[at]),
+      contrary: contrary[at] == 1,
+      apartDeg: apartDeg[at],
+      orbDeg: orbDeg[at],
+    );
+
+final Expando<List<List<AntiscionRow>>> _synastryAntiscia =
+    Expando<List<List<AntiscionRow>>>('synastry antiscia');
+
+List<List<AntiscionRow>> _synastryAntisciaOf(Charts batch) =>
+    _synastryAntiscia[batch] ??= _decodeSynastryAntiscia(batch);
+
+/// `synastry_antiscia` holds a row a chart, or none when none was asked,
+/// and `synastry_antiscion_rows` is ragged by its count.
+List<List<AntiscionRow>> _decodeSynastryAntiscia(Charts batch) {
+  final r = batch.synastryAntiscionRows;
+  return _ragged(
+    batch,
+    batch.synastryAntiscia.count,
+    r.length,
+    'synastry_antiscia and synastry_antiscion_rows',
+    _antiscionRows(r.first, r.second, r.contrary, r.apartDeg, r.orbDeg),
+  );
+}
+
 final Expando<List<Antiscia>> _antiscia = Expando<List<Antiscia>>('antiscia');
 
 List<Antiscia> _antisciaOf(Charts batch) =>
@@ -4392,13 +4429,7 @@ List<Antiscia> _decodeAntiscia(Charts batch) {
     row.pairCount,
     r.length,
     'antiscia and antiscion_rows',
-    (at) => AntiscionRow(
-      first: Graha.byId(r.first[at]),
-      second: Graha.byId(r.second[at]),
-      contrary: r.contrary[at] == 1,
-      apartDeg: r.apartDeg[at],
-      orbDeg: r.orbDeg[at],
-    ),
+    _antiscionRows(r.first, r.second, r.contrary, r.apartDeg, r.orbDeg),
   );
   return [
     for (final (k, rows) in points.indexed)
@@ -6783,7 +6814,9 @@ final class AntisciaRequest {
 
   final OrbModel orbs;
 
-  String get _json => jsonEncode(<String, Object?>{'orbs': orbs._record});
+  Map<String, Object?> get _record => {'orbs': orbs._record};
+
+  String get _json => jsonEncode(_record);
 }
 
 /// A planet's two reflections, tropical degrees
@@ -6807,7 +6840,9 @@ final class Antiscion extends _Value {
   List<Object?> get _fields => [graha, antiscionDeg, contrantiscionDeg];
 }
 
-/// Two planets in antiscion within the orb, the pair in catalogue order.
+/// Two planets in antiscion within the orb: in a chart's own pair the two
+/// in catalogue order, across a synastry the chart's [first] and the
+/// partner's [second].
 final class AntiscionRow extends _Value {
   const AntiscionRow({
     required this.first,
@@ -7047,12 +7082,14 @@ enum SynastryZodiac {
 /// [zodiac]: Leo's nine under his orbs, the lagna read, tropically by
 /// default (C240–C242). [parallels] asks for the parallels across the two
 /// charts too ([Chart.synastryParallels],
-/// `03-design/western-declinations.md`).
+/// `03-design/western-declinations.md`), and [antiscia] the antiscia
+/// across them ([Chart.synastryAntiscia], `03-design/western-antiscia.md`).
 ///
 /// ```dart
 /// final asked = SynastryRequest(mary, lagna: false);
 /// final lilly = SynastryRequest.lilly(mary);
 /// final level = SynastryRequest(mary, parallels: const ParallelRequest());
+/// final mirrored = SynastryRequest(mary, antiscia: const AntisciaRequest());
 /// ```
 final class SynastryRequest {
   const SynastryRequest(
@@ -7061,6 +7098,7 @@ final class SynastryRequest {
     this.lagna = true,
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
+    this.antiscia,
   });
 
   /// Lilly's reading: the Ptolemaic five under his moieties, which give the
@@ -7069,6 +7107,7 @@ final class SynastryRequest {
     this.partner, {
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
+    this.antiscia,
   }) : table = WesternAspectRequest.lilly,
        lagna = false;
 
@@ -7088,12 +7127,16 @@ final class SynastryRequest {
   /// The orb the parallels across are read under; none are read when null.
   final ParallelRequest? parallels;
 
+  /// The orbs the antiscia across are read under; none are read when null.
+  final AntisciaRequest? antiscia;
+
   String get _json => jsonEncode(<String, Object?>{
     'partner': partner._record,
     ...table._record,
     'lagna': lagna,
     'zodiac': zodiac.key,
     if (parallels case final asked?) 'parallels': asked._record,
+    if (antiscia case final asked?) 'antiscia': asked._record,
   });
 }
 
@@ -13135,6 +13178,17 @@ final class Chart {
   /// (`03-design/western-declinations.md`).
   List<SynastryParallelRow>? get synastryParallels {
     final all = _synastryParallelsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The antiscia between this chart and the partner's, closest first: a
+  /// planet of this chart whose tropical longitude and one of the
+  /// partner's sum to 180°, or 0° for the contrantiscion, within the orb
+  /// read at the conjunction, Lilly's moieties by default (C244); null
+  /// unless `synastry` asked for `antiscia`
+  /// (`03-design/western-antiscia.md`).
+  List<AntiscionRow>? get synastryAntiscia {
+    final all = _synastryAntisciaOf(batch);
     return index < all.length ? all[index] : null;
   }
 

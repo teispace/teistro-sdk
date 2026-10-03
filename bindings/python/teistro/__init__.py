@@ -37,6 +37,8 @@ from . import messages as intl
 from ._blob import (
     BlobError,
     Charts,
+    ChartsAntiscionRows,
+    ChartsSynastryAntiscionRows,
     IntlRender,
     Panchanga,
     Positions,
@@ -3925,8 +3927,9 @@ class Antiscion:
 
 @dataclass(frozen=True)
 class AntiscionRow:
-    """Two planets in antiscion within the orb, the pair in catalogue
-    order."""
+    """Two planets in antiscion within the orb: in a chart's own pair the
+    two in catalogue order, across a synastry the chart's first and the
+    partner's second."""
 
     first: Graha
     second: Graha
@@ -4033,16 +4036,20 @@ class SynastryRequest(WesternAspectRequest, total=False):
     the default, or `"CHARTS"`, each chart's own (C241); `parallels` asks
     for the parallels across the two charts too
     (`Chart.synastry_parallels`, `03-design/western-declinations.md`), the
-    lagna joining as `lagna` says.
+    lagna joining as `lagna` says; `antiscia` for the antiscia across them
+    (`Chart.synastry_antiscia`, `03-design/western-antiscia.md`), Lilly's
+    moieties when `{}` (C244).
 
     >>> asked: SynastryRequest = {"partner": mary, "aspects": [WesternAspect.TRINE], "lagna": False}
     >>> level: SynastryRequest = {"partner": mary, "parallels": {}}
+    >>> mirrored: SynastryRequest = {"partner": mary, "antiscia": {"orbs": {"model": "LEO"}}}
     """
 
     partner: Required[SynastryPartner]
     lagna: bool
     zodiac: Literal["TROPICAL", "CHARTS"]
     parallels: ParallelRequest
+    antiscia: AntisciaRequest
 
 
 @dataclass(frozen=True)
@@ -6697,6 +6704,18 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     return _record_json(_aspect_table(asked), "westernAspects", example)
 
 
+def _antiscion_row(rows: Union[ChartsAntiscionRows, ChartsSynastryAntiscionRows], at: int) -> AntiscionRow:
+    """One pair in antiscion, a chart's own (`antiscion_rows`) or across a
+    synastry (`synastry_antiscion_rows`): the two sections share columns."""
+    return AntiscionRow(
+        first=Graha(rows.first[at]),
+        second=Graha(rows.second[at]),
+        contrary=rows.contrary[at] == 1,
+        apart_deg=rows.apart_deg[at],
+        orb_deg=rows.orb_deg[at],
+    )
+
+
 def _antiscia_json(asked: Optional[AntisciaRequest]) -> Optional[str]:
     """The antiscia as the JSON the boundary reads, or nothing for none; an
     orb model's members are written as their keys, as the aspect table's
@@ -6716,6 +6735,9 @@ def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
     if not isinstance(asked, Mapping):
         return _record_json(asked, "synastry", example)
     written = _aspect_table(asked)
+    antiscia = asked.get("antiscia")
+    if isinstance(antiscia, Mapping):
+        written["antiscia"] = _aspect_table(antiscia)
     partner = asked.get("partner")
     if isinstance(partner, Mapping):
         rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds")}
@@ -8366,6 +8388,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def synastry_antiscia(self) -> Optional[Tuple[AntiscionRow, ...]]:
+        """The antiscia between this chart and the partner's, closest first:
+        a planet of this chart whose tropical longitude and one of the
+        partner's sum to 180°, or 0° for the contrantiscion, within the
+        orb read at the conjunction, Lilly's moieties by default (C244);
+        `None` unless `synastry=` asked for `antiscia`
+        (`03-design/western-antiscia.md`)."""
+        parsed = self.batch._synastry_antiscia
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8987,18 +9020,7 @@ class ChartBatch:
         p = self.decoded.antiscion_points
         r = self.decoded.antiscion_rows
         points = self._ragged(row.point_count, p.length, "antiscia and antiscion_points", lambda at: at)
-        pairs = self._ragged(
-            row.pair_count,
-            r.length,
-            "antiscia and antiscion_rows",
-            lambda at: AntiscionRow(
-                first=Graha(r.first[at]),
-                second=Graha(r.second[at]),
-                contrary=r.contrary[at] == 1,
-                apart_deg=r.apart_deg[at],
-                orb_deg=r.orb_deg[at],
-            ),
-        )
+        pairs = self._ragged(row.pair_count, r.length, "antiscia and antiscion_rows", lambda at: _antiscion_row(r, at))
         return [
             Antiscia(
                 points=tuple(
@@ -9014,6 +9036,19 @@ class ChartBatch:
             )
             for k, rows in enumerate(points)
         ]
+
+    @cached_property
+    def _synastry_antiscia(self) -> list[Tuple[AntiscionRow, ...]]:
+        """Every chart's antiscia with the partner, decoded once; empty when
+        none were asked for. `synastry_antiscia` holds a row a chart and
+        `synastry_antiscion_rows` is ragged by its count."""
+        r = self.decoded.synastry_antiscion_rows
+        return self._ragged(
+            self.decoded.synastry_antiscia.count,
+            r.length,
+            "synastry_antiscia and synastry_antiscion_rows",
+            lambda at: _antiscion_row(r, at),
+        )
 
     @cached_property
     def _synastry_parallels(self) -> list[Tuple[SynastryParallelRow, ...]]:

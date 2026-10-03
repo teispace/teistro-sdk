@@ -21,6 +21,7 @@ import json
 
 from teistro import (
     Almuten,
+    AntiscionRow,
     EclipseMoment,
     EclipseSeen,
     KpLevel,
@@ -108,6 +109,18 @@ def put(key: str, value: Any) -> None:
 def listed(items: Iterable[str]) -> str:
     """The items joined by spaces, or `none`."""
     return " ".join(items) or "none"
+
+
+def put_antiscion_rows(key: str, rows: Sequence[AntiscionRow]) -> None:
+    """Pairs in antiscion as every runner prints them, a chart's own or
+    across a synastry: their count, then each pair's planets, side, gap
+    and orb."""
+    put(f"{key}-count", str(len(rows)))
+    for n, row in enumerate(rows):
+        put(
+            f"{key}-{n}",
+            f"{row.first.full_key} {row.second.full_key} {int(row.contrary)} {number(row.apart_deg)} {number(row.orb_deg)}",
+        )
 
 
 def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
@@ -580,6 +593,7 @@ def main() -> None:
                 "aspects": ["CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"],
                 "zodiac": "CHARTS",
                 "parallels": {"orbDeg": 1.5},
+                "antiscia": {"orbs": {"model": "LEO"}},
             },
             progressions={
                 "at": 2470000.5,
@@ -1171,13 +1185,7 @@ def main() -> None:
                 f"chart-{i}-antiscia-unpaired",
                 ",".join(one.full_key for one in reflected.unpaired) or "-",
             )
-            put(f"chart-{i}-antiscia-count", str(len(reflected.pairs)))
-            for n, reflected_pair in enumerate(reflected.pairs):
-                put(
-                    f"chart-{i}-antiscia-{n}",
-                    f"{reflected_pair.first.full_key} {reflected_pair.second.full_key} "
-                    f"{int(reflected_pair.contrary)} {number(reflected_pair.apart_deg)} {number(reflected_pair.orb_deg)}",
-                )
+            put_antiscion_rows(f"chart-{i}-antiscia", reflected.pairs)
             synastry = chart.synastry
             assert synastry is not None
             put(f"chart-{i}-synastry-count", str(len(synastry)))
@@ -1196,6 +1204,9 @@ def main() -> None:
                     f"{natal_key(across_level.first)} {natal_key(across_level.second)} {int(across_level.contrary)} "
                     f"{number(across_level.apart_deg)} {number(across_level.orb_deg)}",
                 )
+            across_reflected = chart.synastry_antiscia
+            assert across_reflected is not None
+            put_antiscion_rows(f"chart-{i}-synastry-antiscia", across_reflected)
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

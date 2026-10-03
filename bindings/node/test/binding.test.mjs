@@ -2495,10 +2495,30 @@ test('a chart carries its synastry with a partner', () => {
   const none = ctx.chart.found({ instant: birth, ...george, synastry: { partner, parallels: { orbDeg: 0.000001 } } });
   assert.deepEqual(none.synastryParallels, [], 'asked and none within the orb is an empty list');
 
+  // The antiscia across: none unless asked, then the recast's seven under
+  // Lilly's moieties, closest first (Saturn's antiscion on Jupiter, 0.09°).
+  assert.equal(ctx.chart.found({ instant: birth, ...george, synastry: { partner } }).synastryAntiscia, null);
+  const reflected = ctx.chart.found({ instant: birth, ...george, synastry: { partner, antiscia: {} } }).synastryAntiscia;
+  assert.deepEqual(
+    reflected.map((row) => [row.first, row.second, row.contrary]),
+    [
+      ['graha.SATURN', 'graha.JUPITER', false],
+      ['graha.SATURN', 'graha.MOON', false],
+      ['graha.MERCURY', 'graha.MARS', false],
+      ['graha.MARS', 'graha.SATURN', true],
+      ['graha.VENUS', 'graha.MARS', false],
+      ['graha.MARS', 'graha.MERCURY', false],
+      ['graha.MARS', 'graha.SUN', false],
+    ],
+  );
+  assert.ok(Math.abs(reflected[0].apartDeg - 0.089) < 0.005, `${reflected[0].apartDeg}`);
+  assert.ok(Object.isFrozen(reflected[0]), 'frozen');
+
   const north = { ...partner, place: { ...partner.place, latitude: 95 } };
   for (const [request, field] of [
     [{ partner: north }, 'synastry.partner.place.latitude'],
     [{ partner, parallels: { orbDeg: 11 } }, 'synastry.parallels.orbDeg'],
+    [{ partner, antiscia: { orbs: { model: 'BY_ASPECT', orbs: [{ aspect: 'TRINE', orbDeg: 3 }] } } }, 'synastry.antiscia.orbs.orbs'],
     [{ partner, zodiac: 'SIDEREAL' }, 'synastry.zodiac'],
     [{ partner, orbs: { model: 'MOIETIES', orbs: [{ graha: 'SUN', orbDeg: 17 }] } }, 'synastry.lagna'],
     [{ lagna: false }, 'synastry.partner'],

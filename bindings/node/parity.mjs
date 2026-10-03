@@ -381,6 +381,7 @@ const charts = geo.chart.foundMany({
     aspects: ['CONJUNCTION', 'SQUARE', 'TRINE', 'OPPOSITION'],
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
+    antiscia: { orbs: { model: 'LEO' } },
   },
   progressions: {
     at: 2470000.5,
@@ -778,13 +779,13 @@ for (const chart of charts) {
     put(`chart-${i}-antiscion-${at.graha}`, `${number(at.antiscionDeg)} ${number(at.contrantiscionDeg)}`),
   );
   put(`chart-${i}-antiscia-unpaired`, reflected.unpaired.join(',') || '-');
-  put(`chart-${i}-antiscia-count`, `${reflected.pairs.length}`);
-  reflected.pairs.forEach((at, n) =>
-    put(
-      `chart-${i}-antiscia-${n}`,
-      `${at.first} ${at.second} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
-    ),
-  );
+  const putAntiscionRows = (key, rows) => {
+    put(`${key}-count`, `${rows.length}`);
+    rows.forEach((at, n) =>
+      put(`${key}-${n}`, `${at.first} ${at.second} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`),
+    );
+  };
+  putAntiscionRows(`chart-${i}-antiscia`, reflected.pairs);
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;
   put(`chart-${i}-synastry-count`, `${synastry.length}`);
@@ -802,6 +803,7 @@ for (const chart of charts) {
       `${point(at.first)} ${point(at.second)} ${at.contrary ? 1 : 0} ${number(at.apartDeg)} ${number(at.orbDeg)}`,
     ),
   );
+  putAntiscionRows(`chart-${i}-synastry-antiscia`, chart.synastryAntiscia);
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

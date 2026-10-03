@@ -3116,6 +3116,28 @@ void _engineTests() {
       ).synastryParallels,
       isEmpty,
     );
+
+    // The antiscia across: none unless asked, then the recast's seven under
+    // Lilly's moieties, closest first (Saturn's antiscion on Jupiter, 0.09°).
+    expect(found(birth, asked: SynastryRequest(mary)).synastryAntiscia, isNull);
+    final reflected =
+        found(
+          birth,
+          asked: SynastryRequest(mary, antiscia: const AntisciaRequest()),
+        ).synastryAntiscia!;
+    expect(
+      [for (final row in reflected) (row.first, row.second, row.contrary)],
+      [
+        (Graha.saturn, Graha.jupiter, false),
+        (Graha.saturn, Graha.moon, false),
+        (Graha.mercury, Graha.mars, false),
+        (Graha.mars, Graha.saturn, true),
+        (Graha.venus, Graha.mars, false),
+        (Graha.mars, Graha.mercury, false),
+        (Graha.mars, Graha.sun, false),
+      ],
+    );
+    expect(reflected.first.apartDeg, closeTo(0.089, 0.005));
     final far = Partner(instant: 9000000, place: mary.place);
     for (final (asked, field) in [
       (
@@ -3126,6 +3148,15 @@ void _engineTests() {
       (
         SynastryRequest(mary, parallels: const ParallelRequest(orbDeg: 11)),
         'synastry.parallels.orbDeg',
+      ),
+      (
+        SynastryRequest(
+          mary,
+          antiscia: const AntisciaRequest(
+            orbs: OrbModel.byAspect({WesternAspect.trine: 3}),
+          ),
+        ),
+        'synastry.antiscia.orbs.orbs',
       ),
     ]) {
       expect(

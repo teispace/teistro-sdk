@@ -1992,12 +1992,37 @@ class AnEngine(WithLibrary):
             self.assertEqual([row.apart_deg for row in parallels], sorted(row.apart_deg for row in parallels))
             narrow: SynastryRequest = {"partner": mary, "parallels": {"orbDeg": 0.000001}}
             self.assertEqual(ctx.chart.found(instant=birth, synastry=narrow, **george).synastry_parallels, ())
+
+            # The antiscia across: none unless asked, then the recast's
+            # seven under Lilly's moieties, closest first (Saturn's
+            # antiscion on Jupiter, 0.09°).
+            self.assertIsNone(ctx.chart.found(instant=birth, synastry={"partner": mary}, **george).synastry_antiscia)
+            mirrored: SynastryRequest = {"partner": mary, "antiscia": {}}
+            reflected = ctx.chart.found(instant=birth, synastry=mirrored, **george).synastry_antiscia
+            assert reflected is not None
+            self.assertEqual(
+                [(row.first, row.second, row.contrary) for row in reflected],
+                [
+                    (Graha.SATURN, Graha.JUPITER, False),
+                    (Graha.SATURN, Graha.MOON, False),
+                    (Graha.MERCURY, Graha.MARS, False),
+                    (Graha.MARS, Graha.SATURN, True),
+                    (Graha.VENUS, Graha.MARS, False),
+                    (Graha.MARS, Graha.MERCURY, False),
+                    (Graha.MARS, Graha.SUN, False),
+                ],
+            )
+            self.assertAlmostEqual(reflected[0].apart_deg, 0.089, delta=0.005)
             refusals: list[tuple[Any, str]] = [
                 ({"partner": {**mary, "born": "London"}}, "synastry.partner.born"),
                 ({"partner": mary, "zodiac": "SIDEREAL"}, "synastry.zodiac"),
                 ({"partner": mary, "orbs": {"model": "MOIETIES", "orbs": [{"graha": Graha.SUN, "orbDeg": 17}]}}, "synastry.lagna"),
                 ({"lagna": False}, "synastry.partner"),
                 ({"partner": mary, "parallels": {"orbDeg": 11}}, "synastry.parallels.orbDeg"),
+                (
+                    {"partner": mary, "antiscia": {"orbs": {"model": "BY_ASPECT", "orbs": [{"aspect": WesternAspect.TRINE, "orbDeg": 3}]}}},
+                    "synastry.antiscia.orbs.orbs",
+                ),
                 ([], "synastry"),
             ]
             for request, field in refusals:
