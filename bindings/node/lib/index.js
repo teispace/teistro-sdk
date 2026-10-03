@@ -120,6 +120,7 @@ import {
   ImpedimentKindById,
   WayById,
   MotionById,
+  WesternAspectById,
   AspectPhaseById,
   KakshyaLordById,
   SarvaStandingById,
@@ -1120,6 +1121,19 @@ export class Chart {
    */
   get progressions() {
     return progressionsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Western aspect table (`westernAspects: { aspects, orbs }`, Leo's
+   * nine under his orbs by default, C240); `null` unless asked for
+   * (`03-design/western-aspects.md`).
+   *
+   * Each row is `{ first, second, aspect, apartDeg, fromExactDeg, orbDeg,
+   * applying }`, the pair in catalogue order over the seven planets and,
+   * when `outerPlanets` placed them, the outer three.
+   */
+  get westernAspects() {
+    return westernAspectsOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2333,6 +2347,11 @@ export class ChartArea extends Area {
           'progressions',
           'a progressions request record, e.g. { at: 2460676.5 } or { contacts: { from, to } }',
         ),
+        westernAspectsJson: recordJson(
+          request.westernAspects,
+          'westernAspects',
+          'a western aspects request record, e.g. {} or { aspects: ["TRINE", "SQUARE"] }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -3352,6 +3371,57 @@ function considerationsOf(batch) {
     );
   }
   CONSIDERATIONS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's Western aspect tables, decoded once however many charts read them. */
+const WESTERN_ASPECTS = new WeakMap();
+
+/**
+ * Every chart's Western aspect table in a batch: `western_aspects` holds a
+ * row a chart, or none when none was asked, and `western_aspect_rows` is
+ * ragged by its count (`03-design/western-aspects.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function westernAspectsOf(batch) {
+  let decoded = WESTERN_ASPECTS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.instant.length;
+  const counts = d.westernAspects.count;
+  const r = d.westernAspectRows;
+  if (counts.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts }, () => null));
+  } else {
+    const starts = startsOf(counts);
+    if (counts.length !== charts || starts[charts] !== r.first.length) {
+      throw new Error(
+        `western_aspects has ${counts.length} rows and western_aspect_rows ${r.first.length} for ${charts} charts`,
+      );
+    }
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    decoded = Object.freeze(
+      Array.from({ length: charts }, (_, k) =>
+        Object.freeze(
+          Array.from({ length: counts[k] }, (_, n) => {
+            const row = starts[k] + n;
+            return Object.freeze({
+              first: graha(r.first[row]),
+              second: graha(r.second[row]),
+              aspect: WesternAspectById.get(r.aspect[row]) ?? 'unknown',
+              apartDeg: r.apartDeg[row],
+              fromExactDeg: r.fromExactDeg[row],
+              orbDeg: r.orbDeg[row],
+              applying: r.applying[row] !== 0,
+            });
+          }),
+        ),
+      ),
+    );
+  }
+  WESTERN_ASPECTS.set(batch, decoded);
   return decoded;
 }
 
