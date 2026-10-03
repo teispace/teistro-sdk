@@ -1053,18 +1053,17 @@ provider's DUT1).
 ## How to resume
 
 0. **Next: the outer planets in a chart** — `western-outer-planets.md`
-   step 3, the readers: a transit's hit list, a progression's contacts
-   and a progressed chart accept Uranus, Neptune and Pluto where the
-   birth carries them, and Leo's two Uranus contacts (p. 41) become a
-   test. Step 2 is built (`with_outer_planets`, held in
-   `outer-planets-measured.md`; C239 measured under an arcsecond). Then
-   the boundary and the wheel; after them the aspects and
+   step 4, the boundary and every binding, with the parity gate (a
+   `SECTION_BITS` entry for `outer`). Steps 2 and 3 are built
+   (`with_outer_planets`, held in `outer-planets-measured.md`, C239
+   measured under an arcsecond; the hit list, the contacts and the
+   later charts read the three, and Leo's quincunx Uranus of April 1907
+   is a test). Then the wheel; after them the aspects and
    their orbs, which synastry and the composites read. Progressions are
    built end to end (`western-progressions.md`, and
    `progressed-angles-measured.md` gives C237 its size). The year measure (C236), the progressed
    angles (C237) and the tertiary month (C238) ship as knobs. Contacts to
-   the radical midheaven and the outer planets, and the parallels, are
-   not covered.
+   the radical midheaven and the parallels are not covered.
    Lilly's perfection reads six of his figures as he judged them (pp.
    177, 238, 385, 389, 437, 452). A collection and a frustration in one of
    his own figures are still untested, as none of those read names one,

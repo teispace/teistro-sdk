@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Direction, Lattice, StationKind};
+use teistro_chart::OUTER;
 use teistro_chart::foundation::{TransitEvent, TransitEventKind};
 use teistro_core::catalogue::{Catalogued as _, Graha};
 use teistro_core::error::Error;
@@ -191,7 +192,7 @@ impl HitRequest {
             );
         }
         repeated(&self.grahas, "grahas")?;
-        nine(self.grahas.iter().copied(), "grahas")?;
+        placeable(self.grahas.iter().copied(), "grahas")?;
         if self.kinds.is_empty() {
             return Err(Error::invalid_arg("no kind of event to report").with_field("kinds"));
         }
@@ -203,7 +204,7 @@ impl HitRequest {
                 return Err(Error::invalid_arg("no aspect to report").with_field("aspects"));
             }
             repeated(&self.points, "points")?;
-            nine(
+            placeable(
                 self.points.iter().filter_map(|point| match point {
                     NatalPoint::Graha { graha } => Some(*graha),
                     NatalPoint::Lagna => None,
@@ -362,17 +363,21 @@ impl From<PointAsked> for NatalPoint {
     }
 }
 
-/// Refuses a graha outside the nine a chart places, by field: the
-/// catalogue names more (Uranus, Pluto), and neither a transit's search
-/// nor a natal chart has them.
-fn nine(grahas: impl IntoIterator<Item = Graha>, field: &str) -> Result<(), Error> {
-    match grahas.into_iter().find(|graha| !GRAHAS.contains(graha)) {
+/// Refuses a graha no chart can place, by field: the nine, and the outer
+/// planets a chart asked `with_outer_planets` places beside them
+/// (`03-design/western-outer-planets.md`). Every member the catalogue
+/// names today is one of the twelve; the check holds a member it adds.
+fn placeable(grahas: impl IntoIterator<Item = Graha>, field: &str) -> Result<(), Error> {
+    match grahas
+        .into_iter()
+        .find(|graha| !GRAHAS.contains(graha) && !OUTER.contains(graha))
+    {
         Some(graha) => Err(Error::invalid_arg(format!(
-            "{} is not one of the nine grahas a chart places",
+            "{} is not a graha a chart places",
             graha.key()
         ))
         .with_field(field)
-        .with_hint("the nine are the Sun to Saturn, Rahu and Ketu")),
+        .with_hint("a chart places the Sun to Saturn, Rahu and Ketu, and Uranus, Neptune and Pluto when asked")),
         None => Ok(()),
     }
 }
@@ -462,6 +467,9 @@ pub(crate) fn lattices_of(
             .ok_or_else(|| {
                 Error::invalid_arg(format!("natal chart {chart} has no {point:?} to aspect"))
                     .with_field("points")
+                    .with_hint(
+                        "an outer planet is in a chart founded `with_outer_planets`; found the natal chart with it",
+                    )
             })?;
             for (edge, shift) in edges {
                 meanings.push((
@@ -586,11 +594,11 @@ mod tests {
             assert_eq!(refused(rest).field(), Some(field), "{rest}");
         }
         assert_eq!(
-            refused(r#", "grahas": ["PLUTO"]"#).field(),
+            refused(r#", "grahas": ["PLUTO", "PLUTO"]"#).field(),
             Some("hits.grahas")
         );
         assert_eq!(
-            refused(r#", "points": ["URANUS"]"#).field(),
+            refused(r#", "points": ["URANUS", "URANUS"]"#).field(),
             Some("hits.points")
         );
         for rest in [

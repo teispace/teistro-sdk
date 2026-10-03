@@ -483,3 +483,60 @@ fn a_chart_inside_a_polar_day_is_founded_and_progressed() {
         assert!(progressed.sky.get() > born.foundation.instant.get());
     }
 }
+
+#[test]
+fn leos_moon_reaches_uranus_when_the_birth_places_it() {
+    let sdk = context();
+    let born = sdk
+        .chart()
+        .reading(jd(BIRTH), &request().with_outer_planets())
+        .unwrap()
+        .value;
+    let uranus = NatalPoint::Graha {
+        graha: Graha::Uranus,
+    };
+    let moon = ContactRequest::default()
+        .with_grahas([Graha::Moon])
+        .with_points([uranus]);
+    let found = sdk
+        .chart()
+        .progressed_contacts(&born, jd(first_of(1906, 10)), jd(first_of(1908, 1)), &moon)
+        .unwrap();
+    // "Quincunx Uranus", April 1907, in his lunar list (p. 41): the one
+    // contact the Moon makes to Uranus in his forty-seventh year.
+    let [contact] = found.as_slice() else {
+        panic!("{found:?}");
+    };
+    assert_eq!((contact.to, contact.angle), (uranus, 150));
+    assert!(
+        (first_of(1907, 3)..first_of(1907, 5)).contains(&contact.life.get()),
+        "{}",
+        contact.life.get()
+    );
+    // The later charts place every body the birth placed.
+    let life = life_of(BIRTH + 46.0);
+    let progressed = sdk
+        .chart()
+        .progressed(&born, life, &ProgressionRequest::default(), &request())
+        .unwrap();
+    let outer = |chart: &Document| -> Vec<Graha> {
+        chart.foundation.outer.iter().map(|at| at.graha).collect()
+    };
+    assert_eq!(outer(&progressed.chart.value), outer(&born));
+    let solar = sdk
+        .chart()
+        .directed(&born, life, &DirectionArc::default(), &request())
+        .unwrap();
+    assert_eq!(solar.planets.len(), 12);
+    // A birth that did not place it gives no contact a point to reach.
+    assert!(
+        sdk.chart()
+            .progressed_contacts(
+                &birth(&sdk),
+                jd(first_of(1906, 10)),
+                jd(first_of(1908, 1)),
+                &moon
+            )
+            .is_err()
+    );
+}

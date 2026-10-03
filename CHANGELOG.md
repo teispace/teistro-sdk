@@ -1974,6 +1974,10 @@ the astronomical numbers do not move. Nothing else computes yet.
     unchanged. They are held to the corpus's recording on 55 births.
     The chart layer gains `body_of`, `OUTER`, `OuterPlanets` and
     `Founder::found_with`.
+    The transit hit list and the progressed contacts accept the three
+    (a natal point among them where the birth placed it), and a
+    progressed or directed chart places them whenever its birth did.
+    Leo's progressed Moon quincunx Uranus, April 1907 (p. 41), is a test.
   - **The progressed angles, measured** (`progressed-angles-measured.md`,
     C237 sized). Over 54 births to age 80, a method's midheaven stands
     at most 7.54° from Leo's map. `AngleMethod::ALL` lists the methods.

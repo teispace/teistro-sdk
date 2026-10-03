@@ -1,15 +1,16 @@
 # The outer planets in a chart (the `western` module)
 
 Status: `building`, 2026-10-03 — written from the corpus and the code
-before any change. Step 2 is built: the chart layer and the SDK place
-the three when asked, held to the corpus in
-[`outer-planets-measured.md`](outer-planets-measured.md).
+before any change. Steps 2 and 3 are built: the chart layer and the
+SDK place the three when asked, held to the corpus in
+[`outer-planets-measured.md`](outer-planets-measured.md), and the
+transit search, the contacts and the later charts read them.
 
 A chart places nine grahas: the seven planets and the two nodes. The
 catalogue names three more, Uranus, Neptune and Pluto, and the built-in
 ephemeris computes all three. No chart carries them, so every Western
 reading that needs them stops short. Leo's lunar year (p. 41) lists the
-progressed Moon sesquiquadrate Uranus twice, and step 4 of
+progressed Moon quincunx Uranus in April 1907, and step 4 of
 [`western-progressions.md`](western-progressions.md) had to leave those
 contacts out. A Western aspect table, synastry and the wheel all wait on
 the same thing. The feature register lists the three as P0, "partial
@@ -83,6 +84,15 @@ but the measured page states them per body instead of one figure.
 - **A graha found its body by its ordinal.** The transit search took
   `bodies[graha as usize]`, which reaches the eighth body and no
   further. `body_of` replaces it, so a search can reach Uranus.
+- **Leo's April holds.** Founded with the three, his birth's progressed
+  Moon makes one contact to Uranus in his forty-seventh year: the
+  quincunx, on 16 April 1907, in the month he prints. An earlier draft
+  of this page called it a sesquiquadrate; his list says quincunx.
+- **A later chart places what the birth placed.** The progressed chart
+  and the solar arc's are founded with the three whenever the birth
+  carries them, whatever the caller's request asks, so a contact or a
+  direction never finds a body the birth had and the later chart lacks.
+  The directed planets are twelve then, in the foundation's order.
 
 ## What this does not decide
 
@@ -106,7 +116,7 @@ but the measured page states them per body instead of one figure.
    difference and the parallax C239 sets aside. **Built.**
 3. The readers: a transit's hit list, a progression's contacts and a
    progressed chart accept the three where the birth carries them.
-   Leo's two Uranus contacts on p. 41 become a test.
+   Leo's Uranus contact on p. 41 becomes a test. **Built.**
 4. The boundary and every binding, with the parity gate.
 5. The wheel draws them (`render-svg.md`, "Outer planets on the
    wheel").
