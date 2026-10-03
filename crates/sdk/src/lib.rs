@@ -239,9 +239,11 @@ pub use teistro_tajika::{
 pub use teistro_western as western;
 pub use teistro_western::{AngleMethod, ArcMeasure, Progression};
 // The Western aspects a chart holds, under Leo's orbs or Lilly's moieties
-// (`03-design/western-aspects.md`).
+// (`03-design/western-aspects.md`), and those between two charts
+// (`03-design/western-synastry.md`).
 pub use teistro_western::{
-    AspectOrb, AspectRequest, BodyOrb, OrbModel, WesternAspect, WesternAspectRow,
+    AspectOrb, AspectRequest, BodyOrb, OrbModel, SynastryRequest, SynastryRow, SynastryZodiac,
+    WesternAspect, WesternAspectRow,
 };
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
