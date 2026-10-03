@@ -152,11 +152,11 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
 
 ## What this does not decide
 
-- **The angles and the cusps.** Lilly reads an antiscion on "the very
-  degree ascending" and on the second cusp (p. 165). Under his moieties
-  an angle takes no orb (C242), and the cusps wait on a Western house
-  system. Until then the table of points answers where each antiscion
-  falls, and the pairs are the planets'.
+- **The cusps** were decided with the Western houses
+  ([`western-houses.md`](western-houses.md), C251): a reflection upon a
+  cusp's very degree, its sign and whole degree, in Lilly's
+  Regiomontanus unless the request names another division. A synastry
+  refuses `cusps`, which are one chart's.
 - **Benefic and malefic.** Lilly weighs an antiscion of a good planet as
   a sextile or trine and a contrantiscion as a square or opposition.
   The row says which relation holds and leaves the weighing to the

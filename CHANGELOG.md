@@ -2046,6 +2046,24 @@ the astronomical numbers do not move. Nothing else computes yet.
     against Queen Mary held to a recast. They cross in sections 94 and
     95, and every binding reads `chart.synastryAntiscia`
     (`synastry_antiscia`), Dart's `SynastryRequest` taking `antiscia`.
+  - **Western houses** (`western-houses.md`, `western-houses-measured.md`).
+    `sdk.chart().western_houses` counts each planet into the houses of
+    the request's division, else the profile's
+    `houses.module_overrides.western`, else Placidus, the division Leo's
+    p. 150 figure is cast in to half a degree at every printed cusp
+    (C249), and says whether Leo reads it with the ascendant: up to the
+    degree that rose one sidereal hour before the birth, "15° of Oblique
+    Ascension" (C250), which never moves its house. A composite now
+    carries its cusps, each the near midpoint of the two charts' same
+    cusp turned by the midheaven (`Composite::cusps_deg`,
+    `Composite::house_of`), and the antiscia read a reflection upon a
+    cusp's very degree when asked (`AntisciaRequest::with_cusps`, C251),
+    in Lilly's Regiomontanus unless named; a synastry's antiscia refuse
+    `cusps` by name. `house_of` moved to `teistro_core::house`. A
+    `western_houses_json` record crosses in sections 103 to 107, the
+    antiscia and composite sections gaining their cusp columns, and
+    Node, Python and Dart read `chart.westernHouses`, `onCusps`,
+    `cuspSystem` and a composite's `cuspsDeg`, with parity.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
