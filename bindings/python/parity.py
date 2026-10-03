@@ -578,6 +578,7 @@ def main() -> None:
                 },
                 "aspects": ["CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"],
                 "zodiac": "CHARTS",
+                "parallels": {"orbDeg": 1.5},
             },
             progressions={
                 "at": 2470000.5,
@@ -1166,6 +1167,15 @@ def main() -> None:
                     f"chart-{i}-synastry-{n}",
                     f"{natal_key(across.first)} {natal_key(across.second)} {across.aspect.key} "
                     f"{number(across.apart_deg)} {number(across.from_exact_deg)} {number(across.orb_deg)}",
+                )
+            levelled = chart.synastry_parallels
+            assert levelled is not None
+            put(f"chart-{i}-synastry-parallel-count", str(len(levelled)))
+            for n, across_level in enumerate(levelled):
+                put(
+                    f"chart-{i}-synastry-parallel-{n}",
+                    f"{natal_key(across_level.first)} {natal_key(across_level.second)} {int(across_level.contrary)} "
+                    f"{number(across_level.apart_deg)} {number(across_level.orb_deg)}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

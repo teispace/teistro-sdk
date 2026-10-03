@@ -596,6 +596,7 @@ void main() {
         ],
       ),
       zodiac: SynastryZodiac.charts,
+      parallels: const ParallelRequest(orbDeg: 1.5),
     ),
     progressions: const ProgressionsRequest(
       at: 2470000.5,
@@ -1284,6 +1285,16 @@ void main() {
         'chart-$i-synastry-$n',
         '${natalKey(row.first)} ${natalKey(row.second)} ${row.aspect.key} '
             '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
+            '${number(row.orbDeg)}',
+      );
+    }
+    final levelled = chart.synastryParallels!;
+    put('chart-$i-synastry-parallel-count', '${levelled.length}');
+    for (final (n, row) in levelled.indexed) {
+      put(
+        'chart-$i-synastry-parallel-$n',
+        '${natalKey(row.first)} ${natalKey(row.second)} '
+            '${row.contrary ? 1 : 0} ${number(row.apartDeg)} '
             '${number(row.orbDeg)}',
       );
     }
