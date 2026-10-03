@@ -1302,6 +1302,26 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 82, 'western_aspects');
+    out.westernAspects = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 83, 'western_aspect_rows');
+    out.westernAspectRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      aspect: column(blob, at, 2, 'u8', at.count),
+      apartDeg: column(blob, at, 3, 'f64', at.count),
+      fromExactDeg: column(blob, at, 4, 'f64', at.count),
+      orbDeg: column(blob, at, 5, 'f64', at.count),
+      applying: column(blob, at, 6, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

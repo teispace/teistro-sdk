@@ -35,7 +35,7 @@ use teistro_ffi::chart::{
     TsHoraReckoning, TsNodeObstruction, TsNodeVedha, TsPolarDayPolicy, TsPolarKind, TsQuadrant,
     TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsSunrise,
     TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring,
-    TsYearYoga,
+    TsWesternAspect, TsYearYoga,
 };
 use teistro_ffi::panchanga::{TsLunarMonth, TsMonthKind, TsSunrises, TsYogaCause};
 use teistro_ffi::time::{TsChosen, TsDeltaTSource, TsDst, TsZoneEra, TsZoneSource, TsZoneWarning};
@@ -366,6 +366,9 @@ fn hits(api: &Api) -> Vec<&'static str> {
         unit(api, "TsMotion", |m: &Motion| id(TsMotion::from(*m) as u8)),
         unit(api, "TsAspectPhase", |p: &AspectPhase| {
             id(TsAspectPhase::from(*p) as u8)
+        }),
+        unit(api, "TsWesternAspect", |a: &teistro::WesternAspect| {
+            TsWesternAspect::of(*a).and_then(|a| id(a as u8))
         }),
     ]
 }

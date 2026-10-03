@@ -7096,6 +7096,66 @@ export declare const Motion: {
 export declare const MotionById: ReadonlyMap<number, Motion>;
 
 /**
+ * A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).
+ */
+export type WesternAspect =
+  | 'CONJUNCTION'
+  | 'SEMI_SEXTILE'
+  | 'SEMI_SQUARE'
+  | 'SEXTILE'
+  | 'SQUARE'
+  | 'TRINE'
+  | 'SESQUIQUADRATE'
+  | 'QUINCUNX'
+  | 'OPPOSITION';
+
+/** Every WesternAspect by name; the values are the strings the union accepts. */
+export declare const WesternAspect: {
+  /**
+   * 0°.
+   */
+  readonly Conjunction: 'CONJUNCTION';
+  /**
+   * 30°.
+   */
+  readonly SemiSextile: 'SEMI_SEXTILE';
+  /**
+   * 45°.
+   */
+  readonly SemiSquare: 'SEMI_SQUARE';
+  /**
+   * 60°.
+   */
+  readonly Sextile: 'SEXTILE';
+  /**
+   * 90°.
+   */
+  readonly Square: 'SQUARE';
+  /**
+   * 120°.
+   */
+  readonly Trine: 'TRINE';
+  /**
+   * 135°.
+   */
+  readonly Sesquiquadrate: 'SESQUIQUADRATE';
+  /**
+   * 150°.
+   */
+  readonly Quincunx: 'QUINCUNX';
+  /**
+   * 180°.
+   */
+  readonly Opposition: 'OPPOSITION';
+};
+
+/**
+ * Every WesternAspect by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const WesternAspectById: ReadonlyMap<number, WesternAspect>;
+
+/**
  * Where in an aspect's window a hit falls (C146).
  */
 export type AspectPhase = 'ENTERING' | 'EXACT' | 'LEAVING';

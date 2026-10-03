@@ -2943,6 +2943,54 @@ class ChartsOuter:
 
 
 @dataclass(frozen=True)
+class ChartsWesternAspects:
+    """The `western_aspects` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.
+    """
+
+    count: memoryview[int]
+    """How many aspects the chart's planets hold under the record's orbs; the chart's rows follow the earlier charts' in `western_aspect_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsWesternAspectRows:
+    """The `western_aspect_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
+    """
+
+    first: memoryview[int]
+    """The first planet of the pair, in the catalogue's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    aspect: memoryview[int]
+    """Which aspect."""
+
+    apart_deg: memoryview[float]
+    """How far apart the two stand, degrees, 0 to 180."""
+
+    from_exact_deg: memoryview[float]
+    """How far from exact, degrees; the smaller, the stronger."""
+
+    orb_deg: memoryview[float]
+    """The orb the model allowed this pair at this aspect, degrees."""
+
+    applying: memoryview[int]
+    """1 when the gap is closing on the aspect, 0 when it is leaving it."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3309,6 +3357,12 @@ class Charts:
     outer: ChartsOuter
     """Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre."""
 
+    western_aspects: ChartsWesternAspects
+    """Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none."""
+
+    western_aspect_rows: ChartsWesternAspectRows
+    """Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3399,6 +3453,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_directed_grahas = blob.section(79, "directed_grahas")
     at_progressed_contacts = blob.section(80, "progressed_contacts")
     at_outer = blob.section(81, "outer")
+    at_western_aspects = blob.section(82, "western_aspects")
+    at_western_aspect_rows = blob.section(83, "western_aspect_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5282,6 +5338,36 @@ def decode_charts(raw: bytes) -> Charts:
                 at_outer, 13, 8, at_outer.count
             ).cast("d"),
             length=at_outer.count,
+        ),
+        western_aspects=ChartsWesternAspects(
+            count=blob.column(
+                at_western_aspects, 0, 4, at_western_aspects.count
+            ).cast("I"),
+            length=at_western_aspects.count,
+        ),
+        western_aspect_rows=ChartsWesternAspectRows(
+            first=blob.column(
+                at_western_aspect_rows, 0, 2, at_western_aspect_rows.count
+            ).cast("H"),
+            second=blob.column(
+                at_western_aspect_rows, 1, 2, at_western_aspect_rows.count
+            ).cast("H"),
+            aspect=blob.column(
+                at_western_aspect_rows, 2, 1, at_western_aspect_rows.count
+            ).cast("B"),
+            apart_deg=blob.column(
+                at_western_aspect_rows, 3, 8, at_western_aspect_rows.count
+            ).cast("d"),
+            from_exact_deg=blob.column(
+                at_western_aspect_rows, 4, 8, at_western_aspect_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_western_aspect_rows, 5, 8, at_western_aspect_rows.count
+            ).cast("d"),
+            applying=blob.column(
+                at_western_aspect_rows, 6, 1, at_western_aspect_rows.count
+            ).cast("B"),
+            length=at_western_aspect_rows.count,
         ),
     )
 

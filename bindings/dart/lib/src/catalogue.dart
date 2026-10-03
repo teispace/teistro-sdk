@@ -6029,6 +6029,54 @@ enum Motion {
   }
 }
 
+/// A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).
+enum WesternAspect {
+  /// 0°.
+  conjunction(0, 'CONJUNCTION'),
+  /// 30°.
+  semiSextile(1, 'SEMI_SEXTILE'),
+  /// 45°.
+  semiSquare(2, 'SEMI_SQUARE'),
+  /// 60°.
+  sextile(3, 'SEXTILE'),
+  /// 90°.
+  square(4, 'SQUARE'),
+  /// 120°.
+  trine(5, 'TRINE'),
+  /// 135°.
+  sesquiquadrate(6, 'SESQUIQUADRATE'),
+  /// 150°.
+  quincunx(7, 'QUINCUNX'),
+  /// 180°.
+  opposition(8, 'OPPOSITION');
+
+  const WesternAspect(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static WesternAspect byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a WesternAspect'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static WesternAspect? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Where in an aspect's window a hit falls (C146).
 enum AspectPhase {
   /// The transit came within the orb.

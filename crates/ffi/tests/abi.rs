@@ -299,6 +299,7 @@ fn chart_request(
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1569,6 +1570,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1713,6 +1715,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1855,6 +1858,7 @@ fn a_chart_request_answers_the_transits() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2069,6 +2073,7 @@ fn a_chart_request_answers_the_hit_list() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2236,6 +2241,7 @@ fn a_chart_request_answers_sade_sati() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2345,6 +2351,7 @@ fn a_chart_request_answers_sade_sati() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2408,6 +2415,7 @@ fn a_chart_request_answers_sade_sati() {
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
+        western_aspects_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2475,6 +2483,7 @@ fn a_chart_request_answers_the_dignities() {
                 considerations_json: ptr::null(),
                 perfection_json: ptr::null(),
                 progressions_json: ptr::null(),
+                western_aspects_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2747,6 +2756,7 @@ fn a_chart_request_answers_the_fortitudes() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4047,6 +4057,7 @@ fn a_chart_request_answers_kp() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4154,6 +4165,7 @@ fn a_chart_request_answers_kp() {
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
+        western_aspects_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4169,6 +4181,7 @@ fn a_chart_request_answers_kp() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4224,6 +4237,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4262,6 +4276,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
         progressions_json: ptr::null(),
+        western_aspects_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4321,6 +4336,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4455,6 +4471,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4594,6 +4611,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5364,6 +5382,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5471,6 +5490,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5647,6 +5667,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
             progressions_json: ptr::null(),
+            western_aspects_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5927,6 +5948,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 considerations_json: ptr::null(),
                 perfection_json: ptr::null(),
                 progressions_json: ptr::null(),
+                western_aspects_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -6842,4 +6864,160 @@ fn a_chart_request_answers_the_progressions() {
         ctx.last_error().2.as_deref(),
         Some("progressions.direction")
     );
+}
+
+/// The Western aspects cross: a request's `western_aspects_json` answers
+/// every chart's count in `western_aspects` and its rows in
+/// `western_aspect_rows`, ragged by that count, each cell the façade's own
+/// to the bit and the outer three among the pairs when the batch placed
+/// them; none asked is empty sections, and refusals are named under the
+/// record's root, the request's and the reading's alike
+/// (`03-design/western-aspects.md`).
+#[test]
+fn a_chart_request_answers_the_western_aspects() {
+    use teistro_ffi::chart::TsWesternAspect;
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    // Edward VII's birth (Leo, *How to Judge a Nativity*, p. 295) and two more.
+    let instants = [2_393_783.95, 2_420_000.25, 2_451_545.0];
+    let base = chart_request(&instants, (51.501, -0.142), 0);
+    let asked_json = CString::new("{}").unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            western_aspects_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.501, -0.142, 0.0).unwrap();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap())
+            .with_outer_planets();
+    let expected: Vec<Vec<teistro::WesternAspectRow>> = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &request,
+        )
+        .unwrap()
+        .value
+        .iter()
+        .map(|document| {
+            sdk.chart()
+                .western_aspects(document, &teistro::AspectRequest::default())
+                .unwrap()
+        })
+        .collect();
+    let rows: Vec<&teistro::WesternAspectRow> = expected.iter().flatten().collect();
+    assert!(
+        rows.iter()
+            .any(|row| row.second == teistro::catalogue::Graha::Uranus),
+        "the outer three are among the pairs"
+    );
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |name: &str| -> Vec<u64> {
+        reader
+            .column("western_aspect_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    assert_eq!(
+        ints("western_aspects", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let int_of = |read: &dyn Fn(&teistro::WesternAspectRow) -> i64| -> Vec<i64> {
+        rows.iter().map(|row| read(row)).collect()
+    };
+    let bits_of = |read: &dyn Fn(&teistro::WesternAspectRow) -> f64| -> Vec<u64> {
+        rows.iter().map(|row| read(row).to_bits()).collect()
+    };
+    assert_eq!(
+        ints("western_aspect_rows", "first"),
+        int_of(&|row| i64::from(row.first.id()))
+    );
+    assert_eq!(
+        ints("western_aspect_rows", "second"),
+        int_of(&|row| i64::from(row.second.id()))
+    );
+    assert_eq!(
+        ints("western_aspect_rows", "aspect"),
+        int_of(&|row| i64::from(TsWesternAspect::of(row.aspect).unwrap() as u8))
+    );
+    assert_eq!(bits("apart_deg"), bits_of(&|row| row.apart_deg));
+    assert_eq!(bits("from_exact_deg"), bits_of(&|row| row.from_exact_deg));
+    assert_eq!(bits("orb_deg"), bits_of(&|row| row.orb_deg));
+    assert_eq!(
+        ints("western_aspect_rows", "applying"),
+        int_of(&|row| i64::from(row.applying))
+    );
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("western_aspects", "count"),
+        ("western_aspect_rows", "first"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A refusal is named by the field the caller wrote: in the request,
+    // and in the reading, where Lilly's moieties meet Uranus.
+    for (text, sections, field) in [
+        (r#"{"aspects": []}"#, 0, "westernAspects.aspects"),
+        (
+            r#"{"orbs": {"model": "MOIETIES", "orbs": [{"graha": "SUN", "orbDeg": 17}]}}"#,
+            0,
+            "westernAspects.orbs.orbs",
+        ),
+    ] {
+        let refused = CString::new(text).unwrap();
+        let status = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                western_aspects_json: refused.as_ptr(),
+                sections,
+                ..base
+            },
+        )
+        .unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
+    }
 }

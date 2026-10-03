@@ -1007,6 +1007,24 @@ export interface ChartRequest {
    * @nullable
    */
   readonly progressionsJson?: string;
+  /**
+   * Every chart's Western aspect table, as a JSON object, every field
+   * optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+   * `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+   * `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+   * nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+   * default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+   * "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+   * "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+   * seven, and the outer three when `TS_CHART_OUTER` placed them. The
+   * answers come back in `western_aspects` and `western_aspect_rows`.
+   * Null for none, which costs nothing (`03-design/western-aspects.md`).
+   * Refusals are named from the record every binding calls
+   * `westernAspects`, as `westernAspects.orbs.orbs`.
+   * @example {"aspects":["TRINE","SQUARE"]}
+   * @nullable
+   */
+  readonly westernAspectsJson?: string;
 }
 
 /**

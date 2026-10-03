@@ -3516,6 +3516,63 @@ export interface ChartsOuter {
 }
 
 /**
+ * The `western_aspects` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.
+ */
+export interface ChartsWesternAspects {
+  /**
+   * How many aspects the chart's planets hold under the record's orbs; the chart's rows follow the earlier charts' in `western_aspect_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `western_aspect_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
+ */
+export interface ChartsWesternAspectRows {
+  /**
+   * The first planet of the pair, in the catalogue's order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * Which aspect.
+   * The values are `WesternAspect` ids.
+   */
+  readonly aspect: Uint8Array;
+  /**
+   * How far apart the two stand, degrees, 0 to 180.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * How far from exact, degrees; the smaller, the stronger.
+   */
+  readonly fromExactDeg: Float64Array;
+  /**
+   * The orb the model allowed this pair at this aspect, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /**
+   * 1 when the gap is closing on the aspect, 0 when it is leaving it.
+   */
+  readonly applying: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4007,6 +4064,14 @@ export interface Charts {
    * Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
    */
   readonly outer: ChartsOuter;
+  /**
+   * Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.
+   */
+  readonly westernAspects: ChartsWesternAspects;
+  /**
+   * Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
+   */
+  readonly westernAspectRows: ChartsWesternAspectRows;
 }
 
 /**

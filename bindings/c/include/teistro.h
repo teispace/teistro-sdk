@@ -5325,6 +5325,48 @@ typedef enum ts_motion {
 } ts_motion;
 
 /**
+ * A Western aspect, one of Leo's nine (`03-design/western-aspects.md`).
+ */
+typedef enum ts_western_aspect {
+    /**
+     * 0°.
+     */
+    TS_WESTERN_ASPECT_CONJUNCTION = 0,
+    /**
+     * 30°.
+     */
+    TS_WESTERN_ASPECT_SEMI_SEXTILE = 1,
+    /**
+     * 45°.
+     */
+    TS_WESTERN_ASPECT_SEMI_SQUARE = 2,
+    /**
+     * 60°.
+     */
+    TS_WESTERN_ASPECT_SEXTILE = 3,
+    /**
+     * 90°.
+     */
+    TS_WESTERN_ASPECT_SQUARE = 4,
+    /**
+     * 120°.
+     */
+    TS_WESTERN_ASPECT_TRINE = 5,
+    /**
+     * 135°.
+     */
+    TS_WESTERN_ASPECT_SESQUIQUADRATE = 6,
+    /**
+     * 150°.
+     */
+    TS_WESTERN_ASPECT_QUINCUNX = 7,
+    /**
+     * 180°.
+     */
+    TS_WESTERN_ASPECT_OPPOSITION = 8,
+} ts_western_aspect;
+
+/**
  * Where in an aspect's window a hit falls (C146).
  */
 typedef enum ts_aspect_phase {
@@ -7699,6 +7741,23 @@ struct ts_chart_request {
      * Example: {"at":2460676.5}. May be null.
      */
     const char * progressions_json;
+    /**
+     * Every chart's Western aspect table, as a JSON object, every field
+     * optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+     * `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+     * `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+     * nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+     * default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+     * "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+     * "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+     * seven, and the outer three when `TS_CHART_OUTER` placed them. The
+     * answers come back in `western_aspects` and `western_aspect_rows`.
+     * Null for none, which costs nothing (`03-design/western-aspects.md`).
+     * Refusals are named from the record every binding calls
+     * `westernAspects`, as `westernAspects.orbs.orbs`.
+     * Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+     */
+    const char * western_aspects_json;
 };
 
 /**
@@ -8633,7 +8692,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 224, "ts_chart_request is 224 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 232, "ts_chart_request is 232 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

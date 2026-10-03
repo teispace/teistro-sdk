@@ -3677,6 +3677,64 @@ final class ChartsOuter {
   final int length;
 }
 
+/// The `western_aspects` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.
+final class ChartsWesternAspects {
+  const ChartsWesternAspects({
+    required this.count,
+    required this.length,
+  });
+
+  /// How many aspects the chart's planets hold under the record's orbs; the chart's rows follow the earlier charts' in `western_aspect_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `western_aspect_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
+final class ChartsWesternAspectRows {
+  const ChartsWesternAspectRows({
+    required this.first,
+    required this.second,
+    required this.aspect,
+    required this.apartDeg,
+    required this.fromExactDeg,
+    required this.orbDeg,
+    required this.applying,
+    required this.length,
+  });
+
+  /// The first planet of the pair, in the catalogue's order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// Which aspect.
+  final Uint8List aspect;
+
+  /// How far apart the two stand, degrees, 0 to 180.
+  final Float64List apartDeg;
+
+  /// How far from exact, degrees; the smaller, the stronger.
+  final Float64List fromExactDeg;
+
+  /// The orb the model allowed this pair at this aspect, degrees.
+  final Float64List orbDeg;
+
+  /// 1 when the gap is closing on the aspect, 0 when it is leaving it.
+  final Uint8List applying;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3870,6 +3928,8 @@ final class Charts {
     required this.directedGrahas,
     required this.progressedContacts,
     required this.outer,
+    required this.westernAspects,
+    required this.westernAspectRows,
   });
 
   /// What kind of chart these are.
@@ -4159,6 +4219,12 @@ final class Charts {
   /// Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
   final ChartsOuter outer;
 
+  /// Every chart's Western aspect table, a row a chart in the `cast` section's order: how many rows of `western_aspect_rows` are its. Empty when `western_aspects_json` asked for none.
+  final ChartsWesternAspects westernAspects;
+
+  /// Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
+  final ChartsWesternAspectRows westernAspectRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4247,6 +4313,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atDirectedGrahas = blob.section(79, 'directed_grahas');
   final atProgressedContacts = blob.section(80, 'progressed_contacts');
   final atOuter = blob.section(81, 'outer');
+  final atWesternAspects = blob.section(82, 'western_aspects');
+  final atWesternAspectRows = blob.section(83, 'western_aspect_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7626,6 +7694,52 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atOuter, 13) + atOuter.count * 8,
       ),
       length: atOuter.count,
+    ),
+    westernAspects: ChartsWesternAspects(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspects, 0),
+        blob.columnOffset(atWesternAspects, 0) + atWesternAspects.count * 4,
+      ),
+      length: atWesternAspects.count,
+    ),
+    westernAspectRows: ChartsWesternAspectRows(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 0),
+        blob.columnOffset(atWesternAspectRows, 0) + atWesternAspectRows.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 1),
+        blob.columnOffset(atWesternAspectRows, 1) + atWesternAspectRows.count * 2,
+      ),
+      aspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 2),
+        blob.columnOffset(atWesternAspectRows, 2) + atWesternAspectRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 3),
+        blob.columnOffset(atWesternAspectRows, 3) + atWesternAspectRows.count * 8,
+      ),
+      fromExactDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 4),
+        blob.columnOffset(atWesternAspectRows, 4) + atWesternAspectRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 5),
+        blob.columnOffset(atWesternAspectRows, 5) + atWesternAspectRows.count * 8,
+      ),
+      applying: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atWesternAspectRows, 6),
+        blob.columnOffset(atWesternAspectRows, 6) + atWesternAspectRows.count * 1,
+      ),
+      length: atWesternAspectRows.count,
     ),
   );
 }

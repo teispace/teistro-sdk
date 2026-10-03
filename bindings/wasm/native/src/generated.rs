@@ -2126,6 +2126,22 @@ pub struct ChartRequest {
     /// Example: {"at":2460676.5}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub progressions_json: Option<String>,
+    /// Every chart's Western aspect table, as a JSON object, every field
+    /// optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+    /// `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+    /// `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+    /// nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+    /// default (C240), `{"model": "MOIETIES", "orbs": [{"graha": "SUN",
+    /// "orbDeg": 17}, …]}`, or `{"model": "BY_ASPECT", "orbs": [{"aspect":
+    /// "TRINE", "orbDeg": 6}, …]}`. The pairs are the chart's planets: the
+    /// seven, and the outer three when `TS_CHART_OUTER` placed them. The
+    /// answers come back in `western_aspects` and `western_aspect_rows`.
+    /// Null for none, which costs nothing (`03-design/western-aspects.md`).
+    /// Refusals are named from the record every binding calls
+    /// `westernAspects`, as `westernAspects.orbs.orbs`.
+    /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub western_aspects_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2155,6 +2171,7 @@ pub struct HeldChartRequest {
     considerations_json: Option<std::ffi::CString>,
     perfection_json: Option<std::ffi::CString>,
     progressions_json: Option<std::ffi::CString>,
+    western_aspects_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2218,6 +2235,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             progressions_json: self
                 .progressions_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            western_aspects_json: self
+                .western_aspects_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2312,6 +2333,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            western_aspects_json: self
+                .western_aspects_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2359,6 +2385,7 @@ impl ChartRequest {
             considerations_json: unsafe { lent_text(raw.considerations_json) },
             perfection_json: unsafe { lent_text(raw.perfection_json) },
             progressions_json: unsafe { lent_text(raw.progressions_json) },
+            western_aspects_json: unsafe { lent_text(raw.western_aspects_json) },
         }
     }
 }

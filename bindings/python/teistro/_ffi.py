@@ -158,6 +158,7 @@ from .catalogue import (
     VarsheshaChosen,
     VimshopakaScoring,
     Way,
+    WesternAspect,
     YearYoga,
     Yoga,
     YogaCause,
@@ -264,7 +265,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 224,
+    "ts_chart_request": 232,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -294,7 +295,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 136,
+    "ts_chart_request": 144,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -704,6 +705,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("considerations_json", ctypes.c_char_p),
         ("perfection_json", ctypes.c_char_p),
         ("progressions_json", ctypes.c_char_p),
+        ("western_aspects_json", ctypes.c_char_p),
     ]
 
 
@@ -2503,6 +2505,23 @@ class ChartRequest:
     Example: {"at":2460676.5}. May be null.
     """
 
+    western_aspects_json: Optional[str] = None
+    """Every chart's Western aspect table, as a JSON object, every field
+    optional: `aspects`, the keys looked for (`"CONJUNCTION"`,
+    `"SEMI_SEXTILE"`, `"SEMI_SQUARE"`, `"SEXTILE"`, `"SQUARE"`,
+    `"TRINE"`, `"SESQUIQUADRATE"`, `"QUINCUNX"`, `"OPPOSITION"`; Leo's
+    nine when left out), and `orbs`, the model: `{"model": "LEO"}` by
+    default (C240), `{"model": "MOIETIES", "orbs": {"graha": "SUN",
+    "orbDeg": 17}, …}`, or `{"model": "BY_ASPECT", "orbs": {"aspect":
+    "TRINE", "orbDeg": 6}, …}`. The pairs are the chart's planets: the
+    seven, and the outer three when `TS_CHART_OUTER` placed them. The
+    answers come back in `western_aspects` and `western_aspect_rows`.
+    Null for none, which costs nothing (`03-design/western-aspects.md`).
+    Refusals are named from the record every binding calls
+    `westernAspects`, as `westernAspects.orbs.orbs`.
+    Example: {"aspects":["TRINE","SQUARE"]}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2583,6 +2602,9 @@ class ChartRequest:
         _progressions_json = None if self.progressions_json is None else self.progressions_json.encode("utf-8")
         owned.append(_progressions_json)
         raw.progressions_json = _progressions_json
+        _western_aspects_json = None if self.western_aspects_json is None else self.western_aspects_json.encode("utf-8")
+        owned.append(_western_aspects_json)
+        raw.western_aspects_json = _western_aspects_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2633,6 +2655,7 @@ class ChartRequest:
             considerations_json=_text(raw.considerations_json),
             perfection_json=_text(raw.perfection_json),
             progressions_json=_text(raw.progressions_json),
+            western_aspects_json=_text(raw.western_aspects_json),
         )
 
 
