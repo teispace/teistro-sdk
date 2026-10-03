@@ -1,10 +1,10 @@
 # Antiscia (the `western` module)
 
-Status: `building`, 2026-10-03, written from the sources before any code.
-Steps 2 and 3 are built: `sdk.chart().antiscia`, held to Lilly's p. 181
-table and to a recast of George V, and measured over the corpus's births
-in [`antiscia-measured.md`](antiscia-measured.md). Step 4, the boundary
-and the bindings, remains.
+Status: `built`, 2026-10-03, written from the sources before any code.
+Every step is built: `sdk.chart().antiscia`, held to Lilly's p. 181
+table and to a recast of George V, measured over the corpus's births in
+[`antiscia-measured.md`](antiscia-measured.md), and crossing to every
+binding as `chart.antiscia`, with parity.
 
 [`western-declinations.md`](western-declinations.md) reads two bodies
 the same distance from the equator. Lilly reads the same equality along
@@ -82,6 +82,13 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
    say "no pair" where the truth is "no orb". So they stand in the
    table of points, and the answer lists them as unpaired; a caller's
    moieties that give them an orb pair them.
+6. **Across the boundary, as the parallels cross.** An `antiscia`
+   record on the chart request (`{}` for the moieties, or `orbs` as the
+   aspect table spells them) asks every chart of the batch. A row a
+   chart counts its points and its pairs, and the two go ragged under
+   it (sections 91 to 93). An unpaired planet crosses as a `paired` flag
+   on its point, so a binding rebuilds the list without a second
+   section.
 
 ## Order of work
 
@@ -110,6 +117,10 @@ Saturn's contrantiscion on Jupiter, 2°50′ away, the one Lilly reads.
   degree of longitude moves a declination by at most 0.4°; the planets'
   latitudes part the rest. So the two tables answer different
   questions, and neither is derived from the other.
+- **An unpaired planet is a column, not a section.** The answer's
+  `unpaired` list is a fact about each point, so it crosses as a flag
+  beside the point's reflections; every binding reads the list back in
+  the order the points stand.
 - **One helper, four copies.** The measured pages' percentage helper
   had been written four times. The new page, the declinations page and
   the stations page print it alike and now share one copy, their pages

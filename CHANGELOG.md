@@ -2010,7 +2010,11 @@ the astronomical numbers do not move. Nothing else computes yet.
     moieties by default, Leo's or a caller's own instead (C244). A planet
     the moieties give no orb is listed as unpaired rather than refused.
     `antiscion_deg` and `contrantiscion_deg` are the two reflections.
-    Lilly's p. 181 table is a test, every antiscion to the minute.
+    Lilly's p. 181 table is a test, every antiscion to the minute. An
+    `antiscia_json` record crosses the boundary in sections 91 to 93,
+    and Node, Python and Dart read `chart.antiscia`, Node's orb models
+    now one `WesternOrbModel` type and Dart's `AntisciaRequest` taking an
+    `OrbModel`, with parity across all four runners.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
