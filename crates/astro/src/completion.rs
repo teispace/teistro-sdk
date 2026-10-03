@@ -1570,7 +1570,7 @@ mod tests {
         assert_eq!(done.step_keys(), vec!["positions:PASS_THROUGH"]);
         assert!(completion.describe().starts_with("test-provider"));
         assert_eq!(completion.policy(), OverridePolicy::PreferNative);
-        assert_eq!(completion.capabilities().bodies.len(), 8);
+        assert_eq!(completion.capabilities().bodies.len(), 11);
     }
 
     #[test]
