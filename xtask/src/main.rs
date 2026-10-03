@@ -274,6 +274,7 @@ mod kp;
 mod lints;
 mod lots;
 mod lunisolar;
+mod matching;
 mod measure;
 mod midpoints;
 mod moon;
@@ -481,6 +482,7 @@ const PASSES: &[Pass] = &[
         western_houses::generate,
         western_houses::check_generated,
     ),
+    ("matching", matching::generate, matching::check_generated),
     (
         "time-lords",
         time_lords::generate,
