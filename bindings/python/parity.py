@@ -50,6 +50,7 @@ from teistro import (
     LayoutRow,
     Latitude,
     Longitude,
+    NatalPoint,
     Observer,
     EssentialDignity,
     Perfection,
@@ -66,6 +67,12 @@ from teistro import (
 )
 
 report: dict[str, str] = {}
+
+
+def natal_key(point: NatalPoint) -> str:
+    """A natal point as every runner prints it: `LAGNA`, or the graha's
+    full key."""
+    return "LAGNA" if point.graha is None else point.graha.full_key
 
 
 def number(value: float | int) -> str:
@@ -562,6 +569,15 @@ def main() -> None:
                     ],
                 },
             },
+            synastry={
+                "partner": {
+                    "instant": 2451545.25,
+                    "observer": Observer(latitude_deg=Latitude(-33.87), longitude_deg=Longitude(151.21), altitude_m=Altitude(0)),
+                    "utc_offset_seconds": 36000,
+                },
+                "aspects": ["CONJUNCTION", "SQUARE", "TRINE", "OPPOSITION"],
+                "zodiac": "CHARTS",
+            },
             progressions={
                 "at": 2470000.5,
                 "year": "NOON_SIDEREAL_TIME",
@@ -839,7 +855,7 @@ def main() -> None:
                 into = e.into.full_key if isinstance(e, (SignIngress, NakshatraIngress)) else "-"
                 motion = e.turns.key if isinstance(e, Station) else e.motion.key
                 if isinstance(e, AspectHit):
-                    to = "LAGNA" if e.to.graha is None else e.to.graha.full_key
+                    to = natal_key(e.to)
                     angle, phase = str(e.angle), e.phase.key
                 else:
                     to, angle, phase = "-", "-", "-"
@@ -1111,10 +1127,9 @@ def main() -> None:
                 put(f"chart-{i}-directed-graha-{n}", f"{directed.graha.full_key} {number(directed.longitude_deg)}")
             put(f"chart-{i}-progressed-contact-count", str(len(pr.contacts)))
             for n, ct in enumerate(pr.contacts):
-                reached = "LAGNA" if ct.to.graha is None else ct.to.graha.full_key
                 put(
                     f"chart-{i}-progressed-contact-{n}",
-                    f"{number(ct.life)} {number(ct.sky)} {ct.graha.full_key} {reached} {ct.angle} {ct.motion.key}",
+                    f"{number(ct.life)} {number(ct.sky)} {ct.graha.full_key} {natal_key(ct.to)} {ct.angle} {ct.motion.key}",
                 )
             western = chart.western_aspects
             assert western is not None
@@ -1124,6 +1139,15 @@ def main() -> None:
                     f"chart-{i}-western-aspect-{n}",
                     f"{row.first.full_key} {row.second.full_key} {row.aspect.key} {number(row.apart_deg)} "
                     f"{number(row.from_exact_deg)} {number(row.orb_deg)} {int(row.applying)}",
+                )
+            synastry = chart.synastry
+            assert synastry is not None
+            put(f"chart-{i}-synastry-count", str(len(synastry)))
+            for n, across in enumerate(synastry):
+                put(
+                    f"chart-{i}-synastry-{n}",
+                    f"{natal_key(across.first)} {natal_key(across.second)} {across.aspect.key} "
+                    f"{number(across.apart_deg)} {number(across.from_exact_deg)} {number(across.orb_deg)}",
                 )
             vs = chart.vimshopaka
             assert vs is not None
