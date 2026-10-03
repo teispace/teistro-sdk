@@ -7848,6 +7848,20 @@ struct ts_chart_request {
      * Example: {"system":"KOCH"}. May be null.
      */
     const char * western_houses_json;
+    /**
+     * Every chart's harmonic chart, as a JSON object: `number`, the
+     * harmonic, a whole number from 1 to 360 every longitude is
+     * multiplied by, and `orbDeg`, how close two points meet in it, 12°
+     * by default (C252), at most 30°. The planets, the ascendant and the
+     * midheaven are multiplied in the chart's own zodiac (C253), each in
+     * its equal house from the harmonic ascendant (C254). The answers
+     * come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+     * Null for none, which costs nothing
+     * (`03-design/western-harmonics.md`). Refusals are named from the
+     * record every binding calls `harmonic`, as `harmonic.number`.
+     * Example: {"number":9}. May be null.
+     */
+    const char * harmonic_json;
 };
 
 /**
@@ -8782,7 +8796,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 272, "ts_chart_request is 272 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 280, "ts_chart_request is 280 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

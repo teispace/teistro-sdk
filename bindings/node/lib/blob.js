@@ -1556,6 +1556,38 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 108, 'harmonics');
+    out.harmonics = {
+      number: column(blob, at, 0, 'u16', at.count),
+      pointCount: column(blob, at, 1, 'u32', at.count),
+      rowCount: column(blob, at, 2, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 109, 'harmonic_points');
+    out.harmonicPoints = {
+      angle: column(blob, at, 0, 'u8', at.count),
+      graha: column(blob, at, 1, 'u16', at.count),
+      longitudeDeg: column(blob, at, 2, 'f64', at.count),
+      house: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 110, 'harmonic_rows');
+    out.harmonicRows = {
+      firstAngle: column(blob, at, 0, 'u8', at.count),
+      firstGraha: column(blob, at, 1, 'u16', at.count),
+      secondAngle: column(blob, at, 2, 'u8', at.count),
+      secondGraha: column(blob, at, 3, 'u16', at.count),
+      apartDeg: column(blob, at, 4, 'f64', at.count),
+      multiple: column(blob, at, 5, 'u16', at.count),
+      orbDeg: column(blob, at, 6, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

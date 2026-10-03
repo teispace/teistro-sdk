@@ -633,6 +633,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_composite_sections(98))
         .chain(chart_synastry_midpoint_sections(101))
         .chain(chart_western_house_sections(103))
+        .chain(chart_harmonic_sections(108))
         .collect(),
     }
 }
@@ -1860,6 +1861,103 @@ fn chart_western_house_sections(first: u32) -> [SectionSchema; 5] {
                     "contrary",
                     Scalar::U8,
                     "1 for the contrantiscion, the reflection about the equinoxes; 0 for the antiscion.",
+                ),
+            ],
+        ),
+    ]
+}
+
+/// The three sections a chart's harmonic crosses as, from `first`: a row a
+/// chart, its points and the points meeting in it, both ragged under the
+/// row (`03-design/western-harmonics.md`).
+fn chart_harmonic_sections(first: u32) -> [SectionSchema; 3] {
+    let empty = "Empty when `harmonic_json` asked for none.";
+    let angle = |name: &str, whose: &str| {
+        ColumnDef::new(
+            name,
+            Scalar::U8,
+            &format!(
+                "Which {whose} it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."
+            ),
+        )
+    };
+    let graha = |name: &str| {
+        graha_column(
+            name,
+            "The planet when the angle beside it is 0; 0 for an angle.",
+        )
+    };
+    [
+        SectionSchema::columns(
+            first,
+            "harmonics",
+            &format!(
+                "Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "number",
+                    Scalar::U16,
+                    "Which harmonic, 1 to 360: the number every longitude is multiplied by.",
+                ),
+                ColumnDef::new(
+                    "point_count",
+                    Scalar::U32,
+                    "How many points the harmonic chart places; the chart's rows follow the earlier charts' in `harmonic_points`.",
+                ),
+                ColumnDef::new(
+                    "row_count",
+                    Scalar::U32,
+                    "How many pairs meet in it; the chart's rows follow the earlier charts' in `harmonic_rows`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "harmonic_points",
+            &format!(
+                "Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). {empty}"
+            ),
+            vec![
+                angle("angle", "point"),
+                graha("graha"),
+                ColumnDef::new(
+                    "longitude_deg",
+                    Scalar::F64,
+                    "Its longitude multiplied by the harmonic, degrees in `[0, 360)`.",
+                ),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "Its equal house from the harmonic ascendant, 1 to 12 (C254).",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "harmonic_rows",
+            &format!(
+                "Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). {empty}"
+            ),
+            vec![
+                angle("first_angle", "earlier point"),
+                graha("first_graha"),
+                angle("second_angle", "later point"),
+                graha("second_graha"),
+                ColumnDef::new(
+                    "apart_deg",
+                    Scalar::F64,
+                    "How far apart they stand in the harmonic chart, degrees.",
+                ),
+                ColumnDef::new(
+                    "multiple",
+                    Scalar::U16,
+                    "Which multiple of the harmonic's aspect they stand at in the chart itself: k for k × 360° / n, 0 to half the harmonic.",
+                ),
+                ColumnDef::new(
+                    "orb_deg",
+                    Scalar::F64,
+                    "The orb the record allowed, degrees.",
                 ),
             ],
         ),

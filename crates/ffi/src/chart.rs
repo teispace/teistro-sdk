@@ -1762,6 +1762,18 @@ pub struct TsChartRequest {
     /// `westernHouses.system`.
     /// `api: nullable example={"system":"KOCH"}`
     pub western_houses_json: *const c_char,
+    /// Every chart's harmonic chart, as a JSON object: `number`, the
+    /// harmonic, a whole number from 1 to 360 every longitude is
+    /// multiplied by, and `orbDeg`, how close two points meet in it, 12°
+    /// by default (C252), at most 30°. The planets, the ascendant and the
+    /// midheaven are multiplied in the chart's own zodiac (C253), each in
+    /// its equal house from the harmonic ascendant (C254). The answers
+    /// come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+    /// Null for none, which costs nothing
+    /// (`03-design/western-harmonics.md`). Refusals are named from the
+    /// record every binding calls `harmonic`, as `harmonic.number`.
+    /// `api: nullable example={"number":9}`
+    pub harmonic_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3318,6 +3330,7 @@ struct AspectTables {
     between: MidpointColumns,
     davisons: DavisonColumns,
     houses: WesternHouseColumns,
+    harmonics: HarmonicColumns,
 }
 
 impl AspectTables {
@@ -3330,6 +3343,7 @@ impl AspectTables {
             between: MidpointColumns::of(composed.midpoints, charts)?,
             davisons: DavisonColumns::of(composed.davisons, charts)?,
             houses: WesternHouseColumns::of(composed.western_houses, charts)?,
+            harmonics: HarmonicColumns::of(composed.harmonics, charts)?,
         })
     }
 
@@ -3346,7 +3360,114 @@ impl AspectTables {
         self.across.write_midpoints(writer)?;
         self.houses.write(writer)?;
         self.across.write_composite_cusps(writer)?;
-        self.reflected.write_cusps(writer)
+        self.reflected.write_cusps(writer)?;
+        self.harmonics.write(writer)
+    }
+}
+
+/// `harmonics`, `harmonic_points` and `harmonic_rows`: each chart's
+/// harmonic chart, its points and the points meeting in it
+/// (`western-harmonics.md`).
+#[derive(Default)]
+struct HarmonicColumns {
+    number: Vec<u16>,
+    point_count: Vec<u32>,
+    row_count: Vec<u32>,
+    point: HarmonicPointCells,
+    longitude_deg: Vec<f64>,
+    house: Vec<u8>,
+    first: HarmonicPointCells,
+    second: HarmonicPointCells,
+    apart_deg: Vec<f64>,
+    multiple: Vec<u16>,
+    orb_deg: Vec<f64>,
+}
+
+/// A harmonic chart's point as the boundary carries it: the angle, 0 for
+/// a graha, 1 for the ascendant and 2 for the midheaven, and the graha's
+/// id, 0 for an angle.
+#[derive(Default)]
+struct HarmonicPointCells {
+    angle: Vec<u8>,
+    graha: Vec<u16>,
+}
+
+impl HarmonicPointCells {
+    fn push(&mut self, point: teistro::HarmonicPoint) {
+        let (angle, graha) = match point {
+            teistro::HarmonicPoint::Graha { graha } => (0, graha.id()),
+            teistro::HarmonicPoint::Ascendant => (1, 0),
+            teistro::HarmonicPoint::Midheaven => (2, 0),
+        };
+        self.angle.push(angle);
+        self.graha.push(graha);
+    }
+
+    fn columns(&self) -> [ColumnData<'_>; 2] {
+        [ColumnData::U8(&self.angle), ColumnData::U16(&self.graha)]
+    }
+}
+
+impl HarmonicColumns {
+    fn of(read: &[teistro::HarmonicChart], charts: usize) -> Result<HarmonicColumns, Error> {
+        one_a_chart(read.len(), charts, "harmonic")?;
+        let mut columns = HarmonicColumns::default();
+        for one in read {
+            columns.number.push(one.harmonic);
+            columns.point_count.push(row_count(one.points.len())?);
+            columns.row_count.push(row_count(one.rows.len())?);
+            for placed in &one.points {
+                columns.point.push(placed.point);
+                columns.longitude_deg.push(placed.longitude_deg);
+                columns.house.push(placed.house.get());
+            }
+            for row in &one.rows {
+                columns.first.push(row.first);
+                columns.second.push(row.second);
+                columns.apart_deg.push(row.apart_deg);
+                columns.multiple.push(row.multiple);
+                columns.orb_deg.push(row.orb_deg);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "harmonics",
+            self.number.len(),
+            &[
+                ColumnData::U16(&self.number),
+                ColumnData::U32(&self.point_count),
+                ColumnData::U32(&self.row_count),
+            ],
+        )?;
+        let [angle, graha] = self.point.columns();
+        writer.columns(
+            "harmonic_points",
+            self.longitude_deg.len(),
+            &[
+                angle,
+                graha,
+                ColumnData::F64(&self.longitude_deg),
+                ColumnData::U8(&self.house),
+            ],
+        )?;
+        let [first_angle, first_graha] = self.first.columns();
+        let [second_angle, second_graha] = self.second.columns();
+        writer.columns(
+            "harmonic_rows",
+            self.apart_deg.len(),
+            &[
+                first_angle,
+                first_graha,
+                second_angle,
+                second_graha,
+                ColumnData::F64(&self.apart_deg),
+                ColumnData::U16(&self.multiple),
+                ColumnData::F64(&self.orb_deg),
+            ],
+        )
     }
 }
 
@@ -6584,6 +6705,9 @@ pub struct Composed<'a> {
     /// Every chart's Western houses, in the batch's order
     /// (`western-houses.md`); empty when none were asked for.
     pub western_houses: &'a [teistro::WesternHouses],
+    /// Every chart's harmonic chart, in the batch's order
+    /// (`western-harmonics.md`); empty when none was asked for.
+    pub harmonics: &'a [teistro::HarmonicChart],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7568,6 +7692,7 @@ struct WesternTables {
     midpoints: Vec<Vec<teistro::MidpointRow>>,
     davisons: Vec<teistro::Partner>,
     houses: Vec<teistro::WesternHouses>,
+    harmonics: Vec<teistro::HarmonicChart>,
 }
 
 impl WesternTables {
@@ -7645,6 +7770,12 @@ impl WesternTables {
                 documents,
                 "westernHouses",
                 |document, asked| sdk.chart().western_houses(document, asked),
+            )?,
+            harmonics: chart_by_chart(
+                records.harmonic.as_ref(),
+                documents,
+                "harmonic",
+                |document, asked| sdk.chart().harmonic(document, asked),
             )?,
         })
     }
@@ -8060,6 +8191,7 @@ struct AskedRecords {
     antiscia: Option<teistro::AntisciaRequest>,
     midpoints: Option<teistro::MidpointRequest>,
     western_houses: Option<teistro::HouseRequest>,
+    harmonic: Option<teistro::HarmonicRequest>,
 }
 
 impl AskedRecords {
@@ -8108,6 +8240,9 @@ impl AskedRecords {
                     .transpose()?,
                 western_houses: optional_text(asked.western_houses_json, "western_houses_json")?
                     .map(teistro::HouseRequest::from_json)
+                    .transpose()?,
+                harmonic: optional_text(asked.harmonic_json, "harmonic_json")?
+                    .map(teistro::HarmonicRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -8342,6 +8477,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 midpoints: &western.midpoints,
                 davisons: &western.davisons,
                 western_houses: &western.houses,
+                harmonics: &western.harmonics,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

@@ -1120,6 +1120,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly westernHousesJson?: string;
+  /**
+   * Every chart's harmonic chart, as a JSON object: `number`, the
+   * harmonic, a whole number from 1 to 360 every longitude is
+   * multiplied by, and `orbDeg`, how close two points meet in it, 12°
+   * by default (C252), at most 30°. The planets, the ascendant and the
+   * midheaven are multiplied in the chart's own zodiac (C253), each in
+   * its equal house from the harmonic ascendant (C254). The answers
+   * come back in `harmonics`, `harmonic_points` and `harmonic_rows`.
+   * Null for none, which costs nothing
+   * (`03-design/western-harmonics.md`). Refusals are named from the
+   * record every binding calls `harmonic`, as `harmonic.number`.
+   * @example {"number":9}
+   * @nullable
+   */
+  readonly harmonicJson?: string;
 }
 
 /**

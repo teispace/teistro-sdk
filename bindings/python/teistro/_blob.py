@@ -3549,6 +3549,84 @@ class ChartsAntiscionCuspRows:
 
 
 @dataclass(frozen=True)
+class ChartsHarmonics:
+    """The `harmonics` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.
+    """
+
+    number: memoryview[int]
+    """Which harmonic, 1 to 360: the number every longitude is multiplied by."""
+
+    point_count: memoryview[int]
+    """How many points the harmonic chart places; the chart's rows follow the earlier charts' in `harmonic_points`."""
+
+    row_count: memoryview[int]
+    """How many pairs meet in it; the chart's rows follow the earlier charts' in `harmonic_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsHarmonicPoints:
+    """The `harmonic_points` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.
+    """
+
+    angle: memoryview[int]
+    """Which point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."""
+
+    graha: memoryview[int]
+    """The planet when the angle beside it is 0; 0 for an angle."""
+
+    longitude_deg: memoryview[float]
+    """Its longitude multiplied by the harmonic, degrees in `[0, 360)`."""
+
+    house: memoryview[int]
+    """Its equal house from the harmonic ascendant, 1 to 12 (C254)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsHarmonicRows:
+    """The `harmonic_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
+    """
+
+    first_angle: memoryview[int]
+    """Which earlier point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."""
+
+    first_graha: memoryview[int]
+    """The planet when the angle beside it is 0; 0 for an angle."""
+
+    second_angle: memoryview[int]
+    """Which later point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven."""
+
+    second_graha: memoryview[int]
+    """The planet when the angle beside it is 0; 0 for an angle."""
+
+    apart_deg: memoryview[float]
+    """How far apart they stand in the harmonic chart, degrees."""
+
+    multiple: memoryview[int]
+    """Which multiple of the harmonic's aspect they stand at in the chart itself: k for k × 360° / n, 0 to half the harmonic."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3993,6 +4071,15 @@ class Charts:
     antiscion_cusp_rows: ChartsAntiscionCuspRows
     """Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`."""
 
+    harmonics: ChartsHarmonics
+    """Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none."""
+
+    harmonic_points: ChartsHarmonicPoints
+    """Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none."""
+
+    harmonic_rows: ChartsHarmonicRows
+    """Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4109,6 +4196,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_western_house_planets = blob.section(105, "western_house_planets")
     at_synastry_composite_cusps = blob.section(106, "synastry_composite_cusps")
     at_antiscion_cusp_rows = blob.section(107, "antiscion_cusp_rows")
+    at_harmonics = blob.section(108, "harmonics")
+    at_harmonic_points = blob.section(109, "harmonic_points")
+    at_harmonic_rows = blob.section(110, "harmonic_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6362,6 +6452,57 @@ def decode_charts(raw: bytes) -> Charts:
                 at_antiscion_cusp_rows, 2, 1, at_antiscion_cusp_rows.count
             ).cast("B"),
             length=at_antiscion_cusp_rows.count,
+        ),
+        harmonics=ChartsHarmonics(
+            number=blob.column(
+                at_harmonics, 0, 2, at_harmonics.count
+            ).cast("H"),
+            point_count=blob.column(
+                at_harmonics, 1, 4, at_harmonics.count
+            ).cast("I"),
+            row_count=blob.column(
+                at_harmonics, 2, 4, at_harmonics.count
+            ).cast("I"),
+            length=at_harmonics.count,
+        ),
+        harmonic_points=ChartsHarmonicPoints(
+            angle=blob.column(
+                at_harmonic_points, 0, 1, at_harmonic_points.count
+            ).cast("B"),
+            graha=blob.column(
+                at_harmonic_points, 1, 2, at_harmonic_points.count
+            ).cast("H"),
+            longitude_deg=blob.column(
+                at_harmonic_points, 2, 8, at_harmonic_points.count
+            ).cast("d"),
+            house=blob.column(
+                at_harmonic_points, 3, 1, at_harmonic_points.count
+            ).cast("B"),
+            length=at_harmonic_points.count,
+        ),
+        harmonic_rows=ChartsHarmonicRows(
+            first_angle=blob.column(
+                at_harmonic_rows, 0, 1, at_harmonic_rows.count
+            ).cast("B"),
+            first_graha=blob.column(
+                at_harmonic_rows, 1, 2, at_harmonic_rows.count
+            ).cast("H"),
+            second_angle=blob.column(
+                at_harmonic_rows, 2, 1, at_harmonic_rows.count
+            ).cast("B"),
+            second_graha=blob.column(
+                at_harmonic_rows, 3, 2, at_harmonic_rows.count
+            ).cast("H"),
+            apart_deg=blob.column(
+                at_harmonic_rows, 4, 8, at_harmonic_rows.count
+            ).cast("d"),
+            multiple=blob.column(
+                at_harmonic_rows, 5, 2, at_harmonic_rows.count
+            ).cast("H"),
+            orb_deg=blob.column(
+                at_harmonic_rows, 6, 8, at_harmonic_rows.count
+            ).cast("d"),
+            length=at_harmonic_rows.count,
         ),
     )
 

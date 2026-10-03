@@ -4407,6 +4407,101 @@ final class ChartsAntiscionCuspRows {
   final int length;
 }
 
+/// The `harmonics` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.
+final class ChartsHarmonics {
+  const ChartsHarmonics({
+    required this.number,
+    required this.pointCount,
+    required this.rowCount,
+    required this.length,
+  });
+
+  /// Which harmonic, 1 to 360: the number every longitude is multiplied by.
+  final Uint16List number;
+
+  /// How many points the harmonic chart places; the chart's rows follow the earlier charts' in `harmonic_points`.
+  final Uint32List pointCount;
+
+  /// How many pairs meet in it; the chart's rows follow the earlier charts' in `harmonic_rows`.
+  final Uint32List rowCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `harmonic_points` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.
+final class ChartsHarmonicPoints {
+  const ChartsHarmonicPoints({
+    required this.angle,
+    required this.graha,
+    required this.longitudeDeg,
+    required this.house,
+    required this.length,
+  });
+
+  /// Which point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+  final Uint8List angle;
+
+  /// The planet when the angle beside it is 0; 0 for an angle.
+  final Uint16List graha;
+
+  /// Its longitude multiplied by the harmonic, degrees in `[0, 360)`.
+  final Float64List longitudeDeg;
+
+  /// Its equal house from the harmonic ascendant, 1 to 12 (C254).
+  final Uint8List house;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `harmonic_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
+final class ChartsHarmonicRows {
+  const ChartsHarmonicRows({
+    required this.firstAngle,
+    required this.firstGraha,
+    required this.secondAngle,
+    required this.secondGraha,
+    required this.apartDeg,
+    required this.multiple,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// Which earlier point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+  final Uint8List firstAngle;
+
+  /// The planet when the angle beside it is 0; 0 for an angle.
+  final Uint16List firstGraha;
+
+  /// Which later point it is: 0 for a planet, named in the graha column beside it; 1 for the ascendant and 2 for the midheaven.
+  final Uint8List secondAngle;
+
+  /// The planet when the angle beside it is 0; 0 for an angle.
+  final Uint16List secondGraha;
+
+  /// How far apart they stand in the harmonic chart, degrees.
+  final Float64List apartDeg;
+
+  /// Which multiple of the harmonic's aspect they stand at in the chart itself: k for k × 360° / n, 0 to half the harmonic.
+  final Uint16List multiple;
+
+  /// The orb the record allowed, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4626,6 +4721,9 @@ final class Charts {
     required this.westernHousePlanets,
     required this.synastryCompositeCusps,
     required this.antiscionCuspRows,
+    required this.harmonics,
+    required this.harmonicPoints,
+    required this.harmonicRows,
   });
 
   /// What kind of chart these are.
@@ -4993,6 +5091,15 @@ final class Charts {
   /// Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.
   final ChartsAntiscionCuspRows antiscionCuspRows;
 
+  /// Every chart's harmonic chart, a row a chart in the `cast` section's order: which harmonic, and how many rows of `harmonic_points` and `harmonic_rows` are its. Empty when `harmonic_json` asked for none.
+  final ChartsHarmonics harmonics;
+
+  /// Every chart's harmonic points, concatenated in the `cast` section's order and **ragged** by `harmonics.point_count`: the planets the chart places in the catalogue's order, then the ascendant and the midheaven, each at its longitude multiplied in the chart's zodiac (Addey; C253). Empty when `harmonic_json` asked for none.
+  final ChartsHarmonicPoints harmonicPoints;
+
+  /// Every chart's pairs meeting in its harmonic chart, concatenated in the `cast` section's order and **ragged** by `harmonics.row_count`, closest first: the two points within the orb of each other there (C252). Empty when `harmonic_json` asked for none.
+  final ChartsHarmonicRows harmonicRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5107,6 +5214,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atWesternHousePlanets = blob.section(105, 'western_house_planets');
   final atSynastryCompositeCusps = blob.section(106, 'synastry_composite_cusps');
   final atAntiscionCuspRows = blob.section(107, 'antiscion_cusp_rows');
+  final atHarmonics = blob.section(108, 'harmonics');
+  final atHarmonicPoints = blob.section(109, 'harmonic_points');
+  final atHarmonicRows = blob.section(110, 'harmonic_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9054,6 +9164,85 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAntiscionCuspRows, 2) + atAntiscionCuspRows.count * 1,
       ),
       length: atAntiscionCuspRows.count,
+    ),
+    harmonics: ChartsHarmonics(
+      number: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonics, 0),
+        blob.columnOffset(atHarmonics, 0) + atHarmonics.count * 2,
+      ),
+      pointCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonics, 1),
+        blob.columnOffset(atHarmonics, 1) + atHarmonics.count * 4,
+      ),
+      rowCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonics, 2),
+        blob.columnOffset(atHarmonics, 2) + atHarmonics.count * 4,
+      ),
+      length: atHarmonics.count,
+    ),
+    harmonicPoints: ChartsHarmonicPoints(
+      angle: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicPoints, 0),
+        blob.columnOffset(atHarmonicPoints, 0) + atHarmonicPoints.count * 1,
+      ),
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicPoints, 1),
+        blob.columnOffset(atHarmonicPoints, 1) + atHarmonicPoints.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicPoints, 2),
+        blob.columnOffset(atHarmonicPoints, 2) + atHarmonicPoints.count * 8,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicPoints, 3),
+        blob.columnOffset(atHarmonicPoints, 3) + atHarmonicPoints.count * 1,
+      ),
+      length: atHarmonicPoints.count,
+    ),
+    harmonicRows: ChartsHarmonicRows(
+      firstAngle: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 0),
+        blob.columnOffset(atHarmonicRows, 0) + atHarmonicRows.count * 1,
+      ),
+      firstGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 1),
+        blob.columnOffset(atHarmonicRows, 1) + atHarmonicRows.count * 2,
+      ),
+      secondAngle: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 2),
+        blob.columnOffset(atHarmonicRows, 2) + atHarmonicRows.count * 1,
+      ),
+      secondGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 3),
+        blob.columnOffset(atHarmonicRows, 3) + atHarmonicRows.count * 2,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 4),
+        blob.columnOffset(atHarmonicRows, 4) + atHarmonicRows.count * 8,
+      ),
+      multiple: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 5),
+        blob.columnOffset(atHarmonicRows, 5) + atHarmonicRows.count * 2,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHarmonicRows, 6),
+        blob.columnOffset(atHarmonicRows, 6) + atHarmonicRows.count * 8,
+      ),
+      length: atHarmonicRows.count,
     ),
   );
 }
