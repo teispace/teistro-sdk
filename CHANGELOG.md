@@ -1991,7 +1991,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     Nativity*, p. 130) are a test. `OrbModel::point_orb_deg` gives the
     orb between any two `NatalPoint`s, and `NatalPoint` is ordered and
     hashable. `synastry-measured.md` reads every pair of the corpus's
-    births both ways and sizes C241.
+    births both ways and sizes C241. It crosses the boundary as a
+    `synastry_json` record on the chart request, the partner's birth
+    beside the table's fields (`PartnerSynastry::from_json`, refused
+    under `synastry`): the SDK founds the partner once and reads every
+    chart of the batch against it (`ChartArea::synastry_with`), and
+    sections 84 and 85 carry the rows, each side a natal point. Node,
+    Python and Dart read them as `chart.synastry`, Dart with a typed
+    `Partner`, `SynastryRequest` and `SynastryZodiac`, with parity
+    across all four runners.
   - **The outer planets in a chart** (`western-outer-planets.md`,
     `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
     places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside
