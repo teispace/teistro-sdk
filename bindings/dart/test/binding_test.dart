@@ -2921,6 +2921,84 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its antiscia', () {
+    // King George V (Leo, *How to Judge a Nativity*, p. 130): his recast's
+    // one pair under Lilly's moieties, the outer three unpaired, Leo's orbs
+    // pairing them, and refusals named in the record
+    // (`03-design/western-antiscia.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final george = Observer(
+      latitudeDeg: Latitude(51.5045),
+      longitudeDeg: Longitude(-0.1366),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2402390.554166667;
+    Chart found(
+      double instant, {
+      AntisciaRequest? asked,
+      bool outerPlanets = false,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: outerPlanets,
+      antiscia: asked,
+    );
+    expect(found(birth).antiscia, isNull);
+
+    final read =
+        found(
+          birth,
+          asked: const AntisciaRequest(),
+          outerPlanets: true,
+        ).antiscia!;
+    final sun = read.points.firstWhere((at) => at.graha == Graha.sun);
+    expect(sun.antiscionDeg, closeTo(107.5685, 0.01));
+    expect(read.pairs, hasLength(1));
+    final pair = read.pairs.single;
+    expect(
+      (pair.first, pair.second, pair.contrary),
+      (Graha.mars, Graha.mercury, false),
+    );
+    expect(pair.apartDeg, closeTo(5.935, 0.02));
+    expect(read.unpaired, [Graha.uranus, Graha.neptune, Graha.pluto]);
+
+    const leo = AntisciaRequest(orbs: OrbModel.leo);
+    expect(
+      found(birth, asked: leo, outerPlanets: true).antiscia!.unpaired,
+      isEmpty,
+    );
+    final instants = [birth, birth - 3000.25];
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: george,
+      utcOffsetSeconds: 0,
+      antiscia: leo,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(batch.at(k).antiscia, found(instant, asked: leo).antiscia);
+    }
+    expect(
+      () => found(
+        birth,
+        asked: const AntisciaRequest(
+          orbs: OrbModel.byAspect({WesternAspect.trine: 3}),
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'antiscia.orbs.orbs',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its synastry with a partner', () {
     // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
     // p. 130): the recast's closest contacts, the lagna left out on
