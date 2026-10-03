@@ -3898,6 +3898,63 @@ export interface ChartsSynastryAntiscionRows {
 }
 
 /**
+ * The `midpoints` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's equal distances, a row a chart in the `cast` section's order: how many rows of `midpoint_rows` are its. Empty when `midpoints_json` asked for none.
+ */
+export interface ChartsMidpoints {
+  /**
+   * How many planets stand equally distant from two others; the chart's rows follow the earlier charts' in `midpoint_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `midpoint_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.
+ */
+export interface ChartsMidpointRows {
+  /**
+   * The first planet of the pair, in the catalogue's order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * The planet equally distant from the two.
+   * The values are `Graha` ids.
+   */
+  readonly middle: Uint16Array;
+  /**
+   * 1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's.
+   */
+  readonly far: Uint8Array;
+  /**
+   * How far it stands from each of the two, the mean of the two arcs, degrees.
+   */
+  readonly distanceDeg: Float64Array;
+  /**
+   * How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.
+   */
+  readonly fromAxisDeg: Float64Array;
+  /**
+   * The orb the record allowed, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4445,6 +4502,14 @@ export interface Charts {
    * Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`.
    */
   readonly synastryAntiscionRows: ChartsSynastryAntiscionRows;
+  /**
+   * Every chart's equal distances, a row a chart in the `cast` section's order: how many rows of `midpoint_rows` are its. Empty when `midpoints_json` asked for none.
+   */
+  readonly midpoints: ChartsMidpoints;
+  /**
+   * Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.
+   */
+  readonly midpointRows: ChartsMidpointRows;
 }
 
 /**

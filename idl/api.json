@@ -12005,6 +12005,21 @@
             "example": "{\"orbs\":{\"model\":\"LEO\"}}",
             "nullable": true
           }
+        },
+        {
+          "name": "midpoints_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's equal distances, as a JSON object, every field\noptional: `orbDeg`, how far from the axis through two planets'\nmidpoint a third may stand, 0.5° by default (C245) and at most 10°.\nA planet stands on the axis when it is equally distant from the\ntwo, on the shorter arc's midpoint or opposite it (C246). The\nplanets are the seven, and the outer three when `TS_CHART_OUTER`\nplaced them. The answers come back in `midpoints` and\n`midpoint_rows`. Null for none, which costs nothing\n(`03-design/western-midpoints.md`). Refusals are named from the\nrecord every binding calls `midpoints`, as `midpoints.orbDeg`.",
+          "meta": {
+            "example": "{\"orbDeg\":1}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -19679,6 +19694,65 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the record allowed the pair, degrees."
+            }
+          ]
+        },
+        {
+          "id": 96,
+          "name": "midpoints",
+          "doc": "Every chart's equal distances, a row a chart in the `cast` section's order: how many rows of `midpoint_rows` are its. Empty when `midpoints_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many planets stand equally distant from two others; the chart's rows follow the earlier charts' in `midpoint_rows`."
+            }
+          ]
+        },
+        {
+          "id": 97,
+          "name": "midpoint_rows",
+          "doc": "Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet of the pair, in the catalogue's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "middle",
+              "scalar": "u16",
+              "doc": "The planet equally distant from the two.",
+              "enum": "Graha"
+            },
+            {
+              "name": "far",
+              "scalar": "u8",
+              "doc": "1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's."
+            },
+            {
+              "name": "distance_deg",
+              "scalar": "f64",
+              "doc": "How far it stands from each of the two, the mean of the two arcs, degrees."
+            },
+            {
+              "name": "from_axis_deg",
+              "scalar": "f64",
+              "doc": "How far it stands from the nearer point of the axis, degrees: half what its two distances differ by."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed, degrees."
             }
           ]
         }

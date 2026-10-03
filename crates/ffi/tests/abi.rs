@@ -303,6 +303,7 @@ fn chart_request(
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1577,6 +1578,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1725,6 +1727,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1871,6 +1874,7 @@ fn a_chart_request_answers_the_transits() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2089,6 +2093,7 @@ fn a_chart_request_answers_the_hit_list() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2260,6 +2265,7 @@ fn a_chart_request_answers_sade_sati() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2373,6 +2379,7 @@ fn a_chart_request_answers_sade_sati() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2440,6 +2447,7 @@ fn a_chart_request_answers_sade_sati() {
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
+        midpoints_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2511,6 +2519,7 @@ fn a_chart_request_answers_the_dignities() {
                 synastry_json: ptr::null(),
                 parallels_json: ptr::null(),
                 antiscia_json: ptr::null(),
+                midpoints_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2787,6 +2796,7 @@ fn a_chart_request_answers_the_fortitudes() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4091,6 +4101,7 @@ fn a_chart_request_answers_kp() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4202,6 +4213,7 @@ fn a_chart_request_answers_kp() {
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
+        midpoints_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4221,6 +4233,7 @@ fn a_chart_request_answers_kp() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4280,6 +4293,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4322,6 +4336,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         synastry_json: ptr::null(),
         parallels_json: ptr::null(),
         antiscia_json: ptr::null(),
+        midpoints_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4385,6 +4400,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4523,6 +4539,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4666,6 +4683,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5440,6 +5458,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5551,6 +5570,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5731,6 +5751,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             synastry_json: ptr::null(),
             parallels_json: ptr::null(),
             antiscia_json: ptr::null(),
+            midpoints_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6015,6 +6036,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 synastry_json: ptr::null(),
                 parallels_json: ptr::null(),
                 antiscia_json: ptr::null(),
+                midpoints_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -7771,6 +7793,146 @@ fn a_chart_request_answers_the_antiscia() {
             &ctx,
             &TsChartRequest {
                 antiscia_json: refused.as_ptr(),
+                ..base
+            },
+        )
+        .unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
+    }
+}
+
+/// Every chart's equal distances cross whole: each cell of `midpoints`
+/// and `midpoint_rows` is the facade's own, bit for bit, on George V's
+/// birth and another at 1.5° from the axis; none asked is empty sections,
+/// and a refusal is named from the record's root
+/// (`03-design/western-midpoints.md`).
+#[test]
+fn a_chart_request_answers_the_midpoints() {
+    /// A row's cell, by its column's name.
+    type Cell<T> = (&'static str, fn(&teistro::MidpointRow) -> T);
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    let base = chart_request(&instants, (51.5045, -0.1366), 0);
+    let asked_json = CString::new(r#"{"orbDeg": 1.5}"#).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            midpoints_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap())
+            .with_outer_planets();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &request,
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::MidpointRequest::default().with_orb_deg(1.5);
+    let expected: Vec<Vec<teistro::MidpointRow>> = charts
+        .iter()
+        .map(|chart| sdk.chart().midpoints(chart, &asked).unwrap())
+        .collect();
+    let rows: Vec<&teistro::MidpointRow> = expected.iter().flatten().collect();
+    assert!(rows.iter().any(|row| row.far), "a far point crosses");
+    assert!(rows.iter().any(|row| !row.far), "a near point crosses");
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    assert_eq!(
+        ints("midpoints", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let named: [Cell<i64>; 4] = [
+        ("first", |row| i64::from(row.first.id())),
+        ("second", |row| i64::from(row.second.id())),
+        ("middle", |row| i64::from(row.middle.id())),
+        ("far", |row| i64::from(row.far)),
+    ];
+    for (name, read) in named {
+        assert_eq!(
+            ints("midpoint_rows", name),
+            rows.iter().map(|row| read(row)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    let measures: [Cell<f64>; 3] = [
+        ("distance_deg", |row| row.distance_deg),
+        ("from_axis_deg", |row| row.from_axis_deg),
+        ("orb_deg", |row| row.orb_deg),
+    ];
+    for (name, read) in measures {
+        let cells: Vec<u64> = reader
+            .column("midpoint_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect();
+        assert_eq!(
+            cells,
+            rows.iter()
+                .map(|row| read(row).to_bits())
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [("midpoints", "count"), ("midpoint_rows", "middle")] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A refusal is named by the field the caller wrote, under the record.
+    for (text, field) in [
+        (r#"{"orbDeg": 11}"#, "midpoints.orbDeg"),
+        (r#"{"orb": 1}"#, "midpoints.orb"),
+    ] {
+        let refused = CString::new(text).unwrap();
+        let status = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                midpoints_json: refused.as_ptr(),
                 ..base
             },
         )

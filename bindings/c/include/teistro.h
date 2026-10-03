@@ -7810,6 +7810,20 @@ struct ts_chart_request {
      * Example: {"orbs":{"model":"LEO"}}. May be null.
      */
     const char * antiscia_json;
+    /**
+     * Every chart's equal distances, as a JSON object, every field
+     * optional: `orbDeg`, how far from the axis through two planets'
+     * midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+     * A planet stands on the axis when it is equally distant from the
+     * two, on the shorter arc's midpoint or opposite it (C246). The
+     * planets are the seven, and the outer three when `TS_CHART_OUTER`
+     * placed them. The answers come back in `midpoints` and
+     * `midpoint_rows`. Null for none, which costs nothing
+     * (`03-design/western-midpoints.md`). Refusals are named from the
+     * record every binding calls `midpoints`, as `midpoints.orbDeg`.
+     * Example: {"orbDeg":1}. May be null.
+     */
+    const char * midpoints_json;
 };
 
 /**
@@ -8744,7 +8758,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 256, "ts_chart_request is 256 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 264, "ts_chart_request is 264 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

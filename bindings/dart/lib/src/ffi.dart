@@ -1205,6 +1205,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"orbs":{"model":"LEO"}}. May be null.
   external ffi.Pointer<ffi.Char> antisciaJson;
 
+  /// Every chart's equal distances, as a JSON object, every field
+  /// optional: `orbDeg`, how far from the axis through two planets'
+  /// midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+  /// A planet stands on the axis when it is equally distant from the
+  /// two, on the shorter arc's midpoint or opposite it (C246). The
+  /// planets are the seven, and the outer three when `TS_CHART_OUTER`
+  /// placed them. The answers come back in `midpoints` and
+  /// `midpoint_rows`. Null for none, which costs nothing
+  /// (`03-design/western-midpoints.md`). Refusals are named from the
+  /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
+  /// Example: {"orbDeg":1}. May be null.
+  external ffi.Pointer<ffi.Char> midpointsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3094,7 +3107,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3445,6 +3458,19 @@ final class ChartRequest {
   /// Example: {"orbs":{"model":"LEO"}}. May be null.
   final String? antisciaJson;
 
+  /// Every chart's equal distances, as a JSON object, every field
+  /// optional: `orbDeg`, how far from the axis through two planets'
+  /// midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+  /// A planet stands on the axis when it is equally distant from the
+  /// two, on the shorter arc's midpoint or opposite it (C246). The
+  /// planets are the seven, and the outer three when `TS_CHART_OUTER`
+  /// placed them. The answers come back in `midpoints` and
+  /// `midpoint_rows`. Null for none, which costs nothing
+  /// (`03-design/western-midpoints.md`). Refusals are named from the
+  /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
+  /// Example: {"orbDeg":1}. May be null.
+  final String? midpointsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3538,6 +3564,9 @@ final class ChartRequest {
     raw.antisciaJson = antisciaJson == null
         ? ffi.nullptr
         : antisciaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.midpointsJson = midpointsJson == null
+        ? ffi.nullptr
+        : midpointsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3617,6 +3646,9 @@ final class ChartRequest {
         antisciaJson: raw.antisciaJson == ffi.nullptr
             ? null
             : raw.antisciaJson.cast<pkg_ffi.Utf8>().toDartString(),
+        midpointsJson: raw.midpointsJson == ffi.nullptr
+            ? null
+            : raw.midpointsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
