@@ -1390,18 +1390,69 @@ export interface WesternAspectRequest {
   /** The aspects looked for, each once; Leo's nine by default. */
   readonly aspects?: readonly WesternAspect[];
   /** The orb model; Leo's by default. */
-  readonly orbs?:
-    | { readonly model: 'LEO' }
-    | {
-        readonly model: 'MOIETIES';
-        /** Each planet's whole orb; a pair is within half the sum of theirs. */
-        readonly orbs: readonly { readonly graha: GrahaName; readonly orbDeg: number }[];
-      }
-    | {
-        readonly model: 'BY_ASPECT';
-        /** Each aspect's orb, whatever the pair. */
-        readonly orbs: readonly { readonly aspect: WesternAspect; readonly orbDeg: number }[];
-      };
+  readonly orbs?: WesternOrbModel;
+}
+
+/**
+ * How wide a Western aspect may be (C240): Leo's by aspect, Lilly's
+ * moieties by planet, or the caller's own by aspect.
+ */
+export type WesternOrbModel =
+  | { readonly model: 'LEO' }
+  | {
+      readonly model: 'MOIETIES';
+      /** Each planet's whole orb; a pair is within half the sum of theirs. */
+      readonly orbs: readonly { readonly graha: GrahaName; readonly orbDeg: number }[];
+    }
+  | {
+      readonly model: 'BY_ASPECT';
+      /** Each aspect's orb, whatever the pair. */
+      readonly orbs: readonly { readonly aspect: WesternAspect; readonly orbDeg: number }[];
+    };
+
+/**
+ * What the antiscia are asked (`03-design/western-antiscia.md`): the orbs
+ * a pair is read under, at the conjunction; Lilly's moieties when absent
+ * (C244), which give the outer three none.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, antiscia: {} });
+ * for (const row of chart.antiscia?.pairs ?? []) console.log(row.first, row.contrary ? 'contrantiscion' : 'antiscion', row.second);
+ */
+export interface AntisciaRequest {
+  readonly orbs?: WesternOrbModel;
+}
+
+/** A planet's two reflections, tropical degrees. */
+export interface Antiscion {
+  readonly graha: Graha | 'unknown';
+  /** Its reflection about the solstices: 180° less its longitude. */
+  readonly antiscionDeg: number;
+  /** Its reflection about the equinoxes: 360° less its longitude. */
+  readonly contrantiscionDeg: number;
+}
+
+/** Two planets in antiscion within the orb. */
+export interface AntiscionRow {
+  /** The earlier planet of the pair, in catalogue order. */
+  readonly first: Graha | 'unknown';
+  readonly second: Graha | 'unknown';
+  /** Whether it is the contrantiscion, the reflection about the equinoxes. */
+  readonly contrary: boolean;
+  /** How far the one's reflection stands from the other, degrees. */
+  readonly apartDeg: number;
+  /** The orb the request allowed the pair, degrees. */
+  readonly orbDeg: number;
+}
+
+/** A chart's antiscia. */
+export interface Antiscia {
+  /** Each planet's reflections, in the catalogue's order. */
+  readonly points: readonly Antiscion[];
+  /** The pairs within the orb, closest first. */
+  readonly pairs: readonly AntiscionRow[];
+  /** The planets the orbs give none, which stand in no pair. */
+  readonly unpaired: readonly (Graha | 'unknown')[];
 }
 
 /** One pair of planets within an aspect's orb. */
@@ -3188,6 +3239,11 @@ export declare class Chart {
    */
   readonly parallels: readonly ParallelRow[] | null;
   /**
+   * The chart's antiscia: each planet's reflections and the pairs standing
+   * in one; `null` unless `antiscia` asked (`03-design/western-antiscia.md`).
+   */
+  readonly antiscia: Antiscia | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4324,6 +4380,11 @@ export interface ChartRequest {
    * None by default.
    */
   readonly parallels?: ParallelRequest;
+  /**
+   * Lilly's antiscia (`03-design/western-antiscia.md`), read as each
+   * chart's `antiscia`: his moieties when `{}`. None by default.
+   */
+  readonly antiscia?: AntisciaRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

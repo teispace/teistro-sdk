@@ -1191,6 +1191,22 @@ export class Chart {
   }
 
   /**
+   * The chart's antiscia (`antiscia: {}` asks for them): each planet's
+   * reflection about the solstices and the equinoxes (Lilly, *Christian
+   * Astrology*, pp. 90–92), and the pairs standing in one within the
+   * orbs, read at the conjunction, Lilly's moieties by default (C244);
+   * `null` unless asked (`03-design/western-antiscia.md`).
+   *
+   * `{ points, pairs, unpaired }`: each point `{ graha, antiscionDeg,
+   * contrantiscionDeg }` in tropical degrees, each pair `{ first, second,
+   * contrary, apartDeg, orbDeg }` closest first, `contrary` true for the
+   * contrantiscion, and `unpaired` the planets the orbs give none.
+   */
+  get antiscia() {
+    return antisciaOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2411,6 +2427,11 @@ export class ChartArea extends Area {
           'parallels',
           'a parallels request record, e.g. {} or { orbDeg: 1 }',
         ),
+        antisciaJson: recordJson(
+          request.antiscia,
+          'antiscia',
+          'an antiscia request record, e.g. {} or { orbs: { model: "LEO" } }',
+        ),
         synastryJson: recordJson(
           request.synastry,
           'synastry',
@@ -3590,6 +3611,57 @@ function declinationsOf(batch) {
     ),
   });
   DECLINATIONS.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's antiscia, decoded once however many charts read them. */
+const ANTISCIA = new WeakMap();
+
+/**
+ * Every chart's antiscia in a batch: `antiscia` holds a row a chart, or
+ * none when none was asked, and `antiscion_points` and `antiscion_rows`
+ * are ragged by its two counts (`03-design/western-antiscia.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function antisciaOf(batch) {
+  let decoded = ANTISCIA.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const p = d.antiscionPoints;
+  const r = d.antiscionRows;
+  const graha = (id) => GrahaById.get(id) ?? 'unknown';
+  const points = raggedOf(batch, d.antiscia.pointCount, p.graha.length, 'antiscia and antiscion_points', (at) => at);
+  const pairs = raggedOf(batch, d.antiscia.pairCount, r.first.length, 'antiscia and antiscion_rows', (at) =>
+    Object.freeze({
+      first: graha(r.first[at]),
+      second: graha(r.second[at]),
+      contrary: r.contrary[at] !== 0,
+      apartDeg: r.apartDeg[at],
+      orbDeg: r.orbDeg[at],
+    }),
+  );
+  decoded = Object.freeze(
+    points.map((rows, k) =>
+      rows === null
+        ? null
+        : Object.freeze({
+            points: Object.freeze(
+              rows.map((at) =>
+                Object.freeze({
+                  graha: graha(p.graha[at]),
+                  antiscionDeg: p.antiscionDeg[at],
+                  contrantiscionDeg: p.contrantiscionDeg[at],
+                }),
+              ),
+            ),
+            pairs: pairs[k],
+            unpaired: Object.freeze(rows.filter((at) => p.paired[at] === 0).map((at) => graha(p.graha[at]))),
+          }),
+    ),
+  );
+  ANTISCIA.set(batch, decoded);
   return decoded;
 }
 

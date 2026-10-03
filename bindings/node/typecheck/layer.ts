@@ -5,6 +5,9 @@
 
 import type {
   Air,
+  Antiscia,
+  AntisciaRequest,
+  AntiscionRow,
   Declinations,
   ParallelRequest,
   ParallelRow,
@@ -1064,6 +1067,31 @@ function theParallels(ctx: Context): string {
 }
 
 void theParallels;
+
+// A chart's antiscia, read all the way down; the request takes the aspect
+// table's orb models.
+function theAntiscia(ctx: Context): string {
+  const asked: AntisciaRequest = { orbs: { model: 'BY_ASPECT', orbs: [{ aspect: 'CONJUNCTION', orbDeg: 2 }] } };
+  const chart = ctx.chart.found({
+    instant: 2402390.5542,
+    place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 },
+    utcOffsetSeconds: 0,
+    antiscia: asked,
+  });
+  // @ts-expect-error an orb model is named
+  const misread: AntisciaRequest = { orbs: { model: 'WIDE' } };
+  const read: Antiscia | null = chart.antiscia;
+  const row: AntiscionRow | undefined = read?.pairs[0];
+  return [
+    read?.points[0]?.antiscionDeg ?? Number.NaN,
+    read?.unpaired[0] ?? 'none',
+    row?.contrary ?? false,
+    row?.orbDeg ?? Number.NaN,
+    String(misread),
+  ].join();
+}
+
+void theAntiscia;
 
 // A festival answer read all the way down, and a rule written the way the
 // shipped pack is, its catalogue members in full as answers give them
