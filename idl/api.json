@@ -138,6 +138,13 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TS_CHART_OUTER",
+      "doc": "A chart request's `sections` bit: Uranus, Neptune and Pluto beside\nthe nine, in the `outer` section (`03-design/western-outer-planets.md`).",
+      "ty": "u32",
+      "value": 4096,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TS_PANCHANGA_YEARS",
       "doc": "`TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's\n`sections` for the lunar years its days fall in.\n\nNamed in the header, because the bits are the boundary's vocabulary:\na consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every\ngenerated layer writes a named option instead. An unknown bit asks\nfor nothing, as a chart request's does.",
       "ty": "u32",
@@ -18988,7 +18995,7 @@
         {
           "id": 78,
           "name": "progressed_grahas",
-          "doc": "The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
+          "doc": "The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
           "kind": "columns",
           "fields": [
             {
@@ -19017,7 +19024,7 @@
         {
           "id": 79,
           "name": "directed_grahas",
-          "doc": "The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
+          "doc": "The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
           "kind": "columns",
           "fields": [
             {
@@ -19075,6 +19082,87 @@
               "scalar": "u8",
               "doc": "Which way the progressed planet was moving.",
               "enum": "TsMotion"
+            }
+          ]
+        },
+        {
+          "id": 81,
+          "name": "outer",
+          "doc": "Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the chart's zodiac, degrees."
+            },
+            {
+              "name": "tropical_deg",
+              "scalar": "f64",
+              "doc": "Its longitude in the tropical zodiac, degrees."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "Its latitude, degrees."
+            },
+            {
+              "name": "distance_au",
+              "scalar": "f64",
+              "doc": "Its distance in astronomical units; zero for a point that has none."
+            },
+            {
+              "name": "speed_deg_per_day",
+              "scalar": "f64",
+              "doc": "Its longitude speed, degrees per day; negative when retrograde."
+            },
+            {
+              "name": "house_bhava",
+              "scalar": "u8",
+              "doc": "The bhava it stands in, 1 to 12."
+            },
+            {
+              "name": "house_method",
+              "scalar": "u16",
+              "doc": "The house system that produced that bhava.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "house_through",
+              "scalar": "f64",
+              "doc": "How far through the bhava it stands, 0 to 1."
+            },
+            {
+              "name": "house_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from the bhava's madhya, degrees."
+            },
+            {
+              "name": "placement_bhava",
+              "scalar": "u8",
+              "doc": "The bhava of the chart's chalit it stands in, 1 to 12."
+            },
+            {
+              "name": "placement_method",
+              "scalar": "u16",
+              "doc": "The house system that produced the chalit.",
+              "enum": "HouseSystem"
+            },
+            {
+              "name": "placement_through",
+              "scalar": "f64",
+              "doc": "How far through that bhava it stands, 0 to 1."
+            },
+            {
+              "name": "placement_from_madhya_deg",
+              "scalar": "f64",
+              "doc": "Its distance from that bhava's madhya, degrees."
             }
           ]
         }
