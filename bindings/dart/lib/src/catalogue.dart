@@ -66,6 +66,10 @@ const int chartDashaPhala = 1024;
 /// karakamsha and the Brahma graha.
 const int chartJaimini = 2048;
 
+/// A chart request's `sections` bit: Uranus, Neptune and Pluto beside
+/// the nine, in the `outer` section (`03-design/western-outer-planets.md`).
+const int chartOuter = 4096;
+
 /// `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
 /// `sections` for the lunar years its days fall in.
 ///

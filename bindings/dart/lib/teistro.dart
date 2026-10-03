@@ -689,6 +689,7 @@ final class ChartArea extends _Area {
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
     bool jaimini = false,
+    bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -722,6 +723,7 @@ final class ChartArea extends _Area {
     vaiseshikamsa: vaiseshikamsa,
     dashaPhala: dashaPhala,
     jaimini: jaimini,
+    outerPlanets: outerPlanets,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
     state: state,
@@ -775,6 +777,7 @@ final class ChartArea extends _Area {
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
     bool jaimini = false,
+    bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -802,6 +805,7 @@ final class ChartArea extends _Area {
                 (vaiseshikamsa ? chartVaiseshikamsa : 0) |
                 (dashaPhala ? chartDashaPhala : 0) |
                 (jaimini ? chartJaimini : 0) |
+                (outerPlanets ? chartOuter : 0) |
                 (shadbala ? chartShadbala : 0) |
                 (bhavaBala ? chartBhavaBala : 0) |
                 (state ? chartState : 0),
@@ -4127,8 +4131,9 @@ List<Progressions> _progressionsOf(Charts batch) =>
     _progressions[batch] ??= _decodeProgressions(batch);
 
 /// `progressions` holds a row a chart, or none when none was asked; the
-/// progressed and directed planets are graha-count rows a chart when an
-/// instant was asked, and the contacts are ragged by the row's count.
+/// progressed and directed planets are the same number of rows a chart
+/// when an instant was asked (the nine, and the outer three when the
+/// birth placed them), and the contacts are ragged by the row's count.
 List<Progressions> _decodeProgressions(Charts batch) {
   final p = batch.progressions;
   final g = batch.progressedGrahas;
@@ -12458,10 +12463,50 @@ final class Chart {
   /// The columns underneath are views over the blob's bytes, charts
   /// outermost; this reads this chart's stride out of them into the
   /// shape an application wants, which is a row.
-  List<PlacedGraha> get grahas {
-    final g = batch.grahas;
-    final base = index * batch.grahaCount;
-    return List<PlacedGraha>.generate(batch.grahaCount, (j) {
+  List<PlacedGraha> get grahas => _placed(batch.grahas, batch.grahaCount);
+
+  /// Uranus, Neptune and Pluto, placed as the grahas are, or an empty
+  /// list unless `outerPlanets: true` asked for them.
+  ///
+  /// ```dart
+  /// final chart = ctx.chart.found(/* … */ outerPlanets: true);
+  /// final uranus = chart.outer.firstWhere((at) => at.graha == Graha.uranus);
+  /// ```
+  ///
+  /// The section holds the same number a chart, so the batch's rows
+  /// divided by its charts is this chart's count.
+  List<PlacedGraha> get outer {
+    final o = batch.outer;
+    final charts = batch.cast.instant.length;
+    if (charts == 0) return const <PlacedGraha>[];
+    if (o.length % charts != 0) {
+      throw StateError('outer has ${o.length} rows for $charts charts');
+    }
+    // The generated section is its own class with the grahas' columns.
+    final g = ChartsGrahas(
+      graha: o.graha,
+      longitudeDeg: o.longitudeDeg,
+      tropicalDeg: o.tropicalDeg,
+      latitudeDeg: o.latitudeDeg,
+      distanceAu: o.distanceAu,
+      speedDegPerDay: o.speedDegPerDay,
+      houseBhava: o.houseBhava,
+      houseMethod: o.houseMethod,
+      houseThrough: o.houseThrough,
+      houseFromMadhyaDeg: o.houseFromMadhyaDeg,
+      placementBhava: o.placementBhava,
+      placementMethod: o.placementMethod,
+      placementThrough: o.placementThrough,
+      placementFromMadhyaDeg: o.placementFromMadhyaDeg,
+      length: o.length,
+    );
+    return _placed(g, o.length ~/ charts);
+  }
+
+  /// One chart's stride of a placed-bodies section, a row a body.
+  List<PlacedGraha> _placed(ChartsGrahas g, int count) {
+    final base = index * count;
+    return List<PlacedGraha>.generate(count, (j) {
       final i = base + j;
       return PlacedGraha(
         graha: Graha.byId(g.graha[i]),

@@ -2735,6 +2735,78 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries the outer planets when asked', () {
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(0),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2400629.742361111;
+    Chart found({
+      bool outerPlanets = false,
+      ProgressionsRequest? progressions,
+    }) => ctx.chart.found(
+      instant: birth,
+      place: london,
+      utcOffsetSeconds: 0,
+      outerPlanets: outerPlanets,
+      progressions: progressions,
+    );
+    final bare = found();
+    expect(bare.outer, isEmpty);
+    final asked = found(outerPlanets: true);
+    expect(asked.outer.map((at) => at.graha), [
+      Graha.uranus,
+      Graha.neptune,
+      Graha.pluto,
+    ]);
+    expect(
+      asked.grahas.map((at) => at.longitudeDeg),
+      bare.grahas.map((at) => at.longitudeDeg),
+      reason: 'the nine are unmoved',
+    );
+    for (final at in asked.outer) {
+      expect(at.distanceAu, greaterThan(15));
+      expect(at.house.bhava, inInclusiveRange(1, 12));
+    }
+
+    const at = birth + 46 * 365.242189;
+    final later =
+        found(
+          outerPlanets: true,
+          progressions: const ProgressionsRequest(at: at),
+        ).progressions!;
+    expect(later.progressed!.grahas.length, 12);
+    expect(later.directed!.planets.length, 12);
+    expect(later.progressed!.grahas[11].graha, Graha.pluto);
+
+    // Leo's progressed Moon quincunx Uranus, April 1907 (p. 41).
+    const contacts = ProgressionContacts(
+      from: 2417484.5,
+      to: 2417941.5,
+      grahas: [Graha.moon],
+      points: [NatalGraha(Graha.uranus)],
+    );
+    final reached =
+        found(
+          outerPlanets: true,
+          progressions: const ProgressionsRequest(contacts: contacts),
+        ).progressions!.contacts!;
+    expect(reached, hasLength(1));
+    expect(reached.single.to, const NatalGraha(Graha.uranus));
+    expect(reached.single.angle, 150);
+    expect(reached.single.life, inInclusiveRange(2417635.5, 2417696.4));
+    expect(
+      () => found(progressions: const ProgressionsRequest(contacts: contacts)),
+      throwsA(isA<TeistroException>()),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its accidental fortitudes', () {
     final ctx = teistro.context(
       profile: 'conformance-baseline',
