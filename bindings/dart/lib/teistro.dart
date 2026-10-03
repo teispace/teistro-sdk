@@ -683,6 +683,7 @@ final class ChartArea extends _Area {
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
     SynastryRequest? synastry,
+    ParallelRequest? parallels,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -719,6 +720,7 @@ final class ChartArea extends _Area {
     progressions: progressions,
     westernAspects: westernAspects,
     synastry: synastry,
+    parallels: parallels,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -775,6 +777,7 @@ final class ChartArea extends _Area {
     ProgressionsRequest? progressions,
     WesternAspectRequest? westernAspects,
     SynastryRequest? synastry,
+    ParallelRequest? parallels,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -834,6 +837,7 @@ final class ChartArea extends _Area {
             progressionsJson: progressions?._json,
             westernAspectsJson: westernAspects?._json,
             synastryJson: synastry?._json,
+            parallelsJson: parallels?._json,
           ),
         ),
       ),
@@ -4285,6 +4289,56 @@ List<List<WesternAspectRow>> _decodeWesternAspects(Charts batch) {
   );
 }
 
+final Expando<(List<Declinations>, List<List<ParallelRow>>)> _declinations =
+    Expando<(List<Declinations>, List<List<ParallelRow>>)>('declinations');
+
+(List<Declinations>, List<List<ParallelRow>>) _declinationsOf(Charts batch) =>
+    _declinations[batch] ??= _decodeDeclinations(batch);
+
+/// `declinations` holds a row a chart, or none when none was asked, and
+/// `declination_rows` and `parallel_rows` are ragged by its two counts.
+(List<Declinations>, List<List<ParallelRow>>) _decodeDeclinations(
+  Charts batch,
+) {
+  final row = batch.declinations;
+  final rows = batch.declinationRows;
+  final p = batch.parallelRows;
+  final grahas = _ragged(
+    batch,
+    row.grahaCount,
+    rows.length,
+    'declinations and declination_rows',
+    (at) => Declined(
+      graha: Graha.byId(rows.graha[at]),
+      declinationDeg: rows.declinationDeg[at],
+    ),
+  );
+  return (
+    List<Declinations>.unmodifiable([
+      for (final (k, planets) in grahas.indexed)
+        Declinations(
+          obliquityDeg: row.obliquityDeg[k],
+          grahas: planets,
+          lagnaDeg: row.lagnaDeg[k],
+          midheavenDeg: row.midheavenDeg[k],
+        ),
+    ]),
+    _ragged(
+      batch,
+      row.parallelCount,
+      p.length,
+      'declinations and parallel_rows',
+      (at) => ParallelRow(
+        first: Graha.byId(p.first[at]),
+        second: Graha.byId(p.second[at]),
+        contrary: p.contrary[at] == 1,
+        apartDeg: p.apartDeg[at],
+        orbDeg: p.orbDeg[at],
+      ),
+    ),
+  );
+}
+
 final Expando<List<List<SynastryRow>>> _synastries =
     Expando<List<List<SynastryRow>>>('synastries');
 
@@ -6676,6 +6730,102 @@ final class WesternAspectRow extends _Value {
     orbDeg,
     applying,
   ];
+}
+
+/// How close two distances from the equator must stand to be a parallel
+/// (`03-design/western-declinations.md`): Leo's 1° (*How to Judge a
+/// Nativity*, p. 47) by default, at most 10°.
+///
+/// ```dart
+/// const leo = ParallelRequest();
+/// const wider = ParallelRequest(orbDeg: 1.5);
+/// ```
+final class ParallelRequest {
+  const ParallelRequest({this.orbDeg = 1});
+
+  /// The orb, degrees.
+  final double orbDeg;
+
+  String get _json => jsonEncode(<String, Object?>{'orbDeg': orbDeg});
+}
+
+/// A planet's distance from the equator.
+final class Declined extends _Value {
+  const Declined({required this.graha, required this.declinationDeg});
+
+  final Graha graha;
+
+  /// Degrees north of the equator.
+  final double declinationDeg;
+
+  @override
+  List<Object?> get _fields => [graha, declinationDeg];
+}
+
+/// A chart's distances from the equator, degrees north
+/// (`03-design/western-declinations.md`).
+final class Declinations extends _Value {
+  const Declinations({
+    required this.obliquityDeg,
+    required this.grahas,
+    required this.lagnaDeg,
+    required this.midheavenDeg,
+  });
+
+  /// The true obliquity at the chart's instant, which turned every one.
+  final double obliquityDeg;
+
+  /// The planets, in the catalogue's order.
+  final List<Declined> grahas;
+
+  /// The lagna's: the Sun's at that degree (Leo, p. 141).
+  final double lagnaDeg;
+
+  /// The midheaven's, read the same way.
+  final double midheavenDeg;
+
+  /// One planet's declination, when the chart placed it.
+  double? graha(Graha graha) {
+    for (final one in grahas) {
+      if (one.graha == graha) return one.declinationDeg;
+    }
+    return null;
+  }
+
+  @override
+  List<Object?> get _fields => [
+    obliquityDeg,
+    ...grahas,
+    lagnaDeg,
+    midheavenDeg,
+  ];
+}
+
+/// One pair of planets the same distance from the equator within the orb,
+/// the pair in catalogue order.
+final class ParallelRow extends _Value {
+  const ParallelRow({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+  });
+
+  final Graha first;
+  final Graha second;
+
+  /// Whether the two stand on opposite sides of the equator (C243).
+  final bool contrary;
+
+  /// How far apart their distances from the equator are, degrees.
+  final double apartDeg;
+
+  /// The orb the request allowed, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [first, second, contrary, apartDeg, orbDeg];
 }
 
 /// The birth every chart of a batch is read against in a synastry: its
@@ -12747,6 +12897,21 @@ final class Chart {
   /// (`03-design/western-aspects.md`).
   List<WesternAspectRow>? get westernAspects {
     final all = _westernAspectsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's distances from the equator, its planets' and its angles';
+  /// null unless `parallels` asked (`03-design/western-declinations.md`).
+  Declinations? get declinations {
+    final all = _declinationsOf(batch).$1;
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The parallels among the chart's planets, closest first: each pair the
+  /// same distance from the equator within the orb (Leo's 1° by default),
+  /// on either side of it (C243); null unless `parallels` asked.
+  List<ParallelRow>? get parallels {
+    final all = _declinationsOf(batch).$2;
     return index < all.length ? all[index] : null;
   }
 

@@ -2841,6 +2841,86 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its declinations and parallels', () {
+    // King George V (Leo, *How to Judge a Nativity*, p. 130): the recast's
+    // declinations, his four parallels, a batch the charts one at a time,
+    // and refusals named in the record
+    // (`03-design/western-declinations.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final george = Observer(
+      latitudeDeg: Latitude(51.5045),
+      longitudeDeg: Longitude(-0.1366),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2402390.554166667;
+    Chart found(
+      double instant, {
+      ParallelRequest? asked,
+      bool outerPlanets = false,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: outerPlanets,
+      parallels: asked,
+    );
+    expect(found(birth).declinations, isNull);
+    expect(found(birth).parallels, isNull);
+
+    final chart = found(
+      birth,
+      asked: const ParallelRequest(),
+      outerPlanets: true,
+    );
+    final read = chart.declinations!;
+    expect(read.grahas, hasLength(10));
+    expect(read.graha(Graha.sun), closeTo(22.2997, 0.01));
+    expect(read.lagnaDeg, closeTo(0.8366, 0.01));
+    expect(read.midheavenDeg, closeTo(-23.452, 0.01));
+    expect(
+      [
+        for (final row in chart.parallels!)
+          (row.first, row.second, row.contrary),
+      ],
+      [
+        (Graha.moon, Graha.neptune, true),
+        (Graha.sun, Graha.jupiter, true),
+        (Graha.jupiter, Graha.uranus, true),
+        (Graha.mercury, Graha.venus, false),
+      ],
+    );
+
+    final instants = [birth, birth - 3000.25];
+    const wider = ParallelRequest(orbDeg: 1.5);
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: george,
+      utcOffsetSeconds: 0,
+      parallels: wider,
+    );
+    for (final (k, instant) in instants.indexed) {
+      final one = found(instant, asked: wider);
+      expect(batch.at(k).parallels, one.parallels);
+      expect(batch.at(k).declinations, one.declinations);
+    }
+    for (final orb in [0.0, 11.0]) {
+      expect(
+        () => found(birth, asked: ParallelRequest(orbDeg: orb)),
+        throwsA(
+          isA<TeistroException>().having(
+            (e) => e.field,
+            'field',
+            'parallels.orbDeg',
+          ),
+        ),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its synastry with a partner', () {
     // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
     // p. 130): the recast's closest contacts, the lagna left out on
