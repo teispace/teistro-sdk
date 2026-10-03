@@ -11861,6 +11861,21 @@
             "example": "{\"house\":7}",
             "nullable": true
           }
+        },
+        {
+          "name": "progressions_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The progressions to read every chart's birth through, as a JSON\nobject, every field optional but one of `at` and `contacts`: `at`,\nthe instant of life (a UTC Julian day) the progressed chart and the\ndirection are read for; `rate` (`{\"sky\": \"DAY\", \"life\": \"YEAR\"}` by\ndefault; a span is `\"DAY\"`, `\"SYNODIC_MONTH\"`, `\"SIDEREAL_MONTH\"`,\n`\"YEAR\"` or `{\"DAYS\": n}`); `year` (`\"TROPICAL\"` by default,\n`\"JULIAN\"`, or Leo's `\"NOON_SIDEREAL_TIME\"`, C236); `angles` (how\nthe progressed midheaven moves, `\"NAIBOD_RIGHT_ASCENSION\"` by\ndefault, C237); `direction` (`\"SOLAR\"` by default, `\"NAIBOD\"`,\n`\"PTOLEMY\"` or `{\"PER_YEAR\": degrees}`); and `contacts`, a window of\nlife `{from, to}` with the progressed `grahas` (the seven by\ndefault), the radical `points` (the seven and the lagna) and the\n`aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.\nThe progressed chart is founded at the request's place. The answers\ncome back in `progressions`, `progressed_grahas`, `directed_grahas`\nand `progressed_contacts`. Null for none, which costs nothing\n(`03-design/western-progressions.md`). Refusals are named from the\nrecord every binding calls `progressions`, as `progressions.year`.",
+          "meta": {
+            "example": "{\"at\":2460676.5}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -18909,6 +18924,157 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The planet's whole orb, degrees; half of it counts toward an application."
+            }
+          ]
+        },
+        {
+          "id": 77,
+          "name": "progressions",
+          "doc": "Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "life",
+              "scalar": "f64",
+              "doc": "The instant of life asked for, a Julian day (UTC). NaN when the record named no `at`."
+            },
+            {
+              "name": "sky",
+              "scalar": "f64",
+              "doc": "The instant of sky that measures it, a Julian day (UTC): where the progressed planets are read. NaN when the record named no `at`."
+            },
+            {
+              "name": "armc_deg",
+              "scalar": "f64",
+              "doc": "The progressed meridian's right ascension, by `angles` (C237), degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "ascendant_deg",
+              "scalar": "f64",
+              "doc": "The progressed ascendant, in the chart's zodiac, degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "midheaven_deg",
+              "scalar": "f64",
+              "doc": "The progressed midheaven, in the chart's zodiac, degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "arc_deg",
+              "scalar": "f64",
+              "doc": "The direction's arc: the solar arc, signed, or the measure's degrees for the years of life, degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "directed_ascendant_deg",
+              "scalar": "f64",
+              "doc": "The birth's ascendant moved by the arc, degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "directed_midheaven_deg",
+              "scalar": "f64",
+              "doc": "The birth's midheaven moved by the arc, degrees. NaN when the record named no `at`."
+            },
+            {
+              "name": "contact_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `progressed_contacts` section belong to this chart; 0 when the record named no `contacts`."
+            },
+            {
+              "name": "contacts_asked",
+              "scalar": "u8",
+              "doc": "1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none."
+            }
+          ]
+        },
+        {
+          "id": 78,
+          "name": "progressed_grahas",
+          "doc": "The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its progressed longitude in the chart's zodiac, degrees."
+            },
+            {
+              "name": "tropical_deg",
+              "scalar": "f64",
+              "doc": "Its progressed tropical longitude, degrees."
+            },
+            {
+              "name": "speed_deg_per_day",
+              "scalar": "f64",
+              "doc": "Its speed at the instant of sky, degrees a day; below zero when retrograde."
+            }
+          ]
+        },
+        {
+          "id": 79,
+          "name": "directed_grahas",
+          "doc": "The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its directed longitude in the chart's zodiac, degrees."
+            }
+          ]
+        },
+        {
+          "id": 80,
+          "name": "progressed_contacts",
+          "doc": "Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "life",
+              "scalar": "f64",
+              "doc": "The instant of life it falls due, a Julian day (UTC)."
+            },
+            {
+              "name": "sky",
+              "scalar": "f64",
+              "doc": "The instant of sky the aspect is exact at, a Julian day (UTC)."
+            },
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The progressed planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "to_lagna",
+              "scalar": "u8",
+              "doc": "1 when the radical point is the lagna, 0 when it is a radical graha."
+            },
+            {
+              "name": "to_graha",
+              "scalar": "u16",
+              "doc": "The radical graha aspected (a `Graha` id); 0 for the lagna."
+            },
+            {
+              "name": "angle",
+              "scalar": "u16",
+              "doc": "The aspect's angle, a whole degree 0 to 180, either side of the radical point."
+            },
+            {
+              "name": "motion",
+              "scalar": "u8",
+              "doc": "Which way the progressed planet was moving.",
+              "enum": "TsMotion"
             }
           ]
         }

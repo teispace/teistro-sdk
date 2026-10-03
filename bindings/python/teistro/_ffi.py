@@ -260,7 +260,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 216,
+    "ts_chart_request": 224,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -699,6 +699,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("lots_json", ctypes.c_char_p),
         ("considerations_json", ctypes.c_char_p),
         ("perfection_json", ctypes.c_char_p),
+        ("progressions_json", ctypes.c_char_p),
     ]
 
 
@@ -2476,6 +2477,28 @@ class ChartRequest:
     Example: {"house":7}. May be null.
     """
 
+    progressions_json: Optional[str] = None
+    """The progressions to read every chart's birth through, as a JSON
+    object, every field optional but one of `at` and `contacts`: `at`,
+    the instant of life (a UTC Julian day) the progressed chart and the
+    direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+    default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+    `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+    `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+    the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+    default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+    `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+    life `{from, to}` with the progressed `grahas` (the seven by
+    default), the radical `points` (the seven and the lagna) and the
+    `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+    The progressed chart is founded at the request's place. The answers
+    come back in `progressions`, `progressed_grahas`, `directed_grahas`
+    and `progressed_contacts`. Null for none, which costs nothing
+    (`03-design/western-progressions.md`). Refusals are named from the
+    record every binding calls `progressions`, as `progressions.year`.
+    Example: {"at":2460676.5}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2553,6 +2576,9 @@ class ChartRequest:
         _perfection_json = None if self.perfection_json is None else self.perfection_json.encode("utf-8")
         owned.append(_perfection_json)
         raw.perfection_json = _perfection_json
+        _progressions_json = None if self.progressions_json is None else self.progressions_json.encode("utf-8")
+        owned.append(_progressions_json)
+        raw.progressions_json = _progressions_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2602,6 +2628,7 @@ class ChartRequest:
             lots_json=_text(raw.lots_json),
             considerations_json=_text(raw.considerations_json),
             perfection_json=_text(raw.perfection_json),
+            progressions_json=_text(raw.progressions_json),
         )
 
 

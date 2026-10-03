@@ -1119,6 +1119,27 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"house":7}. May be null.
   external ffi.Pointer<ffi.Char> perfectionJson;
 
+  /// The progressions to read every chart's birth through, as a JSON
+  /// object, every field optional but one of `at` and `contacts`: `at`,
+  /// the instant of life (a UTC Julian day) the progressed chart and the
+  /// direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+  /// default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+  /// `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+  /// `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+  /// the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+  /// default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+  /// `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+  /// life `{from, to}` with the progressed `grahas` (the seven by
+  /// default), the radical `points` (the seven and the lagna) and the
+  /// `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+  /// The progressed chart is founded at the request's place. The answers
+  /// come back in `progressions`, `progressed_grahas`, `directed_grahas`
+  /// and `progressed_contacts`. Null for none, which costs nothing
+  /// (`03-design/western-progressions.md`). Refusals are named from the
+  /// record every binding calls `progressions`, as `progressions.year`.
+  /// Example: {"at":2460676.5}. May be null.
+  external ffi.Pointer<ffi.Char> progressionsJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3008,7 +3029,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3273,6 +3294,27 @@ final class ChartRequest {
   /// Example: {"house":7}. May be null.
   final String? perfectionJson;
 
+  /// The progressions to read every chart's birth through, as a JSON
+  /// object, every field optional but one of `at` and `contacts`: `at`,
+  /// the instant of life (a UTC Julian day) the progressed chart and the
+  /// direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+  /// default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+  /// `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+  /// `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+  /// the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+  /// default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+  /// `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+  /// life `{from, to}` with the progressed `grahas` (the seven by
+  /// default), the radical `points` (the seven and the lagna) and the
+  /// `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+  /// The progressed chart is founded at the request's place. The answers
+  /// come back in `progressions`, `progressed_grahas`, `directed_grahas`
+  /// and `progressed_contacts`. Null for none, which costs nothing
+  /// (`03-design/western-progressions.md`). Refusals are named from the
+  /// record every binding calls `progressions`, as `progressions.year`.
+  /// Example: {"at":2460676.5}. May be null.
+  final String? progressionsJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3351,6 +3393,9 @@ final class ChartRequest {
     raw.perfectionJson = perfectionJson == null
         ? ffi.nullptr
         : perfectionJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.progressionsJson = progressionsJson == null
+        ? ffi.nullptr
+        : progressionsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3415,6 +3460,9 @@ final class ChartRequest {
         perfectionJson: raw.perfectionJson == ffi.nullptr
             ? null
             : raw.perfectionJson.cast<pkg_ffi.Utf8>().toDartString(),
+        progressionsJson: raw.progressionsJson == ffi.nullptr
+            ? null
+            : raw.progressionsJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

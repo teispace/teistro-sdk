@@ -3464,6 +3464,150 @@ final class ChartsPerfectionOrbs {
   final int length;
 }
 
+/// The `progressions` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
+final class ChartsProgressions {
+  const ChartsProgressions({
+    required this.life,
+    required this.sky,
+    required this.armcDeg,
+    required this.ascendantDeg,
+    required this.midheavenDeg,
+    required this.arcDeg,
+    required this.directedAscendantDeg,
+    required this.directedMidheavenDeg,
+    required this.contactCount,
+    required this.contactsAsked,
+    required this.length,
+  });
+
+  /// The instant of life asked for, a Julian day (UTC). NaN when the record named no `at`.
+  final Float64List life;
+
+  /// The instant of sky that measures it, a Julian day (UTC): where the progressed planets are read. NaN when the record named no `at`.
+  final Float64List sky;
+
+  /// The progressed meridian's right ascension, by `angles` (C237), degrees. NaN when the record named no `at`.
+  final Float64List armcDeg;
+
+  /// The progressed ascendant, in the chart's zodiac, degrees. NaN when the record named no `at`.
+  final Float64List ascendantDeg;
+
+  /// The progressed midheaven, in the chart's zodiac, degrees. NaN when the record named no `at`.
+  final Float64List midheavenDeg;
+
+  /// The direction's arc: the solar arc, signed, or the measure's degrees for the years of life, degrees. NaN when the record named no `at`.
+  final Float64List arcDeg;
+
+  /// The birth's ascendant moved by the arc, degrees. NaN when the record named no `at`.
+  final Float64List directedAscendantDeg;
+
+  /// The birth's midheaven moved by the arc, degrees. NaN when the record named no `at`.
+  final Float64List directedMidheavenDeg;
+
+  /// How many rows of the `progressed_contacts` section belong to this chart; 0 when the record named no `contacts`.
+  final Uint32List contactCount;
+
+  /// 1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.
+  final Uint8List contactsAsked;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `progressed_grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+final class ChartsProgressedGrahas {
+  const ChartsProgressedGrahas({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.tropicalDeg,
+    required this.speedDegPerDay,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// Its progressed longitude in the chart's zodiac, degrees.
+  final Float64List longitudeDeg;
+
+  /// Its progressed tropical longitude, degrees.
+  final Float64List tropicalDeg;
+
+  /// Its speed at the instant of sky, degrees a day; below zero when retrograde.
+  final Float64List speedDegPerDay;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `directed_grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+final class ChartsDirectedGrahas {
+  const ChartsDirectedGrahas({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.length,
+  });
+
+  /// Which planet.
+  final Uint16List graha;
+
+  /// Its directed longitude in the chart's zodiac, degrees.
+  final Float64List longitudeDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `progressed_contacts` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+final class ChartsProgressedContacts {
+  const ChartsProgressedContacts({
+    required this.life,
+    required this.sky,
+    required this.graha,
+    required this.toLagna,
+    required this.toGraha,
+    required this.angle,
+    required this.motion,
+    required this.length,
+  });
+
+  /// The instant of life it falls due, a Julian day (UTC).
+  final Float64List life;
+
+  /// The instant of sky the aspect is exact at, a Julian day (UTC).
+  final Float64List sky;
+
+  /// The progressed planet.
+  final Uint16List graha;
+
+  /// 1 when the radical point is the lagna, 0 when it is a radical graha.
+  final Uint8List toLagna;
+
+  /// The radical graha aspected (a `Graha` id); 0 for the lagna.
+  final Uint16List toGraha;
+
+  /// The aspect's angle, a whole degree 0 to 180, either side of the radical point.
+  final Uint16List angle;
+
+  /// Which way the progressed planet was moving.
+  final Uint8List motion;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3652,6 +3796,10 @@ final class Charts {
     required this.perfectionTranslations,
     required this.perfectionCollections,
     required this.perfectionOrbs,
+    required this.progressions,
+    required this.progressedGrahas,
+    required this.directedGrahas,
+    required this.progressedContacts,
   });
 
   /// What kind of chart these are.
@@ -3926,6 +4074,18 @@ final class Charts {
   /// The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
   final ChartsPerfectionOrbs perfectionOrbs;
 
+  /// Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
+  final ChartsProgressions progressions;
+
+  /// The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+  final ChartsProgressedGrahas progressedGrahas;
+
+  /// The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+  final ChartsDirectedGrahas directedGrahas;
+
+  /// Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+  final ChartsProgressedContacts progressedContacts;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4009,6 +4169,10 @@ Charts decodeCharts(Uint8List bytes) {
   final atPerfectionTranslations = blob.section(74, 'perfection_translations');
   final atPerfectionCollections = blob.section(75, 'perfection_collections');
   final atPerfectionOrbs = blob.section(76, 'perfection_orbs');
+  final atProgressions = blob.section(77, 'progressions');
+  final atProgressedGrahas = blob.section(78, 'progressed_grahas');
+  final atDirectedGrahas = blob.section(79, 'directed_grahas');
+  final atProgressedContacts = blob.section(80, 'progressed_contacts');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7188,6 +7352,133 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atPerfectionOrbs, 0) + atPerfectionOrbs.count * 8,
       ),
       length: atPerfectionOrbs.count,
+    ),
+    progressions: ChartsProgressions(
+      life: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 0),
+        blob.columnOffset(atProgressions, 0) + atProgressions.count * 8,
+      ),
+      sky: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 1),
+        blob.columnOffset(atProgressions, 1) + atProgressions.count * 8,
+      ),
+      armcDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 2),
+        blob.columnOffset(atProgressions, 2) + atProgressions.count * 8,
+      ),
+      ascendantDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 3),
+        blob.columnOffset(atProgressions, 3) + atProgressions.count * 8,
+      ),
+      midheavenDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 4),
+        blob.columnOffset(atProgressions, 4) + atProgressions.count * 8,
+      ),
+      arcDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 5),
+        blob.columnOffset(atProgressions, 5) + atProgressions.count * 8,
+      ),
+      directedAscendantDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 6),
+        blob.columnOffset(atProgressions, 6) + atProgressions.count * 8,
+      ),
+      directedMidheavenDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 7),
+        blob.columnOffset(atProgressions, 7) + atProgressions.count * 8,
+      ),
+      contactCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 8),
+        blob.columnOffset(atProgressions, 8) + atProgressions.count * 4,
+      ),
+      contactsAsked: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressions, 9),
+        blob.columnOffset(atProgressions, 9) + atProgressions.count * 1,
+      ),
+      length: atProgressions.count,
+    ),
+    progressedGrahas: ChartsProgressedGrahas(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedGrahas, 0),
+        blob.columnOffset(atProgressedGrahas, 0) + atProgressedGrahas.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedGrahas, 1),
+        blob.columnOffset(atProgressedGrahas, 1) + atProgressedGrahas.count * 8,
+      ),
+      tropicalDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedGrahas, 2),
+        blob.columnOffset(atProgressedGrahas, 2) + atProgressedGrahas.count * 8,
+      ),
+      speedDegPerDay: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedGrahas, 3),
+        blob.columnOffset(atProgressedGrahas, 3) + atProgressedGrahas.count * 8,
+      ),
+      length: atProgressedGrahas.count,
+    ),
+    directedGrahas: ChartsDirectedGrahas(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDirectedGrahas, 0),
+        blob.columnOffset(atDirectedGrahas, 0) + atDirectedGrahas.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDirectedGrahas, 1),
+        blob.columnOffset(atDirectedGrahas, 1) + atDirectedGrahas.count * 8,
+      ),
+      length: atDirectedGrahas.count,
+    ),
+    progressedContacts: ChartsProgressedContacts(
+      life: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 0),
+        blob.columnOffset(atProgressedContacts, 0) + atProgressedContacts.count * 8,
+      ),
+      sky: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 1),
+        blob.columnOffset(atProgressedContacts, 1) + atProgressedContacts.count * 8,
+      ),
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 2),
+        blob.columnOffset(atProgressedContacts, 2) + atProgressedContacts.count * 2,
+      ),
+      toLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 3),
+        blob.columnOffset(atProgressedContacts, 3) + atProgressedContacts.count * 1,
+      ),
+      toGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 4),
+        blob.columnOffset(atProgressedContacts, 4) + atProgressedContacts.count * 2,
+      ),
+      angle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 5),
+        blob.columnOffset(atProgressedContacts, 5) + atProgressedContacts.count * 2,
+      ),
+      motion: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atProgressedContacts, 6),
+        blob.columnOffset(atProgressedContacts, 6) + atProgressedContacts.count * 1,
+      ),
+      length: atProgressedContacts.count,
     ),
   );
 }

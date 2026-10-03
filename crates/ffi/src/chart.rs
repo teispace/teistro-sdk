@@ -1601,6 +1601,26 @@ pub struct TsChartRequest {
     /// `perfection.quesited`.
     /// `api: nullable example={"house":7}`
     pub perfection_json: *const c_char,
+    /// The progressions to read every chart's birth through, as a JSON
+    /// object, every field optional but one of `at` and `contacts`: `at`,
+    /// the instant of life (a UTC Julian day) the progressed chart and the
+    /// direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+    /// default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+    /// `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+    /// `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+    /// the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+    /// default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+    /// `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+    /// life `{from, to}` with the progressed `grahas` (the seven by
+    /// default), the radical `points` (the seven and the lagna) and the
+    /// `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+    /// The progressed chart is founded at the request's place. The answers
+    /// come back in `progressions`, `progressed_grahas`, `directed_grahas`
+    /// and `progressed_contacts`. Null for none, which costs nothing
+    /// (`03-design/western-progressions.md`). Refusals are named from the
+    /// record every binding calls `progressions`, as `progressions.year`.
+    /// `api: nullable example={"at":2460676.5}`
+    pub progressions_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3096,6 +3116,158 @@ impl HellenisticColumns {
         self.lots.write(writer)?;
         self.considerations.write(writer)?;
         self.perfections.write(writer)
+    }
+}
+
+/// Every chart's progressions (`western-progressions.md`): a row a chart in
+/// `progressions`, the progressed and directed planets a row a graha in
+/// `progressed_grahas` and `directed_grahas` when the record named an
+/// instant of life, and the contacts in `progressed_contacts`, ragged by
+/// that row's count.
+#[derive(Default)]
+struct ProgressionColumns {
+    life: Vec<f64>,
+    sky: Vec<f64>,
+    armc_deg: Vec<f64>,
+    ascendant_deg: Vec<f64>,
+    midheaven_deg: Vec<f64>,
+    arc_deg: Vec<f64>,
+    directed_ascendant_deg: Vec<f64>,
+    directed_midheaven_deg: Vec<f64>,
+    contact_count: Vec<u32>,
+    contacts_asked: Vec<u8>,
+    progressed_graha: Vec<u16>,
+    progressed_longitude_deg: Vec<f64>,
+    progressed_tropical_deg: Vec<f64>,
+    progressed_speed: Vec<f64>,
+    directed_graha: Vec<u16>,
+    directed_longitude_deg: Vec<f64>,
+    contact_life: Vec<f64>,
+    contact_sky: Vec<f64>,
+    contact_graha: Vec<u16>,
+    contact_to_lagna: Vec<u8>,
+    contact_to_graha: Vec<u16>,
+    contact_angle: Vec<u16>,
+    contact_motion: Vec<u8>,
+}
+
+impl ProgressionColumns {
+    fn of(read: &[teistro::Progressions], charts: usize) -> Result<ProgressionColumns, Error> {
+        one_a_chart(read.len(), charts, "progressions")?;
+        let mut columns = ProgressionColumns::default();
+        for one in read {
+            let progressed = one.progressed.as_ref();
+            let directed = one.directed.as_ref();
+            columns
+                .life
+                .push(progressed.map_or(f64::NAN, |p| p.life.get()));
+            columns
+                .sky
+                .push(progressed.map_or(f64::NAN, |p| p.sky.get()));
+            columns
+                .armc_deg
+                .push(progressed.map_or(f64::NAN, |p| p.armc_deg));
+            columns
+                .ascendant_deg
+                .push(progressed.map_or(f64::NAN, |p| p.angles.ascendant_deg));
+            columns
+                .midheaven_deg
+                .push(progressed.map_or(f64::NAN, |p| p.angles.midheaven_deg));
+            columns
+                .arc_deg
+                .push(directed.map_or(f64::NAN, |d| d.arc_deg));
+            columns
+                .directed_ascendant_deg
+                .push(directed.map_or(f64::NAN, |d| d.ascendant_deg));
+            columns
+                .directed_midheaven_deg
+                .push(directed.map_or(f64::NAN, |d| d.midheaven_deg));
+            columns
+                .contacts_asked
+                .push(u8::from(one.contacts.is_some()));
+            let contacts = one.contacts.as_deref().unwrap_or_default();
+            columns.contact_count.push(
+                u32::try_from(contacts.len())
+                    .map_err(|_| Error::internal("more contacts than a section can count"))?,
+            );
+            for at in progressed.map_or(&[][..], |p| p.chart.value.foundation.grahas.as_slice()) {
+                columns.progressed_graha.push(at.graha.id());
+                columns.progressed_longitude_deg.push(at.longitude_deg);
+                columns.progressed_tropical_deg.push(at.tropical_deg);
+                columns.progressed_speed.push(at.speed_deg_per_day);
+            }
+            for at in directed.map_or(&[][..], |d| d.planets.as_slice()) {
+                columns.directed_graha.push(at.graha.id());
+                columns.directed_longitude_deg.push(at.longitude_deg);
+            }
+            for contact in contacts {
+                columns.contact_life.push(contact.life.get());
+                columns.contact_sky.push(contact.sky.get());
+                columns.contact_graha.push(contact.graha.id());
+                columns
+                    .contact_to_lagna
+                    .push(u8::from(contact.to == teistro::NatalPoint::Lagna));
+                columns.contact_to_graha.push(match contact.to {
+                    teistro::NatalPoint::Graha { graha } => graha.id(),
+                    teistro::NatalPoint::Lagna => 0,
+                });
+                columns.contact_angle.push(contact.angle);
+                columns
+                    .contact_motion
+                    .push(TsMotion::from(contact.motion) as u8);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "progressions",
+            self.life.len(),
+            &[
+                ColumnData::F64(&self.life),
+                ColumnData::F64(&self.sky),
+                ColumnData::F64(&self.armc_deg),
+                ColumnData::F64(&self.ascendant_deg),
+                ColumnData::F64(&self.midheaven_deg),
+                ColumnData::F64(&self.arc_deg),
+                ColumnData::F64(&self.directed_ascendant_deg),
+                ColumnData::F64(&self.directed_midheaven_deg),
+                ColumnData::U32(&self.contact_count),
+                ColumnData::U8(&self.contacts_asked),
+            ],
+        )?;
+        writer.columns(
+            "progressed_grahas",
+            self.progressed_graha.len(),
+            &[
+                ColumnData::U16(&self.progressed_graha),
+                ColumnData::F64(&self.progressed_longitude_deg),
+                ColumnData::F64(&self.progressed_tropical_deg),
+                ColumnData::F64(&self.progressed_speed),
+            ],
+        )?;
+        writer.columns(
+            "directed_grahas",
+            self.directed_graha.len(),
+            &[
+                ColumnData::U16(&self.directed_graha),
+                ColumnData::F64(&self.directed_longitude_deg),
+            ],
+        )?;
+        writer.columns(
+            "progressed_contacts",
+            self.contact_life.len(),
+            &[
+                ColumnData::F64(&self.contact_life),
+                ColumnData::F64(&self.contact_sky),
+                ColumnData::U16(&self.contact_graha),
+                ColumnData::U8(&self.contact_to_lagna),
+                ColumnData::U16(&self.contact_to_graha),
+                ColumnData::U16(&self.contact_angle),
+                ColumnData::U8(&self.contact_motion),
+            ],
+        )
     }
 }
 
@@ -5429,6 +5601,9 @@ pub struct Composed<'a> {
     /// rules it was read under, in the batch's order
     /// (`hellenistic-perfection.md`); empty when none was asked for.
     pub perfections: &'a [(teistro::Matter, teistro::PerfectionRules)],
+    /// Every chart's progressions, in the batch's order
+    /// (`western-progressions.md`); empty when none were asked for.
+    pub progressions: &'a [teistro::Progressions],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -5490,6 +5665,7 @@ pub fn encode(
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
     let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
+    let progressions = ProgressionColumns::of(composed.progressions, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -5551,6 +5727,7 @@ pub fn encode(
         searches.write(&mut writer)?;
         writer.bytes("kp", kp.as_bytes())?;
         hellenistic.write(&mut writer)?;
+        progressions.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -6354,6 +6531,44 @@ unsafe fn consideration_rules_of(
         .transpose()
 }
 
+/// The progressions a request's `progressions_json` asks for, none for
+/// null; the crate reads the record ([`teistro::ProgressionsRequest::from_json`]),
+/// which names a refusal from its root, `progressions.year`.
+///
+/// # Safety
+///
+/// `progressions_json` null or a NUL-terminated string.
+unsafe fn progressions_request_of(
+    progressions_json: *const c_char,
+) -> Result<Option<teistro::ProgressionsRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(progressions_json, "progressions_json") }?
+        .map(teistro::ProgressionsRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's progressions, none when none was asked for: each birth
+/// read through the request, its progressed chart founded by `request`.
+fn progressions_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::ProgressionsRequest>,
+    request: &ChartRequest,
+) -> Result<Vec<teistro::Progressions>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            sdk.chart()
+                .progressions(document, asked, request)
+                .map_err(|error| error.with_hint(format!("chart {at}")))
+        })
+        .collect()
+}
+
 /// The perfection a request's `perfection_json` asks for, none for null;
 /// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
 /// naming a refusal from its root, `perfection.quesited`.
@@ -6735,6 +6950,7 @@ struct AskedRecords {
     lots: Option<teistro::LotRequest>,
     considerations: Option<teistro::ConsiderationRules>,
     perfection: Option<teistro::PerfectionRequest>,
+    progressions: Option<teistro::ProgressionsRequest>,
 }
 
 impl AskedRecords {
@@ -6765,6 +6981,7 @@ impl AskedRecords {
                 lots: lot_request_of(asked.lots_json)?,
                 considerations: consideration_rules_of(asked.considerations_json)?,
                 perfection: perfection_request_of(asked.perfection_json)?,
+                progressions: progressions_request_of(asked.progressions_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -6959,6 +7176,12 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let perfections =
             perfections_of(ctx.sdk(), &founded.value, records.perfection, &fortitudes)?;
+        let progressions = progressions_of(
+            ctx.sdk(),
+            &founded.value,
+            records.progressions.as_ref(),
+            &request,
+        )?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -6982,6 +7205,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 lots: &lots,
                 considerations: &considerations,
                 perfections: &perfections,
+                progressions: &progressions,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),
