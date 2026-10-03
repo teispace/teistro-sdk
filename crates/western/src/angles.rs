@@ -35,6 +35,18 @@ pub enum AngleMethod {
     Quotidian,
 }
 
+impl AngleMethod {
+    /// Every method, Leo's first, so a consumer can weigh them all
+    /// (`progressed-angles-measured.md` does).
+    pub const ALL: [AngleMethod; 5] = [
+        AngleMethod::NaibodRightAscension,
+        AngleMethod::NaibodLongitude,
+        AngleMethod::SolarArcLongitude,
+        AngleMethod::SolarArcRightAscension,
+        AngleMethod::Quotidian,
+    ];
+}
+
 /// The Sun at one instant: tropical longitude and the obliquity of date,
 /// degrees.
 #[derive(Clone, Copy, Debug, PartialEq)]

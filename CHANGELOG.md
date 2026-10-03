@@ -1966,6 +1966,17 @@ the astronomical numbers do not move. Nothing else computes yet.
     batch's place and clock alone, not with every section the batch
     asked for. The parity runners print one record's answers for both
     charts, and the five bindings agree on all 17107 values.
+  - **The progressed angles, measured** (`progressed-angles-measured.md`,
+    C237 sized). Over 54 births to age 80, a method's midheaven stands
+    at most 7.54° from Leo's map. `AngleMethod::ALL` lists the methods.
+  - **Fixed:** `western-tropical-default` (now version 2) reckons a polar
+    day from civil midnight, as it does every other day. Before, no
+    chart could be founded inside a polar day under it.
+  - **Fixed:** under `CIVIL_MIDNIGHT` the last polar day runs to the
+    first real sunrise. The small hours between it and the first real
+    day had belonged to no day, so a chart founded there was refused.
+  - **Fixed:** an ephemeris cell past the provider's coverage is
+    `OUT_OF_RANGE`, as a refused request already was, not `PROVIDER`.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

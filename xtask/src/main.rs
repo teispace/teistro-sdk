@@ -285,6 +285,7 @@ mod parity;
 mod platform;
 mod pluto;
 mod points;
+mod progressed_angles;
 mod python_binding;
 mod rashi_dashas;
 mod reception;
@@ -439,6 +440,11 @@ const PASSES: &[Pass] = &[
         fortitudes::check_generated,
     ),
     ("lots", lots::generate, lots::check_generated),
+    (
+        "progressed-angles",
+        progressed_angles::generate,
+        progressed_angles::check_generated,
+    ),
     (
         "time-lords",
         time_lords::generate,
