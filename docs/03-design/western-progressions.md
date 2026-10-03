@@ -1,9 +1,10 @@
 # Progressions and directions (the `western` module, step 1)
 
 Status: `building`, 2026-10-03 — written from Leo's text before any code,
-its worked figures recast with pyswisseph's Moshier series. Steps 2 to
-5 are built: the measures in `crates/western`, the charts and the
-contacts in the SDK's chart area, and the boundary with every binding.
+its worked figures recast with pyswisseph's Moshier series. Every step
+is built: the measures in `crates/western`, the charts and the contacts
+in the SDK's chart area, the boundary with every binding, and the
+measured page of the angle methods.
 
 A progression reads the sky some days after birth as the native's life
 some years after it: the chart for the forty-sixth day is read as the
@@ -281,6 +282,27 @@ lagna, Mars and Venus.
   crossing by its nearest multiple of 30°, so a sesquiquadrate would
   have been reported as a trine or a quincunx. It now rounds to the
   whole degree, which every line of its lattice is.
+- **C237 has a size.** `progressed-angles-measured.md` reads 54 of the
+  corpus's births to age 80 under every method. A method's midheaven
+  stands at most 7.54° from Leo's and its ascendant at most 10.97°. The
+  solar arc and Naibod's part by no more than the equation of the
+  centre's bound along the ecliptic, and no more than the equation of
+  time's along the equator. The quotidian meridian is Leo's at every
+  birthday and half the circle from it half a year on.
+- **A Western chart could not be founded inside a polar day.**
+  `western-tropical-default` left the polar day `UNDEFINED`, so Tromsø's
+  midsummer birth was refused outright. The profile runs its day from
+  midnight, so it now reckons a polar day the same way (`CIVIL_MIDNIGHT`,
+  version 2).
+- **The last polar day ended before the first real one began.** Under
+  `CIVIL_MIDNIGHT` the last polar day ended at midnight and the first
+  real day at its sunrise, so the small hours between belonged to no
+  day. Tromsø's progressed sky at thirty and a half years fell there. The
+  last polar day now runs to the first real sunrise.
+- **A cell past the ephemeris's years claimed the provider had failed.**
+  A refused cell surfaced as `PROVIDER` where a refused request surfaced
+  as `OUT_OF_RANGE`. Both are `OUT_OF_RANGE` now, which is how the page
+  sets aside the one birth whose progressed sky runs past 2400.
 
 ## What is not decided
 
@@ -317,4 +339,5 @@ lagna, Mars and Venus.
 5. The boundary and every binding, with the parity gate. **Built.**
 6. A measured page over the corpus's births: each angle method's
    midheaven against the others by age, so the size of C237 is stated in
-   degrees rather than argued.
+   degrees rather than argued. **Built:**
+   [`progressed-angles-measured.md`](progressed-angles-measured.md).

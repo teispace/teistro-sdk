@@ -165,6 +165,8 @@ jobs:
         run: cargo xtask check-fortitudes
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
         run: cargo xtask check-lots
+      - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
+        run: cargo xtask check-progressed-angles
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
         run: cargo xtask check-time-lords
       - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
