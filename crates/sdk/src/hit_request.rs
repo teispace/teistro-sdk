@@ -88,6 +88,45 @@ impl HitRequest {
         }
     }
 
+    /// The hit list that is each graha's **returns**: its conjunction, at
+    /// 0°, with its own natal place and nothing else
+    /// (`03-design/western-returns.md`). The Moon's is the lunar return.
+    ///
+    /// Asked for several grahas, the list also holds each one's crossing
+    /// of another's natal place, its `to` naming the place;
+    /// [`ChartArea::returns`](crate::area::ChartArea::returns) keeps only
+    /// the returns.
+    ///
+    /// ```
+    /// use teistro::catalogue::Graha;
+    /// use teistro::quantity::{JulianDay, Utc};
+    /// use teistro::{HitKind, HitRequest};
+    ///
+    /// let lunar = HitRequest::returns(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5), [Graha::Moon]);
+    /// assert!(lunar.asks(HitKind::Aspect) && !lunar.asks(HitKind::Station));
+    /// assert_eq!(lunar.aspects(), &[0]);
+    /// ```
+    #[must_use]
+    pub fn returns(
+        from: JulianDay<Utc>,
+        to: JulianDay<Utc>,
+        grahas: impl IntoIterator<Item = Graha>,
+    ) -> HitRequest {
+        let grahas: Vec<Graha> = grahas.into_iter().collect();
+        HitRequest {
+            from,
+            to,
+            points: grahas
+                .iter()
+                .map(|graha| NatalPoint::Graha { graha: *graha })
+                .collect(),
+            grahas,
+            kinds: vec![HitKind::Aspect],
+            aspects: vec![0],
+            orb_deg: None,
+        }
+    }
+
     /// The same request, for these grahas only.
     #[must_use]
     pub fn with_grahas(mut self, grahas: impl IntoIterator<Item = Graha>) -> HitRequest {

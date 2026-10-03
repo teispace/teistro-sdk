@@ -66,6 +66,7 @@ mod muhurta_request;
 mod plan_request;
 mod progressed;
 mod progressions_request;
+mod returns;
 mod rule_request;
 mod rules_bridge;
 mod sade_sati_request;
@@ -281,6 +282,9 @@ pub use teistro_western::{
     ADDEY_HARMONIC_ORB_DEG, HarmonicChart, HarmonicPlaced, HarmonicPoint, HarmonicRequest,
     HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG,
 };
+// A body's returns to its own natal place: the lunar return after Morin
+// (`03-design/western-returns.md`).
+pub use crate::returns::BodyReturn;
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 pub use teistro_western::{ChartPoints, Composite};
