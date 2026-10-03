@@ -2015,6 +2015,12 @@ the astronomical numbers do not move. Nothing else computes yet.
     and Node, Python and Dart read `chart.antiscia`, Node's orb models
     now one `WesternOrbModel` type and Dart's `AntisciaRequest` taking an
     `OrbModel`, with parity across all four runners.
+    A synastry's `antiscia` reads them across two charts
+    (`sdk.chart().synastry_antiscia`, a `PartnerReading`'s `antiscia`),
+    each planet of the chart against each of the partner's, George V
+    against Queen Mary held to a recast. They cross in sections 94 and
+    95, and every binding reads `chart.synastryAntiscia`
+    (`synastry_antiscia`), Dart's `SynastryRequest` taking `antiscia`.
   - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
     the Western aspects between two charts: every planet and lagna of
     one against every planet and lagna of the other, under the aspect
