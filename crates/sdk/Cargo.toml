@@ -43,6 +43,7 @@ teistro-render-svg = { path = "../render-svg" }
 teistro-state = { path = "../state" }
 teistro-time = { path = "../time" }
 teistro-vargas = { path = "../vargas" }
+teistro-western = { path = "../western" }
 teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
 
 [build-dependencies]
@@ -191,6 +192,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "vimshopaka"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "progressions"
 required-features = ["builtin-ephemeris"]
 
 [[example]]

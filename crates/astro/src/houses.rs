@@ -172,7 +172,9 @@ pub struct Obliquity {
 }
 
 impl Obliquity {
-    fn new(deg: f64) -> Obliquity {
+    /// The obliquity of `deg` degrees, for [`circle_point`].
+    #[must_use]
+    pub fn new(deg: f64) -> Obliquity {
         let (sin, cos) = math::sin_cos(deg * DEG2RAD);
         Obliquity {
             deg,

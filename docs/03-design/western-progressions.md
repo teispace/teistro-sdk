@@ -1,8 +1,9 @@
 # Progressions and directions (the `western` module, step 1)
 
 Status: `building`, 2026-10-03 — written from Leo's text before any code,
-its worked figures recast with pyswisseph's Moshier series. Step 2 is
-built in `crates/western`.
+its worked figures recast with pyswisseph's Moshier series. Steps 2 and
+3 are built: the measures in `crates/western`, the charts in the SDK's
+chart area.
 
 A progression reads the sky some days after birth as the native's life
 some years after it: the chart for the forty-sixth day is read as the
@@ -68,7 +69,21 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
    A day measured as a tropical year, the modern default, gives **21
    October**, about 4.40 UT. That is a day and a half before Leo's 22nd
    (C236). The Julian year gives the 21st too, at about 13h.
-5. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
+5. **The progressed Moon's year** (p. 41). Leo's lunar list for his
+   forty-seventh year gives each contact of the progressed Moon to his
+   radical points by month:
+   - sesquiquadrate Mercury, October 1906;
+   - quincunx Jupiter, January 1907;
+   - quincunx Uranus, April;
+   - sesquiquadrate Saturn, June;
+   - quincunx the Sun, August;
+   - trine the midheaven, September;
+   - opposition Venus, November.
+
+   Five of these are to the seven planets, so the contacts must find
+   them in their months. Uranus and the midheaven are not natal points
+   of the hit list yet.
+6. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
    16 hours: 0.985647° a year, and 365.2422 days to the year.
 
 ## The design
@@ -97,19 +112,43 @@ bindings follow the same way the perfection crossed.
 
 The calls:
 
-- **`ChartArea::progressed(&birth, at, &ProgressionRequest)`** answers
+- **`ChartArea::progressed(&birth, at, &ProgressionRequest, &ChartRequest)`** answers
   the progressed instant, the founded chart at that instant, and the
   angles by the chosen method. An instant's chart has angles of its own,
   and those are the quotidian angles, so the default angles are computed
   rather than read off the chart.
-- **`ChartArea::directed(&birth, at, &DirectionRequest)`** answers the
-  arc and every point of the birth chart moved by it. The arc is the
-  Sun's (solar arc) or the measure's (Naibod or a degree a year).
-- **`ChartArea::progressed_contacts(&birth, from, to, &request)`** answers
-  each aspect a progressed point makes to a radical one, and the day it
-  falls due. This is Appendix V. It reuses the crossing search the
-  returns use, run on ephemeris time and mapped back through the
-  measure.
+- **`ChartArea::directed(&birth, at, &DirectionArc, &ChartRequest)`**
+  answers the arc and every point of the birth chart moved by it. The
+  arc is the Sun's (`DirectionArc::Solar`, the solar arc) or a measure's
+  (`DirectionArc::Measure`, Naibod's or a degree a year). The chart
+  request says where the later chart is founded.
+- **`ChartArea::progressed_contacts(&birth, from, to, &ContactRequest)`**
+  answers each aspect a progressed planet makes to a radical point, and
+  the instant of life it falls due. This is Appendix V. It is the transit
+  hit list run on the window of sky that the progression matches to
+  `[from, to]`, with each exact instant mapped back through the measure.
+  The search, the aspect lattices and the order of the answer are the
+  hit list's. A `ContactRequest` names:
+  - the progression;
+  - the progressed planets, the seven by default;
+  - the radical points, the seven and the ascendant by default;
+  - the aspects. The default is Leo's table of aspects (p. 48), whose
+    columns are 30°, 45°, 60°, 90°, 120°, 135°, 150° and 180°, with the
+    conjunction. He warns that "semi-squares and sesquiquadrates" are
+    the ones most easily missed (p. 41).
+
+  The hit list took aspects only at multiples of 30°, which C145 decided
+  for transits, where no text sets a degree aspect. Leo's contact is a
+  sesquiquadrate, so the hit list now takes any whole degree from 0 to
+  180. Its lattice already steps by the angles' greatest common divisor.
+  The orb stays under 15° and must also be under half that step, which
+  is the condition that no two windows meet. Every request valid before
+  is valid now.
+
+  Two of Leo's contacts are not covered: those to the radical midheaven,
+  which is not yet a natal point of the hit list, and the parallels of
+  declination. Contacts between two progressed planets are not covered
+  either.
 
 The arithmetic goes in its own functions, so a consumer can use one
 without the others:
@@ -148,6 +187,28 @@ without the others:
 - **Naibod's table** (p. 262) is the rate to within a day in the degree
   rows, rounding some rows down and others up. It is within an hour in
   most minute rows; the 40′ row is 1.03 hours from the rate.
+- **Leo's figures reproduce through the SDK's own ephemeris.** On the
+  built-in ephemeris his radical Mercury and both noon Moons agree to
+  the minute, the Moon is 135° from Mercury at his 10.40 a.m. to within
+  two minutes, and the progressed map's meridian is his 5h 54m 16s to
+  within two seconds. The remainder is the equation of the equinoxes:
+  the SDK's sidereal time is the apparent one, his the mean.
+- **The quotidian is Leo's map on a whole day.** At the birth's own clock
+  time on a progressed day, the chart's own meridian is the birth's
+  turned by whole days of the mean Sun in right ascension, so the two
+  methods agree there and part between. A test that compares the
+  methods has to ask off the birth's clock time.
+- **The midheaven is the ecliptic point at the meridian's right
+  ascension**, not the ecliptic projection of the equator's point. The
+  first build projected it, and the solar-arc test caught the
+  difference. The house kernel's `circle_point` already answered it, so
+  `Obliquity::new` in `teistro-astro` became public to make that
+  function callable outside its crate.
+- **A longitude method converts with the progressed obliquity.** The
+  moved midheaven goes back to the equator with the obliquity the
+  progressed angles are built on. With the birth's obliquity, the
+  midheaven read back differs from the birth's plus the arc by about
+  3e-6°.
 
 ## What is not decided
 
@@ -176,9 +237,11 @@ without the others:
 
 1. This page, and the crux rows C236 to C238.
 2. `crates/western`: the rate, the measure and the arc arithmetic, held
-   to tests 4 and 5 above. **Built.**
-3. `ChartArea::progressed` and `directed`, held to tests 2 and 3.
-4. `progressed_contacts`, held to test 4 under both measures.
+   to tests 4 and 6 above. **Built.**
+3. `ChartArea::progressed` and `directed`, held to tests 1 to 3.
+   **Built.**
+4. `progressed_contacts`, held to test 4 under both measures and to
+   test 5's year.
 5. The boundary and every binding, with the parity gate.
 6. A measured page over the corpus's births: each angle method's
    midheaven against the others by age, so the size of C237 is stated in

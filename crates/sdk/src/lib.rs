@@ -59,6 +59,7 @@ mod hit_request;
 mod kp_request;
 mod muhurta_request;
 mod plan_request;
+mod progressed;
 mod rule_request;
 mod rules_bridge;
 mod sade_sati_request;
@@ -211,6 +212,11 @@ pub use teistro_hellenistic::{
     Sect, SectRule, Separation, SeventhClause, Siege, SignificatorPlace, Standing, Station,
     Temperament, Terms, TermsTable, Translation, Triplicities, Way, Ways,
 };
+// Progressions and directions, the modern Western measures held to Leo's
+// *The Progressed Horoscope* (`03-design/western-progressions.md`).
+pub use crate::progressed::{
+    Directed, DirectedPlanet, DirectionArc, Progressed, ProgressionRequest,
+};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_kp as kp;
@@ -226,6 +232,8 @@ pub use teistro_tajika::{
     SubDegree, TambiraMover, Tied as VarsheshaTied, Varshesha, VarsheshaRules, YearClock, YearYoga,
     YearYogas, Yoga as TajikaYoga, YogaRules,
 };
+pub use teistro_western as western;
+pub use teistro_western::{AngleMethod, ArcMeasure, Progression};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).

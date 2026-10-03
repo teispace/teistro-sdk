@@ -29,9 +29,11 @@
 
 #![doc(html_no_source)]
 
+mod angles;
 mod arc;
 mod progression;
 
+pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use arc::ArcMeasure;
 pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,

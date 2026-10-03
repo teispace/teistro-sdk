@@ -12,6 +12,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
+teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 
 [lints]
