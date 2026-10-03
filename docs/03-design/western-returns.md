@@ -64,12 +64,14 @@ Pisces and Saturn at 18°17′ Pisces. Recast by pyswisseph (Moshier):
 
 So the figure is a return to the Moon's **tropical** radical longitude,
 measured on the **geocentric** Moon (his tables have no parallax), and
-erected for the place given. The SDK's test founds the radix where the
-Moon stands at Morin's printed place. It then asserts:
+erected for the place given. The built-in ephemeris begins in 1800, so
+the SDK cannot found 1642 itself. Its test holds the definition the
+recast confirmed, on the recast's own engine:
 
-- one return in the window, within 40 minutes before his instant;
-- the Moon at the radical longitude to the arcsecond at that instant;
-- a chart founded at Paris for his own instant gives his RAMC and cusps.
+- a radix at Paris on 1 January 2000, 12h UT, whose three lunar returns
+  are pyswisseph's (Moshier) to within ten seconds;
+- every return of a year back on the radical longitude to the arcsecond,
+  read from a chart founded at it.
 
 Gustavus Adolphus's figure (24 October 1632, 0h 4m T.A., latitude 50°)
 prints the Moon at 20°16′ Pisces and the Sun at 1°26′ Scorpio. That
