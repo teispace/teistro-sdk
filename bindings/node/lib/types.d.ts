@@ -1061,6 +1061,23 @@ export interface ChartRequest {
    * @nullable
    */
   readonly parallelsJson?: string;
+  /**
+   * Every chart's antiscia, as a JSON object, every field optional:
+   * `orbs`, as `western_aspects_json` spells them, read at the
+   * conjunction, Lilly's moieties by default (C244). Each planet is
+   * reflected about the solstices and the equinoxes from its tropical
+   * longitude, and a pair whose longitudes sum to 180° or 0° within the
+   * orb stands in antiscion or contrantiscion. The planets are the
+   * seven, and the outer three when `TS_CHART_OUTER` placed them; one
+   * the orbs give none is reflected and stands in no pair. The answers
+   * come back in `antiscia`, `antiscion_points` and `antiscion_rows`.
+   * Null for none, which costs nothing
+   * (`03-design/western-antiscia.md`). Refusals are named from the
+   * record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
+   * @example {"orbs":{"model":"LEO"}}
+   * @nullable
+   */
+  readonly antisciaJson?: string;
 }
 
 /**

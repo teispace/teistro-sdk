@@ -2398,6 +2398,47 @@ test('a chart carries its declinations and parallels', () => {
   ctx.dispose();
 });
 
+test('a chart carries its antiscia', () => {
+  // King George V (Leo, How to Judge a Nativity, p. 130), whose antiscia
+  // the SDK's test holds against a Moshier recast: under Lilly's moieties
+  // one pair, Mars's antiscion 5.94° from Mercury.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2402390.554166667;
+  assert.equal(ctx.chart.found({ instant: birth, ...george }).antiscia, null);
+
+  const read = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, antiscia: {} }).antiscia;
+  assert.ok(Object.isFrozen(read) && Object.isFrozen(read.points[0]), 'frozen to its leaves');
+  const sun = read.points.find((at) => at.graha === 'graha.SUN');
+  assert.ok(Math.abs(sun.antiscionDeg - 107.5685) < 0.01, `${sun.antiscionDeg}`);
+  assert.ok(Math.abs(((sun.contrantiscionDeg - sun.antiscionDeg + 360) % 360) - 180) < 1e-9);
+  assert.equal(read.pairs.length, 1);
+  const [pair] = read.pairs;
+  assert.deepEqual([pair.first, pair.second, pair.contrary], ['graha.MARS', 'graha.MERCURY', false]);
+  assert.ok(Math.abs(pair.apartDeg - 5.935) < 0.02, `${pair.apartDeg}`);
+  assert.deepEqual(read.unpaired, ['graha.URANUS', 'graha.NEPTUNE', 'graha.PLUTO']);
+
+  const leo = { orbs: { model: 'LEO' } };
+  const wide = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, antiscia: leo }).antiscia;
+  assert.deepEqual(wide.unpaired, [], "Leo's orbs give every planet one");
+  const instants = [birth, birth - 3000.25];
+  const batch = ctx.chart.foundMany({ instants, ...george, antiscia: leo });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).antiscia, ctx.chart.found({ instant, ...george, antiscia: leo }).antiscia),
+  );
+  for (const [request, field] of [
+    [{ orbs: { model: 'BY_ASPECT', orbs: [{ aspect: 'TRINE', orbDeg: 3 }] } }, 'antiscia.orbs.orbs'],
+    [{ orb: 1 }, 'antiscia.orb'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...george, antiscia: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries its synastry with a partner', () => {
   // King George V and Queen Mary (Leo, How to Judge a Nativity, p. 130),
   // whose cross contacts the SDK's test holds against a Moshier recast.
