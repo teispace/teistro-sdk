@@ -4220,6 +4220,68 @@ final class ChartsSynastryDavisons {
   final int length;
 }
 
+/// The `synastry_midpoints` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.
+final class ChartsSynastryMidpoints {
+  const ChartsSynastryMidpoints({
+    required this.count,
+    required this.length,
+  });
+
+  /// How many equal distances stand across the chart and the partner's; the chart's rows follow the earlier charts' in `synastry_midpoint_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_midpoint_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
+final class ChartsSynastryMidpointRows {
+  const ChartsSynastryMidpointRows({
+    required this.first,
+    required this.second,
+    required this.middle,
+    required this.partnersPair,
+    required this.far,
+    required this.distanceDeg,
+    required this.fromAxisDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// The first planet of the pair, in its chart's order.
+  final Uint16List first;
+
+  /// The second.
+  final Uint16List second;
+
+  /// The planet of the other chart equally distant from the two.
+  final Uint16List middle;
+
+  /// 1 when the pair is the partner's and the planet between it the chart's; 0 when the pair is the chart's and the planet between the partner's.
+  final Uint8List partnersPair;
+
+  /// 1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's.
+  final Uint8List far;
+
+  /// How far it stands from each of the two, the mean of the two arcs, degrees.
+  final Float64List distanceDeg;
+
+  /// How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.
+  final Float64List fromAxisDeg;
+
+  /// The orb the record allowed, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4432,6 +4494,8 @@ final class Charts {
     required this.synastryComposites,
     required this.synastryCompositeRows,
     required this.synastryDavisons,
+    required this.synastryMidpoints,
+    required this.synastryMidpointRows,
   });
 
   /// What kind of chart these are.
@@ -4778,6 +4842,12 @@ final class Charts {
   /// Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
   final ChartsSynastryDavisons synastryDavisons;
 
+  /// Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.
+  final ChartsSynastryMidpoints synastryMidpoints;
+
+  /// Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
+  final ChartsSynastryMidpointRows synastryMidpointRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4885,6 +4955,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atSynastryComposites = blob.section(98, 'synastry_composites');
   final atSynastryCompositeRows = blob.section(99, 'synastry_composite_rows');
   final atSynastryDavisons = blob.section(100, 'synastry_davisons');
+  final atSynastryMidpoints = blob.section(101, 'synastry_midpoints');
+  final atSynastryMidpointRows = blob.section(102, 'synastry_midpoint_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8691,6 +8763,57 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atSynastryDavisons, 4) + atSynastryDavisons.count * 4,
       ),
       length: atSynastryDavisons.count,
+    ),
+    synastryMidpoints: ChartsSynastryMidpoints(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpoints, 0),
+        blob.columnOffset(atSynastryMidpoints, 0) + atSynastryMidpoints.count * 4,
+      ),
+      length: atSynastryMidpoints.count,
+    ),
+    synastryMidpointRows: ChartsSynastryMidpointRows(
+      first: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 0),
+        blob.columnOffset(atSynastryMidpointRows, 0) + atSynastryMidpointRows.count * 2,
+      ),
+      second: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 1),
+        blob.columnOffset(atSynastryMidpointRows, 1) + atSynastryMidpointRows.count * 2,
+      ),
+      middle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 2),
+        blob.columnOffset(atSynastryMidpointRows, 2) + atSynastryMidpointRows.count * 2,
+      ),
+      partnersPair: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 3),
+        blob.columnOffset(atSynastryMidpointRows, 3) + atSynastryMidpointRows.count * 1,
+      ),
+      far: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 4),
+        blob.columnOffset(atSynastryMidpointRows, 4) + atSynastryMidpointRows.count * 1,
+      ),
+      distanceDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 5),
+        blob.columnOffset(atSynastryMidpointRows, 5) + atSynastryMidpointRows.count * 8,
+      ),
+      fromAxisDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 6),
+        blob.columnOffset(atSynastryMidpointRows, 6) + atSynastryMidpointRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryMidpointRows, 7),
+        blob.columnOffset(atSynastryMidpointRows, 7) + atSynastryMidpointRows.count * 8,
+      ),
+      length: atSynastryMidpointRows.count,
     ),
   );
 }

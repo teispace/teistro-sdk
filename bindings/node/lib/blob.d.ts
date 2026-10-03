@@ -4037,6 +4037,67 @@ export interface ChartsSynastryDavisons {
 }
 
 /**
+ * The `synastry_midpoints` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.
+ */
+export interface ChartsSynastryMidpoints {
+  /**
+   * How many equal distances stand across the chart and the partner's; the chart's rows follow the earlier charts' in `synastry_midpoint_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_midpoint_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
+ */
+export interface ChartsSynastryMidpointRows {
+  /**
+   * The first planet of the pair, in its chart's order.
+   * The values are `Graha` ids.
+   */
+  readonly first: Uint16Array;
+  /**
+   * The second.
+   * The values are `Graha` ids.
+   */
+  readonly second: Uint16Array;
+  /**
+   * The planet of the other chart equally distant from the two.
+   * The values are `Graha` ids.
+   */
+  readonly middle: Uint16Array;
+  /**
+   * 1 when the pair is the partner's and the planet between it the chart's; 0 when the pair is the chart's and the planet between the partner's.
+   */
+  readonly partnersPair: Uint8Array;
+  /**
+   * 1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's.
+   */
+  readonly far: Uint8Array;
+  /**
+   * How far it stands from each of the two, the mean of the two arcs, degrees.
+   */
+  readonly distanceDeg: Float64Array;
+  /**
+   * How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.
+   */
+  readonly fromAxisDeg: Float64Array;
+  /**
+   * The orb the record allowed, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4604,6 +4665,14 @@ export interface Charts {
    * Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
    */
   readonly synastryDavisons: ChartsSynastryDavisons;
+  /**
+   * Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.
+   */
+  readonly synastryMidpoints: ChartsSynastryMidpoints;
+  /**
+   * Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
+   */
+  readonly synastryMidpointRows: ChartsSynastryMidpointRows;
 }
 
 /**

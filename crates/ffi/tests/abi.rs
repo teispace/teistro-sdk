@@ -8138,3 +8138,140 @@ fn a_chart_request_answers_a_synastrys_composites_and_davison_births() {
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
     }
 }
+
+#[test]
+fn a_chart_request_answers_a_synastrys_equal_distances() {
+    /// An equal distance's cell, by its column's name.
+    type Cell<T> = (&'static str, fn(&teistro::SynastryMidpointRow) -> T);
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    let base = chart_request(&instants, (51.5045, -0.1366), 0);
+    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "midpoints": {"orbDeg": 1}}"#;
+    let asked_json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            synastry_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, teistro::UtcOffset::UTC).with_outer_planets(),
+        )
+        .unwrap()
+        .value;
+    let expected = sdk
+        .chart()
+        .synastry_with(&charts, &teistro::PartnerSynastry::from_json(text).unwrap())
+        .unwrap();
+    let rows: Vec<&teistro::SynastryMidpointRow> = expected
+        .iter()
+        .flat_map(|one| one.midpoints.as_deref().unwrap_or_default())
+        .collect();
+    assert!(
+        rows.iter().any(|row| row.partners_pair) && rows.iter().any(|row| !row.partners_pair),
+        "both sides cross"
+    );
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    assert_eq!(
+        ints("synastry_midpoints", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.midpoints.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let named: [Cell<i64>; 5] = [
+        ("first", |row| i64::from(row.first.id())),
+        ("second", |row| i64::from(row.second.id())),
+        ("middle", |row| i64::from(row.middle.id())),
+        ("partners_pair", |row| i64::from(row.partners_pair)),
+        ("far", |row| i64::from(row.far)),
+    ];
+    for (name, read) in named {
+        assert_eq!(
+            ints("synastry_midpoint_rows", name),
+            rows.iter().map(|row| read(row)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    let measures: [Cell<f64>; 3] = [
+        ("distance_deg", |row| row.distance_deg),
+        ("from_axis_deg", |row| row.from_axis_deg),
+        ("orb_deg", |row| row.orb_deg),
+    ];
+    for (name, read) in measures {
+        let cells: Vec<u64> = reader
+            .column("synastry_midpoint_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect();
+        assert_eq!(
+            cells,
+            rows.iter()
+                .map(|row| read(row).to_bits())
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+
+    // None asked is empty sections; a refusal is named by its field.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("synastry_midpoints", "count"),
+        ("synastry_midpoint_rows", "first"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+    let wide = CString::new(text.replace(r#""orbDeg": 1"#, r#""orbDeg": 11"#)).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            synastry_json: wide.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("synastry.midpoints.orbDeg")
+    );
+}

@@ -1693,14 +1693,18 @@ pub struct TsChartRequest {
     /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
     /// parallels across the two, none when left out) and `antiscia`
     /// (`{"orbs": {"model": "LEO"}}` as `antiscia_json` spells it: the antiscia
-    /// across the two, none when left out), `composite` (true: each chart's
+    /// across the two, none when left out), `midpoints` (`{"orbDeg": 0.5}`
+    /// as `midpoints_json` spells it: the equal distances across the two,
+    /// each chart's planets on the partner's pairs and the partner's on
+    /// the chart's, none when left out), `composite` (true: each chart's
     /// composite with the partner, C247) and `davison` (true: each chart's
     /// Davison birth with the partner, the chart's read on this request's
     /// clock, C248). Each chart is read against the
     /// partner, the chart's point first. The answers come back in
     /// `synastry`, `synastry_rows`, `synastry_parallel_rows`,
     /// `synastry_antiscion_rows`, `synastry_composites`,
-    /// `synastry_composite_rows` and `synastry_davisons`. Null for none,
+    /// `synastry_composite_rows`, `synastry_davisons`, `synastry_midpoints`
+    /// and `synastry_midpoint_rows`. Null for none,
     /// which costs nothing
     /// (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
@@ -3323,7 +3327,8 @@ impl AspectTables {
         self.across.write_antiscia(writer)?;
         self.between.write(writer)?;
         self.across.write_composites(writer)?;
-        self.davisons.write(writer)
+        self.davisons.write(writer)?;
+        self.across.write_midpoints(writer)
     }
 }
 
@@ -3372,13 +3377,69 @@ impl DavisonColumns {
 #[derive(Default)]
 struct MidpointColumns {
     count: Vec<u32>,
+    rows: MidpointRowColumns,
+}
+
+/// The equal distances, one chart's own or across a synastry, as the row
+/// sections cross them; the synastry's carry whose pair it is besides.
+#[derive(Default)]
+struct MidpointRowColumns {
     first: Vec<u16>,
     second: Vec<u16>,
     middle: Vec<u16>,
+    partners_pair: Vec<u8>,
     far: Vec<u8>,
     distance_deg: Vec<f64>,
     from_axis_deg: Vec<f64>,
     orb_deg: Vec<f64>,
+}
+
+impl MidpointRowColumns {
+    fn push(&mut self, row: &teistro::MidpointRow) {
+        self.first.push(row.first.id());
+        self.second.push(row.second.id());
+        self.middle.push(row.middle.id());
+        self.far.push(u8::from(row.far));
+        self.distance_deg.push(row.distance_deg);
+        self.from_axis_deg.push(row.from_axis_deg);
+        self.orb_deg.push(row.orb_deg);
+    }
+
+    fn push_across(&mut self, row: &teistro::SynastryMidpointRow) {
+        self.first.push(row.first.id());
+        self.second.push(row.second.id());
+        self.middle.push(row.middle.id());
+        self.partners_pair.push(u8::from(row.partners_pair));
+        self.far.push(u8::from(row.far));
+        self.distance_deg.push(row.distance_deg);
+        self.from_axis_deg.push(row.from_axis_deg);
+        self.orb_deg.push(row.orb_deg);
+    }
+
+    /// The rows as `section`, with `partners_pair` after `middle` when
+    /// `across`.
+    fn write(
+        &self,
+        writer: &mut Writer<'_>,
+        section: &str,
+        across: bool,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut columns = vec![
+            ColumnData::U16(&self.first),
+            ColumnData::U16(&self.second),
+            ColumnData::U16(&self.middle),
+        ];
+        if across {
+            columns.push(ColumnData::U8(&self.partners_pair));
+        }
+        columns.extend([
+            ColumnData::U8(&self.far),
+            ColumnData::F64(&self.distance_deg),
+            ColumnData::F64(&self.from_axis_deg),
+            ColumnData::F64(&self.orb_deg),
+        ]);
+        writer.columns(section, self.first.len(), &columns)
+    }
 }
 
 impl MidpointColumns {
@@ -3388,13 +3449,7 @@ impl MidpointColumns {
         for rows in read {
             columns.count.push(row_count(rows.len())?);
             for row in rows {
-                columns.first.push(row.first.id());
-                columns.second.push(row.second.id());
-                columns.middle.push(row.middle.id());
-                columns.far.push(u8::from(row.far));
-                columns.distance_deg.push(row.distance_deg);
-                columns.from_axis_deg.push(row.from_axis_deg);
-                columns.orb_deg.push(row.orb_deg);
+                columns.rows.push(row);
             }
         }
         Ok(columns)
@@ -3406,19 +3461,7 @@ impl MidpointColumns {
             self.count.len(),
             &[ColumnData::U32(&self.count)],
         )?;
-        writer.columns(
-            "midpoint_rows",
-            self.first.len(),
-            &[
-                ColumnData::U16(&self.first),
-                ColumnData::U16(&self.second),
-                ColumnData::U16(&self.middle),
-                ColumnData::U8(&self.far),
-                ColumnData::F64(&self.distance_deg),
-                ColumnData::F64(&self.from_axis_deg),
-                ColumnData::F64(&self.orb_deg),
-            ],
-        )
+        self.rows.write(writer, "midpoint_rows", false)
     }
 }
 
@@ -3682,6 +3725,8 @@ struct SynastryColumns {
     parallel_orb_deg: Vec<f64>,
     antiscion_count: Vec<u32>,
     antiscia: AntiscionRowColumns,
+    midpoint_count: Vec<u32>,
+    midpoints: MidpointRowColumns,
     composite_lagna_deg: Vec<f64>,
     composite_midheaven_deg: Vec<f64>,
     composite_lagna_turned: Vec<u8>,
@@ -3712,6 +3757,12 @@ impl SynastryColumns {
             }
             for row in one.antiscia.iter().flatten() {
                 columns.antiscia.push(row);
+            }
+            if let Some(midpoints) = &one.midpoints {
+                columns.midpoint_count.push(row_count(midpoints.len())?);
+            }
+            for row in one.midpoints.iter().flatten() {
+                columns.midpoints.push_across(row);
             }
             if let Some(composite) = &one.composite {
                 columns.composite_lagna_deg.push(composite.lagna_deg);
@@ -3805,6 +3856,17 @@ impl SynastryColumns {
             &[ColumnData::U32(&self.antiscion_count)],
         )?;
         self.antiscia.write(writer, "synastry_antiscion_rows")
+    }
+
+    /// `synastry_midpoints` and `synastry_midpoint_rows`, after the
+    /// composites and the Davison births.
+    fn write_midpoints(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_midpoints",
+            self.midpoint_count.len(),
+            &[ColumnData::U32(&self.midpoint_count)],
+        )?;
+        self.midpoints.write(writer, "synastry_midpoint_rows", true)
     }
 
     /// `synastry_composites` and `synastry_composite_rows`, after the
