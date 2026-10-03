@@ -30,6 +30,7 @@ members = [
     "crates/tajika",
     "crates/hellenistic",
     "crates/western",
+    "crates/matching",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",

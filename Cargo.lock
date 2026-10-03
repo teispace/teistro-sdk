@@ -1819,6 +1819,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-matching"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-muhurta"
 version = "0.0.0"
 dependencies = [
