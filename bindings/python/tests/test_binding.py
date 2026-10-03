@@ -1776,6 +1776,52 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, progressions=request, **london)  # type: ignore[arg-type]
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_the_outer_planets_when_asked(self) -> None:
+        """The outer planets cross when asked: none unless `outer_planets`,
+        then Uranus, Neptune and Pluto in the grahas' shape with the nine
+        unmoved, a progression's later charts carrying them, and Leo's
+        progressed Moon quincunx Uranus in April 1907 (p. 41)
+        (`03-design/western-outer-planets.md`)."""
+        from teistro import NatalPoint, ProgressionContacts
+
+        london: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(0), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2400629.742361111
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            bare = ctx.chart.found(instant=birth, **london)
+            self.assertEqual(bare.outer, [])
+            asked = ctx.chart.found(instant=birth, outer_planets=True, **london)
+            self.assertEqual([at.graha for at in asked.outer], [Graha.URANUS, Graha.NEPTUNE, Graha.PLUTO])
+            self.assertEqual(asked.grahas, bare.grahas, "the nine are unmoved")
+            for placed in asked.outer:
+                self.assertGreater(placed.distance_au, 15)
+                self.assertIn(placed.house.bhava, range(1, 13))
+
+            at = birth + 46 * 365.242189
+            later = ctx.chart.found(instant=birth, outer_planets=True, progressions={"at": at}, **london).progressions
+            assert later is not None and later.progressed is not None and later.directed is not None
+            self.assertEqual(len(later.progressed.grahas), 12)
+            self.assertEqual(len(later.directed.planets), 12)
+            self.assertIs(later.progressed.grahas[11].graha, Graha.PLUTO)
+
+            contacts: ProgressionContacts = {
+                "from": 2417484.5,
+                "to": 2417941.5,
+                "grahas": ["MOON"],
+                "points": [Graha.URANUS],
+            }
+            found = ctx.chart.found(
+                instant=birth, outer_planets=True, progressions={"contacts": contacts}, **london
+            ).progressions
+            assert found is not None and found.contacts is not None
+            (contact,) = found.contacts
+            self.assertEqual((contact.to, contact.angle), (NatalPoint("GRAHA", Graha.URANUS), 150))
+            self.assertTrue(2417635.5 <= contact.life < 2417696.5, f"{contact.life}: March or April 1907")
+            with self.assertRaises(TeistroError):
+                ctx.chart.found(instant=birth, progressions={"contacts": contacts}, **london)
+
     def test_a_chart_carries_its_lots(self) -> None:
         """Valens's lots cross whole, members resolved: the sect and the rules
         read back and handed back as a request, all fourteen in the

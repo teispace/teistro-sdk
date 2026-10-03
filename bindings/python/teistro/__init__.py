@@ -53,6 +53,7 @@ from ._ffi import (
     CHART_DASHA_PHALA,
     CHART_HOUSES,
     CHART_JAIMINI,
+    CHART_OUTER,
     CHART_POINTS,
     CHART_SHADBALA,
     CHART_STATE,
@@ -1550,6 +1551,7 @@ class ChartArea(_Area):
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
         jaimini: bool = False,
+        outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1597,6 +1599,7 @@ class ChartArea(_Area):
             vaiseshikamsa=vaiseshikamsa,
             dasha_phala=dasha_phala,
             jaimini=jaimini,
+            outer_planets=outer_planets,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
             state=state,
@@ -1634,6 +1637,7 @@ class ChartArea(_Area):
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
         jaimini: bool = False,
+        outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1674,6 +1678,7 @@ class ChartArea(_Area):
             | (CHART_VAISESHIKAMSA if vaiseshikamsa else 0)
             | (CHART_DASHA_PHALA if dasha_phala else 0)
             | (CHART_JAIMINI if jaimini else 0)
+            | (CHART_OUTER if outer_planets else 0)
             | (CHART_SHADBALA if shadbala else 0)
             | (CHART_BHAVA_BALA if bhava_bala else 0)
             | (CHART_STATE if state else 0),
@@ -8093,8 +8098,29 @@ class Chart:
         outermost; this reads this chart's stride out of them into the
         shape an application wants, which is a row.
         """
-        columns = self.batch.decoded.grahas
-        count = self.batch.decoded.graha_count
+        return self._placed(self.batch.decoded.grahas, self.batch.decoded.graha_count)
+
+    @property
+    def outer(self) -> list[PlacedGraha]:
+        """Uranus, Neptune and Pluto, placed as the grahas are, or an empty
+        list unless `outer_planets=True` asked for them.
+
+        >>> # chart = ctx.chart.found(..., outer_planets=True)
+        >>> # uranus = next(at for at in chart.outer if at.graha == Graha.URANUS)
+
+        The section holds the same number a chart, so the batch's rows
+        divided by its charts is this chart's count.
+        """
+        decoded = self.batch.decoded
+        charts = len(decoded.cast.instant)
+        rows = len(decoded.outer.graha)
+        count, odd = divmod(rows, charts) if charts else (0, 0)
+        if odd:
+            raise ValueError(f"outer has {rows} rows for {charts} charts")
+        return self._placed(decoded.outer, count)
+
+    def _placed(self, columns: Any, count: int) -> list[PlacedGraha]:
+        """One chart's stride of a placed-bodies section, a row a body."""
         base = self.index * count
         return [
             PlacedGraha(
