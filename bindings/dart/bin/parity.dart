@@ -577,6 +577,7 @@ void main() {
       }),
     ),
     parallels: const ParallelRequest(orbDeg: 1.5),
+    antiscia: const AntisciaRequest(),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1274,6 +1275,28 @@ void main() {
     for (final (n, row) in parallels.indexed) {
       put(
         'chart-$i-parallel-$n',
+        '${row.first.fullKey} ${row.second.fullKey} ${row.contrary ? 1 : 0} '
+            '${number(row.apartDeg)} ${number(row.orbDeg)}',
+      );
+    }
+    final reflected = chart.antiscia!;
+    for (final reflection in reflected.points) {
+      put(
+        'chart-$i-antiscion-${reflection.graha.fullKey}',
+        '${number(reflection.antiscionDeg)} '
+            '${number(reflection.contrantiscionDeg)}',
+      );
+    }
+    put(
+      'chart-$i-antiscia-unpaired',
+      reflected.unpaired.isEmpty
+          ? '-'
+          : reflected.unpaired.map((one) => one.fullKey).join(','),
+    );
+    put('chart-$i-antiscia-count', '${reflected.pairs.length}');
+    for (final (n, row) in reflected.pairs.indexed) {
+      put(
+        'chart-$i-antiscia-$n',
         '${row.first.fullKey} ${row.second.fullKey} ${row.contrary ? 1 : 0} '
             '${number(row.apartDeg)} ${number(row.orbDeg)}',
       );

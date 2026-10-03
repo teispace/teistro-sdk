@@ -924,6 +924,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_progressions(report, &geo, index, document, &bare);
         the_western_aspects(report, &geo, index, document);
         the_parallels(report, &geo, index, document);
+        the_antiscia(report, &geo, index, document);
     }
     the_synastry(report, &geo, &read.value);
     // **One call, as the other three make one.** The foundations are the
@@ -1978,6 +1979,56 @@ fn the_parallels(report: &mut Report, sdk: &Context, index: usize, document: &te
         put(
             report,
             &format!("chart-{index}-parallel-{n}"),
+            format!(
+                "{} {} {} {} {}",
+                row.first.full_key(),
+                row.second.full_key(),
+                u8::from(row.contrary),
+                number(row.apart_deg),
+                number(row.orb_deg)
+            ),
+        );
+    }
+}
+
+/// The antiscia as the other three print them: each planet's two
+/// reflections, the planets left unpaired, then each pair under Lilly's
+/// moieties, the default every runner asks with `{}`.
+fn the_antiscia(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let read = sdk
+        .chart()
+        .antiscia(document, &teistro::AntisciaRequest::default())
+        .expect("a valid request");
+    for at in &read.points {
+        put(
+            report,
+            &format!("chart-{index}-antiscion-{}", at.graha.full_key()),
+            format!(
+                "{} {}",
+                number(at.antiscion_deg),
+                number(at.contrantiscion_deg)
+            ),
+        );
+    }
+    let unpaired: Vec<&str> = read.unpaired.iter().map(|one| one.full_key()).collect();
+    put(
+        report,
+        &format!("chart-{index}-antiscia-unpaired"),
+        if unpaired.is_empty() {
+            String::from("-")
+        } else {
+            unpaired.join(",")
+        },
+    );
+    put(
+        report,
+        &format!("chart-{index}-antiscia-count"),
+        read.pairs.len().to_string(),
+    );
+    for (n, row) in read.pairs.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-antiscia-{n}"),
             format!(
                 "{} {} {} {} {}",
                 row.first.full_key(),
