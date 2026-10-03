@@ -2191,6 +2191,19 @@ pub struct ChartRequest {
     /// Example: {"orbs":{"model":"LEO"}}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub antiscia_json: Option<String>,
+    /// Every chart's equal distances, as a JSON object, every field
+    /// optional: `orbDeg`, how far from the axis through two planets'
+    /// midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+    /// A planet stands on the axis when it is equally distant from the
+    /// two, on the shorter arc's midpoint or opposite it (C246). The
+    /// planets are the seven, and the outer three when `TS_CHART_OUTER`
+    /// placed them. The answers come back in `midpoints` and
+    /// `midpoint_rows`. Null for none, which costs nothing
+    /// (`03-design/western-midpoints.md`). Refusals are named from the
+    /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
+    /// Example: {"orbDeg":1}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub midpoints_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2224,6 +2237,7 @@ pub struct HeldChartRequest {
     synastry_json: Option<std::ffi::CString>,
     parallels_json: Option<std::ffi::CString>,
     antiscia_json: Option<std::ffi::CString>,
+    midpoints_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2303,6 +2317,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             antiscia_json: self
                 .antiscia_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            midpoints_json: self
+                .midpoints_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2417,6 +2435,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            midpoints_json: self
+                .midpoints_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2468,6 +2491,7 @@ impl ChartRequest {
             synastry_json: unsafe { lent_text(raw.synastry_json) },
             parallels_json: unsafe { lent_text(raw.parallels_json) },
             antiscia_json: unsafe { lent_text(raw.antiscia_json) },
+            midpoints_json: unsafe { lent_text(raw.midpoints_json) },
         }
     }
 }

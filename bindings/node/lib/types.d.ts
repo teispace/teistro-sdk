@@ -1080,6 +1080,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly antisciaJson?: string;
+  /**
+   * Every chart's equal distances, as a JSON object, every field
+   * optional: `orbDeg`, how far from the axis through two planets'
+   * midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+   * A planet stands on the axis when it is equally distant from the
+   * two, on the shorter arc's midpoint or opposite it (C246). The
+   * planets are the seven, and the outer three when `TS_CHART_OUTER`
+   * placed them. The answers come back in `midpoints` and
+   * `midpoint_rows`. Null for none, which costs nothing
+   * (`03-design/western-midpoints.md`). Refusals are named from the
+   * record every binding calls `midpoints`, as `midpoints.orbDeg`.
+   * @example {"orbDeg":1}
+   * @nullable
+   */
+  readonly midpointsJson?: string;
 }
 
 /**

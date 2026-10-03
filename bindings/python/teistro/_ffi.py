@@ -265,7 +265,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 256,
+    "ts_chart_request": 264,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -295,7 +295,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 152,
+    "ts_chart_request": 160,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -709,6 +709,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("synastry_json", ctypes.c_char_p),
         ("parallels_json", ctypes.c_char_p),
         ("antiscia_json", ctypes.c_char_p),
+        ("midpoints_json", ctypes.c_char_p),
     ]
 
 
@@ -2577,6 +2578,20 @@ class ChartRequest:
     Example: {"orbs":{"model":"LEO"}}. May be null.
     """
 
+    midpoints_json: Optional[str] = None
+    """Every chart's equal distances, as a JSON object, every field
+    optional: `orbDeg`, how far from the axis through two planets'
+    midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+    A planet stands on the axis when it is equally distant from the
+    two, on the shorter arc's midpoint or opposite it (C246). The
+    planets are the seven, and the outer three when `TS_CHART_OUTER`
+    placed them. The answers come back in `midpoints` and
+    `midpoint_rows`. Null for none, which costs nothing
+    (`03-design/western-midpoints.md`). Refusals are named from the
+    record every binding calls `midpoints`, as `midpoints.orbDeg`.
+    Example: {"orbDeg":1}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2669,6 +2684,9 @@ class ChartRequest:
         _antiscia_json = None if self.antiscia_json is None else self.antiscia_json.encode("utf-8")
         owned.append(_antiscia_json)
         raw.antiscia_json = _antiscia_json
+        _midpoints_json = None if self.midpoints_json is None else self.midpoints_json.encode("utf-8")
+        owned.append(_midpoints_json)
+        raw.midpoints_json = _midpoints_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2723,6 +2741,7 @@ class ChartRequest:
             synastry_json=_text(raw.synastry_json),
             parallels_json=_text(raw.parallels_json),
             antiscia_json=_text(raw.antiscia_json),
+            midpoints_json=_text(raw.midpoints_json),
         )
 
 

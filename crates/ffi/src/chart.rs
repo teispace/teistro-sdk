@@ -1728,6 +1728,18 @@ pub struct TsChartRequest {
     /// record every binding calls `antiscia`, as `antiscia.orbs.orbs`.
     /// `api: nullable example={"orbs":{"model":"LEO"}}`
     pub antiscia_json: *const c_char,
+    /// Every chart's equal distances, as a JSON object, every field
+    /// optional: `orbDeg`, how far from the axis through two planets'
+    /// midpoint a third may stand, 0.5° by default (C245) and at most 10°.
+    /// A planet stands on the axis when it is equally distant from the
+    /// two, on the shorter arc's midpoint or opposite it (C246). The
+    /// planets are the seven, and the outer three when `TS_CHART_OUTER`
+    /// placed them. The answers come back in `midpoints` and
+    /// `midpoint_rows`. Null for none, which costs nothing
+    /// (`03-design/western-midpoints.md`). Refusals are named from the
+    /// record every binding calls `midpoints`, as `midpoints.orbDeg`.
+    /// `api: nullable example={"orbDeg":1}`
+    pub midpoints_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3281,6 +3293,7 @@ struct AspectTables {
     across: SynastryColumns,
     declined: DeclinationColumns,
     reflected: AntisciaColumns,
+    between: MidpointColumns,
 }
 
 impl AspectTables {
@@ -3290,6 +3303,7 @@ impl AspectTables {
             across: SynastryColumns::of(composed.synastry, charts)?,
             declined: DeclinationColumns::of(composed.declinations, composed.parallels, charts)?,
             reflected: AntisciaColumns::of(composed.antiscia, charts)?,
+            between: MidpointColumns::of(composed.midpoints, charts)?,
         })
     }
 
@@ -3299,7 +3313,63 @@ impl AspectTables {
         self.declined.write(writer)?;
         self.across.write_parallels(writer)?;
         self.reflected.write(writer)?;
-        self.across.write_antiscia(writer)
+        self.across.write_antiscia(writer)?;
+        self.between.write(writer)
+    }
+}
+
+/// `midpoints` and `midpoint_rows`: each chart's planets equally distant
+/// from two others (`western-midpoints.md`).
+#[derive(Default)]
+struct MidpointColumns {
+    count: Vec<u32>,
+    first: Vec<u16>,
+    second: Vec<u16>,
+    middle: Vec<u16>,
+    far: Vec<u8>,
+    distance_deg: Vec<f64>,
+    from_axis_deg: Vec<f64>,
+    orb_deg: Vec<f64>,
+}
+
+impl MidpointColumns {
+    fn of(read: &[Vec<teistro::MidpointRow>], charts: usize) -> Result<MidpointColumns, Error> {
+        one_a_chart(read.len(), charts, "midpoints")?;
+        let mut columns = MidpointColumns::default();
+        for rows in read {
+            columns.count.push(row_count(rows.len())?);
+            for row in rows {
+                columns.first.push(row.first.id());
+                columns.second.push(row.second.id());
+                columns.middle.push(row.middle.id());
+                columns.far.push(u8::from(row.far));
+                columns.distance_deg.push(row.distance_deg);
+                columns.from_axis_deg.push(row.from_axis_deg);
+                columns.orb_deg.push(row.orb_deg);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "midpoints",
+            self.count.len(),
+            &[ColumnData::U32(&self.count)],
+        )?;
+        writer.columns(
+            "midpoint_rows",
+            self.first.len(),
+            &[
+                ColumnData::U16(&self.first),
+                ColumnData::U16(&self.second),
+                ColumnData::U16(&self.middle),
+                ColumnData::U8(&self.far),
+                ColumnData::F64(&self.distance_deg),
+                ColumnData::F64(&self.from_axis_deg),
+                ColumnData::F64(&self.orb_deg),
+            ],
+        )
     }
 }
 
@@ -6205,6 +6275,9 @@ pub struct Composed<'a> {
     /// Every chart's antiscia, in the batch's order
     /// (`western-antiscia.md`); empty when none were asked for.
     pub antiscia: &'a [teistro::Antiscia],
+    /// Every chart's equal distances, in the batch's order
+    /// (`western-midpoints.md`); empty when none were asked for.
+    pub midpoints: &'a [Vec<teistro::MidpointRow>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7178,14 +7251,15 @@ fn progressions_of(
 
 /// The Western tables a batch was asked for, read once: each chart's own
 /// aspects, its synastry with the record's partner, its declinations with
-/// the parallels among its planets, and its antiscia. Each is empty when
-/// its record was null.
+/// the parallels among its planets, its antiscia and its equal distances.
+/// Each is empty when its record was null.
 struct WesternTables {
     aspects: Vec<Vec<teistro::WesternAspectRow>>,
     synastry: Vec<teistro::PartnerReading>,
     declinations: Vec<teistro::Declinations>,
     parallels: Vec<Vec<teistro::ParallelRow>>,
     antiscia: Vec<teistro::Antiscia>,
+    midpoints: Vec<Vec<teistro::MidpointRow>>,
 }
 
 impl WesternTables {
@@ -7199,19 +7273,11 @@ impl WesternTables {
         let each = |root: &'static str| {
             move |at: usize, error: Error| error.under(root).with_hint(format!("chart {at}"))
         };
-        let aspects = records.western_aspects.as_ref().map_or_else(
-            || Ok(Vec::new()),
-            |asked| {
-                documents
-                    .iter()
-                    .enumerate()
-                    .map(|(at, document)| {
-                        sdk.chart()
-                            .western_aspects(document, asked)
-                            .map_err(|error| each("westernAspects")(at, error))
-                    })
-                    .collect()
-            },
+        let aspects = chart_by_chart(
+            records.western_aspects.as_ref(),
+            documents,
+            "westernAspects",
+            |document, asked| sdk.chart().western_aspects(document, asked),
         )?;
         let synastry = records.synastry.as_ref().map_or_else(
             || Ok(Vec::new()),
@@ -7239,28 +7305,47 @@ impl WesternTables {
                 .into_iter()
                 .unzip(),
         };
-        let antiscia = records.antiscia.as_ref().map_or_else(
-            || Ok(Vec::new()),
-            |asked| {
-                documents
-                    .iter()
-                    .enumerate()
-                    .map(|(at, document)| {
-                        sdk.chart()
-                            .antiscia(document, asked)
-                            .map_err(|error| each("antiscia")(at, error))
-                    })
-                    .collect()
-            },
-        )?;
         Ok(WesternTables {
             aspects,
             synastry,
             declinations,
             parallels,
-            antiscia,
+            antiscia: chart_by_chart(
+                records.antiscia.as_ref(),
+                documents,
+                "antiscia",
+                |document, asked| sdk.chart().antiscia(document, asked),
+            )?,
+            midpoints: chart_by_chart(
+                records.midpoints.as_ref(),
+                documents,
+                "midpoints",
+                |document, asked| sdk.chart().midpoints(document, asked),
+            )?,
         })
     }
+}
+
+/// One table a chart, each read by `read` under the asked record, or none
+/// when it was null; a refusal is named under the record's `root` and says
+/// which chart.
+fn chart_by_chart<A, T>(
+    asked: Option<&A>,
+    documents: &[Document],
+    root: &'static str,
+    read: impl Fn(&Document, &A) -> Result<T, Error>,
+) -> Result<Vec<T>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            read(document, asked)
+                .map_err(|error| error.under(root).with_hint(format!("chart {at}")))
+        })
+        .collect()
 }
 
 /// The perfection a request's `perfection_json` asks for, none for null;
@@ -7649,6 +7734,7 @@ struct AskedRecords {
     synastry: Option<teistro::PartnerSynastry>,
     parallels: Option<teistro::ParallelRequest>,
     antiscia: Option<teistro::AntisciaRequest>,
+    midpoints: Option<teistro::MidpointRequest>,
 }
 
 impl AskedRecords {
@@ -7691,6 +7777,9 @@ impl AskedRecords {
                     .transpose()?,
                 antiscia: optional_text(asked.antiscia_json, "antiscia_json")?
                     .map(teistro::AntisciaRequest::from_json)
+                    .transpose()?,
+                midpoints: optional_text(asked.midpoints_json, "midpoints_json")?
+                    .map(teistro::MidpointRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -7922,6 +8011,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 declinations: &western.declinations,
                 parallels: &western.parallels,
                 antiscia: &western.antiscia,
+                midpoints: &western.midpoints,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

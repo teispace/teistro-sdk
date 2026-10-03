@@ -1440,6 +1440,26 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 96, 'midpoints');
+    out.midpoints = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 97, 'midpoint_rows');
+    out.midpointRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      middle: column(blob, at, 2, 'u16', at.count),
+      far: column(blob, at, 3, 'u8', at.count),
+      distanceDeg: column(blob, at, 4, 'f64', at.count),
+      fromAxisDeg: column(blob, at, 5, 'f64', at.count),
+      orbDeg: column(blob, at, 6, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

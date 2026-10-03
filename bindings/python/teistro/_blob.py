@@ -3273,6 +3273,54 @@ class ChartsSynastryAntiscionRows:
 
 
 @dataclass(frozen=True)
+class ChartsMidpoints:
+    """The `midpoints` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's equal distances, a row a chart in the `cast` section's order: how many rows of `midpoint_rows` are its. Empty when `midpoints_json` asked for none.
+    """
+
+    count: memoryview[int]
+    """How many planets stand equally distant from two others; the chart's rows follow the earlier charts' in `midpoint_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsMidpointRows:
+    """The `midpoint_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.
+    """
+
+    first: memoryview[int]
+    """The first planet of the pair, in the catalogue's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    middle: memoryview[int]
+    """The planet equally distant from the two."""
+
+    far: memoryview[int]
+    """1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's."""
+
+    distance_deg: memoryview[float]
+    """How far it stands from each of the two, the mean of the two arcs, degrees."""
+
+    from_axis_deg: memoryview[float]
+    """How far it stands from the nearer point of the axis, degrees: half what its two distances differ by."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3681,6 +3729,12 @@ class Charts:
     synastry_antiscion_rows: ChartsSynastryAntiscionRows
     """Every chart's pairs in antiscion with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_antiscia.count`, each chart's closest first: a planet of the chart (the seven, and the outer three when `TS_CHART_OUTER` placed them) and one of the partner's whose tropical longitudes sum to 180°, or to 0° for the contrantiscion, within the orb of the record's `antiscia` read at the conjunction (Lilly's moieties by default, C244). Empty when `synastry_json` asked for no `antiscia`."""
 
+    midpoints: ChartsMidpoints
+    """Every chart's equal distances, a row a chart in the `cast` section's order: how many rows of `midpoint_rows` are its. Empty when `midpoints_json` asked for none."""
+
+    midpoint_rows: ChartsMidpointRows
+    """Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3785,6 +3839,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_antiscion_rows = blob.section(93, "antiscion_rows")
     at_synastry_antiscia = blob.section(94, "synastry_antiscia")
     at_synastry_antiscion_rows = blob.section(95, "synastry_antiscion_rows")
+    at_midpoints = blob.section(96, "midpoints")
+    at_midpoint_rows = blob.section(97, "midpoint_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5870,6 +5926,36 @@ def decode_charts(raw: bytes) -> Charts:
                 at_synastry_antiscion_rows, 4, 8, at_synastry_antiscion_rows.count
             ).cast("d"),
             length=at_synastry_antiscion_rows.count,
+        ),
+        midpoints=ChartsMidpoints(
+            count=blob.column(
+                at_midpoints, 0, 4, at_midpoints.count
+            ).cast("I"),
+            length=at_midpoints.count,
+        ),
+        midpoint_rows=ChartsMidpointRows(
+            first=blob.column(
+                at_midpoint_rows, 0, 2, at_midpoint_rows.count
+            ).cast("H"),
+            second=blob.column(
+                at_midpoint_rows, 1, 2, at_midpoint_rows.count
+            ).cast("H"),
+            middle=blob.column(
+                at_midpoint_rows, 2, 2, at_midpoint_rows.count
+            ).cast("H"),
+            far=blob.column(
+                at_midpoint_rows, 3, 1, at_midpoint_rows.count
+            ).cast("B"),
+            distance_deg=blob.column(
+                at_midpoint_rows, 4, 8, at_midpoint_rows.count
+            ).cast("d"),
+            from_axis_deg=blob.column(
+                at_midpoint_rows, 5, 8, at_midpoint_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_midpoint_rows, 6, 8, at_midpoint_rows.count
+            ).cast("d"),
+            length=at_midpoint_rows.count,
         ),
     )
 
