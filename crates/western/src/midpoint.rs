@@ -7,7 +7,7 @@ use teistro_core::angle::{difference_deg, near_midpoint_deg};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
-use crate::aspects::{PlanetAt, refuse_repeats};
+use crate::aspects::{PlanetAt, refuse_unreadable};
 use crate::declination::{LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG};
 
 /// The record's name where a binding sends it, which a refusal is named
@@ -149,44 +149,154 @@ pub fn midpoints(
     request: &MidpointRequest,
 ) -> Result<Vec<MidpointRow>, Error> {
     request.check()?;
-    refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
-        .map_err(|why| why.with_field("bodies"))?;
-    if let Some(at) = bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
-        return Err(
-            Error::invalid_arg("a longitude is a finite number of degrees")
-                .with_field(format!("bodies[{at}].longitudeDeg")),
-        );
-    }
-    let mut rows = Vec::new();
-    for (at, first) in bodies.iter().enumerate() {
-        for second in bodies.iter().skip(at + 1) {
-            let near = near_midpoint_deg(first.longitude_deg, second.longitude_deg);
-            for middle in bodies {
-                if middle.graha == first.graha || middle.graha == second.graha {
-                    continue;
-                }
-                let from_near = difference_deg(middle.longitude_deg, near).abs();
-                let far = from_near > 90.0;
-                let from_axis_deg = if far { 180.0 - from_near } else { from_near };
-                if from_axis_deg <= request.orb_deg {
-                    rows.push(MidpointRow {
-                        first: first.graha,
-                        second: second.graha,
-                        middle: middle.graha,
-                        far,
-                        distance_deg: f64::midpoint(
-                            difference_deg(middle.longitude_deg, first.longitude_deg).abs(),
-                            difference_deg(middle.longitude_deg, second.longitude_deg).abs(),
-                        ),
-                        from_axis_deg,
-                        orb_deg: request.orb_deg,
-                    });
-                }
-            }
-        }
-    }
+    refuse_unreadable(bodies, "bodies")?;
+    let mut rows: Vec<MidpointRow> = bodies
+        .iter()
+        .enumerate()
+        .flat_map(|(at, first)| {
+            bodies
+                .iter()
+                .skip(at + 1)
+                .map(move |second| (first, second))
+        })
+        .flat_map(|pair| equal_distances(pair, bodies, true, request.orb_deg))
+        .collect();
     rows.sort_by(|a, b| a.from_axis_deg.total_cmp(&b.from_axis_deg));
     Ok(rows)
+}
+
+/// An equal distance across two charts: a planet of one standing within
+/// the orb of the axis through the midpoint of two of the other's
+/// (`03-design/western-midpoints.md`, decision 9).
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynastryMidpointRow {
+    /// The earlier planet of the pair, in the order its chart gives them.
+    pub first: Graha,
+    /// The later.
+    pub second: Graha,
+    /// The planet of the other chart equally distant from the two.
+    pub middle: Graha,
+    /// Whether the pair is the partner's and the planet between it the
+    /// chart's; false when the pair is the chart's and the planet between
+    /// the partner's.
+    pub partners_pair: bool,
+    /// Whether it stands opposite the midpoint of the pair's shorter arc
+    /// (C246); false on the shorter's.
+    pub far: bool,
+    /// How far it stands from each of the two, the mean of the two arcs,
+    /// degrees.
+    pub distance_deg: f64,
+    /// How far it stands from the nearer point of the axis, degrees.
+    pub from_axis_deg: f64,
+    /// The orb the request allowed, degrees.
+    pub orb_deg: f64,
+}
+
+impl SynastryMidpointRow {
+    const fn of(row: MidpointRow, partners_pair: bool) -> SynastryMidpointRow {
+        let MidpointRow {
+            first,
+            second,
+            middle,
+            far,
+            distance_deg,
+            from_axis_deg,
+            orb_deg,
+        } = row;
+        SynastryMidpointRow {
+            first,
+            second,
+            middle,
+            partners_pair,
+            far,
+            distance_deg,
+            from_axis_deg,
+            orb_deg,
+        }
+    }
+}
+
+/// The **equal distances across two charts** (decision 9): every planet of
+/// `partner` within the orb of the axis through two of `chart`'s, and
+/// every planet of `chart` within the orb of the axis through two of
+/// `partner`'s, closest first. A pair of one planet from each chart is not
+/// read. Rows equally close keep the chart's pairs first.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_western::{MidpointRequest, PlanetAt, synastry_midpoints};
+///
+/// // His Sun at 0° and Moon at 190°; her Mars at 95°, on the far point.
+/// let rows = synastry_midpoints(
+///     &[PlanetAt::new(Graha::Sun, 0.0), PlanetAt::new(Graha::Moon, 190.0)],
+///     &[PlanetAt::new(Graha::Mars, 95.0)],
+///     &MidpointRequest::default(),
+/// )?;
+/// assert_eq!(rows.len(), 1);
+/// assert!(!rows[0].partners_pair && rows[0].far);
+/// assert_eq!(rows[0].middle, Graha::Mars);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// What [`MidpointRequest::check`] refuses; a planet given twice on one
+/// side; a longitude that is not a finite number.
+pub fn synastry_midpoints(
+    chart: &[PlanetAt],
+    partner: &[PlanetAt],
+    request: &MidpointRequest,
+) -> Result<Vec<SynastryMidpointRow>, Error> {
+    request.check()?;
+    refuse_unreadable(chart, "first")?;
+    refuse_unreadable(partner, "second")?;
+    let across = |pairs: &[PlanetAt], middles: &[PlanetAt], partners_pair: bool| {
+        pairs
+            .iter()
+            .enumerate()
+            .flat_map(|(at, first)| pairs.iter().skip(at + 1).map(move |second| (first, second)))
+            .flat_map(|pair| equal_distances(pair, middles, false, request.orb_deg))
+            .map(move |row| SynastryMidpointRow::of(row, partners_pair))
+            .collect::<Vec<_>>()
+    };
+    let mut rows = across(chart, partner, false);
+    rows.extend(across(partner, chart, true));
+    rows.sort_by(|a, b| a.from_axis_deg.total_cmp(&b.from_axis_deg));
+    Ok(rows)
+}
+
+/// Every one of `middles` within `orb_deg` of the axis through the pair's
+/// midpoint. Within one chart (`same_chart`) the pair's own two are not
+/// read against themselves; across two charts every planet is, the
+/// partner's Sun on the chart's Sun and Moon too.
+fn equal_distances<'a>(
+    (first, second): (&'a PlanetAt, &'a PlanetAt),
+    middles: &'a [PlanetAt],
+    same_chart: bool,
+    orb_deg: f64,
+) -> impl Iterator<Item = MidpointRow> + 'a {
+    let near = near_midpoint_deg(first.longitude_deg, second.longitude_deg);
+    middles.iter().filter_map(move |middle| {
+        if same_chart && (middle.graha == first.graha || middle.graha == second.graha) {
+            return None;
+        }
+        let from_near = difference_deg(middle.longitude_deg, near).abs();
+        let far = from_near > 90.0;
+        let from_axis_deg = if far { 180.0 - from_near } else { from_near };
+        (from_axis_deg <= orb_deg).then(|| MidpointRow {
+            first: first.graha,
+            second: second.graha,
+            middle: middle.graha,
+            far,
+            distance_deg: f64::midpoint(
+                difference_deg(middle.longitude_deg, first.longitude_deg).abs(),
+                difference_deg(middle.longitude_deg, second.longitude_deg).abs(),
+            ),
+            from_axis_deg,
+            orb_deg,
+        })
+    })
 }
 
 #[cfg(test)]
@@ -351,6 +461,105 @@ mod tests {
                 .unwrap_err()
                 .field(),
             Some("midpoints.orb")
+        );
+    }
+
+    #[test]
+    fn across_two_charts_the_same_planet_counts_and_each_side_is_marked() {
+        // His Sun at 10° and Moon at 50°: her Sun at 30° stands on their
+        // midpoint, though his Sun is one of the pair. Her pairs' axes
+        // (65°, 85°, 120° and their far points) hold neither of his.
+        let his = [
+            PlanetAt::new(Graha::Sun, 10.0),
+            PlanetAt::new(Graha::Moon, 50.0),
+        ];
+        let hers = [
+            PlanetAt::new(Graha::Sun, 30.0),
+            PlanetAt::new(Graha::Venus, 100.0),
+            PlanetAt::new(Graha::Mars, 140.0),
+        ];
+        let rows = synastry_midpoints(&his, &hers, &MidpointRequest::default()).unwrap();
+        assert_eq!(rows.len(), 1, "{rows:?}");
+        assert_eq!(
+            (
+                rows[0].first,
+                rows[0].second,
+                rows[0].middle,
+                rows[0].partners_pair,
+                rows[0].far
+            ),
+            (Graha::Sun, Graha::Moon, Graha::Sun, false, false)
+        );
+        assert!((rows[0].distance_deg - 20.0).abs() < 1e-9);
+
+        // Turned round, the same equal distance is the partner's pair.
+        let rows = synastry_midpoints(&hers, &his, &MidpointRequest::default()).unwrap();
+        assert_eq!(rows.len(), 1, "{rows:?}");
+        assert!(rows[0].partners_pair);
+        assert_eq!(rows[0].middle, Graha::Sun);
+    }
+
+    #[test]
+    fn across_two_charts_a_planet_of_one_on_a_pair_of_the_other_both_ways() {
+        // Her Venus 100° and Mars 140°: midpoint 120°, far point 300°; his
+        // Saturn at 300.2° stands on the far point. His Sun 10° and Moon
+        // 50° hold her Sun 30°.
+        let his = [
+            PlanetAt::new(Graha::Sun, 10.0),
+            PlanetAt::new(Graha::Moon, 50.0),
+            PlanetAt::new(Graha::Saturn, 300.2),
+        ];
+        let hers = [
+            PlanetAt::new(Graha::Sun, 30.0),
+            PlanetAt::new(Graha::Venus, 100.0),
+            PlanetAt::new(Graha::Mars, 140.0),
+        ];
+        let rows = synastry_midpoints(&his, &hers, &MidpointRequest::default()).unwrap();
+        let sides: Vec<(Graha, Graha, Graha, bool, bool)> = rows
+            .iter()
+            .map(|row| {
+                (
+                    row.first,
+                    row.second,
+                    row.middle,
+                    row.partners_pair,
+                    row.far,
+                )
+            })
+            .collect();
+        assert_eq!(
+            sides,
+            [
+                (Graha::Sun, Graha::Moon, Graha::Sun, false, false),
+                (Graha::Venus, Graha::Mars, Graha::Saturn, true, true),
+            ]
+        );
+        assert!((rows[1].from_axis_deg - 0.2).abs() < 1e-9);
+    }
+
+    #[test]
+    fn across_two_charts_a_refusal_names_its_side() {
+        let one = [PlanetAt::new(Graha::Sun, 10.0)];
+        let twice = [
+            PlanetAt::new(Graha::Sun, 10.0),
+            PlanetAt::new(Graha::Sun, 11.0),
+        ];
+        let lost = [PlanetAt::new(Graha::Sun, f64::NAN)];
+        let asked = MidpointRequest::default();
+        assert_eq!(
+            synastry_midpoints(&twice, &one, &asked)
+                .unwrap_err()
+                .field(),
+            Some("first")
+        );
+        assert_eq!(
+            synastry_midpoints(&one, &lost, &asked).unwrap_err().field(),
+            Some("second[0].longitudeDeg")
+        );
+        let wide = MidpointRequest::default().with_orb_deg(11.0);
+        assert_eq!(
+            synastry_midpoints(&one, &one, &wide).unwrap_err().field(),
+            Some("orbDeg")
         );
     }
 }
