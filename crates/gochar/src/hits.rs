@@ -31,8 +31,9 @@ pub enum Motion {
     Retrograde,
 }
 
-/// A natal point a transit can aspect.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+/// A natal point a transit can aspect, ordered as a tie between hits is
+/// broken: the grahas in the catalogue's order, then the lagna.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NatalPoint {
