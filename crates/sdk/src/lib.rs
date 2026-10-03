@@ -246,11 +246,13 @@ pub use teistro_western::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, SynastryRequest, SynastryRow, SynastryZodiac,
     WesternAspect, WesternAspectRow,
 };
-pub use western_aspects::{Partner, PartnerSynastry};
+pub use western_aspects::{Partner, PartnerReading, PartnerSynastry};
 // The declinations a chart's points stand at and Leo's parallels among
 // its planets (`03-design/western-declinations.md`).
 pub use declinations::Declinations;
-pub use teistro_western::{Declined, ParallelRequest, ParallelRow};
+pub use teistro_western::{
+    Declined, DeclinedPoint, ParallelRequest, ParallelRow, SynastryParallelRow,
+};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).

@@ -10,8 +10,8 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
-    AspectRequest, Placed, SynastryPoint, SynastryRequest, SynastryRow, SynastryZodiac,
-    WesternAspectRow, aspects, synastry,
+    AspectRequest, Placed, SynastryParallelRow, SynastryPoint, SynastryRequest, SynastryRow,
+    SynastryZodiac, WesternAspectRow, aspects, synastry,
 };
 
 use crate::area::ChartArea;
@@ -212,18 +212,21 @@ impl ChartArea<'_> {
     /// Every chart's **synastry with one partner**: the partner's birth is
     /// founded once, with the outer planets when any chart placed them,
     /// and each chart is read against it as [`ChartArea::synastry`] reads
-    /// two, the chart first. One list a chart, in the order given.
+    /// two, the chart first, with the parallels across the two
+    /// ([`ChartArea::synastry_parallels`]) when the request asks for them.
+    /// One reading a chart, in the order given.
     ///
     /// # Errors
     ///
     /// What [`SynastryRequest::check`] refuses, a partner that cannot be
-    /// founded, and what [`ChartArea::synastry`] refuses, hinted with the
-    /// chart's place in the list.
+    /// founded, and what [`ChartArea::synastry`] and
+    /// [`ChartArea::synastry_parallels`] refuse, hinted with the chart's
+    /// place in the list.
     pub fn synastry_with(
         self,
         charts: &[Document],
         asked: &PartnerSynastry,
-    ) -> Result<Vec<Vec<SynastryRow>>, Error> {
+    ) -> Result<Vec<PartnerReading>, Error> {
         asked.request.check()?;
         let Partner {
             instant,
@@ -243,15 +246,48 @@ impl ChartArea<'_> {
             .reading(instant, &request)
             .map_err(|why| why.with_field("partner"))?
             .value;
+        let theirs = asked
+            .request
+            .parallels
+            .map(|_| self.declinations(&partner))
+            .transpose()
+            .map_err(|why| why.with_field("partner"))?;
         charts
             .iter()
             .enumerate()
             .map(|(at, chart)| {
-                self.synastry(chart, &partner, &asked.request)
-                    .map_err(|why| why.with_hint(format!("chart {at}")))
+                let read = || -> Result<PartnerReading, Error> {
+                    let parallels = match (asked.request.parallels, &theirs) {
+                        (Some(orb), Some(theirs)) => {
+                            Some(self.declinations(chart)?.parallels_across(
+                                theirs,
+                                asked.request.lagna,
+                                orb,
+                            )?)
+                        }
+                        _ => None,
+                    };
+                    Ok(PartnerReading {
+                        aspects: self.synastry(chart, &partner, &asked.request)?,
+                        parallels,
+                    })
+                };
+                read().map_err(|why| why.with_hint(format!("chart {at}")))
             })
             .collect()
     }
+}
+
+/// One chart read against a partner: the aspects across the two, and the
+/// parallels across them when the request asked.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartnerReading {
+    /// The aspects, the chart's point first, closest first.
+    pub aspects: Vec<SynastryRow>,
+    /// The parallels, the chart's point first, closest first; `None`
+    /// unless the request's `parallels` asked.
+    pub parallels: Option<Vec<SynastryParallelRow>>,
 }
 
 /// The planets a Western table reads: the seven, never the nodes, and the

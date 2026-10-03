@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 use teistro_core::angle::declination_deg;
 use teistro_core::error::Error;
 use teistro_serial::Document;
-use teistro_western::{Declined, ParallelRequest, ParallelRow, parallels};
+use teistro_western::{
+    Declined, DeclinedPoint, ParallelRequest, ParallelRow, SynastryParallelRow, SynastryRequest,
+    parallels, synastry_parallels,
+};
 
 use crate::area::ChartArea;
 use crate::western_aspects::planets;
@@ -114,5 +117,70 @@ impl ChartArea<'_> {
     ) -> Result<Vec<ParallelRow>, Error> {
         request.check()?;
         parallels(&self.declinations(chart)?.grahas, request)
+    }
+
+    /// The **parallels across two charts**: every point of `first` the
+    /// same distance from the equator as a point of `second`, within the
+    /// orb of the request's `parallels` (Leo's 1° when it names none), on
+    /// either side of the equator (C243), closest first. The points are
+    /// each chart's planets and, unless the request leaves it out, its
+    /// lagna. A declination does not depend on the zodiac, so the
+    /// request's `zodiac` changes nothing here.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, ParallelRequest, SynastryRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (his, hers): ((JulianDay<Utc>, ChartRequest), (JulianDay<Utc>, ChartRequest)) = todo!();
+    /// let first = sdk.chart().reading(his.0, &his.1)?.value;
+    /// let second = sdk.chart().reading(hers.0, &hers.1)?.value;
+    /// let asked = SynastryRequest::default().with_parallels(ParallelRequest::default());
+    /// for row in sdk.chart().synastry_parallels(&first, &second, &asked)? {
+    ///     println!("{:?} and {:?}, {:.2}° apart", row.first, row.second, row.apart_deg);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`SynastryRequest::check`] refuses, and what
+    /// [`ChartArea::declinations`] does for either chart.
+    pub fn synastry_parallels(
+        self,
+        first: &Document,
+        second: &Document,
+        request: &SynastryRequest,
+    ) -> Result<Vec<SynastryParallelRow>, Error> {
+        request.check()?;
+        self.declinations(first)?.parallels_across(
+            &self.declinations(second)?,
+            request.lagna,
+            request.parallels.unwrap_or_default(),
+        )
+    }
+}
+
+impl Declinations {
+    /// The parallels across this chart's declinations and `theirs`, each
+    /// chart's lagna beside its planets when `lagna`.
+    pub(crate) fn parallels_across(
+        &self,
+        theirs: &Declinations,
+        lagna: bool,
+        request: ParallelRequest,
+    ) -> Result<Vec<SynastryParallelRow>, Error> {
+        synastry_parallels(&self.points(lagna), &theirs.points(lagna), &request)
+    }
+
+    /// The chart's points as a synastry's parallels read them: its planets,
+    /// then its lagna when asked.
+    fn points(&self, lagna: bool) -> Vec<DeclinedPoint> {
+        self.grahas
+            .iter()
+            .map(|one| DeclinedPoint::graha(one.graha, one.declination_deg))
+            .chain(lagna.then(|| DeclinedPoint::lagna(self.lagna_deg)))
+            .collect()
     }
 }
