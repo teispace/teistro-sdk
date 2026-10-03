@@ -41,7 +41,7 @@ mod synastry;
 pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use antiscia::{
     Antiscia, AntisciaRequest, Antiscion, AntiscionRow, Reflected, antiscia, antiscion_deg,
-    contrantiscion_deg,
+    contrantiscion_deg, synastry_antiscia,
 };
 pub use arc::ArcMeasure;
 pub use aspects::{

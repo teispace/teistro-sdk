@@ -30,6 +30,7 @@ use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_gochar::hits::NatalPoint;
 
+use crate::antiscia::AntisciaRequest;
 use crate::aspects::{AspectRequest, OrbModel, Station, WesternAspect, holding, refuse_repeats};
 use crate::declination::{ParallelRequest, paired, refuse_past_a_pole};
 
@@ -71,6 +72,11 @@ pub struct SynastryRequest {
     /// (`03-design/western-declinations.md`). None by default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parallels: Option<ParallelRequest>,
+    /// The antiscia across the two charts, when asked: each planet of one
+    /// whose reflection falls on a planet of the other
+    /// (`03-design/western-antiscia.md`). None by default.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub antiscia: Option<AntisciaRequest>,
 }
 
 /// [`SynastryRequest`] as it is read: the aspect table's fields laid
@@ -84,6 +90,7 @@ struct Asked {
     lagna: bool,
     zodiac: SynastryZodiac,
     parallels: Option<ParallelRequest>,
+    antiscia: Option<AntisciaRequest>,
 }
 
 impl Default for Asked {
@@ -93,6 +100,7 @@ impl Default for Asked {
             lagna,
             zodiac,
             parallels,
+            antiscia,
         } = SynastryRequest::default();
         Asked {
             aspects,
@@ -100,6 +108,7 @@ impl Default for Asked {
             lagna,
             zodiac,
             parallels,
+            antiscia,
         }
     }
 }
@@ -114,6 +123,7 @@ impl From<Asked> for SynastryRequest {
             lagna: asked.lagna,
             zodiac: asked.zodiac,
             parallels: asked.parallels,
+            antiscia: asked.antiscia,
         }
     }
 }
@@ -125,6 +135,7 @@ impl Default for SynastryRequest {
             lagna: true,
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
+            antiscia: None,
         }
     }
 }
@@ -139,6 +150,7 @@ impl SynastryRequest {
             lagna: false,
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
+            antiscia: None,
         }
     }
 
@@ -146,6 +158,13 @@ impl SynastryRequest {
     #[must_use]
     pub const fn with_parallels(mut self, parallels: ParallelRequest) -> Self {
         self.parallels = Some(parallels);
+        self
+    }
+
+    /// Reads the antiscia across the two charts too, under this request.
+    #[must_use]
+    pub fn with_antiscia(mut self, antiscia: AntisciaRequest) -> Self {
+        self.antiscia = Some(antiscia);
         self
     }
 
@@ -224,6 +243,9 @@ impl SynastryRequest {
         }
         if let Some(parallels) = &self.parallels {
             parallels.check().map_err(|why| why.under("parallels"))?;
+        }
+        if let Some(antiscia) = &self.antiscia {
+            antiscia.check().map_err(|why| why.under("antiscia"))?;
         }
         Ok(())
     }
