@@ -506,6 +506,9 @@ __all__ = [
     # The Western aspects.
     "WesternAspectRequest",
     "WesternAspectRow",
+    "SynastryPartner",
+    "SynastryRequest",
+    "SynastryRow",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1549,6 +1552,7 @@ class ChartArea(_Area):
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
+        synastry: Optional[SynastryRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1598,6 +1602,7 @@ class ChartArea(_Area):
             perfection=perfection,
             progressions=progressions,
             western_aspects=western_aspects,
+            synastry=synastry,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1637,6 +1642,7 @@ class ChartArea(_Area):
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
         western_aspects: Optional[WesternAspectRequest] = None,
+        synastry: Optional[SynastryRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1708,6 +1714,7 @@ class ChartArea(_Area):
             perfection_json=_perfection_json(perfection),
             progressions_json=_progressions_json(progressions),
             western_aspects_json=_western_aspects_json(western_aspects),
+            synastry_json=_synastry_json(synastry),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3871,6 +3878,54 @@ class WesternAspectRow:
 
     applying: bool
     """Whether the faster planet is closing on the exact angle."""
+
+
+class SynastryPartner(TypedDict, total=False):
+    """The partner every chart is read against: a birth's instant, its
+    observer, and its clock, UTC when left out.
+
+    >>> mary: SynastryPartner = {"instant": 2403113.4993, "observer": Observer(
+    ...     latitude_deg=Latitude(51.5058), longitude_deg=Longitude(-0.1878), altitude_m=Altitude(0))}
+    """
+
+    instant: Required[float]
+    observer: Required[Observer]
+    utc_offset_seconds: int
+
+
+class SynastryRequest(WesternAspectRequest, total=False):
+    """A synastry: every chart read against one partner's birth
+    (`03-design/western-synastry.md`). `aspects` and `orbs` ask what
+    `WesternAspectRequest` does; `lagna`, true by default, keeps each
+    chart's lagna beside its planets (it stands as a planet in Leo's orbs,
+    C242, and Lilly's moieties need it left out); `zodiac` is `"TROPICAL"`,
+    the default, or `"CHARTS"`, each chart's own (C241).
+
+    >>> asked: SynastryRequest = {"partner": mary, "aspects": [WesternAspect.TRINE], "lagna": False}
+    """
+
+    partner: Required[SynastryPartner]
+    lagna: bool
+    zodiac: Literal["TROPICAL", "CHARTS"]
+
+
+@dataclass(frozen=True)
+class SynastryRow:
+    """One point of a chart and one of the partner's within an aspect's orb
+    (`03-design/western-synastry.md`): `first` is the chart's, `second`
+    the partner's."""
+
+    first: NatalPoint
+    second: NatalPoint
+    aspect: WesternAspect
+    apart_deg: float
+    """The shorter arc between them, degrees 0 to 180."""
+
+    from_exact_deg: float
+    """How far that arc is from the aspect's exact angle, degrees."""
+
+    orb_deg: float
+    """The orb the model allowed the pair at this aspect, degrees."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -6485,6 +6540,39 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
     example = "{'aspects': ['TRINE', 'SQUARE']}"
     if not isinstance(asked, Mapping):
         return _record_json(asked, "westernAspects", example)
+    return _record_json(_aspect_table(asked), "westernAspects", example)
+
+
+def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
+    """The synastry as the JSON the boundary reads, or nothing for none:
+    the partner's observer as the place a chart is founded at, and the
+    aspect table as `_western_aspects_json` writes it; the SDK refuses the
+    rest, naming the field from `synastry`."""
+    example = "{'partner': {'instant': 2460676.5, 'observer': Observer(...)}}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "synastry", example)
+    written = _aspect_table(asked)
+    partner = asked.get("partner")
+    if isinstance(partner, Mapping):
+        rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds")}
+        observer = partner.get("observer")
+        if not isinstance(observer, Observer):
+            raise TypeError("synastry['partner']['observer']: expected an Observer")
+        written["partner"] = {
+            **rest,
+            "place": {
+                "latitude": float(observer.latitude_deg),
+                "longitude": float(observer.longitude_deg),
+                "altitude": float(observer.altitude_m),
+            },
+            "utcOffsetSeconds": partner.get("utc_offset_seconds", 0),
+        }
+    return _record_json(written, "synastry", example)
+
+
+def _aspect_table(asked: Mapping[str, Any]) -> Dict[str, Any]:
+    """An aspect table's record with its members written as their keys,
+    an orb row's included, and every other field as it is."""
     written: Dict[str, Any] = _keyed(asked)
     orbs = written.get("orbs")
     if isinstance(orbs, Mapping):
@@ -6495,7 +6583,7 @@ def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str
                 {name: _member_key(value) for name, value in row.items()} if isinstance(row, Mapping) else row
                 for row in rows
             ]
-    return _record_json(written, "westernAspects", example)
+    return written
 
 
 def _perfection_json(perfection: Optional[PerfectionRequest]) -> Optional[str]:
@@ -8072,6 +8160,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def synastry(self) -> Optional[Tuple[SynastryRow, ...]]:
+        """The Western aspects between this chart and the partner's, closest
+        first; `None` unless `synastry=` asked
+        (`03-design/western-synastry.md`)."""
+        parsed = self.batch._synastries
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8627,40 +8723,62 @@ class ChartBatch:
             )
         return read
 
+    def _ragged(self, counts: Any, rows: int, names: str, read: Callable[[int], T]) -> list[Tuple[T, ...]]:
+        """A per-chart table from a count section and the rows it is ragged
+        by: each chart's rows, or none at all when the count section is
+        empty because nothing was asked."""
+        charts = len(self.decoded.cast.instant)
+        if counts.length == 0:
+            return []
+        if counts.length != charts or rows != sum(counts.count):
+            raise TeistroError(Status.INTERNAL, f"{names}: {counts.length} counts and {rows} rows for {charts} charts")
+        tables: list[Tuple[T, ...]] = []
+        start = 0
+        for count in counts.count:
+            tables.append(tuple(read(at) for at in range(start, start + count)))
+            start += count
+        return tables
+
     @cached_property
     def _western_aspects(self) -> list[Tuple[WesternAspectRow, ...]]:
         """Every chart's Western aspect table, decoded once; empty when none
         was asked for. `western_aspects` holds a row a chart and
         `western_aspect_rows` is ragged by its count."""
-        counts = self.decoded.western_aspects
         r = self.decoded.western_aspect_rows
-        charts = len(self.decoded.cast.instant)
-        if counts.length == 0:
-            return []
-        if counts.length != charts or r.length != sum(counts.count):
-            raise TeistroError(
-                Status.INTERNAL,
-                f"western_aspects has {counts.length} rows and western_aspect_rows {r.length} for {charts} charts",
-            )
-        read: list[Tuple[WesternAspectRow, ...]] = []
-        start = 0
-        for k in range(charts):
-            read.append(
-                tuple(
-                    WesternAspectRow(
-                        first=Graha(r.first[at]),
-                        second=Graha(r.second[at]),
-                        aspect=WesternAspect(r.aspect[at]),
-                        apart_deg=r.apart_deg[at],
-                        from_exact_deg=r.from_exact_deg[at],
-                        orb_deg=r.orb_deg[at],
-                        applying=r.applying[at] == 1,
-                    )
-                    for at in range(start, start + counts.count[k])
-                )
-            )
-            start += counts.count[k]
-        return read
+        return self._ragged(
+            self.decoded.western_aspects,
+            r.length,
+            "western_aspects and western_aspect_rows",
+            lambda at: WesternAspectRow(
+                first=Graha(r.first[at]),
+                second=Graha(r.second[at]),
+                aspect=WesternAspect(r.aspect[at]),
+                apart_deg=r.apart_deg[at],
+                from_exact_deg=r.from_exact_deg[at],
+                orb_deg=r.orb_deg[at],
+                applying=r.applying[at] == 1,
+            ),
+        )
+
+    @cached_property
+    def _synastries(self) -> list[Tuple[SynastryRow, ...]]:
+        """Every chart's synastry with the partner, decoded once; empty when
+        none was asked for. `synastry` holds a row a chart and
+        `synastry_rows` is ragged by its count."""
+        r = self.decoded.synastry_rows
+        return self._ragged(
+            self.decoded.synastry,
+            r.length,
+            "synastry and synastry_rows",
+            lambda at: SynastryRow(
+                first=_point_at(r.first_lagna[at], r.first_graha[at]),
+                second=_point_at(r.second_lagna[at], r.second_graha[at]),
+                aspect=WesternAspect(r.aspect[at]),
+                apart_deg=r.apart_deg[at],
+                from_exact_deg=r.from_exact_deg[at],
+                orb_deg=r.orb_deg[at],
+            ),
+        )
 
     @cached_property
     def _perfections(self) -> list[Matter]:
