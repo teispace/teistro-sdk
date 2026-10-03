@@ -4365,6 +4365,31 @@ List<List<SynastryRow>> _decodeSynastries(Charts batch) {
   );
 }
 
+final Expando<List<List<SynastryParallelRow>>> _synastryParallels =
+    Expando<List<List<SynastryParallelRow>>>('synastry parallels');
+
+List<List<SynastryParallelRow>> _synastryParallelsOf(Charts batch) =>
+    _synastryParallels[batch] ??= _decodeSynastryParallels(batch);
+
+/// `synastry_parallels` holds a row a chart, or none when none was asked,
+/// and `synastry_parallel_rows` is ragged by its count.
+List<List<SynastryParallelRow>> _decodeSynastryParallels(Charts batch) {
+  final p = batch.synastryParallelRows;
+  return _ragged(
+    batch,
+    batch.synastryParallels.count,
+    p.length,
+    'synastry_parallels and synastry_parallel_rows',
+    (at) => SynastryParallelRow(
+      first: _pointAt(p.firstLagna[at], p.firstGraha[at]),
+      second: _pointAt(p.secondLagna[at], p.secondGraha[at]),
+      contrary: p.contrary[at] == 1,
+      apartDeg: p.apartDeg[at],
+      orbDeg: p.orbDeg[at],
+    ),
+  );
+}
+
 final Expando<List<Matter>> _perfections = Expando<List<Matter>>('perfections');
 
 List<Matter> _perfectionsOf(Charts batch) =>
@@ -6746,7 +6771,9 @@ final class ParallelRequest {
   /// The orb, degrees.
   final double orbDeg;
 
-  String get _json => jsonEncode(<String, Object?>{'orbDeg': orbDeg});
+  Map<String, Object?> get _record => <String, Object?>{'orbDeg': orbDeg};
+
+  String get _json => jsonEncode(_record);
 }
 
 /// A planet's distance from the equator.
@@ -6883,11 +6910,14 @@ enum SynastryZodiac {
 /// (`03-design/western-synastry.md`), under the aspects and orbs a chart's
 /// own [table] reads, each chart's [lagna] beside its planets, in a
 /// [zodiac]: Leo's nine under his orbs, the lagna read, tropically by
-/// default (C240–C242).
+/// default (C240–C242). [parallels] asks for the parallels across the two
+/// charts too ([Chart.synastryParallels],
+/// `03-design/western-declinations.md`).
 ///
 /// ```dart
 /// final asked = SynastryRequest(mary, lagna: false);
 /// final lilly = SynastryRequest.lilly(mary);
+/// final level = SynastryRequest(mary, parallels: const ParallelRequest());
 /// ```
 final class SynastryRequest {
   const SynastryRequest(
@@ -6895,6 +6925,7 @@ final class SynastryRequest {
     this.table = const WesternAspectRequest(),
     this.lagna = true,
     this.zodiac = SynastryZodiac.tropical,
+    this.parallels,
   });
 
   /// Lilly's reading: the Ptolemaic five under his moieties, which give the
@@ -6902,6 +6933,7 @@ final class SynastryRequest {
   const SynastryRequest.lilly(
     this.partner, {
     this.zodiac = SynastryZodiac.tropical,
+    this.parallels,
   }) : table = WesternAspectRequest.lilly,
        lagna = false;
 
@@ -6918,11 +6950,15 @@ final class SynastryRequest {
   /// The zodiac the two are compared in.
   final SynastryZodiac zodiac;
 
+  /// The orb the parallels across are read under; none are read when null.
+  final ParallelRequest? parallels;
+
   String get _json => jsonEncode(<String, Object?>{
     'partner': partner._record,
     ...table._record,
     'lagna': lagna,
     'zodiac': zodiac.key,
+    if (parallels case final asked?) 'parallels': asked._record,
   });
 }
 
@@ -6961,6 +6997,34 @@ final class SynastryRow extends _Value {
     fromExactDeg,
     orbDeg,
   ];
+}
+
+/// One point of a chart and one of the partner's the same distance from the
+/// equator within the orb (`03-design/western-declinations.md`): [first]
+/// is the chart's, [second] the partner's.
+final class SynastryParallelRow extends _Value {
+  const SynastryParallelRow({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+  });
+
+  final NatalPoint first;
+  final NatalPoint second;
+
+  /// Whether the two stand on opposite sides of the equator (C243).
+  final bool contrary;
+
+  /// How far apart their distances from the equator are, degrees.
+  final double apartDeg;
+
+  /// The orb the request allowed, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [first, second, contrary, apartDeg, orbDeg];
 }
 
 /// A planet of the progressed chart.
@@ -12919,6 +12983,14 @@ final class Chart {
   /// first; null unless `synastry` asked (`03-design/western-synastry.md`).
   List<SynastryRow>? get synastry {
     final all = _synastriesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The parallels between this chart and the partner's, closest first;
+  /// null unless `synastry` asked for `parallels`
+  /// (`03-design/western-declinations.md`).
+  List<SynastryParallelRow>? get synastryParallels {
+    final all = _synastryParallelsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

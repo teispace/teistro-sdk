@@ -3007,6 +3007,37 @@ void _engineTests() {
     for (final (k, instant) in instants.indexed) {
       expect(batch.at(k).synastry, found(instant, asked: two).synastry);
     }
+
+    // The parallels across: none unless asked, then the recast's closest
+    // (Uranus with Uranus, 0.05°) and a contrary pair within 0.95°.
+    expect(
+      found(birth, asked: SynastryRequest(mary)).synastryParallels,
+      isNull,
+    );
+    final parallels =
+        found(
+          birth,
+          asked: SynastryRequest(mary, parallels: const ParallelRequest()),
+          outerPlanets: true,
+        ).synastryParallels!;
+    const uranus = NatalGraha(Graha.uranus);
+    expect((parallels.first.first, parallels.first.second), (uranus, uranus));
+    expect(parallels.first.apartDeg, closeTo(0.049, 0.005));
+    expect(parallels.any((row) => row.contrary && row.apartDeg < 0.95), isTrue);
+    expect(
+      parallels.every((row) => row.apartDeg <= row.orbDeg && row.orbDeg == 1),
+      isTrue,
+    );
+    expect(
+      found(
+        birth,
+        asked: SynastryRequest(
+          mary,
+          parallels: const ParallelRequest(orbDeg: 0.000001),
+        ),
+      ).synastryParallels,
+      isEmpty,
+    );
     final far = Partner(instant: 9000000, place: mary.place);
     for (final (asked, field) in [
       (
@@ -3014,6 +3045,10 @@ void _engineTests() {
         'synastry.lagna',
       ),
       (SynastryRequest(far), 'synastry.partner'),
+      (
+        SynastryRequest(mary, parallels: const ParallelRequest(orbDeg: 11)),
+        'synastry.parallels.orbDeg',
+      ),
     ]) {
       expect(
         () => found(birth, asked: asked),
