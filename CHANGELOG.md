@@ -1974,7 +1974,13 @@ the astronomical numbers do not move. Nothing else computes yet.
     (`AspectRequest::lilly`), or a caller's own. Rows come closest
     first, and Leo's reading of Edward VII's nativity is a test. The
     orb engine gains the semi-sextile, semi-square, sesquiquadrate and
-    quincunx.
+    quincunx. They cross the boundary: `western_aspects_json` asks with
+    one record (`AspectRequest::from_json`, refused under
+    `westernAspects`), and sections 82 and 83 carry each chart's rows,
+    the aspect as `TsWesternAspect`. Node, Python and Dart read them as
+    `chart.westernAspects` (`western_aspects`), Dart with a typed
+    `OrbModel` and `WesternAspectRequest.lilly`, with parity across all
+    four runners.
   - **The outer planets in a chart** (`western-outer-planets.md`,
     `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
     places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside
