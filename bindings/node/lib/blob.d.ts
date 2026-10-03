@@ -3716,6 +3716,60 @@ export interface ChartsParallelRows {
 }
 
 /**
+ * The `synastry_parallels` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.
+ */
+export interface ChartsSynastryParallels {
+  /**
+   * How many parallels stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_parallel_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_parallel_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
+ */
+export interface ChartsSynastryParallelRows {
+  /**
+   * 1 when the chart's point is the lagna, 0 when it is a graha.
+   */
+  readonly firstLagna: Uint8Array;
+  /**
+   * Which graha the chart's point is (a `Graha` id); 0 for the lagna.
+   */
+  readonly firstGraha: Uint16Array;
+  /**
+   * 1 when the partner's point is the lagna, 0 when it is a graha.
+   */
+  readonly secondLagna: Uint8Array;
+  /**
+   * Which graha the partner's point is (a `Graha` id); 0 for the lagna.
+   */
+  readonly secondGraha: Uint16Array;
+  /**
+   * 1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.
+   */
+  readonly contrary: Uint8Array;
+  /**
+   * How far apart their distances from the equator are, degrees.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * The orb the record allowed, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4235,6 +4289,14 @@ export interface Charts {
    * Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.
    */
   readonly parallelRows: ChartsParallelRows;
+  /**
+   * Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.
+   */
+  readonly synastryParallels: ChartsSynastryParallels;
+  /**
+   * Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
+   */
+  readonly synastryParallelRows: ChartsSynastryParallelRows;
 }
 
 /**

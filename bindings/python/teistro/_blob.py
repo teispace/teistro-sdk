@@ -3114,6 +3114,54 @@ class ChartsParallelRows:
 
 
 @dataclass(frozen=True)
+class ChartsSynastryParallels:
+    """The `synastry_parallels` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`.
+    """
+
+    count: memoryview[int]
+    """How many parallels stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_parallel_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryParallelRows:
+    """The `synastry_parallel_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`.
+    """
+
+    first_lagna: memoryview[int]
+    """1 when the chart's point is the lagna, 0 when it is a graha."""
+
+    first_graha: memoryview[int]
+    """Which graha the chart's point is (a `Graha` id); 0 for the lagna."""
+
+    second_lagna: memoryview[int]
+    """1 when the partner's point is the lagna, 0 when it is a graha."""
+
+    second_graha: memoryview[int]
+    """Which graha the partner's point is (a `Graha` id); 0 for the lagna."""
+
+    contrary: memoryview[int]
+    """1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side."""
+
+    apart_deg: memoryview[float]
+    """How far apart their distances from the equator are, degrees."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3501,6 +3549,12 @@ class Charts:
     parallel_rows: ChartsParallelRows
     """Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none."""
 
+    synastry_parallels: ChartsSynastryParallels
+    """Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. Empty when `synastry_json` asked for no `parallels`."""
+
+    synastry_parallel_rows: ChartsSynastryParallelRows
+    """Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). Empty when `synastry_json` asked for no `parallels`."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3598,6 +3652,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_declinations = blob.section(86, "declinations")
     at_declination_rows = blob.section(87, "declination_rows")
     at_parallel_rows = blob.section(88, "parallel_rows")
+    at_synastry_parallels = blob.section(89, "synastry_parallels")
+    at_synastry_parallel_rows = blob.section(90, "synastry_parallel_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5587,6 +5643,36 @@ def decode_charts(raw: bytes) -> Charts:
                 at_parallel_rows, 4, 8, at_parallel_rows.count
             ).cast("d"),
             length=at_parallel_rows.count,
+        ),
+        synastry_parallels=ChartsSynastryParallels(
+            count=blob.column(
+                at_synastry_parallels, 0, 4, at_synastry_parallels.count
+            ).cast("I"),
+            length=at_synastry_parallels.count,
+        ),
+        synastry_parallel_rows=ChartsSynastryParallelRows(
+            first_lagna=blob.column(
+                at_synastry_parallel_rows, 0, 1, at_synastry_parallel_rows.count
+            ).cast("B"),
+            first_graha=blob.column(
+                at_synastry_parallel_rows, 1, 2, at_synastry_parallel_rows.count
+            ).cast("H"),
+            second_lagna=blob.column(
+                at_synastry_parallel_rows, 2, 1, at_synastry_parallel_rows.count
+            ).cast("B"),
+            second_graha=blob.column(
+                at_synastry_parallel_rows, 3, 2, at_synastry_parallel_rows.count
+            ).cast("H"),
+            contrary=blob.column(
+                at_synastry_parallel_rows, 4, 1, at_synastry_parallel_rows.count
+            ).cast("B"),
+            apart_deg=blob.column(
+                at_synastry_parallel_rows, 5, 8, at_synastry_parallel_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_synastry_parallel_rows, 6, 8, at_synastry_parallel_rows.count
+            ).cast("d"),
+            length=at_synastry_parallel_rows.count,
         ),
     )
 

@@ -626,6 +626,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_western_aspect_sections(82))
         .chain(chart_synastry_sections(84))
         .chain(chart_declination_sections(86))
+        .chain(chart_synastry_parallel_sections(89))
         .collect(),
     }
 }
@@ -1408,6 +1409,53 @@ fn chart_synastry_sections(first: u32) -> [SectionSchema; 2] {
                 .chain(point_columns("second", "the partner's"))
                 .chain(western_aspect_measures())
                 .collect(),
+        ),
+    ]
+}
+
+/// The two sections the parallels across a chart and the synastry's
+/// partner cross as, from `first`: a row a chart, and the parallels ragged
+/// under it (`03-design/western-declinations.md`). Their own row, not a
+/// column of `synastry`'s, so a record that asked for none reads apart
+/// from one whose charts hold none.
+fn chart_synastry_parallel_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `synastry_json` asked for no `parallels`.";
+    [
+        SectionSchema::columns(
+            first,
+            "synastry_parallels",
+            &format!(
+                "Every chart's parallels with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_parallel_rows` are its. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "How many parallels stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_parallel_rows`.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "synastry_parallel_rows",
+            &format!(
+                "Every chart's parallels with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_parallels.count`, each chart's closest first: a point of the chart (its planets and, unless the record leaves it out, its lagna) the same distance from the equator as a point of the partner's, within the orb of the record's `parallels` (Leo's 1° by default), on either side of it (C243). {empty}"
+            ),
+            point_columns("first", "the chart's")
+            .into_iter()
+            .chain(point_columns("second", "the partner's"))
+            .chain([
+                ColumnDef::new(
+                    "contrary",
+                    Scalar::U8,
+                    "1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side.",
+                ),
+                ColumnDef::new(
+                    "apart_deg",
+                    Scalar::F64,
+                    "How far apart their distances from the equator are, degrees.",
+                ),
+                ColumnDef::new("orb_deg", Scalar::F64, "The orb the record allowed, degrees."),
+            ])
+            .collect(),
         ),
     ]
 }

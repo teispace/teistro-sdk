@@ -7067,13 +7067,16 @@ fn a_chart_request_answers_the_western_aspects() {
 }
 
 /// Every chart's synastry with one partner crosses whole: each cell of
-/// `synastry` and `synastry_rows` is the facade's own, bit for bit, with
+/// `synastry`, `synastry_rows` and the parallels' two sections is the
+/// facade's own, bit for bit, with
 /// George V's birth (Leo, *How to Judge a Nativity*, p. 130) and another
 /// read against Queen Mary's; none asked is empty sections, and a refusal
 /// is named from the record's root (`03-design/western-synastry.md`).
 #[test]
 fn a_chart_request_answers_a_synastry_with_a_partner() {
     use teistro_ffi::chart::TsWesternAspect;
+    /// A parallel row's cell, by its column's name.
+    type Cell<T> = (&'static str, fn(&teistro::SynastryParallelRow) -> T);
 
     let ctx = Ctx::with_ephemeris(
         0,
@@ -7085,7 +7088,7 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
     .unwrap();
     let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
     let base = chart_request(&instants, (51.5045, -0.1366), 0);
-    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"]}"#;
+    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 0}}, "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "OPPOSITION"], "parallels": {}}"#;
     let asked_json = CString::new(text).unwrap();
     let bytes = chart_blob(
         &ctx,
@@ -7123,7 +7126,12 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         .chart()
         .synastry_with(&charts, &teistro::PartnerSynastry::from_json(text).unwrap())
         .unwrap();
-    let rows: Vec<&teistro::SynastryRow> = expected.iter().flatten().collect();
+    let rows: Vec<&teistro::SynastryRow> = expected.iter().flat_map(|one| &one.aspects).collect();
+    let parallels: Vec<&teistro::SynastryParallelRow> = expected
+        .iter()
+        .flat_map(|one| one.parallels.as_deref().unwrap_or_default())
+        .collect();
+    assert!(!parallels.is_empty(), "the parallels cross too");
     assert!(
         rows.iter()
             .any(|row| row.second == teistro::NatalPoint::Lagna),
@@ -7149,7 +7157,7 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
         ints("synastry", "count"),
         expected
             .iter()
-            .map(|one| i64::try_from(one.len()).unwrap())
+            .map(|one| i64::try_from(one.aspects.len()).unwrap())
             .collect::<Vec<_>>()
     );
     let int_of = |read: &dyn Fn(&teistro::SynastryRow) -> i64| -> Vec<i64> {
@@ -7187,10 +7195,90 @@ fn a_chart_request_answers_a_synastry_with_a_partner() {
     assert_eq!(bits("from_exact_deg"), bits_of(&|row| row.from_exact_deg));
     assert_eq!(bits("orb_deg"), bits_of(&|row| row.orb_deg));
 
+    // The parallels across, counted and listed in sections of their own.
+    assert_eq!(
+        ints("synastry_parallels", "count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.parallels.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let across: [Cell<i64>; 5] = [
+        ("first_lagna", |row| {
+            i64::from(row.first == teistro::NatalPoint::Lagna)
+        }),
+        ("first_graha", |row| match row.first {
+            teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
+            teistro::NatalPoint::Lagna => 0,
+        }),
+        ("second_lagna", |row| {
+            i64::from(row.second == teistro::NatalPoint::Lagna)
+        }),
+        ("second_graha", |row| match row.second {
+            teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
+            teistro::NatalPoint::Lagna => 0,
+        }),
+        ("contrary", |row| i64::from(row.contrary)),
+    ];
+    for (name, read) in across {
+        assert_eq!(
+            ints("synastry_parallel_rows", name),
+            parallels.iter().map(|row| read(row)).collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+    let measures: [Cell<f64>; 2] = [
+        ("apart_deg", |row| row.apart_deg),
+        ("orb_deg", |row| row.orb_deg),
+    ];
+    for (name, read) in measures {
+        let cells: Vec<u64> = reader
+            .column("synastry_parallel_rows", name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect();
+        assert_eq!(
+            cells,
+            parallels
+                .iter()
+                .map(|row| read(row).to_bits())
+                .collect::<Vec<_>>(),
+            "{name}"
+        );
+    }
+
+    // A synastry without parallels counts none for no chart: the
+    // sections are empty, not rows of 0.
+    let aspects_only = CString::new(text.replace(r#", "parallels": {}"#, "")).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            synastry_json: aspects_only.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    assert_eq!(
+        reader.column("synastry", "count").unwrap().len(),
+        instants.len()
+    );
+    assert_eq!(
+        reader.column("synastry_parallels", "count").unwrap().len(),
+        0
+    );
+
     // None asked is empty sections.
     let bytes = chart_blob(&ctx, &base).unwrap();
     let reader = Reader::parse(&bytes, &schema).unwrap();
-    for (section, column) in [("synastry", "count"), ("synastry_rows", "first_lagna")] {
+    for (section, column) in [
+        ("synastry", "count"),
+        ("synastry_rows", "first_lagna"),
+        ("synastry_parallels", "count"),
+        ("synastry_parallel_rows", "contrary"),
+    ] {
         assert_eq!(
             reader.column(section, column).unwrap().len(),
             0,

@@ -2076,10 +2076,13 @@ pub struct ChartRequest {
     /// the context's settings with the outer planets when
     /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
     /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
-    /// (true: each side's lagna is read beside its planets, C242) and
-    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
-    /// chart is read against the partner, the chart's point first. The
-    /// answers come back in `synastry` and `synastry_rows`. Null for none,
+    /// (true: each side's lagna is read beside its planets, C242),
+    /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241) and
+    /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
+    /// parallels across the two, none when left out). Each chart is read
+    /// against the partner, the chart's point first. The answers come back
+    /// in `synastry`, `synastry_rows` and `synastry_parallel_rows`. Null
+    /// for none,
     /// which costs nothing (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
