@@ -2348,6 +2348,56 @@ test('a chart carries its Western aspects', () => {
   ctx.dispose();
 });
 
+test('a chart carries its declinations and parallels', () => {
+  // King George V (Leo, How to Judge a Nativity, p. 130), whose
+  // declinations the SDK's test holds against a Moshier recast.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2402390.554166667;
+  const bare = ctx.chart.found({ instant: birth, ...george });
+  assert.equal(bare.declinations, null);
+  assert.equal(bare.parallels, null);
+
+  const chart = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, parallels: {} });
+  const read = chart.declinations;
+  assert.ok(Object.isFrozen(read) && Object.isFrozen(read.grahas[0]), 'frozen to its leaves');
+  assert.equal(read.grahas.length, 10, 'the nodes are not read');
+  const of = (graha) => read.grahas.find((one) => one.graha === graha).declinationDeg;
+  assert.ok(Math.abs(of('graha.SUN') - 22.2997) < 0.01);
+  assert.ok(Math.abs(read.lagnaDeg - 0.8366) < 0.01);
+  assert.ok(Math.abs(read.midheavenDeg + 23.452) < 0.01);
+  assert.deepEqual(
+    chart.parallels.map((row) => [row.first, row.second, row.contrary]),
+    [
+      ['graha.MOON', 'graha.NEPTUNE', true],
+      ['graha.SUN', 'graha.JUPITER', true],
+      ['graha.JUPITER', 'graha.URANUS', true],
+      ['graha.MERCURY', 'graha.VENUS', false],
+    ],
+  );
+
+  const instants = [birth, birth - 3000.25];
+  const asked = { orbDeg: 1.5 };
+  const batch = ctx.chart.foundMany({ instants, ...george, parallels: asked });
+  instants.forEach((instant, k) => {
+    const one = ctx.chart.found({ instant, ...george, parallels: asked });
+    assert.deepEqual(batch.at(k).parallels, one.parallels);
+    assert.deepEqual(batch.at(k).declinations, one.declinations);
+  });
+  for (const [request, field] of [
+    [{ orbDeg: 0 }, 'parallels.orbDeg'],
+    [{ orbDeg: 11 }, 'parallels.orbDeg'],
+    [{ orb: 1 }, 'parallels.orb'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...george, parallels: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries its synastry with a partner', () => {
   // King George V and Queen Mary (Leo, How to Judge a Nativity, p. 130),
   // whose cross contacts the SDK's test holds against a Moshier recast.

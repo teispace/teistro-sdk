@@ -1454,6 +1454,44 @@ export interface SynastryRequest extends WesternAspectRequest {
   readonly zodiac?: 'TROPICAL' | 'CHARTS';
 }
 
+/**
+ * How close two distances from the equator must stand to be a parallel
+ * (`03-design/western-declinations.md`): Leo's 1° (*How to Judge a
+ * Nativity*, p. 47) when absent, at most 10°.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, parallels: {} });
+ * for (const row of chart.parallels ?? []) console.log(row.first, row.contrary ? 'contra' : 'parallel', row.second);
+ */
+export interface ParallelRequest {
+  readonly orbDeg?: number;
+}
+
+/** A chart's distances from the equator, degrees north. */
+export interface Declinations {
+  /** The true obliquity at the chart's instant, which turned every one. */
+  readonly obliquityDeg: number;
+  /** The planets, in the catalogue's order. */
+  readonly grahas: readonly { readonly graha: Graha | 'unknown'; readonly declinationDeg: number }[];
+  /** The lagna's: the Sun's at that degree (Leo, p. 141). */
+  readonly lagnaDeg: number;
+  /** The midheaven's, read the same way. */
+  readonly midheavenDeg: number;
+}
+
+/** One pair of planets the same distance from the equator, within the orb. */
+export interface ParallelRow {
+  /** The earlier planet of the pair, in catalogue order. */
+  readonly first: Graha | 'unknown';
+  readonly second: Graha | 'unknown';
+  /** Whether the two stand on opposite sides of the equator (C243). */
+  readonly contrary: boolean;
+  /** How far apart their distances from the equator are, degrees. */
+  readonly apartDeg: number;
+  /** The orb the request allowed, degrees. */
+  readonly orbDeg: number;
+}
+
 /** One point of a chart and one of the partner's within an aspect's orb. */
 export interface SynastryRow {
   /** The chart's point. */
@@ -3113,6 +3151,16 @@ export declare class Chart {
    */
   readonly synastry: readonly SynastryRow[] | null;
   /**
+   * The chart's distances from the equator; `null` unless `parallels`
+   * asked (`03-design/western-declinations.md`).
+   */
+  readonly declinations: Declinations | null;
+  /**
+   * The parallels among the chart's planets, closest first; `null` unless
+   * `parallels` asked.
+   */
+  readonly parallels: readonly ParallelRow[] | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4243,6 +4291,12 @@ export interface ChartRequest {
    * `synastry`. None by default.
    */
   readonly synastry?: SynastryRequest;
+  /**
+   * The parallels to read in every chart, with its declinations, read back
+   * as each chart's `parallels` and `declinations`: Leo's 1° when `{}`.
+   * None by default.
+   */
+  readonly parallels?: ParallelRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */
