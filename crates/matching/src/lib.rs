@@ -21,6 +21,7 @@
 
 mod ashta;
 mod native;
+mod porutham;
 
 pub use ashta::{
     ASHTA_KOOTA, ASHTA_KOOTA_POINTS, AshtaKoota, BhakootDosha, BhakootExceptions, BhakootLift,
@@ -29,6 +30,12 @@ pub use ashta::{
     vashya_relation, yoni_relation,
 };
 pub use native::Native;
+pub use porutham::{
+    CHIEF_FIVE, DeerghaBeyond, DhinamRule, LordsFriendship, PORUTHAM, Porutham, PoruthamException,
+    PoruthamReading, PoruthamRow, PoruthamRules, Rajju, TwoSignStar, porutham,
+};
 
+#[cfg(test)]
+mod porutham_tests;
 #[cfg(test)]
 mod tests;
