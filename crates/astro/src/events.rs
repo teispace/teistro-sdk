@@ -1808,9 +1808,9 @@ mod tests {
         );
         // A body the provider does not carry is refused by name, in a pair too.
         let refused = longitudes
-            .longitude_and_speed_pair([Body::Moon, Body::Pluto], J2000)
+            .longitude_and_speed_pair([Body::Moon, Body::TrueNode], J2000)
             .unwrap_err();
-        assert!(refused.to_string().contains("PLUTO"), "{refused}");
+        assert!(refused.to_string().contains("TRUE_NODE"), "{refused}");
         // The tithi search reads pairs alone; an ingress search singles alone.
         let counting = Counting {
             inner: &longitudes,
