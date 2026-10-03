@@ -11262,6 +11262,30 @@ final class HitRequest {
     this.orbDeg,
   });
 
+  /// The hit list that is each graha's returns: its conjunction, at 0°,
+  /// with its own natal place (`03-design/western-returns.md`), the Moon's
+  /// by default (the lunar return); the Sun's is the solar. Asked for
+  /// several grahas, the list also holds each one's crossing of another's
+  /// natal place, its [AspectHit.to] naming the place.
+  ///
+  /// ```dart
+  /// final lunar = ctx.chart.found(/* … */ hits: HitRequest.returns(from: 2451546, to: 2451911.25)).hits;
+  /// // The figure, erected where the native is (C258).
+  /// final figure = ctx.chart.found(instant: lunar.first.instant, /* … */);
+  /// ```
+  factory HitRequest.returns({
+    required double from,
+    required double to,
+    List<Graha> grahas = const [Graha.moon],
+  }) => HitRequest(
+    from: from,
+    to: to,
+    grahas: grahas,
+    kinds: const [HitKind.aspect],
+    points: [for (final g in grahas) NatalGraha(g)],
+    aspects: const [0],
+  );
+
   /// The window's start, a UTC Julian day.
   final double from;
 

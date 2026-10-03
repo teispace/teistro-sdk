@@ -1251,6 +1251,35 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=2451545, place=observer, utc_offset_seconds=20700, hits=bad)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_lunar_return_is_the_moon_back_on_her_own_natal_place(self) -> None:
+        """A body's returns are the hit list asked for its conjunction with
+        its own natal place: the Moon's thirteen a year, a sidereal month
+        apart, each a chart whose Moon stands on the radical one."""
+        from teistro import AspectHit, HitKind, NatalPoint, returns_request
+
+        paris = Observer(latitude_deg=Latitude(48.8534), longitude_deg=Longitude(2.3488), altitude_m=Altitude(0))
+        asked = returns_request(2451546, 2451911.25)
+        self.assertEqual(
+            (asked["grahas"], asked["kinds"], asked["points"], asked["aspects"]),
+            ([Graha.MOON], [HitKind.ASPECT], [Graha.MOON], [0]),
+        )
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            lunar = ctx.chart.found(instant=2451545, place=paris, utc_offset_seconds=0, hits=asked).hits
+            self.assertEqual(len(lunar), 13)
+            for k, hit in enumerate(lunar):
+                self.assertEqual(hit.graha, Graha.MOON)
+                self.assertIsInstance(hit.event, AspectHit)
+                assert isinstance(hit.event, AspectHit)
+                self.assertEqual((hit.event.to, hit.event.angle), (NatalPoint("GRAHA", Graha.MOON), 0))
+                if k > 0:
+                    self.assertTrue(27 < hit.instant - lunar[k - 1].instant < 27.7)
+
+            def moon(instant: float) -> float:
+                chart = ctx.chart.found(instant=instant, place=paris, utc_offset_seconds=0)
+                return next(g.longitude_deg for g in chart.grahas if g.graha == Graha.MOON)
+
+            self.assertAlmostEqual(moon(lunar[0].instant), moon(2451545), delta=1 / 3600)
+
     def test_a_chart_carries_its_sade_sati_each_period_whole(self) -> None:
         """Sade Sati crosses whole: `None` unless asked; each Sade Sati its
         three phases in order; a period asked about at one instant inside it

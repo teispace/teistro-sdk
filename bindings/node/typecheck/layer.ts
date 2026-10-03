@@ -115,7 +115,7 @@ import type {
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type { Ayanamsha, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
-import { decodeProvenance } from '../lib/index.js';
+import { decodeProvenance, returnsRequest } from '../lib/index.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -1185,6 +1185,26 @@ function theHarmonic(ctx: Context): string {
 }
 
 void theHarmonic;
+
+// A lunar and a solar return, asked through the hit list.
+function theReturns(ctx: Context): string {
+  const lunar: HitRequest = returnsRequest(2451546, 2451911.25);
+  const both: HitRequest = returnsRequest(2451546, 2451911.25, ['SUN', 'graha.MOON']);
+  // @ts-expect-error a graha's name, not a number
+  const misread = returnsRequest(2451546, 2451911.25, [1]);
+  const hits = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 48.8534, longitude: 2.3488, altitude: 0 },
+    utcOffsetSeconds: 0,
+    hits: both,
+  }).hits;
+  const back = hits.filter(
+    (hit) => hit.event.kind === 'ASPECT' && hit.event.to.point === 'GRAHA' && hit.event.to.graha === hit.graha,
+  );
+  return [lunar.grahas?.length ?? 0, back.length, String(misread)].join();
+}
+
+void theReturns;
 
 // A chart's equal distances, read all the way down.
 function theMidpoints(ctx: Context): string {
