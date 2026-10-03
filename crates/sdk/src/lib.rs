@@ -284,6 +284,7 @@ pub use teistro_western::{
     HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG,
 };
 // Matching: the Ashta Koota of two charts' Moons (`03-design/matching.md`).
+pub use matching_chart::{MatchRole, PartnerMatching};
 pub use teistro_matching as matching;
 pub use teistro_matching::{AshtaKoota, KootaReading, KootaRow, KootaRules, Native};
 // A body's returns to its own natal place: the lunar return after Morin

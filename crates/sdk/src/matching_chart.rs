@@ -1,12 +1,103 @@
 //! Two founded charts matched through the Moon of each
 //! (`03-design/matching.md`).
 
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_matching::{AshtaKoota, KootaRules, Native, ashta_koota};
 use teistro_serial::Document;
 
 use crate::area::ChartArea;
+use crate::reading::ChartRequest;
+use crate::western_aspects::Partner;
+
+/// The record's name where a binding sends it, which a refusal is named
+/// under.
+const MATCHING: &str = "matching";
+
+/// Which side of a match a birth stands on. Varna and Gana read
+/// differently when the two swap, so a match names them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MatchRole {
+    /// The bride's birth.
+    Bride,
+    /// The groom's birth.
+    Groom,
+}
+
+impl MatchRole {
+    /// The other side.
+    #[must_use]
+    pub const fn other(self) -> MatchRole {
+        match self {
+            MatchRole::Bride => MatchRole::Groom,
+            MatchRole::Groom => MatchRole::Bride,
+        }
+    }
+
+    /// The role's name, which a refusal is named by.
+    const fn field(self) -> &'static str {
+        match self {
+            MatchRole::Bride => "bride",
+            MatchRole::Groom => "groom",
+        }
+    }
+}
+
+/// A match against a partner's birth, as a binding asks it: the partner,
+/// the side the partner stands on, every chart of the batch on the other,
+/// and the rules.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartnerMatching {
+    /// Whose birth every chart is matched with.
+    pub partner: Partner,
+    /// The side the partner stands on; every chart stands on the other.
+    pub partner_role: MatchRole,
+    /// The readings the kootas are computed under; the sources' own when
+    /// left out.
+    #[serde(default)]
+    pub rules: KootaRules,
+}
+
+impl PartnerMatching {
+    /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
+    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
+    /// `partnerRole`, `"BRIDE"` or `"GROOM"`, and `rules`, the
+    /// [`KootaRules`] with every field optional.
+    ///
+    /// ```
+    /// use teistro::{MatchRole, PartnerMatching};
+    /// use teistro::matching::NadiDosha;
+    ///
+    /// let asked = PartnerMatching::from_json(
+    ///     r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7, "longitude": 85.3, "altitude": 0}}, "partnerRole": "BRIDE", "rules": {"nadiDosha": "MIDDLE_ONLY"}}"#,
+    /// )?;
+    /// assert_eq!(asked.partner_role, MatchRole::Bride);
+    /// assert_eq!(asked.rules.nadi_dosha, NadiDosha::MiddleOnly);
+    /// // The side is never assumed.
+    /// let unsided = PartnerMatching::from_json(
+    ///     r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7, "longitude": 85.3, "altitude": 0}}}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(unsided.field(), Some("matching"));
+    /// let typo = PartnerMatching::from_json(
+    ///     r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7, "longitude": 85.3, "altitude": 0}}, "partnerRole": "GROOM", "rules": {"nadi": "ANY"}}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(typo.field(), Some("matching.rules.nadi"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read and a value out of its bounds, each named under `matching`.
+    pub fn from_json(text: &str) -> Result<PartnerMatching, Error> {
+        teistro_core::strict::read(text, MATCHING)
+    }
+}
 
 impl ChartArea<'_> {
     /// The **Ashta Koota** of a bride's chart and a groom's (*Muhurta
@@ -45,10 +136,51 @@ impl ChartArea<'_> {
         rules: KootaRules,
     ) -> Result<AshtaKoota, Error> {
         Ok(ashta_koota(
-            native(bride, "bride")?,
-            native(groom, "groom")?,
+            native(bride, MatchRole::Bride.field())?,
+            native(groom, MatchRole::Groom.field())?,
             rules,
         ))
+    }
+
+    /// Each chart matched with a partner's birth ([`ChartArea::matching`]),
+    /// one [`AshtaKoota`] a chart in the order given: the partner on
+    /// [`PartnerMatching::partner_role`]'s side, every chart on the other.
+    /// The partner is founded once, under this context's profile, which
+    /// must be sidereal.
+    ///
+    /// # Errors
+    ///
+    /// A partner that cannot be founded or whose chart is tropical, named
+    /// `partner`, and what [`ChartArea::matching`] refuses of a chart,
+    /// hinted with its place in the list.
+    pub fn matching_with(
+        self,
+        charts: &[Document],
+        asked: &PartnerMatching,
+    ) -> Result<Vec<AshtaKoota>, Error> {
+        let Partner {
+            instant,
+            place,
+            utc_offset,
+        } = asked.partner;
+        let partner = self
+            .reading(instant, &ChartRequest::at(place, utc_offset))
+            .map_err(|why| why.with_field("partner"))?
+            .value;
+        let theirs = native(&partner, "partner")?;
+        let role = asked.partner_role.other();
+        charts
+            .iter()
+            .enumerate()
+            .map(|(at, chart)| {
+                let ours = native(chart, role.field())
+                    .map_err(|why| why.with_hint(format!("chart {at}")))?;
+                Ok(match role {
+                    MatchRole::Bride => ashta_koota(ours, theirs, asked.rules),
+                    MatchRole::Groom => ashta_koota(theirs, ours, asked.rules),
+                })
+            })
+            .collect()
     }
 }
 
