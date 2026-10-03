@@ -3180,8 +3180,11 @@ struct MatchingColumns {
     bride_lord: Vec<u16>,
     groom_lord: Vec<u16>,
     maitri: Vec<u8>,
+    maitri_lifted: Vec<u8>,
     bride_gana: Vec<u16>,
     groom_gana: Vec<u16>,
+    gana_dosha: Vec<u8>,
+    gana_lifted: Vec<u8>,
     bhakoot_apart: Vec<u8>,
     bhakoot_dosha: Vec<u8>,
     bhakoot_one_lord: Vec<u8>,
@@ -3193,6 +3196,7 @@ struct MatchingColumns {
     bride_nadi: Vec<u16>,
     groom_nadi: Vec<u16>,
     nadi_dosha: Vec<u8>,
+    nadi_lifted: Vec<u8>,
     koota: Vec<u16>,
     points: Vec<f64>,
     max_points: Vec<f64>,
@@ -3200,8 +3204,6 @@ struct MatchingColumns {
 
 impl MatchingColumns {
     fn of(read: &[teistro::Matched], charts: usize) -> Result<MatchingColumns, Error> {
-        use teistro::KootaReading;
-
         one_a_chart(read.len(), charts, "matching")?;
         let mut columns = MatchingColumns::default();
         for one in read.iter().map(|matched| &matched.ashta_koota) {
@@ -3223,79 +3225,91 @@ impl MatchingColumns {
                 columns.koota.push(koota.id());
                 columns.points.push(row.points);
                 columns.max_points.push(row.max_points);
-                match row.reading {
-                    KootaReading::Varna { bride, groom } => {
-                        columns.bride_varna.push(bride.id());
-                        columns.groom_varna.push(groom.id());
-                    }
-                    KootaReading::Vashya { relation } => {
-                        columns.vashya.push(TsVashyaRelation::from(relation) as u8);
-                    }
-                    KootaReading::Tara {
-                        bride_to_groom,
-                        groom_to_bride,
-                    } => {
-                        columns.tara_bride_to_groom.push(bride_to_groom);
-                        columns.tara_groom_to_bride.push(groom_to_bride);
-                    }
-                    KootaReading::Yoni {
-                        bride,
-                        groom,
-                        relation,
-                    } => {
-                        columns.bride_yoni.push(bride.id());
-                        columns.groom_yoni.push(groom.id());
-                        columns.yoni.push(TsYoniRelation::from(relation) as u8);
-                    }
-                    KootaReading::GrahaMaitri {
-                        bride,
-                        groom,
-                        relation,
-                    } => {
-                        columns.bride_lord.push(bride.id());
-                        columns.groom_lord.push(groom.id());
-                        columns.maitri.push(TsMaitriRelation::from(relation) as u8);
-                    }
-                    KootaReading::Gana { bride, groom } => {
-                        columns.bride_gana.push(bride.id());
-                        columns.groom_gana.push(groom.id());
-                    }
-                    KootaReading::Bhakoot {
-                        apart,
-                        dosha,
-                        exceptions,
-                        lifted,
-                    } => {
-                        columns.bhakoot_apart.push(apart);
-                        columns
-                            .bhakoot_dosha
-                            .push(TsBhakootDosha::from(dosha) as u8);
-                        columns.bhakoot_one_lord.push(u8::from(exceptions.one_lord));
-                        columns
-                            .bhakoot_lords_friends
-                            .push(u8::from(exceptions.lords_friends));
-                        columns
-                            .bhakoot_navamsha_lords_friends
-                            .push(u8::from(exceptions.navamsha_lords_friends));
-                        columns
-                            .bhakoot_tara_pure
-                            .push(u8::from(exceptions.tara_pure));
-                        columns.bhakoot_vashya.push(u8::from(exceptions.vashya));
-                        columns.bhakoot_lifted.push(u8::from(lifted));
-                    }
-                    KootaReading::Nadi {
-                        bride,
-                        groom,
-                        dosha,
-                    } => {
-                        columns.bride_nadi.push(bride.id());
-                        columns.groom_nadi.push(groom.id());
-                        columns.nadi_dosha.push(u8::from(dosha));
-                    }
-                }
+                columns.read(row.reading);
             }
         }
         Ok(columns)
+    }
+
+    /// One koota's reading into the columns that koota fills.
+    fn read(&mut self, reading: teistro::KootaReading) {
+        use teistro::KootaReading;
+
+        match reading {
+            KootaReading::Varna { bride, groom } => {
+                self.bride_varna.push(bride.id());
+                self.groom_varna.push(groom.id());
+            }
+            KootaReading::Vashya { relation } => {
+                self.vashya.push(TsVashyaRelation::from(relation) as u8);
+            }
+            KootaReading::Tara {
+                bride_to_groom,
+                groom_to_bride,
+            } => {
+                self.tara_bride_to_groom.push(bride_to_groom);
+                self.tara_groom_to_bride.push(groom_to_bride);
+            }
+            KootaReading::Yoni {
+                bride,
+                groom,
+                relation,
+            } => {
+                self.bride_yoni.push(bride.id());
+                self.groom_yoni.push(groom.id());
+                self.yoni.push(TsYoniRelation::from(relation) as u8);
+            }
+            KootaReading::GrahaMaitri {
+                bride,
+                groom,
+                relation,
+                lifted,
+            } => {
+                self.bride_lord.push(bride.id());
+                self.groom_lord.push(groom.id());
+                self.maitri.push(TsMaitriRelation::from(relation) as u8);
+                self.maitri_lifted.push(u8::from(lifted));
+            }
+            KootaReading::Gana {
+                bride,
+                groom,
+                dosha,
+                lifted,
+            } => {
+                self.bride_gana.push(bride.id());
+                self.groom_gana.push(groom.id());
+                self.gana_dosha.push(u8::from(dosha));
+                self.gana_lifted.push(u8::from(lifted));
+            }
+            KootaReading::Bhakoot {
+                apart,
+                dosha,
+                exceptions,
+                lifted,
+            } => {
+                self.bhakoot_apart.push(apart);
+                self.bhakoot_dosha.push(TsBhakootDosha::from(dosha) as u8);
+                self.bhakoot_one_lord.push(u8::from(exceptions.one_lord));
+                self.bhakoot_lords_friends
+                    .push(u8::from(exceptions.lords_friends));
+                self.bhakoot_navamsha_lords_friends
+                    .push(u8::from(exceptions.navamsha_lords_friends));
+                self.bhakoot_tara_pure.push(u8::from(exceptions.tara_pure));
+                self.bhakoot_vashya.push(u8::from(exceptions.vashya));
+                self.bhakoot_lifted.push(u8::from(lifted));
+            }
+            KootaReading::Nadi {
+                bride,
+                groom,
+                dosha,
+                lifted,
+            } => {
+                self.bride_nadi.push(bride.id());
+                self.groom_nadi.push(groom.id());
+                self.nadi_dosha.push(u8::from(dosha));
+                self.nadi_lifted.push(u8::from(lifted));
+            }
+        }
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -3315,8 +3329,11 @@ impl MatchingColumns {
                 ColumnData::U16(&self.bride_lord),
                 ColumnData::U16(&self.groom_lord),
                 ColumnData::U8(&self.maitri),
+                ColumnData::U8(&self.maitri_lifted),
                 ColumnData::U16(&self.bride_gana),
                 ColumnData::U16(&self.groom_gana),
+                ColumnData::U8(&self.gana_dosha),
+                ColumnData::U8(&self.gana_lifted),
                 ColumnData::U8(&self.bhakoot_apart),
                 ColumnData::U8(&self.bhakoot_dosha),
                 ColumnData::U8(&self.bhakoot_one_lord),
@@ -3328,6 +3345,7 @@ impl MatchingColumns {
                 ColumnData::U16(&self.bride_nadi),
                 ColumnData::U16(&self.groom_nadi),
                 ColumnData::U8(&self.nadi_dosha),
+                ColumnData::U8(&self.nadi_lifted),
             ],
         )?;
         writer.columns(

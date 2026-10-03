@@ -837,8 +837,11 @@ for (const chart of charts) {
       case 'koota.TARA':
         return `${r.brideToGroom} ${r.groomToBride}`;
       case 'koota.YONI':
-      case 'koota.GRAHA_MAITRI':
         return `${r.bride} ${r.groom} ${r.relation}`;
+      case 'koota.GRAHA_MAITRI':
+        return `${r.bride} ${r.groom} ${r.relation} ${flag(r.lifted)}`;
+      case 'koota.GANA':
+        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
       case 'koota.BHAKOOT': {
         const e = r.exceptions;
         return [r.apart, r.dosha ?? 'NONE', e.oneLord, e.lordsFriends, e.navamshaLordsFriends, e.taraPure, e.vashya, r.lifted]
@@ -846,7 +849,7 @@ for (const chart of charts) {
           .join(' ');
       }
       case 'koota.NADI':
-        return `${r.bride} ${r.groom} ${flag(r.dosha)}`;
+        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
       default:
         return `${r.bride} ${r.groom}`;
     }

@@ -4295,6 +4295,10 @@ class MaitriKoota:
     bride: Graha
     groom: Graha
     relation: MaitriRelation
+    lifted: bool
+    """Whether a good Bhakoot lifts the lords' enmity (VI.33); false with no
+    enmity."""
+
     koota: Koota = Koota.GRAHA_MAITRI
 
 
@@ -4304,6 +4308,14 @@ class GanaKoota:
 
     bride: Gana
     groom: Gana
+    dosha: bool
+    """Whether a Rakshasa stands beside another gana."""
+
+    lifted: bool
+    """Whether the dosha is lifted: the sign lords or the navamsha lords
+    befriended (VI.33), or one sign or one star between the two (VI.36);
+    false with no dosha."""
+
     koota: Koota = Koota.GANA
 
 
@@ -4333,6 +4345,11 @@ class NadiKoota:
     groom: Nadi
     dosha: bool
     """Whether the shared nadi is a dosha under the rules."""
+
+    lifted: bool
+    """Whether the dosha is lifted by one sign with two stars, one star
+    across two signs or one star in two padas (VI.36); false with no
+    dosha."""
 
     koota: Koota = Koota.NADI
 
@@ -9907,8 +9924,18 @@ class ChartBatch:
                 VashyaKoota(VashyaRelation(m.vashya[at])),
                 TaraKoota(m.tara_bride_to_groom[at], m.tara_groom_to_bride[at]),
                 YoniKoota(Yoni(m.bride_yoni[at]), Yoni(m.groom_yoni[at]), YoniRelation(m.yoni[at])),
-                MaitriKoota(Graha(m.bride_lord[at]), Graha(m.groom_lord[at]), MaitriRelation(m.maitri[at])),
-                GanaKoota(Gana(m.bride_gana[at]), Gana(m.groom_gana[at])),
+                MaitriKoota(
+                    Graha(m.bride_lord[at]),
+                    Graha(m.groom_lord[at]),
+                    MaitriRelation(m.maitri[at]),
+                    m.maitri_lifted[at] == 1,
+                ),
+                GanaKoota(
+                    Gana(m.bride_gana[at]),
+                    Gana(m.groom_gana[at]),
+                    m.gana_dosha[at] == 1,
+                    m.gana_lifted[at] == 1,
+                ),
                 BhakootKoota(
                     apart=m.bhakoot_apart[at],
                     dosha=None if dosha == BhakootDosha.NONE else dosha,
@@ -9921,7 +9948,12 @@ class ChartBatch:
                     ),
                     lifted=m.bhakoot_lifted[at] == 1,
                 ),
-                NadiKoota(Nadi(m.bride_nadi[at]), Nadi(m.groom_nadi[at]), m.nadi_dosha[at] == 1),
+                NadiKoota(
+                    Nadi(m.bride_nadi[at]),
+                    Nadi(m.groom_nadi[at]),
+                    m.nadi_dosha[at] == 1,
+                    m.nadi_lifted[at] == 1,
+                ),
             )
             return {one.koota: one for one in read}
 

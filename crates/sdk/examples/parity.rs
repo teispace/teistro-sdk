@@ -2263,15 +2263,26 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
                     bride,
                     groom,
                     relation,
+                    lifted,
                 } => format!(
-                    "{} {} {}",
+                    "{} {} {} {}",
                     bride.full_key(),
                     groom.full_key(),
-                    wire_key(&relation)
+                    wire_key(&relation),
+                    u8::from(lifted)
                 ),
-                KootaReading::Gana { bride, groom } => {
-                    format!("{} {}", bride.full_key(), groom.full_key())
-                }
+                KootaReading::Gana {
+                    bride,
+                    groom,
+                    dosha,
+                    lifted,
+                } => format!(
+                    "{} {} {} {}",
+                    bride.full_key(),
+                    groom.full_key(),
+                    u8::from(dosha),
+                    u8::from(lifted)
+                ),
                 KootaReading::Bhakoot {
                     apart,
                     dosha,
@@ -2291,11 +2302,13 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
                     bride,
                     groom,
                     dosha,
+                    lifted,
                 } => format!(
-                    "{} {} {}",
+                    "{} {} {} {}",
                     bride.full_key(),
                     groom.full_key(),
-                    u8::from(dosha)
+                    u8::from(dosha),
+                    u8::from(lifted)
                 ),
             };
             put(

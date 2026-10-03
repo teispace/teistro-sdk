@@ -3258,6 +3258,14 @@ void _engineTests() {
     );
     final nadi = itself.kootas[7].reading as NadiKoota;
     expect((nadi.dosha, nadi.bride == nadi.groom), (true, true));
+    // One star in one pada is the nadi dosha VI.36 does not lift; one gana
+    // and one lord leave nothing to lift.
+    final gana = itself.kootas[5].reading as GanaKoota;
+    final maitri = itself.kootas[4].reading as MaitriKoota;
+    expect(
+      (nadi.lifted, gana.dosha, gana.lifted, maitri.lifted),
+      (false, false, false, false),
+    );
 
     // The ten considerations ride on the same request: one star in one
     // sign shares its Rajju, which the one lord lifts.

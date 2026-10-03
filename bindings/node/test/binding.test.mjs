@@ -2620,11 +2620,14 @@ test('a chart carries its match with a partner', () => {
     self.kootas.map((row) => row.maxPoints),
     [1, 2, 3, 4, 5, 6, 7, 8],
   );
-  const [, vashya, tara, yoni, maitri, , bhakoot, nadi] = self.kootas.map((row) => row.reading);
+  const [, vashya, tara, yoni, maitri, gana, bhakoot, nadi] = self.kootas.map((row) => row.reading);
   assert.deepEqual([vashya.relation, yoni.relation, maitri.relation], ['MUTUAL', 'SAME', 'ONE_LORD']);
   assert.deepEqual([tara.brideToGroom, tara.groomToBride], [1, 1]);
   assert.deepEqual([bhakoot.apart, bhakoot.dosha, bhakoot.lifted, bhakoot.exceptions.oneLord], [1, null, false, true]);
   assert.ok(nadi.dosha && nadi.bride === nadi.groom && nadi.bride.startsWith('nadi.'));
+  // One star in one pada is the nadi dosha VI.36 does not lift; one gana
+  // and one lord leave nothing to lift.
+  assert.deepEqual([nadi.lifted, gana.dosha, gana.lifted, maitri.lifted], [false, false, false, false]);
 
   // The ten considerations ride on the same request (Kalaprakasika XIII):
   // one star in one sign shares its Rajju, which the one lord lifts.

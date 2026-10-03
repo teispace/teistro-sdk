@@ -2157,6 +2157,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Matching's other doshas carry their exceptions** (`matching.md`,
+  C283, C284). *Muhurta Chintamani* VI.33 lifts a Rakshasa beside
+  another gana when the sign or navamsha lords are friends, and the
+  lords' enmity when the Bhakoot is good; VI.36 lifts the nadi and the
+  gana doshas on one sign with two stars or one star across two signs,
+  and the nadi on one star in two padas. Graha Maitri, Gana and Nadi
+  now say `lifted`, and Gana its `dosha`, in every binding; a lifted
+  nadi counts as pure for the Bhakoot's exceptions. No point moves.
+  Section 111 gains four columns; the measured page counts each lift.
 - **The Ashta Koota, measured** (`matching-measured.md`): every pair of
   the 108 padas, five claims held, the totals' spread, each koota's
   mean, each Bhakoot exception and what each knob moves, held by

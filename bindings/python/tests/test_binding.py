@@ -2078,7 +2078,9 @@ class AnEngine(WithLibrary):
             AshtaKoota,
             BhakootKoota,
             DhinamPorutham,
+            GanaKoota,
             Koota,
+            MaitriKoota,
             MaitriRelation,
             MatchingRequest,
             NadiKoota,
@@ -2116,6 +2118,11 @@ class AnEngine(WithLibrary):
             assert isinstance(bhakoot, BhakootKoota) and isinstance(nadi, NadiKoota)
             self.assertEqual((bhakoot.apart, bhakoot.dosha, bhakoot.lifted, bhakoot.exceptions.one_lord), (1, None, False, True))
             self.assertTrue(nadi.dosha and nadi.bride == nadi.groom)
+            # One star in one pada is the nadi dosha VI.36 does not lift; one
+            # gana and one lord leave nothing to lift.
+            gana = matched.kootas[5].reading
+            assert isinstance(gana, GanaKoota) and isinstance(maitri, MaitriKoota)
+            self.assertEqual((nadi.lifted, gana.dosha, gana.lifted, maitri.lifted), (False, False, False, False))
 
             # The ten considerations ride on the same request: one star in
             # one sign shares its Rajju, which the one lord lifts.

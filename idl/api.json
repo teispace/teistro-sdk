@@ -20494,6 +20494,11 @@
               "enum": "TsMaitriRelation"
             },
             {
+              "name": "maitri_lifted",
+              "scalar": "u8",
+              "doc": "1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283)."
+            },
+            {
               "name": "bride_gana",
               "scalar": "u16",
               "doc": "The bride's gana, by her or his Moon's nakshatra (VI.29–30).",
@@ -20504,6 +20509,16 @@
               "scalar": "u16",
               "doc": "The groom's gana, by her or his Moon's nakshatra (VI.29–30).",
               "enum": "Gana"
+            },
+            {
+              "name": "gana_dosha",
+              "scalar": "u8",
+              "doc": "1 when a Rakshasa stands beside another gana, the gana dosha."
+            },
+            {
+              "name": "gana_lifted",
+              "scalar": "u8",
+              "doc": "1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283)."
             },
             {
               "name": "bhakoot_apart",
@@ -20562,6 +20577,11 @@
               "name": "nadi_dosha",
               "scalar": "u8",
               "doc": "1 when the shared nadi is a dosha under the record's `nadiDosha` (C264)."
+            },
+            {
+              "name": "nadi_lifted",
+              "scalar": "u8",
+              "doc": "1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284)."
             }
           ]
         },

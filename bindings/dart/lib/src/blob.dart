@@ -4520,8 +4520,11 @@ final class ChartsMatchings {
     required this.brideLord,
     required this.groomLord,
     required this.maitri,
+    required this.maitriLifted,
     required this.brideGana,
     required this.groomGana,
+    required this.ganaDosha,
+    required this.ganaLifted,
     required this.bhakootApart,
     required this.bhakootDosha,
     required this.bhakootOneLord,
@@ -4533,6 +4536,7 @@ final class ChartsMatchings {
     required this.brideNadi,
     required this.groomNadi,
     required this.nadiDosha,
+    required this.nadiLifted,
     required this.length,
   });
 
@@ -4572,11 +4576,20 @@ final class ChartsMatchings {
   /// How the two lords stand by the natural friendships.
   final Uint8List maitri;
 
+  /// 1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283).
+  final Uint8List maitriLifted;
+
   /// The bride's gana, by her or his Moon's nakshatra (VI.29–30).
   final Uint16List brideGana;
 
   /// The groom's gana, by her or his Moon's nakshatra (VI.29–30).
   final Uint16List groomGana;
+
+  /// 1 when a Rakshasa stands beside another gana, the gana dosha.
+  final Uint8List ganaDosha;
+
+  /// 1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283).
+  final Uint8List ganaLifted;
 
   /// The groom's Moon sign counted from the bride's, 1 to 12 (VI.31).
   final Uint8List bhakootApart;
@@ -4610,6 +4623,9 @@ final class ChartsMatchings {
 
   /// 1 when the shared nadi is a dosha under the record's `nadiDosha` (C264).
   final Uint8List nadiDosha;
+
+  /// 1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284).
+  final Uint8List nadiLifted;
 
   /// The number of rows every column holds.
   final int length;
@@ -9593,70 +9609,90 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atMatchings, 11),
         blob.columnOffset(atMatchings, 11) + atMatchings.count * 1,
       ),
-      brideGana: Uint16List.sublistView(
+      maitriLifted: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 12),
-        blob.columnOffset(atMatchings, 12) + atMatchings.count * 2,
+        blob.columnOffset(atMatchings, 12) + atMatchings.count * 1,
       ),
-      groomGana: Uint16List.sublistView(
+      brideGana: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 13),
         blob.columnOffset(atMatchings, 13) + atMatchings.count * 2,
       ),
-      bhakootApart: Uint8List.sublistView(
+      groomGana: Uint16List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 14),
-        blob.columnOffset(atMatchings, 14) + atMatchings.count * 1,
+        blob.columnOffset(atMatchings, 14) + atMatchings.count * 2,
       ),
-      bhakootDosha: Uint8List.sublistView(
+      ganaDosha: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 15),
         blob.columnOffset(atMatchings, 15) + atMatchings.count * 1,
       ),
-      bhakootOneLord: Uint8List.sublistView(
+      ganaLifted: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 16),
         blob.columnOffset(atMatchings, 16) + atMatchings.count * 1,
       ),
-      bhakootLordsFriends: Uint8List.sublistView(
+      bhakootApart: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 17),
         blob.columnOffset(atMatchings, 17) + atMatchings.count * 1,
       ),
-      bhakootNavamshaLordsFriends: Uint8List.sublistView(
+      bhakootDosha: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 18),
         blob.columnOffset(atMatchings, 18) + atMatchings.count * 1,
       ),
-      bhakootTaraPure: Uint8List.sublistView(
+      bhakootOneLord: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 19),
         blob.columnOffset(atMatchings, 19) + atMatchings.count * 1,
       ),
-      bhakootVashya: Uint8List.sublistView(
+      bhakootLordsFriends: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 20),
         blob.columnOffset(atMatchings, 20) + atMatchings.count * 1,
       ),
-      bhakootLifted: Uint8List.sublistView(
+      bhakootNavamshaLordsFriends: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 21),
         blob.columnOffset(atMatchings, 21) + atMatchings.count * 1,
       ),
-      brideNadi: Uint16List.sublistView(
+      bhakootTaraPure: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 22),
-        blob.columnOffset(atMatchings, 22) + atMatchings.count * 2,
+        blob.columnOffset(atMatchings, 22) + atMatchings.count * 1,
       ),
-      groomNadi: Uint16List.sublistView(
+      bhakootVashya: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 23),
-        blob.columnOffset(atMatchings, 23) + atMatchings.count * 2,
+        blob.columnOffset(atMatchings, 23) + atMatchings.count * 1,
       ),
-      nadiDosha: Uint8List.sublistView(
+      bhakootLifted: Uint8List.sublistView(
         blob.bytes,
         blob.columnOffset(atMatchings, 24),
         blob.columnOffset(atMatchings, 24) + atMatchings.count * 1,
+      ),
+      brideNadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 25),
+        blob.columnOffset(atMatchings, 25) + atMatchings.count * 2,
+      ),
+      groomNadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 26),
+        blob.columnOffset(atMatchings, 26) + atMatchings.count * 2,
+      ),
+      nadiDosha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 27),
+        blob.columnOffset(atMatchings, 27) + atMatchings.count * 1,
+      ),
+      nadiLifted: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatchings, 28),
+        blob.columnOffset(atMatchings, 28) + atMatchings.count * 1,
       ),
       length: atMatchings.count,
     ),

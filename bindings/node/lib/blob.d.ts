@@ -4373,6 +4373,10 @@ export interface ChartsMatchings {
    */
   readonly maitri: Uint8Array;
   /**
+   * 1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283).
+   */
+  readonly maitriLifted: Uint8Array;
+  /**
    * The bride's gana, by her or his Moon's nakshatra (VI.29–30).
    * The values are `Gana` ids.
    */
@@ -4382,6 +4386,14 @@ export interface ChartsMatchings {
    * The values are `Gana` ids.
    */
   readonly groomGana: Uint16Array;
+  /**
+   * 1 when a Rakshasa stands beside another gana, the gana dosha.
+   */
+  readonly ganaDosha: Uint8Array;
+  /**
+   * 1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283).
+   */
+  readonly ganaLifted: Uint8Array;
   /**
    * The groom's Moon sign counted from the bride's, 1 to 12 (VI.31).
    */
@@ -4429,6 +4441,10 @@ export interface ChartsMatchings {
    * 1 when the shared nadi is a dosha under the record's `nadiDosha` (C264).
    */
   readonly nadiDosha: Uint8Array;
+  /**
+   * 1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284).
+   */
+  readonly nadiLifted: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
