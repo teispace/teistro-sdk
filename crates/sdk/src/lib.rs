@@ -65,6 +65,7 @@ mod rule_request;
 mod rules_bridge;
 mod sade_sati_request;
 mod varsha;
+mod western_aspects;
 
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
@@ -237,6 +238,11 @@ pub use teistro_tajika::{
 };
 pub use teistro_western as western;
 pub use teistro_western::{AngleMethod, ArcMeasure, Progression};
+// The Western aspects a chart holds, under Leo's orbs or Lilly's moieties
+// (`03-design/western-aspects.md`).
+pub use teistro_western::{
+    AspectOrb, AspectRequest, BodyOrb, OrbModel, WesternAspect, WesternAspectRow,
+};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).

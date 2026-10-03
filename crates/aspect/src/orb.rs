@@ -99,6 +99,26 @@ impl Angle {
         key: "OPPOSITION",
         degrees: 180.0,
     };
+    /// A twelfth of the circle, half a sextile.
+    pub const SEMI_SEXTILE: Angle = Angle {
+        key: "SEMI_SEXTILE",
+        degrees: 30.0,
+    };
+    /// An eighth of the circle, half a square.
+    pub const SEMI_SQUARE: Angle = Angle {
+        key: "SEMI_SQUARE",
+        degrees: 45.0,
+    };
+    /// Three eighths of the circle, a square and a half.
+    pub const SESQUIQUADRATE: Angle = Angle {
+        key: "SESQUIQUADRATE",
+        degrees: 135.0,
+    };
+    /// Five twelfths of the circle.
+    pub const QUINCUNX: Angle = Angle {
+        key: "QUINCUNX",
+        degrees: 150.0,
+    };
 
     /// The five Ptolemaic angles, which the Tajika aspects are read on
     /// too.

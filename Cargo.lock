@@ -2136,6 +2136,7 @@ version = "0.0.0"
 dependencies = [
  "serde",
  "serde_json",
+ "teistro-aspect",
  "teistro-astro",
  "teistro-core",
 ]
