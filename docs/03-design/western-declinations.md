@@ -1,6 +1,10 @@
 # Declinations and parallels (the `western` module)
 
-Status: `designed`, 2026-10-03, written from the sources before any code.
+Status: `building`, 2026-10-03, written from the sources before any code.
+Steps 2 and 3 are built: `sdk.chart().declinations` and
+`sdk.chart().parallels`, held to George V against a recast, and
+measured over the corpus's births in
+[`declinations-measured.md`](declinations-measured.md).
 
 [`western-aspects.md`](western-aspects.md) reads the aspects along the
 ecliptic. Leo adds one aspect that is not an angle there: two bodies the
@@ -89,6 +93,25 @@ not need to ask its ephemeris for anything new.
    under Leo's orbs.
 4. The boundary record and every binding, with parity.
 5. Parallels across two charts in a synastry.
+
+## What building it found
+
+- **The formula is the ephemeris's, exactly, and the SDK's agrees.**
+  George V's ten declinations and both angles match the Moshier recast
+  to 0.01°. A sidereal chart of the same birth gives the same
+  declinations to 1e-6°, since every planet carries its tropical
+  longitude.
+- **The ayana bala's copy kept every bit.** Moving it onto the shared
+  function left `shadbala-measured.md` unchanged.
+- **Over the corpus.** The 55 births hold 217 parallels within 1°,
+  138 on the same side and 79 contrary. About half of each (50.7% and
+  54.4%) share their pair with one of Leo's nine aspects, where he
+  reads the aspect instead (p. 43).
+- **A Sun past the obliquity is the frame, not a defect.** One birth's
+  Sun stands 7.65″ past the obliquity. Under the profile's topocentric
+  frame the Sun has a latitude of up to its 8.8″ parallax, and the
+  measured page now gates that bound. Venus, the Moon, Mars and
+  Mercury pass the obliquity by degrees in 8 to 15 births each.
 
 ## What this does not decide
 

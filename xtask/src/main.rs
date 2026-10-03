@@ -246,6 +246,7 @@ mod dart_binding;
 mod dasha_coverage;
 mod dasha_systems;
 mod dashas;
+mod declinations;
 mod document_schema;
 mod doshas;
 mod eclipses;
@@ -459,6 +460,11 @@ const PASSES: &[Pass] = &[
         western_aspects::check_generated,
     ),
     ("synastry", synastry::generate, synastry::check_generated),
+    (
+        "declinations",
+        declinations::generate,
+        declinations::check_generated,
+    ),
     (
         "time-lords",
         time_lords::generate,
