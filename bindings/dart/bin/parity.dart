@@ -576,6 +576,7 @@ void main() {
         Graha.pluto: 5,
       }),
     ),
+    parallels: const ParallelRequest(orbDeg: 1.5),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1253,6 +1254,27 @@ void main() {
         '${row.first.fullKey} ${row.second.fullKey} ${row.aspect.key} '
             '${number(row.apartDeg)} ${number(row.fromExactDeg)} '
             '${number(row.orbDeg)} ${row.applying ? 1 : 0}',
+      );
+    }
+    final declined = chart.declinations!;
+    put(
+      'chart-$i-declinations',
+      '${number(declined.obliquityDeg)} ${number(declined.lagnaDeg)} '
+          '${number(declined.midheavenDeg)}',
+    );
+    for (final at in declined.grahas) {
+      put(
+        'chart-$i-declination-${at.graha.fullKey}',
+        number(at.declinationDeg),
+      );
+    }
+    final parallels = chart.parallels!;
+    put('chart-$i-parallel-count', '${parallels.length}');
+    for (final (n, row) in parallels.indexed) {
+      put(
+        'chart-$i-parallel-$n',
+        '${row.first.fullKey} ${row.second.fullKey} ${row.contrary ? 1 : 0} '
+            '${number(row.apartDeg)} ${number(row.orbDeg)}',
       );
     }
     final synastry = chart.synastry!;

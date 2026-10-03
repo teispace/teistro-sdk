@@ -569,6 +569,7 @@ def main() -> None:
                     ],
                 },
             },
+            parallels={"orbDeg": 1.5},
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1139,6 +1140,23 @@ def main() -> None:
                     f"chart-{i}-western-aspect-{n}",
                     f"{row.first.full_key} {row.second.full_key} {row.aspect.key} {number(row.apart_deg)} "
                     f"{number(row.from_exact_deg)} {number(row.orb_deg)} {int(row.applying)}",
+                )
+            declined = chart.declinations
+            assert declined is not None
+            put(
+                f"chart-{i}-declinations",
+                f"{number(declined.obliquity_deg)} {number(declined.lagna_deg)} {number(declined.midheaven_deg)}",
+            )
+            for declined_at in declined.grahas:
+                put(f"chart-{i}-declination-{declined_at.graha.full_key}", number(declined_at.declination_deg))
+            parallels = chart.parallels
+            assert parallels is not None
+            put(f"chart-{i}-parallel-count", str(len(parallels)))
+            for n, pair in enumerate(parallels):
+                put(
+                    f"chart-{i}-parallel-{n}",
+                    f"{pair.first.full_key} {pair.second.full_key} {int(pair.contrary)} "
+                    f"{number(pair.apart_deg)} {number(pair.orb_deg)}",
                 )
             synastry = chart.synastry
             assert synastry is not None
