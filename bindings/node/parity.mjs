@@ -383,6 +383,7 @@ const charts = geo.chart.foundMany({
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
     antiscia: { orbs: { model: 'LEO' } },
+    midpoints: { orbDeg: 1.5 },
     composite: true,
     davison: true,
   },
@@ -815,6 +816,14 @@ for (const chart of charts) {
     ),
   );
   putAntiscionRows(`chart-${i}-synastry-antiscia`, chart.synastryAntiscia);
+  const across = chart.synastryMidpoints;
+  put(`chart-${i}-synastry-midpoint-count`, `${across.length}`);
+  across.forEach((at, n) =>
+    put(
+      `chart-${i}-synastry-midpoint-${n}`,
+      `${at.first} ${at.second} ${at.middle} ${at.partnersPair ? 1 : 0} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
+    ),
+  );
   const composite = chart.synastryComposite;
   put(
     `chart-${i}-composite`,

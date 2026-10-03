@@ -1181,6 +1181,22 @@ export class Chart {
   }
 
   /**
+   * The equal distances between this chart and the partner's
+   * (`synastry: { partner, midpoints: {} }`), closest first: a planet of
+   * one chart within the orb of the axis through two of the other's, on
+   * the shorter arc's midpoint or opposite it, 0.5° by default (C245,
+   * C246); `null` unless the synastry record asked for them
+   * (`03-design/western-midpoints.md`).
+   *
+   * Each row is `{ first, second, middle, partnersPair, far, distanceDeg,
+   * fromAxisDeg, orbDeg }`: `partnersPair` is true when the pair is the
+   * partner's and `middle` this chart's planet.
+   */
+  get synastryMidpoints() {
+    return synastriesOf(this.#batch).midpoints[this.#index] ?? null;
+  }
+
+  /**
    * The composite of this chart and the partner's
    * (`synastry: { partner, composite: true }`): each planet at the near
    * midpoint of its two places, moving at the mean of its two speeds, the
@@ -3616,7 +3632,7 @@ const SYNASTRIES = new WeakMap();
  * (`03-design/western-composites.md`).
  *
  * @param {Charts} batch
- * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[], antiscia: readonly (readonly object[]|null)[], composites: readonly (object|null)[], davisons: readonly (object|null)[] }}
+ * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[], antiscia: readonly (readonly object[]|null)[], midpoints: readonly (readonly object[]|null)[], composites: readonly (object|null)[], davisons: readonly (object|null)[] }}
  */
 function synastriesOf(batch) {
   let decoded = SYNASTRIES.get(batch);
@@ -3678,7 +3694,11 @@ function synastriesOf(batch) {
       utcOffsetSeconds: b.utcOffsetSeconds[k],
     }),
   );
-  decoded = Object.freeze({ aspects, parallels, antiscia, composites: Object.freeze(composites), davisons });
+  const m = d.synastryMidpointRows;
+  const midpoints = raggedOf(batch, d.synastryMidpoints.count, m.first.length, 'synastry_midpoints and synastry_midpoint_rows', (row) =>
+    Object.freeze({ ...midpointFieldsOf(m, row), partnersPair: m.partnersPair[row] !== 0 }),
+  );
+  decoded = Object.freeze({ aspects, parallels, antiscia, midpoints, composites: Object.freeze(composites), davisons });
   SYNASTRIES.set(batch, decoded);
   return decoded;
 }
@@ -3811,20 +3831,31 @@ function midpointsOf(batch) {
   if (decoded !== undefined) return decoded;
   const d = batch.decoded;
   const r = d.midpointRows;
-  const graha = (id) => GrahaById.get(id) ?? 'unknown';
   decoded = raggedOf(batch, d.midpoints.count, r.first.length, 'midpoints and midpoint_rows', (at) =>
-    Object.freeze({
-      first: graha(r.first[at]),
-      second: graha(r.second[at]),
-      middle: graha(r.middle[at]),
-      far: r.far[at] !== 0,
-      distanceDeg: r.distanceDeg[at],
-      fromAxisDeg: r.fromAxisDeg[at],
-      orbDeg: r.orbDeg[at],
-    }),
+    Object.freeze(midpointFieldsOf(r, at)),
   );
   MIDPOINTS.set(batch, decoded);
   return decoded;
+}
+
+/**
+ * One equal distance's fields, a chart's own (`midpoint_rows`) or across a
+ * synastry (`synastry_midpoint_rows`, which adds `partnersPair`): the two
+ * sections share their other columns.
+ *
+ * @param {{ first: ArrayLike<number>, second: ArrayLike<number>, middle: ArrayLike<number>, far: ArrayLike<number>, distanceDeg: ArrayLike<number>, fromAxisDeg: ArrayLike<number>, orbDeg: ArrayLike<number> }} r
+ * @param {number} at
+ */
+function midpointFieldsOf(r, at) {
+  return {
+    first: GrahaById.get(r.first[at]) ?? 'unknown',
+    second: GrahaById.get(r.second[at]) ?? 'unknown',
+    middle: GrahaById.get(r.middle[at]) ?? 'unknown',
+    far: r.far[at] !== 0,
+    distanceDeg: r.distanceDeg[at],
+    fromAxisDeg: r.fromAxisDeg[at],
+    orbDeg: r.orbDeg[at],
+  };
 }
 
 /** Each batch's progressions, decoded once however many charts read them. */

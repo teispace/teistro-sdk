@@ -2021,6 +2021,12 @@ the astronomical numbers do not move. Nothing else computes yet.
     Dart read `chart.synastryComposite` and `chart.synastryDavison`, the
     Davison birth in the shape a chart request takes, with parity.
     `near_midpoint_deg` is now the same either way round to the bit.
+  - **Equal distances across two charts** (`western-midpoints.md`,
+    decision 9). `sdk.chart().synastry_midpoints` reads each chart's
+    pairs against the other chart's planets, both ways, flagging which
+    chart the pair is from (`partners_pair`), in the synastry's zodiac. A
+    synastry's `midpoints` crosses in sections 101 and 102, and Node,
+    Python and Dart read `chart.synastryMidpoints`, with parity.
   - **Antiscia** (`western-antiscia.md`, `antiscia-measured.md`).
     `sdk.chart().antiscia` gives each planet's reflection about the
     solstices and about the equinoxes (Lilly, *Christian Astrology*,

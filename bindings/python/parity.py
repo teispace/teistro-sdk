@@ -595,6 +595,7 @@ def main() -> None:
                 "zodiac": "CHARTS",
                 "parallels": {"orbDeg": 1.5},
                 "antiscia": {"orbs": {"model": "LEO"}},
+                "midpoints": {"orbDeg": 1.5},
                 "composite": True,
                 "davison": True,
             },
@@ -1219,6 +1220,16 @@ def main() -> None:
             across_reflected = chart.synastry_antiscia
             assert across_reflected is not None
             put_antiscion_rows(f"chart-{i}-synastry-antiscia", across_reflected)
+            across_equal = chart.synastry_midpoints
+            assert across_equal is not None
+            put(f"chart-{i}-synastry-midpoint-count", str(len(across_equal)))
+            for n, between_pair in enumerate(across_equal):
+                put(
+                    f"chart-{i}-synastry-midpoint-{n}",
+                    f"{between_pair.first.full_key} {between_pair.second.full_key} {between_pair.middle.full_key} "
+                    f"{int(between_pair.partners_pair)} {int(between_pair.far)} {number(between_pair.distance_deg)} "
+                    f"{number(between_pair.from_axis_deg)} {number(between_pair.orb_deg)}",
+                )
             composite = chart.synastry_composite
             assert composite is not None
             put(

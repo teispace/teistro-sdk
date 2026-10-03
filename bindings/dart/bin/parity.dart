@@ -613,6 +613,7 @@ void main() {
       zodiac: SynastryZodiac.charts,
       parallels: const ParallelRequest(orbDeg: 1.5),
       antiscia: const AntisciaRequest(orbs: OrbModel.leo),
+      midpoints: const MidpointRequest(orbDeg: 1.5),
       composite: true,
       davison: true,
     ),
@@ -1342,6 +1343,17 @@ void main() {
       );
     }
     putAntiscionRows('chart-$i-synastry-antiscia', chart.synastryAntiscia!);
+    final across = chart.synastryMidpoints!;
+    put('chart-$i-synastry-midpoint-count', '${across.length}');
+    for (final (n, row) in across.indexed) {
+      put(
+        'chart-$i-synastry-midpoint-$n',
+        '${row.first.fullKey} ${row.second.fullKey} ${row.middle.fullKey} '
+            '${row.partnersPair ? 1 : 0} ${row.far ? 1 : 0} '
+            '${number(row.distanceDeg)} ${number(row.fromAxisDeg)} '
+            '${number(row.orbDeg)}',
+      );
+    }
     final composite = chart.synastryComposite!;
     put(
       'chart-$i-composite',

@@ -2073,7 +2073,7 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, synastry=request, **george)
                 self.assertEqual(caught.exception.field, field)
 
-    def test_a_synastry_makes_the_composite_and_the_davison_birth(self) -> None:
+    def test_a_synastry_reads_the_equal_distances_and_makes_the_composite_and_davison(self) -> None:
         """The composite and the Davison birth cross on King George V and
         Queen Mary against the SDK test's Moshier recast; the Davison birth
         founds a chart as a birth does (`03-design/western-composites.md`)."""
@@ -2120,7 +2120,22 @@ class AnEngine(WithLibrary):
             mars = next(one for one in between.grahas if one.graha == Graha.MARS)
             self.assertTrue(near(mars.tropical_deg, 20.1267), mars.tropical_deg)
 
+            # The equal distances across: none unless asked, then the SDK
+            # test's recast within 1°, her Venus on his Sun and Neptune the
+            # closest.
+            self.assertIsNone(plain.synastry_midpoints)
+            level: SynastryRequest = {"partner": mary, "midpoints": {"orbDeg": 1}}
+            equal = ctx.chart.found(instant=birth, outer_planets=True, synastry=level, **george).synastry_midpoints
+            assert equal is not None
+            self.assertEqual(len(equal), 10)
+            self.assertEqual(
+                (equal[0].first, equal[0].second, equal[0].middle, equal[0].partners_pair, equal[0].far),
+                (Graha.SUN, Graha.NEPTUNE, Graha.VENUS, True, False),
+            )
+            self.assertAlmostEqual(equal[0].from_axis_deg, 0.14, delta=0.01)
+
             refusals: list[tuple[Any, str]] = [
+                ({"partner": mary, "midpoints": {"orbDeg": 11}}, "synastry.midpoints.orbDeg"),
                 ({"partner": mary, "composite": "yes"}, "synastry.composite"),
                 ({"partner": mary, "davison": 1}, "synastry.davison"),
             ]
