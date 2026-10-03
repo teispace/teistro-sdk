@@ -1,5 +1,6 @@
 //! Modern Western doctrine: progressions and directions
-//! (`03-design/western-progressions.md`).
+//! (`03-design/western-progressions.md`), and the aspects a chart holds
+//! under a model of orbs (`03-design/western-aspects.md`).
 //!
 //! Everything here is the arithmetic of a measure, so there is no ephemeris
 //! and no chart: a progression matches an instant of the sky to an instant
@@ -31,10 +32,14 @@
 
 mod angles;
 mod arc;
+mod aspects;
 mod progression;
 
 pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use arc::ArcMeasure;
+pub use aspects::{
+    AspectOrb, AspectRequest, BodyOrb, OrbModel, Placed, WesternAspect, WesternAspectRow, aspects,
+};
 pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,
     YearMeasure,

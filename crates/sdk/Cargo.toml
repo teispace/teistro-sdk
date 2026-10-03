@@ -202,6 +202,10 @@ required-features = ["builtin-ephemeris"]
 name = "outer_planets"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "western_aspects"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]

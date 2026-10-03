@@ -12,6 +12,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
+teistro-aspect = { path = "../aspect" }
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 serde = { version = "1", features = ["derive"] }
