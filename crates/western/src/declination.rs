@@ -161,40 +161,74 @@ pub fn parallels(
     request.check()?;
     refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
         .map_err(|why| why.with_field("bodies"))?;
-    if let Some((at, one)) = bodies
-        .iter()
-        .enumerate()
-        .find(|(_, one)| !(one.declination_deg.is_finite() && one.declination_deg.abs() <= 90.0))
-    {
-        return Err(Error::invalid_arg(format!(
-            "a declination is between -90° and 90°, not {}",
-            one.declination_deg
-        ))
-        .with_field(format!("bodies[{at}].declinationDeg")));
-    }
-    let mut rows: Vec<ParallelRow> = bodies
-        .iter()
-        .enumerate()
-        .flat_map(|(at, first)| {
-            bodies
-                .iter()
-                .skip(at + 1)
-                .map(move |second| (first, second))
+    refuse_past_a_pole(bodies.iter().map(|one| one.declination_deg), |at| {
+        format!("bodies[{at}].declinationDeg")
+    })?;
+    let pairs = bodies.iter().enumerate().flat_map(|(at, first)| {
+        bodies.iter().skip(at + 1).map(move |second| {
+            (
+                (first.graha, first.declination_deg),
+                (second.graha, second.declination_deg),
+            )
         })
-        .filter_map(|(first, second)| {
-            let apart_deg = (first.declination_deg.abs() - second.declination_deg.abs()).abs();
-            (apart_deg <= request.orb_deg).then_some(ParallelRow {
-                first: first.graha,
-                second: second.graha,
-                contrary: first.declination_deg * second.declination_deg < 0.0,
+    });
+    Ok(paired(pairs, request.orb_deg)
+        .into_iter()
+        .map(|pair| ParallelRow {
+            first: pair.first,
+            second: pair.second,
+            contrary: pair.contrary,
+            apart_deg: pair.apart_deg,
+            orb_deg: request.orb_deg,
+        })
+        .collect())
+}
+
+/// Two points the same distance from the equator, whatever names them: a
+/// chart's planets, or a point of each of two charts.
+pub(crate) struct Paired<K> {
+    pub(crate) first: K,
+    pub(crate) second: K,
+    pub(crate) contrary: bool,
+    pub(crate) apart_deg: f64,
+}
+
+/// Every pair of `(label, declination)`s within `orb_deg`, closest first;
+/// pairs equally close keep the order they were given in.
+pub(crate) fn paired<K: Copy>(
+    pairs: impl Iterator<Item = ((K, f64), (K, f64))>,
+    orb_deg: f64,
+) -> Vec<Paired<K>> {
+    let mut rows: Vec<Paired<K>> = pairs
+        .filter_map(|((first, a), (second, b))| {
+            let apart_deg = (a.abs() - b.abs()).abs();
+            (apart_deg <= orb_deg).then_some(Paired {
+                first,
+                second,
+                contrary: a * b < 0.0,
                 apart_deg,
-                orb_deg: request.orb_deg,
             })
         })
         .collect();
-    // Stable, so pairs equally close keep the order the bodies were given.
     rows.sort_by(|a, b| a.apart_deg.total_cmp(&b.apart_deg));
-    Ok(rows)
+    rows
+}
+
+/// Refuses a declination that is not a finite number of degrees between
+/// the poles, naming the `at`th by `field(at)`.
+pub(crate) fn refuse_past_a_pole(
+    declinations: impl Iterator<Item = f64>,
+    field: impl Fn(usize) -> String,
+) -> Result<(), Error> {
+    for (at, declination) in declinations.enumerate() {
+        if !(declination.is_finite() && declination.abs() <= 90.0) {
+            return Err(Error::invalid_arg(format!(
+                "a declination is between -90° and 90°, not {declination}"
+            ))
+            .with_field(field(at)));
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]
