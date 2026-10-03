@@ -2841,6 +2841,114 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its synastry with a partner', () {
+    // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
+    // p. 130): the recast's closest contacts, the lagna left out on
+    // request, a batch the charts one at a time, and refusals named in the
+    // record (`03-design/western-synastry.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final george = Observer(
+      latitudeDeg: Latitude(51.5045),
+      longitudeDeg: Longitude(-0.1366),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2402390.554166667;
+    final mary = Partner(
+      instant: 2403113.499305556,
+      place: Observer(
+        latitudeDeg: Latitude(51.5058),
+        longitudeDeg: Longitude(-0.1878),
+        altitudeM: Altitude(0),
+      ),
+    );
+    Chart found(
+      double instant, {
+      SynastryRequest? asked,
+      bool outerPlanets = false,
+    }) => ctx.chart.found(
+      instant: instant,
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: outerPlanets,
+      synastry: asked,
+    );
+    expect(found(birth).synastry, isNull);
+
+    final rows =
+        found(
+          birth,
+          asked: SynastryRequest(mary),
+          outerPlanets: true,
+        ).synastry!;
+    const mars = NatalGraha(Graha.mars);
+    for (final (first, aspect, second, fromExactDeg) in [
+      (mars, WesternAspect.opposition, const NatalLagna(), 0.32),
+      (mars, WesternAspect.sextile, const NatalGraha(Graha.sun), 0.39),
+      (
+        const NatalGraha(Graha.pluto),
+        WesternAspect.conjunction,
+        const NatalGraha(Graha.pluto),
+        1.69,
+      ),
+    ]) {
+      final row = rows.firstWhere(
+        (row) =>
+            row.first == first && row.aspect == aspect && row.second == second,
+      );
+      expect(row.fromExactDeg, closeTo(fromExactDeg, 0.01));
+    }
+    expect(rows.every((row) => row.fromExactDeg <= row.orbDeg), isTrue);
+
+    final without =
+        found(birth, asked: SynastryRequest(mary, lagna: false)).synastry!;
+    expect(
+      without.every(
+        (row) => row.first is NatalGraha && row.second is NatalGraha,
+      ),
+      isTrue,
+    );
+
+    final instants = [birth, birth - 3000.25];
+    final two = SynastryRequest(
+      mary,
+      table: const WesternAspectRequest(
+        aspects: [WesternAspect.sextile, WesternAspect.opposition],
+      ),
+    );
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: george,
+      utcOffsetSeconds: 0,
+      synastry: two,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(batch.at(k).synastry, found(instant, asked: two).synastry);
+    }
+    final far = Partner(instant: 9000000, place: mary.place);
+    for (final (asked, field) in [
+      (
+        SynastryRequest(mary, table: WesternAspectRequest.lilly),
+        'synastry.lagna',
+      ),
+      (SynastryRequest(far), 'synastry.partner'),
+    ]) {
+      expect(
+        () => found(birth, asked: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    // Lilly's own reading leaves the lagna out, and the outer three need
+    // leaving out too.
+    expect(
+      found(birth, asked: SynastryRequest.lilly(mary)).synastry,
+      isNotEmpty,
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries the outer planets when asked', () {
     final ctx = teistro.context(
       profile: 'western-tropical-default',
