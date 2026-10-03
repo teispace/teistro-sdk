@@ -1,10 +1,12 @@
 # Declinations and parallels (the `western` module)
 
 Status: `building`, 2026-10-03, written from the sources before any code.
-Steps 2 and 3 are built: `sdk.chart().declinations` and
-`sdk.chart().parallels`, held to George V against a recast, and
-measured over the corpus's births in
-[`declinations-measured.md`](declinations-measured.md).
+Steps 2 to 4 are built: `sdk.chart().declinations` and
+`sdk.chart().parallels`, held to George V against a recast, measured
+over the corpus's births in
+[`declinations-measured.md`](declinations-measured.md), and crossing to
+every binding as `chart.declinations` and `chart.parallels`, with
+parity. Step 5, the parallels across two charts, remains.
 
 [`western-aspects.md`](western-aspects.md) reads the aspects along the
 ecliptic. Leo adds one aspect that is not an angle there: two bodies the
@@ -107,6 +109,11 @@ not need to ask its ephemeris for anything new.
   138 on the same side and 79 contrary. About half of each (50.7% and
   54.4%) share their pair with one of Leo's nine aspects, where he
   reads the aspect instead (p. 43).
+- **The boundary reads each chart's declinations once.** The
+  declinations section carries the angles' and the parallels are read
+  from the same planets' rows, so a batch never turns a planet twice.
+  Sections 86 to 88 grew the wasm module by 24 kB raw, and its budget
+  was re-measured.
 - **A Sun past the obliquity is the frame, not a defect.** One birth's
   Sun stands 7.65″ past the obliquity. Under the profile's topocentric
   frame the Sun has a latitude of up to its 8.8″ parallax, and the
