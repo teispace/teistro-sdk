@@ -7,7 +7,7 @@ use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
-use crate::aspects::{OrbModel, WesternAspect, refuse_repeats};
+use crate::aspects::{OrbModel, PlanetAt, WesternAspect, refuse_repeats};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -139,27 +139,6 @@ impl AntisciaRequest {
     }
 }
 
-/// A planet as the antiscia read it: its tropical longitude.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Reflected {
-    /// Which planet.
-    pub graha: Graha,
-    /// Its tropical longitude, degrees.
-    pub longitude_deg: f64,
-}
-
-impl Reflected {
-    /// A planet at a tropical longitude.
-    #[must_use]
-    pub const fn new(graha: Graha, longitude_deg: f64) -> Reflected {
-        Reflected {
-            graha,
-            longitude_deg,
-        }
-    }
-}
-
 /// A planet's two reflections, tropical degrees, as Lilly tabulates them
 /// beside a figure (p. 181).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -213,11 +192,11 @@ pub struct Antiscia {
 ///
 /// ```
 /// use teistro_core::catalogue::Graha;
-/// use teistro_western::{AntisciaRequest, Reflected, antiscia};
+/// use teistro_western::{AntisciaRequest, PlanetAt, antiscia};
 ///
 /// // Lilly's p. 181 figure: Saturn's contrantiscion falls "neer" Jupiter.
 /// let read = antiscia(
-///     &[Reflected::new(Graha::Saturn, 255.32), Reflected::new(Graha::Jupiter, 107.52)],
+///     &[PlanetAt::new(Graha::Saturn, 255.32), PlanetAt::new(Graha::Jupiter, 107.52)],
 ///     &AntisciaRequest::default(),
 /// )?;
 /// assert!(read.pairs[0].contrary);
@@ -229,7 +208,7 @@ pub struct Antiscia {
 ///
 /// What [`AntisciaRequest::check`] refuses; a planet given twice; a
 /// longitude that is not a finite number.
-pub fn antiscia(bodies: &[Reflected], request: &AntisciaRequest) -> Result<Antiscia, Error> {
+pub fn antiscia(bodies: &[PlanetAt], request: &AntisciaRequest) -> Result<Antiscia, Error> {
     request.check()?;
     refuse_unreadable(bodies, "bodies")?;
     let pairs = bodies.iter().enumerate().flat_map(|(at, first)| {
@@ -263,12 +242,12 @@ pub fn antiscia(bodies: &[Reflected], request: &AntisciaRequest) -> Result<Antis
 ///
 /// ```
 /// use teistro_core::catalogue::Graha;
-/// use teistro_western::{AntisciaRequest, Reflected, synastry_antiscia};
+/// use teistro_western::{AntisciaRequest, PlanetAt, synastry_antiscia};
 ///
 /// // His Sun in 10° Taurus reflects onto her Sun in 20° Leo (Lilly, p. 90).
 /// let rows = synastry_antiscia(
-///     &[Reflected::new(Graha::Sun, 40.0)],
-///     &[Reflected::new(Graha::Sun, 140.0)],
+///     &[PlanetAt::new(Graha::Sun, 40.0)],
+///     &[PlanetAt::new(Graha::Sun, 140.0)],
 ///     &AntisciaRequest::default(),
 /// )?;
 /// assert!(!rows[0].contrary && rows[0].apart_deg < 1e-9);
@@ -280,8 +259,8 @@ pub fn antiscia(bodies: &[Reflected], request: &AntisciaRequest) -> Result<Antis
 /// What [`AntisciaRequest::check`] refuses; a planet given twice on one
 /// side; a longitude that is not a finite number.
 pub fn synastry_antiscia(
-    first: &[Reflected],
-    second: &[Reflected],
+    first: &[PlanetAt],
+    second: &[PlanetAt],
     request: &AntisciaRequest,
 ) -> Result<Vec<AntiscionRow>, Error> {
     request.check()?;
@@ -297,7 +276,7 @@ pub fn synastry_antiscia(
 
 /// Refuses a side naming a planet twice, or a longitude that is not a
 /// finite number, naming the side.
-fn refuse_unreadable(bodies: &[Reflected], side: &str) -> Result<(), Error> {
+fn refuse_unreadable(bodies: &[PlanetAt], side: &str) -> Result<(), Error> {
     refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
         .map_err(|why| why.with_field(side))?;
     match bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
@@ -313,7 +292,7 @@ fn refuse_unreadable(bodies: &[Reflected], side: &str) -> Result<(), Error> {
 /// contrantiscion) within the orb the request reads at the conjunction,
 /// closest first; pairs equally close keep the order given.
 fn reflected<'a>(
-    pairs: impl Iterator<Item = (&'a Reflected, &'a Reflected)>,
+    pairs: impl Iterator<Item = (&'a PlanetAt, &'a PlanetAt)>,
     request: &AntisciaRequest,
 ) -> Result<Vec<AntiscionRow>, Error> {
     let mut rows = Vec::new();
@@ -369,11 +348,11 @@ mod tests {
     ];
 
     /// The figure's planets, recovered from the printed antiscions.
-    fn figure() -> Vec<Reflected> {
+    fn figure() -> Vec<PlanetAt> {
         PRINTED
             .iter()
             .map(|&(graha, sign, degrees, minutes)| {
-                Reflected::new(graha, antiscion_deg(at(sign, degrees, minutes)))
+                PlanetAt::new(graha, antiscion_deg(at(sign, degrees, minutes)))
             })
             .collect()
     }
@@ -415,7 +394,7 @@ mod tests {
     #[test]
     fn a_planet_the_moieties_leave_out_is_listed() {
         let mut bodies = figure();
-        bodies.push(Reflected::new(
+        bodies.push(PlanetAt::new(
             Graha::Uranus,
             antiscion_deg(bodies[0].longitude_deg),
         ));
@@ -448,7 +427,7 @@ mod tests {
         assert_eq!(across, within.pairs);
         // A planet meets its own kind across: Saturn on the partner's Saturn
         // reflected.
-        let mirror = [Reflected::new(
+        let mirror = [PlanetAt::new(
             Graha::Saturn,
             antiscion_deg(saturn.longitude_deg),
         )];
@@ -486,7 +465,7 @@ mod tests {
                 .field(),
             Some("bodies")
         );
-        let lost = [Reflected::new(Graha::Sun, f64::NAN)];
+        let lost = [PlanetAt::new(Graha::Sun, f64::NAN)];
         assert_eq!(
             antiscia(&lost, &AntisciaRequest::default())
                 .unwrap_err()
