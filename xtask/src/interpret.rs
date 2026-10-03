@@ -995,7 +995,7 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// `nature` are both catalogued and neither is named anywhere. A kind that
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
-const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 12] = [
+const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 13] = [
     (
         "PANCHANGA",
         &["panchanga", "phala"],
@@ -1121,6 +1121,17 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 12] = [
         and a boundary code is not a key a message can match on until it \
         is given one (Q38)",
         &[],
+    ),
+    (
+        "OUTER",
+        &[],
+        "\
+        Uranus, Neptune and Pluto, placed beside the nine. `positions` \
+        would say them in the sentence it says a graha's degree in, but \
+        **no strict locale names them**: the vetted graha table stops at \
+        the nine, so the sentence has no word to put in. The wheel waits \
+        on the same names (`western-outer-planets.md` step 5)",
+        &["graha"],
     ),
 ];
 
