@@ -4437,6 +4437,71 @@ List<List<MidpointRow>> _decodeMidpoints(Charts batch) {
   );
 }
 
+final Expando<List<Composite>> _synastryComposites = Expando<List<Composite>>(
+  'synastry composites',
+);
+
+List<Composite> _synastryCompositesOf(Charts batch) =>
+    _synastryComposites[batch] ??= _decodeSynastryComposites(batch);
+
+/// `synastry_composites` holds a row a chart, or none when none was asked,
+/// and `synastry_composite_rows` is ragged by its count.
+List<Composite> _decodeSynastryComposites(Charts batch) {
+  final c = batch.synastryComposites;
+  final r = batch.synastryCompositeRows;
+  final planets = _ragged(
+    batch,
+    c.count,
+    r.length,
+    'synastry_composites and synastry_composite_rows',
+    (at) => CompositePlanet(
+      graha: Graha.byId(r.graha[at]),
+      longitudeDeg: r.longitudeDeg[at],
+      speedDegPerDay: r.speedDegPerDay[at],
+    ),
+  );
+  return List<Composite>.unmodifiable([
+    for (final (k, rows) in planets.indexed)
+      Composite(
+        planets: rows,
+        lagnaDeg: c.lagnaDeg[k],
+        midheavenDeg: c.midheavenDeg[k],
+        lagnaTurned: c.lagnaTurned[k] == 1,
+      ),
+  ]);
+}
+
+final Expando<List<Partner>> _synastryDavisons = Expando<List<Partner>>(
+  'synastry davisons',
+);
+
+List<Partner> _synastryDavisonsOf(Charts batch) =>
+    _synastryDavisons[batch] ??= _decodeSynastryDavisons(batch);
+
+/// `synastry_davisons` holds a Davison birth a chart, or none when none was
+/// asked.
+List<Partner> _decodeSynastryDavisons(Charts batch) {
+  final b = batch.synastryDavisons;
+  final charts = batch.cast.instant.length;
+  if (b.length != 0 && b.length != charts) {
+    throw StateError(
+      'synastry_davisons has ${b.length} rows for $charts charts; it is one a chart or none',
+    );
+  }
+  return List<Partner>.unmodifiable([
+    for (var k = 0; k < b.length; k++)
+      Partner(
+        instant: b.instant[k],
+        place: Observer(
+          latitudeDeg: Latitude(b.latitudeDeg[k]),
+          longitudeDeg: Longitude(b.longitudeDeg[k]),
+          altitudeM: Altitude(b.altitudeM[k]),
+        ),
+        utcOffsetSeconds: b.utcOffsetSeconds[k],
+      ),
+  ]);
+}
+
 final Expando<List<Antiscia>> _antiscia = Expando<List<Antiscia>>('antiscia');
 
 List<Antiscia> _antisciaOf(Charts batch) =>
@@ -7176,14 +7241,18 @@ enum SynastryZodiac {
 /// [zodiac]: Leo's nine under his orbs, the lagna read, tropically by
 /// default (C240–C242). [parallels] asks for the parallels across the two
 /// charts too ([Chart.synastryParallels],
-/// `03-design/western-declinations.md`), and [antiscia] the antiscia
-/// across them ([Chart.synastryAntiscia], `03-design/western-antiscia.md`).
+/// `03-design/western-declinations.md`), [antiscia] the antiscia across
+/// them ([Chart.synastryAntiscia], `03-design/western-antiscia.md`),
+/// [composite] the composite of the two ([Chart.synastryComposite], C247)
+/// and [davison] each chart's Davison birth with the partner
+/// ([Chart.synastryDavison], C248; `03-design/western-composites.md`).
 ///
 /// ```dart
 /// final asked = SynastryRequest(mary, lagna: false);
 /// final lilly = SynastryRequest.lilly(mary);
 /// final level = SynastryRequest(mary, parallels: const ParallelRequest());
 /// final mirrored = SynastryRequest(mary, antiscia: const AntisciaRequest());
+/// final oneChart = SynastryRequest(mary, composite: true, davison: true);
 /// ```
 final class SynastryRequest {
   const SynastryRequest(
@@ -7193,6 +7262,8 @@ final class SynastryRequest {
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
     this.antiscia,
+    this.composite = false,
+    this.davison = false,
   });
 
   /// Lilly's reading: the Ptolemaic five under his moieties, which give the
@@ -7202,6 +7273,8 @@ final class SynastryRequest {
     this.zodiac = SynastryZodiac.tropical,
     this.parallels,
     this.antiscia,
+    this.composite = false,
+    this.davison = false,
   }) : table = WesternAspectRequest.lilly,
        lagna = false;
 
@@ -7224,6 +7297,12 @@ final class SynastryRequest {
   /// The orbs the antiscia across are read under; none are read when null.
   final AntisciaRequest? antiscia;
 
+  /// Whether the composite of the two charts is made too.
+  final bool composite;
+
+  /// Whether each chart's Davison birth with the partner is given too.
+  final bool davison;
+
   String get _json => jsonEncode(<String, Object?>{
     'partner': partner._record,
     ...table._record,
@@ -7231,7 +7310,59 @@ final class SynastryRequest {
     'zodiac': zodiac.key,
     if (parallels case final asked?) 'parallels': asked._record,
     if (antiscia case final asked?) 'antiscia': asked._record,
+    if (composite) 'composite': true,
+    if (davison) 'davison': true,
   });
+}
+
+/// A planet of a composite chart: the near midpoint of its two places,
+/// degrees in the synastry's zodiac, moving at the mean of its two speeds.
+final class CompositePlanet extends _Value {
+  const CompositePlanet({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.speedDegPerDay,
+  });
+
+  final Graha graha;
+
+  /// The near midpoint of its two places, degrees.
+  final double longitudeDeg;
+
+  /// The mean of its two speeds, degrees a day; negative when retrograde.
+  final double speedDegPerDay;
+
+  @override
+  List<Object?> get _fields => [graha, longitudeDeg, speedDegPerDay];
+}
+
+/// The composite of a chart and a synastry's partner
+/// (`03-design/western-composites.md`, C247): its [planets] in the
+/// chart's order, the midheaven at the near midpoint of the two, and the
+/// lagna at the near midpoint of the two lagnas, turned by 180° when that
+/// stood before the midheaven, as [lagnaTurned] says.
+final class Composite extends _Value {
+  const Composite({
+    required this.planets,
+    required this.lagnaDeg,
+    required this.midheavenDeg,
+    required this.lagnaTurned,
+  });
+
+  final List<CompositePlanet> planets;
+
+  /// The composite lagna, degrees.
+  final double lagnaDeg;
+
+  /// The composite midheaven, degrees.
+  final double midheavenDeg;
+
+  /// Whether the lagnas' near midpoint stood before the midheaven and was
+  /// turned by 180°.
+  final bool lagnaTurned;
+
+  @override
+  List<Object?> get _fields => [planets, lagnaDeg, midheavenDeg, lagnaTurned];
 }
 
 /// One point of a chart and one of the partner's within an aspect's orb
@@ -13292,6 +13423,28 @@ final class Chart {
   /// (`03-design/western-antiscia.md`).
   List<AntiscionRow>? get synastryAntiscia {
     final all = _synastryAntisciaOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The composite of this chart and the partner's: each planet at the near
+  /// midpoint of its two places, moving at the mean of its two speeds, the
+  /// midheaven at the near midpoint of the two, and the lagna at theirs,
+  /// turned by 180° when it stood before the midheaven (C247), in the
+  /// synastry's zodiac; null unless `synastry` asked for `composite`
+  /// (`03-design/western-composites.md`).
+  Composite? get synastryComposite {
+    final all = _synastryCompositesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Davison birth of this chart and the partner (C248): the mean of
+  /// the two instants, of the two latitudes and altitudes, of the two
+  /// longitudes the shorter way round, and of the two clocks, this chart's
+  /// read on the request's; null unless `synastry` asked for `davison`
+  /// (`03-design/western-composites.md`). It is a [Partner], so it founds
+  /// a chart as a birth does, or stands as a synastry's partner.
+  Partner? get synastryDavison {
+    final all = _synastryDavisonsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

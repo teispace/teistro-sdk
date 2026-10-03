@@ -3235,6 +3235,87 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a synastry makes the composite and the Davison birth', () {
+    // King George V and Queen Mary, against the SDK test's Moshier recast
+    // (`03-design/western-composites.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final george = Observer(
+      latitudeDeg: Latitude(51.5045),
+      longitudeDeg: Longitude(-0.1366),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2402390.554166667;
+    final mary = Partner(
+      instant: 2403113.499305556,
+      place: Observer(
+        latitudeDeg: Latitude(51.5058),
+        longitudeDeg: Longitude(-0.1878),
+        altitudeM: Altitude(0),
+      ),
+    );
+    Chart found(SynastryRequest asked) => ctx.chart.found(
+      instant: birth,
+      place: george,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      synastry: asked,
+    );
+    bool near(double a, double b) => ((a - b + 540) % 360 - 180).abs() < 0.01;
+
+    final plain = found(SynastryRequest(mary));
+    expect(plain.synastryComposite, isNull);
+    expect(plain.synastryDavison, isNull);
+
+    final chart = found(SynastryRequest(mary, composite: true, davison: true));
+    final composite = chart.synastryComposite!;
+    expect(composite.planets, hasLength(10));
+    for (final (graha, longitude) in [
+      (Graha.sun, 68.8193),
+      (Graha.moon, 259.7289),
+      (Graha.mars, 130.5171),
+      (Graha.pluto, 44.2555),
+    ]) {
+      final at = composite.planets.firstWhere((one) => one.graha == graha);
+      expect(
+        near(at.longitudeDeg, longitude),
+        isTrue,
+        reason: '$graha ${at.longitudeDeg}',
+      );
+    }
+    expect(
+      near(composite.midheavenDeg, 258.1797),
+      isTrue,
+      reason: '${composite.midheavenDeg}',
+    );
+    expect(
+      near(composite.lagnaDeg, 334.007),
+      isTrue,
+      reason: '${composite.lagnaDeg}',
+    );
+    expect(composite.lagnaTurned, isFalse);
+
+    // The Davison birth is a Partner, so it founds a chart as a birth does.
+    final davison = chart.synastryDavison!;
+    expect(davison.instant, closeTo(2402752.026736111, 1e-8));
+    expect(davison.place.longitudeDeg, closeTo(-0.1622, 1e-9));
+    expect(davison.utcOffsetSeconds, 0);
+    final between = ctx.chart.found(
+      instant: davison.instant,
+      place: davison.place,
+      utcOffsetSeconds: davison.utcOffsetSeconds,
+    );
+    final mars = between.grahas.firstWhere((one) => one.graha == Graha.mars);
+    expect(
+      near(mars.tropicalDeg, 20.1267),
+      isTrue,
+      reason: '${mars.tropicalDeg}',
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries the outer planets when asked', () {
     final ctx = teistro.context(
       profile: 'western-tropical-default',

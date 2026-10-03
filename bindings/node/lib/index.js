@@ -1181,6 +1181,38 @@ export class Chart {
   }
 
   /**
+   * The composite of this chart and the partner's
+   * (`synastry: { partner, composite: true }`): each planet at the near
+   * midpoint of its two places, moving at the mean of its two speeds, the
+   * midheaven at the near midpoint of the two, and the lagna at theirs,
+   * turned by 180° when it stood before the midheaven (C247); in the
+   * synastry's zodiac; `null` unless asked
+   * (`03-design/western-composites.md`).
+   *
+   * It is `{ planets, lagnaDeg, midheavenDeg, lagnaTurned }`, each planet
+   * `{ graha, longitudeDeg, speedDegPerDay }` in this chart's order.
+   */
+  get synastryComposite() {
+    return synastriesOf(this.#batch).composites[this.#index] ?? null;
+  }
+
+  /**
+   * The Davison birth of this chart and the partner
+   * (`synastry: { partner, davison: true }`): the mean of the two
+   * instants, of the two latitudes and altitudes, of the two longitudes
+   * the shorter way round, and of the two clocks, this chart's read on
+   * the request's (C248); `null` unless asked
+   * (`03-design/western-composites.md`).
+   *
+   * It is `{ instant, place, utcOffsetSeconds }`, the shape a chart
+   * request and a synastry's `partner` take, so it founds a chart as a
+   * birth does: `ctx.chart.found({ ...chart.synastryDavison })`.
+   */
+  get synastryDavison() {
+    return synastriesOf(this.#batch).davisons[this.#index] ?? null;
+  }
+
+  /**
    * The chart's distances from the equator (`parallels: { orbDeg }` asks
    * for them with the parallels); `null` unless asked for
    * (`03-design/western-declinations.md`).
@@ -3521,6 +3553,24 @@ function raggedOf(batch, counts, rows, names, read) {
   );
 }
 
+/**
+ * A section holding a row a chart, or none when its record was not asked:
+ * each chart's row read by `read`, or `null` for every chart.
+ *
+ * @template T
+ * @param {Charts} batch
+ * @param {number} rows
+ * @param {string} name
+ * @param {(chart: number) => T} read
+ * @returns {readonly (T|null)[]}
+ */
+function rowAChartOf(batch, rows, name, read) {
+  const charts = batch.decoded.cast.instant.length;
+  if (rows === 0) return Object.freeze(Array.from({ length: charts }, () => null));
+  if (rows !== charts) throw new Error(`${name} has ${rows} rows for ${charts} charts; it is one a chart or none`);
+  return Object.freeze(Array.from({ length: charts }, (_, k) => read(k)));
+}
+
 /** Each batch's Western aspect tables, decoded once however many charts read them. */
 const WESTERN_ASPECTS = new WeakMap();
 
@@ -3553,7 +3603,7 @@ function westernAspectsOf(batch) {
   return decoded;
 }
 
-/** Each batch's synastries, their aspects, parallels and antiscia, decoded once however many charts read them. */
+/** Each batch's synastries, their aspects, parallels, antiscia, composites and Davison births, decoded once however many charts read them. */
 const SYNASTRIES = new WeakMap();
 
 /**
@@ -3561,10 +3611,12 @@ const SYNASTRIES = new WeakMap();
  * row a chart, or none when none was asked, and `synastry_rows` is ragged
  * by its count (`03-design/western-synastry.md`); `synastry_parallels` and
  * `synastry_antiscia` and their rows the same for the parallels and the
- * antiscia across the two.
+ * antiscia across the two, and `synastry_composites` for the composite's
+ * planets; `synastry_davisons` holds a Davison birth a chart, or none
+ * (`03-design/western-composites.md`).
  *
  * @param {Charts} batch
- * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[], antiscia: readonly (readonly object[]|null)[] }}
+ * @returns {{ aspects: readonly (readonly object[]|null)[], parallels: readonly (readonly object[]|null)[], antiscia: readonly (readonly object[]|null)[], composites: readonly (object|null)[], davisons: readonly (object|null)[] }}
  */
 function synastriesOf(batch) {
   let decoded = SYNASTRIES.get(batch);
@@ -3600,7 +3652,33 @@ function synastriesOf(batch) {
   const antiscia = raggedOf(batch, d.synastryAntiscia.count, a.first.length, 'synastry and synastry_antiscion_rows', (row) =>
     antiscionRowOf(a, row),
   );
-  decoded = Object.freeze({ aspects, parallels, antiscia });
+  const c = d.synastryComposites;
+  const cr = d.synastryCompositeRows;
+  const composites = raggedOf(batch, c.count, cr.graha.length, 'synastry_composites and synastry_composite_rows', (row) =>
+    Object.freeze({
+      graha: GrahaById.get(cr.graha[row]) ?? 'unknown',
+      longitudeDeg: cr.longitudeDeg[row],
+      speedDegPerDay: cr.speedDegPerDay[row],
+    }),
+  ).map((planets, k) =>
+    planets === null
+      ? null
+      : Object.freeze({
+          planets,
+          lagnaDeg: c.lagnaDeg[k],
+          midheavenDeg: c.midheavenDeg[k],
+          lagnaTurned: c.lagnaTurned[k] !== 0,
+        }),
+  );
+  const b = d.synastryDavisons;
+  const davisons = rowAChartOf(batch, b.instant.length, 'synastry_davisons', (k) =>
+    Object.freeze({
+      instant: b.instant[k],
+      place: Object.freeze({ latitude: b.latitudeDeg[k], longitude: b.longitudeDeg[k], altitude: b.altitudeM[k] }),
+      utcOffsetSeconds: b.utcOffsetSeconds[k],
+    }),
+  );
+  decoded = Object.freeze({ aspects, parallels, antiscia, composites: Object.freeze(composites), davisons });
   SYNASTRIES.set(batch, decoded);
   return decoded;
 }

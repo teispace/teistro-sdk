@@ -595,6 +595,8 @@ def main() -> None:
                 "zodiac": "CHARTS",
                 "parallels": {"orbDeg": 1.5},
                 "antiscia": {"orbs": {"model": "LEO"}},
+                "composite": True,
+                "davison": True,
             },
             progressions={
                 "at": 2470000.5,
@@ -1217,6 +1219,25 @@ def main() -> None:
             across_reflected = chart.synastry_antiscia
             assert across_reflected is not None
             put_antiscion_rows(f"chart-{i}-synastry-antiscia", across_reflected)
+            composite = chart.synastry_composite
+            assert composite is not None
+            put(
+                f"chart-{i}-composite",
+                f"{number(composite.lagna_deg)} {number(composite.midheaven_deg)} "
+                f"{int(composite.lagna_turned)} {len(composite.planets)}",
+            )
+            for n, middle in enumerate(composite.planets):
+                put(
+                    f"chart-{i}-composite-{n}",
+                    f"{middle.graha.full_key} {number(middle.longitude_deg)} {number(middle.speed_deg_per_day)}",
+                )
+            davison = chart.synastry_davison
+            assert davison is not None
+            put(
+                f"chart-{i}-davison",
+                f"{number(davison.instant)} {number(davison.place.latitude_deg)} {number(davison.place.longitude_deg)} "
+                f"{number(davison.place.altitude_m)} {davison.utc_offset_seconds}",
+            )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

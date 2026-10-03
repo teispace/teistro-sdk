@@ -2578,6 +2578,61 @@ test('a chart carries its synastry with a partner', () => {
  * a progression's later charts carrying them, and Leo's progressed Moon
  * quincunx Uranus in April 1907 (p. 41) (`03-design/western-outer-planets.md`).
  */
+test('a synastry makes the composite and the Davison birth', () => {
+  // King George V and Queen Mary, against the SDK test's Moshier recast.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const george = { place: { latitude: 51.5045, longitude: -0.1366, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2402390.554166667;
+  const partner = { instant: 2403113.499305556, place: { latitude: 51.5058, longitude: -0.1878, altitude: 0 } };
+  const plain = ctx.chart.found({ instant: birth, ...george, outerPlanets: true, synastry: { partner } });
+  assert.equal(plain.synastryComposite, null);
+  assert.equal(plain.synastryDavison, null);
+
+  const chart = ctx.chart.found({
+    instant: birth,
+    ...george,
+    outerPlanets: true,
+    synastry: { partner, composite: true, davison: true },
+  });
+  const composite = chart.synastryComposite;
+  assert.ok(Object.isFrozen(composite) && Object.isFrozen(composite.planets[0]), 'frozen to its leaves');
+  assert.equal(composite.planets.length, 10);
+  const near = (a, b) => Math.abs(((a - b + 540) % 360) - 180) < 0.01;
+  for (const [graha, longitude] of [
+    ['graha.SUN', 68.8193],
+    ['graha.MOON', 259.7289],
+    ['graha.MARS', 130.5171],
+    ['graha.PLUTO', 44.2555],
+  ]) {
+    const at = composite.planets.find((one) => one.graha === graha);
+    assert.ok(near(at.longitudeDeg, longitude), `${graha} ${at.longitudeDeg}`);
+  }
+  assert.ok(near(composite.midheavenDeg, 258.1797), `${composite.midheavenDeg}`);
+  assert.ok(near(composite.lagnaDeg, 334.007), `${composite.lagnaDeg}`);
+  assert.equal(composite.lagnaTurned, false);
+
+  // The Davison birth founds a chart as a birth does.
+  const davison = chart.synastryDavison;
+  assert.ok(Math.abs(davison.instant - 2402752.026736111) < 1e-8, `${davison.instant}`);
+  assert.ok(Math.abs(davison.place.longitude + 0.1622) < 1e-9, `${davison.place.longitude}`);
+  assert.equal(davison.utcOffsetSeconds, 0);
+  const between = ctx.chart.found({ ...davison });
+  const mars = between.grahas.find((one) => one.graha === 'graha.MARS');
+  assert.ok(near(mars.tropicalDeg, 20.1267), `${mars.tropicalDeg}`);
+
+  for (const [request, field] of [
+    [{ partner, composite: 'yes' }, 'synastry.composite'],
+    [{ partner, davison: 1 }, 'synastry.davison'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...george, synastry: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries the outer planets when asked', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
   const london = { place: { latitude: 51.5, longitude: 0, altitude: 0 }, utcOffsetSeconds: 0 };

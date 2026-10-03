@@ -1551,6 +1551,59 @@ export interface SynastryRequest extends WesternAspectRequest {
    * conjunction (Lilly's moieties when `{}`, C244).
    */
   readonly antiscia?: AntisciaRequest;
+  /**
+   * The composite of the two charts too (`chart.synastryComposite`): each
+   * planet and both angles at the near midpoint of the two charts', in
+   * this request's zodiac (C247). False when absent.
+   */
+  readonly composite?: boolean;
+  /**
+   * Each chart's Davison birth with the partner too
+   * (`chart.synastryDavison`): the midpoint of the two births in time and
+   * place (C248). False when absent.
+   */
+  readonly davison?: boolean;
+}
+
+/** A planet of a composite chart. */
+export interface CompositePlanet {
+  readonly graha: Graha | 'unknown';
+  /** The near midpoint of its two places, degrees, in the synastry's zodiac. */
+  readonly longitudeDeg: number;
+  /** The mean of its two speeds, degrees a day; negative when retrograde. */
+  readonly speedDegPerDay: number;
+}
+
+/**
+ * The composite of a chart and a synastry's partner
+ * (`03-design/western-composites.md`, C247).
+ */
+export interface Composite {
+  /** Its planets, in the chart's order. */
+  readonly planets: readonly CompositePlanet[];
+  /** The near midpoint of the two lagnas, turned when `lagnaTurned` says, degrees. */
+  readonly lagnaDeg: number;
+  /** The near midpoint of the two midheavens, degrees. */
+  readonly midheavenDeg: number;
+  /** Whether the lagnas' near midpoint stood before the midheaven and was turned by 180°. */
+  readonly lagnaTurned: boolean;
+}
+
+/**
+ * The Davison birth of a chart and a synastry's partner (C248), in the
+ * shape a chart request takes, so it founds a chart as a birth does.
+ *
+ * @example
+ * const davison = chart.synastryDavison;
+ * if (davison !== null) ctx.chart.found({ ...davison });
+ */
+export interface DavisonBirth {
+  /** The mean instant, a Julian day on the UTC scale. */
+  readonly instant: number;
+  /** The mean place, the longitude taken the shorter way round. */
+  readonly place: ChartPlace;
+  /** The mean of the two clocks, seconds east of UTC: it names only the civil day. */
+  readonly utcOffsetSeconds: number;
 }
 
 /**
@@ -3275,6 +3328,16 @@ export declare class Chart {
    * (`03-design/western-antiscia.md`).
    */
   readonly synastryAntiscia: readonly AntiscionRow[] | null;
+  /**
+   * The composite of this chart and the partner's; `null` unless
+   * `synastry` asked for `composite` (`03-design/western-composites.md`).
+   */
+  readonly synastryComposite: Composite | null;
+  /**
+   * The Davison birth of this chart and the partner; `null` unless
+   * `synastry` asked for `davison` (`03-design/western-composites.md`).
+   */
+  readonly synastryDavison: DavisonBirth | null;
   /**
    * The chart's distances from the equator; `null` unless `parallels`
    * asked (`03-design/western-declinations.md`).

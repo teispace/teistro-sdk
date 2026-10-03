@@ -383,6 +383,8 @@ const charts = geo.chart.foundMany({
     zodiac: 'CHARTS',
     parallels: { orbDeg: 1.5 },
     antiscia: { orbs: { model: 'LEO' } },
+    composite: true,
+    davison: true,
   },
   progressions: {
     at: 2470000.5,
@@ -813,6 +815,19 @@ for (const chart of charts) {
     ),
   );
   putAntiscionRows(`chart-${i}-synastry-antiscia`, chart.synastryAntiscia);
+  const composite = chart.synastryComposite;
+  put(
+    `chart-${i}-composite`,
+    `${number(composite.lagnaDeg)} ${number(composite.midheavenDeg)} ${composite.lagnaTurned ? 1 : 0} ${composite.planets.length}`,
+  );
+  composite.planets.forEach((at, n) =>
+    put(`chart-${i}-composite-${n}`, `${at.graha} ${number(at.longitudeDeg)} ${number(at.speedDegPerDay)}`),
+  );
+  const davison = chart.synastryDavison;
+  put(
+    `chart-${i}-davison`,
+    `${number(davison.instant)} ${number(davison.place.latitude)} ${number(davison.place.longitude)} ${number(davison.place.altitude)} ${davison.utcOffsetSeconds}`,
+  );
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,
