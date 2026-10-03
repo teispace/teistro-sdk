@@ -923,6 +923,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         one_document(report, &geo, index, document);
         the_progressions(report, &geo, index, document, &bare);
         the_western_aspects(report, &geo, index, document);
+        the_parallels(report, &geo, index, document);
     }
     the_synastry(report, &geo, &read.value);
     // **One call, as the other three make one.** The foundations are the
@@ -1936,6 +1937,54 @@ fn the_western_aspects(
                 number(row.from_exact_deg),
                 number(row.orb_deg),
                 u8::from(row.applying)
+            ),
+        );
+    }
+}
+
+/// The parallels every runner asks for: a wider orb than Leo's, so the
+/// record's own value crosses.
+const PARALLELS_JSON: &str = r#"{"orbDeg":1.5}"#;
+
+/// A chart's declinations and parallels as the other three print them:
+/// the obliquity and the angles', each planet's, then the parallels.
+fn the_parallels(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::ParallelRequest::from_json(PARALLELS_JSON).expect("a valid request");
+    let declined = sdk.chart().declinations(document).expect("the angles");
+    put(
+        report,
+        &format!("chart-{index}-declinations"),
+        format!(
+            "{} {} {}",
+            number(declined.obliquity_deg),
+            number(declined.lagna_deg),
+            number(declined.midheaven_deg)
+        ),
+    );
+    for at in &declined.grahas {
+        put(
+            report,
+            &format!("chart-{index}-declination-{}", at.graha.full_key()),
+            number(at.declination_deg),
+        );
+    }
+    let rows = sdk.chart().parallels(document, &asked).expect("the angles");
+    put(
+        report,
+        &format!("chart-{index}-parallel-count"),
+        rows.len().to_string(),
+    );
+    for (n, row) in rows.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-parallel-{n}"),
+            format!(
+                "{} {} {} {} {}",
+                row.first.full_key(),
+                row.second.full_key(),
+                u8::from(row.contrary),
+                number(row.apart_deg),
+                number(row.orb_deg)
             ),
         );
     }
