@@ -1939,7 +1939,7 @@ test('a chart carries its hit list, the sky once for the batch', () => {
   for (const [asked, field] of [
     [{ from: 2460676.5, to: 2460600.5 }, 'hits.to'],
     [{ ...hits, orbDeg: 20 }, 'hits.orbDeg'],
-    [{ ...hits, grahas: ['PLUTO'] }, 'hits.grahas'],
+    [{ ...hits, grahas: ['PLUTO', 'PLUTO'] }, 'hits.grahas'],
     [{ ...hits, points: ['ASCENDANT'] }, 'hits.points[0]'],
   ]) {
     assert.throws(

@@ -100,6 +100,82 @@ fn every_sign_ingress_is_where_a_founded_chart_puts_it() {
     }
 }
 
+/// The outer planets are searched as the nine are: over a decade each
+/// ingress is read back through a chart that asks for them, and a natal
+/// point the birth placed is reached.
+#[test]
+fn the_outer_planets_are_searched_as_the_nine_are() {
+    let sdk = context(None);
+    let request = ChartRequest::at(place(), UtcOffset::UTC).with_outer_planets();
+    let decade = HitRequest::between(
+        JulianDay::<Utc>::literal(2_460_676.5),
+        JulianDay::<Utc>::literal(2_464_329.0),
+    )
+    .with_grahas([Graha::Uranus, Graha::Neptune, Graha::Pluto])
+    .with_kinds([HitKind::SignIngress, HitKind::Station]);
+    let hits = sdk.chart().hits(&natal(&sdk), &decade).unwrap().value;
+    for graha in [Graha::Uranus, Graha::Neptune, Graha::Pluto] {
+        assert!(
+            hits.iter()
+                .any(|hit| hit.graha == graha && matches!(hit.event, HitEvent::Station { .. })),
+            "{graha:?} stands still every year"
+        );
+    }
+    let second = 1.0 / 86_400.0;
+    let mut ingresses = 0;
+    for hit in &hits {
+        let HitEvent::SignIngress { into, .. } = hit.event else {
+            continue;
+        };
+        ingresses += 1;
+        let sign = |by: f64| {
+            let at = JulianDay::<Utc>::literal(hit.instant.get() + by);
+            let chart = sdk.chart().reading(at, &request).unwrap().value;
+            let deg = chart.foundation.graha(hit.graha).unwrap().longitude_deg;
+            Rashi::ALL[(deg.rem_euclid(360.0) / 30.0) as usize % 12]
+        };
+        assert_ne!(sign(-second), into, "{hit:?}");
+        assert_eq!(sign(second), into, "{hit:?}");
+    }
+    assert!(ingresses > 0, "a decade moves Uranus a sign");
+    // A natal point among the outer three is reached when the birth
+    // placed it, and named when it did not.
+    let birth = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+            &ChartRequest::at(place(), UtcOffset::literal(5, 45, 0)).with_outer_planets(),
+        )
+        .unwrap()
+        .value;
+    let pluto = NatalPoint::Graha {
+        graha: Graha::Pluto,
+    };
+    let aspects = decade
+        .with_grahas([Graha::Saturn])
+        .with_kinds([HitKind::Aspect])
+        .with_points([pluto]);
+    let reached = sdk.chart().hits(&birth, &aspects).unwrap().value;
+    for hit in &reached {
+        let HitEvent::Aspect {
+            to, angle, phase, ..
+        } = hit.event
+        else {
+            panic!("only aspects were asked for: {hit:?}");
+        };
+        assert_eq!(to, pluto);
+        if phase == AspectPhase::Exact {
+            let apart = separation(&sdk, &birth, hit, to);
+            assert!(at_angle(apart, angle, 0.0), "{hit:?}: {apart}");
+        }
+    }
+    assert!(
+        !reached.is_empty(),
+        "Saturn aspects natal Pluto in a decade"
+    );
+    assert!(sdk.chart().hits(&natal(&sdk), &aspects).is_err());
+}
+
 /// Ketu is Rahu's opposite point, searched as Rahu turned half a circle:
 /// every one of its ingresses is Rahu's at the same instant, six signs on.
 #[test]

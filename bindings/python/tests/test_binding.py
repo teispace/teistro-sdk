@@ -1244,7 +1244,7 @@ class AnEngine(WithLibrary):
             refusals: list[tuple[HitRequest, str]] = [
                 ({"from": 2460676.5, "to": 2460600.5}, "hits.to"),
                 ({**asked, "orbDeg": 20}, "hits.orbDeg"),
-                ({**asked, "grahas": ["PLUTO"]}, "hits.grahas"),
+                ({**asked, "grahas": ["PLUTO", "PLUTO"]}, "hits.grahas"),
             ]
             for bad, field in refusals:
                 with self.assertRaises(TeistroError) as refused:

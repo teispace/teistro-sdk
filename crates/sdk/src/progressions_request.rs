@@ -329,7 +329,7 @@ mod tests {
                 "progressions.contacts.aspects",
             ),
             (
-                r#"{"contacts": {"from": 1e6, "to": 2e6, "grahas": ["URANUS"]}}"#,
+                r#"{"contacts": {"from": 1e6, "to": 2e6, "grahas": ["MOON", "MOON"]}}"#,
                 "progressions.contacts.grahas",
             ),
         ] {

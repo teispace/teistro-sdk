@@ -5,8 +5,11 @@
 //! instant of sky a progression answers, turns the angles by the asked
 //! method, and moves a birth's points by a direction's arc.
 
+use std::borrow::Cow;
+
 use teistro_astro::houses::{Input, houses};
 use teistro_astro::sky::{Spherical, ecliptic_to_equatorial};
+use teistro_chart::OuterPlanets;
 use teistro_chart::foundation::ChartAngles;
 use teistro_core::catalogue::{Graha, HouseSystem};
 use teistro_core::envelope::Envelope;
@@ -89,6 +92,18 @@ pub struct Progressed {
     pub armc_deg: f64,
     /// What it was asked with.
     pub asked: ProgressionRequest,
+}
+
+/// The request a later chart of a birth is founded with: the outer
+/// planets too where the birth carries them, so a progressed chart
+/// places every body its birth placed
+/// (`03-design/western-outer-planets.md`).
+fn carrying<'a>(birth: &Document, request: &'a ChartRequest) -> Cow<'a, ChartRequest> {
+    if birth.foundation.outer.is_empty() || request.outer_planets() == OuterPlanets::Placed {
+        Cow::Borrowed(request)
+    } else {
+        Cow::Owned(request.clone().with_outer_planets())
+    }
 }
 
 /// The arc a direction moves every point by.
@@ -313,7 +328,7 @@ impl ChartArea<'_> {
     ) -> Result<Progressed, Error> {
         let born = birth.foundation.instant;
         let sky = asked.progression.sky_at(born, life)?;
-        let chart = self.reading(sky, request)?;
+        let chart = self.reading(sky, &carrying(birth, request))?;
         let natal = self.angles(birth)?;
         let own = self.angles(&chart.value)?;
         let zodiac = &chart.value.foundation.zodiac;
@@ -400,7 +415,7 @@ impl ChartArea<'_> {
         let arc_deg = match arc {
             DirectionArc::Solar(progression) => {
                 let sky = progression.sky_at(born, life)?;
-                let later = self.reading(sky, request)?.value;
+                let later = self.reading(sky, &carrying(birth, request))?.value;
                 // Signed, so a converse arc is negative and an arc across
                 // 0° Aries is not a circle short.
                 (sun_of(&later)? - sun_of(birth)? + 180.0).rem_euclid(360.0) - 180.0
@@ -418,6 +433,7 @@ impl ChartArea<'_> {
                 .foundation
                 .grahas
                 .iter()
+                .chain(&birth.foundation.outer)
                 .map(|at| DirectedPlanet {
                     graha: at.graha,
                     longitude_deg: moved(at.longitude_deg),

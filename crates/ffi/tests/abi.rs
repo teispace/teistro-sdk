@@ -2185,7 +2185,7 @@ fn a_chart_request_answers_the_hit_list() {
         Some("hits.orbDeg")
     );
     assert_eq!(
-        refused(r#"{"from":2460676.5,"to":2460866.5,"grahas":["PLUTO"]}"#).as_deref(),
+        refused(r#"{"from":2460676.5,"to":2460866.5,"grahas":["PLUTO","PLUTO"]}"#).as_deref(),
         Some("hits.grahas")
     );
 }

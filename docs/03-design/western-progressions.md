@@ -82,8 +82,9 @@ His sidereal time at birth, 2h 52m 54s, and at Greenwich noon that day,
    - opposition Venus, November.
 
    Five of these are to the seven planets, so the contacts must find
-   them in their months. Uranus and the midheaven are not natal points
-   of the hit list yet.
+   them in their months. The midheaven is not a natal point of the hit
+   list yet; Uranus is, where the birth places it
+   (`western-outer-planets.md`), and the April contact is a test.
 6. **The Naibod measure** (p. 261). 20° 15′ is 20 years, 198 days and
    16 hours: 0.985647° a year, and 365.2422 days to the year.
 
