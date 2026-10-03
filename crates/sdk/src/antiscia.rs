@@ -4,8 +4,7 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::error::Error;
 use teistro_serial::Document;
 use teistro_western::{
-    Antiscia, AntisciaRequest, AntiscionRow, Reflected, SynastryRequest, antiscia,
-    synastry_antiscia,
+    Antiscia, AntisciaRequest, AntiscionRow, PlanetAt, SynastryRequest, antiscia, synastry_antiscia,
 };
 
 use crate::area::ChartArea;
@@ -85,8 +84,8 @@ impl ChartArea<'_> {
 
 /// A chart's planets as the antiscia read them: each at its tropical
 /// longitude.
-pub(crate) fn reflected(foundation: &ChartFoundation) -> Vec<Reflected> {
+pub(crate) fn reflected(foundation: &ChartFoundation) -> Vec<PlanetAt> {
     planets(foundation)
-        .map(|at| Reflected::new(at.graha, at.tropical_deg))
+        .map(|at| PlanetAt::new(at.graha, at.tropical_deg))
         .collect()
 }
