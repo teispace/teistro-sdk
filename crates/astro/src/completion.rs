@@ -1178,7 +1178,7 @@ pub(crate) fn apparent_cell(
         .ok_or_else(|| Error::internal("a grid has a cell for every instant"))?;
     if !cell.is_ok() {
         return Err(Error::new(
-            teistro_core::error::Status::Provider,
+            cell.status.status(),
             format!(
                 "{} at {ut1}: the provider answered {:?}",
                 body.key(),

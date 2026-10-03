@@ -3,6 +3,7 @@
 //! (`docs/03-design/ephemeris-port-and-adapters.md`, §3).
 
 use serde::Serialize;
+use teistro_core::error::Status;
 use teistro_core::settings::Tier;
 
 use crate::frame::Frame;
@@ -56,6 +57,22 @@ impl CellStatus {
             CellStatus::OutOfRange => -2,
             CellStatus::DataMissing => -3,
             CellStatus::Provider { code } => code,
+        }
+    }
+
+    /// The SDK status a refused cell maps to, as
+    /// [`crate::ProviderError::status`] maps a refused request: an instant
+    /// outside the coverage is `OUT_OF_RANGE` whether one cell or the whole
+    /// request was refused for it, and never a failure of the provider.
+    #[must_use]
+    pub const fn status(self) -> Status {
+        match self {
+            CellStatus::Ok => Status::Ok,
+            CellStatus::UnsupportedBody => Status::Unsupported,
+            CellStatus::OutOfRange => Status::OutOfRange,
+            CellStatus::NotComputed | CellStatus::DataMissing | CellStatus::Provider { .. } => {
+                Status::Provider
+            }
         }
     }
 

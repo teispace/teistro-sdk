@@ -384,8 +384,11 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         [
             ("c028-troms-1988-06-21.json", teistro::Status::OutOfRange),
             ("c029-troms-1988-12-21.json", teistro::Status::OutOfRange),
-            ("c047-london-1800-01-02.json", teistro::Status::Provider),
-            ("c048-kathmandu-2399-12-30.json", teistro::Status::Provider),
+            ("c047-london-1800-01-02.json", teistro::Status::OutOfRange),
+            (
+                "c048-kathmandu-2399-12-30.json",
+                teistro::Status::OutOfRange
+            ),
         ]
     );
 }
@@ -610,8 +613,11 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
     assert_eq!(
         refused,
         [
-            ("c047-london-1800-01-02.json", teistro::Status::Provider),
-            ("c048-kathmandu-2399-12-30.json", teistro::Status::Provider),
+            ("c047-london-1800-01-02.json", teistro::Status::OutOfRange),
+            (
+                "c048-kathmandu-2399-12-30.json",
+                teistro::Status::OutOfRange
+            ),
         ]
     );
 }
