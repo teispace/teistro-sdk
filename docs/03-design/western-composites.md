@@ -1,10 +1,11 @@
 # Composite and Davison charts (the `western` module)
 
-Status: `in progress`, 2026-10-03, written from the sources before any
-code. Steps 2 and 3 are built: `sdk.chart().composite` and
-`Partner::davison`, held to a recast of George V and Queen Mary, and
-measured over the corpus's pairs of births in
-[`composites-measured.md`](composites-measured.md).
+Status: `built`, 2026-10-03, written from the sources before any code.
+Every step is built: `sdk.chart().composite` and `Partner::davison`,
+held to a recast of George V and Queen Mary, measured over the corpus's
+pairs of births in [`composites-measured.md`](composites-measured.md),
+and crossing to every binding as `chart.synastryComposite` and
+`chart.synastryDavison`, with parity.
 
 [`western-synastry.md`](western-synastry.md) reads two charts against
 each other. A relationship chart makes **one** chart of two: the
@@ -130,6 +131,11 @@ the example is read for its place alone.
   years apart and opposite it when odd, since it made that many whole
   turns between them; every other planet parts further, the Moon by a
   median of 166°.
+
+- **A document keeps no clock.** The Davison birth's clock is the mean
+  of the two, and a founded chart does not carry the clock it was asked
+  on, so `synastry_with` cannot give it; `PartnerSynastry::davisons`
+  takes the clock from its caller, and the boundary passes the batch's.
 
 ## What this does not decide
 

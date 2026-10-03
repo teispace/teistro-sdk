@@ -2010,6 +2010,17 @@ the astronomical numbers do not move. Nothing else computes yet.
     opposite it (C246), Leo's own example standing on the far point. A
     `midpoints_json` record crosses the boundary in sections 96 and 97,
     and Node, Python and Dart read `chart.midpoints`, with parity.
+  - **Composite and Davison charts** (`western-composites.md`,
+    `composites-measured.md`). `sdk.chart().composite` makes one chart of
+    two: each planet at the near midpoint of its two places with the mean
+    speed, the midheaven at the near midpoint of the two, and the lagna at
+    theirs, turned by 180° when it stands before the midheaven (Townley;
+    Astrolog; C247). `Partner::davison` gives the mean birth, its
+    longitude the shorter way round (C248). A synastry's `composite` and
+    `davison` flags cross in sections 98 to 100, and Node, Python and
+    Dart read `chart.synastryComposite` and `chart.synastryDavison`, the
+    Davison birth in the shape a chart request takes, with parity.
+    `near_midpoint_deg` is now the same either way round to the bit.
   - **Antiscia** (`western-antiscia.md`, `antiscia-measured.md`).
     `sdk.chart().antiscia` gives each planet's reflection about the
     solstices and about the equinoxes (Lilly, *Christian Astrology*,

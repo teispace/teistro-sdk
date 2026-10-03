@@ -154,10 +154,10 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
 
 ## What this does not decide
 
-- **The composite charts.** A midpoint composite (each pair of planets
-  read at its midpoint) and a relationship chart founded at the
-  midpoint in time and place are later methods with no rank 1 text read
-  yet. They get their own page.
+- **The composite charts.** They are read on their own page
+  ([`western-composites.md`](western-composites.md), decision 6), from
+  Townley's own account and Astrolog's source: a synastry's `composite`
+  and `davison` ask for them beside the aspects.
 - **Weighting.** Leo reads a contact by the planets' natures (Mars on
   Venus, Saturn on Venus) and gives no score. The rows carry the
   distance from exact and the orb, and leave any weighting to the
