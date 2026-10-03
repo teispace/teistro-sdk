@@ -171,6 +171,8 @@ jobs:
         run: cargo xtask check-western-aspects
       - name: Synastry page (every pair of the corpus's births read in the tropical zodiac and in each chart's own, where the two part, C241)
         run: cargo xtask check-synastry
+      - name: Declinations page (Leo's parallels over the corpus, contrary and aspected, and the planets past the obliquity, C243)
+        run: cargo xtask check-declinations
       - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
         run: cargo xtask check-progressed-angles
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
