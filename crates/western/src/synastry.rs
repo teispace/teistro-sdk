@@ -33,6 +33,7 @@ use teistro_gochar::hits::NatalPoint;
 use crate::antiscia::AntisciaRequest;
 use crate::aspects::{AspectRequest, OrbModel, Station, WesternAspect, holding, refuse_repeats};
 use crate::declination::{ParallelRequest, paired, refuse_past_a_pole};
+use crate::midpoint::MidpointRequest;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -77,6 +78,11 @@ pub struct SynastryRequest {
     /// (`03-design/western-antiscia.md`). None by default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub antiscia: Option<AntisciaRequest>,
+    /// The equal distances across the two charts, when asked: each planet
+    /// of one on the axis through two of the other's
+    /// (`03-design/western-midpoints.md`, decision 9). None by default.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub midpoints: Option<MidpointRequest>,
     /// Whether the composite of the two charts is made too: each planet
     /// and both angles at the near midpoint of the two charts', in the
     /// request's zodiac (`03-design/western-composites.md`, C247). False
@@ -97,6 +103,7 @@ struct Asked {
     zodiac: SynastryZodiac,
     parallels: Option<ParallelRequest>,
     antiscia: Option<AntisciaRequest>,
+    midpoints: Option<MidpointRequest>,
     composite: bool,
 }
 
@@ -108,6 +115,7 @@ impl Default for Asked {
             zodiac,
             parallels,
             antiscia,
+            midpoints,
             composite,
         } = SynastryRequest::default();
         Asked {
@@ -117,6 +125,7 @@ impl Default for Asked {
             zodiac,
             parallels,
             antiscia,
+            midpoints,
             composite,
         }
     }
@@ -133,6 +142,7 @@ impl From<Asked> for SynastryRequest {
             zodiac: asked.zodiac,
             parallels: asked.parallels,
             antiscia: asked.antiscia,
+            midpoints: asked.midpoints,
             composite: asked.composite,
         }
     }
@@ -146,6 +156,7 @@ impl Default for SynastryRequest {
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
             antiscia: None,
+            midpoints: None,
             composite: false,
         }
     }
@@ -162,6 +173,7 @@ impl SynastryRequest {
             zodiac: SynastryZodiac::Tropical,
             parallels: None,
             antiscia: None,
+            midpoints: None,
             composite: false,
         }
     }
@@ -177,6 +189,14 @@ impl SynastryRequest {
     #[must_use]
     pub fn with_antiscia(mut self, antiscia: AntisciaRequest) -> Self {
         self.antiscia = Some(antiscia);
+        self
+    }
+
+    /// Reads the equal distances across the two charts too, under this
+    /// request.
+    #[must_use]
+    pub const fn with_midpoints(mut self, midpoints: MidpointRequest) -> Self {
+        self.midpoints = Some(midpoints);
         self
     }
 
@@ -218,7 +238,8 @@ impl SynastryRequest {
     /// The request a binding sends, as JSON: the aspect table's `aspects`
     /// and `orbs` ([`AspectRequest::from_json`]), `lagna` (true when left
     /// out), `zodiac`, `"TROPICAL"` (the default) or `"CHARTS"`,
-    /// `parallels`, `antiscia`, and `composite` (false when left out).
+    /// `parallels`, `antiscia`, `midpoints` (`{"orbDeg": 0.5}` as a
+    /// chart's own are asked), and `composite` (false when left out).
     ///
     /// ```
     /// use teistro_western::{SynastryRequest, SynastryZodiac, WesternAspect};
@@ -268,6 +289,9 @@ impl SynastryRequest {
         }
         if let Some(antiscia) = &self.antiscia {
             antiscia.check().map_err(|why| why.under("antiscia"))?;
+        }
+        if let Some(midpoints) = &self.midpoints {
+            midpoints.check().map_err(|why| why.under("midpoints"))?;
         }
         Ok(())
     }

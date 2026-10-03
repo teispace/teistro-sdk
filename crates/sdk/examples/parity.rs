@@ -2092,9 +2092,10 @@ fn natal_key(point: teistro::NatalPoint) -> &'static str {
 /// in Sydney at J2000, in each chart's own zodiac, so the partner's own
 /// clock, the lagna and C241's sidereal reading all cross; the parallels
 /// across under a widened orb; the antiscia across under Leo's orbs,
-/// which give every planet one; and the composite and the Davison birth,
+/// which give every planet one; the equal distances across under a
+/// widened orb; and the composite and the Davison birth,
 /// the partner's clock and the charts' meeting in it.
-const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}},"composite":true,"davison":true}"#;
+const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}},"midpoints":{"orbDeg":1.5},"composite":true,"davison":true}"#;
 
 /// Every chart's synastry as the other three print it: its length, then
 /// each row's two points, aspect, arcs and orb; then the parallels across,
@@ -2162,43 +2163,96 @@ fn the_synastry(
             &format!("chart-{index}-synastry-antiscia"),
             one.antiscia.as_deref().expect("the record asks for them"),
         );
-        let composite = one.composite.as_ref().expect("the record asks for it");
-        put(
+        put_synastry_midpoints(
             report,
-            &format!("chart-{index}-composite"),
-            format!(
-                "{} {} {} {}",
-                number(composite.lagna_deg),
-                number(composite.midheaven_deg),
-                u8::from(composite.lagna_turned),
-                composite.planets.len()
-            ),
+            index,
+            one.midpoints.as_deref().expect("the record asks for them"),
         );
-        for (n, at) in composite.planets.iter().enumerate() {
-            put(
-                report,
-                &format!("chart-{index}-composite-{n}"),
-                format!(
-                    "{} {} {}",
-                    at.graha.full_key(),
-                    number(at.longitude_deg),
-                    number(at.speed_deg_per_day)
-                ),
-            );
-        }
+        put_one_chart(
+            report,
+            index,
+            one.composite.as_ref().expect("the record asks for it"),
+            davison,
+        );
+    }
+}
+
+/// The equal distances across a synastry as the other three print them:
+/// their count, then each row's pair, the planet between, whose pair,
+/// side, distance, gap from the axis and orb.
+fn put_synastry_midpoints(
+    report: &mut Report,
+    index: usize,
+    across: &[teistro::SynastryMidpointRow],
+) {
+    put(
+        report,
+        &format!("chart-{index}-synastry-midpoint-count"),
+        across.len().to_string(),
+    );
+    for (n, row) in across.iter().enumerate() {
         put(
             report,
-            &format!("chart-{index}-davison"),
+            &format!("chart-{index}-synastry-midpoint-{n}"),
             format!(
-                "{} {} {} {} {}",
-                number(davison.instant.get()),
-                number(davison.place.latitude.get()),
-                number(davison.place.longitude.get()),
-                number(davison.place.altitude.get()),
-                davison.utc_offset.seconds()
+                "{} {} {} {} {} {} {} {}",
+                row.first.full_key(),
+                row.second.full_key(),
+                row.middle.full_key(),
+                u8::from(row.partners_pair),
+                u8::from(row.far),
+                number(row.distance_deg),
+                number(row.from_axis_deg),
+                number(row.orb_deg)
             ),
         );
     }
+}
+
+/// The composite and the Davison birth as the other three print them: the
+/// composite's angles and each planet's place and speed, then the
+/// Davison birth.
+fn put_one_chart(
+    report: &mut Report,
+    index: usize,
+    composite: &teistro::Composite,
+    davison: &teistro::Partner,
+) {
+    put(
+        report,
+        &format!("chart-{index}-composite"),
+        format!(
+            "{} {} {} {}",
+            number(composite.lagna_deg),
+            number(composite.midheaven_deg),
+            u8::from(composite.lagna_turned),
+            composite.planets.len()
+        ),
+    );
+    for (n, at) in composite.planets.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-composite-{n}"),
+            format!(
+                "{} {} {}",
+                at.graha.full_key(),
+                number(at.longitude_deg),
+                number(at.speed_deg_per_day)
+            ),
+        );
+    }
+    put(
+        report,
+        &format!("chart-{index}-davison"),
+        format!(
+            "{} {} {} {} {}",
+            number(davison.instant.get()),
+            number(davison.place.latitude.get()),
+            number(davison.place.longitude.get()),
+            number(davison.place.altitude.get()),
+            davison.utc_offset.seconds()
+        ),
+    );
 }
 
 /// The lots every runner asks for: III.11's Fortune, the one that reads

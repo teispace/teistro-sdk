@@ -263,7 +263,9 @@ pub use teistro_western::{
 };
 // A planet equally distant from two others along the zodiac, on either
 // point of their midpoint axis (`03-design/western-midpoints.md`).
-pub use teistro_western::{DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow};
+pub use teistro_western::{
+    DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow, SynastryMidpointRow,
+};
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
 pub use teistro_western::{ChartPoints, Composite};

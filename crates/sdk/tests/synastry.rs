@@ -13,9 +13,9 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    AntisciaRequest, AspectRequest, ChartRequest, Context, Document, Ephemeris, NatalPoint,
-    ParallelRequest, Partner, PartnerSynastry, SynastryRequest, SynastryRow, SynastryZodiac,
-    UtcOffset, WesternAspect,
+    AntisciaRequest, AspectRequest, ChartRequest, Context, Document, Ephemeris, MidpointRequest,
+    NatalPoint, ParallelRequest, Partner, PartnerSynastry, SynastryMidpointRow, SynastryRequest,
+    SynastryRow, SynastryZodiac, UtcOffset, WesternAspect,
 };
 
 /// "born 1-18 a.m., 3rd June, 1865, London", at Marlborough House.
@@ -481,4 +481,110 @@ fn a_synastry_makes_the_composite_and_the_davison_birth_when_asked() {
     assert_eq!(wrong.field(), Some("synastry.davison"));
     let wrong = record(r#", "composite": 1"#).unwrap_err();
     assert_eq!(wrong.field(), Some("synastry.composite"));
+}
+
+#[test]
+fn the_equal_distances_across_agree_with_the_recast() {
+    // The recast's equal distances within 1° of the axis, closest first:
+    // the pair, the planet between it, whether the pair is Mary's, whether
+    // on the far point, and how far from the axis.
+    let recast: [(Graha, Graha, Graha, bool, bool, f64); 10] = [
+        (Graha::Sun, Graha::Neptune, Graha::Venus, true, false, 0.140),
+        (
+            Graha::Venus,
+            Graha::Neptune,
+            Graha::Saturn,
+            true,
+            true,
+            0.177,
+        ),
+        (
+            Graha::Uranus,
+            Graha::Neptune,
+            Graha::Saturn,
+            false,
+            true,
+            0.348,
+        ),
+        (Graha::Venus, Graha::Pluto, Graha::Venus, true, false, 0.380),
+        (
+            Graha::Jupiter,
+            Graha::Pluto,
+            Graha::Neptune,
+            true,
+            false,
+            0.419,
+        ),
+        (Graha::Moon, Graha::Uranus, Graha::Mars, false, false, 0.631),
+        (Graha::Uranus, Graha::Pluto, Graha::Sun, false, false, 0.785),
+        (Graha::Sun, Graha::Venus, Graha::Mercury, true, false, 0.838),
+        (
+            Graha::Mercury,
+            Graha::Pluto,
+            Graha::Pluto,
+            false,
+            false,
+            0.844,
+        ),
+        (
+            Graha::Moon,
+            Graha::Neptune,
+            Graha::Uranus,
+            false,
+            false,
+            0.953,
+        ),
+    ];
+    let sdk = western();
+    let (george, mary) = (born(&sdk, GEORGE), born(&sdk, MARY));
+    let asked =
+        SynastryRequest::default().with_midpoints(MidpointRequest::default().with_orb_deg(1.0));
+    let rows = sdk
+        .chart()
+        .synastry_midpoints(&george, &mary, &asked)
+        .unwrap();
+    assert_eq!(rows.len(), recast.len(), "{rows:#?}");
+    for ((first, second, middle, partners_pair, far, from_axis_deg), row) in
+        recast.iter().zip(&rows)
+    {
+        assert_eq!(
+            (
+                row.first,
+                row.second,
+                row.middle,
+                row.partners_pair,
+                row.far
+            ),
+            (*first, *second, *middle, *partners_pair, *far)
+        );
+        assert!(
+            (row.from_axis_deg - from_axis_deg).abs() < 0.01,
+            "{row:?} against {from_axis_deg}"
+        );
+    }
+
+    // The batch reads them the same, beside the aspects; the default orb
+    // keeps the five within 0.5°.
+    let (jd, latitude, longitude) = MARY;
+    let partner = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "midpoints": {{}}}}"#
+    ))
+    .unwrap();
+    let read = sdk.chart().synastry_with(&[george], &partner).unwrap();
+    let within = read[0].midpoints.as_deref().unwrap();
+    let narrowed: Vec<SynastryMidpointRow> = rows[..5]
+        .iter()
+        .map(|row| SynastryMidpointRow {
+            orb_deg: 0.5,
+            ..*row
+        })
+        .collect();
+    assert_eq!(within, narrowed.as_slice());
+
+    // A refusal inside the record is named by its field.
+    let wide = PartnerSynastry::from_json(&format!(
+        r#"{{"partner": {{"instant": {jd}, "place": {{"latitude": {latitude}, "longitude": {longitude}, "altitude": 0}}}}, "midpoints": {{"orbDeg": 11}}}}"#
+    ))
+    .unwrap_err();
+    assert_eq!(wide.field(), Some("synastry.midpoints.orbDeg"));
 }

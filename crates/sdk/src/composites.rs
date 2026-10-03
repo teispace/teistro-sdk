@@ -10,7 +10,7 @@ use teistro_serial::Document;
 use teistro_western::{ChartPoints, Composite, Placed, SynastryZodiac, composite};
 
 use crate::area::ChartArea;
-use crate::western_aspects::{Partner, planets};
+use crate::western_aspects::{Partner, angle_in, planets_in};
 
 impl ChartArea<'_> {
     /// The **composite** of two charts (Townley; Astrolog, C247): each
@@ -46,33 +46,15 @@ impl ChartArea<'_> {
         zodiac: SynastryZodiac,
     ) -> Result<Composite, Error> {
         refuse_mixed_zodiacs(&first.foundation, &second.foundation, zodiac)?;
-        let tropical = zodiac == SynastryZodiac::Tropical;
         let points = |chart: &Document| -> Result<ChartPoints, Error> {
             let angles = self.angles(chart)?;
             let foundation = &chart.foundation;
-            let frame = |deg: f64| {
-                if tropical {
-                    foundation.zodiac.to_tropical(deg)
-                } else {
-                    deg
-                }
-            };
             Ok(ChartPoints {
-                planets: planets(foundation)
-                    .map(|at| {
-                        Placed::new(
-                            at.graha,
-                            if tropical {
-                                at.tropical_deg
-                            } else {
-                                at.longitude_deg
-                            },
-                            at.speed_deg_per_day,
-                        )
-                    })
+                planets: planets_in(foundation, zodiac)
+                    .map(|(at, longitude)| Placed::new(at.graha, longitude, at.speed_deg_per_day))
                     .collect(),
-                lagna_deg: frame(angles.ascendant_deg),
-                midheaven_deg: frame(angles.midheaven_deg),
+                lagna_deg: angle_in(foundation, zodiac, angles.ascendant_deg),
+                midheaven_deg: angle_in(foundation, zodiac, angles.midheaven_deg),
             })
         };
         composite(
