@@ -3573,6 +3573,65 @@ export interface ChartsWesternAspectRows {
 }
 
 /**
+ * The `synastry` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.
+ */
+export interface ChartsSynastry {
+  /**
+   * How many aspects stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_rows`.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `synastry_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
+ */
+export interface ChartsSynastryRows {
+  /**
+   * 1 when the chart's point is the lagna, 0 when it is a graha.
+   */
+  readonly firstLagna: Uint8Array;
+  /**
+   * Which graha the chart's point is (a `Graha` id); 0 for the lagna.
+   */
+  readonly firstGraha: Uint16Array;
+  /**
+   * 1 when the partner's point is the lagna, 0 when it is a graha.
+   */
+  readonly secondLagna: Uint8Array;
+  /**
+   * Which graha the partner's point is (a `Graha` id); 0 for the lagna.
+   */
+  readonly secondGraha: Uint16Array;
+  /**
+   * Which aspect.
+   * The values are `WesternAspect` ids.
+   */
+  readonly aspect: Uint8Array;
+  /**
+   * How far apart the two stand, degrees, 0 to 180.
+   */
+  readonly apartDeg: Float64Array;
+  /**
+   * How far from exact, degrees; the smaller, the stronger.
+   */
+  readonly fromExactDeg: Float64Array;
+  /**
+   * The orb the model allowed this pair at this aspect, degrees.
+   */
+  readonly orbDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -4072,6 +4131,14 @@ export interface Charts {
    * Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
    */
   readonly westernAspectRows: ChartsWesternAspectRows;
+  /**
+   * Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.
+   */
+  readonly synastry: ChartsSynastry;
+  /**
+   * Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
+   */
+  readonly synastryRows: ChartsSynastryRows;
 }
 
 /**

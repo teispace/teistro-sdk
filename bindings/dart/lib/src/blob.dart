@@ -3735,6 +3735,68 @@ final class ChartsWesternAspectRows {
   final int length;
 }
 
+/// The `synastry` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.
+final class ChartsSynastry {
+  const ChartsSynastry({
+    required this.count,
+    required this.length,
+  });
+
+  /// How many aspects stand between the chart's points and the partner's; the chart's rows follow the earlier charts' in `synastry_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
+final class ChartsSynastryRows {
+  const ChartsSynastryRows({
+    required this.firstLagna,
+    required this.firstGraha,
+    required this.secondLagna,
+    required this.secondGraha,
+    required this.aspect,
+    required this.apartDeg,
+    required this.fromExactDeg,
+    required this.orbDeg,
+    required this.length,
+  });
+
+  /// 1 when the chart's point is the lagna, 0 when it is a graha.
+  final Uint8List firstLagna;
+
+  /// Which graha the chart's point is (a `Graha` id); 0 for the lagna.
+  final Uint16List firstGraha;
+
+  /// 1 when the partner's point is the lagna, 0 when it is a graha.
+  final Uint8List secondLagna;
+
+  /// Which graha the partner's point is (a `Graha` id); 0 for the lagna.
+  final Uint16List secondGraha;
+
+  /// Which aspect.
+  final Uint8List aspect;
+
+  /// How far apart the two stand, degrees, 0 to 180.
+  final Float64List apartDeg;
+
+  /// How far from exact, degrees; the smaller, the stronger.
+  final Float64List fromExactDeg;
+
+  /// The orb the model allowed this pair at this aspect, degrees.
+  final Float64List orbDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -3930,6 +3992,8 @@ final class Charts {
     required this.outer,
     required this.westernAspects,
     required this.westernAspectRows,
+    required this.synastry,
+    required this.synastryRows,
   });
 
   /// What kind of chart these are.
@@ -4225,6 +4289,12 @@ final class Charts {
   /// Every chart's aspects, concatenated in the `cast` section's order and **ragged** by `western_aspects.count`, each chart's closest first: a pair of its planets (the seven, and the outer three when `TS_CHART_OUTER` placed them) at one of the record's aspects, inside the orb its model allows (Leo's by aspect by default, C240). Empty when `western_aspects_json` asked for none.
   final ChartsWesternAspectRows westernAspectRows;
 
+  /// Every chart's synastry with the record's partner, a row a chart in the `cast` section's order: how many rows of `synastry_rows` are its. Empty when `synastry_json` asked for none.
+  final ChartsSynastry synastry;
+
+  /// Every chart's synastry, concatenated in the `cast` section's order and **ragged** by `synastry.count`, each chart's closest first: a point of the chart (its planets, the outer three when `TS_CHART_OUTER` placed them, and its lagna unless the record leaves it out) against a point of the partner's at one of the record's aspects, inside the orb its model allows (Leo's by default, C240; the lagna stands as a planet, C242), compared in the tropical zodiac unless the record asks for each chart's own (C241). Empty when `synastry_json` asked for none.
+  final ChartsSynastryRows synastryRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4315,6 +4385,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atOuter = blob.section(81, 'outer');
   final atWesternAspects = blob.section(82, 'western_aspects');
   final atWesternAspectRows = blob.section(83, 'western_aspect_rows');
+  final atSynastry = blob.section(84, 'synastry');
+  final atSynastryRows = blob.section(85, 'synastry_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7740,6 +7812,57 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atWesternAspectRows, 6) + atWesternAspectRows.count * 1,
       ),
       length: atWesternAspectRows.count,
+    ),
+    synastry: ChartsSynastry(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastry, 0),
+        blob.columnOffset(atSynastry, 0) + atSynastry.count * 4,
+      ),
+      length: atSynastry.count,
+    ),
+    synastryRows: ChartsSynastryRows(
+      firstLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 0),
+        blob.columnOffset(atSynastryRows, 0) + atSynastryRows.count * 1,
+      ),
+      firstGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 1),
+        blob.columnOffset(atSynastryRows, 1) + atSynastryRows.count * 2,
+      ),
+      secondLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 2),
+        blob.columnOffset(atSynastryRows, 2) + atSynastryRows.count * 1,
+      ),
+      secondGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 3),
+        blob.columnOffset(atSynastryRows, 3) + atSynastryRows.count * 2,
+      ),
+      aspect: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 4),
+        blob.columnOffset(atSynastryRows, 4) + atSynastryRows.count * 1,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 5),
+        blob.columnOffset(atSynastryRows, 5) + atSynastryRows.count * 8,
+      ),
+      fromExactDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 6),
+        blob.columnOffset(atSynastryRows, 6) + atSynastryRows.count * 8,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryRows, 7),
+        blob.columnOffset(atSynastryRows, 7) + atSynastryRows.count * 8,
+      ),
+      length: atSynastryRows.count,
     ),
   );
 }

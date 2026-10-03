@@ -7758,6 +7758,23 @@ struct ts_chart_request {
      * Example: {"aspects":["TRINE","SQUARE"]}. May be null.
      */
     const char * western_aspects_json;
+    /**
+     * Every chart's synastry with one partner, as a JSON object:
+     * `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+     * "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+     * the context's settings with the outer planets when
+     * `TS_CHART_OUTER` placed them; and beside it, every field optional,
+     * `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+     * (true: each side's lagna is read beside its planets, C242) and
+     * `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+     * chart is read against the partner, the chart's point first. The
+     * answers come back in `synastry` and `synastry_rows`. Null for none,
+     * which costs nothing (`03-design/western-synastry.md`). Refusals are
+     * named from the record every binding calls `synastry`, as
+     * `synastry.partner.place.latitude`.
+     * Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+     */
+    const char * synastry_json;
 };
 
 /**
@@ -8692,7 +8709,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 232, "ts_chart_request is 232 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 240, "ts_chart_request is 240 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

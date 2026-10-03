@@ -1156,6 +1156,22 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
   external ffi.Pointer<ffi.Char> westernAspectsJson;
 
+  /// Every chart's synastry with one partner, as a JSON object:
+  /// `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+  /// "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+  /// the context's settings with the outer planets when
+  /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
+  /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+  /// (true: each side's lagna is read beside its planets, C242) and
+  /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+  /// chart is read against the partner, the chart's point first. The
+  /// answers come back in `synastry` and `synastry_rows`. Null for none,
+  /// which costs nothing (`03-design/western-synastry.md`). Refusals are
+  /// named from the record every binding calls `synastry`, as
+  /// `synastry.partner.place.latitude`.
+  /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+  external ffi.Pointer<ffi.Char> synastryJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3045,7 +3061,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3347,6 +3363,22 @@ final class ChartRequest {
   /// Example: {"aspects":["TRINE","SQUARE"]}. May be null.
   final String? westernAspectsJson;
 
+  /// Every chart's synastry with one partner, as a JSON object:
+  /// `partner`, the second birth, `{"instant": jd, "place": {"latitude",
+  /// "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under
+  /// the context's settings with the outer planets when
+  /// `TS_CHART_OUTER` placed them; and beside it, every field optional,
+  /// `aspects` and `orbs` as `western_aspects_json` spells them, `lagna`
+  /// (true: each side's lagna is read beside its planets, C242) and
+  /// `zodiac` (`"TROPICAL"`, the default, or `"CHARTS"`, C241). Each
+  /// chart is read against the partner, the chart's point first. The
+  /// answers come back in `synastry` and `synastry_rows`. Null for none,
+  /// which costs nothing (`03-design/western-synastry.md`). Refusals are
+  /// named from the record every binding calls `synastry`, as
+  /// `synastry.partner.place.latitude`.
+  /// Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
+  final String? synastryJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3431,6 +3463,9 @@ final class ChartRequest {
     raw.westernAspectsJson = westernAspectsJson == null
         ? ffi.nullptr
         : westernAspectsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.synastryJson = synastryJson == null
+        ? ffi.nullptr
+        : synastryJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3501,6 +3536,9 @@ final class ChartRequest {
         westernAspectsJson: raw.westernAspectsJson == ffi.nullptr
             ? null
             : raw.westernAspectsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        synastryJson: raw.synastryJson == ffi.nullptr
+            ? null
+            : raw.synastryJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

@@ -1322,6 +1322,27 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 84, 'synastry');
+    out.synastry = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 85, 'synastry_rows');
+    out.synastryRows = {
+      firstLagna: column(blob, at, 0, 'u8', at.count),
+      firstGraha: column(blob, at, 1, 'u16', at.count),
+      secondLagna: column(blob, at, 2, 'u8', at.count),
+      secondGraha: column(blob, at, 3, 'u16', at.count),
+      aspect: column(blob, at, 4, 'u8', at.count),
+      apartDeg: column(blob, at, 5, 'f64', at.count),
+      fromExactDeg: column(blob, at, 6, 'f64', at.count),
+      orbDeg: column(blob, at, 7, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 
