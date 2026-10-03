@@ -1981,6 +1981,15 @@ the astronomical numbers do not move. Nothing else computes yet.
     `chart.westernAspects` (`western_aspects`), Dart with a typed
     `OrbModel` and `WesternAspectRequest.lilly`, with parity across all
     four runners.
+  - **Synastry** (`western-synastry.md`). `sdk.chart().synastry` reads
+    the Western aspects between two charts: every planet and lagna of
+    one against every planet and lagna of the other, under the aspect
+    table's `aspects` and `orbs` (`SynastryRequest`), in the tropical
+    zodiac by default or each chart's own (`SynastryZodiac`, C241). The
+    lagna stands as a planet in Leo's orbs and has none among Lilly's
+    moieties (C242). Leo's George V and Queen Mary (*How to Judge a
+    Nativity*, p. 130) are a test. `OrbModel::point_orb_deg` gives the
+    orb between any two `NatalPoint`s.
   - **The outer planets in a chart** (`western-outer-planets.md`,
     `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
     places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside
