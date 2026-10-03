@@ -1,7 +1,9 @@
 # Synastry: the Western aspects between two charts (the `western` module)
 
-Status: `designed`, 2026-10-03, written from the sources before any
-code.
+Status: `building`, 2026-10-03, written from the sources before any
+code. Step 2 is built: `western::synastry` on the engine a chart's own
+table reads, and `sdk.chart().synastry`, held to George V and Queen
+Mary.
 
 [`western-aspects.md`](western-aspects.md) answers *which aspects does
 this chart hold?* Synastry asks the same of two charts: which of one
@@ -64,11 +66,12 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
    each side as a `NatalPoint`, which the hit list already gives every
    binding: a graha, or the lagna. The lagna can be left out, since it
    is the point an uncertain birth time moves most.
-3. **The lagna's orb is a planet's (C242).** Leo gives the ascendant no
-   orb. Under his model it takes a planet's orb at each aspect, never a
-   luminary's widening. Under Lilly's moieties it has none, so a request
-   that keeps the lagna and reads moieties is refused by field, as
-   Uranus is.
+3. **The lagna stands as a planet in the orbs (C242).** Leo gives the
+   ascendant no orb. Under his model it takes a planet's place in his
+   rule: 8° at the conjunction and opposition beside a planet or the
+   other lagna, 10° beside a luminary, and never the luminaries' own
+   12°. Under Lilly's moieties it has none, so a request that keeps the
+   lagna and reads moieties is refused by field, as Uranus is.
 4. **No applying.** Two births do not move against each other, so a
    synastry row has no `applying` and is a type of its own rather than a
    `WesternAspectRow` with a field that means nothing.
@@ -98,6 +101,31 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
 3. A measured page over pairs of the corpus's births: how often the two
    zodiac readings part, and by how much.
 4. The boundary call and every binding, with parity.
+
+## What building it found
+
+- **The table agrees with an independent recast.** Every Ptolemaic
+  contact within 2.5° of exact between George V and Queen Mary, nine of
+  them, matches the Moshier recast to 0.01°. Three of them involve a
+  side's lagna or outer planets: his Mars opposite her ascendant
+  (0.32°), his Pluto conjunct hers (1.69°) and square her Mars (2.03°).
+  Leo's two remarks inside the charts hold under his orbs.
+- **One engine, by construction.** `aspects` and `synastry` now hand
+  their pairs to one function that chooses the orb and measures the
+  gap. A chart's table reads each pair once; a synastry reads every
+  pair across, with the speeds left at zero since no row reports
+  applying.
+- **The zodiacs part by the ayanamsha's difference, exactly.** Under a
+  sidereal profile the two births, two years apart, carry ayanamshas
+  about 100″ apart, and every separation across them moves by that
+  difference to 1e-9° when read in each chart's own zodiac. That is
+  C241's whole size for this pair; it grows by about 50″ a year of age
+  gap.
+- **The lagna beside a luminary.** The first test expected the lagna 9°
+  from the other's Sun to hold nothing, reading "a planet's orb" as 8°.
+  Leo's rule widens any luminary–planet pair to 10°, so it holds; the
+  decision above now says where the lagna stands in the rule rather
+  than which number it gets.
 
 ## What this does not decide
 
