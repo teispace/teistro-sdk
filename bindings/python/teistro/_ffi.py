@@ -265,7 +265,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 240,
+    "ts_chart_request": 248,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -295,7 +295,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 144,
+    "ts_chart_request": 152,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -707,6 +707,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("progressions_json", ctypes.c_char_p),
         ("western_aspects_json", ctypes.c_char_p),
         ("synastry_json", ctypes.c_char_p),
+        ("parallels_json", ctypes.c_char_p),
     ]
 
 
@@ -2540,6 +2541,20 @@ class ChartRequest:
     Example: {"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}. May be null.
     """
 
+    parallels_json: Optional[str] = None
+    """Every chart's declinations and the parallels among its planets, as
+    a JSON object, every field optional: `orbDeg`, how close two
+    distances from the equator must stand, Leo's 1° by default and at
+    most 10°. A pair on either side of the equator is a parallel
+    (C243). The pairs are the chart's planets: the seven, and the outer
+    three when `TS_CHART_OUTER` placed them. The answers come back in
+    `declinations`, `declination_rows` and `parallel_rows`. Null for
+    none, which costs nothing (`03-design/western-declinations.md`).
+    Refusals are named from the record every binding calls
+    `parallels`, as `parallels.orbDeg`.
+    Example: {"orbDeg":1}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2626,6 +2641,9 @@ class ChartRequest:
         _synastry_json = None if self.synastry_json is None else self.synastry_json.encode("utf-8")
         owned.append(_synastry_json)
         raw.synastry_json = _synastry_json
+        _parallels_json = None if self.parallels_json is None else self.parallels_json.encode("utf-8")
+        owned.append(_parallels_json)
+        raw.parallels_json = _parallels_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2678,6 +2696,7 @@ class ChartRequest:
             progressions_json=_text(raw.progressions_json),
             western_aspects_json=_text(raw.western_aspects_json),
             synastry_json=_text(raw.synastry_json),
+            parallels_json=_text(raw.parallels_json),
         )
 
 

@@ -1043,6 +1043,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly synastryJson?: string;
+  /**
+   * Every chart's declinations and the parallels among its planets, as
+   * a JSON object, every field optional: `orbDeg`, how close two
+   * distances from the equator must stand, Leo's 1° by default and at
+   * most 10°. A pair on either side of the equator is a parallel
+   * (C243). The pairs are the chart's planets: the seven, and the outer
+   * three when `TS_CHART_OUTER` placed them. The answers come back in
+   * `declinations`, `declination_rows` and `parallel_rows`. Null for
+   * none, which costs nothing (`03-design/western-declinations.md`).
+   * Refusals are named from the record every binding calls
+   * `parallels`, as `parallels.orbDeg`.
+   * @example {"orbDeg":1}
+   * @nullable
+   */
+  readonly parallelsJson?: string;
 }
 
 /**

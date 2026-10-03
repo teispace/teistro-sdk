@@ -11975,6 +11975,21 @@
             "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
             "nullable": true
           }
+        },
+        {
+          "name": "parallels_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart's declinations and the parallels among its planets, as\na JSON object, every field optional: `orbDeg`, how close two\ndistances from the equator must stand, Leo's 1° by default and at\nmost 10°. A pair on either side of the equator is a parallel\n(C243). The pairs are the chart's planets: the seven, and the outer\nthree when `TS_CHART_OUTER` placed them. The answers come back in\n`declinations`, `declination_rows` and `parallel_rows`. Null for\nnone, which costs nothing (`03-design/western-declinations.md`).\nRefusals are named from the record every binding calls\n`parallels`, as `parallels.orbDeg`.",
+          "meta": {
+            "example": "{\"orbDeg\":1}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -19376,6 +19391,93 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the model allowed this pair at this aspect, degrees."
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "name": "declinations",
+          "doc": "Every chart's distances from the equator, a row a chart in the `cast` section's order: the obliquity they were turned by, the angles', and how many rows of `declination_rows` and `parallel_rows` are its. Empty when `parallels_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "obliquity_deg",
+              "scalar": "f64",
+              "doc": "The true obliquity at the chart's instant, degrees."
+            },
+            {
+              "name": "lagna_deg",
+              "scalar": "f64",
+              "doc": "The lagna's declination, degrees north: the Sun's at that degree (Leo, p. 141)."
+            },
+            {
+              "name": "midheaven_deg",
+              "scalar": "f64",
+              "doc": "The midheaven's declination, degrees north, read the same way."
+            },
+            {
+              "name": "graha_count",
+              "scalar": "u32",
+              "doc": "How many planets' declinations are the chart's in `declination_rows`."
+            },
+            {
+              "name": "parallel_count",
+              "scalar": "u32",
+              "doc": "How many parallels are the chart's in `parallel_rows`."
+            }
+          ]
+        },
+        {
+          "id": 87,
+          "name": "declination_rows",
+          "doc": "Every chart's planets' declinations, concatenated in the `cast` section's order and **ragged** by `declinations.graha_count`: the seven, and the outer three when `TS_CHART_OUTER` placed them, in the catalogue's order, from each one's tropical longitude, ecliptic latitude and the true obliquity. Empty when `parallels_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "declination_deg",
+              "scalar": "f64",
+              "doc": "Its declination, degrees north."
+            }
+          ]
+        },
+        {
+          "id": 88,
+          "name": "parallel_rows",
+          "doc": "Every chart's parallels, concatenated in the `cast` section's order and **ragged** by `declinations.parallel_count`, each chart's closest first: a pair of its planets the same distance from the equator within the record's orb (Leo's 1° by default, p. 47), on either side of it (C243). Empty when `parallels_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet of the pair, in the catalogue's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "contrary",
+              "scalar": "u8",
+              "doc": "1 when the two stand on opposite sides of the equator, the contra-parallel; 0 when on one side."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart their distances from the equator are, degrees."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed, degrees."
             }
           ]
         }

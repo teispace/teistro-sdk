@@ -1697,6 +1697,18 @@ pub struct TsChartRequest {
     /// `synastry.partner.place.latitude`.
     /// `api: nullable example={"partner":{"instant":2403113.4993,"place":{"latitude":51.5058,"longitude":-0.1878,"altitude":0}}}`
     pub synastry_json: *const c_char,
+    /// Every chart's declinations and the parallels among its planets, as
+    /// a JSON object, every field optional: `orbDeg`, how close two
+    /// distances from the equator must stand, Leo's 1° by default and at
+    /// most 10°. A pair on either side of the equator is a parallel
+    /// (C243). The pairs are the chart's planets: the seven, and the outer
+    /// three when `TS_CHART_OUTER` placed them. The answers come back in
+    /// `declinations`, `declination_rows` and `parallel_rows`. Null for
+    /// none, which costs nothing (`03-design/western-declinations.md`).
+    /// Refusals are named from the record every binding calls
+    /// `parallels`, as `parallels.orbDeg`.
+    /// `api: nullable example={"orbDeg":1}`
+    pub parallels_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -3248,6 +3260,7 @@ struct ProgressionColumns {
 struct AspectTables {
     own: WesternAspectColumns,
     across: SynastryColumns,
+    declined: DeclinationColumns,
 }
 
 impl AspectTables {
@@ -3255,12 +3268,97 @@ impl AspectTables {
         Ok(AspectTables {
             own: WesternAspectColumns::of(composed.western_aspects, charts)?,
             across: SynastryColumns::of(composed.synastry, charts)?,
+            declined: DeclinationColumns::of(composed.declinations, composed.parallels, charts)?,
         })
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         self.own.write(writer)?;
-        self.across.write(writer)
+        self.across.write(writer)?;
+        self.declined.write(writer)
+    }
+}
+
+/// `declinations`, `declination_rows` and `parallel_rows`: each chart's
+/// distances from the equator and the parallels among its planets
+/// (`western-declinations.md`).
+#[derive(Default)]
+struct DeclinationColumns {
+    obliquity_deg: Vec<f64>,
+    lagna_deg: Vec<f64>,
+    midheaven_deg: Vec<f64>,
+    graha_count: Vec<u32>,
+    parallel_count: Vec<u32>,
+    graha: Vec<u16>,
+    declination_deg: Vec<f64>,
+    first: Vec<u16>,
+    second: Vec<u16>,
+    contrary: Vec<u8>,
+    apart_deg: Vec<f64>,
+    orb_deg: Vec<f64>,
+}
+
+impl DeclinationColumns {
+    fn of(
+        declinations: &[teistro::Declinations],
+        parallels: &[Vec<teistro::ParallelRow>],
+        charts: usize,
+    ) -> Result<DeclinationColumns, Error> {
+        one_a_chart(declinations.len(), charts, "declinations")?;
+        one_a_chart(parallels.len(), declinations.len(), "parallels")?;
+        let mut columns = DeclinationColumns::default();
+        for (read, rows) in declinations.iter().zip(parallels) {
+            columns.obliquity_deg.push(read.obliquity_deg);
+            columns.lagna_deg.push(read.lagna_deg);
+            columns.midheaven_deg.push(read.midheaven_deg);
+            columns.graha_count.push(row_count(read.grahas.len())?);
+            columns.parallel_count.push(row_count(rows.len())?);
+            for one in &read.grahas {
+                columns.graha.push(one.graha.id());
+                columns.declination_deg.push(one.declination_deg);
+            }
+            for row in rows {
+                columns.first.push(row.first.id());
+                columns.second.push(row.second.id());
+                columns.contrary.push(u8::from(row.contrary));
+                columns.apart_deg.push(row.apart_deg);
+                columns.orb_deg.push(row.orb_deg);
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "declinations",
+            self.obliquity_deg.len(),
+            &[
+                ColumnData::F64(&self.obliquity_deg),
+                ColumnData::F64(&self.lagna_deg),
+                ColumnData::F64(&self.midheaven_deg),
+                ColumnData::U32(&self.graha_count),
+                ColumnData::U32(&self.parallel_count),
+            ],
+        )?;
+        writer.columns(
+            "declination_rows",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::F64(&self.declination_deg),
+            ],
+        )?;
+        writer.columns(
+            "parallel_rows",
+            self.first.len(),
+            &[
+                ColumnData::U16(&self.first),
+                ColumnData::U16(&self.second),
+                ColumnData::U8(&self.contrary),
+                ColumnData::F64(&self.apart_deg),
+                ColumnData::F64(&self.orb_deg),
+            ],
+        )
     }
 }
 
@@ -3284,7 +3382,7 @@ impl WesternAspectColumns {
         one_a_chart(read.len(), charts, "western aspects")?;
         let mut columns = WesternAspectColumns::default();
         for rows in read {
-            columns.count.push(aspect_count(rows.len())?);
+            columns.count.push(row_count(rows.len())?);
             for row in rows {
                 columns.first.push(row.first.id());
                 columns.second.push(row.second.id());
@@ -3338,7 +3436,7 @@ impl SynastryColumns {
         one_a_chart(read.len(), charts, "synastries")?;
         let mut columns = SynastryColumns::default();
         for rows in read {
-            columns.count.push(aspect_count(rows.len())?);
+            columns.count.push(row_count(rows.len())?);
             for row in rows {
                 columns.first.push(row.first);
                 columns.second.push(row.second);
@@ -3379,9 +3477,10 @@ impl SynastryColumns {
     }
 }
 
-/// How many aspects a chart's rows hold, as a section counts them.
-fn aspect_count(rows: usize) -> Result<u32, Error> {
-    u32::try_from(rows).map_err(|_| Error::internal("more aspects than a section can count"))
+/// How many rows a chart holds in a ragged section, as its count column
+/// says.
+fn row_count(rows: usize) -> Result<u32, Error> {
+    u32::try_from(rows).map_err(|_| Error::internal("more rows than a section can count"))
 }
 
 /// The four cells a Western aspect row measures, whichever two points
@@ -5910,6 +6009,13 @@ pub struct Composed<'a> {
     /// Every chart's synastry with the record's partner, in the batch's
     /// order (`western-synastry.md`); empty when none was asked for.
     pub synastry: &'a [Vec<teistro::SynastryRow>],
+    /// Every chart's declinations, in the batch's order
+    /// (`western-declinations.md`); empty when no parallels were asked
+    /// for.
+    pub declinations: &'a [teistro::Declinations],
+    /// Every chart's parallels, in the batch's order; empty when none were
+    /// asked for.
+    pub parallels: &'a [Vec<teistro::ParallelRow>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -6881,46 +6987,75 @@ fn progressions_of(
         .collect()
 }
 
-/// Every chart's Western aspect table, none when none was asked for. A
-/// refusal is named under the record's root, as the request's own are.
-fn western_aspects_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::AspectRequest>,
-) -> Result<Vec<Vec<teistro::WesternAspectRow>>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .western_aspects(document, asked)
-                .map_err(|error| {
-                    error
-                        .under("westernAspects")
-                        .with_hint(format!("chart {at}"))
-                })
-        })
-        .collect()
+/// The Western tables a batch was asked for, read once: each chart's own
+/// aspects, its synastry with the record's partner, and its declinations
+/// with the parallels among its planets. Each is empty when its record
+/// was null.
+struct WesternTables {
+    aspects: Vec<Vec<teistro::WesternAspectRow>>,
+    synastry: Vec<Vec<teistro::SynastryRow>>,
+    declinations: Vec<teistro::Declinations>,
+    parallels: Vec<Vec<teistro::ParallelRow>>,
 }
 
-/// Every chart's synastry with the record's partner, none when the record
-/// is null; a refusal is named under `synastry`.
-fn synastry_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::PartnerSynastry>,
-) -> Result<Vec<Vec<teistro::SynastryRow>>, Error> {
-    asked.map_or_else(
-        || Ok(Vec::new()),
-        |asked| {
-            sdk.chart()
-                .synastry_with(documents, asked)
-                .map_err(|error| error.under("synastry"))
-        },
-    )
+impl WesternTables {
+    /// Every table `records` asks of `documents`; a refusal is named under
+    /// its record's root, and one read chart by chart says which chart.
+    fn of(
+        sdk: &teistro::Context,
+        documents: &[Document],
+        records: &AskedRecords,
+    ) -> Result<WesternTables, Error> {
+        let each = |root: &'static str| {
+            move |at: usize, error: Error| error.under(root).with_hint(format!("chart {at}"))
+        };
+        let aspects = records.western_aspects.as_ref().map_or_else(
+            || Ok(Vec::new()),
+            |asked| {
+                documents
+                    .iter()
+                    .enumerate()
+                    .map(|(at, document)| {
+                        sdk.chart()
+                            .western_aspects(document, asked)
+                            .map_err(|error| each("westernAspects")(at, error))
+                    })
+                    .collect()
+            },
+        )?;
+        let synastry = records.synastry.as_ref().map_or_else(
+            || Ok(Vec::new()),
+            |asked| {
+                sdk.chart()
+                    .synastry_with(documents, asked)
+                    .map_err(|error| error.under("synastry"))
+            },
+        )?;
+        let (declinations, parallels) = match &records.parallels {
+            None => (Vec::new(), Vec::new()),
+            Some(asked) => documents
+                .iter()
+                .enumerate()
+                .map(|(at, document)| {
+                    let declined = sdk
+                        .chart()
+                        .declinations(document)
+                        .map_err(|error| each("parallels")(at, error))?;
+                    let parallels = teistro::western::parallels(&declined.grahas, asked)
+                        .map_err(|error| each("parallels")(at, error))?;
+                    Ok((declined, parallels))
+                })
+                .collect::<Result<Vec<_>, Error>>()?
+                .into_iter()
+                .unzip(),
+        };
+        Ok(WesternTables {
+            aspects,
+            synastry,
+            declinations,
+            parallels,
+        })
+    }
 }
 
 /// The perfection a request's `perfection_json` asks for, none for null;
@@ -7307,6 +7442,7 @@ struct AskedRecords {
     progressions: Option<teistro::ProgressionsRequest>,
     western_aspects: Option<teistro::AspectRequest>,
     synastry: Option<teistro::PartnerSynastry>,
+    parallels: Option<teistro::ParallelRequest>,
 }
 
 impl AskedRecords {
@@ -7343,6 +7479,9 @@ impl AskedRecords {
                     .transpose()?,
                 synastry: optional_text(asked.synastry_json, "synastry_json")?
                     .map(teistro::PartnerSynastry::from_json)
+                    .transpose()?,
+                parallels: optional_text(asked.parallels_json, "parallels_json")?
+                    .map(teistro::ParallelRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -7544,9 +7683,7 @@ pub unsafe extern "C" fn ts_chart_found(
             records.progressions.as_ref(),
             &ChartRequest::at(place, clock).with_kind(kind),
         )?;
-        let western_aspects =
-            western_aspects_of(ctx.sdk(), &founded.value, records.western_aspects.as_ref())?;
-        let synastry = synastry_of(ctx.sdk(), &founded.value, records.synastry.as_ref())?;
+        let western = WesternTables::of(ctx.sdk(), &founded.value, &records)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -7571,8 +7708,10 @@ pub unsafe extern "C" fn ts_chart_found(
                 considerations: &considerations,
                 perfections: &perfections,
                 progressions: &progressions,
-                western_aspects: &western_aspects,
-                synastry: &synastry,
+                western_aspects: &western.aspects,
+                synastry: &western.synastry,
+                declinations: &western.declinations,
+                parallels: &western.parallels,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),
