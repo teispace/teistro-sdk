@@ -150,6 +150,7 @@ from .catalogue import (
     SarvaStanding,
     HitKind,
     Motion,
+    WesternAspect,
     AspectPhase,
     Reckoning,
     Sect,
@@ -414,6 +415,7 @@ __all__ = [
     "AspectHit",
     "HitKind",
     "Motion",
+    "WesternAspect",
     "AspectPhase",
     # Sade Sati: Saturn's spells from the natal Moon, and its names.
     "SadeSatiRequest",
@@ -501,6 +503,9 @@ __all__ = [
     "Directed",
     "DirectedPlanet",
     "ProgressedContact",
+    # The Western aspects.
+    "WesternAspectRequest",
+    "WesternAspectRow",
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
@@ -1543,6 +1548,7 @@ class ChartArea(_Area):
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
+        western_aspects: Optional[WesternAspectRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1591,6 +1597,7 @@ class ChartArea(_Area):
             considerations=considerations,
             perfection=perfection,
             progressions=progressions,
+            western_aspects=western_aspects,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1629,6 +1636,7 @@ class ChartArea(_Area):
         considerations: Optional[Union[ConsiderationRequest, ConsiderationRules]] = None,
         perfection: Optional[PerfectionRequest] = None,
         progressions: Optional[ProgressionsRequest] = None,
+        western_aspects: Optional[WesternAspectRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1699,6 +1707,7 @@ class ChartArea(_Area):
             considerations_json=_considerations_json(considerations),
             perfection_json=_perfection_json(perfection),
             progressions_json=_progressions_json(progressions),
+            western_aspects_json=_western_aspects_json(western_aspects),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -3825,6 +3834,43 @@ class Progressions:
     progressed: Optional[Progressed]
     directed: Optional[Directed]
     contacts: Optional[Tuple[ProgressedContact, ...]]
+
+
+class WesternAspectRequest(TypedDict, total=False):
+    """Which Western aspects to look for in every chart, and under which
+    orbs (`03-design/western-aspects.md`): `aspects`, Leo's nine by
+    default, and `orbs`, the model: `{"model": "LEO"}` by default (C240),
+    `{"model": "MOIETIES", "orbs": [{"graha": Graha.SUN, "orbDeg": 17}, …]}`
+    or `{"model": "BY_ASPECT", "orbs": [{"aspect": WesternAspect.TRINE,
+    "orbDeg": 6}, …]}`. Members may be written as members or as keys.
+
+    >>> leo: WesternAspectRequest = {}
+    >>> five: WesternAspectRequest = {"aspects": [WesternAspect.TRINE, "SQUARE"]}
+    """
+
+    aspects: Sequence[Union[WesternAspect, str]]
+    orbs: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
+class WesternAspectRow:
+    """One pair of planets within an aspect's orb
+    (`03-design/western-aspects.md`), the pair in catalogue order."""
+
+    first: Graha
+    second: Graha
+    aspect: WesternAspect
+    apart_deg: float
+    """The shorter arc between them, degrees 0 to 180."""
+
+    from_exact_deg: float
+    """How far that arc is from the aspect's exact angle, degrees."""
+
+    orb_deg: float
+    """The orb the model allowed the pair at this aspect, degrees."""
+
+    applying: bool
+    """Whether the faster planet is closing on the exact angle."""
 
 
 class MuhurtaNative(TypedDict, total=False):
@@ -6422,6 +6468,36 @@ def _considerations_json(
     return _record_json(_written(considerations), "considerations", example)
 
 
+def _member_key(value: Any) -> Any:
+    """A member as the key the boundary reads (a graha's full key), and
+    anything else as it is, for the SDK to refuse by name."""
+    if isinstance(value, Graha):
+        return value.full_key
+    if isinstance(value, Member):
+        return value.key
+    return value
+
+
+def _western_aspects_json(asked: Optional[WesternAspectRequest]) -> Optional[str]:
+    """The Western aspects as the JSON the boundary reads, or nothing for
+    none; members are written as their keys, and the SDK refuses the rest,
+    naming the field from `westernAspects`."""
+    example = "{'aspects': ['TRINE', 'SQUARE']}"
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "westernAspects", example)
+    written: Dict[str, Any] = _keyed(asked)
+    orbs = written.get("orbs")
+    if isinstance(orbs, Mapping):
+        written["orbs"] = dict(orbs)
+        rows = orbs.get("orbs")
+        if isinstance(rows, Sequence) and not isinstance(rows, (str, bytes)):
+            written["orbs"]["orbs"] = [
+                {name: _member_key(value) for name, value in row.items()} if isinstance(row, Mapping) else row
+                for row in rows
+            ]
+    return _record_json(written, "westernAspects", example)
+
+
 def _perfection_json(perfection: Optional[PerfectionRequest]) -> Optional[str]:
     """The perfection as the JSON the boundary reads, or nothing for none;
     the SDK refuses the rest, naming the field from `perfection`."""
@@ -7988,6 +8064,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def western_aspects(self) -> Optional[Tuple[WesternAspectRow, ...]]:
+        """The Western aspect table, closest first: Leo's nine under his orbs
+        by default (C240); `None` unless `western_aspects=` asked
+        (`03-design/western-aspects.md`)."""
+        parsed = self.batch._western_aspects
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -8541,6 +8625,41 @@ class ChartBatch:
                     contacts=contacts,
                 )
             )
+        return read
+
+    @cached_property
+    def _western_aspects(self) -> list[Tuple[WesternAspectRow, ...]]:
+        """Every chart's Western aspect table, decoded once; empty when none
+        was asked for. `western_aspects` holds a row a chart and
+        `western_aspect_rows` is ragged by its count."""
+        counts = self.decoded.western_aspects
+        r = self.decoded.western_aspect_rows
+        charts = len(self.decoded.cast.instant)
+        if counts.length == 0:
+            return []
+        if counts.length != charts or r.length != sum(counts.count):
+            raise TeistroError(
+                Status.INTERNAL,
+                f"western_aspects has {counts.length} rows and western_aspect_rows {r.length} for {charts} charts",
+            )
+        read: list[Tuple[WesternAspectRow, ...]] = []
+        start = 0
+        for k in range(charts):
+            read.append(
+                tuple(
+                    WesternAspectRow(
+                        first=Graha(r.first[at]),
+                        second=Graha(r.second[at]),
+                        aspect=WesternAspect(r.aspect[at]),
+                        apart_deg=r.apart_deg[at],
+                        from_exact_deg=r.from_exact_deg[at],
+                        orb_deg=r.orb_deg[at],
+                        applying=r.applying[at] == 1,
+                    )
+                    for at in range(start, start + counts.count[k])
+                )
+            )
+            start += counts.count[k]
         return read
 
     @cached_property
