@@ -4101,6 +4101,60 @@ export const BhakootDoshaById = new Map([
   [3, 'TWO_TWELVE'],
 ]);
 
+/** Every DhinamRule by name. */
+export const DhinamRule = Object.freeze({
+  Count: 'COUNT',
+  SecondRoundQuarter: 'SECOND_ROUND_QUARTER',
+  VadhaVainasika: 'VADHA_VAINASIKA',
+  TwentySeventh: 'TWENTY_SEVENTH',
+  CommonExcellent: 'COMMON_EXCELLENT',
+  CommonNeutral: 'COMMON_NEUTRAL',
+  CommonAvoid: 'COMMON_AVOID',
+  TwoSigns: 'TWO_SIGNS',
+  SameSign: 'SAME_SIGN',
+  NextStar: 'NEXT_STAR',
+  HappyPair: 'HAPPY_PAIR',
+});
+
+/**
+ * Every DhinamRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DhinamRuleById = new Map([
+  [0, 'COUNT'],
+  [1, 'SECOND_ROUND_QUARTER'],
+  [2, 'VADHA_VAINASIKA'],
+  [3, 'TWENTY_SEVENTH'],
+  [4, 'COMMON_EXCELLENT'],
+  [5, 'COMMON_NEUTRAL'],
+  [6, 'COMMON_AVOID'],
+  [7, 'TWO_SIGNS'],
+  [8, 'SAME_SIGN'],
+  [9, 'NEXT_STAR'],
+  [10, 'HAPPY_PAIR'],
+]);
+
+/** Every Rajju by name. */
+export const Rajju = Object.freeze({
+  Padha: 'PADHA',
+  Ooru: 'OORU',
+  Nabhi: 'NABHI',
+  Kanta: 'KANTA',
+  Siro: 'SIRO',
+});
+
+/**
+ * Every Rajju by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RajjuById = new Map([
+  [0, 'PADHA'],
+  [1, 'OORU'],
+  [2, 'NABHI'],
+  [3, 'KANTA'],
+  [4, 'SIRO'],
+]);
+
 /** Every HarshaGrade by name. */
 export const HarshaGrade = Object.freeze({
   Nirbala: 'NIRBALA',

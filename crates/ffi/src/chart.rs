@@ -1775,15 +1775,21 @@ pub struct TsChartRequest {
     /// `api: nullable example={"number":9}`
     pub harmonic_json: *const c_char,
     /// Every chart matched with one partner's birth by the Ashta Koota of
-    /// *Muhurta Chintamani* VI.21–34, as a JSON object: `partner`,
+    /// *Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON
+    /// object: `partner`,
     /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
     /// "utcOffsetSeconds"}`, founded once under the context's sidereal
     /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
     /// on the other side; and `rules`, every field optional: `equalVarna`
     /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
     /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
-    /// `MIDDLE_ONLY`). The answers come back in `matchings` and
-    /// `matching_kootas`. Null for none, which costs nothing
+    /// `MIDDLE_ONLY`); and `porutham`, the ten considerations of
+    /// *Kalaprakasika* XIII, every field optional: `twoSignStar`
+    /// (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
+    /// (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or
+    /// `ONE_WAY`). The answers come back in `matchings`,
+    /// `matching_kootas`, `poruthams` and `porutham_rows`. Null for none,
+    /// which costs nothing
     /// (`03-design/matching.md`). Refusals are named from the record every
     /// binding calls `matching`, as `matching.partnerRole`.
     /// `api: nullable example={"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}`
@@ -3193,12 +3199,12 @@ struct MatchingColumns {
 }
 
 impl MatchingColumns {
-    fn of(read: &[teistro::AshtaKoota], charts: usize) -> Result<MatchingColumns, Error> {
+    fn of(read: &[teistro::Matched], charts: usize) -> Result<MatchingColumns, Error> {
         use teistro::KootaReading;
 
         one_a_chart(read.len(), charts, "matching")?;
         let mut columns = MatchingColumns::default();
-        for one in read {
+        for one in read.iter().map(|matched| &matched.ashta_koota) {
             // Every column takes one cell a chart only when the eight are
             // read in the verse's order.
             let ordered = one.kootas.len() == teistro::matching::ASHTA_KOOTA.len()
@@ -3331,6 +3337,169 @@ impl MatchingColumns {
                 ColumnData::U16(&self.koota),
                 ColumnData::F64(&self.points),
                 ColumnData::F64(&self.max_points),
+            ],
+        )
+    }
+}
+
+/// `poruthams` and `porutham_rows`: each chart matched with the record's
+/// partner by the ten considerations, what each read, and whether each
+/// agrees (`matching.md`).
+#[derive(Default)]
+struct PoruthamColumns {
+    agreeing: Vec<u8>,
+    chief_agreeing: Vec<u8>,
+    one_lord: Vec<u8>,
+    lords_friendly: Vec<u8>,
+    opposite: Vec<u8>,
+    count: Vec<u8>,
+    dhinam_rule: Vec<u8>,
+    bride_gana: Vec<u16>,
+    groom_gana: Vec<u16>,
+    gana_diminished: Vec<u8>,
+    bride_yoni: Vec<u16>,
+    groom_yoni: Vec<u16>,
+    yoni_hostile: Vec<u8>,
+    apart: Vec<u8>,
+    bride_lord: Vec<u16>,
+    groom_lord: Vec<u16>,
+    bride_calls_friend: Vec<u8>,
+    groom_calls_friend: Vec<u8>,
+    bride_to_groom: Vec<u8>,
+    groom_to_bride: Vec<u8>,
+    bride_rajju: Vec<u8>,
+    groom_rajju: Vec<u8>,
+    pierced: Vec<u8>,
+    koota: Vec<u16>,
+    agrees: Vec<u8>,
+    lifted: Vec<u8>,
+}
+
+impl PoruthamColumns {
+    fn of(read: &[teistro::Matched]) -> Result<PoruthamColumns, Error> {
+        use teistro::PoruthamReading;
+
+        let mut columns = PoruthamColumns::default();
+        for one in read.iter().map(|matched| &matched.porutham) {
+            // As the kootas: one cell a chart only in the chapter's order.
+            let ordered = one.considerations.len() == teistro::matching::PORUTHAM.len()
+                && one
+                    .considerations
+                    .iter()
+                    .zip(teistro::matching::PORUTHAM)
+                    .all(|(row, koota)| row.reading.koota() == koota);
+            if !ordered {
+                return Err(Error::internal(
+                    "a porutham's considerations are not the ten in the chapter's order",
+                ));
+            }
+            columns.agreeing.push(one.agreeing);
+            columns.chief_agreeing.push(one.chief_agreeing);
+            columns.one_lord.push(u8::from(one.exception.one_lord));
+            columns
+                .lords_friendly
+                .push(u8::from(one.exception.lords_friendly));
+            columns.opposite.push(u8::from(one.exception.opposite));
+            for row in &one.considerations {
+                columns.koota.push(row.reading.koota().id());
+                columns.agrees.push(u8::from(row.agrees));
+                columns.lifted.push(u8::from(row.lifted));
+                match row.reading {
+                    PoruthamReading::Tara { count, rule } => {
+                        columns.count.push(count);
+                        columns.dhinam_rule.push(TsDhinamRule::from(rule) as u8);
+                    }
+                    PoruthamReading::Gana {
+                        bride,
+                        groom,
+                        diminished,
+                    } => {
+                        columns.bride_gana.push(bride.id());
+                        columns.groom_gana.push(groom.id());
+                        columns.gana_diminished.push(u8::from(diminished));
+                    }
+                    // The count is Dhinam's, read once.
+                    PoruthamReading::Mahendra { .. } | PoruthamReading::StreeDeergha { .. } => {}
+                    PoruthamReading::Yoni {
+                        bride,
+                        groom,
+                        hostile,
+                    } => {
+                        columns.bride_yoni.push(bride.id());
+                        columns.groom_yoni.push(groom.id());
+                        columns.yoni_hostile.push(u8::from(hostile));
+                    }
+                    PoruthamReading::Bhakoot { apart } => columns.apart.push(apart),
+                    PoruthamReading::GrahaMaitri {
+                        bride,
+                        groom,
+                        bride_calls_friend,
+                        groom_calls_friend,
+                    } => {
+                        columns.bride_lord.push(bride.id());
+                        columns.groom_lord.push(groom.id());
+                        columns
+                            .bride_calls_friend
+                            .push(u8::from(bride_calls_friend));
+                        columns
+                            .groom_calls_friend
+                            .push(u8::from(groom_calls_friend));
+                    }
+                    PoruthamReading::Vashya {
+                        bride_to_groom,
+                        groom_to_bride,
+                    } => {
+                        columns.bride_to_groom.push(u8::from(bride_to_groom));
+                        columns.groom_to_bride.push(u8::from(groom_to_bride));
+                    }
+                    PoruthamReading::Rajju { bride, groom } => {
+                        columns.bride_rajju.push(TsRajju::from(bride) as u8);
+                        columns.groom_rajju.push(TsRajju::from(groom) as u8);
+                    }
+                    PoruthamReading::Vedha { pierced } => columns.pierced.push(u8::from(pierced)),
+                }
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "poruthams",
+            self.agreeing.len(),
+            &[
+                ColumnData::U8(&self.agreeing),
+                ColumnData::U8(&self.chief_agreeing),
+                ColumnData::U8(&self.one_lord),
+                ColumnData::U8(&self.lords_friendly),
+                ColumnData::U8(&self.opposite),
+                ColumnData::U8(&self.count),
+                ColumnData::U8(&self.dhinam_rule),
+                ColumnData::U16(&self.bride_gana),
+                ColumnData::U16(&self.groom_gana),
+                ColumnData::U8(&self.gana_diminished),
+                ColumnData::U16(&self.bride_yoni),
+                ColumnData::U16(&self.groom_yoni),
+                ColumnData::U8(&self.yoni_hostile),
+                ColumnData::U8(&self.apart),
+                ColumnData::U16(&self.bride_lord),
+                ColumnData::U16(&self.groom_lord),
+                ColumnData::U8(&self.bride_calls_friend),
+                ColumnData::U8(&self.groom_calls_friend),
+                ColumnData::U8(&self.bride_to_groom),
+                ColumnData::U8(&self.groom_to_bride),
+                ColumnData::U8(&self.bride_rajju),
+                ColumnData::U8(&self.groom_rajju),
+                ColumnData::U8(&self.pierced),
+            ],
+        )?;
+        writer.columns(
+            "porutham_rows",
+            self.koota.len(),
+            &[
+                ColumnData::U16(&self.koota),
+                ColumnData::U8(&self.agrees),
+                ColumnData::U8(&self.lifted),
             ],
         )
     }
@@ -3525,6 +3694,7 @@ struct AspectTables {
     houses: WesternHouseColumns,
     harmonics: HarmonicColumns,
     matchings: MatchingColumns,
+    poruthams: PoruthamColumns,
 }
 
 impl AspectTables {
@@ -3539,6 +3709,7 @@ impl AspectTables {
             houses: WesternHouseColumns::of(composed.western_houses, charts)?,
             harmonics: HarmonicColumns::of(composed.harmonics, charts)?,
             matchings: MatchingColumns::of(composed.matchings, charts)?,
+            poruthams: PoruthamColumns::of(composed.matchings)?,
         })
     }
 
@@ -3557,7 +3728,8 @@ impl AspectTables {
         self.across.write_composite_cusps(writer)?;
         self.reflected.write_cusps(writer)?;
         self.harmonics.write(writer)?;
-        self.matchings.write(writer)
+        self.matchings.write(writer)?;
+        self.poruthams.write(writer)
     }
 }
 
@@ -6906,7 +7078,7 @@ pub struct Composed<'a> {
     pub harmonics: &'a [teistro::HarmonicChart],
     /// Every chart matched with the record's partner, in the batch's order
     /// (`matching.md`); empty when none was asked for.
-    pub matchings: &'a [teistro::AshtaKoota],
+    pub matchings: &'a [teistro::Matched],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7611,6 +7783,88 @@ impl From<Option<teistro::matching::BhakootDosha>> for TsBhakootDosha {
     }
 }
 
+/// Which of *Kalaprakasika*'s rules decided Dhinam
+/// (`03-design/matching.md`, pp. 69–72).
+///
+/// Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
+/// match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDhinamRule {
+    /// The count alone: the 3rd, 5th and 7th of the first nine disagree.
+    Count = 0,
+    /// A quarter of the second nine, the groom's star's.
+    SecondRoundQuarter = 1,
+    /// The 22nd, *Vadha-Vainasika*.
+    VadhaVainasika = 2,
+    /// The 27th, in two signs.
+    TwentySeventh = 3,
+    /// One star for both, among the excellent.
+    CommonExcellent = 4,
+    /// One star for both, among the neutral.
+    CommonNeutral = 5,
+    /// One star for both, among those to avoid.
+    CommonAvoid = 6,
+    /// One star for both across two signs, by whose quarter comes first.
+    TwoSigns = 7,
+    /// Two stars in one sign: the groom's must be prior.
+    SameSign = 8,
+    /// Two stars in one sign, the groom's next after one the chapter names.
+    NextStar = 9,
+    /// One of the four happy pairs, either way round.
+    HappyPair = 10,
+}
+
+impl From<teistro::matching::DhinamRule> for TsDhinamRule {
+    fn from(rule: teistro::matching::DhinamRule) -> TsDhinamRule {
+        use teistro::matching::DhinamRule;
+        match rule {
+            DhinamRule::Count => TsDhinamRule::Count,
+            DhinamRule::SecondRoundQuarter => TsDhinamRule::SecondRoundQuarter,
+            DhinamRule::VadhaVainasika => TsDhinamRule::VadhaVainasika,
+            DhinamRule::TwentySeventh => TsDhinamRule::TwentySeventh,
+            DhinamRule::CommonExcellent => TsDhinamRule::CommonExcellent,
+            DhinamRule::CommonNeutral => TsDhinamRule::CommonNeutral,
+            DhinamRule::CommonAvoid => TsDhinamRule::CommonAvoid,
+            DhinamRule::TwoSigns => TsDhinamRule::TwoSigns,
+            DhinamRule::SameSign => TsDhinamRule::SameSign,
+            DhinamRule::NextStar => TsDhinamRule::NextStar,
+            DhinamRule::HappyPair => TsDhinamRule::HappyPair,
+        }
+    }
+}
+
+/// A Rajju division, foot to head (`03-design/matching.md`, p. 75).
+///
+/// Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsRajju {
+    /// The foot.
+    Padha = 0,
+    /// The thigh.
+    Ooru = 1,
+    /// The navel.
+    Nabhi = 2,
+    /// The neck.
+    Kanta = 3,
+    /// The head.
+    Siro = 4,
+}
+
+impl From<teistro::matching::Rajju> for TsRajju {
+    fn from(rajju: teistro::matching::Rajju) -> TsRajju {
+        use teistro::matching::Rajju;
+        match rajju {
+            Rajju::Padha => TsRajju::Padha,
+            Rajju::Ooru => TsRajju::Ooru,
+            Rajju::Nabhi => TsRajju::Nabhi,
+            Rajju::Kanta => TsRajju::Kanta,
+            Rajju::Siro => TsRajju::Siro,
+        }
+    }
+}
+
 /// What the source calls a planet by its Harsha bala
 /// (`03-design/tajika-harsha.md`).
 ///
@@ -8010,7 +8264,7 @@ fn matchings_of(
     sdk: &teistro::Context,
     documents: &[Document],
     asked: Option<&teistro::PartnerMatching>,
-) -> Result<Vec<teistro::AshtaKoota>, Error> {
+) -> Result<Vec<teistro::Matched>, Error> {
     asked.map_or_else(
         || Ok(Vec::new()),
         |asked| {

@@ -4878,6 +4878,70 @@ class BhakootDosha(Member):
     """Second and twelfth."""
 
 
+class DhinamRule(Member):
+    """Which of *Kalaprakasika*'s rules decided Dhinam
+    (`03-design/matching.md`, pp. 69–72).
+
+    Mirrors `teistro::matching::DhinamRule` through an **exhaustive**
+    match.
+    """
+
+    COUNT = 0
+    """The count alone: the 3rd, 5th and 7th of the first nine disagree."""
+
+    SECOND_ROUND_QUARTER = 1
+    """A quarter of the second nine, the groom's star's."""
+
+    VADHA_VAINASIKA = 2
+    """The 22nd, *Vadha-Vainasika*."""
+
+    TWENTY_SEVENTH = 3
+    """The 27th, in two signs."""
+
+    COMMON_EXCELLENT = 4
+    """One star for both, among the excellent."""
+
+    COMMON_NEUTRAL = 5
+    """One star for both, among the neutral."""
+
+    COMMON_AVOID = 6
+    """One star for both, among those to avoid."""
+
+    TWO_SIGNS = 7
+    """One star for both across two signs, by whose quarter comes first."""
+
+    SAME_SIGN = 8
+    """Two stars in one sign: the groom's must be prior."""
+
+    NEXT_STAR = 9
+    """Two stars in one sign, the groom's next after one the chapter names."""
+
+    HAPPY_PAIR = 10
+    """One of the four happy pairs, either way round."""
+
+
+class Rajju(Member):
+    """A Rajju division, foot to head (`03-design/matching.md`, p. 75).
+
+    Mirrors `teistro::matching::Rajju` through an **exhaustive** match.
+    """
+
+    PADHA = 0
+    """The foot."""
+
+    OORU = 1
+    """The thigh."""
+
+    NABHI = 2
+    """The navel."""
+
+    KANTA = 3
+    """The neck."""
+
+    SIRO = 4
+    """The head."""
+
+
 class HarshaGrade(Member):
     """What the source calls a planet by its Harsha bala
     (`03-design/tajika-harsha.md`).
@@ -6767,6 +6831,26 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "SIX_EIGHT",
         2: "FIVE_NINE",
         3: "TWO_TWELVE",
+    },
+    "DhinamRule": {
+        0: "COUNT",
+        1: "SECOND_ROUND_QUARTER",
+        2: "VADHA_VAINASIKA",
+        3: "TWENTY_SEVENTH",
+        4: "COMMON_EXCELLENT",
+        5: "COMMON_NEUTRAL",
+        6: "COMMON_AVOID",
+        7: "TWO_SIGNS",
+        8: "SAME_SIGN",
+        9: "NEXT_STAR",
+        10: "HAPPY_PAIR",
+    },
+    "Rajju": {
+        0: "PADHA",
+        1: "OORU",
+        2: "NABHI",
+        3: "KANTA",
+        4: "SIRO",
     },
     "HarshaGrade": {
         0: "NIRBALA",

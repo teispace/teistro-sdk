@@ -2220,7 +2220,7 @@ fn the_partners(
     the_matching(report, sdk, documents);
 }
 
-const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"partnerRole":"BRIDE","rules":{"bhakootLift":"GARGA"}}"#;
+const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"partnerRole":"BRIDE","rules":{"bhakootLift":"GARGA"},"porutham":{"lordsFriendship":"ONE_WAY"}}"#;
 
 /// Every chart's match as the other three print it: the total, then each
 /// koota by its full key with its points, its most and what it read, the
@@ -2232,7 +2232,8 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
         .chart()
         .matching_with(documents, &asked)
         .expect("sidereal charts");
-    for (index, one) in read.iter().enumerate() {
+    for (index, both) in read.iter().enumerate() {
+        let one = &both.ashta_koota;
         put(
             report,
             &format!("chart-{index}-matching"),
@@ -2307,6 +2308,82 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
                 ),
             );
         }
+        the_porutham(report, index, &both.porutham);
+    }
+}
+
+/// A chart's ten considerations as the other three print them: the counts
+/// and the exception's clauses, then each consideration by its full key
+/// with whether it agrees, whether it was lifted and what it read.
+fn the_porutham(report: &mut Report, index: usize, ten: &teistro::Porutham) {
+    use teistro::PoruthamReading;
+    let flag = |held: bool| u8::from(held);
+    let e = ten.exception;
+    put(
+        report,
+        &format!("chart-{index}-porutham"),
+        format!(
+            "{} {} {} {} {}",
+            ten.agreeing,
+            ten.chief_agreeing,
+            flag(e.one_lord),
+            flag(e.lords_friendly),
+            flag(e.opposite)
+        ),
+    );
+    for row in &ten.considerations {
+        let reading = match row.reading {
+            PoruthamReading::Tara { count, rule } => format!("{count} {}", wire_key(&rule)),
+            PoruthamReading::Gana {
+                bride,
+                groom,
+                diminished,
+            } => format!(
+                "{} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                flag(diminished)
+            ),
+            PoruthamReading::Mahendra { count } | PoruthamReading::StreeDeergha { count } => {
+                count.to_string()
+            }
+            PoruthamReading::Yoni {
+                bride,
+                groom,
+                hostile,
+            } => format!(
+                "{} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                flag(hostile)
+            ),
+            PoruthamReading::Bhakoot { apart } => apart.to_string(),
+            PoruthamReading::GrahaMaitri {
+                bride,
+                groom,
+                bride_calls_friend,
+                groom_calls_friend,
+            } => format!(
+                "{} {} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                flag(bride_calls_friend),
+                flag(groom_calls_friend)
+            ),
+            PoruthamReading::Vashya {
+                bride_to_groom,
+                groom_to_bride,
+            } => format!("{} {}", flag(bride_to_groom), flag(groom_to_bride)),
+            PoruthamReading::Rajju { bride, groom } => {
+                format!("{} {}", wire_key(&bride), wire_key(&groom))
+            }
+            PoruthamReading::Vedha { pierced } => flag(pierced).to_string(),
+        };
+        put(
+            report,
+            &format!("chart-{index}-porutham-{}", row.reading.koota().full_key()),
+            format!("{} {} {reading}", flag(row.agrees), flag(row.lifted)),
+        );
     }
 }
 

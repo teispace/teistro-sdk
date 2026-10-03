@@ -2090,10 +2090,107 @@ fn matching_columns() -> Vec<ColumnDef> {
     columns
 }
 
-/// The two sections a match crosses as, from `first`: a row a chart, what
-/// each koota read, and each koota's points, eight rows a chart in the
-/// verse's order (`03-design/matching.md`).
-fn chart_matching_sections(first: u32) -> [SectionSchema; 2] {
+/// The `poruthams` section's columns: the counts, the p. 76 exception's
+/// clauses, then what each of the ten read in Kalaprakasika's order
+/// (`03-design/matching.md`).
+fn porutham_columns() -> Vec<ColumnDef> {
+    let flag = |name: &str, doc: &str| ColumnDef::new(name, Scalar::U8, doc);
+    let sides = |what: &str, kind: &str, scalar: Scalar, doc: &str| {
+        [
+            ColumnDef::new(
+                &format!("bride_{what}"),
+                scalar,
+                &format!("The bride's {doc}."),
+            )
+            .of_enum(kind),
+            ColumnDef::new(
+                &format!("groom_{what}"),
+                scalar,
+                &format!("The groom's {doc}."),
+            )
+            .of_enum(kind),
+        ]
+    };
+    let mut columns = vec![
+        flag(
+            "agreeing",
+            "How many of the ten agree, a lift included; the chapter asks \"at least five\" (p. 76).",
+        ),
+        flag(
+            "chief_agreeing",
+            "How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju.",
+        ),
+        flag(
+            "one_lord",
+            "1 when one lord rules both Moon signs: the p. 76 exception's first clause (C277).",
+        ),
+        flag(
+            "lords_friendly",
+            "1 when the two sign lords are friendly on the chapter's own table, as the record's `lordsFriendship` reads it (C273).",
+        ),
+        flag("opposite", "1 when the two Moon signs are opposite."),
+        flag(
+            "count",
+            "The groom's nakshatra counted from the bride's, 1 to 27, which Dhinam, Mahendra and Sthree-Dheergham read.",
+        ),
+        ColumnDef::new(
+            "dhinam_rule",
+            Scalar::U8,
+            "Which of the chapter's rules decided Dhinam (pp. 69–72).",
+        )
+        .of_enum("TsDhinamRule"),
+    ];
+    columns.extend(sides(
+        "gana",
+        "Gana",
+        Scalar::U16,
+        "gana, by her or his Moon's nakshatra (p. 72)",
+    ));
+    columns.push(flag(
+        "gana_diminished",
+        "1 when a Rakshasa stands beside another gana and the bride's star is beyond the 14th from the groom's: the evil \"diminishes\", the disagreement stands (C279).",
+    ));
+    columns.extend(sides(
+        "yoni",
+        "Yoni",
+        Scalar::U16,
+        "yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278)",
+    ));
+    columns.extend([
+        flag("yoni_hostile", "1 when the two yonis are among the chapter's eight enmities."),
+        flag("apart", "The groom's Moon sign counted from the bride's, 1 to 12, which Rasi reads (pp. 73–74)."),
+        graha_column("bride_lord", "The lord of the bride's Moon sign."),
+        graha_column("groom_lord", "The lord of the groom's Moon sign."),
+        flag(
+            "bride_calls_friend",
+            "1 when the bride's lord calls the groom's a friend on the chapter's own table (pp. 74–75); a lord is its own.",
+        ),
+        flag("groom_calls_friend", "1 when the groom's lord calls the bride's a friend."),
+        flag(
+            "bride_to_groom",
+            "1 when the bride's Moon sign is concordant to the groom's on p. 75's Vasyam table, never a sign to itself (C274).",
+        ),
+        flag("groom_to_bride", "1 when the groom's Moon sign is concordant to the bride's."),
+    ]);
+    columns.extend(sides(
+        "rajju",
+        "TsRajju",
+        Scalar::U8,
+        "Rajju division, by her or his Moon's nakshatra (p. 75, C275)",
+    ));
+    columns.push(flag(
+        "pierced",
+        "1 when the two nakshatras are a Vedhai pair of p. 76 (C276).",
+    ));
+    columns
+}
+
+/// The four sections a match crosses as, from `first`: a row a chart with
+/// what each koota read, each koota's points (eight rows a chart in the
+/// verse's order), a row a chart with what each of the ten considerations
+/// read, and whether each agrees (ten rows a chart in the chapter's order)
+/// (`03-design/matching.md`).
+fn chart_matching_sections(first: u32) -> [SectionSchema; 4] {
     let empty = "Empty when `matching_json` asked for none.";
     [
         SectionSchema::columns(
@@ -2117,6 +2214,35 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 2] {
                     "max_points",
                     Scalar::F64,
                     "The most it gives, 1 for Varna to 8 for Nadi.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "poruthams",
+            &format!(
+                "Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. {empty}"
+            ),
+            porutham_columns(),
+        ),
+        SectionSchema::columns(
+            first + 3,
+            "porutham_rows",
+            &format!(
+                "Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. {empty}"
+            ),
+            vec![
+                ColumnDef::new(
+                    "koota",
+                    Scalar::U16,
+                    "Which consideration, a catalogue koota (C282).",
+                )
+                .of_enum("Koota"),
+                ColumnDef::new("agrees", Scalar::U8, "1 when it agrees, a lift included."),
+                ColumnDef::new(
+                    "lifted",
+                    Scalar::U8,
+                    "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277).",
                 ),
             ],
         ),

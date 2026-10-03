@@ -9,11 +9,11 @@
 )]
 
 use teistro::catalogue::{Graha, Koota};
-use teistro::matching::ashta_koota;
+use teistro::matching::{ashta_koota, porutham};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
     ChartRequest, Context, Document, Ephemeris, KootaReading, KootaRules, MatchRole, Native,
-    Partner, PartnerMatching, UtcOffset,
+    Partner, PartnerMatching, PoruthamRules, UtcOffset,
 };
 
 fn context(profile: Option<&str>) -> Context {
@@ -71,6 +71,14 @@ fn a_match_reads_each_charts_own_sidereal_moon() {
             koota,
             ashta_koota(moon(&bride), moon(&groom), KootaRules::default())
         );
+        let ten = sdk
+            .chart()
+            .porutham(&bride, &groom, PoruthamRules::default())
+            .unwrap();
+        assert_eq!(
+            ten,
+            porutham(moon(&bride), moon(&groom), PoruthamRules::default())
+        );
         assert!((0.0..=36.0).contains(&koota.total));
         let Some(KootaReading::Tara {
             bride_to_groom,
@@ -116,15 +124,26 @@ fn a_batch_stands_on_the_side_the_partner_does_not() {
             partner: partner(2_447_892.5),
             partner_role: role,
             rules,
+            porutham: PoruthamRules {
+                deergha_beyond: teistro::matching::DeerghaBeyond::Seventh,
+                ..PoruthamRules::default()
+            },
         };
         let matched = sdk.chart().matching_with(&charts, &asked).unwrap();
         assert_eq!(matched.len(), charts.len());
-        for (chart, koota) in charts.iter().zip(&matched) {
-            let alone = match role {
-                MatchRole::Bride => sdk.chart().matching(&hers, chart, rules),
-                MatchRole::Groom => sdk.chart().matching(chart, &hers, rules),
+        for (chart, both) in charts.iter().zip(&matched) {
+            let (bride, groom) = match role {
+                MatchRole::Bride => (&hers, chart),
+                MatchRole::Groom => (chart, &hers),
             };
-            assert_eq!(*koota, alone.unwrap());
+            assert_eq!(
+                both.ashta_koota,
+                sdk.chart().matching(bride, groom, rules).unwrap()
+            );
+            assert_eq!(
+                both.porutham,
+                sdk.chart().porutham(bride, groom, asked.porutham).unwrap()
+            );
         }
     }
 }
@@ -136,6 +155,7 @@ fn a_tropical_partner_is_refused_as_the_partner() {
         partner: partner(2_447_892.5),
         partner_role: MatchRole::Groom,
         rules: KootaRules::default(),
+        porutham: PoruthamRules::default(),
     };
     let refused = western.chart().matching_with(&[], &asked).unwrap_err();
     assert_eq!(refused.field(), Some("partner"));
@@ -147,6 +167,7 @@ fn a_record_reads_back_what_it_wrote() {
         partner: partner(2_447_892.5),
         partner_role: MatchRole::Bride,
         rules: KootaRules::default(),
+        porutham: PoruthamRules::default(),
     };
     let text = serde_json::to_string(&asked).unwrap();
     assert_eq!(PartnerMatching::from_json(&text).unwrap(), asked);
@@ -155,4 +176,9 @@ fn a_record_reads_back_what_it_wrote() {
     )
     .unwrap_err();
     assert_eq!(north.field(), Some("matching.partner.place.latitude"));
+    let typo = PartnerMatching::from_json(
+        r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27, "longitude": 85, "altitude": 0}}, "partnerRole": "BRIDE", "porutham": {"deergha": "SEVENTH"}}"#,
+    )
+    .unwrap_err();
+    assert_eq!(typo.field(), Some("matching.porutham.deergha"));
 }
