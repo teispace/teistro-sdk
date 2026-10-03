@@ -684,6 +684,7 @@ final class ChartArea extends _Area {
     WesternAspectRequest? westernAspects,
     SynastryRequest? synastry,
     ParallelRequest? parallels,
+    AntisciaRequest? antiscia,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -721,6 +722,7 @@ final class ChartArea extends _Area {
     westernAspects: westernAspects,
     synastry: synastry,
     parallels: parallels,
+    antiscia: antiscia,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -778,6 +780,7 @@ final class ChartArea extends _Area {
     WesternAspectRequest? westernAspects,
     SynastryRequest? synastry,
     ParallelRequest? parallels,
+    AntisciaRequest? antiscia,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -838,6 +841,7 @@ final class ChartArea extends _Area {
             westernAspectsJson: westernAspects?._json,
             synastryJson: synastry?._json,
             parallelsJson: parallels?._json,
+            antisciaJson: antiscia?._json,
           ),
         ),
       ),
@@ -4365,6 +4369,57 @@ List<List<SynastryRow>> _decodeSynastries(Charts batch) {
   );
 }
 
+final Expando<List<Antiscia>> _antiscia = Expando<List<Antiscia>>('antiscia');
+
+List<Antiscia> _antisciaOf(Charts batch) =>
+    _antiscia[batch] ??= _decodeAntiscia(batch);
+
+/// `antiscia` holds a row a chart, or none when none was asked, and
+/// `antiscion_points` and `antiscion_rows` are ragged by its two counts.
+List<Antiscia> _decodeAntiscia(Charts batch) {
+  final row = batch.antiscia;
+  final p = batch.antiscionPoints;
+  final r = batch.antiscionRows;
+  final points = _ragged(
+    batch,
+    row.pointCount,
+    p.length,
+    'antiscia and antiscion_points',
+    (at) => at,
+  );
+  final pairs = _ragged(
+    batch,
+    row.pairCount,
+    r.length,
+    'antiscia and antiscion_rows',
+    (at) => AntiscionRow(
+      first: Graha.byId(r.first[at]),
+      second: Graha.byId(r.second[at]),
+      contrary: r.contrary[at] == 1,
+      apartDeg: r.apartDeg[at],
+      orbDeg: r.orbDeg[at],
+    ),
+  );
+  return [
+    for (final (k, rows) in points.indexed)
+      Antiscia(
+        points: [
+          for (final at in rows)
+            Antiscion(
+              graha: Graha.byId(p.graha[at]),
+              antiscionDeg: p.antiscionDeg[at],
+              contrantiscionDeg: p.contrantiscionDeg[at],
+            ),
+        ],
+        pairs: pairs[k],
+        unpaired: [
+          for (final at in rows)
+            if (p.paired[at] == 0) Graha.byId(p.graha[at]),
+        ],
+      ),
+  ];
+}
+
 final Expando<List<List<SynastryParallelRow>>> _synastryParallels =
     Expando<List<List<SynastryParallelRow>>>('synastry parallels');
 
@@ -6714,6 +6769,86 @@ final class WesternAspectRequest {
   };
 
   String get _json => jsonEncode(_record);
+}
+
+/// What the antiscia are asked (`03-design/western-antiscia.md`): the
+/// [orbs] a pair is read under, at the conjunction; Lilly's moieties by
+/// default (C244), which give the outer three none.
+///
+/// ```dart
+/// const leo = AntisciaRequest(orbs: OrbModel.leo);
+/// ```
+final class AntisciaRequest {
+  const AntisciaRequest({this.orbs = OrbModel.lilly});
+
+  final OrbModel orbs;
+
+  String get _json => jsonEncode(<String, Object?>{'orbs': orbs._record});
+}
+
+/// A planet's two reflections, tropical degrees
+/// (`03-design/western-antiscia.md`).
+final class Antiscion extends _Value {
+  const Antiscion({
+    required this.graha,
+    required this.antiscionDeg,
+    required this.contrantiscionDeg,
+  });
+
+  final Graha graha;
+
+  /// Its reflection about the solstices: 180° less its longitude.
+  final double antiscionDeg;
+
+  /// Its reflection about the equinoxes: 360° less its longitude.
+  final double contrantiscionDeg;
+
+  @override
+  List<Object?> get _fields => [graha, antiscionDeg, contrantiscionDeg];
+}
+
+/// Two planets in antiscion within the orb, the pair in catalogue order.
+final class AntiscionRow extends _Value {
+  const AntiscionRow({
+    required this.first,
+    required this.second,
+    required this.contrary,
+    required this.apartDeg,
+    required this.orbDeg,
+  });
+
+  final Graha first;
+  final Graha second;
+
+  /// Whether it is the contrantiscion, the reflection about the equinoxes.
+  final bool contrary;
+
+  /// How far the one's reflection stands from the other, degrees.
+  final double apartDeg;
+
+  /// The orb the request allowed the pair, degrees.
+  final double orbDeg;
+
+  @override
+  List<Object?> get _fields => [first, second, contrary, apartDeg, orbDeg];
+}
+
+/// A chart's antiscia (Lilly, *Christian Astrology*, pp. 90–92): each
+/// planet's reflections, the pairs within the orb closest first, and the
+/// planets the orbs give none.
+final class Antiscia extends _Value {
+  const Antiscia({
+    required this.points,
+    required this.pairs,
+    required this.unpaired,
+  });
+
+  final List<Antiscion> points;
+  final List<AntiscionRow> pairs;
+  final List<Graha> unpaired;
+
+  @override
+  List<Object?> get _fields => [...points, null, ...pairs, null, ...unpaired];
 }
 
 /// One pair of planets within an aspect's orb, the pair in catalogue
@@ -12974,6 +13109,15 @@ final class Chart {
   /// The parallels among the chart's planets, closest first: each pair the
   /// same distance from the equator within the orb (Leo's 1° by default),
   /// on either side of it (C243); null unless `parallels` asked.
+  /// The chart's antiscia: each planet's reflection about the solstices
+  /// and the equinoxes, and the pairs standing in one within the orbs,
+  /// Lilly's moieties by default (C244); null unless `antiscia` asked
+  /// (`03-design/western-antiscia.md`).
+  Antiscia? get antiscia {
+    final all = _antisciaOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
   List<ParallelRow>? get parallels {
     final all = _declinationsOf(batch).$2;
     return index < all.length ? all[index] : null;
