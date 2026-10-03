@@ -3306,6 +3306,146 @@ export interface ChartsPerfectionOrbs {
 }
 
 /**
+ * The `progressions` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsProgressions {
+  /**
+   * The instant of life asked for, a Julian day (UTC). NaN when the record named no `at`.
+   */
+  readonly life: Float64Array;
+  /**
+   * The instant of sky that measures it, a Julian day (UTC): where the progressed planets are read. NaN when the record named no `at`.
+   */
+  readonly sky: Float64Array;
+  /**
+   * The progressed meridian's right ascension, by `angles` (C237), degrees. NaN when the record named no `at`.
+   */
+  readonly armcDeg: Float64Array;
+  /**
+   * The progressed ascendant, in the chart's zodiac, degrees. NaN when the record named no `at`.
+   */
+  readonly ascendantDeg: Float64Array;
+  /**
+   * The progressed midheaven, in the chart's zodiac, degrees. NaN when the record named no `at`.
+   */
+  readonly midheavenDeg: Float64Array;
+  /**
+   * The direction's arc: the solar arc, signed, or the measure's degrees for the years of life, degrees. NaN when the record named no `at`.
+   */
+  readonly arcDeg: Float64Array;
+  /**
+   * The birth's ascendant moved by the arc, degrees. NaN when the record named no `at`.
+   */
+  readonly directedAscendantDeg: Float64Array;
+  /**
+   * The birth's midheaven moved by the arc, degrees. NaN when the record named no `at`.
+   */
+  readonly directedMidheavenDeg: Float64Array;
+  /**
+   * How many rows of the `progressed_contacts` section belong to this chart; 0 when the record named no `contacts`.
+   */
+  readonly contactCount: Uint32Array;
+  /**
+   * 1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.
+   */
+  readonly contactsAsked: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `progressed_grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsProgressedGrahas {
+  /**
+   * Which planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its progressed longitude in the chart's zodiac, degrees.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * Its progressed tropical longitude, degrees.
+   */
+  readonly tropicalDeg: Float64Array;
+  /**
+   * Its speed at the instant of sky, degrees a day; below zero when retrograde.
+   */
+  readonly speedDegPerDay: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `directed_grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsDirectedGrahas {
+  /**
+   * Which planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its directed longitude in the chart's zodiac, degrees.
+   */
+  readonly longitudeDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `progressed_contacts` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+ */
+export interface ChartsProgressedContacts {
+  /**
+   * The instant of life it falls due, a Julian day (UTC).
+   */
+  readonly life: Float64Array;
+  /**
+   * The instant of sky the aspect is exact at, a Julian day (UTC).
+   */
+  readonly sky: Float64Array;
+  /**
+   * The progressed planet.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * 1 when the radical point is the lagna, 0 when it is a radical graha.
+   */
+  readonly toLagna: Uint8Array;
+  /**
+   * The radical graha aspected (a `Graha` id); 0 for the lagna.
+   */
+  readonly toGraha: Uint16Array;
+  /**
+   * The aspect's angle, a whole degree 0 to 180, either side of the radical point.
+   */
+  readonly angle: Uint16Array;
+  /**
+   * Which way the progressed planet was moving.
+   * The values are `Motion` ids.
+   */
+  readonly motion: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -3777,6 +3917,22 @@ export interface Charts {
    * The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none.
    */
   readonly perfectionOrbs: ChartsPerfectionOrbs;
+  /**
+   * Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
+   */
+  readonly progressions: ChartsProgressions;
+  /**
+   * The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+   */
+  readonly progressedGrahas: ChartsProgressedGrahas;
+  /**
+   * The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+   */
+  readonly directedGrahas: ChartsDirectedGrahas;
+  /**
+   * Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+   */
+  readonly progressedContacts: ChartsProgressedContacts;
 }
 
 /**

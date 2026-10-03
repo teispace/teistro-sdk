@@ -2772,6 +2772,123 @@ class ChartsPerfectionOrbs:
 
 
 @dataclass(frozen=True)
+class ChartsProgressions:
+    """The `progressions` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none.
+    """
+
+    life: memoryview[float]
+    """The instant of life asked for, a Julian day (UTC). NaN when the record named no `at`."""
+
+    sky: memoryview[float]
+    """The instant of sky that measures it, a Julian day (UTC): where the progressed planets are read. NaN when the record named no `at`."""
+
+    armc_deg: memoryview[float]
+    """The progressed meridian's right ascension, by `angles` (C237), degrees. NaN when the record named no `at`."""
+
+    ascendant_deg: memoryview[float]
+    """The progressed ascendant, in the chart's zodiac, degrees. NaN when the record named no `at`."""
+
+    midheaven_deg: memoryview[float]
+    """The progressed midheaven, in the chart's zodiac, degrees. NaN when the record named no `at`."""
+
+    arc_deg: memoryview[float]
+    """The direction's arc: the solar arc, signed, or the measure's degrees for the years of life, degrees. NaN when the record named no `at`."""
+
+    directed_ascendant_deg: memoryview[float]
+    """The birth's ascendant moved by the arc, degrees. NaN when the record named no `at`."""
+
+    directed_midheaven_deg: memoryview[float]
+    """The birth's midheaven moved by the arc, degrees. NaN when the record named no `at`."""
+
+    contact_count: memoryview[int]
+    """How many rows of the `progressed_contacts` section belong to this chart; 0 when the record named no `contacts`."""
+
+    contacts_asked: memoryview[int]
+    """1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsProgressedGrahas:
+    """The `progressed_grahas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    longitude_deg: memoryview[float]
+    """Its progressed longitude in the chart's zodiac, degrees."""
+
+    tropical_deg: memoryview[float]
+    """Its progressed tropical longitude, degrees."""
+
+    speed_deg_per_day: memoryview[float]
+    """Its speed at the instant of sky, degrees a day; below zero when retrograde."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDirectedGrahas:
+    """The `directed_grahas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+    """
+
+    graha: memoryview[int]
+    """Which planet."""
+
+    longitude_deg: memoryview[float]
+    """Its directed longitude in the chart's zodiac, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsProgressedContacts:
+    """The `progressed_contacts` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
+    """
+
+    life: memoryview[float]
+    """The instant of life it falls due, a Julian day (UTC)."""
+
+    sky: memoryview[float]
+    """The instant of sky the aspect is exact at, a Julian day (UTC)."""
+
+    graha: memoryview[int]
+    """The progressed planet."""
+
+    to_lagna: memoryview[int]
+    """1 when the radical point is the lagna, 0 when it is a radical graha."""
+
+    to_graha: memoryview[int]
+    """The radical graha aspected (a `Graha` id); 0 for the lagna."""
+
+    angle: memoryview[int]
+    """The aspect's angle, a whole degree 0 to 180, either side of the radical point."""
+
+    motion: memoryview[int]
+    """Which way the progressed planet was moving."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3123,6 +3240,18 @@ class Charts:
     perfection_orbs: ChartsPerfectionOrbs
     """The orbs the moieties were taken from, **seven rows a chart** in the `cast` section's order, each chart's in the Chaldean order, `perfection_json.rules.orbsDeg`. Empty when `perfection_json` asked for none."""
 
+    progressions: ChartsProgressions
+    """Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. Empty when `progressions_json` asked for none."""
+
+    progressed_grahas: ChartsProgressedGrahas
+    """The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
+
+    directed_grahas: ChartsDirectedGrahas
+    """The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none."""
+
+    progressed_contacts: ChartsProgressedContacts
+    """Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3208,6 +3337,10 @@ def decode_charts(raw: bytes) -> Charts:
     at_perfection_translations = blob.section(74, "perfection_translations")
     at_perfection_collections = blob.section(75, "perfection_collections")
     at_perfection_orbs = blob.section(76, "perfection_orbs")
+    at_progressions = blob.section(77, "progressions")
+    at_progressed_grahas = blob.section(78, "progressed_grahas")
+    at_directed_grahas = blob.section(79, "directed_grahas")
+    at_progressed_contacts = blob.section(80, "progressed_contacts")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -4977,6 +5110,87 @@ def decode_charts(raw: bytes) -> Charts:
                 at_perfection_orbs, 0, 8, at_perfection_orbs.count
             ).cast("d"),
             length=at_perfection_orbs.count,
+        ),
+        progressions=ChartsProgressions(
+            life=blob.column(
+                at_progressions, 0, 8, at_progressions.count
+            ).cast("d"),
+            sky=blob.column(
+                at_progressions, 1, 8, at_progressions.count
+            ).cast("d"),
+            armc_deg=blob.column(
+                at_progressions, 2, 8, at_progressions.count
+            ).cast("d"),
+            ascendant_deg=blob.column(
+                at_progressions, 3, 8, at_progressions.count
+            ).cast("d"),
+            midheaven_deg=blob.column(
+                at_progressions, 4, 8, at_progressions.count
+            ).cast("d"),
+            arc_deg=blob.column(
+                at_progressions, 5, 8, at_progressions.count
+            ).cast("d"),
+            directed_ascendant_deg=blob.column(
+                at_progressions, 6, 8, at_progressions.count
+            ).cast("d"),
+            directed_midheaven_deg=blob.column(
+                at_progressions, 7, 8, at_progressions.count
+            ).cast("d"),
+            contact_count=blob.column(
+                at_progressions, 8, 4, at_progressions.count
+            ).cast("I"),
+            contacts_asked=blob.column(
+                at_progressions, 9, 1, at_progressions.count
+            ).cast("B"),
+            length=at_progressions.count,
+        ),
+        progressed_grahas=ChartsProgressedGrahas(
+            graha=blob.column(
+                at_progressed_grahas, 0, 2, at_progressed_grahas.count
+            ).cast("H"),
+            longitude_deg=blob.column(
+                at_progressed_grahas, 1, 8, at_progressed_grahas.count
+            ).cast("d"),
+            tropical_deg=blob.column(
+                at_progressed_grahas, 2, 8, at_progressed_grahas.count
+            ).cast("d"),
+            speed_deg_per_day=blob.column(
+                at_progressed_grahas, 3, 8, at_progressed_grahas.count
+            ).cast("d"),
+            length=at_progressed_grahas.count,
+        ),
+        directed_grahas=ChartsDirectedGrahas(
+            graha=blob.column(
+                at_directed_grahas, 0, 2, at_directed_grahas.count
+            ).cast("H"),
+            longitude_deg=blob.column(
+                at_directed_grahas, 1, 8, at_directed_grahas.count
+            ).cast("d"),
+            length=at_directed_grahas.count,
+        ),
+        progressed_contacts=ChartsProgressedContacts(
+            life=blob.column(
+                at_progressed_contacts, 0, 8, at_progressed_contacts.count
+            ).cast("d"),
+            sky=blob.column(
+                at_progressed_contacts, 1, 8, at_progressed_contacts.count
+            ).cast("d"),
+            graha=blob.column(
+                at_progressed_contacts, 2, 2, at_progressed_contacts.count
+            ).cast("H"),
+            to_lagna=blob.column(
+                at_progressed_contacts, 3, 1, at_progressed_contacts.count
+            ).cast("B"),
+            to_graha=blob.column(
+                at_progressed_contacts, 4, 2, at_progressed_contacts.count
+            ).cast("H"),
+            angle=blob.column(
+                at_progressed_contacts, 5, 2, at_progressed_contacts.count
+            ).cast("H"),
+            motion=blob.column(
+                at_progressed_contacts, 6, 1, at_progressed_contacts.count
+            ).cast("B"),
+            length=at_progressed_contacts.count,
         ),
     )
 

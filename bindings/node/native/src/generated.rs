@@ -2035,6 +2035,26 @@ pub struct ChartRequest {
     /// `perfection.quesited`.
     /// Example: {"house":7}. May be null.
     pub perfection_json: Option<String>,
+    /// The progressions to read every chart's birth through, as a JSON
+    /// object, every field optional but one of `at` and `contacts`: `at`,
+    /// the instant of life (a UTC Julian day) the progressed chart and the
+    /// direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+    /// default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+    /// `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+    /// `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+    /// the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+    /// default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+    /// `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+    /// life `{from, to}` with the progressed `grahas` (the seven by
+    /// default), the radical `points` (the seven and the lagna) and the
+    /// `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+    /// The progressed chart is founded at the request's place. The answers
+    /// come back in `progressions`, `progressed_grahas`, `directed_grahas`
+    /// and `progressed_contacts`. Null for none, which costs nothing
+    /// (`03-design/western-progressions.md`). Refusals are named from the
+    /// record every binding calls `progressions`, as `progressions.year`.
+    /// Example: {"at":2460676.5}. May be null.
+    pub progressions_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2063,6 +2083,7 @@ pub struct HeldChartRequest {
     lots_json: Option<std::ffi::CString>,
     considerations_json: Option<std::ffi::CString>,
     perfection_json: Option<std::ffi::CString>,
+    progressions_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2122,6 +2143,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             perfection_json: self
                 .perfection_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            progressions_json: self
+                .progressions_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2211,6 +2236,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            progressions_json: self
+                .progressions_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2257,6 +2287,7 @@ impl ChartRequest {
             lots_json: unsafe { lent_text(raw.lots_json) },
             considerations_json: unsafe { lent_text(raw.considerations_json) },
             perfection_json: unsafe { lent_text(raw.perfection_json) },
+            progressions_json: unsafe { lent_text(raw.progressions_json) },
         }
     }
 }

@@ -613,6 +613,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_lot_sections(67))
         .chain(chart_consideration_sections(69))
         .chain(chart_perfection_sections(72))
+        .chain(chart_progression_sections(77))
         .collect(),
     }
 }
@@ -1237,6 +1238,166 @@ fn chart_perfection_sections(first: u32) -> [SectionSchema; 5] {
             )],
         ),
     ]
+}
+
+/// The four sections progressions cross as, from `first`: a row a chart,
+/// the progressed and directed planets, and the contacts ragged under the
+/// row (`03-design/western-progressions.md`).
+fn chart_progression_sections(first: u32) -> [SectionSchema; 4] {
+    let empty = "Empty when `progressions_json` asked for none.";
+    [
+        progressions_section(first, empty),
+        SectionSchema::columns(
+            first + 1,
+            "progressed_grahas",
+            &format!(
+                "The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. {empty}"
+            ),
+            vec![
+                graha_column("graha", "Which planet."),
+                ColumnDef::new(
+                    "longitude_deg",
+                    Scalar::F64,
+                    "Its progressed longitude in the chart's zodiac, degrees.",
+                ),
+                ColumnDef::new(
+                    "tropical_deg",
+                    Scalar::F64,
+                    "Its progressed tropical longitude, degrees.",
+                ),
+                ColumnDef::new(
+                    "speed_deg_per_day",
+                    Scalar::F64,
+                    "Its speed at the instant of sky, degrees a day; below zero when retrograde.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "directed_grahas",
+            &format!(
+                "The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. {empty}"
+            ),
+            vec![
+                graha_column("graha", "Which planet."),
+                ColumnDef::new(
+                    "longitude_deg",
+                    Scalar::F64,
+                    "Its directed longitude in the chart's zodiac, degrees.",
+                ),
+            ],
+        ),
+        progressed_contacts_section(first + 3, empty),
+    ]
+}
+
+/// The `progressions` section: a row a chart.
+fn progressions_section(id: u32, empty: &str) -> SectionSchema {
+    let no_at = "NaN when the record named no `at`.";
+    let degrees = |name: &str, doc: &str| {
+        ColumnDef::new(name, Scalar::F64, &format!("{doc}, degrees. {no_at}"))
+    };
+    SectionSchema::columns(
+        id,
+        "progressions",
+        &format!(
+            "Every chart's progressions (Leo, *The Progressed Horoscope*), a row a chart in the `cast` section's order: the progressed chart and the direction at the record's `at`, and how many contacts its window holds. {empty}"
+        ),
+        vec![
+            ColumnDef::new(
+                "life",
+                Scalar::F64,
+                &format!("The instant of life asked for, a Julian day (UTC). {no_at}"),
+            ),
+            ColumnDef::new(
+                "sky",
+                Scalar::F64,
+                &format!(
+                    "The instant of sky that measures it, a Julian day (UTC): where the progressed planets are read. {no_at}"
+                ),
+            ),
+            degrees(
+                "armc_deg",
+                "The progressed meridian's right ascension, by `angles` (C237)",
+            ),
+            degrees(
+                "ascendant_deg",
+                "The progressed ascendant, in the chart's zodiac",
+            ),
+            degrees(
+                "midheaven_deg",
+                "The progressed midheaven, in the chart's zodiac",
+            ),
+            degrees(
+                "arc_deg",
+                "The direction's arc: the solar arc, signed, or the measure's degrees for the years of life",
+            ),
+            degrees(
+                "directed_ascendant_deg",
+                "The birth's ascendant moved by the arc",
+            ),
+            degrees(
+                "directed_midheaven_deg",
+                "The birth's midheaven moved by the arc",
+            ),
+            ColumnDef::new(
+                "contact_count",
+                Scalar::U32,
+                "How many rows of the `progressed_contacts` section belong to this chart; 0 when the record named no `contacts`.",
+            ),
+            ColumnDef::new(
+                "contacts_asked",
+                Scalar::U8,
+                "1 when the record named `contacts`, so a count of 0 is a window holding none; 0 when it named none.",
+            ),
+        ],
+    )
+}
+
+/// The `progressed_contacts` section: every contact, ragged under the
+/// `progressions` row.
+fn progressed_contacts_section(id: u32, empty: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "progressed_contacts",
+        &format!(
+            "Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. {empty}"
+        ),
+        vec![
+            ColumnDef::new(
+                "life",
+                Scalar::F64,
+                "The instant of life it falls due, a Julian day (UTC).",
+            ),
+            ColumnDef::new(
+                "sky",
+                Scalar::F64,
+                "The instant of sky the aspect is exact at, a Julian day (UTC).",
+            ),
+            graha_column("graha", "The progressed planet."),
+            ColumnDef::new(
+                "to_lagna",
+                Scalar::U8,
+                "1 when the radical point is the lagna, 0 when it is a radical graha.",
+            ),
+            ColumnDef::new(
+                "to_graha",
+                Scalar::U16,
+                "The radical graha aspected (a `Graha` id); 0 for the lagna.",
+            ),
+            ColumnDef::new(
+                "angle",
+                Scalar::U16,
+                "The aspect's angle, a whole degree 0 to 180, either side of the radical point.",
+            ),
+            ColumnDef::new(
+                "motion",
+                Scalar::U8,
+                "Which way the progressed planet was moving.",
+            )
+            .of_enum("TsMotion"),
+        ],
+    )
 }
 
 /// The `perfection_collections` section: every collection of light,

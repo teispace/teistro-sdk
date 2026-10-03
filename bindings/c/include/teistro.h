@@ -7671,6 +7671,28 @@ struct ts_chart_request {
      * Example: {"house":7}. May be null.
      */
     const char * perfection_json;
+    /**
+     * The progressions to read every chart's birth through, as a JSON
+     * object, every field optional but one of `at` and `contacts`: `at`,
+     * the instant of life (a UTC Julian day) the progressed chart and the
+     * direction are read for; `rate` (`{"sky": "DAY", "life": "YEAR"}` by
+     * default; a span is `"DAY"`, `"SYNODIC_MONTH"`, `"SIDEREAL_MONTH"`,
+     * `"YEAR"` or `{"DAYS": n}`); `year` (`"TROPICAL"` by default,
+     * `"JULIAN"`, or Leo's `"NOON_SIDEREAL_TIME"`, C236); `angles` (how
+     * the progressed midheaven moves, `"NAIBOD_RIGHT_ASCENSION"` by
+     * default, C237); `direction` (`"SOLAR"` by default, `"NAIBOD"`,
+     * `"PTOLEMY"` or `{"PER_YEAR": degrees}`); and `contacts`, a window of
+     * life `{from, to}` with the progressed `grahas` (the seven by
+     * default), the radical `points` (the seven and the lagna) and the
+     * `aspects` (Leo's table, p. 48), spelled as `hits_json` spells them.
+     * The progressed chart is founded at the request's place. The answers
+     * come back in `progressions`, `progressed_grahas`, `directed_grahas`
+     * and `progressed_contacts`. Null for none, which costs nothing
+     * (`03-design/western-progressions.md`). Refusals are named from the
+     * record every binding calls `progressions`, as `progressions.year`.
+     * Example: {"at":2460676.5}. May be null.
+     */
+    const char * progressions_json;
 };
 
 /**
@@ -8605,7 +8627,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 216, "ts_chart_request is 216 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 224, "ts_chart_request is 224 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

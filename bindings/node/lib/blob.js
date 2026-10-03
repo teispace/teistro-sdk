@@ -1235,6 +1235,53 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 77, 'progressions');
+    out.progressions = {
+      life: column(blob, at, 0, 'f64', at.count),
+      sky: column(blob, at, 1, 'f64', at.count),
+      armcDeg: column(blob, at, 2, 'f64', at.count),
+      ascendantDeg: column(blob, at, 3, 'f64', at.count),
+      midheavenDeg: column(blob, at, 4, 'f64', at.count),
+      arcDeg: column(blob, at, 5, 'f64', at.count),
+      directedAscendantDeg: column(blob, at, 6, 'f64', at.count),
+      directedMidheavenDeg: column(blob, at, 7, 'f64', at.count),
+      contactCount: column(blob, at, 8, 'u32', at.count),
+      contactsAsked: column(blob, at, 9, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 78, 'progressed_grahas');
+    out.progressedGrahas = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      tropicalDeg: column(blob, at, 2, 'f64', at.count),
+      speedDegPerDay: column(blob, at, 3, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 79, 'directed_grahas');
+    out.directedGrahas = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 80, 'progressed_contacts');
+    out.progressedContacts = {
+      life: column(blob, at, 0, 'f64', at.count),
+      sky: column(blob, at, 1, 'f64', at.count),
+      graha: column(blob, at, 2, 'u16', at.count),
+      toLagna: column(blob, at, 3, 'u8', at.count),
+      toGraha: column(blob, at, 4, 'u16', at.count),
+      angle: column(blob, at, 5, 'u16', at.count),
+      motion: column(blob, at, 6, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

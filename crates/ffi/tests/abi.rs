@@ -298,6 +298,7 @@ fn chart_request(
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1567,6 +1568,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1710,6 +1712,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1851,6 +1854,7 @@ fn a_chart_request_answers_the_transits() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2064,6 +2068,7 @@ fn a_chart_request_answers_the_hit_list() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2230,6 +2235,7 @@ fn a_chart_request_answers_sade_sati() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2338,6 +2344,7 @@ fn a_chart_request_answers_sade_sati() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -2400,6 +2407,7 @@ fn a_chart_request_answers_sade_sati() {
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
+        progressions_json: ptr::null(),
         ..said
     };
     // SAFETY: as above.
@@ -2466,6 +2474,7 @@ fn a_chart_request_answers_the_dignities() {
                 lots_json: ptr::null(),
                 considerations_json: ptr::null(),
                 perfection_json: ptr::null(),
+                progressions_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2737,6 +2746,7 @@ fn a_chart_request_answers_the_fortitudes() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4036,6 +4046,7 @@ fn a_chart_request_answers_kp() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4142,6 +4153,7 @@ fn a_chart_request_answers_kp() {
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
+        progressions_json: ptr::null(),
         ..request
     };
     assert_eq!(section(&none), "");
@@ -4156,6 +4168,7 @@ fn a_chart_request_answers_kp() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -4210,6 +4223,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4247,6 +4261,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
         lots_json: ptr::null(),
         considerations_json: ptr::null(),
         perfection_json: ptr::null(),
+        progressions_json: ptr::null(),
         ..request
     };
     let mut out = TsBlob::empty();
@@ -4305,6 +4320,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4438,6 +4454,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4576,6 +4593,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5345,6 +5363,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5451,6 +5470,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5626,6 +5646,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             lots_json: ptr::null(),
             considerations_json: ptr::null(),
             perfection_json: ptr::null(),
+            progressions_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5905,6 +5926,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 lots_json: ptr::null(),
                 considerations_json: ptr::null(),
                 perfection_json: ptr::null(),
+                progressions_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -6532,4 +6554,289 @@ fn a_muhurta_record_is_refused_by_the_key_that_is_wrong() {
         assert_eq!(status, Status::InvalidArg, "{text}: {message}");
         assert_eq!(named.as_deref(), Some(field), "{text}: {message}");
     }
+}
+
+/// Progressions cross: a request's `progressions_json` answers every
+/// chart's progressed chart and direction in `progressions`, the planets in
+/// `progressed_grahas` and `directed_grahas`, and the contacts in
+/// `progressed_contacts` ragged by the row's count, each cell the façade's
+/// own to the bit; none asked is empty sections, and a refusal is named by
+/// the field the caller wrote (`03-design/western-progressions.md`).
+#[test]
+#[expect(
+    clippy::too_many_lines,
+    reason = "one assertion per column of four sections"
+)]
+fn a_chart_request_answers_the_progressions() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    // Leo's birth and three more at London, read at one instant of life.
+    let instants = [
+        2_400_629.742_361_111,
+        2_405_000.25,
+        2_410_321.9,
+        2_415_020.5,
+    ];
+    let base = chart_request(&instants, (51.5, -0.12), 0);
+    let asked_text = r#"{"at": 2430000.5, "year": "NOON_SIDEREAL_TIME", "angles": "SOLAR_ARC_LONGITUDE",
+        "contacts": {"from": 2425000.5, "to": 2428000.5, "grahas": ["MOON", "SUN"], "points": ["LAGNA", "MARS", "VENUS"]}}"#;
+    let asked_json = CString::new(asked_text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            progressions_json: asked_json.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5, -0.12, 0.0).unwrap();
+    let request =
+        teistro::ChartRequest::at(place, teistro::UtcOffset::try_from_seconds(0).unwrap());
+    let natal = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &request,
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::ProgressionsRequest::from_json(asked_text).unwrap();
+    let expected: Vec<teistro::Progressions> = natal
+        .iter()
+        .map(|document| {
+            sdk.chart()
+                .progressions(document, &asked, &request)
+                .unwrap()
+        })
+        .collect();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let progressed = |read: &dyn Fn(&teistro::Progressed) -> f64| -> Vec<u64> {
+        expected
+            .iter()
+            .map(|one| read(one.progressed.as_ref().unwrap()).to_bits())
+            .collect()
+    };
+    let directed = |read: &dyn Fn(&teistro::Directed) -> f64| -> Vec<u64> {
+        expected
+            .iter()
+            .map(|one| read(one.directed.as_ref().unwrap()).to_bits())
+            .collect()
+    };
+
+    // A row a chart.
+    assert_eq!(bits("progressions", "life"), progressed(&|p| p.life.get()));
+    assert_eq!(bits("progressions", "sky"), progressed(&|p| p.sky.get()));
+    assert_eq!(
+        bits("progressions", "armc_deg"),
+        progressed(&|p| p.armc_deg)
+    );
+    assert_eq!(
+        bits("progressions", "ascendant_deg"),
+        progressed(&|p| p.angles.ascendant_deg)
+    );
+    assert_eq!(
+        bits("progressions", "midheaven_deg"),
+        progressed(&|p| p.angles.midheaven_deg)
+    );
+    assert_eq!(bits("progressions", "arc_deg"), directed(&|d| d.arc_deg));
+    assert_eq!(
+        bits("progressions", "directed_ascendant_deg"),
+        directed(&|d| d.ascendant_deg)
+    );
+    assert_eq!(
+        bits("progressions", "directed_midheaven_deg"),
+        directed(&|d| d.midheaven_deg)
+    );
+    let contacts: Vec<&teistro::ProgressedContact> = expected
+        .iter()
+        .flat_map(|one| one.contacts.as_deref().unwrap())
+        .collect();
+    assert!(!contacts.is_empty(), "the window holds contacts");
+    assert_eq!(
+        ints("progressions", "contact_count"),
+        expected
+            .iter()
+            .map(|one| i64::try_from(one.contacts.as_ref().unwrap().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+
+    assert_eq!(
+        ints("progressions", "contacts_asked"),
+        vec![1; instants.len()]
+    );
+
+    // The planets, graha-count rows a chart.
+    let grahas: Vec<&teistro_chart::foundation::GrahaPosition> = expected
+        .iter()
+        .flat_map(|one| {
+            &one.progressed
+                .as_ref()
+                .unwrap()
+                .chart
+                .value
+                .foundation
+                .grahas
+        })
+        .collect();
+    assert_eq!(
+        ints("progressed_grahas", "graha"),
+        grahas
+            .iter()
+            .map(|at| i64::from(at.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    for (column, read) in [
+        (
+            "longitude_deg",
+            (|at: &teistro_chart::foundation::GrahaPosition| at.longitude_deg)
+                as fn(&teistro_chart::foundation::GrahaPosition) -> f64,
+        ),
+        ("tropical_deg", |at| at.tropical_deg),
+        ("speed_deg_per_day", |at| at.speed_deg_per_day),
+    ] {
+        assert_eq!(
+            bits("progressed_grahas", column),
+            grahas
+                .iter()
+                .map(|at| read(at).to_bits())
+                .collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+    let moved: Vec<&teistro::DirectedPlanet> = expected
+        .iter()
+        .flat_map(|one| &one.directed.as_ref().unwrap().planets)
+        .collect();
+    assert_eq!(
+        ints("directed_grahas", "graha"),
+        moved
+            .iter()
+            .map(|at| i64::from(at.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("directed_grahas", "longitude_deg"),
+        moved
+            .iter()
+            .map(|at| at.longitude_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+
+    // The contacts, ragged.
+    assert_eq!(
+        bits("progressed_contacts", "life"),
+        contacts
+            .iter()
+            .map(|c| c.life.get().to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("progressed_contacts", "sky"),
+        contacts
+            .iter()
+            .map(|c| c.sky.get().to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "graha"),
+        contacts
+            .iter()
+            .map(|c| i64::from(c.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "to_lagna"),
+        contacts
+            .iter()
+            .map(|c| i64::from(c.to == teistro::NatalPoint::Lagna))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "to_graha"),
+        contacts
+            .iter()
+            .map(|c| match c.to {
+                teistro::NatalPoint::Graha { graha } => i64::from(graha.id()),
+                teistro::NatalPoint::Lagna => 0,
+            })
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "angle"),
+        contacts
+            .iter()
+            .map(|c| i64::from(c.angle))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("progressed_contacts", "motion"),
+        contacts
+            .iter()
+            .map(|c| i64::from(teistro_ffi::chart::TsMotion::from(c.motion) as u8))
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("progressions", "life"),
+        ("progressed_grahas", "graha"),
+        ("directed_grahas", "graha"),
+        ("progressed_contacts", "life"),
+    ] {
+        assert_eq!(
+            reader.column(section, column).unwrap().len(),
+            0,
+            "{section}"
+        );
+    }
+
+    // A refusal is named by the field the caller wrote.
+    let refused = CString::new(r#"{"at": 2430000.5, "direction": {"PER_YEAR": 0}}"#).unwrap();
+    let status = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            progressions_json: refused.as_ptr(),
+            ..base
+        },
+    )
+    .unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("progressions.direction")
+    );
 }
