@@ -593,6 +593,7 @@ void main() {
     antiscia: const AntisciaRequest(cusps: WesternHouseRequest()),
     midpoints: const MidpointRequest(orbDeg: 1.5),
     westernHouses: const WesternHouseRequest(),
+    harmonic: const HarmonicRequest(5),
     synastry: SynastryRequest(
       Partner(
         instant: 2451545.25,
@@ -1336,6 +1337,28 @@ void main() {
       put(
         'chart-$i-western-house-${at.graha.fullKey}',
         '${at.house} ${at.withAscendant ? 1 : 0}',
+      );
+    }
+    final fifth = chart.harmonic!;
+    String pointKey(HarmonicPoint point) => switch (point) {
+      HarmonicGraha(:final graha) => graha.fullKey,
+      HarmonicAngle(:final point) => point,
+    };
+    put(
+      'chart-$i-harmonic',
+      '${fifth.harmonic} ${fifth.points.length} ${fifth.rows.length}',
+    );
+    for (final at in fifth.points) {
+      put(
+        'chart-$i-harmonic-${pointKey(at.point)}',
+        '${number(at.longitudeDeg)} ${at.house}',
+      );
+    }
+    for (final (n, at) in fifth.rows.indexed) {
+      put(
+        'chart-$i-harmonic-row-$n',
+        '${pointKey(at.first)} ${pointKey(at.second)} ${number(at.apartDeg)} '
+            '${at.multiple} ${number(at.orbDeg)}',
       );
     }
     final between = chart.midpoints!;

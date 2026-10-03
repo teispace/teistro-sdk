@@ -2039,6 +2039,53 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, western_houses=request, **london)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_harmonic(self) -> None:
+        """Churchill's 9th harmonic as Addey reads it (*Harmonics in
+        Astrology*, pp. 97–98): the Moon on Saturn in the third, Venus
+        rising, Pluto in the tenth; a batch the charts one at a time, and
+        refusals named by field (`03-design/western-harmonics.md`)."""
+        from teistro import HarmonicChart, HarmonicPoint, HarmonicRequest
+
+        blenheim: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(51.8414), longitude_deg=Longitude(-1.3611), altitude_m=Altitude(0)),
+            "utc_offset_seconds": 0,
+        }
+        birth = 2405857.564892
+        with self.teistro.context(profile="western-tropical-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=birth, **blenheim).harmonic)
+            ninth = ctx.chart.found(instant=birth, outer_planets=True, harmonic={"number": 9}, **blenheim).harmonic
+            assert isinstance(ninth, HarmonicChart)
+            self.assertEqual((ninth.harmonic, len(ninth.points)), (9, 12))
+            house = {one.point: one.house for one in ninth.points}
+
+            def planet(graha: Graha) -> HarmonicPoint:
+                return HarmonicPoint("GRAHA", graha)
+
+            self.assertEqual(
+                [house[planet(g)] for g in (Graha.MOON, Graha.SATURN, Graha.VENUS, Graha.PLUTO)], [3, 3, 1, 10]
+            )
+            self.assertEqual(house[HarmonicPoint("ASCENDANT")], 1)
+            self.assertEqual(ninth.points[-1].point, HarmonicPoint("MIDHEAVEN"))
+            row = next(one for one in ninth.rows if (one.first, one.second) == (planet(Graha.MOON), planet(Graha.SATURN)))
+            self.assertLess(row.apart_deg, 0.6)
+            self.assertEqual((row.multiple, row.orb_deg), (4, 12.0))
+
+            fifth: HarmonicRequest = {"number": 5, "orbDeg": 3}
+            instants = [birth, birth + 100.5]
+            batch = ctx.chart.found_many(instants=instants, harmonic=fifth, **blenheim)
+            for k, instant in enumerate(instants):
+                self.assertEqual(batch.at(k).harmonic, ctx.chart.found(instant=instant, harmonic=fifth, **blenheim).harmonic)
+            refusals: list[tuple[Any, str]] = [
+                ({"number": 0}, "harmonic.number"),
+                ({"number": 9, "orbDeg": 31}, "harmonic.orbDeg"),
+                ({}, "harmonic"),
+                ([], "harmonic"),
+            ]
+            for request, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.found(instant=birth, harmonic=request, **blenheim)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,

@@ -2522,6 +2522,46 @@ test('a chart carries its Western houses', () => {
   ctx.dispose();
 });
 
+test('a chart carries its harmonic', () => {
+  // Churchill's 9th harmonic as Addey reads it (Harmonics in Astrology,
+  // pp. 97-98): the Moon on Saturn in the third, Venus rising, Pluto in
+  // the tenth.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  const blenheim = { place: { latitude: 51.8414, longitude: -1.3611, altitude: 0 }, utcOffsetSeconds: 0 };
+  const birth = 2405857.564892;
+  assert.equal(ctx.chart.found({ instant: birth, ...blenheim }).harmonic, null);
+
+  const ninth = ctx.chart.found({ instant: birth, ...blenheim, outerPlanets: true, harmonic: { number: 9 } }).harmonic;
+  assert.ok(Object.isFrozen(ninth) && Object.isFrozen(ninth.rows[0].first), 'frozen to its leaves');
+  assert.equal(ninth.harmonic, 9);
+  assert.equal(ninth.points.length, 12);
+  const house = (graha) => ninth.points.find((one) => one.point.graha === graha).house;
+  assert.deepEqual([house('graha.MOON'), house('graha.SATURN'), house('graha.VENUS'), house('graha.PLUTO')], [3, 3, 1, 10]);
+  const ascendant = ninth.points.find((one) => one.point.point === 'ASCENDANT');
+  assert.deepEqual([ascendant.house, ninth.points.at(-1).point], [1, { point: 'MIDHEAVEN' }]);
+  const row = ninth.rows.find((one) => one.first.graha === 'graha.MOON' && one.second.graha === 'graha.SATURN');
+  assert.ok(row.apartDeg < 0.6, `${row.apartDeg}`);
+  assert.deepEqual([row.multiple, row.orbDeg], [4, 12]);
+
+  // A batch reads each chart as alone, and a refusal is named by its field.
+  const instants = [birth, birth + 100.5];
+  const batch = ctx.chart.foundMany({ instants, ...blenheim, harmonic: { number: 5, orbDeg: 3 } });
+  instants.forEach((instant, k) =>
+    assert.deepEqual(batch.at(k).harmonic, ctx.chart.found({ instant, ...blenheim, harmonic: { number: 5, orbDeg: 3 } }).harmonic),
+  );
+  for (const [request, field] of [
+    [{ number: 0 }, 'harmonic.number'],
+    [{ number: 9, orbDeg: 31 }, 'harmonic.orbDeg'],
+    [{}, 'harmonic'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: birth, ...blenheim, harmonic: request }),
+      (error) => error instanceof TeistroError && error.field === field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('a chart carries its synastry with a partner', () => {
   // King George V and Queen Mary (Leo, How to Judge a Nativity, p. 130),
   // whose cross contacts the SDK's test holds against a Moshier recast.

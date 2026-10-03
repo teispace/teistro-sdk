@@ -1454,6 +1454,59 @@ export interface WesternHousePlacement {
   readonly withAscendant: boolean;
 }
 
+/**
+ * What a chart's harmonic is asked (`03-design/western-harmonics.md`):
+ * `number`, a whole number from 1 to 360 every longitude is multiplied by
+ * (Addey), and `orbDeg`, how close two points meet in the harmonic chart,
+ * 12° when absent (C252), at most 30°.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, harmonic: { number: 9 } });
+ * for (const row of chart.harmonic?.rows ?? []) console.log(row.first, row.second, row.apartDeg);
+ */
+export interface HarmonicRequest {
+  readonly number: number;
+  readonly orbDeg?: number;
+}
+
+/** A point of a harmonic chart: a planet, the ascendant or the midheaven. */
+export type HarmonicPoint =
+  | { readonly point: 'GRAHA'; readonly graha: Graha | 'unknown' }
+  | { readonly point: 'ASCENDANT' }
+  | { readonly point: 'MIDHEAVEN' };
+
+/** A point's place in a harmonic chart. */
+export interface HarmonicPlaced {
+  readonly point: HarmonicPoint;
+  /** Its longitude multiplied by the harmonic, degrees in `[0, 360)`. */
+  readonly longitudeDeg: number;
+  /** Its equal house from the harmonic ascendant, 1 to 12 (C254). */
+  readonly house: number;
+}
+
+/** Two points meeting in a harmonic chart, within the orb of each other there. */
+export interface HarmonicRow {
+  /** The earlier point: the planets in the catalogue's order, then the ascendant, then the midheaven. */
+  readonly first: HarmonicPoint;
+  readonly second: HarmonicPoint;
+  /** How far apart they stand in the harmonic chart, degrees. */
+  readonly apartDeg: number;
+  /** Which multiple k of the harmonic's aspect, k × 360° / n, they stand at in the chart itself. */
+  readonly multiple: number;
+  /** The orb the request allowed, degrees. */
+  readonly orbDeg: number;
+}
+
+/** A chart's harmonic chart, in its own zodiac (C253). */
+export interface HarmonicChart {
+  /** Which harmonic. */
+  readonly harmonic: number;
+  /** The planets in the catalogue's order, then the ascendant and the midheaven. */
+  readonly points: readonly HarmonicPlaced[];
+  /** The pairs meeting within the orb, closest first. */
+  readonly rows: readonly HarmonicRow[];
+}
+
 /** A chart's Western houses, in its own zodiac. */
 export interface WesternHouses {
   /** The division the cusps are of: the one asked, or the one a polar policy fell back to. */
@@ -3446,6 +3499,11 @@ export declare class Chart {
    */
   readonly westernHouses: WesternHouses | null;
   /**
+   * The chart's harmonic chart: each point multiplied and the pairs
+   * meeting in it; `null` unless `harmonic` asked (`03-design/western-harmonics.md`).
+   */
+  readonly harmonic: HarmonicChart | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -4597,6 +4655,11 @@ export interface ChartRequest {
    * chart's `westernHouses`: Placidus when `{}`. None by default.
    */
   readonly westernHouses?: WesternHouseRequest;
+  /**
+   * A chart's harmonic (`03-design/western-harmonics.md`), read as each
+   * chart's `harmonic`: `{ number: 9 }` for the 9th. None by default.
+   */
+  readonly harmonic?: HarmonicRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

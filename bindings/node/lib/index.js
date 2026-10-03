@@ -1299,6 +1299,19 @@ export class Chart {
   }
 
   /**
+   * The chart's harmonic chart (`harmonic: { number: 9 }` asks for it):
+   * each planet, the ascendant and the midheaven at its longitude
+   * multiplied, in its equal house from the harmonic ascendant (C254),
+   * and every pair meeting within the orb, 12° by default (C252), closest
+   * first; `null` unless asked (`03-design/western-harmonics.md`).
+   *
+   * @returns {object|null}
+   */
+  get harmonic() {
+    return harmonicsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -2529,6 +2542,7 @@ export class ChartArea extends Area {
           'westernHouses',
           "a Western houses request record, e.g. {} or { system: 'house_system.KOCH' }",
         ),
+        harmonicJson: recordJson(request.harmonic, 'harmonic', 'a harmonic request record, e.g. { number: 9 }'),
         midpointsJson: recordJson(
           request.midpoints,
           'midpoints',
@@ -3890,6 +3904,63 @@ function westernHousesOf(batch) {
     }),
   );
   WESTERN_HOUSES.set(batch, decoded);
+  return decoded;
+}
+
+/** Each batch's harmonic charts, decoded once however many charts read them. */
+const HARMONICS = new WeakMap();
+
+/**
+ * A harmonic chart's point from its two cells: `{ point: 'GRAHA', graha }`,
+ * `{ point: 'ASCENDANT' }` or `{ point: 'MIDHEAVEN' }`.
+ *
+ * @param {number} angle
+ * @param {number} graha
+ * @returns {object}
+ */
+function harmonicPointOf(angle, graha) {
+  if (angle === 1) return HARMONIC_ASCENDANT;
+  if (angle === 2) return HARMONIC_MIDHEAVEN;
+  return Object.freeze({ point: 'GRAHA', graha: GrahaById.get(graha) ?? 'unknown' });
+}
+const HARMONIC_ASCENDANT = Object.freeze({ point: 'ASCENDANT' });
+const HARMONIC_MIDHEAVEN = Object.freeze({ point: 'MIDHEAVEN' });
+
+/**
+ * Every chart's harmonic chart in a batch: `harmonics` holds a row a chart,
+ * or none when none was asked, and `harmonic_points` and `harmonic_rows`
+ * are ragged by its two counts (`03-design/western-harmonics.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function harmonicsOf(batch) {
+  let decoded = HARMONICS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const h = d.harmonics;
+  const p = d.harmonicPoints;
+  const r = d.harmonicRows;
+  const points = raggedOf(batch, h.pointCount, p.angle.length, 'harmonics and harmonic_points', (at) =>
+    Object.freeze({
+      point: harmonicPointOf(p.angle[at], p.graha[at]),
+      longitudeDeg: p.longitudeDeg[at],
+      house: p.house[at],
+    }),
+  );
+  const rows = raggedOf(batch, h.rowCount, r.apartDeg.length, 'harmonics and harmonic_rows', (at) =>
+    Object.freeze({
+      first: harmonicPointOf(r.firstAngle[at], r.firstGraha[at]),
+      second: harmonicPointOf(r.secondAngle[at], r.secondGraha[at]),
+      apartDeg: r.apartDeg[at],
+      multiple: r.multiple[at],
+      orbDeg: r.orbDeg[at],
+    }),
+  );
+  decoded = rowAChartOf(batch, h.number.length, 'harmonics', (k) =>
+    Object.freeze({ harmonic: h.number[k], points: points[k], rows: rows[k] }),
+  );
+  HARMONICS.set(batch, decoded);
   return decoded;
 }
 

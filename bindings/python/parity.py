@@ -21,6 +21,7 @@ import json
 
 from teistro import (
     Almuten,
+    HarmonicPoint,
     AntiscionRow,
     EclipseMoment,
     EclipseSeen,
@@ -74,6 +75,12 @@ def natal_key(point: NatalPoint) -> str:
     """A natal point as every runner prints it: `LAGNA`, or the graha's
     full key."""
     return "LAGNA" if point.graha is None else point.graha.full_key
+
+
+def harmonic_key(point: HarmonicPoint) -> str:
+    """A harmonic point as every runner prints it: a graha's full key, or
+    the angle's name."""
+    return point.point if point.graha is None else point.graha.full_key
 
 
 def number(value: float | int) -> str:
@@ -586,6 +593,7 @@ def main() -> None:
             antiscia={"cusps": {}},
             midpoints={"orbDeg": 1.5},
             western_houses={},
+            harmonic={"number": 5},
             synastry={
                 "partner": {
                     "instant": 2451545.25,
@@ -1205,6 +1213,17 @@ def main() -> None:
                 put(f"chart-{i}-western-cusp-{n}", number(western_cusp))
             for counted in houses.planets:
                 put(f"chart-{i}-western-house-{counted.graha.full_key}", f"{counted.house} {int(counted.with_ascendant)}")
+            fifth = chart.harmonic
+            assert fifth is not None
+            put(f"chart-{i}-harmonic", f"{fifth.harmonic} {len(fifth.points)} {len(fifth.rows)}")
+            for raised in fifth.points:
+                put(f"chart-{i}-harmonic-{harmonic_key(raised.point)}", f"{number(raised.longitude_deg)} {raised.house}")
+            for n, meeting in enumerate(fifth.rows):
+                put(
+                    f"chart-{i}-harmonic-row-{n}",
+                    f"{harmonic_key(meeting.first)} {harmonic_key(meeting.second)} {number(meeting.apart_deg)} "
+                    f"{meeting.multiple} {number(meeting.orb_deg)}",
+                )
             between = chart.midpoints
             assert between is not None
             put(f"chart-{i}-midpoint-count", str(len(between)))

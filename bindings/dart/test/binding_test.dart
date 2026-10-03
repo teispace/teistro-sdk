@@ -3082,6 +3082,79 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its harmonic', () {
+    // Churchill's 9th harmonic as Addey reads it (*Harmonics in
+    // Astrology*, pp. 97–98): the Moon on Saturn in the third, Venus
+    // rising, Pluto in the tenth (`03-design/western-harmonics.md`).
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final blenheim = Observer(
+      latitudeDeg: Latitude(51.8414),
+      longitudeDeg: Longitude(-1.3611),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2405857.564892;
+    Chart found(double instant, {HarmonicRequest? asked}) => ctx.chart.found(
+      instant: instant,
+      place: blenheim,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      harmonic: asked,
+    );
+    expect(found(birth).harmonic, isNull);
+
+    final ninth = found(birth, asked: const HarmonicRequest(9)).harmonic!;
+    expect((ninth.harmonic, ninth.points.length), (9, 12));
+    int house(HarmonicPoint point) =>
+        ninth.points.firstWhere((one) => one.point == point).house;
+    expect(
+      [
+        for (final graha in [
+          Graha.moon,
+          Graha.saturn,
+          Graha.venus,
+          Graha.pluto,
+        ])
+          house(HarmonicGraha(graha)),
+      ],
+      [3, 3, 1, 10],
+    );
+    expect(house(HarmonicPoint.ascendant), 1);
+    expect(ninth.points.last.point, HarmonicPoint.midheaven);
+    final row = ninth.rows.firstWhere(
+      (one) =>
+          one.first == const HarmonicGraha(Graha.moon) &&
+          one.second == const HarmonicGraha(Graha.saturn),
+    );
+    expect(row.apartDeg, lessThan(0.6));
+    expect((row.multiple, row.orbDeg), (4, 12.0));
+
+    const fifth = HarmonicRequest(5, orbDeg: 3);
+    final instants = [birth, birth + 100.5];
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: blenheim,
+      utcOffsetSeconds: 0,
+      outerPlanets: true,
+      harmonic: fifth,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(batch.at(k).harmonic, found(instant, asked: fifth).harmonic);
+    }
+    for (final (asked, field) in [
+      (const HarmonicRequest(0), 'harmonic.number'),
+      (const HarmonicRequest(9, orbDeg: 31), 'harmonic.orbDeg'),
+    ]) {
+      expect(
+        () => found(birth, asked: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its Western houses', () {
     // Leo's own illustration (*How to Judge a Nativity*, p. 150), "a female
     // born at 2.42 A.M. 13th December, 1835, London", against the SDK

@@ -26,6 +26,10 @@ import type {
   WesternHousePlacement,
   WesternHouseRequest,
   WesternHouses,
+  HarmonicChart,
+  HarmonicPlaced,
+  HarmonicRequest,
+  HarmonicRow,
   Almanac,
   BlackoutKind,
   LunarEclipseKind,
@@ -1154,6 +1158,33 @@ function theWesternHouses(ctx: Context): string {
 }
 
 void theWesternHouses;
+
+// A chart's harmonic, read all the way down to a point's tag.
+function theHarmonic(ctx: Context): string {
+  const asked: HarmonicRequest = { number: 9, orbDeg: 6 };
+  const chart = ctx.chart.found({
+    instant: 2405857.5649,
+    place: { latitude: 51.8414, longitude: -1.3611, altitude: 0 },
+    utcOffsetSeconds: 0,
+    harmonic: asked,
+  });
+  // @ts-expect-error the harmonic is required
+  const misread: HarmonicRequest = { orbDeg: 6 };
+  const read: HarmonicChart | null = chart.harmonic;
+  const placed: HarmonicPlaced | undefined = read?.points[0];
+  const row: HarmonicRow | undefined = read?.rows[0];
+  const first = row?.first;
+  return [
+    read?.harmonic ?? 0,
+    placed?.longitudeDeg ?? Number.NaN,
+    placed?.house ?? 0,
+    first?.point === 'GRAHA' ? first.graha : (first?.point ?? 'none'),
+    row?.multiple ?? 0,
+    String(misread),
+  ].join();
+}
+
+void theHarmonic;
 
 // A chart's equal distances, read all the way down.
 function theMidpoints(ctx: Context): string {
