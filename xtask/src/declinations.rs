@@ -17,7 +17,7 @@ use teistro::{AspectRequest, Context, Declinations, ParallelRequest, ParallelRow
 
 use crate::births::{CHARTS, births, conformance};
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, arcsec, count, fill, table, verdict_of};
+use crate::measure::{Claim, arcsec, count, fill, share, table, verdict_of};
 
 const PAGE: &str = "docs/03-design/declinations-measured.md";
 
@@ -185,16 +185,6 @@ fn past_by(excess_deg: f64) -> String {
     } else {
         format!("{excess_deg:.2}°")
     }
-}
-
-/// A share as a percentage to one place; a dash for none.
-fn share(part: usize, whole: usize) -> String {
-    if whole == 0 {
-        return String::from("—");
-    }
-    let ratio = f64::from(u32::try_from(part).unwrap_or(u32::MAX))
-        / f64::from(u32::try_from(whole).unwrap_or(u32::MAX));
-    format!("{:.1}%", 100.0 * ratio)
 }
 
 fn page(root: &Path) -> Result<String, String> {
