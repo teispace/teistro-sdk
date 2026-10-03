@@ -53,6 +53,7 @@ pub use area::{
     FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MuhurtaDays, Plans,
     TimeArea,
 };
+mod antiscia;
 mod declinations;
 mod festival_request;
 mod gochar_request;
@@ -252,6 +253,12 @@ pub use western_aspects::{Partner, PartnerReading, PartnerSynastry};
 pub use declinations::Declinations;
 pub use teistro_western::{
     Declined, DeclinedPoint, ParallelRequest, ParallelRow, SynastryParallelRow,
+};
+// Each planet's reflections about the solstices and the equinoxes, and the
+// pairs standing in one (`03-design/western-antiscia.md`).
+pub use teistro_western::{
+    Antiscia, AntisciaRequest, Antiscion, AntiscionRow, Reflected, antiscion_deg,
+    contrantiscion_deg,
 };
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
