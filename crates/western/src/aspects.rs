@@ -299,6 +299,20 @@ const fn is_luminary(point: NatalPoint) -> bool {
     )
 }
 
+/// Refuses a list of planets naming one twice, or a longitude that is not
+/// a finite number, naming the list by `side`.
+pub(crate) fn refuse_unreadable(bodies: &[PlanetAt], side: &str) -> Result<(), Error> {
+    refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
+        .map_err(|why| why.with_field(side))?;
+    match bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
+        Some(at) => Err(
+            Error::invalid_arg("a longitude is a finite number of degrees")
+                .with_field(format!("{side}[{at}].longitudeDeg")),
+        ),
+        None => Ok(()),
+    }
+}
+
 /// Refuses a list naming one member twice, by its key.
 pub(crate) fn refuse_repeats(
     members: impl Iterator<Item = &'static str>,

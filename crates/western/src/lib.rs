@@ -55,7 +55,8 @@ pub use declination::{
     Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };
 pub use midpoint::{
-    DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow, midpoints,
+    DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow,
+    SynastryMidpointRow, midpoints, synastry_midpoints,
 };
 pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,

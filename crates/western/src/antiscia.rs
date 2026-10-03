@@ -7,7 +7,7 @@ use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 
-use crate::aspects::{OrbModel, PlanetAt, WesternAspect, refuse_repeats};
+use crate::aspects::{OrbModel, PlanetAt, WesternAspect, refuse_unreadable};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -272,20 +272,6 @@ pub fn synastry_antiscia(
             .flat_map(|a| second.iter().map(move |b| (a, b))),
         request,
     )
-}
-
-/// Refuses a side naming a planet twice, or a longitude that is not a
-/// finite number, naming the side.
-fn refuse_unreadable(bodies: &[PlanetAt], side: &str) -> Result<(), Error> {
-    refuse_repeats(bodies.iter().map(|one| one.graha.key()), "a body")
-        .map_err(|why| why.with_field(side))?;
-    match bodies.iter().position(|one| !one.longitude_deg.is_finite()) {
-        Some(at) => Err(
-            Error::invalid_arg("a longitude is a finite number of degrees")
-                .with_field(format!("{side}[{at}].longitudeDeg")),
-        ),
-        None => Ok(()),
-    }
 }
 
 /// Every pair whose longitudes sum to 180° (the antiscion) or 0° (the

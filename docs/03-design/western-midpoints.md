@@ -92,6 +92,15 @@ example holds only if both points of the axis count.
    every chart of the batch. A row a chart counts its equal distances,
    and they go ragged under it (sections 96 and 97).
 
+9. **Across two charts, a pair of one and a planet of the other.** A
+   synastry's `midpoints` reads each chart's planets on the axes of the
+   partner's pairs, and the partner's planets on the axes of the
+   chart's, under the same orb and in the synastry's zodiac. A row says
+   whose pair it is (`partners_pair`). A pair of one planet from each
+   chart is not read: its midpoint is the composite's place for two
+   different planets, which no source here reads, and the composite
+   reads the same planet's two places.
+
 ## Order of work
 
 1. This page, and the cruxes C245 and C246.
@@ -132,5 +141,3 @@ example holds only if both points of the axis count.
 - **Midpoint trees and the 90° dial.** The modern school reads the
   midpoint axis modulo 45° or 90°. That is a later method with no
   public-domain text read, and gets its own page if one is found.
-- **Equal distances across two charts.** Read on the same engine across
-  two charts, a later step, as the parallels and the antiscia were.
