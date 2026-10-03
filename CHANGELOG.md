@@ -1966,6 +1966,14 @@ the astronomical numbers do not move. Nothing else computes yet.
     batch's place and clock alone, not with every section the batch
     asked for. The parity runners print one record's answers for both
     charts, and the five bindings agree on all 17107 values.
+  - **The outer planets in a chart** (`western-outer-planets.md`,
+    `outer-planets-measured.md`). `ChartRequest::with_outer_planets()`
+    places Uranus, Neptune and Pluto in `ChartFoundation::outer`, beside
+    the nine and in the same request to the ephemeris, and
+    `ChartFoundation::graha` finds them. A chart that does not ask is
+    unchanged. They are held to the corpus's recording on 55 births.
+    The chart layer gains `body_of`, `OUTER`, `OuterPlanets` and
+    `Founder::found_with`.
   - **The progressed angles, measured** (`progressed-angles-measured.md`,
     C237 sized). Over 54 births to age 80, a method's midheaven stands
     at most 7.54° from Leo's map. `AngleMethod::ALL` lists the methods.

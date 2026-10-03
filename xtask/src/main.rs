@@ -279,6 +279,7 @@ mod nepal_day;
 mod nepal_month;
 mod nepal_sambat;
 mod node_binding;
+mod outer_planets;
 mod package;
 mod panchanga;
 mod parity;
@@ -440,6 +441,11 @@ const PASSES: &[Pass] = &[
         fortitudes::check_generated,
     ),
     ("lots", lots::generate, lots::check_generated),
+    (
+        "outer-planets",
+        outer_planets::generate,
+        outer_planets::check_generated,
+    ),
     (
         "progressed-angles",
         progressed_angles::generate,

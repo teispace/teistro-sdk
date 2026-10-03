@@ -360,7 +360,8 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Envelope<Vec<Document>>, Error> {
         let place = request.place();
         self.founding(request.offset(), |founder| {
-            let founded = founder.found(instants, place, request.kind())?;
+            let founded =
+                founder.found_with(instants, place, request.kind(), request.outer_planets())?;
             let mut documents = Vec::with_capacity(founded.value.len());
             for foundation in &founded.value {
                 documents.push(self.sections_of(founder, foundation, request)?);

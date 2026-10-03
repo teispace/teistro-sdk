@@ -36,7 +36,7 @@ use teistro::{
     SahamTerm, UtcOffset, VenusPlace, YearClock, YearDasha,
 };
 
-use crate::births::{Birth, CHARTS, births};
+use crate::births::{Birth, CHARTS, births, conformance};
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, capitalised, count, fill, listed, plural, spelled, table, times};
 
@@ -153,16 +153,6 @@ fn against_the_recording(sdk: &Context, births: &[Birth]) -> Result<(usize, usiz
         }
     }
     Ok((wrong, of))
-}
-
-/// The context every reading here is made under; a worker builds its own,
-/// since a context serves one thread.
-fn conformance() -> Result<Context, String> {
-    Context::builder()
-        .profile("conformance-baseline")
-        .ephemeris([Ephemeris::Builtin])
-        .build()
-        .map_err(|why| format!("the conformance profile: {why}"))
 }
 
 fn page(root: &Path) -> Result<String, String> {

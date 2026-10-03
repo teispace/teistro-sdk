@@ -175,6 +175,14 @@ pub struct ChartFoundation {
     pub timing: BirthTiming,
     /// The grahas, in the catalogue's order.
     pub grahas: Vec<GrahaPosition>,
+    /// Uranus, Neptune and Pluto, in the catalogue's order, when the chart
+    /// was asked to place them ([`OuterPlanets::Placed`]); empty, and left
+    /// out of the document, when it was not
+    /// (`03-design/western-outer-planets.md`). Beside the nine rather than
+    /// among them, because every reader of [`ChartFoundation::grahas`]
+    /// counts nine.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub outer: Vec<GrahaPosition>,
     /// What the provider and the completion did, for the stamp.
     pub steps: Vec<String>,
 }
@@ -203,10 +211,14 @@ impl ChartFoundation {
         self.steps.contains(&native)
     }
 
-    /// One graha, by name.
+    /// One graha, by name: one of the nine, or an outer planet the chart
+    /// placed.
     #[must_use]
     pub fn graha(&self, graha: Graha) -> Option<&GrahaPosition> {
-        self.grahas.iter().find(|position| position.graha == graha)
+        self.grahas
+            .iter()
+            .chain(&self.outer)
+            .find(|position| position.graha == graha)
     }
 
     /// The lagna's sign, 0 for Aries.
@@ -232,6 +244,10 @@ struct Input {
     longitude_deg: f64,
     altitude_m: f64,
     kind: &'static str,
+    /// Whether the outer planets were asked for; left out when not, so a
+    /// chart that does not ask hashes as it always did.
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
+    outer: bool,
 }
 
 /// The same, for a batch.
@@ -243,6 +259,10 @@ struct BatchInput {
     longitude_deg: f64,
     altitude_m: f64,
     kind: &'static str,
+    /// Whether the outer planets were asked for; left out when not, so a
+    /// chart that does not ask hashes as it always did.
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
+    outer: bool,
 }
 
 /// One event of a transit search ([`Founder::transit_events`]).
@@ -301,6 +321,10 @@ pub struct ContactEvents {
     pub stations: Vec<TransitEvent>,
 }
 
+/// The nine grahas, the outer planets a chart was asked for, and the steps
+/// that placed them.
+type Placed = (Vec<GrahaPosition>, Vec<GrahaPosition>, Vec<String>);
+
 /// The bodies a chart asks the provider for, and the graha each answers
 /// for.
 ///
@@ -309,20 +333,61 @@ pub struct ContactEvents {
 /// frame (`05-testing/01-golden-vectors.md`, entry 6).
 #[must_use]
 pub fn bodies_of(settings: &Settings) -> Vec<Body> {
-    vec![
-        Body::Sun,
-        Body::Moon,
-        Body::Mars,
-        Body::Mercury,
-        Body::Jupiter,
-        Body::Venus,
-        Body::Saturn,
-        if settings.frame.node == Node::True {
-            Body::TrueNode
-        } else {
-            Body::MeanNode
-        },
+    [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Saturn,
+        Graha::Rahu,
     ]
+    .into_iter()
+    .filter_map(|graha| body_of(graha, settings).map(|(body, _)| body))
+    .collect()
+}
+
+/// The outer planets a chart places when asked, in the catalogue's order.
+pub const OUTER: [Graha; 3] = [Graha::Uranus, Graha::Neptune, Graha::Pluto];
+
+/// Whether a chart places the outer planets beside the nine
+/// (`03-design/western-outer-planets.md`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum OuterPlanets {
+    /// The nine alone, as every chart was before.
+    #[default]
+    Left,
+    /// Uranus, Neptune and Pluto as well, in [`ChartFoundation::outer`].
+    Placed,
+}
+
+/// The body a graha is read from, and how far to turn it: Ketu is the
+/// node the settings name turned half a circle, and every other graha is
+/// its own body unturned. The one place a graha names its body, so a
+/// search reaches the outer planets as it reaches the seven.
+#[must_use]
+pub fn body_of(graha: Graha, settings: &Settings) -> Option<(Body, f64)> {
+    let node = if settings.frame.node == Node::True {
+        Body::TrueNode
+    } else {
+        Body::MeanNode
+    };
+    Some(match graha {
+        Graha::Sun => (Body::Sun, 0.0),
+        Graha::Moon => (Body::Moon, 0.0),
+        Graha::Mars => (Body::Mars, 0.0),
+        Graha::Mercury => (Body::Mercury, 0.0),
+        Graha::Jupiter => (Body::Jupiter, 0.0),
+        Graha::Venus => (Body::Venus, 0.0),
+        Graha::Saturn => (Body::Saturn, 0.0),
+        Graha::Rahu => (node, 0.0),
+        Graha::Ketu => (node, 180.0),
+        Graha::Uranus => (Body::Uranus, 0.0),
+        Graha::Neptune => (Body::Neptune, 0.0),
+        Graha::Pluto => (Body::Pluto, 0.0),
+        _ => return None,
+    })
 }
 
 /// Founds charts: one construction, many moments.
@@ -402,7 +467,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         kind: ChartKind,
     ) -> Result<Envelope<ChartFoundation>, Error> {
-        let chart = self.value(instant, place, kind)?;
+        let chart = self.value(instant, place, kind, OuterPlanets::Left)?;
         let provenance = self.provenance(&chart);
         Ok(Envelope::new(chart, provenance))
     }
@@ -413,6 +478,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         instant: JulianDay<Utc>,
         place: &Place,
         kind: ChartKind,
+        outer: OuterPlanets,
     ) -> Result<ChartFoundation, Error> {
         let ut1 = JulianDay::<Ut1>::literal(instant.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
@@ -459,13 +525,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let day_lagna_deg = self.lagna(day_ut1, day_tt, place, &zodiac)?;
 
         let timing = self.timing(&day, instant)?;
-        let (grahas, mut steps) = self.grahas(
+        let (grahas, outer, mut steps) = self.grahas(
             &completion,
             ut1,
             place,
             (&zodiac, turning),
-            &houses,
-            &chalit,
+            (&houses, &chalit),
+            outer,
         )?;
         steps.push(format!("zodiac:{}", zodiac_from.key()));
         let angles_from = if self.defined_angles(ut1, place)?.is_some() {
@@ -492,6 +558,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             chalit,
             timing,
             grahas,
+            outer,
             steps,
         })
     }
@@ -525,6 +592,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 longitude_deg: chart.place.longitude.get(),
                 altitude_m: chart.place.altitude.get(),
                 kind: chart.kind.key(),
+                outer: !chart.outer.is_empty(),
             }),
             chart.zodiac.request,
             chart.steps.clone(),
@@ -584,9 +652,26 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         kind: ChartKind,
     ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
+        self.found_with(instants, place, kind, OuterPlanets::Left)
+    }
+
+    /// [`Founder::found`], placing the outer planets beside the nine when
+    /// asked, in the same request to the provider.
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::found`], and a provider that cannot place an outer
+    /// planet asked for.
+    pub fn found_with(
+        &self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+        kind: ChartKind,
+        outer: OuterPlanets,
+    ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
         let charts: Vec<ChartFoundation> = instants
             .iter()
-            .map(|instant| self.value(*instant, place, kind))
+            .map(|instant| self.value(*instant, place, kind, outer))
             .collect::<Result<_, _>>()?;
         // One stamp over the batch: the settings, the provider and the
         // steps are the same for every chart in it, and the input hash is
@@ -601,6 +686,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             longitude_deg: place.longitude.get(),
             altitude_m: place.altitude.get(),
             kind: kind.key(),
+            outer: outer == OuterPlanets::Placed,
         });
         Ok(Envelope::new(charts, provenance))
     }
@@ -644,6 +730,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             longitude_deg: place.longitude.get(),
             altitude_m: place.altitude.get(),
             kind: "LONGITUDES",
+            outer: false,
         });
         let Some(first) = zodiacs.first() else {
             return Ok(Envelope::new(
@@ -724,7 +811,6 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         stations: bool,
         (from, to): (JulianDay<Utc>, JulianDay<Utc>),
     ) -> Result<Envelope<Vec<TransitEvent>>, Error> {
-        let bodies = bodies_of(self.settings());
         let (start, end) = (
             JulianDay::<Ut1>::literal(from.get()),
             JulianDay::<Ut1>::literal(to.get()),
@@ -733,11 +819,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             let mut events = Vec::new();
             for graha in grahas {
                 // Ketu is Rahu turned half a circle.
-                let (body, turned) = match graha {
-                    Graha::Ketu => (bodies.get(7), 180.0),
-                    other => (bodies.get(*other as usize), 0.0),
-                };
-                let body = *body.ok_or_else(|| {
+                let (body, turned) = body_of(*graha, self.settings()).ok_or_else(|| {
                     Error::invalid_arg(format!("{} has no transit to search", graha.key()))
                         .with_field("grahas")
                 })?;
@@ -809,11 +891,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         stations_of: &[Graha],
         (from, to): (JulianDay<Utc>, JulianDay<Utc>),
     ) -> Result<Envelope<ContactEvents>, Error> {
-        let bodies = bodies_of(self.settings());
         let body = |graha: Graha| -> Result<Body, Error> {
             match graha {
                 Graha::Rahu | Graha::Ketu => None,
-                other => bodies.get(other as usize).copied(),
+                other if OUTER.contains(&other) => None,
+                other => body_of(other, self.settings()).map(|(body, _)| body),
             }
             .ok_or_else(|| {
                 Error::invalid_arg(format!("{} is not one of the seven", graha.key()))
@@ -905,6 +987,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             longitude_deg: place.longitude.get(),
             altitude_m: place.altitude.get(),
             kind,
+            outer: false,
         });
         let steps = vec![format!("crossings:{}", Implementation::Sdk.key())];
         Envelope::new(value, self.stamp(input_hash, frame, steps))
@@ -921,6 +1004,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 longitude_deg: place.longitude.get(),
                 altitude_m: place.altitude.get(),
                 kind: kind.key(),
+                outer: false,
             }),
         )
     }
@@ -1150,10 +1234,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         ut1: JulianDay<Ut1>,
         place: &Place,
         (zodiac, turning): (&ChartZodiac, f64),
-        houses: &Bhavas,
-        chalit: &Bhavas,
-    ) -> Result<(Vec<GrahaPosition>, Vec<String>), Error> {
-        let bodies = bodies_of(self.settings());
+        (houses, chalit): (&Bhavas, &Bhavas),
+        outer: OuterPlanets,
+    ) -> Result<Placed, Error> {
+        // The outer planets ride in the nine's grid: three more cells, not
+        // a second request.
+        let mut bodies = bodies_of(self.settings());
+        if outer == OuterPlanets::Placed {
+            bodies.extend([Body::Uranus, Body::Neptune, Body::Pluto]);
+        }
         let jds = [ut1.get()];
         let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, zodiac.request);
         if zodiac.needs_observer() {
@@ -1162,6 +1251,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let completed: Completed = completion.positions(&request)?;
 
         let mut grahas = Vec::with_capacity(bodies.len() + 1);
+        let mut placed_outer = Vec::new();
         for (index, body) in bodies.iter().enumerate() {
             let cell = completed.columns.at(0, index).ok_or_else(|| {
                 Error::internal(format!("the grid has no cell for {}", body.key()))
@@ -1177,7 +1267,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             let graha = body
                 .graha()
                 .ok_or_else(|| Error::internal(format!("{} is not a graha", body.key())))?;
-            grahas.push(Self::position(
+            let position = Self::position(
                 graha,
                 cell.lon,
                 cell.lat,
@@ -1186,7 +1276,12 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 zodiac,
                 houses,
                 chalit,
-            ));
+            );
+            if OUTER.contains(&graha) {
+                placed_outer.push(position);
+            } else {
+                grahas.push(position);
+            }
         }
 
         // Ketu: Rahu's opposite point in the same frame, with the same
@@ -1204,7 +1299,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 chalit,
             ));
         }
-        Ok((grahas, completed.step_keys()))
+        Ok((grahas, placed_outer, completed.step_keys()))
     }
 
     /// One graha's position, placed in both divisions.

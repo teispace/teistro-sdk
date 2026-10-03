@@ -10,7 +10,7 @@ use std::path::Path;
 
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Document, UtcOffset};
+use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 use crate::rules_corpus::read_json;
 
@@ -42,6 +42,16 @@ impl Birth {
     pub(crate) fn request(&self) -> ChartRequest {
         ChartRequest::at(self.document.foundation.place, self.offset)
     }
+}
+
+/// The context the corpus was recorded under, on the built-in ephemeris;
+/// a worker builds its own, since a context serves one thread.
+pub(crate) fn conformance() -> Result<Context, String> {
+    Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .map_err(|why| format!("the conformance profile: {why}"))
 }
 
 /// Every recorded birth, founded by the SDK under the conformance profile.

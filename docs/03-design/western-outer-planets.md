@@ -1,7 +1,9 @@
 # The outer planets in a chart (the `western` module)
 
-Status: `design`, 2026-10-03 — written from the corpus and the code
-before any change. Nothing here is built yet.
+Status: `building`, 2026-10-03 — written from the corpus and the code
+before any change. Step 2 is built: the chart layer and the SDK place
+the three when asked, held to the corpus in
+[`outer-planets-measured.md`](outer-planets-measured.md).
 
 A chart places nine grahas: the seven planets and the two nodes. The
 catalogue names three more, Uranus, Neptune and Pluto, and the built-in
@@ -66,6 +68,22 @@ but the measured page states them per body instead of one figure.
    The transit search, the contact search and the progressions then
    accept the outer three where a chart carries them.
 
+## What building it found
+
+- **The corpus holds every bound.** Placed from the Earth's centre, the
+  three agree with the recording within 5.11″ (Uranus), 6.14″
+  (Neptune) and 0.893″ (Pluto). The bounds are built from the
+  ephemeris's parts, not read off a sample. The theory's floor seen
+  from the Earth, plus the standard tier's arcsecond, gives 6″ and 8″.
+  A first bound taken from the built-in page's sample worst (4.73″) was
+  falsified at 5.11″, which is why the bound is now derived.
+- **C239 is under an arcsecond.** Placing the three from the observer
+  moves them at most 0.559″: 0.51″ of parallax at Uranus's nearest, and
+  diurnal aberration.
+- **A graha found its body by its ordinal.** The transit search took
+  `bodies[graha as usize]`, which reaches the eighth body and no
+  further. `body_of` replaces it, so a search can reach Uranus.
+
 ## What this does not decide
 
 - **Rulership.** Whether Uranus rules Aquarius, Neptune Pisces and
@@ -85,7 +103,7 @@ but the measured page states them per body instead of one figure.
    three in the same grid, `ChartFoundation::outer`, and
    `ChartRequest::with_outer_planets()`. Held to the corpus's 55 charts
    in `outer-planets-measured.md`, which states each body's worst
-   difference and the parallax C239 sets aside.
+   difference and the parallax C239 sets aside. **Built.**
 3. The readers: a transit's hit list, a progression's contacts and a
    progressed chart accept the three where the birth carries them.
    Leo's two Uranus contacts on p. 41 become a test.
