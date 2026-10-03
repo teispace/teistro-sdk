@@ -256,7 +256,7 @@ impl ChartArea<'_> {
 
 /// The planets a Western table reads: the seven, never the nodes, and the
 /// outer three when the chart placed them.
-fn planets(foundation: &ChartFoundation) -> impl Iterator<Item = &GrahaPosition> {
+pub(crate) fn planets(foundation: &ChartFoundation) -> impl Iterator<Item = &GrahaPosition> {
     foundation
         .grahas
         .iter()

@@ -210,6 +210,10 @@ required-features = ["builtin-ephemeris"]
 name = "synastry"
 required-features = ["builtin-ephemeris"]
 
+[[test]]
+name = "declinations"
+required-features = ["builtin-ephemeris"]
+
 [[example]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]

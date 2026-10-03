@@ -42,10 +42,10 @@ not need to ask its ephemeris for anything new.
    each planet's tropical longitude, its ecliptic latitude and the true
    obliquity at the chart's instant. It does not depend on the chart's
    zodiac: a sidereal chart's planets carry their tropical longitude
-   too. The rotation is the one the astronomy already has
-   (`sky::ecliptic_to_equatorial`). The Shadbala's ayana bala, which
-   reads the same declination under its `True` kranti, now calls it
-   rather than repeating the formula.
+   too. The formula is one function, `core::angle::declination_deg`,
+   which both `western` and the strength crate reach. The Shadbala's
+   ayana bala reads the same declination under its `True` kranti and
+   now calls it rather than repeating the formula.
 2. **The angles have declinations too.** The lagna and the midheaven
    are degrees of the ecliptic, so each takes the declination the Sun
    would have there, at no latitude (Leo, p. 141). A chart's

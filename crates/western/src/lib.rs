@@ -33,6 +33,7 @@
 mod angles;
 mod arc;
 mod aspects;
+mod declination;
 mod progression;
 mod synastry;
 
@@ -40,6 +41,9 @@ pub use angles::{AngleMethod, Meridian, SunAt, progressed_armc};
 pub use arc::ArcMeasure;
 pub use aspects::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, Placed, WesternAspect, WesternAspectRow, aspects,
+};
+pub use declination::{
+    Declined, LEO_PARALLEL_ORB_DEG, MAX_PARALLEL_ORB_DEG, ParallelRequest, ParallelRow, parallels,
 };
 pub use progression::{
     Progression, Rate, SIDEREAL_MONTH_DAYS, SYNODIC_MONTH_DAYS, Span, TROPICAL_YEAR_DAYS,

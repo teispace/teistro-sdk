@@ -53,6 +53,7 @@ pub use area::{
     FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MuhurtaDays, Plans,
     TimeArea,
 };
+mod declinations;
 mod festival_request;
 mod gochar_request;
 mod hit_request;
@@ -246,6 +247,10 @@ pub use teistro_western::{
     WesternAspect, WesternAspectRow,
 };
 pub use western_aspects::{Partner, PartnerSynastry};
+// The declinations a chart's points stand at and Leo's parallels among
+// its planets (`03-design/western-declinations.md`).
+pub use declinations::Declinations;
+pub use teistro_western::{Declined, ParallelRequest, ParallelRow};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).
