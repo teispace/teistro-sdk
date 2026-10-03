@@ -3393,6 +3393,57 @@ class ChartsSynastryDavisons:
 
 
 @dataclass(frozen=True)
+class ChartsSynastryMidpoints:
+    """The `synastry_midpoints` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.
+    """
+
+    count: memoryview[int]
+    """How many equal distances stand across the chart and the partner's; the chart's rows follow the earlier charts' in `synastry_midpoint_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryMidpointRows:
+    """The `synastry_midpoint_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.
+    """
+
+    first: memoryview[int]
+    """The first planet of the pair, in its chart's order."""
+
+    second: memoryview[int]
+    """The second."""
+
+    middle: memoryview[int]
+    """The planet of the other chart equally distant from the two."""
+
+    partners_pair: memoryview[int]
+    """1 when the pair is the partner's and the planet between it the chart's; 0 when the pair is the chart's and the planet between the partner's."""
+
+    far: memoryview[int]
+    """1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's."""
+
+    distance_deg: memoryview[float]
+    """How far it stands from each of the two, the mean of the two arcs, degrees."""
+
+    from_axis_deg: memoryview[float]
+    """How far it stands from the nearer point of the axis, degrees: half what its two distances differ by."""
+
+    orb_deg: memoryview[float]
+    """The orb the record allowed, degrees."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3816,6 +3867,12 @@ class Charts:
     synastry_davisons: ChartsSynastryDavisons
     """Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`."""
 
+    synastry_midpoints: ChartsSynastryMidpoints
+    """Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`."""
+
+    synastry_midpoint_rows: ChartsSynastryMidpointRows
+    """Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3925,6 +3982,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_synastry_composites = blob.section(98, "synastry_composites")
     at_synastry_composite_rows = blob.section(99, "synastry_composite_rows")
     at_synastry_davisons = blob.section(100, "synastry_davisons")
+    at_synastry_midpoints = blob.section(101, "synastry_midpoints")
+    at_synastry_midpoint_rows = blob.section(102, "synastry_midpoint_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6085,6 +6144,39 @@ def decode_charts(raw: bytes) -> Charts:
                 at_synastry_davisons, 4, 4, at_synastry_davisons.count
             ).cast("i"),
             length=at_synastry_davisons.count,
+        ),
+        synastry_midpoints=ChartsSynastryMidpoints(
+            count=blob.column(
+                at_synastry_midpoints, 0, 4, at_synastry_midpoints.count
+            ).cast("I"),
+            length=at_synastry_midpoints.count,
+        ),
+        synastry_midpoint_rows=ChartsSynastryMidpointRows(
+            first=blob.column(
+                at_synastry_midpoint_rows, 0, 2, at_synastry_midpoint_rows.count
+            ).cast("H"),
+            second=blob.column(
+                at_synastry_midpoint_rows, 1, 2, at_synastry_midpoint_rows.count
+            ).cast("H"),
+            middle=blob.column(
+                at_synastry_midpoint_rows, 2, 2, at_synastry_midpoint_rows.count
+            ).cast("H"),
+            partners_pair=blob.column(
+                at_synastry_midpoint_rows, 3, 1, at_synastry_midpoint_rows.count
+            ).cast("B"),
+            far=blob.column(
+                at_synastry_midpoint_rows, 4, 1, at_synastry_midpoint_rows.count
+            ).cast("B"),
+            distance_deg=blob.column(
+                at_synastry_midpoint_rows, 5, 8, at_synastry_midpoint_rows.count
+            ).cast("d"),
+            from_axis_deg=blob.column(
+                at_synastry_midpoint_rows, 6, 8, at_synastry_midpoint_rows.count
+            ).cast("d"),
+            orb_deg=blob.column(
+                at_synastry_midpoint_rows, 7, 8, at_synastry_midpoint_rows.count
+            ).cast("d"),
+            length=at_synastry_midpoint_rows.count,
         ),
     )
 

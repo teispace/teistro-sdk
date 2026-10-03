@@ -1490,6 +1490,27 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 101, 'synastry_midpoints');
+    out.synastryMidpoints = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 102, 'synastry_midpoint_rows');
+    out.synastryMidpointRows = {
+      first: column(blob, at, 0, 'u16', at.count),
+      second: column(blob, at, 1, 'u16', at.count),
+      middle: column(blob, at, 2, 'u16', at.count),
+      partnersPair: column(blob, at, 3, 'u8', at.count),
+      far: column(blob, at, 4, 'u8', at.count),
+      distanceDeg: column(blob, at, 5, 'f64', at.count),
+      fromAxisDeg: column(blob, at, 6, 'f64', at.count),
+      orbDeg: column(blob, at, 7, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

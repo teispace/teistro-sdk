@@ -631,6 +631,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_synastry_antiscia_sections(94))
         .chain(chart_midpoint_sections(96))
         .chain(chart_composite_sections(98))
+        .chain(chart_synastry_midpoint_sections(101))
         .collect(),
     }
 }
@@ -1579,7 +1580,6 @@ fn chart_synastry_antiscia_sections(first: u32) -> [SectionSchema; 2] {
 /// chart, and the rows ragged under it (`03-design/western-midpoints.md`).
 fn chart_midpoint_sections(first: u32) -> [SectionSchema; 2] {
     let empty = "Empty when `midpoints_json` asked for none.";
-    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
     [
         SectionSchema::columns(
             first,
@@ -1599,28 +1599,79 @@ fn chart_midpoint_sections(first: u32) -> [SectionSchema; 2] {
             &format!(
                 "Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). {empty}"
             ),
-            vec![
-                graha_column(
-                    "first",
-                    "The first planet of the pair, in the catalogue's order.",
-                ),
-                graha_column("second", "The second."),
-                graha_column("middle", "The planet equally distant from the two."),
-                ColumnDef::new(
-                    "far",
-                    Scalar::U8,
-                    "1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's.",
-                ),
-                degrees(
-                    "distance_deg",
-                    "How far it stands from each of the two, the mean of the two arcs, degrees.",
-                ),
-                degrees(
-                    "from_axis_deg",
-                    "How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.",
-                ),
-                degrees("orb_deg", "The orb the record allowed, degrees."),
-            ],
+            midpoint_row_columns(
+                "The first planet of the pair, in the catalogue's order.",
+                "The planet equally distant from the two.",
+                false,
+            ),
+        ),
+    ]
+}
+
+/// The columns of an equal distance, one chart's own or, with
+/// `partners_pair`, across a synastry.
+fn midpoint_row_columns(first: &str, middle: &str, across: bool) -> Vec<ColumnDef> {
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    let mut columns = vec![
+        graha_column("first", first),
+        graha_column("second", "The second."),
+        graha_column("middle", middle),
+    ];
+    if across {
+        columns.push(ColumnDef::new(
+            "partners_pair",
+            Scalar::U8,
+            "1 when the pair is the partner's and the planet between it the chart's; 0 when the pair is the chart's and the planet between the partner's.",
+        ));
+    }
+    columns.extend([
+        ColumnDef::new(
+            "far",
+            Scalar::U8,
+            "1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's.",
+        ),
+        degrees(
+            "distance_deg",
+            "How far it stands from each of the two, the mean of the two arcs, degrees.",
+        ),
+        degrees(
+            "from_axis_deg",
+            "How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.",
+        ),
+        degrees("orb_deg", "The orb the record allowed, degrees."),
+    ]);
+    columns
+}
+
+/// The two sections the equal distances across a chart and the synastry's
+/// partner cross as, from `first`: a row a chart, and the rows ragged
+/// under it (`03-design/western-midpoints.md`, decision 9).
+fn chart_synastry_midpoint_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `synastry_json` asked for no `midpoints`.";
+    [
+        SectionSchema::columns(
+            first,
+            "synastry_midpoints",
+            &format!(
+                "Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "How many equal distances stand across the chart and the partner's; the chart's rows follow the earlier charts' in `synastry_midpoint_rows`.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "synastry_midpoint_rows",
+            &format!(
+                "Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. {empty}"
+            ),
+            midpoint_row_columns(
+                "The first planet of the pair, in its chart's order.",
+                "The planet of the other chart equally distant from the two.",
+                true,
+            ),
         ),
     ]
 }

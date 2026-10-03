@@ -11970,7 +11970,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out) and `antiscia`\n(`{\"orbs\": {\"model\": \"LEO\"}}` as `antiscia_json` spells it: the antiscia\nacross the two, none when left out), `composite` (true: each chart's\ncomposite with the partner, C247) and `davison` (true: each chart's\nDavison birth with the partner, the chart's read on this request's\nclock, C248). Each chart is read against the\npartner, the chart's point first. The answers come back in\n`synastry`, `synastry_rows`, `synastry_parallel_rows`,\n`synastry_antiscion_rows`, `synastry_composites`,\n`synastry_composite_rows` and `synastry_davisons`. Null for none,\nwhich costs nothing\n(`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
+          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out) and `antiscia`\n(`{\"orbs\": {\"model\": \"LEO\"}}` as `antiscia_json` spells it: the antiscia\nacross the two, none when left out), `midpoints` (`{\"orbDeg\": 0.5}`\nas `midpoints_json` spells it: the equal distances across the two,\neach chart's planets on the partner's pairs and the partner's on\nthe chart's, none when left out), `composite` (true: each chart's\ncomposite with the partner, C247) and `davison` (true: each chart's\nDavison birth with the partner, the chart's read on this request's\nclock, C248). Each chart is read against the\npartner, the chart's point first. The answers come back in\n`synastry`, `synastry_rows`, `synastry_parallel_rows`,\n`synastry_antiscion_rows`, `synastry_composites`,\n`synastry_composite_rows`, `synastry_davisons`, `synastry_midpoints`\nand `synastry_midpoint_rows`. Null for none,\nwhich costs nothing\n(`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
             "nullable": true
@@ -19838,6 +19838,70 @@
               "name": "utc_offset_seconds",
               "scalar": "i32",
               "doc": "The mean of the two clocks, seconds east of UTC: it names only the civil day."
+            }
+          ]
+        },
+        {
+          "id": 101,
+          "name": "synastry_midpoints",
+          "doc": "Every chart's equal distances with the synastry's partner, a row a chart in the `cast` section's order: how many rows of `synastry_midpoint_rows` are its. Empty when `synastry_json` asked for no `midpoints`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many equal distances stand across the chart and the partner's; the chart's rows follow the earlier charts' in `synastry_midpoint_rows`."
+            }
+          ]
+        },
+        {
+          "id": 102,
+          "name": "synastry_midpoint_rows",
+          "doc": "Every chart's equal distances with the synastry's partner, concatenated in the `cast` section's order and **ragged** by `synastry_midpoints.count`, each chart's closest first: a planet of one chart within the record's orb of the axis through the midpoint of two of the other's (0.5° by default, C245), on the shorter arc's midpoint or opposite it (C246), in the record's zodiac; the planets are the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `synastry_json` asked for no `midpoints`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "first",
+              "scalar": "u16",
+              "doc": "The first planet of the pair, in its chart's order.",
+              "enum": "Graha"
+            },
+            {
+              "name": "second",
+              "scalar": "u16",
+              "doc": "The second.",
+              "enum": "Graha"
+            },
+            {
+              "name": "middle",
+              "scalar": "u16",
+              "doc": "The planet of the other chart equally distant from the two.",
+              "enum": "Graha"
+            },
+            {
+              "name": "partners_pair",
+              "scalar": "u8",
+              "doc": "1 when the pair is the partner's and the planet between it the chart's; 0 when the pair is the chart's and the planet between the partner's."
+            },
+            {
+              "name": "far",
+              "scalar": "u8",
+              "doc": "1 when it stands opposite the midpoint of the pair's shorter arc, on the longer arc's midpoint; 0 on the shorter's."
+            },
+            {
+              "name": "distance_deg",
+              "scalar": "f64",
+              "doc": "How far it stands from each of the two, the mean of the two arcs, degrees."
+            },
+            {
+              "name": "from_axis_deg",
+              "scalar": "f64",
+              "doc": "How far it stands from the nearer point of the axis, degrees: half what its two distances differ by."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb the record allowed, degrees."
             }
           ]
         }
