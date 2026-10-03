@@ -2904,6 +2904,15 @@ export declare class Chart {
   readonly timing: ChartTiming;
   /** The grahas, in the catalogue's order, one object each. */
   readonly grahas: readonly PlacedGraha[];
+  /**
+   * Uranus, Neptune and Pluto, placed as the grahas are; empty unless
+   * `outerPlanets` asked for them.
+   *
+   * @example
+   * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, outerPlanets: true });
+   * const uranus = chart.outer.find((at) => at.graha === 'graha.URANUS');
+   */
+  readonly outer: readonly PlacedGraha[];
   /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
   readonly vargas: readonly DivisionalChart[];
   /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
@@ -4133,6 +4142,12 @@ export interface ChartRequest {
   readonly dashaPhala?: boolean;
   /** Whether to compute Jaimini's significators; false by default. */
   readonly jaimini?: boolean;
+  /**
+   * Whether to place Uranus, Neptune and Pluto beside the nine, in
+   * `chart.outer`; false by default. A progression's later charts and a
+   * hit list's natal points then reach them too.
+   */
+  readonly outerPlanets?: boolean;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
   /** Whether to compute the Bhava bala; false by default. */

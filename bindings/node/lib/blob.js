@@ -1282,6 +1282,26 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 81, 'outer');
+    out.outer = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      tropicalDeg: column(blob, at, 2, 'f64', at.count),
+      latitudeDeg: column(blob, at, 3, 'f64', at.count),
+      distanceAu: column(blob, at, 4, 'f64', at.count),
+      speedDegPerDay: column(blob, at, 5, 'f64', at.count),
+      houseBhava: column(blob, at, 6, 'u8', at.count),
+      houseMethod: column(blob, at, 7, 'u16', at.count),
+      houseThrough: column(blob, at, 8, 'f64', at.count),
+      houseFromMadhyaDeg: column(blob, at, 9, 'f64', at.count),
+      placementBhava: column(blob, at, 10, 'u8', at.count),
+      placementMethod: column(blob, at, 11, 'u16', at.count),
+      placementThrough: column(blob, at, 12, 'f64', at.count),
+      placementFromMadhyaDeg: column(blob, at, 13, 'f64', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

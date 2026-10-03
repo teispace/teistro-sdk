@@ -3360,7 +3360,7 @@ export interface ChartsProgressions {
  * The `progressed_grahas` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+ * The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
  */
 export interface ChartsProgressedGrahas {
   /**
@@ -3388,7 +3388,7 @@ export interface ChartsProgressedGrahas {
  * The `directed_grahas` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+ * The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
  */
 export interface ChartsDirectedGrahas {
   /**
@@ -3441,6 +3441,76 @@ export interface ChartsProgressedContacts {
    * The values are `Motion` ids.
    */
   readonly motion: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `outer` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
+ */
+export interface ChartsOuter {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its longitude in the chart's zodiac, degrees.
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * Its longitude in the tropical zodiac, degrees.
+   */
+  readonly tropicalDeg: Float64Array;
+  /**
+   * Its latitude, degrees.
+   */
+  readonly latitudeDeg: Float64Array;
+  /**
+   * Its distance in astronomical units; zero for a point that has none.
+   */
+  readonly distanceAu: Float64Array;
+  /**
+   * Its longitude speed, degrees per day; negative when retrograde.
+   */
+  readonly speedDegPerDay: Float64Array;
+  /**
+   * The bhava it stands in, 1 to 12.
+   */
+  readonly houseBhava: Uint8Array;
+  /**
+   * The house system that produced that bhava.
+   * The values are `HouseSystem` ids.
+   */
+  readonly houseMethod: Uint16Array;
+  /**
+   * How far through the bhava it stands, 0 to 1.
+   */
+  readonly houseThrough: Float64Array;
+  /**
+   * Its distance from the bhava's madhya, degrees.
+   */
+  readonly houseFromMadhyaDeg: Float64Array;
+  /**
+   * The bhava of the chart's chalit it stands in, 1 to 12.
+   */
+  readonly placementBhava: Uint8Array;
+  /**
+   * The house system that produced the chalit.
+   * The values are `HouseSystem` ids.
+   */
+  readonly placementMethod: Uint16Array;
+  /**
+   * How far through that bhava it stands, 0 to 1.
+   */
+  readonly placementThrough: Float64Array;
+  /**
+   * Its distance from that bhava's madhya, degrees.
+   */
+  readonly placementFromMadhyaDeg: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -3922,17 +3992,21 @@ export interface Charts {
    */
   readonly progressions: ChartsProgressions;
   /**
-   * The progressed planets, **graha-count rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+   * The progressed planets, **the same number of rows a chart** in the `cast` section's order, each chart's in the catalogue's order: the chart founded at `progressions.sky`, the nine and then the outer three when the birth placed them (`TS_CHART_OUTER`). A reader divides the rows by `chart_count`. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
    */
   readonly progressedGrahas: ChartsProgressedGrahas;
   /**
-   * The birth's planets moved by the direction's arc, **graha-count rows a chart** in the `cast` section's order. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
+   * The birth's planets moved by the direction's arc, **as many rows a chart as `progressed_grahas`** in the `cast` section's order: the nine, and the outer three when the birth placed them. Empty when the record named no `at`. Empty when `progressions_json` asked for none.
    */
   readonly directedGrahas: ChartsDirectedGrahas;
   /**
    * Every exact aspect a progressed planet makes to a radical point in the record's window (Leo's Appendix V), concatenated in the `cast` section's order and **ragged** by `progressions.contact_count`, each chart's in the order they fall due. Empty when `progressions_json` asked for none.
    */
   readonly progressedContacts: ChartsProgressedContacts;
+  /**
+   * Uranus, Neptune and Pluto beside the nine, **the same number of rows a chart**, charts outermost and each chart's in the catalogue's order, the columns `grahas` has: three a chart when `TS_CHART_OUTER` asked for them, and empty when it did not. A reader divides the rows by `chart_count`. They are placed as the nine are, in the chart's zodiac and from its centre.
+   */
+  readonly outer: ChartsOuter;
 }
 
 /**

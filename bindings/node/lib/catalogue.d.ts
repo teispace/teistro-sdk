@@ -112,6 +112,12 @@ export declare const CHART_DASHA_PHALA: 1024;
 export declare const CHART_JAIMINI: 2048;
 
 /**
+ * A chart request's `sections` bit: Uranus, Neptune and Pluto beside
+ * the nine, in the `outer` section (`03-design/western-outer-planets.md`).
+ */
+export declare const CHART_OUTER: 4096;
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *

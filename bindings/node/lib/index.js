@@ -31,6 +31,7 @@ import {
   CHART_DASHA_PHALA,
   CHART_HOUSES,
   CHART_JAIMINI,
+  CHART_OUTER,
   CHART_POINTS,
   CHART_SHADBALA,
   CHART_STATE,
@@ -1283,8 +1284,27 @@ export class Chart {
    * an application wants, which is a row.
    */
   get grahas() {
-    const g = this.#batch.decoded.grahas;
-    const count = this.#batch.decoded.grahaCount;
+    return this.#placed(this.#batch.decoded.grahas, this.#batch.decoded.grahaCount);
+  }
+
+  /**
+   * Uranus, Neptune and Pluto, placed as the grahas are, or an empty
+   * list unless `outerPlanets: true` asked for them. The section holds
+   * the same number a chart, so the batch's rows divided by its charts
+   * is this chart's count.
+   */
+  get outer() {
+    const d = this.#batch.decoded;
+    const charts = d.cast.instant.length;
+    const count = charts === 0 ? 0 : d.outer.graha.length / charts;
+    if (!Number.isInteger(count)) {
+      throw new Error(`outer has ${d.outer.graha.length} rows for ${charts} charts`);
+    }
+    return this.#placed(d.outer, count);
+  }
+
+  /** One chart's stride of a placed-bodies section, a row a body. */
+  #placed(g, count) {
     const base = this.#index * count;
     return Array.from({ length: count }, (_, j) => {
       const i = base + j;
@@ -2262,6 +2282,7 @@ export class ChartArea extends Area {
           (request.bhavaBala === true ? CHART_BHAVA_BALA : 0) |
           (request.dashaPhala === true ? CHART_DASHA_PHALA : 0) |
           (request.jaimini === true ? CHART_JAIMINI : 0) |
+          (request.outerPlanets === true ? CHART_OUTER : 0) |
           (request.state === true ? CHART_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: dashaIds(request.dashas, this.#dashas),
