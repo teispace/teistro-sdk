@@ -1,10 +1,11 @@
 # Synastry: the Western aspects between two charts (the `western` module)
 
-Status: `building`, 2026-10-03, written from the sources before any
-code. Steps 2 and 3 are built: `western::synastry` on the engine a
-chart's own table reads, and `sdk.chart().synastry`, held to George V
-and Queen Mary, and measured over every pair of the corpus's births in
-[`synastry-measured.md`](synastry-measured.md).
+Status: `built`, 2026-10-03, written from the sources before any code.
+`western::synastry` reads on the engine a chart's own table reads, and
+`sdk.chart().synastry` is held to George V and Queen Mary, measured over
+every pair of the corpus's births in
+[`synastry-measured.md`](synastry-measured.md), and crosses to every
+binding as `chart.synastry`, with parity.
 
 [`western-aspects.md`](western-aspects.md) answers *which aspects does
 this chart hold?* Synastry asks the same of two charts: which of one
@@ -87,10 +88,19 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
 6. **The table is one engine.** The single chart's `aspects` and the
    synastry share one loop over pairs and one orb rule. Only the pairs
    handed to it differ, so an orb is never measured twice.
-7. **Across the boundary, a call of its own.** A chart batch is founded
-   at one place, and two people are not born at one. So synastry crosses
-   as a call that takes two births, founds both and answers the rows,
-   not as a chart section.
+7. **Across the boundary, a partner on the chart request.** A chart
+   batch is founded at one place, and two people are not born at one,
+   so the partner's birth travels whole in a `synastry` record beside
+   the aspect table's fields: `{"partner": {"instant", "place",
+   "utcOffsetSeconds"}, "aspects", "orbs", "lagna", "zodiac"}`. The
+   SDK founds the partner once for the batch
+   (`ChartArea::synastry_with`) and reads every chart against it, so
+   one person read against many candidates, or a life's progressed
+   charts against one partner, is a single call. Sections 84 and 85
+   carry the rows, each side a `NatalPoint` in the hit list's two cells.
+   A call of its own, taking two births, was the first plan; it would
+   have repeated the chart request's whole founding surface for a
+   second person and given up the batch.
 
 ## Order of work
 
@@ -101,7 +111,8 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
    recast.
 3. A measured page over pairs of the corpus's births: how often the two
    zodiac readings part, and by how much.
-4. The boundary call and every binding, with parity.
+4. The `synastry` record on the chart request and every binding, with
+   parity.
 
 ## What building it found
 
@@ -129,6 +140,12 @@ sextile her Sun (0.39° from exact), his Mars opposite her ascendant
   gates that the share grows band by band. A synastry between
   contemporaries barely depends on C241; one between a person and a
   historical chart does.
+- **`flatten` hid the field a refusal names.** The record lays the
+  aspect table's fields beside the partner, and serde's `flatten`
+  buffers whatever it reads, so an unknown zodiac was refused as
+  `synastry` rather than `synastry.zodiac`. Both requests are now read
+  through flat records of their own, and the ABI test and every
+  binding hold the field by name.
 - **The lagna beside a luminary.** The first test expected the lagna 9°
   from the other's Sun to hold nothing, reading "a planet's orb" as 8°.
   Leo's rule widens any luminary–planet pair to 10°, so it holds; the
