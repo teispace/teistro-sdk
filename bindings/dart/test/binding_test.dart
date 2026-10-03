@@ -2617,6 +2617,124 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its progressions', () {
+    final ctx = teistro.context(
+      profile: 'western-tropical-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final london = Observer(
+      latitudeDeg: Latitude(51.5),
+      longitudeDeg: Longitude(0),
+      altitudeM: Altitude(0),
+    );
+    const birth = 2400629.742361111;
+    Chart found(double instant, {ProgressionsRequest? progressions}) =>
+        ctx.chart.found(
+          instant: instant,
+          place: london,
+          utcOffsetSeconds: 0,
+          progressions: progressions,
+        );
+    expect(found(birth).progressions, isNull);
+
+    // His forty-seventh year: the map at sidereal time 5h 54m 16s (p. 35).
+    const at = birth + 46 * 365.242189;
+    final read =
+        found(
+          birth,
+          progressions: const ProgressionsRequest(at: at),
+        ).progressions!;
+    final progressed = read.progressed!;
+    final directed = read.directed!;
+    expect(progressed.sky, closeTo(birth + 46, 1e-9));
+    expect(progressed.armcDeg / 15, closeTo(5 + 54 / 60 + 16 / 3600, 2 / 3600));
+    expect(progressed.grahas.length, directed.planets.length);
+    expect(read.contacts, isNull);
+    final sun = progressed.grahas.firstWhere((g) => g.graha == Graha.sun);
+    final directedSun = directed.planets.firstWhere(
+      (g) => g.graha == Graha.sun,
+    );
+    expect(sun.longitudeDeg, closeTo(directedSun.longitudeDeg, 1e-9));
+
+    // The Moon sesquiquadrate Mercury (p. 305): the 21st by a year, the
+    // 22nd by his rule.
+    const october = ProgressionContacts(
+      from: 2417484.5,
+      to: 2417515.5,
+      grahas: [Graha.moon],
+      points: [NatalGraha(Graha.mercury)],
+      aspects: [135],
+    );
+    for (final (year, day) in [
+      (YearMeasure.tropical, 21),
+      (YearMeasure.noonSiderealTime, 22),
+    ]) {
+      final contacts =
+          found(
+            birth,
+            progressions: ProgressionsRequest(year: year, contacts: october),
+          ).progressions!;
+      expect(contacts.progressed, isNull);
+      final [contact] = contacts.contacts!;
+      expect(
+        (contact.graha, contact.to, contact.angle, contact.motion),
+        (Graha.moon, const NatalGraha(Graha.mercury), 135, Motion.direct),
+      );
+      expect((contact.life - 2417484.5).floor() + 1, day, reason: '$year');
+    }
+    final none =
+        found(
+          birth,
+          progressions: const ProgressionsRequest(
+            contacts: ProgressionContacts(
+              from: 2417484.5,
+              to: 2417515.5,
+              grahas: [Graha.moon],
+              aspects: [90],
+            ),
+          ),
+        ).progressions!;
+    expect(none.contacts, isEmpty, reason: 'a window asked holding none');
+
+    final instants = [birth, birth + 3000.25, birth + 9000.5];
+    const many = ProgressionsRequest(
+      at: 2430000.5,
+      angles: AngleMethod.solarArcLongitude,
+      direction: DirectionArc.naibod,
+    );
+    final batch = ctx.chart.foundMany(
+      instants: instants,
+      place: london,
+      utcOffsetSeconds: 0,
+      progressions: many,
+    );
+    for (final (k, instant) in instants.indexed) {
+      expect(
+        batch.at(k).progressions,
+        found(instant, progressions: many).progressions,
+      );
+    }
+    for (final (asked, field) in [
+      (const ProgressionsRequest(), 'progressions.at'),
+      (
+        const ProgressionsRequest(at: at, direction: DirectionArc.perYear(0)),
+        'progressions.direction',
+      ),
+      (
+        const ProgressionsRequest(
+          contacts: ProgressionContacts(from: 2, to: 1),
+        ),
+        'progressions.contacts.to',
+      ),
+    ]) {
+      expect(
+        () => found(birth, progressions: asked),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its accidental fortitudes', () {
     final ctx = teistro.context(
       profile: 'conformance-baseline',
