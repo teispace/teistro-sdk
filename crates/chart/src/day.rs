@@ -147,7 +147,14 @@ pub fn chart_day(
 /// somewhere else. A normal day holds every instant from its sunrise to
 /// the next, so only a synthesised one can miss.
 fn outside(day: &LocalDay, instant: JulianDay<Utc>) -> Error {
-    let DayState::Polar { kind, policy } = day.state else {
+    // Only `NEAREST_EVENT` places a day elsewhere: every other day, real
+    // or synthesised, meets the next at its sunrise, so a miss under any
+    // other is this crate's error and not the consumer's choice.
+    let DayState::Polar {
+        kind,
+        policy: policy @ PolarDayPolicy::NearestEvent,
+    } = day.state
+    else {
         return Error::internal(format!(
             "the day from {} to {} was chosen for {instant} and does not hold it",
             day.sunrise, day.next_sunrise
@@ -361,6 +368,59 @@ mod tests {
         );
         let held = found(PolarDayPolicy::CivilMidnight).unwrap();
         assert!(held.day.contains(noon));
+    }
+
+    /// [`MidnightSun`] the other way round: the Sun rises and sets like
+    /// [`SixToSix`] before fixed day 730 020 and never sets from it on.
+    #[derive(Debug)]
+    struct SunThatStopsSetting;
+
+    impl SolarModel for SunThatStopsSetting {
+        fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
+            SixToSix.sidereal_sun_deg(jd_ut)
+        }
+
+        fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
+            if day.get() >= 730_020 {
+                return Ok(DayLight::AlwaysUp);
+            }
+            SixToSix.day_light(day, place)
+        }
+
+        fn describe(&self) -> String {
+            String::from("sun-that-stops-setting")
+        }
+
+        fn convention(&self) -> SunriseConvention {
+            SixToSix.convention()
+        }
+    }
+
+    /// Under `CIVIL_MIDNIGHT` every instant belongs to a day, across both
+    /// seams of a polar season. The last polar day once ended at civil
+    /// midnight while the first real day began at its sunrise, so the
+    /// small hours between belonged to none: found progressing Tromsø's
+    /// midsummer birth thirty and a half years on
+    /// (`progressed-angles-measured.md`).
+    #[test]
+    fn every_instant_across_a_polar_seam_has_a_day() {
+        let models: [&dyn SolarModel; 2] = [&MidnightSun, &SunThatStopsSetting];
+        for model in models {
+            for half_hour in 0..(10 * 48) {
+                let instant = at(730_015, f64::from(half_hour) / 2.0);
+                let day = chart_day(
+                    model,
+                    &Gregorian,
+                    &UtcOffset::UTC,
+                    &place(),
+                    instant,
+                    PolarDayPolicy::CivilMidnight,
+                )
+                .unwrap_or_else(|e| panic!("{} at {instant}: {e}", model.describe()));
+                assert!(day.day.contains(instant));
+                assert!((0.0..1.0).contains(&day.elapsed), "{}", day.elapsed);
+            }
+        }
     }
 
     #[test]
