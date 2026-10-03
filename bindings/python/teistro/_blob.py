@@ -3321,6 +3321,78 @@ class ChartsMidpointRows:
 
 
 @dataclass(frozen=True)
+class ChartsSynastryComposites:
+    """The `synastry_composites` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
+    """
+
+    lagna_deg: memoryview[float]
+    """The composite lagna, degrees: the near midpoint of the two lagnas, turned by 180° when `lagna_turned` says."""
+
+    midheaven_deg: memoryview[float]
+    """The composite midheaven, degrees: the near midpoint of the two midheavens."""
+
+    lagna_turned: memoryview[int]
+    """1 when the near midpoint of the two lagnas stood before the midheaven and was turned by 180° to stand after it, as a lagna does; 0 otherwise."""
+
+    count: memoryview[int]
+    """How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryCompositeRows:
+    """The `synastry_composite_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+    """
+
+    graha: memoryview[int]
+    """The planet."""
+
+    longitude_deg: memoryview[float]
+    """Its composite longitude, degrees, in the record's zodiac."""
+
+    speed_deg_per_day: memoryview[float]
+    """The mean of its two speeds, degrees a day; negative when retrograde."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSynastryDavisons:
+    """The `synastry_davisons` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
+    """
+
+    instant: memoryview[float]
+    """The mean instant, a Julian day on the UTC scale."""
+
+    latitude_deg: memoryview[float]
+    """The mean latitude, degrees north."""
+
+    longitude_deg: memoryview[float]
+    """The mean longitude the shorter way round, degrees east."""
+
+    altitude_m: memoryview[float]
+    """The mean altitude, metres."""
+
+    utc_offset_seconds: memoryview[int]
+    """The mean of the two clocks, seconds east of UTC: it names only the civil day."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -3735,6 +3807,15 @@ class Charts:
     midpoint_rows: ChartsMidpointRows
     """Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none."""
 
+    synastry_composites: ChartsSynastryComposites
+    """Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`."""
+
+    synastry_composite_rows: ChartsSynastryCompositeRows
+    """Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`."""
+
+    synastry_davisons: ChartsSynastryDavisons
+    """Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -3841,6 +3922,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_synastry_antiscion_rows = blob.section(95, "synastry_antiscion_rows")
     at_midpoints = blob.section(96, "midpoints")
     at_midpoint_rows = blob.section(97, "midpoint_rows")
+    at_synastry_composites = blob.section(98, "synastry_composites")
+    at_synastry_composite_rows = blob.section(99, "synastry_composite_rows")
+    at_synastry_davisons = blob.section(100, "synastry_davisons")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -5956,6 +6040,51 @@ def decode_charts(raw: bytes) -> Charts:
                 at_midpoint_rows, 6, 8, at_midpoint_rows.count
             ).cast("d"),
             length=at_midpoint_rows.count,
+        ),
+        synastry_composites=ChartsSynastryComposites(
+            lagna_deg=blob.column(
+                at_synastry_composites, 0, 8, at_synastry_composites.count
+            ).cast("d"),
+            midheaven_deg=blob.column(
+                at_synastry_composites, 1, 8, at_synastry_composites.count
+            ).cast("d"),
+            lagna_turned=blob.column(
+                at_synastry_composites, 2, 1, at_synastry_composites.count
+            ).cast("B"),
+            count=blob.column(
+                at_synastry_composites, 3, 4, at_synastry_composites.count
+            ).cast("I"),
+            length=at_synastry_composites.count,
+        ),
+        synastry_composite_rows=ChartsSynastryCompositeRows(
+            graha=blob.column(
+                at_synastry_composite_rows, 0, 2, at_synastry_composite_rows.count
+            ).cast("H"),
+            longitude_deg=blob.column(
+                at_synastry_composite_rows, 1, 8, at_synastry_composite_rows.count
+            ).cast("d"),
+            speed_deg_per_day=blob.column(
+                at_synastry_composite_rows, 2, 8, at_synastry_composite_rows.count
+            ).cast("d"),
+            length=at_synastry_composite_rows.count,
+        ),
+        synastry_davisons=ChartsSynastryDavisons(
+            instant=blob.column(
+                at_synastry_davisons, 0, 8, at_synastry_davisons.count
+            ).cast("d"),
+            latitude_deg=blob.column(
+                at_synastry_davisons, 1, 8, at_synastry_davisons.count
+            ).cast("d"),
+            longitude_deg=blob.column(
+                at_synastry_davisons, 2, 8, at_synastry_davisons.count
+            ).cast("d"),
+            altitude_m=blob.column(
+                at_synastry_davisons, 3, 8, at_synastry_davisons.count
+            ).cast("d"),
+            utc_offset_seconds=blob.column(
+                at_synastry_davisons, 4, 4, at_synastry_davisons.count
+            ).cast("i"),
+            length=at_synastry_davisons.count,
         ),
     )
 

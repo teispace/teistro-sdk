@@ -7941,3 +7941,200 @@ fn a_chart_request_answers_the_midpoints() {
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
     }
 }
+
+#[test]
+fn a_chart_request_answers_a_synastrys_composites_and_davison_births() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_402_390.554_166_667, 2_399_390.304_166_667];
+    // An hour east, so the Davison clock is the mean of two that differ.
+    let base = chart_request(&instants, (51.5045, -0.1366), 3600);
+    let text = r#"{"partner": {"instant": 2403113.499305556, "place": {"latitude": 51.5058, "longitude": -0.1878, "altitude": 20}, "utcOffsetSeconds": -7200}, "composite": true, "davison": true}"#;
+    let asked_json = CString::new(text).unwrap();
+    let bytes = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            synastry_json: asked_json.as_ptr(),
+            sections: teistro_ffi::chart::TS_CHART_OUTER,
+            ..base
+        },
+    )
+    .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .profile("western-tropical-default")
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(51.5045, -0.1366, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(3600).unwrap();
+    let charts = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(place, clock).with_outer_planets(),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::PartnerSynastry::from_json(text).unwrap();
+    let composites: Vec<teistro::Composite> = sdk
+        .chart()
+        .synastry_with(&charts, &asked)
+        .unwrap()
+        .into_iter()
+        .map(|one| one.composite.unwrap())
+        .collect();
+    let davisons = asked.davisons(&charts, clock).unwrap().unwrap();
+    let bits = |section: &str, name: &str| -> Vec<u64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(|cell| cell.as_f64().to_bits())
+            .collect()
+    };
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let of = |read: fn(&teistro::Composite) -> f64| -> Vec<u64> {
+        composites.iter().map(|one| read(one).to_bits()).collect()
+    };
+    assert_eq!(
+        bits("synastry_composites", "lagna_deg"),
+        of(|one| one.lagna_deg)
+    );
+    assert_eq!(
+        bits("synastry_composites", "midheaven_deg"),
+        of(|one| one.midheaven_deg)
+    );
+    assert_eq!(
+        ints("synastry_composites", "lagna_turned"),
+        composites
+            .iter()
+            .map(|one| i64::from(one.lagna_turned))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("synastry_composites", "count"),
+        composites
+            .iter()
+            .map(|one| i64::try_from(one.planets.len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let planets: Vec<&teistro::western::Placed> =
+        composites.iter().flat_map(|one| &one.planets).collect();
+    assert_eq!(
+        planets.len(),
+        20,
+        "ten planets a chart, the outer three too"
+    );
+    assert_eq!(
+        ints("synastry_composite_rows", "graha"),
+        planets
+            .iter()
+            .map(|at| i64::from(at.graha.id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("synastry_composite_rows", "longitude_deg"),
+        planets
+            .iter()
+            .map(|at| at.longitude_deg.to_bits())
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        bits("synastry_composite_rows", "speed_deg_per_day"),
+        planets
+            .iter()
+            .map(|at| at.speed_deg_per_day.to_bits())
+            .collect::<Vec<_>>()
+    );
+
+    // The Davison births, on the mean of the batch's clock and the
+    // partner's: an hour east and two hours west meet half an hour west.
+    let birth = |read: fn(&teistro::Partner) -> f64| -> Vec<u64> {
+        davisons.iter().map(|one| read(one).to_bits()).collect()
+    };
+    assert_eq!(
+        bits("synastry_davisons", "instant"),
+        birth(|one| one.instant.get())
+    );
+    assert_eq!(
+        bits("synastry_davisons", "latitude_deg"),
+        birth(|one| one.place.latitude.get())
+    );
+    assert_eq!(
+        bits("synastry_davisons", "longitude_deg"),
+        birth(|one| one.place.longitude.get())
+    );
+    assert_eq!(
+        bits("synastry_davisons", "altitude_m"),
+        birth(|one| one.place.altitude.get())
+    );
+    assert_eq!(
+        ints("synastry_davisons", "utc_offset_seconds"),
+        [-1800, -1800]
+    );
+
+    // Neither asked is empty sections, not rows of nothing.
+    let plain = CString::new(r#"{"partner": {"instant": 2403113.5, "place": {"latitude": 51.5, "longitude": 0, "altitude": 0}}}"#).unwrap();
+    for asked in [plain.as_ptr(), std::ptr::null()] {
+        let bytes = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                synastry_json: asked,
+                ..base
+            },
+        )
+        .unwrap();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        for (section, column) in [
+            ("synastry_composites", "count"),
+            ("synastry_composite_rows", "graha"),
+            ("synastry_davisons", "instant"),
+        ] {
+            assert_eq!(
+                reader.column(section, column).unwrap().len(),
+                0,
+                "{section}"
+            );
+        }
+    }
+
+    // A flag that is not one is named by its field, under the record.
+    for (extra, field) in [
+        (r#""composite": "yes""#, "synastry.composite"),
+        (r#""davison": 1"#, "synastry.davison"),
+    ] {
+        let text = format!(
+            r#"{{"partner": {{"instant": 2403113.5, "place": {{"latitude": 51.5, "longitude": 0, "altitude": 0}}}}, {extra}}}"#
+        );
+        let asked = CString::new(text.clone()).unwrap();
+        let status = chart_blob(
+            &ctx,
+            &TsChartRequest {
+                synastry_json: asked.as_ptr(),
+                ..base
+            },
+        )
+        .unwrap_err();
+        assert_eq!(status, Status::InvalidArg, "{text}");
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{text}");
+    }
+}

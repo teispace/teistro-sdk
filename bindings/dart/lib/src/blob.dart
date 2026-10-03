@@ -4133,6 +4133,93 @@ final class ChartsMidpointRows {
   final int length;
 }
 
+/// The `synastry_composites` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
+final class ChartsSynastryComposites {
+  const ChartsSynastryComposites({
+    required this.lagnaDeg,
+    required this.midheavenDeg,
+    required this.lagnaTurned,
+    required this.count,
+    required this.length,
+  });
+
+  /// The composite lagna, degrees: the near midpoint of the two lagnas, turned by 180° when `lagna_turned` says.
+  final Float64List lagnaDeg;
+
+  /// The composite midheaven, degrees: the near midpoint of the two midheavens.
+  final Float64List midheavenDeg;
+
+  /// 1 when the near midpoint of the two lagnas stood before the midheaven and was turned by 180° to stand after it, as a lagna does; 0 otherwise.
+  final Uint8List lagnaTurned;
+
+  /// How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_composite_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+final class ChartsSynastryCompositeRows {
+  const ChartsSynastryCompositeRows({
+    required this.graha,
+    required this.longitudeDeg,
+    required this.speedDegPerDay,
+    required this.length,
+  });
+
+  /// The planet.
+  final Uint16List graha;
+
+  /// Its composite longitude, degrees, in the record's zodiac.
+  final Float64List longitudeDeg;
+
+  /// The mean of its two speeds, degrees a day; negative when retrograde.
+  final Float64List speedDegPerDay;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `synastry_davisons` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
+final class ChartsSynastryDavisons {
+  const ChartsSynastryDavisons({
+    required this.instant,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.altitudeM,
+    required this.utcOffsetSeconds,
+    required this.length,
+  });
+
+  /// The mean instant, a Julian day on the UTC scale.
+  final Float64List instant;
+
+  /// The mean latitude, degrees north.
+  final Float64List latitudeDeg;
+
+  /// The mean longitude the shorter way round, degrees east.
+  final Float64List longitudeDeg;
+
+  /// The mean altitude, metres.
+  final Float64List altitudeM;
+
+  /// The mean of the two clocks, seconds east of UTC: it names only the civil day.
+  final Int32List utcOffsetSeconds;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -4342,6 +4429,9 @@ final class Charts {
     required this.synastryAntiscionRows,
     required this.midpoints,
     required this.midpointRows,
+    required this.synastryComposites,
+    required this.synastryCompositeRows,
+    required this.synastryDavisons,
   });
 
   /// What kind of chart these are.
@@ -4679,6 +4769,15 @@ final class Charts {
   /// Every chart's equal distances, concatenated in the `cast` section's order and **ragged** by `midpoints.count`, each chart's closest first: a planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) within the record's orb of the axis through two others' midpoint, 0.5° by default (C245), on the shorter arc's midpoint or opposite it (C246; Leo, *How to Judge a Nativity*, pp. 47–48). Empty when `midpoints_json` asked for none.
   final ChartsMidpointRows midpointRows;
 
+  /// Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
+  final ChartsSynastryComposites synastryComposites;
+
+  /// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+  final ChartsSynastryCompositeRows synastryCompositeRows;
+
+  /// Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
+  final ChartsSynastryDavisons synastryDavisons;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -4783,6 +4882,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atSynastryAntiscionRows = blob.section(95, 'synastry_antiscion_rows');
   final atMidpoints = blob.section(96, 'midpoints');
   final atMidpointRows = blob.section(97, 'midpoint_rows');
+  final atSynastryComposites = blob.section(98, 'synastry_composites');
+  final atSynastryCompositeRows = blob.section(99, 'synastry_composite_rows');
+  final atSynastryDavisons = blob.section(100, 'synastry_davisons');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -8520,6 +8622,75 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atMidpointRows, 6) + atMidpointRows.count * 8,
       ),
       length: atMidpointRows.count,
+    ),
+    synastryComposites: ChartsSynastryComposites(
+      lagnaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryComposites, 0),
+        blob.columnOffset(atSynastryComposites, 0) + atSynastryComposites.count * 8,
+      ),
+      midheavenDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryComposites, 1),
+        blob.columnOffset(atSynastryComposites, 1) + atSynastryComposites.count * 8,
+      ),
+      lagnaTurned: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryComposites, 2),
+        blob.columnOffset(atSynastryComposites, 2) + atSynastryComposites.count * 1,
+      ),
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryComposites, 3),
+        blob.columnOffset(atSynastryComposites, 3) + atSynastryComposites.count * 4,
+      ),
+      length: atSynastryComposites.count,
+    ),
+    synastryCompositeRows: ChartsSynastryCompositeRows(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryCompositeRows, 0),
+        blob.columnOffset(atSynastryCompositeRows, 0) + atSynastryCompositeRows.count * 2,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryCompositeRows, 1),
+        blob.columnOffset(atSynastryCompositeRows, 1) + atSynastryCompositeRows.count * 8,
+      ),
+      speedDegPerDay: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryCompositeRows, 2),
+        blob.columnOffset(atSynastryCompositeRows, 2) + atSynastryCompositeRows.count * 8,
+      ),
+      length: atSynastryCompositeRows.count,
+    ),
+    synastryDavisons: ChartsSynastryDavisons(
+      instant: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryDavisons, 0),
+        blob.columnOffset(atSynastryDavisons, 0) + atSynastryDavisons.count * 8,
+      ),
+      latitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryDavisons, 1),
+        blob.columnOffset(atSynastryDavisons, 1) + atSynastryDavisons.count * 8,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryDavisons, 2),
+        blob.columnOffset(atSynastryDavisons, 2) + atSynastryDavisons.count * 8,
+      ),
+      altitudeM: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryDavisons, 3),
+        blob.columnOffset(atSynastryDavisons, 3) + atSynastryDavisons.count * 8,
+      ),
+      utcOffsetSeconds: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSynastryDavisons, 4),
+        blob.columnOffset(atSynastryDavisons, 4) + atSynastryDavisons.count * 4,
+      ),
+      length: atSynastryDavisons.count,
     ),
   );
 }

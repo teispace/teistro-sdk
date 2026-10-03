@@ -630,6 +630,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_antiscia_sections(91))
         .chain(chart_synastry_antiscia_sections(94))
         .chain(chart_midpoint_sections(96))
+        .chain(chart_composite_sections(98))
         .collect(),
     }
 }
@@ -1619,6 +1620,88 @@ fn chart_midpoint_sections(first: u32) -> [SectionSchema; 2] {
                     "How far it stands from the nearer point of the axis, degrees: half what its two distances differ by.",
                 ),
                 degrees("orb_deg", "The orb the record allowed, degrees."),
+            ],
+        ),
+    ]
+}
+
+/// The three sections a synastry's composites and Davison births cross
+/// as, from `first`: a composite a chart, its planets ragged under it, and
+/// a Davison birth a chart (`03-design/western-composites.md`).
+fn chart_composite_sections(first: u32) -> [SectionSchema; 3] {
+    let empty = |field: &str| format!("Empty when `synastry_json` asked for no `{field}`.");
+    let degrees = |name: &str, doc: &str| ColumnDef::new(name, Scalar::F64, doc);
+    [
+        SectionSchema::columns(
+            first,
+            "synastry_composites",
+            &format!(
+                "Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). {}",
+                empty("composite")
+            ),
+            vec![
+                degrees(
+                    "lagna_deg",
+                    "The composite lagna, degrees: the near midpoint of the two lagnas, turned by 180° when `lagna_turned` says.",
+                ),
+                degrees(
+                    "midheaven_deg",
+                    "The composite midheaven, degrees: the near midpoint of the two midheavens.",
+                ),
+                ColumnDef::new(
+                    "lagna_turned",
+                    Scalar::U8,
+                    "1 when the near midpoint of the two lagnas stood before the midheaven and was turned by 180° to stand after it, as a lagna does; 0 otherwise.",
+                ),
+                ColumnDef::new(
+                    "count",
+                    Scalar::U32,
+                    "How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "synastry_composite_rows",
+            &format!(
+                "Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). {}",
+                empty("composite")
+            ),
+            vec![
+                graha_column("graha", "The planet."),
+                degrees(
+                    "longitude_deg",
+                    "Its composite longitude, degrees, in the record's zodiac.",
+                ),
+                degrees(
+                    "speed_deg_per_day",
+                    "The mean of its two speeds, degrees a day; negative when retrograde.",
+                ),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 2,
+            "synastry_davisons",
+            &format!(
+                "Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. {}",
+                empty("davison")
+            ),
+            vec![
+                degrees(
+                    "instant",
+                    "The mean instant, a Julian day on the UTC scale.",
+                ),
+                degrees("latitude_deg", "The mean latitude, degrees north."),
+                degrees(
+                    "longitude_deg",
+                    "The mean longitude the shorter way round, degrees east.",
+                ),
+                degrees("altitude_m", "The mean altitude, metres."),
+                ColumnDef::new(
+                    "utc_offset_seconds",
+                    Scalar::I32,
+                    "The mean of the two clocks, seconds east of UTC: it names only the civil day.",
+                ),
             ],
         ),
     ]

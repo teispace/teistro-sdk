@@ -1693,10 +1693,15 @@ pub struct TsChartRequest {
     /// `parallels` (`{"orbDeg": 1}` as `parallels_json` spells it: the
     /// parallels across the two, none when left out) and `antiscia`
     /// (`{"orbs": {"model": "LEO"}}` as `antiscia_json` spells it: the antiscia
-    /// across the two, none when left out). Each chart is read against the
+    /// across the two, none when left out), `composite` (true: each chart's
+    /// composite with the partner, C247) and `davison` (true: each chart's
+    /// Davison birth with the partner, the chart's read on this request's
+    /// clock, C248). Each chart is read against the
     /// partner, the chart's point first. The answers come back in
-    /// `synastry`, `synastry_rows`, `synastry_parallel_rows` and
-    /// `synastry_antiscion_rows`. Null for none, which costs nothing
+    /// `synastry`, `synastry_rows`, `synastry_parallel_rows`,
+    /// `synastry_antiscion_rows`, `synastry_composites`,
+    /// `synastry_composite_rows` and `synastry_davisons`. Null for none,
+    /// which costs nothing
     /// (`03-design/western-synastry.md`). Refusals are
     /// named from the record every binding calls `synastry`, as
     /// `synastry.partner.place.latitude`.
@@ -3294,6 +3299,7 @@ struct AspectTables {
     declined: DeclinationColumns,
     reflected: AntisciaColumns,
     between: MidpointColumns,
+    davisons: DavisonColumns,
 }
 
 impl AspectTables {
@@ -3304,6 +3310,7 @@ impl AspectTables {
             declined: DeclinationColumns::of(composed.declinations, composed.parallels, charts)?,
             reflected: AntisciaColumns::of(composed.antiscia, charts)?,
             between: MidpointColumns::of(composed.midpoints, charts)?,
+            davisons: DavisonColumns::of(composed.davisons, charts)?,
         })
     }
 
@@ -3314,7 +3321,49 @@ impl AspectTables {
         self.across.write_parallels(writer)?;
         self.reflected.write(writer)?;
         self.across.write_antiscia(writer)?;
-        self.between.write(writer)
+        self.between.write(writer)?;
+        self.across.write_composites(writer)?;
+        self.davisons.write(writer)
+    }
+}
+
+/// `synastry_davisons`: each chart's Davison birth with the synastry's
+/// partner, when asked (`western-composites.md`, C248).
+#[derive(Default)]
+struct DavisonColumns {
+    instant: Vec<f64>,
+    latitude_deg: Vec<f64>,
+    longitude_deg: Vec<f64>,
+    altitude_m: Vec<f64>,
+    utc_offset_seconds: Vec<i32>,
+}
+
+impl DavisonColumns {
+    fn of(read: &[teistro::Partner], charts: usize) -> Result<DavisonColumns, Error> {
+        one_a_chart(read.len(), charts, "davisons")?;
+        let mut columns = DavisonColumns::default();
+        for birth in read {
+            columns.instant.push(birth.instant.get());
+            columns.latitude_deg.push(birth.place.latitude.get());
+            columns.longitude_deg.push(birth.place.longitude.get());
+            columns.altitude_m.push(birth.place.altitude.get());
+            columns.utc_offset_seconds.push(birth.utc_offset.seconds());
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_davisons",
+            self.instant.len(),
+            &[
+                ColumnData::F64(&self.instant),
+                ColumnData::F64(&self.latitude_deg),
+                ColumnData::F64(&self.longitude_deg),
+                ColumnData::F64(&self.altitude_m),
+                ColumnData::I32(&self.utc_offset_seconds),
+            ],
+        )
     }
 }
 
@@ -3633,6 +3682,13 @@ struct SynastryColumns {
     parallel_orb_deg: Vec<f64>,
     antiscion_count: Vec<u32>,
     antiscia: AntiscionRowColumns,
+    composite_lagna_deg: Vec<f64>,
+    composite_midheaven_deg: Vec<f64>,
+    composite_lagna_turned: Vec<u8>,
+    composite_count: Vec<u32>,
+    composite_graha: Vec<u16>,
+    composite_longitude_deg: Vec<f64>,
+    composite_speed_deg_per_day: Vec<f64>,
 }
 
 impl SynastryColumns {
@@ -3656,6 +3712,25 @@ impl SynastryColumns {
             }
             for row in one.antiscia.iter().flatten() {
                 columns.antiscia.push(row);
+            }
+            if let Some(composite) = &one.composite {
+                columns.composite_lagna_deg.push(composite.lagna_deg);
+                columns
+                    .composite_midheaven_deg
+                    .push(composite.midheaven_deg);
+                columns
+                    .composite_lagna_turned
+                    .push(u8::from(composite.lagna_turned));
+                columns
+                    .composite_count
+                    .push(row_count(composite.planets.len())?);
+                for at in &composite.planets {
+                    columns.composite_graha.push(at.graha.id());
+                    columns.composite_longitude_deg.push(at.longitude_deg);
+                    columns
+                        .composite_speed_deg_per_day
+                        .push(at.speed_deg_per_day);
+                }
             }
             for row in &one.aspects {
                 columns.first.push(row.first);
@@ -3730,6 +3805,33 @@ impl SynastryColumns {
             &[ColumnData::U32(&self.antiscion_count)],
         )?;
         self.antiscia.write(writer, "synastry_antiscion_rows")
+    }
+
+    /// `synastry_composites` and `synastry_composite_rows`, after the
+    /// equal distances.
+    fn write_composites(
+        &self,
+        writer: &mut Writer<'_>,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "synastry_composites",
+            self.composite_count.len(),
+            &[
+                ColumnData::F64(&self.composite_lagna_deg),
+                ColumnData::F64(&self.composite_midheaven_deg),
+                ColumnData::U8(&self.composite_lagna_turned),
+                ColumnData::U32(&self.composite_count),
+            ],
+        )?;
+        writer.columns(
+            "synastry_composite_rows",
+            self.composite_graha.len(),
+            &[
+                ColumnData::U16(&self.composite_graha),
+                ColumnData::F64(&self.composite_longitude_deg),
+                ColumnData::F64(&self.composite_speed_deg_per_day),
+            ],
+        )
     }
 }
 
@@ -6278,6 +6380,10 @@ pub struct Composed<'a> {
     /// Every chart's equal distances, in the batch's order
     /// (`western-midpoints.md`); empty when none were asked for.
     pub midpoints: &'a [Vec<teistro::MidpointRow>],
+    /// Every chart's Davison birth with the synastry's partner, in the
+    /// batch's order (`western-composites.md`); empty when none was asked
+    /// for.
+    pub davisons: &'a [teistro::Partner],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7260,15 +7366,18 @@ struct WesternTables {
     parallels: Vec<Vec<teistro::ParallelRow>>,
     antiscia: Vec<teistro::Antiscia>,
     midpoints: Vec<Vec<teistro::MidpointRow>>,
+    davisons: Vec<teistro::Partner>,
 }
 
 impl WesternTables {
     /// Every table `records` asks of `documents`; a refusal is named under
     /// its record's root, and one read chart by chart says which chart.
+    /// `clock` is the batch's, which a Davison birth reads the charts on.
     fn of(
         sdk: &teistro::Context,
         documents: &[Document],
         records: &AskedRecords,
+        clock: UtcOffset,
     ) -> Result<WesternTables, Error> {
         let each = |root: &'static str| {
             move |at: usize, error: Error| error.under(root).with_hint(format!("chart {at}"))
@@ -7322,6 +7431,14 @@ impl WesternTables {
                 "midpoints",
                 |document, asked| sdk.chart().midpoints(document, asked),
             )?,
+            davisons: records
+                .synastry
+                .as_ref()
+                .map(|asked| asked.davisons(documents, clock))
+                .transpose()
+                .map_err(|error| error.under("synastry"))?
+                .flatten()
+                .unwrap_or_default(),
         })
     }
 }
@@ -7981,7 +8098,7 @@ pub unsafe extern "C" fn ts_chart_found(
             records.progressions.as_ref(),
             &ChartRequest::at(place, clock).with_kind(kind),
         )?;
-        let western = WesternTables::of(ctx.sdk(), &founded.value, &records)?;
+        let western = WesternTables::of(ctx.sdk(), &founded.value, &records, clock)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -8012,6 +8129,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 parallels: &western.parallels,
                 antiscia: &western.antiscia,
                 midpoints: &western.midpoints,
+                davisons: &western.davisons,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

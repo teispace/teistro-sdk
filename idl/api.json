@@ -11970,7 +11970,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out) and `antiscia`\n(`{\"orbs\": {\"model\": \"LEO\"}}` as `antiscia_json` spells it: the antiscia\nacross the two, none when left out). Each chart is read against the\npartner, the chart's point first. The answers come back in\n`synastry`, `synastry_rows`, `synastry_parallel_rows` and\n`synastry_antiscion_rows`. Null for none, which costs nothing\n(`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
+          "doc": "Every chart's synastry with one partner, as a JSON object:\n`partner`, the second birth, `{\"instant\": jd, \"place\": {\"latitude\",\n\"longitude\", \"altitude\"}, \"utcOffsetSeconds\"}`, founded once under\nthe context's settings with the outer planets when\n`TS_CHART_OUTER` placed them; and beside it, every field optional,\n`aspects` and `orbs` as `western_aspects_json` spells them, `lagna`\n(true: each side's lagna is read beside its planets, C242),\n`zodiac` (`\"TROPICAL\"`, the default, or `\"CHARTS\"`, C241) and\n`parallels` (`{\"orbDeg\": 1}` as `parallels_json` spells it: the\nparallels across the two, none when left out) and `antiscia`\n(`{\"orbs\": {\"model\": \"LEO\"}}` as `antiscia_json` spells it: the antiscia\nacross the two, none when left out), `composite` (true: each chart's\ncomposite with the partner, C247) and `davison` (true: each chart's\nDavison birth with the partner, the chart's read on this request's\nclock, C248). Each chart is read against the\npartner, the chart's point first. The answers come back in\n`synastry`, `synastry_rows`, `synastry_parallel_rows`,\n`synastry_antiscion_rows`, `synastry_composites`,\n`synastry_composite_rows` and `synastry_davisons`. Null for none,\nwhich costs nothing\n(`03-design/western-synastry.md`). Refusals are\nnamed from the record every binding calls `synastry`, as\n`synastry.partner.place.latitude`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2403113.4993,\"place\":{\"latitude\":51.5058,\"longitude\":-0.1878,\"altitude\":0}}}",
             "nullable": true
@@ -19753,6 +19753,91 @@
               "name": "orb_deg",
               "scalar": "f64",
               "doc": "The orb the record allowed, degrees."
+            }
+          ]
+        },
+        {
+          "id": 98,
+          "name": "synastry_composites",
+          "doc": "Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lagna_deg",
+              "scalar": "f64",
+              "doc": "The composite lagna, degrees: the near midpoint of the two lagnas, turned by 180° when `lagna_turned` says."
+            },
+            {
+              "name": "midheaven_deg",
+              "scalar": "f64",
+              "doc": "The composite midheaven, degrees: the near midpoint of the two midheavens."
+            },
+            {
+              "name": "lagna_turned",
+              "scalar": "u8",
+              "doc": "1 when the near midpoint of the two lagnas stood before the midheaven and was turned by 180° to stand after it, as a lagna does; 0 otherwise."
+            },
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "How many planets the composite places; the chart's rows follow the earlier charts' in `synastry_composite_rows`."
+            }
+          ]
+        },
+        {
+          "id": 99,
+          "name": "synastry_composite_rows",
+          "doc": "Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The planet.",
+              "enum": "Graha"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Its composite longitude, degrees, in the record's zodiac."
+            },
+            {
+              "name": "speed_deg_per_day",
+              "scalar": "f64",
+              "doc": "The mean of its two speeds, degrees a day; negative when retrograde."
+            }
+          ]
+        },
+        {
+          "id": 100,
+          "name": "synastry_davisons",
+          "doc": "Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "The mean instant, a Julian day on the UTC scale."
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "The mean latitude, degrees north."
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "The mean longitude the shorter way round, degrees east."
+            },
+            {
+              "name": "altitude_m",
+              "scalar": "f64",
+              "doc": "The mean altitude, metres."
+            },
+            {
+              "name": "utc_offset_seconds",
+              "scalar": "i32",
+              "doc": "The mean of the two clocks, seconds east of UTC: it names only the civil day."
             }
           ]
         }
