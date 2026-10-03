@@ -414,6 +414,28 @@ impl AspectRequest {
     }
 }
 
+/// A planet at a longitude, as the readings that need no motion take it:
+/// the antiscia (its tropical longitude) and the equal distances.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanetAt {
+    /// Which planet.
+    pub graha: Graha,
+    /// Its longitude, degrees.
+    pub longitude_deg: f64,
+}
+
+impl PlanetAt {
+    /// A planet at a longitude.
+    #[must_use]
+    pub const fn new(graha: Graha, longitude_deg: f64) -> PlanetAt {
+        PlanetAt {
+            graha,
+            longitude_deg,
+        }
+    }
+}
+
 /// A body as the table reads it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
