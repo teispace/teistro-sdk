@@ -1922,6 +1922,20 @@ the astronomical numbers do not move. Nothing else computes yet.
       and on the 21st by either year;
     - his November 10th for noon;
     - his Naibod example, and his table to the day and the hour.
+  - **Progressed charts and directions through the façade**
+    (`western-progressions.md` step 3). `ChartArea::progressed` founds
+    the chart at the instant of sky a `ProgressionRequest` matches to an
+    instant of life, and answers it with the angles turned by an
+    `AngleMethod`: the mean Sun in right ascension (Leo's own map, the
+    default), the mean Sun or the solar arc along the ecliptic, the solar
+    arc in right ascension, or the quotidian chart's own.
+    `ChartArea::directed` moves every planet and both angles of a birth by
+    one `DirectionArc`, the Sun's (signed, so a converse arc is negative)
+    or an `ArcMeasure`'s. On the built-in ephemeris Leo's Mercury and both
+    noon Moons agree to the minute, his contact's 135° to two minutes, and
+    his progressed map's 5h 54m 16s to two seconds. `teistro-astro`'s
+    `Obliquity::new` is now public, so `circle_point` can be called from
+    outside the crate.
 
   **Numbers:** none moved; everything here is new. The pass finds the
   Tajika decanate lord equal to Lilly's face on all 36 decans. Over the

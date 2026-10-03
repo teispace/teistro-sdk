@@ -1574,6 +1574,7 @@ dependencies = [
  "teistro-tajika",
  "teistro-time",
  "teistro-vargas",
+ "teistro-western",
 ]
 
 [[package]]
@@ -2133,6 +2134,7 @@ dependencies = [
 name = "teistro-western"
 version = "0.0.0"
 dependencies = [
+ "teistro-astro",
  "teistro-core",
 ]
 
