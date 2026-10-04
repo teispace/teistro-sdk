@@ -4805,6 +4805,50 @@ List<Porutham> _decodePoruthams(Charts batch) {
   ]);
 }
 
+final Expando<List<Kuja>> _kujas = Expando<List<Kuja>>('kujas');
+
+List<Kuja> _kujasOf(Charts batch) => _kujas[batch] ??= _decodeKujas(batch);
+
+/// `kujas` holds a row a chart, or none when none was asked
+/// (`03-design/matching.md`).
+List<Kuja> _decodeKujas(Charts batch) {
+  final k = batch.kujas;
+  KujaSide side(
+    List<Uint8List> house,
+    List<Uint8List> inHouses,
+    Uint8List dosha,
+    int at,
+  ) => KujaSide(
+    readings: List.unmodifiable([
+      for (final (n, from) in KujaReference.values.indexed)
+        KujaReading(
+          from: from,
+          house: house[n][at],
+          inHouses: inHouses[n][at] == 1,
+        ),
+    ]),
+    dosha: dosha[at] == 1,
+  );
+  return List.unmodifiable([
+    for (var at = 0; at < k.both.length; at++)
+      Kuja(
+        bride: side(
+          [k.brideLagnaHouse, k.brideMoonHouse, k.brideVenusHouse],
+          [k.brideLagnaInHouses, k.brideMoonInHouses, k.brideVenusInHouses],
+          k.brideDosha,
+          at,
+        ),
+        groom: side(
+          [k.groomLagnaHouse, k.groomMoonHouse, k.groomVenusHouse],
+          [k.groomLagnaInHouses, k.groomMoonInHouses, k.groomVenusInHouses],
+          k.groomDosha,
+          at,
+        ),
+        both: k.both[at] == 1,
+      ),
+  ]);
+}
+
 final Expando<List<HarmonicChart>> _harmonics = Expando<List<HarmonicChart>>(
   'harmonics',
 );
@@ -7418,11 +7462,131 @@ final class PoruthamRules {
   };
 }
 
+/// Which houses of Mars make the Kuja dosha (C285).
+enum KujaHouses {
+  /// The 1st, 4th, 7th, 8th and 12th (*Manasagari*, jāyābhāva v. 4); the
+  /// default.
+  manasagari('MANASAGARI'),
+
+  /// The same with the 2nd, as modern practice has it (rank 3).
+  withSecond('WITH_SECOND');
+
+  const KujaHouses(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// From where Mars's house makes the Kuja dosha (C286).
+enum KujaFrom {
+  /// The lagna alone, as the verse counts; the default.
+  lagna('LAGNA'),
+
+  /// The lagna, the Moon or Venus, as modern practice counts (rank 3).
+  lagnaMoonVenus('LAGNA_MOON_VENUS');
+
+  const KujaFrom(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The readings the Kuja dosha is computed under; each default is the
+/// verse's own (`03-design/matching.md`).
+///
+/// ```dart
+/// const everywhere = KujaRules(from: KujaFrom.lagnaMoonVenus);
+/// ```
+final class KujaRules {
+  const KujaRules({
+    this.houses = KujaHouses.manasagari,
+    this.from = KujaFrom.lagna,
+  });
+
+  final KujaHouses houses;
+  final KujaFrom from;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'houses': houses.key,
+    'from': from.key,
+  };
+}
+
+/// A place Mars's house is counted from.
+enum KujaReference {
+  /// The lagna.
+  lagna('LAGNA'),
+
+  /// The Moon.
+  moon('MOON'),
+
+  /// Venus.
+  venus('VENUS');
+
+  const KujaReference(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// Mars's house from one reference.
+final class KujaReading extends _Value {
+  const KujaReading({
+    required this.from,
+    required this.house,
+    required this.inHouses,
+  });
+
+  /// The place the house is counted from.
+  final KujaReference from;
+
+  /// Mars's house from it by sign, 1 to 12 (C287).
+  final int house;
+
+  /// Whether the house is one of the rules' houses; it makes the dosha
+  /// only from a reference the rules count.
+  final bool inHouses;
+
+  @override
+  List<Object?> get _fields => [from, house, inHouses];
+}
+
+/// One native's Kuja dosha.
+final class KujaSide extends _Value {
+  const KujaSide({required this.readings, required this.dosha});
+
+  /// Mars's house from the lagna, the Moon and Venus, whatever the rules
+  /// count.
+  final List<KujaReading> readings;
+
+  /// Whether Mars stands in one of the rules' houses from a reference the
+  /// rules count.
+  final bool dosha;
+
+  @override
+  List<Object?> get _fields => [...readings, dosha];
+}
+
+/// The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4),
+/// as clauses: nothing is lifted (C288).
+final class Kuja extends _Value {
+  const Kuja({required this.bride, required this.groom, required this.both});
+
+  final KujaSide bride;
+  final KujaSide groom;
+
+  /// Whether both carry it, the fact the popular cancellation reads.
+  final bool both;
+
+  @override
+  List<Object?> get _fields => [bride, groom, both];
+}
+
 /// A match with a partner's birth (`03-design/matching.md`): the
 /// [partner], founded once for the whole batch under the context's
 /// sidereal profile; [partnerRole], the side the partner stands on, every
-/// chart standing on the other; the Ashta Koota's [rules]; and the ten
-/// considerations' [porutham] rules.
+/// chart standing on the other; the Ashta Koota's [rules]; the ten
+/// considerations' [porutham] rules; and the Kuja dosha's [kuja] rules.
 ///
 /// ```dart
 /// final asked = MatchingRequest(
@@ -7436,6 +7600,7 @@ final class MatchingRequest {
     required this.partnerRole,
     this.rules = const KootaRules(),
     this.porutham = const PoruthamRules(),
+    this.kuja = const KujaRules(),
   });
 
   /// Whose birth every chart is matched with.
@@ -7450,11 +7615,15 @@ final class MatchingRequest {
   /// The readings the ten considerations are computed under.
   final PoruthamRules porutham;
 
+  /// The readings the Kuja dosha is computed under.
+  final KujaRules kuja;
+
   Map<String, Object?> get _record => <String, Object?>{
     'partner': partner._record,
     'partnerRole': partnerRole.key,
     'rules': rules._record,
     'porutham': porutham._record,
+    'kuja': kuja._record,
   };
 
   String get _json => jsonEncode(_record);
@@ -14808,6 +14977,16 @@ final class Chart {
   /// (`03-design/matching.md`).
   Porutham? get porutham {
     final all = _poruthamsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's Kuja dosha beside the same partner's (*Manasagari*,
+  /// jāyābhāva v. 4; `matching` asks for it with both systems): Mars's house
+  /// by sign from the lagna, the Moon and Venus on each side, whether each
+  /// side carries the dosha under the rules and whether both do. Nothing is
+  /// lifted; null unless asked (`03-design/matching.md`).
+  Kuja? get kuja {
+    final all = _kujasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

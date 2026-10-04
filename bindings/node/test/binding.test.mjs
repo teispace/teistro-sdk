@@ -2649,6 +2649,23 @@ test('a chart carries its match with a partner', () => {
   assert.equal(ten.agreeing, ten.considerations.filter((row) => row.agrees).length);
   assert.equal(ctx.chart.found({ instant: birth, ...kathmandu }).porutham, null);
 
+  // The Kuja dosha rides on it too (Manasagari): one birth on both sides
+  // reads Mars alike, so both carry it or neither does.
+  const kuja = { from: 'LAGNA_MOON_VENUS' };
+  const mars = ctx.chart.found({ instant: birth, ...kathmandu, matching: { partner, partnerRole: 'BRIDE', kuja } }).kuja;
+  assert.ok(Object.isFrozen(mars) && Object.isFrozen(mars.bride.readings[0]), 'frozen to its leaves');
+  assert.deepEqual(mars.bride, mars.groom);
+  assert.deepEqual(
+    mars.bride.readings.map((reading) => reading.from),
+    ['LAGNA', 'MOON', 'VENUS'],
+  );
+  for (const reading of mars.bride.readings) {
+    assert.equal(reading.inHouses, [1, 4, 7, 8, 12].includes(reading.house));
+  }
+  assert.equal(mars.bride.dosha, mars.bride.readings.some((reading) => reading.inHouses));
+  assert.equal(mars.both, mars.bride.dosha);
+  assert.equal(ctx.chart.found({ instant: birth, ...kathmandu }).kuja, null);
+
   // A batch reads each chart as alone; the sides swap Varna and Gana's
   // reading; a refusal is named by its field.
   const instants = [birth, birth + 9.5, birth + 17.25];
@@ -2659,6 +2676,7 @@ test('a chart carries its match with a partner', () => {
     const alone = one.matching;
     assert.deepEqual(batch.at(k).matching, alone);
     assert.deepEqual(batch.at(k).porutham, one.porutham);
+    assert.deepEqual(batch.at(k).kuja, one.kuja);
     const swapped = ctx.chart.found({ instant, ...kathmandu, matching: { ...matching, partnerRole: 'BRIDE' } }).matching;
     const varna = (one) => one.kootas[0].reading;
     assert.deepEqual([varna(swapped).bride, varna(swapped).groom], [varna(alone).groom, varna(alone).bride]);
@@ -2667,6 +2685,7 @@ test('a chart carries its match with a partner', () => {
     [{ ...matching, partnerRole: 'UNCLE' }, 'matching.partnerRole'],
     [{ ...matching, rules: { nadi: 'ANY' } }, 'matching.rules.nadi'],
     [{ ...matching, porutham: { deergha: 'SEVENTH' } }, 'matching.porutham.deergha'],
+    [{ ...matching, kuja: { house: 'WITH_SECOND' } }, 'matching.kuja.house'],
     [{ partner: matching.partner }, 'matching'],
   ]) {
     assert.throws(

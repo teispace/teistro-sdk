@@ -3305,6 +3305,26 @@ void _engineTests() {
     expect(ten.agreeing, ten.considerations.where((row) => row.agrees).length);
     expect(found(birth).porutham, isNull);
 
+    // The Kuja dosha rides on it too (Manasagari): one birth on both sides
+    // reads Mars alike, so both carry it or neither does.
+    final mars =
+        found(
+          birth,
+          asked: MatchingRequest(
+            Partner(instant: birth, place: kathmandu, utcOffsetSeconds: 20700),
+            partnerRole: MatchRole.bride,
+            kuja: const KujaRules(from: KujaFrom.lagnaMoonVenus),
+          ),
+        ).kuja!;
+    expect(mars.bride, mars.groom);
+    expect([for (final r in mars.bride.readings) r.from], KujaReference.values);
+    for (final reading in mars.bride.readings) {
+      expect(reading.inHouses, [1, 4, 7, 8, 12].contains(reading.house));
+    }
+    expect(mars.bride.dosha, mars.bride.readings.any((r) => r.inHouses));
+    expect(mars.both, mars.bride.dosha);
+    expect(found(birth).kuja, isNull);
+
     final asked = MatchingRequest(
       Partner(instant: 2447892.5, place: kathmandu, utcOffsetSeconds: 20700),
       partnerRole: MatchRole.groom,
@@ -3322,6 +3342,7 @@ void _engineTests() {
       final alone = one.matching!;
       expect(batch.at(k).matching, alone);
       expect(batch.at(k).porutham, one.porutham);
+      expect(batch.at(k).kuja, one.kuja);
       final swapped =
           found(
             instant,

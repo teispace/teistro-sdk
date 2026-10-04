@@ -674,6 +674,10 @@ void main() {
       partnerRole: MatchRole.bride,
       rules: const KootaRules(bhakootLift: BhakootLift.garga),
       porutham: const PoruthamRules(lordsFriendship: LordsFriendship.oneWay),
+      kuja: const KujaRules(
+        houses: KujaHouses.withSecond,
+        from: KujaFrom.lagnaMoonVenus,
+      ),
     ),
     synastry: SynastryRequest(
       Partner(
@@ -1443,6 +1447,15 @@ void main() {
             '${poruthamText(row.reading)}',
       );
     }
+    final mars = chart.kuja!;
+    for (final (who, side) in [('bride', mars.bride), ('groom', mars.groom)]) {
+      final readings = [
+        for (final r in side.readings)
+          '${r.from.key} ${r.house} ${flag(r.inHouses)}',
+      ];
+      put('chart-$i-kuja-$who', '${readings.join(' ')} ${flag(side.dosha)}');
+    }
+    put('chart-$i-kuja', '${flag(mars.both)}');
     final fifth = chart.harmonic!;
     String pointKey(HarmonicPoint point) => switch (point) {
       HarmonicGraha(:final graha) => graha.fullKey,

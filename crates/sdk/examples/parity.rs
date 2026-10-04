@@ -2220,7 +2220,7 @@ fn the_partners(
     the_matching(report, sdk, documents);
 }
 
-const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"partnerRole":"BRIDE","rules":{"bhakootLift":"GARGA"},"porutham":{"lordsFriendship":"ONE_WAY"}}"#;
+const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"partnerRole":"BRIDE","rules":{"bhakootLift":"GARGA"},"porutham":{"lordsFriendship":"ONE_WAY"},"kuja":{"houses":"WITH_SECOND","from":"LAGNA_MOON_VENUS"}}"#;
 
 /// Every chart's match as the other three print it: the total, then each
 /// koota by its full key with its points, its most and what it read, the
@@ -2322,7 +2322,38 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
             );
         }
         the_porutham(report, index, &both.porutham);
+        the_kuja(report, index, &both.kuja);
     }
+}
+
+/// A chart's Kuja dosha as the other three print it: each side's three
+/// readings, by reference, house and whether it is one of the rules', then
+/// its dosha; and whether both carry it.
+fn the_kuja(report: &mut Report, index: usize, mars: &teistro::Kuja) {
+    for (who, side) in [("bride", &mars.bride), ("groom", &mars.groom)] {
+        let readings: Vec<String> = side
+            .readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} {} {}",
+                    wire_key(&reading.from),
+                    reading.house,
+                    u8::from(reading.in_houses)
+                )
+            })
+            .collect();
+        put(
+            report,
+            &format!("chart-{index}-kuja-{who}"),
+            format!("{} {}", readings.join(" "), u8::from(side.dosha)),
+        );
+    }
+    put(
+        report,
+        &format!("chart-{index}-kuja"),
+        u8::from(mars.both).to_string(),
+    );
 }
 
 /// A chart's ten considerations as the other three print them: the counts

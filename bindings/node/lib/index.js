@@ -1351,6 +1351,19 @@ export class Chart {
   }
 
   /**
+   * The chart's Kuja dosha beside the same partner's (*Manasagari*,
+   * jāyābhāva v. 4; `matching` asks for it with both systems): Mars's house
+   * by sign from the lagna, the Moon and Venus on each side, whether each
+   * side carries the dosha under the rules and whether both do. Nothing is
+   * lifted; `null` unless asked (`03-design/matching.md`).
+   *
+   * @returns {object|null}
+   */
+  get kuja() {
+    return kujasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
@@ -4091,6 +4104,44 @@ function matchingsOf(batch) {
 
 /** Each batch's ten considerations, decoded once however many charts read them. */
 const PORUTHAMS = new WeakMap();
+const KUJAS = new WeakMap();
+
+/** The three places Mars's house is counted from, in the order every answer reports them, with their columns' stem. */
+const KUJA_REFERENCES = Object.freeze([
+  ['LAGNA', 'Lagna'],
+  ['MOON', 'Moon'],
+  ['VENUS', 'Venus'],
+]);
+
+/**
+ * Each chart's Kuja dosha, decoded once per batch from `kujas`.
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function kujasOf(batch) {
+  let decoded = KUJAS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const k = batch.decoded.kujas;
+  const side = (who, at) =>
+    Object.freeze({
+      readings: Object.freeze(
+        KUJA_REFERENCES.map(([from, stem]) =>
+          Object.freeze({
+            from,
+            house: k[`${who}${stem}House`][at],
+            inHouses: k[`${who}${stem}InHouses`][at] === 1,
+          }),
+        ),
+      ),
+      dosha: k[`${who}Dosha`][at] === 1,
+    });
+  decoded = rowAChartOf(batch, k.both.length, 'kujas', (at) =>
+    Object.freeze({ bride: side('bride', at), groom: side('groom', at), both: k.both[at] === 1 }),
+  );
+  KUJAS.set(batch, decoded);
+  return decoded;
+}
 
 /**
  * Every chart's ten considerations with the record's partner in a batch:

@@ -671,6 +671,7 @@ def main() -> None:
                 "partnerRole": "BRIDE",
                 "rules": {"bhakootLift": "GARGA"},
                 "porutham": {"lordsFriendship": "ONE_WAY"},
+                "kuja": {"houses": "WITH_SECOND", "from": "LAGNA_MOON_VENUS"},
             },
             synastry={
                 "partner": {
@@ -1312,6 +1313,12 @@ def main() -> None:
                     f"chart-{i}-porutham-{consideration.reading.koota.full_key}",
                     f"{int(consideration.agrees)} {int(consideration.lifted)} {porutham_text(consideration.reading)}",
                 )
+            mars = chart.kuja
+            assert mars is not None
+            for who, side in (("bride", mars.bride), ("groom", mars.groom)):
+                readings = " ".join(f"{r.reference} {r.house} {int(r.in_houses)}" for r in side.readings)
+                put(f"chart-{i}-kuja-{who}", f"{readings} {int(side.dosha)}")
+            put(f"chart-{i}-kuja", str(int(mars.both)))
             fifth = chart.harmonic
             assert fifth is not None
             put(f"chart-{i}-harmonic", f"{fifth.harmonic} {len(fifth.points)} {len(fifth.rows)}")
