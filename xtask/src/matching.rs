@@ -1,6 +1,7 @@
 //! The Ashta Koota, measured (`matching.md`): every pair of the 108 padas,
 //! a bride's Moon in one and a groom's in another, read under the verse's
-//! rules and under each knob's alternative.
+//! rules and under each knob's alternative; and the Kuja dosha over every
+//! placement of the four signs it reads.
 //!
 //! A pada fixes everything a koota reads: the nakshatra, the sign and the
 //! navamsha. So 108 × 108 pairs are every pair of Moons the kootas can
@@ -15,9 +16,11 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::catalogue::Koota;
+use teistro::catalogue::Rashi;
 use teistro::matching::{
     ASHTA_KOOTA, ASHTA_KOOTA_POINTS, AshtaKoota, BhakootDosha, BhakootLift, DevaBride, EqualVarna,
-    KootaReading, KootaRules, MaitriRelation, NadiDosha, Native, ashta_koota,
+    KootaReading, KootaRules, KujaFrom, KujaHouses, KujaNative, KujaRules, MaitriRelation,
+    NadiDosha, Native, ashta_koota, kuja_side,
 };
 
 use crate::generated::{Output, check, write};
@@ -376,6 +379,67 @@ fn knobs(natives: &[Native], read: &[Pair]) -> String {
     out
 }
 
+/// How many natives carry the Kuja dosha under each reading, over every
+/// placement of the four signs it reads, and how many pairs of them carry
+/// it on both sides.
+fn kuja_table() -> String {
+    let natives: Vec<KujaNative> = Rashi::ALL
+        .iter()
+        .flat_map(|&lagna| {
+            Rashi::ALL.iter().flat_map(move |&moon| {
+                Rashi::ALL.iter().flat_map(move |&venus| {
+                    Rashi::ALL.iter().map(move |&mars| KujaNative {
+                        lagna,
+                        moon,
+                        venus,
+                        mars,
+                    })
+                })
+            })
+        })
+        .collect();
+    let mut out = String::from(
+        "| reading | natives | with the dosha | share | pairs with both |\n|---|---|---|---|---|\n",
+    );
+    for (label, houses, from) in [
+        (
+            "the verse's five from the lagna, the default",
+            KujaHouses::Manasagari,
+            KujaFrom::Lagna,
+        ),
+        (
+            "six with the 2nd from the lagna",
+            KujaHouses::WithSecond,
+            KujaFrom::Lagna,
+        ),
+        (
+            "the verse's five from the lagna, the Moon or Venus",
+            KujaHouses::Manasagari,
+            KujaFrom::LagnaMoonVenus,
+        ),
+        (
+            "six with the 2nd from the lagna, the Moon or Venus",
+            KujaHouses::WithSecond,
+            KujaFrom::LagnaMoonVenus,
+        ),
+    ] {
+        let rules = KujaRules { houses, from };
+        let held = natives
+            .iter()
+            .filter(|&&native| kuja_side(native, rules).dosha)
+            .count();
+        let _ = writeln!(
+            out,
+            "| {label} | {} | {} | {} | {} |",
+            count(natives.len()),
+            count(held),
+            share(held, natives.len()),
+            share(held * held, natives.len() * natives.len()),
+        );
+    }
+    out
+}
+
 fn page() -> Result<String, String> {
     let natives = natives()?;
     let read = pairs(&natives, KootaRules::default());
@@ -438,6 +502,16 @@ fn page() -> Result<String, String> {
          those two knobs can change what is said without moving a total.\n\n",
     );
     out.push_str(&knobs(&natives, &read));
+    out.push_str(
+        "\n## The Kuja dosha\n\n\
+         Mars's house is read by sign from the lagna, the Moon and Venus, so \
+         every placement of those four signs is every native the Kuja dosha \
+         can tell apart. How many carry it under each reading, and how many \
+         of the pairs of two such natives carry it on both sides, the fact \
+         the popular cancellation reads (C285, C286, C288). The placements \
+         are counted alike, though Venus never stands far from the Sun.\n\n",
+    );
+    out.push_str(&kuja_table());
     Ok(fill(&out))
 }
 
