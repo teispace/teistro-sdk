@@ -226,6 +226,22 @@ apply to those facts (C288).
 of each founded chart, so a chart without the lagna is refused by the
 role it stands in.
 
+## The marriage doshas, decided
+
+**One list, nothing new in it** (C289). The list gathers what the
+three readings already report: the Ashta Koota's Bhakoot dosha, the
+shared nadi, a Rakshasa beside another gana and the lords' enmity, the
+four VI.32–36 name and lift; each of the ten considerations that
+disagrees, or agrees only by the p. 76 exception; and each side's Kuja
+dosha. An entry names its system, its catalogue koota (none for the
+Kuja dosha, which is no koota), its side for the Kuja dosha, and
+whether it is lifted. The order is the answers' own: the verse's, then
+the chapter's, then the bride's side before the groom's.
+
+**No severity** (C290). No text read grades a marriage dosha, so the
+list carries none; the baseline engine's 0 to 100 is its own. A
+consumer that ranks doshas does so over the entries' stated facts.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
