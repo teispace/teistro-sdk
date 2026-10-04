@@ -1775,20 +1775,23 @@ pub struct TsChartRequest {
     /// `api: nullable example={"number":9}`
     pub harmonic_json: *const c_char,
     /// Every chart matched with one partner's birth by the Ashta Koota of
-    /// *Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON
-    /// object: `partner`,
+    /// *Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja
+    /// dosha, as a JSON object: `partner`,
     /// `{"instant": jd, "place": {"latitude", "longitude", "altitude"},
     /// "utcOffsetSeconds"}`, founded once under the context's sidereal
     /// profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing
     /// on the other side; and `rules`, every field optional: `equalVarna`
     /// (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),
     /// `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or
-    /// `MIDDLE_ONLY`); and `porutham`, the ten considerations of
+    /// `MIDDLE_ONLY`); `porutham`, the ten considerations of
     /// *Kalaprakasika* XIII, every field optional: `twoSignStar`
     /// (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
     /// (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or
-    /// `ONE_WAY`). The answers come back in `matchings`,
-    /// `matching_kootas`, `poruthams` and `porutham_rows`. Null for none,
+    /// `ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field
+    /// optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
+    /// (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in
+    /// `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and
+    /// `kujas`. Null for none,
     /// which costs nothing
     /// (`03-design/matching.md`). Refusals are named from the record every
     /// binding calls `matching`, as `matching.partnerRole`.
@@ -3523,6 +3526,68 @@ impl PoruthamColumns {
     }
 }
 
+/// One side's cells of the `kujas` section.
+#[derive(Default)]
+struct KujaSideColumns {
+    house: [Vec<u8>; 3],
+    in_houses: [Vec<u8>; 3],
+    dosha: Vec<u8>,
+}
+
+impl KujaSideColumns {
+    fn push(&mut self, side: &teistro::matching::KujaSide) {
+        for ((house, in_houses), reading) in self
+            .house
+            .iter_mut()
+            .zip(&mut self.in_houses)
+            .zip(&side.readings)
+        {
+            house.push(reading.house);
+            in_houses.push(u8::from(reading.in_houses));
+        }
+        self.dosha.push(u8::from(side.dosha));
+    }
+
+    fn cells(&self) -> impl Iterator<Item = ColumnData<'_>> {
+        self.house
+            .iter()
+            .chain(&self.in_houses)
+            .chain(std::iter::once(&self.dosha))
+            .map(|cells| ColumnData::U8(cells))
+    }
+}
+
+/// `kujas`: each chart's Kuja dosha beside its partner's
+/// (`matching.md`).
+#[derive(Default)]
+struct KujaColumns {
+    bride: KujaSideColumns,
+    groom: KujaSideColumns,
+    both: Vec<u8>,
+}
+
+impl KujaColumns {
+    fn of(read: &[teistro::Matched]) -> KujaColumns {
+        let mut columns = KujaColumns::default();
+        for one in read.iter().map(|matched| &matched.kuja) {
+            columns.bride.push(&one.bride);
+            columns.groom.push(&one.groom);
+            columns.both.push(u8::from(one.both));
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let cells: Vec<ColumnData<'_>> = self
+            .bride
+            .cells()
+            .chain(self.groom.cells())
+            .chain(std::iter::once(ColumnData::U8(&self.both)))
+            .collect();
+        writer.columns("kujas", self.both.len(), &cells)
+    }
+}
+
 fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
     if read == 0 || read == charts {
         Ok(())
@@ -3713,6 +3778,7 @@ struct AspectTables {
     harmonics: HarmonicColumns,
     matchings: MatchingColumns,
     poruthams: PoruthamColumns,
+    kujas: KujaColumns,
 }
 
 impl AspectTables {
@@ -3728,6 +3794,7 @@ impl AspectTables {
             harmonics: HarmonicColumns::of(composed.harmonics, charts)?,
             matchings: MatchingColumns::of(composed.matchings, charts)?,
             poruthams: PoruthamColumns::of(composed.matchings)?,
+            kujas: KujaColumns::of(composed.matchings),
         })
     }
 
@@ -3747,7 +3814,8 @@ impl AspectTables {
         self.reflected.write_cusps(writer)?;
         self.harmonics.write(writer)?;
         self.matchings.write(writer)?;
-        self.poruthams.write(writer)
+        self.poruthams.write(writer)?;
+        self.kujas.write(writer)
     }
 }
 

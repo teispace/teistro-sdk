@@ -2214,7 +2214,7 @@ fn porutham_columns() -> Vec<ColumnDef> {
 /// verse's order), a row a chart with what each of the ten considerations
 /// read, and whether each agrees (ten rows a chart in the chapter's order)
 /// (`03-design/matching.md`).
-fn chart_matching_sections(first: u32) -> [SectionSchema; 4] {
+fn chart_matching_sections(first: u32) -> [SectionSchema; 5] {
     let empty = "Empty when `matching_json` asked for none.";
     [
         SectionSchema::columns(
@@ -2270,7 +2270,55 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 4] {
                 ),
             ],
         ),
+        SectionSchema::columns(
+            first + 4,
+            "kujas",
+            &format!(
+                "Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). {empty}"
+            ),
+            kuja_columns(),
+        ),
     ]
+}
+
+/// The `kujas` section's columns: the bride's side, the groom's, and
+/// whether both carry the dosha (`03-design/matching.md`).
+fn kuja_columns() -> Vec<ColumnDef> {
+    let side = |who: &str, whose: &str| {
+        let mut columns: Vec<ColumnDef> = ["lagna", "moon", "venus"]
+            .iter()
+            .map(|from| {
+                ColumnDef::new(
+                    &format!("{who}_{from}_house"),
+                    Scalar::U8,
+                    &format!("Mars's house by sign from {whose} {from}, 1 to 12 (C287)."),
+                )
+            })
+            .collect();
+        columns.extend(["lagna", "moon", "venus"].iter().map(|from| {
+            ColumnDef::new(
+                &format!("{who}_{from}_in_houses"),
+                Scalar::U8,
+                &format!(
+                    "1 when that house from {whose} {from} is one of the rules' houses (C285)."
+                ),
+            )
+        }));
+        columns.push(ColumnDef::new(
+            &format!("{who}_dosha"),
+            Scalar::U8,
+            &format!("1 when {whose} Mars stands in one of the rules' houses from a reference the rules count (C286)."),
+        ));
+        columns
+    };
+    let mut columns = side("bride", "the bride's");
+    columns.extend(side("groom", "the groom's"));
+    columns.push(ColumnDef::new(
+        "both",
+        Scalar::U8,
+        "1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).",
+    ));
+    columns
 }
 
 /// The three sections the declinations and the parallels cross as, from

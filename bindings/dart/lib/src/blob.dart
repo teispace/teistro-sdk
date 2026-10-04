@@ -4786,6 +4786,79 @@ final class ChartsPoruthamRows {
   final int length;
 }
 
+/// The `kujas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+final class ChartsKujas {
+  const ChartsKujas({
+    required this.brideLagnaHouse,
+    required this.brideMoonHouse,
+    required this.brideVenusHouse,
+    required this.brideLagnaInHouses,
+    required this.brideMoonInHouses,
+    required this.brideVenusInHouses,
+    required this.brideDosha,
+    required this.groomLagnaHouse,
+    required this.groomMoonHouse,
+    required this.groomVenusHouse,
+    required this.groomLagnaInHouses,
+    required this.groomMoonInHouses,
+    required this.groomVenusInHouses,
+    required this.groomDosha,
+    required this.both,
+    required this.length,
+  });
+
+  /// Mars's house by sign from the bride's lagna, 1 to 12 (C287).
+  final Uint8List brideLagnaHouse;
+
+  /// Mars's house by sign from the bride's moon, 1 to 12 (C287).
+  final Uint8List brideMoonHouse;
+
+  /// Mars's house by sign from the bride's venus, 1 to 12 (C287).
+  final Uint8List brideVenusHouse;
+
+  /// 1 when that house from the bride's lagna is one of the rules' houses (C285).
+  final Uint8List brideLagnaInHouses;
+
+  /// 1 when that house from the bride's moon is one of the rules' houses (C285).
+  final Uint8List brideMoonInHouses;
+
+  /// 1 when that house from the bride's venus is one of the rules' houses (C285).
+  final Uint8List brideVenusInHouses;
+
+  /// 1 when the bride's Mars stands in one of the rules' houses from a reference the rules count (C286).
+  final Uint8List brideDosha;
+
+  /// Mars's house by sign from the groom's lagna, 1 to 12 (C287).
+  final Uint8List groomLagnaHouse;
+
+  /// Mars's house by sign from the groom's moon, 1 to 12 (C287).
+  final Uint8List groomMoonHouse;
+
+  /// Mars's house by sign from the groom's venus, 1 to 12 (C287).
+  final Uint8List groomVenusHouse;
+
+  /// 1 when that house from the groom's lagna is one of the rules' houses (C285).
+  final Uint8List groomLagnaInHouses;
+
+  /// 1 when that house from the groom's moon is one of the rules' houses (C285).
+  final Uint8List groomMoonInHouses;
+
+  /// 1 when that house from the groom's venus is one of the rules' houses (C285).
+  final Uint8List groomVenusInHouses;
+
+  /// 1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286).
+  final Uint8List groomDosha;
+
+  /// 1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).
+  final Uint8List both;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5012,6 +5085,7 @@ final class Charts {
     required this.matchingKootas,
     required this.poruthams,
     required this.poruthamRows,
+    required this.kujas,
   });
 
   /// What kind of chart these are.
@@ -5400,6 +5474,9 @@ final class Charts {
   /// Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
   final ChartsPoruthamRows poruthamRows;
 
+  /// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+  final ChartsKujas kujas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5521,6 +5598,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atMatchingKootas = blob.section(112, 'matching_kootas');
   final atPoruthams = blob.section(113, 'poruthams');
   final atPoruthamRows = blob.section(114, 'porutham_rows');
+  final atKujas = blob.section(115, 'kujas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -9849,6 +9927,84 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atPoruthamRows, 2) + atPoruthamRows.count * 1,
       ),
       length: atPoruthamRows.count,
+    ),
+    kujas: ChartsKujas(
+      brideLagnaHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 0),
+        blob.columnOffset(atKujas, 0) + atKujas.count * 1,
+      ),
+      brideMoonHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 1),
+        blob.columnOffset(atKujas, 1) + atKujas.count * 1,
+      ),
+      brideVenusHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 2),
+        blob.columnOffset(atKujas, 2) + atKujas.count * 1,
+      ),
+      brideLagnaInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 3),
+        blob.columnOffset(atKujas, 3) + atKujas.count * 1,
+      ),
+      brideMoonInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 4),
+        blob.columnOffset(atKujas, 4) + atKujas.count * 1,
+      ),
+      brideVenusInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 5),
+        blob.columnOffset(atKujas, 5) + atKujas.count * 1,
+      ),
+      brideDosha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 6),
+        blob.columnOffset(atKujas, 6) + atKujas.count * 1,
+      ),
+      groomLagnaHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 7),
+        blob.columnOffset(atKujas, 7) + atKujas.count * 1,
+      ),
+      groomMoonHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 8),
+        blob.columnOffset(atKujas, 8) + atKujas.count * 1,
+      ),
+      groomVenusHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 9),
+        blob.columnOffset(atKujas, 9) + atKujas.count * 1,
+      ),
+      groomLagnaInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 10),
+        blob.columnOffset(atKujas, 10) + atKujas.count * 1,
+      ),
+      groomMoonInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 11),
+        blob.columnOffset(atKujas, 11) + atKujas.count * 1,
+      ),
+      groomVenusInHouses: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 12),
+        blob.columnOffset(atKujas, 12) + atKujas.count * 1,
+      ),
+      groomDosha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 13),
+        blob.columnOffset(atKujas, 13) + atKujas.count * 1,
+      ),
+      both: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atKujas, 14),
+        blob.columnOffset(atKujas, 14) + atKujas.count * 1,
+      ),
+      length: atKujas.count,
     ),
   );
 }
