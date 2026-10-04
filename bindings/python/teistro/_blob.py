@@ -3849,6 +3849,63 @@ class ChartsPoruthamRows:
 
 
 @dataclass(frozen=True)
+class ChartsKujas:
+    """The `kujas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+    """
+
+    bride_lagna_house: memoryview[int]
+    """Mars's house by sign from the bride's lagna, 1 to 12 (C287)."""
+
+    bride_moon_house: memoryview[int]
+    """Mars's house by sign from the bride's moon, 1 to 12 (C287)."""
+
+    bride_venus_house: memoryview[int]
+    """Mars's house by sign from the bride's venus, 1 to 12 (C287)."""
+
+    bride_lagna_in_houses: memoryview[int]
+    """1 when that house from the bride's lagna is one of the rules' houses (C285)."""
+
+    bride_moon_in_houses: memoryview[int]
+    """1 when that house from the bride's moon is one of the rules' houses (C285)."""
+
+    bride_venus_in_houses: memoryview[int]
+    """1 when that house from the bride's venus is one of the rules' houses (C285)."""
+
+    bride_dosha: memoryview[int]
+    """1 when the bride's Mars stands in one of the rules' houses from a reference the rules count (C286)."""
+
+    groom_lagna_house: memoryview[int]
+    """Mars's house by sign from the groom's lagna, 1 to 12 (C287)."""
+
+    groom_moon_house: memoryview[int]
+    """Mars's house by sign from the groom's moon, 1 to 12 (C287)."""
+
+    groom_venus_house: memoryview[int]
+    """Mars's house by sign from the groom's venus, 1 to 12 (C287)."""
+
+    groom_lagna_in_houses: memoryview[int]
+    """1 when that house from the groom's lagna is one of the rules' houses (C285)."""
+
+    groom_moon_in_houses: memoryview[int]
+    """1 when that house from the groom's moon is one of the rules' houses (C285)."""
+
+    groom_venus_in_houses: memoryview[int]
+    """1 when that house from the groom's venus is one of the rules' houses (C285)."""
+
+    groom_dosha: memoryview[int]
+    """1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286)."""
+
+    both: memoryview[int]
+    """1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4314,6 +4371,9 @@ class Charts:
     porutham_rows: ChartsPoruthamRows
     """Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none."""
 
+    kujas: ChartsKujas
+    """Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4437,6 +4497,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_matching_kootas = blob.section(112, "matching_kootas")
     at_poruthams = blob.section(113, "poruthams")
     at_porutham_rows = blob.section(114, "porutham_rows")
+    at_kujas = blob.section(115, "kujas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -6925,6 +6986,48 @@ def decode_charts(raw: bytes) -> Charts:
                 at_porutham_rows, 2, 1, at_porutham_rows.count
             ).cast("B"),
             length=at_porutham_rows.count,
+        ),
+        kujas=ChartsKujas(
+            bride_lagna_house=blob.column(
+                at_kujas, 0, 1, at_kujas.count
+            ).cast("B"),
+            bride_moon_house=blob.column(
+                at_kujas, 1, 1, at_kujas.count
+            ).cast("B"),
+            bride_venus_house=blob.column(
+                at_kujas, 2, 1, at_kujas.count
+            ).cast("B"),
+            bride_lagna_in_houses=blob.column(
+                at_kujas, 3, 1, at_kujas.count
+            ).cast("B"),
+            bride_moon_in_houses=blob.column(
+                at_kujas, 4, 1, at_kujas.count
+            ).cast("B"),
+            bride_venus_in_houses=blob.column(
+                at_kujas, 5, 1, at_kujas.count
+            ).cast("B"),
+            bride_dosha=blob.column(at_kujas, 6, 1, at_kujas.count).cast("B"),
+            groom_lagna_house=blob.column(
+                at_kujas, 7, 1, at_kujas.count
+            ).cast("B"),
+            groom_moon_house=blob.column(
+                at_kujas, 8, 1, at_kujas.count
+            ).cast("B"),
+            groom_venus_house=blob.column(
+                at_kujas, 9, 1, at_kujas.count
+            ).cast("B"),
+            groom_lagna_in_houses=blob.column(
+                at_kujas, 10, 1, at_kujas.count
+            ).cast("B"),
+            groom_moon_in_houses=blob.column(
+                at_kujas, 11, 1, at_kujas.count
+            ).cast("B"),
+            groom_venus_in_houses=blob.column(
+                at_kujas, 12, 1, at_kujas.count
+            ).cast("B"),
+            groom_dosha=blob.column(at_kujas, 13, 1, at_kujas.count).cast("B"),
+            both=blob.column(at_kujas, 14, 1, at_kujas.count).cast("B"),
+            length=at_kujas.count,
         ),
     )
 

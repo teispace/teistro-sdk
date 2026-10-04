@@ -8739,7 +8739,7 @@ fn a_chart_request_answers_its_matching() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
     let instants = [2_451_545.0, 2_451_552.5, 2_451_561.25];
     let base = chart_request(&instants, (27.7172, 85.324), 20_700);
-    let text = r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7172, "longitude": 85.324, "altitude": 1400}, "utcOffsetSeconds": 20700}, "partnerRole": "GROOM", "rules": {"bhakootLift": "GARGA"}}"#;
+    let text = r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27.7172, "longitude": 85.324, "altitude": 1400}, "utcOffsetSeconds": 20700}, "partnerRole": "GROOM", "rules": {"bhakootLift": "GARGA"}, "kuja": {"houses": "WITH_SECOND"}}"#;
     let matching_json = CString::new(text).unwrap();
     let bytes = chart_blob(
         &ctx,
@@ -8999,6 +8999,35 @@ fn a_chart_request_answers_its_matching() {
         );
     }
 
+    // The Kuja dosha, a side's seven cells and whether both carry it.
+    let mut expected = std::collections::BTreeMap::<String, Vec<i64>>::new();
+    for one in matched.iter().map(|one| &one.kuja) {
+        for (who, side) in [("bride", &one.bride), ("groom", &one.groom)] {
+            for (from, reading) in ["lagna", "moon", "venus"].iter().zip(&side.readings) {
+                expected
+                    .entry(format!("{who}_{from}_house"))
+                    .or_default()
+                    .push(i64::from(reading.house));
+                expected
+                    .entry(format!("{who}_{from}_in_houses"))
+                    .or_default()
+                    .push(i64::from(reading.in_houses));
+            }
+            expected
+                .entry(format!("{who}_dosha"))
+                .or_default()
+                .push(i64::from(side.dosha));
+        }
+        expected
+            .entry("both".to_owned())
+            .or_default()
+            .push(i64::from(one.both));
+    }
+    assert_eq!(expected.len(), 15, "every column of the row a chart");
+    for (name, cells) in &expected {
+        assert_eq!(&ints("kujas", name), cells, "{name}");
+    }
+
     // None asked is empty sections; a refusal is named by its field.
     let bytes = chart_blob(&ctx, &base).unwrap();
     let reader = Reader::parse(&bytes, &schema).unwrap();
@@ -9007,6 +9036,7 @@ fn a_chart_request_answers_its_matching() {
         ("matching_kootas", "koota"),
         ("poruthams", "agreeing"),
         ("porutham_rows", "koota"),
+        ("kujas", "both"),
     ] {
         assert_eq!(
             reader.column(section, column).unwrap().len(),

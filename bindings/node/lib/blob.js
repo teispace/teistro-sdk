@@ -1670,6 +1670,27 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 115, 'kujas');
+    out.kujas = {
+      brideLagnaHouse: column(blob, at, 0, 'u8', at.count),
+      brideMoonHouse: column(blob, at, 1, 'u8', at.count),
+      brideVenusHouse: column(blob, at, 2, 'u8', at.count),
+      brideLagnaInHouses: column(blob, at, 3, 'u8', at.count),
+      brideMoonInHouses: column(blob, at, 4, 'u8', at.count),
+      brideVenusInHouses: column(blob, at, 5, 'u8', at.count),
+      brideDosha: column(blob, at, 6, 'u8', at.count),
+      groomLagnaHouse: column(blob, at, 7, 'u8', at.count),
+      groomMoonHouse: column(blob, at, 8, 'u8', at.count),
+      groomVenusHouse: column(blob, at, 9, 'u8', at.count),
+      groomLagnaInHouses: column(blob, at, 10, 'u8', at.count),
+      groomMoonInHouses: column(blob, at, 11, 'u8', at.count),
+      groomVenusInHouses: column(blob, at, 12, 'u8', at.count),
+      groomDosha: column(blob, at, 13, 'u8', at.count),
+      both: column(blob, at, 14, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

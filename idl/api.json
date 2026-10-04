@@ -12312,7 +12312,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34 and the ten considerations, as a JSON\nobject: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`); and `porutham`, the ten considerations of\n*Kalaprakasika* XIII, every field optional: `twoSignStar`\n(`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`\n(`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or\n`ONE_WAY`). The answers come back in `matchings`,\n`matching_kootas`, `poruthams` and `porutham_rows`. Null for none,\nwhich costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
+          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja\ndosha, as a JSON object: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`); `porutham`, the ten considerations of\n*Kalaprakasika* XIII, every field optional: `twoSignStar`\n(`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`\n(`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or\n`ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field\noptional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`\n(`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in\n`matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and\n`kujas`. Null for none,\nwhich costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2447892.5,\"place\":{\"latitude\":27.7172,\"longitude\":85.324,\"altitude\":1400}},\"partnerRole\":\"BRIDE\"}",
             "nullable": true
@@ -20762,6 +20762,89 @@
               "name": "lifted",
               "scalar": "u8",
               "doc": "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277)."
+            }
+          ]
+        },
+        {
+          "id": 115,
+          "name": "kujas",
+          "doc": "Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "bride_lagna_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the bride's lagna, 1 to 12 (C287)."
+            },
+            {
+              "name": "bride_moon_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the bride's moon, 1 to 12 (C287)."
+            },
+            {
+              "name": "bride_venus_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the bride's venus, 1 to 12 (C287)."
+            },
+            {
+              "name": "bride_lagna_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the bride's lagna is one of the rules' houses (C285)."
+            },
+            {
+              "name": "bride_moon_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the bride's moon is one of the rules' houses (C285)."
+            },
+            {
+              "name": "bride_venus_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the bride's venus is one of the rules' houses (C285)."
+            },
+            {
+              "name": "bride_dosha",
+              "scalar": "u8",
+              "doc": "1 when the bride's Mars stands in one of the rules' houses from a reference the rules count (C286)."
+            },
+            {
+              "name": "groom_lagna_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the groom's lagna, 1 to 12 (C287)."
+            },
+            {
+              "name": "groom_moon_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the groom's moon, 1 to 12 (C287)."
+            },
+            {
+              "name": "groom_venus_house",
+              "scalar": "u8",
+              "doc": "Mars's house by sign from the groom's venus, 1 to 12 (C287)."
+            },
+            {
+              "name": "groom_lagna_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the groom's lagna is one of the rules' houses (C285)."
+            },
+            {
+              "name": "groom_moon_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the groom's moon is one of the rules' houses (C285)."
+            },
+            {
+              "name": "groom_venus_in_houses",
+              "scalar": "u8",
+              "doc": "1 when that house from the groom's venus is one of the rules' houses (C285)."
+            },
+            {
+              "name": "groom_dosha",
+              "scalar": "u8",
+              "doc": "1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286)."
+            },
+            {
+              "name": "both",
+              "scalar": "u8",
+              "doc": "1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288)."
             }
           ]
         }

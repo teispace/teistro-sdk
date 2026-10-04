@@ -4610,6 +4610,77 @@ export interface ChartsPoruthamRows {
 }
 
 /**
+ * The `kujas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+ */
+export interface ChartsKujas {
+  /**
+   * Mars's house by sign from the bride's lagna, 1 to 12 (C287).
+   */
+  readonly brideLagnaHouse: Uint8Array;
+  /**
+   * Mars's house by sign from the bride's moon, 1 to 12 (C287).
+   */
+  readonly brideMoonHouse: Uint8Array;
+  /**
+   * Mars's house by sign from the bride's venus, 1 to 12 (C287).
+   */
+  readonly brideVenusHouse: Uint8Array;
+  /**
+   * 1 when that house from the bride's lagna is one of the rules' houses (C285).
+   */
+  readonly brideLagnaInHouses: Uint8Array;
+  /**
+   * 1 when that house from the bride's moon is one of the rules' houses (C285).
+   */
+  readonly brideMoonInHouses: Uint8Array;
+  /**
+   * 1 when that house from the bride's venus is one of the rules' houses (C285).
+   */
+  readonly brideVenusInHouses: Uint8Array;
+  /**
+   * 1 when the bride's Mars stands in one of the rules' houses from a reference the rules count (C286).
+   */
+  readonly brideDosha: Uint8Array;
+  /**
+   * Mars's house by sign from the groom's lagna, 1 to 12 (C287).
+   */
+  readonly groomLagnaHouse: Uint8Array;
+  /**
+   * Mars's house by sign from the groom's moon, 1 to 12 (C287).
+   */
+  readonly groomMoonHouse: Uint8Array;
+  /**
+   * Mars's house by sign from the groom's venus, 1 to 12 (C287).
+   */
+  readonly groomVenusHouse: Uint8Array;
+  /**
+   * 1 when that house from the groom's lagna is one of the rules' houses (C285).
+   */
+  readonly groomLagnaInHouses: Uint8Array;
+  /**
+   * 1 when that house from the groom's moon is one of the rules' houses (C285).
+   */
+  readonly groomMoonInHouses: Uint8Array;
+  /**
+   * 1 when that house from the groom's venus is one of the rules' houses (C285).
+   */
+  readonly groomVenusInHouses: Uint8Array;
+  /**
+   * 1 when the groom's Mars stands in one of the rules' houses from a reference the rules count (C286).
+   */
+  readonly groomDosha: Uint8Array;
+  /**
+   * 1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288).
+   */
+  readonly both: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5233,6 +5304,10 @@ export interface Charts {
    * Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. Empty when `matching_json` asked for none.
    */
   readonly poruthamRows: ChartsPoruthamRows;
+  /**
+   * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
+   */
+  readonly kujas: ChartsKujas;
 }
 
 /**
