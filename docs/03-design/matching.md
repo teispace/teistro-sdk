@@ -234,21 +234,26 @@ role it stands in.
   `porutham(bride, groom, PoruthamRules) -> Porutham`, ten rows of
   `{ agrees, lifted, reading }`, each reading naming its koota.
   `PoruthamRules` holds the three knobs (C270, C272, C273).
-- `sdk.chart().matching(&bride, &groom, KootaRules)` and
-  `sdk.chart().porutham(&bride, &groom, PoruthamRules)` on two founded
-  charts. `sdk.chart().matching_with(&charts, &PartnerMatching)` matches
-  a batch with one partner's birth, founded once, and answers a `Matched`
-  a chart: both systems.
+  `kuja(bride, groom, KujaRules) -> Kuja` reads a `KujaNative { lagna,
+  moon, venus, mars }` on each side: three readings a side, `{ from,
+  house, in_houses }`, the side's `dosha`, and `both`.
+- `sdk.chart().matching(&bride, &groom, KootaRules)`,
+  `sdk.chart().porutham(&bride, &groom, PoruthamRules)` and
+  `sdk.chart().kuja(&bride, &groom, KujaRules)` on two founded charts.
+  `sdk.chart().matching_with(&charts, &PartnerMatching)` matches a batch
+  with one partner's birth, founded once, and answers a `Matched` a
+  chart: both systems and the Kuja dosha.
 - At the boundary, `matching_json` is `{"partner", "partnerRole",
-  "rules", "porutham"}`. The partner is synastry's record. `partnerRole`
+  "rules", "porutham", "kuja"}`. The partner is synastry's record. `partnerRole`
   is `BRIDE` or `GROOM`, and every chart of the batch stands on the other
   side. The Ashta Koota crosses in `matchings`, a row a chart with every
   koota's reading, and `matching_kootas`, eight rows a chart with the
   points; the ten in `poruthams`, a row a chart with the counts, the
   exception's clauses and every reading, and `porutham_rows`, ten rows
-  a chart with whether each agrees and was lifted. Every binding reads
-  `chart.matching` and `chart.porutham`, with parity across the five
-  runners.
+  a chart with whether each agrees and was lifted; and the Kuja dosha
+  in `kujas`, a row a chart with each side's seven cells and `both`.
+  Every binding reads `chart.matching`, `chart.porutham` and
+  `chart.kuja`, with parity across the five runners.
 
 ## What building it found
 
@@ -310,6 +315,21 @@ role it stands in.
   lords, since a good Bhakoot is what lifts their enmity, and a lifted
   nadi is pure for the Bhakoot's exceptions (C284). How often each is
   lifted over the grid is measured in `matching-measured.md`.
+- **Mars is read beside the Moon, not in place of it.** A native for
+  the kootas is the Moon alone, and the Kuja dosha needs the lagna,
+  Venus and Mars too; a second `KujaNative` keeps the Moon's tables
+  free of planets they never read, and the SDK founds both from one
+  chart, refusing it by its role when it lacks one.
+- **The popular reading names most charts.** Six houses counted from
+  three places leave little of the circle free: over every placement of
+  the four signs, the measured page finds the popular reading giving
+  the dosha to roughly twice as many natives as the verse's five from
+  the lagna, and to the large majority of them
+  (`matching-measured.md`). This is why the verse stays the default.
+- **Python spells `from` as `reference`.** `from` is a Python keyword,
+  so the reading's field is `reference` there and the request's
+  `KujaRules` is declared by call; the wire and the other bindings keep
+  `from`.
 - **A birth matched with itself is a fixed point.** One sign and one
   nakshatra give every koota but Nadi its whole points and the shared
   nadi none, 28 whatever the Moon. Each binding's test starts from it.

@@ -87,3 +87,19 @@ is said without moving a total.
 | a Deva bride with a Manushya groom gives 3 (C262) | 1296 | 11.1% | 1.0 | 1296 | 11.1% |
 | a bad Bhakoot is lifted by Garga's count (C263) | 0 | 0.0% | 0.0 | 1922 | 16.5% |
 | only the middle nadi is a dosha (C264) | 0 | 0.0% | 0.0 | 2592 | 22.2% |
+
+## The Kuja dosha
+
+Mars's house is read by sign from the lagna, the Moon and Venus, so
+every placement of those four signs is every native the Kuja dosha can
+tell apart. How many carry it under each reading, and how many of the
+pairs of two such natives carry it on both sides, the fact the popular
+cancellation reads (C285, C286, C288). The placements are counted alike,
+though Venus never stands far from the Sun.
+
+| reading | natives | with the dosha | share | pairs with both |
+|---|---|---|---|---|
+| the verse's five from the lagna, the default | 20 736 | 8640 | 41.7% | 17.4% |
+| six with the 2nd from the lagna | 20 736 | 10 368 | 50.0% | 25.0% |
+| the verse's five from the lagna, the Moon or Venus | 20 736 | 16 620 | 80.2% | 64.2% |
+| six with the 2nd from the lagna, the Moon or Venus | 20 736 | 18 144 | 87.5% | 76.6% |

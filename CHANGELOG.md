@@ -2157,6 +2157,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Matching's Kuja dosha** (`matching.md`, C285 to C288).
+  *Manasagari*'s jāyābhāva v. 4, read on the 1904 print's page image,
+  names Mars in the 1st, 12th, 4th, 7th and 8th, for bride and groom
+  alike; the BPHS printings of 1899 and 1923, *Muhurta Chintamani* and
+  *Muhurta Martanda* carry no such verse. `kuja(bride, groom,
+  KujaRules)` reports Mars's house by sign from the lagna, the Moon and
+  Venus on each side, each side's dosha under the rules and whether
+  both carry it; nothing is lifted, since no verse read lifts it. The
+  six with the 2nd and the three references are knobs naming their
+  rank 3 source. `sdk.chart().kuja` reads two charts, `matching_with`
+  answers it a chart, `matching_json` takes `kuja`, section 115 carries
+  it, and Node, Python and Dart read `chart.kuja`, the five runners
+  agreeing.
 - **Matching's other doshas carry their exceptions** (`matching.md`,
   C283, C284). *Muhurta Chintamani* VI.33 lifts a Rakshasa beside
   another gana when the sign or navamsha lords are friends, and the
