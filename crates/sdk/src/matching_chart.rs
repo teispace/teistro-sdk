@@ -1,11 +1,13 @@
-//! Two founded charts matched through the Moon of each
-//! (`03-design/matching.md`).
+//! Two founded charts matched through the Moon of each, and Mars in
+//! each (`03-design/matching.md`).
 
 use serde::{Deserialize, Serialize};
+use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_matching::{
-    AshtaKoota, KootaRules, Native, Porutham, PoruthamRules, ashta_koota, porutham,
+    AshtaKoota, KootaRules, Kuja, KujaNative, KujaRules, Native, Porutham, PoruthamRules,
+    ashta_koota, kuja, porutham,
 };
 use teistro_serial::Document;
 
@@ -65,6 +67,10 @@ pub struct PartnerMatching {
     /// chapter's own when left out.
     #[serde(default)]
     pub porutham: PoruthamRules,
+    /// The readings the Kuja dosha is computed under; the verse's own
+    /// when left out.
+    #[serde(default)]
+    pub kuja: KujaRules,
 }
 
 /// One chart matched with a partner under both systems.
@@ -75,14 +81,16 @@ pub struct Matched {
     pub ashta_koota: AshtaKoota,
     /// The South's ten considerations.
     pub porutham: Porutham,
+    /// Mars in each chart (*Manasagari*, jāyābhāva v. 4).
+    pub kuja: Kuja,
 }
 
 impl PartnerMatching {
     /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
     /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
     /// `partnerRole`, `"BRIDE"` or `"GROOM"`, `rules`, the [`KootaRules`]
-    /// with every field optional, and `porutham`, the [`PoruthamRules`]
-    /// likewise.
+    /// with every field optional, `porutham`, the [`PoruthamRules`]
+    /// likewise, and `kuja`, the [`KujaRules`] likewise.
     ///
     /// ```
     /// use teistro::{MatchRole, PartnerMatching};
@@ -195,8 +203,38 @@ impl ChartArea<'_> {
         ))
     }
 
-    /// Each chart matched with a partner's birth under both systems
-    /// ([`ChartArea::matching`] and [`ChartArea::porutham`]), one
+    /// The **Kuja dosha** of a bride's chart and a groom's (*Manasagari*,
+    /// jāyābhāva v. 4): Mars's house from the lagna, the Moon and Venus in
+    /// each, whether each carries the dosha under the rules and whether
+    /// both do. Nothing is lifted: no verse read lifts it, so the popular
+    /// cancellation is the reader's to apply (`03-design/matching.md`).
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, KujaRules};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (bride, groom): (Document, Document) = todo!();
+    /// let mars = sdk.chart().kuja(&bride, &groom, KujaRules::default())?;
+    /// println!("bride {}, groom {}, both {}", mars.bride.dosha, mars.groom.dosha, mars.both);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A chart founded in the tropical zodiac, or one that does not place
+    /// the Moon, Venus or Mars, named `bride` or `groom`.
+    pub fn kuja(self, bride: &Document, groom: &Document, rules: KujaRules) -> Result<Kuja, Error> {
+        Ok(kuja(
+            kuja_native(bride, MatchRole::Bride.field())?,
+            kuja_native(groom, MatchRole::Groom.field())?,
+            rules,
+        ))
+    }
+
+    /// Each chart matched with a partner's birth under both systems and
+    /// the Kuja dosha ([`ChartArea::matching`], [`ChartArea::porutham`]
+    /// and [`ChartArea::kuja`]), one
     /// [`Matched`] a chart in the order given: the partner on
     /// [`PartnerMatching::partner_role`]'s side, every chart on the other.
     /// The partner is founded once, under this context's profile, which
@@ -221,39 +259,74 @@ impl ChartArea<'_> {
             .reading(instant, &ChartRequest::at(place, utc_offset))
             .map_err(|why| why.with_field("partner"))?
             .value;
-        let theirs = native(&partner, "partner")?;
+        let theirs = natives(&partner, "partner")?;
         let role = asked.partner_role.other();
         charts
             .iter()
             .enumerate()
             .map(|(at, chart)| {
-                let ours = native(chart, role.field())
+                let ours = natives(chart, role.field())
                     .map_err(|why| why.with_hint(format!("chart {at}")))?;
                 let (bride, groom) = match role {
                     MatchRole::Bride => (ours, theirs),
                     MatchRole::Groom => (theirs, ours),
                 };
                 Ok(Matched {
-                    ashta_koota: ashta_koota(bride, groom, asked.rules),
-                    porutham: porutham(bride, groom, asked.porutham),
+                    ashta_koota: ashta_koota(bride.0, groom.0, asked.rules),
+                    porutham: porutham(bride.0, groom.0, asked.porutham),
+                    kuja: kuja(bride.1, groom.1, asked.kuja),
                 })
             })
             .collect()
     }
 }
 
-/// A chart's Moon as matching reads it, refused by the role it was given.
-fn native(chart: &Document, role: &str) -> Result<Native, Error> {
+/// A chart's foundation, refused by the role it was given unless it is
+/// sidereal.
+fn sidereal<'a>(chart: &'a Document, role: &str) -> Result<&'a ChartFoundation, Error> {
     let foundation = &chart.foundation;
-    if !foundation.zodiac.is_sidereal() {
-        return Err(Error::invalid_arg(format!(
+    if foundation.zodiac.is_sidereal() {
+        Ok(foundation)
+    } else {
+        Err(Error::invalid_arg(format!(
             "the {role}'s chart is founded in the tropical zodiac, where a nakshatra means nothing"
         ))
         .with_field(role)
-        .with_hint("found it under a sidereal profile, such as the default"));
+        .with_hint("found it under a sidereal profile, such as the default"))
     }
-    let moon = foundation.graha(Graha::Moon).ok_or_else(|| {
-        Error::invalid_arg(format!("the {role}'s chart does not place the Moon")).with_field(role)
-    })?;
-    Native::of_moon(moon.longitude_deg).map_err(|error| error.with_field(role))
+}
+
+/// A graha's longitude in a chart, refused by the role it was given when
+/// the chart does not place it.
+fn longitude(foundation: &ChartFoundation, graha: Graha, role: &str) -> Result<f64, Error> {
+    foundation
+        .graha(graha)
+        .map(|position| position.longitude_deg)
+        .ok_or_else(|| {
+            Error::invalid_arg(format!("the {role}'s chart does not place {graha:?}"))
+                .with_field(role)
+        })
+}
+
+/// A chart's Moon as matching reads it, refused by the role it was given.
+fn native(chart: &Document, role: &str) -> Result<Native, Error> {
+    let moon = longitude(sidereal(chart, role)?, Graha::Moon, role)?;
+    Native::of_moon(moon).map_err(|error| error.with_field(role))
+}
+
+/// A chart's lagna, Moon, Venus and Mars as the Kuja dosha reads them.
+fn kuja_native(chart: &Document, role: &str) -> Result<KujaNative, Error> {
+    let foundation = sidereal(chart, role)?;
+    KujaNative::of_longitudes(
+        foundation.lagna_deg,
+        longitude(foundation, Graha::Moon, role)?,
+        longitude(foundation, Graha::Venus, role)?,
+        longitude(foundation, Graha::Mars, role)?,
+    )
+    .map_err(|error| error.with_field(role))
+}
+
+/// Everything a match reads of one chart.
+fn natives(chart: &Document, role: &str) -> Result<(Native, KujaNative), Error> {
+    Ok((native(chart, role)?, kuja_native(chart, role)?))
 }

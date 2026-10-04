@@ -9,11 +9,11 @@
 )]
 
 use teistro::catalogue::{Graha, Koota};
-use teistro::matching::{ashta_koota, porutham};
+use teistro::matching::{KujaFrom, ashta_koota, porutham};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, KootaReading, KootaRules, MatchRole, Native,
-    Partner, PartnerMatching, PoruthamRules, UtcOffset,
+    ChartRequest, Context, Document, Ephemeris, KootaReading, KootaRules, KujaRules, MatchRole,
+    Native, Partner, PartnerMatching, PoruthamRules, UtcOffset,
 };
 
 fn context(profile: Option<&str>) -> Context {
@@ -128,6 +128,10 @@ fn a_batch_stands_on_the_side_the_partner_does_not() {
                 deergha_beyond: teistro::matching::DeerghaBeyond::Seventh,
                 ..PoruthamRules::default()
             },
+            kuja: KujaRules {
+                from: KujaFrom::LagnaMoonVenus,
+                ..KujaRules::default()
+            },
         };
         let matched = sdk.chart().matching_with(&charts, &asked).unwrap();
         assert_eq!(matched.len(), charts.len());
@@ -144,6 +148,10 @@ fn a_batch_stands_on_the_side_the_partner_does_not() {
                 both.porutham,
                 sdk.chart().porutham(bride, groom, asked.porutham).unwrap()
             );
+            assert_eq!(
+                both.kuja,
+                sdk.chart().kuja(bride, groom, asked.kuja).unwrap()
+            );
         }
     }
 }
@@ -156,6 +164,7 @@ fn a_tropical_partner_is_refused_as_the_partner() {
         partner_role: MatchRole::Groom,
         rules: KootaRules::default(),
         porutham: PoruthamRules::default(),
+        kuja: KujaRules::default(),
     };
     let refused = western.chart().matching_with(&[], &asked).unwrap_err();
     assert_eq!(refused.field(), Some("partner"));
@@ -168,6 +177,7 @@ fn a_record_reads_back_what_it_wrote() {
         partner_role: MatchRole::Bride,
         rules: KootaRules::default(),
         porutham: PoruthamRules::default(),
+        kuja: KujaRules::default(),
     };
     let text = serde_json::to_string(&asked).unwrap();
     assert_eq!(PartnerMatching::from_json(&text).unwrap(), asked);
@@ -181,4 +191,39 @@ fn a_record_reads_back_what_it_wrote() {
     )
     .unwrap_err();
     assert_eq!(typo.field(), Some("matching.porutham.deergha"));
+    let typo = PartnerMatching::from_json(
+        r#"{"partner": {"instant": 2447892.5, "place": {"latitude": 27, "longitude": 85, "altitude": 0}}, "partnerRole": "BRIDE", "kuja": {"house": "WITH_SECOND"}}"#,
+    )
+    .unwrap_err();
+    assert_eq!(typo.field(), Some("matching.kuja.house"));
+}
+
+#[test]
+fn the_kuja_dosha_reads_mars_from_each_founded_chart() {
+    let sdk = context(None);
+    let bride = founded(&sdk, 2_447_892.5);
+    let groom = founded(&sdk, 2_451_545.0);
+    let read = sdk
+        .chart()
+        .kuja(&bride, &groom, KujaRules::default())
+        .unwrap();
+    for (chart, side) in [(&bride, read.bride), (&groom, read.groom)] {
+        let sign = |graha| {
+            let at = chart.foundation.graha(graha).unwrap().longitude_deg;
+            teistro::catalogue::Rashi::of_longitude(at.rem_euclid(360.0)).id()
+        };
+        let lagna = u16::from(chart.foundation.lagna_sign_index());
+        let mars = sign(Graha::Mars);
+        let house = u8::try_from((mars + 12 - lagna) % 12 + 1).unwrap();
+        assert_eq!(side.readings[0].house, house);
+        assert_eq!(side.dosha, [1, 4, 7, 8, 12].contains(&house));
+    }
+    assert_eq!(read.both, read.bride.dosha && read.groom.dosha);
+    let western = context(Some("western-tropical-default"));
+    let tropical = founded(&western, 2_451_545.0);
+    let refused = sdk
+        .chart()
+        .kuja(&bride, &tropical, KujaRules::default())
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("groom"));
 }
