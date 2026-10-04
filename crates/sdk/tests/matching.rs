@@ -152,6 +152,10 @@ fn a_batch_stands_on_the_side_the_partner_does_not() {
                 both.kuja,
                 sdk.chart().kuja(bride, groom, asked.kuja).unwrap()
             );
+            assert_eq!(
+                both.doshas(),
+                teistro::matching::marriage_doshas(&both.ashta_koota, &both.porutham, &both.kuja)
+            );
         }
     }
 }
