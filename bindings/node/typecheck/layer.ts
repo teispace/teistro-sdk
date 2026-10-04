@@ -28,6 +28,8 @@ import type {
   WesternHouses,
   AshtaKoota,
   KootaReading,
+  Kuja,
+  KujaReading,
   Porutham,
   PoruthamReading,
   MatchingRequest,
@@ -1198,6 +1200,7 @@ function theMatching(ctx: Context): string {
     partnerRole: 'BRIDE',
     rules: { nadiDosha: 'MIDDLE_ONLY' },
     porutham: { deerghaBeyond: 'SEVENTH' },
+    kuja: { houses: 'WITH_SECOND', from: 'LAGNA_MOON_VENUS' },
   };
   const chart = ctx.chart.found({
     instant: 2451545.0,
@@ -1218,7 +1221,15 @@ function theMatching(ctx: Context): string {
   const ten: Porutham | null = chart.porutham;
   const dhinam: PoruthamReading | undefined = ten?.considerations[0]?.reading;
   const rajju = ten?.considerations[8]?.reading;
+  // @ts-expect-error a Kuja rule takes only its own members
+  const misplaced: MatchingRequest = { ...asked, kuja: { from: 'SUN' } };
+  const mars: Kuja | null = chart.kuja;
+  const fromLagna: KujaReading | undefined = mars?.bride.readings[0];
   return [
+    `${fromLagna?.from ?? ''} ${fromLagna?.house ?? 0} ${fromLagna?.inHouses ?? false}`,
+    mars?.groom.dosha ?? false,
+    mars?.both ?? false,
+    String(misplaced),
     ten?.agreeing ?? 0,
     ten?.chiefAgreeing ?? 0,
     ten?.exception.opposite ?? false,

@@ -567,6 +567,10 @@ __all__ = [
     "PoruthamRow",
     "PoruthamException",
     "Porutham",
+    "KujaRules",
+    "KujaReading",
+    "KujaSide",
+    "Kuja",
     "MidpointRow",
     "SynastryMidpointRow",
     "SynastryPartner",
@@ -4207,13 +4211,28 @@ class PoruthamRules(TypedDict, total=False):
     lordsFriendship: Literal["MUTUAL", "ONE_WAY"]
 
 
+# The readings the Kuja dosha is computed under, each the verse's own when
+# absent (`03-design/matching.md`): `houses`, *Manasagari*'s five,
+# `"MANASAGARI"`, or `"WITH_SECOND"` (C285); and `from`, `"LAGNA"` or
+# `"LAGNA_MOON_VENUS"` (C286). Declared by call since `from` is a keyword:
+# `everywhere: KujaRules = {"from": "LAGNA_MOON_VENUS"}`.
+KujaRules = TypedDict(
+    "KujaRules",
+    {
+        "houses": Literal["MANASAGARI", "WITH_SECOND"],
+        "from": Literal["LAGNA", "LAGNA_MOON_VENUS"],
+    },
+    total=False,
+)
+
+
 class MatchingRequest(TypedDict, total=False):
     """A match with a partner's birth (`03-design/matching.md`): the
     partner, founded once for the whole batch under the context's sidereal
     profile; `partnerRole`, the side the partner stands on, every chart
     standing on the other, since Varna and Gana read differently when the
-    two swap; the Ashta Koota's `rules`; and the ten considerations'
-    `porutham` rules.
+    two swap; the Ashta Koota's `rules`; the ten considerations'
+    `porutham` rules; and the Kuja dosha's `kuja` rules.
 
     >>> asked: MatchingRequest = {"partner": {"instant": 2447892.5, "observer": Observer(
     ...     latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))},
@@ -4224,6 +4243,7 @@ class MatchingRequest(TypedDict, total=False):
     partnerRole: Required[Literal["BRIDE", "GROOM"]]
     rules: KootaRules
     porutham: PoruthamRules
+    kuja: KujaRules
 
 
 @dataclass(frozen=True)
@@ -4532,6 +4552,45 @@ class PoruthamRow:
     """Whether it agrees only by the p. 76 exception."""
 
     reading: PoruthamReading
+
+
+@dataclass(frozen=True)
+class KujaReading:
+    """Mars's house from one reference."""
+
+    reference: Literal["LAGNA", "MOON", "VENUS"]
+    """The place the house is counted from, the answer's `from`."""
+
+    house: int
+    """Mars's house from it by sign, 1 to 12 (C287)."""
+
+    in_houses: bool
+    """Whether the house is one of the rules' houses; it makes the dosha
+    only from a reference the rules count."""
+
+
+@dataclass(frozen=True)
+class KujaSide:
+    """One native's Kuja dosha."""
+
+    readings: Tuple[KujaReading, ...]
+    """Mars's house from the lagna, the Moon and Venus, whatever the rules
+    count."""
+
+    dosha: bool
+    """Whether Mars stands in one of the rules' houses from a reference the
+    rules count."""
+
+
+@dataclass(frozen=True)
+class Kuja:
+    """The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva
+    v. 4), as clauses: nothing is lifted (C288)."""
+
+    bride: KujaSide
+    groom: KujaSide
+    both: bool
+    """Whether both carry it, the fact the popular cancellation reads."""
 
 
 @dataclass(frozen=True)
@@ -9175,6 +9234,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def kuja(self) -> Optional[Kuja]:
+        """The chart's Kuja dosha beside the same partner's (*Manasagari*,
+        jāyābhāva v. 4; `matching=` asks for it with both systems): Mars's
+        house by sign from the lagna, the Moon and Venus on each side,
+        whether each side carries the dosha under the rules and whether
+        both do. Nothing is lifted; `None` unless asked
+        (`03-design/matching.md`)."""
+        parsed = self.batch._kujas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def harmonic(self) -> Optional[HarmonicChart]:
         """The chart's harmonic chart: each planet, the ascendant and the
         midheaven at its longitude multiplied, in its equal house from the
@@ -10031,6 +10101,28 @@ class ChartBatch:
                 )
             )
         return matched
+
+    @cached_property
+    def _kujas(self) -> list[Kuja]:
+        """Every chart's Kuja dosha with the record's partner, decoded once;
+        empty when none was asked for. `kujas` holds a row a chart."""
+        k = self.decoded.kujas
+        references: Tuple[Literal["LAGNA", "MOON", "VENUS"], ...] = ("LAGNA", "MOON", "VENUS")
+
+        def side(who: str, at: int) -> KujaSide:
+            return KujaSide(
+                readings=tuple(
+                    KujaReading(
+                        reference,
+                        getattr(k, f"{who}_{reference.lower()}_house")[at],
+                        getattr(k, f"{who}_{reference.lower()}_in_houses")[at] == 1,
+                    )
+                    for reference in references
+                ),
+                dosha=getattr(k, f"{who}_dosha")[at] == 1,
+            )
+
+        return [Kuja(side("bride", at), side("groom", at), k.both[at] == 1) for at in range(len(k.both))]
 
     @cached_property
     def _harmonics(self) -> list[HarmonicChart]:

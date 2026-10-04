@@ -384,6 +384,7 @@ const charts = geo.chart.foundMany({
     partnerRole: 'BRIDE',
     rules: { bhakootLift: 'GARGA' },
     porutham: { lordsFriendship: 'ONE_WAY' },
+    kuja: { houses: 'WITH_SECOND', from: 'LAGNA_MOON_VENUS' },
   },
   synastry: {
     partner: { instant: 2451545.25, place: { latitude: -33.87, longitude: 151.21, altitude: 0 }, utcOffsetSeconds: 36000 },
@@ -893,6 +894,12 @@ for (const chart of charts) {
   ten.considerations.forEach((row) =>
     put(`chart-${i}-porutham-${row.reading.koota}`, `${flag(row.agrees)} ${flag(row.lifted)} ${tenText(row.reading)}`),
   );
+  const mars = chart.kuja;
+  for (const [who, side] of [['bride', mars.bride], ['groom', mars.groom]]) {
+    const readings = side.readings.map((r) => `${r.from} ${r.house} ${flag(r.inHouses)}`);
+    put(`chart-${i}-kuja-${who}`, `${readings.join(' ')} ${flag(side.dosha)}`);
+  }
+  put(`chart-${i}-kuja`, flag(mars.both));
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;
   put(`chart-${i}-synastry-count`, `${synastry.length}`);

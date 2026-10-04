@@ -1560,6 +1560,16 @@ export interface MatchingRequest {
   readonly rules?: KootaRules;
   /** The readings the ten considerations are computed under. */
   readonly porutham?: PoruthamRules;
+  /** The readings the Kuja dosha is computed under. */
+  readonly kuja?: KujaRules;
+}
+
+/** The readings the Kuja dosha is computed under; each default is the verse's own. */
+export interface KujaRules {
+  /** Which houses of Mars make the dosha: *Manasagari*'s five, `'MANASAGARI'` (the default), or `'WITH_SECOND'` (C285). */
+  readonly houses?: 'MANASAGARI' | 'WITH_SECOND';
+  /** From where they are counted: `'LAGNA'` (the default) or `'LAGNA_MOON_VENUS'` (C286). */
+  readonly from?: 'LAGNA' | 'LAGNA_MOON_VENUS';
 }
 
 /** The readings the ten considerations are computed under; each default is the chapter's own. */
@@ -1751,6 +1761,32 @@ export interface Porutham {
   /** How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju. */
   readonly chiefAgreeing: number;
   readonly exception: PoruthamException;
+}
+
+/** Mars's house from one reference. */
+export interface KujaReading {
+  /** The place the house is counted from. */
+  readonly from: 'LAGNA' | 'MOON' | 'VENUS';
+  /** Mars's house from it by sign, 1 to 12 (C287). */
+  readonly house: number;
+  /** Whether the house is one of the rules' houses; it makes the dosha only from a reference the rules count. */
+  readonly inHouses: boolean;
+}
+
+/** One native's Kuja dosha. */
+export interface KujaSide {
+  /** Mars's house from the lagna, the Moon and Venus, whatever the rules count. */
+  readonly readings: readonly KujaReading[];
+  /** Whether Mars stands in one of the rules' houses from a reference the rules count. */
+  readonly dosha: boolean;
+}
+
+/** The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4), as clauses: nothing is lifted (C288). */
+export interface Kuja {
+  readonly bride: KujaSide;
+  readonly groom: KujaSide;
+  /** Whether both carry it, the fact the popular cancellation reads. */
+  readonly both: boolean;
 }
 
 /** A chart's Western houses, in its own zodiac. */
@@ -3759,6 +3795,11 @@ export declare class Chart {
    * *Kalaprakasika* XIII; `null` unless `matching` asked (`03-design/matching.md`).
    */
   readonly porutham: Porutham | null;
+  /**
+   * The chart's Kuja dosha beside the same partner's (*Manasagari*,
+   * jāyābhāva v. 4); `null` unless `matching` asked (`03-design/matching.md`).
+   */
+  readonly kuja: Kuja | null;
   /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.

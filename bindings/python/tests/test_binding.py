@@ -2080,6 +2080,7 @@ class AnEngine(WithLibrary):
             DhinamPorutham,
             GanaKoota,
             Koota,
+            Kuja,
             MaitriKoota,
             MaitriRelation,
             MatchingRequest,
@@ -2152,6 +2153,19 @@ class AnEngine(WithLibrary):
             self.assertEqual(ten.agreeing, sum(row.agrees for row in ten.considerations))
             self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).porutham)
 
+            # The Kuja dosha rides on it too (Manasagari): one birth on both
+            # sides reads Mars alike, so both carry it or neither does.
+            everywhere: MatchingRequest = {**itself, "kuja": {"from": "LAGNA_MOON_VENUS"}}
+            mars = ctx.chart.found(instant=birth, matching=everywhere, **kathmandu).kuja
+            assert isinstance(mars, Kuja)
+            self.assertEqual(mars.bride, mars.groom)
+            self.assertEqual([r.reference for r in mars.bride.readings], ["LAGNA", "MOON", "VENUS"])
+            for reading in mars.bride.readings:
+                self.assertEqual(reading.in_houses, reading.house in (1, 4, 7, 8, 12))
+            self.assertEqual(mars.bride.dosha, any(r.in_houses for r in mars.bride.readings))
+            self.assertEqual(mars.both, mars.bride.dosha)
+            self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).kuja)
+
             asked: MatchingRequest = {
                 "partner": {"instant": 2447892.5, "observer": kathmandu["place"], "utc_offset_seconds": 20700},
                 "partnerRole": "GROOM",
@@ -2164,6 +2178,7 @@ class AnEngine(WithLibrary):
                 alone = one.matching
                 self.assertEqual(batch.at(k).matching, alone)
                 self.assertEqual(batch.at(k).porutham, one.porutham)
+                self.assertEqual(batch.at(k).kuja, one.kuja)
                 swapped = ctx.chart.found(instant=instant, matching={**asked, "partnerRole": "BRIDE"}, **kathmandu).matching
                 assert alone is not None and swapped is not None
                 ours, theirs = alone.kootas[0].reading, swapped.kootas[0].reading
@@ -2173,6 +2188,7 @@ class AnEngine(WithLibrary):
                 ({**asked, "partnerRole": "UNCLE"}, "matching.partnerRole"),
                 ({**asked, "rules": {"nadi": "ANY"}}, "matching.rules.nadi"),
                 ({**asked, "porutham": {"deergha": "SEVENTH"}}, "matching.porutham.deergha"),
+                ({**asked, "kuja": {"house": "WITH_SECOND"}}, "matching.kuja.house"),
                 ({"partner": asked["partner"]}, "matching"),
             ]
             for request, field in refusals:
