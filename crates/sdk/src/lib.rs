@@ -285,11 +285,11 @@ pub use teistro_western::{
 };
 // Matching: the Ashta Koota and the ten considerations of two charts'
 // Moons, and the Kuja dosha of their Mars (`03-design/matching.md`).
-pub use matching_chart::{MatchRole, Matched, PartnerMatching};
+pub use matching_chart::{Matched, PartnerMatching};
 pub use teistro_matching as matching;
 pub use teistro_matching::{
-    AshtaKoota, KootaReading, KootaRow, KootaRules, Kuja, KujaRules, Native, Porutham,
-    PoruthamReading, PoruthamRow, PoruthamRules,
+    AshtaKoota, KootaReading, KootaRow, KootaRules, Kuja, KujaRules, MarriageDosha, MatchRole,
+    Native, Porutham, PoruthamReading, PoruthamRow, PoruthamRules,
 };
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).

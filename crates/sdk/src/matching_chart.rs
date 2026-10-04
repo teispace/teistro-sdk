@@ -6,8 +6,8 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_matching::{
-    AshtaKoota, KootaRules, Kuja, KujaNative, KujaRules, Native, Porutham, PoruthamRules,
-    ashta_koota, kuja, porutham,
+    AshtaKoota, KootaRules, Kuja, KujaNative, KujaRules, MarriageDosha, MatchRole, Native,
+    Porutham, PoruthamRules, ashta_koota, kuja, marriage_doshas, porutham,
 };
 use teistro_serial::Document;
 
@@ -18,36 +18,6 @@ use crate::western_aspects::Partner;
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
 const MATCHING: &str = "matching";
-
-/// Which side of a match a birth stands on. Varna and Gana read
-/// differently when the two swap, so a match names them.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum MatchRole {
-    /// The bride's birth.
-    Bride,
-    /// The groom's birth.
-    Groom,
-}
-
-impl MatchRole {
-    /// The other side.
-    #[must_use]
-    pub const fn other(self) -> MatchRole {
-        match self {
-            MatchRole::Bride => MatchRole::Groom,
-            MatchRole::Groom => MatchRole::Bride,
-        }
-    }
-
-    /// The role's name, which a refusal is named by.
-    const fn field(self) -> &'static str {
-        match self {
-            MatchRole::Bride => "bride",
-            MatchRole::Groom => "groom",
-        }
-    }
-}
 
 /// A match against a partner's birth, as a binding asks it: the partner,
 /// the side the partner stands on, every chart of the batch on the other,
@@ -83,6 +53,17 @@ pub struct Matched {
     pub porutham: Porutham,
     /// Mars in each chart (*Manasagari*, jāyābhāva v. 4).
     pub kuja: Kuja,
+}
+
+impl Matched {
+    /// Every marriage dosha the three readings report, as one list in
+    /// their own order, each with whether it is lifted. Nothing is judged
+    /// anew and no severity is given (`03-design/matching.md`, C289,
+    /// C290).
+    #[must_use]
+    pub fn doshas(&self) -> Vec<MarriageDosha> {
+        marriage_doshas(&self.ashta_koota, &self.porutham, &self.kuja)
+    }
 }
 
 impl PartnerMatching {
@@ -161,8 +142,8 @@ impl ChartArea<'_> {
         rules: KootaRules,
     ) -> Result<AshtaKoota, Error> {
         Ok(ashta_koota(
-            native(bride, MatchRole::Bride.field())?,
-            native(groom, MatchRole::Groom.field())?,
+            native(bride, MatchRole::Bride.name())?,
+            native(groom, MatchRole::Groom.name())?,
             rules,
         ))
     }
@@ -197,8 +178,8 @@ impl ChartArea<'_> {
         rules: PoruthamRules,
     ) -> Result<Porutham, Error> {
         Ok(porutham(
-            native(bride, MatchRole::Bride.field())?,
-            native(groom, MatchRole::Groom.field())?,
+            native(bride, MatchRole::Bride.name())?,
+            native(groom, MatchRole::Groom.name())?,
             rules,
         ))
     }
@@ -226,8 +207,8 @@ impl ChartArea<'_> {
     /// the Moon, Venus or Mars, named `bride` or `groom`.
     pub fn kuja(self, bride: &Document, groom: &Document, rules: KujaRules) -> Result<Kuja, Error> {
         Ok(kuja(
-            kuja_native(bride, MatchRole::Bride.field())?,
-            kuja_native(groom, MatchRole::Groom.field())?,
+            kuja_native(bride, MatchRole::Bride.name())?,
+            kuja_native(groom, MatchRole::Groom.name())?,
             rules,
         ))
     }
@@ -265,7 +246,7 @@ impl ChartArea<'_> {
             .iter()
             .enumerate()
             .map(|(at, chart)| {
-                let ours = natives(chart, role.field())
+                let ours = natives(chart, role.name())
                     .map_err(|why| why.with_hint(format!("chart {at}")))?;
                 let (bride, groom) = match role {
                     MatchRole::Bride => (ours, theirs),
