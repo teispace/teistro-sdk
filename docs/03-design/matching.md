@@ -195,6 +195,37 @@ chief five marked: Dhinam, Ganam, Yoni, Rasi and Rajju. The text's
 of the stars, gotra and the signs' castes. They are judgments beyond
 the ten, a later step if a consumer asks.
 
+## The Kuja dosha, decided
+
+**The source** is *Manasagari*, jāyābhāva v. 4, read on the page image
+of the 1904 Venkateshwar print (Internet Archive
+`mhgo_manasagari-paddhati-sanskrit-and-hindi-jyotisha-pothi-mumbai-1904-shri-venk`,
+leaf n120): Mars in the lagna, the 12th, the 4th, the 7th or the 8th, in
+the bride's chart for the husband's ruin and in the groom's for the
+wife's. The BPHS printings of 1899 and 1923, *Muhurta Chintamani* and
+*Muhurta Martanda* (1930) were searched and carry no such verse;
+*Jataka Parijata* XVI v. 23 has Mars in the 7th aspected by enemies,
+a judgment of one chart and not a match (C285).
+
+**The houses** are the verse's five by default. The six with the 2nd,
+which the baseline engine and modern practice use, are a knob
+(`KujaHouses`, C285). Each is counted by sign from the reference's sign
+(C287).
+
+**The references.** Mars's house from the lagna, the Moon and Venus is
+reported for both natives whatever the rules, as fact. The lagna alone
+makes the dosha by default, as the verse counts; all three is a knob
+(`KujaFrom`, C286).
+
+**No lift.** No verse read lifts the dosha. Each side reports whether
+it carries the dosha and the match whether both do, as clauses; the
+popular cancellation by both charts carrying it is the consumer's to
+apply to those facts (C288).
+
+**What it reads.** The lagna's, the Moon's, Venus's and Mars's signs
+of each founded chart, so a chart without the lagna is refused by the
+role it stands in.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
