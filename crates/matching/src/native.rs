@@ -68,6 +68,32 @@ impl Native {
         })
     }
 
+    /// The native whose Moon stands in a nakshatra's pada: the pada's
+    /// middle, so every koota reads the pada named.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Nakshatra, Rashi};
+    /// use teistro_matching::Native;
+    ///
+    /// // Krittika's second pada is the first in Taurus.
+    /// let moon = Native::of_pada(Nakshatra::Krittika, 2)?;
+    /// assert_eq!((moon.pada, moon.rashi), (2, Rashi::Taurus));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A pada outside 1 to 4, named `pada`.
+    pub fn of_pada(nakshatra: Nakshatra, pada: u8) -> Result<Native, Error> {
+        if !(1..=4).contains(&pada) {
+            return Err(
+                Error::invalid_arg(format!("a pada is 1 to 4, not {pada}")).with_field("pada")
+            );
+        }
+        let quarter = nakshatra.id() * 4 + u16::from(pada) - 1;
+        Native::of_moon((f64::from(quarter) + 0.5) * NAKSHATRA_DEG / 4.0)
+    }
+
     /// The nakshatra's place in the circle, 0 for Ashvini.
     pub(crate) fn star(self) -> u16 {
         self.nakshatra.id()
