@@ -380,6 +380,7 @@ __all__ = [
     "RuleRequest",
     "AyurdayaRules",
     "RasmiRules",
+    "ChakrayusRules",
     "ThreePairsRules",
     "RulesReading",
     "ShippedRules",
@@ -7554,11 +7555,22 @@ class RasmiRules(TypedDict, total=False):
     place: Literal["dwadasamsa", "sign"]
 
 
+class ChakrayusRules(TypedDict, total=False):
+    """How the wheel of time's span, Chakrayus, is read (*Jataka Parijata*
+    ch. 5 v. 26, crux C310); every field optional, the note's figure's by
+    default.
+
+    >>> by_pada: ChakrayusRules = {"portion": "pada"}
+    """
+
+    portion: Literal["star", "pada"]
+
+
 class RuleRequest(TypedDict, total=False):
     """The rules a request asks a chart to answer
     (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
     consumer's own rules in the SDK's rule format. `ayurdaya`,
-    `threePairs` and `rasmi` choose how the longevity readings are read,
+    `threePairs`, `rasmi` and `chakrayus` choose how the longevity readings are read,
     and are refused without `longevity`."""
 
     shipped: List[ShippedRules]
@@ -7569,6 +7581,7 @@ class RuleRequest(TypedDict, total=False):
     ayurdaya: AyurdayaRules
     threePairs: ThreePairsRules
     rasmi: RasmiRules
+    chakrayus: ChakrayusRules
 
 
 class RulesReading(TypedDict, total=False):

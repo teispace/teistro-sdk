@@ -2157,6 +2157,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The wheel of time's span, Chakrayus** (`ayurdaya-spans.md`, C310).
+  The longevity readings gain `chakrayus`, *Jataka Parijata* ch. 5 v. 26:
+  each graha's ch. 17 years in proportion to what of its nakshatra is
+  still to run, held to the note's figure (the Sun 2.653 years). A rule
+  request carries `chakrayus` in every binding, `portion` choosing the
+  whole star (default) or the pada the verse names, and v. 33's
+  Kalachakra candidate carries its years. **Numbers:** none; a new
+  reading.
 - **The dashas' span, Dasayus** (`ayurdaya-spans.md`, C309). The
   longevity readings gain `dasayus`, *Jataka Parijata* ch. 5 v. 27: the
   chart's Vimshottari balance and the eight dashas after it, and v. 33's

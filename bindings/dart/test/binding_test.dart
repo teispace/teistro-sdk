@@ -850,6 +850,21 @@ void _engineTests() {
     // v. 27: the dashas' span, a cycle of 120 years less what had run.
     final dasayus = longevity['dasayus']! as Map<String, Object?>;
     expect(dasayus['years']! as num, inInclusiveRange(100, 120));
+    // v. 26: the wheel of time's span, the note's figure's portion by
+    // default.
+    expect((longevity['chakrayus']! as Map<String, Object?>)['rules'], {
+      'portion': 'star',
+    });
+    final byPada =
+        (found(
+                  const RuleRequest(
+                    longevity: true,
+                    chakrayus: ChakrayusRules(portion: ChakraPortion.pada),
+                  ),
+                )!['longevity']!
+                as Map<String, Object?>)['chakrayus']!
+            as Map<String, Object?>;
+    expect(byPada['rules'], {'portion': 'pada'});
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),
       throwsA(

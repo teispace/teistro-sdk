@@ -1011,6 +1011,11 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   // v. 27: the dashas' span, a cycle of 120 years less what had run.
   const { years } = answered.longevity.dasayus;
   assert.ok(years >= 100 && years <= 120, String(years));
+  // v. 26: the wheel of time's span, the note's figure's portion by default.
+  assert.deepEqual(answered.longevity.chakrayus.rules, { portion: 'star' });
+  const byPada = ctx.chart.found({ ...request, rules: { longevity: true, chakrayus: { portion: 'pada' } } })
+    .rules.longevity.chakrayus;
+  assert.deepEqual(byPada.rules, { portion: 'pada' });
   for (const [rules, field] of [
     [{ ayurdaya: parijata }, 'rules.ayurdaya'],
     [{ rasmi: { place: 'sign' } }, 'rules.rasmi'],

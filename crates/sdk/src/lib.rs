@@ -235,7 +235,7 @@ pub use teistro_interpret::{Item, Plan};
 pub use teistro_kp as kp;
 pub use teistro_kp::{KpChart, KpNumber, KpReading};
 pub use teistro_rules as rules;
-pub use teistro_rules::longevity::{AyurdayaRules, RasmiRules};
+pub use teistro_rules::longevity::{AyurdayaRules, ChakrayusRules, RasmiRules};
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths, ThreePairsRules};
 pub use teistro_tajika as tajika;
 pub use teistro_tajika::{

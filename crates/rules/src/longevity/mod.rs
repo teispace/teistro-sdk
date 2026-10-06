@@ -8,6 +8,7 @@
 //! numbers, where a rule answers present or not.
 
 mod ayurdaya;
+mod chakrayus;
 mod choice;
 mod dasayus;
 mod maraka;
@@ -17,6 +18,9 @@ mod rasmi;
 pub use ayurdaya::{
     Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
     Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years, visible_half_share,
+};
+pub use chakrayus::{
+    ChakraGiver, ChakraPortion, Chakrayus, ChakrayusRules, chakra_years, untraversed,
 };
 pub use choice::{Ayus, Candidate, Computed, SpanChoice, span_choice};
 pub use dasayus::{Dasayus, dasayus};

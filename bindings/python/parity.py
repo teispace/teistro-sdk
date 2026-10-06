@@ -867,6 +867,7 @@ def main() -> None:
             put(f"chart-{i}-rules-span", answered["longevity"]["choice"]["ayus"] or "")
             dasayus = answered["longevity"]["dasayus"]
             put(f"chart-{i}-rules-dasayus", dasayus["years"] if dasayus else 0.0)
+            put(f"chart-{i}-rules-chakrayus", answered["longevity"]["chakrayus"]["years"])
             # **Every item said**, not merely counted: the only place the
             # four bindings are compared on text, which exercises the
             # composers, the params shape and the locale engine at once.
