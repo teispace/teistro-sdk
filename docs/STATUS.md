@@ -1058,7 +1058,8 @@ provider's DUT1).
    doublings), Chakrayus (v. 26, through ch. 17's Kalachakra years),
    Nakshatra dasayus (v. 27), and the v. 33 rule choosing a span by the
    strongest of the seven and the lagna. Each needs its own worked
-   figure before code. The three BPHS spans now read as *Jataka Parijata*
+   figure before code; `ayurdaya-spans.md` records the research, the
+   Rasmi crux (rays zero or half at debilitation) and the figures. The three BPHS spans now read as *Jataka Parijata*
    reads them under `AyurdayaRules::PARIJATA` (C302 to C304), and a rule
    request carries `ayurdaya` and `threePairs` in every binding.
    The avakahada is built in every binding (`matching.md`, C297 to C301):
