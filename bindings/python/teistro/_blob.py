@@ -3723,6 +3723,51 @@ class ChartsMarriageDoshaRows:
 
 
 @dataclass(frozen=True)
+class ChartsAvakahada:
+    """The `avakahada` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+    """
+
+    nakshatra: memoryview[int]
+    """The Moon's nakshatra."""
+
+    pada: memoryview[int]
+    """Its pada, 1 to 4."""
+
+    rashi: memoryview[int]
+    """The Moon's sign."""
+
+    nakshatra_lord: memoryview[int]
+    """The nakshatra's lord, the Vimshottari dasha's."""
+
+    rashi_lord: memoryview[int]
+    """The sign's lord, the one Graha Maitri reads."""
+
+    varna: memoryview[int]
+    """The sign's varna, as Varna koota reads it (VI.22)."""
+
+    yoni: memoryview[int]
+    """The nakshatra's yoni."""
+
+    gana: memoryview[int]
+    """The nakshatra's gana."""
+
+    nadi: memoryview[int]
+    """The nakshatra's nadi."""
+
+    cell: memoryview[int]
+    """The birth syllable's place among the śatapada cakra's 112 cells, 0 for a, Krittika's first (C297)."""
+
+    varga: memoryview[int]
+    """The birth syllable's varga (C295)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4419,6 +4464,12 @@ class Charts:
     marriage_dosha_rows: ChartsMarriageDoshaRows
     """Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none."""
 
+    avakahada: ChartsAvakahada
+    """Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for."""
+
+    avakahada_syllables: str
+    """UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `devanagari, iast`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4545,6 +4596,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_kujas = blob.section(115, "kujas")
     at_marriage_doshas = blob.section(116, "marriage_doshas")
     at_marriage_dosha_rows = blob.section(117, "marriage_dosha_rows")
+    at_avakahada = blob.section(118, "avakahada")
+    at_avakahada_syllables = blob.section(119, "avakahada_syllables")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7097,6 +7150,33 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_marriage_dosha_rows.count,
         ),
+        avakahada=ChartsAvakahada(
+            nakshatra=blob.column(
+                at_avakahada, 0, 2, at_avakahada.count
+            ).cast("H"),
+            pada=blob.column(at_avakahada, 1, 1, at_avakahada.count).cast("B"),
+            rashi=blob.column(
+                at_avakahada, 2, 2, at_avakahada.count
+            ).cast("H"),
+            nakshatra_lord=blob.column(
+                at_avakahada, 3, 2, at_avakahada.count
+            ).cast("H"),
+            rashi_lord=blob.column(
+                at_avakahada, 4, 2, at_avakahada.count
+            ).cast("H"),
+            varna=blob.column(
+                at_avakahada, 5, 2, at_avakahada.count
+            ).cast("H"),
+            yoni=blob.column(at_avakahada, 6, 2, at_avakahada.count).cast("H"),
+            gana=blob.column(at_avakahada, 7, 2, at_avakahada.count).cast("H"),
+            nadi=blob.column(at_avakahada, 8, 2, at_avakahada.count).cast("H"),
+            cell=blob.column(at_avakahada, 9, 1, at_avakahada.count).cast("B"),
+            varga=blob.column(
+                at_avakahada, 10, 1, at_avakahada.count
+            ).cast("B"),
+            length=at_avakahada.count,
+        ),
+        avakahada_syllables=blob.text(at_avakahada_syllables),
     )
 
 

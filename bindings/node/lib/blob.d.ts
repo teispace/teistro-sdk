@@ -4425,6 +4425,70 @@ export interface ChartsMarriageDoshaRows {
 }
 
 /**
+ * The `avakahada` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+ */
+export interface ChartsAvakahada {
+  /**
+   * The Moon's nakshatra.
+   * The values are `Nakshatra` ids.
+   */
+  readonly nakshatra: Uint16Array;
+  /**
+   * Its pada, 1 to 4.
+   */
+  readonly pada: Uint8Array;
+  /**
+   * The Moon's sign.
+   * The values are `Rashi` ids.
+   */
+  readonly rashi: Uint16Array;
+  /**
+   * The nakshatra's lord, the Vimshottari dasha's.
+   * The values are `Graha` ids.
+   */
+  readonly nakshatraLord: Uint16Array;
+  /**
+   * The sign's lord, the one Graha Maitri reads.
+   * The values are `Graha` ids.
+   */
+  readonly rashiLord: Uint16Array;
+  /**
+   * The sign's varna, as Varna koota reads it (VI.22).
+   * The values are `Varna` ids.
+   */
+  readonly varna: Uint16Array;
+  /**
+   * The nakshatra's yoni.
+   * The values are `Yoni` ids.
+   */
+  readonly yoni: Uint16Array;
+  /**
+   * The nakshatra's gana.
+   * The values are `Gana` ids.
+   */
+  readonly gana: Uint16Array;
+  /**
+   * The nakshatra's nadi.
+   * The values are `Nadi` ids.
+   */
+  readonly nadi: Uint16Array;
+  /**
+   * The birth syllable's place among the śatapada cakra's 112 cells, 0 for a, Krittika's first (C297).
+   */
+  readonly cell: Uint8Array;
+  /**
+   * The birth syllable's varga (C295).
+   * The values are `NameVarga` ids.
+   */
+  readonly varga: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5349,6 +5413,14 @@ export interface Charts {
    * Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
    */
   readonly marriageDoshaRows: ChartsMarriageDoshaRows;
+  /**
+   * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+   */
+  readonly avakahada: ChartsAvakahada;
+  /**
+   * UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.
+   */
+  readonly avakahadaSyllables: string;
 }
 
 /**

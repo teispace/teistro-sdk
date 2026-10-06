@@ -106,6 +106,13 @@ extern "C" {
 #define TS_CHART_OUTER ((uint32_t)4096)
 
 /**
+ * A chart request's `sections` bit: the Moon's avakahada, in the
+ * `avakahada` and `avakahada_syllables` sections; a tropical chart
+ * refuses it (`03-design/matching.md`, C301).
+ */
+#define TS_CHART_AVAKAHADA ((uint32_t)8192)
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *
@@ -143,7 +150,7 @@ typedef enum ts_kind {
      */
     TS_KIND_RASHI = 2,
     /**
-     * The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member.
+     * The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
      */
     TS_KIND_NAKSHATRA = 3,
     /**
@@ -509,7 +516,7 @@ typedef enum ts_rashi {
 } ts_rashi;
 
 /**
- * The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
+ * The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299). Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
  */
 typedef enum ts_nakshatra {
     /**

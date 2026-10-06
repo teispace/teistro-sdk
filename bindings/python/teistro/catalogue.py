@@ -85,7 +85,7 @@ class Kind(Member):
     """The twelve signs."""
 
     nakshatra = 3
-    """The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member."""
+    """The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299)."""
 
     tithi = 4
     """The thirty tithis of the lunar month."""
@@ -365,7 +365,7 @@ class Rashi(Catalogued):
 
 
 class Nakshatra(Catalogued):
-    """The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`."""
+    """The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299). Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`."""
 
     ASHWINI = 0
     """Ashwini"""

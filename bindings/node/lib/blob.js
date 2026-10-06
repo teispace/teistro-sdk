@@ -1708,6 +1708,27 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 118, 'avakahada');
+    out.avakahada = {
+      nakshatra: column(blob, at, 0, 'u16', at.count),
+      pada: column(blob, at, 1, 'u8', at.count),
+      rashi: column(blob, at, 2, 'u16', at.count),
+      nakshatraLord: column(blob, at, 3, 'u16', at.count),
+      rashiLord: column(blob, at, 4, 'u16', at.count),
+      varna: column(blob, at, 5, 'u16', at.count),
+      yoni: column(blob, at, 6, 'u16', at.count),
+      gana: column(blob, at, 7, 'u16', at.count),
+      nadi: column(blob, at, 8, 'u16', at.count),
+      cell: column(blob, at, 9, 'u8', at.count),
+      varga: column(blob, at, 10, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 119, 'avakahada_syllables');
+    out.avakahadaSyllables = text(blob, at);
+  }
   return out;
 }
 

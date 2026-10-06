@@ -165,6 +165,7 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
             "TS_CHART_DASHA_PHALA",
             "TS_CHART_JAIMINI",
             "TS_CHART_OUTER",
+            "TS_CHART_AVAKAHADA",
             "TS_PANCHANGA_YEARS",
             "TS_PANCHANGA_ECLIPSES",
             "TS_PANCHANGA_NEPAL_SAMBAT",

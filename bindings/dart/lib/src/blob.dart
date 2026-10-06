@@ -4621,6 +4621,63 @@ final class ChartsMarriageDoshaRows {
   final int length;
 }
 
+/// The `avakahada` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+final class ChartsAvakahada {
+  const ChartsAvakahada({
+    required this.nakshatra,
+    required this.pada,
+    required this.rashi,
+    required this.nakshatraLord,
+    required this.rashiLord,
+    required this.varna,
+    required this.yoni,
+    required this.gana,
+    required this.nadi,
+    required this.cell,
+    required this.varga,
+    required this.length,
+  });
+
+  /// The Moon's nakshatra.
+  final Uint16List nakshatra;
+
+  /// Its pada, 1 to 4.
+  final Uint8List pada;
+
+  /// The Moon's sign.
+  final Uint16List rashi;
+
+  /// The nakshatra's lord, the Vimshottari dasha's.
+  final Uint16List nakshatraLord;
+
+  /// The sign's lord, the one Graha Maitri reads.
+  final Uint16List rashiLord;
+
+  /// The sign's varna, as Varna koota reads it (VI.22).
+  final Uint16List varna;
+
+  /// The nakshatra's yoni.
+  final Uint16List yoni;
+
+  /// The nakshatra's gana.
+  final Uint16List gana;
+
+  /// The nakshatra's nadi.
+  final Uint16List nadi;
+
+  /// The birth syllable's place among the śatapada cakra's 112 cells, 0 for a, Krittika's first (C297).
+  final Uint8List cell;
+
+  /// The birth syllable's varga (C295).
+  final Uint8List varga;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5134,6 +5191,8 @@ final class Charts {
     required this.kujas,
     required this.marriageDoshas,
     required this.marriageDoshaRows,
+    required this.avakahada,
+    required this.avakahadaSyllables,
   });
 
   /// What kind of chart these are.
@@ -5531,6 +5590,12 @@ final class Charts {
   /// Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
   final ChartsMarriageDoshaRows marriageDoshaRows;
 
+  /// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+  final ChartsAvakahada avakahada;
+
+  /// UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.
+  final String avakahadaSyllables;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5655,6 +5720,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atKujas = blob.section(115, 'kujas');
   final atMarriageDoshas = blob.section(116, 'marriage_doshas');
   final atMarriageDoshaRows = blob.section(117, 'marriage_dosha_rows');
+  final atAvakahada = blob.section(118, 'avakahada');
+  final atAvakahadaSyllables = blob.section(119, 'avakahada_syllables');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10093,6 +10160,65 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atMarriageDoshaRows.count,
     ),
+    avakahada: ChartsAvakahada(
+      nakshatra: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 0),
+        blob.columnOffset(atAvakahada, 0) + atAvakahada.count * 2,
+      ),
+      pada: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 1),
+        blob.columnOffset(atAvakahada, 1) + atAvakahada.count * 1,
+      ),
+      rashi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 2),
+        blob.columnOffset(atAvakahada, 2) + atAvakahada.count * 2,
+      ),
+      nakshatraLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 3),
+        blob.columnOffset(atAvakahada, 3) + atAvakahada.count * 2,
+      ),
+      rashiLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 4),
+        blob.columnOffset(atAvakahada, 4) + atAvakahada.count * 2,
+      ),
+      varna: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 5),
+        blob.columnOffset(atAvakahada, 5) + atAvakahada.count * 2,
+      ),
+      yoni: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 6),
+        blob.columnOffset(atAvakahada, 6) + atAvakahada.count * 2,
+      ),
+      gana: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 7),
+        blob.columnOffset(atAvakahada, 7) + atAvakahada.count * 2,
+      ),
+      nadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 8),
+        blob.columnOffset(atAvakahada, 8) + atAvakahada.count * 2,
+      ),
+      cell: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 9),
+        blob.columnOffset(atAvakahada, 9) + atAvakahada.count * 1,
+      ),
+      varga: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAvakahada, 10),
+        blob.columnOffset(atAvakahada, 10) + atAvakahada.count * 1,
+      ),
+      length: atAvakahada.count,
+    ),
+    avakahadaSyllables: blob.text(atAvakahadaSyllables),
   );
 }
 

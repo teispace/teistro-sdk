@@ -70,6 +70,11 @@ const int chartJaimini = 2048;
 /// the nine, in the `outer` section (`03-design/western-outer-planets.md`).
 const int chartOuter = 4096;
 
+/// A chart request's `sections` bit: the Moon's avakahada, in the
+/// `avakahada` and `avakahada_syllables` sections; a tropical chart
+/// refuses it (`03-design/matching.md`, C301).
+const int chartAvakahada = 8192;
+
 /// `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
 /// `sections` for the lunar years its days fall in.
 ///
@@ -122,7 +127,7 @@ enum Kind {
   graha(1, 'graha'),
   /// The twelve signs.
   rashi(2, 'rashi'),
-  /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member.
+  /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
   nakshatra(3, 'nakshatra'),
   /// The thirty tithis of the lunar month.
   tithi(4, 'tithi'),
@@ -398,7 +403,7 @@ enum Rashi implements KeyOf<Rashi> {
   }
 }
 
-/// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
+/// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299). Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.
 enum Nakshatra implements KeyOf<Nakshatra> {
   /// Ashwini
   ashwini(0, 'ASHWINI'),
