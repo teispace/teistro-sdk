@@ -86,6 +86,13 @@ export const CHART_JAIMINI = 2048;
 export const CHART_OUTER = 4096;
 
 /**
+ * A chart request's `sections` bit: the Moon's avakahada, in the
+ * `avakahada` and `avakahada_syllables` sections; a tropical chart
+ * refuses it (`03-design/matching.md`, C301).
+ */
+export const CHART_AVAKAHADA = 8192;
+
+/**
  * `TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's
  * `sections` for the lunar years its days fall in.
  *

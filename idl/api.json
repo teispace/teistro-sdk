@@ -146,6 +146,13 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TS_CHART_AVAKAHADA",
+      "doc": "A chart request's `sections` bit: the Moon's avakahada, in the\n`avakahada` and `avakahada_syllables` sections; a tropical chart\nrefuses it (`03-design/matching.md`, C301).",
+      "ty": "u32",
+      "value": 8192,
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TS_PANCHANGA_YEARS",
       "doc": "`TS_PANCHANGA_YEARS`, the bit a caller sets in a panchanga request's\n`sections` for the lunar years its days fall in.\n\nNamed in the header, because the bits are the boundary's vocabulary:\na consumer of the C ABI writes `TS_PANCHANGA_YEARS`, and every\ngenerated layer writes a named option instead. An unknown bit asks\nfor nothing, as a chart request's does.",
       "ty": "u32",
@@ -188,7 +195,7 @@
         {
           "name": "Nakshatra",
           "value": 3,
-          "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member.",
+          "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).",
           "key": "nakshatra"
         },
         {
@@ -730,7 +737,7 @@
     },
     {
       "name": "Nakshatra",
-      "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.",
+      "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299). Members are the catalogue's ids; the full key id is `(TS_KIND_NAKSHATRA << 16) | member`.",
       "repr": "u16",
       "kind": "nakshatra",
       "values": [
@@ -21077,6 +21084,85 @@
               "doc": "1 when an exception the source names lifts it."
             }
           ]
+        },
+        {
+          "id": 118,
+          "name": "avakahada",
+          "doc": "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "nakshatra",
+              "scalar": "u16",
+              "doc": "The Moon's nakshatra.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "pada",
+              "scalar": "u8",
+              "doc": "Its pada, 1 to 4."
+            },
+            {
+              "name": "rashi",
+              "scalar": "u16",
+              "doc": "The Moon's sign.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "nakshatra_lord",
+              "scalar": "u16",
+              "doc": "The nakshatra's lord, the Vimshottari dasha's.",
+              "enum": "Graha"
+            },
+            {
+              "name": "rashi_lord",
+              "scalar": "u16",
+              "doc": "The sign's lord, the one Graha Maitri reads.",
+              "enum": "Graha"
+            },
+            {
+              "name": "varna",
+              "scalar": "u16",
+              "doc": "The sign's varna, as Varna koota reads it (VI.22).",
+              "enum": "Varna"
+            },
+            {
+              "name": "yoni",
+              "scalar": "u16",
+              "doc": "The nakshatra's yoni.",
+              "enum": "Yoni"
+            },
+            {
+              "name": "gana",
+              "scalar": "u16",
+              "doc": "The nakshatra's gana.",
+              "enum": "Gana"
+            },
+            {
+              "name": "nadi",
+              "scalar": "u16",
+              "doc": "The nakshatra's nadi.",
+              "enum": "Nadi"
+            },
+            {
+              "name": "cell",
+              "scalar": "u8",
+              "doc": "The birth syllable's place among the śatapada cakra's 112 cells, 0 for a, Krittika's first (C297)."
+            },
+            {
+              "name": "varga",
+              "scalar": "u8",
+              "doc": "The birth syllable's varga (C295).",
+              "enum": "TsNameVarga"
+            }
+          ]
+        },
+        {
+          "id": 119,
+          "name": "avakahada_syllables",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },

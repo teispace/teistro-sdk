@@ -649,6 +649,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_harmonic_sections(108))
         .chain(chart_matching_sections(111))
         .chain(chart_marriage_dosha_sections(116))
+        .chain(chart_avakahada_sections(118))
         .collect(),
     }
 }
@@ -2354,6 +2355,61 @@ fn chart_marriage_dosha_sections(first: u32) -> [SectionSchema; 2] {
                     "1 when an exception the source names lifts it.",
                 ),
             ],
+        ),
+    ]
+}
+
+/// Every chart's avakahada from `first`: the Moon's readings a row a
+/// chart, and the syllables it is named by as text (`03-design/matching.md`,
+/// C297 to C301).
+fn chart_avakahada_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when the avakahada was not asked for.";
+    let read =
+        |name: &str, doc: &str, kind: &str| ColumnDef::new(name, Scalar::U16, doc).of_enum(kind);
+    [
+        SectionSchema::columns(
+            first,
+            "avakahada",
+            &format!(
+                "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). {empty}"
+            ),
+            vec![
+                read("nakshatra", "The Moon's nakshatra.", "Nakshatra"),
+                ColumnDef::new("pada", Scalar::U8, "Its pada, 1 to 4."),
+                read("rashi", "The Moon's sign.", "Rashi"),
+                read(
+                    "nakshatra_lord",
+                    "The nakshatra's lord, the Vimshottari dasha's.",
+                    "Graha",
+                ),
+                read(
+                    "rashi_lord",
+                    "The sign's lord, the one Graha Maitri reads.",
+                    "Graha",
+                ),
+                read(
+                    "varna",
+                    "The sign's varna, as Varna koota reads it (VI.22).",
+                    "Varna",
+                ),
+                read("yoni", "The nakshatra's yoni.", "Yoni"),
+                read("gana", "The nakshatra's gana.", "Gana"),
+                read("nadi", "The nakshatra's nadi.", "Nadi"),
+                ColumnDef::new(
+                    "cell",
+                    Scalar::U8,
+                    "The birth syllable's place among the śatapada cakra's 112 cells, 0 for a, Krittika's first (C297).",
+                ),
+                ColumnDef::new("varga", Scalar::U8, "The birth syllable's varga (C295).")
+                    .of_enum("TsNameVarga"),
+            ],
+        ),
+        SectionSchema::bytes(
+            first + 1,
+            "avakahada_syllables",
+            &format!(
+                "UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). {empty}"
+            ),
         ),
     ]
 }

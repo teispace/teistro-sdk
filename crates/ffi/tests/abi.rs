@@ -6769,10 +6769,12 @@ fn a_chart_request_answers_the_progressions() {
         // request below holds that a progressed chart is founded on the
         // batch's foundation alone: the sections cost, and change nothing.
         // The one exception is the outer planets, which the birth then
-        // carries and its later charts place too.
+        // carries and its later charts place too. The avakahada is left
+        // out as `with_everything` leaves it out: a tropical chart
+        // refuses it.
         &TsChartRequest {
             progressions_json: asked_json.as_ptr(),
-            sections: u32::MAX,
+            sections: !teistro_ffi::chart::TS_CHART_AVAKAHADA,
             ..base
         },
     )
@@ -8724,6 +8726,128 @@ fn a_chart_request_answers_its_harmonic() {
     .unwrap_err();
     assert_eq!(status, Status::InvalidArg);
     assert_eq!(ctx.last_error().2.as_deref(), Some("harmonic.number"));
+}
+
+/// The avakahada crosses whole: every cell and syllable equals the
+/// façade's over a batch, nothing asked is empty sections, and a tropical
+/// chart refuses it by name (`03-design/matching.md`, C301).
+#[test]
+fn a_chart_request_answers_its_avakahada() {
+    use teistro_ffi::chart::TS_CHART_AVAKAHADA;
+    use teistro_ffi::naam::TsNameVarga;
+
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_451_545.0, 2_451_552.5, 2_451_561.25];
+    let base = chart_request(&instants, (27.7172, 85.324), 20_700);
+    let asked = TsChartRequest {
+        sections: TS_CHART_AVAKAHADA,
+        ..base
+    };
+    let bytes = chart_blob(&ctx, &asked)
+        .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let readings: Vec<teistro::Avakahada> = sdk
+        .chart()
+        .readings(
+            &instants
+                .iter()
+                .map(|&jd| teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal(jd))
+                .collect::<Vec<_>>(),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            )
+            .with_avakahada(),
+        )
+        .unwrap()
+        .value
+        .into_iter()
+        .map(|document| document.avakahada.unwrap())
+        .collect();
+    let ints = |name: &str| -> Vec<i64> {
+        reader
+            .column("avakahada", name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    for (column, cell) in [
+        (
+            "nakshatra",
+            &(|read: &teistro::Avakahada| i64::from(read.nakshatra.id()))
+                as &dyn Fn(&teistro::Avakahada) -> i64,
+        ),
+        ("pada", &|read: &teistro::Avakahada| i64::from(read.pada)),
+        ("rashi", &|read: &teistro::Avakahada| {
+            i64::from(read.rashi.id())
+        }),
+        ("nakshatra_lord", &|read: &teistro::Avakahada| {
+            i64::from(read.nakshatra_lord.id())
+        }),
+        ("rashi_lord", &|read: &teistro::Avakahada| {
+            i64::from(read.rashi_lord.id())
+        }),
+        ("varna", &|read: &teistro::Avakahada| {
+            i64::from(read.varna.id())
+        }),
+        ("yoni", &|read: &teistro::Avakahada| {
+            i64::from(read.yoni.id())
+        }),
+        ("gana", &|read: &teistro::Avakahada| {
+            i64::from(read.gana.id())
+        }),
+        ("nadi", &|read: &teistro::Avakahada| {
+            i64::from(read.nadi.id())
+        }),
+        ("cell", &|read: &teistro::Avakahada| {
+            i64::from(read.syllable.cell)
+        }),
+        ("varga", &|read: &teistro::Avakahada| {
+            TsNameVarga::from(read.syllable.varga) as i64
+        }),
+    ] {
+        assert_eq!(
+            ints(column),
+            readings.iter().map(cell).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+    let syllables: Vec<[String; 2]> =
+        serde_json::from_slice(reader.bytes("avakahada_syllables").unwrap()).unwrap();
+    assert_eq!(
+        syllables,
+        readings
+            .iter()
+            .map(|read| [read.syllable.devanagari.clone(), read.syllable.iast.clone()])
+            .collect::<Vec<_>>()
+    );
+
+    // None asked is empty sections; a tropical chart refuses it by name.
+    let bytes = chart_blob(&ctx, &base).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    assert_eq!(reader.column("avakahada", "pada").unwrap().len(), 0);
+    assert_eq!(reader.bytes("avakahada_syllables").unwrap(), b"");
+    let western = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("western-tropical-default"),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        chart_blob(&western, &asked).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(western.last_error().2.as_deref(), Some("avakahada"));
 }
 
 /// A match crosses whole: every cell of the two sections equals the

@@ -1884,8 +1884,14 @@ pub const TS_CHART_JAIMINI: u32 = 2048;
 ///
 /// `api: constant`
 pub const TS_CHART_OUTER: u32 = 4096;
+/// A chart request's `sections` bit: the Moon's avakahada, in the
+/// `avakahada` and `avakahada_syllables` sections; a tropical chart
+/// refuses it (`03-design/matching.md`, C301).
+///
+/// `api: constant`
+pub const TS_CHART_AVAKAHADA: u32 = 8192;
 
-const SECTION_BITS: [SectionBit; 13] = [
+const SECTION_BITS: [SectionBit; 14] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -1899,6 +1905,7 @@ const SECTION_BITS: [SectionBit; 13] = [
     (TS_CHART_DASHA_PHALA, ChartRequest::with_dasha_phala),
     (TS_CHART_JAIMINI, ChartRequest::with_jaimini),
     (TS_CHART_OUTER, ChartRequest::with_outer_planets),
+    (TS_CHART_AVAKAHADA, ChartRequest::with_avakahada),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -2658,6 +2665,84 @@ impl DashaPhalaColumns {
             ColumnData::U8(&self.unfavourable),
         ]);
         writer.columns("dasha_phala", self.graha.len(), &data)
+    }
+}
+
+/// Every chart's avakahada, a row a chart that asked for it, and its
+/// syllables as the canonical JSON `avakahada_syllables` carries.
+#[derive(Default)]
+struct AvakahadaColumns {
+    nakshatra: Vec<u16>,
+    pada: Vec<u8>,
+    rashi: Vec<u16>,
+    nakshatra_lord: Vec<u16>,
+    rashi_lord: Vec<u16>,
+    varna: Vec<u16>,
+    yoni: Vec<u16>,
+    gana: Vec<u16>,
+    nadi: Vec<u16>,
+    cell: Vec<u8>,
+    varga: Vec<u8>,
+    /// Empty when no chart asked, so a caller that did not pays for no text.
+    syllables: String,
+}
+
+impl AvakahadaColumns {
+    fn of(documents: &[Document]) -> AvakahadaColumns {
+        let readings: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.avakahada.as_ref())
+            .collect();
+        let mut columns = AvakahadaColumns::default();
+        for read in &readings {
+            columns.nakshatra.push(read.nakshatra.id());
+            columns.pada.push(read.pada);
+            columns.rashi.push(read.rashi.id());
+            columns.nakshatra_lord.push(read.nakshatra_lord.id());
+            columns.rashi_lord.push(read.rashi_lord.id());
+            columns.varna.push(read.varna.id());
+            columns.yoni.push(read.yoni.id());
+            columns.gana.push(read.gana.id());
+            columns.nadi.push(read.nadi.id());
+            columns.cell.push(read.syllable.cell);
+            columns
+                .varga
+                .push(crate::naam::TsNameVarga::from(read.syllable.varga) as u8);
+        }
+        if !readings.is_empty() {
+            let texts: Vec<[&str; 2]> = readings
+                .iter()
+                .map(|read| {
+                    [
+                        read.syllable.devanagari.as_str(),
+                        read.syllable.iast.as_str(),
+                    ]
+                })
+                .collect();
+            columns.syllables = teistro_core::envelope::canonical_json(&texts);
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "avakahada",
+            self.pada.len(),
+            &[
+                ColumnData::U16(&self.nakshatra),
+                ColumnData::U8(&self.pada),
+                ColumnData::U16(&self.rashi),
+                ColumnData::U16(&self.nakshatra_lord),
+                ColumnData::U16(&self.rashi_lord),
+                ColumnData::U16(&self.varna),
+                ColumnData::U16(&self.yoni),
+                ColumnData::U16(&self.gana),
+                ColumnData::U16(&self.nadi),
+                ColumnData::U8(&self.cell),
+                ColumnData::U8(&self.varga),
+            ],
+        )?;
+        writer.bytes("avakahada_syllables", self.syllables.as_bytes())
     }
 }
 
@@ -7369,6 +7454,7 @@ pub fn encode(
         progressions.write(&mut writer)?;
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
         tables.write(&mut writer)?;
+        by.avakahada.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -8804,6 +8890,7 @@ struct Sections {
     dasha_phala: DashaPhalaColumns,
     jaimini: JaiminiColumns,
     years: PraveshaColumns,
+    avakahada: AvakahadaColumns,
 }
 
 impl Sections {
@@ -8828,6 +8915,7 @@ impl Sections {
             dasha_phala: DashaPhalaColumns::of(documents),
             jaimini: JaiminiColumns::of(documents),
             years: PraveshaColumns::of(praveshas)?,
+            avakahada: AvakahadaColumns::of(documents),
         })
     }
 }
