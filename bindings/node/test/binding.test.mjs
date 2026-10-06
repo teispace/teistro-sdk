@@ -1016,6 +1016,18 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   const byPada = ctx.chart.found({ ...request, rules: { longevity: true, chakrayus: { portion: 'pada' } } })
     .rules.longevity.chakrayus;
   assert.deepEqual(byPada.rules, { portion: 'pada' });
+  // ch. 10: the ashtakavarga spans, the seven's years summed, and the
+  // candidate Mars names carries their sum.
+  const spans = answered.longevity.ashtakavarga;
+  assert.deepEqual(spans.rules, { measures: 'parijata', divisor: 'thirty' });
+  assert.equal(spans.grahas.length, 7);
+  const bhinna = spans.grahas.reduce((sum, giver) => sum + giver.years, 0);
+  assert.ok(Math.abs(bhinna - spans.bhinna) < 1e-9, String(bhinna));
+  assert.equal(choice.candidates.find((c) => c.ayus === 'bhinnashtakavarga').years, spans.bhinna);
+  const balabhadra = { measures: 'bphs', divisor: 'seven-over-twenty-seven' };
+  const byBalabhadra = ctx.chart.found({ ...request, rules: { longevity: true, ashtakavarga: balabhadra } })
+    .rules.longevity.ashtakavarga;
+  assert.deepEqual(byBalabhadra.rules, balabhadra);
   for (const [rules, field] of [
     [{ ayurdaya: parijata }, 'rules.ayurdaya'],
     [{ rasmi: { place: 'sign' } }, 'rules.rasmi'],

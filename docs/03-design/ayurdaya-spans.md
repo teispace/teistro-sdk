@@ -141,5 +141,65 @@ readings of the figure decide the rest:
    `chakrayus.portion` is the star by default and the pada by choice.
    With it, 46 of the corpus's 53 charts name a computed span under
    v. 33; the 7 left name Samudaya (6) or Bhinnashtakavarga (1).
-5. The two ashtakavarga spans (v. 27's last clause, "treated in ch. 10"),
-   next.
+5. ~~The two ashtakavarga spans (v. 27's last clause, "treated in ch.
+   10").~~ Built (C311 to C314): `longevity.ashtakavarga` gives each
+   graha's years from its own reduced ashtakavarga, their sum
+   (Bhinnashtakavargaja, 24 to 58 years over the corpus) and Samudaya
+   (1.4 to 108.7). Every one of the corpus's 53 charts now names a span
+   the SDK computes.
+
+## The ashtakavarga spans (ch. 10, vol. II)
+
+v. 33's Mars names Bhinnashtakavargaja and Saturn Samudaya; v. 27 says
+the ashtakavarga ayus is "treated in ch. 10". Volume II (public domain,
+the Internet Archive's page images, `page/nNN_w1400.jpg`; the book page
+is the image number plus 620) gives both.
+
+- **vv. 44 and 45 (p. 689), each graha's years.** In the graha's own
+  ashtakavarga after the trine and the single-lord reductions (vv. 39 to
+  42), multiply each sign's bindus by its sign's measure, Aries to
+  Pisces 7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12, and the bindus in the
+  signs the seven occupy by the occupant's measure, the Sun to Saturn 5,
+  5, 8, 5, 10, 7, 5. Divide the sum by 30; a quotient over 12 casts out
+  its twelves. The figure (p. 690): the Sun's reduced ashtakavarga gives
+  162 by the signs and 90 by the grahas, 252 / 30 = 8.4 years.
+  **Virgo's measure is 5** where BPHS's translator, and the SDK's pinda,
+  read 6, and the recording engine 8.
+- **The note (p. 690):** Balabhadra and Mantreswara multiply the same sum
+  by 7 and divide by 27, casting out twenty-sevens, and reduce it: half
+  for another graha in the bhava, debilitation or the Sun's rays; a
+  third in an enemy's house or the visible half; the greatest only.
+- **v. 46 (p. 691):** doubled in exaltation, halved in debilitation or
+  eclipsed, in proportion between; Mars retrograde doubled.
+- **v. 48:** the seven's years summed are the span; some add the
+  lagna's, from its own ashtakavarga.
+- **v. 50 (p. 693):** another Bhinnashtakavarga span, the bindus in the
+  signs the seven occupy, "subject to the reductions mentioned already".
+- **v. 70 (p. 705):** the sarvashtakavarga's trine and single-lord
+  reductions, then each sign's figure less its twelves, a figure of
+  exactly 12 kept.
+- **v. 71 (p. 706), Samudaya:** those figures times the same sign and
+  graha measures, the sum times 7 over 27; "if in excess of the standard
+  Ayus, i.e. 100 years, should be diminished by 100 years". No worked
+  figure.
+
+Decided:
+
+- **Virgo 5 (C311).** The book's own table, which its figure uses; BPHS's
+  translator's 6, the SDK's pinda, by choice (`measures: "bphs"`).
+- **Over 30 (C312).** The verse's, which the figure works; the note's
+  Balabhadra and Mantreswara 7 over 27 by choice
+  (`divisor: "seven-over-twenty-seven"`). The note's reductions are not
+  read with either: they are Balabhadra's, and the verse's v. 46 is.
+- **v. 46 alone (C313).** Twice at exaltation, half at debilitation,
+  linear in the arc from debilitation between, as `by_exaltation`
+  measures it; an eclipsed (combust) graha halved instead and retrograde
+  Mars doubled. The lagna's years (v. 48's "some") and v. 50's other
+  span are not read.
+- **A hundred taken off once (C314).** v. 71 diminishes a product "in
+  excess of" 100 by 100. Over the corpus the products run from 40.7 to
+  208.7 years: 19 are under 100, 32 lose the hundred, and 2 exceed 200
+  and keep over 100 years. The verse says no more, so the span is
+  literal and `samudaya_product` carries the product before it. v. 71
+  calls the span Nakshatra Ayus and gives it in solar years by 324 over
+  365 (p. 706): `samudaya_solar`.

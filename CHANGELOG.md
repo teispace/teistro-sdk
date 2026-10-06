@@ -2157,6 +2157,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The two ashtakavarga spans** (`ayurdaya-spans.md`, C311 to C314).
+  The longevity readings gain `ashtakavarga`, *Jataka Parijata* ch. 10:
+  each graha's years from its own reduced ashtakavarga (vv. 44 to 46),
+  held to the figure's Sun (162 + 90 → 8.4 years), their sum as
+  Bhinnashtakavargaja, and Samudaya from the gathered ashtakavarga
+  (vv. 70 and 71) with the product before its hundred is taken off and
+  its solar years by the verse's 324 over 365. A
+  rule request carries `ashtakavarga` in every binding, `measures` and
+  `divisor` choosing BPHS's Virgo and the note's 7 over 27, and v. 33's
+  Bhinnashtakavarga and Samudaya candidates carry their years. A
+  longevity request now also asks for the ashtakavarga it reads.
+  `teistro_strength::ashtakavarga::reduce` is public. **Numbers:** none
+  beyond the new reading.
 - **The wheel of time's span, Chakrayus** (`ayurdaya-spans.md`, C310).
   The longevity readings gain `chakrayus`, *Jataka Parijata* ch. 5 v. 26:
   each graha's ch. 17 years in proportion to what of its nakshatra is

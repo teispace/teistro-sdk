@@ -5927,6 +5927,7 @@ final class RuleRequest {
     this.threePairs,
     this.rasmi,
     this.chakrayus,
+    this.ashtakavarga,
   });
 
   /// The shipped sets to evaluate.
@@ -5942,10 +5943,10 @@ final class RuleRequest {
   final bool houses;
 
   /// Whether to add the three pairs, the three spans, the rays, the
-  /// dashas' and the wheel of time's spans, the span the strongest names
-  /// and the marakas; asks the
-  /// chart for the Shadbala and Bhava bala they weigh and the Vimshottari
-  /// whose balance the dashas' span reads.
+  /// dashas', the wheel of time's and the two ashtakavarga spans, the span
+  /// the strongest names and the marakas; asks the chart for the Shadbala
+  /// and Bhava bala they weigh, the Vimshottari whose balance the dashas'
+  /// span reads and the ashtakavarga.
   final bool longevity;
 
   /// How the three spans are read when [longevity] asks; BPHS's by
@@ -5964,6 +5965,10 @@ final class RuleRequest {
   /// note's figure's by default. Refused without [longevity].
   final ChakrayusRules? chakrayus;
 
+  /// How the two ashtakavarga spans are read when [longevity] asks;
+  /// *Jataka Parijata*'s by default. Refused without [longevity].
+  final AshtakavargaAyusRules? ashtakavarga;
+
   String get _json => jsonEncode(<String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
@@ -5974,6 +5979,7 @@ final class RuleRequest {
     if (threePairs != null) 'threePairs': threePairs!._record,
     if (rasmi != null) 'rasmi': rasmi!._record,
     if (chakrayus != null) 'chakrayus': chakrayus!._record,
+    if (ashtakavarga != null) 'ashtakavarga': ashtakavarga!._record,
   });
 }
 
@@ -6218,6 +6224,61 @@ final class ChakrayusRules {
 
   Map<String, Object?> get _record => <String, Object?>{
     if (portion != null) 'portion': portion!.key,
+  };
+}
+
+/// Which table measures the signs in the ashtakavarga spans (crux C311).
+enum AyusSignMeasures {
+  /// *Jataka Parijata*'s, Virgo 5.
+  parijata('parijata'),
+
+  /// BPHS's translator's, Virgo 6, which the pindas use.
+  bphs('bphs');
+
+  const AyusSignMeasures(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How a graha's ashtakavarga pinda becomes years (crux C312).
+enum AyusDivisor {
+  /// Over 30, twelves cast out (*Jataka Parijata* ch. 10 vv. 44 and 45).
+  thirty('thirty'),
+
+  /// Times 7 over 27, twenty-sevens cast out (Balabhadra and Mantreswara).
+  sevenOverTwentySeven('seven-over-twenty-seven');
+
+  const AyusDivisor(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya, are
+/// read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311 to
+/// C314); a field left null is *Jataka Parijata*'s reading.
+///
+/// ```dart
+/// // As Balabhadra reads them, by BPHS's measures and 7 over 27.
+/// const rules = RuleRequest(
+///   longevity: true,
+///   ashtakavarga: AshtakavargaAyusRules(
+///     measures: AyusSignMeasures.bphs,
+///     divisor: AyusDivisor.sevenOverTwentySeven,
+///   ),
+/// );
+/// ```
+final class AshtakavargaAyusRules {
+  const AshtakavargaAyusRules({this.measures, this.divisor});
+
+  final AyusSignMeasures? measures;
+
+  final AyusDivisor? divisor;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (measures != null) 'measures': measures!.key,
+    if (divisor != null) 'divisor': divisor!.key,
   };
 }
 

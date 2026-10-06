@@ -1176,6 +1176,14 @@ counts from the same distance, and the rays' class by Jatakadesa's bands;
 `ayurdaya-spans.md` records the crux and the figure it is held to
 (C305 to C307).
 
+**The ashtakavarga spans (2026-10-07).** Ch. 10 (vol. II) gives the last
+two spans v. 33 names. `Evaluator::ashtakavarga_ayus` takes a chart's raw
+bindus, reduces each graha's row by the strength crate's own `reduce`
+(the trine and Ekadhipatya under the chart's setting, so there is one
+reduction), and gives each graha's years, their sum and Samudaya from the
+gathered rows; `ayurdaya-spans.md` records the figure and cruxes C311 to
+C314.
+
 **The spans as *Jataka Parijata* reads them (2026-10-07).** *Jataka Parijata*
 ch. 5 (Sastri's 1932 translation, public domain, read on the page images)
 quotes Varahamihira's three spans and reductions, and reads three of them

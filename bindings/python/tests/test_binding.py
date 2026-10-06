@@ -57,6 +57,7 @@ from teistro import (
     AyurdayaRules,
     RasmiRules,
     ChakrayusRules,
+    AshtakavargaAyusRules,
     RuleRequest,
     RulesReading,
     Theme,
@@ -1033,6 +1034,17 @@ class AnEngine(WithLibrary):
         pada = found({"longevity": True, "chakrayus": by_pada})
         assert pada is not None
         self.assertEqual(pada["longevity"]["chakrayus"]["rules"], {"portion": "pada"})
+        # ch. 10: the ashtakavarga spans, the seven's years summed, and the
+        # candidate Mars names carries their sum.
+        spans = answered["longevity"]["ashtakavarga"]
+        self.assertEqual(spans["rules"], {"measures": "parijata", "divisor": "thirty"})
+        self.assertAlmostEqual(sum(giver["years"] for giver in spans["grahas"]), spans["bhinna"])
+        mars = next(c for c in choice["candidates"] if c["ayus"] == "bhinnashtakavarga")
+        self.assertEqual(mars["years"], spans["bhinna"])
+        balabhadra: AshtakavargaAyusRules = {"measures": "bphs", "divisor": "seven-over-twenty-seven"}
+        by_balabhadra = found({"longevity": True, "ashtakavarga": balabhadra})
+        assert by_balabhadra is not None
+        self.assertEqual(by_balabhadra["longevity"]["ashtakavarga"]["rules"], balabhadra)
         with self.assertRaises(TeistroError) as unread:
             found({"rasmi": verse_rules})
         self.assertEqual(unread.exception.field, "rules.rasmi")

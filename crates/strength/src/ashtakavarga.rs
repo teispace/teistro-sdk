@@ -294,6 +294,29 @@ pub fn bindus(chart: &AshtakavargaChart, reading: MoonBinduFromJupiter) -> [[u8;
     prastara(chart, reading).map(|row| row.map(|cell| cell.count_ones() as u8))
 }
 
+/// A row reduced the two ways (BPHS chs. 67 and 68, *Jataka Parijata* ch. 10
+/// vv. 39 to 42): the trine reduction, then the Ekadhipatya under `rule`,
+/// with `occupied` the signs the seven grahas stand in.
+///
+/// ```
+/// use teistro_core::settings::Ekadhipatya;
+/// use teistro_strength::ashtakavarga::reduce;
+///
+/// // Each trine loses its least, leaving Leo 2 of its 5; Saturn's
+/// // Capricorn and Aquarius, both empty and left 1 each, are cleared.
+/// let row: [u16; 12] = [3, 1, 2, 4, 5, 1, 2, 3, 4, 2, 3, 1];
+/// let reduced = reduce(row, &[false; 12], Ekadhipatya::Bphs);
+/// assert_eq!((reduced[4], reduced[9], reduced[10]), (2, 0, 0));
+/// ```
+#[must_use]
+pub fn reduce<T: Copy + Ord + Default + core::ops::Sub<Output = T>>(
+    values: [T; SIGNS],
+    occupied: &[bool; SIGNS],
+    rule: Ekadhipatya,
+) -> [T; SIGNS] {
+    ekadhipatya(trikona(values), occupied, rule)
+}
+
 /// The trine reduction: the least of each trine taken from all three.
 fn trikona<T: Copy + Ord + core::ops::Sub<Output = T>>(values: [T; SIGNS]) -> [T; SIGNS] {
     let mut out = values;
