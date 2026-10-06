@@ -2157,6 +2157,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Naam milan in every binding** (`matching.md`, C291 to C296).
+  `sdk.matching.naam(bride, groom, rules)` is a new area in Node,
+  Python, Dart and Rust, since a match of two names reads no sky.
+  `ts_naam_milan` answers the `naam` blob, whose Ashta Koota and ten
+  considerations cross in the chart's own shapes and are read by the
+  chart's own decoders. `TsNameVarga` and `TsVargaRelation` are held to
+  serde. The five parity runners agree on a Devanagari pair with
+  Abhijit placed in Shravana and an IAST pair.
 - **Naam milan: two names matched star to star** (`matching.md`, C291
   to C296). A name's first syllable gives its star through the śatapada
   cakra, which *Muhurta Chintamani* prints (p. 173) and *Narapati

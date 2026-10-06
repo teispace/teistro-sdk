@@ -1,7 +1,7 @@
 # Matching: the Ashta Koota and the ten considerations (the `matching` module)
 
 Status: the Ashta Koota and the ten considerations `built`, 2026-10-04;
-naam milan `built` in the kernel and the SDK, 2026-10-06.
+naam milan `built` in every binding, 2026-10-07.
 Written from the sources before any code. `sdk.chart().matching`
 answers two charts' Ashta Koota and `sdk.chart().porutham` their ten
 considerations; `matching_with` matches a batch against one partner's
@@ -336,6 +336,20 @@ a name against a birth chart is not offered.
   read. Every binding reads `chart.matching`, `chart.porutham`,
   `chart.kuja` and `chart.marriageDoshas`, with parity across the five
   runners.
+- Naam milan reads no sky, so it is not a chart field: it is
+  `sdk.matching().naam(bride, groom, NaamRules)`, an area of its own in
+  every binding (`surface-areas.md`). At the boundary,
+  `ts_naam_milan(request_json)` takes `{"bride", "groom", "rules"}`,
+  read strictly as `NaamRequest`, and answers the `naam` blob:
+  `naam_names`, two rows (the bride's, then the groom's) of `cell`,
+  `nakshatra`, `abhijit` (1 where the star is none of the 27), `quarter`
+  and `varga`; `naam_varga`, the relation; and the chart's own
+  `matchings`, `matching_kootas`, `poruthams` and `porutham_rows`
+  shapes, one match, written by the chart's own column writers. Each
+  binding reads those four through the decoder a chart batch uses, so a
+  name match and a birth match cannot drift apart. A refusal is named
+  under `naam`: `naam.groom.abhijit`, `naam.bride.name`,
+  `naam.rules.name.latin`.
 
 ## What building it found
 
