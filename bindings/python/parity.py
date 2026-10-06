@@ -20,6 +20,10 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    AshtaKoota,
+    Context,
+    NaamRules,
+    Porutham,
     BhakootKoota,
     DhinamPorutham,
     GanamPorutham,
@@ -302,6 +306,50 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
         )
 
 
+def put_ashta(prefix: str, matched: AshtaKoota) -> None:
+    """An Ashta Koota as every runner prints it, under `prefix`."""
+    put(f"{prefix}-matching", number(matched.total))
+    for koota in matched.kootas:
+        put(
+            f"{prefix}-matching-{koota.reading.koota.full_key}",
+            f"{number(koota.points)} {number(koota.max_points)} {reading_text(koota.reading)}",
+        )
+
+
+def put_porutham(prefix: str, ten: Porutham) -> None:
+    """Ten considerations as every runner prints them, under `prefix`."""
+    clauses = ten.exception
+    put(
+        f"{prefix}-porutham",
+        f"{ten.agreeing} {ten.chief_agreeing} {int(clauses.one_lord)} "
+        f"{int(clauses.lords_friendly)} {int(clauses.opposite)}",
+    )
+    for consideration in ten.considerations:
+        put(
+            f"{prefix}-porutham-{consideration.reading.koota.full_key}",
+            f"{int(consideration.agrees)} {int(consideration.lifted)} {porutham_text(consideration.reading)}",
+        )
+
+
+def put_naam(ctx: Context) -> None:
+    """Two pairs of names, as every runner asks them: a Devanagari pair
+    whose groom's syllable is Abhijit's, placed in Shravana, and an IAST
+    pair."""
+    pairs: list[tuple[str, str, NaamRules]] = [
+        ("प्रिया", "ज़ोया", {"name": {"abhijit": "SHRAVANA"}, "koota": {"nadiDosha": "MIDDLE_ONLY"}}),
+        ("kṛṣṇā", "śyāma", {"name": {"latin": "IAST"}, "porutham": {"deerghaBeyond": "SEVENTH"}}),
+    ]
+    for n, (bride, groom, rules) in enumerate(pairs):
+        read = ctx.matching.naam(bride, groom, rules)
+        for who, name in (("bride", read.bride), ("groom", read.groom)):
+            star = "NONE" if name.nakshatra is None else name.nakshatra.full_key
+            put(f"naam-{n}-{who}", f"{name.cell} {star} {name.quarter} {name.varga.key}")
+        varga = read.varga
+        put(f"naam-{n}-varga", f"{varga.bride.key} {varga.groom.key} {varga.relation.key}")
+        put_ashta(f"naam-{n}", read.ashta)
+        put_porutham(f"naam-{n}", read.porutham)
+
+
 def put_day(prefix: str, day: LocalDay) -> None:
     """A local day's every field, under the same keys for a chart's day and
     an almanac's, because the two layers hand back one record."""
@@ -353,6 +401,7 @@ def main() -> None:
     put("locale", ctx.intl.locale)
     put("settings-hash", ctx.settings_hash)
     put("settings-fnv", fnv(ctx.settings_json))
+    put_naam(ctx)
 
     # ── The calendars ─────────────────────────────────────────────────
     day = date(Calendar.GREGORIAN, 2015, 4, 14)
@@ -1294,25 +1343,10 @@ def main() -> None:
                 put(f"chart-{i}-western-house-{counted.graha.full_key}", f"{counted.house} {int(counted.with_ascendant)}")
             matched = chart.matching
             assert matched is not None
-            put(f"chart-{i}-matching", number(matched.total))
-            for koota in matched.kootas:
-                put(
-                    f"chart-{i}-matching-{koota.reading.koota.full_key}",
-                    f"{number(koota.points)} {number(koota.max_points)} {reading_text(koota.reading)}",
-                )
+            put_ashta(f"chart-{i}", matched)
             ten = chart.porutham
             assert ten is not None
-            clauses = ten.exception
-            put(
-                f"chart-{i}-porutham",
-                f"{ten.agreeing} {ten.chief_agreeing} {int(clauses.one_lord)} "
-                f"{int(clauses.lords_friendly)} {int(clauses.opposite)}",
-            )
-            for consideration in ten.considerations:
-                put(
-                    f"chart-{i}-porutham-{consideration.reading.koota.full_key}",
-                    f"{int(consideration.agrees)} {int(consideration.lifted)} {porutham_text(consideration.reading)}",
-                )
+            put_porutham(f"chart-{i}", ten)
             mars = chart.kuja
             assert mars is not None
             for who, side in (("bride", mars.bride), ("groom", mars.groom)):
@@ -1965,6 +1999,7 @@ def main() -> None:
         ("intl.load_pack", ctx.intl.load_pack),
         ("keys.id", ctx.keys.id),
         ("keys.name", ctx.keys.name),
+        ("matching.naam", ctx.matching.naam),
         ("frame.canonical", ctx.frame.canonical),
         ("frame.pack", ctx.frame.pack),
         ("frame.unpack", ctx.frame.unpack),

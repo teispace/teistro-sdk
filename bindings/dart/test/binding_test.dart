@@ -3494,6 +3494,71 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('two names match star to star without a chart', () {
+    // प्रि is Uttara Phalguni's 4th syllable and कृ Mrigashira's 4th
+    // (Svarodaya vv. 3-8, the first consonant taking the cluster's vowel);
+    // pa and ka stand 4 vargas apart, eater and eaten (VI.35).
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final read = ctx.matching.naam('प्रिया', 'कृष्ण');
+    expect(
+      (read.bride.nakshatra, read.bride.quarter, read.bride.varga),
+      (Nakshatra.uttaraPhalguni, 4, NameVarga.rat),
+    );
+    expect(
+      (read.groom.nakshatra, read.groom.quarter, read.groom.varga),
+      (Nakshatra.mrigashira, 4, NameVarga.cat),
+    );
+    expect(
+      read.varga,
+      const VargaKoota(
+        bride: NameVarga.rat,
+        groom: NameVarga.cat,
+        relation: VargaRelation.enemy,
+      ),
+    );
+    expect(read.ashta.kootas, hasLength(8));
+    expect(
+      read.ashta.total,
+      read.ashta.kootas.fold<double>(0, (sum, row) => sum + row.points),
+    );
+    expect(read.porutham.considerations, hasLength(10));
+    // The ten considerations count the groom's star from the bride's.
+    expect(
+      (read.porutham.considerations.first.reading as DhinamPorutham).count,
+      21,
+    );
+
+    // IAST, when declared, is the same name.
+    expect(
+      ctx.matching.naam(
+        'priyā',
+        'kṛṣṇa',
+        const NaamRules(name: NameRules(latin: LatinName.iast)),
+      ),
+      read,
+    );
+
+    // Abhijit's row is none of the 27: refused, unless the rules place it.
+    final placed = ctx.matching.naam(
+      'सीता',
+      'ज़ोया',
+      const NaamRules(name: NameRules(abhijit: AbhijitPada.shravana)),
+    );
+    expect((placed.groom.nakshatra, placed.groom.quarter), (null, 3));
+    for (final (run, field) in [
+      (() => ctx.matching.naam('सीता', 'ज़ोया'), 'naam.groom.abhijit'),
+      (() => ctx.matching.naam('Sita', 'राम'), 'naam.bride.name'),
+    ]) {
+      expect(
+        run,
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its synastry with a partner', () {
     // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
     // p. 130): the recast's closest contacts, the lagna left out on

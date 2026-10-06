@@ -740,6 +740,7 @@ fn the_surface(report: &mut Report) {
         ("intl.transliterate", "present"),
         ("keys.id", "present"),
         ("keys.name", "present"),
+        ("matching.naam", "present"),
         ("time.civil_of", "present"),
         ("time.convert", "present"),
         ("time.delta_t", "present"),
@@ -2226,104 +2227,144 @@ const MATCHING_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitu
 /// koota by its full key with its points, its most and what it read, the
 /// fields in serde's order, a flag as 0 or 1 and no dosha as `NONE`.
 fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Document]) {
-    use teistro::KootaReading;
     let asked = teistro::PartnerMatching::from_json(MATCHING_JSON).expect("a valid request");
     let read = sdk
         .chart()
         .matching_with(documents, &asked)
         .expect("sidereal charts");
     for (index, both) in read.iter().enumerate() {
-        let one = &both.ashta_koota;
-        put(
-            report,
-            &format!("chart-{index}-matching"),
-            number(one.total),
-        );
-        for row in &one.kootas {
-            let reading = match row.reading {
-                KootaReading::Varna { bride, groom } => {
-                    format!("{} {}", bride.full_key(), groom.full_key())
-                }
-                KootaReading::Vashya { relation } => wire_key(&relation),
-                KootaReading::Tara {
-                    bride_to_groom,
-                    groom_to_bride,
-                } => format!("{bride_to_groom} {groom_to_bride}"),
-                KootaReading::Yoni {
-                    bride,
-                    groom,
-                    relation,
-                } => format!(
-                    "{} {} {}",
-                    bride.full_key(),
-                    groom.full_key(),
-                    wire_key(&relation)
-                ),
-                KootaReading::GrahaMaitri {
-                    bride,
-                    groom,
-                    relation,
-                    lifted,
-                } => format!(
-                    "{} {} {} {}",
-                    bride.full_key(),
-                    groom.full_key(),
-                    wire_key(&relation),
-                    u8::from(lifted)
-                ),
-                KootaReading::Gana {
-                    bride,
-                    groom,
-                    dosha,
-                    lifted,
-                } => format!(
-                    "{} {} {} {}",
-                    bride.full_key(),
-                    groom.full_key(),
-                    u8::from(dosha),
-                    u8::from(lifted)
-                ),
-                KootaReading::Bhakoot {
-                    apart,
-                    dosha,
-                    exceptions,
-                    lifted,
-                } => format!(
-                    "{apart} {} {} {} {} {} {} {}",
-                    dosha.map_or_else(|| "NONE".to_owned(), |dosha| wire_key(&dosha)),
-                    u8::from(exceptions.one_lord),
-                    u8::from(exceptions.lords_friends),
-                    u8::from(exceptions.navamsha_lords_friends),
-                    u8::from(exceptions.tara_pure),
-                    u8::from(exceptions.vashya),
-                    u8::from(lifted)
-                ),
-                KootaReading::Nadi {
-                    bride,
-                    groom,
-                    dosha,
-                    lifted,
-                } => format!(
-                    "{} {} {} {}",
-                    bride.full_key(),
-                    groom.full_key(),
-                    u8::from(dosha),
-                    u8::from(lifted)
-                ),
-            };
+        let prefix = format!("chart-{index}");
+        the_ashta(report, &prefix, &both.ashta_koota);
+        the_porutham(report, &prefix, &both.porutham);
+        the_kuja(report, index, &both.kuja);
+        the_doshas(report, index, &both.doshas());
+    }
+}
+
+/// Two pairs of names matched as the other three ask them: a Devanagari
+/// pair whose groom's syllable is Abhijit's, placed in Shravana, and an
+/// IAST pair; each name's syllable, the vargas, then the Ashta Koota and
+/// the ten considerations as a chart's match prints them.
+fn the_naam(report: &mut Report) {
+    for (index, request) in NAAM_JSON.iter().enumerate() {
+        let read = teistro::NaamRequest::from_json(request)
+            .and_then(|asked| asked.answer())
+            .expect("two names the cakra reads");
+        let prefix = format!("naam-{index}");
+        for (who, name) in [("bride", &read.bride), ("groom", &read.groom)] {
             put(
                 report,
-                &format!("chart-{index}-matching-{}", row.reading.koota().full_key()),
+                &format!("{prefix}-{who}"),
                 format!(
-                    "{} {} {reading}",
-                    number(row.points),
-                    number(row.max_points)
+                    "{} {} {} {}",
+                    name.cell,
+                    name.nakshatra.map_or("NONE", |star| star.full_key()),
+                    name.quarter,
+                    wire_key(&name.varga)
                 ),
             );
         }
-        the_porutham(report, index, &both.porutham);
-        the_kuja(report, index, &both.kuja);
-        the_doshas(report, index, &both.doshas());
+        put(
+            report,
+            &format!("{prefix}-varga"),
+            format!(
+                "{} {} {}",
+                wire_key(&read.varga.bride),
+                wire_key(&read.varga.groom),
+                wire_key(&read.varga.relation)
+            ),
+        );
+        the_ashta(report, &prefix, &read.ashta);
+        the_porutham(report, &prefix, &read.porutham);
+    }
+}
+
+/// An Ashta Koota as the other three print it: the total, then each koota
+/// by its full key with its points, the most it gives and what it read.
+fn the_ashta(report: &mut Report, prefix: &str, one: &teistro::AshtaKoota) {
+    use teistro::KootaReading;
+    put(report, &format!("{prefix}-matching"), number(one.total));
+    for row in &one.kootas {
+        let reading = match row.reading {
+            KootaReading::Varna { bride, groom } => {
+                format!("{} {}", bride.full_key(), groom.full_key())
+            }
+            KootaReading::Vashya { relation } => wire_key(&relation),
+            KootaReading::Tara {
+                bride_to_groom,
+                groom_to_bride,
+            } => format!("{bride_to_groom} {groom_to_bride}"),
+            KootaReading::Yoni {
+                bride,
+                groom,
+                relation,
+            } => format!(
+                "{} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                wire_key(&relation)
+            ),
+            KootaReading::GrahaMaitri {
+                bride,
+                groom,
+                relation,
+                lifted,
+            } => format!(
+                "{} {} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                wire_key(&relation),
+                u8::from(lifted)
+            ),
+            KootaReading::Gana {
+                bride,
+                groom,
+                dosha,
+                lifted,
+            } => format!(
+                "{} {} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                u8::from(dosha),
+                u8::from(lifted)
+            ),
+            KootaReading::Bhakoot {
+                apart,
+                dosha,
+                exceptions,
+                lifted,
+            } => format!(
+                "{apart} {} {} {} {} {} {} {}",
+                dosha.map_or_else(|| "NONE".to_owned(), |dosha| wire_key(&dosha)),
+                u8::from(exceptions.one_lord),
+                u8::from(exceptions.lords_friends),
+                u8::from(exceptions.navamsha_lords_friends),
+                u8::from(exceptions.tara_pure),
+                u8::from(exceptions.vashya),
+                u8::from(lifted)
+            ),
+            KootaReading::Nadi {
+                bride,
+                groom,
+                dosha,
+                lifted,
+            } => format!(
+                "{} {} {} {}",
+                bride.full_key(),
+                groom.full_key(),
+                u8::from(dosha),
+                u8::from(lifted)
+            ),
+        };
+        put(
+            report,
+            &format!("{prefix}-matching-{}", row.reading.koota().full_key()),
+            format!(
+                "{} {} {reading}",
+                number(row.points),
+                number(row.max_points)
+            ),
+        );
     }
 }
 
@@ -2382,16 +2423,16 @@ fn the_kuja(report: &mut Report, index: usize, mars: &teistro::Kuja) {
     );
 }
 
-/// A chart's ten considerations as the other three print them: the counts
-/// and the exception's clauses, then each consideration by its full key
-/// with whether it agrees, whether it was lifted and what it read.
-fn the_porutham(report: &mut Report, index: usize, ten: &teistro::Porutham) {
+/// Ten considerations as the other three print them: the counts and the
+/// exception's clauses, then each consideration by its full key with
+/// whether it agrees, whether it was lifted and what it read.
+fn the_porutham(report: &mut Report, prefix: &str, ten: &teistro::Porutham) {
     use teistro::PoruthamReading;
     let flag = |held: bool| u8::from(held);
     let e = ten.exception;
     put(
         report,
-        &format!("chart-{index}-porutham"),
+        &format!("{prefix}-porutham"),
         format!(
             "{} {} {} {} {}",
             ten.agreeing,
@@ -2451,11 +2492,19 @@ fn the_porutham(report: &mut Report, index: usize, ten: &teistro::Porutham) {
         };
         put(
             report,
-            &format!("chart-{index}-porutham-{}", row.reading.koota().full_key()),
+            &format!("{prefix}-porutham-{}", row.reading.koota().full_key()),
             format!("{} {} {reading}", flag(row.agrees), flag(row.lifted)),
         );
     }
 }
+
+/// The naam milan requests every runner sends: a Devanagari pair whose
+/// groom's syllable is Abhijit's, placed in Shravana under a middle-only
+/// nadi, and an IAST pair.
+const NAAM_JSON: [&str; 2] = [
+    r#"{"bride":"प्रिया","groom":"ज़ोया","rules":{"name":{"abhijit":"SHRAVANA"},"koota":{"nadiDosha":"MIDDLE_ONLY"}}}"#,
+    r#"{"bride":"kṛṣṇā","groom":"śyāma","rules":{"name":{"latin":"IAST"},"porutham":{"deerghaBeyond":"SEVENTH"}}}"#,
+];
 
 const SYNASTRY_JSON: &str = r#"{"partner":{"instant":2451545.25,"place":{"latitude":-33.87,"longitude":151.21,"altitude":0},"utcOffsetSeconds":36000},"aspects":["CONJUNCTION","SQUARE","TRINE","OPPOSITION"],"zodiac":"CHARTS","parallels":{"orbDeg":1.5},"antiscia":{"orbs":{"model":"LEO"}},"midpoints":{"orbDeg":1.5},"composite":true,"davison":true}"#;
 
@@ -5152,6 +5201,7 @@ fn main() {
     the_frame(&mut report, &sdk);
     the_constants(&mut report);
     the_surface(&mut report);
+    the_naam(&mut report);
     let place = Place::new(
         Latitude::try_new(27.7172).expect("a latitude"),
         Longitude::try_new(85.324).expect("a longitude"),

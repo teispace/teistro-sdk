@@ -425,6 +425,94 @@ put('chart-provenance-fnv', fnv(charts.provenanceJson));
 put('chart-provenance-profile', charts.provenance.profile);
 put('chart-graha-count', charts.decoded.grahaCount);
 
+/** A clause as every runner prints it: 1 held, 0 not. */
+const flag = (value) => (value ? 1 : 0);
+
+/** An Ashta Koota as every runner prints it, under `prefix`. */
+function putAshta(prefix, matched) {
+  const readingText = (r) => {
+    switch (r.koota) {
+      case 'koota.VASHYA':
+        return r.relation;
+      case 'koota.TARA':
+        return `${r.brideToGroom} ${r.groomToBride}`;
+      case 'koota.YONI':
+        return `${r.bride} ${r.groom} ${r.relation}`;
+      case 'koota.GRAHA_MAITRI':
+        return `${r.bride} ${r.groom} ${r.relation} ${flag(r.lifted)}`;
+      case 'koota.GANA':
+        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
+      case 'koota.BHAKOOT': {
+        const e = r.exceptions;
+        return [r.apart, r.dosha ?? 'NONE', e.oneLord, e.lordsFriends, e.navamshaLordsFriends, e.taraPure, e.vashya, r.lifted]
+          .map((cell) => (typeof cell === 'boolean' ? flag(cell) : cell))
+          .join(' ');
+      }
+      case 'koota.NADI':
+        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
+      default:
+        return `${r.bride} ${r.groom}`;
+    }
+  };
+  put(`${prefix}-matching`, number(matched.total));
+  matched.kootas.forEach((row) =>
+    put(
+      `${prefix}-matching-${row.reading.koota}`,
+      `${number(row.points)} ${number(row.maxPoints)} ${readingText(row.reading)}`,
+    ),
+  );
+}
+
+/** Ten considerations as every runner prints them, under `prefix`. */
+function putPorutham(prefix, ten) {
+  const e = ten.exception;
+  put(
+    `${prefix}-porutham`,
+    `${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} ${flag(e.lordsFriendly)} ${flag(e.opposite)}`,
+  );
+  const tenText = (r) => {
+    switch (r.koota) {
+      case 'koota.TARA':
+        return `${r.count} ${r.rule}`;
+      case 'koota.GANA':
+        return `${r.bride} ${r.groom} ${flag(r.diminished)}`;
+      case 'koota.MAHENDRA':
+      case 'koota.STREE_DEERGHA':
+        return `${r.count}`;
+      case 'koota.YONI':
+        return `${r.bride} ${r.groom} ${flag(r.hostile)}`;
+      case 'koota.BHAKOOT':
+        return `${r.apart}`;
+      case 'koota.GRAHA_MAITRI':
+        return `${r.bride} ${r.groom} ${flag(r.brideCallsFriend)} ${flag(r.groomCallsFriend)}`;
+      case 'koota.VASHYA':
+        return `${flag(r.brideToGroom)} ${flag(r.groomToBride)}`;
+      case 'koota.VEDHA':
+        return `${flag(r.pierced)}`;
+      default:
+        return `${r.bride} ${r.groom}`;
+    }
+  };
+  ten.considerations.forEach((row) =>
+    put(`${prefix}-porutham-${row.reading.koota}`, `${flag(row.agrees)} ${flag(row.lifted)} ${tenText(row.reading)}`),
+  );
+}
+
+// Two pairs of names, as every runner asks them: a Devanagari pair whose
+// groom's syllable is Abhijit's, placed in Shravana, and an IAST pair.
+for (const [n, [bride, groom, rules]] of [
+  ['प्रिया', 'ज़ोया', { name: { abhijit: 'SHRAVANA' }, koota: { nadiDosha: 'MIDDLE_ONLY' } }],
+  ['kṛṣṇā', 'śyāma', { name: { latin: 'IAST' }, porutham: { deerghaBeyond: 'SEVENTH' } }],
+].entries()) {
+  const read = ctx.matching.naam(bride, groom, rules);
+  for (const [who, name] of [['bride', read.bride], ['groom', read.groom]]) {
+    put(`naam-${n}-${who}`, `${name.cell} ${name.nakshatra ?? 'NONE'} ${name.quarter} ${name.varga}`);
+  }
+  put(`naam-${n}-varga`, `${read.varga.bride} ${read.varga.groom} ${read.varga.relation}`);
+  putAshta(`naam-${n}`, read.ashta);
+  putPorutham(`naam-${n}`, read.porutham);
+}
+
 for (const chart of charts) {
   const i = chart.index;
   put(`chart-${i}-content-hash`, chart.provenance.contentHash);
@@ -687,7 +775,6 @@ for (const chart of charts) {
     put(`chart-${i}-lot-${lot}`, `${number(place.longitudeDeg)} ${place.sign} ${place.lord} ${place.house}`),
   );
   const cs = chart.considerations;
-  const flag = (value) => (value ? 1 : 0);
   const list = (values) => values.join(',') || '-';
   const perfection = (found) => (found === null ? '-' : `${found.planet} ${found.aspect} ${number(found.days)} ${number(found.gapDeg)}`);
   put(
@@ -830,70 +917,8 @@ for (const chart of charts) {
       `${at.first} ${at.second} ${at.middle} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
     ),
   );
-  const matched = chart.matching;
-  const readingText = (r) => {
-    switch (r.koota) {
-      case 'koota.VASHYA':
-        return r.relation;
-      case 'koota.TARA':
-        return `${r.brideToGroom} ${r.groomToBride}`;
-      case 'koota.YONI':
-        return `${r.bride} ${r.groom} ${r.relation}`;
-      case 'koota.GRAHA_MAITRI':
-        return `${r.bride} ${r.groom} ${r.relation} ${flag(r.lifted)}`;
-      case 'koota.GANA':
-        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
-      case 'koota.BHAKOOT': {
-        const e = r.exceptions;
-        return [r.apart, r.dosha ?? 'NONE', e.oneLord, e.lordsFriends, e.navamshaLordsFriends, e.taraPure, e.vashya, r.lifted]
-          .map((cell) => (typeof cell === 'boolean' ? flag(cell) : cell))
-          .join(' ');
-      }
-      case 'koota.NADI':
-        return `${r.bride} ${r.groom} ${flag(r.dosha)} ${flag(r.lifted)}`;
-      default:
-        return `${r.bride} ${r.groom}`;
-    }
-  };
-  put(`chart-${i}-matching`, number(matched.total));
-  matched.kootas.forEach((row) =>
-    put(
-      `chart-${i}-matching-${row.reading.koota}`,
-      `${number(row.points)} ${number(row.maxPoints)} ${readingText(row.reading)}`,
-    ),
-  );
-  const ten = chart.porutham;
-  const e = ten.exception;
-  put(
-    `chart-${i}-porutham`,
-    `${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} ${flag(e.lordsFriendly)} ${flag(e.opposite)}`,
-  );
-  const tenText = (r) => {
-    switch (r.koota) {
-      case 'koota.TARA':
-        return `${r.count} ${r.rule}`;
-      case 'koota.GANA':
-        return `${r.bride} ${r.groom} ${flag(r.diminished)}`;
-      case 'koota.MAHENDRA':
-      case 'koota.STREE_DEERGHA':
-        return `${r.count}`;
-      case 'koota.YONI':
-        return `${r.bride} ${r.groom} ${flag(r.hostile)}`;
-      case 'koota.BHAKOOT':
-        return `${r.apart}`;
-      case 'koota.GRAHA_MAITRI':
-        return `${r.bride} ${r.groom} ${flag(r.brideCallsFriend)} ${flag(r.groomCallsFriend)}`;
-      case 'koota.VASHYA':
-        return `${flag(r.brideToGroom)} ${flag(r.groomToBride)}`;
-      case 'koota.VEDHA':
-        return `${flag(r.pierced)}`;
-      default:
-        return `${r.bride} ${r.groom}`;
-    }
-  };
-  ten.considerations.forEach((row) =>
-    put(`chart-${i}-porutham-${row.reading.koota}`, `${flag(row.agrees)} ${flag(row.lifted)} ${tenText(row.reading)}`),
-  );
+  putAshta(`chart-${i}`, chart.matching);
+  putPorutham(`chart-${i}`, chart.porutham);
   const mars = chart.kuja;
   for (const [who, side] of [['bride', mars.bride], ['groom', mars.groom]]) {
     const readings = side.readings.map((r) => `${r.from} ${r.house} ${flag(r.inHouses)}`);
@@ -1509,6 +1534,7 @@ for (const [path, member] of [
   ['intl.load_pack', shape.intl.loadPack],
   ['keys.id', shape.keys.id],
   ['keys.name', shape.keys.name],
+  ['matching.naam', shape.matching.naam],
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],

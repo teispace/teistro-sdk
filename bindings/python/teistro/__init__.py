@@ -42,10 +42,15 @@ from ._blob import (
     ChartsSynastryAntiscionRows,
     ChartsSynastryMidpointRows,
     IntlRender,
+    MatchingKootas,
+    Matchings,
     Panchanga,
+    PoruthamRows,
+    Poruthams,
     Positions,
     decode_charts,
     decode_intl_render,
+    decode_naam,
     decode_panchanga,
     decode_positions,
 )
@@ -146,6 +151,8 @@ from .catalogue import (
     Rajju,
     DoshaSystem,
     MatchRole,
+    NameVarga,
+    VargaRelation,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -569,6 +576,11 @@ __all__ = [
     "PoruthamRow",
     "PoruthamException",
     "Porutham",
+    "NameRules",
+    "NaamRules",
+    "NameSyllable",
+    "VargaKoota",
+    "NaamMilan",
     "KujaRules",
     "KujaReading",
     "KujaSide",
@@ -741,6 +753,8 @@ __all__ = [
     "Rajju",
     "DoshaSystem",
     "MatchRole",
+    "NameVarga",
+    "VargaRelation",
     "HarshaRules",
     "HarshaBala",
     "TajikaRelation",
@@ -1906,6 +1920,49 @@ class AlmanacArea(_Area):
         ).at(0)
 
 
+class MatchingArea(_Area):
+    """`sdk.matching` — what matches without a chart: two names, star to
+    star (`03-design/matching.md`, C291 to C296). A match of two births is
+    asked of the charts, through `matching` beside a chart request."""
+
+    def naam(self, bride: str, groom: str, rules: Optional[NaamRules] = None) -> NaamMilan:
+        """Two names matched star to star (naam milan): each name's first
+        syllable in the śatapada cakra, the varga koota of *Muhurta
+        Chintamani* VI.35, and the Ashta Koota and the ten considerations
+        read from the two name stars.
+
+        A name is read in Devanagari, or in IAST when `rules["name"]["latin"]`
+        is `"IAST"`; an English spelling is refused rather than guessed. A
+        name in Abhijit's row is refused unless `rules["name"]["abhijit"]`
+        places it. Each refusal is named, `naam.groom.abhijit` and the like.
+
+        >>> read = sdk.matching.naam("सीता", "राम")  # doctest: +SKIP
+        """
+        request: Dict[str, Any] = {"bride": bride, "groom": groom}
+        written = _record_json(rules, "rules", "{'name': {'latin': 'IAST'}}")
+        if written is not None:
+            request["rules"] = json.loads(written)
+        d = decode_naam(self._context.inner.naam_milan(json.dumps(request)))
+        n = d.naam_names
+
+        def name(at: int) -> NameSyllable:
+            return NameSyllable(
+                cell=n.cell[at],
+                nakshatra=None if n.abhijit[at] == 1 else Nakshatra(n.nakshatra[at]),
+                quarter=n.quarter[at],
+                varga=NameVarga(n.varga[at]),
+            )
+
+        bride_name, groom_name = name(0), name(1)
+        return NaamMilan(
+            bride=bride_name,
+            groom=groom_name,
+            varga=VargaKoota(bride_name.varga, groom_name.varga, VargaRelation(d.relation)),
+            ashta=_matchings_in(d.matchings, d.matching_kootas, 1)[0],
+            porutham=_poruthams_in(d.poruthams, d.porutham_rows, 1)[0],
+        )
+
+
 class Context:
     """A context, and everything a consumer asks of one.
 
@@ -1985,6 +2042,11 @@ class Context:
     def almanac(self) -> AlmanacArea:
         """A day, or a run of days, with its limbs."""
         return AlmanacArea(self)
+
+    @cached_property
+    def matching(self) -> MatchingArea:
+        """What matches without a chart: two names, star to star."""
+        return MatchingArea(self)
 
     # ── The context itself ────────────────────────────────────────────
 
@@ -4643,6 +4705,80 @@ class Porutham:
     Rajju."""
 
     exception: PoruthamException
+
+
+class NameRules(TypedDict, total=False):
+    """How a name is read for naam milan, each the source's own when absent
+    (`03-design/matching.md`): `latin`, a name in Latin letters
+    `"REFUSE"`d or read as `"IAST"` (C293), never guessed since English
+    "ch" is IAST "c"; and `abhijit`, where a syllable in Abhijit's row is
+    placed: `"REFUSE"`, `"UTTARA_ASHADHA"` (its 4th quarter) or
+    `"SHRAVANA"` (its 1st) (C294).
+
+    >>> iast: NameRules = {"latin": "IAST"}
+    """
+
+    latin: Literal["REFUSE", "IAST"]
+    abhijit: Literal["REFUSE", "UTTARA_ASHADHA", "SHRAVANA"]
+
+
+class NaamRules(TypedDict, total=False):
+    """The readings naam milan is computed under, each the source's own
+    when absent: how the `name`s are read, and the `koota` and `porutham`
+    rules the two name stars are matched under.
+
+    >>> placed: NaamRules = {"name": {"abhijit": "SHRAVANA"}, "koota": {"nadiDosha": "MIDDLE_ONLY"}}
+    """
+
+    name: NameRules
+    koota: KootaRules
+    porutham: PoruthamRules
+
+
+@dataclass(frozen=True)
+class NameSyllable:
+    """A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8)."""
+
+    cell: int
+    """Its place among the cakra's 112 cells, 0 for a, Krittika's first."""
+
+    nakshatra: Optional[Nakshatra]
+    """Its star, or `None` for Abhijit, which is none of the 27;
+    `NameRules.abhijit` decides the star it is matched as."""
+
+    quarter: int
+    """Which of the star's four syllables it is, 1 to 4: the pada, for
+    one of the 27."""
+
+    varga: NameVarga
+    """The letter group the name begins in, as written (VI.35)."""
+
+
+@dataclass(frozen=True)
+class VargaKoota:
+    """Two names' vargas and how they stand (*Muhurta Chintamani* VI.35,
+    C295)."""
+
+    bride: NameVarga
+    groom: NameVarga
+    relation: VargaRelation
+    """One varga, enemies (each the 5th from the other), or neither."""
+
+
+@dataclass(frozen=True)
+class NaamMilan:
+    """Two names matched star to star (naam milan)."""
+
+    bride: NameSyllable
+    groom: NameSyllable
+    varga: VargaKoota
+    ashta: AshtaKoota
+    """The Ashta Koota of the two name stars, as a chart's `matching`
+    reads two Moons."""
+
+    porutham: Porutham
+    """The ten considerations of the two name stars, as a chart's
+    `porutham` reads two Moons."""
 
 
 @dataclass(frozen=True)
@@ -7417,6 +7553,144 @@ def _gochar_json(gochar: Optional[GocharRequest]) -> Optional[str]:
     return _record_json(written, "gochar", "{'instants': [2460676.5], 'from': 'MOON'}")
 
 
+def _ragged_in(charts: int, counts: Sequence[int], rows: int, names: str, read: Callable[[int], T]) -> list[Tuple[T, ...]]:
+    """A per-chart table from a count column and the rows it is ragged by,
+    for `charts` charts: each chart's rows, or none at all when the column
+    is empty because nothing was asked."""
+    if len(counts) == 0:
+        return []
+    if len(counts) != charts or rows != sum(counts):
+        raise TeistroError(Status.INTERNAL, f"{names}: {len(counts)} counts and {rows} rows for {charts} charts")
+    tables: list[Tuple[T, ...]] = []
+    start = 0
+    for count in counts:
+        tables.append(tuple(read(at) for at in range(start, start + count)))
+        start += count
+    return tables
+
+
+def _matchings_in(m: Matchings, k: MatchingKootas, charts: int) -> list[AshtaKoota]:
+    """The Ashta Koota read from the `matchings` and `matching_kootas`
+    shapes of any blob carrying them, `charts` rows: a chart batch's, or a
+    naam blob's one match; empty when none was asked for. `matchings`
+    holds a row a match with what each koota read, and `matching_kootas`
+    eight rows a match, each koota's points in the verse's order."""
+
+    def readings(at: int) -> Dict[Koota, KootaReading]:
+        dosha = BhakootDosha(m.bhakoot_dosha[at])
+        read: Tuple[KootaReading, ...] = (
+            VarnaKoota(Varna(m.bride_varna[at]), Varna(m.groom_varna[at])),
+            VashyaKoota(VashyaRelation(m.vashya[at])),
+            TaraKoota(m.tara_bride_to_groom[at], m.tara_groom_to_bride[at]),
+            YoniKoota(Yoni(m.bride_yoni[at]), Yoni(m.groom_yoni[at]), YoniRelation(m.yoni[at])),
+            MaitriKoota(
+                Graha(m.bride_lord[at]),
+                Graha(m.groom_lord[at]),
+                MaitriRelation(m.maitri[at]),
+                m.maitri_lifted[at] == 1,
+            ),
+            GanaKoota(
+                Gana(m.bride_gana[at]),
+                Gana(m.groom_gana[at]),
+                m.gana_dosha[at] == 1,
+                m.gana_lifted[at] == 1,
+            ),
+            BhakootKoota(
+                apart=m.bhakoot_apart[at],
+                dosha=None if dosha == BhakootDosha.NONE else dosha,
+                exceptions=BhakootExceptions(
+                    one_lord=m.bhakoot_one_lord[at] == 1,
+                    lords_friends=m.bhakoot_lords_friends[at] == 1,
+                    navamsha_lords_friends=m.bhakoot_navamsha_lords_friends[at] == 1,
+                    tara_pure=m.bhakoot_tara_pure[at] == 1,
+                    vashya=m.bhakoot_vashya[at] == 1,
+                ),
+                lifted=m.bhakoot_lifted[at] == 1,
+            ),
+            NadiKoota(
+                Nadi(m.bride_nadi[at]),
+                Nadi(m.groom_nadi[at]),
+                m.nadi_dosha[at] == 1,
+                m.nadi_lifted[at] == 1,
+            ),
+        )
+        return {one.koota: one for one in read}
+
+    kootas = _ragged_in(
+        charts,
+        [8] * len(m.total),
+        k.length,
+        "matchings and matching_kootas",
+        lambda row: (Koota(k.koota[row]), k.points[row], k.max_points[row]),
+    )
+    matched: list[AshtaKoota] = []
+    for at, rows in enumerate(kootas):
+        read = readings(at)
+        matched.append(
+            AshtaKoota(
+                kootas=tuple(
+                    KootaRow(points=points, max_points=most, reading=read[koota]) for koota, points, most in rows
+                ),
+                total=m.total[at],
+            )
+        )
+    return matched
+
+
+def _poruthams_in(p: Poruthams, r: PoruthamRows, charts: int) -> list[Porutham]:
+    """The ten considerations read from the `poruthams` and
+    `porutham_rows` shapes of any blob carrying them, `charts` rows; empty
+    when none was asked for. `poruthams` holds a row a match with what
+    each read, and `porutham_rows` ten rows a match, whether each agrees
+    in the chapter's order."""
+
+    def readings(at: int) -> Dict[Koota, PoruthamReading]:
+        read: Tuple[PoruthamReading, ...] = (
+            DhinamPorutham(p.count[at], DhinamRule(p.dhinam_rule[at])),
+            GanamPorutham(Gana(p.bride_gana[at]), Gana(p.groom_gana[at]), p.gana_diminished[at] == 1),
+            MahendraPorutham(p.count[at]),
+            DeerghaPorutham(p.count[at]),
+            YoniPorutham(Yoni(p.bride_yoni[at]), Yoni(p.groom_yoni[at]), p.yoni_hostile[at] == 1),
+            RasiPorutham(p.apart[at]),
+            RasyadhipathiPorutham(
+                Graha(p.bride_lord[at]),
+                Graha(p.groom_lord[at]),
+                p.bride_calls_friend[at] == 1,
+                p.groom_calls_friend[at] == 1,
+            ),
+            VasyamPorutham(p.bride_to_groom[at] == 1, p.groom_to_bride[at] == 1),
+            RajjuPorutham(Rajju(p.bride_rajju[at]), Rajju(p.groom_rajju[at])),
+            VedhaiPorutham(p.pierced[at] == 1),
+        )
+        return {one.koota: one for one in read}
+
+    rows = _ragged_in(
+        charts,
+        [10] * len(p.agreeing),
+        r.length,
+        "poruthams and porutham_rows",
+        lambda row: (Koota(r.koota[row]), r.agrees[row] == 1, r.lifted[row] == 1),
+    )
+    matched: list[Porutham] = []
+    for at, ten in enumerate(rows):
+        read = readings(at)
+        matched.append(
+            Porutham(
+                considerations=tuple(
+                    PoruthamRow(agrees=agrees, lifted=lifted, reading=read[koota]) for koota, agrees, lifted in ten
+                ),
+                agreeing=p.agreeing[at],
+                chief_agreeing=p.chief_agreeing[at],
+                exception=PoruthamException(
+                    one_lord=p.one_lord[at] == 1,
+                    lords_friendly=p.lords_friendly[at] == 1,
+                    opposite=p.opposite[at] == 1,
+                ),
+            )
+        )
+    return matched
+
+
 def _point_at(to_lagna: int, to_graha: int) -> NatalPoint:
     """A natal point from a `to_lagna` and a `to_graha` column's cells."""
     return NatalPoint("LAGNA") if to_lagna else NatalPoint("GRAHA", Graha(to_graha))
@@ -9925,17 +10199,7 @@ class ChartBatch:
         """A per-chart table from a count column and the rows it is ragged
         by: each chart's rows, or none at all when the column is empty
         because nothing was asked."""
-        charts = len(self.decoded.cast.instant)
-        if len(counts) == 0:
-            return []
-        if len(counts) != charts or rows != sum(counts):
-            raise TeistroError(Status.INTERNAL, f"{names}: {len(counts)} counts and {rows} rows for {charts} charts")
-        tables: list[Tuple[T, ...]] = []
-        start = 0
-        for count in counts:
-            tables.append(tuple(read(at) for at in range(start, start + count)))
-            start += count
-        return tables
+        return _ragged_in(len(self.decoded.cast.instant), counts, rows, names, read)
 
     @cached_property
     def _western_aspects(self) -> list[Tuple[WesternAspectRow, ...]]:
@@ -10016,126 +10280,14 @@ class ChartBatch:
     @cached_property
     def _matchings(self) -> list[AshtaKoota]:
         """Every chart's match with the record's partner, decoded once;
-        empty when none was asked for. `matchings` holds a row a chart with
-        what each koota read, and `matching_kootas` eight rows a chart,
-        each koota's points in the verse's order."""
-        m = self.decoded.matchings
-        k = self.decoded.matching_kootas
-
-        def readings(at: int) -> Dict[Koota, KootaReading]:
-            dosha = BhakootDosha(m.bhakoot_dosha[at])
-            read: Tuple[KootaReading, ...] = (
-                VarnaKoota(Varna(m.bride_varna[at]), Varna(m.groom_varna[at])),
-                VashyaKoota(VashyaRelation(m.vashya[at])),
-                TaraKoota(m.tara_bride_to_groom[at], m.tara_groom_to_bride[at]),
-                YoniKoota(Yoni(m.bride_yoni[at]), Yoni(m.groom_yoni[at]), YoniRelation(m.yoni[at])),
-                MaitriKoota(
-                    Graha(m.bride_lord[at]),
-                    Graha(m.groom_lord[at]),
-                    MaitriRelation(m.maitri[at]),
-                    m.maitri_lifted[at] == 1,
-                ),
-                GanaKoota(
-                    Gana(m.bride_gana[at]),
-                    Gana(m.groom_gana[at]),
-                    m.gana_dosha[at] == 1,
-                    m.gana_lifted[at] == 1,
-                ),
-                BhakootKoota(
-                    apart=m.bhakoot_apart[at],
-                    dosha=None if dosha == BhakootDosha.NONE else dosha,
-                    exceptions=BhakootExceptions(
-                        one_lord=m.bhakoot_one_lord[at] == 1,
-                        lords_friends=m.bhakoot_lords_friends[at] == 1,
-                        navamsha_lords_friends=m.bhakoot_navamsha_lords_friends[at] == 1,
-                        tara_pure=m.bhakoot_tara_pure[at] == 1,
-                        vashya=m.bhakoot_vashya[at] == 1,
-                    ),
-                    lifted=m.bhakoot_lifted[at] == 1,
-                ),
-                NadiKoota(
-                    Nadi(m.bride_nadi[at]),
-                    Nadi(m.groom_nadi[at]),
-                    m.nadi_dosha[at] == 1,
-                    m.nadi_lifted[at] == 1,
-                ),
-            )
-            return {one.koota: one for one in read}
-
-        charts = len(m.total)
-        kootas = self._ragged(
-            [8] * charts,
-            k.length,
-            "matchings and matching_kootas",
-            lambda row: (Koota(k.koota[row]), k.points[row], k.max_points[row]),
-        )
-        matched: list[AshtaKoota] = []
-        for at, rows in enumerate(kootas):
-            read = readings(at)
-            matched.append(
-                AshtaKoota(
-                    kootas=tuple(
-                        KootaRow(points=points, max_points=most, reading=read[koota]) for koota, points, most in rows
-                    ),
-                    total=m.total[at],
-                )
-            )
-        return matched
+        empty when none was asked for."""
+        return _matchings_in(self.decoded.matchings, self.decoded.matching_kootas, len(self.decoded.cast.instant))
 
     @cached_property
     def _poruthams(self) -> list[Porutham]:
         """Every chart's ten considerations with the record's partner,
-        decoded once; empty when none was asked for. `poruthams` holds a
-        row a chart with what each read, and `porutham_rows` ten rows a
-        chart, whether each agrees in the chapter's order."""
-        p = self.decoded.poruthams
-        r = self.decoded.porutham_rows
-
-        def readings(at: int) -> Dict[Koota, PoruthamReading]:
-            read: Tuple[PoruthamReading, ...] = (
-                DhinamPorutham(p.count[at], DhinamRule(p.dhinam_rule[at])),
-                GanamPorutham(Gana(p.bride_gana[at]), Gana(p.groom_gana[at]), p.gana_diminished[at] == 1),
-                MahendraPorutham(p.count[at]),
-                DeerghaPorutham(p.count[at]),
-                YoniPorutham(Yoni(p.bride_yoni[at]), Yoni(p.groom_yoni[at]), p.yoni_hostile[at] == 1),
-                RasiPorutham(p.apart[at]),
-                RasyadhipathiPorutham(
-                    Graha(p.bride_lord[at]),
-                    Graha(p.groom_lord[at]),
-                    p.bride_calls_friend[at] == 1,
-                    p.groom_calls_friend[at] == 1,
-                ),
-                VasyamPorutham(p.bride_to_groom[at] == 1, p.groom_to_bride[at] == 1),
-                RajjuPorutham(Rajju(p.bride_rajju[at]), Rajju(p.groom_rajju[at])),
-                VedhaiPorutham(p.pierced[at] == 1),
-            )
-            return {one.koota: one for one in read}
-
-        charts = len(p.agreeing)
-        rows = self._ragged(
-            [10] * charts,
-            r.length,
-            "poruthams and porutham_rows",
-            lambda row: (Koota(r.koota[row]), r.agrees[row] == 1, r.lifted[row] == 1),
-        )
-        matched: list[Porutham] = []
-        for at, ten in enumerate(rows):
-            read = readings(at)
-            matched.append(
-                Porutham(
-                    considerations=tuple(
-                        PoruthamRow(agrees=agrees, lifted=lifted, reading=read[koota]) for koota, agrees, lifted in ten
-                    ),
-                    agreeing=p.agreeing[at],
-                    chief_agreeing=p.chief_agreeing[at],
-                    exception=PoruthamException(
-                        one_lord=p.one_lord[at] == 1,
-                        lords_friendly=p.lords_friendly[at] == 1,
-                        opposite=p.opposite[at] == 1,
-                    ),
-                )
-            )
-        return matched
+        decoded once; empty when none was asked for."""
+        return _poruthams_in(self.decoded.poruthams, self.decoded.porutham_rows, len(self.decoded.cast.instant))
 
     @cached_property
     def _kujas(self) -> list[Kuja]:

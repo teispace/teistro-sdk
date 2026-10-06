@@ -80,6 +80,7 @@ function instances() {
     FrameArea: ctx.frame,
     ChartArea: ctx.chart,
     AlmanacArea: ctx.almanac,
+    MatchingArea: ctx.matching,
     // The built-in describes no operations of its own; the test provider
     // does, which is what an engine is made from.
     Engine: engined.engine,

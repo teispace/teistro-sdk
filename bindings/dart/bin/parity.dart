@@ -26,14 +26,13 @@ String natalKey(NatalPoint point) => switch (point) {
   NatalGraha(:final graha) => graha.fullKey,
 };
 
-/// A koota's reading as every runner prints it: its fields in serde's
-/// order, a member by its full key, a flag as 0 or 1 and no dosha as
-/// `NONE`.
+/// A clause as every runner prints it: 1 held, 0 not.
+String flag(bool held) => held ? '1' : '0';
+
 /// A consideration's reading as every runner prints it: its fields in
 /// serde's order, a member by its full key (a boundary enum by its key)
 /// and a flag as 0 or 1.
 String poruthamText(PoruthamReading reading) {
-  String flag(bool held) => held ? '1' : '0';
   return switch (reading) {
     DhinamPorutham(:final count, :final rule) => '$count ${rule.key}',
     GanamPorutham(:final bride, :final groom, :final diminished) =>
@@ -58,8 +57,10 @@ String poruthamText(PoruthamReading reading) {
   };
 }
 
+/// A koota's reading as every runner prints it: its fields in serde's
+/// order, a member by its full key, a flag as 0 or 1 and no dosha as
+/// `NONE`.
 String readingText(KootaReading reading) {
-  String flag(bool value) => value ? '1' : '0';
   return switch (reading) {
     VarnaKoota(:final bride, :final groom) =>
       '${bride.fullKey} ${groom.fullKey}',
@@ -246,6 +247,75 @@ void putMuhurta(String prefix, MuhurtaAnswer answer) {
 
 /// A local day's every field, under the same keys for a chart's day and
 /// an almanac's, because the two layers hand back one record.
+/// An Ashta Koota as every runner prints it, under [prefix].
+void putAshta(String prefix, AshtaKoota matched) {
+  put('$prefix-matching', number(matched.total));
+  for (final row in matched.kootas) {
+    put(
+      '$prefix-matching-${row.reading.koota.fullKey}',
+      '${number(row.points)} ${number(row.maxPoints)} '
+          '${readingText(row.reading)}',
+    );
+  }
+}
+
+/// Ten considerations as every runner prints them, under [prefix].
+void putPorutham(String prefix, Porutham ten) {
+  final e = ten.exception;
+  put(
+    '$prefix-porutham',
+    '${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} '
+        '${flag(e.lordsFriendly)} ${flag(e.opposite)}',
+  );
+  for (final row in ten.considerations) {
+    put(
+      '$prefix-porutham-${row.reading.koota.fullKey}',
+      '${flag(row.agrees)} ${flag(row.lifted)} '
+          '${poruthamText(row.reading)}',
+    );
+  }
+}
+
+/// Two pairs of names, as every runner asks them: a Devanagari pair whose
+/// groom's syllable is Abhijit's, placed in Shravana, and an IAST pair.
+void putNaam(Context ctx) {
+  const pairs = [
+    (
+      'प्रिया',
+      'ज़ोया',
+      NaamRules(
+        name: NameRules(abhijit: AbhijitPada.shravana),
+        koota: KootaRules(nadiDosha: NadiDosha.middleOnly),
+      ),
+    ),
+    (
+      'kṛṣṇā',
+      'śyāma',
+      NaamRules(
+        name: NameRules(latin: LatinName.iast),
+        porutham: PoruthamRules(deerghaBeyond: DeerghaBeyond.seventh),
+      ),
+    ),
+  ];
+  for (final (n, (bride, groom, rules)) in pairs.indexed) {
+    final read = ctx.matching.naam(bride, groom, rules);
+    for (final (who, name) in [('bride', read.bride), ('groom', read.groom)]) {
+      put(
+        'naam-$n-$who',
+        '${name.cell} ${name.nakshatra?.fullKey ?? 'NONE'} ${name.quarter} '
+            '${name.varga.key}',
+      );
+    }
+    final varga = read.varga;
+    put(
+      'naam-$n-varga',
+      '${varga.bride.key} ${varga.groom.key} ${varga.relation.key}',
+    );
+    putAshta('naam-$n', read.ashta);
+    putPorutham('naam-$n', read.porutham);
+  }
+}
+
 void putDay(String prefix, LocalDay day) {
   put('$prefix-vara', day.vara.fullKey);
   put('$prefix-sunrise', day.sunrise);
@@ -295,6 +365,7 @@ void main() {
   put('locale', ctx.intl.locale);
   put('settings-hash', ctx.settingsHash);
   put('settings-fnv', fnv(ctx.settingsJson));
+  putNaam(ctx);
 
   // ── The calendars ────────────────────────────────────────────────────
   final date = Calendar.gregorian.date(2015, 4, 14);
@@ -1424,29 +1495,8 @@ void main() {
         '${at.house} ${at.withAscendant ? 1 : 0}',
       );
     }
-    final matched = chart.matching!;
-    put('chart-$i-matching', number(matched.total));
-    for (final row in matched.kootas) {
-      put(
-        'chart-$i-matching-${row.reading.koota.fullKey}',
-        '${number(row.points)} ${number(row.maxPoints)} '
-            '${readingText(row.reading)}',
-      );
-    }
-    final ten = chart.porutham!;
-    final e = ten.exception;
-    put(
-      'chart-$i-porutham',
-      '${ten.agreeing} ${ten.chiefAgreeing} ${flag(e.oneLord)} '
-          '${flag(e.lordsFriendly)} ${flag(e.opposite)}',
-    );
-    for (final row in ten.considerations) {
-      put(
-        'chart-$i-porutham-${row.reading.koota.fullKey}',
-        '${flag(row.agrees)} ${flag(row.lifted)} '
-            '${poruthamText(row.reading)}',
-      );
-    }
+    putAshta('chart-$i', chart.matching!);
+    putPorutham('chart-$i', chart.porutham!);
     final mars = chart.kuja!;
     for (final (who, side) in [('bride', mars.bride), ('groom', mars.groom)]) {
       final readings = [
@@ -2216,6 +2266,7 @@ void main() {
     ('intl.load_pack', ctx.intl.loadPack),
     ('keys.id', ctx.keys.id),
     ('keys.name', ctx.keys.name),
+    ('matching.naam', ctx.matching.naam),
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),
     ('frame.unpack', ctx.frame.unpack),

@@ -10,13 +10,13 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 8 disagree; so no operation can be looked for under two names |
-| every area holds an operation that reaches the boundary | **holds** | 0 of 8 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 33 disagree; which is what the namespace is for |
-| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 14 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 8 of 48 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | **holds** | 0 of 159 disagree; so an operation added to one binding cannot go unheld in the other three; 1 allowed |
-| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 8 disagree; site/content/docs/surface.mdx names all 8 and nothing else |
+| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 9 disagree; so no operation can be looked for under two names |
+| every area holds an operation that reaches the boundary | **holds** | 0 of 9 disagree |
+| no operation's name repeats its own area's | **holds** | 0 of 34 disagree; which is what the namespace is for |
+| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 15 disagree; unreached: `blob`, `context`, `lib`, `provider`, `string` |
+| an entry point's name already carries its own module | falsified | 8 of 49 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_context_new_with_provider` |
+| every operation the layer declares is listed by every parity runner | **holds** | 0 of 163 disagree; so an operation added to one binding cannot go unheld in the other three; 1 allowed |
+| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 9 disagree; site/content/docs/surface.mdx names all 9 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 
@@ -32,7 +32,7 @@ The remaining 1 is not accounted for: `ts_error_free`.
 
 ## The areas the layer wires
 
-**8 areas over 33 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**9 areas over 34 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -108,6 +108,12 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | `of` | `ts_panchanga_days` (panchanga) |
 | `day` | — |
 
+### `sdk.matching` — `MatchingArea`
+
+| operation | reaches |
+|---|---|
+| `naam` | `ts_naam_milan` (naam) |
+
 ### `sdk.engine` — `Engine`
 
 | operation | reaches |
@@ -132,6 +138,7 @@ The remaining 1 is not accounted for: `ts_error_free`.
 | `intl` | 7 | `intl` |
 | `key` | 2 | `keys` |
 | `lib` | 6 | — |
+| `naam` | 1 | `matching` |
 | `panchanga` | 1 | `almanac` |
 | `positions` | 1 | `(root)` |
 | `provider` | 3 | — |

@@ -721,8 +721,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsVashyaRelation`, four, `TsYoniRelation`, three, `TsMaitriRelation`,
   // seven, and `TsBhakootDosha`, four; 1325 since the ten considerations'
   // `TsDhinamRule`, eleven, and `TsRajju`, five; 1330 since the marriage
-  // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two.
-  assert.equal(entries, 1330, 'every member of every enum is in a table');
+  // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two; 1341 since
+  // naam milan's `TsNameVarga`, eight, and `TsVargaRelation`, three.
+  assert.equal(entries, 1341, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2718,6 +2719,43 @@ test('a chart carries its match with a partner', () => {
     (error) => error instanceof TeistroError && error.field === 'matching.partner',
   );
   western.dispose();
+  ctx.dispose();
+});
+
+test('two names match star to star without a chart', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  // प्रि is Uttara Phalguni's 4th syllable and कृ Mrigashira's 4th
+  // (Svarodaya vv. 3-8, the first consonant taking the cluster's vowel);
+  // pa and ka stand 4 vargas apart, eater and eaten (VI.35).
+  const read = ctx.matching.naam('प्रिया', 'कृष्ण');
+  assert.ok(Object.isFrozen(read) && Object.isFrozen(read.bride) && Object.isFrozen(read.varga), 'frozen');
+  assert.deepEqual(
+    [read.bride.nakshatra, read.bride.quarter, read.bride.varga],
+    ['nakshatra.UTTARA_PHALGUNI', 4, 'RAT'],
+  );
+  assert.deepEqual([read.groom.nakshatra, read.groom.quarter, read.groom.varga], ['nakshatra.MRIGASHIRA', 4, 'CAT']);
+  assert.deepEqual(read.varga, { bride: 'RAT', groom: 'CAT', relation: 'ENEMY' });
+  assert.equal(read.ashta.kootas.length, 8);
+  assert.equal(read.ashta.total, read.ashta.kootas.reduce((sum, row) => sum + row.points, 0));
+  assert.equal(read.porutham.considerations.length, 10);
+  // The ten considerations count the groom's star from the bride's.
+  assert.equal(read.porutham.considerations[0].reading.count, 21);
+
+  // IAST, when declared, is the same name.
+  assert.deepEqual(ctx.matching.naam('priyā', 'kṛṣṇa', { name: { latin: 'IAST' } }), read);
+
+  // Abhijit's row is none of the 27: refused, unless the rules place it.
+  const abhijit = ctx.matching.naam('सीता', 'ज़ोया', { name: { abhijit: 'SHRAVANA' } });
+  assert.deepEqual([abhijit.groom.nakshatra, abhijit.groom.quarter], [null, 3]);
+  for (const [run, field] of [
+    [() => ctx.matching.naam('सीता', 'ज़ोया'), 'naam.groom.abhijit'],
+    [() => ctx.matching.naam('Sita', 'राम'), 'naam.bride.name'],
+    [() => ctx.matching.naam('सीता', 'राम', { nam: {} }), 'naam.rules.nam'],
+    [() => ctx.matching.naam('सीता', 'राम', { name: { latin: 'ENGLISH' } }), 'naam.rules.name.latin'],
+  ]) {
+    assert.throws(run, (error) => error instanceof TeistroError && error.field === field, field);
+  }
+  assert.throws(() => ctx.matching.naam('सीता', 'राम', 'IAST'), TypeError);
   ctx.dispose();
 });
 
