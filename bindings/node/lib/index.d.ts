@@ -700,6 +700,44 @@ export interface JaiminiReading {
   readonly grahaArudhas: readonly (Rashi | 'unknown' | null)[];
 }
 
+/** The syllable a child is named by: the birth pada's own cell (C297 to C299). */
+export interface BirthSyllable {
+  /** Its place among the śatapada cakra's 112 cells, 0 for a, Krittika's first. */
+  readonly cell: number;
+  /** As *Muhurta Chintamani* p. 173 prints it, e.g. `चू`. */
+  readonly devanagari: string;
+  /** Its IAST, e.g. `cū`. */
+  readonly iast: string;
+  /** The letter group it begins in (VI.35). */
+  readonly varga: NameVarga | 'unknown';
+}
+
+/**
+ * What a janma-patrika prints of the Moon: its star and pada, the syllable
+ * the child is named by, and the readings the Ashta Koota takes of the same
+ * Moon (C301). Vashya, paya, disha and tatwa are not here (C300).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, avakahada: true });
+ * console.log(chart.avakahada?.syllable.devanagari);
+ */
+export interface Avakahada {
+  readonly nakshatra: Nakshatra | 'unknown';
+  /** The pada, 1 to 4. */
+  readonly pada: number;
+  readonly rashi: Rashi | 'unknown';
+  /** The nakshatra's lord, the Vimshottari dasha's. */
+  readonly nakshatraLord: Graha | 'unknown';
+  /** The sign's lord, the one Graha Maitri reads. */
+  readonly rashiLord: Graha | 'unknown';
+  /** The sign's varna, as Varna koota reads it (VI.22). */
+  readonly varna: Varna;
+  readonly yoni: Yoni;
+  readonly gana: Gana;
+  readonly nadi: Nadi;
+  readonly syllable: BirthSyllable;
+}
+
 /** What a gochar reading counted its houses from, and that point's sign. */
 export interface GocharReference {
   /** The natal Moon (Phaladeepika ch. 26 v. 1) or, asked, the lagna (C139). */
@@ -3708,6 +3746,8 @@ export declare class Chart {
   readonly dashaPhala: DashaPhalaReading | null;
   /** Jaimini's significators; `null` unless `jaimini` asked for them. */
   readonly jaimini: JaiminiReading | null;
+  /** The Moon's avakahada; `null` unless `avakahada` asked for it. */
+  readonly avakahada: Avakahada | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
   /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
@@ -5048,6 +5088,11 @@ export interface ChartRequest {
   readonly dashaPhala?: boolean;
   /** Whether to compute Jaimini's significators; false by default. */
   readonly jaimini?: boolean;
+  /**
+   * Whether to read the Moon's avakahada; false by default. A tropical
+   * chart refuses it, named `avakahada`.
+   */
+  readonly avakahada?: boolean;
   /**
    * Whether to place Uranus, Neptune and Pluto beside the nine, in
    * `chart.outer`; false by default. A progression's later charts and a

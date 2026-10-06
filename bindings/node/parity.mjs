@@ -350,6 +350,7 @@ const charts = geo.chart.foundMany({
   vaiseshikamsa: true,
   dashaPhala: true,
   jaimini: true,
+  avakahada: true,
   outerPlanets: true,
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
@@ -648,6 +649,13 @@ for (const chart of charts) {
   const { karakamsha: k, brahma: b } = chart.jaimini;
   put(`chart-${i}-jaimini`, `${k.atmakaraka} ${k.sign} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}`);
   put(`chart-${i}-graha-arudhas`, chart.jaimini.grahaArudhas.map((sign) => sign ?? '-').join(','));
+  const birth = chart.avakahada;
+  put(
+    `chart-${i}-avakahada`,
+    `${birth.nakshatra} ${birth.pada} ${birth.rashi} ${birth.nakshatraLord} ${birth.rashiLord} ${birth.varna} ${birth.yoni} ${birth.gana} ${birth.nadi}`,
+  );
+  const syllable = birth.syllable;
+  put(`chart-${i}-avakahada-syllable`, `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`);
   chart.gochar.forEach((reading, at) => {
     const { reference: ref, rules } = reading;
     put(

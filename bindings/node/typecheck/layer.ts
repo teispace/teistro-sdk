@@ -28,6 +28,8 @@ import type {
   WesternHouses,
   AshtaKoota,
   NaamMilan,
+  Avakahada,
+  BirthSyllable,
   NaamRules,
   NameSyllable,
   KootaReading,
@@ -124,7 +126,7 @@ import type {
   Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Ayanamsha, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
+import type { Ayanamsha, Gana, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance, returnsRequest } from '../lib/index.js';
 
@@ -1278,6 +1280,23 @@ function theNaam(ctx: Context): string {
 }
 
 void theNaam;
+
+// A chart's avakahada, read down to its syllable's own fields.
+function theAvakahada(ctx: Context): string {
+  const place = { latitude: 27.7, longitude: 85.3 };
+  const read: Avakahada | null = ctx.chart.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700, avakahada: true })
+    .avakahada;
+  if (read === null) return '';
+  const syllable: BirthSyllable = read.syllable;
+  const gana: Gana = read.gana;
+  return [
+    `${read.nakshatra} ${read.pada} ${read.rashi} ${read.nakshatraLord} ${read.rashiLord}`,
+    `${read.varna} ${read.yoni} ${gana} ${read.nadi}`,
+    `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`,
+  ].join();
+}
+
+void theAvakahada;
 
 // A lunar and a solar return, asked through the hit list.
 function theReturns(ctx: Context): string {

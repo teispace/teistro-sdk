@@ -1077,6 +1077,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
         .with_vaiseshikamsa()
         .with_dasha_phala()
         .with_jaimini()
+        .with_avakahada()
         .with_outer_planets()
         .with_shadbala()
         .with_bhava_bala()
@@ -3890,6 +3891,7 @@ fn the_strength(report: &mut Report, index: usize, document: &teistro::Document)
     the_vaiseshikamsa(report, index, document);
     the_dasha_phala(report, index, document);
     the_jaimini(report, index, document);
+    the_avakahada(report, index, document);
     the_shadbala(report, index, document);
     the_bhava_bala(report, index, document);
 }
@@ -4019,6 +4021,42 @@ fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Docume
 /// Jaimini's significators as the other three print them: the karakamsha
 /// with its houses in both charts, and the Brahma graha's rule, count, marks
 /// and answer, `-` for each that is absent.
+/// The avakahada as the other three print it: the Moon's readings, then
+/// the syllable it names the child by.
+fn the_avakahada(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(read) = document.avakahada.as_ref() else {
+        return;
+    };
+    put(
+        report,
+        &format!("chart-{index}-avakahada"),
+        format!(
+            "{} {} {} {} {} {} {} {} {}",
+            read.nakshatra.full_key(),
+            read.pada,
+            read.rashi.full_key(),
+            read.nakshatra_lord.full_key(),
+            read.rashi_lord.full_key(),
+            read.varna.full_key(),
+            read.yoni.full_key(),
+            read.gana.full_key(),
+            read.nadi.full_key()
+        ),
+    );
+    let syllable = &read.syllable;
+    put(
+        report,
+        &format!("chart-{index}-avakahada-syllable"),
+        format!(
+            "{} {} {} {}",
+            syllable.cell,
+            syllable.devanagari,
+            syllable.iast,
+            wire_key(&syllable.varga)
+        ),
+    );
+}
+
 fn the_jaimini(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(reading) = document.jaimini.as_ref() else {
         return;

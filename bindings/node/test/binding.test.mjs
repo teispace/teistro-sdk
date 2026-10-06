@@ -2759,6 +2759,55 @@ test('two names match star to star without a chart', () => {
   ctx.dispose();
 });
 
+/**
+ * A chart's avakahada crosses whole, and its syllable names the child back
+ * to the Moon's own star and pada (C297): read as a name, the birth syllable
+ * is the birth pada. `null` unless asked; a tropical chart refuses it.
+ */
+test('a chart carries its avakahada, whose syllable names the birth pada', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).avakahada, null);
+  const padas = new Set();
+  for (let step = 0; step < 28; step += 1) {
+    const read = ctx.chart.found({ instant: 2451545 + step * 0.83, place, utcOffsetSeconds: 20700, avakahada: true })
+      .avakahada;
+    assert.ok(Object.isFrozen(read) && Object.isFrozen(read.syllable), 'frozen');
+    for (const [value, prefix] of [
+      [read.nakshatra, 'nakshatra'],
+      [read.rashi, 'rashi'],
+      [read.nakshatraLord, 'graha'],
+      [read.rashiLord, 'graha'],
+      [read.varna, 'varna'],
+      [read.yoni, 'yoni'],
+      [read.gana, 'gana'],
+      [read.nadi, 'nadi'],
+    ]) {
+      assert.ok(value.startsWith(`${prefix}.`), value);
+    }
+    const named = ctx.matching.naam(read.syllable.devanagari, read.syllable.devanagari).bride;
+    assert.deepEqual(
+      [named.cell, named.nakshatra, named.quarter, named.varga],
+      [read.syllable.cell, read.nakshatra, read.pada, read.syllable.varga],
+      read.syllable.devanagari,
+    );
+    assert.deepEqual(
+      ctx.matching.naam(read.syllable.iast, read.syllable.iast, { name: { latin: 'IAST' } }).bride,
+      named,
+      read.syllable.iast,
+    );
+    padas.add(`${read.nakshatra} ${read.pada}`);
+  }
+  assert.ok(padas.size > 20, `${padas.size} padas`);
+  const western = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
+  assert.throws(
+    () => western.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, avakahada: true }),
+    (error) => error instanceof TeistroError && error.field === 'avakahada',
+  );
+  western.dispose();
+  ctx.dispose();
+});
+
 test('a chart carries its synastry with a partner', () => {
   // King George V and Queen Mary (Leo, How to Judge a Nativity, p. 130),
   // whose cross contacts the SDK's test holds against a Moshier recast.

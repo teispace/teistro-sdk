@@ -31,6 +31,7 @@ import {
   CHART_DASHA_PHALA,
   CHART_HOUSES,
   CHART_JAIMINI,
+  CHART_AVAKAHADA,
   CHART_OUTER,
   CHART_POINTS,
   CHART_SHADBALA,
@@ -956,6 +957,15 @@ export class Chart {
    */
   get jaimini() {
     return jaiminisOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Moon's avakahada (`avakahada: true`): its star and pada, the
+   * syllable the child is named by, and the readings the Ashta Koota takes
+   * of the same Moon (C301); `null` unless asked for.
+   */
+  get avakahada() {
+    return avakahadasOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2541,6 +2551,7 @@ export class ChartArea extends Area {
           (request.bhavaBala === true ? CHART_BHAVA_BALA : 0) |
           (request.dashaPhala === true ? CHART_DASHA_PHALA : 0) |
           (request.jaimini === true ? CHART_JAIMINI : 0) |
+          (request.avakahada === true ? CHART_AVAKAHADA : 0) |
           (request.outerPlanets === true ? CHART_OUTER : 0) |
           (request.state === true ? CHART_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
@@ -5296,6 +5307,41 @@ function bala(subSub) {
     ...parts,
     toString: () => `${pad(parts.units)}:${pad(parts.subUnits)}:${pad(parts.subSub)}`,
   };
+}
+/** Each batch's avakahadas, decoded once however many charts read them. */
+const AVAKAHADAS = new WeakMap();
+
+/** Every chart's avakahada in a batch; empty when none was asked for. */
+function avakahadasOf(batch) {
+  let decoded = AVAKAHADAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.avakahada;
+    const texts = batch.decoded.avakahadaSyllables;
+    const syllables = texts ? JSON.parse(texts) : [];
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    decoded = Array.from({ length: c.pada.length }, (_, chart) => {
+      const [devanagari, iast] = syllables[chart];
+      return Object.freeze({
+        nakshatra: NakshatraById.get(c.nakshatra[chart]) ?? 'unknown',
+        pada: c.pada[chart],
+        rashi: RashiById.get(c.rashi[chart]) ?? 'unknown',
+        nakshatraLord: graha(c.nakshatraLord[chart]),
+        rashiLord: graha(c.rashiLord[chart]),
+        varna: VarnaById.get(c.varna[chart]) ?? 'unknown',
+        yoni: YoniById.get(c.yoni[chart]) ?? 'unknown',
+        gana: GanaById.get(c.gana[chart]) ?? 'unknown',
+        nadi: NadiById.get(c.nadi[chart]) ?? 'unknown',
+        syllable: Object.freeze({
+          cell: c.cell[chart],
+          devanagari,
+          iast,
+          varga: NameVargaById.get(c.varga[chart]) ?? 'unknown',
+        }),
+      });
+    });
+    AVAKAHADAS.set(batch, decoded);
+  }
+  return decoded;
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */

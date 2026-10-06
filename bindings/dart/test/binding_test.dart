@@ -3559,6 +3559,84 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test(
+    'a chart carries its avakahada, whose syllable names the birth pada',
+    () {
+      // Read as a name, in either script, the birth syllable is the birth
+      // pada (C297); null unless asked; a tropical chart refuses it by name.
+      final ctx = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
+      final kathmandu = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      );
+      expect(
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: kathmandu,
+              utcOffsetSeconds: 20700,
+            )
+            .avakahada,
+        isNull,
+      );
+      final padas = <(Nakshatra, int)>{};
+      for (var step = 0; step < 28; step++) {
+        final read =
+            ctx.chart
+                .found(
+                  instant: 2451545.0 + step * 0.83,
+                  place: kathmandu,
+                  utcOffsetSeconds: 20700,
+                  avakahada: true,
+                )
+                .avakahada!;
+        final named =
+            ctx.matching
+                .naam(read.syllable.devanagari, read.syllable.devanagari)
+                .bride;
+        expect(
+          (named.cell, named.nakshatra, named.quarter, named.varga),
+          (read.syllable.cell, read.nakshatra, read.pada, read.syllable.varga),
+          reason: read.syllable.devanagari,
+        );
+        expect(
+          ctx.matching
+              .naam(
+                read.syllable.iast,
+                read.syllable.iast,
+                const NaamRules(name: NameRules(latin: LatinName.iast)),
+              )
+              .bride,
+          named,
+          reason: read.syllable.iast,
+        );
+        padas.add((read.nakshatra, read.pada));
+      }
+      expect(padas.length, greaterThan(20));
+      ctx.dispose();
+
+      final western = teistro.context(
+        profile: 'western-tropical-default',
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
+      expect(
+        () => western.chart.found(
+          instant: 2451545.0,
+          place: kathmandu,
+          utcOffsetSeconds: 20700,
+          avakahada: true,
+        ),
+        throwsA(
+          isA<TeistroException>().having((e) => e.field, 'field', 'avakahada'),
+        ),
+      );
+      western.dispose();
+    },
+  );
+
   test('a chart carries its synastry with a partner', () {
     // King George V and Queen Mary (Leo, *How to Judge a Nativity*,
     // p. 130): the recast's closest contacts, the lagna left out on
