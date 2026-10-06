@@ -20,6 +20,7 @@
 #![doc(html_no_source)]
 
 mod ashta;
+mod avakahada;
 mod doshas;
 mod kuja;
 mod name;
@@ -33,6 +34,7 @@ pub use ashta::{
     VashyaRelation, YoniRelation, ashta_koota, is_vashya, maitri_relation, sign_varna,
     vashya_relation, yoni_relation,
 };
+pub use avakahada::{Avakahada, avakahada};
 pub use doshas::{DoshaSystem, MarriageDosha, marriage_doshas};
 pub use kuja::{
     KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaNative, KujaReading, KujaReference, KujaRules,
