@@ -1456,6 +1456,15 @@ void main() {
       put('chart-$i-kuja-$who', '${readings.join(' ')} ${flag(side.dosha)}');
     }
     put('chart-$i-kuja', '${flag(mars.both)}');
+    final doshas = chart.marriageDoshas!;
+    put('chart-$i-doshas', '${doshas.length}');
+    for (final (n, d) in doshas.indexed) {
+      put(
+        'chart-$i-dosha-$n',
+        '${d.system.key} ${d.koota?.fullKey ?? 'NONE'} '
+            '${d.side?.key ?? 'NONE'} ${flag(d.lifted)}',
+      );
+    }
     final fifth = chart.harmonic!;
     String pointKey(HarmonicPoint point) => switch (point) {
       HarmonicGraha(:final graha) => graha.fullKey,

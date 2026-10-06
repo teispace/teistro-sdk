@@ -900,6 +900,11 @@ for (const chart of charts) {
     put(`chart-${i}-kuja-${who}`, `${readings.join(' ')} ${flag(side.dosha)}`);
   }
   put(`chart-${i}-kuja`, flag(mars.both));
+  const doshas = chart.marriageDoshas;
+  put(`chart-${i}-doshas`, `${doshas.length}`);
+  doshas.forEach((d, n) =>
+    put(`chart-${i}-dosha-${n}`, `${d.system} ${d.koota ?? 'NONE'} ${d.side ?? 'NONE'} ${flag(d.lifted)}`),
+  );
   const point = (p) => (p.point === 'LAGNA' ? 'LAGNA' : p.graha);
   const synastry = chart.synastry;
   put(`chart-${i}-synastry-count`, `${synastry.length}`);

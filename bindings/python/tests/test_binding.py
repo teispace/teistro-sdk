@@ -2080,7 +2080,10 @@ class AnEngine(WithLibrary):
             DhinamPorutham,
             GanaKoota,
             Koota,
+            DoshaSystem,
             Kuja,
+            MarriageDosha,
+            MatchRole,
             MaitriKoota,
             MaitriRelation,
             MatchingRequest,
@@ -2166,6 +2169,23 @@ class AnEngine(WithLibrary):
             self.assertEqual(mars.both, mars.bride.dosha)
             self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).kuja)
 
+            # The marriage doshas gather the three (C289): the shared nadi in
+            # one pada first, then each consideration that disagrees or was
+            # lifted, then the Kuja sides.
+            paired = ctx.chart.found(instant=birth, matching=itself, **kathmandu)
+            doshas, ten, mine = paired.marriage_doshas, paired.porutham, paired.kuja
+            assert doshas is not None and ten is not None and mine is not None
+            self.assertEqual(doshas[0], MarriageDosha(DoshaSystem.ASHTA_KOOTA, Koota.NADI, None, False))
+            self.assertEqual(
+                [(d.koota, d.lifted) for d in doshas if d.system is DoshaSystem.PORUTHAM],
+                [(row.reading.koota, row.lifted) for row in ten.considerations if not row.agrees or row.lifted],
+            )
+            self.assertEqual(
+                [d.side for d in doshas if d.system is DoshaSystem.KUJA],
+                [MatchRole.BRIDE, MatchRole.GROOM] if mine.bride.dosha else [],
+            )
+            self.assertIsNone(ctx.chart.found(instant=birth, **kathmandu).marriage_doshas)
+
             asked: MatchingRequest = {
                 "partner": {"instant": 2447892.5, "observer": kathmandu["place"], "utc_offset_seconds": 20700},
                 "partnerRole": "GROOM",
@@ -2179,6 +2199,7 @@ class AnEngine(WithLibrary):
                 self.assertEqual(batch.at(k).matching, alone)
                 self.assertEqual(batch.at(k).porutham, one.porutham)
                 self.assertEqual(batch.at(k).kuja, one.kuja)
+                self.assertEqual(batch.at(k).marriage_doshas, one.marriage_doshas)
                 swapped = ctx.chart.found(instant=instant, matching={**asked, "partnerRole": "BRIDE"}, **kathmandu).matching
                 assert alone is not None and swapped is not None
                 ours, theirs = alone.kootas[0].reading, swapped.kootas[0].reading

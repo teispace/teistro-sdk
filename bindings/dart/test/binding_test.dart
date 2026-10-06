@@ -3325,6 +3325,47 @@ void _engineTests() {
     expect(mars.both, mars.bride.dosha);
     expect(found(birth).kuja, isNull);
 
+    // The marriage doshas gather the three (C289): the shared nadi in one
+    // pada first, then each consideration that disagrees or was lifted,
+    // then the Kuja sides.
+    final self = found(
+      birth,
+      asked: MatchingRequest(
+        Partner(instant: birth, place: kathmandu, utcOffsetSeconds: 20700),
+        partnerRole: MatchRole.bride,
+      ),
+    );
+    final doshas = self.marriageDoshas!;
+    expect(
+      doshas.first,
+      const MarriageDosha(
+        system: DoshaSystem.ashtaKoota,
+        koota: Koota.nadi,
+        side: null,
+        lifted: false,
+      ),
+    );
+    expect(
+      [
+        for (final d in doshas)
+          if (d.system == DoshaSystem.porutham) (d.koota, d.lifted),
+      ],
+      [
+        for (final row in self.porutham!.considerations)
+          if (!row.agrees || row.lifted) (row.reading.koota, row.lifted),
+      ],
+    );
+    expect(
+      [
+        for (final d in doshas)
+          if (d.system == DoshaSystem.kuja) d.side,
+      ],
+      self.kuja!.bride.dosha
+          ? [MatchRole.bride, MatchRole.groom]
+          : <MatchRole>[],
+    );
+    expect(found(birth).marriageDoshas, isNull);
+
     final asked = MatchingRequest(
       Partner(instant: 2447892.5, place: kathmandu, utcOffsetSeconds: 20700),
       partnerRole: MatchRole.groom,
@@ -3343,6 +3384,7 @@ void _engineTests() {
       expect(batch.at(k).matching, alone);
       expect(batch.at(k).porutham, one.porutham);
       expect(batch.at(k).kuja, one.kuja);
+      expect(batch.at(k).marriageDoshas, one.marriageDoshas);
       final swapped =
           found(
             instant,

@@ -147,6 +147,8 @@ import {
   BhakootDoshaById,
   DhinamRuleById,
   RajjuById,
+  DoshaSystemById,
+  MatchRoleById,
 } from './catalogue.js';
 import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
@@ -1361,6 +1363,20 @@ export class Chart {
    */
   get kuja() {
     return kujasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Every marriage dosha the chart's match with the same partner carries,
+   * as one list in the answers' own order: the Ashta Koota's Bhakoot,
+   * Nadi, Gana and the lords' enmity, each of the ten considerations that
+   * disagrees or agrees only by the p. 76 exception, and each side's Kuja
+   * dosha, each with whether it is lifted. No severity is given, since no
+   * text grades one; `null` unless `matching` asked (`03-design/matching.md`).
+   *
+   * @returns {readonly object[]|null}
+   */
+  get marriageDoshas() {
+    return marriageDoshasOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -4105,6 +4121,34 @@ function matchingsOf(batch) {
 /** Each batch's ten considerations, decoded once however many charts read them. */
 const PORUTHAMS = new WeakMap();
 const KUJAS = new WeakMap();
+const MARRIAGE_DOSHAS = new WeakMap();
+
+/**
+ * Each chart's marriage doshas, decoded once per batch from
+ * `marriage_doshas` and the rows ragged under it.
+ *
+ * @param {Charts} batch
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function marriageDoshasOf(batch) {
+  let decoded = MARRIAGE_DOSHAS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const r = d.marriageDoshaRows;
+  const of = (byId, id) => byId.get(id) ?? 'unknown';
+  decoded = raggedOf(batch, d.marriageDoshas.count, r.system.length, 'marriage_doshas and marriage_dosha_rows', (row) => {
+    const system = of(DoshaSystemById, r.system[row]);
+    const kuja = system === 'KUJA';
+    return Object.freeze({
+      system,
+      koota: kuja ? null : of(KootaById, r.koota[row]),
+      side: kuja ? of(MatchRoleById, r.side[row]) : null,
+      lifted: r.lifted[row] === 1,
+    });
+  });
+  MARRIAGE_DOSHAS.set(batch, decoded);
+  return decoded;
+}
 
 /** The three places Mars's house is counted from, in the order every answer reports them, with their columns' stem. */
 const KUJA_REFERENCES = Object.freeze([

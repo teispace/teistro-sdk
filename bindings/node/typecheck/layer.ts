@@ -30,6 +30,7 @@ import type {
   KootaReading,
   Kuja,
   KujaReading,
+  MarriageDosha,
   Porutham,
   PoruthamReading,
   MatchingRequest,
@@ -1225,7 +1226,9 @@ function theMatching(ctx: Context): string {
   const misplaced: MatchingRequest = { ...asked, kuja: { from: 'SUN' } };
   const mars: Kuja | null = chart.kuja;
   const fromLagna: KujaReading | undefined = mars?.bride.readings[0];
+  const first: MarriageDosha | undefined = chart.marriageDoshas?.[0];
   return [
+    `${first?.system ?? ''} ${first?.koota ?? 'NONE'} ${first?.side ?? 'NONE'} ${first?.lifted ?? false}`,
     `${fromLagna?.from ?? ''} ${fromLagna?.house ?? 0} ${fromLagna?.inHouses ?? false}`,
     mars?.groom.dosha ?? false,
     mars?.both ?? false,
