@@ -3319,7 +3319,8 @@ export interface RuleRequest {
   readonly houses?: boolean;
   /**
    * Whether to add the three pairs, the three spans, the rays, the dashas'
-   * span, the span the strongest names and the marakas; asks the chart for
+   * and the wheel of time's spans, the span the strongest names and the
+   * marakas; asks the chart for
    * the Shadbala and Bhava bala they weigh and the Vimshottari whose
    * balance the dashas' span reads.
    */
@@ -3330,6 +3331,8 @@ export interface RuleRequest {
   readonly threePairs?: ThreePairsRules;
   /** How the rays are read, when `longevity` asks; the translator's note's by default. */
   readonly rasmi?: RasmiRules;
+  /** How the wheel of time's span is read, when `longevity` asks; the note's figure's by default. */
+  readonly chakrayus?: ChakrayusRules;
 }
 
 /**
@@ -3380,6 +3383,19 @@ export interface ThreePairsRules {
 export interface RasmiRules {
   /** Which place doubles them or takes a share: the dwadasamsa, or the sign. */
   readonly place?: 'dwadasamsa' | 'sign';
+}
+
+/**
+ * How the wheel of time's span, Chakrayus, is read (*Jataka Parijata* ch. 5
+ * v. 26, crux C310); every field optional, the note's figure's by default.
+ *
+ * @example
+ * // As the verse names it, by the untraversed pada.
+ * const rules: RuleRequest = { longevity: true, chakrayus: { portion: 'pada' } };
+ */
+export interface ChakrayusRules {
+  /** Which untraversed part a graha's years follow: its whole nakshatra, or its pada. */
+  readonly portion?: 'star' | 'pada';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

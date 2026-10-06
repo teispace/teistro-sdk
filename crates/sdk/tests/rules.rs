@@ -611,9 +611,8 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
     assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
-    // Every chart names one span, over all eight: 43 of the 53 one the SDK
-    // computes (Pinda, Nisarga, Rasmi, Nakshatra and Amsa), 10 one of the
-    // three it does not yet.
+    // Every chart names one span, over all eight: 46 of the 53 one the SDK
+    // computes, 7 one of the two ashtakavarga spans it does not yet.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
     assert_eq!(
         named,
@@ -661,6 +660,8 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
     // between a hundred years and the hundred and twenty.
     let dasayus = longevity.dasayus.unwrap();
     assert!((100.0..=120.0).contains(&dasayus.years), "{name}");
+    // The wheel of time's span is at most the seven's 72 years.
+    assert!((0.0..=72.0).contains(&longevity.chakrayus.years), "{name}");
     let choice = &longevity.choice;
     assert!(choice.all_weighed, "{name}");
     for candidate in &choice.candidates {
@@ -670,6 +671,7 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
             Ayus::Amsa => Some(longevity.ayurdaya.amsayu.years),
             Ayus::Rasmi => Some(rasmi.years),
             Ayus::Nakshatra => longevity.dasayus.map(|span| span.years),
+            Ayus::Kalachakra => Some(longevity.chakrayus.years),
             _ => None,
         };
         assert_eq!(candidate.years, years, "{name}");
@@ -759,6 +761,7 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
         (r#"{"ayurdaya": {}}"#, "ayurdaya"),
         (r#"{"threePairs": {}}"#, "threePairs"),
         (r#"{"rasmi": {}}"#, "rasmi"),
+        (r#"{"chakrayus": {}}"#, "chakrayus"),
     ] {
         let refused = RuleRequest::from_json(text)
             .unwrap()

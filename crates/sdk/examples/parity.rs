@@ -109,6 +109,15 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             &format!("chart-{index}-rules-dasayus"),
             number(dasayus),
         );
+        let chakrayus = reading
+            .longevity
+            .as_ref()
+            .map_or(0.0, |longevity| longevity.chakrayus.years);
+        put(
+            report,
+            &format!("chart-{index}-rules-chakrayus"),
+            number(chakrayus),
+        );
     }
 }
 

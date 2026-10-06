@@ -5926,6 +5926,7 @@ final class RuleRequest {
     this.ayurdaya,
     this.threePairs,
     this.rasmi,
+    this.chakrayus,
   });
 
   /// The shipped sets to evaluate.
@@ -5941,7 +5942,8 @@ final class RuleRequest {
   final bool houses;
 
   /// Whether to add the three pairs, the three spans, the rays, the
-  /// dashas' span, the span the strongest names and the marakas; asks the
+  /// dashas' and the wheel of time's spans, the span the strongest names
+  /// and the marakas; asks the
   /// chart for the Shadbala and Bhava bala they weigh and the Vimshottari
   /// whose balance the dashas' span reads.
   final bool longevity;
@@ -5958,6 +5960,10 @@ final class RuleRequest {
   /// by default. Refused without [longevity].
   final RasmiRules? rasmi;
 
+  /// How the wheel of time's span is read when [longevity] asks; the
+  /// note's figure's by default. Refused without [longevity].
+  final ChakrayusRules? chakrayus;
+
   String get _json => jsonEncode(<String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
@@ -5967,6 +5973,7 @@ final class RuleRequest {
     if (ayurdaya != null) 'ayurdaya': ayurdaya!._record,
     if (threePairs != null) 'threePairs': threePairs!._record,
     if (rasmi != null) 'rasmi': rasmi!._record,
+    if (chakrayus != null) 'chakrayus': chakrayus!._record,
   });
 }
 
@@ -6176,6 +6183,41 @@ final class RasmiRules {
 
   Map<String, Object?> get _record => <String, Object?>{
     if (place != null) 'place': place!.key,
+  };
+}
+
+/// Which untraversed part a graha's years follow in Chakrayus (crux C310).
+enum ChakraPortion {
+  /// The whole nakshatra's, as the note's figure takes it.
+  star('star'),
+
+  /// The pada's, as the verse names it.
+  pada('pada');
+
+  const ChakraPortion(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How the wheel of time's span, Chakrayus, is read (*Jataka Parijata*
+/// ch. 5 v. 26, crux C310); a field left null is the note's figure's
+/// reading.
+///
+/// ```dart
+/// // As the verse names it, by the untraversed pada.
+/// const rules = RuleRequest(
+///   longevity: true,
+///   chakrayus: ChakrayusRules(portion: ChakraPortion.pada),
+/// );
+/// ```
+final class ChakrayusRules {
+  const ChakrayusRules({this.portion});
+
+  final ChakraPortion? portion;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (portion != null) 'portion': portion!.key,
   };
 }
 

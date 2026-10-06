@@ -1,7 +1,7 @@
 # The remaining spans of life (*Jataka Parijata* ch. 5)
 
-Status: Rasmi, v. 33's choice and Dasayus `decided` and built,
-2026-10-07; the rest `research`. The
+Status: Rasmi, v. 33's choice, Dasayus and Chakrayus `decided` and
+built, 2026-10-07; the two ashtakavarga spans `research`. The
 three spans BPHS and *Jataka Parijata* share (Pindayu, Nisargayu,
 Amsayu) are built (`rules-engine.md`), and are read as the book reads
 them under `AyurdayaRules::PARIJATA` (C302 to C304). This page records
@@ -133,4 +133,13 @@ readings of the figure decide the rest:
    eight dashas after it, 100 to 120 years. v. 33's Nakshatra candidate
    carries it, and 43 of the corpus's 53 charts now name a computed
    span.
-4. Chakrayus, once ch. 17's Kalachakra years are read.
+4. ~~Chakrayus, once ch. 17's Kalachakra years are read.~~ Built
+   (C310): ch. 17 v. 6, read in vol. II, gives the seven's years, which
+   are the dasha crate's Kalachakra sign years by each graha's own sign.
+   The verse names the untraversed pada, but the note's one figure takes
+   the Sun's whole star and his own years (424.5 × 5 / 800 = 2.653), so
+   `chakrayus.portion` is the star by default and the pada by choice.
+   With it, 46 of the corpus's 53 charts name a computed span under
+   v. 33; the 7 left name Samudaya (6) or Bhinnashtakavarga (1).
+5. The two ashtakavarga spans (v. 27's last clause, "treated in ch. 10"),
+   next.

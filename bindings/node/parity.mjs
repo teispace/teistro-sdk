@@ -585,6 +585,7 @@ for (const chart of charts) {
   put(`chart-${i}-rules-rays`, chart.rules.longevity.rasmi.total);
   put(`chart-${i}-rules-span`, chart.rules.longevity.choice.ayus ?? '');
   put(`chart-${i}-rules-dasayus`, chart.rules.longevity.dasayus?.years ?? 0);
+  put(`chart-${i}-rules-chakrayus`, chart.rules.longevity.chakrayus.years);
   // **Every item said**, not merely counted: this is the only place the
   // four bindings are compared on text, and it exercises the composers,
   // the params shape and the locale engine in one comparison.

@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 
 use super::ayurdaya::Ayurdaya;
+use super::chakrayus::Chakrayus;
 use super::dasayus::Dasayus;
 use super::rasmi::Rasmi;
 use crate::chart::Strengths;
@@ -77,8 +78,9 @@ pub struct Candidate {
     /// The span it names.
     pub ayus: Ayus,
     /// That span's years where it is computed: Pinda, Nisarga and Amsa as
-    /// the three spans read them, Rasmi as the rays' years and Nakshatra as
-    /// the dashas' (v. 27); none for the three the SDK does not yet
+    /// the three spans read them, Rasmi as the rays' years, Nakshatra as
+    /// the dashas' (v. 27) and Kalachakra as the wheel of time's (v. 26);
+    /// none for the two ashtakavarga spans, which the SDK does not yet
     /// compute.
     pub years: Option<f64>,
 }
@@ -93,6 +95,8 @@ pub struct Computed<'a> {
     pub rasmi: Option<&'a Rasmi>,
     /// The dashas' span.
     pub dasayus: Option<&'a Dasayus>,
+    /// The wheel of time's span.
+    pub chakrayus: Option<&'a Chakrayus>,
 }
 
 /// The span the strongest names, with every candidate weighed.
@@ -150,7 +154,8 @@ pub fn span_choice(
                 Ayus::Amsa => spans.map(|spans| spans.amsayu.years),
                 Ayus::Rasmi => computed.rasmi.map(|rays| rays.years),
                 Ayus::Nakshatra => computed.dasayus.map(|span| span.years),
-                Ayus::Bhinnashtakavarga | Ayus::Kalachakra | Ayus::Samudaya => None,
+                Ayus::Kalachakra => computed.chakrayus.map(|span| span.years),
+                Ayus::Bhinnashtakavarga | Ayus::Samudaya => None,
             },
         }
     });

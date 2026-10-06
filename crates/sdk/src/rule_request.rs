@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
 use teistro_rules::longevity::{
-    Ayurdaya, AyurdayaRules, Dasayus, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
+    Ayurdaya, AyurdayaRules, Chakrayus, ChakrayusRules, Dasayus, Marakas, Rasmi, RasmiRules,
+    SpanChoice, ThreePairs,
 };
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
@@ -120,7 +121,8 @@ pub struct RuleRequest {
     /// Whether to add the twelve house readings.
     pub houses: bool,
     /// Whether to add the three pairs, the three spans, the rays, the
-    /// dashas' span, the span the strongest names and the marakas. Asks the
+    /// dashas' and the wheel of time's spans, the span the strongest names
+    /// and the marakas. Asks the
     /// chart for its Shadbala and Bhava bala, which they weigh, and its
     /// Vimshottari, whose balance the dashas' span reads.
     pub longevity: bool,
@@ -134,6 +136,9 @@ pub struct RuleRequest {
     /// `longevity` asks for them;
     /// the translator's note's by default (cruxes C305 to C307).
     pub rasmi: Option<RasmiRules>,
+    /// The choices the wheel of time's span is read under, when
+    /// `longevity` asks for it; the note's figure's by default (crux C310).
+    pub chakrayus: Option<ChakrayusRules>,
 }
 
 impl RuleRequest {
@@ -227,6 +232,25 @@ impl RuleRequest {
         self
     }
 
+    /// The same request with the longevity readings, the wheel of time's
+    /// span read under `rules`.
+    ///
+    /// ```
+    /// use teistro::RuleRequest;
+    /// use teistro::rules::longevity::{ChakraPortion, ChakrayusRules};
+    ///
+    /// let by_pada = ChakrayusRules { portion: ChakraPortion::Pada };
+    /// let read = RuleRequest::from_json(r#"{"longevity": true, "chakrayus": {"portion": "pada"}}"#)?;
+    /// assert_eq!(read, RuleRequest::default().with_chakrayus(by_pada));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_chakrayus(mut self, rules: ChakrayusRules) -> RuleRequest {
+        self.longevity = true;
+        self.chakrayus = Some(rules);
+        self
+    }
+
     /// A request read from JSON. A value that does not read is refused by
     /// where it stands — `rules[3].when`, `houses` — with what was wrong.
     ///
@@ -259,7 +283,7 @@ impl RuleRequest {
         let request: RuleRequest =
             teistro_core::strict::deserialize(&value, "").map_err(|err| {
                 err.with_hint(
-                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya`, `threePairs` and `rasmi`",
+                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya`, `threePairs`, `rasmi` and `chakrayus`",
                 )
             })?;
         Ok(request.with_rules(rules))
@@ -298,6 +322,7 @@ impl RuleRequest {
             ("ayurdaya", self.ayurdaya.is_some()),
             ("threePairs", self.three_pairs.is_some()),
             ("rasmi", self.rasmi.is_some()),
+            ("chakrayus", self.chakrayus.is_some()),
         ] {
             if given && !self.longevity {
                 return Err(Error::invalid_arg(format!(
@@ -315,6 +340,7 @@ impl RuleRequest {
                 ayurdaya: self.ayurdaya.unwrap_or_default(),
                 three_pairs: self.three_pairs.unwrap_or_default(),
                 rasmi: self.rasmi.unwrap_or_default(),
+                chakrayus: self.chakrayus.unwrap_or_default(),
             }),
         })
     }
@@ -326,6 +352,7 @@ pub(crate) struct LongevityRules {
     pub(crate) ayurdaya: AyurdayaRules,
     pub(crate) three_pairs: ThreePairsRules,
     pub(crate) rasmi: RasmiRules,
+    pub(crate) chakrayus: ChakrayusRules,
 }
 
 /// A validated set of rules with what else a reading should answer.
@@ -384,6 +411,13 @@ impl RuleSet {
         self.longevity.map(|rules| rules.rasmi)
     }
 
+    /// The choices the wheel of time's span is read under, when the
+    /// longevity readings are asked for.
+    #[must_use]
+    pub fn chakrayus(&self) -> Option<ChakrayusRules> {
+        self.longevity.map(|rules| rules.chakrayus)
+    }
+
     /// Every longevity choice together, when the readings are asked for.
     pub(crate) const fn longevity_rules(&self) -> Option<LongevityRules> {
         self.longevity
@@ -415,6 +449,10 @@ pub struct Longevity {
     /// Vimshottari's balance and the eight dashas after it; none where the
     /// chart's Vimshottari has no balance.
     pub dasayus: Option<Dasayus>,
+    /// The span the wheel of time gives (*Jataka Parijata* ch. 5 v. 26):
+    /// each graha's ch. 17 years in proportion to what of its nakshatra is
+    /// still to run.
+    pub chakrayus: Chakrayus,
     /// Which span the strongest of the seven grahas and the lagna names
     /// (*Jataka Parijata* ch. 5 v. 33), the lagna weighed by its Bhava
     /// bala in rupas.

@@ -56,6 +56,7 @@ from teistro import (
     Plans,
     AyurdayaRules,
     RasmiRules,
+    ChakrayusRules,
     RuleRequest,
     RulesReading,
     Theme,
@@ -1026,6 +1027,12 @@ class AnEngine(WithLibrary):
         self.assertIs(choice["all_weighed"], True)
         # v. 27: the dashas' span, a cycle of 120 years less what had run.
         self.assertTrue(100.0 <= answered["longevity"]["dasayus"]["years"] <= 120.0)
+        # v. 26: the wheel of time's span, the note's figure's portion by default.
+        self.assertEqual(answered["longevity"]["chakrayus"]["rules"], {"portion": "star"})
+        by_pada: ChakrayusRules = {"portion": "pada"}
+        pada = found({"longevity": True, "chakrayus": by_pada})
+        assert pada is not None
+        self.assertEqual(pada["longevity"]["chakrayus"]["rules"], {"portion": "pada"})
         with self.assertRaises(TeistroError) as unread:
             found({"rasmi": verse_rules})
         self.assertEqual(unread.exception.field, "rules.rasmi")

@@ -464,10 +464,12 @@ impl<'a> ChartArea<'a> {
                         reading.system == DashaName::Catalogued(DashaSystem::Vimshottari)
                     })
                     .and_then(|reading| dasayus(reading.first_lord, reading.balance?.remaining));
+                let chakrayus = evaluator.chakrayus(rules.chakrayus);
                 let computed = Computed {
                     ayurdaya: Some(&ayurdaya),
                     rasmi: Some(&rasmi),
                     dasayus: dasayus.as_ref(),
+                    chakrayus: Some(&chakrayus),
                 };
                 Longevity {
                     three_pairs: evaluator.three_pairs(rules.three_pairs),
@@ -475,6 +477,7 @@ impl<'a> ChartArea<'a> {
                     ayurdaya,
                     rasmi,
                     dasayus,
+                    chakrayus,
                     marakas: evaluator.marakas(),
                 }
             });
