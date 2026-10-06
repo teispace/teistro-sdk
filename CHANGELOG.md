@@ -2157,6 +2157,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The spans of life as *Jataka Parijata* reads them** (`rules-engine.md`,
+  C302 to C304). `AyurdayaRules` gains `enemy_exempt`, `enmity` and
+  `rising`, each defaulting to BPHS's reading, and
+  `AyurdayaRules::PARIJATA` reads them as *Jataka Parijata* ch. 5 does:
+  Mars exempt in an enemy's sign, compound enmity, and a rising malefic
+  taking from every giver. A rule request carries `ayurdaya` and
+  `threePairs` in every binding, where the longevity readings were read
+  only under their defaults; either without `longevity` is refused by its
+  field. Held to the book's 1853 worked example. **Numbers:** none under
+  the defaults.
 - **The avakahada** (`matching.md`, C297 to C301). A chart asked with
   `with_avakahada` (Node `avakahada: true`, Python `avakahada=True`,
   Dart `avakahada: true`, C `TS_CHART_AVAKAHADA`) carries the Moon's
