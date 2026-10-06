@@ -77,38 +77,28 @@ fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
     );
 }
 
-/// The chart of *Jataka Parijata*'s worked example, from its printed
-/// longitudes (p. 238).
+/// A printed longitude: signs, degrees, minutes and seconds.
+fn at(sign: u8, degrees: f64, minutes: f64, seconds: f64) -> f64 {
+    f64::from(sign) * 30.0 + degrees + minutes / 60.0 + seconds / 3600.0
+}
+
+/// A chart from a book's printed longitudes, the Sun to Saturn, the nodes
+/// and the lagna, with every graha direct, unburnt and of neutral dignity.
 #[allow(
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     reason = "a longitude under 360 over thirty is a sign index, and over a navamsha's span under 108"
 )]
-fn parijata_1853() -> teistro_rules::RuleChart {
-    use teistro_core::catalogue::{Dignity, Graha, Rashi};
-    use teistro_rules::{Body, House, Placement, RuleChart, StrengthMeasure, Strengths};
+fn printed_chart(longitudes: [f64; 10]) -> teistro_rules::RuleChart {
+    use teistro_core::catalogue::{Dignity, Rashi};
+    use teistro_rules::{House, Placement, RuleChart};
 
-    let at =
-        |sign: u8, degrees: f64, minutes: f64| f64::from(sign) * 30.0 + degrees + minutes / 60.0;
-    let lagna = at(0, 14.0, 32.0);
-    // The Sun to Saturn, then the nodes the book does not print, then the lagna.
-    let longitudes = [
-        at(0, 17.0, 43.0),
-        at(9, 14.0, 30.0),
-        at(11, 27.0, 53.0),
-        at(11, 24.0, 14.0),
-        at(8, 1.0, 25.0),
-        at(0, 14.0, 3.0),
-        at(0, 27.0, 56.0),
-        at(1, 15.0, 0.0),
-        at(7, 15.0, 0.0),
-        lagna,
-    ];
     let sign_of = |longitude: f64| Rashi::from_id((longitude / 30.0) as u16).unwrap();
+    let lagna = sign_of(longitudes[9]);
     let placements = longitudes.map(|longitude| Placement {
         longitude,
         sign: sign_of(longitude),
-        house: House::between(Rashi::Aries, sign_of(longitude)),
+        house: House::between(lagna, sign_of(longitude)),
         dignity: Dignity::Neutral,
         retrograde: false,
         combust: false,
@@ -116,26 +106,48 @@ fn parijata_1853() -> teistro_rules::RuleChart {
         karaka8: None,
         navamsha: Rashi::from_id((longitude * 3.0 / 10.0) as u16 % 12).unwrap(),
     });
-    let mut chart = RuleChart {
+    RuleChart {
         placements,
         panchanga: None,
-        strengths: Some(Strengths {
-            measure: StrengthMeasure::Caller,
-            of: [
-                Some(9.0),
-                Some(6.0),
-                Some(8.0),
-                Some(5.0),
-                Some(6.0),
-                Some(6.0),
-                Some(6.0),
-                None,
-                None,
-                None,
-            ],
-            required: [None; 10],
-        }),
-    };
+        strengths: None,
+    }
+}
+
+/// The chart of *Jataka Parijata*'s worked example, from its printed
+/// longitudes (p. 238).
+fn parijata_1853() -> teistro_rules::RuleChart {
+    use teistro_core::catalogue::Graha;
+    use teistro_rules::{Body, StrengthMeasure, Strengths};
+
+    // The Sun to Saturn, then the nodes the book does not print, then the lagna.
+    let mut chart = printed_chart([
+        at(0, 17.0, 43.0, 0.0),
+        at(9, 14.0, 30.0, 0.0),
+        at(11, 27.0, 53.0, 0.0),
+        at(11, 24.0, 14.0, 0.0),
+        at(8, 1.0, 25.0, 0.0),
+        at(0, 14.0, 3.0, 0.0),
+        at(0, 27.0, 56.0, 0.0),
+        at(1, 15.0, 0.0, 0.0),
+        at(7, 15.0, 0.0, 0.0),
+        at(0, 14.0, 32.0, 0.0),
+    ]);
+    chart.strengths = Some(Strengths {
+        measure: StrengthMeasure::Caller,
+        of: [
+            Some(9.0),
+            Some(6.0),
+            Some(8.0),
+            Some(5.0),
+            Some(6.0),
+            Some(6.0),
+            Some(6.0),
+            None,
+            None,
+            None,
+        ],
+        required: [None; 10],
+    });
     // "Venus and Saturn are eclipsed" (p. 239).
     for graha in [Graha::Venus, Graha::Saturn] {
         chart.placements[Body::Graha(graha).index()].combust = true;
@@ -240,4 +252,76 @@ fn jataka_parijata_s_worked_example_reads_as_the_book_reduces_it() {
             Combine::Largest
         )
     );
+}
+
+/// The translator's figure of the rays (*Jataka Parijata* ch. 5, notes to
+/// v. 22, pp. 251 to 254), "a distinguished personage": Jupiter retrograde,
+/// Saturn eclipsed.
+///
+/// The book's table prints Jupiter at 6s 25° 13′ 23″ and its working at
+/// 6s 25° 43′ 23″; the working's is taken, which its rays follow. Its Mars
+/// multiplies .132537 / 6 × 5 as .1103475 for .110448, so his rays are the
+/// product, .2209 for the printed .2207, and the total 31.3234 for 31.3232.
+#[test]
+fn the_rays_reproduce_the_translator_s_figure_to_its_last_place() {
+    use teistro_core::catalogue::Graha;
+    use teistro_rules::Body;
+    use teistro_rules::longevity::{Facing, RasmiRules};
+    use teistro_rules::rule::LifeClass;
+
+    let mut chart = printed_chart([
+        at(1, 2.0, 55.0, 30.0),
+        at(11, 23.0, 35.0, 24.0),
+        at(3, 24.0, 1.0, 26.0),
+        at(0, 13.0, 10.0, 48.0),
+        at(6, 25.0, 43.0, 23.0),
+        at(2, 18.0, 15.0, 50.0),
+        at(0, 17.0, 59.0, 38.0),
+        // Rahu with Venus and Ketu opposite, as the chakra draws them.
+        at(2, 15.0, 0.0, 0.0),
+        at(8, 15.0, 0.0, 0.0),
+        at(7, 15.0, 47.0, 24.0),
+    ]);
+    chart.placements[Body::Graha(Graha::Jupiter).index()].retrograde = true;
+    chart.placements[Body::Graha(Graha::Saturn).index()].combust = true;
+    let rasmi = Evaluator::new(&chart, Readings::TEXTS).rasmi(RasmiRules::default());
+
+    let printed = [
+        (8.7264, Facing::Away, false, 0.0),
+        (6.5902, Facing::Towards, false, 1.0 / 16.0),
+        (0.2209, Facing::Away, true, 0.0),
+        (1.5655, Facing::Towards, true, 0.0),
+        (5.3882, Facing::Away, true, 0.0),
+        (8.7765, Facing::Away, true, 0.0),
+        (0.0557, Facing::Away, false, 0.0),
+    ];
+    for (graha, (rays, facing, doubled, share)) in rasmi.grahas.iter().zip(printed) {
+        // The book truncates to its fourth place.
+        assert!((graha.rays - rays).abs() < 1e-4, "{graha:?} against {rays}");
+        assert_eq!(
+            (
+                graha.facing,
+                graha.doubled,
+                graha.enemy_share,
+                graha.eclipsed
+            ),
+            (facing, doubled, share, false),
+            "{graha:?}"
+        );
+    }
+    // Long by Jatakadesa's bands.
+    assert!((rasmi.total - 31.3234).abs() < 1e-4, "{}", rasmi.total);
+    assert_eq!(rasmi.class, LifeClass::Long);
+
+    // v. 23's years keep half at debilitation: the Sun's 9.363 (p. 254),
+    // under the same doublings as his rays.
+    let sun = rasmi.grahas[0];
+    assert!((sun.basic_years - 9.363).abs() < 1e-3 && (sun.years - sun.basic_years).abs() < 1e-12);
+    for graha in rasmi.grahas {
+        assert!((graha.years / graha.basic_years - graha.rays / graha.basic).abs() < 1e-9);
+    }
+    // By the sign, Mercury in Aries is only in a friend's (Mars, neutral by
+    // nature and in the fourth from him): the doubling was the dwadasamsa's.
+    let by_sign = Evaluator::new(&chart, Readings::TEXTS).rasmi(RasmiRules::VERSE);
+    assert!(!by_sign.grahas[3].doubled);
 }

@@ -433,14 +433,12 @@ impl<'a> ChartArea<'a> {
                 })
                 .collect();
             let houses = set.houses().then(|| evaluator.house_readings(set.rules()));
-            let longevity = set
-                .ayurdaya()
-                .zip(set.three_pairs())
-                .map(|(ayurdaya, three_pairs)| Longevity {
-                    three_pairs: evaluator.three_pairs(three_pairs),
-                    ayurdaya: evaluator.ayurdaya(ayurdaya),
-                    marakas: evaluator.marakas(),
-                });
+            let longevity = set.longevity_rules().map(|rules| Longevity {
+                three_pairs: evaluator.three_pairs(rules.three_pairs),
+                ayurdaya: evaluator.ayurdaya(rules.ayurdaya),
+                rasmi: evaluator.rasmi(rules.rasmi),
+                marakas: evaluator.marakas(),
+            });
             let reading = RulesReading {
                 present,
                 houses,

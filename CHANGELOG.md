@@ -2157,6 +2157,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The rays, Rasmi** (`ayurdaya-spans.md`, C305 to C307). The longevity
+  readings gain `rasmi`: each graha's rays and Rasmija years by *Jataka
+  Parijata* ch. 5 vv. 22 to 25, the rays' total and its class by
+  Jatakadesa's bands, and the years' sum. A rule request carries `rasmi`
+  in every binding, `place` choosing the dwadasamsa (the translator's
+  note, default) or the sign (v. 24). Held to the note's full figure.
+  **Numbers:** none; a new reading.
 - **The spans of life as *Jataka Parijata* reads them** (`rules-engine.md`,
   C302 to C304). `AyurdayaRules` gains `enemy_exempt`, `enmity` and
   `rising`, each defaulting to BPHS's reading, and

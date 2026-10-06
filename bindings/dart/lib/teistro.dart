@@ -5925,6 +5925,7 @@ final class RuleRequest {
     this.longevity = false,
     this.ayurdaya,
     this.threePairs,
+    this.rasmi,
   });
 
   /// The shipped sets to evaluate.
@@ -5939,7 +5940,8 @@ final class RuleRequest {
   /// Whether to add the twelve house readings.
   final bool houses;
 
-  /// Whether to add the three pairs, the three spans and the marakas.
+  /// Whether to add the three pairs, the three spans, the rays and the
+  /// marakas.
   final bool longevity;
 
   /// How the three spans are read when [longevity] asks; BPHS's by
@@ -5950,6 +5952,10 @@ final class RuleRequest {
   /// default. Refused without [longevity].
   final ThreePairsRules? threePairs;
 
+  /// How the rays are read when [longevity] asks; the translator's note's
+  /// by default. Refused without [longevity].
+  final RasmiRules? rasmi;
+
   String get _json => jsonEncode(<String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
@@ -5958,6 +5964,7 @@ final class RuleRequest {
     'longevity': longevity,
     if (ayurdaya != null) 'ayurdaya': ayurdaya!._record,
     if (threePairs != null) 'threePairs': threePairs!._record,
+    if (rasmi != null) 'rasmi': rasmi!._record,
   });
 }
 
@@ -6132,6 +6139,41 @@ final class ThreePairsRules {
     if (rectification != null) 'rectification': rectification!.key,
     if (basis != null) 'basis': basis!.key,
     if (saturn != null) 'saturn': saturn!.key,
+  };
+}
+
+/// Which place doubles a graha's rays or takes a share of them (crux C306).
+enum RayPlace {
+  /// The dwadasamsa, as the translator's note reads it.
+  dwadasamsa('dwadasamsa'),
+
+  /// The sign, as v. 24 reads it.
+  sign('sign');
+
+  const RayPlace(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How the seven grahas' rays and Rasmija years are read (*Jataka
+/// Parijata* ch. 5 vv. 22 to 25, cruxes C305 to C307); a field left null
+/// is the translator's note's reading.
+///
+/// ```dart
+/// // As v. 24 reads them, by the sign.
+/// const rules = RuleRequest(longevity: true, rasmi: RasmiRules.verse);
+/// ```
+final class RasmiRules {
+  const RasmiRules({this.place});
+
+  /// v. 24 as the verse reads: the place by the sign.
+  static const verse = RasmiRules(place: RayPlace.sign);
+
+  final RayPlace? place;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (place != null) 'place': place!.key,
   };
 }
 

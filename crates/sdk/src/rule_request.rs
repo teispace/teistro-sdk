@@ -10,7 +10,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
-use teistro_rules::longevity::{Ayurdaya, AyurdayaRules, Marakas, ThreePairs};
+use teistro_rules::longevity::{Ayurdaya, AyurdayaRules, Marakas, Rasmi, RasmiRules, ThreePairs};
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
 /// A set of rules the kernel ships.
@@ -117,7 +117,8 @@ pub struct RuleRequest {
     pub readings: RuleReadings,
     /// Whether to add the twelve house readings.
     pub houses: bool,
-    /// Whether to add the three pairs, the three spans and the marakas.
+    /// Whether to add the three pairs, the three spans, the rays and the
+    /// marakas.
     pub longevity: bool,
     /// The choices the three spans are read under, when `longevity` asks
     /// for them; BPHS's by default (cruxes C104, C302 to C304).
@@ -125,6 +126,10 @@ pub struct RuleRequest {
     /// The choices the three pairs are read under, when `longevity` asks
     /// for them; the verses' by default (crux C103).
     pub three_pairs: Option<ThreePairsRules>,
+    /// The choices the rays and Rasmija years are read under, when
+    /// `longevity` asks for them;
+    /// the translator's note's by default (cruxes C305 to C307).
+    pub rasmi: Option<RasmiRules>,
 }
 
 impl RuleRequest {
@@ -196,6 +201,28 @@ impl RuleRequest {
         self
     }
 
+    /// The same request with the longevity readings, the rays read under
+    /// `rules`.
+    ///
+    /// ```
+    /// use teistro::RuleRequest;
+    /// use teistro::rules::longevity::RasmiRules;
+    ///
+    /// let request = RuleRequest::default().with_rasmi(RasmiRules::VERSE);
+    /// let read = RuleRequest::from_json(
+    ///     r#"{"longevity": true, "rasmi": {"place": "sign"}}"#,
+    /// )?;
+    /// assert_eq!(read, request);
+    /// assert_eq!(request.rule_set()?.rasmi(), Some(RasmiRules::VERSE));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_rasmi(mut self, rules: RasmiRules) -> RuleRequest {
+        self.longevity = true;
+        self.rasmi = Some(rules);
+        self
+    }
+
     /// A request read from JSON. A value that does not read is refused by
     /// where it stands — `rules[3].when`, `houses` — with what was wrong.
     ///
@@ -228,7 +255,7 @@ impl RuleRequest {
         let request: RuleRequest =
             teistro_core::strict::deserialize(&value, "").map_err(|err| {
                 err.with_hint(
-                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya` and `threePairs`",
+                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya`, `threePairs` and `rasmi`",
                 )
             })?;
         Ok(request.with_rules(rules))
@@ -266,6 +293,7 @@ impl RuleRequest {
         for (field, given) in [
             ("ayurdaya", self.ayurdaya.is_some()),
             ("threePairs", self.three_pairs.is_some()),
+            ("rasmi", self.rasmi.is_some()),
         ] {
             if given && !self.longevity {
                 return Err(Error::invalid_arg(format!(
@@ -282,6 +310,7 @@ impl RuleRequest {
             longevity: self.longevity.then(|| LongevityRules {
                 ayurdaya: self.ayurdaya.unwrap_or_default(),
                 three_pairs: self.three_pairs.unwrap_or_default(),
+                rasmi: self.rasmi.unwrap_or_default(),
             }),
         })
     }
@@ -289,9 +318,10 @@ impl RuleRequest {
 
 /// The choices the longevity readings are read under.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct LongevityRules {
-    ayurdaya: AyurdayaRules,
-    three_pairs: ThreePairsRules,
+pub(crate) struct LongevityRules {
+    pub(crate) ayurdaya: AyurdayaRules,
+    pub(crate) three_pairs: ThreePairsRules,
+    pub(crate) rasmi: RasmiRules,
 }
 
 /// A validated set of rules with what else a reading should answer.
@@ -342,6 +372,18 @@ impl RuleSet {
     pub fn three_pairs(&self) -> Option<ThreePairsRules> {
         self.longevity.map(|rules| rules.three_pairs)
     }
+
+    /// The choices the rays are read under, when the longevity readings
+    /// are asked for.
+    #[must_use]
+    pub fn rasmi(&self) -> Option<RasmiRules> {
+        self.longevity.map(|rules| rules.rasmi)
+    }
+
+    /// Every longevity choice together, when the readings are asked for.
+    pub(crate) const fn longevity_rules(&self) -> Option<LongevityRules> {
+        self.longevity
+    }
 }
 
 /// A rule that held on a chart, and what it answered.
@@ -362,6 +404,9 @@ pub struct Longevity {
     pub three_pairs: Option<ThreePairs>,
     /// The three spans.
     pub ayurdaya: Ayurdaya,
+    /// The seven grahas' rays, the class of life their sum gives, and
+    /// Rasmija ayurdaya.
+    pub rasmi: Rasmi,
     /// The marakas.
     pub marakas: Marakas,
 }

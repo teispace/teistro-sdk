@@ -1167,6 +1167,15 @@ Nisargayu is 120 on every chart; Pindayu averages 85 years, Nisargayu 79 and
 Amsayu 39. The translator's note to v. 32 averages two spans wrongly, 46.35 for
 46.6, which the test of the tie rule found.
 
+**The rays (2026-10-07).** *Jataka Parijata* ch. 5 vv. 22 to 25 give a
+fourth reading, Rasmi: each graha's rays by its distance from
+debilitation, doubled in its own place, its exaltation, a great friend's
+or retrograde, a share lost in an enemy's, halved when eclipsed save
+Venus and Saturn. `Evaluator::rasmi` reports the rays and the years v. 23
+counts from the same distance, and the rays' class by Jatakadesa's bands;
+`ayurdaya-spans.md` records the crux and the figure it is held to
+(C305 to C307).
+
 **The spans as *Jataka Parijata* reads them (2026-10-07).** *Jataka Parijata*
 ch. 5 (Sastri's 1932 translation, public domain, read on the page images)
 quotes Varahamihira's three spans and reductions, and reads three of them

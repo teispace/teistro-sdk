@@ -592,6 +592,14 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
             reading.unreadable.is_empty(),
             "{name}"
         );
+        // Every graha's rays lie between nothing and twice its 10, 9, 5, 5, 7,
+        // 8 or 5, and the class is the total's.
+        let rasmi = &longevity.rasmi;
+        assert!(rasmi.total >= 0.0 && rasmi.total <= 98.0, "{name}");
+        assert_eq!(
+            rasmi.class,
+            teistro::rules::longevity::class_of_rays(rasmi.total)
+        );
         if !reading.unreadable.is_empty() {
             unreadable.push(name.clone());
         }
@@ -684,7 +692,7 @@ fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {
 fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_reads() {
     use teistro::RuleRequest;
     use teistro::rules::ThreePairsRules;
-    use teistro::rules::longevity::{AyurdayaRules, Enmity};
+    use teistro::rules::longevity::{AyurdayaRules, Enmity, RasmiRules};
 
     let set = RuleRequest::from_json(r#"{"longevity": true, "ayurdaya": {"enmity": "compound"}}"#)
         .unwrap()
@@ -698,10 +706,12 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
         })
     );
     assert_eq!(set.three_pairs(), Some(ThreePairsRules::VERSE));
+    assert_eq!(set.rasmi(), Some(RasmiRules::default()));
     assert_eq!(RuleRequest::default().rule_set().unwrap().ayurdaya(), None);
     for (text, field) in [
         (r#"{"ayurdaya": {}}"#, "ayurdaya"),
         (r#"{"threePairs": {}}"#, "threePairs"),
+        (r#"{"rasmi": {}}"#, "rasmi"),
     ] {
         let refused = RuleRequest::from_json(text)
             .unwrap()
@@ -713,4 +723,7 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
         RuleRequest::from_json(r#"{"longevity": true, "ayurdaya": {"enmity": "temporary"}}"#)
             .unwrap_err();
     assert_eq!(unknown.field(), Some("ayurdaya.enmity"));
+    let unknown = RuleRequest::from_json(r#"{"longevity": true, "rasmi": {"place": "navamsha"}}"#)
+        .unwrap_err();
+    assert_eq!(unknown.field(), Some("rasmi.place"));
 }

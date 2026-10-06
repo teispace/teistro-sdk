@@ -582,6 +582,7 @@ for (const chart of charts) {
   });
   put(`chart-${i}-rules-present`, chart.rules.present.map((held) => held.rule).join(','));
   put(`chart-${i}-rules-pindayu`, chart.rules.longevity.ayurdaya.pindayu.years);
+  put(`chart-${i}-rules-rays`, chart.rules.longevity.rasmi.total);
   // **Every item said**, not merely counted: this is the only place the
   // four bindings are compared on text, and it exercises the composers,
   // the params shape and the locale engine in one comparison.

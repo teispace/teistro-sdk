@@ -863,6 +863,7 @@ def main() -> None:
             assert answered is not None
             put(f"chart-{i}-rules-present", ",".join(held["rule"] for held in answered["present"]))
             put(f"chart-{i}-rules-pindayu", answered["longevity"]["ayurdaya"]["pindayu"]["years"])
+            put(f"chart-{i}-rules-rays", answered["longevity"]["rasmi"]["total"])
             # **Every item said**, not merely counted: the only place the
             # four bindings are compared on text, which exercises the
             # composers, the params shape and the locale engine at once.
