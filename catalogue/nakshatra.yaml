@@ -1,7 +1,7 @@
 kind: nakshatra
 number: 3
 version: 1
-doc: "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member."
+doc: "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299)."
 types:
   Pada: { akshara: str, devanagari: str }
 attributes:
@@ -30,13 +30,13 @@ members:
       element: PRITHVI
       muhurta_nature: KSHIPRA
       padas:
-        - akshara: "Chu"
-          devanagari: "चु"
-        - akshara: "Che"
+        - akshara: "cū"
+          devanagari: "चू"
+        - akshara: "ce"
           devanagari: "चे"
-        - akshara: "Cho"
+        - akshara: "co"
           devanagari: "चो"
-        - akshara: "La"
+        - akshara: "lā"
           devanagari: "ला"
     sources:
       - text: "baseline-engine"
@@ -60,13 +60,13 @@ members:
       element: PRITHVI
       muhurta_nature: UGRA
       padas:
-        - akshara: "Li"
+        - akshara: "lī"
           devanagari: "ली"
-        - akshara: "Lu"
+        - akshara: "lū"
           devanagari: "लू"
-        - akshara: "Le"
+        - akshara: "le"
           devanagari: "ले"
-        - akshara: "Lo"
+        - akshara: "lo"
           devanagari: "लो"
     sources:
       - text: "baseline-engine"
@@ -90,13 +90,13 @@ members:
       element: PRITHVI
       muhurta_nature: MISHRA
       padas:
-        - akshara: A
-          devanagari: "अ"
-        - akshara: "Ee"
+        - akshara: "ā"
+          devanagari: "आ"
+        - akshara: "ī"
           devanagari: "ई"
-        - akshara: U
+        - akshara: "u"
           devanagari: "उ"
-        - akshara: "Ea"
+        - akshara: "e"
           devanagari: "ए"
     sources:
       - text: "baseline-engine"
@@ -120,14 +120,14 @@ members:
       element: PRITHVI
       muhurta_nature: DHRUVA
       padas:
-        - akshara: O
+        - akshara: "o"
           devanagari: "ओ"
-        - akshara: "Va"
+        - akshara: "vā"
           devanagari: "वा"
-        - akshara: "Vi"
-          devanagari: "वि"
-        - akshara: "Vu"
-          devanagari: "वु"
+        - akshara: "vī"
+          devanagari: "वी"
+        - akshara: "vū"
+          devanagari: "वू"
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -150,13 +150,13 @@ members:
       element: PRITHVI
       muhurta_nature: MRIDU
       padas:
-        - akshara: "Ve"
+        - akshara: "ve"
           devanagari: "वे"
-        - akshara: "Vo"
+        - akshara: "vo"
           devanagari: "वो"
-        - akshara: "Ka"
+        - akshara: "kā"
           devanagari: "का"
-        - akshara: "Ki"
+        - akshara: "kī"
           devanagari: "की"
     sources:
       - text: "baseline-engine"
@@ -180,14 +180,14 @@ members:
       element: PRITHVI
       muhurta_nature: TIKSHNA
       padas:
-        - akshara: "Ku"
-          devanagari: "कु"
-        - akshara: "Gha"
+        - akshara: "kū"
+          devanagari: "कू"
+        - akshara: "gha"
           devanagari: "घ"
-        - akshara: "Ng"
+        - akshara: "ṅa"
           devanagari: "ङ"
-        - akshara: "Chha"
-          devanagari: "छ"
+        - akshara: "chā"
+          devanagari: "छा"
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -210,13 +210,13 @@ members:
       element: PRITHVI
       muhurta_nature: CHARA
       padas:
-        - akshara: "Ke"
+        - akshara: "ke"
           devanagari: "के"
-        - akshara: "Ko"
+        - akshara: "ko"
           devanagari: "को"
-        - akshara: "Ha"
+        - akshara: "hā"
           devanagari: "हा"
-        - akshara: "Hi"
+        - akshara: "hī"
           devanagari: "ही"
     sources:
       - text: "baseline-engine"
@@ -240,13 +240,13 @@ members:
       element: PRITHVI
       muhurta_nature: KSHIPRA
       padas:
-        - akshara: "Hu"
-          devanagari: "हु"
-        - akshara: "He"
+        - akshara: "hū"
+          devanagari: "हू"
+        - akshara: "he"
           devanagari: "हे"
-        - akshara: "Ho"
+        - akshara: "ho"
           devanagari: "हो"
-        - akshara: "Da"
+        - akshara: "ḍā"
           devanagari: "डा"
     sources:
       - text: "baseline-engine"
@@ -270,13 +270,13 @@ members:
       element: PRITHVI
       muhurta_nature: TIKSHNA
       padas:
-        - akshara: "Di"
+        - akshara: "ḍī"
           devanagari: "डी"
-        - akshara: "Du"
+        - akshara: "ḍū"
           devanagari: "डू"
-        - akshara: "De"
+        - akshara: "ḍe"
           devanagari: "डे"
-        - akshara: "Do"
+        - akshara: "ḍo"
           devanagari: "डो"
     sources:
       - text: "baseline-engine"
@@ -300,13 +300,13 @@ members:
       element: AGNI
       muhurta_nature: UGRA
       padas:
-        - akshara: "Ma"
+        - akshara: "mā"
           devanagari: "मा"
-        - akshara: "Mi"
+        - akshara: "mī"
           devanagari: "मी"
-        - akshara: "Mu"
-          devanagari: "मु"
-        - akshara: "Me"
+        - akshara: "mū"
+          devanagari: "मू"
+        - akshara: "me"
           devanagari: "मे"
     sources:
       - text: "baseline-engine"
@@ -330,13 +330,13 @@ members:
       element: AGNI
       muhurta_nature: UGRA
       padas:
-        - akshara: "Mo"
+        - akshara: "mo"
           devanagari: "मो"
-        - akshara: "Ta"
+        - akshara: "ṭā"
           devanagari: "टा"
-        - akshara: "Ti"
+        - akshara: "ṭī"
           devanagari: "टी"
-        - akshara: "Tu"
+        - akshara: "ṭū"
           devanagari: "टू"
     sources:
       - text: "baseline-engine"
@@ -360,13 +360,13 @@ members:
       element: AGNI
       muhurta_nature: DHRUVA
       padas:
-        - akshara: "Te"
+        - akshara: "ṭe"
           devanagari: "टे"
-        - akshara: "To"
+        - akshara: "ṭo"
           devanagari: "टो"
-        - akshara: "Pa"
+        - akshara: "pā"
           devanagari: "पा"
-        - akshara: "Pi"
+        - akshara: "pī"
           devanagari: "पी"
     sources:
       - text: "baseline-engine"
@@ -390,14 +390,14 @@ members:
       element: AGNI
       muhurta_nature: KSHIPRA
       padas:
-        - akshara: "Pu"
-          devanagari: "पु"
-        - akshara: "Sha"
+        - akshara: "pū"
+          devanagari: "पू"
+        - akshara: "ṣa"
           devanagari: "ष"
-        - akshara: "Na"
-          devanagari: "ण"
-        - akshara: "Tha"
-          devanagari: "ठ"
+        - akshara: "ṇā"
+          devanagari: "णा"
+        - akshara: "ṭhā"
+          devanagari: "ठा"
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -420,13 +420,13 @@ members:
       element: AGNI
       muhurta_nature: MRIDU
       padas:
-        - akshara: "Pe"
+        - akshara: "pe"
           devanagari: "पे"
-        - akshara: "Po"
+        - akshara: "po"
           devanagari: "पो"
-        - akshara: "Ra"
+        - akshara: "rā"
           devanagari: "रा"
-        - akshara: "Ri"
+        - akshara: "rī"
           devanagari: "री"
     sources:
       - text: "baseline-engine"
@@ -450,13 +450,13 @@ members:
       element: AGNI
       muhurta_nature: CHARA
       padas:
-        - akshara: "Ru"
+        - akshara: "rū"
           devanagari: "रू"
-        - akshara: "Re"
+        - akshara: "re"
           devanagari: "रे"
-        - akshara: "Ro"
+        - akshara: "ro"
           devanagari: "रो"
-        - akshara: "Ta"
+        - akshara: "tā"
           devanagari: "ता"
     sources:
       - text: "baseline-engine"
@@ -480,13 +480,13 @@ members:
       element: AGNI
       muhurta_nature: MISHRA
       padas:
-        - akshara: "Ti"
+        - akshara: "tī"
           devanagari: "ती"
-        - akshara: "Tu"
+        - akshara: "tū"
           devanagari: "तू"
-        - akshara: "Te"
+        - akshara: "te"
           devanagari: "ते"
-        - akshara: "To"
+        - akshara: "to"
           devanagari: "तो"
     sources:
       - text: "baseline-engine"
@@ -510,13 +510,13 @@ members:
       element: VAYU
       muhurta_nature: MRIDU
       padas:
-        - akshara: "Na"
+        - akshara: "nā"
           devanagari: "ना"
-        - akshara: "Ni"
+        - akshara: "nī"
           devanagari: "नी"
-        - akshara: "Nu"
+        - akshara: "nū"
           devanagari: "नू"
-        - akshara: "Ne"
+        - akshara: "ne"
           devanagari: "ने"
     sources:
       - text: "baseline-engine"
@@ -540,13 +540,13 @@ members:
       element: VAYU
       muhurta_nature: TIKSHNA
       padas:
-        - akshara: "No"
+        - akshara: "no"
           devanagari: "नो"
-        - akshara: "Ya"
+        - akshara: "yā"
           devanagari: "या"
-        - akshara: "Yi"
+        - akshara: "yī"
           devanagari: "यी"
-        - akshara: "Yu"
+        - akshara: "yū"
           devanagari: "यू"
     sources:
       - text: "baseline-engine"
@@ -570,13 +570,13 @@ members:
       element: VAYU
       muhurta_nature: TIKSHNA
       padas:
-        - akshara: "Ye"
+        - akshara: "ye"
           devanagari: "ये"
-        - akshara: "Yo"
+        - akshara: "yo"
           devanagari: "यो"
-        - akshara: "Bha"
+        - akshara: "bhā"
           devanagari: "भा"
-        - akshara: "Bhi"
+        - akshara: "bhī"
           devanagari: "भी"
     sources:
       - text: "baseline-engine"
@@ -600,13 +600,13 @@ members:
       element: VAYU
       muhurta_nature: UGRA
       padas:
-        - akshara: "Bhu"
+        - akshara: "bhū"
           devanagari: "भू"
-        - akshara: "Dha"
+        - akshara: "dhā"
           devanagari: "धा"
-        - akshara: "Pha"
+        - akshara: "phā"
           devanagari: "फा"
-        - akshara: "Dha"
+        - akshara: "ḍhā"
           devanagari: "ढा"
     sources:
       - text: "baseline-engine"
@@ -630,13 +630,13 @@ members:
       element: VAYU
       muhurta_nature: DHRUVA
       padas:
-        - akshara: "Bhe"
+        - akshara: "bhe"
           devanagari: "भे"
-        - akshara: "Bho"
+        - akshara: "bho"
           devanagari: "भो"
-        - akshara: "Ja"
+        - akshara: "jā"
           devanagari: "जा"
-        - akshara: "Ji"
+        - akshara: "jī"
           devanagari: "जी"
     sources:
       - text: "baseline-engine"
@@ -660,13 +660,13 @@ members:
       element: VAYU
       muhurta_nature: CHARA
       padas:
-        - akshara: "Khi"
+        - akshara: "khī"
           devanagari: "खी"
-        - akshara: "Khu"
+        - akshara: "khū"
           devanagari: "खू"
-        - akshara: "Khe"
+        - akshara: "khe"
           devanagari: "खे"
-        - akshara: "Kho"
+        - akshara: "kho"
           devanagari: "खो"
     sources:
       - text: "baseline-engine"
@@ -690,13 +690,13 @@ members:
       element: AKASHA
       muhurta_nature: CHARA
       padas:
-        - akshara: "Ga"
+        - akshara: "gā"
           devanagari: "गा"
-        - akshara: "Gi"
+        - akshara: "gī"
           devanagari: "गी"
-        - akshara: "Gu"
-          devanagari: "गु"
-        - akshara: "Ge"
+        - akshara: "gū"
+          devanagari: "गू"
+        - akshara: "ge"
           devanagari: "गे"
     sources:
       - text: "baseline-engine"
@@ -720,13 +720,13 @@ members:
       element: AKASHA
       muhurta_nature: CHARA
       padas:
-        - akshara: "Go"
+        - akshara: "go"
           devanagari: "गो"
-        - akshara: "Sa"
+        - akshara: "sā"
           devanagari: "सा"
-        - akshara: "Si"
+        - akshara: "sī"
           devanagari: "सी"
-        - akshara: "Su"
+        - akshara: "sū"
           devanagari: "सू"
     sources:
       - text: "baseline-engine"
@@ -750,13 +750,13 @@ members:
       element: AKASHA
       muhurta_nature: UGRA
       padas:
-        - akshara: "Se"
+        - akshara: "se"
           devanagari: "से"
-        - akshara: "So"
+        - akshara: "so"
           devanagari: "सो"
-        - akshara: "Da"
+        - akshara: "dā"
           devanagari: "दा"
-        - akshara: "Di"
+        - akshara: "dī"
           devanagari: "दी"
     sources:
       - text: "baseline-engine"
@@ -780,14 +780,14 @@ members:
       element: AKASHA
       muhurta_nature: DHRUVA
       padas:
-        - akshara: "Du"
+        - akshara: "dū"
           devanagari: "दू"
-        - akshara: "Tha"
+        - akshara: "tha"
           devanagari: "थ"
-        - akshara: "Jha"
+        - akshara: "jha"
           devanagari: "झ"
-        - akshara: "Gya"
-          devanagari: "ञ"
+        - akshara: "ñā"
+          devanagari: "ञा"
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -810,13 +810,13 @@ members:
       element: AKASHA
       muhurta_nature: MRIDU
       padas:
-        - akshara: "De"
+        - akshara: "de"
           devanagari: "दे"
-        - akshara: "Do"
+        - akshara: "do"
           devanagari: "दो"
-        - akshara: "Cha"
+        - akshara: "cā"
           devanagari: "चा"
-        - akshara: "Chi"
+        - akshara: "cī"
           devanagari: "ची"
     sources:
       - text: "baseline-engine"

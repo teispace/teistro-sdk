@@ -12,7 +12,7 @@ pub enum Kind {
     Graha = 1,
     /// The twelve signs.
     Rashi = 2,
-    /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member.
+    /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
     Nakshatra = 3,
     /// The thirty tithis of the lunar month.
     Tithi = 4,
