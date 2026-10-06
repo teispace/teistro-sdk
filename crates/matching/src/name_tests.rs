@@ -8,44 +8,11 @@
 
 use teistro_core::catalogue::Nakshatra;
 
+use crate::name::PRINTED;
 use crate::{
     AbhijitPada, KootaRules, LatinName, NaamRules, NameRules, NameSyllable, NameVarga, Native,
-    VargaRelation, ashta_koota, naam_milan, name_syllable, varga_koota,
+    VargaRelation, ashta_koota, birth_syllable, naam_milan, name_syllable, varga_koota,
 };
-
-/// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
-/// n185, read on the image), from Ashvini, Abhijit after Uttarashadha,
-/// with the print's vowel lengths.
-const PRINTED: [[&str; 4]; 28] = [
-    ["चू", "चे", "चो", "ला"],
-    ["ली", "लू", "ले", "लो"],
-    ["आ", "ई", "उ", "ए"],
-    ["ओ", "वा", "वी", "वू"],
-    ["वे", "वो", "का", "की"],
-    ["कू", "घ", "ङ", "छा"],
-    ["के", "को", "हा", "ही"],
-    ["हू", "हे", "हो", "डा"],
-    ["डी", "डू", "डे", "डो"],
-    ["मा", "मी", "मू", "मे"],
-    ["मो", "टा", "टी", "टू"],
-    ["टे", "टो", "पा", "पी"],
-    ["पू", "ष", "णा", "ठा"],
-    ["पे", "पो", "रा", "री"],
-    ["रू", "रे", "रो", "ता"],
-    ["ती", "तू", "ते", "तो"],
-    ["ना", "नी", "नू", "ने"],
-    ["नो", "या", "यी", "यू"],
-    ["ये", "यो", "भा", "भी"],
-    ["भू", "धा", "फा", "ढा"],
-    ["भे", "भो", "जा", "जी"],
-    ["जू", "जे", "जो", "खा"],
-    ["खी", "खू", "खे", "खो"],
-    ["गा", "गी", "गू", "गे"],
-    ["गो", "सा", "सी", "सू"],
-    ["से", "सो", "दा", "दी"],
-    ["दू", "थ", "झ", "ञा"],
-    ["दे", "दो", "चा", "ची"],
-];
 
 /// The printed row's star, `None` for Abhijit's.
 fn star_of(row: usize) -> Option<Nakshatra> {
@@ -207,4 +174,59 @@ fn a_pada_founds_its_native() {
         let refused = Native::of_pada(Nakshatra::Ashwini, pada).unwrap_err();
         assert_eq!(refused.field(), Some("pada"));
     }
+}
+
+#[test]
+fn a_birth_pada_names_by_its_own_cell_in_both_scripts() {
+    // C297 to C299: the 108 padas answer 108 cells, never Abhijit's, each
+    // printed syllable reading back to its own pada in Devanagari and in
+    // IAST.
+    let iast = NameRules {
+        latin: LatinName::Iast,
+        ..NameRules::default()
+    };
+    let mut cells = Vec::new();
+    for nakshatra in Nakshatra::ALL {
+        for pada in 1..=4 {
+            let named = birth_syllable(nakshatra, pada).unwrap();
+            for (spelled, rules) in [
+                (&named.devanagari, NameRules::default()),
+                (&named.iast, iast),
+            ] {
+                let back = name_syllable(spelled, rules).unwrap();
+                assert_eq!(
+                    (back.cell, back.nakshatra, back.quarter, back.varga),
+                    (named.cell, Some(nakshatra), pada, named.varga),
+                    "{nakshatra:?} {pada} {spelled}"
+                );
+            }
+            cells.push(named.cell);
+        }
+    }
+    cells.sort_unstable();
+    cells.dedup();
+    assert_eq!(cells.len(), 108);
+    assert!(
+        cells.iter().all(|cell| !(76..80).contains(cell)),
+        "Abhijit's row is cells 76 to 79"
+    );
+    // The print's own spellings, a short u and a bare pillar among them.
+    for (nakshatra, pada, devanagari, iast) in [
+        (Nakshatra::Ashwini, 1, "चू", "cū"),
+        (Nakshatra::Krittika, 3, "उ", "u"),
+        (Nakshatra::Ardra, 2, "घ", "gha"),
+        (Nakshatra::Hasta, 3, "णा", "ṇā"),
+        (Nakshatra::UttaraAshadha, 4, "जी", "jī"),
+        (Nakshatra::Shravana, 1, "खी", "khī"),
+    ] {
+        let named = birth_syllable(nakshatra, pada).unwrap();
+        assert_eq!(
+            (named.devanagari.as_str(), named.iast.as_str()),
+            (devanagari, iast)
+        );
+    }
+    assert_eq!(
+        birth_syllable(Nakshatra::Ashwini, 5).unwrap_err().field(),
+        Some("pada")
+    );
 }
