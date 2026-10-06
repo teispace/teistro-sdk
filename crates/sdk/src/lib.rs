@@ -51,8 +51,8 @@ mod scale;
 
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, Answers, CalendarArea, ChartArea, EngineArea,
-    FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MuhurtaDays, Plans,
-    TimeArea,
+    FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MatchingArea,
+    MuhurtaDays, Plans, TimeArea,
 };
 mod antiscia;
 mod declinations;
@@ -64,6 +64,7 @@ mod kp_request;
 mod matching_chart;
 mod midpoints;
 mod muhurta_request;
+mod naam_request;
 mod plan_request;
 mod progressed;
 mod progressions_request;
@@ -287,6 +288,7 @@ pub use teistro_western::{
 // Moons, the Kuja dosha of their Mars, and naam milan of two names, which
 // needs no chart (`03-design/matching.md`).
 pub use matching_chart::{Matched, PartnerMatching};
+pub use naam_request::NaamRequest;
 pub use teistro_matching as matching;
 pub use teistro_matching::{
     AshtaKoota, KootaReading, KootaRow, KootaRules, Kuja, KujaRules, MarriageDosha, MatchRole,

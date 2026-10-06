@@ -104,6 +104,7 @@ from .catalogue import (
     MuhurtaYoga,
     Nadi,
     Nakshatra,
+    NameVarga,
     Nature,
     NodeObstruction,
     NodeVedha,
@@ -160,6 +161,7 @@ from .catalogue import (
     Vaiseshikamsa,
     Vara,
     Varga,
+    VargaRelation,
     Varna,
     VarsheshaChosen,
     VashyaRelation,
@@ -3837,6 +3839,13 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_panchanga_days.restype = ctypes.c_int32
+        self.ts_naam_milan: Any = library.ts_naam_milan
+        self.ts_naam_milan.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_BlobStruct),
+        ]
+        self.ts_naam_milan.restype = ctypes.c_int32
         self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
         self.ts_ephemeris_manifest.argtypes = [
             ctypes.POINTER(_Context),
@@ -4506,6 +4515,34 @@ class TeistroContext:
         status = Status(self._lib.ts_panchanga_days(
             self._raw,
             ctypes.byref(_request),
+            ctypes.byref(_out_blob),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        blob = _take_blob(self._lib, _out_blob)
+        return blob
+
+    def naam_milan(self, request_json: str) -> bytes:
+        """Matches two names star to star (naam milan) and answers with the
+        `naam` blob: each name's first syllable in the śatapada cakra, the
+        varga koota, and the Ashta Koota and the ten considerations of the two
+        name stars (`03-design/matching.md`, C291 to C296).
+
+        `request_json` is `{"bride", "groom", "rules"}`: the two names, in
+        Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+        `NaamRules` with every field optional. A name the cakra does not read,
+        a Latin name while `latin` refuses, or an Abhijit syllable while
+        `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
+        `naam.groom`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_blob = _BlobStruct()
+        status = Status(self._lib.ts_naam_milan(
+            self._raw,
+            _request_json,
             ctypes.byref(_out_blob),
         ))
         if status != Status.OK:

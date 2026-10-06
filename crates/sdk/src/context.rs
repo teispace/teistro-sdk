@@ -24,7 +24,7 @@ use teistro_time::EmbeddedTzdb;
 use crate::BUNDLES;
 use crate::area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
-    TimeArea,
+    MatchingArea, TimeArea,
 };
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
@@ -294,6 +294,12 @@ impl Context {
     #[must_use]
     pub fn almanac(&self) -> AlmanacArea<'_> {
         AlmanacArea::of_context(self)
+    }
+
+    /// What matches without a chart: two names, star to star.
+    #[must_use]
+    pub fn matching(&self) -> MatchingArea<'_> {
+        MatchingArea::of(self)
     }
 
     /// The operations your **ephemeris** brings with it, beyond the ones

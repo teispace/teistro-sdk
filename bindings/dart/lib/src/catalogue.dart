@@ -8068,3 +8068,91 @@ enum Sunrises {
   }
 }
 
+/// Which of the eight letter groups a name begins in, by the animal
+/// *Muhurta Chintamani* VI.35 gives it (C295).
+///
+/// Mirrors `teistro::matching::NameVarga` through an **exhaustive** match.
+enum NameVarga {
+  /// The vowels.
+  garuda(0, 'GARUDA'),
+  /// ka kha ga gha ṅa.
+  cat(1, 'CAT'),
+  /// ca cha ja jha ña.
+  lion(2, 'LION'),
+  /// ṭa ṭha ḍa ḍha ṇa.
+  dog(3, 'DOG'),
+  /// ta tha da dha na.
+  serpent(4, 'SERPENT'),
+  /// pa pha ba bha ma.
+  rat(5, 'RAT'),
+  /// ya ra la va.
+  deer(6, 'DEER'),
+  /// śa ṣa sa ha.
+  sheep(7, 'SHEEP');
+
+  const NameVarga(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static NameVarga byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a NameVarga'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static NameVarga? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How two names' vargas stand (VI.35).
+///
+/// Mirrors `teistro::matching::VargaRelation` through an **exhaustive**
+/// match.
+enum VargaRelation {
+  /// One varga.
+  same(0, 'SAME'),
+  /// Each the 5th from the other, eater and eaten.
+  enemy(1, 'ENEMY'),
+  /// Neither.
+  neutral(2, 'NEUTRAL');
+
+  const VargaRelation(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static VargaRelation byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a VargaRelation'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VargaRelation? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+

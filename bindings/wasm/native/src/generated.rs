@@ -4160,6 +4160,32 @@ impl Context {
         Ok(take_blob(&mut out_blob))
     }
 
+    /// Matches two names star to star (naam milan) and answers with the
+    /// `naam` blob: each name's first syllable in the śatapada cakra, the
+    /// varga koota, and the Ashta Koota and the ten considerations of the two
+    /// name stars (`03-design/matching.md`, C291 to C296).
+    ///
+    /// `request_json` is `{"bride", "groom", "rules"}`: the two names, in
+    /// Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+    /// `NaamRules` with every field optional. A name the cakra does not read,
+    /// a Latin name while `latin` refuses, or an Abhijit syllable while
+    /// `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
+    /// `naam.groom`.
+    #[wasm_bindgen(js_name = naamMilan)]
+    pub fn naam_milan(&self, request_json: String) -> Result<Vec<u8>> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::naam::ts_naam_milan(self.handle, request_json.as_ptr(), &raw mut out_blob)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_blob(&mut out_blob))
+    }
+
     /// What the context's engine says it offers beyond this library's own
     /// operations: its manifest, as the engine wrote it.
     ///

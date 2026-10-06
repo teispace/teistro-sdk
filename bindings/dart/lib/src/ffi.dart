@@ -1768,6 +1768,8 @@ typedef TsPositionsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsPositionsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PositionRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
+typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1827,6 +1829,7 @@ final class TeistroLibrary {
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
+        ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
@@ -2075,6 +2078,19 @@ final class TeistroLibrary {
   /// under `day.polar_day_policy = UNDEFINED` is `UNSUPPORTED` naming the
   /// policies that would synthesise one.
   final TsPanchangaDaysDart ts_panchanga_days;
+
+  /// Matches two names star to star (naam milan) and answers with the
+  /// `naam` blob: each name's first syllable in the śatapada cakra, the
+  /// varga koota, and the Ashta Koota and the ten considerations of the two
+  /// name stars (`03-design/matching.md`, C291 to C296).
+  ///
+  /// `request_json` is `{"bride", "groom", "rules"}`: the two names, in
+  /// Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+  /// `NaamRules` with every field optional. A name the cakra does not read,
+  /// a Latin name while `latin` refuses, or an Abhijit syllable while
+  /// `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
+  /// `naam.groom`.
+  final TsNaamMilanDart ts_naam_milan;
 
   /// What the context's engine says it offers beyond this library's own
   /// operations: its manifest, as the engine wrote it.
@@ -4875,6 +4891,28 @@ final class TeistroContext implements ffi.Finalizable {
         request.write(rawrequest, arena);
         final outBlob = arena<BlobStruct>();
         final status = _lib.ts_panchanga_days(_handle, rawrequest, outBlob);
+        if (status != 0) _fail(status);
+        return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// Matches two names star to star (naam milan) and answers with the
+  /// `naam` blob: each name's first syllable in the śatapada cakra, the
+  /// varga koota, and the Ashta Koota and the ten considerations of the two
+  /// name stars (`03-design/matching.md`, C291 to C296).
+  ///
+  /// `request_json` is `{"bride", "groom", "rules"}`: the two names, in
+  /// Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+  /// `NaamRules` with every field optional. A name the cakra does not read,
+  /// a Latin name while `latin` refuses, or an Abhijit syllable while
+  /// `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
+  /// `naam.groom`.
+  Uint8List naamMilan(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outBlob = arena<BlobStruct>();
+        final status = _lib.ts_naam_milan(_handle, rawrequestJson, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
     });

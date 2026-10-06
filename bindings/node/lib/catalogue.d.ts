@@ -9014,3 +9014,91 @@ export declare const Sunrises: {
  */
 export declare const SunrisesById: ReadonlyMap<number, Sunrises>;
 
+/**
+ * Which of the eight letter groups a name begins in, by the animal
+ * *Muhurta Chintamani* VI.35 gives it (C295).
+ *
+ * Mirrors `teistro::matching::NameVarga` through an **exhaustive** match.
+ */
+export type NameVarga =
+  | 'GARUDA'
+  | 'CAT'
+  | 'LION'
+  | 'DOG'
+  | 'SERPENT'
+  | 'RAT'
+  | 'DEER'
+  | 'SHEEP';
+
+/** Every NameVarga by name; the values are the strings the union accepts. */
+export declare const NameVarga: {
+  /**
+   * The vowels.
+   */
+  readonly Garuda: 'GARUDA';
+  /**
+   * ka kha ga gha ṅa.
+   */
+  readonly Cat: 'CAT';
+  /**
+   * ca cha ja jha ña.
+   */
+  readonly Lion: 'LION';
+  /**
+   * ṭa ṭha ḍa ḍha ṇa.
+   */
+  readonly Dog: 'DOG';
+  /**
+   * ta tha da dha na.
+   */
+  readonly Serpent: 'SERPENT';
+  /**
+   * pa pha ba bha ma.
+   */
+  readonly Rat: 'RAT';
+  /**
+   * ya ra la va.
+   */
+  readonly Deer: 'DEER';
+  /**
+   * śa ṣa sa ha.
+   */
+  readonly Sheep: 'SHEEP';
+};
+
+/**
+ * Every NameVarga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NameVargaById: ReadonlyMap<number, NameVarga>;
+
+/**
+ * How two names' vargas stand (VI.35).
+ *
+ * Mirrors `teistro::matching::VargaRelation` through an **exhaustive**
+ * match.
+ */
+export type VargaRelation = 'SAME' | 'ENEMY' | 'NEUTRAL';
+
+/** Every VargaRelation by name; the values are the strings the union accepts. */
+export declare const VargaRelation: {
+  /**
+   * One varga.
+   */
+  readonly Same: 'SAME';
+  /**
+   * Each the 5th from the other, eater and eaten.
+   */
+  readonly Enemy: 'ENEMY';
+  /**
+   * Neither.
+   */
+  readonly Neutral: 'NEUTRAL';
+};
+
+/**
+ * Every VargaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VargaRelationById: ReadonlyMap<number, VargaRelation>;
+

@@ -2000,3 +2000,111 @@ export function decodePanchanga(bytes) {
   return out;
 }
 
+/**
+ * Decodes a Naam blob: Two names matched star to star (naam milan): each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations read from the two name stars, in the same sections and shapes a chart's match crosses as.
+ *
+ * @param {Uint8Array} bytes the blob the library returned
+ */
+export function decodeNaam(bytes) {
+  const blob = open(bytes, 5, 'naam');
+  const out = {};
+  {
+    const at = section(blob, 1, 'naam_names');
+    out.naamNames = {
+      cell: column(blob, at, 0, 'u8', at.count),
+      nakshatra: column(blob, at, 1, 'u16', at.count),
+      abhijit: column(blob, at, 2, 'u8', at.count),
+      quarter: column(blob, at, 3, 'u8', at.count),
+      varga: column(blob, at, 4, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 2, 'naam_varga');
+    out.relation = READERS.u8(blob.dv, at.offset + 0);
+  }
+  {
+    const at = section(blob, 3, 'matchings');
+    out.matchings = {
+      total: column(blob, at, 0, 'f64', at.count),
+      brideVarna: column(blob, at, 1, 'u16', at.count),
+      groomVarna: column(blob, at, 2, 'u16', at.count),
+      vashya: column(blob, at, 3, 'u8', at.count),
+      taraBrideToGroom: column(blob, at, 4, 'u8', at.count),
+      taraGroomToBride: column(blob, at, 5, 'u8', at.count),
+      brideYoni: column(blob, at, 6, 'u16', at.count),
+      groomYoni: column(blob, at, 7, 'u16', at.count),
+      yoni: column(blob, at, 8, 'u8', at.count),
+      brideLord: column(blob, at, 9, 'u16', at.count),
+      groomLord: column(blob, at, 10, 'u16', at.count),
+      maitri: column(blob, at, 11, 'u8', at.count),
+      maitriLifted: column(blob, at, 12, 'u8', at.count),
+      brideGana: column(blob, at, 13, 'u16', at.count),
+      groomGana: column(blob, at, 14, 'u16', at.count),
+      ganaDosha: column(blob, at, 15, 'u8', at.count),
+      ganaLifted: column(blob, at, 16, 'u8', at.count),
+      bhakootApart: column(blob, at, 17, 'u8', at.count),
+      bhakootDosha: column(blob, at, 18, 'u8', at.count),
+      bhakootOneLord: column(blob, at, 19, 'u8', at.count),
+      bhakootLordsFriends: column(blob, at, 20, 'u8', at.count),
+      bhakootNavamshaLordsFriends: column(blob, at, 21, 'u8', at.count),
+      bhakootTaraPure: column(blob, at, 22, 'u8', at.count),
+      bhakootVashya: column(blob, at, 23, 'u8', at.count),
+      bhakootLifted: column(blob, at, 24, 'u8', at.count),
+      brideNadi: column(blob, at, 25, 'u16', at.count),
+      groomNadi: column(blob, at, 26, 'u16', at.count),
+      nadiDosha: column(blob, at, 27, 'u8', at.count),
+      nadiLifted: column(blob, at, 28, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 4, 'matching_kootas');
+    out.matchingKootas = {
+      koota: column(blob, at, 0, 'u16', at.count),
+      points: column(blob, at, 1, 'f64', at.count),
+      maxPoints: column(blob, at, 2, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 5, 'poruthams');
+    out.poruthams = {
+      agreeing: column(blob, at, 0, 'u8', at.count),
+      chiefAgreeing: column(blob, at, 1, 'u8', at.count),
+      oneLord: column(blob, at, 2, 'u8', at.count),
+      lordsFriendly: column(blob, at, 3, 'u8', at.count),
+      opposite: column(blob, at, 4, 'u8', at.count),
+      count: column(blob, at, 5, 'u8', at.count),
+      dhinamRule: column(blob, at, 6, 'u8', at.count),
+      brideGana: column(blob, at, 7, 'u16', at.count),
+      groomGana: column(blob, at, 8, 'u16', at.count),
+      ganaDiminished: column(blob, at, 9, 'u8', at.count),
+      brideYoni: column(blob, at, 10, 'u16', at.count),
+      groomYoni: column(blob, at, 11, 'u16', at.count),
+      yoniHostile: column(blob, at, 12, 'u8', at.count),
+      apart: column(blob, at, 13, 'u8', at.count),
+      brideLord: column(blob, at, 14, 'u16', at.count),
+      groomLord: column(blob, at, 15, 'u16', at.count),
+      brideCallsFriend: column(blob, at, 16, 'u8', at.count),
+      groomCallsFriend: column(blob, at, 17, 'u8', at.count),
+      brideToGroom: column(blob, at, 18, 'u8', at.count),
+      groomToBride: column(blob, at, 19, 'u8', at.count),
+      brideRajju: column(blob, at, 20, 'u8', at.count),
+      groomRajju: column(blob, at, 21, 'u8', at.count),
+      pierced: column(blob, at, 22, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 6, 'porutham_rows');
+    out.poruthamRows = {
+      koota: column(blob, at, 0, 'u16', at.count),
+      agrees: column(blob, at, 1, 'u8', at.count),
+      lifted: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  return out;
+}
+

@@ -14,17 +14,30 @@ pub const CHARTS: &str = "charts";
 
 /// The panchanga blob's name.
 pub const PANCHANGA: &str = "panchanga";
+/// The naam milan blob's name.
+pub const NAAM: &str = "naam";
 
 /// Every schema, in id order.
 #[must_use]
 pub fn schemas() -> Vec<BlobSchema> {
-    vec![positions(), intl_render(), charts(), panchanga()]
+    vec![positions(), intl_render(), charts(), panchanga(), naam()]
 }
 
 /// The name every section holding a day arc declares, so that two blobs
 /// carrying the same day decode into **one** type in each binding rather
 /// than two identical ones (`03-design/chart-at-the-boundary.md` §8).
 pub const DAY_SHAPE: &str = "day";
+
+/// The shapes a match crosses as, shared by a chart's match with its
+/// partner and two names' match, so each binding reads both through one
+/// type and one reader (`03-design/matching.md`).
+pub const MATCHINGS_SHAPE: &str = "matchings";
+/// See [`MATCHINGS_SHAPE`].
+pub const MATCHING_KOOTAS_SHAPE: &str = "matching_kootas";
+/// See [`MATCHINGS_SHAPE`].
+pub const PORUTHAMS_SHAPE: &str = "poruthams";
+/// See [`MATCHINGS_SHAPE`].
+pub const PORUTHAM_ROWS_SHAPE: &str = "porutham_rows";
 
 /// The day an instant belongs to, which is not always its civil date.
 ///
@@ -2210,6 +2223,38 @@ fn porutham_columns() -> Vec<ColumnDef> {
     columns
 }
 
+/// A koota's points: which koota, its points and the most it gives.
+fn matching_koota_columns() -> Vec<ColumnDef> {
+    vec![
+        ColumnDef::new("koota", Scalar::U16, "Which koota.").of_enum("Koota"),
+        ColumnDef::new("points", Scalar::F64, "Its points, a multiple of a half."),
+        ColumnDef::new(
+            "max_points",
+            Scalar::F64,
+            "The most it gives, 1 for Varna to 8 for Nadi.",
+        ),
+    ]
+}
+
+/// One of the ten considerations: which, whether it agrees and whether
+/// only by the exception.
+fn porutham_row_columns() -> Vec<ColumnDef> {
+    vec![
+        ColumnDef::new(
+            "koota",
+            Scalar::U16,
+            "Which consideration, a catalogue koota (C282).",
+        )
+        .of_enum("Koota"),
+        ColumnDef::new("agrees", Scalar::U8, "1 when it agrees, a lift included."),
+        ColumnDef::new(
+            "lifted",
+            Scalar::U8,
+            "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277).",
+        ),
+    ]
+}
+
 /// The four sections a match crosses as, from `first`: a row a chart with
 /// what each koota read, each koota's points (eight rows a chart in the
 /// verse's order), a row a chart with what each of the ten considerations
@@ -2225,23 +2270,17 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 5] {
                 "Every chart matched with the record's partner by the Ashta Koota of *Muhurta Chintamani* VI.21–34, a row a chart in the `cast` section's order: what each koota read between the bride's Moon and the groom's, the chart on the side `partnerRole` leaves it. Never a verdict: the doshas and their exceptions are clauses. {empty}"
             ),
             matching_columns(),
-        ),
+        )
+        .of_shape(MATCHINGS_SHAPE),
         SectionSchema::columns(
             first + 1,
             "matching_kootas",
             &format!(
                 "Every chart's eight kootas, eight rows a chart in the `cast` section's order and the verse's: Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi. {empty}"
             ),
-            vec![
-                ColumnDef::new("koota", Scalar::U16, "Which koota.").of_enum("Koota"),
-                ColumnDef::new("points", Scalar::F64, "Its points, a multiple of a half."),
-                ColumnDef::new(
-                    "max_points",
-                    Scalar::F64,
-                    "The most it gives, 1 for Varna to 8 for Nadi.",
-                ),
-            ],
-        ),
+            matching_koota_columns(),
+        )
+        .of_shape(MATCHING_KOOTAS_SHAPE),
         SectionSchema::columns(
             first + 2,
             "poruthams",
@@ -2249,28 +2288,17 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 5] {
                 "Every chart matched with the record's partner by the ten considerations of *Kalaprakasika* XIII, a row a chart in the `cast` section's order: how many agree, the p. 76 exception's clauses, and what each of the ten read, on the chapter's own tables. Never a verdict. {empty}"
             ),
             porutham_columns(),
-        ),
+        )
+        .of_shape(PORUTHAMS_SHAPE),
         SectionSchema::columns(
             first + 3,
             "porutham_rows",
             &format!(
                 "Every chart's ten considerations, ten rows a chart in the `cast` section's order and the chapter's: Dhinam (`TARA`), Ganam, Mahendra, Sthree-Dheergham, Yoni, Rasi (`BHAKOOT`), Rasyadhipathi (`GRAHA_MAITRI`), Vasyam (`VASHYA`), Rajju, Vedhai. {empty}"
             ),
-            vec![
-                ColumnDef::new(
-                    "koota",
-                    Scalar::U16,
-                    "Which consideration, a catalogue koota (C282).",
-                )
-                .of_enum("Koota"),
-                ColumnDef::new("agrees", Scalar::U8, "1 when it agrees, a lift included."),
-                ColumnDef::new(
-                    "lifted",
-                    Scalar::U8,
-                    "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277).",
-                ),
-            ],
-        ),
+            porutham_row_columns(),
+        )
+        .of_shape(PORUTHAM_ROWS_SHAPE),
         SectionSchema::columns(
             first + 4,
             "kujas",
@@ -4969,6 +4997,46 @@ fn panchanga_muhurta_yogas_section(id: u32) -> SectionSchema {
             fields
         },
     )
+}
+
+/// Two names matched star to star: each name's first syllable, their
+/// vargas, and the Ashta Koota and the ten considerations of the two name
+/// stars, in the sections a chart's match crosses as (`matching.md`,
+/// C291 to C296).
+#[must_use]
+pub fn naam() -> BlobSchema {
+    let one = "One row: the two names' match.";
+    BlobSchema {
+        name: NAAM.to_string(),
+        id: 5,
+        doc: "Two names matched star to star (naam milan): each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations read from the two name stars, in the same sections and shapes a chart's match crosses as.".to_string(),
+        sections: vec![
+            SectionSchema::columns(
+                1,
+                "naam_names",
+                "Each name's first syllable, two rows: the bride's, then the groom's.",
+                vec![
+                    ColumnDef::new("cell", Scalar::U8, "Its place among the cakra's 112 cells, 0 for a, Krittika's first."),
+                    ColumnDef::new("nakshatra", Scalar::U16, "Its star; read only when `abhijit` is 0.").of_enum("Nakshatra"),
+                    ColumnDef::new("abhijit", Scalar::U8, "1 when the syllable is Abhijit's, which is none of the 27 (C292)."),
+                    ColumnDef::new("quarter", Scalar::U8, "Which of the star's four syllables, 1 to 4: the pada, for one of the 27."),
+                    ColumnDef::new("varga", Scalar::U8, "The varga of the name's first letter as written (C295).").of_enum("TsNameVarga"),
+                ],
+            ),
+            SectionSchema::fixed(
+                2,
+                "naam_varga",
+                "The varga koota of *Muhurta Chintamani* VI.35: how the two names' vargas stand. Never points.",
+                vec![
+                    ColumnDef::new("relation", Scalar::U8, "One varga, enemies (each the 5th from the other) or neither.").of_enum("TsVargaRelation"),
+                ],
+            ),
+            SectionSchema::columns(3, "matchings", &format!("The Ashta Koota of the two name stars, as a chart's match reads two Moons. {one}"), matching_columns()).of_shape(MATCHINGS_SHAPE),
+            SectionSchema::columns(4, "matching_kootas", "The eight kootas' points, in the verse's order.", matching_koota_columns()).of_shape(MATCHING_KOOTAS_SHAPE),
+            SectionSchema::columns(5, "poruthams", &format!("The ten considerations of the two name stars. {one}"), porutham_columns()).of_shape(PORUTHAMS_SHAPE),
+            SectionSchema::columns(6, "porutham_rows", "The ten considerations, in the chapter's order.", porutham_row_columns()).of_shape(PORUTHAM_ROWS_SHAPE),
+        ],
+    }
 }
 
 /// A batch of almanacs: one day at one place, many times over.

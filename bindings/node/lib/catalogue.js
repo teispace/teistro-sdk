@@ -4508,3 +4508,47 @@ export const SunrisesById = new Map([
   [3, 'NEITHER'],
 ]);
 
+/** Every NameVarga by name. */
+export const NameVarga = Object.freeze({
+  Garuda: 'GARUDA',
+  Cat: 'CAT',
+  Lion: 'LION',
+  Dog: 'DOG',
+  Serpent: 'SERPENT',
+  Rat: 'RAT',
+  Deer: 'DEER',
+  Sheep: 'SHEEP',
+});
+
+/**
+ * Every NameVarga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NameVargaById = new Map([
+  [0, 'GARUDA'],
+  [1, 'CAT'],
+  [2, 'LION'],
+  [3, 'DOG'],
+  [4, 'SERPENT'],
+  [5, 'RAT'],
+  [6, 'DEER'],
+  [7, 'SHEEP'],
+]);
+
+/** Every VargaRelation by name. */
+export const VargaRelation = Object.freeze({
+  Same: 'SAME',
+  Enemy: 'ENEMY',
+  Neutral: 'NEUTRAL',
+});
+
+/**
+ * Every VargaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VargaRelationById = new Map([
+  [0, 'SAME'],
+  [1, 'ENEMY'],
+  [2, 'NEUTRAL'],
+]);
+
