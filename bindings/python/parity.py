@@ -656,6 +656,7 @@ def main() -> None:
             vaiseshikamsa=True,
             dasha_phala=True,
             jaimini=True,
+            avakahada=True,
             outer_planets=True,
             gochar={"instants": [2460676.5, 2460736.5], "ashtakavarga": True},
             hits={
@@ -977,6 +978,18 @@ def main() -> None:
             put(
                 f"chart-{i}-graha-arudhas",
                 ",".join(sign.full_key if sign else "-" for sign in jr.graha_arudhas),
+            )
+            birth = chart.avakahada
+            assert birth is not None
+            put(
+                f"chart-{i}-avakahada",
+                f"{birth.nakshatra.full_key} {birth.pada} {birth.rashi.full_key} {birth.nakshatra_lord.full_key} "
+                + f"{birth.rashi_lord.full_key} {birth.varna.full_key} {birth.yoni.full_key} {birth.gana.full_key} {birth.nadi.full_key}",
+            )
+            syllable = birth.syllable
+            put(
+                f"chart-{i}-avakahada-syllable",
+                f"{syllable.cell} {syllable.devanagari} {syllable.iast} {syllable.varga.key}",
             )
             put(
                 f"chart-{i}-brahma",

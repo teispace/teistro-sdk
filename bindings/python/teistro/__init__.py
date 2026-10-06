@@ -58,6 +58,7 @@ from ._ffi import (
     NO_MEMBER,
     CHART_ASHTAKAVARGA,
     CHART_ASPECTS,
+    CHART_AVAKAHADA,
     CHART_BHAVA_BALA,
     CHART_DASHA_PHALA,
     CHART_HOUSES,
@@ -579,6 +580,8 @@ __all__ = [
     "NameRules",
     "NaamRules",
     "NameSyllable",
+    "Avakahada",
+    "BirthSyllable",
     "VargaKoota",
     "NaamMilan",
     "KujaRules",
@@ -1660,6 +1663,7 @@ class ChartArea(_Area):
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
         jaimini: bool = False,
+        avakahada: bool = False,
         outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
@@ -1716,6 +1720,7 @@ class ChartArea(_Area):
             vaiseshikamsa=vaiseshikamsa,
             dasha_phala=dasha_phala,
             jaimini=jaimini,
+            avakahada=avakahada,
             outer_planets=outer_planets,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
@@ -1762,6 +1767,7 @@ class ChartArea(_Area):
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
         jaimini: bool = False,
+        avakahada: bool = False,
         outer_planets: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
@@ -1803,6 +1809,7 @@ class ChartArea(_Area):
             | (CHART_VAISESHIKAMSA if vaiseshikamsa else 0)
             | (CHART_DASHA_PHALA if dasha_phala else 0)
             | (CHART_JAIMINI if jaimini else 0)
+            | (CHART_AVAKAHADA if avakahada else 0)
             | (CHART_OUTER if outer_planets else 0)
             | (CHART_SHADBALA if shadbala else 0)
             | (CHART_BHAVA_BALA if bhava_bala else 0)
@@ -4752,6 +4759,66 @@ class NameSyllable:
 
     varga: NameVarga
     """The letter group the name begins in, as written (VI.35)."""
+
+
+@dataclass(frozen=True)
+class BirthSyllable:
+    """The syllable a child is named by: the birth pada's own cell in the
+    śatapada cakra (C297 to C299)."""
+
+    cell: int
+    """Its place among the cakra's 112 cells, 0 for a, Krittika's first."""
+
+    devanagari: str
+    """As *Muhurta Chintamani* p. 173 prints it, e.g. `चू`."""
+
+    iast: str
+    """Its IAST, e.g. `cū`."""
+
+    varga: NameVarga
+    """The letter group it begins in (VI.35)."""
+
+
+@dataclass(frozen=True)
+class Avakahada:
+    """What a janma-patrika prints of the Moon: its star and pada, the
+    syllable the child is named by, and the readings the Ashta Koota takes
+    of the same Moon (C301). Vashya, paya, disha and tatwa are not here
+    (C300).
+
+    >>> # chart = ctx.chart.found(..., avakahada=True)
+    >>> # name_by = chart.avakahada.syllable.devanagari
+    """
+
+    nakshatra: Nakshatra
+    """The Moon's nakshatra."""
+
+    pada: int
+    """Its pada, 1 to 4."""
+
+    rashi: Rashi
+    """The Moon's sign."""
+
+    nakshatra_lord: Graha
+    """The nakshatra's lord, the Vimshottari dasha's."""
+
+    rashi_lord: Graha
+    """The sign's lord, the one Graha Maitri reads."""
+
+    varna: Varna
+    """The sign's varna, as Varna koota reads it (VI.22)."""
+
+    yoni: Yoni
+    """The nakshatra's yoni."""
+
+    gana: Gana
+    """The nakshatra's gana."""
+
+    nadi: Nadi
+    """The nakshatra's nadi."""
+
+    syllable: BirthSyllable
+    """The syllable the child is named by."""
 
 
 @dataclass(frozen=True)
@@ -9653,6 +9720,13 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def avakahada(self) -> Optional[Avakahada]:
+        """The Moon's avakahada, when `avakahada=True` asked for it; a
+        tropical chart refuses it, named `avakahada`."""
+        parsed = self.batch._avakahadas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
         """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
         parsed = self.batch._vaiseshikamsas
@@ -10030,6 +10104,34 @@ class ChartBatch:
             )
 
         return [reading(chart) for chart in range(c.length)]
+
+    @cached_property
+    def _avakahadas(self) -> list[Avakahada]:
+        """Every chart's avakahada, decoded once; empty when none was asked
+        for."""
+        c = self.decoded.avakahada
+        text = self.decoded.avakahada_syllables
+        syllables = json.loads(text) if text else []
+        return [
+            Avakahada(
+                nakshatra=Nakshatra(c.nakshatra[chart]),
+                pada=c.pada[chart],
+                rashi=Rashi(c.rashi[chart]),
+                nakshatra_lord=Graha(c.nakshatra_lord[chart]),
+                rashi_lord=Graha(c.rashi_lord[chart]),
+                varna=Varna(c.varna[chart]),
+                yoni=Yoni(c.yoni[chart]),
+                gana=Gana(c.gana[chart]),
+                nadi=Nadi(c.nadi[chart]),
+                syllable=BirthSyllable(
+                    cell=c.cell[chart],
+                    devanagari=syllables[chart][0],
+                    iast=syllables[chart][1],
+                    varga=NameVarga(c.varga[chart]),
+                ),
+            )
+            for chart in range(c.length)
+        ]
 
     @cached_property
     def _kps(self) -> list[KpReading]:

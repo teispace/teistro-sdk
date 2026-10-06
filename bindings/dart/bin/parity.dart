@@ -662,6 +662,7 @@ void main() {
     vaiseshikamsa: true,
     dashaPhala: true,
     jaimini: true,
+    avakahada: true,
     outerPlanets: true,
     gochar: const GocharRequest(
       instants: [2460676.5, 2460736.5],
@@ -1044,6 +1045,18 @@ void main() {
     put(
       'chart-$i-graha-arudhas',
       jr.grahaArudhas.map((sign) => sign?.fullKey ?? '-').join(','),
+    );
+    final birth = chart.avakahada!;
+    put(
+      'chart-$i-avakahada',
+      '${birth.nakshatra.fullKey} ${birth.pada} ${birth.rashi.fullKey} '
+          '${birth.nakshatraLord.fullKey} ${birth.rashiLord.fullKey} ${birth.varna.fullKey} '
+          '${birth.yoni.fullKey} ${birth.gana.fullKey} ${birth.nadi.fullKey}',
+    );
+    final syllable = birth.syllable;
+    put(
+      'chart-$i-avakahada-syllable',
+      '${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga.key}',
     );
     final qualified = b.qualified.map((g) => g.fullKey).join(',');
     put(

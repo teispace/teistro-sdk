@@ -697,6 +697,7 @@ final class ChartArea extends _Area {
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
     bool jaimini = false,
+    bool avakahada = false,
     bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
@@ -739,6 +740,7 @@ final class ChartArea extends _Area {
     vaiseshikamsa: vaiseshikamsa,
     dashaPhala: dashaPhala,
     jaimini: jaimini,
+    avakahada: avakahada,
     outerPlanets: outerPlanets,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
@@ -801,6 +803,7 @@ final class ChartArea extends _Area {
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
     bool jaimini = false,
+    bool avakahada = false,
     bool outerPlanets = false,
     bool shadbala = false,
     bool bhavaBala = false,
@@ -829,6 +832,7 @@ final class ChartArea extends _Area {
                 (vaiseshikamsa ? chartVaiseshikamsa : 0) |
                 (dashaPhala ? chartDashaPhala : 0) |
                 (jaimini ? chartJaimini : 0) |
+                (avakahada ? chartAvakahada : 0) |
                 (outerPlanets ? chartOuter : 0) |
                 (shadbala ? chartShadbala : 0) |
                 (bhavaBala ? chartBhavaBala : 0) |
@@ -5631,6 +5635,42 @@ List<JaiminiReading> _decodeJaiminis(Charts batch) {
   }, growable: false);
 }
 
+/// Each batch's avakahadas, decoded once however many charts read them.
+final Expando<List<Avakahada>> _avakahadas = Expando<List<Avakahada>>(
+  'avakahadas',
+);
+
+List<Avakahada> _avakahadasOf(Charts batch) =>
+    _avakahadas[batch] ??= _decodeAvakahadas(batch);
+
+List<Avakahada> _decodeAvakahadas(Charts batch) {
+  final c = batch.avakahada;
+  final syllables =
+      batch.avakahadaSyllables.isEmpty
+          ? const <Object?>[]
+          : jsonDecode(batch.avakahadaSyllables) as List<Object?>;
+  return List<Avakahada>.generate(c.length, (chart) {
+    final text = syllables[chart] as List<Object?>;
+    return Avakahada(
+      nakshatra: Nakshatra.byId(c.nakshatra[chart]),
+      pada: c.pada[chart],
+      rashi: Rashi.byId(c.rashi[chart]),
+      nakshatraLord: Graha.byId(c.nakshatraLord[chart]),
+      rashiLord: Graha.byId(c.rashiLord[chart]),
+      varna: Varna.byId(c.varna[chart]),
+      yoni: Yoni.byId(c.yoni[chart]),
+      gana: Gana.byId(c.gana[chart]),
+      nadi: Nadi.byId(c.nadi[chart]),
+      syllable: BirthSyllable(
+        cell: c.cell[chart],
+        devanagari: text[0]! as String,
+        iast: text[1]! as String,
+        varga: NameVarga.byId(c.varga[chart]),
+      ),
+    );
+  }, growable: false);
+}
+
 /// Each batch's Vaiseshikamsas, decoded once however many charts read them.
 final Expando<List<VaiseshikamsaReading>> _vaiseshikamsas =
     Expando<List<VaiseshikamsaReading>>('vaiseshikamsas');
@@ -8351,6 +8391,100 @@ final class NameSyllable extends _Value {
 
   @override
   List<Object?> get _fields => [cell, nakshatra, quarter, varga];
+}
+
+/// The syllable a child is named by: the birth pada's own cell in the
+/// śatapada cakra (C297 to C299).
+final class BirthSyllable extends _Value {
+  const BirthSyllable({
+    required this.cell,
+    required this.devanagari,
+    required this.iast,
+    required this.varga,
+  });
+
+  /// Its place among the cakra's 112 cells, 0 for a, Krittika's first.
+  final int cell;
+
+  /// As *Muhurta Chintamani* p. 173 prints it, e.g. `चू`.
+  final String devanagari;
+
+  /// Its IAST, e.g. `cū`.
+  final String iast;
+
+  /// The letter group it begins in (VI.35).
+  final NameVarga varga;
+
+  @override
+  List<Object?> get _fields => [cell, devanagari, iast, varga];
+}
+
+/// What a janma-patrika prints of the Moon: its star and pada, the
+/// syllable the child is named by, and the readings the Ashta Koota takes
+/// of the same Moon (C301). Vashya, paya, disha and tatwa are not here
+/// (C300).
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ avakahada: true);
+/// final nameBy = chart.avakahada!.syllable.devanagari;
+/// ```
+final class Avakahada extends _Value {
+  const Avakahada({
+    required this.nakshatra,
+    required this.pada,
+    required this.rashi,
+    required this.nakshatraLord,
+    required this.rashiLord,
+    required this.varna,
+    required this.yoni,
+    required this.gana,
+    required this.nadi,
+    required this.syllable,
+  });
+
+  /// The Moon's nakshatra.
+  final Nakshatra nakshatra;
+
+  /// Its pada, 1 to 4.
+  final int pada;
+
+  /// The Moon's sign.
+  final Rashi rashi;
+
+  /// The nakshatra's lord, the Vimshottari dasha's.
+  final Graha nakshatraLord;
+
+  /// The sign's lord, the one Graha Maitri reads.
+  final Graha rashiLord;
+
+  /// The sign's varna, as Varna koota reads it (VI.22).
+  final Varna varna;
+
+  /// The nakshatra's yoni.
+  final Yoni yoni;
+
+  /// The nakshatra's gana.
+  final Gana gana;
+
+  /// The nakshatra's nadi.
+  final Nadi nadi;
+
+  /// The syllable the child is named by.
+  final BirthSyllable syllable;
+
+  @override
+  List<Object?> get _fields => [
+    nakshatra,
+    pada,
+    rashi,
+    nakshatraLord,
+    rashiLord,
+    varna,
+    yoni,
+    gana,
+    nadi,
+    syllable,
+  ];
 }
 
 /// Two names' vargas and how they stand (*Muhurta Chintamani* VI.35,
@@ -15103,6 +15237,13 @@ final class Chart {
   /// Jaimini's significators, when `jaimini: true` asked for them.
   JaiminiReading? get jaimini {
     final all = _jaiminisOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Moon's avakahada, when `avakahada: true` asked for it; a tropical
+  /// chart refuses it, named `avakahada`.
+  Avakahada? get avakahada {
+    final all = _avakahadasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

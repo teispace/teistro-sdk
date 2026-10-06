@@ -2312,6 +2312,38 @@ class AnEngine(WithLibrary):
                     ctx.matching.naam(bride, groom, rules)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_chart_carries_its_avakahada_whose_syllable_names_the_birth_pada(self) -> None:
+        """The avakahada crosses whole, and its syllable names the child
+        back to the Moon's own star and pada (C297): read as a name, in
+        either script, the birth syllable is the birth pada. `None` unless
+        asked; a tropical chart refuses it by name (`03-design/matching.md`)."""
+        from teistro import Avakahada
+
+        kathmandu: dict[str, Any] = {
+            "place": Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)),
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=2451545.0, **kathmandu).avakahada)
+            padas = set()
+            for step in range(28):
+                read = ctx.chart.found(instant=2451545.0 + step * 0.83, avakahada=True, **kathmandu).avakahada
+                assert isinstance(read, Avakahada)
+                named = ctx.matching.naam(read.syllable.devanagari, read.syllable.devanagari).bride
+                self.assertEqual(
+                    (named.cell, named.nakshatra, named.quarter, named.varga),
+                    (read.syllable.cell, read.nakshatra, read.pada, read.syllable.varga),
+                    read.syllable.devanagari,
+                )
+                latin = ctx.matching.naam(read.syllable.iast, read.syllable.iast, {"name": {"latin": "IAST"}})
+                self.assertEqual(latin.bride, named, read.syllable.iast)
+                padas.add((read.nakshatra, read.pada))
+            self.assertGreater(len(padas), 20)
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN, profile="western-tropical-default") as western:
+            with self.assertRaises(TeistroError) as caught:
+                western.chart.found(instant=2451545.0, avakahada=True, **kathmandu)
+            self.assertEqual(caught.exception.field, "avakahada")
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,
