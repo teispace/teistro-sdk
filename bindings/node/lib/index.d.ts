@@ -3317,7 +3317,11 @@ export interface RuleRequest {
   readonly readings?: 'TEXTS' | 'RECORDING_ENGINE';
   /** Whether to add the twelve house readings. */
   readonly houses?: boolean;
-  /** Whether to add the three pairs, the three spans, the rays and the marakas. */
+  /**
+   * Whether to add the three pairs, the three spans, the rays, the span the
+   * strongest names and the marakas; asks the chart for the Shadbala and
+   * Bhava bala they weigh.
+   */
   readonly longevity?: boolean;
   /** How the three spans are read, when `longevity` asks; BPHS's by default. */
   readonly ayurdaya?: AyurdayaRules;

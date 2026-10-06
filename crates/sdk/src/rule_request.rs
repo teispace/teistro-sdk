@@ -10,7 +10,9 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
-use teistro_rules::longevity::{Ayurdaya, AyurdayaRules, Marakas, Rasmi, RasmiRules, ThreePairs};
+use teistro_rules::longevity::{
+    Ayurdaya, AyurdayaRules, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
+};
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
 /// A set of rules the kernel ships.
@@ -117,8 +119,9 @@ pub struct RuleRequest {
     pub readings: RuleReadings,
     /// Whether to add the twelve house readings.
     pub houses: bool,
-    /// Whether to add the three pairs, the three spans, the rays and the
-    /// marakas.
+    /// Whether to add the three pairs, the three spans, the rays, the span
+    /// the strongest names and the marakas. Asks the chart for its Shadbala
+    /// and Bhava bala, which they weigh.
     pub longevity: bool,
     /// The choices the three spans are read under, when `longevity` asks
     /// for them; BPHS's by default (cruxes C104, C302 to C304).
@@ -407,6 +410,10 @@ pub struct Longevity {
     /// The seven grahas' rays, the class of life their sum gives, and
     /// Rasmija ayurdaya.
     pub rasmi: Rasmi,
+    /// Which span the strongest of the seven grahas and the lagna names
+    /// (*Jataka Parijata* ch. 5 v. 33), the lagna weighed by its Bhava
+    /// bala in rupas.
+    pub choice: SpanChoice,
     /// The marakas.
     pub marakas: Marakas,
 }

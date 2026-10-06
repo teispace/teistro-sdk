@@ -1004,6 +1004,10 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   const verse = ctx.chart.found({ ...request, rules: { longevity: true, rasmi: { place: 'sign' } } })
     .rules.longevity.rasmi;
   assert.deepEqual(verse.rules, { place: 'sign' });
+  // v. 33: eight candidates, the lagna weighed by its Bhava bala.
+  const choice = answered.longevity.choice;
+  assert.equal(choice.candidates.length, 8);
+  assert.equal(choice.all_weighed, true);
   for (const [rules, field] of [
     [{ ayurdaya: parijata }, 'rules.ayurdaya'],
     [{ rasmi: { place: 'sign' } }, 'rules.rasmi'],

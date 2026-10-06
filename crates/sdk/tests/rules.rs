@@ -21,6 +21,7 @@ use teistro::catalogue::Varga;
 use teistro::catalogue::{DashaSystem, Graha, Point};
 use teistro::quantity::Depth;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::rules::longevity::Ayus;
 use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
 use teistro::rules::{Levels, Timing};
 use teistro::{
@@ -547,6 +548,7 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .expect("a valid set");
     let (mut charts, mut present, mut unreadable) = (0, 0, Vec::new());
     let mut refused = Vec::new();
+    let mut named = std::collections::BTreeMap::new();
     for (name, chart) in common::charts() {
         let input = &chart["input"];
         let number = |value: &serde_json::Value| value.as_f64().unwrap();
@@ -592,14 +594,9 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
             reading.unreadable.is_empty(),
             "{name}"
         );
-        // Every graha's rays lie between nothing and twice its 10, 9, 5, 5, 7,
-        // 8 or 5, and the class is the total's.
-        let rasmi = &longevity.rasmi;
-        assert!(rasmi.total >= 0.0 && rasmi.total <= 98.0, "{name}");
-        assert_eq!(
-            rasmi.class,
-            teistro::rules::longevity::class_of_rays(rasmi.total)
-        );
+        if let Some(ayus) = rays_and_choice_hold(&name, longevity) {
+            *named.entry(format!("{ayus:?}")).or_insert(0_u32) += 1;
+        }
         if !reading.unreadable.is_empty() {
             unreadable.push(name.clone());
         }
@@ -614,6 +611,23 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
     assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
+    // Every chart names one span, over all eight: 36 of the 53 one the SDK
+    // computes (Pinda, Nisarga, Rasmi and Amsa), 17 one of the four it does
+    // not yet.
+    let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
+    assert_eq!(
+        named,
+        [
+            ("Amsa", 12),
+            ("Bhinnashtakavarga", 1),
+            ("Kalachakra", 3),
+            ("Nakshatra", 7),
+            ("Nisarga", 7),
+            ("Pinda", 7),
+            ("Rasmi", 10),
+            ("Samudaya", 6)
+        ]
+    );
     assert_eq!(
         unreadable,
         ["c028-troms-1988-06-21.json", "c029-troms-1988-12-21.json"]
@@ -628,6 +642,34 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
             ),
         ]
     );
+}
+
+/// The rays and v. 33's choice of one corpus chart, held to what must be
+/// true of every chart; the span its strongest names, when one is.
+fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ayus> {
+    // Every graha's rays lie between nothing and twice its 10, 9, 5, 5, 7,
+    // 8 or 5, and the class is the total's.
+    let rasmi = &longevity.rasmi;
+    assert!(rasmi.total >= 0.0 && rasmi.total <= 98.0, "{name}");
+    assert_eq!(
+        rasmi.class,
+        teistro::rules::longevity::class_of_rays(rasmi.total)
+    );
+    // v. 33 weighs the lagna by its Bhava bala beside the Shadbala, and a
+    // span it names that is computed carries that span's years.
+    let choice = &longevity.choice;
+    assert!(choice.all_weighed, "{name}");
+    for candidate in &choice.candidates {
+        let years = match candidate.ayus {
+            Ayus::Pinda => Some(longevity.ayurdaya.pindayu.years),
+            Ayus::Nisarga => Some(longevity.ayurdaya.nisargayu.years),
+            Ayus::Amsa => Some(longevity.ayurdaya.amsayu.years),
+            Ayus::Rasmi => Some(rasmi.years),
+            _ => None,
+        };
+        assert_eq!(candidate.years, years, "{name}");
+    }
+    choice.ayus
 }
 
 /// A shipped set and the readings are named by the key serde writes, in the

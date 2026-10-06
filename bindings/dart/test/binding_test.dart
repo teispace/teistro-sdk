@@ -843,6 +843,10 @@ void _engineTests() {
                 as Map<String, Object?>)['rasmi']!
             as Map<String, Object?>;
     expect(verse['rules'], {'place': 'sign'});
+    // v. 33: eight candidates, the lagna weighed by its Bhava bala.
+    final choice = longevity['choice']! as Map<String, Object?>;
+    expect(choice['candidates'], hasLength(8));
+    expect(choice['all_weighed'], isTrue);
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),
       throwsA(

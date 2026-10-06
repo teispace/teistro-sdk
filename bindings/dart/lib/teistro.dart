@@ -5940,8 +5940,9 @@ final class RuleRequest {
   /// Whether to add the twelve house readings.
   final bool houses;
 
-  /// Whether to add the three pairs, the three spans, the rays and the
-  /// marakas.
+  /// Whether to add the three pairs, the three spans, the rays, the span
+  /// the strongest names and the marakas; asks the chart for the Shadbala
+  /// and Bhava bala they weigh.
   final bool longevity;
 
   /// How the three spans are read when [longevity] asks; BPHS's by
