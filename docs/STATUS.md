@@ -1052,18 +1052,16 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the avakahada chakra, with the name syllable** (roadmap
-   Phase 8, `namakarana`). A birth's Moon pada gives the syllable a name
-   begins with: the śatapada cakra built for naam milan, read from the
-   cell rather than the letter. The baseline engine prints it inside the
-   avakahada chakra, the janma-patrika's birth summary read off the Moon:
-   varna, vashya, yoni, gana and nadi (which the Ashta Koota already
-   reads), the syllable and its varga, and paya, disha and tatwa, which
-   nothing here computes yet. Research first: the rank 1 rule for each
-   new row (paya by the Moon's house or by its nakshatra; the disha and
-   tatwa tables), what the sources say of Abhijit's padas when naming,
-   and whether the summary earns a record of its own or is the koota
-   natives' readings gathered.
+0. **Next: build the name syllable and the avakahada** (`matching.md`,
+   C297 to C301, decided 2026-10-07). The kernel's cakra read from the
+   cell: a Moon's pada answers its own syllable, spelled as *Muhurta
+   Chintamani* p. 173 prints it (the transcribed table moves from the
+   tests into `name.rs`, held to the rule both ways), IAST transliterated
+   from it. Then a chart field `avakahada` gathering the Moon's nakshatra
+   and pada, the syllable and its varga, and the varna, vashya, yoni,
+   gana, nadi and lords the koota natives already read, across the
+   boundary and in every binding. Paya, disha and tatwa are not shipped
+   (C300).
    Naam milan is built in every binding (`matching.md`, C291 to C296):
    `sdk.matching.naam(bride, groom, rules)`, its own area since it reads
    no sky, answered as the `naam` blob whose Ashta Koota and ten
