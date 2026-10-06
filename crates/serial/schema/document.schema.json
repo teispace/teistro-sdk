@@ -212,6 +212,67 @@
       },
       "type": "object"
     },
+    "Avakahada": {
+      "description": "What a janma-patrika prints of the Moon: its star and pada, the syllable the child is named by, and the readings a koota takes of one native (C301).",
+      "properties": {
+        "gana": {
+          "$ref": "#/$defs/Gana",
+          "description": "The nakshatra's gana."
+        },
+        "nadi": {
+          "$ref": "#/$defs/Nadi",
+          "description": "The nakshatra's nadi."
+        },
+        "nakshatra": {
+          "$ref": "#/$defs/Nakshatra",
+          "description": "The Moon's nakshatra."
+        },
+        "nakshatraLord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The nakshatra's lord, the Vimshottari dasha's."
+        },
+        "pada": {
+          "description": "Its pada, 1 to 4.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rashi": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The Moon's sign."
+        },
+        "rashiLord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The sign's lord, the one Graha Maitri reads."
+        },
+        "syllable": {
+          "$ref": "#/$defs/BirthSyllable",
+          "description": "The syllable the child is named by, with its varga (C297 to C299)."
+        },
+        "varna": {
+          "$ref": "#/$defs/Varna",
+          "description": "The sign's varna, as Varna koota reads it (VI.22)."
+        },
+        "yoni": {
+          "$ref": "#/$defs/Yoni",
+          "description": "The nakshatra's yoni."
+        }
+      },
+      "required": [
+        "nakshatra",
+        "pada",
+        "rashi",
+        "nakshatraLord",
+        "rashiLord",
+        "varna",
+        "yoni",
+        "gana",
+        "nadi",
+        "syllable"
+      ],
+      "type": "object"
+    },
     "AvasthaBaladi": {
       "anyOf": [
         {
@@ -945,6 +1006,37 @@
           "type": "string"
         }
       ]
+    },
+    "BirthSyllable": {
+      "description": "The syllable a birth names a child by: the cakra's cell for the Moon's pada, as the catalogue spells it after the print (C297 to C299).",
+      "properties": {
+        "cell": {
+          "description": "Its place among the cakra's 112 cells, 0 for a, Krittika's first; never one of Abhijit's four (C298).",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "devanagari": {
+          "description": "As *Muhurta Chintamani* p. 173 prints it.",
+          "type": "string"
+        },
+        "iast": {
+          "description": "The same spelling in IAST.",
+          "type": "string"
+        },
+        "varga": {
+          "$ref": "#/$defs/NameVarga",
+          "description": "The varga a name beginning with it stands in (VI.35)."
+        }
+      },
+      "required": [
+        "cell",
+        "devanagari",
+        "iast",
+        "varga"
+      ],
+      "type": "object"
     },
     "BirthTiming": {
       "description": "What the birth timing is, taken from the day's arc and the profile's reckonings.",
@@ -2205,6 +2297,17 @@
           ],
           "description": "Which bodies reach which."
         },
+        "avakahada": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Avakahada"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The janma-patrika's summary of the Moon: its star and pada, the syllable the child is named by, and the readings a koota takes of one native (`03-design/matching.md`, C301)."
+        },
         "bhava_bala": {
           "anyOf": [
             {
@@ -2624,6 +2727,31 @@
         "compound"
       ],
       "type": "object"
+    },
+    "Gana": {
+      "anyOf": [
+        {
+          "description": "A key of the `gana` catalogue, as a document writes it.",
+          "enum": [
+            "DEVA",
+            "MANUSHYA",
+            "RAKSHASA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `gana` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "gana.DEVA",
+            "gana.MANUSHYA",
+            "gana.RAKSHASA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `gana` catalogue, bare or full.",
+      "x-teistro-kind": "gana"
     },
     "GhatiPala": {
       "description": "A ghati-pala count from sunrise.",
@@ -4420,6 +4548,31 @@
       ],
       "type": "object"
     },
+    "Nadi": {
+      "anyOf": [
+        {
+          "description": "A key of the `nadi` catalogue, as a document writes it.",
+          "enum": [
+            "AADI",
+            "MADHYA",
+            "ANTYA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `nadi` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "nadi.AADI",
+            "nadi.MADHYA",
+            "nadi.ANTYA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `nadi` catalogue, bare or full.",
+      "x-teistro-kind": "nadi"
+    },
     "Naisargika": {
       "description": "The Shadbala's natural strengths (crux C71).",
       "oneOf": [
@@ -4530,6 +4683,51 @@
         "inside"
       ],
       "type": "object"
+    },
+    "NameVarga": {
+      "description": "Which of the eight letter groups a name begins in, by the animal VI.35 gives it (C295).",
+      "oneOf": [
+        {
+          "const": "GARUDA",
+          "description": "The vowels.",
+          "type": "string"
+        },
+        {
+          "const": "CAT",
+          "description": "ka kha ga gha ṅa.",
+          "type": "string"
+        },
+        {
+          "const": "LION",
+          "description": "ca cha ja jha ña.",
+          "type": "string"
+        },
+        {
+          "const": "DOG",
+          "description": "ṭa ṭha ḍa ḍha ṇa.",
+          "type": "string"
+        },
+        {
+          "const": "SERPENT",
+          "description": "ta tha da dha na.",
+          "type": "string"
+        },
+        {
+          "const": "RAT",
+          "description": "pa pha ba bha ma.",
+          "type": "string"
+        },
+        {
+          "const": "DEER",
+          "description": "ya ra la va.",
+          "type": "string"
+        },
+        {
+          "const": "SHEEP",
+          "description": "śa ṣa sa ha.",
+          "type": "string"
+        }
+      ]
     },
     "NamedLord": {
       "description": "Which lord a mahadasha names.",
@@ -7024,6 +7222,35 @@
       ],
       "type": "object"
     },
+    "Varna": {
+      "anyOf": [
+        {
+          "description": "A key of the `varna` catalogue, as a document writes it.",
+          "enum": [
+            "BRAHMIN",
+            "KSHATRIYA",
+            "VAISHYA",
+            "SHUDRA",
+            "MLECCHA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `varna` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "varna.BRAHMIN",
+            "varna.KSHATRIYA",
+            "varna.VAISHYA",
+            "varna.SHUDRA",
+            "varna.MLECCHA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `varna` catalogue, bare or full.",
+      "x-teistro-kind": "varna"
+    },
     "Version": {
       "description": "A semantic version.",
       "properties": {
@@ -7366,6 +7593,53 @@
         "inside"
       ],
       "type": "object"
+    },
+    "Yoni": {
+      "anyOf": [
+        {
+          "description": "A key of the `yoni` catalogue, as a document writes it.",
+          "enum": [
+            "HORSE",
+            "ELEPHANT",
+            "GOAT",
+            "SERPENT",
+            "DOG",
+            "CAT",
+            "RAT",
+            "COW",
+            "BUFFALO",
+            "TIGER",
+            "DEER",
+            "MONKEY",
+            "MONGOOSE",
+            "LION"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `yoni` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "yoni.HORSE",
+            "yoni.ELEPHANT",
+            "yoni.GOAT",
+            "yoni.SERPENT",
+            "yoni.DOG",
+            "yoni.CAT",
+            "yoni.RAT",
+            "yoni.COW",
+            "yoni.BUFFALO",
+            "yoni.TIGER",
+            "yoni.DEER",
+            "yoni.MONKEY",
+            "yoni.MONGOOSE",
+            "yoni.LION"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `yoni` catalogue, bare or full.",
+      "x-teistro-kind": "yoni"
     },
     "Yuddha": {
       "description": "Whether the Shadbala counts the Yuddha bala of grahas at war (crux C70).",

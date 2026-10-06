@@ -634,6 +634,9 @@ impl<'a> ChartArea<'a> {
         if request.sections.has(Sections::JAIMINI) {
             document = document.with_jaimini(self.jaimini_of(foundation)?);
         }
+        if request.sections.has(Sections::AVAKAHADA) {
+            document = document.with_avakahada(crate::matching_chart::avakahada_of(foundation)?);
+        }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
         }

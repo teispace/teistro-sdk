@@ -1967,6 +1967,7 @@ dependencies = [
  "teistro-dasha",
  "teistro-geometry",
  "teistro-houses",
+ "teistro-matching",
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",

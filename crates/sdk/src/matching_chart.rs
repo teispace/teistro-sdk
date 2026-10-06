@@ -6,8 +6,8 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
 use teistro_matching::{
-    AshtaKoota, KootaRules, Kuja, KujaNative, KujaRules, MarriageDosha, MatchRole, Native,
-    Porutham, PoruthamRules, ashta_koota, kuja, marriage_doshas, porutham,
+    AshtaKoota, Avakahada, KootaRules, Kuja, KujaNative, KujaRules, MarriageDosha, MatchRole,
+    Native, Porutham, PoruthamRules, ashta_koota, avakahada, kuja, marriage_doshas, porutham,
 };
 use teistro_serial::Document;
 
@@ -287,6 +287,23 @@ fn longitude(foundation: &ChartFoundation, graha: Graha, role: &str) -> Result<f
             Error::invalid_arg(format!("the {role}'s chart does not place {graha:?}"))
                 .with_field(role)
         })
+}
+
+/// A chart's avakahada: its Moon read as one native (C301), refused on a
+/// tropical chart, where a nakshatra means nothing.
+pub(crate) fn avakahada_of(foundation: &ChartFoundation) -> Result<Avakahada, Error> {
+    const FIELD: &str = "avakahada";
+    if !foundation.zodiac.is_sidereal() {
+        return Err(Error::invalid_arg(
+            "the chart is founded in the tropical zodiac, where a nakshatra means nothing",
+        )
+        .with_field(FIELD)
+        .with_hint("found it under a sidereal profile, such as the default"));
+    }
+    let moon = longitude(foundation, Graha::Moon, FIELD)?;
+    Native::of_moon(moon)
+        .and_then(avakahada)
+        .map_err(|error| error.under(FIELD))
 }
 
 /// A chart's Moon as matching reads it, refused by the role it was given.

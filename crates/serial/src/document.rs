@@ -18,6 +18,7 @@ use teistro_dasha::DashaReading;
 use teistro_dasha::jaimini::JaiminiReading;
 use teistro_geometry::Drawing;
 use teistro_houses::Houses;
+use teistro_matching::Avakahada;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
@@ -82,6 +83,11 @@ pub struct Document {
     /// the rule found none (`03-design/jaimini-significators.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub jaimini: Option<JaiminiReading>,
+    /// The janma-patrika's summary of the Moon: its star and pada, the
+    /// syllable the child is named by, and the readings a koota takes of
+    /// one native (`03-design/matching.md`, C301).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub avakahada: Option<Avakahada>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -114,6 +120,7 @@ impl Document {
             vaiseshikamsa: None,
             dasha_phala: None,
             jaimini: None,
+            avakahada: None,
             shadbala: None,
             bhava_bala: None,
             drawings: Vec::new(),
@@ -188,6 +195,13 @@ impl Document {
     #[must_use]
     pub fn with_jaimini(mut self, jaimini: JaiminiReading) -> Document {
         self.jaimini = Some(jaimini);
+        self
+    }
+
+    /// With the Moon's avakahada.
+    #[must_use]
+    pub fn with_avakahada(mut self, avakahada: Avakahada) -> Document {
+        self.avakahada = Some(avakahada);
         self
     }
 
