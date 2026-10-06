@@ -995,7 +995,7 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// `nature` are both catalogued and neither is named anywhere. A kind that
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
-const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 13] = [
+const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 14] = [
     (
         "PANCHANGA",
         &["panchanga", "phala"],
@@ -1132,6 +1132,19 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 13] = [
         the nine, so the sentence has no word to put in. The wheel waits \
         on the same names (`western-outer-planets.md` step 5)",
         &["graha"],
+    ),
+    (
+        "AVAKAHADA",
+        &[],
+        "\
+        the Moon's nakshatra and pada, its sign and both lords, the \
+        varna, yoni, gana and nadi, and the syllable the child is named \
+        by. Every member a sentence would put in is **named** already, \
+        and the syllable is its own text in both scripts, so what is \
+        missing is the sentence, in every locale, and a janma-patrika's \
+        wording wants a vetted text rather than one drafted here \
+        (`matching.md`, C301)",
+        &[],
     ),
 ];
 
