@@ -91,6 +91,14 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             number(pindayu),
         );
         put(report, &format!("chart-{index}-rules-rays"), number(rays));
+        // The span v. 33 names, by the key every binding reads, or nothing.
+        let span = reading
+            .longevity
+            .as_ref()
+            .and_then(|longevity| serde_json::to_value(longevity.choice.ayus).ok())
+            .and_then(|key| key.as_str().map(str::to_owned))
+            .unwrap_or_default();
+        put(report, &format!("chart-{index}-rules-span"), span);
     }
 }
 

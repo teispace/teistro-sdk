@@ -1,6 +1,7 @@
 # The remaining spans of life (*Jataka Parijata* ch. 5)
 
-Status: Rasmi `decided` and built, 2026-10-07; the rest `research`. The
+Status: Rasmi and v. 33's choice `decided` and built, 2026-10-07; the
+rest `research`. The
 three spans BPHS and *Jataka Parijata* share (Pindayu, Nisargayu,
 Amsayu) are built (`rules-engine.md`), and are read as the book reads
 them under `AyurdayaRules::PARIJATA` (C302 to C304). This page records
@@ -115,7 +116,16 @@ readings of the figure decide the rest:
 
 1. ~~Rasmi: the rays with the note's figure, and Rasmijayus with v. 23's.~~
    Built (C305 to C307).
-2. v. 33's choice, reported as which body is strongest and the span it
-   names, never a single verdict, as v. 28 and BPHS's choice are.
+2. ~~v. 33's choice, reported as which body is strongest and the span it
+   names, never a single verdict, as v. 28 and BPHS's choice are.~~
+   Built (C308): `longevity.choice` weighs the seven grahas' Shadbala and
+   the lagna's Bhava bala, both in rupas, and reports every candidate,
+   the strongest, the span it names and its years where computed. Over
+   the corpus's 53 charts it names Amsa 12 times, Rasmi 10, Pinda,
+   Nisarga and Nakshatra 7 each, Samudaya 6, Kalachakra 3 and
+   Bhinnashtakavarga once: 17 charts name a span not yet computed.
+   **Found:** a longevity request asked for no Shadbala unless a rule in
+   the set read strength, so the visible half's "strongest of several"
+   compared nothing and every one of the several lost; it now asks.
 3. Dasayus over the dashas the SDK already computes.
 4. Chakrayus, once ch. 17's Kalachakra years are read.

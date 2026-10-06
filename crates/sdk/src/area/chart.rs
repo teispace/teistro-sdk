@@ -78,6 +78,7 @@ use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
+use teistro_rules::longevity::span_choice;
 
 /// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
 /// a chart whose lagna is `lagna`, with its arudha lagna counted to each
@@ -399,8 +400,18 @@ impl<'a> ChartArea<'a> {
         request: &ChartRequest,
         set: &'r RuleSet,
     ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
-        let asked = request.clone().rule_inputs(set.rules(), true);
-        let (documents, provenance, unreadable) = match self.read(instants, &asked) {
+        // The longevity readings weigh strengths: the visible half's
+        // strongest of several, and v. 33's strongest of the seven and the
+        // lagna, whose strength is its bhava's.
+        let inputs = |points: bool| {
+            let asked = request.clone().rule_inputs(set.rules(), points);
+            if set.longevity() {
+                asked.with_shadbala().with_bhava_bala()
+            } else {
+                asked
+            }
+        };
+        let (documents, provenance, unreadable) = match self.read(instants, &inputs(true)) {
             Ok(read) => (read.value, read.provenance, false),
             // Only the points a rule named, never ones the caller asked for.
             Err(error)
@@ -409,8 +420,7 @@ impl<'a> ChartArea<'a> {
                         .field()
                         .is_some_and(|field| field.starts_with("points")) =>
             {
-                let without = request.clone().rule_inputs(set.rules(), false);
-                let read = self.read(instants, &without)?;
+                let read = self.read(instants, &inputs(false))?;
                 (read.value, read.provenance, true)
             }
             Err(error) => return Err(error),
@@ -433,11 +443,27 @@ impl<'a> ChartArea<'a> {
                 })
                 .collect();
             let houses = set.houses().then(|| evaluator.house_readings(set.rules()));
-            let longevity = set.longevity_rules().map(|rules| Longevity {
-                three_pairs: evaluator.three_pairs(rules.three_pairs),
-                ayurdaya: evaluator.ayurdaya(rules.ayurdaya),
-                rasmi: evaluator.rasmi(rules.rasmi),
-                marakas: evaluator.marakas(),
+            let longevity = set.longevity_rules().map(|rules| {
+                let ayurdaya = evaluator.ayurdaya(rules.ayurdaya);
+                let rasmi = evaluator.rasmi(rules.rasmi);
+                // Bhava bala in rupas, the unit of the grahas' Shadbala.
+                let lagna = document
+                    .bhava_bala
+                    .as_ref()
+                    .and_then(|bala| bala.bhavas.first())
+                    .map(|first| first.virupas / 60.0);
+                Longevity {
+                    three_pairs: evaluator.three_pairs(rules.three_pairs),
+                    choice: span_choice(
+                        &evaluator.strengths(),
+                        lagna,
+                        Some(&ayurdaya),
+                        Some(&rasmi),
+                    ),
+                    ayurdaya,
+                    rasmi,
+                    marakas: evaluator.marakas(),
+                }
             });
             let reading = RulesReading {
                 present,

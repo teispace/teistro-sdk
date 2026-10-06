@@ -913,6 +913,10 @@ void main() {
       'chart-$i-rules-rays',
       (longevity['rasmi']! as Map<String, Object?>)['total'],
     );
+    put(
+      'chart-$i-rules-span',
+      (longevity['choice']! as Map<String, Object?>)['ayus'] ?? '',
+    );
     // **Every item said**, not merely counted: the only place the four
     // bindings are compared on text, which exercises the composers, the
     // params shape and the locale engine at once.

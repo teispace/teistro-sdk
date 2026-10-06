@@ -1020,6 +1020,10 @@ class AnEngine(WithLibrary):
         verse = found({"longevity": True, "rasmi": verse_rules})
         assert verse is not None
         self.assertEqual(verse["longevity"]["rasmi"]["rules"], {"place": "sign"})
+        # v. 33: eight candidates, the lagna weighed by its Bhava bala.
+        choice = answered["longevity"]["choice"]
+        self.assertEqual(len(choice["candidates"]), 8)
+        self.assertIs(choice["all_weighed"], True)
         with self.assertRaises(TeistroError) as unread:
             found({"rasmi": verse_rules})
         self.assertEqual(unread.exception.field, "rules.rasmi")

@@ -2157,6 +2157,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The span the strongest names** (`ayurdaya-spans.md`, C308). The
+  longevity readings gain `choice`, *Jataka Parijata* ch. 5 v. 33: the
+  seven grahas' Shadbala and the lagna's Bhava bala in rupas, each with
+  the span it names and that span's years where computed, the strongest
+  and its span; a tie names none. **Numbers:** a longevity request now
+  asks for the Shadbala and Bhava bala it weighs, which it did only when
+  a rule in the set read strength. Without them the visible half's
+  "strongest of several" compared nothing and every one of the several
+  lost. On the corpus, asked without a strength-reading rule, 40 of the
+  51 charts read move: Pindayu by −7.95 to +22.35 years, Nisargayu by
+  −7.95 to +29.2, Amsayu by up to +9.67 on 23 of them.
 - **The rays, Rasmi** (`ayurdaya-spans.md`, C305 to C307). The longevity
   readings gain `rasmi`: each graha's rays and Rasmija years by *Jataka
   Parijata* ch. 5 vv. 22 to 25, the rays' total and its class by
