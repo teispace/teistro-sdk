@@ -1,6 +1,7 @@
 # Matching: the Ashta Koota and the ten considerations (the `matching` module)
 
-Status: the Ashta Koota and the ten considerations `built`, 2026-10-04.
+Status: the Ashta Koota and the ten considerations `built`, 2026-10-04;
+naam milan `built` in the kernel and the SDK, 2026-10-06.
 Written from the sources before any code. `sdk.chart().matching`
 answers two charts' Ashta Koota and `sdk.chart().porutham` their ten
 considerations; `matching_with` matches a batch against one partner's
@@ -242,6 +243,57 @@ the chapter's, then the bride's side before the groom's.
 list carries none; the baseline engine's 0 to 100 is its own. A
 consumer that ranks doshas does so over the entries' stated facts.
 
+## Naam milan, decided
+
+**The syllables are a rule** (C291). *Muhurta Chintamani*'s nāmakarma
+commentary (1954 print, p. 173, leaf n185) quotes Jyotisharka's
+śatapada cakra, four syllables to each of 28 stars from Ashvini, Abhijit
+among them. *Narapati Jayacharya Svarodaya*'s śatapada cakra vv. 1–8
+(1946 Khemraj print, pp. 73–74, leaf n83 read on the image) builds it: the twenty letters a v k h ḍ,
+m ṭ p r t, n y bh j kh, g s d c l, each with the five vowels a i u e o,
+read in order from Krittika four to a star, the cells ku, pu, bhu and du
+each followed by three letters (gha ṅa cha, ṣa ṇa ṭha, dha pha ḍha,
+tha jha ña): 100 + 12 = 112. The rule reproduces the printed table cell
+for cell once vowel length is folded, and the 112 stay distinct folded
+(measured), so the kernel encodes the rule and a test holds it to the
+printed rows. The baseline engine's table drops Abhijit's row.
+
+**Abhijit** (C292). A name whose syllable is ju, je, jo or kha is
+answered as Abhijit's, with its quarter. A koota needs one of the 108
+padas, which Abhijit is not; a knob places it in Uttarashadha's 4th pada
+or Shravana's 1st (Abhijit spans 276°40′ to 280°53′20″, across both),
+and without the knob the match is refused, naming it.
+
+**A name's first syllable** (C293). The verse reads the name's first
+letter. Its first akshara is read in Devanagari, or in IAST when the
+caller declares it; a Latin spelling is never guessed, since English
+"ch" is च and IAST's ch is छ (Revati against Ardra). A conjunct is read
+by its first consonant with the cluster's vowel, as the Jayalakshmī ṭīkā
+on the mātrā-svara cakra reads *yajñadatta*; vowel length is folded; ṛ
+is read as i, as the ṭīkā reads *kṛṣṇa*; a nukta's letter is read as its
+base. Ai, au, ḷ and the borrowed vowels are refused, naming the letter,
+and a caller who knows the star founds the native with
+`Native::of_pada`.
+
+**Letters the cakra lacks** (C294). It has no b and no ś. *Svarodaya*'s
+sarvatobhadra v. 22 (p. 58) makes ba and va, śa and sa, ṣa and kha, ṅa
+and ña stand for each other; the two gaps are filled by it, b as v and
+ś as s, and a letter the cakra carries is read as itself.
+
+**The varga koota** (C295). *Muhurta Chintamani* VI.35 (p. 265), "approved in the east":
+the vargas of a, ka, ca, ṭa, ta, pa, ya and śa are Garuda, cat, lion,
+dog, serpent, rat, deer and sheep, and the 5th from one's own is its
+enemy. Each side's varga is read from the name's own first letter
+(ś in the śa varga, b in the pa varga, no substitution), and the koota
+reports both vargas and whether they are one, enemies, or neither; no
+points.
+
+**Name to name** (C296). Vasishtha, quoted under VI.36: for an unknown
+birth the name's star stands in for it, and birth star is matched with
+birth star, name star with name star. Naam milan takes two names and
+reads the Ashta Koota and the ten considerations from both name stars;
+a name against a birth chart is not offered.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
@@ -256,6 +308,13 @@ consumer that ranks doshas does so over the entries' stated facts.
   `marriage_doshas(&AshtaKoota, &Porutham, &Kuja) -> Vec<MarriageDosha>`
   gathers them, each `{ system, koota, side, lifted }`; `MatchRole`
   lives here, since the list names a side.
+  `name_syllable(name, NameRules) -> NameSyllable { cell, nakshatra,
+  quarter, varga }` reads a name, `nakshatra` `None` for Abhijit;
+  `NameSyllable::native(AbhijitPada)` and `Native::of_pada` found the
+  native a koota reads; `naam_milan(bride, groom, NaamRules) ->
+  NaamMilan { bride, groom, varga, ashta, porutham }` matches two names,
+  `varga_koota` two vargas. `NameRules` holds `latin` (`REFUSE` or
+  `IAST`) and `abhijit` (`REFUSE`, `UTTARA_ASHADHA` or `SHRAVANA`).
 - `sdk.chart().matching(&bride, &groom, KootaRules)`,
   `sdk.chart().porutham(&bride, &groom, PoruthamRules)` and
   `sdk.chart().kuja(&bride, &groom, KujaRules)` on two founded charts.
