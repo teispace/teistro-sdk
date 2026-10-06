@@ -1322,10 +1322,10 @@ def main() -> None:
             doshas = chart.marriage_doshas
             assert doshas is not None
             put(f"chart-{i}-doshas", str(len(doshas)))
-            for at, dosha in enumerate(doshas):
+            for n, dosha in enumerate(doshas):
                 named = "NONE" if dosha.koota is None else dosha.koota.full_key
                 carrier = "NONE" if dosha.side is None else dosha.side.key
-                put(f"chart-{i}-dosha-{at}", f"{dosha.system.key} {named} {carrier} {int(dosha.lifted)}")
+                put(f"chart-{i}-dosha-{n}", f"{dosha.system.key} {named} {carrier} {int(dosha.lifted)}")
             fifth = chart.harmonic
             assert fifth is not None
             put(f"chart-{i}-harmonic", f"{fifth.harmonic} {len(fifth.points)} {len(fifth.rows)}")
