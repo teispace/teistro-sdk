@@ -2157,6 +2157,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The avakahada** (`matching.md`, C297 to C301). A chart asked with
+  `with_avakahada` (Node `avakahada: true`, Python `avakahada=True`,
+  Dart `avakahada: true`, C `TS_CHART_AVAKAHADA`) carries the Moon's
+  avakahada. That is its nakshatra and pada, the sign, both lords, and
+  the varna, yoni, gana and nadi, each the reading the Ashta Koota
+  takes of the same Moon. It also carries the syllable the child is
+  named by: the birth pada's own cell in the śatapada cakra, since
+  *Muhurta Chintamani*'s nāmakarma commentary names a child by it.
+  That syllable is spelled as p. 173 prints it and in IAST.
+  `birth_syllable(nakshatra, pada)` answers it alone. A tropical chart
+  refuses the avakahada. Vashya's groups, paya, disha and tatwa are
+  not shipped, since no rank 1 text gives them. **Numbers:** the
+  catalogue's pada syllables (`nakshatra.yaml` `padas`) now spell the
+  page. 13 of the 108 changed from the baseline engine's copy: nine
+  vowels lengthened and four pillars.
 - **Naam milan in every binding** (`matching.md`, C291 to C296).
   `sdk.matching.naam(bride, groom, rules)` is a new area in Node,
   Python, Dart and Rust, since a match of two names reads no sky.

@@ -385,6 +385,20 @@ of its own.
   read. Every binding reads `chart.matching`, `chart.porutham`,
   `chart.kuja` and `chart.marriageDoshas`, with parity across the five
   runners.
+- The avakahada is a chart field, asked by name:
+  `avakahada(Native) -> Avakahada { nakshatra, pada, rashi,
+  nakshatra_lord, rashi_lord, varna, yoni, gana, nadi, syllable }` in
+  `crates/matching`, with `birth_syllable(nakshatra, pada) ->
+  BirthSyllable { cell, devanagari, iast, varga }` reading the pada's
+  own cell. `ChartRequest::with_avakahada` fills `Document::avakahada`.
+  `with_everything` leaves it out, as it leaves out the Sthira dasa,
+  since a tropical chart refuses it under the field `avakahada`. At the
+  boundary the bit is `TS_CHART_AVAKAHADA`. The section `avakahada`
+  holds a row a chart, every reading a catalogue member, with the
+  syllable's `cell` and `varga`. `avakahada_syllables` carries the text,
+  as canonical JSON `[devanagari, iast]` a row. Every binding reads
+  `chart.avakahada`, and each binding's test reads the syllable back as
+  a name, in both scripts, to the Moon's own star and pada.
 - Naam milan reads no sky, so it is not a chart field: it is
   `sdk.matching().naam(bride, groom, NaamRules)`, an area of its own in
   every binding (`surface-areas.md`). At the boundary,
