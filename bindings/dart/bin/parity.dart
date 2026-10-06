@@ -903,12 +903,15 @@ void main() {
           .map((held) => (held! as Map<String, Object?>)['rule'])
           .join(','),
     );
-    final ayurdaya =
-        (answered['longevity']! as Map<String, Object?>)['ayurdaya']!
-            as Map<String, Object?>;
+    final longevity = answered['longevity']! as Map<String, Object?>;
+    final ayurdaya = longevity['ayurdaya']! as Map<String, Object?>;
     put(
       'chart-$i-rules-pindayu',
       (ayurdaya['pindayu']! as Map<String, Object?>)['years'],
+    );
+    put(
+      'chart-$i-rules-rays',
+      (longevity['rasmi']! as Map<String, Object?>)['total'],
     );
     // **Every item said**, not merely counted: the only place the four
     // bindings are compared on text, which exercises the composers, the

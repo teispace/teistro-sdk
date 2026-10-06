@@ -55,6 +55,7 @@ from teistro import (
     PlanRequest,
     Plans,
     AyurdayaRules,
+    RasmiRules,
     RuleRequest,
     RulesReading,
     Theme,
@@ -1009,6 +1010,19 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as unread:
             found({"ayurdaya": parijata})
         self.assertEqual(unread.exception.field, "rules.ayurdaya")
+        # The rays, the note's by default, and as the verses read them.
+        rays = answered["longevity"]["rasmi"]
+        self.assertEqual(len(rays["grahas"]), 7)
+        self.assertEqual(rays["rules"], {"place": "dwadasamsa"})
+        self.assertIn(rays["class"], ("short", "medium", "long"))
+        self.assertGreaterEqual(rays["grahas"][0]["basic_years"], rays["grahas"][0]["basic"])
+        verse_rules: RasmiRules = {"place": "sign"}
+        verse = found({"longevity": True, "rasmi": verse_rules})
+        assert verse is not None
+        self.assertEqual(verse["longevity"]["rasmi"]["rules"], {"place": "sign"})
+        with self.assertRaises(TeistroError) as unread:
+            found({"rasmi": verse_rules})
+        self.assertEqual(unread.exception.field, "rules.rasmi")
 
         mine = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
                 "conditions": [{"type": "rule", "key": present[0]["rule"]}]}

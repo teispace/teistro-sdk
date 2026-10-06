@@ -301,11 +301,16 @@ pub fn full_years(method: Method, graha: Graha) -> Option<f64> {
 /// ```
 #[must_use]
 pub fn by_exaltation(graha: Graha, longitude: f64, full: f64) -> Option<f64> {
-    let exaltation = graha.attributes().exaltation?;
-    let point = f64::from(exaltation.sign as u8) * 30.0 + f64::from(exaltation.degree);
+    let point = deep_exaltation(graha)?;
     let arc = (point - longitude).rem_euclid(360.0);
     let arc = if arc < 180.0 { 360.0 - arc } else { arc };
     Some(full * arc / 360.0)
+}
+
+/// A graha's point of deep exaltation as a longitude, or none for a node.
+pub(super) fn deep_exaltation(graha: Graha) -> Option<f64> {
+    let exaltation = graha.attributes().exaltation?;
+    Some(f64::from(exaltation.sign as u8) * 30.0 + f64::from(exaltation.degree))
 }
 
 /// The years a longitude gives in Amsayu (vv. 18 to 19): a year a navamsha

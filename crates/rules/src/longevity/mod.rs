@@ -10,6 +10,7 @@
 mod ayurdaya;
 mod maraka;
 mod pairs;
+mod rasmi;
 
 pub use ayurdaya::{
     Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
@@ -19,4 +20,7 @@ pub use maraka::{Brings, Marakas, Presentation, Reason, Reasons, Vulnerability, 
 pub use pairs::{
     Basis, Decided, Pair, PairReading, Rectification, SaturnAmongThem, Shift, ThreePairs,
     ThreePairsRules, class_of, rectify, years_of,
+};
+pub use rasmi::{
+    Facing, GrahaRays, Rasmi, RasmiRules, RayPlace, class_of_rays, dwadasamsa_of, rays_by_distance,
 };

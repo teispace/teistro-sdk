@@ -995,8 +995,18 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   const chosen = ctx.chart.found({ ...request, rules: { longevity: true, ayurdaya: parijata, threePairs: { saturn: 'raises' } } })
     .rules.longevity.ayurdaya.rules;
   assert.deepEqual([chosen.enemy_exempt, chosen.enmity, chosen.rising, chosen.combine], ['mars', 'compound', 'every', 'largest']);
+  // The rays, the note's by default, and as the verses read them.
+  const rays = answered.longevity.rasmi;
+  assert.equal(rays.grahas.length, 7);
+  assert.deepEqual(rays.rules, { place: 'dwadasamsa' });
+  assert.ok(['short', 'medium', 'long'].includes(rays.class), rays.class);
+  assert.ok(rays.grahas[0].basic_years >= rays.grahas[0].basic, 'years keep half at debilitation');
+  const verse = ctx.chart.found({ ...request, rules: { longevity: true, rasmi: { place: 'sign' } } })
+    .rules.longevity.rasmi;
+  assert.deepEqual(verse.rules, { place: 'sign' });
   for (const [rules, field] of [
     [{ ayurdaya: parijata }, 'rules.ayurdaya'],
+    [{ rasmi: { place: 'sign' } }, 'rules.rasmi'],
     [{ longevity: true, ayurdaya: { enmity: 'temporary' } }, 'rules.ayurdaya.enmity'],
   ]) {
     assert.throws(

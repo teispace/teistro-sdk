@@ -82,15 +82,15 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             &format!("chart-{index}-rules-present"),
             keys.join(","),
         );
-        let pindayu = reading
-            .longevity
-            .as_ref()
-            .map_or(0.0, |longevity| longevity.ayurdaya.pindayu.years);
+        let (pindayu, rays) = reading.longevity.as_ref().map_or((0.0, 0.0), |longevity| {
+            (longevity.ayurdaya.pindayu.years, longevity.rasmi.total)
+        });
         put(
             report,
             &format!("chart-{index}-rules-pindayu"),
             number(pindayu),
         );
+        put(report, &format!("chart-{index}-rules-rays"), number(rays));
     }
 }
 

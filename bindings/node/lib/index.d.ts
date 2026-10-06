@@ -3317,12 +3317,14 @@ export interface RuleRequest {
   readonly readings?: 'TEXTS' | 'RECORDING_ENGINE';
   /** Whether to add the twelve house readings. */
   readonly houses?: boolean;
-  /** Whether to add the three pairs, the three spans and the marakas. */
+  /** Whether to add the three pairs, the three spans, the rays and the marakas. */
   readonly longevity?: boolean;
   /** How the three spans are read, when `longevity` asks; BPHS's by default. */
   readonly ayurdaya?: AyurdayaRules;
   /** How the three pairs are read, when `longevity` asks; the verses' by default. */
   readonly threePairs?: ThreePairsRules;
+  /** How the rays are read, when `longevity` asks; the translator's note's by default. */
+  readonly rasmi?: RasmiRules;
 }
 
 /**
@@ -3359,6 +3361,20 @@ export interface ThreePairsRules {
   readonly basis?: 'class-years' | 'per-pair';
   /** Whether Saturn among the contributors lowers the class or raises it. */
   readonly saturn?: 'lowers' | 'raises';
+}
+
+/**
+ * How the seven grahas' rays and Rasmija years are read (*Jataka Parijata* ch. 5 vv. 22 to 25,
+ * cruxes C305 to C307); every field optional, the translator's note's
+ * readings by default, whose figure the SDK reproduces.
+ *
+ * @example
+ * // As v. 24 reads them: the place by the sign.
+ * const rules: RuleRequest = { longevity: true, rasmi: { place: 'sign' } };
+ */
+export interface RasmiRules {
+  /** Which place doubles them or takes a share: the dwadasamsa, or the sign. */
+  readonly place?: 'dwadasamsa' | 'sign';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

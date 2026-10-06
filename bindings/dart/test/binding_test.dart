@@ -825,6 +825,30 @@ void _engineTests() {
         ),
       ),
     );
+    // The rays, the note's by default, and as the verses read them.
+    final rays = longevity['rasmi']! as Map<String, Object?>;
+    expect(rays['grahas'], hasLength(7));
+    expect(rays['rules'], {'place': 'dwadasamsa'});
+    expect(['short', 'medium', 'long'], contains(rays['class']));
+    final sun =
+        (rays['grahas']! as List<Object?>).first! as Map<String, Object?>;
+    expect(
+      sun['basic_years']! as num,
+      greaterThanOrEqualTo(sun['basic']! as num),
+    );
+    final verse =
+        (found(
+                  const RuleRequest(longevity: true, rasmi: RasmiRules.verse),
+                )!['longevity']!
+                as Map<String, Object?>)['rasmi']!
+            as Map<String, Object?>;
+    expect(verse['rules'], {'place': 'sign'});
+    expect(
+      () => found(const RuleRequest(rasmi: RasmiRules.verse)),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'rules.rasmi'),
+      ),
+    );
 
     final first = (present.first! as Map<String, Object?>)['rule']! as String;
     final withMine =

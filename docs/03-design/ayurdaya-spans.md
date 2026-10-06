@@ -1,11 +1,11 @@
 # The remaining spans of life (*Jataka Parijata* ch. 5)
 
-Status: `research`, 2026-10-07. Nothing here is built yet. The three
-spans BPHS and *Jataka Parijata* share (Pindayu, Nisargayu, Amsayu) are
-built (`rules-engine.md`), and are read as the book reads them under
-`AyurdayaRules::PARIJATA` (C302 to C304). This page records what the
-chapter gives beyond them, and the worked figures each must be held to
-before code.
+Status: Rasmi `decided` and built, 2026-10-07; the rest `research`. The
+three spans BPHS and *Jataka Parijata* share (Pindayu, Nisargayu,
+Amsayu) are built (`rules-engine.md`), and are read as the book reads
+them under `AyurdayaRules::PARIJATA` (C302 to C304). This page records
+what the chapter gives beyond them, and the worked figures each must be
+held to before code.
 
 ## The source
 
@@ -54,7 +54,7 @@ Jataka*, as the chapter's first note says.
   Samudaya (ashtakavarga) and Amsa respectively.
 - **v. 34**: years of 360 days × 360/365 are solar years.
 
-## The Rasmi crux, to decide before code
+## The Rasmi crux
 
 The chapter scales rays two ways on facing pages.
 
@@ -86,14 +86,35 @@ The chapter scales rays two ways on facing pages.
 
 The two scales answer different questions. The note counts **rays**,
 which grade a life by bands; v. 23 counts **Rasmijayus years**, which
-sum like Pindayu. The proposal to decide on this page is that both
-ship, each held to its own figure: the rays with their dwadasamsa
-modifications and the bands as clauses, and Rasmijayus with v. 24's
-doublings. Neither is to be read as the other.
+sum like Pindayu. Neither is to be read as the other.
+
+**Decided (C305 to C307) and built.** `Evaluator::rasmi(RasmiRules)`
+reports every graha's `rays` (nothing at debilitation) and `years`
+(half there), the same doubling and shares applied to both, the rays'
+`total` with its `class` by Jatakadesa's bands, and the years' sum. A
+rule request carries it in `longevity.rasmi`, and `rasmi.place` picks
+the dwadasamsa (default) or the sign (`RasmiRules::VERSE`). Three
+readings of the figure decide the rest:
+
+- **Only a great friend doubles.** The note writes "a friendly planet",
+  but calls the Sun's Gemini dwadasamsa "a neutral planet's" though
+  Mercury, twelfth from him, is a compound friend, and Venus's
+  Capricorn dwadasamsa "a very friendly planet's". v. 24 says "a very
+  friendly house". Enmity is compound too: the Moon loses a sixteenth
+  in Jupiter's Sagittarius, Jupiter being neutral to her by nature and
+  eighth from her.
+- **The book's own slips.** Its table prints Jupiter at 6s 25° 13′ 23″
+  and its working at 6s 25° 43′ 23″, whose rays it gives; and it works
+  Mars's .132537 / 6 × 5 as .1103475 for .110448. With the working's
+  Jupiter, every ray reproduces to the fourth place the book truncates
+  to, Mars's to the product, and the total is 31.3234 for 31.3232.
+- **Not read:** the eighth lost "when the retrograde motion of a planet
+  is about to cease", which needs a speed a rule chart does not carry.
 
 ## Order of work
 
-1. Rasmi: the rays with the note's figure, and Rasmijayus with v. 23's.
+1. ~~Rasmi: the rays with the note's figure, and Rasmijayus with v. 23's.~~
+   Built (C305 to C307).
 2. v. 33's choice, reported as which body is strongest and the span it
    names, never a single verdict, as v. 28 and BPHS's choice are.
 3. Dasayus over the dashas the SDK already computes.

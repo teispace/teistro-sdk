@@ -379,6 +379,7 @@ __all__ = [
     "Plans",
     "RuleRequest",
     "AyurdayaRules",
+    "RasmiRules",
     "ThreePairsRules",
     "RulesReading",
     "ShippedRules",
@@ -7542,12 +7543,23 @@ class ThreePairsRules(TypedDict, total=False):
     saturn: Literal["lowers", "raises"]
 
 
+class RasmiRules(TypedDict, total=False):
+    """How the seven grahas' rays and Rasmija years are read (*Jataka Parijata* ch. 5 vv. 22
+    to 25, cruxes C305 to C307); every field optional, the translator's
+    note's readings by default.
+
+    >>> verse: RasmiRules = {"place": "sign"}
+    """
+
+    place: Literal["dwadasamsa", "sign"]
+
+
 class RuleRequest(TypedDict, total=False):
     """The rules a request asks a chart to answer
     (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
-    consumer's own rules in the SDK's rule format. `ayurdaya` and
-    `threePairs` choose how the longevity readings are read, and are
-    refused without `longevity`."""
+    consumer's own rules in the SDK's rule format. `ayurdaya`,
+    `threePairs` and `rasmi` choose how the longevity readings are read,
+    and are refused without `longevity`."""
 
     shipped: List[ShippedRules]
     rules: List[Mapping[str, Any]]
@@ -7556,6 +7568,7 @@ class RuleRequest(TypedDict, total=False):
     longevity: bool
     ayurdaya: AyurdayaRules
     threePairs: ThreePairsRules
+    rasmi: RasmiRules
 
 
 class RulesReading(TypedDict, total=False):
