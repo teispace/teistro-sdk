@@ -21,6 +21,7 @@
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
+    "crates/ffi/src/naam.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs"
   ],
@@ -9451,6 +9452,88 @@
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TsNameVarga",
+      "doc": "Which of the eight letter groups a name begins in, by the animal\n*Muhurta Chintamani* VI.35 gives it (C295).\n\nMirrors `teistro::matching::NameVarga` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Garuda",
+          "value": 0,
+          "doc": "The vowels.",
+          "key": "GARUDA"
+        },
+        {
+          "name": "Cat",
+          "value": 1,
+          "doc": "ka kha ga gha ṅa.",
+          "key": "CAT"
+        },
+        {
+          "name": "Lion",
+          "value": 2,
+          "doc": "ca cha ja jha ña.",
+          "key": "LION"
+        },
+        {
+          "name": "Dog",
+          "value": 3,
+          "doc": "ṭa ṭha ḍa ḍha ṇa.",
+          "key": "DOG"
+        },
+        {
+          "name": "Serpent",
+          "value": 4,
+          "doc": "ta tha da dha na.",
+          "key": "SERPENT"
+        },
+        {
+          "name": "Rat",
+          "value": 5,
+          "doc": "pa pha ba bha ma.",
+          "key": "RAT"
+        },
+        {
+          "name": "Deer",
+          "value": 6,
+          "doc": "ya ra la va.",
+          "key": "DEER"
+        },
+        {
+          "name": "Sheep",
+          "value": 7,
+          "doc": "śa ṣa sa ha.",
+          "key": "SHEEP"
+        }
+      ],
+      "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "TsVargaRelation",
+      "doc": "How two names' vargas stand (VI.35).\n\nMirrors `teistro::matching::VargaRelation` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Same",
+          "value": 0,
+          "doc": "One varga.",
+          "key": "SAME"
+        },
+        {
+          "name": "Enemy",
+          "value": 1,
+          "doc": "Each the 5th from the other, eater and eaten.",
+          "key": "ENEMY"
+        },
+        {
+          "name": "Neutral",
+          "value": 2,
+          "doc": "Neither.",
+          "key": "NEUTRAL"
+        }
+      ],
+      "source": "crates/ffi/src/naam.rs"
     }
   ],
   "opaques": [
@@ -15143,6 +15226,59 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_naam_milan",
+      "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or, when `rules.name.latin` is `IAST`, in IAST, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, or an Abhijit syllable while\n`abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or\n`naam.groom`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {
+        "blob": "naam"
+      },
+      "source": "crates/ffi/src/naam.rs"
+    },
+    {
       "name": "ts_ephemeris_manifest",
       "doc": "What the context's engine says it offers beyond this library's own\noperations: its manifest, as the engine wrote it.\n\nThe document names each operation, its parameters and the role of\neach — which of them a caller supplies and which the engine fills.\nRead it once and cache it against the engine's version; it changes\nwhen the engine does and not when this library does.\n\n`CAPABILITY` when the context has no ephemeris, `UNSUPPORTED` when the\nengine describes nothing of its own.",
       "safety": "`context` must be a live handle; `out_json` valid for a write.",
@@ -20629,7 +20765,8 @@
               "scalar": "u8",
               "doc": "1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284)."
             }
-          ]
+          ],
+          "shape": "matchings"
         },
         {
           "id": 112,
@@ -20653,7 +20790,8 @@
               "scalar": "f64",
               "doc": "The most it gives, 1 for Varna to 8 for Nadi."
             }
-          ]
+          ],
+          "shape": "matching_kootas"
         },
         {
           "id": 113,
@@ -20785,7 +20923,8 @@
               "scalar": "u8",
               "doc": "1 when the two nakshatras are a Vedhai pair of p. 76 (C276)."
             }
-          ]
+          ],
+          "shape": "poruthams"
         },
         {
           "id": 114,
@@ -20809,7 +20948,8 @@
               "scalar": "u8",
               "doc": "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277)."
             }
-          ]
+          ],
+          "shape": "porutham_rows"
         },
         {
           "id": 115,
@@ -21914,6 +22054,413 @@
           "doc": "UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them.",
           "kind": "bytes",
           "fields": []
+        }
+      ]
+    },
+    {
+      "name": "naam",
+      "id": 5,
+      "doc": "Two names matched star to star (naam milan): each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations read from the two name stars, in the same sections and shapes a chart's match crosses as.",
+      "sections": [
+        {
+          "id": 1,
+          "name": "naam_names",
+          "doc": "Each name's first syllable, two rows: the bride's, then the groom's.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "cell",
+              "scalar": "u8",
+              "doc": "Its place among the cakra's 112 cells, 0 for a, Krittika's first."
+            },
+            {
+              "name": "nakshatra",
+              "scalar": "u16",
+              "doc": "Its star; read only when `abhijit` is 0.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "abhijit",
+              "scalar": "u8",
+              "doc": "1 when the syllable is Abhijit's, which is none of the 27 (C292)."
+            },
+            {
+              "name": "quarter",
+              "scalar": "u8",
+              "doc": "Which of the star's four syllables, 1 to 4: the pada, for one of the 27."
+            },
+            {
+              "name": "varga",
+              "scalar": "u8",
+              "doc": "The varga of the name's first letter as written (C295).",
+              "enum": "TsNameVarga"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "naam_varga",
+          "doc": "The varga koota of *Muhurta Chintamani* VI.35: how the two names' vargas stand. Never points.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "relation",
+              "scalar": "u8",
+              "doc": "One varga, enemies (each the 5th from the other) or neither.",
+              "enum": "TsVargaRelation"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "matchings",
+          "doc": "The Ashta Koota of the two name stars, as a chart's match reads two Moons. One row: the two names' match.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "total",
+              "scalar": "f64",
+              "doc": "The eight kootas' points, out of 36, a multiple of a half."
+            },
+            {
+              "name": "bride_varna",
+              "scalar": "u16",
+              "doc": "The bride's varna, by her or his Moon's sign (VI.22).",
+              "enum": "Varna"
+            },
+            {
+              "name": "groom_varna",
+              "scalar": "u16",
+              "doc": "The groom's varna, by her or his Moon's sign (VI.22).",
+              "enum": "Varna"
+            },
+            {
+              "name": "vashya",
+              "scalar": "u8",
+              "doc": "How the two Moon signs stand in Vashya (VI.23, C260).",
+              "enum": "TsVashyaRelation"
+            },
+            {
+              "name": "tara_bride_to_groom",
+              "scalar": "u8",
+              "doc": "The tara counted from the bride's nakshatra to the groom's, 1 to 9 (VI.24); the 3rd, 5th and 7th are bad."
+            },
+            {
+              "name": "tara_groom_to_bride",
+              "scalar": "u8",
+              "doc": "The tara counted from the groom's nakshatra to the bride's, 1 to 9."
+            },
+            {
+              "name": "bride_yoni",
+              "scalar": "u16",
+              "doc": "The bride's yoni, by her or his Moon's nakshatra (VI.25–26).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "groom_yoni",
+              "scalar": "u16",
+              "doc": "The groom's yoni, by her or his Moon's nakshatra (VI.25–26).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "yoni",
+              "scalar": "u8",
+              "doc": "How the two yonis stand (C261).",
+              "enum": "TsYoniRelation"
+            },
+            {
+              "name": "bride_lord",
+              "scalar": "u16",
+              "doc": "The lord of the bride's Moon sign (VI.27–28).",
+              "enum": "Graha"
+            },
+            {
+              "name": "groom_lord",
+              "scalar": "u16",
+              "doc": "The lord of the groom's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "maitri",
+              "scalar": "u8",
+              "doc": "How the two lords stand by the natural friendships.",
+              "enum": "TsMaitriRelation"
+            },
+            {
+              "name": "maitri_lifted",
+              "scalar": "u8",
+              "doc": "1 when the lords' enmity is lifted by a good Bhakoot (VI.33, C283)."
+            },
+            {
+              "name": "bride_gana",
+              "scalar": "u16",
+              "doc": "The bride's gana, by her or his Moon's nakshatra (VI.29–30).",
+              "enum": "Gana"
+            },
+            {
+              "name": "groom_gana",
+              "scalar": "u16",
+              "doc": "The groom's gana, by her or his Moon's nakshatra (VI.29–30).",
+              "enum": "Gana"
+            },
+            {
+              "name": "gana_dosha",
+              "scalar": "u8",
+              "doc": "1 when a Rakshasa stands beside another gana, the gana dosha."
+            },
+            {
+              "name": "gana_lifted",
+              "scalar": "u8",
+              "doc": "1 when the gana dosha is lifted: the sign lords or the navamsha lords befriended (VI.33), or one sign with two stars or one star across two signs (VI.36, C283)."
+            },
+            {
+              "name": "bhakoot_apart",
+              "scalar": "u8",
+              "doc": "The groom's Moon sign counted from the bride's, 1 to 12 (VI.31)."
+            },
+            {
+              "name": "bhakoot_dosha",
+              "scalar": "u8",
+              "doc": "The bad Bhakoot the two signs stand at, or none.",
+              "enum": "TsBhakootDosha"
+            },
+            {
+              "name": "bhakoot_one_lord",
+              "scalar": "u8",
+              "doc": "1 when one lord rules both signs: the first exception of VI.32–33, reported whether or not there is a dosha."
+            },
+            {
+              "name": "bhakoot_lords_friends",
+              "scalar": "u8",
+              "doc": "1 when the two sign lords are each other's friends."
+            },
+            {
+              "name": "bhakoot_navamsha_lords_friends",
+              "scalar": "u8",
+              "doc": "1 when the lords of the two Moons' navamshas are one or each other's friends."
+            },
+            {
+              "name": "bhakoot_tara_pure",
+              "scalar": "u8",
+              "doc": "1 when the tara is pure both ways."
+            },
+            {
+              "name": "bhakoot_vashya",
+              "scalar": "u8",
+              "doc": "1 when one sign is vashya to the other."
+            },
+            {
+              "name": "bhakoot_lifted",
+              "scalar": "u8",
+              "doc": "1 when the exceptions lift the dosha under the record's `bhakootLift` (C263); 0 with no dosha."
+            },
+            {
+              "name": "bride_nadi",
+              "scalar": "u16",
+              "doc": "The bride's nadi, by her or his Moon's nakshatra (VI.34).",
+              "enum": "Nadi"
+            },
+            {
+              "name": "groom_nadi",
+              "scalar": "u16",
+              "doc": "The groom's nadi, by her or his Moon's nakshatra (VI.34).",
+              "enum": "Nadi"
+            },
+            {
+              "name": "nadi_dosha",
+              "scalar": "u8",
+              "doc": "1 when the shared nadi is a dosha under the record's `nadiDosha` (C264)."
+            },
+            {
+              "name": "nadi_lifted",
+              "scalar": "u8",
+              "doc": "1 when the nadi dosha is lifted by one sign with two stars, one star across two signs, or one star in two padas (VI.36, C284)."
+            }
+          ],
+          "shape": "matchings"
+        },
+        {
+          "id": 4,
+          "name": "matching_kootas",
+          "doc": "The eight kootas' points, in the verse's order.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "koota",
+              "scalar": "u16",
+              "doc": "Which koota.",
+              "enum": "Koota"
+            },
+            {
+              "name": "points",
+              "scalar": "f64",
+              "doc": "Its points, a multiple of a half."
+            },
+            {
+              "name": "max_points",
+              "scalar": "f64",
+              "doc": "The most it gives, 1 for Varna to 8 for Nadi."
+            }
+          ],
+          "shape": "matching_kootas"
+        },
+        {
+          "id": 5,
+          "name": "poruthams",
+          "doc": "The ten considerations of the two name stars. One row: the two names' match.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "agreeing",
+              "scalar": "u8",
+              "doc": "How many of the ten agree, a lift included; the chapter asks \"at least five\" (p. 76)."
+            },
+            {
+              "name": "chief_agreeing",
+              "scalar": "u8",
+              "doc": "How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju."
+            },
+            {
+              "name": "one_lord",
+              "scalar": "u8",
+              "doc": "1 when one lord rules both Moon signs: the p. 76 exception's first clause (C277)."
+            },
+            {
+              "name": "lords_friendly",
+              "scalar": "u8",
+              "doc": "1 when the two sign lords are friendly on the chapter's own table, as the record's `lordsFriendship` reads it (C273)."
+            },
+            {
+              "name": "opposite",
+              "scalar": "u8",
+              "doc": "1 when the two Moon signs are opposite."
+            },
+            {
+              "name": "count",
+              "scalar": "u8",
+              "doc": "The groom's nakshatra counted from the bride's, 1 to 27, which Dhinam, Mahendra and Sthree-Dheergham read."
+            },
+            {
+              "name": "dhinam_rule",
+              "scalar": "u8",
+              "doc": "Which of the chapter's rules decided Dhinam (pp. 69–72).",
+              "enum": "TsDhinamRule"
+            },
+            {
+              "name": "bride_gana",
+              "scalar": "u16",
+              "doc": "The bride's gana, by her or his Moon's nakshatra (p. 72).",
+              "enum": "Gana"
+            },
+            {
+              "name": "groom_gana",
+              "scalar": "u16",
+              "doc": "The groom's gana, by her or his Moon's nakshatra (p. 72).",
+              "enum": "Gana"
+            },
+            {
+              "name": "gana_diminished",
+              "scalar": "u8",
+              "doc": "1 when a Rakshasa stands beside another gana and the bride's star is beyond the 14th from the groom's: the evil \"diminishes\", the disagreement stands (C279)."
+            },
+            {
+              "name": "bride_yoni",
+              "scalar": "u16",
+              "doc": "The bride's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "groom_yoni",
+              "scalar": "u16",
+              "doc": "The groom's yoni on the chapter's own table, Uttarashadha the cow (p. 73, C278).",
+              "enum": "Yoni"
+            },
+            {
+              "name": "yoni_hostile",
+              "scalar": "u8",
+              "doc": "1 when the two yonis are among the chapter's eight enmities."
+            },
+            {
+              "name": "apart",
+              "scalar": "u8",
+              "doc": "The groom's Moon sign counted from the bride's, 1 to 12, which Rasi reads (pp. 73–74)."
+            },
+            {
+              "name": "bride_lord",
+              "scalar": "u16",
+              "doc": "The lord of the bride's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "groom_lord",
+              "scalar": "u16",
+              "doc": "The lord of the groom's Moon sign.",
+              "enum": "Graha"
+            },
+            {
+              "name": "bride_calls_friend",
+              "scalar": "u8",
+              "doc": "1 when the bride's lord calls the groom's a friend on the chapter's own table (pp. 74–75); a lord is its own."
+            },
+            {
+              "name": "groom_calls_friend",
+              "scalar": "u8",
+              "doc": "1 when the groom's lord calls the bride's a friend."
+            },
+            {
+              "name": "bride_to_groom",
+              "scalar": "u8",
+              "doc": "1 when the bride's Moon sign is concordant to the groom's on p. 75's Vasyam table, never a sign to itself (C274)."
+            },
+            {
+              "name": "groom_to_bride",
+              "scalar": "u8",
+              "doc": "1 when the groom's Moon sign is concordant to the bride's."
+            },
+            {
+              "name": "bride_rajju",
+              "scalar": "u8",
+              "doc": "The bride's Rajju division, by her or his Moon's nakshatra (p. 75, C275).",
+              "enum": "TsRajju"
+            },
+            {
+              "name": "groom_rajju",
+              "scalar": "u8",
+              "doc": "The groom's Rajju division, by her or his Moon's nakshatra (p. 75, C275).",
+              "enum": "TsRajju"
+            },
+            {
+              "name": "pierced",
+              "scalar": "u8",
+              "doc": "1 when the two nakshatras are a Vedhai pair of p. 76 (C276)."
+            }
+          ],
+          "shape": "poruthams"
+        },
+        {
+          "id": 6,
+          "name": "porutham_rows",
+          "doc": "The ten considerations, in the chapter's order.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "koota",
+              "scalar": "u16",
+              "doc": "Which consideration, a catalogue koota (C282).",
+              "enum": "Koota"
+            },
+            {
+              "name": "agrees",
+              "scalar": "u8",
+              "doc": "1 when it agrees, a lift included."
+            },
+            {
+              "name": "lifted",
+              "scalar": "u8",
+              "doc": "1 when it agrees only by the p. 76 exception: Ganam, Rasi, Rajju and Vedhai (C277)."
+            }
+          ],
+          "shape": "porutham_rows"
         }
       ]
     }

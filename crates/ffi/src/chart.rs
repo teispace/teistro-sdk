@@ -3171,7 +3171,7 @@ struct DignityColumns {
 /// partner, what every koota read, and each koota's points
 /// (`matching.md`).
 #[derive(Default)]
-struct MatchingColumns {
+pub(crate) struct MatchingColumns {
     total: Vec<f64>,
     bride_varna: Vec<u16>,
     groom_varna: Vec<u16>,
@@ -3209,8 +3209,16 @@ struct MatchingColumns {
 impl MatchingColumns {
     fn of(read: &[teistro::Matched], charts: usize) -> Result<MatchingColumns, Error> {
         one_a_chart(read.len(), charts, "matching")?;
+        MatchingColumns::of_kootas(read.iter().map(|matched| &matched.ashta_koota))
+    }
+
+    /// The columns of any number of Ashta Kootas, a row each: a chart's
+    /// matches or two names' one (`naam.rs`).
+    pub(crate) fn of_kootas<'a>(
+        read: impl IntoIterator<Item = &'a teistro::AshtaKoota>,
+    ) -> Result<MatchingColumns, Error> {
         let mut columns = MatchingColumns::default();
-        for one in read.iter().map(|matched| &matched.ashta_koota) {
+        for one in read {
             // Every column takes one cell a chart only when the eight are
             // read in the verse's order.
             let ordered = one.kootas.len() == teistro::matching::ASHTA_KOOTA.len()
@@ -3316,7 +3324,10 @@ impl MatchingColumns {
         }
     }
 
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+    pub(crate) fn write(
+        &self,
+        writer: &mut Writer<'_>,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
             "matchings",
             self.total.len(),
@@ -3368,7 +3379,7 @@ impl MatchingColumns {
 /// partner by the ten considerations, what each read, and whether each
 /// agrees (`matching.md`).
 #[derive(Default)]
-struct PoruthamColumns {
+pub(crate) struct PoruthamColumns {
     agreeing: Vec<u8>,
     chief_agreeing: Vec<u8>,
     one_lord: Vec<u8>,
@@ -3399,10 +3410,18 @@ struct PoruthamColumns {
 
 impl PoruthamColumns {
     fn of(read: &[teistro::Matched]) -> Result<PoruthamColumns, Error> {
+        PoruthamColumns::of_poruthams(read.iter().map(|matched| &matched.porutham))
+    }
+
+    /// The columns of any number of matches by the ten considerations, a
+    /// row each: a chart's matches or two names' one (`naam.rs`).
+    pub(crate) fn of_poruthams<'a>(
+        read: impl IntoIterator<Item = &'a teistro::Porutham>,
+    ) -> Result<PoruthamColumns, Error> {
         use teistro::PoruthamReading;
 
         let mut columns = PoruthamColumns::default();
-        for one in read.iter().map(|matched| &matched.porutham) {
+        for one in read {
             // As the kootas: one cell a chart only in the chapter's order.
             let ordered = one.considerations.len() == teistro::matching::PORUTHAM.len()
                 && one
@@ -3485,7 +3504,10 @@ impl PoruthamColumns {
         Ok(columns)
     }
 
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+    pub(crate) fn write(
+        &self,
+        writer: &mut Writer<'_>,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
             "poruthams",
             self.agreeing.len(),

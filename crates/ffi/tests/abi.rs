@@ -9099,3 +9099,121 @@ fn a_chart_request_answers_its_matching() {
     assert_eq!(status, Status::InvalidArg);
     assert_eq!(ctx.last_error().2.as_deref(), Some("matching.partnerRole"));
 }
+
+fn naam_blob(ctx: &Ctx, request: &str) -> Result<Vec<u8>, Status> {
+    let request = CString::new(request).unwrap();
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status =
+        unsafe { teistro_ffi::naam::ts_naam_milan(ctx.handle, request.as_ptr(), &raw mut blob) };
+    let bytes = (status == Status::Ok).then(|| {
+        // SAFETY: the library wrote `len` bytes.
+        unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec()
+    });
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_blob_free(&raw mut blob) };
+    bytes.ok_or(status)
+}
+
+/// Two names cross as the kernel reads them, the match in the chart's own
+/// sections, and a refusal is named down to its side.
+#[test]
+fn two_names_cross_as_the_kernel_matches_them() {
+    use teistro_ffi::naam::{TsNameVarga, TsVargaRelation};
+
+    let ctx = Ctx::defaults();
+    let schema = teistro_ffi::schemas::naam();
+    let request =
+        r#"{"bride": "सीता", "groom": "जोशी", "rules": {"name": {"abhijit": "SHRAVANA"}}}"#;
+    let bytes = naam_blob(&ctx, request).unwrap();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let ints = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .unwrap()
+            .into_iter()
+            .map(ScalarValue::as_i64)
+            .collect()
+    };
+    let read = teistro::NaamRequest::from_json(request)
+        .unwrap()
+        .answer()
+        .unwrap();
+    let names = [read.bride, read.groom];
+    for (column, cell) in [
+        (
+            "cell",
+            &(|one: &teistro::NameSyllable| i64::from(one.cell))
+                as &dyn Fn(&teistro::NameSyllable) -> i64,
+        ),
+        ("nakshatra", &|one: &teistro::NameSyllable| {
+            one.nakshatra.map_or(0, |star| i64::from(star.id()))
+        }),
+        ("abhijit", &|one: &teistro::NameSyllable| {
+            i64::from(one.nakshatra.is_none())
+        }),
+        ("quarter", &|one: &teistro::NameSyllable| {
+            i64::from(one.quarter)
+        }),
+        ("varga", &|one: &teistro::NameSyllable| {
+            TsNameVarga::from(one.varga) as i64
+        }),
+    ] {
+        assert_eq!(
+            ints("naam_names", column),
+            names.iter().map(cell).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+    // The groom's syllable is Abhijit's, placed in Shravana's first pada.
+    assert_eq!(ints("naam_names", "abhijit"), [0, 1]);
+    assert_eq!(
+        reader.fixed("naam_varga").unwrap()[0].as_i64(),
+        TsVargaRelation::from(read.varga.relation) as i64
+    );
+    assert_eq!(
+        reader.column("matchings", "total").unwrap()[0].as_f64(),
+        read.ashta.total
+    );
+    assert_eq!(
+        ints("matching_kootas", "koota"),
+        read.ashta
+            .kootas
+            .iter()
+            .map(|row| i64::from(row.reading.koota().id()))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        ints("poruthams", "agreeing"),
+        [i64::from(read.porutham.agreeing)]
+    );
+    assert_eq!(ints("porutham_rows", "agrees").len(), 10);
+
+    // The four match sections share their shapes with a chart's.
+    let charts = teistro_ffi::schemas::charts();
+    for name in ["matchings", "matching_kootas", "poruthams", "porutham_rows"] {
+        let (_, mine) = schema.section(name).unwrap();
+        let (_, chart) = charts.section(name).unwrap();
+        assert_eq!(
+            (mine.shape.as_deref(), chart.shape.as_deref()),
+            (Some(name), Some(name))
+        );
+    }
+
+    // A refusal is named down to the side and the knob.
+    for (request, field) in [
+        (
+            r#"{"bride": "सीता", "groom": "जोशी"}"#,
+            "naam.groom.abhijit",
+        ),
+        (r#"{"bride": "Sita", "groom": "राम"}"#, "naam.bride.name"),
+        (r#"{"bride": "सीता"}"#, "naam"),
+    ] {
+        assert_eq!(
+            naam_blob(&ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}

@@ -25,6 +25,7 @@ mod frame;
 mod interpret;
 mod intl;
 mod keys;
+mod matching;
 mod time;
 
 use teistro_calendar::solar::drik::DrikSun;
@@ -82,4 +83,5 @@ pub use frame::FrameArea;
 pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
+pub use matching::MatchingArea;
 pub use time::TimeArea;

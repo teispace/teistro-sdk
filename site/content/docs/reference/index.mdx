@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 48 entry points over 27 structs and 155 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 49 entry points over 27 structs and 157 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -112,6 +112,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_panchanga_days`](panchanga/ts_panchanga_days) | Founds the almanac of every day in a range at one place and answers with its blob: the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what each day is said to be. |
 
+### Naam
+
+| entry point | what it does |
+|---|---|
+| [`ts_naam_milan`](naam/ts_naam_milan) | Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296). |
+
 ### Ephemeris
 
 | entry point | what it does |
@@ -153,5 +159,6 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/intl.rs`
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
+- `crates/ffi/src/naam.rs`
 - `crates/ffi/src/ephemeris.rs`
 - `crates/ffi/src/provider.rs`

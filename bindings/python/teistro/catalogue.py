@@ -5285,6 +5285,55 @@ class Sunrises(Member):
     """Neither: the member names no day (kshaya)."""
 
 
+class NameVarga(Member):
+    """Which of the eight letter groups a name begins in, by the animal
+    *Muhurta Chintamani* VI.35 gives it (C295).
+
+    Mirrors `teistro::matching::NameVarga` through an **exhaustive** match.
+    """
+
+    GARUDA = 0
+    """The vowels."""
+
+    CAT = 1
+    """ka kha ga gha ṅa."""
+
+    LION = 2
+    """ca cha ja jha ña."""
+
+    DOG = 3
+    """ṭa ṭha ḍa ḍha ṇa."""
+
+    SERPENT = 4
+    """ta tha da dha na."""
+
+    RAT = 5
+    """pa pha ba bha ma."""
+
+    DEER = 6
+    """ya ra la va."""
+
+    SHEEP = 7
+    """śa ṣa sa ha."""
+
+
+class VargaRelation(Member):
+    """How two names' vargas stand (VI.35).
+
+    Mirrors `teistro::matching::VargaRelation` through an **exhaustive**
+    match.
+    """
+
+    SAME = 0
+    """One varga."""
+
+    ENEMY = 1
+    """Each the 5th from the other, eater and eaten."""
+
+    NEUTRAL = 2
+    """Neither."""
+
+
 # The key of every member, by enum and id, and the kind of every
 # catalogued enum. The two bases above read them; nothing else should.
 _KEYS: dict[str, dict[int, str]] = {
@@ -6992,6 +7041,21 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NEXT",
         2: "BOTH",
         3: "NEITHER",
+    },
+    "NameVarga": {
+        0: "GARUDA",
+        1: "CAT",
+        2: "LION",
+        3: "DOG",
+        4: "SERPENT",
+        5: "RAT",
+        6: "DEER",
+        7: "SHEEP",
+    },
+    "VargaRelation": {
+        0: "SAME",
+        1: "ENEMY",
+        2: "NEUTRAL",
     },
 }
 

@@ -632,14 +632,22 @@ fn fortitudes(api: &Api) -> Vec<&'static str> {
 fn matching(api: &Api) -> Vec<&'static str> {
     use teistro::MatchRole;
     use teistro::matching::{
-        BhakootDosha, DhinamRule, DoshaSystem, MaitriRelation, Rajju, VashyaRelation, YoniRelation,
+        BhakootDosha, DhinamRule, DoshaSystem, MaitriRelation, NameVarga, Rajju, VargaRelation,
+        VashyaRelation, YoniRelation,
     };
     use teistro_ffi::chart::{
         TsBhakootDosha, TsDhinamRule, TsDoshaSystem, TsMaitriRelation, TsMatchRole, TsRajju,
         TsVashyaRelation, TsYoniRelation,
     };
+    use teistro_ffi::naam::{TsNameVarga, TsVargaRelation};
     let id = |value: u8| Some(i64::from(value));
     vec![
+        unit(api, "TsNameVarga", |v: &NameVarga| {
+            id(TsNameVarga::from(*v) as u8)
+        }),
+        unit(api, "TsVargaRelation", |r: &VargaRelation| {
+            id(TsVargaRelation::from(*r) as u8)
+        }),
         unit(api, "TsDhinamRule", |r: &DhinamRule| {
             id(TsDhinamRule::from(*r) as u8)
         }),

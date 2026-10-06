@@ -1,0 +1,58 @@
+---
+title: ts_naam_milan
+description: "Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296)."
+---
+
+Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296).
+
+`request_json` is `{"bride", "groom", "rules"}`: the two names, in Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the `NaamRules` with every field optional. A name the cakra does not read, a Latin name while `latin` refuses, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or `naam.groom`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_naam_milan(const ts_context * context, const char * request_json, ts_blob * out_blob);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.naam_milan(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.naamMilan(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_blob` | `ts_blob *` | receives a blob | — |
+
+## What it hands back
+
+`blob`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## The result blob
+
+The call fills a blob following the `naam` schema, which the binding's generated decoder reads. The schema is in `idl/api.json`, and every binding decodes it from the blob's own bytes rather than copying them.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_blob` valid for a write.
+
+Declared in `crates/ffi/src/naam.rs`.
