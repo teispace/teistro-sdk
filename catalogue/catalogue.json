@@ -1079,7 +1079,7 @@
       "kind": "nakshatra",
       "number": 3,
       "version": 1,
-      "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member.",
+      "doc": "The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).",
       "types": {
         "Pada": {
           "akshara": "str",
@@ -1118,19 +1118,19 @@
             "muhurta_nature": "KSHIPRA",
             "padas": [
               {
-                "akshara": "Chu",
-                "devanagari": "चु"
+                "akshara": "cū",
+                "devanagari": "चू"
               },
               {
-                "akshara": "Che",
+                "akshara": "ce",
                 "devanagari": "चे"
               },
               {
-                "akshara": "Cho",
+                "akshara": "co",
                 "devanagari": "चो"
               },
               {
-                "akshara": "La",
+                "akshara": "lā",
                 "devanagari": "ला"
               }
             ]
@@ -1171,19 +1171,19 @@
             "muhurta_nature": "UGRA",
             "padas": [
               {
-                "akshara": "Li",
+                "akshara": "lī",
                 "devanagari": "ली"
               },
               {
-                "akshara": "Lu",
+                "akshara": "lū",
                 "devanagari": "लू"
               },
               {
-                "akshara": "Le",
+                "akshara": "le",
                 "devanagari": "ले"
               },
               {
-                "akshara": "Lo",
+                "akshara": "lo",
                 "devanagari": "लो"
               }
             ]
@@ -1224,19 +1224,19 @@
             "muhurta_nature": "MISHRA",
             "padas": [
               {
-                "akshara": "A",
-                "devanagari": "अ"
+                "akshara": "ā",
+                "devanagari": "आ"
               },
               {
-                "akshara": "Ee",
+                "akshara": "ī",
                 "devanagari": "ई"
               },
               {
-                "akshara": "U",
+                "akshara": "u",
                 "devanagari": "उ"
               },
               {
-                "akshara": "Ea",
+                "akshara": "e",
                 "devanagari": "ए"
               }
             ]
@@ -1277,20 +1277,20 @@
             "muhurta_nature": "DHRUVA",
             "padas": [
               {
-                "akshara": "O",
+                "akshara": "o",
                 "devanagari": "ओ"
               },
               {
-                "akshara": "Va",
+                "akshara": "vā",
                 "devanagari": "वा"
               },
               {
-                "akshara": "Vi",
-                "devanagari": "वि"
+                "akshara": "vī",
+                "devanagari": "वी"
               },
               {
-                "akshara": "Vu",
-                "devanagari": "वु"
+                "akshara": "vū",
+                "devanagari": "वू"
               }
             ]
           },
@@ -1330,19 +1330,19 @@
             "muhurta_nature": "MRIDU",
             "padas": [
               {
-                "akshara": "Ve",
+                "akshara": "ve",
                 "devanagari": "वे"
               },
               {
-                "akshara": "Vo",
+                "akshara": "vo",
                 "devanagari": "वो"
               },
               {
-                "akshara": "Ka",
+                "akshara": "kā",
                 "devanagari": "का"
               },
               {
-                "akshara": "Ki",
+                "akshara": "kī",
                 "devanagari": "की"
               }
             ]
@@ -1383,20 +1383,20 @@
             "muhurta_nature": "TIKSHNA",
             "padas": [
               {
-                "akshara": "Ku",
-                "devanagari": "कु"
+                "akshara": "kū",
+                "devanagari": "कू"
               },
               {
-                "akshara": "Gha",
+                "akshara": "gha",
                 "devanagari": "घ"
               },
               {
-                "akshara": "Ng",
+                "akshara": "ṅa",
                 "devanagari": "ङ"
               },
               {
-                "akshara": "Chha",
-                "devanagari": "छ"
+                "akshara": "chā",
+                "devanagari": "छा"
               }
             ]
           },
@@ -1436,19 +1436,19 @@
             "muhurta_nature": "CHARA",
             "padas": [
               {
-                "akshara": "Ke",
+                "akshara": "ke",
                 "devanagari": "के"
               },
               {
-                "akshara": "Ko",
+                "akshara": "ko",
                 "devanagari": "को"
               },
               {
-                "akshara": "Ha",
+                "akshara": "hā",
                 "devanagari": "हा"
               },
               {
-                "akshara": "Hi",
+                "akshara": "hī",
                 "devanagari": "ही"
               }
             ]
@@ -1489,19 +1489,19 @@
             "muhurta_nature": "KSHIPRA",
             "padas": [
               {
-                "akshara": "Hu",
-                "devanagari": "हु"
+                "akshara": "hū",
+                "devanagari": "हू"
               },
               {
-                "akshara": "He",
+                "akshara": "he",
                 "devanagari": "हे"
               },
               {
-                "akshara": "Ho",
+                "akshara": "ho",
                 "devanagari": "हो"
               },
               {
-                "akshara": "Da",
+                "akshara": "ḍā",
                 "devanagari": "डा"
               }
             ]
@@ -1542,19 +1542,19 @@
             "muhurta_nature": "TIKSHNA",
             "padas": [
               {
-                "akshara": "Di",
+                "akshara": "ḍī",
                 "devanagari": "डी"
               },
               {
-                "akshara": "Du",
+                "akshara": "ḍū",
                 "devanagari": "डू"
               },
               {
-                "akshara": "De",
+                "akshara": "ḍe",
                 "devanagari": "डे"
               },
               {
-                "akshara": "Do",
+                "akshara": "ḍo",
                 "devanagari": "डो"
               }
             ]
@@ -1595,19 +1595,19 @@
             "muhurta_nature": "UGRA",
             "padas": [
               {
-                "akshara": "Ma",
+                "akshara": "mā",
                 "devanagari": "मा"
               },
               {
-                "akshara": "Mi",
+                "akshara": "mī",
                 "devanagari": "मी"
               },
               {
-                "akshara": "Mu",
-                "devanagari": "मु"
+                "akshara": "mū",
+                "devanagari": "मू"
               },
               {
-                "akshara": "Me",
+                "akshara": "me",
                 "devanagari": "मे"
               }
             ]
@@ -1648,19 +1648,19 @@
             "muhurta_nature": "UGRA",
             "padas": [
               {
-                "akshara": "Mo",
+                "akshara": "mo",
                 "devanagari": "मो"
               },
               {
-                "akshara": "Ta",
+                "akshara": "ṭā",
                 "devanagari": "टा"
               },
               {
-                "akshara": "Ti",
+                "akshara": "ṭī",
                 "devanagari": "टी"
               },
               {
-                "akshara": "Tu",
+                "akshara": "ṭū",
                 "devanagari": "टू"
               }
             ]
@@ -1701,19 +1701,19 @@
             "muhurta_nature": "DHRUVA",
             "padas": [
               {
-                "akshara": "Te",
+                "akshara": "ṭe",
                 "devanagari": "टे"
               },
               {
-                "akshara": "To",
+                "akshara": "ṭo",
                 "devanagari": "टो"
               },
               {
-                "akshara": "Pa",
+                "akshara": "pā",
                 "devanagari": "पा"
               },
               {
-                "akshara": "Pi",
+                "akshara": "pī",
                 "devanagari": "पी"
               }
             ]
@@ -1754,20 +1754,20 @@
             "muhurta_nature": "KSHIPRA",
             "padas": [
               {
-                "akshara": "Pu",
-                "devanagari": "पु"
+                "akshara": "pū",
+                "devanagari": "पू"
               },
               {
-                "akshara": "Sha",
+                "akshara": "ṣa",
                 "devanagari": "ष"
               },
               {
-                "akshara": "Na",
-                "devanagari": "ण"
+                "akshara": "ṇā",
+                "devanagari": "णा"
               },
               {
-                "akshara": "Tha",
-                "devanagari": "ठ"
+                "akshara": "ṭhā",
+                "devanagari": "ठा"
               }
             ]
           },
@@ -1807,19 +1807,19 @@
             "muhurta_nature": "MRIDU",
             "padas": [
               {
-                "akshara": "Pe",
+                "akshara": "pe",
                 "devanagari": "पे"
               },
               {
-                "akshara": "Po",
+                "akshara": "po",
                 "devanagari": "पो"
               },
               {
-                "akshara": "Ra",
+                "akshara": "rā",
                 "devanagari": "रा"
               },
               {
-                "akshara": "Ri",
+                "akshara": "rī",
                 "devanagari": "री"
               }
             ]
@@ -1860,19 +1860,19 @@
             "muhurta_nature": "CHARA",
             "padas": [
               {
-                "akshara": "Ru",
+                "akshara": "rū",
                 "devanagari": "रू"
               },
               {
-                "akshara": "Re",
+                "akshara": "re",
                 "devanagari": "रे"
               },
               {
-                "akshara": "Ro",
+                "akshara": "ro",
                 "devanagari": "रो"
               },
               {
-                "akshara": "Ta",
+                "akshara": "tā",
                 "devanagari": "ता"
               }
             ]
@@ -1913,19 +1913,19 @@
             "muhurta_nature": "MISHRA",
             "padas": [
               {
-                "akshara": "Ti",
+                "akshara": "tī",
                 "devanagari": "ती"
               },
               {
-                "akshara": "Tu",
+                "akshara": "tū",
                 "devanagari": "तू"
               },
               {
-                "akshara": "Te",
+                "akshara": "te",
                 "devanagari": "ते"
               },
               {
-                "akshara": "To",
+                "akshara": "to",
                 "devanagari": "तो"
               }
             ]
@@ -1966,19 +1966,19 @@
             "muhurta_nature": "MRIDU",
             "padas": [
               {
-                "akshara": "Na",
+                "akshara": "nā",
                 "devanagari": "ना"
               },
               {
-                "akshara": "Ni",
+                "akshara": "nī",
                 "devanagari": "नी"
               },
               {
-                "akshara": "Nu",
+                "akshara": "nū",
                 "devanagari": "नू"
               },
               {
-                "akshara": "Ne",
+                "akshara": "ne",
                 "devanagari": "ने"
               }
             ]
@@ -2019,19 +2019,19 @@
             "muhurta_nature": "TIKSHNA",
             "padas": [
               {
-                "akshara": "No",
+                "akshara": "no",
                 "devanagari": "नो"
               },
               {
-                "akshara": "Ya",
+                "akshara": "yā",
                 "devanagari": "या"
               },
               {
-                "akshara": "Yi",
+                "akshara": "yī",
                 "devanagari": "यी"
               },
               {
-                "akshara": "Yu",
+                "akshara": "yū",
                 "devanagari": "यू"
               }
             ]
@@ -2072,19 +2072,19 @@
             "muhurta_nature": "TIKSHNA",
             "padas": [
               {
-                "akshara": "Ye",
+                "akshara": "ye",
                 "devanagari": "ये"
               },
               {
-                "akshara": "Yo",
+                "akshara": "yo",
                 "devanagari": "यो"
               },
               {
-                "akshara": "Bha",
+                "akshara": "bhā",
                 "devanagari": "भा"
               },
               {
-                "akshara": "Bhi",
+                "akshara": "bhī",
                 "devanagari": "भी"
               }
             ]
@@ -2125,19 +2125,19 @@
             "muhurta_nature": "UGRA",
             "padas": [
               {
-                "akshara": "Bhu",
+                "akshara": "bhū",
                 "devanagari": "भू"
               },
               {
-                "akshara": "Dha",
+                "akshara": "dhā",
                 "devanagari": "धा"
               },
               {
-                "akshara": "Pha",
+                "akshara": "phā",
                 "devanagari": "फा"
               },
               {
-                "akshara": "Dha",
+                "akshara": "ḍhā",
                 "devanagari": "ढा"
               }
             ]
@@ -2178,19 +2178,19 @@
             "muhurta_nature": "DHRUVA",
             "padas": [
               {
-                "akshara": "Bhe",
+                "akshara": "bhe",
                 "devanagari": "भे"
               },
               {
-                "akshara": "Bho",
+                "akshara": "bho",
                 "devanagari": "भो"
               },
               {
-                "akshara": "Ja",
+                "akshara": "jā",
                 "devanagari": "जा"
               },
               {
-                "akshara": "Ji",
+                "akshara": "jī",
                 "devanagari": "जी"
               }
             ]
@@ -2231,19 +2231,19 @@
             "muhurta_nature": "CHARA",
             "padas": [
               {
-                "akshara": "Khi",
+                "akshara": "khī",
                 "devanagari": "खी"
               },
               {
-                "akshara": "Khu",
+                "akshara": "khū",
                 "devanagari": "खू"
               },
               {
-                "akshara": "Khe",
+                "akshara": "khe",
                 "devanagari": "खे"
               },
               {
-                "akshara": "Kho",
+                "akshara": "kho",
                 "devanagari": "खो"
               }
             ]
@@ -2284,19 +2284,19 @@
             "muhurta_nature": "CHARA",
             "padas": [
               {
-                "akshara": "Ga",
+                "akshara": "gā",
                 "devanagari": "गा"
               },
               {
-                "akshara": "Gi",
+                "akshara": "gī",
                 "devanagari": "गी"
               },
               {
-                "akshara": "Gu",
-                "devanagari": "गु"
+                "akshara": "gū",
+                "devanagari": "गू"
               },
               {
-                "akshara": "Ge",
+                "akshara": "ge",
                 "devanagari": "गे"
               }
             ]
@@ -2337,19 +2337,19 @@
             "muhurta_nature": "CHARA",
             "padas": [
               {
-                "akshara": "Go",
+                "akshara": "go",
                 "devanagari": "गो"
               },
               {
-                "akshara": "Sa",
+                "akshara": "sā",
                 "devanagari": "सा"
               },
               {
-                "akshara": "Si",
+                "akshara": "sī",
                 "devanagari": "सी"
               },
               {
-                "akshara": "Su",
+                "akshara": "sū",
                 "devanagari": "सू"
               }
             ]
@@ -2390,19 +2390,19 @@
             "muhurta_nature": "UGRA",
             "padas": [
               {
-                "akshara": "Se",
+                "akshara": "se",
                 "devanagari": "से"
               },
               {
-                "akshara": "So",
+                "akshara": "so",
                 "devanagari": "सो"
               },
               {
-                "akshara": "Da",
+                "akshara": "dā",
                 "devanagari": "दा"
               },
               {
-                "akshara": "Di",
+                "akshara": "dī",
                 "devanagari": "दी"
               }
             ]
@@ -2443,20 +2443,20 @@
             "muhurta_nature": "DHRUVA",
             "padas": [
               {
-                "akshara": "Du",
+                "akshara": "dū",
                 "devanagari": "दू"
               },
               {
-                "akshara": "Tha",
+                "akshara": "tha",
                 "devanagari": "थ"
               },
               {
-                "akshara": "Jha",
+                "akshara": "jha",
                 "devanagari": "झ"
               },
               {
-                "akshara": "Gya",
-                "devanagari": "ञ"
+                "akshara": "ñā",
+                "devanagari": "ञा"
               }
             ]
           },
@@ -2496,19 +2496,19 @@
             "muhurta_nature": "MRIDU",
             "padas": [
               {
-                "akshara": "De",
+                "akshara": "de",
                 "devanagari": "दे"
               },
               {
-                "akshara": "Do",
+                "akshara": "do",
                 "devanagari": "दो"
               },
               {
-                "akshara": "Cha",
+                "akshara": "cā",
                 "devanagari": "चा"
               },
               {
-                "akshara": "Chi",
+                "akshara": "cī",
                 "devanagari": "ची"
               }
             ]

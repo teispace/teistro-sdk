@@ -374,7 +374,7 @@ fn devanagari(name: &str) -> Result<Akshara, Error> {
 }
 
 /// IAST's consonants, the aspirates before the letters they begin with.
-const IAST_CONSONANTS: [(&str, char); 33] = [
+pub(crate) const IAST_CONSONANTS: [(&str, char); 33] = [
     ("kh", 'ख'),
     ("gh", 'घ'),
     ("ch", 'छ'),
@@ -524,42 +524,8 @@ pub fn name_syllable(name: &str, rules: NameRules) -> Result<NameSyllable, Error
     })
 }
 
-/// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
-/// n185, read on the image), from Ashvini, Abhijit after Uttarashadha,
-/// with the print's vowel lengths.
-pub(crate) const PRINTED: [[&str; 4]; 28] = [
-    ["चू", "चे", "चो", "ला"],
-    ["ली", "लू", "ले", "लो"],
-    ["आ", "ई", "उ", "ए"],
-    ["ओ", "वा", "वी", "वू"],
-    ["वे", "वो", "का", "की"],
-    ["कू", "घ", "ङ", "छा"],
-    ["के", "को", "हा", "ही"],
-    ["हू", "हे", "हो", "डा"],
-    ["डी", "डू", "डे", "डो"],
-    ["मा", "मी", "मू", "मे"],
-    ["मो", "टा", "टी", "टू"],
-    ["टे", "टो", "पा", "पी"],
-    ["पू", "ष", "णा", "ठा"],
-    ["पे", "पो", "रा", "री"],
-    ["रू", "रे", "रो", "ता"],
-    ["ती", "तू", "ते", "तो"],
-    ["ना", "नी", "नू", "ने"],
-    ["नो", "या", "यी", "यू"],
-    ["ये", "यो", "भा", "भी"],
-    ["भू", "धा", "फा", "ढा"],
-    ["भे", "भो", "जा", "जी"],
-    ["जू", "जे", "जो", "खा"],
-    ["खी", "खू", "खे", "खो"],
-    ["गा", "गी", "गू", "गे"],
-    ["गो", "सा", "सी", "सू"],
-    ["से", "सो", "दा", "दी"],
-    ["दू", "थ", "झ", "ञा"],
-    ["दे", "दो", "चा", "ची"],
-];
-
 /// The syllable a birth names a child by: the cakra's cell for the
-/// Moon's pada, as the print spells it (C297 to C299).
+/// Moon's pada, as the catalogue spells it after the print (C297 to C299).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -595,53 +561,21 @@ pub struct BirthSyllable {
 ///
 /// A `pada` outside 1 to 4, named `pada`.
 pub fn birth_syllable(nakshatra: Nakshatra, pada: u8) -> Result<BirthSyllable, Error> {
-    if !(1..=4).contains(&pada) {
-        return Err(Error::invalid_arg(format!("a pada is 1 to 4, not {pada}")).with_field("pada"));
-    }
+    let at = usize::from(pada).checked_sub(1);
+    let printed = at
+        .and_then(|at| nakshatra.attributes().padas.get(at).copied())
+        .ok_or_else(|| {
+            Error::invalid_arg(format!("a pada is 1 to 4, not {pada}")).with_field("pada")
+        })?;
     // Krittika's row first, Abhijit's 20th, as `name_syllable` counts.
     let star = (usize::from(nakshatra.id()) + 25) % 27;
     let row = star + usize::from(star >= 19);
-    let printed = PRINTED
-        .get((row + 2) % 28)
-        .and_then(|four| four.get(usize::from(pada) - 1))
-        .copied()
-        .unwrap_or_default();
     Ok(BirthSyllable {
-        cell: u8::try_from(row * 4 + usize::from(pada) - 1).unwrap_or(0),
-        devanagari: printed.to_owned(),
-        iast: iast_of(printed),
-        varga: NameVarga::of(printed.chars().next().and_then(consonant_of)),
+        cell: u8::try_from(row * 4 + at.unwrap_or(0)).unwrap_or(0),
+        devanagari: printed.devanagari.to_owned(),
+        iast: printed.akshara.to_owned(),
+        varga: NameVarga::of(printed.devanagari.chars().next().and_then(consonant_of)),
     })
-}
-
-/// A printed syllable in IAST, through the letters the IAST reader reads.
-fn iast_of(printed: &str) -> String {
-    let mut out = String::new();
-    let mut inherent = false;
-    for letter in printed.chars() {
-        if let Some((spelled, _)) = IAST_CONSONANTS.iter().find(|(_, c)| *c == letter) {
-            out.push_str(spelled);
-            inherent = true;
-            continue;
-        }
-        let vowel = match letter {
-            'अ' => "a",
-            'आ' | 'ा' => "ā",
-            'इ' | 'ि' => "i",
-            'ई' | 'ी' => "ī",
-            'उ' | 'ु' => "u",
-            'ऊ' | 'ू' => "ū",
-            'ए' | 'े' => "e",
-            'ओ' | 'ो' => "o",
-            _ => continue,
-        };
-        out.push_str(vowel);
-        inherent = false;
-    }
-    if inherent {
-        out.push('a');
-    }
-    out
 }
 
 /// The readings two names are matched under.

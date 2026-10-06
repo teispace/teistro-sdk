@@ -8,11 +8,44 @@
 
 use teistro_core::catalogue::Nakshatra;
 
-use crate::name::PRINTED;
 use crate::{
     AbhijitPada, KootaRules, LatinName, NaamRules, NameRules, NameSyllable, NameVarga, Native,
     VargaRelation, ashta_koota, birth_syllable, naam_milan, name_syllable, varga_koota,
 };
+
+/// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
+/// n185, read on the image), from Ashvini, Abhijit after Uttarashadha,
+/// with the print's vowel lengths.
+const PRINTED: [[&str; 4]; 28] = [
+    ["चू", "चे", "चो", "ला"],
+    ["ली", "लू", "ले", "लो"],
+    ["आ", "ई", "उ", "ए"],
+    ["ओ", "वा", "वी", "वू"],
+    ["वे", "वो", "का", "की"],
+    ["कू", "घ", "ङ", "छा"],
+    ["के", "को", "हा", "ही"],
+    ["हू", "हे", "हो", "डा"],
+    ["डी", "डू", "डे", "डो"],
+    ["मा", "मी", "मू", "मे"],
+    ["मो", "टा", "टी", "टू"],
+    ["टे", "टो", "पा", "पी"],
+    ["पू", "ष", "णा", "ठा"],
+    ["पे", "पो", "रा", "री"],
+    ["रू", "रे", "रो", "ता"],
+    ["ती", "तू", "ते", "तो"],
+    ["ना", "नी", "नू", "ने"],
+    ["नो", "या", "यी", "यू"],
+    ["ये", "यो", "भा", "भी"],
+    ["भू", "धा", "फा", "ढा"],
+    ["भे", "भो", "जा", "जी"],
+    ["जू", "जे", "जो", "खा"],
+    ["खी", "खू", "खे", "खो"],
+    ["गा", "गी", "गू", "गे"],
+    ["गो", "सा", "सी", "सू"],
+    ["से", "सो", "दा", "दी"],
+    ["दू", "थ", "झ", "ञा"],
+    ["दे", "दो", "चा", "ची"],
+];
 
 /// The printed row's star, `None` for Abhijit's.
 fn star_of(row: usize) -> Option<Nakshatra> {
@@ -229,4 +262,52 @@ fn a_birth_pada_names_by_its_own_cell_in_both_scripts() {
         birth_syllable(Nakshatra::Ashwini, 5).unwrap_err().field(),
         Some("pada")
     );
+}
+
+#[test]
+fn the_catalogue_spells_every_pada_as_the_page_prints_it() {
+    // C299: the catalogue's 108 syllables are the printed table's, Abhijit
+    // aside, and each `akshara` is its Devanagari in IAST.
+    for (row, syllables) in PRINTED.iter().enumerate() {
+        let Some(nakshatra) = star_of(row) else {
+            continue;
+        };
+        for (pada, printed) in nakshatra.attributes().padas.iter().zip(syllables) {
+            assert_eq!(pada.devanagari, *printed, "{nakshatra:?}");
+            assert_eq!(pada.akshara, iast_of(printed), "{nakshatra:?} {printed}");
+        }
+    }
+}
+
+/// A printed syllable in IAST, through the letters the IAST reader reads.
+fn iast_of(printed: &str) -> String {
+    let mut out = String::new();
+    let mut inherent = false;
+    for letter in printed.chars() {
+        if let Some((spelled, _)) = crate::name::IAST_CONSONANTS
+            .iter()
+            .find(|(_, c)| *c == letter)
+        {
+            out.push_str(spelled);
+            inherent = true;
+            continue;
+        }
+        let vowel = match letter {
+            'अ' => "a",
+            'आ' | 'ा' => "ā",
+            'इ' | 'ि' => "i",
+            'ई' | 'ी' => "ī",
+            'उ' | 'ु' => "u",
+            'ऊ' | 'ू' => "ū",
+            'ए' | 'े' => "e",
+            'ओ' | 'ो' => "o",
+            _ => continue,
+        };
+        out.push_str(vowel);
+        inherent = false;
+    }
+    if inherent {
+        out.push('a');
+    }
+    out
 }
