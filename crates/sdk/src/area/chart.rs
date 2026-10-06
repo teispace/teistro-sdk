@@ -78,7 +78,6 @@ use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
-use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
 
 /// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
 /// a chart whose lagna is `lagna`, with its arudha lagna counted to each
@@ -434,11 +433,14 @@ impl<'a> ChartArea<'a> {
                 })
                 .collect();
             let houses = set.houses().then(|| evaluator.house_readings(set.rules()));
-            let longevity = set.longevity().then(|| Longevity {
-                three_pairs: evaluator.three_pairs(ThreePairsRules::VERSE),
-                ayurdaya: evaluator.ayurdaya(AyurdayaRules::default()),
-                marakas: evaluator.marakas(),
-            });
+            let longevity = set
+                .ayurdaya()
+                .zip(set.three_pairs())
+                .map(|(ayurdaya, three_pairs)| Longevity {
+                    three_pairs: evaluator.three_pairs(three_pairs),
+                    ayurdaya: evaluator.ayurdaya(ayurdaya),
+                    marakas: evaluator.marakas(),
+                });
             let reading = RulesReading {
                 present,
                 houses,

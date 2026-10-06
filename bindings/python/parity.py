@@ -634,7 +634,11 @@ def main() -> None:
                 ("chart_layout.ACME_KERALA", Varga.D9),
             ],
             theme="DARK",
-            rules={"shipped": ["NABHASAS"], "longevity": True},
+            rules={
+                "shipped": ["NABHASAS"],
+                "longevity": True,
+                "ayurdaya": {"enemy_exempt": "mars", "enmity": "compound", "rising": "every"},
+            },
             # Every composer, so the four agree on what every chart *says*
             # and not only on what it computes
             # (`03-design/plans-at-the-boundary.md`).

@@ -889,10 +889,11 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     let asked = the_chart_request(place, offset, &geo);
     // The foundation alone, as the boundary founds a progressed chart.
     let bare = ChartRequest::at(place, offset).with_kind(ChartKind::Natal);
-    // The text-written rules and the longevity readings, as the other three
-    // ask for them, so the four agree on what every chart answers by rule.
+    // The text-written rules and the longevity readings, the spans read as
+    // *Jataka Parijata* reads them, as the other three ask for them, so the
+    // four agree on what every chart answers by rule and how it was asked.
     let rules = teistro::RuleRequest::shipped([teistro::ShippedRules::Nabhasas])
-        .with_longevity()
+        .with_ayurdaya(teistro::rules::longevity::AyurdayaRules::PARIJATA)
         .rule_set()
         .expect("a valid set");
     let answered = geo

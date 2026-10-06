@@ -3319,6 +3319,46 @@ export interface RuleRequest {
   readonly houses?: boolean;
   /** Whether to add the three pairs, the three spans and the marakas. */
   readonly longevity?: boolean;
+  /** How the three spans are read, when `longevity` asks; BPHS's by default. */
+  readonly ayurdaya?: AyurdayaRules;
+  /** How the three pairs are read, when `longevity` asks; the verses' by default. */
+  readonly threePairs?: ThreePairsRules;
+}
+
+/**
+ * How Pindayu, Nisargayu and Amsayu are read (cruxes C104, C302 to C304);
+ * every field optional, BPHS's readings by default.
+ *
+ * @example
+ * // As *Jataka Parijata* ch. 5 reads Varahamihira's reductions.
+ * const rules: RuleRequest = {
+ *   longevity: true,
+ *   ayurdaya: { enemy_exempt: 'mars', enmity: 'compound', rising: 'every' },
+ * };
+ */
+export interface AyurdayaRules {
+  /** Several reductions on one graha: the largest only, or each in turn. */
+  readonly combine?: 'largest' | 'each';
+  /** Nisargayu's years given as Pindayu gives them, or listed alone (always 120). */
+  readonly nisarga?: 'like-pindayu' | 'listed';
+  /** Whether Amsayu triples and doubles a graha in dignity. */
+  readonly amsayu_multiplied?: boolean;
+  /** Who keeps its years in an enemy's sign: a retrograde graha, or Mars. */
+  readonly enemy_exempt?: 'retrograde' | 'mars';
+  /** Whose enmity takes a third: natural, or compound. */
+  readonly enmity?: 'natural' | 'compound';
+  /** Whose years a rising malefic takes: its own, or every giver's. */
+  readonly rising?: 'malefic' | 'every';
+}
+
+/** How the three pairs are read (crux C103); every field optional, the verses' by default. */
+export interface ThreePairsRules {
+  /** Which degrees rectify the class: those still to run, or those gone. */
+  readonly rectification?: 'remaining' | 'elapsed';
+  /** What the degrees multiply: the class's years once, or once per pair. */
+  readonly basis?: 'class-years' | 'per-pair';
+  /** Whether Saturn among the contributors lowers the class or raises it. */
+  readonly saturn?: 'lowers' | 'raises';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

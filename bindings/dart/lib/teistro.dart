@@ -5923,6 +5923,8 @@ final class RuleRequest {
     this.readings = RuleReadings.texts,
     this.houses = false,
     this.longevity = false,
+    this.ayurdaya,
+    this.threePairs,
   });
 
   /// The shipped sets to evaluate.
@@ -5940,13 +5942,197 @@ final class RuleRequest {
   /// Whether to add the three pairs, the three spans and the marakas.
   final bool longevity;
 
+  /// How the three spans are read when [longevity] asks; BPHS's by
+  /// default. Refused without [longevity].
+  final AyurdayaRules? ayurdaya;
+
+  /// How the three pairs are read when [longevity] asks; the verses' by
+  /// default. Refused without [longevity].
+  final ThreePairsRules? threePairs;
+
   String get _json => jsonEncode(<String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
     'readings': readings.key,
     'houses': houses,
     'longevity': longevity,
+    if (ayurdaya != null) 'ayurdaya': ayurdaya!._record,
+    if (threePairs != null) 'threePairs': threePairs!._record,
   });
+}
+
+/// How several reductions on one graha combine (crux C104).
+enum AyurdayaCombine {
+  /// Only the largest.
+  largest('largest'),
+
+  /// Each in turn from what the one before left.
+  each('each');
+
+  const AyurdayaCombine(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How Nisargayu's listed years are given (crux C104).
+enum NisargaYears {
+  /// As Pindayu gives its years, with the same reductions.
+  likePindayu('like-pindayu'),
+
+  /// The listed years alone: always 120.
+  listed('listed');
+
+  const NisargaYears(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// Which graha keeps its years in an enemy's sign (crux C302).
+enum EnemyExempt {
+  /// A retrograde graha, as BPHS reads it.
+  retrograde('retrograde'),
+
+  /// Mars, as *Jataka Parijata* ch. 5 v. 8 is translated.
+  mars('mars');
+
+  const EnemyExempt(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// Whose enmity takes a third in an enemy's sign (crux C303).
+enum Enmity {
+  /// Natural enmity.
+  natural('natural'),
+
+  /// The compound of the natural and the temporary friendship.
+  compound('compound');
+
+  const Enmity(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// Whose years a malefic rising in the lagna takes (crux C304).
+enum RisingTakes {
+  /// Each malefic's own.
+  malefic('malefic'),
+
+  /// Every giver's, once, as *Jataka Parijata* ch. 5 vv. 11 to 13 read.
+  every('every');
+
+  const RisingTakes(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How Pindayu, Nisargayu and Amsayu are read (cruxes C104, C302 to
+/// C304); a field left null is BPHS's reading.
+///
+/// ```dart
+/// // As *Jataka Parijata* ch. 5 reads Varahamihira's reductions.
+/// const rules = RuleRequest(
+///   longevity: true,
+///   ayurdaya: AyurdayaRules.parijata,
+/// );
+/// ```
+final class AyurdayaRules {
+  const AyurdayaRules({
+    this.combine,
+    this.nisarga,
+    this.amsayuMultiplied,
+    this.enemyExempt,
+    this.enmity,
+    this.rising,
+  });
+
+  /// *Jataka Parijata* ch. 5's readings of the reductions.
+  static const parijata = AyurdayaRules(
+    enemyExempt: EnemyExempt.mars,
+    enmity: Enmity.compound,
+    rising: RisingTakes.every,
+  );
+
+  final AyurdayaCombine? combine;
+  final NisargaYears? nisarga;
+
+  /// Whether Amsayu triples and doubles a graha in dignity.
+  final bool? amsayuMultiplied;
+  final EnemyExempt? enemyExempt;
+  final Enmity? enmity;
+  final RisingTakes? rising;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (combine != null) 'combine': combine!.key,
+    if (nisarga != null) 'nisarga': nisarga!.key,
+    if (amsayuMultiplied != null) 'amsayu_multiplied': amsayuMultiplied,
+    if (enemyExempt != null) 'enemy_exempt': enemyExempt!.key,
+    if (enmity != null) 'enmity': enmity!.key,
+    if (rising != null) 'rising': rising!.key,
+  };
+}
+
+/// Which degrees rectify the class of life (crux C103).
+enum PairsRectification {
+  /// The degrees still to run, as the verse says.
+  remaining('remaining'),
+
+  /// The degrees gone, as the translator's arithmetic runs.
+  elapsed('elapsed');
+
+  const PairsRectification(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// What the rectification multiplies (crux C103).
+enum PairsBasis {
+  /// The class's years once.
+  classYears('class-years'),
+
+  /// The class's years once for each pair that gave it.
+  perPair('per-pair');
+
+  const PairsBasis(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// What Saturn among the contributors does to the class (crux C103).
+enum SaturnAmongPairs {
+  /// Lowers it, as the verse says first.
+  lowers('lowers'),
+
+  /// Raises it, as "some advocate".
+  raises('raises');
+
+  const SaturnAmongPairs(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
+/// How the three pairs are read (crux C103); a field left null is the
+/// verses' reading.
+final class ThreePairsRules {
+  const ThreePairsRules({this.rectification, this.basis, this.saturn});
+
+  final PairsRectification? rectification;
+  final PairsBasis? basis;
+  final SaturnAmongPairs? saturn;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    if (rectification != null) 'rectification': rectification!.key,
+    if (basis != null) 'basis': basis!.key,
+    if (saturn != null) 'saturn': saturn!.key,
+  };
 }
 
 /// The narrative plans a request asks a chart for

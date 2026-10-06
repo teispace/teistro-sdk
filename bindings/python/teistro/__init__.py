@@ -378,6 +378,8 @@ __all__ = [
     "PlanRequest",
     "Plans",
     "RuleRequest",
+    "AyurdayaRules",
+    "ThreePairsRules",
     "RulesReading",
     "ShippedRules",
     "ShippedTheme",
@@ -7516,16 +7518,44 @@ ShippedRules = Literal["DOSHAS", "YOGAS", "GANDANTAS", "ARISHTAS", "READINGS", "
 """A set of rules the SDK ships."""
 
 
+class AyurdayaRules(TypedDict, total=False):
+    """How Pindayu, Nisargayu and Amsayu are read (cruxes C104, C302 to
+    C304); every field optional, BPHS's readings by default.
+
+    >>> parijata: AyurdayaRules = {"enemy_exempt": "mars", "enmity": "compound", "rising": "every"}
+    """
+
+    combine: Literal["largest", "each"]
+    nisarga: Literal["like-pindayu", "listed"]
+    amsayu_multiplied: bool
+    enemy_exempt: Literal["retrograde", "mars"]
+    enmity: Literal["natural", "compound"]
+    rising: Literal["malefic", "every"]
+
+
+class ThreePairsRules(TypedDict, total=False):
+    """How the three pairs are read (crux C103); every field optional,
+    the verses' by default."""
+
+    rectification: Literal["remaining", "elapsed"]
+    basis: Literal["class-years", "per-pair"]
+    saturn: Literal["lowers", "raises"]
+
+
 class RuleRequest(TypedDict, total=False):
     """The rules a request asks a chart to answer
     (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
-    consumer's own rules in the SDK's rule format."""
+    consumer's own rules in the SDK's rule format. `ayurdaya` and
+    `threePairs` choose how the longevity readings are read, and are
+    refused without `longevity`."""
 
     shipped: List[ShippedRules]
     rules: List[Mapping[str, Any]]
     readings: Literal["TEXTS", "RECORDING_ENGINE"]
     houses: bool
     longevity: bool
+    ayurdaya: AyurdayaRules
+    threePairs: ThreePairsRules
 
 
 class RulesReading(TypedDict, total=False):

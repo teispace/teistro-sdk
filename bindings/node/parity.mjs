@@ -329,7 +329,11 @@ const charts = geo.chart.foundMany({
   theme: 'DARK',
   // The text-written rules and the longevity readings, so the four agree on
   // what every chart answers by rule.
-  rules: { shipped: ['NABHASAS'], longevity: true },
+  rules: {
+    shipped: ['NABHASAS'],
+    longevity: true,
+    ayurdaya: { enemy_exempt: 'mars', enmity: 'compound', rising: 'every' },
+  },
   // Every composer, so the four agree on what every chart *says* and not
   // only on what it computes (`03-design/plans-at-the-boundary.md`).
   interpret: {

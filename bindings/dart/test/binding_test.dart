@@ -791,6 +791,40 @@ void _engineTests() {
     final longevity = answered['longevity']! as Map<String, Object?>;
     final ayurdaya = longevity['ayurdaya']! as Map<String, Object?>;
     expect((ayurdaya['pindayu']! as Map<String, Object?>)['years'], isA<num>());
+    expect((ayurdaya['rules']! as Map<String, Object?>)['enmity'], 'natural');
+    // The spans read as *Jataka Parijata* reads them, and a choice nothing
+    // reads refused.
+    final chosen =
+        found(
+          const RuleRequest(
+            longevity: true,
+            ayurdaya: AyurdayaRules.parijata,
+            threePairs: ThreePairsRules(saturn: SaturnAmongPairs.raises),
+          ),
+        )!;
+    final rules =
+        ((chosen['longevity']! as Map<String, Object?>)['ayurdaya']!
+                as Map<String, Object?>)['rules']!
+            as Map<String, Object?>;
+    expect(
+      [
+        rules['enemy_exempt'],
+        rules['enmity'],
+        rules['rising'],
+        rules['combine'],
+      ],
+      ['mars', 'compound', 'every', 'largest'],
+    );
+    expect(
+      () => found(const RuleRequest(ayurdaya: AyurdayaRules.parijata)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rules.ayurdaya',
+        ),
+      ),
+    );
 
     final first = (present.first! as Map<String, Object?>)['rule']! as String;
     final withMine =
