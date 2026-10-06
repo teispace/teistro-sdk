@@ -333,7 +333,10 @@ bands do.
 
 **The avakahada is the Moon's natives gathered** (C301). What the
 janma-patrika prints is varna, vashya, yoni, gana, nadi, the nakshatra
-and sign lords, the syllable and its varga. All of it is read today only
+and sign lords, the syllable and its varga. Vashya is not one sign's:
+VI.23 reads it as a relation between two signs, and the five groups the
+patrika prints (quadruped, human, water, wild, insect) wait with C300.
+The rest are one native's. All of it is read today only
 inside a match, which needs two births. One chart's summary is therefore
 a chart field, `avakahada`, holding the Moon's nakshatra and pada, the
 syllable, and each of those readings by the same catalogue members the

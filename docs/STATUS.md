@@ -1052,16 +1052,15 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: build the name syllable and the avakahada** (`matching.md`,
-   C297 to C301, decided 2026-10-07). The kernel's cakra read from the
-   cell: a Moon's pada answers its own syllable, spelled as *Muhurta
-   Chintamani* p. 173 prints it (the transcribed table moves from the
-   tests into `name.rs`, held to the rule both ways), IAST transliterated
-   from it. Then a chart field `avakahada` gathering the Moon's nakshatra
-   and pada, the syllable and its varga, and the varna, vashya, yoni,
-   gana, nadi and lords the koota natives already read, across the
-   boundary and in every binding. Paya, disha and tatwa are not shipped
-   (C300).
+0. **Next: the avakahada as a chart field** (`matching.md`, C301): the
+   Moon's nakshatra and pada, its `birth_syllable` and varga, and the
+   varna, yoni, gana, nadi and lords one native reads, across the
+   boundary and in every binding. Vashya's five groups, paya, disha and
+   tatwa are not shipped (C300, C301).
+   `birth_syllable(nakshatra, pada)` is built in the kernel (C297 to
+   C299): the naam milan cakra read from the cell, spelled as *Muhurta
+   Chintamani* p. 173 prints it and in IAST, every one of the 108 padas
+   reading back to its own cell through both readers.
    Naam milan is built in every binding (`matching.md`, C291 to C296):
    `sdk.matching.naam(bride, groom, rules)`, its own area since it reads
    no sky, answered as the `naam` blob whose Ashta Koota and ten
