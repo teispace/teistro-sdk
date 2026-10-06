@@ -611,8 +611,8 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
     assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
-    // Every chart names one span, over all eight: 46 of the 53 one the SDK
-    // computes, 7 one of the two ashtakavarga spans it does not yet.
+    // Every chart names one span, over all eight, and the SDK computes
+    // each.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
     assert_eq!(
         named,
@@ -662,6 +662,20 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
     assert!((100.0..=120.0).contains(&dasayus.years), "{name}");
     // The wheel of time's span is at most the seven's 72 years.
     assert!((0.0..=72.0).contains(&longevity.chakrayus.years), "{name}");
+    // Each graha's ashtakavarga years are under a twelve, doubled at most,
+    // and their sum is the Bhinnashtakavarga span.
+    let ashtakavarga = longevity.ashtakavarga.unwrap();
+    for giver in &ashtakavarga.grahas {
+        assert!(giver.basic >= 0.0 && giver.basic <= 12.0, "{name}");
+        assert!((0.5..=2.0).contains(&giver.factor), "{name}");
+    }
+    let sum: f64 = ashtakavarga.grahas.iter().map(|giver| giver.years).sum();
+    assert!((sum - ashtakavarga.bhinna).abs() < 1e-9, "{name}");
+    assert!(ashtakavarga.samudaya >= 0.0, "{name}");
+    assert!(
+        (ashtakavarga.samudaya_solar * 365.0 - ashtakavarga.samudaya * 324.0).abs() < 1e-9,
+        "{name}"
+    );
     let choice = &longevity.choice;
     assert!(choice.all_weighed, "{name}");
     for candidate in &choice.candidates {
@@ -672,7 +686,8 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
             Ayus::Rasmi => Some(rasmi.years),
             Ayus::Nakshatra => longevity.dasayus.map(|span| span.years),
             Ayus::Kalachakra => Some(longevity.chakrayus.years),
-            _ => None,
+            Ayus::Bhinnashtakavarga => Some(ashtakavarga.bhinna),
+            Ayus::Samudaya => Some(ashtakavarga.samudaya),
         };
         assert_eq!(candidate.years, years, "{name}");
     }

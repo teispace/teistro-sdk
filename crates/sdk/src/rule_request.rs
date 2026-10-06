@@ -11,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
 use teistro_rules::longevity::{
-    Ayurdaya, AyurdayaRules, Chakrayus, ChakrayusRules, Dasayus, Marakas, Rasmi, RasmiRules,
-    SpanChoice, ThreePairs,
+    AshtakavargaAyus, AshtakavargaAyusRules, Ayurdaya, AyurdayaRules, Chakrayus, ChakrayusRules,
+    Dasayus, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
 };
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
@@ -121,10 +121,10 @@ pub struct RuleRequest {
     /// Whether to add the twelve house readings.
     pub houses: bool,
     /// Whether to add the three pairs, the three spans, the rays, the
-    /// dashas' and the wheel of time's spans, the span the strongest names
-    /// and the marakas. Asks the
-    /// chart for its Shadbala and Bhava bala, which they weigh, and its
-    /// Vimshottari, whose balance the dashas' span reads.
+    /// dashas', the wheel of time's and the two ashtakavarga spans, the
+    /// span the strongest names and the marakas. Asks the chart for its
+    /// Shadbala and Bhava bala, which they weigh, its Vimshottari, whose
+    /// balance the dashas' span reads, and its ashtakavarga.
     pub longevity: bool,
     /// The choices the three spans are read under, when `longevity` asks
     /// for them; BPHS's by default (cruxes C104, C302 to C304).
@@ -139,6 +139,10 @@ pub struct RuleRequest {
     /// The choices the wheel of time's span is read under, when
     /// `longevity` asks for it; the note's figure's by default (crux C310).
     pub chakrayus: Option<ChakrayusRules>,
+    /// The choices the two ashtakavarga spans are read under, when
+    /// `longevity` asks for them; *Jataka Parijata*'s by default (cruxes
+    /// C311 and C312).
+    pub ashtakavarga: Option<AshtakavargaAyusRules>,
 }
 
 impl RuleRequest {
@@ -251,6 +255,31 @@ impl RuleRequest {
         self
     }
 
+    /// The same request with the longevity readings, the two ashtakavarga
+    /// spans read under `rules`.
+    ///
+    /// ```
+    /// use teistro::RuleRequest;
+    /// use teistro::rules::longevity::{AshtakavargaAyusRules, Divisor, SignMeasures};
+    ///
+    /// let balabhadra = AshtakavargaAyusRules {
+    ///     measures: SignMeasures::Bphs,
+    ///     divisor: Divisor::SevenOverTwentySeven,
+    /// };
+    /// let read = RuleRequest::from_json(
+    ///     r#"{"longevity": true, "ashtakavarga": {"measures": "bphs", "divisor": "seven-over-twenty-seven"}}"#,
+    /// )?;
+    /// assert_eq!(read, RuleRequest::default().with_ashtakavarga(balabhadra));
+    /// assert_eq!(read.rule_set()?.ashtakavarga(), Some(balabhadra));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_ashtakavarga(mut self, rules: AshtakavargaAyusRules) -> RuleRequest {
+        self.longevity = true;
+        self.ashtakavarga = Some(rules);
+        self
+    }
+
     /// A request read from JSON. A value that does not read is refused by
     /// where it stands — `rules[3].when`, `houses` — with what was wrong.
     ///
@@ -283,7 +312,7 @@ impl RuleRequest {
         let request: RuleRequest =
             teistro_core::strict::deserialize(&value, "").map_err(|err| {
                 err.with_hint(
-                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya`, `threePairs`, `rasmi` and `chakrayus`",
+                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya`, `threePairs`, `rasmi`, `chakrayus` and `ashtakavarga`",
                 )
             })?;
         Ok(request.with_rules(rules))
@@ -323,6 +352,7 @@ impl RuleRequest {
             ("threePairs", self.three_pairs.is_some()),
             ("rasmi", self.rasmi.is_some()),
             ("chakrayus", self.chakrayus.is_some()),
+            ("ashtakavarga", self.ashtakavarga.is_some()),
         ] {
             if given && !self.longevity {
                 return Err(Error::invalid_arg(format!(
@@ -341,6 +371,7 @@ impl RuleRequest {
                 three_pairs: self.three_pairs.unwrap_or_default(),
                 rasmi: self.rasmi.unwrap_or_default(),
                 chakrayus: self.chakrayus.unwrap_or_default(),
+                ashtakavarga: self.ashtakavarga.unwrap_or_default(),
             }),
         })
     }
@@ -353,6 +384,7 @@ pub(crate) struct LongevityRules {
     pub(crate) three_pairs: ThreePairsRules,
     pub(crate) rasmi: RasmiRules,
     pub(crate) chakrayus: ChakrayusRules,
+    pub(crate) ashtakavarga: AshtakavargaAyusRules,
 }
 
 /// A validated set of rules with what else a reading should answer.
@@ -418,6 +450,13 @@ impl RuleSet {
         self.longevity.map(|rules| rules.chakrayus)
     }
 
+    /// The choices the two ashtakavarga spans are read under, when the
+    /// longevity readings are asked for.
+    #[must_use]
+    pub fn ashtakavarga(&self) -> Option<AshtakavargaAyusRules> {
+        self.longevity.map(|rules| rules.ashtakavarga)
+    }
+
     /// Every longevity choice together, when the readings are asked for.
     pub(crate) const fn longevity_rules(&self) -> Option<LongevityRules> {
         self.longevity
@@ -453,6 +492,11 @@ pub struct Longevity {
     /// each graha's ch. 17 years in proportion to what of its nakshatra is
     /// still to run.
     pub chakrayus: Chakrayus,
+    /// The two ashtakavarga spans (*Jataka Parijata* ch. 10 vv. 44 to 48,
+    /// 70 and 71): each graha's years from its own reduced ashtakavarga,
+    /// their sum, and the gathered ashtakavarga's; none where the chart
+    /// carries no ashtakavarga.
+    pub ashtakavarga: Option<AshtakavargaAyus>,
     /// Which span the strongest of the seven grahas and the lagna names
     /// (*Jataka Parijata* ch. 5 v. 33), the lagna weighed by its Bhava
     /// bala in rupas.

@@ -13,6 +13,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 
+use super::ashtakavarga::AshtakavargaAyus;
 use super::ayurdaya::Ayurdaya;
 use super::chakrayus::Chakrayus;
 use super::dasayus::Dasayus;
@@ -30,13 +31,15 @@ pub enum Ayus {
     Nisarga,
     /// Rasmija, from the rays (vv. 22 to 25).
     Rasmi,
-    /// From each graha's own ashtakavarga.
+    /// Bhinnashtakavargaja, from each graha's own ashtakavarga (ch. 10
+    /// vv. 44 to 48).
     Bhinnashtakavarga,
     /// Kalachakraja, through the Kalachakra years (v. 26).
     Kalachakra,
     /// Nakshatraja, the dasas from the Moon's nakshatra (v. 27).
     Nakshatra,
-    /// From the gathered ashtakavarga.
+    /// Samudayashtakavargaja, from the gathered ashtakavarga (ch. 10
+    /// vv. 70 and 71).
     Samudaya,
     /// Amsaja, from the navamshas (vv. 17 to 21).
     Amsa,
@@ -79,9 +82,9 @@ pub struct Candidate {
     pub ayus: Ayus,
     /// That span's years where it is computed: Pinda, Nisarga and Amsa as
     /// the three spans read them, Rasmi as the rays' years, Nakshatra as
-    /// the dashas' (v. 27) and Kalachakra as the wheel of time's (v. 26);
-    /// none for the two ashtakavarga spans, which the SDK does not yet
-    /// compute.
+    /// the dashas' (v. 27), Kalachakra as the wheel of time's (v. 26) and
+    /// the two ashtakavarga spans as ch. 10 reads them; none for a span not
+    /// among those `computed`.
     pub years: Option<f64>,
 }
 
@@ -97,6 +100,8 @@ pub struct Computed<'a> {
     pub dasayus: Option<&'a Dasayus>,
     /// The wheel of time's span.
     pub chakrayus: Option<&'a Chakrayus>,
+    /// The two ashtakavarga spans.
+    pub ashtakavarga: Option<&'a AshtakavargaAyus>,
 }
 
 /// The span the strongest names, with every candidate weighed.
@@ -155,7 +160,8 @@ pub fn span_choice(
                 Ayus::Rasmi => computed.rasmi.map(|rays| rays.years),
                 Ayus::Nakshatra => computed.dasayus.map(|span| span.years),
                 Ayus::Kalachakra => computed.chakrayus.map(|span| span.years),
-                Ayus::Bhinnashtakavarga | Ayus::Samudaya => None,
+                Ayus::Bhinnashtakavarga => computed.ashtakavarga.map(|spans| spans.bhinna),
+                Ayus::Samudaya => computed.ashtakavarga.map(|spans| spans.samudaya),
             },
         }
     });

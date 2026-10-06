@@ -78,7 +78,7 @@ use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
-use teistro_rules::longevity::{Computed, dasayus, span_choice};
+use teistro_rules::longevity::{Bindus, Computed, dasayus, span_choice};
 
 /// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
 /// a chart whose lagna is `lagna`, with its arudha lagna counted to each
@@ -403,7 +403,8 @@ impl<'a> ChartArea<'a> {
         // The longevity readings weigh strengths: the visible half's
         // strongest of several, and v. 33's strongest of the seven and the
         // lagna, whose strength is its bhava's. Dasayus reads Vimshottari's
-        // balance at birth, as the settings measure it.
+        // balance at birth, as the settings measure it, and the two
+        // ashtakavarga spans the chart's bindus.
         let vimshottari = KeyId::from(DashaSystem::Vimshottari);
         let inputs = |points: bool| {
             let asked = request.clone().rule_inputs(set.rules(), points);
@@ -414,7 +415,11 @@ impl<'a> ChartArea<'a> {
             if !dashas.contains(&vimshottari) {
                 dashas.push(vimshottari);
             }
-            asked.with_shadbala().with_bhava_bala().with_dashas(dashas)
+            asked
+                .with_shadbala()
+                .with_bhava_bala()
+                .with_ashtakavarga()
+                .with_dashas(dashas)
         };
         let (documents, provenance, unreadable) = match self.read(instants, &inputs(true)) {
             Ok(read) => (read.value, read.provenance, false),
@@ -465,11 +470,15 @@ impl<'a> ChartArea<'a> {
                     })
                     .and_then(|reading| dasayus(reading.first_lord, reading.balance?.remaining));
                 let chakrayus = evaluator.chakrayus(rules.chakrayus);
+                let ashtakavarga = document.ashtakavarga.as_ref().map(|reading| {
+                    evaluator.ashtakavarga_ayus(&Bindus::from(reading), rules.ashtakavarga)
+                });
                 let computed = Computed {
                     ayurdaya: Some(&ayurdaya),
                     rasmi: Some(&rasmi),
                     dasayus: dasayus.as_ref(),
                     chakrayus: Some(&chakrayus),
+                    ashtakavarga: ashtakavarga.as_ref(),
                 };
                 Longevity {
                     three_pairs: evaluator.three_pairs(rules.three_pairs),
@@ -478,6 +487,7 @@ impl<'a> ChartArea<'a> {
                     rasmi,
                     dasayus,
                     chakrayus,
+                    ashtakavarga,
                     marakas: evaluator.marakas(),
                 }
             });

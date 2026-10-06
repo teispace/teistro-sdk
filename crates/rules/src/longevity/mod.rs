@@ -7,6 +7,7 @@
 //! need a chart's degrees and a strength comparison, and they answer with
 //! numbers, where a rule answers present or not.
 
+mod ashtakavarga;
 mod ayurdaya;
 mod chakrayus;
 mod choice;
@@ -15,6 +16,10 @@ mod maraka;
 mod pairs;
 mod rasmi;
 
+pub use ashtakavarga::{
+    AshtakaGiver, AshtakavargaAyus, AshtakavargaAyusRules, Bindus, Divisor,
+    PARIJATA_RASHI_MEASURES, SignMeasures, pinda_years, pindas,
+};
 pub use ayurdaya::{
     Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
     Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years, visible_half_share,

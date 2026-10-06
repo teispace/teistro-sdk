@@ -925,6 +925,9 @@ void main() {
       'chart-$i-rules-chakrayus',
       (longevity['chakrayus']! as Map<String, Object?>)['years'],
     );
+    final spans = longevity['ashtakavarga'] as Map<String, Object?>?;
+    put('chart-$i-rules-bhinna', spans?['bhinna'] ?? 0.0);
+    put('chart-$i-rules-samudaya', spans?['samudaya'] ?? 0.0);
     // **Every item said**, not merely counted: the only place the four
     // bindings are compared on text, which exercises the composers, the
     // params shape and the locale engine at once.

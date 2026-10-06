@@ -381,6 +381,7 @@ __all__ = [
     "AyurdayaRules",
     "RasmiRules",
     "ChakrayusRules",
+    "AshtakavargaAyusRules",
     "ThreePairsRules",
     "RulesReading",
     "ShippedRules",
@@ -7566,12 +7567,24 @@ class ChakrayusRules(TypedDict, total=False):
     portion: Literal["star", "pada"]
 
 
+class AshtakavargaAyusRules(TypedDict, total=False):
+    """How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya,
+    are read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311
+    to C314); every field optional, *Jataka Parijata*'s by default.
+
+    >>> balabhadra: AshtakavargaAyusRules = {"measures": "bphs", "divisor": "seven-over-twenty-seven"}
+    """
+
+    measures: Literal["parijata", "bphs"]
+    divisor: Literal["thirty", "seven-over-twenty-seven"]
+
+
 class RuleRequest(TypedDict, total=False):
     """The rules a request asks a chart to answer
     (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
     consumer's own rules in the SDK's rule format. `ayurdaya`,
-    `threePairs`, `rasmi` and `chakrayus` choose how the longevity readings are read,
-    and are refused without `longevity`."""
+    `threePairs`, `rasmi`, `chakrayus` and `ashtakavarga` choose how the
+    longevity readings are read, and are refused without `longevity`."""
 
     shipped: List[ShippedRules]
     rules: List[Mapping[str, Any]]
@@ -7582,6 +7595,7 @@ class RuleRequest(TypedDict, total=False):
     threePairs: ThreePairsRules
     rasmi: RasmiRules
     chakrayus: ChakrayusRules
+    ashtakavarga: AshtakavargaAyusRules
 
 
 class RulesReading(TypedDict, total=False):

@@ -3318,11 +3318,11 @@ export interface RuleRequest {
   /** Whether to add the twelve house readings. */
   readonly houses?: boolean;
   /**
-   * Whether to add the three pairs, the three spans, the rays, the dashas'
-   * and the wheel of time's spans, the span the strongest names and the
-   * marakas; asks the chart for
-   * the Shadbala and Bhava bala they weigh and the Vimshottari whose
-   * balance the dashas' span reads.
+   * Whether to add the three pairs, the three spans, the rays, the dashas',
+   * the wheel of time's and the two ashtakavarga spans, the span the
+   * strongest names and the marakas; asks the chart for the Shadbala and
+   * Bhava bala they weigh, the Vimshottari whose balance the dashas' span
+   * reads and the ashtakavarga.
    */
   readonly longevity?: boolean;
   /** How the three spans are read, when `longevity` asks; BPHS's by default. */
@@ -3333,6 +3333,8 @@ export interface RuleRequest {
   readonly rasmi?: RasmiRules;
   /** How the wheel of time's span is read, when `longevity` asks; the note's figure's by default. */
   readonly chakrayus?: ChakrayusRules;
+  /** How the two ashtakavarga spans are read, when `longevity` asks; *Jataka Parijata*'s by default. */
+  readonly ashtakavarga?: AshtakavargaAyusRules;
 }
 
 /**
@@ -3396,6 +3398,25 @@ export interface RasmiRules {
 export interface ChakrayusRules {
   /** Which untraversed part a graha's years follow: its whole nakshatra, or its pada. */
   readonly portion?: 'star' | 'pada';
+}
+
+/**
+ * How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya, are
+ * read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311 to
+ * C314); every field optional, *Jataka Parijata*'s by default.
+ *
+ * @example
+ * // As Balabhadra reads them, by BPHS's measures and 7 over 27.
+ * const rules: RuleRequest = {
+ *   longevity: true,
+ *   ashtakavarga: { measures: 'bphs', divisor: 'seven-over-twenty-seven' },
+ * };
+ */
+export interface AshtakavargaAyusRules {
+  /** Which table measures the signs: *Jataka Parijata*'s (Virgo 5), or BPHS's translator's (Virgo 6). */
+  readonly measures?: 'parijata' | 'bphs';
+  /** How a pinda becomes years: over 30, twelves cast out, or times 7 over 27, twenty-sevens cast out. */
+  readonly divisor?: 'thirty' | 'seven-over-twenty-seven';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

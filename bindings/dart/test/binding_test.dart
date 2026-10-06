@@ -865,6 +865,36 @@ void _engineTests() {
                 as Map<String, Object?>)['chakrayus']!
             as Map<String, Object?>;
     expect(byPada['rules'], {'portion': 'pada'});
+    // ch. 10: the ashtakavarga spans, the seven's years summed, and the
+    // candidate Mars names carries their sum.
+    final spans = longevity['ashtakavarga']! as Map<String, Object?>;
+    expect(spans['rules'], {'measures': 'parijata', 'divisor': 'thirty'});
+    final givers =
+        (spans['grahas']! as List<Object?>).cast<Map<String, Object?>>();
+    expect(
+      givers.fold<num>(0, (sum, giver) => sum + (giver['years']! as num)),
+      closeTo(spans['bhinna']! as num, 1e-9),
+    );
+    final mars = (choice['candidates']! as List<Object?>)
+        .cast<Map<String, Object?>>()
+        .firstWhere((c) => c['ayus'] == 'bhinnashtakavarga');
+    expect(mars['years'], spans['bhinna']);
+    final byBalabhadra =
+        (found(
+                  const RuleRequest(
+                    longevity: true,
+                    ashtakavarga: AshtakavargaAyusRules(
+                      measures: AyusSignMeasures.bphs,
+                      divisor: AyusDivisor.sevenOverTwentySeven,
+                    ),
+                  ),
+                )!['longevity']!
+                as Map<String, Object?>)['ashtakavarga']!
+            as Map<String, Object?>;
+    expect(byBalabhadra['rules'], {
+      'measures': 'bphs',
+      'divisor': 'seven-over-twenty-seven',
+    });
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),
       throwsA(
