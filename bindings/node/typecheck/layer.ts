@@ -27,6 +27,9 @@ import type {
   WesternHouseRequest,
   WesternHouses,
   AshtaKoota,
+  NaamMilan,
+  NaamRules,
+  NameSyllable,
   KootaReading,
   Kuja,
   KujaReading,
@@ -1250,6 +1253,31 @@ function theMatching(ctx: Context): string {
 }
 
 void theMatching;
+
+// Two names matched, read all the way down to a koota's own fields.
+function theNaam(ctx: Context): string {
+  const rules: NaamRules = { name: { latin: 'IAST', abhijit: 'SHRAVANA' }, koota: { nadiDosha: 'MIDDLE_ONLY' } };
+  // @ts-expect-error a name rule takes only its own members
+  const misread: NaamRules = { name: { latin: 'ENGLISH' } };
+  // @ts-expect-error Abhijit is placed in one of its two neighbours
+  const misplaced: NaamRules = { name: { abhijit: 'ABHIJIT' } };
+  const read: NaamMilan = ctx.matching.naam('sītā', 'rāma', rules);
+  const bride: NameSyllable = read.bride;
+  const tara = read.ashta.kootas[2]?.reading;
+  const rajju = read.porutham.considerations[8]?.reading;
+  return [
+    `${bride.cell} ${bride.nakshatra ?? 'ABHIJIT'} ${bride.quarter} ${bride.varga}`,
+    `${read.varga.bride} ${read.varga.groom} ${read.varga.relation}`,
+    read.ashta.total,
+    tara?.koota === 'koota.TARA' ? `${tara.brideToGroom}` : '',
+    read.porutham.agreeing,
+    rajju?.koota === 'koota.RAJJU' ? `${rajju.bride} ${rajju.groom}` : '',
+    String(misread),
+    String(misplaced),
+  ].join();
+}
+
+void theNaam;
 
 // A lunar and a solar return, asked through the hit list.
 function theReturns(ctx: Context): string {

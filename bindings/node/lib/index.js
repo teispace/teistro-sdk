@@ -149,8 +149,10 @@ import {
   RajjuById,
   DoshaSystemById,
   MatchRoleById,
+  NameVargaById,
+  VargaRelationById,
 } from './catalogue.js';
-import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
+import { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
 import { decodeProvenance, decodeStep } from './records.js';
 
@@ -3661,7 +3663,21 @@ function considerationsOf(batch) {
  * @returns {readonly (readonly object[]|null)[]}
  */
 function raggedOf(batch, counts, rows, names, read) {
-  const charts = batch.decoded.cast.instant.length;
+  return raggedIn(batch.decoded.cast.instant.length, counts, rows, names, read);
+}
+
+/**
+ * As `raggedOf`, over any blob whose sections hold `charts` rows: a chart
+ * batch's charts, or a naam blob's one match.
+ *
+ * @param {number} charts
+ * @param {ArrayLike<number>} counts
+ * @param {number} rows
+ * @param {string} names
+ * @param {(row: number) => object} read
+ * @returns {readonly (readonly object[]|null)[]}
+ */
+function raggedIn(charts, counts, rows, names, read) {
   if (counts.length === 0) return Object.freeze(Array.from({ length: charts }, () => null));
   const starts = startsOf(counts);
   if (counts.length !== charts || starts[charts] !== rows) {
@@ -3686,7 +3702,20 @@ function raggedOf(batch, counts, rows, names, read) {
  * @returns {readonly (T|null)[]}
  */
 function rowAChartOf(batch, rows, name, read) {
-  const charts = batch.decoded.cast.instant.length;
+  return rowAChartIn(batch.decoded.cast.instant.length, rows, name, read);
+}
+
+/**
+ * As `rowAChartOf`, over any blob whose sections hold `charts` rows.
+ *
+ * @template T
+ * @param {number} charts
+ * @param {number} rows
+ * @param {string} name
+ * @param {(chart: number) => T} read
+ * @returns {readonly (T|null)[]}
+ */
+function rowAChartIn(charts, rows, name, read) {
   if (rows === 0) return Object.freeze(Array.from({ length: charts }, () => null));
   if (rows !== charts) throw new Error(`${name} has ${rows} rows for ${charts} charts; it is one a chart or none`);
   return Object.freeze(Array.from({ length: charts }, (_, k) => read(k)));
@@ -4052,7 +4081,21 @@ const MATCHINGS = new WeakMap();
 function matchingsOf(batch) {
   let decoded = MATCHINGS.get(batch);
   if (decoded !== undefined) return decoded;
-  const d = batch.decoded;
+  decoded = matchingsIn(batch.decoded, batch.decoded.cast.instant.length);
+  MATCHINGS.set(batch, decoded);
+  return decoded;
+}
+
+/**
+ * The Ashta Koota read from the `matchings` and `matching_kootas` shapes of
+ * any blob carrying them, `charts` rows: a chart batch's, or a naam blob's
+ * one match (`03-design/matching.md`).
+ *
+ * @param {{ matchings: object, matchingKootas: object }} d the decoded blob
+ * @param {number} charts
+ * @returns {readonly (object|null)[]}
+ */
+function matchingsIn(d, charts) {
   const m = d.matchings;
   const k = d.matchingKootas;
   const of = (byId, id) => byId.get(id) ?? 'unknown';
@@ -4094,12 +4137,12 @@ function matchingsOf(batch) {
     };
   };
   const eight = Array.from({ length: m.total.length }, () => 8);
-  const kootas = raggedOf(batch, eight, k.koota.length, 'matchings and matching_kootas', (row) => ({
+  const kootas = raggedIn(charts, eight, k.koota.length, 'matchings and matching_kootas', (row) => ({
     koota: of(KootaById, k.koota[row]),
     points: k.points[row],
     maxPoints: k.maxPoints[row],
   }));
-  decoded = rowAChartOf(batch, m.total.length, 'matchings', (at) => {
+  return rowAChartIn(charts, m.total.length, 'matchings', (at) => {
     const read = readings(at);
     return Object.freeze({
       kootas: Object.freeze(
@@ -4114,8 +4157,6 @@ function matchingsOf(batch) {
       total: m.total[at],
     });
   });
-  MATCHINGS.set(batch, decoded);
-  return decoded;
 }
 
 /** Each batch's ten considerations, decoded once however many charts read them. */
@@ -4199,7 +4240,20 @@ function kujasOf(batch) {
 function poruthamsOf(batch) {
   let decoded = PORUTHAMS.get(batch);
   if (decoded !== undefined) return decoded;
-  const d = batch.decoded;
+  decoded = poruthamsIn(batch.decoded, batch.decoded.cast.instant.length);
+  PORUTHAMS.set(batch, decoded);
+  return decoded;
+}
+
+/**
+ * The ten considerations read from the `poruthams` and `porutham_rows`
+ * shapes of any blob carrying them, `charts` rows (`03-design/matching.md`).
+ *
+ * @param {{ poruthams: object, poruthamRows: object }} d the decoded blob
+ * @param {number} charts
+ * @returns {readonly (object|null)[]}
+ */
+function poruthamsIn(d, charts) {
   const p = d.poruthams;
   const r = d.poruthamRows;
   const of = (byId, id) => byId.get(id) ?? 'unknown';
@@ -4221,12 +4275,12 @@ function poruthamsOf(batch) {
     'koota.VEDHA': { pierced: p.pierced[at] === 1 },
   });
   const ten = Array.from({ length: p.agreeing.length }, () => 10);
-  const rows = raggedOf(batch, ten, r.koota.length, 'poruthams and porutham_rows', (row) => ({
+  const rows = raggedIn(charts, ten, r.koota.length, 'poruthams and porutham_rows', (row) => ({
     koota: of(KootaById, r.koota[row]),
     agrees: r.agrees[row] === 1,
     lifted: r.lifted[row] === 1,
   }));
-  decoded = rowAChartOf(batch, p.agreeing.length, 'poruthams', (at) => {
+  return rowAChartIn(charts, p.agreeing.length, 'poruthams', (at) => {
     const read = readings(at);
     return Object.freeze({
       considerations: Object.freeze(
@@ -4247,8 +4301,6 @@ function poruthamsOf(batch) {
       }),
     });
   });
-  PORUTHAMS.set(batch, decoded);
-  return decoded;
 }
 
 /** Each batch's equal distances, decoded once however many charts read them. */
@@ -5418,6 +5470,61 @@ function catalogueKeys(asked, field, kind) {
 }
 
 /**
+ * `sdk.matching` — what matches without a chart: two names, star to star
+ * (`03-design/matching.md`, C291 to C296). A match of two births is asked
+ * of the charts, through `matching` beside a chart request.
+ */
+export class MatchingArea extends Area {
+  /**
+   * Two names matched star to star (naam milan): each name's first
+   * syllable in the śatapada cakra, the varga koota of *Muhurta
+   * Chintamani* VI.35, and the Ashta Koota and the ten considerations
+   * read from the two name stars, as a chart's `matching` and `porutham`
+   * read two Moons.
+   *
+   * A name is read in Devanagari, or in IAST when `rules.name.latin` is
+   * `'IAST'`; an English spelling is refused rather than guessed. A name
+   * in Abhijit's row is refused unless `rules.name.abhijit` places it.
+   * Each refusal is named, `naam.groom.abhijit` and the like.
+   *
+   * @param {string} bride the bride's name
+   * @param {string} groom the groom's name
+   * @param {object} [rules] `{ name, koota, porutham }`, each optional
+   * @returns {object}
+   */
+  naam(bride, groom, rules) {
+    const request = { bride, groom };
+    if (rules !== undefined && rules !== null) {
+      if (typeof rules !== 'object' || Array.isArray(rules)) {
+        throw new TypeError("rules: expected a naam rules record, e.g. { name: { latin: 'IAST' } }");
+      }
+      request.rules = rules;
+    }
+    const d = decodeNaam(run(this, (inner) => inner.naamMilan(JSON.stringify(request))));
+    const n = d.naamNames;
+    const name = (at) =>
+      Object.freeze({
+        cell: n.cell[at],
+        nakshatra: n.abhijit[at] === 1 ? null : (NakshatraById.get(n.nakshatra[at]) ?? 'unknown'),
+        quarter: n.quarter[at],
+        varga: NameVargaById.get(n.varga[at]) ?? 'unknown',
+      });
+    const [brideName, groomName] = [name(0), name(1)];
+    return Object.freeze({
+      bride: brideName,
+      groom: groomName,
+      varga: Object.freeze({
+        bride: brideName.varga,
+        groom: groomName.varga,
+        relation: VargaRelationById.get(d.relation) ?? 'unknown',
+      }),
+      ashta: matchingsIn(d, 1)[0],
+      porutham: poruthamsIn(d, 1)[0],
+    });
+  }
+}
+
+/**
  * `sdk.almanac` — a day, or a run of days, with its limbs.
  *
  * The boundary calls this `panchanga` and the area takes the consumer's
@@ -5596,6 +5703,8 @@ export class Context {
     );
     /** A day, or a run of days, with its limbs. */
     this.almanac = new AlmanacArea(reach);
+    /** What matches without a chart: two names, star to star. */
+    this.matching = new MatchingArea(reach);
     this.#engine = new Engine(reach);
   }
 
@@ -5942,7 +6051,7 @@ export const returnsRequest = (from, to, grahas = ['MOON']) => ({
   aspects: [0],
 });
 
-export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
+export { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';
 export * from './records.js';

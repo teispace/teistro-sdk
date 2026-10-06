@@ -117,6 +117,8 @@ import type {
   Koota,
   YoniRelation,
   MaitriRelation,
+  NameVarga,
+  VargaRelation,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -208,7 +210,7 @@ export declare function fixedZone(offsetSeconds: number): ZoneSpec;
  */
 export declare function localMeanZone(longitudeDeg: Longitude): ZoneSpec;
 
-export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
+export { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 
 /** A failed call, with everything the library said about it. */
@@ -1762,6 +1764,54 @@ export interface Porutham {
   /** How many of the chief five agree: Dhinam, Ganam, Yoni, Rasi and Rajju. */
   readonly chiefAgreeing: number;
   readonly exception: PoruthamException;
+}
+
+/** How a name is read for naam milan; each default is the source's own (C291, C293). */
+export interface NameRules {
+  /** A name in Latin letters: `'REFUSE'`d (the default), or read as `'IAST'`; English "ch" is IAST "c", so it is never guessed. */
+  readonly latin?: 'REFUSE' | 'IAST';
+  /** Where a syllable in Abhijit's row is placed: `'REFUSE'` (the default), `'UTTARA_ASHADHA'` (its 4th quarter) or `'SHRAVANA'` (its 1st) (C294). */
+  readonly abhijit?: 'REFUSE' | 'UTTARA_ASHADHA' | 'SHRAVANA';
+}
+
+/** The readings naam milan is computed under; each optional, each the source's own when absent. */
+export interface NaamRules {
+  readonly name?: NameRules;
+  /** The readings the Ashta Koota of the name stars is computed under. */
+  readonly koota?: KootaRules;
+  /** The readings the ten considerations of the name stars are computed under. */
+  readonly porutham?: PoruthamRules;
+}
+
+/** A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8). */
+export interface NameSyllable {
+  /** Its place among the cakra's 112 cells, 0 for a, Krittika's first. */
+  readonly cell: number;
+  /** Its star, or null for Abhijit, which is none of the 27; `rules.name.abhijit` decides the star it is matched as. */
+  readonly nakshatra: Nakshatra | null;
+  /** Which of the star's four syllables it is, 1 to 4: the pada, for one of the 27. */
+  readonly quarter: number;
+  /** The letter group the name begins in (VI.35). */
+  readonly varga: NameVarga | 'unknown';
+}
+
+/** Two names' vargas and how they stand (*Muhurta Chintamani* VI.35, C295). */
+export interface VargaKoota {
+  readonly bride: NameVarga | 'unknown';
+  readonly groom: NameVarga | 'unknown';
+  /** One varga, enemies (each the 5th from the other), or neither. */
+  readonly relation: VargaRelation | 'unknown';
+}
+
+/** Two names matched star to star (naam milan). */
+export interface NaamMilan {
+  readonly bride: NameSyllable;
+  readonly groom: NameSyllable;
+  readonly varga: VargaKoota;
+  /** The Ashta Koota of the two name stars, as a chart's `matching` reads two Moons. */
+  readonly ashta: AshtaKoota;
+  /** The ten considerations of the two name stars, as a chart's `porutham` reads two Moons. */
+  readonly porutham: Porutham;
 }
 
 /** Mars's house from one reference. */
@@ -5417,6 +5467,24 @@ export declare class AlmanacArea {
   day(request: AlmanacDayRequest): AlmanacDay;
 }
 
+/**
+ * `sdk.matching` — what matches without a chart: two names, star to star.
+ * A match of two births is asked of the charts, through `matching`
+ * beside a chart request.
+ */
+export declare class MatchingArea {
+  /**
+   * Two names matched star to star (naam milan). A name is read in
+   * Devanagari, or in IAST when `rules.name.latin` is `'IAST'`; a refusal
+   * is named, `naam.groom.abhijit` and the like.
+   *
+   * @example
+   * const read = ctx.matching.naam('सीता', 'राम');
+   * console.log(read.bride.nakshatra, read.varga.relation, read.ashta.total);
+   */
+  naam(bride: string, groom: string, rules?: NaamRules): NaamMilan;
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -5445,6 +5513,8 @@ export declare class Context {
   readonly chart: ChartArea;
   /** A day, or a run of days, with its limbs. */
   readonly almanac: AlmanacArea;
+  /** What matches without a chart: two names, star to star. */
+  readonly matching: MatchingArea;
   /** The id of the profile the settings came from. */
   readonly profile: string;
   /** The resolved settings, as their canonical document. */

@@ -2268,6 +2268,50 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=birth, harmonic=request, **blenheim)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_two_names_match_star_to_star_without_a_chart(self) -> None:
+        """प्रि is Uttara Phalguni's 4th syllable and कृ Mrigashira's 4th
+        (*Svarodaya* vv. 3-8, the first consonant taking the cluster's
+        vowel), and pa and ka stand 4 vargas apart, eater and eaten (VI.35);
+        IAST read when declared, Abhijit placed when asked, and refusals
+        named by field (`03-design/matching.md`)."""
+        from teistro import DhinamPorutham, NaamMilan, NaamRules, NameVarga, Nakshatra, VargaRelation
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            read: NaamMilan = ctx.matching.naam("प्रिया", "कृष्ण")
+            self.assertEqual(
+                (read.bride.nakshatra, read.bride.quarter, read.bride.varga),
+                (Nakshatra.UTTARA_PHALGUNI, 4, NameVarga.RAT),
+            )
+            self.assertEqual(
+                (read.groom.nakshatra, read.groom.quarter, read.groom.varga),
+                (Nakshatra.MRIGASHIRA, 4, NameVarga.CAT),
+            )
+            self.assertIs(read.varga.relation, VargaRelation.ENEMY)
+            self.assertEqual(len(read.ashta.kootas), 8)
+            self.assertEqual(read.ashta.total, sum(row.points for row in read.ashta.kootas))
+            self.assertEqual(len(read.porutham.considerations), 10)
+            # The ten considerations count the groom's star from the bride's.
+            dhinam = read.porutham.considerations[0].reading
+            assert isinstance(dhinam, DhinamPorutham)
+            self.assertEqual(dhinam.count, 21)
+
+            iast: NaamRules = {"name": {"latin": "IAST"}}
+            self.assertEqual(ctx.matching.naam("priyā", "kṛṣṇa", iast), read)
+
+            placed = ctx.matching.naam("सीता", "ज़ोया", {"name": {"abhijit": "SHRAVANA"}})
+            self.assertEqual((placed.groom.nakshatra, placed.groom.quarter), (None, 3))
+            refusals: list[tuple[tuple[str, str, Any], str]] = [
+                (("सीता", "ज़ोया", None), "naam.groom.abhijit"),
+                (("Sita", "राम", None), "naam.bride.name"),
+                (("सीता", "राम", {"nam": {}}), "naam.rules.nam"),
+                (("सीता", "राम", {"name": {"latin": "ENGLISH"}}), "naam.rules.name.latin"),
+                (("सीता", "राम", "IAST"), "rules"),
+            ]
+            for (bride, groom, rules), field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.matching.naam(bride, groom, rules)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_synastry_with_a_partner(self) -> None:
         """A synastry crosses whole on King George V and Queen Mary (Leo,
         *How to Judge a Nativity*, p. 130): the recast's closest contacts,

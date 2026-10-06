@@ -941,6 +941,62 @@ final class AlmanacArea extends _Area {
   ).at(0);
 }
 
+/// `sdk.matching` — what matches without a chart: two names, star to star
+/// (`03-design/matching.md`, C291 to C296). A match of two births is asked
+/// of the charts, through [MatchingRequest] beside a chart request.
+final class MatchingArea extends _Area {
+  const MatchingArea._(super.context);
+
+  /// Two names matched star to star (naam milan): each name's first
+  /// syllable in the śatapada cakra, the varga koota of *Muhurta
+  /// Chintamani* VI.35, and the Ashta Koota and the ten considerations
+  /// read from the two name stars, as a chart's match reads two Moons.
+  ///
+  /// A name is read in Devanagari, or in IAST when [NameRules.latin] is
+  /// [LatinName.iast]; an English spelling is refused rather than guessed.
+  /// A name in Abhijit's row is refused unless [NameRules.abhijit] places
+  /// it. Each refusal is named, `naam.groom.abhijit` and the like.
+  ///
+  /// ```dart
+  /// final read = sdk.matching.naam('सीता', 'राम');
+  /// print('${read.bride.nakshatra} ${read.varga.relation} ${read.ashta.total}');
+  /// ```
+  NaamMilan naam(
+    String bride,
+    String groom, [
+    NaamRules rules = const NaamRules(),
+  ]) {
+    final d = decodeNaam(
+      _context._inner.naamMilan(
+        jsonEncode(<String, Object?>{
+          'bride': bride,
+          'groom': groom,
+          'rules': rules._record,
+        }),
+      ),
+    );
+    final n = d.naamNames;
+    NameSyllable name(int at) => NameSyllable(
+      cell: n.cell[at],
+      nakshatra: n.abhijit[at] == 1 ? null : Nakshatra.byId(n.nakshatra[at]),
+      quarter: n.quarter[at],
+      varga: NameVarga.byId(n.varga[at]),
+    );
+    final (brideName, groomName) = (name(0), name(1));
+    return NaamMilan(
+      bride: brideName,
+      groom: groomName,
+      varga: VargaKoota(
+        bride: brideName.varga,
+        groom: groomName.varga,
+        relation: VargaRelation.byId(d.relation),
+      ),
+      ashta: _matchingsIn(d.matchings, d.matchingKootas, 1).single,
+      porutham: _poruthamsIn(d.poruthams, d.poruthamRows, 1).single,
+    );
+  }
+}
+
 /// A context: settings, a locale and an ephemeris, with the calls that use
 /// them. Built by [Teistro.context].
 ///
@@ -1029,6 +1085,9 @@ final class Context {
 
   /// A day, or a run of days, with its limbs.
   late final AlmanacArea almanac = AlmanacArea._(this);
+
+  /// What matches without a chart: two names, star to star.
+  late final MatchingArea matching = MatchingArea._(this);
 
   /// The id of the profile the settings came from.
   String get profile => _inner.profile();
@@ -4266,8 +4325,17 @@ List<List<T>> _ragged<T>(
   int rows,
   String names,
   T Function(int at) read,
+) => _raggedIn(batch.cast.instant.length, counts, rows, names, read);
+
+/// A per-match table from a count column and the rows it is ragged by, for
+/// [charts] rows: a chart batch's, or a naam blob's one match.
+List<List<T>> _raggedIn<T>(
+  int charts,
+  List<int> counts,
+  int rows,
+  String names,
+  T Function(int at) read,
 ) {
-  final charts = batch.cast.instant.length;
   if (counts.isEmpty) return List<List<T>>.unmodifiable(const []);
   final total = counts.fold<int>(0, (sum, n) => sum + n);
   if (counts.length != charts || rows != total) {
@@ -4644,14 +4712,19 @@ final Expando<List<AshtaKoota>> _matchings = Expando<List<AshtaKoota>>(
 );
 
 List<AshtaKoota> _matchingsOf(Charts batch) =>
-    _matchings[batch] ??= _decodeMatchings(batch);
+    _matchings[batch] ??= _matchingsIn(
+      batch.matchings,
+      batch.matchingKootas,
+      batch.cast.instant.length,
+    );
 
-/// `matchings` holds a row a chart with what each koota read, or none when
-/// none was asked, and `matching_kootas` eight rows a chart, each koota's
-/// points in the verse's order (`03-design/matching.md`).
-List<AshtaKoota> _decodeMatchings(Charts batch) {
-  final m = batch.matchings;
-  final k = batch.matchingKootas;
+/// The Ashta Koota read from the `matchings` and `matching_kootas` shapes
+/// of any blob carrying them, [charts] rows: a chart batch's, or a naam
+/// blob's one match. `matchings` holds a row a match with what each koota
+/// read, or none when none was asked, and `matching_kootas` eight rows a
+/// match, each koota's points in the verse's order
+/// (`03-design/matching.md`).
+List<AshtaKoota> _matchingsIn(Matchings m, MatchingKootas k, int charts) {
   Map<Koota, KootaReading> readings(int at) {
     final dosha = BhakootDosha.byId(m.bhakootDosha[at]);
     final read = <KootaReading>[
@@ -4703,8 +4776,8 @@ List<AshtaKoota> _decodeMatchings(Charts batch) {
     return {for (final one in read) one.koota: one};
   }
 
-  final kootas = _ragged(
-    batch,
+  final kootas = _raggedIn(
+    charts,
     List<int>.filled(m.total.length, 8),
     k.length,
     'matchings and matching_kootas',
@@ -4729,15 +4802,18 @@ List<AshtaKoota> _decodeMatchings(Charts batch) {
 final Expando<List<Porutham>> _poruthams = Expando<List<Porutham>>('poruthams');
 
 List<Porutham> _poruthamsOf(Charts batch) =>
-    _poruthams[batch] ??= _decodePoruthams(batch);
+    _poruthams[batch] ??= _poruthamsIn(
+      batch.poruthams,
+      batch.poruthamRows,
+      batch.cast.instant.length,
+    );
 
-/// `poruthams` holds a row a chart with what each of the ten
-/// considerations read, or none when none was asked, and `porutham_rows`
-/// ten rows a chart, whether each agrees in the chapter's order
-/// (`03-design/matching.md`).
-List<Porutham> _decodePoruthams(Charts batch) {
-  final p = batch.poruthams;
-  final r = batch.poruthamRows;
+/// The ten considerations read from the `poruthams` and `porutham_rows`
+/// shapes of any blob carrying them, [charts] rows. `poruthams` holds a
+/// row a match with what each read, or none when none was asked, and
+/// `porutham_rows` ten rows a match, whether each agrees in the chapter's
+/// order (`03-design/matching.md`).
+List<Porutham> _poruthamsIn(Poruthams p, PoruthamRows r, int charts) {
   Map<Koota, PoruthamReading> readings(int at) {
     final read = <PoruthamReading>[
       DhinamPorutham(
@@ -4776,8 +4852,8 @@ List<Porutham> _decodePoruthams(Charts batch) {
     return {for (final one in read) one.koota: one};
   }
 
-  final rows = _ragged(
-    batch,
+  final rows = _raggedIn(
+    charts,
     List<int>.filled(p.agreeing.length, 10),
     r.length,
     'poruthams and porutham_rows',
@@ -8164,6 +8240,162 @@ final class Porutham extends _Value {
     chiefAgreeing,
     exception,
   ];
+}
+
+/// How a name in Latin letters is read (C293).
+enum LatinName {
+  /// Refused; the default, since English "ch" is IAST "c" and a guess
+  /// would match the wrong star.
+  refuse('REFUSE'),
+
+  /// Read as IAST.
+  iast('IAST');
+
+  const LatinName(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// Where a syllable in Abhijit's row is placed, Abhijit being none of the
+/// 27 (C294).
+enum AbhijitPada {
+  /// Refused; the default.
+  refuse('REFUSE'),
+
+  /// Uttara Ashadha's 4th quarter.
+  uttaraAshadha('UTTARA_ASHADHA'),
+
+  /// Shravana's 1st quarter.
+  shravana('SHRAVANA');
+
+  const AbhijitPada(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// How a name is read for naam milan; each default is the source's own
+/// (`03-design/matching.md`).
+///
+/// ```dart
+/// const iast = NameRules(latin: LatinName.iast);
+/// ```
+final class NameRules {
+  const NameRules({
+    this.latin = LatinName.refuse,
+    this.abhijit = AbhijitPada.refuse,
+  });
+
+  final LatinName latin;
+  final AbhijitPada abhijit;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'latin': latin.key,
+    'abhijit': abhijit.key,
+  };
+}
+
+/// The readings naam milan is computed under; each default is the
+/// source's own.
+///
+/// ```dart
+/// const placed = NaamRules(name: NameRules(abhijit: AbhijitPada.shravana));
+/// ```
+final class NaamRules {
+  const NaamRules({
+    this.name = const NameRules(),
+    this.koota = const KootaRules(),
+    this.porutham = const PoruthamRules(),
+  });
+
+  /// How the two names are read.
+  final NameRules name;
+
+  /// The readings the Ashta Koota of the name stars is computed under.
+  final KootaRules koota;
+
+  /// The readings the ten considerations of the name stars are computed
+  /// under.
+  final PoruthamRules porutham;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'name': name._record,
+    'koota': koota._record,
+    'porutham': porutham._record,
+  };
+}
+
+/// A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8).
+final class NameSyllable extends _Value {
+  const NameSyllable({
+    required this.cell,
+    required this.nakshatra,
+    required this.quarter,
+    required this.varga,
+  });
+
+  /// Its place among the cakra's 112 cells, 0 for a, Krittika's first.
+  final int cell;
+
+  /// Its star, or null for Abhijit, which is none of the 27;
+  /// [NameRules.abhijit] decides the star it is matched as.
+  final Nakshatra? nakshatra;
+
+  /// Which of the star's four syllables it is, 1 to 4: the pada, for one
+  /// of the 27.
+  final int quarter;
+
+  /// The letter group the name begins in, as written (VI.35).
+  final NameVarga varga;
+
+  @override
+  List<Object?> get _fields => [cell, nakshatra, quarter, varga];
+}
+
+/// Two names' vargas and how they stand (*Muhurta Chintamani* VI.35,
+/// C295).
+final class VargaKoota extends _Value {
+  const VargaKoota({
+    required this.bride,
+    required this.groom,
+    required this.relation,
+  });
+
+  final NameVarga bride;
+  final NameVarga groom;
+
+  /// One varga, enemies (each the 5th from the other), or neither.
+  final VargaRelation relation;
+
+  @override
+  List<Object?> get _fields => [bride, groom, relation];
+}
+
+/// Two names matched star to star (naam milan).
+final class NaamMilan extends _Value {
+  const NaamMilan({
+    required this.bride,
+    required this.groom,
+    required this.varga,
+    required this.ashta,
+    required this.porutham,
+  });
+
+  final NameSyllable bride;
+  final NameSyllable groom;
+  final VargaKoota varga;
+
+  /// The Ashta Koota of the two name stars, as a chart's match reads two
+  /// Moons.
+  final AshtaKoota ashta;
+
+  /// The ten considerations of the two name stars, as a chart's match
+  /// reads two Moons.
+  final Porutham porutham;
+
+  @override
+  List<Object?> get _fields => [bride, groom, varga, ashta, porutham];
 }
 
 /// What a chart's harmonic is asked (`03-design/western-harmonics.md`):
