@@ -1,7 +1,7 @@
 # The remaining spans of life (*Jataka Parijata* ch. 5)
 
-Status: Rasmi and v. 33's choice `decided` and built, 2026-10-07; the
-rest `research`. The
+Status: Rasmi, v. 33's choice and Dasayus `decided` and built,
+2026-10-07; the rest `research`. The
 three spans BPHS and *Jataka Parijata* share (Pindayu, Nisargayu,
 Amsayu) are built (`rules-engine.md`), and are read as the book reads
 them under `AyurdayaRules::PARIJATA` (C302 to C304). This page records
@@ -127,5 +127,10 @@ readings of the figure decide the rest:
    **Found:** a longevity request asked for no Shadbala unless a rule in
    the set read strength, so the visible half's "strongest of several"
    compared nothing and every one of the several lost; it now asks.
-3. Dasayus over the dashas the SDK already computes.
+3. ~~Dasayus over the dashas the SDK already computes.~~ Built (C309):
+   ch. 18 v. 3, read in vol. II, gives Vimshottari's lords and years, so
+   `longevity.dasayus` is the chart's own Vimshottari balance and the
+   eight dashas after it, 100 to 120 years. v. 33's Nakshatra candidate
+   carries it, and 43 of the corpus's 53 charts now name a computed
+   span.
 4. Chakrayus, once ch. 17's Kalachakra years are read.

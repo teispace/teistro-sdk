@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 
 use super::ayurdaya::Ayurdaya;
+use super::dasayus::Dasayus;
 use super::rasmi::Rasmi;
 use crate::chart::Strengths;
 use crate::language::Body;
@@ -76,9 +77,22 @@ pub struct Candidate {
     /// The span it names.
     pub ayus: Ayus,
     /// That span's years where it is computed: Pinda, Nisarga and Amsa as
-    /// the three spans read them, Rasmi as the rays' years; none for the
-    /// four the SDK does not yet compute.
+    /// the three spans read them, Rasmi as the rays' years and Nakshatra as
+    /// the dashas' (v. 27); none for the three the SDK does not yet
+    /// compute.
     pub years: Option<f64>,
+}
+
+/// The spans already computed, whose years a candidate carries; each left
+/// out is a span whose candidate carries none.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Computed<'a> {
+    /// Pinda, Nisarga and Amsa.
+    pub ayurdaya: Option<&'a Ayurdaya>,
+    /// The rays and their years.
+    pub rasmi: Option<&'a Rasmi>,
+    /// The dashas' span.
+    pub dasayus: Option<&'a Dasayus>,
 }
 
 /// The span the strongest names, with every candidate weighed.
@@ -99,10 +113,10 @@ pub struct SpanChoice {
 
 /// v. 33's choice over a chart's strengths, `lagna` filling the lagna's
 /// where the chart's measure does not reach it, with each span's years from
-/// `spans` and `rays`.
+/// those `computed`.
 ///
 /// ```
-/// use teistro_rules::longevity::{Ayus, span_choice};
+/// use teistro_rules::longevity::{Ayus, Computed, span_choice};
 /// # use teistro_rules::{Body, StrengthMeasure, Strengths};
 /// # use teistro_core::catalogue::Graha;
 /// // The rays' figure (p. 251): the Sun's 8.154 rupas are the greatest of
@@ -113,7 +127,7 @@ pub struct SpanChoice {
 ///          Some(7.719), Some(5.053), None, None, None],
 ///     required: [None; 10],
 /// };
-/// let choice = span_choice(&strengths, Some(7.345), None, None);
+/// let choice = span_choice(&strengths, Some(7.345), Computed::default());
 /// assert_eq!(choice.strongest, Some(Body::Graha(Graha::Sun)));
 /// assert_eq!(choice.ayus, Some(Ayus::Pinda));
 /// ```
@@ -121,9 +135,9 @@ pub struct SpanChoice {
 pub fn span_choice(
     strengths: &Strengths,
     lagna: Option<f64>,
-    spans: Option<&Ayurdaya>,
-    rays: Option<&Rasmi>,
+    computed: Computed<'_>,
 ) -> SpanChoice {
+    let spans = computed.ayurdaya;
     let candidates = NAMES.map(|(by, ayus)| {
         let measured = strengths.of.get(by.index()).copied().flatten();
         Candidate {
@@ -134,10 +148,9 @@ pub fn span_choice(
                 Ayus::Pinda => spans.map(|spans| spans.pindayu.years),
                 Ayus::Nisarga => spans.map(|spans| spans.nisargayu.years),
                 Ayus::Amsa => spans.map(|spans| spans.amsayu.years),
-                Ayus::Rasmi => rays.map(|rays| rays.years),
-                Ayus::Bhinnashtakavarga | Ayus::Kalachakra | Ayus::Nakshatra | Ayus::Samudaya => {
-                    None
-                }
+                Ayus::Rasmi => computed.rasmi.map(|rays| rays.years),
+                Ayus::Nakshatra => computed.dasayus.map(|span| span.years),
+                Ayus::Bhinnashtakavarga | Ayus::Kalachakra | Ayus::Samudaya => None,
             },
         }
     });
@@ -193,19 +206,18 @@ mod tests {
                 None,
             ]),
             None,
-            None,
-            None,
+            Computed::default(),
         );
         assert_eq!(
             (tied.strongest, tied.ayus, tied.all_weighed),
             (None, None, false)
         );
-        let none = span_choice(&strengths([None; 10]), None, None, None);
+        let none = span_choice(&strengths([None; 10]), None, Computed::default());
         assert_eq!(none.strongest, None);
         // The lagna's own strength stands where the measure reaches it.
         let mut of = [Some(1.0); 10];
         of[9] = Some(9.0);
-        let lagna = span_choice(&strengths(of), Some(0.0), None, None);
+        let lagna = span_choice(&strengths(of), Some(0.0), Computed::default());
         assert_eq!((lagna.ayus, lagna.all_weighed), (Some(Ayus::Amsa), true));
         assert_eq!(Ayus::named_by(Body::Graha(Graha::Rahu)), None);
         assert_eq!(

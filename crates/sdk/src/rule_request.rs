@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_rules::ThreePairsRules;
 use teistro_rules::longevity::{
-    Ayurdaya, AyurdayaRules, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
+    Ayurdaya, AyurdayaRules, Dasayus, Marakas, Rasmi, RasmiRules, SpanChoice, ThreePairs,
 };
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
@@ -119,9 +119,10 @@ pub struct RuleRequest {
     pub readings: RuleReadings,
     /// Whether to add the twelve house readings.
     pub houses: bool,
-    /// Whether to add the three pairs, the three spans, the rays, the span
-    /// the strongest names and the marakas. Asks the chart for its Shadbala
-    /// and Bhava bala, which they weigh.
+    /// Whether to add the three pairs, the three spans, the rays, the
+    /// dashas' span, the span the strongest names and the marakas. Asks the
+    /// chart for its Shadbala and Bhava bala, which they weigh, and its
+    /// Vimshottari, whose balance the dashas' span reads.
     pub longevity: bool,
     /// The choices the three spans are read under, when `longevity` asks
     /// for them; BPHS's by default (cruxes C104, C302 to C304).
@@ -410,6 +411,10 @@ pub struct Longevity {
     /// The seven grahas' rays, the class of life their sum gives, and
     /// Rasmija ayurdaya.
     pub rasmi: Rasmi,
+    /// The span the dashas give from birth (*Jataka Parijata* ch. 5 v. 27):
+    /// Vimshottari's balance and the eight dashas after it; none where the
+    /// chart's Vimshottari has no balance.
+    pub dasayus: Option<Dasayus>,
     /// Which span the strongest of the seven grahas and the lagna names
     /// (*Jataka Parijata* ch. 5 v. 33), the lagna weighed by its Bhava
     /// bala in rupas.

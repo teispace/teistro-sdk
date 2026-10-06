@@ -1024,6 +1024,8 @@ class AnEngine(WithLibrary):
         choice = answered["longevity"]["choice"]
         self.assertEqual(len(choice["candidates"]), 8)
         self.assertIs(choice["all_weighed"], True)
+        # v. 27: the dashas' span, a cycle of 120 years less what had run.
+        self.assertTrue(100.0 <= answered["longevity"]["dasayus"]["years"] <= 120.0)
         with self.assertRaises(TeistroError) as unread:
             found({"rasmi": verse_rules})
         self.assertEqual(unread.exception.field, "rules.rasmi")

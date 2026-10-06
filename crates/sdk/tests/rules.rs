@@ -611,9 +611,9 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
     assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
-    // Every chart names one span, over all eight: 36 of the 53 one the SDK
-    // computes (Pinda, Nisarga, Rasmi and Amsa), 17 one of the four it does
-    // not yet.
+    // Every chart names one span, over all eight: 43 of the 53 one the SDK
+    // computes (Pinda, Nisarga, Rasmi, Nakshatra and Amsa), 10 one of the
+    // three it does not yet.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
     assert_eq!(
         named,
@@ -657,6 +657,10 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
     );
     // v. 33 weighs the lagna by its Bhava bala beside the Shadbala, and a
     // span it names that is computed carries that span's years.
+    // The dashas' span is a whole cycle less what of the first had run, so
+    // between a hundred years and the hundred and twenty.
+    let dasayus = longevity.dasayus.unwrap();
+    assert!((100.0..=120.0).contains(&dasayus.years), "{name}");
     let choice = &longevity.choice;
     assert!(choice.all_weighed, "{name}");
     for candidate in &choice.candidates {
@@ -665,6 +669,7 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
             Ayus::Nisarga => Some(longevity.ayurdaya.nisargayu.years),
             Ayus::Amsa => Some(longevity.ayurdaya.amsayu.years),
             Ayus::Rasmi => Some(rasmi.years),
+            Ayus::Nakshatra => longevity.dasayus.map(|span| span.years),
             _ => None,
         };
         assert_eq!(candidate.years, years, "{name}");

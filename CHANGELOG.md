@@ -2157,6 +2157,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The dashas' span, Dasayus** (`ayurdaya-spans.md`, C309). The
+  longevity readings gain `dasayus`, *Jataka Parijata* ch. 5 v. 27: the
+  chart's Vimshottari balance and the eight dashas after it, and v. 33's
+  Nakshatra candidate carries its years. A longevity request now also
+  asks for the Vimshottari dasha it reads, which the returned document
+  carries. **Numbers:** none beyond the new reading.
 - **The span the strongest names** (`ayurdaya-spans.md`, C308). The
   longevity readings gain `choice`, *Jataka Parijata* ch. 5 v. 33: the
   seven grahas' Shadbala and the lagna's Bhava bala in rupas, each with

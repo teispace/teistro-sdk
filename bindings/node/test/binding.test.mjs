@@ -1008,6 +1008,9 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   const choice = answered.longevity.choice;
   assert.equal(choice.candidates.length, 8);
   assert.equal(choice.all_weighed, true);
+  // v. 27: the dashas' span, a cycle of 120 years less what had run.
+  const { years } = answered.longevity.dasayus;
+  assert.ok(years >= 100 && years <= 120, String(years));
   for (const [rules, field] of [
     [{ ayurdaya: parijata }, 'rules.ayurdaya'],
     [{ rasmi: { place: 'sign' } }, 'rules.rasmi'],
