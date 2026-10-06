@@ -9,6 +9,7 @@
 
 mod ayurdaya;
 mod choice;
+mod dasayus;
 mod maraka;
 mod pairs;
 mod rasmi;
@@ -17,7 +18,8 @@ pub use ayurdaya::{
     Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
     Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years, visible_half_share,
 };
-pub use choice::{Ayus, Candidate, SpanChoice, span_choice};
+pub use choice::{Ayus, Candidate, Computed, SpanChoice, span_choice};
+pub use dasayus::{Dasayus, dasayus};
 pub use maraka::{Brings, Marakas, Presentation, Reason, Reasons, Vulnerability, age_span};
 pub use pairs::{
     Basis, Decided, Pair, PairReading, Rectification, SaturnAmongThem, Shift, ThreePairs,

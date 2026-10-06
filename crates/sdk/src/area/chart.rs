@@ -78,7 +78,7 @@ use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
-use teistro_rules::longevity::span_choice;
+use teistro_rules::longevity::{Computed, dasayus, span_choice};
 
 /// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
 /// a chart whose lagna is `lagna`, with its arudha lagna counted to each
@@ -402,14 +402,19 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
         // The longevity readings weigh strengths: the visible half's
         // strongest of several, and v. 33's strongest of the seven and the
-        // lagna, whose strength is its bhava's.
+        // lagna, whose strength is its bhava's. Dasayus reads Vimshottari's
+        // balance at birth, as the settings measure it.
+        let vimshottari = KeyId::from(DashaSystem::Vimshottari);
         let inputs = |points: bool| {
             let asked = request.clone().rule_inputs(set.rules(), points);
-            if set.longevity() {
-                asked.with_shadbala().with_bhava_bala()
-            } else {
-                asked
+            if !set.longevity() {
+                return asked;
             }
+            let mut dashas = asked.dashas().to_vec();
+            if !dashas.contains(&vimshottari) {
+                dashas.push(vimshottari);
+            }
+            asked.with_shadbala().with_bhava_bala().with_dashas(dashas)
         };
         let (documents, provenance, unreadable) = match self.read(instants, &inputs(true)) {
             Ok(read) => (read.value, read.provenance, false),
@@ -452,16 +457,24 @@ impl<'a> ChartArea<'a> {
                     .as_ref()
                     .and_then(|bala| bala.bhavas.first())
                     .map(|first| first.virupas / 60.0);
+                let dasayus = document
+                    .dashas
+                    .iter()
+                    .find(|reading| {
+                        reading.system == DashaName::Catalogued(DashaSystem::Vimshottari)
+                    })
+                    .and_then(|reading| dasayus(reading.first_lord, reading.balance?.remaining));
+                let computed = Computed {
+                    ayurdaya: Some(&ayurdaya),
+                    rasmi: Some(&rasmi),
+                    dasayus: dasayus.as_ref(),
+                };
                 Longevity {
                     three_pairs: evaluator.three_pairs(rules.three_pairs),
-                    choice: span_choice(
-                        &evaluator.strengths(),
-                        lagna,
-                        Some(&ayurdaya),
-                        Some(&rasmi),
-                    ),
+                    choice: span_choice(&evaluator.strengths(), lagna, computed),
                     ayurdaya,
                     rasmi,
+                    dasayus,
                     marakas: evaluator.marakas(),
                 }
             });

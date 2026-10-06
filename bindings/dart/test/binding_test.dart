@@ -847,6 +847,9 @@ void _engineTests() {
     final choice = longevity['choice']! as Map<String, Object?>;
     expect(choice['candidates'], hasLength(8));
     expect(choice['all_weighed'], isTrue);
+    // v. 27: the dashas' span, a cycle of 120 years less what had run.
+    final dasayus = longevity['dasayus']! as Map<String, Object?>;
+    expect(dasayus['years']! as num, inInclusiveRange(100, 120));
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),
       throwsA(

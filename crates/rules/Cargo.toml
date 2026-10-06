@@ -14,6 +14,7 @@ publish = false
 [dependencies]
 teistro-aspect = { path = "../aspect" }
 teistro-core = { path = "../core" }
+teistro-dasha = { path = "../dasha" }
 teistro-points = { path = "../points" }
 teistro-state = { path = "../state" }
 serde = { version = "1", features = ["derive"] }

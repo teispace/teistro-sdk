@@ -99,6 +99,16 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             .and_then(|key| key.as_str().map(str::to_owned))
             .unwrap_or_default();
         put(report, &format!("chart-{index}-rules-span"), span);
+        let dasayus = reading
+            .longevity
+            .as_ref()
+            .and_then(|longevity| longevity.dasayus)
+            .map_or(0.0, |span| span.years);
+        put(
+            report,
+            &format!("chart-{index}-rules-dasayus"),
+            number(dasayus),
+        );
     }
 }
 
