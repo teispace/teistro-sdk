@@ -1,5 +1,5 @@
-//! Matching two births through the Moon of each, and Mars in each
-//! (`03-design/matching.md`).
+//! Matching two births through the Moon of each, and Mars in each, and
+//! two names through the star of each (`03-design/matching.md`).
 //!
 //! Everything here is a reading of tables, so there is no ephemeris, no
 //! chart and no instant: a [`Native`] is the Moon's nakshatra, pada, sign
@@ -22,6 +22,7 @@
 mod ashta;
 mod doshas;
 mod kuja;
+mod name;
 mod native;
 mod porutham;
 mod role;
@@ -37,6 +38,10 @@ pub use kuja::{
     KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaNative, KujaReading, KujaReference, KujaRules,
     KujaSide, kuja, kuja_side,
 };
+pub use name::{
+    AbhijitPada, LatinName, NaamMilan, NaamRules, NameRules, NameSyllable, NameVarga, VargaKoota,
+    VargaRelation, naam_milan, name_syllable, varga_koota,
+};
 pub use native::Native;
 pub use porutham::{
     CHIEF_FIVE, DeerghaBeyond, DhinamRule, LordsFriendship, PORUTHAM, Porutham, PoruthamException,
@@ -48,6 +53,8 @@ pub use role::MatchRole;
 mod doshas_tests;
 #[cfg(test)]
 mod kuja_tests;
+#[cfg(test)]
+mod name_tests;
 #[cfg(test)]
 mod porutham_tests;
 #[cfg(test)]

@@ -2157,6 +2157,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Naam milan: two names matched star to star** (`matching.md`, C291
+  to C296). A name's first syllable gives its star through the śatapada
+  cakra, which *Muhurta Chintamani* prints (p. 173) and *Narapati
+  Jayacharya Svarodaya* builds as a rule: twenty letters with five
+  vowels and four pillars, 112 cells from Krittika with Abhijit among
+  them. The rule reproduces the printed table cell for cell.
+  `name_syllable` reads the first akshara in Devanagari, or in IAST when
+  `latin` says so (an English spelling is never guessed): a conjunct by
+  its first consonant, vowel length folded, ṛ as i, b as v and ś as s
+  by *Svarodaya*'s v. 22, and ai, au and ḷ refused by name. Abhijit's
+  four syllables are answered as Abhijit, and a koota places them by the
+  `abhijit` knob or refuses. `naam_milan` reads the Ashta Koota and the
+  ten considerations from both name stars, as Vasishtha asks, beside
+  VI.35's varga koota, reported as facts. `Native::of_pada` founds a
+  native from a nakshatra's pada.
 - **Matching's marriage doshas as one list** (`matching.md`, C289,
   C290). `marriage_doshas` gathers what the three readings report: the
   Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the
