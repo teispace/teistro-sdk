@@ -1271,7 +1271,8 @@ final class ChartRequestStruct extends ffi.Struct {
   /// optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
   /// (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in
   /// `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and
-  /// `kujas`. Null for none,
+  /// `kujas`, with every dosha the three report gathered in
+  /// `marriage_doshas` and `marriage_dosha_rows`. Null for none,
   /// which costs nothing
   /// (`03-design/matching.md`). Refusals are named from the record every
   /// binding calls `matching`, as `matching.partnerRole`.
@@ -3584,7 +3585,8 @@ final class ChartRequest {
   /// optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
   /// (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in
   /// `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and
-  /// `kujas`. Null for none,
+  /// `kujas`, with every dosha the three report gathered in
+  /// `marriage_doshas` and `marriage_dosha_rows`. Null for none,
   /// which costs nothing
   /// (`03-design/matching.md`). Refusals are named from the record every
   /// binding calls `matching`, as `matching.partnerRole`.

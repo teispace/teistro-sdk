@@ -1791,7 +1791,8 @@ pub struct TsChartRequest {
     /// optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
     /// (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in
     /// `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and
-    /// `kujas`. Null for none,
+    /// `kujas`, with every dosha the three report gathered in
+    /// `marriage_doshas` and `marriage_dosha_rows`. Null for none,
     /// which costs nothing
     /// (`03-design/matching.md`). Refusals are named from the record every
     /// binding calls `matching`, as `matching.partnerRole`.
@@ -3588,6 +3589,60 @@ impl KujaColumns {
     }
 }
 
+/// `marriage_doshas` and `marriage_dosha_rows`: each chart's marriage
+/// doshas with its partner, a count a chart and the entries ragged under
+/// it (`matching.md`, C289).
+#[derive(Default)]
+struct MarriageDoshaColumns {
+    count: Vec<u32>,
+    system: Vec<u8>,
+    koota: Vec<u16>,
+    side: Vec<u8>,
+    lifted: Vec<u8>,
+}
+
+impl MarriageDoshaColumns {
+    fn of(read: &[teistro::Matched]) -> Result<MarriageDoshaColumns, Error> {
+        let mut columns = MarriageDoshaColumns::default();
+        for doshas in read.iter().map(teistro::Matched::doshas) {
+            columns
+                .count
+                .push(u32::try_from(doshas.len()).map_err(|_| {
+                    Error::internal("a match lists more doshas than a count holds")
+                })?);
+            for one in doshas {
+                columns.system.push(TsDoshaSystem::from(one.system) as u8);
+                columns
+                    .koota
+                    .push(one.koota.map_or(0, teistro::catalogue::Koota::id));
+                columns
+                    .side
+                    .push(one.side.map_or(0, |side| TsMatchRole::from(side) as u8));
+                columns.lifted.push(u8::from(one.lifted));
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "marriage_doshas",
+            self.count.len(),
+            &[ColumnData::U32(&self.count)],
+        )?;
+        writer.columns(
+            "marriage_dosha_rows",
+            self.system.len(),
+            &[
+                ColumnData::U8(&self.system),
+                ColumnData::U16(&self.koota),
+                ColumnData::U8(&self.side),
+                ColumnData::U8(&self.lifted),
+            ],
+        )
+    }
+}
+
 fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
     if read == 0 || read == charts {
         Ok(())
@@ -3779,6 +3834,7 @@ struct AspectTables {
     matchings: MatchingColumns,
     poruthams: PoruthamColumns,
     kujas: KujaColumns,
+    doshas: MarriageDoshaColumns,
 }
 
 impl AspectTables {
@@ -3795,6 +3851,7 @@ impl AspectTables {
             matchings: MatchingColumns::of(composed.matchings, charts)?,
             poruthams: PoruthamColumns::of(composed.matchings)?,
             kujas: KujaColumns::of(composed.matchings),
+            doshas: MarriageDoshaColumns::of(composed.matchings)?,
         })
     }
 
@@ -3815,7 +3872,8 @@ impl AspectTables {
         self.harmonics.write(writer)?;
         self.matchings.write(writer)?;
         self.poruthams.write(writer)?;
-        self.kujas.write(writer)
+        self.kujas.write(writer)?;
+        self.doshas.write(writer)
     }
 }
 
@@ -7947,6 +8005,54 @@ impl From<teistro::matching::Rajju> for TsRajju {
             Rajju::Nabhi => TsRajju::Nabhi,
             Rajju::Kanta => TsRajju::Kanta,
             Rajju::Siro => TsRajju::Siro,
+        }
+    }
+}
+
+/// Which reading a marriage dosha comes from (`03-design/matching.md`,
+/// C289).
+///
+/// Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
+/// match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDoshaSystem {
+    /// The Ashta Koota of *Muhurta Chintamani*.
+    AshtaKoota = 0,
+    /// The ten considerations of *Kalaprakasika*.
+    Porutham = 1,
+    /// The Kuja dosha of *Manasagari*.
+    Kuja = 2,
+}
+
+impl From<teistro::matching::DoshaSystem> for TsDoshaSystem {
+    fn from(system: teistro::matching::DoshaSystem) -> TsDoshaSystem {
+        use teistro::matching::DoshaSystem;
+        match system {
+            DoshaSystem::AshtaKoota => TsDoshaSystem::AshtaKoota,
+            DoshaSystem::Porutham => TsDoshaSystem::Porutham,
+            DoshaSystem::Kuja => TsDoshaSystem::Kuja,
+        }
+    }
+}
+
+/// The side of a match a birth stands on (`03-design/matching.md`).
+///
+/// Mirrors `teistro::MatchRole` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsMatchRole {
+    /// The bride's.
+    Bride = 0,
+    /// The groom's.
+    Groom = 1,
+}
+
+impl From<teistro::MatchRole> for TsMatchRole {
+    fn from(role: teistro::MatchRole) -> TsMatchRole {
+        match role {
+            teistro::MatchRole::Bride => TsMatchRole::Bride,
+            teistro::MatchRole::Groom => TsMatchRole::Groom,
         }
     }
 }

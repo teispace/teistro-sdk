@@ -8733,7 +8733,8 @@ fn a_chart_request_answers_its_harmonic() {
 fn a_chart_request_answers_its_matching() {
     use teistro::{KootaReading, PoruthamReading};
     use teistro_ffi::chart::{
-        TsBhakootDosha, TsDhinamRule, TsMaitriRelation, TsRajju, TsVashyaRelation, TsYoniRelation,
+        TsBhakootDosha, TsDhinamRule, TsDoshaSystem, TsMaitriRelation, TsMatchRole, TsRajju,
+        TsVashyaRelation, TsYoniRelation,
     };
 
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
@@ -9028,6 +9029,43 @@ fn a_chart_request_answers_its_matching() {
         assert_eq!(&ints("kujas", name), cells, "{name}");
     }
 
+    // The marriage doshas, a count a chart and the entries ragged under it.
+    assert_eq!(
+        ints("marriage_doshas", "count"),
+        matched
+            .iter()
+            .map(|one| i64::try_from(one.doshas().len()).unwrap())
+            .collect::<Vec<_>>()
+    );
+    let listed: Vec<teistro::MarriageDosha> =
+        matched.iter().flat_map(teistro::Matched::doshas).collect();
+    assert!(
+        listed.iter().any(|one| one.side.is_none()),
+        "a dosha between the two"
+    );
+    for (column, cell) in [
+        (
+            "system",
+            &(|one: &teistro::MarriageDosha| TsDoshaSystem::from(one.system) as i64)
+                as &dyn Fn(&teistro::MarriageDosha) -> i64,
+        ),
+        ("koota", &|one: &teistro::MarriageDosha| {
+            one.koota.map_or(0, |koota| i64::from(koota.id()))
+        }),
+        ("side", &|one: &teistro::MarriageDosha| {
+            one.side.map_or(0, |side| TsMatchRole::from(side) as i64)
+        }),
+        ("lifted", &|one: &teistro::MarriageDosha| {
+            i64::from(one.lifted)
+        }),
+    ] {
+        assert_eq!(
+            ints("marriage_dosha_rows", column),
+            listed.iter().map(cell).collect::<Vec<_>>(),
+            "{column}"
+        );
+    }
+
     // None asked is empty sections; a refusal is named by its field.
     let bytes = chart_blob(&ctx, &base).unwrap();
     let reader = Reader::parse(&bytes, &schema).unwrap();
@@ -9037,6 +9075,8 @@ fn a_chart_request_answers_its_matching() {
         ("poruthams", "agreeing"),
         ("porutham_rows", "koota"),
         ("kujas", "both"),
+        ("marriage_doshas", "count"),
+        ("marriage_dosha_rows", "system"),
     ] {
         assert_eq!(
             reader.column(section, column).unwrap().len(),

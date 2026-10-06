@@ -635,6 +635,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_western_house_sections(103))
         .chain(chart_harmonic_sections(108))
         .chain(chart_matching_sections(111))
+        .chain(chart_marriage_dosha_sections(116))
         .collect(),
     }
 }
@@ -2277,6 +2278,54 @@ fn chart_matching_sections(first: u32) -> [SectionSchema; 5] {
                 "Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). {empty}"
             ),
             kuja_columns(),
+        ),
+    ]
+}
+
+/// The two sections a match's marriage doshas cross as, from `first`: a
+/// count a chart, and the entries ragged under it (C289, C290).
+fn chart_marriage_dosha_sections(first: u32) -> [SectionSchema; 2] {
+    let empty = "Empty when `matching_json` asked for none.";
+    [
+        SectionSchema::columns(
+            first,
+            "marriage_doshas",
+            &format!(
+                "How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). {empty}"
+            ),
+            vec![ColumnDef::new(
+                "count",
+                Scalar::U32,
+                "The number of entries, every dosha the three readings report.",
+            )],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "marriage_dosha_rows",
+            &format!(
+                "Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). {empty}"
+            ),
+            vec![
+                ColumnDef::new("system", Scalar::U8, "Which reading it comes from.")
+                    .of_enum("TsDoshaSystem"),
+                ColumnDef::new(
+                    "koota",
+                    Scalar::U16,
+                    "The koota or consideration it is; read only when `system` is not `KUJA`.",
+                )
+                .of_enum("Koota"),
+                ColumnDef::new(
+                    "side",
+                    Scalar::U8,
+                    "The side carrying it; read only when `system` is `KUJA`.",
+                )
+                .of_enum("TsMatchRole"),
+                ColumnDef::new(
+                    "lifted",
+                    Scalar::U8,
+                    "1 when an exception the source names lifts it.",
+                ),
+            ],
         ),
     ]
 }

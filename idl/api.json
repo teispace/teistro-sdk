@@ -8869,6 +8869,52 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsDoshaSystem",
+      "doc": "Which reading a marriage dosha comes from (`03-design/matching.md`,\nC289).\n\nMirrors `teistro::matching::DoshaSystem` through an **exhaustive**\nmatch.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "AshtaKoota",
+          "value": 0,
+          "doc": "The Ashta Koota of *Muhurta Chintamani*.",
+          "key": "ASHTA_KOOTA"
+        },
+        {
+          "name": "Porutham",
+          "value": 1,
+          "doc": "The ten considerations of *Kalaprakasika*.",
+          "key": "PORUTHAM"
+        },
+        {
+          "name": "Kuja",
+          "value": 2,
+          "doc": "The Kuja dosha of *Manasagari*.",
+          "key": "KUJA"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsMatchRole",
+      "doc": "The side of a match a birth stands on (`03-design/matching.md`).\n\nMirrors `teistro::MatchRole` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Bride",
+          "value": 0,
+          "doc": "The bride's.",
+          "key": "BRIDE"
+        },
+        {
+          "name": "Groom",
+          "value": 1,
+          "doc": "The groom's.",
+          "key": "GROOM"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHarshaGrade",
       "doc": "What the source calls a planet by its Harsha bala\n(`03-design/tajika-harsha.md`).\n\nMirrors `teistro::HarshaGrade` through an **exhaustive** match.",
       "repr": "u8",
@@ -12312,7 +12358,7 @@
             },
             "mutable": false
           },
-          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja\ndosha, as a JSON object: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`); `porutham`, the ten considerations of\n*Kalaprakasika* XIII, every field optional: `twoSignStar`\n(`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`\n(`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or\n`ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field\noptional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`\n(`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in\n`matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and\n`kujas`. Null for none,\nwhich costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
+          "doc": "Every chart matched with one partner's birth by the Ashta Koota of\n*Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja\ndosha, as a JSON object: `partner`,\n`{\"instant\": jd, \"place\": {\"latitude\", \"longitude\", \"altitude\"},\n\"utcOffsetSeconds\"}`, founded once under the context's sidereal\nprofile; `partnerRole`, `\"BRIDE\"` or `\"GROOM\"`, every chart standing\non the other side; and `rules`, every field optional: `equalVarna`\n(`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`),\n`bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or\n`MIDDLE_ONLY`); `porutham`, the ten considerations of\n*Kalaprakasika* XIII, every field optional: `twoSignStar`\n(`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`\n(`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or\n`ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field\noptional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`\n(`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in\n`matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and\n`kujas`, with every dosha the three report gathered in\n`marriage_doshas` and `marriage_dosha_rows`. Null for none,\nwhich costs nothing\n(`03-design/matching.md`). Refusals are named from the record every\nbinding calls `matching`, as `matching.partnerRole`.",
           "meta": {
             "example": "{\"partner\":{\"instant\":2447892.5,\"place\":{\"latitude\":27.7172,\"longitude\":85.324,\"altitude\":1400}},\"partnerRole\":\"BRIDE\"}",
             "nullable": true
@@ -20845,6 +20891,50 @@
               "name": "both",
               "scalar": "u8",
               "doc": "1 when both carry the dosha, the fact the popular cancellation reads; nothing is lifted (C288)."
+            }
+          ]
+        },
+        {
+          "id": 116,
+          "name": "marriage_doshas",
+          "doc": "How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "count",
+              "scalar": "u32",
+              "doc": "The number of entries, every dosha the three readings report."
+            }
+          ]
+        },
+        {
+          "id": 117,
+          "name": "marriage_dosha_rows",
+          "doc": "Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "system",
+              "scalar": "u8",
+              "doc": "Which reading it comes from.",
+              "enum": "TsDoshaSystem"
+            },
+            {
+              "name": "koota",
+              "scalar": "u16",
+              "doc": "The koota or consideration it is; read only when `system` is not `KUJA`.",
+              "enum": "Koota"
+            },
+            {
+              "name": "side",
+              "scalar": "u8",
+              "doc": "The side carrying it; read only when `system` is `KUJA`.",
+              "enum": "TsMatchRole"
+            },
+            {
+              "name": "lifted",
+              "scalar": "u8",
+              "doc": "1 when an exception the source names lifts it."
             }
           ]
         }

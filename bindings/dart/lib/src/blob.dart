@@ -4859,6 +4859,52 @@ final class ChartsKujas {
   final int length;
 }
 
+/// The `marriage_doshas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
+final class ChartsMarriageDoshas {
+  const ChartsMarriageDoshas({
+    required this.count,
+    required this.length,
+  });
+
+  /// The number of entries, every dosha the three readings report.
+  final Uint32List count;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `marriage_dosha_rows` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
+final class ChartsMarriageDoshaRows {
+  const ChartsMarriageDoshaRows({
+    required this.system,
+    required this.koota,
+    required this.side,
+    required this.lifted,
+    required this.length,
+  });
+
+  /// Which reading it comes from.
+  final Uint8List system;
+
+  /// The koota or consideration it is; read only when `system` is not `KUJA`.
+  final Uint16List koota;
+
+  /// The side carrying it; read only when `system` is `KUJA`.
+  final Uint8List side;
+
+  /// 1 when an exception the source names lifts it.
+  final Uint8List lifted;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5086,6 +5132,8 @@ final class Charts {
     required this.poruthams,
     required this.poruthamRows,
     required this.kujas,
+    required this.marriageDoshas,
+    required this.marriageDoshaRows,
   });
 
   /// What kind of chart these are.
@@ -5477,6 +5525,12 @@ final class Charts {
   /// Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
   final ChartsKujas kujas;
 
+  /// How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
+  final ChartsMarriageDoshas marriageDoshas;
+
+  /// Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
+  final ChartsMarriageDoshaRows marriageDoshaRows;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5599,6 +5653,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atPoruthams = blob.section(113, 'poruthams');
   final atPoruthamRows = blob.section(114, 'porutham_rows');
   final atKujas = blob.section(115, 'kujas');
+  final atMarriageDoshas = blob.section(116, 'marriage_doshas');
+  final atMarriageDoshaRows = blob.section(117, 'marriage_dosha_rows');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10005,6 +10061,37 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atKujas, 14) + atKujas.count * 1,
       ),
       length: atKujas.count,
+    ),
+    marriageDoshas: ChartsMarriageDoshas(
+      count: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMarriageDoshas, 0),
+        blob.columnOffset(atMarriageDoshas, 0) + atMarriageDoshas.count * 4,
+      ),
+      length: atMarriageDoshas.count,
+    ),
+    marriageDoshaRows: ChartsMarriageDoshaRows(
+      system: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMarriageDoshaRows, 0),
+        blob.columnOffset(atMarriageDoshaRows, 0) + atMarriageDoshaRows.count * 1,
+      ),
+      koota: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMarriageDoshaRows, 1),
+        blob.columnOffset(atMarriageDoshaRows, 1) + atMarriageDoshaRows.count * 2,
+      ),
+      side: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMarriageDoshaRows, 2),
+        blob.columnOffset(atMarriageDoshaRows, 2) + atMarriageDoshaRows.count * 1,
+      ),
+      lifted: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMarriageDoshaRows, 3),
+        blob.columnOffset(atMarriageDoshaRows, 3) + atMarriageDoshaRows.count * 1,
+      ),
+      length: atMarriageDoshaRows.count,
     ),
   );
 }
