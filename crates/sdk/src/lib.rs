@@ -291,9 +291,10 @@ pub use matching_chart::{Matched, PartnerMatching};
 pub use naam_request::NaamRequest;
 pub use teistro_matching as matching;
 pub use teistro_matching::{
-    AshtaKoota, KootaReading, KootaRow, KootaRules, Kuja, KujaRules, MarriageDosha, MatchRole,
-    NaamMilan, NaamRules, NameRules, NameSyllable, Native, Porutham, PoruthamReading, PoruthamRow,
-    PoruthamRules, naam_milan, name_syllable,
+    AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaRules,
+    MarriageDosha, MatchRole, NaamMilan, NaamRules, NameRules, NameSyllable, Native, Porutham,
+    PoruthamReading, PoruthamRow, PoruthamRules, avakahada, birth_syllable, naam_milan,
+    name_syllable,
 };
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).

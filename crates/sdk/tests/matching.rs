@@ -231,3 +231,41 @@ fn the_kuja_dosha_reads_mars_from_each_founded_chart() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("groom"));
 }
+
+#[test]
+fn a_chart_carries_its_moons_avakahada_and_a_tropical_one_refuses_it() {
+    // C301: the section is the kernel's reading of the chart's own
+    // sidereal Moon; a tropical chart has no nakshatra and refuses it by
+    // name, so `with_everything` leaves it to be asked for.
+    let sdk = context(None);
+    let request = ChartRequest::at(kathmandu(), UtcOffset::UTC);
+    for instant in [2_447_892.5, 2_451_545.0, 2_460_000.25] {
+        let at = JulianDay::<Utc>::try_new(instant).unwrap();
+        let chart = sdk
+            .chart()
+            .reading(at, &request.clone().with_avakahada())
+            .unwrap()
+            .value;
+        let read = chart.avakahada.clone().unwrap();
+        assert_eq!(read, teistro::avakahada(moon(&chart)).unwrap());
+        assert_eq!(
+            read.syllable,
+            teistro::birth_syllable(read.nakshatra, read.pada).unwrap()
+        );
+        let everything = sdk
+            .chart()
+            .reading(at, &request.clone().with_everything())
+            .unwrap()
+            .value;
+        assert!(everything.avakahada.is_none());
+    }
+    let western = context(Some("western-tropical-default"));
+    let refused = western
+        .chart()
+        .reading(
+            JulianDay::<Utc>::try_new(2_451_545.0).unwrap(),
+            &request.with_avakahada(),
+        )
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("avakahada"));
+}

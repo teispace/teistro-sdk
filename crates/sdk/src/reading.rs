@@ -68,6 +68,8 @@ impl Sections {
     pub(crate) const JAIMINI: Sections = Sections(1 << 11);
     /// Uranus, Neptune and Pluto beside the nine, in the foundation.
     pub(crate) const OUTER: Sections = Sections(1 << 12);
+    /// The Moon's avakahada.
+    pub(crate) const AVAKAHADA: Sections = Sections(1 << 13);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -415,6 +417,30 @@ impl ChartRequest {
         self
     }
 
+    /// The Moon's avakahada: its star and pada, the syllable the child is
+    /// named by, and the readings a koota takes of one native
+    /// (`03-design/matching.md`, C297 to C301). A tropical chart has no
+    /// nakshatra and refuses it, named `avakahada`, so
+    /// [`with_everything`](Self::with_everything) asks for it only by name.
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_avakahada();
+    /// let chart = sdk.chart().reading(JulianDay::try_new(2_451_545.0)?, &request)?.value;
+    /// let read = chart.avakahada.expect("asked for");
+    /// assert!((1..=4).contains(&read.pada));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_avakahada(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::AVAKAHADA);
+        self
+    }
+
     /// Uranus, Neptune and Pluto, placed beside the nine in the
     /// foundation's `outer` and asked for in the same request to the
     /// ephemeris (`03-design/western-outer-planets.md`). Left out, the
@@ -551,8 +577,9 @@ impl ChartRequest {
     /// parity runner asks for: the widest document the SDK can produce for
     /// any chart. Every dasha system this build computes on every chart
     /// ([`teistro_dasha::systems_every_chart_gives`]): the Sthira dasa,
-    /// which a chart with no Brahma graha refuses, is asked for by name.
-    /// **No drawings**:
+    /// which a chart with no Brahma graha refuses, is asked for by name, and
+    /// so is the avakahada, which a tropical chart refuses
+    /// ([`with_avakahada`](Self::with_avakahada)). **No drawings**:
     /// those are named pairs, and every layout times every
     /// chart is a hundred and twenty-six placements nobody asked for.
     #[must_use]
