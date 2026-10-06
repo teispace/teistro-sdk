@@ -676,3 +676,41 @@ fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {
         .unwrap_err();
     assert_eq!(error.field(), Some("rules"));
 }
+
+/// A rule request chooses how the longevity readings are read, each field
+/// optional, and a choice without the readings it chooses for is refused
+/// by name rather than ignored (cruxes C302 to C304).
+#[test]
+fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_reads() {
+    use teistro::RuleRequest;
+    use teistro::rules::ThreePairsRules;
+    use teistro::rules::longevity::{AyurdayaRules, Enmity};
+
+    let set = RuleRequest::from_json(r#"{"longevity": true, "ayurdaya": {"enmity": "compound"}}"#)
+        .unwrap()
+        .rule_set()
+        .unwrap();
+    assert_eq!(
+        set.ayurdaya(),
+        Some(AyurdayaRules {
+            enmity: Enmity::Compound,
+            ..AyurdayaRules::default()
+        })
+    );
+    assert_eq!(set.three_pairs(), Some(ThreePairsRules::VERSE));
+    assert_eq!(RuleRequest::default().rule_set().unwrap().ayurdaya(), None);
+    for (text, field) in [
+        (r#"{"ayurdaya": {}}"#, "ayurdaya"),
+        (r#"{"threePairs": {}}"#, "threePairs"),
+    ] {
+        let refused = RuleRequest::from_json(text)
+            .unwrap()
+            .rule_set()
+            .unwrap_err();
+        assert_eq!(refused.field(), Some(field), "{text}");
+    }
+    let unknown =
+        RuleRequest::from_json(r#"{"longevity": true, "ayurdaya": {"enmity": "temporary"}}"#)
+            .unwrap_err();
+    assert_eq!(unknown.field(), Some("ayurdaya.enmity"));
+}

@@ -9,7 +9,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
-use teistro_rules::longevity::{Ayurdaya, Marakas, ThreePairs};
+use teistro_rules::ThreePairsRules;
+use teistro_rules::longevity::{Ayurdaya, AyurdayaRules, Marakas, ThreePairs};
 use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, shipped};
 
 /// A set of rules the kernel ships.
@@ -118,6 +119,12 @@ pub struct RuleRequest {
     pub houses: bool,
     /// Whether to add the three pairs, the three spans and the marakas.
     pub longevity: bool,
+    /// The choices the three spans are read under, when `longevity` asks
+    /// for them; BPHS's by default (cruxes C104, C302 to C304).
+    pub ayurdaya: Option<AyurdayaRules>,
+    /// The choices the three pairs are read under, when `longevity` asks
+    /// for them; the verses' by default (crux C103).
+    pub three_pairs: Option<ThreePairsRules>,
 }
 
 impl RuleRequest {
@@ -158,6 +165,37 @@ impl RuleRequest {
         self
     }
 
+    /// The same request with the longevity readings, the three spans read
+    /// under `rules`.
+    ///
+    /// ```
+    /// use teistro::RuleRequest;
+    /// use teistro::rules::longevity::AyurdayaRules;
+    ///
+    /// let request = RuleRequest::default().with_ayurdaya(AyurdayaRules::PARIJATA);
+    /// let read = RuleRequest::from_json(
+    ///     r#"{"longevity": true, "ayurdaya": {"enemy_exempt": "mars", "enmity": "compound", "rising": "every"}}"#,
+    /// )?;
+    /// assert_eq!(read, request);
+    /// assert_eq!(request.rule_set()?.ayurdaya(), Some(AyurdayaRules::PARIJATA));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_ayurdaya(mut self, rules: AyurdayaRules) -> RuleRequest {
+        self.longevity = true;
+        self.ayurdaya = Some(rules);
+        self
+    }
+
+    /// The same request with the longevity readings, the three pairs read
+    /// under `rules`.
+    #[must_use]
+    pub const fn with_three_pairs(mut self, rules: ThreePairsRules) -> RuleRequest {
+        self.longevity = true;
+        self.three_pairs = Some(rules);
+        self
+    }
+
     /// A request read from JSON. A value that does not read is refused by
     /// where it stands — `rules[3].when`, `houses` — with what was wrong.
     ///
@@ -190,7 +228,7 @@ impl RuleRequest {
         let request: RuleRequest =
             teistro_core::strict::deserialize(&value, "").map_err(|err| {
                 err.with_hint(
-                    "an object of `shipped`, `rules`, `readings`, `houses` and `longevity`",
+                    "an object of `shipped`, `rules`, `readings`, `houses`, `longevity`, `ayurdaya` and `threePairs`",
                 )
             })?;
         Ok(request.with_rules(rules))
@@ -223,13 +261,37 @@ impl RuleRequest {
         }
         check_references(&rules)
             .map_err(|reason| Error::invalid_arg(reason).with_field("rules"))?;
+        // A longevity choice without the longevity readings would be read
+        // by nothing, so it is refused rather than ignored.
+        for (field, given) in [
+            ("ayurdaya", self.ayurdaya.is_some()),
+            ("threePairs", self.three_pairs.is_some()),
+        ] {
+            if given && !self.longevity {
+                return Err(Error::invalid_arg(format!(
+                    "`{field}` chooses how the longevity readings are read, which `longevity` does not ask for"
+                ))
+                .with_field(field)
+                .with_hint("set `longevity` to true, or leave the choice out"));
+            }
+        }
         Ok(RuleSet {
             rules,
             readings: self.readings,
             houses: self.houses,
-            longevity: self.longevity,
+            longevity: self.longevity.then(|| LongevityRules {
+                ayurdaya: self.ayurdaya.unwrap_or_default(),
+                three_pairs: self.three_pairs.unwrap_or_default(),
+            }),
         })
     }
+}
+
+/// The choices the longevity readings are read under.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct LongevityRules {
+    ayurdaya: AyurdayaRules,
+    three_pairs: ThreePairsRules,
 }
 
 /// A validated set of rules with what else a reading should answer.
@@ -238,7 +300,7 @@ pub struct RuleSet {
     rules: Vec<Rule>,
     readings: RuleReadings,
     houses: bool,
-    longevity: bool,
+    longevity: Option<LongevityRules>,
 }
 
 impl RuleSet {
@@ -264,7 +326,21 @@ impl RuleSet {
     /// Whether the longevity readings are asked for.
     #[must_use]
     pub const fn longevity(&self) -> bool {
-        self.longevity
+        self.longevity.is_some()
+    }
+
+    /// The choices the three spans are read under, when the longevity
+    /// readings are asked for.
+    #[must_use]
+    pub fn ayurdaya(&self) -> Option<AyurdayaRules> {
+        self.longevity.map(|rules| rules.ayurdaya)
+    }
+
+    /// The choices the three pairs are read under, when the longevity
+    /// readings are asked for.
+    #[must_use]
+    pub fn three_pairs(&self) -> Option<ThreePairsRules> {
+        self.longevity.map(|rules| rules.three_pairs)
     }
 }
 

@@ -988,7 +988,23 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
     assert.equal(held.result.present, true);
   }
   assert.equal(typeof answered.longevity.ayurdaya.pindayu.years, 'number');
+  assert.equal(answered.longevity.ayurdaya.rules.enmity, 'natural', "BPHS's readings by default");
   assert.ok(Object.isFrozen(answered.present[0].result), 'a reading handed out is a reading kept');
+  // The spans read as *Jataka Parijata* reads them, and a choice nothing reads refused.
+  const parijata = { enemy_exempt: 'mars', enmity: 'compound', rising: 'every' };
+  const chosen = ctx.chart.found({ ...request, rules: { longevity: true, ayurdaya: parijata, threePairs: { saturn: 'raises' } } })
+    .rules.longevity.ayurdaya.rules;
+  assert.deepEqual([chosen.enemy_exempt, chosen.enmity, chosen.rising, chosen.combine], ['mars', 'compound', 'every', 'largest']);
+  for (const [rules, field] of [
+    [{ ayurdaya: parijata }, 'rules.ayurdaya'],
+    [{ longevity: true, ayurdaya: { enmity: 'temporary' } }, 'rules.ayurdaya.enmity'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ ...request, rules }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
 
   // A consumer's rule naming a shipped one holds where it holds.
   const shipped = answered.present[0].rule;

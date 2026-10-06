@@ -54,6 +54,7 @@ from teistro import (
     TimeScale,
     PlanRequest,
     Plans,
+    AyurdayaRules,
     RuleRequest,
     RulesReading,
     Theme,
@@ -994,6 +995,20 @@ class AnEngine(WithLibrary):
             self.assertIsInstance(held["rule"], str)
             self.assertIs(held["result"]["present"], True)
         self.assertIsInstance(answered["longevity"]["ayurdaya"]["pindayu"]["years"], float)
+        self.assertEqual(answered["longevity"]["ayurdaya"]["rules"]["enmity"], "natural")
+        # The spans read as *Jataka Parijata* reads them, and a choice
+        # nothing reads refused.
+        parijata: AyurdayaRules = {"enemy_exempt": "mars", "enmity": "compound", "rising": "every"}
+        chosen = found({"longevity": True, "ayurdaya": parijata, "threePairs": {"saturn": "raises"}})
+        assert chosen is not None
+        rules = chosen["longevity"]["ayurdaya"]["rules"]
+        self.assertEqual(
+            (rules["enemy_exempt"], rules["enmity"], rules["rising"], rules["combine"]),
+            ("mars", "compound", "every", "largest"),
+        )
+        with self.assertRaises(TeistroError) as unread:
+            found({"ayurdaya": parijata})
+        self.assertEqual(unread.exception.field, "rules.ayurdaya")
 
         mine = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
                 "conditions": [{"type": "rule", "key": present[0]["rule"]}]}
