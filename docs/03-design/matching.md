@@ -294,6 +294,52 @@ birth star, name star with name star. Naam milan takes two names and
 reads the Ashta Koota and the ten considerations from both name stars;
 a name against a birth chart is not offered.
 
+## The name syllable and the avakahada, decided
+
+Status: `decided`, 2026-10-07, from the sources before any code.
+
+**The syllable of a birth** (C297). *Muhurta Chintamani*'s commentary
+on nāmakarma (1954 print, p. 173, leaf n185) says the name is to begin
+with the letter that *Svarodaya*'s śatapada cakra gives the birth
+nakshatra's pada. It cites the *Gṛhyapariśiṣṭa*: "tad-akṣarādikaṃ nāma,
+yasmin dhiṣṇye yad akṣaram", that is, the name begins with the letter of
+its star. *Svarodaya*'s own v. 1 calls the cakra "born of the letters of
+the stars' padas". The cakra built for naam milan is therefore also the
+naming rule, read from the cell rather than the letter. No second table
+is needed.
+
+**Abhijit is not a birth's** (C298). The verse the commentary quotes
+gives Abhijit its row (ju, je, jo, kha) and then closes by giving each
+sign "nine padas", 108 in all. A Moon's pada is one of the 108, so the
+naming reading answers that pada's own syllable, and Abhijit's four are
+reached only by reading a name (C292). No knob is needed: the text
+decides.
+
+**The spelling is the print's** (C299). The rule fixes a cell's
+consonant and vowel class but not how a print spells it. p. 173 writes
+long vowels throughout except Krittika's उ, and spells the pillars
+irregularly (घ ङ छा, ष णा ठा, धा फा ढा, थ झ ञा). So the syllable is answered as the cell,
+spelled in Devanagari as the page prints it and in IAST transliterated
+from that spelling. The transcribed table is held to the rule both ways:
+each printed syllable reads back to its own cell.
+
+**Paya, disha and tatwa are not shipped** (C300). The baseline engine's
+avakahada adds paya (gold, silver, copper or iron), disha and tatwa. None
+of them is given by *Manasagari* (1904), *Muhurta Chintamani* (1954),
+*Svarodaya* (1946) or the Sanskrit quoted in the undated *Brihad
+Avakahada Chakra* scans. The web gives only rank 3 pages, which read paya
+from the Moon's house. They wait on a rank 1 text, as the recommendation
+bands do.
+
+**The avakahada is the Moon's natives gathered** (C301). What the
+janma-patrika prints is varna, vashya, yoni, gana, nadi, the nakshatra
+and sign lords, the syllable and its varga. All of it is read today only
+inside a match, which needs two births. One chart's summary is therefore
+a chart field, `avakahada`, holding the Moon's nakshatra and pada, the
+syllable, and each of those readings by the same catalogue members the
+kootas use. It is a gathering, not new doctrine, so it carries no rules
+of its own.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
