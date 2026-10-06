@@ -144,6 +144,8 @@ from .catalogue import (
     BhakootDosha,
     DhinamRule,
     Rajju,
+    DoshaSystem,
+    MatchRole,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -571,6 +573,7 @@ __all__ = [
     "KujaReading",
     "KujaSide",
     "Kuja",
+    "MarriageDosha",
     "MidpointRow",
     "SynastryMidpointRow",
     "SynastryPartner",
@@ -736,6 +739,8 @@ __all__ = [
     "BhakootDosha",
     "DhinamRule",
     "Rajju",
+    "DoshaSystem",
+    "MatchRole",
     "HarshaRules",
     "HarshaBala",
     "TajikaRelation",
@@ -4591,6 +4596,25 @@ class Kuja:
     groom: KujaSide
     both: bool
     """Whether both carry it, the fact the popular cancellation reads."""
+
+
+@dataclass(frozen=True)
+class MarriageDosha:
+    """One marriage dosha a match carries (C289). No severity is given,
+    since no text grades one (C290)."""
+
+    system: DoshaSystem
+    """The reading it comes from."""
+
+    koota: Optional[Koota]
+    """The koota or consideration it is; `None` for the Kuja dosha, which
+    is no koota."""
+
+    side: Optional[MatchRole]
+    """The side carrying it, for the Kuja dosha; `None` for the rest."""
+
+    lifted: bool
+    """Whether an exception the source names lifts it."""
 
 
 @dataclass(frozen=True)
@@ -9245,6 +9269,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def marriage_doshas(self) -> Optional[Tuple[MarriageDosha, ...]]:
+        """Every marriage dosha the chart's match with the same partner
+        carries, as one list in the answers' own order: the Ashta Koota's
+        Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that
+        disagrees or agrees only by the p. 76 exception, and each side's Kuja
+        dosha, each with whether it is lifted. No severity; `None` unless
+        `matching=` asked (`03-design/matching.md`)."""
+        parsed = self.batch._marriage_doshas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def harmonic(self) -> Optional[HarmonicChart]:
         """The chart's harmonic chart: each planet, the ascendant and the
         midheaven at its longitude multiplied, in its equal house from the
@@ -10123,6 +10158,25 @@ class ChartBatch:
             )
 
         return [Kuja(side("bride", at), side("groom", at), k.both[at] == 1) for at in range(len(k.both))]
+
+    @cached_property
+    def _marriage_doshas(self) -> list[Tuple[MarriageDosha, ...]]:
+        """Every chart's marriage doshas, decoded once; empty when none was
+        asked for. `marriage_doshas` holds a count a chart and
+        `marriage_dosha_rows` the entries ragged under it."""
+        r = self.decoded.marriage_dosha_rows
+
+        def entry(row: int) -> MarriageDosha:
+            system = DoshaSystem(r.system[row])
+            kuja = system is DoshaSystem.KUJA
+            return MarriageDosha(
+                system=system,
+                koota=None if kuja else Koota(r.koota[row]),
+                side=MatchRole(r.side[row]) if kuja else None,
+                lifted=r.lifted[row] == 1,
+            )
+
+        return self._ragged(self.decoded.marriage_doshas.count, len(r.system), "marriage_doshas and marriage_dosha_rows", entry)
 
     @cached_property
     def _harmonics(self) -> list[HarmonicChart]:

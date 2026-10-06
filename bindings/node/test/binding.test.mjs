@@ -720,8 +720,9 @@ test('every catalogue enum has a complete id table', () => {
   // aspects, nine `TsWesternAspect`s; 1309 since the matching's
   // `TsVashyaRelation`, four, `TsYoniRelation`, three, `TsMaitriRelation`,
   // seven, and `TsBhakootDosha`, four; 1325 since the ten considerations'
-  // `TsDhinamRule`, eleven, and `TsRajju`, five.
-  assert.equal(entries, 1325, 'every member of every enum is in a table');
+  // `TsDhinamRule`, eleven, and `TsRajju`, five; 1330 since the marriage
+  // doshas' `TsDoshaSystem`, three, and `TsMatchRole`, two.
+  assert.equal(entries, 1330, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2666,6 +2667,23 @@ test('a chart carries its match with a partner', () => {
   assert.equal(mars.both, mars.bride.dosha);
   assert.equal(ctx.chart.found({ instant: birth, ...kathmandu }).kuja, null);
 
+  // The marriage doshas gather the three (C289): the shared nadi in one
+  // pada first, then each consideration that disagrees or was lifted, then
+  // the Kuja sides.
+  const paired = ctx.chart.found({ instant: birth, ...kathmandu, matching: { partner, partnerRole: 'BRIDE' } });
+  const doshas = paired.marriageDoshas;
+  assert.ok(Object.isFrozen(doshas) && Object.isFrozen(doshas[0]), 'frozen to its leaves');
+  assert.deepEqual(doshas[0], { system: 'ASHTA_KOOTA', koota: 'koota.NADI', side: null, lifted: false });
+  assert.deepEqual(
+    doshas.filter((d) => d.system === 'PORUTHAM').map((d) => [d.koota, d.lifted]),
+    paired.porutham.considerations.filter((row) => !row.agrees || row.lifted).map((row) => [row.reading.koota, row.lifted]),
+  );
+  assert.deepEqual(
+    doshas.filter((d) => d.system === 'KUJA').map((d) => d.side),
+    paired.kuja.bride.dosha ? ['BRIDE', 'GROOM'] : [],
+  );
+  assert.equal(ctx.chart.found({ instant: birth, ...kathmandu }).marriageDoshas, null);
+
   // A batch reads each chart as alone; the sides swap Varna and Gana's
   // reading; a refusal is named by its field.
   const instants = [birth, birth + 9.5, birth + 17.25];
@@ -2677,6 +2695,7 @@ test('a chart carries its match with a partner', () => {
     assert.deepEqual(batch.at(k).matching, alone);
     assert.deepEqual(batch.at(k).porutham, one.porutham);
     assert.deepEqual(batch.at(k).kuja, one.kuja);
+    assert.deepEqual(batch.at(k).marriageDoshas, one.marriageDoshas);
     const swapped = ctx.chart.found({ instant, ...kathmandu, matching: { ...matching, partnerRole: 'BRIDE' } }).matching;
     const varna = (one) => one.kootas[0].reading;
     assert.deepEqual([varna(swapped).bride, varna(swapped).groom], [varna(alone).groom, varna(alone).bride]);

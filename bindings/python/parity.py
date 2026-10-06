@@ -1319,6 +1319,13 @@ def main() -> None:
                 readings = " ".join(f"{r.reference} {r.house} {int(r.in_houses)}" for r in side.readings)
                 put(f"chart-{i}-kuja-{who}", f"{readings} {int(side.dosha)}")
             put(f"chart-{i}-kuja", str(int(mars.both)))
+            doshas = chart.marriage_doshas
+            assert doshas is not None
+            put(f"chart-{i}-doshas", str(len(doshas)))
+            for at, dosha in enumerate(doshas):
+                named = "NONE" if dosha.koota is None else dosha.koota.full_key
+                carrier = "NONE" if dosha.side is None else dosha.side.key
+                put(f"chart-{i}-dosha-{at}", f"{dosha.system.key} {named} {carrier} {int(dosha.lifted)}")
             fifth = chart.harmonic
             assert fifth is not None
             put(f"chart-{i}-harmonic", f"{fifth.harmonic} {len(fifth.points)} {len(fifth.rows)}")

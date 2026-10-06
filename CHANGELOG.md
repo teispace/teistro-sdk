@@ -2157,6 +2157,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Matching's marriage doshas as one list** (`matching.md`, C289,
+  C290). `marriage_doshas` gathers what the three readings report: the
+  Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the
+  ten considerations that disagrees or agrees by the p. 76 exception,
+  and each side's Kuja dosha, each with its lift and in the answers' own
+  order. No severity is shipped, since no text grades one.
+  `Matched::doshas` reads it; sections 116 and 117 carry it with
+  `TsDoshaSystem` and `TsMatchRole`; Node, Python and Dart read
+  `chart.marriageDoshas`, the five runners agreeing. `MatchRole` moves
+  into the matching kernel, re-exported where it was.
 - **Matching's Kuja dosha** (`matching.md`, C285 to C288).
   *Manasagari*'s jāyābhāva v. 4, read on the 1904 print's page image,
   names Mars in the 1st, 12th, 4th, 7th and 8th, for bride and groom

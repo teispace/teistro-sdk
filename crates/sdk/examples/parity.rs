@@ -2323,6 +2323,32 @@ fn the_matching(report: &mut Report, sdk: &Context, documents: &[teistro::Docume
         }
         the_porutham(report, index, &both.porutham);
         the_kuja(report, index, &both.kuja);
+        the_doshas(report, index, &both.doshas());
+    }
+}
+
+/// A chart's marriage doshas as the other three print them: the count,
+/// then each entry's system, koota by its full key, side and lift, `NONE`
+/// for an absent koota or side.
+fn the_doshas(report: &mut Report, index: usize, doshas: &[teistro::MarriageDosha]) {
+    put(
+        report,
+        &format!("chart-{index}-doshas"),
+        doshas.len().to_string(),
+    );
+    for (n, one) in doshas.iter().enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-dosha-{n}"),
+            format!(
+                "{} {} {} {}",
+                wire_key(&one.system),
+                one.koota.map_or("NONE", |koota| koota.full_key()),
+                one.side
+                    .map_or_else(|| "NONE".to_owned(), |side| wire_key(&side)),
+                u8::from(one.lifted)
+            ),
+        );
     }
 }
 

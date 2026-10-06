@@ -114,6 +114,7 @@ import type {
   VashyaRelation,
   DhinamRule,
   Rajju,
+  Koota,
   YoniRelation,
   MaitriRelation,
 } from './catalogue.js';
@@ -1787,6 +1788,19 @@ export interface Kuja {
   readonly groom: KujaSide;
   /** Whether both carry it, the fact the popular cancellation reads. */
   readonly both: boolean;
+}
+
+/**
+ * One marriage dosha a match carries (C289): its reading, its koota or
+ * consideration (`null` for the Kuja dosha, which is no koota), the side
+ * carrying it for the Kuja dosha (`null` for the rest), and whether an
+ * exception the source names lifts it. No severity (C290).
+ */
+export interface MarriageDosha {
+  readonly system: 'ASHTA_KOOTA' | 'PORUTHAM' | 'KUJA' | 'unknown';
+  readonly koota: Koota | 'unknown' | null;
+  readonly side: 'BRIDE' | 'GROOM' | 'unknown' | null;
+  readonly lifted: boolean;
 }
 
 /** A chart's Western houses, in its own zodiac. */
@@ -3800,6 +3814,12 @@ export declare class Chart {
    * jāyābhāva v. 4); `null` unless `matching` asked (`03-design/matching.md`).
    */
   readonly kuja: Kuja | null;
+  /**
+   * Every marriage dosha the match carries, in the answers' own order,
+   * each with whether it is lifted; `null` unless `matching` asked
+   * (`03-design/matching.md`).
+   */
+  readonly marriageDoshas: readonly MarriageDosha[] | null;
   /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.

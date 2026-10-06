@@ -253,12 +253,16 @@ consumer that ranks doshas does so over the entries' stated facts.
   `kuja(bride, groom, KujaRules) -> Kuja` reads a `KujaNative { lagna,
   moon, venus, mars }` on each side: three readings a side, `{ from,
   house, in_houses }`, the side's `dosha`, and `both`.
+  `marriage_doshas(&AshtaKoota, &Porutham, &Kuja) -> Vec<MarriageDosha>`
+  gathers them, each `{ system, koota, side, lifted }`; `MatchRole`
+  lives here, since the list names a side.
 - `sdk.chart().matching(&bride, &groom, KootaRules)`,
   `sdk.chart().porutham(&bride, &groom, PoruthamRules)` and
   `sdk.chart().kuja(&bride, &groom, KujaRules)` on two founded charts.
   `sdk.chart().matching_with(&charts, &PartnerMatching)` matches a batch
   with one partner's birth, founded once, and answers a `Matched` a
-  chart: both systems and the Kuja dosha.
+  chart: both systems and the Kuja dosha, and `Matched::doshas` the
+  list.
 - At the boundary, `matching_json` is `{"partner", "partnerRole",
   "rules", "porutham", "kuja"}`. The partner is synastry's record. `partnerRole`
   is `BRIDE` or `GROOM`, and every chart of the batch stands on the other
@@ -267,9 +271,12 @@ consumer that ranks doshas does so over the entries' stated facts.
   points; the ten in `poruthams`, a row a chart with the counts, the
   exception's clauses and every reading, and `porutham_rows`, ten rows
   a chart with whether each agrees and was lifted; and the Kuja dosha
-  in `kujas`, a row a chart with each side's seven cells and `both`.
-  Every binding reads `chart.matching`, `chart.porutham` and
-  `chart.kuja`, with parity across the five runners.
+  in `kujas`, a row a chart with each side's seven cells and `both`; the
+  list in `marriage_doshas`, a count a chart, and `marriage_dosha_rows`
+  ragged under it, its `system` deciding whether `koota` or `side` is
+  read. Every binding reads `chart.matching`, `chart.porutham`,
+  `chart.kuja` and `chart.marriageDoshas`, with parity across the five
+  runners.
 
 ## What building it found
 
@@ -346,6 +353,13 @@ consumer that ranks doshas does so over the entries' stated facts.
   so the reading's field is `reference` there and the request's
   `KujaRules` is declared by call; the wire and the other bindings keep
   `from`.
+- **One side, one type.** The list names a side, so `MatchRole` moved
+  from the SDK into the kernel, and the boundary's `TsMatchRole` is
+  generated into every binding's catalogue. Dart had its own hand-written
+  `MatchRole`; it was deleted for the generated one, which carries the
+  same members and their ids.
+- **The list is derived, not stored.** `Matched::doshas` computes it
+  from the three answers, so the answer holds each fact once.
 - **A birth matched with itself is a fixed point.** One sign and one
   nakshatra give every koota but Nadi its whole points and the shared
   nadi none, 28 whatever the Moon. Each binding's test starts from it.

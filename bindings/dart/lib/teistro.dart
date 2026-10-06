@@ -4849,6 +4849,35 @@ List<Kuja> _decodeKujas(Charts batch) {
   ]);
 }
 
+final Expando<List<List<MarriageDosha>>> _marriageDoshas =
+    Expando<List<List<MarriageDosha>>>('marriageDoshas');
+
+List<List<MarriageDosha>> _marriageDoshasOf(Charts batch) =>
+    _marriageDoshas[batch] ??= _decodeMarriageDoshas(batch);
+
+/// `marriage_doshas` holds a count a chart, or none when none was asked,
+/// and `marriage_dosha_rows` the entries ragged under it
+/// (`03-design/matching.md`).
+List<List<MarriageDosha>> _decodeMarriageDoshas(Charts batch) {
+  final r = batch.marriageDoshaRows;
+  return _ragged(
+    batch,
+    batch.marriageDoshas.count,
+    r.system.length,
+    'marriage_doshas and marriage_dosha_rows',
+    (row) {
+      final system = DoshaSystem.byId(r.system[row]);
+      final kuja = system == DoshaSystem.kuja;
+      return MarriageDosha(
+        system: system,
+        koota: kuja ? null : Koota.byId(r.koota[row]),
+        side: kuja ? MatchRole.byId(r.side[row]) : null,
+        lifted: r.lifted[row] == 1,
+      );
+    },
+  );
+}
+
 final Expando<List<HarmonicChart>> _harmonics = Expando<List<HarmonicChart>>(
   'harmonics',
 );
@@ -7294,21 +7323,6 @@ final class WesternAspectRequest {
   String get _json => jsonEncode(_record);
 }
 
-/// The side of a match a birth stands on: Varna and Gana read differently
-/// when the two swap (`03-design/matching.md`).
-enum MatchRole {
-  /// The bride's birth.
-  bride('BRIDE'),
-
-  /// The groom's birth.
-  groom('GROOM');
-
-  const MatchRole(this.key);
-
-  /// The member's key, as every binding spells it.
-  final String key;
-}
-
 /// The point an equal varna earns (C259).
 enum EqualVarna {
   /// One point, the verse's own; the default.
@@ -7565,6 +7579,27 @@ final class KujaSide extends _Value {
 
   @override
   List<Object?> get _fields => [...readings, dosha];
+}
+
+/// One marriage dosha a match carries (C289): its reading, its koota or
+/// consideration (null for the Kuja dosha, which is no koota), the side
+/// carrying it for the Kuja dosha (null for the rest), and whether an
+/// exception the source names lifts it. No severity (C290).
+final class MarriageDosha extends _Value {
+  const MarriageDosha({
+    required this.system,
+    required this.koota,
+    required this.side,
+    required this.lifted,
+  });
+
+  final DoshaSystem system;
+  final Koota? koota;
+  final MatchRole? side;
+  final bool lifted;
+
+  @override
+  List<Object?> get _fields => [system, koota, side, lifted];
 }
 
 /// The Kuja dosha of a bride and a groom (*Manasagari*, jāyābhāva v. 4),
@@ -14987,6 +15022,17 @@ final class Chart {
   /// lifted; null unless asked (`03-design/matching.md`).
   Kuja? get kuja {
     final all = _kujasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Every marriage dosha the chart's match with the same partner carries,
+  /// as one list in the answers' own order: the Ashta Koota's Bhakoot,
+  /// Nadi, Gana and the lords' enmity, each of the ten that disagrees or
+  /// agrees only by the p. 76 exception, and each side's Kuja dosha, each
+  /// with whether it is lifted. No severity; null unless `matching` asked
+  /// (`03-design/matching.md`).
+  List<MarriageDosha>? get marriageDoshas {
+    final all = _marriageDoshasOf(batch);
     return index < all.length ? all[index] : null;
   }
 
