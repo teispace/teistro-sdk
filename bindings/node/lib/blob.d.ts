@@ -4681,6 +4681,51 @@ export interface ChartsKujas {
 }
 
 /**
+ * The `marriage_doshas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
+ */
+export interface ChartsMarriageDoshas {
+  /**
+   * The number of entries, every dosha the three readings report.
+   */
+  readonly count: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `marriage_dosha_rows` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
+ */
+export interface ChartsMarriageDoshaRows {
+  /**
+   * Which reading it comes from.
+   * The values are `DoshaSystem` ids.
+   */
+  readonly system: Uint8Array;
+  /**
+   * The koota or consideration it is; read only when `system` is not `KUJA`.
+   * The values are `Koota` ids.
+   */
+  readonly koota: Uint16Array;
+  /**
+   * The side carrying it; read only when `system` is `KUJA`.
+   * The values are `MatchRole` ids.
+   */
+  readonly side: Uint8Array;
+  /**
+   * 1 when an exception the source names lifts it.
+   */
+  readonly lifted: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5308,6 +5353,14 @@ export interface Charts {
    * Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none.
    */
   readonly kujas: ChartsKujas;
+  /**
+   * How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
+   */
+  readonly marriageDoshas: ChartsMarriageDoshas;
+  /**
+   * Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
+   */
+  readonly marriageDoshaRows: ChartsMarriageDoshaRows;
 }
 
 /**

@@ -7315,6 +7315,82 @@ enum Rajju {
   }
 }
 
+/// Which reading a marriage dosha comes from (`03-design/matching.md`,
+/// C289).
+///
+/// Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
+/// match.
+enum DoshaSystem {
+  /// The Ashta Koota of *Muhurta Chintamani*.
+  ashtaKoota(0, 'ASHTA_KOOTA'),
+  /// The ten considerations of *Kalaprakasika*.
+  porutham(1, 'PORUTHAM'),
+  /// The Kuja dosha of *Manasagari*.
+  kuja(2, 'KUJA');
+
+  const DoshaSystem(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DoshaSystem byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DoshaSystem'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DoshaSystem? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The side of a match a birth stands on (`03-design/matching.md`).
+///
+/// Mirrors `teistro::MatchRole` through an **exhaustive** match.
+enum MatchRole {
+  /// The bride's.
+  bride(0, 'BRIDE'),
+  /// The groom's.
+  groom(1, 'GROOM');
+
+  const MatchRole(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static MatchRole byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a MatchRole'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MatchRole? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What the source calls a planet by its Harsha bala
 /// (`03-design/tajika-harsha.md`).
 ///

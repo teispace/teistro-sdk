@@ -3906,6 +3906,45 @@ class ChartsKujas:
 
 
 @dataclass(frozen=True)
+class ChartsMarriageDoshas:
+    """The `marriage_doshas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none.
+    """
+
+    count: memoryview[int]
+    """The number of entries, every dosha the three readings report."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsMarriageDoshaRows:
+    """The `marriage_dosha_rows` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
+    """
+
+    system: memoryview[int]
+    """Which reading it comes from."""
+
+    koota: memoryview[int]
+    """The koota or consideration it is; read only when `system` is not `KUJA`."""
+
+    side: memoryview[int]
+    """The side carrying it; read only when `system` is `KUJA`."""
+
+    lifted: memoryview[int]
+    """1 when an exception the source names lifts it."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4374,6 +4413,12 @@ class Charts:
     kujas: ChartsKujas
     """Every chart's Kuja dosha beside the record's partner's (*Manasagari*, jāyābhāva v. 4), a row a chart in the `cast` section's order: Mars's house by sign from the lagna, the Moon and Venus on each side, whether each side carries the dosha under `matching.kuja`, and whether both do. Never lifted (C288). Empty when `matching_json` asked for none."""
 
+    marriage_doshas: ChartsMarriageDoshas
+    """How many marriage doshas each chart's match carries, a row a chart in the `cast` section's order; the entries are `marriage_dosha_rows`, **ragged** by `count` (C289). Empty when `matching_json` asked for none."""
+
+    marriage_dosha_rows: ChartsMarriageDoshaRows
+    """Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4498,6 +4543,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_poruthams = blob.section(113, "poruthams")
     at_porutham_rows = blob.section(114, "porutham_rows")
     at_kujas = blob.section(115, "kujas")
+    at_marriage_doshas = blob.section(116, "marriage_doshas")
+    at_marriage_dosha_rows = blob.section(117, "marriage_dosha_rows")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7028,6 +7075,27 @@ def decode_charts(raw: bytes) -> Charts:
             groom_dosha=blob.column(at_kujas, 13, 1, at_kujas.count).cast("B"),
             both=blob.column(at_kujas, 14, 1, at_kujas.count).cast("B"),
             length=at_kujas.count,
+        ),
+        marriage_doshas=ChartsMarriageDoshas(
+            count=blob.column(
+                at_marriage_doshas, 0, 4, at_marriage_doshas.count
+            ).cast("I"),
+            length=at_marriage_doshas.count,
+        ),
+        marriage_dosha_rows=ChartsMarriageDoshaRows(
+            system=blob.column(
+                at_marriage_dosha_rows, 0, 1, at_marriage_dosha_rows.count
+            ).cast("B"),
+            koota=blob.column(
+                at_marriage_dosha_rows, 1, 2, at_marriage_dosha_rows.count
+            ).cast("H"),
+            side=blob.column(
+                at_marriage_dosha_rows, 2, 1, at_marriage_dosha_rows.count
+            ).cast("B"),
+            lifted=blob.column(
+                at_marriage_dosha_rows, 3, 1, at_marriage_dosha_rows.count
+            ).cast("B"),
+            length=at_marriage_dosha_rows.count,
         ),
     )
 

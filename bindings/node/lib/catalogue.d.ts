@@ -8391,6 +8391,62 @@ export declare const Rajju: {
 export declare const RajjuById: ReadonlyMap<number, Rajju>;
 
 /**
+ * Which reading a marriage dosha comes from (`03-design/matching.md`,
+ * C289).
+ *
+ * Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
+ * match.
+ */
+export type DoshaSystem = 'ASHTA_KOOTA' | 'PORUTHAM' | 'KUJA';
+
+/** Every DoshaSystem by name; the values are the strings the union accepts. */
+export declare const DoshaSystem: {
+  /**
+   * The Ashta Koota of *Muhurta Chintamani*.
+   */
+  readonly AshtaKoota: 'ASHTA_KOOTA';
+  /**
+   * The ten considerations of *Kalaprakasika*.
+   */
+  readonly Porutham: 'PORUTHAM';
+  /**
+   * The Kuja dosha of *Manasagari*.
+   */
+  readonly Kuja: 'KUJA';
+};
+
+/**
+ * Every DoshaSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DoshaSystemById: ReadonlyMap<number, DoshaSystem>;
+
+/**
+ * The side of a match a birth stands on (`03-design/matching.md`).
+ *
+ * Mirrors `teistro::MatchRole` through an **exhaustive** match.
+ */
+export type MatchRole = 'BRIDE' | 'GROOM';
+
+/** Every MatchRole by name; the values are the strings the union accepts. */
+export declare const MatchRole: {
+  /**
+   * The bride's.
+   */
+  readonly Bride: 'BRIDE';
+  /**
+   * The groom's.
+   */
+  readonly Groom: 'GROOM';
+};
+
+/**
+ * Every MatchRole by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MatchRoleById: ReadonlyMap<number, MatchRole>;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *

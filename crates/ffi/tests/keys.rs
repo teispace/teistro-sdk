@@ -630,11 +630,13 @@ fn fortitudes(api: &Api) -> Vec<&'static str> {
 /// The matching's enums (`03-design/matching.md`): a bhakoot's `NONE` is
 /// the absence of a dosha, which no Rust type spells.
 fn matching(api: &Api) -> Vec<&'static str> {
+    use teistro::MatchRole;
     use teistro::matching::{
-        BhakootDosha, DhinamRule, MaitriRelation, Rajju, VashyaRelation, YoniRelation,
+        BhakootDosha, DhinamRule, DoshaSystem, MaitriRelation, Rajju, VashyaRelation, YoniRelation,
     };
     use teistro_ffi::chart::{
-        TsBhakootDosha, TsDhinamRule, TsMaitriRelation, TsRajju, TsVashyaRelation, TsYoniRelation,
+        TsBhakootDosha, TsDhinamRule, TsDoshaSystem, TsMaitriRelation, TsMatchRole, TsRajju,
+        TsVashyaRelation, TsYoniRelation,
     };
     let id = |value: u8| Some(i64::from(value));
     vec![
@@ -642,6 +644,12 @@ fn matching(api: &Api) -> Vec<&'static str> {
             id(TsDhinamRule::from(*r) as u8)
         }),
         unit(api, "TsRajju", |r: &Rajju| id(TsRajju::from(*r) as u8)),
+        unit(api, "TsDoshaSystem", |s: &DoshaSystem| {
+            id(TsDoshaSystem::from(*s) as u8)
+        }),
+        unit(api, "TsMatchRole", |r: &MatchRole| {
+            id(TsMatchRole::from(*r) as u8)
+        }),
         unit(api, "TsVashyaRelation", |r: &VashyaRelation| {
             id(TsVashyaRelation::from(*r) as u8)
         }),

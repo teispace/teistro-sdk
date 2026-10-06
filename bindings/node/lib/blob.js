@@ -1691,6 +1691,23 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 116, 'marriage_doshas');
+    out.marriageDoshas = {
+      count: column(blob, at, 0, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 117, 'marriage_dosha_rows');
+    out.marriageDoshaRows = {
+      system: column(blob, at, 0, 'u8', at.count),
+      koota: column(blob, at, 1, 'u16', at.count),
+      side: column(blob, at, 2, 'u8', at.count),
+      lifted: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

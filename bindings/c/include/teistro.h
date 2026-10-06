@@ -6257,6 +6257,44 @@ typedef enum ts_rajju {
 } ts_rajju;
 
 /**
+ * Which reading a marriage dosha comes from (`03-design/matching.md`,
+ * C289).
+ *
+ * Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
+ * match.
+ */
+typedef enum ts_dosha_system {
+    /**
+     * The Ashta Koota of *Muhurta Chintamani*.
+     */
+    TS_DOSHA_SYSTEM_ASHTA_KOOTA = 0,
+    /**
+     * The ten considerations of *Kalaprakasika*.
+     */
+    TS_DOSHA_SYSTEM_PORUTHAM = 1,
+    /**
+     * The Kuja dosha of *Manasagari*.
+     */
+    TS_DOSHA_SYSTEM_KUJA = 2,
+} ts_dosha_system;
+
+/**
+ * The side of a match a birth stands on (`03-design/matching.md`).
+ *
+ * Mirrors `teistro::MatchRole` through an **exhaustive** match.
+ */
+typedef enum ts_match_role {
+    /**
+     * The bride's.
+     */
+    TS_MATCH_ROLE_BRIDE = 0,
+    /**
+     * The groom's.
+     */
+    TS_MATCH_ROLE_GROOM = 1,
+} ts_match_role;
+
+/**
  * What the source calls a planet by its Harsha bala
  * (`03-design/tajika-harsha.md`).
  *
@@ -8073,7 +8111,8 @@ struct ts_chart_request {
      * optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
      * (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in
      * `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and
-     * `kujas`. Null for none,
+     * `kujas`, with every dosha the three report gathered in
+     * `marriage_doshas` and `marriage_dosha_rows`. Null for none,
      * which costs nothing
      * (`03-design/matching.md`). Refusals are named from the record every
      * binding calls `matching`, as `matching.partnerRole`.

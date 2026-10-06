@@ -4942,6 +4942,37 @@ class Rajju(Member):
     """The head."""
 
 
+class DoshaSystem(Member):
+    """Which reading a marriage dosha comes from (`03-design/matching.md`,
+    C289).
+
+    Mirrors `teistro::matching::DoshaSystem` through an **exhaustive**
+    match.
+    """
+
+    ASHTA_KOOTA = 0
+    """The Ashta Koota of *Muhurta Chintamani*."""
+
+    PORUTHAM = 1
+    """The ten considerations of *Kalaprakasika*."""
+
+    KUJA = 2
+    """The Kuja dosha of *Manasagari*."""
+
+
+class MatchRole(Member):
+    """The side of a match a birth stands on (`03-design/matching.md`).
+
+    Mirrors `teistro::MatchRole` through an **exhaustive** match.
+    """
+
+    BRIDE = 0
+    """The bride's."""
+
+    GROOM = 1
+    """The groom's."""
+
+
 class HarshaGrade(Member):
     """What the source calls a planet by its Harsha bala
     (`03-design/tajika-harsha.md`).
@@ -6851,6 +6882,15 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "NABHI",
         3: "KANTA",
         4: "SIRO",
+    },
+    "DoshaSystem": {
+        0: "ASHTA_KOOTA",
+        1: "PORUTHAM",
+        2: "KUJA",
+    },
+    "MatchRole": {
+        0: "BRIDE",
+        1: "GROOM",
     },
     "HarshaGrade": {
         0: "NIRBALA",

@@ -4155,6 +4155,38 @@ export const RajjuById = new Map([
   [4, 'SIRO'],
 ]);
 
+/** Every DoshaSystem by name. */
+export const DoshaSystem = Object.freeze({
+  AshtaKoota: 'ASHTA_KOOTA',
+  Porutham: 'PORUTHAM',
+  Kuja: 'KUJA',
+});
+
+/**
+ * Every DoshaSystem by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DoshaSystemById = new Map([
+  [0, 'ASHTA_KOOTA'],
+  [1, 'PORUTHAM'],
+  [2, 'KUJA'],
+]);
+
+/** Every MatchRole by name. */
+export const MatchRole = Object.freeze({
+  Bride: 'BRIDE',
+  Groom: 'GROOM',
+});
+
+/**
+ * Every MatchRole by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MatchRoleById = new Map([
+  [0, 'BRIDE'],
+  [1, 'GROOM'],
+]);
+
 /** Every HarshaGrade by name. */
 export const HarshaGrade = Object.freeze({
   Nirbala: 'NIRBALA',
