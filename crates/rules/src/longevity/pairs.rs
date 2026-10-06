@@ -154,8 +154,10 @@ pub enum SaturnAmongThem {
     Raises,
 }
 
-/// The choices the three pairs are read under.
+/// The choices the three pairs are read under; every field is optional
+/// where a request reads it.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct ThreePairsRules {
     /// Which way the degrees count.
     pub rectification: Rectification,

@@ -15,7 +15,10 @@
 //! strongest, and the mean on a tie (vv. 30 to 32).
 //!
 //! What the translation does not settle is a knob, [`AyurdayaRules`] (crux
-//! C104). Years are the texts' own, of 360 days.
+//! C104), and so is each place *Jataka Parijata* ch. 5, which quotes
+//! Varahamihira's rules, reads them otherwise: which graha keeps its years
+//! in an enemy's sign, whose enmity, and whose years a rising malefic
+//! takes (cruxes C302 to C304). Years are the texts' own, of 360 days.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -88,8 +91,64 @@ pub enum Nisarga {
     Listed,
 }
 
-/// The choices the spans are read under.
+/// Which graha keeps all its years in an enemy's sign (C302).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum EnemyExempt {
+    /// A retrograde graha, as BPHS reads it and *Jataka Parijata* ch. 5
+    /// v. 8's note records Badarayana reading the verse's *vakra*.
+    #[default]
+    Retrograde,
+    /// Mars, the majority's reading of *vakra* that the translation of
+    /// *Jataka Parijata* ch. 5 v. 8 gives.
+    Mars,
+}
+
+/// Whose enmity takes a third in an enemy's sign (C303).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Enmity {
+    /// The sign's lord a natural enemy, as the catalogue lists them.
+    #[default]
+    Natural,
+    /// The sign's lord an enemy or great enemy by the compound of the
+    /// natural and the temporary friendship, as *Jataka Parijata*'s worked
+    /// example (pp. 237 to 239) reads it: Saturn in Aries, Mars in the 12th
+    /// from him, loses nothing.
+    Compound,
+}
+
+/// Whose years a malefic rising in the lagna diminishes (C304).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RisingTakes {
+    /// Each malefic's own.
+    #[default]
+    Malefic,
+    /// Every giver's, the lagna's own excepted, by the share of the zodiac
+    /// the lagna has gone, once however many malefics rise: *Jataka
+    /// Parijata* ch. 5 vv. 11 to 13, "multiply herewith the ayurdaya of the
+    /// planets separately".
+    Every,
+}
+
+/// The choices the spans are read under. Every field is optional where a
+/// request reads it, and the defaults keep BPHS's readings.
+///
+/// ```
+/// use teistro_rules::longevity::{AyurdayaRules, EnemyExempt, Enmity, RisingTakes};
+///
+/// // As *Jataka Parijata* ch. 5 reads Varahamihira's reductions.
+/// let parijata: AyurdayaRules = serde_json::from_str(
+///     r#"{"enemy_exempt": "mars", "enmity": "compound", "rising": "every"}"#,
+/// )?;
+/// assert_eq!(parijata, AyurdayaRules::PARIJATA);
+/// assert_eq!(parijata.enemy_exempt, EnemyExempt::Mars);
+/// assert_eq!((parijata.enmity, parijata.rising), (Enmity::Compound, RisingTakes::Every));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
 pub struct AyurdayaRules {
     /// How reductions combine.
     pub combine: Combine,
@@ -99,6 +158,26 @@ pub struct AyurdayaRules {
     /// one in its own navamsha or drekkana, as "some scholars suggest"
     /// (vv. 20 to 22).
     pub amsayu_multiplied: bool,
+    /// Which graha keeps its years in an enemy's sign.
+    pub enemy_exempt: EnemyExempt,
+    /// Whose enmity takes a third.
+    pub enmity: Enmity,
+    /// Whose years a rising malefic takes.
+    pub rising: RisingTakes,
+}
+
+impl AyurdayaRules {
+    /// *Jataka Parijata* ch. 5's readings of the reductions it shares with
+    /// BPHS: Mars keeps his years in an enemy's sign, enmity is compound,
+    /// and a rising malefic takes from every giver. The rest stay BPHS's.
+    pub const PARIJATA: AyurdayaRules = AyurdayaRules {
+        combine: Combine::Largest,
+        nisarga: Nisarga::LikePindayu,
+        amsayu_multiplied: false,
+        enemy_exempt: EnemyExempt::Mars,
+        enmity: Enmity::Compound,
+        rising: RisingTakes::Every,
+    };
 }
 
 /// Who gives years.
@@ -272,6 +351,7 @@ impl Evaluator<'_> {
         let lagna = chart.placement(Body::Lagna);
         let strengths = self.strengths();
         let benefic_aspects_lagna = self.benefic_aspects_lagna();
+        let rising_share = self.rising_share(benefic_aspects_lagna);
         let contributions = GRAHAS.map(|graha| {
             let body = Body::Graha(graha);
             let at = chart.placement(body);
@@ -307,12 +387,10 @@ impl Evaluator<'_> {
                 // catalogue lists them: the compound relationship a chart's
                 // dignity carries turns on where the two stand, which the
                 // verse does not ask.
-                enemy_sign: if !at.retrograde
-                    && graha
-                        .attributes()
-                        .enemies
-                        .contains(&at.sign.attributes().lord)
-                {
+                enemy_sign: if !exempt_in_enemy_sign(rules.enemy_exempt, graha, at)
+                    && in_enemy_sign(rules.enmity, graha, at.sign, |other| {
+                        Some(chart.placement(Body::Graha(other)).sign)
+                    }) {
                     basic / 3.0
                 } else {
                     0.0
@@ -322,15 +400,17 @@ impl Evaluator<'_> {
                 } else {
                     basic * visible_half_share(house, benefic)
                 },
-                rising: if !benefic && house.get() == 1 {
-                    let loss = basic * lagna.longitude.rem_euclid(360.0) / 360.0;
-                    if benefic_aspects_lagna {
-                        loss / 2.0
-                    } else {
-                        loss
+                rising: match rules.rising {
+                    RisingTakes::Every => basic * rising_share,
+                    RisingTakes::Malefic if !benefic && house.get() == 1 => {
+                        let loss = basic * lagna.longitude.rem_euclid(360.0) / 360.0;
+                        if benefic_aspects_lagna {
+                            loss / 2.0
+                        } else {
+                            loss
+                        }
                     }
-                } else {
-                    0.0
+                    RisingTakes::Malefic => 0.0,
                 },
             };
             Contribution {
@@ -381,6 +461,23 @@ impl Evaluator<'_> {
         }
     }
 
+    /// The share of its years every giver loses under `RisingTakes::Every`
+    /// when a malefic rises: the lagna's longitude over the zodiac, halved
+    /// under a benefic's aspect, and none when no malefic rises.
+    fn rising_share(&self, benefic_aspects_lagna: bool) -> f64 {
+        let chart = self.chart();
+        let lagna = chart.placement(Body::Lagna);
+        let malefic_rises = GRAHAS.iter().any(|graha| {
+            !BENEFICS.contains(graha) && chart.placement(Body::Graha(*graha)).sign == lagna.sign
+        });
+        let share = lagna.longitude.rem_euclid(360.0) / 360.0;
+        match (malefic_rises, benefic_aspects_lagna) {
+            (false, _) => 0.0,
+            (true, false) => share,
+            (true, true) => share / 2.0,
+        }
+    }
+
     /// Whether a natural benefic aspects the lagna, which halves a rising
     /// malefic's loss (v. 13).
     fn benefic_aspects_lagna(&self) -> bool {
@@ -396,6 +493,36 @@ impl Evaluator<'_> {
                 &mut Participants::default(),
             )
         })
+    }
+}
+
+/// Whether a graha keeps its years in an enemy's sign under the rules.
+fn exempt_in_enemy_sign(exempt: EnemyExempt, graha: Graha, at: &Placement) -> bool {
+    match exempt {
+        EnemyExempt::Retrograde => at.retrograde,
+        EnemyExempt::Mars => graha == Graha::Mars,
+    }
+}
+
+/// Whether a graha in `sign` stands in an enemy's sign under `enmity`;
+/// `sign_of` places the sign's lord for the temporary friendship.
+fn in_enemy_sign(
+    enmity: Enmity,
+    graha: Graha,
+    sign: Rashi,
+    sign_of: impl Fn(Graha) -> Option<Rashi>,
+) -> bool {
+    use teistro_core::catalogue::Relationship;
+    use teistro_state::dignity::{compound, natural, temporary};
+    let natural = natural(graha, sign);
+    match enmity {
+        Enmity::Natural => natural == Relationship::Enemy,
+        Enmity::Compound => temporary(graha, sign, sign_of).is_some_and(|temporary| {
+            matches!(
+                compound(natural, temporary),
+                Relationship::Enemy | Relationship::GreatEnemy
+            )
+        }),
     }
 }
 
