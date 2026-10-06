@@ -524,6 +524,126 @@ pub fn name_syllable(name: &str, rules: NameRules) -> Result<NameSyllable, Error
     })
 }
 
+/// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
+/// n185, read on the image), from Ashvini, Abhijit after Uttarashadha,
+/// with the print's vowel lengths.
+pub(crate) const PRINTED: [[&str; 4]; 28] = [
+    ["चू", "चे", "चो", "ला"],
+    ["ली", "लू", "ले", "लो"],
+    ["आ", "ई", "उ", "ए"],
+    ["ओ", "वा", "वी", "वू"],
+    ["वे", "वो", "का", "की"],
+    ["कू", "घ", "ङ", "छा"],
+    ["के", "को", "हा", "ही"],
+    ["हू", "हे", "हो", "डा"],
+    ["डी", "डू", "डे", "डो"],
+    ["मा", "मी", "मू", "मे"],
+    ["मो", "टा", "टी", "टू"],
+    ["टे", "टो", "पा", "पी"],
+    ["पू", "ष", "णा", "ठा"],
+    ["पे", "पो", "रा", "री"],
+    ["रू", "रे", "रो", "ता"],
+    ["ती", "तू", "ते", "तो"],
+    ["ना", "नी", "नू", "ने"],
+    ["नो", "या", "यी", "यू"],
+    ["ये", "यो", "भा", "भी"],
+    ["भू", "धा", "फा", "ढा"],
+    ["भे", "भो", "जा", "जी"],
+    ["जू", "जे", "जो", "खा"],
+    ["खी", "खू", "खे", "खो"],
+    ["गा", "गी", "गू", "गे"],
+    ["गो", "सा", "सी", "सू"],
+    ["से", "सो", "दा", "दी"],
+    ["दू", "थ", "झ", "ञा"],
+    ["दे", "दो", "चा", "ची"],
+];
+
+/// The syllable a birth names a child by: the cakra's cell for the
+/// Moon's pada, as the print spells it (C297 to C299).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct BirthSyllable {
+    /// Its place among the cakra's 112 cells, 0 for a, Krittika's first;
+    /// never one of Abhijit's four (C298).
+    pub cell: u8,
+    /// As *Muhurta Chintamani* p. 173 prints it.
+    pub devanagari: String,
+    /// The same spelling in IAST.
+    pub iast: String,
+    /// The varga a name beginning with it stands in (VI.35).
+    pub varga: NameVarga,
+}
+
+/// The syllable a child born with the Moon in `pada` of `nakshatra` is
+/// named by: the letter *Svarodaya*'s śatapada cakra gives the birth
+/// pada, as *Muhurta Chintamani*'s nāmakarma commentary asks (C297). A
+/// birth's pada is one of the 108, so Abhijit's four syllables are never
+/// answered (C298).
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_matching::{NameVarga, birth_syllable};
+///
+/// let first = birth_syllable(Nakshatra::Ashwini, 1)?;
+/// assert_eq!((first.devanagari.as_str(), first.iast.as_str()), ("चू", "cū"));
+/// assert_eq!(first.varga, NameVarga::Lion);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// A `pada` outside 1 to 4, named `pada`.
+pub fn birth_syllable(nakshatra: Nakshatra, pada: u8) -> Result<BirthSyllable, Error> {
+    if !(1..=4).contains(&pada) {
+        return Err(Error::invalid_arg(format!("a pada is 1 to 4, not {pada}")).with_field("pada"));
+    }
+    // Krittika's row first, Abhijit's 20th, as `name_syllable` counts.
+    let star = (usize::from(nakshatra.id()) + 25) % 27;
+    let row = star + usize::from(star >= 19);
+    let printed = PRINTED
+        .get((row + 2) % 28)
+        .and_then(|four| four.get(usize::from(pada) - 1))
+        .copied()
+        .unwrap_or_default();
+    Ok(BirthSyllable {
+        cell: u8::try_from(row * 4 + usize::from(pada) - 1).unwrap_or(0),
+        devanagari: printed.to_owned(),
+        iast: iast_of(printed),
+        varga: NameVarga::of(printed.chars().next().and_then(consonant_of)),
+    })
+}
+
+/// A printed syllable in IAST, through the letters the IAST reader reads.
+fn iast_of(printed: &str) -> String {
+    let mut out = String::new();
+    let mut inherent = false;
+    for letter in printed.chars() {
+        if let Some((spelled, _)) = IAST_CONSONANTS.iter().find(|(_, c)| *c == letter) {
+            out.push_str(spelled);
+            inherent = true;
+            continue;
+        }
+        let vowel = match letter {
+            'अ' => "a",
+            'आ' | 'ा' => "ā",
+            'इ' | 'ि' => "i",
+            'ई' | 'ी' => "ī",
+            'उ' | 'ु' => "u",
+            'ऊ' | 'ू' => "ū",
+            'ए' | 'े' => "e",
+            'ओ' | 'ो' => "o",
+            _ => continue,
+        };
+        out.push_str(vowel);
+        inherent = false;
+    }
+    if inherent {
+        out.push('a');
+    }
+    out
+}
+
 /// The readings two names are matched under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
