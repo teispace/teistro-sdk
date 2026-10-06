@@ -1167,6 +1167,26 @@ Nisargayu is 120 on every chart; Pindayu averages 85 years, Nisargayu 79 and
 Amsayu 39. The translator's note to v. 32 averages two spans wrongly, 46.35 for
 46.6, which the test of the tie rule found.
 
+**The spans as *Jataka Parijata* reads them (2026-10-07).** *Jataka Parijata*
+ch. 5 (Sastri's 1932 translation, public domain, read on the page images)
+quotes Varahamihira's three spans and reductions, and reads three of them
+otherwise than BPHS's translator: Mars, not a retrograde graha, keeps his
+years in an enemy's sign (v. 8, C302); enmity is the compound friendship, as
+its worked example finds Saturn in Aries unharmed with Mars in the 12th from
+him (C303); and a rising malefic takes the lagna's share from every giver,
+once (vv. 11 to 13, C304). Each is an `AyurdayaRules` field, BPHS's reading
+the default, and `AyurdayaRules::PARIJATA` gathers the three. A rule
+request now carries `ayurdaya` and `threePairs`, which the SDK read only
+under their defaults before; a choice without `longevity` is refused by its
+field. **Measured** on the book's example (30 April 1853, its printed
+longitudes): four of the seven basic Pindayu years reproduce to the printed
+figure, and three differ by the book's own arithmetic (Mars from 120° where
+the longitudes give 120° 7′, Jupiter from 33° for 33° 35′, Venus from
+162° 45′ for 162° 57′); the Moon's sixth in the tenth gives 14.554 as
+printed, Mars stronger in the twelfth takes all his years and Mercury's
+none, eclipsed Venus and Saturn keep theirs, and the rising share is the
+book's 4.36/108 halved.
+
 **The three pairs (2026-09-16).** BPHS ch. 43 vv. 33 to 50 read a class of
 life from six things: the lagna and eighth lords, Saturn and the Moon, the
 lagna and the hora lagna. It is a reading and not a rule, so it is
