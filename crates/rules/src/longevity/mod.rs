@@ -12,8 +12,8 @@ mod maraka;
 mod pairs;
 
 pub use ayurdaya::{
-    Ayurdaya, AyurdayaRules, Combine, Contribution, Giver, Method, Nisarga, Reductions, Span,
-    by_exaltation, by_navamsha, full_years, visible_half_share,
+    Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
+    Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years, visible_half_share,
 };
 pub use maraka::{Brings, Marakas, Presentation, Reason, Reasons, Vulnerability, age_span};
 pub use pairs::{
