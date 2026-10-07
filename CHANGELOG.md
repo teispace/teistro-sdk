@@ -2273,6 +2273,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **Remedies, step 3: whom a remedy is for** (`remedies.md`, C351).
+  `teistro::remedies::subjects(sky, functional)` answers each graha with
+  every reason that makes it a subject: the running daśā lords,
+  debility, combustion, a place in 6, 8 or 12, a functional malefic, a
+  maraka or the badhakesha. It ranks none of them. The running
+  antardaśā's printed śānti comes with each of its conditions judged by
+  `holds`, or left open (`None`) where the verse does not state a
+  predicate. **Numbers:** none move.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's

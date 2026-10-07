@@ -1,8 +1,8 @@
 # Remedies: functional nature, graha-śānti and the subjects of a remedy (the `remedies` module)
 
 Status: `built` for step 1 (functional nature, `crates/remedies`) and
-step 2 (graha-śānti and the antardaśā śāntis), 2026-10-07; steps 3 and
-4 are designed below and not built.
+step 2 (graha-śānti and the antardaśā śāntis) and step 3 (the subjects
+of a remedy), 2026-10-07; step 4 is designed below and not built.
 
 Phase 8 lists remedies after matching. The baseline engine reaches them
 from a controller, and 39 interpretation readings wait on them to name
@@ -145,16 +145,26 @@ read (C333).
    - **Still to come:**
      - the baseline engine's bījas, grains, fingers, carats and ring
        metals become a `BASELINE` pack, marked unsourced.
-3. **Whom a remedy is for.** BPHS 84.26 and *Yājñavalkya* I.307 name the
-   graha ill-placed (*duḥstha*) for the person at the time. The answer
-   is a list of subjects, each with its reasons:
-   - the running daśā lords;
-   - debility, combustion, or a place in 6, 8 or 12;
-   - a functional malefic, a maraka or the badhakesha;
-   - an active dosha.
+3. **Whom a remedy is for** (built, C351). BPHS 84.26 and
+   *Yājñavalkya* I.307 name the graha ill-placed (*duḥstha*) for the
+   person at the time, and neither defines the word. `subjects(sky,
+   functional)` answers each graha with every reason that makes it a
+   subject:
+   - the running mahādaśā or antardaśā lord;
+   - debilitated, combust, or in the 6th, 8th or 12th;
+   - a functional malefic, a maraka or the badhakesha (step 1).
 
-   The answer carries no priority by default, and the instant is always
-   given; nothing reads the clock.
+   **How the answer reads:**
+   - It ranks nothing, and it reads no clock: the running daśā is part
+     of the input.
+   - **The running antardaśā's printed śānti** comes with it, and `holds`
+     judges each of its conditions where the verse states a predicate.
+   - **What the verse leaves open is not decided.** That covers "with
+     the 8th or 12th" and the mixed grammar, Jupiter/Moon's
+     2nd-and-6th lord, which the Moon, owning one sign, cannot be
+     (C349), and any lordship of a node (C351). Each answers `None`.
+   - **An active dosha** as a reason waits for the rules engine's
+     doshas to be read here.
 4. **The ishṭa-devatā.** BPHS (1923) ch. 9 vv. 70–75 reads it from the
    grahas in the 12th from the karakamsha. The baseline instead looks up
    its 12 sign-keyed records by the Moon's sign.
