@@ -228,3 +228,19 @@ pub const fn baseline_ishta_devata(moon: Rashi) -> [Deity; 2] {
         _ => [Deity::Vishnu, Deity::Brihaspati],
     }
 }
+
+/// The ishṭa-devatā in both charts the kārakāṁśa's houses are counted
+/// in, since the verses name neither (C130).
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct IshtaDevatas {
+    /// The Ātmakāraka the kārakāṁśa is its navāṁśa sign.
+    pub atmakaraka: Graha,
+    /// The kārakāṁśa.
+    pub karakamsha: Rashi,
+    /// The 12th from it, the grahas placed by the rasi chart.
+    pub in_rasi: IshtaDevata,
+    /// The 12th from it, the grahas placed by the navāṁśa.
+    pub in_navamsha: IshtaDevata,
+}

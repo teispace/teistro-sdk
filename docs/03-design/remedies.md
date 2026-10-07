@@ -2,7 +2,7 @@
 
 Status: `built` for step 1 (functional nature, `crates/remedies`) and
 step 2 (graha-śānti and the antardaśā śāntis), step 3 (the subjects
-of a remedy) and step 4's kernel (the ishṭa-devatā), 2026-10-07.
+of a remedy) and step 4 (the ishṭa-devatā), 2026-10-07.
 
 Phase 8 lists remedies after matching. The baseline engine reaches them
 from a controller, and 39 interpretation readings wait on them to name
@@ -177,8 +177,9 @@ read (C333).
      the knob `SunWithKetu::Surya` (C354).
    - **"With Ketu" is reported, not read in.** Rahu never stands with
      Ketu, so the series cannot all be conjunctions (C355).
-   - **The chart is the caller's** (C130): the façade will answer the
-     rasi chart and the navāṁśa both.
+   - **The chart is the caller's** (C130): `sdk.chart().ishta_devata(&document,
+     rules)` answers the rasi chart and the navāṁśa both, from the
+     kārakāṁśa the chart's Jaimini reading names.
    - **The baseline's table** keys twelve pairs by the Moon's sign;
      `baseline_ishta_devata` is reached only when asked (C356).
    - **Not built:** vv. 66–69 (a benefic exalted in the 12th; Ketu there
