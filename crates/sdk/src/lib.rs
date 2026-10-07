@@ -304,6 +304,9 @@ pub use teistro_matching::{
 // Numerology: a name and a civil date under Balliett's cycle and Cheiro's
 // table, which reads no sky (`03-design/numerology.md`).
 pub use teistro_numerology as numerology;
+// Remedies: a lagna's functional natures after Laghu Parashari and BPHS
+// ch. 13 (`03-design/remedies.md`).
+pub use teistro_remedies as remedies;
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).
 pub use crate::returns::BodyReturn;
