@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 85);
+    assert_eq!(rules.len(), 89);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -93,7 +93,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (324, 8));
+    assert_eq!((cancelled, saravali_cancelled), (350, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(
         counts.as_slice(),
@@ -209,8 +209,9 @@ const GRADED: [&str; 18] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 35] = [
+const SILENT: [&str; 36] = [
     "ABHUKTA_MOOLA",
+    "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
     "ARISHTA_JUPITER_SATURN_RAHU_IN_ORDER",
@@ -248,12 +249,15 @@ const SILENT: [&str; 35] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 85] = [
+const ANSWERED: [(&str, usize); 89] = [
     ("ABHUKTA_MOOLA", 0),
+    ("ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
     ("ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA", 12),
     ("ARISHTA_BHANGA_MARS_WITH_JUPITER", 31),
+    ("ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA", 2),
+    ("ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA", 25),
     ("ARISHTA_FIVE_IN_THE_SECOND", 0),
     ("ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND", 0),
     ("ARISHTA_JUPITER_SATURN_RAHU_IN_ORDER", 0),
@@ -272,6 +276,7 @@ const ANSWERED: [(&str, usize); 85] = [
     ("ARISHTA_MOON_HEMMED_OR_ASPECTED_BY_MALEFICS", 55),
     ("ARISHTA_MOON_IN_DUSTHANA_MALEFIC_ASPECT", 15),
     ("ARISHTA_MOON_SIXTH_SATURN_LAGNA_MARS_SEVENTH", 0),
+    ("ARISHTA_MOON_WITH_A_MALEFIC_STRONG_MALEFICS_ASPECTING", 8),
     ("ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED", 0),
     ("ARISHTA_RAHU_WITH_JUPITER_IN_LAGNA_OR_FOURTH", 0),
     ("ARISHTA_RETROGRADE_BENEFIC_IN_DUSTHANA", 5),
