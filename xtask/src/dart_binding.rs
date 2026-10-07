@@ -119,7 +119,7 @@ fn adapter(root: &Path) -> Result<(), ()> {
 
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("dart", "--version") {
-        eprintln!("no `dart` on this machine; the Dart binding's tests need it");
+        crate::skip::skip("no `dart` on this machine; the Dart binding's tests need it");
         return 0;
     }
     let package = root.join(PACKAGE);

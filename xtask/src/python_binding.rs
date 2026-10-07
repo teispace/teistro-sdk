@@ -157,7 +157,9 @@ fn wrong_usages(package: &Path, checker: &(String, Vec<String>)) -> Result<(), (
 pub(crate) fn check(root: &Path) -> i32 {
     let python = interpreter();
     if !present(&python, "--version") {
-        eprintln!("no `{python}` on this machine; the Python binding's tests need it");
+        crate::skip::skip(format_args!(
+            "no `{python}` on this machine; the Python binding's tests need it"
+        ));
         return 0;
     }
     let package = root.join(PACKAGE);
@@ -183,9 +185,9 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     let Some(checker) = type_checker(root, &python) else {
-        println!(
-            "skip  {PACKAGE}: the pinned type checker is not installed and could not be (needs `{python} -m venv`; or set MYPY)"
-        );
+        crate::skip::skip(format_args!(
+            "{PACKAGE}: the pinned type checker is not installed and could not be (needs `{python} -m venv`; or set MYPY)"
+        ));
         return 0;
     };
     let outcome = wrong_usages(&package, &checker)

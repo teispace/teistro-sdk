@@ -7,6 +7,7 @@
 # laptop.
 #
 #   gate     the tag is the version, and the version is releasable
+#   verify   the full verify matrix, called here so publish can wait on it
 #   build    each platform builds its own artefacts and manifest
 #   wasm     the wasm package, one artefact for every host, built once
 #   stage    the manifests are merged and the two published packages staged
@@ -24,6 +25,11 @@ on:
 
 permissions:
   contents: read
+
+# A gate that skips part of itself for a missing tool fails here rather
+# than reporting green (`xtask/src/skip.rs`).
+env:
+  TEISTRO_STRICT: "1"
 
 jobs:
   gate:
@@ -61,6 +67,14 @@ jobs:
       - name: The changelog answers whether any number moved
         if: github.event_name == 'push' || steps.version.outputs.version != '0.0.0'
         run: cargo xtask changelog-entry "$(cargo xtask version)"
+
+  # Every binding on every platform, as the nightly runs it. Publishing
+  # waits for it: verify used to run on the tag as a workflow of its own,
+  # so a release could publish while verify was still red.
+  verify:
+    name: verify
+    needs: gate
+    uses: ./.github/workflows/verify.yml
 
   build:
     name: build (${{ matrix.platform }})
@@ -195,7 +209,7 @@ jobs:
 
   publish:
     name: publish
-    needs: [gate, stage]
+    needs: [gate, verify, stage]
     if: needs.gate.outputs.publish == 'true'
     runs-on: ubuntu-latest
     environment: release

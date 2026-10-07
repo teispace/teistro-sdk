@@ -311,6 +311,7 @@ mod sect;
 mod serial;
 mod shadbala;
 mod site;
+mod skip;
 mod state;
 mod state_readings;
 mod stations;
@@ -554,7 +555,7 @@ fn main() {
         ));
     }
     if let Some(code) = generated_page(command) {
-        std::process::exit(code);
+        std::process::exit(skip::verdict(code));
     }
     let code = match Some(command) {
         Some("check-docs") => check_docs(),
@@ -638,7 +639,7 @@ fn main() {
         },
         _ => usage(),
     };
-    process::exit(code);
+    process::exit(skip::verdict(code));
 }
 
 fn usage() -> i32 {

@@ -392,7 +392,7 @@ fn collect(
             &[],
         ));
     } else {
-        println!("skip  {NODE}: no `node` on this machine");
+        crate::skip::skip(format_args!("{NODE}: no `node` on this machine"));
     }
     if has_dart {
         let library = root.join("target/release").join(library_artefact());
@@ -407,7 +407,7 @@ fn collect(
             &[],
         ));
     } else {
-        println!("skip  {DART}: no `dart` on this machine");
+        crate::skip::skip(format_args!("{DART}: no `dart` on this machine"));
     }
     if has_python {
         let library = root.join("target/release").join(library_artefact());
@@ -423,7 +423,7 @@ fn collect(
             &[],
         ));
     } else {
-        println!("skip  {PYTHON}: no `{python}` on this machine");
+        crate::skip::skip(format_args!("{PYTHON}: no `{python}` on this machine"));
     }
     // The Rust surface's own runner. No `present` check: it is an
     // example of a workspace crate, so a machine that can run this gate
@@ -462,7 +462,10 @@ fn collect(
             );
         }
     } else {
-        println!("skip  the wasm runner: needs `node` and the `wasm32-unknown-unknown` target");
+        crate::skip::excused(
+            "the wasm runner: needs `node` and the `wasm32-unknown-unknown` target",
+            "one row of the matrix builds the target and compares it",
+        );
     }
 
     Some((reports, attempted))
@@ -475,9 +478,9 @@ pub(crate) fn check(root: &Path) -> i32 {
     let has_python = present(&python, "--version");
     let ran = has_node || has_dart || has_python;
     if !ran {
-        eprintln!(
+        crate::skip::skip(format_args!(
             "no `node`, `dart` or `{python}` on this machine; the parity gate needs two of them"
-        );
+        ));
         return 0;
     }
     if library(root).is_err() {
@@ -516,7 +519,10 @@ pub(crate) fn check(root: &Path) -> i32 {
 /// The reports compared, value for value: 0 when they agree.
 fn values_agree(reports: &[Report], ran: bool) -> i32 {
     if reports.len() < 2 {
-        println!("skip  nothing to compare: {} report(s)", reports.len());
+        crate::skip::skip(format_args!(
+            "nothing to compare: {} report(s)",
+            reports.len()
+        ));
         return i32::from(reports.is_empty() && ran);
     }
     // Every report against the first, so a machine with two toolchains
@@ -575,10 +581,10 @@ fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
         return 1;
     }
     if sets.len() < 2 {
-        println!(
-            "skip  no examples to compare: {}",
+        crate::skip::skip(format_args!(
+            "no examples to compare: {}",
             plural(sets.len(), "binding")
-        );
+        ));
         return 0;
     }
     let names: Vec<&str> = sets.iter().map(|(binding, _)| binding.name()).collect();

@@ -357,7 +357,7 @@ fn held_to_node(
 /// The probe in a headless browser, unbundled.
 fn browser(root: &Path, staged: &Path, node: &Value) -> Result<(), ()> {
     let Some(chrome) = chrome() else {
-        println!("skip  the browser check needs Chrome (set CHROME to its binary)");
+        crate::skip::skip("the browser check needs Chrome (set CHROME to its binary)");
         return Ok(());
     };
     held_to_node(
@@ -380,8 +380,8 @@ fn browser(root: &Path, staged: &Path, node: &Value) -> Result<(), ()> {
 /// only where the install cannot happen, and says so.
 fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
     if pinned_npm_tool(&root.join(WORKERD), "wrangler").is_none() {
-        println!(
-            "skip  the Workers check: the pinned Wrangler is not installed and could not be (needs `npm`)"
+        crate::skip::skip(
+            "the Workers check: the pinned Wrangler is not installed and could not be (needs `npm`)",
         );
         return Ok(());
     }
@@ -397,7 +397,7 @@ fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
 /// the Node package's own consumer.
 fn consumer(root: &Path, staged: &Path) -> Result<(), ()> {
     let Some(npm) = tool("npm", "--version") else {
-        println!("skip  the installed wasm package: no `npm` on this machine");
+        crate::skip::skip("the installed wasm package: no `npm` on this machine");
         return Ok(());
     };
     let project = root.join(CONSUMER);
@@ -450,7 +450,7 @@ fn consumer(root: &Path, staged: &Path) -> Result<(), ()> {
 
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
-        eprintln!("no `node` on this machine; the wasm binding's tests need it");
+        crate::skip::skip("no `node` on this machine; the wasm binding's tests need it");
         return 0;
     }
     let staged = root.join(STAGED);

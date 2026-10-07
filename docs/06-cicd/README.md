@@ -9,7 +9,7 @@ Status: `built`, 2026-09-06. The research is in
 |---|---|---|
 | `fast-check` | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate the Rust toolchain alone can run (`check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`, `check-intl`, `check-ffi`, `check-lints`); on a pull request, that every commit is signed off |
 | `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64; the two Linux runs compared value by value (a difference fails the job) and macOS reported against them (a difference is published, not failed) |
-| `verify` | nightly, on demand, on a tag | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on all five platforms |
+| `verify` | nightly, on demand, and inside every release | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on all five platforms |
 | `release` | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published to npm, pub.dev and the release page |
 | `docs` | every push to `main`, a pull request that touches the site, a tag | the site builds and renders every generated reference page; a tag publishes it to GitHub Pages |
 | `benchmarks` | every pull request, on demand | `cargo xtask bench` under callgrind, compared with the base commit measured in the same job: above 3% fails, above 1% is reported |
@@ -32,8 +32,9 @@ The gates that need another toolchain run by hand and in `verify`, which
 is the nightly matrix: `check-c` needs a C compiler, `check-node` a Node
 and a TypeScript, `check-dart` a Dart, `check-parity` both, and
 `check-package` all three. A missing toolchain skips its own gate and
-names what it wanted; a skip is not a pass, and the release's own run has
-every toolchain installed.
+names what it wanted. In verify and in a release `TEISTRO_STRICT` makes
+that skip a failure, apart from the three skips excused by design
+(`01-pipelines.md`).
 
 ## Planned contents
 
@@ -56,7 +57,9 @@ every toolchain installed.
 - The nightly carries the cross-architecture determinism matrix comparing
   output hashes (ADR-0022), mutation testing, the full conformance run and
   the differential sweep against Teimeris and the recorded oracles.
-- A skip is not a pass: the summary names what did not run.
+- A skip is not a pass: under `TEISTRO_STRICT` (verify and the release)
+  a skip fails its gate, and only the skips a gate excuses by design,
+  each saying why, are let through.
 - Every gate is proven red once and the run is recorded.
 - Artefacts are installed into throwaway projects and run before they are
   published.
