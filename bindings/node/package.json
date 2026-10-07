@@ -51,6 +51,7 @@
     "@teistro/sdk-linux-arm64": "0.0.0",
     "@teistro/sdk-darwin-arm64": "0.0.0",
     "@teistro/sdk-darwin-x64": "0.0.0",
-    "@teistro/sdk-win32-x64": "0.0.0"
+    "@teistro/sdk-win32-x64": "0.0.0",
+    "@teistro/sdk-win32-arm64": "0.0.0"
   }
 }

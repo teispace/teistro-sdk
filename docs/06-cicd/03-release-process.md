@@ -58,11 +58,11 @@ It is the one command that has to know the list; nobody else does.
 | job | what it does |
 |---|---|
 | `gate` | `check-tag` (the tag is the version the repository carries), `check-versions`, the documentation, FFI and determinism gates, and the changelog's entry for this version |
-| `verify` | the whole verify matrix (`verify.yml`, called), every binding's gates on five platforms, the wasm package and the ephemeris tiers; `publish` waits for it |
-| `build` | five runners, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
+| `verify` | the whole verify matrix (`verify.yml`, called), every binding's gates on every platform, the wasm package and the ephemeris tiers; `publish` waits for it |
+| `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
 | `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome and Cloudflare's workerd each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
-| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then the five platform packages and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages; then the Dart package |
+| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages; then the Dart package |
 
 Every job runs under `TEISTRO_STRICT`, so a gate that skips part of
 itself for a missing tool fails rather than passing on what it did not
@@ -184,8 +184,8 @@ than against the download itself.
 | Dart | `dart pub add teistro` then `dart run teistro:install` | the release, checked against the package's own digest table, written to `.dart_tool/teistro/<version>/` |
 
 Every one of them is installed into a throwaway project and run before it
-is published: that is `cargo xtask check-package`, and it runs on all five
-platforms in the `build` job.
+is published: that is `cargo xtask check-package`, and it runs for every
+platform in the `build` job.
 
 An air-gapped machine has two ways in: `dart run teistro:install --from
 <archive>` installs from a file it already has, and `$TEISTRO_LIBRARY`
