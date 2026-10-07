@@ -180,6 +180,7 @@ than against the download itself.
 |---|---|---|
 | C | `teistro-c-<version>-<platform>.tar.gz` | the bundle: header, shared and static library |
 | Node | `npm install @teistro/sdk` | the platform package npm chose for the host, loaded by name |
+| Python | `pip install teistro` | the platform wheel pip chose for the host, which carries the library in `teistro/_lib/`; on a host no wheel fits, the source distribution and `teistro-install`, checked against the package's own digest table |
 | Dart | `dart pub add teistro` then `dart run teistro:install` | the release, checked against the package's own digest table, written to `.dart_tool/teistro/<version>/` |
 
 Every one of them is installed into a throwaway project and run before it

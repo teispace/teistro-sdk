@@ -2262,6 +2262,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   (trusted publishing, PEP 740 attestations); the PyPI step used
   `twine upload`, which exchanges no token and would have failed at the
   first release. **Numbers:** none move.
+- **A Python wheel per platform** (`bindings/python/README.md`). Each
+  release builds a `py3-none-<platform>` wheel per row of the platform
+  table, written by `cargo xtask package stage` from the library that
+  platform built (its digest checked first) and carrying it in
+  `teistro/_lib/`, which `Teistro.open()` already read. pip picks the
+  host's own, so `pip install teistro` needs no second step; where no
+  wheel fits, the source distribution and `teistro-install` stand as
+  before. A Linux wheel is tagged with the glibc floor and a macOS one
+  with the minimum its library's load commands name, and `check-package`
+  installs the host's wheel into a fresh environment and runs the consumer
+  program. **Numbers:** none move.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's

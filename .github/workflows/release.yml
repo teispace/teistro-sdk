@@ -299,6 +299,10 @@ jobs:
           set -eu
           python -m pip install --disable-pip-version-check build
           python -m build --sdist --wheel --outdir ../../pypi-dist .
+          # A wheel a platform, each carrying its library, which
+          # `package stage` wrote (`xtask/src/wheel.rs`); the pure wheel
+          # and the sdist stay for a host none is tagged for.
+          cp ../wheels/*.whl ../../pypi-dist/
         working-directory: dist/pypi/teistro
       # Trusted publishing: PyPI takes the runner's OIDC token, as npm and
       # pub.dev do, so no long-lived credential is stored here, and each

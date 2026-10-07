@@ -329,6 +329,7 @@ mod vsop;
 mod wasm_binding;
 mod western_aspects;
 mod western_houses;
+mod wheel;
 mod yogas;
 
 use std::env;

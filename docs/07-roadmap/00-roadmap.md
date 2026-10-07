@@ -932,6 +932,8 @@ The order below puts what blocks a release first.
 4. **Python platform wheels.** The binding is ctypes, so one
    `py3-none-<platform>` wheel per platform, written by xtask, replaces
    the download on first use.
+   **Built** (2026-10-08): `xtask/src/wheel.rs`, tagged per row by
+   `Platform::wheel_tag`, the download kept for hosts no wheel fits.
 5. **Tree-shaking and size.**
    - `/*#__PURE__*/` on the generated catalogue's top-level calls.
    - esbuild, Vite and webpack fixtures proving that `/catalogue` alone

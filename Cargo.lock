@@ -2497,6 +2497,8 @@ dependencies = [
 name = "xtask"
 version = "0.0.0"
 dependencies = [
+ "base64",
+ "crc32fast",
  "flate2",
  "regex",
  "schemars",
@@ -2528,6 +2530,7 @@ dependencies = [
  "teistro-strength",
  "teistro-time",
  "teistro-vargas",
+ "toml",
 ]
 
 [[package]]

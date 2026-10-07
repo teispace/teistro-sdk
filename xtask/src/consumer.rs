@@ -488,6 +488,57 @@ fn python_consumer(
         return Err(());
     }
 
+    run_python_consumer(root, &into, &venv, "the installed Python package")?;
+    python_wheel_consumer(root, dist, check, platform, version, &python)
+}
+
+/// Installs this platform's wheel into an environment of its own and runs
+/// the consumer with nothing installed beside it: the library it answers
+/// with is the one the wheel carries.
+fn python_wheel_consumer(
+    root: &Path,
+    dist: &Path,
+    check: &Path,
+    platform: &Platform,
+    version: &str,
+    python: &str,
+) -> Result<(), ()> {
+    let into = check.join("python-wheel");
+    fs::create_dir_all(&into).map_err(|err| println!("FAIL  {CHECK}/python-wheel: {err}"))?;
+    let wheel = dist.join(format!(
+        "pypi/wheels/teistro-{version}-py3-none-{}.whl",
+        platform.wheel_tag
+    ));
+    if !wheel.is_file() {
+        println!(
+            "FAIL  no wheel was staged for {} at {}",
+            platform.name(),
+            rel(root, &wheel)
+        );
+        return Err(());
+    }
+    step(
+        crate::binding::python_command(python)
+            .args(["-m", "venv", ".venv"])
+            .current_dir(&into),
+        "",
+        "the Python environment for the wheel could not be created",
+    )?;
+    let venv = into.join(".venv").join(platform.venv_bin());
+    step(
+        crate::binding::python_command(venv.join("pip"))
+            .args(["install", "--disable-pip-version-check", "--quiet"])
+            .arg(&wheel)
+            .current_dir(&into),
+        "",
+        "the platform wheel did not install",
+    )?;
+    run_python_consumer(root, &into, &venv, "the platform wheel")
+}
+
+/// Runs the Python consumer in `into` with the environment at `venv`, the
+/// library found only where the package itself looks.
+fn run_python_consumer(root: &Path, into: &Path, venv: &Path, what: &str) -> Result<(), ()> {
     fs::copy(
         root.join("bindings/python/packaging/consumer.py"),
         into.join("consumer.py"),
@@ -496,10 +547,10 @@ fn python_consumer(
     step(
         crate::binding::python_command(venv.join("python"))
             .arg("consumer.py")
-            .current_dir(&into)
+            .current_dir(into)
             .env_remove("TEISTRO_LIBRARY"),
-        "the installed Python package answers as the library does",
-        "the installed Python package did not answer",
+        &format!("{what} answers as the library does"),
+        &format!("{what} did not answer"),
     )
 }
 
