@@ -709,6 +709,25 @@ __all__ = [
     "MoonWeakness",
     "PrashnaScore",
     "PrashnaFactor",
+    # Remedies: whom to propitiate, why and how, and the chosen deity.
+    "RemedyRequest",
+    "RemedyRules",
+    "FunctionalRules",
+    "ShantiRules",
+    "DevataRules",
+    "Remedies",
+    "Functional",
+    "FunctionalRow",
+    "FunctionalClause",
+    "Badhaka",
+    "RemedySubjects",
+    "RemedySubject",
+    "AntardashaShanti",
+    "DashaShanti",
+    "Shanti",
+    "IshtaDevatas",
+    "IshtaDevata",
+    "Devotion",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -1686,6 +1705,7 @@ class ChartArea(_Area):
         harmonic: Optional[HarmonicRequest] = None,
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
+        remedies: Optional[RemedyRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1744,6 +1764,7 @@ class ChartArea(_Area):
             harmonic=harmonic,
             matching=matching,
             prashna=prashna,
+            remedies=remedies,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1792,6 +1813,7 @@ class ChartArea(_Area):
         harmonic: Optional[HarmonicRequest] = None,
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
+        remedies: Optional[RemedyRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1877,6 +1899,7 @@ class ChartArea(_Area):
             harmonic_json=_record_json(harmonic, "harmonic", "{'number': 9}"),
             matching_json=_matching_json(matching),
             prashna_json=_record_json(prashna, "prashna", "{'question': {'house': 7}}"),
+            remedies_json=_record_json(remedies, "remedies", "{'at': 2460676.5}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -7586,6 +7609,201 @@ class Prashna:
     """The sign of the querent's number; `None` unless one was given."""
 
 
+class FunctionalRules(TypedDict, total=False):
+    """Which scheme judges the grahas' functional natures: `scheme`,
+    `LAGHU_PARASHARI` (the default) or the baseline engine's unsourced
+    `BASELINE` (C331)."""
+
+    scheme: str
+
+
+class ShantiRules(TypedDict, total=False):
+    """Which text's ṛk Rahu's śānti gives: `rik`, `BPHS` (the default) or
+    `YAJNAVALKYA`."""
+
+    rik: str
+
+
+class DevataRules(TypedDict, total=False):
+    """Whom the Sun with Ketu is devoted to: `sunWithKetu`, `SHIVA` (the
+    default) or `SURYA` (C354)."""
+
+    sunWithKetu: str
+
+
+class RemedyRules(TypedDict, total=False):
+    """The readings remedies are given under, one knob per crux, the texts'
+    own by default."""
+
+    functional: FunctionalRules
+    shanti: ShantiRules
+    devata: DevataRules
+
+
+class RemedyRequest(TypedDict, total=False):
+    """The remedies to read in every chart of a request
+    (`03-design/remedies.md`), every field optional. An `at`, a Julian day
+    in UT, reads the Vimśottarī periods running then, so it asks for that
+    daśā too.
+
+    >>> asked: RemedyRequest = {"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}}
+    """
+
+    at: float
+    rules: RemedyRules
+
+
+@dataclass(frozen=True)
+class FunctionalClause:
+    """A Laghu Parashari clause that made a graha's nature, by `kind`
+    (`LAGNESHA`, `TRIKONA_LORD`, `MARAKA`, …), and the house it read."""
+
+    kind: str
+    house: int
+
+
+@dataclass(frozen=True)
+class FunctionalRow:
+    """What the lagna's lordships make of one graha."""
+
+    graha: Graha
+    houses: Tuple[int, ...]
+    """The houses it lords, counted from the lagna."""
+    clauses: Tuple[FunctionalClause, ...]
+    nature: str
+    """`YOGAKARAKA`, `BENEFIC`, `NEUTRAL` or `MALEFIC`."""
+
+
+@dataclass(frozen=True)
+class Badhaka:
+    """The bādhaka house, the 11th from a movable lagna, the 9th from a
+    fixed and the 7th from a dual, and its lord."""
+
+    house: int
+    lord: Graha
+
+
+@dataclass(frozen=True)
+class Functional:
+    """What a lagna's lordships make of the seven grahas (Laghu Parashari)."""
+
+    lagna: Rashi
+    scheme: str
+    rows: Tuple[FunctionalRow, ...]
+    """The seven grahas that own signs, Sun to Saturn."""
+    yogakarakas: Tuple[Graha, ...]
+    marakas: Tuple[Graha, ...]
+    """The lords of the 2nd and the 7th (LP v. 23)."""
+    badhaka: Badhaka
+
+
+@dataclass(frozen=True)
+class RemedySubject:
+    """A graha a remedy is for, and every reason (`FUNCTIONAL_MALEFIC`,
+    `DEBILITATED`, `DUSTHANA`, `MARAKA`, `MAHADASHA`, `ANTARDASHA`,
+    `COMBUST` or `BADHAKESHA`)."""
+
+    graha: Graha
+    reasons: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class DashaShanti:
+    """What BPHS prints for one antardaśā: where, the conditions any of
+    which brings the evil, and the rites, all of which are prescribed."""
+
+    mahadasha: Graha
+    antardasha: Graha
+    chapter: int
+    verses: str
+    page: int
+    conditions: Tuple[str, ...]
+    remedies: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class AntardashaShanti:
+    """The running antardaśā's śānti and whether each condition holds, in
+    the printed order: `None` where the verse leaves it open."""
+
+    shanti: DashaShanti
+    holds: Tuple[Optional[bool], ...]
+
+
+@dataclass(frozen=True)
+class RemedySubjects:
+    """Whom a remedy is for, in catalogue order and unranked, and the
+    running antardaśā's śānti; `None` without `at`."""
+
+    subjects: Tuple[RemedySubject, ...]
+    antardasha: Optional[AntardashaShanti]
+
+
+@dataclass(frozen=True)
+class Shanti:
+    """A graha's śānti (BPHS ch. 84): its image, ṛk, japa in thousands,
+    fuel, food, fee and gem, the substance it rules (`None` for the
+    nodes), its direction (`None` for Ketu, C345) and its maṇḍala place."""
+
+    graha: Graha
+    image: str
+    rik: str
+    japa_thousands: int
+    samidh: str
+    food: str
+    dakshina: str
+    gem: str
+    substance: Optional[str]
+    direction: Optional[Direction]
+    mandala: str
+
+
+@dataclass(frozen=True)
+class Devotion:
+    """A graha in the 12th from the kārakāṁśa, the deities its verse names
+    (in the 1923 print's ch. 9), and whether Ketu stands with it (C355)."""
+
+    graha: Graha
+    deities: Tuple[str, ...]
+    verse: int
+    with_ketu: bool
+
+
+@dataclass(frozen=True)
+class IshtaDevata:
+    """The 12th from the kārakāṁśa in one chart, read as BPHS vv. 70–76
+    read it: its devotions in catalogue order (empty when the sign is
+    empty), and Saturn or Venus there in a malefic's sign (vv. 75–76)."""
+
+    rules: DevataRules
+    sign: Rashi
+    devotions: Tuple[Devotion, ...]
+    minor: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class IshtaDevatas:
+    """The ishṭa-devatā, in the rāśi chart and in the navāṁśa."""
+
+    atmakaraka: Graha
+    karakamsha: Rashi
+    in_rasi: IshtaDevata
+    in_navamsha: IshtaDevata
+
+
+@dataclass(frozen=True)
+class Remedies:
+    """A chart's remedies (`03-design/remedies.md`)."""
+
+    rules: RemedyRules
+    """The readings it was given under, every member filled."""
+    functional: Functional
+    subjects: RemedySubjects
+    shantis: Tuple[Shanti, ...]
+    """The graha-śānti of each subject, in their order."""
+    ishta_devata: IshtaDevatas
+
+
 @dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
@@ -8531,6 +8749,102 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
             applying_to=graha(score["applyingTo"]),
         ),
         number_sign=None if sign is None else _member(Rashi, sign),
+    )
+
+
+def _remedies(raw: Mapping[str, Any]) -> Remedies:
+    """A chart's remedies from the `remedies` section's JSON, its keys made
+    members."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    def rashi(key: str) -> Rashi:
+        found: Rashi = _member(Rashi, key)
+        return found
+
+    def devata(one: Mapping[str, Any]) -> IshtaDevata:
+        return IshtaDevata(
+            rules=one["rules"],
+            sign=rashi(one["sign"]),
+            devotions=tuple(
+                Devotion(graha=graha(d["graha"]), deities=tuple(d["deities"]), verse=d["verse"], with_ketu=d["withKetu"])
+                for d in one["devotions"]
+            ),
+            minor=tuple(graha(key) for key in one["minor"]),
+        )
+
+    functional = raw["functional"]
+    antardasha = raw["subjects"]["antardasha"]
+    devatas = raw["ishtaDevata"]
+    return Remedies(
+        rules=raw["rules"],
+        functional=Functional(
+            lagna=rashi(functional["lagna"]),
+            scheme=functional["scheme"],
+            rows=tuple(
+                FunctionalRow(
+                    graha=graha(row["graha"]),
+                    houses=tuple(row["houses"]),
+                    clauses=tuple(FunctionalClause(kind=c["kind"], house=c["house"]) for c in row["clauses"]),
+                    nature=row["nature"],
+                )
+                for row in functional["rows"]
+            ),
+            yogakarakas=tuple(graha(key) for key in functional["yogakarakas"]),
+            marakas=tuple(graha(key) for key in functional["marakas"]),
+            badhaka=Badhaka(house=functional["badhaka"]["house"], lord=graha(functional["badhaka"]["lord"])),
+        ),
+        subjects=RemedySubjects(
+            subjects=tuple(
+                RemedySubject(graha=graha(one["graha"]), reasons=tuple(one["reasons"]))
+                for one in raw["subjects"]["subjects"]
+            ),
+            antardasha=None if antardasha is None else _antardasha_shanti(antardasha),
+        ),
+        shantis=tuple(_shanti(one) for one in raw["shantis"]),
+        ishta_devata=IshtaDevatas(
+            atmakaraka=graha(devatas["atmakaraka"]),
+            karakamsha=rashi(devatas["karakamsha"]),
+            in_rasi=devata(devatas["inRasi"]),
+            in_navamsha=devata(devatas["inNavamsha"]),
+        ),
+    )
+
+
+def _antardasha_shanti(raw: Mapping[str, Any]) -> AntardashaShanti:
+    """The running antardaśā's śānti from the `remedies` section's JSON."""
+    printed = raw["shanti"]
+    return AntardashaShanti(
+        shanti=DashaShanti(
+            mahadasha=_member(Graha, printed["mahadasha"]),
+            antardasha=_member(Graha, printed["antardasha"]),
+            chapter=printed["chapter"],
+            verses=printed["verses"],
+            page=printed["page"],
+            conditions=tuple(printed["conditions"]),
+            remedies=tuple(printed["remedies"]),
+        ),
+        holds=tuple(raw["holds"]),
+    )
+
+
+def _shanti(raw: Mapping[str, Any]) -> Shanti:
+    """One graha's śānti from the `remedies` section's JSON."""
+    direction = raw["direction"]
+    return Shanti(
+        graha=_member(Graha, raw["graha"]),
+        image=raw["image"],
+        rik=raw["rik"],
+        japa_thousands=raw["japaThousands"],
+        samidh=raw["samidh"],
+        food=raw["food"],
+        dakshina=raw["dakshina"],
+        gem=raw["gem"],
+        substance=raw["substance"],
+        direction=None if direction is None else _member(Direction, direction),
+        mandala=raw["mandala"],
     )
 
 
@@ -10103,6 +10417,16 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def remedies(self) -> Optional[Remedies]:
+        """The chart's remedies: what the lagna's lordships make of the
+        seven grahas, whom a remedy is for and why, each subject's
+        graha-śānti, the running antardaśā's śānti under `at`, and the
+        ishṭa-devatā in both charts. `None` unless `remedies=` asked for
+        them (`03-design/remedies.md`)."""
+        parsed = self.batch._remedies
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dignities(self) -> Optional[Dignities]:
         """The seven planets' essential dignities and the chart's sect, with
         everything that made them; `None` unless `dignities=` asked for them
@@ -10748,6 +11072,13 @@ class ChartBatch:
         for."""
         text = self.decoded.prashna
         return [_prashna(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _remedies(self) -> list[Remedies]:
+        """Every chart's remedies, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.remedies
+        return [_remedies(raw) for raw in json.loads(text)] if text else []
 
     @cached_property
     def _kps(self) -> list[KpReading]:

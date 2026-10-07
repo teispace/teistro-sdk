@@ -4473,6 +4473,9 @@ class Charts:
     prashna: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, verdict, change, timing, mook, links, moon, score, numberSign}` (`03-design/prashna.md`). `verdict` is `{clauses, outcome}`, each clause `{kind, graha, favour}` naming its verse by `kind`, and `outcome` `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` (*Shatpanchashika* I.4, C337). `change` is `STAYS` or `CHANGES`. `timing` is `{rule, graha, tie, count, multiplier, amount, unit, between}`, `amount` null where the rule gives none. `mook` is `{rule, graha, tie, house, person, thought}`, `person` null but under `SHATPANCHASHIKA`. `links` is the Tajika yogas between the lagna lord and the asked house's lord, as a year's `matters` carry them, null when no house was asked. `moon` is `{rules, clauses}`, each clause a key of the Samjna Tantra vv. 73-74 (C352). `score` is the baseline engine's `{points, answer, factors, void, applyingTo}`, null unless `rules.score` is `BASELINE`; `numberSign` the sign of the querent's number, null unless one was given. Empty when `prashna_json` asked for none."""
 
+    remedies: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, functional, subjects, shantis, ishtaDevata}` (`03-design/remedies.md`). `rules` is `{functional, shanti, devata}`, every member filled. `functional` is the lagna's natures under *Laghu Parashari*: `{lagna, scheme, rows, yogakarakas, marakas, badhaka}`, each of the seven's row `{graha, houses, clauses, nature}` with every clause `{kind, house}` that made it, and `badhaka` `{house, lord}`. `subjects` is `{subjects, antardasha}`: each graha with at least one reason, `{graha, reasons}`, ranked by nothing (C351), and `antardasha` the running Vimshottari antardasha's printed shanti `{shanti, holds}`, `shanti` being `{mahadasha, antardasha, chapter, verses, page, conditions, remedies}` and `holds` each condition true, false or null where the verse leaves it open, the whole null unless the record named `at`. `shantis` is each subject's graha-shanti, `{graha, image, rik, japaThousands, samidh, food, dakshina, gem, substance, direction, mandala}`. `ishtaDevata` is `{atmakaraka, karakamsha, inRasi, inNavamsha}`, each chart's `{rules, sign, devotions, minor}`: every graha in the 12th from the karakamsha as `{graha, deities, verse, withKetu}`, and Saturn or Venus there in a malefic's sign (C354 to C356). Empty when `remedies_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4602,6 +4605,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_avakahada = blob.section(118, "avakahada")
     at_avakahada_syllables = blob.section(119, "avakahada_syllables")
     at_prashna = blob.section(120, "prashna")
+    at_remedies = blob.section(121, "remedies")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7182,6 +7186,7 @@ def decode_charts(raw: bytes) -> Charts:
         ),
         avakahada_syllables=blob.text(at_avakahada_syllables),
         prashna=blob.text(at_prashna),
+        remedies=blob.text(at_remedies),
     )
 
 

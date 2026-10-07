@@ -1437,6 +1437,51 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
             self.assertEqual(refused.exception.field, "prashna.question.house")
 
+    def test_a_chart_carries_its_remedies(self) -> None:
+        """Remedies cross whole, their keys made members, the antardaśā's
+        śānti only once `at` asks for the running periods (the request asks
+        for the Vimśottarī daśā itself), and a bad rule refused by its
+        record's name (`03-design/remedies.md`)."""
+        from teistro import Direction, Rashi, TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).remedies)
+            plain = ctx.chart.found(instant=instant, remedies={}, **at).remedies
+            assert plain is not None
+            self.assertIsNone(plain.subjects.antardasha)
+            self.assertEqual(
+                plain.rules,
+                {"functional": {"scheme": "LAGHU_PARASHARI"}, "shanti": {"rik": "BPHS"}, "devata": {"sunWithKetu": "SHIVA"}},
+            )
+            self.assertEqual(len(plain.functional.rows), 7)
+            read = ctx.chart.found(
+                instant=instant,
+                remedies={"at": instant + 20 * 365.25, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
+                **at,
+            ).remedies
+            assert read is not None and read.subjects.antardasha is not None
+            self.assertIsInstance(read.functional.lagna, Rashi)
+            self.assertTrue(all(isinstance(row.graha, Graha) for row in read.functional.rows))
+            self.assertIsInstance(read.functional.badhaka.lord, Graha)
+            self.assertTrue(all(one.reasons for one in read.subjects.subjects))
+            self.assertEqual([one.graha for one in read.shantis], [one.graha for one in read.subjects.subjects])
+            self.assertTrue(all(one.direction is None or isinstance(one.direction, Direction) for one in read.shantis))
+            running = read.subjects.antardasha
+            self.assertIsInstance(running.shanti.mahadasha, Graha)
+            self.assertEqual(len(running.holds), len(running.shanti.conditions))
+            devata = read.ishta_devata
+            self.assertIsInstance(devata.atmakaraka, Graha)
+            self.assertIsInstance(devata.karakamsha, Rashi)
+            for one in (devata.in_rasi, devata.in_navamsha):
+                self.assertIsInstance(one.sign, Rashi)
+                self.assertTrue(all(isinstance(d.graha, Graha) and d.deities for d in one.devotions))
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, remedies={"rules": {"devatas": {}}}, **at)  # type: ignore[arg-type]
+            self.assertEqual(refused.exception.field, "remedies.rules.devatas")
+
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each
         planet, a horary number's lagna is the exact start of its sub while

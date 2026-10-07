@@ -1876,6 +1876,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_considerations(report, geo, index, document);
     the_perfection(report, geo, index, document);
     the_prashna(report, geo, index, document);
+    the_remedies(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2001,6 +2002,142 @@ fn prashna_beside(
                 ),
             );
         }
+    }
+}
+
+/// The remedies every runner asks for: the periods running at the start
+/// of 2025, and Yājñavalkya's ṛk for Rahu.
+const REMEDIES_JSON: &str = r#"{"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}"#;
+
+/// Remedies as the other three print them: the rules and the lordships in
+/// one row, then each graha's nature, each subject, the running
+/// antardaśā's śānti, each śānti and the ishṭa-devatā in both charts.
+fn the_remedies(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::RemedyRequest::from_json(REMEDIES_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .remedies(document, &asked)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-remedies{what}");
+    let functional = &read.functional;
+    put(
+        report,
+        &key(""),
+        format!(
+            "{} {} {} {} {} {} {}:{}",
+            wire_key(&read.rules.functional.scheme),
+            wire_key(&read.rules.shanti.rik),
+            wire_key(&read.rules.devata.sun_with_ketu),
+            functional.lagna.full_key(),
+            full_keys(&functional.yogakarakas),
+            full_keys(&functional.marakas),
+            functional.badhaka.house,
+            functional.badhaka.lord.full_key()
+        ),
+    );
+    for row in &functional.rows {
+        put(
+            report,
+            &key(&format!("-nature-{}", row.graha.full_key())),
+            format!(
+                "{} {} {}",
+                dashed(row.houses.iter().map(u8::to_string)),
+                dashed(row.clauses.iter().map(|clause| format!(
+                    "{}:{}",
+                    wire_key(&clause.kind),
+                    clause.house
+                ))),
+                wire_key(&row.nature)
+            ),
+        );
+    }
+    for subject in &read.subjects.subjects {
+        put(
+            report,
+            &key(&format!("-subject-{}", subject.graha.full_key())),
+            dashed(subject.reasons.iter().map(wire_key)),
+        );
+    }
+    if let Some(running) = &read.subjects.antardasha {
+        let shanti = &running.shanti;
+        put(
+            report,
+            &key("-antardasha"),
+            format!(
+                "{} {} {} {} {} {} {} {}",
+                shanti.mahadasha.full_key(),
+                shanti.antardasha.full_key(),
+                shanti.chapter,
+                shanti.verses,
+                shanti.page,
+                dashed(shanti.conditions.iter().map(wire_key)),
+                dashed(shanti.remedies.iter().map(wire_key)),
+                dashed(running.holds.iter().map(|holds| {
+                    holds.map_or_else(|| String::from("-"), |holds| holds.to_string())
+                }))
+            ),
+        );
+    }
+    remedies_rites(report, &key, &read);
+}
+
+/// Each śānti and the ishṭa-devatā, as every runner prints them.
+fn remedies_rites(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::remedies::Remedies,
+) {
+    for shanti in &read.shantis {
+        put(
+            report,
+            &key(&format!("-shanti-{}", shanti.graha.full_key())),
+            format!(
+                "{} {} {} {} {} {} {} {} {} {}",
+                wire_key(&shanti.image),
+                shanti.japa_thousands,
+                wire_key(&shanti.samidh),
+                wire_key(&shanti.food),
+                wire_key(&shanti.dakshina),
+                wire_key(&shanti.gem),
+                shanti
+                    .substance
+                    .map_or_else(|| String::from("-"), |substance| wire_key(&substance)),
+                shanti
+                    .direction
+                    .map_or("-", |direction| direction.full_key()),
+                wire_key(&shanti.mandala),
+                shanti.rik
+            ),
+        );
+    }
+    let devata = &read.ishta_devata;
+    put(
+        report,
+        &key("-devata"),
+        format!(
+            "{} {}",
+            devata.atmakaraka.full_key(),
+            devata.karakamsha.full_key()
+        ),
+    );
+    for (chart, one) in [("rasi", &devata.in_rasi), ("navamsha", &devata.in_navamsha)] {
+        put(
+            report,
+            &key(&format!("-devata-{chart}")),
+            format!(
+                "{} {} {} {}",
+                wire_key(&one.rules.sun_with_ketu),
+                one.sign.full_key(),
+                dashed(one.devotions.iter().map(|devotion| format!(
+                    "{}:{}:{}:{}",
+                    devotion.graha.full_key(),
+                    devotion.deities.iter().map(wire_key).collect::<Vec<_>>().join("|"),
+                    devotion.verse,
+                    devotion.with_ketu
+                ))),
+                full_keys(&one.minor)
+            ),
+        );
     }
 }
 

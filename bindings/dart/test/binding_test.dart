@@ -4448,6 +4448,67 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its remedies', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    Remedies? found(RemedyRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              remedies: asked,
+            )
+            .remedies;
+    expect(found(null), isNull);
+
+    final plain = found(const RemedyRequest())!;
+    expect(plain.subjects.antardasha, isNull, reason: 'no instant, no periods');
+    expect(plain.rules, const RemedyRules(), reason: 'the texts\' own');
+    expect(plain.functional.rows, hasLength(7), reason: 'the seven lords');
+
+    final read =
+        found(
+          const RemedyRequest(
+            at: instant + 20 * 365.25,
+            rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
+          ),
+        )!;
+    expect(read.rules.shanti.rik, RikSource.yajnavalkya);
+    expect(read.functional.lagna, isNot(Rashi.unknown));
+    expect(
+      read.subjects.subjects.every((one) => one.reasons.isNotEmpty),
+      isTrue,
+    );
+    expect(
+      [for (final one in read.shantis) one.graha],
+      [for (final one in read.subjects.subjects) one.graha],
+      reason: 'a śānti for each subject, in their order',
+    );
+    final running = read.subjects.antardasha!;
+    expect(running.holds, hasLength(running.shanti.conditions.length));
+    final devata = read.ishtaDevata;
+    expect(devata.atmakaraka, isNot(Graha.unknown));
+    for (final one in [devata.inRasi, devata.inNavamsha]) {
+      expect(one.sign, isNot(Rashi.unknown));
+      expect(one.devotions.every((d) => d.deities.isNotEmpty), isTrue);
+    }
+    expect(
+      () => found(const RemedyRequest(at: double.nan)),
+      throwsA(
+        isA<ArgumentError>().having((e) => e.name, 'name', 'remedies.at'),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

@@ -2656,6 +2656,232 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
+/** Remedies to read in every chart, every member optional (`03-design/remedies.md`). */
+export interface RemedyRequest {
+  /** The instant, a Julian day in UT, whose running Vimśottarī periods are read; none when left out. */
+  readonly at?: number;
+  /** The readings; the texts' own when left out. */
+  readonly rules?: RemedyRules;
+}
+
+/** The readings remedies are given under, one knob per crux. */
+export interface RemedyRules {
+  /** Which scheme judges the grahas' functional natures; `BASELINE` is unsourced. */
+  readonly functional?: { readonly scheme?: 'LAGHU_PARASHARI' | 'BASELINE' };
+  /** Which text's ṛk Rahu's śānti gives: BPHS 84.17–18 or Yājñavalkya I.301. */
+  readonly shanti?: { readonly rik?: 'BPHS' | 'YAJNAVALKYA' };
+  /** Whom the Sun with Ketu is devoted to (C354). */
+  readonly devata?: { readonly sunWithKetu?: 'SHIVA' | 'SURYA' };
+}
+
+/** A chart's remedies: whom to propitiate, why, how, and the chosen deity (`03-design/remedies.md`). */
+export interface Remedies {
+  /** The readings it was given under, every member filled. */
+  readonly rules: {
+    readonly functional: Required<NonNullable<RemedyRules['functional']>>;
+    readonly shanti: Required<NonNullable<RemedyRules['shanti']>>;
+    readonly devata: Required<NonNullable<RemedyRules['devata']>>;
+  };
+  /** What the lagna's lordships make of the seven grahas (Laghu Parashari). */
+  readonly functional: {
+    readonly lagna: Rashi;
+    readonly scheme: 'LAGHU_PARASHARI' | 'BASELINE';
+    readonly rows: readonly {
+      readonly graha: Graha;
+      /** The houses it lords, counted from the lagna. */
+      readonly houses: readonly number[];
+      readonly clauses: readonly { readonly kind: FunctionalClauseKind; readonly house: number }[];
+      readonly nature: 'YOGAKARAKA' | 'BENEFIC' | 'NEUTRAL' | 'MALEFIC';
+    }[];
+    readonly yogakarakas: readonly Graha[];
+    /** The lords of the 2nd and the 7th (LP v. 23). */
+    readonly marakas: readonly Graha[];
+    /** The 11th from a movable lagna, the 9th from a fixed, the 7th from a dual, and its lord. */
+    readonly badhaka: { readonly house: number; readonly lord: Graha };
+  };
+  /** The grahas to propitiate, each with its reasons. */
+  readonly subjects: {
+    /** Each graha with at least one reason, in catalogue order, unranked. */
+    readonly subjects: readonly { readonly graha: Graha; readonly reasons: readonly RemedyReason[] }[];
+    /** The running antardaśā's śānti and which of its conditions hold; `null` without `at`. */
+    readonly antardasha: {
+      readonly shanti: {
+        readonly mahadasha: Graha;
+        readonly antardasha: Graha;
+        readonly chapter: number;
+        readonly verses: string;
+        readonly page: number;
+        /** Any of which brings the evil; empty when the verses name none. */
+        readonly conditions: readonly DashaShantiCondition[];
+        readonly remedies: readonly DashaRemedy[];
+      };
+      /** Whether each condition holds, in the printed order; `null` where the verse leaves it open. */
+      readonly holds: readonly (boolean | null)[];
+    } | null;
+  };
+  /** The graha-śānti of each subject, in their order (BPHS ch. 84). */
+  readonly shantis: readonly RemedyShanti[];
+  /** The ishṭa-devatā, the 12th from the kārakāṁśa, in both charts. */
+  readonly ishtaDevata: {
+    readonly atmakaraka: Graha;
+    readonly karakamsha: Rashi;
+    /** Read from the kārakāṁśa in the rāśi chart. */
+    readonly inRasi: IshtaDevata;
+    /** Read from the kārakāṁśa in the navāṁśa. */
+    readonly inNavamsha: IshtaDevata;
+  };
+}
+
+/** A graha's śānti: its image, ṛk, japa, fuel, food, fee, gem and place (BPHS ch. 84). */
+export interface RemedyShanti {
+  readonly graha: Graha;
+  readonly image: 'COPPER' | 'CRYSTAL' | 'RED_SANDALWOOD' | 'GOLD' | 'SILVER' | 'IRON' | 'LEAD' | 'BRONZE';
+  /** Its ṛk's opening words in IAST, as BPHS 84.17–18 prints them, or Yājñavalkya I.301 for Rahu under `YAJNAVALKYA`. */
+  readonly rik: string;
+  /** Its japa count in thousands (BPHS 84.19–20). */
+  readonly japaThousands: number;
+  readonly samidh: 'ARKA' | 'PALASHA' | 'KHADIRA' | 'APAMARGA' | 'PIPPALA' | 'UDUMBARA' | 'SHAMI' | 'DURVA' | 'KUSHA';
+  readonly food: 'GUDAUDANA' | 'PAYASA' | 'HAVISHYA' | 'KSHIRA_SHASHTIKA' | 'DADHYODANA' | 'HAVIS' | 'CHURNA' | 'MAMSA' | 'CHITRANNA';
+  readonly dakshina: 'MILCH_COW' | 'CONCH' | 'BULL' | 'GOLD' | 'CLOTH' | 'HORSE' | 'BLACK_COW' | 'IRON' | 'GOAT';
+  readonly gem: 'RUBY' | 'PEARL' | 'CORAL' | 'EMERALD' | 'TOPAZ' | 'DIAMOND' | 'SAPPHIRE' | 'HESSONITE' | 'CATS_EYE';
+  /** The substance it rules (Brihat Jataka II.12); `null` for the nodes. */
+  readonly substance: 'COPPER' | 'GEMS' | 'GOLD' | 'ALLOY' | 'SILVER' | 'PEARLS' | 'IRON' | null;
+  /** Its direction (Brihat Jataka II.5); `null` for Ketu, which the verse leaves out (C345). */
+  readonly direction: Direction | null;
+  /** Its place in the Matsya maṇḍala. */
+  readonly mandala: 'CENTRE' | 'EAST' | 'SOUTHEAST' | 'SOUTH' | 'SOUTHWEST' | 'WEST' | 'NORTHWEST' | 'NORTH' | 'NORTHEAST';
+}
+
+/** The 12th from the kārakāṁśa in one chart, read as BPHS vv. 70–76 read it. */
+export interface IshtaDevata {
+  readonly rules: Required<NonNullable<RemedyRules['devata']>>;
+  /** The twelfth sign from the kārakāṁśa. */
+  readonly sign: Rashi;
+  /** Each graha in it with its devotion, in catalogue order; empty when the sign is empty. */
+  readonly devotions: readonly {
+    readonly graha: Graha;
+    readonly deities: readonly IshtaDeity[];
+    /** The verse, in the 1923 print's ch. 9. */
+    readonly verse: number;
+    /** Whether Ketu stands in the same sign (C355); always false of the nodes. */
+    readonly withKetu: boolean;
+  }[];
+  /** Saturn or Venus there in a sign a natural malefic rules: devotion to minor deities (vv. 75–76). */
+  readonly minor: readonly Graha[];
+}
+
+/** A deity the ishṭa-devatā verses name (BPHS, the 1923 print's ch. 9 vv. 70–76). */
+export type IshtaDeity =
+  | 'SHIVA'
+  | 'GAURI'
+  | 'PARVATI'
+  | 'LAKSHMI'
+  | 'SKANDA'
+  | 'VISHNU'
+  | 'DURGA'
+  | 'HERAMBA'
+  | 'SURYA'
+  | 'MINOR'
+  | 'CHANDRA'
+  | 'SARASWATI'
+  | 'NARASIMHA'
+  | 'HANUMAN'
+  | 'DATTATREYA'
+  | 'SHANI'
+  | 'KRISHNA'
+  | 'BRIHASPATI';
+
+/** Why a graha is to be propitiated. */
+export type RemedyReason =
+  | 'MAHADASHA'
+  | 'ANTARDASHA'
+  | 'DEBILITATED'
+  | 'COMBUST'
+  | 'DUSTHANA'
+  | 'FUNCTIONAL_MALEFIC'
+  | 'MARAKA'
+  | 'BADHAKESHA';
+
+/** A condition the antardasha's verses name for their remedy. */
+export type DashaShantiCondition =
+  | 'LORD_OF_SECOND_OR_SEVENTH'
+  | 'LORD_OF_SEVENTH'
+  | 'IN_SECOND_OR_SEVENTH'
+  | 'IN_SECOND_SEVENTH_OR_EIGHTH'
+  | 'WITH_EIGHTH_OR_TWELFTH'
+  | 'EIGHTH_LORD_IN_EIGHTH'
+  | 'SIXTH_OR_EIGHTH_FROM_DASHA_LORD_OR_WEAK'
+  | 'DUSTHANA_FROM_DASHA_LORD_WITH_MALEFIC'
+  | 'IN_SECOND_OR_SEVENTH_WITH_ITS_LORD'
+  | 'RELATED_TO_SECOND_OR_SEVENTH_LORD'
+  | 'EIGHTH_LORD_WITH_SECOND_OR_SEVENTH_LORD'
+  | 'WITH_SECOND_OR_SEVENTH_LORDS'
+  | 'LORD_OF_EIGHTH_OR_SEVENTH_OR_IN_SECOND'
+  | 'LORD_OF_SECOND_AND_SIXTH'
+  | 'SECOND_OR_SEVENTH_LORD_IN_SEVENTH'
+  | 'JOINED_OR_ASPECTED';
+
+/** A remedy the antardasha verses prescribe. */
+export type DashaRemedy =
+  | 'MRITYUNJAYA_JAPA'
+  | 'MAHA_MRITYUNJAYA_JAPA'
+  | 'RUDRA_JAPA'
+  | 'DURGA_JAPA'
+  | 'DURGA_DEVI_JAPA'
+  | 'DURGA_LAKSHMI_JAPA'
+  | 'DURGA_PATHA'
+  | 'VISHNU_SAHASRANAMA'
+  | 'SHIVA_SAHASRANAMA'
+  | 'ADITYA_HRIDAYA_JAPA'
+  | 'ISHTA_JAPA'
+  | 'SUBRAHMA_JAPA_DANA'
+  | 'SHANTI'
+  | 'GRIHYA_SHANTI'
+  | 'SHANTI_HOMA'
+  | 'AYUTA_HOMA'
+  | 'TILA_HOMA'
+  | 'DARSHA_SHANTI'
+  | 'SURYA_PRITI'
+  | 'SURYA_PUJA'
+  | 'CHANDRA_PRITI'
+  | 'BUDHA_PRITI_DANA'
+  | 'SHIVA_PUJA'
+  | 'BRAHMANA_ARCANA'
+  | 'DEVA_BRAHMANA_BHOJANA'
+  | 'CHAGA_DANA'
+  | 'SHVETA_GO_MAHISHI'
+  | 'KRISHNA_GO_MAHISHI'
+  | 'SHVETA_GO_RAJATA'
+  | 'GO_DANA'
+  | 'DHENU_DANA'
+  | 'KAPILA_GO_DANA'
+  | 'SVARNA_DHENU'
+  | 'GO_BHU_HIRANYA_DANA'
+  | 'ANADVAN_DANA'
+  | 'ASHVA_DANA'
+  | 'NAGA_DANA'
+  | 'SVARNA_DANA'
+  | 'SVARNA_PRATIMA_DANA'
+  | 'RAJATA_PRATIMA_DANA'
+  | 'ANNA_DANA'
+  | 'VASTRA_DANA'
+  | 'GUDA_GHRITA_DADHI_TANDULA';
+
+/** A Laghu Parashari clause that made a graha's nature. */
+export type FunctionalClauseKind =
+  | 'LAGNESHA'
+  | 'TRIKONA_LORD'
+  | 'TRISHADAYA_LORD'
+  | 'RANDHRESHA'
+  | 'RANDHRESHA_VOID_LAGNESHA'
+  | 'RANDHRESHA_VOID_LUMINARY'
+  | 'KENDRA_BENEFIC_LOSES'
+  | 'KENDRA_MALEFIC_LOSES'
+  | 'BY_ASSOCIATION'
+  | 'YOGAKARAKA'
+  | 'MARAKA'
+  | 'BADHAKESHA';
+
 /** An arc of the zodiac, half-open, in nanoarcseconds (divide by `3.6e12` for degrees). */
 export interface KpSpan {
   readonly start: number;
@@ -4151,6 +4377,13 @@ export declare class Chart {
    */
   readonly prashna: Prashna | null;
   /**
+   * The chart's remedies: each graha's functional nature, whom to
+   * propitiate and why, each one's shānti, the running antardasha's
+   * verses under `at`, and the chosen deity; `null` unless `remedies`
+   * asked (`03-design/remedies.md`).
+   */
+  readonly remedies: Remedies | null;
+  /**
    * The seven planets' essential dignities and the chart's sect; `null`
    * unless `dignities` asked (`03-design/essential-dignities.md`).
    */
@@ -5357,6 +5590,13 @@ export interface ChartRequest {
    * default; `{}` reads the texts' own rules with no house asked.
    */
   readonly prashna?: PrashnaRequest;
+  /**
+   * The remedies to read in every chart, read back as each chart's
+   * `remedies` (`03-design/remedies.md`). An `at` asks for the
+   * Vimśottarī daśā too. None by default; `{}` reads the texts' own
+   * rules with no periods running.
+   */
+  readonly remedies?: RemedyRequest;
   /**
    * The seven planets' essential dignities to read in every chart, read
    * back as each chart's `dignities` (`03-design/essential-dignities.md`).

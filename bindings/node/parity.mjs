@@ -370,6 +370,7 @@ const charts = geo.chart.foundMany({
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
   prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
+  remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
     orbs: {
@@ -935,6 +936,41 @@ for (const chart of charts) {
   );
   matterSaid(`chart-${i}-prashna-links`, pr.links);
   put(`chart-${i}-prashna-links-states`, `R:${list(pr.links.states.retrograde)} C:${list(pr.links.states.combust)}`);
+  const rm = chart.remedies;
+  const fn = rm.functional;
+  put(
+    `chart-${i}-remedies`,
+    `${rm.rules.functional.scheme} ${rm.rules.shanti.rik} ${rm.rules.devata.sunWithKetu} ${fn.lagna} ${list(fn.yogakarakas)} ${list(fn.marakas)} ${fn.badhaka.house}:${fn.badhaka.lord}`,
+  );
+  fn.rows.forEach((row) =>
+    put(
+      `chart-${i}-remedies-nature-${row.graha}`,
+      `${list(row.houses)} ${list(row.clauses.map((c) => `${c.kind}:${c.house}`))} ${row.nature}`,
+    ),
+  );
+  rm.subjects.subjects.forEach((one) => put(`chart-${i}-remedies-subject-${one.graha}`, list(one.reasons)));
+  const ad = rm.subjects.antardasha;
+  if (ad !== null) {
+    const ds = ad.shanti;
+    put(
+      `chart-${i}-remedies-antardasha`,
+      `${ds.mahadasha} ${ds.antardasha} ${ds.chapter} ${ds.verses} ${ds.page} ${list(ds.conditions)} ${list(ds.remedies)} ${list(ad.holds.map(some))}`,
+    );
+  }
+  rm.shantis.forEach((sh) =>
+    put(
+      `chart-${i}-remedies-shanti-${sh.graha}`,
+      `${sh.image} ${sh.japaThousands} ${sh.samidh} ${sh.food} ${sh.dakshina} ${sh.gem} ${some(sh.substance)} ${some(sh.direction)} ${sh.mandala} ${sh.rik}`,
+    ),
+  );
+  const dv = rm.ishtaDevata;
+  put(`chart-${i}-remedies-devata`, `${dv.atmakaraka} ${dv.karakamsha}`);
+  for (const [name, one] of [['rasi', dv.inRasi], ['navamsha', dv.inNavamsha]]) {
+    put(
+      `chart-${i}-remedies-devata-${name}`,
+      `${one.rules.sunWithKetu} ${one.sign} ${list(one.devotions.map((d) => `${d.graha}:${d.deities.join('|')}:${d.verse}:${d.withKetu}`))} ${list(one.minor)}`,
+    );
+  }
   const { progressed: pg, directed: dr, contacts } = chart.progressions;
   put(
     `chart-${i}-progressed`,

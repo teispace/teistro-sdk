@@ -109,6 +109,8 @@ import type {
   KpRequest,
   Prashna,
   PrashnaRequest,
+  Remedies,
+  RemedyRequest,
   PlanetDignity,
   Reception,
   Term,
@@ -855,6 +857,64 @@ function thePrashna(ctx: Context): string {
 }
 
 void thePrashna;
+
+// Remedies read all the way down, and a request in every field.
+function theRemedies(ctx: Context): string {
+  const asked: RemedyRequest = {
+    at: 2460676.5,
+    rules: {
+      functional: { scheme: 'BASELINE' },
+      shanti: { rik: 'YAJNAVALKYA' },
+      devata: { sunWithKetu: 'SURYA' },
+    },
+  };
+  const read: Remedies | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    remedies: asked,
+  }).remedies;
+  if (read === null) return 'none';
+  const { rules, functional, subjects, shantis, ishtaDevata } = read;
+  const natures = functional.rows.map(
+    (r) => `${r.graha} ${r.houses.join()} ${r.clauses.map((c) => `${c.kind} ${c.house}`).join()} ${r.nature}`,
+  );
+  const lordships = `${functional.lagna} ${functional.scheme} ${functional.yogakarakas.join()} ${functional.marakas.join()} ${functional.badhaka.house} ${functional.badhaka.lord}`;
+  const whom = subjects.subjects.map((s) => `${s.graha} ${s.reasons.join()}`);
+  const running =
+    subjects.antardasha === null
+      ? '-'
+      : (({ shanti: d, holds }) =>
+          `${d.mahadasha} ${d.antardasha} ${d.chapter} ${d.verses} ${d.page} ${d.conditions.join()} ${d.remedies.join()} ${holds.map((h) => h ?? '-').join()}`)(
+          subjects.antardasha,
+        );
+  const rites = shantis.map(
+    (s) =>
+      `${s.graha} ${s.image} ${s.rik} ${s.japaThousands} ${s.samidh} ${s.food} ${s.dakshina} ${s.gem} ${s.substance ?? '-'} ${s.direction ?? '-'} ${s.mandala}`,
+  );
+  const devatas = [ishtaDevata.inRasi, ishtaDevata.inNavamsha].map(
+    (d) =>
+      `${d.rules.sunWithKetu} ${d.sign} ${d.devotions.map((v) => `${v.graha} ${v.deities.join()} ${v.verse} ${v.withKetu}`).join()} ${d.minor.join()}`,
+  );
+  // @ts-expect-error a rule is one of the texts'
+  const wrong: RemedyRequest = { rules: { shanti: { rik: 'MANU' } } };
+  return [
+    rules.functional.scheme,
+    rules.shanti.rik,
+    rules.devata.sunWithKetu,
+    ...natures,
+    lordships,
+    ...whom,
+    running,
+    ...rites,
+    ishtaDevata.atmakaraka,
+    ishtaDevata.karakamsha,
+    ...devatas,
+    String(wrong),
+  ].join();
+}
+
+void theRemedies;
 
 // The essential dignities read all the way down, and a request in every
 // field, a table's lords in either spelling.

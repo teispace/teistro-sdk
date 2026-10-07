@@ -8204,6 +8204,21 @@ struct ts_chart_request {
      * Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
      */
     const char * prashna_json;
+    /**
+     * Every chart's remedies, as BPHS, *Laghu Parashari* and
+     * *Yājñavalkya* prescribe them, as a JSON object, every member
+     * optional: `at` (the Julian day UTC whose running Vimśottarī
+     * mahādaśā and antardaśā name subjects and bring the antardaśā's
+     * printed śānti; none reads no daśā) and `rules` (`functional`
+     * `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts'
+     * own by default). A record with `at` asks for the Vimśottarī daśā
+     * too. Each chart's remedies come back in the `remedies` section.
+     * Null for none, which costs nothing (`03-design/remedies.md`).
+     * Refusals are named from the record every binding calls `remedies`,
+     * as `remedies.rules.devata`.
+     * Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
+     */
+    const char * remedies_json;
 };
 
 /**
@@ -9174,7 +9189,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 296, "ts_chart_request is 296 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 304, "ts_chart_request is 304 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

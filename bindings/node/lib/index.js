@@ -1065,6 +1065,19 @@ export class Chart {
   }
 
   /**
+   * The chart's remedies (`remedies: { at: 2460676.5 }`): what the
+   * lagna's lordships make of the seven grahas, whom a remedy is for and
+   * why, each subject's graha-śānti, the running antardaśā's śānti under
+   * `at`, and the ishṭa-devatā in both charts. `null` unless asked
+   * (`03-design/remedies.md`).
+   *
+   * @returns {object|null}
+   */
+  get remedies() {
+    return remediesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The seven planets' essential dignities (`dignities: { sectRule, rules,
    * scores }`), with the chart's sect and everything that made them;
    * `null` unless asked for (`03-design/essential-dignities.md`).
@@ -2643,6 +2656,11 @@ export class ChartArea extends Area {
           request.prashna,
           'prashna',
           "a prashna request record, e.g. { question: { house: 7 } } or { rules: { mook: 'MOON_HOUSE' } }",
+        ),
+        remediesJson: recordJson(
+          request.remedies,
+          'remedies',
+          "a remedies request record, e.g. { at: 2460676.5 } or { rules: { shanti: { rik: 'YAJNAVALKYA' } } }",
         ),
         matchingJson: recordJson(
           request.matching,
@@ -4712,6 +4730,72 @@ function prashnaFrom(read) {
     links: links === null ? null : yogasFrom(links),
     score: score === null ? null : { ...score, applyingTo: graha(score.applyingTo) },
     numberSign: numberSign === null ? null : `rashi.${numberSign}`,
+  };
+}
+
+/** Each batch's remedies, parsed once however many charts read them. */
+const REMEDIES = new WeakMap();
+
+/**
+ * Every chart's remedies in a batch: the `remedies` section's JSON, one
+ * entry a chart, catalogue keys in full (`03-design/remedies.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function remediesOf(batch) {
+  return sectionOf(REMEDIES, batch, 'remedies', remediesFrom);
+}
+
+/**
+ * A chart's remedies as the boundary's JSON writes them, their bare keys
+ * made full.
+ */
+function remediesFrom({ rules, functional, subjects, shantis, ishtaDevata }) {
+  const graha = (key) => `graha.${key}`;
+  const rashi = (key) => `rashi.${key}`;
+  const devata = (one) => ({
+    ...one,
+    sign: rashi(one.sign),
+    devotions: one.devotions.map((devotion) => ({ ...devotion, graha: graha(devotion.graha) })),
+    minor: one.minor.map(graha),
+  });
+  const { antardasha } = subjects;
+  return {
+    rules,
+    functional: {
+      ...functional,
+      lagna: rashi(functional.lagna),
+      rows: functional.rows.map((row) => ({ ...row, graha: graha(row.graha) })),
+      yogakarakas: functional.yogakarakas.map(graha),
+      marakas: functional.marakas.map(graha),
+      badhaka: { ...functional.badhaka, lord: graha(functional.badhaka.lord) },
+    },
+    subjects: {
+      subjects: subjects.subjects.map((one) => ({ ...one, graha: graha(one.graha) })),
+      antardasha:
+        antardasha === null
+          ? null
+          : {
+              ...antardasha,
+              shanti: {
+                ...antardasha.shanti,
+                mahadasha: graha(antardasha.shanti.mahadasha),
+                antardasha: graha(antardasha.shanti.antardasha),
+              },
+            },
+    },
+    shantis: shantis.map((one) => ({
+      ...one,
+      graha: graha(one.graha),
+      direction: one.direction === null ? null : `direction.${one.direction}`,
+    })),
+    ishtaDevata: {
+      atmakaraka: graha(ishtaDevata.atmakaraka),
+      karakamsha: rashi(ishtaDevata.karakamsha),
+      inRasi: devata(ishtaDevata.inRasi),
+      inNavamsha: devata(ishtaDevata.inNavamsha),
+    },
   };
 }
 

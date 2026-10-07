@@ -1179,6 +1179,22 @@ export interface ChartRequest {
    * @nullable
    */
   readonly prashnaJson?: string;
+  /**
+   * Every chart's remedies, as BPHS, *Laghu Parashari* and
+   * *Yājñavalkya* prescribe them, as a JSON object, every member
+   * optional: `at` (the Julian day UTC whose running Vimśottarī
+   * mahādaśā and antardaśā name subjects and bring the antardaśā's
+   * printed śānti; none reads no daśā) and `rules` (`functional`
+   * `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts'
+   * own by default). A record with `at` asks for the Vimśottarī daśā
+   * too. Each chart's remedies come back in the `remedies` section.
+   * Null for none, which costs nothing (`03-design/remedies.md`).
+   * Refusals are named from the record every binding calls `remedies`,
+   * as `remedies.rules.devata`.
+   * @example {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}
+   * @nullable
+   */
+  readonly remediesJson?: string;
 }
 
 /**

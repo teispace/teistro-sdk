@@ -2280,6 +2280,20 @@ pub struct ChartRequest {
     /// Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prashna_json: Option<String>,
+    /// Every chart's remedies, as BPHS, *Laghu Parashari* and
+    /// *Yājñavalkya* prescribe them, as a JSON object, every member
+    /// optional: `at` (the Julian day UTC whose running Vimśottarī
+    /// mahādaśā and antardaśā name subjects and bring the antardaśā's
+    /// printed śānti; none reads no daśā) and `rules` (`functional`
+    /// `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts'
+    /// own by default). A record with `at` asks for the Vimśottarī daśā
+    /// too. Each chart's remedies come back in the `remedies` section.
+    /// Null for none, which costs nothing (`03-design/remedies.md`).
+    /// Refusals are named from the record every binding calls `remedies`,
+    /// as `remedies.rules.devata`.
+    /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remedies_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2318,6 +2332,7 @@ pub struct HeldChartRequest {
     harmonic_json: Option<std::ffi::CString>,
     matching_json: Option<std::ffi::CString>,
     prashna_json: Option<std::ffi::CString>,
+    remedies_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2417,6 +2432,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             prashna_json: self
                 .prashna_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            remedies_json: self
+                .remedies_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2556,6 +2575,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            remedies_json: self
+                .remedies_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2612,6 +2636,7 @@ impl ChartRequest {
             harmonic_json: unsafe { lent_text(raw.harmonic_json) },
             matching_json: unsafe { lent_text(raw.matching_json) },
             prashna_json: unsafe { lent_text(raw.prashna_json) },
+            remedies_json: unsafe { lent_text(raw.remedies_json) },
         }
     }
 }
