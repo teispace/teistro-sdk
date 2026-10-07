@@ -3096,7 +3096,7 @@ mod tests {
         else {
             panic!("shipped")
         };
-        assert_eq!(evil.references().count(), 6);
+        assert_eq!(evil.references().count(), 7);
 
         let mut c = chart();
         // Malefics in the sixth and the twelfth: Saturn in Virgo, Mars in

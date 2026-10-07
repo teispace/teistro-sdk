@@ -2165,6 +2165,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   printed Sanskrit part (vv. 25, 29), the Sanskrit is followed. **Numbers:**
   none for an existing rule; a consumer asking for every arishta receives
   the new ones.
+- **BPHS ch. 9's last evils.** Seven more evils at birth (ch. 9 vv. 12 and
+  15 to 20: the Moon joined by a malefic in the ninth, seventh or lagna;
+  Scorpio rising with the malefics east and the benefics west; the hemmed
+  lagna; the Moon hemmed or waning in the lagna) and one antidote (ch. 10
+  v. 6, the Sun in the twelfth with Libra rising). V. 12's ninth house is
+  the Sanskrit's, where an English translation reads the eighth.
+  **Numbers:** an arishta that held on a Libra-rising chart with the Sun
+  in the twelfth is now cancelled there (446 cancellations over the
+  corpus, from 433); nothing else moves.
 - **BPHS's strength-bound arishta verses.** Four rules ship that waited on
   a strength measure: ch. 9 v. 23's seven weak in the apoklimas, v. 26's
   Moon among malefics aspected by a strong one, and ch. 10 vv. 3 and 4's

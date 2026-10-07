@@ -7,9 +7,9 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-1744 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 152 in `ARISHTAS`, 632 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 6505 conditions are written 2792 ways, which say 2788 things, and the renderer gives those 2788 sentences.
+1752 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 160 in `ARISHTAS`, 632 in `READINGS`, 274 in `NABHASAS`, 657 in `the corpus's own`. Their 6622 conditions are written 2806 ways, which say 2802 things, and the renderer gives those 2802 sentences.
 
-The 1087 shipped rules are what a consumer evaluates; the corpus's own
+The 1095 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped
 pack uses.
 
@@ -17,8 +17,8 @@ pack uses.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no two conditions that differ in meaning read alike | **holds** | 0 of 2788 disagree |
-| every condition of every rule renders | **holds** | 0 of 6505 disagree |
+| no two conditions that differ in meaning read alike | **holds** | 0 of 2802 disagree |
+| every condition of every rule renders | **holds** | 0 of 6622 disagree |
 
 No rendering is shared by two conditions that mean different things, so
 a change to what a rule asks changes its prose.
@@ -45,9 +45,9 @@ a change to what a rule asks changes its prose.
 | kind | occurrences | as it reads |
 |---|---|---|
 | `and` | 574 | MOON aspects VENUS and VENUS aspects MOON |
-| `or` | 326 | MARS is combust or MARS is retrograde |
-| `not` | 195 | it is not the case that JUPITER is combust |
-| `planet-in-house` | 752 | SUN stands in the 1st house |
+| `or` | 327 | MARS is combust or MARS is retrograde |
+| `not` | 200 | it is not the case that JUPITER is combust |
+| `planet-in-house` | 757 | SUN stands in the 1st house |
 | `planet-in-sign` | 413 | SUN stands in LEO |
 | `planet-dignity` | 221 | the dignity of SUN is exalted |
 | `planet-in-kendra` | 98 | SUN stands in a kendra |
@@ -76,12 +76,12 @@ a change to what a rule asks changes its prose.
 | `lord-of-house-strong` | 8 | the lord of the 4th house is exalted, in its own sign or in its mooltrikona |
 | `lord-of-house-is` | 3 | the lord of the 4th house is JUPITER, VENUS, MERCURY or MOON |
 | `lord-of-house-conjunct-planet` | 2 | the lord of the 5th house shares a sign with KETU |
-| `lagna-in-sign` | 10 | the lagna rises in CANCER |
+| `lagna-in-sign` | 12 | the lagna rises in LIBRA |
 | `planet-in-house-and-sign` | 26 | SUN stands in the 1st house and in LEO |
 | `planet-at-gandanta` | 4 | SUN stands at a gandanta junction, within the usual 3°20′ |
 | `planet-in-degrees` | 188 | LAGNA stands between 0° and 10° of its sign |
 | `panchanga-tithi` | 8 | the birth tithi is AMAVASYA |
-| `panchanga-paksha` | 18 | the birth falls in the SHUKLA paksha |
+| `panchanga-paksha` | 19 | the birth falls in the SHUKLA paksha |
 | `panchanga-vara` | 3 | the birth weekday is RAVIVARA |
 | `panchanga-nakshatra` | 11 | the Moon's birth nakshatra is MULA |
 | `panchanga-yoga` | 2 | the panchanga yoga at birth is VAIDHRITI |
@@ -99,9 +99,9 @@ a change to what a rule asks changes its prose.
 | `for-any` | 89 | some one of MARS or SATURN meets: (the body found is strong and the body found aspects SUN) |
 | `count-of` | 12 | at least 4 of the nine grahas meet: the body found aspects MOON |
 | `in-varga` | 15 | in the D3, the lord of SUN and JUPITER are one body |
-| `count-in-houses` | 286 | at least 1 malefic stands in the 7th from SUN |
-| `count-aspecting` | 11 | at least 1 malefic aspects SUN |
-| `rule` | 1089 | the rule NABHASA_GADA holds |
+| `count-in-houses` | 304 | at least 1 malefic stands in the 7th from SUN |
+| `count-aspecting` | 13 | at least 1 malefic aspects SUN |
+| `rule` | 1172 | the rule NABHASA_GADA holds |
 | `at-limb-edge` | 8 | the birth falls within the last 2 ghatikas of the tithi |
 | `birth-by-day` | 6 | the birth fell by day |
 | `same-sign` | 103 | MOON and KETU stand in one sign |
