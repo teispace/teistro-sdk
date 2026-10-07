@@ -48,7 +48,8 @@ mod tests;
 
 pub use dasha::{Condition, DashaShanti, Remedy, dasha_shanti, dasha_shantis};
 pub use devata::{
-    Deity, DevataRules, Devotion, IshtaDevata, SunWithKetu, baseline_ishta_devata, ishta_devata,
+    Deity, DevataRules, Devotion, IshtaDevata, IshtaDevatas, SunWithKetu, baseline_ishta_devata,
+    ishta_devata,
 };
 pub use functional::{
     Badhaka, Clause, ClauseKind, Functional, FunctionalRow, FunctionalRules, Nature, Scheme,

@@ -2279,6 +2279,8 @@ the astronomical numbers do not move. Nothing else computes yet.
   minor deities. The prints exchange vv. 70–71's fruits; the recension's
   pairing is the default and the prints' *ravi-bhakti* a knob.
   `baseline_ishta_devata(moon)` gives the baseline's Moon-sign table.
+  `sdk.chart().ishta_devata(&document, rules)` reads the 12th in the rasi
+  chart and the navāṁśa both, from the chart's own kārakāṁśa.
   `House::VYAYA` is new. **Numbers:** none move.
 - **Prashna in every binding** (`prashna.md` step 4). A chart request's
   `prashna` record (`{question: {house, number}, rules}`) reads every

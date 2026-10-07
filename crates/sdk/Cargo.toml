@@ -183,6 +183,10 @@ name = "prashna"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "ishta_devata"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 

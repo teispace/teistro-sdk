@@ -60,6 +60,7 @@ mod festival_request;
 mod gochar_request;
 mod harmonics;
 mod hit_request;
+mod ishta_devata;
 mod kp_request;
 mod matching_chart;
 mod midpoints;
