@@ -453,6 +453,12 @@ Ten rules of Saravali ch. 10 ship with theirs. A test holds that a rule with an
 outcome is Saravali's, because no other text grades an affliction, and pins the
 eleven that carry one.
 
+*Brihat Jataka* ch. 6 grades once (2026-10-07): v. 6's Moon in the sixth or
+eighth dies at once under a malefic's aspect, at eight years under benefics'
+alone and at four under both. So the test now allows the two texts and no
+third, and the two graded readings of v. 6 ship beside the ungraded one, each
+refusing the others' aspects so that exactly one can hold.
+
 **The antidotes of chs. 11 and 12 (2026-09-16).** Kalyana Varma answers his own
 chapter of evils with two of cancellations: ch. 11 counters "the evils
 emanating from, or afflicting the Moon" (v. 1) and ch. 12 the evils at birth
@@ -1348,8 +1354,8 @@ condition is one sentence and a rule a passage carrying everything it holds
 beside its conditions, from one vocabulary that the trace reads too: a step
 now prints "holds: the lord of house 10 stands in a kendra" where it printed
 the schema's own `planet-in-kendra`. `cargo xtask rule-doc <pack|category|key>`
-prints the passages and the pass measures them: 1654 rules' 5415 conditions
-are written 2600 ways, which say 2596 things and read as 2596 sentences, so
+prints the passages and the pass measures them: 1662 rules' 5453 conditions
+are written 2614 ways, which say 2610 things and read as 2610 sentences, so
 no two meanings share a sentence. The three single-armed combinators it found
 in a shipped pack were simplified when it first ran.
 

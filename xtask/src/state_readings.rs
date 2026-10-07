@@ -216,7 +216,7 @@ const VOCABULARIES: [Vocabulary; 10] = [
     vocabulary(
         "ayurdaya-classical-rule",
         "the shipped Brihat Jataka balarishta rules",
-        11,
+        19,
         0,
         "five verse citations from an edition the SDK does not ship",
     ),

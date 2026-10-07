@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 22 609 items, 243 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 22 630 items, 243 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 747 020 bytes of JSON over the 93 charts, 29 537 bytes a
-chart, 35 634 bytes for the widest and 121 bytes an item. The verses'
+golden file: 2 750 701 bytes of JSON over the 93 charts, 29 577 bytes a
+chart, 35 694 bytes for the widest and 121 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 140 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22609 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 22609 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22630 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22630 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22630 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 22630 disagree |
 
-Every one of the 45 218 renderings — 22 609 in each of 2 strict
+Every one of the 45 260 renderings — 22 630 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -74,8 +74,8 @@ about.
 | `sdk.phala.yoni` | 0 |
 | `sdk.reading.effect` | 2449 |
 | `sdk.reading.lifeClass` | 214 |
-| `sdk.reading.lifeSpan` | 96 |
-| `sdk.reading.participants` | 3333 |
+| `sdk.reading.lifeSpan` | 100 |
+| `sdk.reading.participants` | 3350 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
@@ -107,7 +107,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 2449 of the 22 609
+**The verse's own statement is not translated.** 2449 of the 22 630
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -119,7 +119,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 365 rules this pass composes carry a reading, and they
+rule: 12 of the 373 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 

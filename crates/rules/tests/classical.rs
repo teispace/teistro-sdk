@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 77);
+    assert_eq!(rules.len(), 85);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -40,9 +40,11 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         );
         assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
         Tables::EMPTY.check(rule).expect("these name no table");
-        // Only Saravali grades: no other text says how long the child lives.
+        // Saravali grades, and Brihat Jataka once (ch. 6 v. 6): no other
+        // text read says how long the child lives.
         assert!(
-            rule.outcomes.is_empty() || rule.source.text == "Saravali",
+            rule.outcomes.is_empty()
+                || matches!(rule.source.text.as_str(), "Saravali" | "Brihat Jataka"),
             "{}: an outcome is a span its verse gives",
             rule.key
         );
@@ -55,7 +57,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .map(|rule| rule.key.as_str())
         .collect();
     assert_eq!(graded, GRADED);
-    assert_eq!(spans.len(), 14);
+    assert_eq!(spans.len(), 16);
     assert!(
         spans
             .iter()
@@ -185,7 +187,9 @@ fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
 /// two of them with the span they leave, and the one antidote of ch. 12 that
 /// counts a life in years rather than calling it illimitable. Saravali is the
 /// only text here that says anything beyond presence at all.
-const GRADED: [&str; 16] = [
+const GRADED: [&str; 18] = [
+    "BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BENEFICS_ALONE",
+    "BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BOTH",
     "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
     "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
     "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -205,7 +209,7 @@ const GRADED: [&str; 16] = [
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 33] = [
+const SILENT: [&str; 35] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
@@ -224,6 +228,8 @@ const SILENT: [&str; 33] = [
     "ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH",
     "BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH",
     "BJ_LUMINARY_IN_LAGNA_MALEFICS_IN_FIVE_EIGHT_NINE",
+    "BJ_MOON_BETWEEN_MALEFICS_IN_FOURTH_SEVENTH_OR_EIGHTH",
+    "BJ_MOON_BETWEEN_MALEFICS_IN_LAGNA_MALEFICS_SEVENTH_AND_EIGHTH",
     "BJ_SATURN_SUN_MOON_MARS_IN_ORDER",
     "BJ_WANING_MOON_IN_TWELFTH",
     "LAGNA_GANDANTA",
@@ -242,7 +248,7 @@ const SILENT: [&str; 33] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 77] = [
+const ANSWERED: [(&str, usize); 85] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -286,9 +292,20 @@ const ANSWERED: [(&str, usize); 77] = [
     ("BJ_MALEFICS_IN_SIXTH_AND_EIGHTH", 14),
     ("BJ_MALEFICS_IN_TWELFTH_AND_SECOND", 17),
     ("BJ_MALEFICS_ON_LAGNA_SEVENTH_AND_THE_MOON", 4),
+    ("BJ_MOON_AND_THREE_MALEFICS_IN_THE_KENDRAS", 3),
+    ("BJ_MOON_BETWEEN_MALEFICS_IN_FOURTH_SEVENTH_OR_EIGHTH", 0),
+    (
+        "BJ_MOON_BETWEEN_MALEFICS_IN_LAGNA_MALEFICS_SEVENTH_AND_EIGHTH",
+        0,
+    ),
     ("BJ_MOON_IN_LAGNA_MALEFIC_IN_SEVENTH", 2),
+    ("BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_A_MALEFIC", 9),
+    ("BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BENEFICS_ALONE", 2),
+    ("BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BOTH", 2),
     ("BJ_MOON_IN_THE_LAST_NAVAMSHA", 3),
+    ("BJ_MOON_WITH_A_MALEFIC_UNSUPPORTED", 1),
     ("BJ_SATURN_SUN_MOON_MARS_IN_ORDER", 0),
+    ("BJ_WANING_MOON_IN_LAGNA_MALEFICS_IN_EIGHTH_AND_KENDRAS", 1),
     ("BJ_WANING_MOON_IN_TWELFTH", 0),
     ("BJ_WANING_MOON_WITH_A_MALEFIC", 22),
     ("LAGNA_GANDANTA", 0),

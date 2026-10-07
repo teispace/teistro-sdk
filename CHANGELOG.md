@@ -2157,6 +2157,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The rest of Brihat Jataka ch. 6.** Eight more of Varahamihira's
+  Balarishta rules ship, read off the 1905 print's page images: v. 1's
+  Moon and three malefics holding the kendras, v. 5's afflicted Moon
+  without support, v. 6's Moon in the sixth or eighth under malefics'
+  aspect, benefics' (a `life-span` of 8 years) or both (4 years), and
+  v. 7's three figures of the waning or hemmed Moon. A rule with an
+  outcome may now be Brihat Jataka's as well as Saravali's. **Numbers:**
+  none; new rules, which a consumer asking for every arishta now
+  receives.
 - **The lagna's ashtakavarga and the last of ch. 10's spans**
   (`ayurdaya-spans.md`, C318). The ashtakavarga spans gain `lagna`, the
   lagna's years from its own ashtakavarga (Parasara's table, v. 48's
