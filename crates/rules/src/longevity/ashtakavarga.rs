@@ -11,7 +11,9 @@
 //! note gives Balabhadra's and Mantreswara's divisor, 7 over 27 with
 //! twenty-sevens cast out (C312). v. 46 doubles them at exaltation and
 //! halves them at debilitation, in proportion between, halves them when
-//! eclipsed and doubles retrograde Mars (C313).
+//! eclipsed and doubles retrograde Mars (C313). The note's own reductions,
+//! the greatest of a half or a third, are the other choice (C317); 7 over
+//! 27 counts nakshatra years, converted to solar ones by 324 over 365.
 //!
 //! Samudaya reduces the gathered ashtakavarga the same two ways, casts the
 //! twelves out of each sign keeping a 12 (v. 70), and takes the same
@@ -24,16 +26,16 @@
 //! translator reads 6 (C311). Not read: the lagna's own years, which some
 //! add (v. 48), from an ashtakavarga the SDK does not compute; v. 50's
 //! other Bhinnashtakavarga span, whose "reductions mentioned already" the
-//! text does not name; and the note's reductions of Balabhadra's years.
+//! text does not name.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::settings::Ekadhipatya;
 use teistro_strength::ashtakavarga::{AshtakavargaReading, GRAHA_MEASURES, RASHI_MEASURES, reduce};
 
-use super::ayurdaya::by_exaltation;
+use super::ayurdaya::{Enmity, by_exaltation, in_enemy_sign};
 use crate::eval::Evaluator;
-use crate::language::Body;
+use crate::language::{Body, House};
 
 /// The seven, the Sun to Saturn, as an ashtakavarga lists them.
 const GRAHAS: [Graha; 7] = [
@@ -53,6 +55,8 @@ pub const PARIJATA_RASHI_MEASURES: [u16; 12] = [7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 
 /// A nakshatra year's days, twelve months of 27, in which v. 71 counts
 /// Samudaya.
 const NAKSHATRA_YEAR: f64 = 324.0;
+/// A year of 360 days, in which v. 34 counts a span.
+const SAVANA_YEAR: f64 = 360.0;
 /// A solar year's days as v. 71 converts to them.
 const SOLAR_YEAR: f64 = 365.0;
 
@@ -90,6 +94,21 @@ pub enum Divisor {
     SevenOverTwentySeven,
 }
 
+/// How each graha's ashtakavarga years are reduced (C317).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AshtakaReductions {
+    /// v. 46: twice at exaltation, half at debilitation or eclipsed, in
+    /// proportion between, and retrograde Mars doubled.
+    #[default]
+    Verse,
+    /// Balabhadra's and Mantreswara's, in the note (p. 691): half for
+    /// another graha in the bhava, at debilitation or combust; a third in a
+    /// natural enemy's sign or the visible half, and for the Sun or the
+    /// Moon in a node's sign; the greatest only.
+    Balabhadra,
+}
+
 /// The choices the ashtakavarga spans are read under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -98,6 +117,8 @@ pub struct AshtakavargaAyusRules {
     pub measures: SignMeasures,
     /// How a graha's pinda becomes years.
     pub divisor: Divisor,
+    /// How each graha's years are reduced.
+    pub reductions: AshtakaReductions,
 }
 
 /// A chart's raw ashtakavargas and how they are reduced.
@@ -151,6 +172,9 @@ pub struct AshtakavargaAyus {
     pub grahas: [AshtakaGiver; 7],
     /// Their sum, Bhinnashtakavargaja (v. 48).
     pub bhinna: f64,
+    /// That sum in solar years: years of 360 days over 30, by v. 34, and
+    /// nakshatra years of 324 over 7 by 27, as the note converts them.
+    pub bhinna_solar: f64,
     /// The gathered ashtakavarga's span, Samudaya (v. 71): the product
     /// below, less a hundred years once when over a hundred (C314).
     pub samudaya: f64,
@@ -249,7 +273,10 @@ impl Evaluator<'_> {
             let (rashi_pinda, graha_pinda) = pindas(&reduced, &signs, rules.measures);
             let basic = pinda_years(rashi_pinda + graha_pinda, rules.divisor);
             let at = chart.placement(Body::Graha(graha));
-            let factor = factor(graha, at.longitude, at.retrograde, at.combust);
+            let factor = match rules.reductions {
+                AshtakaReductions::Verse => factor(graha, at.longitude, at.retrograde, at.combust),
+                AshtakaReductions::Balabhadra => self.balabhadra_factor(graha),
+            };
             AshtakaGiver {
                 graha,
                 rashi_pinda,
@@ -276,14 +303,59 @@ impl Evaluator<'_> {
         } else {
             product
         };
+        let bhinna = grahas.iter().map(|giver| giver.years).sum::<f64>();
+        // Seven over 27 counts in nakshatra years, as v. 71 and the note
+        // convert them; over 30 in the years of 360 days v. 34 converts.
+        let year = match rules.divisor {
+            Divisor::Thirty => SAVANA_YEAR,
+            Divisor::SevenOverTwentySeven => NAKSHATRA_YEAR,
+        };
         AshtakavargaAyus {
             grahas,
-            bhinna: grahas.iter().map(|giver| giver.years).sum(),
+            bhinna,
+            bhinna_solar: bhinna * year / SOLAR_YEAR,
             samudaya,
             samudaya_product: product,
             samudaya_solar: samudaya * NAKSHATRA_YEAR / SOLAR_YEAR,
             rules,
         }
+    }
+}
+
+impl Evaluator<'_> {
+    /// What of a graha's years Balabhadra's reductions leave: one less the
+    /// greatest share that applies (the note to v. 46). Its bhava is whole
+    /// signs from the lagna, and "another planet" any of the nine.
+    fn balabhadra_factor(&self, graha: Graha) -> f64 {
+        let chart = self.chart();
+        let at = chart.placement(Body::Graha(graha));
+        let lagna = chart.placement(Body::Lagna);
+        let sign_of = |other: Graha| chart.placement(Body::Graha(other)).sign;
+        let joined = GRAHAS
+            .iter()
+            .chain(&[Graha::Rahu, Graha::Ketu])
+            .any(|other| *other != graha && sign_of(*other) == at.sign);
+        let debilitated = graha
+            .attributes()
+            .debilitation
+            .is_some_and(|point| point.sign == at.sign);
+        let enemy = in_enemy_sign(Enmity::Natural, graha, at.sign, |other| {
+            Some(sign_of(other))
+        });
+        let visible = House::between(lagna.sign, at.sign).get() >= 7;
+        let eclipsed = matches!(graha, Graha::Sun | Graha::Moon)
+            && [Graha::Rahu, Graha::Ketu]
+                .iter()
+                .any(|node| sign_of(*node) == at.sign);
+        let greatest = [
+            (joined || debilitated || at.combust, 0.5),
+            (enemy || visible || eclipsed, 1.0 / 3.0),
+        ]
+        .iter()
+        .filter(|(applies, _)| *applies)
+        .map(|(_, share)| *share)
+        .fold(0.0, f64::max);
+        1.0 - greatest
     }
 }
 

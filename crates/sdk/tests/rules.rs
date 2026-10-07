@@ -788,6 +788,7 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
         (r#"{"threePairs": {}}"#, "threePairs"),
         (r#"{"rasmi": {}}"#, "rasmi"),
         (r#"{"chakrayus": {}}"#, "chakrayus"),
+        (r#"{"ashtakavarga": {}}"#, "ashtakavarga"),
     ] {
         let refused = RuleRequest::from_json(text)
             .unwrap()
@@ -802,4 +803,9 @@ fn a_rule_request_chooses_its_longevity_readings_and_refuses_a_choice_nothing_re
     let unknown = RuleRequest::from_json(r#"{"longevity": true, "rasmi": {"place": "navamsha"}}"#)
         .unwrap_err();
     assert_eq!(unknown.field(), Some("rasmi.place"));
+    let unknown = RuleRequest::from_json(
+        r#"{"longevity": true, "ashtakavarga": {"reductions": "mantreswara"}}"#,
+    )
+    .unwrap_err();
+    assert_eq!(unknown.field(), Some("ashtakavarga.reductions"));
 }

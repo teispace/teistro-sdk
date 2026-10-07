@@ -6255,6 +6255,21 @@ enum AyusDivisor {
   final String key;
 }
 
+/// How each graha's ashtakavarga years are reduced (crux C317).
+enum AshtakaReductions {
+  /// v. 46: doubled at exaltation, halved at debilitation, in proportion
+  /// between.
+  verse('verse'),
+
+  /// Balabhadra's: the greatest of a half or a third only.
+  balabhadra('balabhadra');
+
+  const AshtakaReductions(this.key);
+
+  /// The key a request names it with.
+  final String key;
+}
+
 /// How the two ashtakavarga spans, Bhinnashtakavargaja and Samudaya, are
 /// read (*Jataka Parijata* ch. 10 vv. 44 to 48, 70 and 71, cruxes C311 to
 /// C314); a field left null is *Jataka Parijata*'s reading.
@@ -6270,15 +6285,18 @@ enum AyusDivisor {
 /// );
 /// ```
 final class AshtakavargaAyusRules {
-  const AshtakavargaAyusRules({this.measures, this.divisor});
+  const AshtakavargaAyusRules({this.measures, this.divisor, this.reductions});
 
   final AyusSignMeasures? measures;
 
   final AyusDivisor? divisor;
 
+  final AshtakaReductions? reductions;
+
   Map<String, Object?> get _record => <String, Object?>{
     if (measures != null) 'measures': measures!.key,
     if (divisor != null) 'divisor': divisor!.key,
+    if (reductions != null) 'reductions': reductions!.key,
   };
 }
 

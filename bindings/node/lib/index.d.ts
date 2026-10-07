@@ -3417,6 +3417,8 @@ export interface AshtakavargaAyusRules {
   readonly measures?: 'parijata' | 'bphs';
   /** How a pinda becomes years: over 30, twelves cast out, or times 7 over 27, twenty-sevens cast out. */
   readonly divisor?: 'thirty' | 'seven-over-twenty-seven';
+  /** How each graha's years are reduced: v. 46's, or Balabhadra's greatest share only (C317). */
+  readonly reductions?: 'verse' | 'balabhadra';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

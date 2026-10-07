@@ -537,7 +537,7 @@ fn exempt_in_enemy_sign(exempt: EnemyExempt, graha: Graha, at: &Placement) -> bo
 
 /// Whether a graha in `sign` stands in an enemy's sign under `enmity`;
 /// `sign_of` places the sign's lord for the temporary friendship.
-fn in_enemy_sign(
+pub(super) fn in_enemy_sign(
     enmity: Enmity,
     graha: Graha,
     sign: Rashi,
