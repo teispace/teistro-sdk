@@ -37,8 +37,8 @@ use crate::binding::{LIBRARY_STEM, cargo, step};
 use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
 use crate::platform::{NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
-use crate::release;
 use crate::{read, rel};
+use crate::{release, sbom};
 
 /// The manifest's schema, versioned like every other file this repository
 /// writes for someone else to read.
@@ -125,6 +125,10 @@ fn shipped() -> String {
 /// its own runner, so the build is native and only the symbol versions it
 /// asks for change; `floor::check` then reads them back. The output
 /// directory drops the suffix, so it is the same as a plain build's.
+///
+/// Every row builds through `cargo auditable`, which passes any cargo
+/// command through and links the crates that went in into each library
+/// (`sbom::embedded` reads that back).
 fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
     let (subcommand, target, hint) = match platform.glibc_floor {
         Some((major, minor)) => (
@@ -137,9 +141,14 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
         ),
         None => ("build", platform.triple.to_string(), String::new()),
     };
+    let auditable = fs::read_to_string(root.join(sbom::AUDITABLE_VERSION)).map_or_else(
+        |_| String::from("the pinned version"),
+        |text| text.trim().to_string(),
+    );
     step(
         Command::new(cargo())
             .args([
+                "auditable",
                 subcommand,
                 "--release",
                 "--quiet",
@@ -153,7 +162,8 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
             .current_dir(root),
         "",
         &format!(
-            "the library and the addon did not build for {}{hint}",
+            "the library and the addon did not build for {}{hint} (every row builds through \
+             cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
             platform.triple
         ),
     )?;
@@ -176,10 +186,13 @@ fn stage_platform(
     let shared = built.join(platform.shared(LIBRARY_STEM));
     let addon = built.join(platform.shared(ADDON_STEM));
     crate::floor::check(platform, &[&shared, &addon]).map_err(io::Error::other)?;
+    sbom::embedded(&[&shared, &addon]).map_err(io::Error::other)?;
+    let library_bill = bill(root, dist, platform, version, "teistro-ffi", "library")?;
+    let addon_bill = bill(root, dist, platform, version, ADDON_PACKAGE, "addon")?;
 
     let library = gzipped_library(dist, platform, version, &shared)?;
-    let bundle = c_bundle(root, dist, platform, version, built)?;
-    let package = npm_platform_package(root, dist, platform, version, &addon)?;
+    let bundle = c_bundle(root, dist, platform, version, built, &library_bill)?;
+    let package = npm_platform_package(root, dist, platform, version, &addon, &addon_bill)?;
 
     let manifest = json!({
         "schema": SCHEMA,
@@ -192,10 +205,42 @@ fn stage_platform(
         "addon": entry(&addon, ADDON_FILE)?,
         "archives": [library, bundle],
         "npm": package,
+        // What each file is made of, beside the files (`xtask/src/sbom.rs`).
+        "sboms": [
+            entry(&library_bill, &file_name(&library_bill))?,
+            entry(&addon_bill, &file_name(&addon_bill))?,
+        ],
     });
     let path = dist.join(manifest_name(version, &platform.name()));
     fs::write(&path, format!("{}\n", to_json(&manifest)))?;
     Ok(manifest)
+}
+
+/// The Node addon's package, whose bill the platform's npm package carries.
+const ADDON_PACKAGE: &str = "teistro-node";
+
+/// Writes the `CycloneDX` bill of materials for one of a platform's files
+/// into `dist`, and returns where.
+fn bill(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    package: &str,
+    what: &str,
+) -> io::Result<PathBuf> {
+    let path = dist.join(format!(
+        "teistro-{version}-{}-{what}.cdx.json",
+        platform.name()
+    ));
+    sbom::write(root, platform.triple, package, &path).map_err(io::Error::other)?;
+    Ok(path)
+}
+
+/// A path's last component, as a manifest names a file.
+fn file_name(path: &Path) -> String {
+    path.file_name()
+        .map_or_else(String::new, |name| name.to_string_lossy().into_owned())
 }
 
 /// The per-platform manifest's file name, which `stage` looks for.
@@ -238,6 +283,7 @@ fn c_bundle(
     platform: &Platform,
     version: &str,
     built: &Path,
+    bill: &Path,
 ) -> io::Result<Value> {
     let stem = format!("teistro-c-{version}-{}", platform.name());
     let name = format!("{stem}.tar.gz");
@@ -270,6 +316,7 @@ fn c_bundle(
     for legal in LEGAL {
         append(&mut archive, &format!("{stem}/{legal}"), &root.join(legal))?;
     }
+    append(&mut archive, &format!("{stem}/{}", sbom::FILE), bill)?;
     archive.into_inner()?.finish()?;
     entry(&path, &name)
 }
@@ -299,6 +346,7 @@ fn npm_platform_package(
     platform: &Platform,
     version: &str,
     addon: &Path,
+    bill: &Path,
 ) -> io::Result<Value> {
     let name = platform.npm_package();
     let directory = dist.join("npm").join(&name);
@@ -307,6 +355,7 @@ fn npm_platform_package(
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
+    fs::copy(bill, directory.join(sbom::FILE))?;
 
     let mut manifest = Map::new();
     manifest.insert("name".to_string(), json!(name));
@@ -333,7 +382,7 @@ fn npm_platform_package(
         manifest.insert("libc".to_string(), json!([libc]));
     }
     manifest.insert("engines".to_string(), json!({ "node": ">=20" }));
-    let mut files = vec![json!(ADDON_FILE)];
+    let mut files = vec![json!(ADDON_FILE), json!(sbom::FILE)];
     files.extend(LEGAL.map(|legal| json!(legal)));
     manifest.insert("files".to_string(), Value::Array(files));
     fs::write(
@@ -484,13 +533,17 @@ fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::R
     Ok(written)
 }
 
-/// Every archive's digest, in the format `sha256sum -c` reads, so that a
-/// download can be checked with the tool already on the machine.
+/// Every archive's and every bill's digest, in the format `sha256sum -c`
+/// reads, so that a download can be checked with the tool already on the
+/// machine.
 fn checksum_list(merged: &Value) -> String {
     let mut lines = Vec::new();
     if let Some(platforms) = merged["platforms"].as_object() {
         for platform in platforms.values() {
-            for archive in platform["archives"].as_array().into_iter().flatten() {
+            let files = ["archives", "sboms"]
+                .into_iter()
+                .flat_map(|list| platform[list].as_array().into_iter().flatten());
+            for archive in files {
                 lines.push(format!(
                     "{}  {}",
                     archive["sha256"].as_str().unwrap_or_default(),
@@ -702,10 +755,16 @@ mod tests {
     fn checksums_are_what_sha256sum_reads() {
         let merged = json!({
             "platforms": {
-                "linux-x64": { "archives": [ { "file": "b.gz", "sha256": "bb" } ] },
+                "linux-x64": {
+                    "archives": [ { "file": "b.gz", "sha256": "bb" } ],
+                    "sboms": [ { "file": "b.cdx.json", "sha256": "cc" } ],
+                },
                 "darwin-arm64": { "archives": [ { "file": "a.gz", "sha256": "aa" } ] },
             }
         });
-        assert_eq!(checksum_list(&merged), "aa  a.gz\nbb  b.gz\n");
+        assert_eq!(
+            checksum_list(&merged),
+            "aa  a.gz\nbb  b.gz\ncc  b.cdx.json\n"
+        );
     }
 }

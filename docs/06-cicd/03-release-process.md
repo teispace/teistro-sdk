@@ -115,13 +115,52 @@ long-lived publishing credential exists before the release.** A token
 minted, used once and revoked within the hour is not a credential nobody
 is watching.
 
-When the time comes, prefer npm's trusted publishing over a token: the
-`publish` job already asks for the `id-token: write` permission it needs,
-and a workflow that authenticates by who it is cannot leak a secret it
-does not hold. The `NODE_AUTH_TOKEN` in the workflow is the fallback for
-a registry that does not support it.
+Every registry publishes by the runner's OIDC token where it can, since a
+workflow that authenticates by who it is cannot leak a secret it does not
+hold.
+
+| registry | how the `publish` job authenticates | what the maintainer sets up once |
+|---|---|---|
+| npm | trusted publishing, through npm 11.5.1 or later, which the job installs | a package's first publish takes `NPM_TOKEN`, minted for it and revoked after, because a trusted publisher is configured on a package that exists. Then each of the seven packages names `release.yml` and the `release` environment as its trusted publisher, and the secret is deleted |
+| PyPI | trusted publishing through `pypa/gh-action-pypi-publish`, which also attaches a PEP 740 attestation to each file | a pending publisher for `teistro` naming `release.yml` and the `release` environment, which PyPI allows before the project exists |
+| pub.dev | automated publishing by the OIDC token | automated publishing enabled for `teistro`, on tags `v{{version}}` |
+
+`twine upload` exchanges no token, so the step that used it would have
+failed for want of a credential. It was replaced before the first release
+could find out.
 
 ## Provenance
+
+**What each file is made of** is said twice (`xtask/src/sbom.rs`):
+
+- **Inside the file.** Every shared library and Node addon is built
+  through `cargo auditable`, pinned in `xtask/cargo-auditable.version`,
+  which links the crates it carries into a `.dep-v0` section. A scanner
+  such as `cargo audit bin` or Trivy can then read a file on its own.
+  `package` refuses a file without that section. The static library
+  carries none, because `cargo auditable` writes only into what is
+  linked, and the bundle's bill covers it.
+- **Beside it.** A CycloneDX 1.5 bill of materials per artefact, written
+  from `cargo tree` for the artefact's own package and target, with each
+  registry crate's checksum from `Cargo.lock`. Each platform has two: the
+  library's (`teistro-<version>-<platform>-library.cdx.json`, also inside
+  the C bundle) and the addon's (also inside the platform's npm package).
+  The wasm package carries its module's. A bill has no timestamp and
+  sorts every list, so a rebuild of the same commit writes the same
+  bytes. It is attached to the release and listed in `checksums.txt`.
+  `cargo tree` is used rather than `cargo metadata`, because metadata
+  resolves features for the whole workspace and would list crates that
+  another member's features switch on. The library's bill would have
+  named `clap`.
+
+**Who built each file** is attested: `actions/attest-build-provenance`
+signs every archive, every bill, the manifest and `checksums.txt`, and
+records the signature in the public transparency log. Run
+`gh attestation verify <file> --repo teispace/teistro-sdk` to check one.
+
+**Advisories** are checked on every push by `cargo deny check` in the fast
+check. It reads the RustSec database `cargo audit` reads, and refuses a
+yanked crate as well.
 
 npm packages are published with `--provenance`, which records in a public
 transparency log which workflow, at which commit, built the tarball. The

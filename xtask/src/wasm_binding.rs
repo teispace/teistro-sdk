@@ -53,6 +53,7 @@ use serde_json::{Value, json};
 
 use crate::binding::{blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
+use crate::sbom;
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
@@ -173,7 +174,14 @@ fn manifest(node: &Value) -> Value {
         fields.insert("imports".into(), json!({ "#native": loaders }));
         fields.insert(
             "files".into(),
-            json!(["lib/", "wasm/", "README.md", "LICENSE", "NOTICE"]),
+            json!([
+                "lib/",
+                "wasm/",
+                "README.md",
+                "LICENSE",
+                "NOTICE",
+                sbom::FILE
+            ]),
         );
         fields.remove("optionalDependencies");
         fields.remove("scripts");
@@ -221,7 +229,16 @@ fn assemble(root: &Path, directory: &Path) -> io::Result<()> {
     for legal in LEGAL {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
-    Ok(())
+    // One module for every host, so one bill, for its own target. The
+    // module is not built through `cargo auditable`: the bill is what says
+    // what it carries.
+    sbom::write(
+        root,
+        "wasm32-unknown-unknown",
+        PACKAGE,
+        &directory.join(sbom::FILE),
+    )
+    .map_err(io::Error::other)
 }
 
 /// Builds the module, binds it for the web and stages the package at

@@ -306,6 +306,7 @@ mod rust_surface;
 mod saait;
 mod sade_sati;
 mod samvatsara;
+mod sbom;
 mod schema;
 mod sect;
 mod serial;

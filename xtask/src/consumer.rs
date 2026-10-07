@@ -86,7 +86,13 @@ fn c_consumer(
     let bundle = into.join(&stem);
     let include = bundle.join("include");
     let lib = bundle.join("lib");
-    for expected in ["include/teistro.h", "LICENSE", "NOTICE", "README.md"] {
+    for expected in [
+        "include/teistro.h",
+        "LICENSE",
+        "NOTICE",
+        "README.md",
+        crate::sbom::FILE,
+    ] {
         if !bundle.join(expected).is_file() {
             println!("FAIL  the C bundle has no {expected}");
             return Err(());

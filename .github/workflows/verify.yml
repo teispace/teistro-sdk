@@ -77,6 +77,16 @@ jobs:
       - name: The linker that holds a Linux build to its glibc floor
         if: runner.os == 'Linux'
         run: pip install -r xtask/zigbuild-requirements.txt
+      # Every shipped library is built through cargo-auditable, which links
+      # the crates it carries into it (`xtask/src/sbom.rs`); the version is
+      # pinned in the one file a failing local build names.
+      - id: auditable
+        name: The pinned cargo-auditable
+        shell: bash
+        run: echo "version=$(cat xtask/cargo-auditable.version)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-auditable@${{ steps.auditable.outputs.version }}
       - name: One version across the workspace and both packages
         run: cargo xtask check-versions
       - name: The C binding against the generated header

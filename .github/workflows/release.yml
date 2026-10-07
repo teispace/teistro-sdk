@@ -116,6 +116,16 @@ jobs:
       - name: The linker that holds a Linux build to its glibc floor
         if: runner.os == 'Linux'
         run: pip install -r xtask/zigbuild-requirements.txt
+      # Every shipped library is built through cargo-auditable, which links
+      # the crates it carries into it (`xtask/src/sbom.rs`); the version is
+      # pinned in the one file a failing local build names.
+      - id: auditable
+        name: The pinned cargo-auditable
+        shell: bash
+        run: echo "version=$(cat xtask/cargo-auditable.version)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-auditable@${{ steps.auditable.outputs.version }}
       - name: What this platform ships
         run: cargo xtask package ${{ matrix.platform }}
       - name: The packages installed into throwaway projects and run
@@ -215,9 +225,11 @@ jobs:
     environment: release
     permissions:
       contents: write
-      # npm provenance and pub.dev's automated publishing both take the
+      # npm's and PyPI's trusted publishing, npm provenance, pub.dev's
+      # automated publishing and the build attestations all take the
       # runner's OIDC token instead of a long-lived credential.
       id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -236,6 +248,18 @@ jobs:
           python-version: "3.13"
 
       - uses: dtolnay/rust-toolchain@stable
+      # Which workflow, at which commit, built each file, signed and
+      # recorded in a public log: `gh attestation verify <file> --repo
+      # teispace/teistro-sdk` checks one. The bills are attested too, so
+      # what a file says it carries is held to the run that built it.
+      - name: Every file's build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/*.gz
+            dist/*.cdx.json
+            dist/checksums.txt
+            dist/manifest.json
       - name: The GitHub release, with the archives and their digests
         env:
           GH_TOKEN: ${{ github.token }}
@@ -245,8 +269,14 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "Teistro ${{ needs.gate.outputs.version }}" \
             --notes-file notes.md \
-            dist/*.gz dist/checksums.txt dist/manifest.json
+            dist/*.gz dist/*.cdx.json dist/checksums.txt dist/manifest.json
 
+      # npm 11.5.1 is the first to publish by the runner's OIDC token, which
+      # it tries before any token. A package's first publish still takes
+      # `NPM_TOKEN`, because trusted publishing is configured on a package
+      # that exists (`06-cicd/03-release-process.md`).
+      - name: An npm that publishes by who the workflow is
+        run: npm install --global npm@11
       - name: The platform packages and the wasm one, then the one that depends on the platforms
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -264,12 +294,17 @@ jobs:
         run: dart pub publish --force
         working-directory: dist/pub/teistro
 
-      - name: The Python package
-        # Trusted publishing: PyPI takes the runner's OIDC token, as npm
-        # and pub.dev do, so no long-lived credential is stored here.
+      - name: The Python package, built
         run: |
           set -eu
-          python -m pip install --disable-pip-version-check build twine
+          python -m pip install --disable-pip-version-check build
           python -m build --sdist --wheel --outdir ../../pypi-dist .
-          python -m twine upload --non-interactive ../../pypi-dist/*
         working-directory: dist/pypi/teistro
+      # Trusted publishing: PyPI takes the runner's OIDC token, as npm and
+      # pub.dev do, so no long-lived credential is stored here, and each
+      # file gets a PEP 740 attestation. `twine upload` alone exchanges no
+      # token and would have failed for want of a credential.
+      - name: The Python package, published
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: pypi-dist
