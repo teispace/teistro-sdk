@@ -2242,6 +2242,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   baseline engine's lagna-modality rule as `BASELINE`), and whom an
   unspoken question is about (VII.7–8, or the Moon's house). **Numbers:**
   none move; a new module.
+- **Prashna, step 2: the Tajika links** (`prashna.md`). A question about
+  a house now carries `links`: the sixteen Tajika yogas between the
+  lagna lord and that house's lord, judged by `crates/tajika` with the
+  query chart's retrogression and combustion (`Placed::combust` is new).
+  The Prashna Tantra's nakta example (vv. 18–19) passes as printed.
+  **Numbers:** none move.
 - **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
   `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
   (the 1923 print) prescribe for each of the 81 antardaśās: the verses,

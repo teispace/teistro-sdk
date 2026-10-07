@@ -21,7 +21,7 @@
 //! // Shatpanchashika V.5's own example: Taurus rising, Virgo the first
 //! // sign a graha stands in, five signs on: sixty days, or five if that
 //! // graha is retrograde.
-//! let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false };
+//! let at = |longitude_deg: f64| Placed { longitude_deg, navamsha: Rashi::Aries, retrograde: false, combust: false };
 //! let sky = PrashnaSky {
 //!     lagna_deg: 40.0,
 //!     lagna_navamsha: Rashi::Leo,
@@ -45,6 +45,7 @@ use teistro_aspect::drishti;
 use teistro_core::Error;
 use teistro_core::catalogue::{Graha, Modality, Parity, Rashi, Rising};
 use teistro_core::house::House;
+use teistro_tajika::{AnnualSky, AnnualStates, YearYogas, YogaRules, year_yogas_with_states};
 
 #[cfg(test)]
 mod tests;
@@ -86,6 +87,8 @@ pub struct Placed {
     pub navamsha: Rashi,
     /// Whether it is retrograde.
     pub retrograde: bool,
+    /// Whether the Sun burns it.
+    pub combust: bool,
 }
 
 impl Placed {
@@ -550,6 +553,11 @@ pub struct Prashna {
     pub timing: Timing,
     /// What an unspoken question is about.
     pub mook: Mook,
+    /// How the lagna lord and the lord of the house asked about stand
+    /// to each other, as Tajika's sixteen yogas judge them (Tajika
+    /// Nilakanthi's Prashna Tantra, vv. 9–21): present only when a
+    /// house is asked.
+    pub links: Option<YearYogas>,
 }
 
 /// Reads a query chart.
@@ -571,7 +579,46 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
         change: change(sky),
         timing: timing(sky, rules.timing)?,
         mook: mook(sky, rules.mook)?,
+        links: links(sky, question)?,
     })
+}
+
+/// The Tajika yogas between the lagna lord and the kāryesha.
+///
+/// The Prashna Tantra judges a question by the same sixteen yogas, under
+/// the same orbs (v. 13), that the annual chart does, so the year's
+/// judgement is read over the query chart's sky.
+fn links(sky: &PrashnaSky, question: Question) -> Result<Option<YearYogas>, Error> {
+    let Some(house) = question.house.and_then(|house| House::try_from(house).ok()) else {
+        return Ok(None);
+    };
+    let at = |graha: Graha| {
+        sky.of(graha)
+            .map(|placed| placed.longitude_deg)
+            .ok_or_else(unplaced)
+    };
+    let annual = AnnualSky {
+        sun_deg: at(Graha::Sun)?,
+        moon_deg: at(Graha::Moon)?,
+        mars_deg: at(Graha::Mars)?,
+        mercury_deg: at(Graha::Mercury)?,
+        jupiter_deg: at(Graha::Jupiter)?,
+        venus_deg: at(Graha::Venus)?,
+        saturn_deg: at(Graha::Saturn)?,
+    };
+    let those = |state: fn(&Placed) -> bool| -> Vec<Graha> {
+        GRAHAS
+            .into_iter()
+            .zip(sky.grahas)
+            .filter(|(graha, placed)| SEVEN.contains(graha) && state(placed))
+            .map(|(graha, _)| graha)
+            .collect()
+    };
+    let states = AnnualStates {
+        retrograde: those(|placed| placed.retrograde),
+        combust: those(|placed| placed.combust),
+    };
+    year_yogas_with_states(sky.lagna_deg, house, &annual, &states, YogaRules::default()).map(Some)
 }
 
 /// The clause a graha makes by its disposition, if it has one.
