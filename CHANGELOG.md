@@ -2282,6 +2282,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   `sdk.chart().ishta_devata(&document, rules)` reads the 12th in the rasi
   chart and the navāṁśa both, from the chart's own kārakāṁśa.
   `House::VYAYA` is new. **Numbers:** none move.
+- **Remedies through the façade** (`remedies.md`).
+  `sdk.chart().remedies(&document, &RemedyRequest)` reads every step off
+  one chart: the functional natures, the subjects, each subject's
+  graha-śānti and the ishṭa-devatā. With `at`, the Vimśottarī daśā
+  running then names subjects and brings its antardaśā's printed śānti.
+  A document without that daśā is refused by `dashas`.
+  `RemedyRequest::from_json` reads the record a binding will send.
+  **Numbers:** none move.
 - **Prashna in every binding** (`prashna.md` step 4). A chart request's
   `prashna` record (`{question: {house, number}, rules}`) reads every
   chart of a batch as the chart of its question's moment, and asks for the
