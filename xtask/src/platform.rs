@@ -27,6 +27,14 @@ pub(crate) struct Platform {
     pub(crate) libc: Option<&'static str>,
     /// The GitHub runner that builds this platform in the release matrix.
     pub(crate) runner: &'static str,
+    /// The oldest glibc a build for this platform must load on, which
+    /// `package` holds every shipped file to (`floor.rs`). `None` where
+    /// the C library is not glibc.
+    ///
+    /// 2.28 is RHEL 8's and Debian 10's, the oldest still supported in
+    /// 2026, and the floor Node 22's own Linux builds and `manylinux_2_28`
+    /// wheels already ask of a consumer, so the SDK asks nothing more.
+    pub(crate) glibc_floor: Option<(u32, u32)>,
 }
 
 /// Every platform the release matrix builds.
@@ -43,6 +51,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         cpu: "x64",
         libc: Some("glibc"),
         runner: "ubuntu-latest",
+        glibc_floor: Some((2, 28)),
     },
     Platform {
         triple: "aarch64-unknown-linux-gnu",
@@ -50,6 +59,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         cpu: "arm64",
         libc: Some("glibc"),
         runner: "ubuntu-24.04-arm",
+        glibc_floor: Some((2, 28)),
     },
     Platform {
         triple: "aarch64-apple-darwin",
@@ -57,6 +67,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         cpu: "arm64",
         libc: None,
         runner: "macos-latest",
+        glibc_floor: None,
     },
     Platform {
         triple: "x86_64-apple-darwin",
@@ -71,6 +82,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         // workflows to this field now, because the correction had to be
         // made in three places and one of them was missed.
         runner: "macos-15-intel",
+        glibc_floor: None,
     },
     Platform {
         triple: "x86_64-pc-windows-msvc",
@@ -78,6 +90,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         cpu: "x64",
         libc: None,
         runner: "windows-latest",
+        glibc_floor: None,
     },
 ];
 
@@ -114,6 +127,7 @@ impl Platform {
                 cpu: "unknown",
                 libc: None,
                 runner: "none",
+                glibc_floor: None,
             };
         };
         Self::by_triple(triple).unwrap_or_else(|| unreachable!("the triple came from the table"))
