@@ -6,21 +6,28 @@
 # Node and a Dart on five platforms is minutes of machine time and a
 # contributor should not wait for it to see a typo.
 #
-# A skip is not a pass: each gate prints `skip` with the tool it wanted,
-# and the summary below counts what actually ran.
+# A skip is not a pass. Each gate prints `skip` with the tool it wanted,
+# and `TEISTRO_STRICT` makes any skip fail the gate. The only exceptions
+# are the ones the gate itself excuses by design, each saying why
+# (`xtask/src/skip.rs`).
+#
+# A release runs this workflow itself (`workflow_call`), and its publish
+# job waits for it, so nothing is published past a red matrix.
 name: verify
 
 on:
   workflow_dispatch:
+  workflow_call:
   schedule:
     # Nightly, an hour after the hash matrix, so the two do not queue
     # against each other for runners.
     - cron: "0 4 * * *"
-  push:
-    tags: ["v*"]
 
 permissions:
   contents: read
+
+env:
+  TEISTRO_STRICT: "1"
 
 jobs:
   bindings:

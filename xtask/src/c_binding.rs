@@ -24,7 +24,9 @@ fn compiler() -> String {
 pub(crate) fn check(root: &Path) -> i32 {
     let cc = compiler();
     if !present(&cc, "--version") {
-        eprintln!("no `{cc}` on this machine; the C binding's test needs a C compiler");
+        crate::skip::skip(format_args!(
+            "no `{cc}` on this machine; the C binding's test needs a C compiler"
+        ));
         return 0;
     }
     if build(root, "teistro-ffi", "the library").is_err() {

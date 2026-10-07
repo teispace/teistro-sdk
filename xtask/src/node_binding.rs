@@ -112,7 +112,7 @@ fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
 
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
-        eprintln!("no `node` on this machine; the Node binding's tests need it");
+        crate::skip::skip("no `node` on this machine; the Node binding's tests need it");
         return 0;
     }
     let fixtures = root.join(FIXTURES);
@@ -140,9 +140,9 @@ pub(crate) fn check(root: &Path) -> i32 {
         // gate installs it, so reaching here means npm could not be run
         // or the install failed -- not that the machine was expected to
         // have brought its own.
-        println!(
-            "skip  {TSCONFIG}: the pinned TypeScript compiler is not installed and could not be (needs `npm`; or set TSC)"
-        );
+        crate::skip::skip(format_args!(
+            "{TSCONFIG}: the pinned TypeScript compiler is not installed and could not be (needs `npm`; or set TSC)"
+        ));
         return 0;
     };
     let checked = step(

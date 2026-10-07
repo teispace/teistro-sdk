@@ -33,7 +33,7 @@ const BUILT: [&str; 3] = [
 
 pub(crate) fn check(root: &Path) -> i32 {
     let Some(npm) = tool("npm", "--version") else {
-        eprintln!("no `npm` on this machine; the documentation site's gate needs it");
+        crate::skip::skip("no `npm` on this machine; the documentation site's gate needs it");
         return 0;
     };
     let site = root.join(SITE);

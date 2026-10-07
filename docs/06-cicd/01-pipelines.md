@@ -12,7 +12,7 @@ red teaches people to ignore it.
 | workflow | when | what it proves |
 |---|---|---|
 | [`fast-check`](../../.github/workflows/fast-check.yml) | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate one toolchain can run; on a pull request, that every commit is signed off |
-| [`verify`](../../.github/workflows/verify.yml) | nightly, on demand, on a tag | the bindings on five platforms: the C header against a C compiler, the Node and Dart bindings against the real library, the two against each other, and the packages installed into throwaway projects and run |
+| [`verify`](../../.github/workflows/verify.yml) | nightly, on demand, and inside every release | the bindings on five platforms: the C header against a C compiler, the Node and Dart bindings against the real library, the two against each other, and the packages installed into throwaway projects and run |
 | [`hash-matrix`](../../.github/workflows/hash-matrix.yml) | nightly, on demand | the same source computes the same numbers on another architecture, value by value |
 | [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published |
 | [`docs`](../../.github/workflows/docs.yml) | every push to `main`, a pull request touching the site, a tag | the site builds and renders every generated reference page; a tag publishes it |
@@ -44,10 +44,22 @@ same table the packager builds from — a platform is added by adding a row
 in `xtask/src/platform.rs`, and the workflow's matrix is that table
 written out.
 
-A missing toolchain skips its own gate and says so. A skip is not a pass:
-the line names the tool it wanted, and the release's own run has every
-toolchain installed, so nothing reaches a release having only ever been
-skipped.
+A missing toolchain skips its own gate and says so, so a contributor
+without Dart can still run the Node gate. **In verify and in a release a
+skip fails.** Both set `TEISTRO_STRICT`, and every gate counts the parts
+it skipped and fails at the end when any were (`xtask/src/skip.rs`). A
+runner that lost its Python goes red; it no longer reports green having
+checked nothing of Python. Three skips are excused by design, each
+saying why at the point where it is made:
+
+- the wasm runner, which one row of the matrix builds and compares;
+- the Teimeris adapter's package, which is built in its own repository;
+- the Windows static library under MinGW, the gap
+  [`02-build-matrix.md`](02-build-matrix.md) admits.
+
+The release calls verify (`workflow_call`), and its `publish` job waits
+for it. Before this, verify ran on the tag as a workflow of its own, so a
+release could publish while verify was still red.
 
 ## The hash matrix
 
@@ -88,7 +100,8 @@ about.
 
 ## Release
 
-Four jobs, described in [`03-release-process.md`](03-release-process.md).
+Five jobs and the verify matrix it calls, described in
+[`03-release-process.md`](03-release-process.md).
 Every step is `cargo xtask ...`, so the release that runs on a runner is
 the release that runs on a laptop; the workflow is the schedule and the
 credentials, and nothing else.

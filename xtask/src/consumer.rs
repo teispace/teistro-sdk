@@ -75,7 +75,7 @@ fn c_consumer(
 ) -> Result<(), ()> {
     let cc = std::env::var("CC").unwrap_or_else(|_| String::from("cc"));
     if !present(&cc, "--version") {
-        println!("skip  the C bundle: no `{cc}` on this machine");
+        crate::skip::skip(format_args!("the C bundle: no `{cc}` on this machine"));
         return Ok(());
     }
     let into = check.join("c");
@@ -120,7 +120,10 @@ fn c_consumer(
         // static library and a consumer with the matching compiler
         // links it, but this gate's `cc` is not that compiler.
         StaticLink::Refused(why) => {
-            println!("skip  the C bundle's static library, with `{cc}`: {why}");
+            crate::skip::excused(
+                format_args!("the C bundle's static library, with `{cc}`: {why}"),
+                "the gap `06-cicd/02-build-matrix.md` admits",
+            );
         }
     }
 
@@ -167,7 +170,7 @@ fn unpack(archive: &Path, into: &Path) -> std::io::Result<()> {
 /// them into an empty project, and runs the consumer there.
 fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
     let Some(npm) = tool("npm", "--version") else {
-        println!("skip  the Node packages: no `npm` on this machine");
+        crate::skip::skip("the Node packages: no `npm` on this machine");
         return Ok(());
     };
     let into = check.join("node");
@@ -252,12 +255,13 @@ const ENGINE_DATA: &str = "TEISTRO_TEIMERIS_DATA";
 /// says which it wanted.
 fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
     let Some(npm) = tool("npm", "--version") else {
-        println!("skip  the adapter package: no `npm` on this machine");
+        crate::skip::skip("the adapter package: no `npm` on this machine");
         return Ok(());
     };
     let Some(library) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
-        println!(
-            "skip  the adapter package: it is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library"
+        crate::skip::excused(
+            "the adapter package: set TEISTRO_TEIMERIS_ADAPTER to its library",
+            "the adapter is built in its own repository",
         );
         return Ok(());
     };
@@ -351,7 +355,7 @@ fn dart_consumer(
     version: &str,
 ) -> Result<(), ()> {
     if !present("dart", "--version") {
-        println!("skip  the Dart package: no `dart` on this machine");
+        crate::skip::skip("the Dart package: no `dart` on this machine");
         return Ok(());
     }
     let into = check.join("dart");
@@ -428,7 +432,9 @@ fn python_consumer(
 ) -> Result<(), ()> {
     let python = crate::binding::python();
     if !present(&python, "--version") {
-        println!("skip  the Python package: no `{python}` on this machine");
+        crate::skip::skip(format_args!(
+            "the Python package: no `{python}` on this machine"
+        ));
         return Ok(());
     }
     let into = check.join("python");
