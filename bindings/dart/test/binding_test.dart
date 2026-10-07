@@ -3697,6 +3697,82 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a name and a birth date read under numerology without a chart', () {
+    // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
+    // 17 January 1872, 1 + 8 + 9 = 18 = 9. Cheiro p. 70: Henry 18/9 and
+    // Elder 19/1, their singles 10.
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final read = ctx.numerology.profile(
+      'Henry Elder',
+      const BirthDate(1872, 1, 17),
+    );
+    final name = read.pythagoreanName;
+    expect(
+      [
+        for (final word in name.words)
+          (word.text, word.total, word.reduction.number),
+      ],
+      [('Henry', 34, 7), ('Elder', 26, 8)],
+    );
+    expect(name.words.first.letters.first, const NumerologyLetter('H', 8));
+    expect(
+      (name.system, name.compound, name.reduction),
+      (
+        NumerologySystem.pythagorean,
+        null,
+        const Reduction(steps: [15, 6], number: 6),
+      ),
+    );
+    expect(
+      read.pythagoreanBirth.sum,
+      const Reduction(steps: [18, 9], number: 9),
+    );
+    expect(read.pythagoreanBirth.apart, isEmpty);
+    expect(
+      (read.chaldeanName.system, read.chaldeanName.compound),
+      (NumerologySystem.chaldean, 10),
+    );
+    expect(read.chaldeanBirth.birth.number, 8);
+    expect(read.baseline, isNull);
+    expect(
+      ctx.numerology
+          .profile(
+            'Henry Elder',
+            const BirthDate(1872, 1, 17),
+            const NumerologyRules.baseline(),
+          )
+          .baseline,
+      isNotNull,
+    );
+
+    // Balliett p. 90: born 11 July 1838 is "9, 11", the day apart.
+    final wanamaker =
+        ctx.numerology
+            .profile('John Wanamaker', const BirthDate(1838, 7, 11))
+            .pythagoreanBirth;
+    expect(wanamaker.sum?.number, 9);
+    expect(wanamaker.apart, [11]);
+
+    for (final (run, field) in [
+      (
+        () => ctx.numerology.profile('Kṛṣṇa', const BirthDate(1990, 1, 1)),
+        'numerology.name',
+      ),
+      (
+        () => ctx.numerology.profile('Rama', const BirthDate(1900, 2, 29)),
+        'numerology.date',
+      ),
+    ]) {
+      expect(
+        run,
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test(
     'a chart carries its avakahada, whose syllable names the birth pada',
     () {

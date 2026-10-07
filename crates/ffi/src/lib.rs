@@ -49,6 +49,7 @@ pub mod frame;
 pub mod intl;
 pub mod key;
 pub mod naam;
+pub mod numerology;
 pub mod panchanga;
 pub mod positions;
 pub mod provider;

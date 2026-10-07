@@ -9341,3 +9341,69 @@ fn two_names_cross_as_the_kernel_matches_them() {
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
 }
+
+fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::numerology::ts_numerology_profile(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// A name and a date cross as the façade reads them, the profile as its
+/// own JSON, and a refusal is named under `numerology`.
+#[test]
+fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
+    let ctx = Ctx::defaults();
+    let request = r#"{"name": "Henry Elder", "date": {"year": 1872, "month": 1, "day": 17}}"#;
+    let crossed = numerology_json(&ctx, request).unwrap();
+    let kernel = teistro::NumerologyRequest::from_json(request)
+        .and_then(|asked| asked.answer())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert_eq!(
+        read["pythagoreanName"]["reduction"]["steps"],
+        serde_json::json!([15, 6])
+    );
+    assert_eq!(
+        read["pythagoreanName"]["words"][0]["letters"][0],
+        serde_json::json!({"letter": "H", "value": 8})
+    );
+    assert_eq!(
+        read["pythagoreanBirth"]["sum"]["steps"],
+        serde_json::json!([18, 9])
+    );
+    assert_eq!(read["baseline"], serde_json::Value::Null);
+
+    for (request, field) in [
+        (
+            r#"{"name": "Kṛṣṇa", "date": {"year": 1990, "month": 1, "day": 1}}"#,
+            "numerology.name",
+        ),
+        (
+            r#"{"name": "Rama", "date": {"year": 1900, "month": 2, "day": 29}}"#,
+            "numerology.date",
+        ),
+        (
+            r#"{"name": "Rama", "date": {"year": 1990, "month": 1, "day": 1}, "rules": {"master": "NONE"}}"#,
+            "numerology.rules.master",
+        ),
+        (r#"{"name": "Rama"}"#, "numerology"),
+    ] {
+        assert_eq!(
+            numerology_json(&ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}

@@ -31,6 +31,8 @@ import type {
   Avakahada,
   BirthSyllable,
   NaamRules,
+  NumerologyProfile,
+  NumerologyRules,
   NameSyllable,
   KootaReading,
   Kuja,
@@ -1280,6 +1282,27 @@ function theNaam(ctx: Context): string {
 }
 
 void theNaam;
+
+// A name and a date read under numerology, all the way down to a letter.
+function theNumerology(ctx: Context): string {
+  const rules: NumerologyRules = { masters: 'NONE', nonLatin: 'SKIP' };
+  // @ts-expect-error a masters reading takes only its own members
+  const misread: NumerologyRules = { masters: 'ELEVEN' };
+  const read: NumerologyProfile = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 }, rules);
+  const first = read.pythagoreanName.words[0]?.letters[0];
+  return [
+    `${first?.letter ?? ''}${first?.value ?? 0}`,
+    read.pythagoreanName.reduction.steps.join('/'),
+    read.chaldeanName.compound ?? 'NONE',
+    read.pythagoreanBirth.sum?.number ?? 'NONE',
+    read.pythagoreanBirth.apart.join(','),
+    read.chaldeanBirth.year.number,
+    read.baseline?.chaldeanDestiny.number ?? 'NONE',
+    String(misread),
+  ].join();
+}
+
+void theNumerology;
 
 // A chart's avakahada, read down to its syllable's own fields.
 function theAvakahada(ctx: Context): string {

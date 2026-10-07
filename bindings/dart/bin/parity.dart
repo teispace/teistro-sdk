@@ -316,6 +316,62 @@ void putNaam(Context ctx) {
   }
 }
 
+/// Two numerology requests, as every runner asks them: Balliett's own
+/// example under the sources' readings, and her John Wanamaker under every
+/// baseline reading.
+void putNumerology(Context ctx) {
+  String steps(Reduction reduction) => reduction.steps.join('/');
+  final asked = [
+    ('Henry Elder', const BirthDate(1872, 1, 17), const NumerologyRules()),
+    (
+      'John Wanamaker',
+      const BirthDate(1838, 7, 11),
+      const NumerologyRules.baseline(),
+    ),
+  ];
+  for (final (n, (name, born, rules)) in asked.indexed) {
+    final read = ctx.numerology.profile(name, born, rules);
+    for (final (system, named) in [
+      ('pythagorean', read.pythagoreanName),
+      ('chaldean', read.chaldeanName),
+    ]) {
+      put(
+        'numerology-$n-$system',
+        '${named.total} ${named.compound ?? 'NONE'} ${steps(named.reduction)}',
+      );
+      for (final (at, word) in named.words.indexed) {
+        final letters = word.letters
+            .map((letter) => '${letter.letter}${letter.value}')
+            .join(',');
+        put(
+          'numerology-$n-$system-word-$at',
+          '${word.text} $letters ${word.total} ${steps(word.reduction)}',
+        );
+      }
+    }
+    final birth = read.pythagoreanBirth;
+    final sum = birth.sum;
+    put(
+      'numerology-$n-birth',
+      '${steps(birth.month)} ${steps(birth.day)} ${steps(birth.year)} '
+          '${sum == null ? 'NONE' : steps(sum)} '
+          '${birth.apart.isEmpty ? '-' : birth.apart.join(',')}',
+    );
+    put(
+      'numerology-$n-chaldean-birth',
+      '${steps(read.chaldeanBirth.birth)} ${steps(read.chaldeanBirth.year)}',
+    );
+    final own = read.baseline;
+    put(
+      'numerology-$n-baseline',
+      own == null
+          ? 'NONE'
+          : '${steps(own.soul)} ${steps(own.personality)} '
+              '${steps(own.chaldeanDestiny)}',
+    );
+  }
+}
+
 void putDay(String prefix, LocalDay day) {
   put('$prefix-vara', day.vara.fullKey);
   put('$prefix-sunrise', day.sunrise);
@@ -366,6 +422,7 @@ void main() {
   put('settings-hash', ctx.settingsHash);
   put('settings-fnv', fnv(ctx.settingsJson));
   putNaam(ctx);
+  putNumerology(ctx);
 
   // ── The calendars ────────────────────────────────────────────────────
   final date = Calendar.gregorian.date(2015, 4, 14);
@@ -2307,6 +2364,7 @@ void main() {
     ('keys.id', ctx.keys.id),
     ('keys.name', ctx.keys.name),
     ('matching.naam', ctx.matching.naam),
+    ('numerology.profile', ctx.numerology.profile),
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),
     ('frame.unpack', ctx.frame.unpack),

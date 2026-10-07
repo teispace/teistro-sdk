@@ -1001,6 +1001,48 @@ final class MatchingArea extends _Area {
   }
 }
 
+/// `sdk.numerology` — a name and a birth date under Balliett's letter
+/// cycle and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to
+/// C328). It reads no sky.
+final class NumerologyArea extends _Area {
+  const NumerologyArea._(super.context);
+
+  /// Everything numerology says of a name and a birth date: the name under
+  /// both systems, word by word with every reduction step, Balliett's
+  /// birth number, Cheiro's day and year, and the baseline engine's own
+  /// numbers under every baseline reading only.
+  ///
+  /// The name is read in the 26 Latin letters; anything else is refused,
+  /// named `numerology.name`, unless [NumerologyRules.nonLatin] is
+  /// [NonLatin.skip]. A date the Gregorian calendar does not have is
+  /// refused as `numerology.date`.
+  ///
+  /// ```dart
+  /// final read = sdk.numerology.profile('Henry Elder', const BirthDate(1872, 1, 17));
+  /// print('${read.pythagoreanName.reduction.number} ${read.chaldeanBirth.birth.number}');
+  /// ```
+  NumerologyProfile profile(
+    String name,
+    BirthDate date, [
+    NumerologyRules rules = const NumerologyRules(),
+  ]) => NumerologyProfile._of(
+    jsonDecode(
+          _context._inner.numerologyProfile(
+            jsonEncode(<String, Object?>{
+              'name': name,
+              'date': <String, Object?>{
+                'year': date.year,
+                'month': date.month,
+                'day': date.day,
+              },
+              'rules': rules._record,
+            }),
+          ),
+        )
+        as Map<String, Object?>,
+  );
+}
+
 /// A context: settings, a locale and an ephemeris, with the calls that use
 /// them. Built by [Teistro.context].
 ///
@@ -1092,6 +1134,9 @@ final class Context {
 
   /// What matches without a chart: two names, star to star.
   late final MatchingArea matching = MatchingArea._(this);
+
+  /// What a name and a birth date say under numerology's two systems.
+  late final NumerologyArea numerology = NumerologyArea._(this);
 
   /// The id of the profile the settings came from.
   String get profile => _inner.profile();
@@ -8737,6 +8782,390 @@ final class NaamRules {
     'koota': koota._record,
     'porutham': porutham._record,
   };
+}
+
+/// Which totals stop a Pythagorean reduction (C320).
+enum Masters {
+  /// None: every number reduced to one digit.
+  none('NONE'),
+
+  /// 11 and 22, Balliett's (pp. 30, 31, 48, 90); the default.
+  elevenTwentyTwo('ELEVEN_TWENTY_TWO'),
+
+  /// 11, 22 and 33, the baseline engine's.
+  elevenTwentyTwoThirtyThree('ELEVEN_TWENTY_TWO_THIRTY_THREE');
+
+  const Masters(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// How a name's words are reduced (C321).
+enum NameReduction {
+  /// Each word reduced, then added (Balliett pp. 18–19, Cheiro); the
+  /// default.
+  byWord('BY_WORD'),
+
+  /// Every letter added at once, the baseline engine's.
+  whole('WHOLE');
+
+  const NameReduction(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// What a Chaldean name's compound number is (C322).
+enum ChaldeanCompound {
+  /// The words' single numbers added (Cheiro p. 72); the default.
+  sumOfSingles('SUM_OF_SINGLES'),
+
+  /// Every letter added, the baseline engine's.
+  letterTotal('LETTER_TOTAL');
+
+  const ChaldeanCompound(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// How the Pythagorean birth number is reduced (C323).
+enum BirthReduction {
+  /// Month, day and year each reduced, then added (Balliett p. 19); the
+  /// default.
+  byPart('BY_PART'),
+
+  /// Every digit of the date added, the baseline engine's.
+  digitSum('DIGIT_SUM');
+
+  const BirthReduction(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// What is done with a character outside A to Z (C326).
+enum NonLatin {
+  /// Refused, named with its place; the default, since neither table says
+  /// what é is worth.
+  refuse('REFUSE'),
+
+  /// Skipped, the baseline engine's.
+  skip('SKIP');
+
+  const NonLatin(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+}
+
+/// The two systems a name is read under.
+enum NumerologySystem {
+  /// Balliett's 1–9 letter cycle.
+  pythagorean('PYTHAGOREAN'),
+
+  /// Cheiro's table.
+  chaldean('CHALDEAN');
+
+  const NumerologySystem(this.key);
+
+  /// The member's key, as every binding spells it.
+  final String key;
+
+  static NumerologySystem _of(String key) =>
+      values.firstWhere((system) => system.key == key);
+}
+
+/// The readings numerology is computed under; each default is the
+/// source's own, and every other value is the baseline engine's
+/// (`03-design/numerology.md`).
+///
+/// ```dart
+/// const plain = NumerologyRules(masters: Masters.none);
+/// ```
+final class NumerologyRules {
+  const NumerologyRules({
+    this.masters = Masters.elevenTwentyTwo,
+    this.nameReduction = NameReduction.byWord,
+    this.chaldeanCompound = ChaldeanCompound.sumOfSingles,
+    this.birthReduction = BirthReduction.byPart,
+    this.nonLatin = NonLatin.refuse,
+  });
+
+  /// Every baseline reading, under which the answer also carries the
+  /// baseline engine's own numbers.
+  const NumerologyRules.baseline()
+    : masters = Masters.elevenTwentyTwoThirtyThree,
+      nameReduction = NameReduction.whole,
+      chaldeanCompound = ChaldeanCompound.letterTotal,
+      birthReduction = BirthReduction.digitSum,
+      nonLatin = NonLatin.skip;
+
+  final Masters masters;
+  final NameReduction nameReduction;
+  final ChaldeanCompound chaldeanCompound;
+  final BirthReduction birthReduction;
+  final NonLatin nonLatin;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'masters': masters.key,
+    'nameReduction': nameReduction.key,
+    'chaldeanCompound': chaldeanCompound.key,
+    'birthReduction': birthReduction.key,
+    'nonLatin': nonLatin.key,
+  };
+}
+
+/// A Gregorian birth date: a civil date, never an instant, so no zone can
+/// move it a day. Checked against the calendar where it is read.
+final class BirthDate extends _Value {
+  const BirthDate(this.year, this.month, this.day);
+
+  final int year;
+
+  /// 1 to 12.
+  final int month;
+
+  /// 1 to the month's length.
+  final int day;
+
+  @override
+  List<Object?> get _fields => [year, month, day];
+}
+
+/// A number reduced: every sum, so "33, so 6" and "38, so 11" read back.
+final class Reduction extends _Value {
+  const Reduction({required this.steps, required this.number});
+
+  /// The sums in order: the number reduced, then each digit sum.
+  final List<int> steps;
+
+  /// Where it stopped: one digit, or a master the rules keep.
+  final int number;
+
+  static Reduction _of(Object? raw) {
+    final map = raw! as Map<String, Object?>;
+    return Reduction(
+      steps: List.unmodifiable([
+        for (final step in map['steps']! as List<Object?>) step! as int,
+      ]),
+      number: map['number']! as int,
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [steps, number];
+}
+
+/// One letter of a word and what the system's table makes it worth.
+final class NumerologyLetter extends _Value {
+  const NumerologyLetter(this.letter, this.value);
+
+  /// The letter, upper case.
+  final String letter;
+  final int value;
+
+  @override
+  List<Object?> get _fields => [letter, value];
+}
+
+/// One word of a name.
+final class WordNumber extends _Value {
+  const WordNumber({
+    required this.text,
+    required this.letters,
+    required this.total,
+    required this.reduction,
+  });
+
+  /// The word as written.
+  final String text;
+  final List<NumerologyLetter> letters;
+
+  /// The letters added.
+  final int total;
+  final Reduction reduction;
+
+  @override
+  List<Object?> get _fields => [text, letters, total, reduction];
+}
+
+/// A name read under one system.
+final class NameNumber extends _Value {
+  const NameNumber({
+    required this.system,
+    required this.words,
+    required this.total,
+    required this.compound,
+    required this.reduction,
+  });
+
+  final NumerologySystem system;
+
+  /// Every word, in order, so either reduction can be read back.
+  final List<WordNumber> words;
+
+  /// What the final reduction started from.
+  final int total;
+
+  /// Cheiro's compound number, for the Chaldean system only.
+  final int? compound;
+  final Reduction reduction;
+
+  static NameNumber _of(Object? raw) {
+    final map = raw! as Map<String, Object?>;
+    return NameNumber(
+      system: NumerologySystem._of(map['system']! as String),
+      words: List.unmodifiable([
+        for (final word
+            in (map['words']! as List<Object?>).cast<Map<String, Object?>>())
+          WordNumber(
+            text: word['text']! as String,
+            letters: List.unmodifiable([
+              for (final letter
+                  in (word['letters']! as List<Object?>)
+                      .cast<Map<String, Object?>>())
+                NumerologyLetter(
+                  letter['letter']! as String,
+                  letter['value']! as int,
+                ),
+            ]),
+            total: word['total']! as int,
+            reduction: Reduction._of(word['reduction']),
+          ),
+      ]),
+      total: map['total']! as int,
+      compound: map['compound'] as int?,
+      reduction: Reduction._of(map['reduction']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [system, words, total, compound, reduction];
+}
+
+/// Balliett's birth number.
+final class BirthNumber extends _Value {
+  const BirthNumber({
+    required this.month,
+    required this.day,
+    required this.year,
+    required this.sum,
+    required this.apart,
+  });
+
+  final Reduction month;
+  final Reduction day;
+  final Reduction year;
+
+  /// The parts that are not masters, added and reduced; null when every
+  /// part is a master.
+  final Reduction? sum;
+
+  /// The parts that are masters, which stand apart from the sum (Balliett
+  /// p. 90), in the order month, day, year.
+  final List<int> apart;
+
+  @override
+  List<Object?> get _fields => [month, day, year, sum, apart];
+}
+
+/// Cheiro's numbers of a date, which are "not added together" (p. 93).
+final class ChaldeanDate extends _Value {
+  const ChaldeanDate({required this.birth, required this.year});
+
+  /// The day of the month, reduced.
+  final Reduction birth;
+
+  /// The year's digits reduced.
+  final Reduction year;
+
+  @override
+  List<Object?> get _fields => [birth, year];
+}
+
+/// The numbers only the baseline engine computes, with no public-domain
+/// source in hand.
+final class BaselineNumerology extends _Value {
+  const BaselineNumerology({
+    required this.soul,
+    required this.personality,
+    required this.chaldeanDestiny,
+  });
+
+  /// The vowels A, E, I, O and U under Balliett's cycle.
+  final Reduction soul;
+
+  /// The other letters.
+  final Reduction personality;
+
+  /// The date's digit sum under Cheiro, which he forbids (p. 93).
+  final Reduction chaldeanDestiny;
+
+  @override
+  List<Object?> get _fields => [soul, personality, chaldeanDestiny];
+}
+
+/// Everything numerology says of a name and a birth date.
+final class NumerologyProfile extends _Value {
+  const NumerologyProfile({
+    required this.pythagoreanName,
+    required this.pythagoreanBirth,
+    required this.chaldeanName,
+    required this.chaldeanBirth,
+    required this.baseline,
+  });
+
+  final NameNumber pythagoreanName;
+  final BirthNumber pythagoreanBirth;
+  final NameNumber chaldeanName;
+  final ChaldeanDate chaldeanBirth;
+
+  /// The baseline engine's own numbers, present only under
+  /// [NumerologyRules.baseline], so they are never mistaken for the
+  /// texts'.
+  final BaselineNumerology? baseline;
+
+  static NumerologyProfile _of(Map<String, Object?> raw) {
+    final birth = raw['pythagoreanBirth']! as Map<String, Object?>;
+    final chaldean = raw['chaldeanBirth']! as Map<String, Object?>;
+    final own = raw['baseline'] as Map<String, Object?>?;
+    return NumerologyProfile(
+      pythagoreanName: NameNumber._of(raw['pythagoreanName']),
+      pythagoreanBirth: BirthNumber(
+        month: Reduction._of(birth['month']),
+        day: Reduction._of(birth['day']),
+        year: Reduction._of(birth['year']),
+        sum: birth['sum'] == null ? null : Reduction._of(birth['sum']),
+        apart: List.unmodifiable([
+          for (final part in birth['apart']! as List<Object?>) part! as int,
+        ]),
+      ),
+      chaldeanName: NameNumber._of(raw['chaldeanName']),
+      chaldeanBirth: ChaldeanDate(
+        birth: Reduction._of(chaldean['birth']),
+        year: Reduction._of(chaldean['year']),
+      ),
+      baseline:
+          own == null
+              ? null
+              : BaselineNumerology(
+                soul: Reduction._of(own['soul']),
+                personality: Reduction._of(own['personality']),
+                chaldeanDestiny: Reduction._of(own['chaldeanDestiny']),
+              ),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [
+    pythagoreanName,
+    pythagoreanBirth,
+    chaldeanName,
+    chaldeanBirth,
+    baseline,
+  ];
 }
 
 /// A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8).

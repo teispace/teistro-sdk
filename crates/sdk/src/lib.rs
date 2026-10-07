@@ -52,7 +52,7 @@ mod scale;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, Answers, CalendarArea, ChartArea, EngineArea,
     FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MatchingArea,
-    MuhurtaDays, Plans, TimeArea,
+    MuhurtaDays, NumerologyArea, Plans, TimeArea,
 };
 mod antiscia;
 mod declinations;
@@ -65,6 +65,7 @@ mod matching_chart;
 mod midpoints;
 mod muhurta_request;
 mod naam_request;
+mod numerology_request;
 mod plan_request;
 mod progressed;
 mod progressions_request;
@@ -292,6 +293,7 @@ pub use teistro_western::{
 // needs no chart (`03-design/matching.md`).
 pub use matching_chart::{Matched, PartnerMatching};
 pub use naam_request::NaamRequest;
+pub use numerology_request::NumerologyRequest;
 pub use teistro_matching as matching;
 pub use teistro_matching::{
     AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaRules,

@@ -2204,6 +2204,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   over 27 and by 360 over 365 under 30, which v. 33's Bhinnashtakavarga
   candidate carries as its solar years. **Numbers:** none under the
   defaults.
+- **Numerology in every binding** (`numerology.md`, `surface-areas.md`).
+  `sdk.numerology.profile(name, date, rules)` in Rust, Node, Python and
+  Dart, a tenth area: one entry point, `ts_numerology_profile`, takes
+  `{"name", "date", "rules"}` and answers the profile as canonical JSON,
+  which each binding parses into its own frozen types. The date is a
+  civil date in every binding (`{ year, month, day }`, `datetime.date`,
+  `BirthDate`), never an instant, and one the calendar does not have is
+  refused as `numerology.date`. A word's letters cross as
+  `{ letter, value }` records. The five parity runners agree on Henry
+  Elder and on John Wanamaker under every baseline reading. **Numbers:**
+  none move.
 - **Numerology, the kernel** (`numerology.md`, C320 to C328). A new
   crate, `teistro-numerology`, re-exported as `teistro::numerology`,
   reads a name and a civil date under Balliett's letter cycle (1908)

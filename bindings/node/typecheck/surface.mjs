@@ -81,6 +81,7 @@ function instances() {
     ChartArea: ctx.chart,
     AlmanacArea: ctx.almanac,
     MatchingArea: ctx.matching,
+    NumerologyArea: ctx.numerology,
     // The built-in describes no operations of its own; the test provider
     // does, which is what an engine is made from.
     Engine: engined.engine,

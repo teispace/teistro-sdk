@@ -48,10 +48,12 @@ holding one operation is an area at all.
 
 ## 3. The areas
 
-These, and a root. `matching` came last, with naam milan (C291 to C296):
+These, and a root. `matching` came with naam milan (C291 to C296):
 a match of two births rides on the chart request, because it reads both
 Moons, and a match of two names reads no sky, so it needed an area of its
 own rather than a chart field nobody could ask without a birth.
+`numerology` reads a name and a civil date and no sky either, on the
+same ground (C320 to C328).
 
 | area | operations | from |
 |---|---|---|
@@ -63,6 +65,7 @@ own rather than a chart field nobody could ask without a birth.
 | `chart` | `found`, `foundMany` | `chart` |
 | `almanac` | `of`, `day` | `panchanga` |
 | `matching` | `naam` | `naam` |
+| `numerology` | `profile` | `numerology` |
 | `engine` | `manifestJson`, `manifest`, `names`, `signature`, `call`, `callJson` | `ephemeris` |
 
 Four names change, and each is a word the namespace now carries:

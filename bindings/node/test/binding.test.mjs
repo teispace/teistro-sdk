@@ -2821,6 +2821,45 @@ test('two names match star to star without a chart', () => {
   ctx.dispose();
 });
 
+test('a name and a birth date read under numerology without a chart', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
+  // 17 January 1872, 1 + 8 + 9 = 18 = 9.
+  const read = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 });
+  assert.ok(Object.isFrozen(read) && Object.isFrozen(read.pythagoreanName.words[0].letters[0]), 'frozen');
+  const name = read.pythagoreanName;
+  assert.deepEqual(
+    name.words.map((word) => [word.text, word.total, word.reduction.number]),
+    [
+      ['Henry', 34, 7],
+      ['Elder', 26, 8],
+    ],
+  );
+  assert.deepEqual(name.words[0].letters[0], { letter: 'H', value: 8 });
+  assert.deepEqual([name.system, name.compound, name.reduction.steps], ['PYTHAGOREAN', null, [15, 6]]);
+  assert.deepEqual(read.pythagoreanBirth.sum, { steps: [18, 9], number: 9 });
+  assert.deepEqual(read.pythagoreanBirth.apart, []);
+  // Cheiro p. 70: Henry 18/9 and Elder 19/1, their singles 10, so 1.
+  assert.deepEqual([read.chaldeanName.system, read.chaldeanName.compound], ['CHALDEAN', 10]);
+  assert.equal(read.chaldeanBirth.birth.number, 8);
+  assert.equal(read.baseline, null);
+
+  // Balliett p. 90: born 11 July 1838 is "9, 11", the day apart.
+  const wanamaker = ctx.numerology.profile('John Wanamaker', { year: 1838, month: 7, day: 11 }, { masters: 'ELEVEN_TWENTY_TWO' });
+  assert.deepEqual([wanamaker.pythagoreanBirth.sum.number, wanamaker.pythagoreanBirth.apart], [9, [11]]);
+
+  for (const [run, field] of [
+    [() => ctx.numerology.profile('Kṛṣṇa', { year: 1990, month: 1, day: 1 }), 'numerology.name'],
+    [() => ctx.numerology.profile('Rama', { year: 1900, month: 2, day: 29 }), 'numerology.date'],
+    [() => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, { master: 'NONE' }), 'numerology.rules.master'],
+  ]) {
+    assert.throws(run, (error) => error instanceof TeistroError && error.field === field, field);
+  }
+  assert.throws(() => ctx.numerology.profile('Rama', '1990-01-01'), TypeError);
+  assert.throws(() => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, 'NONE'), TypeError);
+  ctx.dispose();
+});
+
 /**
  * A chart's avakahada crosses whole, and its syllable names the child back
  * to the Moon's own star and pada (C297): read as a name, the birth syllable

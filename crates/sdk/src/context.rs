@@ -24,7 +24,7 @@ use teistro_time::EmbeddedTzdb;
 use crate::BUNDLES;
 use crate::area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
-    MatchingArea, TimeArea,
+    MatchingArea, NumerologyArea, TimeArea,
 };
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
@@ -300,6 +300,12 @@ impl Context {
     #[must_use]
     pub fn matching(&self) -> MatchingArea<'_> {
         MatchingArea::of(self)
+    }
+
+    /// What a name and a birth date say under numerology's two systems.
+    #[must_use]
+    pub fn numerology(&self) -> NumerologyArea<'_> {
+        NumerologyArea::of(self)
     }
 
     /// The operations your **ephemeris** brings with it, beyond the ones
