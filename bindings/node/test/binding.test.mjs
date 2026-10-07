@@ -4077,3 +4077,58 @@ test('a chart carries its prashna', () => {
   );
   ctx.dispose();
 });
+
+/**
+ * Remedies cross whole: every catalogue key in full, the antardaśā's śānti
+ * only once `at` asks for the running periods (the request asks for the
+ * Vimśottarī daśā itself), and a bad rule refused by its record's name
+ * (`03-design/remedies.md`).
+ */
+test('a chart carries its remedies', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).remedies, null);
+
+  const plain = ctx.chart.found({ instant, ...at, remedies: {} }).remedies;
+  assert.equal(plain.subjects.antardasha, null, 'no instant, no running periods');
+  assert.deepEqual(plain.rules, {
+    functional: { scheme: 'LAGHU_PARASHARI' },
+    shanti: { rik: 'BPHS' },
+    devata: { sunWithKetu: 'SHIVA' },
+  });
+  assert.equal(plain.functional.rows.length, 7, 'the seven that own signs');
+  assert.ok(Object.isFrozen(plain.functional.rows), 'frozen to its leaves');
+
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    remedies: { at: instant + 20 * 365.25, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
+  }).remedies;
+  // Keys in full, as every other accessor gives them.
+  assert.ok(read.functional.lagna.startsWith('rashi.'));
+  assert.ok(read.functional.rows.every((row) => row.graha.startsWith('graha.')));
+  assert.ok(read.functional.badhaka.lord.startsWith('graha.'));
+  assert.ok(read.subjects.subjects.every((one) => one.graha.startsWith('graha.') && one.reasons.length > 0));
+  assert.deepEqual(
+    read.shantis.map((one) => one.graha),
+    read.subjects.subjects.map((one) => one.graha),
+    'a śānti for each subject, in their order',
+  );
+  assert.ok(read.shantis.every((one) => one.direction === null || one.direction.startsWith('direction.')));
+  const { shanti, holds } = read.subjects.antardasha;
+  assert.ok(shanti.mahadasha.startsWith('graha.') && shanti.antardasha.startsWith('graha.'));
+  assert.equal(holds.length, shanti.conditions.length, 'one verdict a condition');
+  const { ishtaDevata } = read;
+  assert.ok(ishtaDevata.atmakaraka.startsWith('graha.') && ishtaDevata.karakamsha.startsWith('rashi.'));
+  for (const one of [ishtaDevata.inRasi, ishtaDevata.inNavamsha]) {
+    assert.ok(one.sign.startsWith('rashi.'));
+    assert.ok(one.devotions.every((devotion) => devotion.graha.startsWith('graha.') && devotion.deities.length > 0));
+  }
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, remedies: { rules: { devatas: {} } } }),
+    (error) => error.field === 'remedies.rules.devatas',
+  );
+  ctx.dispose();
+});

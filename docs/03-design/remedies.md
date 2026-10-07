@@ -203,9 +203,15 @@ prescribe for its antardaśās. Without `at` no daśā is read, since the
 kernel reads no clock. With it, a document carrying no Vimśottarī daśā
 is refused by `dashas`.
 
-The bindings follow prashna's pattern: a `remedies_json` member of the
-chart request, which asks for the Vimśottarī daśā itself, and a
-`remedies` section of canonical JSON, one answer a chart.
+The bindings follow prashna's pattern. `remedies_json` on the chart
+request asks for the Vimśottarī daśā itself when `at` is given, and
+section 121 `remedies` carries one answer a chart as canonical JSON.
+Node's `chart.remedies` writes catalogue keys in full. Python and Dart
+read them as catalogue members, and every closed set the texts name as a
+member of its own. The ishṭa-devatā's deities are `IshtaDeity` in the
+bindings, because the catalogue's `Deity` names the nakshatras' deities.
+The ABI test holds the section to the façade's answer, and the parity
+runners print every field.
 
 ## The acceptance tests
 

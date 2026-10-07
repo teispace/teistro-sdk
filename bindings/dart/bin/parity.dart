@@ -153,6 +153,71 @@ void putMatter(String at, TajikaMatter m) {
 }
 
 /// The items joined by commas, or `-`.
+/// A chart's remedies, each row under [at].
+void putRemedies(String at, Remedies rm) {
+  String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
+  final fn = rm.functional;
+  put(
+    at,
+    '${rm.rules.functional.scheme.key} ${rm.rules.shanti.rik.key} '
+    '${rm.rules.devata.sunWithKetu.key} ${fn.lagna.fullKey} '
+    '${keys(fn.yogakarakas)} ${keys(fn.marakas)} '
+    '${fn.badhaka.house}:${fn.badhaka.lord.fullKey}',
+  );
+  for (final row in fn.rows) {
+    put(
+      '$at-nature-${row.graha.fullKey}',
+      '${joined(row.houses.map((h) => '$h'))} '
+          '${joined(row.clauses.map((c) => '${c.kind.key}:${c.house}'))} '
+          '${row.nature.key}',
+    );
+  }
+  for (final one in rm.subjects.subjects) {
+    put(
+      '$at-subject-${one.graha.fullKey}',
+      joined(one.reasons.map((r) => r.key)),
+    );
+  }
+  final running = rm.subjects.antardasha;
+  if (running != null) {
+    final ds = running.shanti;
+    put(
+      '$at-antardasha',
+      '${ds.mahadasha.fullKey} ${ds.antardasha.fullKey} ${ds.chapter} '
+          '${ds.verses} ${ds.page} ${joined(ds.conditions.map((c) => c.key))} '
+          '${joined(ds.remedies.map((r) => r.key))} '
+          '${joined(running.holds.map((h) => h?.toString() ?? '-'))}',
+    );
+  }
+  for (final sh in rm.shantis) {
+    put(
+      '$at-shanti-${sh.graha.fullKey}',
+      '${sh.image.key} ${sh.japaThousands} ${sh.samidh.key} ${sh.food.key} '
+          '${sh.dakshina.key} ${sh.gem.key} ${sh.substance?.key ?? '-'} '
+          '${sh.direction?.fullKey ?? '-'} ${sh.mandala.key} ${sh.rik}',
+    );
+  }
+  final dv = rm.ishtaDevata;
+  put('$at-devata', '${dv.atmakaraka.fullKey} ${dv.karakamsha.fullKey}');
+  for (final (name, one) in [
+    ('rasi', dv.inRasi),
+    ('navamsha', dv.inNavamsha),
+  ]) {
+    final devotions = joined(
+      one.devotions.map(
+        (d) =>
+            '${d.graha.fullKey}:${d.deities.map((x) => x.key).join('|')}:'
+            '${d.verse}:${d.withKetu}',
+      ),
+    );
+    put(
+      '$at-devata-$name',
+      '${one.rules.sunWithKetu.key} ${one.sign.fullKey} $devotions '
+          '${keys(one.minor)}',
+    );
+  }
+}
+
 String joined(Iterable<String> items) {
   final all = items.join(',');
   return all.isEmpty ? '-' : all;
@@ -809,6 +874,10 @@ void main() {
       house: 7,
       number: 14,
       rules: PrashnaRules(score: ScoreRule.baseline),
+    ),
+    remedies: const RemedyRequest(
+      at: 2460676.5,
+      rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
     ),
     westernAspects: const WesternAspectRequest(
       aspects: [
@@ -1572,6 +1641,7 @@ void main() {
       'R:${joined(links.states!.retrograde.map((g) => g.fullKey))} '
           'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
     );
+    putRemedies('chart-$i-remedies', chart.remedies!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;
     final dr = pr.directed!;

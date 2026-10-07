@@ -280,7 +280,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 296,
+    "ts_chart_request": 304,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -729,6 +729,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("harmonic_json", ctypes.c_char_p),
         ("matching_json", ctypes.c_char_p),
         ("prashna_json", ctypes.c_char_p),
+        ("remedies_json", ctypes.c_char_p),
     ]
 
 
@@ -2691,6 +2692,21 @@ class ChartRequest:
     Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
     """
 
+    remedies_json: Optional[str] = None
+    """Every chart's remedies, as BPHS, *Laghu Parashari* and
+    *Yājñavalkya* prescribe them, as a JSON object, every member
+    optional: `at` (the Julian day UTC whose running Vimśottarī
+    mahādaśā and antardaśā name subjects and bring the antardaśā's
+    printed śānti; none reads no daśā) and `rules` (`functional`
+    `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts'
+    own by default). A record with `at` asks for the Vimśottarī daśā
+    too. Each chart's remedies come back in the `remedies` section.
+    Null for none, which costs nothing (`03-design/remedies.md`).
+    Refusals are named from the record every binding calls `remedies`,
+    as `remedies.rules.devata`.
+    Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2798,6 +2814,9 @@ class ChartRequest:
         _prashna_json = None if self.prashna_json is None else self.prashna_json.encode("utf-8")
         owned.append(_prashna_json)
         raw.prashna_json = _prashna_json
+        _remedies_json = None if self.remedies_json is None else self.remedies_json.encode("utf-8")
+        owned.append(_remedies_json)
+        raw.remedies_json = _remedies_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2857,6 +2876,7 @@ class ChartRequest:
             harmonic_json=_text(raw.harmonic_json),
             matching_json=_text(raw.matching_json),
             prashna_json=_text(raw.prashna_json),
+            remedies_json=_text(raw.remedies_json),
         )
 
 

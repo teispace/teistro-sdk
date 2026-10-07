@@ -35,7 +35,7 @@ use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, Kind, Varga};
+use teistro_core::catalogue::{ChartKind, DashaSystem, Kind, Varga};
 use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
@@ -1812,6 +1812,19 @@ pub struct TsChartRequest {
     /// binding calls `prashna`, as `prashna.question.house`.
     /// `api: nullable example={"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}`
     pub prashna_json: *const c_char,
+    /// Every chart's remedies, as BPHS, *Laghu Parashari* and
+    /// *Yājñavalkya* prescribe them, as a JSON object, every member
+    /// optional: `at` (the Julian day UTC whose running Vimśottarī
+    /// mahādaśā and antardaśā name subjects and bring the antardaśā's
+    /// printed śānti; none reads no daśā) and `rules` (`functional`
+    /// `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts'
+    /// own by default). A record with `at` asks for the Vimśottarī daśā
+    /// too. Each chart's remedies come back in the `remedies` section.
+    /// Null for none, which costs nothing (`03-design/remedies.md`).
+    /// Refusals are named from the record every binding calls `remedies`,
+    /// as `remedies.rules.devata`.
+    /// `api: nullable example={"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}`
+    pub remedies_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -7347,6 +7360,9 @@ pub struct Composed<'a> {
     /// Every chart read as a prashna, as canonical JSON (`prashna.md`);
     /// empty when none was asked for.
     pub prashna: &'a str,
+    /// Every chart's remedies, as canonical JSON (`remedies.md`); empty
+    /// when none were asked for.
+    pub remedies: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -7355,7 +7371,8 @@ pub struct Composed<'a> {
 
 impl Composed<'_> {
     /// Writes the sections the composers answered as text, each as it
-    /// came: the drawings, the rules, the plans, KP and prashna. The
+    /// came: the drawings, the rules, the plans, KP, prashna and the
+    /// remedies. The
     /// writer takes sections in any order, so these need not sit among
     /// the columns they follow in the schema.
     fn write_texts(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -7365,6 +7382,7 @@ impl Composed<'_> {
             ("plans", self.plans),
             ("kp", self.kp),
             ("prashna", self.prashna),
+            ("remedies", self.remedies),
         ] {
             writer.bytes(name, text.as_bytes())?;
         }
@@ -8461,22 +8479,46 @@ unsafe fn kp_request_of(
     }))
 }
 
-/// Every chart read as a prashna, as the canonical JSON the `prashna`
-/// section carries: an array with one reading a chart, or nothing at all
-/// when none was asked for.
-fn prashna_json(
-    sdk: &teistro::Context,
+/// Every chart's answer to a record, as the canonical JSON its section
+/// carries: an array with one answer a chart, or nothing at all when the
+/// record was not sent.
+fn each_json<A, T: serde::Serialize>(
     documents: &[Document],
-    asked: Option<&teistro::PrashnaRequest>,
+    asked: Option<&A>,
+    answer: impl Fn(&Document, &A) -> Result<T, Error>,
 ) -> Result<String, Error> {
     let Some(asked) = asked else {
         return Ok(String::new());
     };
-    let readings = documents
+    let answers = documents
         .iter()
-        .map(|document| sdk.chart().prashna(document, asked))
+        .map(|document| answer(document, asked))
         .collect::<Result<Vec<_>, Error>>()?;
-    Ok(teistro_core::envelope::canonical_json(&readings))
+    Ok(teistro_core::envelope::canonical_json(&answers))
+}
+
+/// The sections the façade answers a chart at a time from a record of its
+/// own, each the canonical JSON [`each_json`] writes.
+struct ChartReadings {
+    prashna: String,
+    remedies: String,
+}
+
+impl ChartReadings {
+    fn of(
+        sdk: &teistro::Context,
+        documents: &[Document],
+        records: &AskedRecords,
+    ) -> Result<Self, Error> {
+        Ok(Self {
+            prashna: each_json(documents, records.prashna.as_ref(), |document, asked| {
+                sdk.chart().prashna(document, asked)
+            })?,
+            remedies: each_json(documents, records.remedies.as_ref(), |document, asked| {
+                sdk.chart().remedies(document, asked)
+            })?,
+        })
+    }
 }
 
 /// Every chart's KP reading as the canonical JSON the `kp` section carries:
@@ -9139,20 +9181,36 @@ struct AskedRecords {
     harmonic: Option<teistro::HarmonicRequest>,
     matching: Option<teistro::PartnerMatching>,
     prashna: Option<teistro::PrashnaRequest>,
+    remedies: Option<teistro::RemedyRequest>,
 }
 
 impl AskedRecords {
     /// The chart request with what these records need of the charts
     /// themselves: the lots a chart reports are the lots its time lords
-    /// release from, so one `lots` record sets both; and a prashna weighs
-    /// the seven by their Shadbala, so one `prashna` record asks for it.
+    /// release from, so one `lots` record sets both; a prashna weighs the
+    /// seven by their Shadbala, so one `prashna` record asks for it; and a
+    /// remedy read at an instant reads the Vimśottarī daśā running then.
     fn widen(&self, request: ChartRequest) -> ChartRequest {
         let request = match self.lots {
             Some(rules) => request.with_lot_rules(rules),
             None => request,
         };
-        if self.prashna.is_some() {
+        let request = if self.prashna.is_some() {
             request.with_shadbala()
+        } else {
+            request
+        };
+        let vimshottari = KeyId::from(DashaSystem::Vimshottari);
+        if self.remedies.is_some_and(|asked| asked.at.is_some())
+            && !request.dashas().contains(&vimshottari)
+        {
+            let dashas: Vec<_> = request
+                .dashas()
+                .iter()
+                .copied()
+                .chain([vimshottari])
+                .collect();
+            request.with_dashas(dashas)
         } else {
             request
         }
@@ -9212,6 +9270,9 @@ impl AskedRecords {
                     .transpose()?,
                 prashna: optional_text(asked.prashna_json, "prashna_json")?
                     .map(teistro::PrashnaRequest::from_json)
+                    .transpose()?,
+                remedies: optional_text(asked.remedies_json, "remedies_json")?
+                    .map(teistro::RemedyRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -9410,7 +9471,7 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let western = WesternTables::of(ctx.sdk(), &founded.value, &records, clock)?;
         let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
-        let prashna = prashna_json(ctx.sdk(), &founded.value, records.prashna.as_ref())?;
+        let readings = ChartReadings::of(ctx.sdk(), &founded.value, &records)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -9445,7 +9506,8 @@ pub unsafe extern "C" fn ts_chart_found(
                 western_houses: &western.houses,
                 harmonics: &western.harmonics,
                 matchings: &matchings,
-                prashna: &prashna,
+                prashna: &readings.prashna,
+                remedies: &readings.remedies,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

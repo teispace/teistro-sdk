@@ -214,6 +214,54 @@ def held_said(h: Any) -> str:
     ])
 
 
+def listed_or_dash(items: Iterable[str]) -> str:
+    """Items joined by commas, `-` for none, as every runner writes them."""
+    return ",".join(items) or "-"
+
+
+def put_remedies(at: str, rm: Any) -> None:
+    """A chart's remedies, each row under `at`."""
+
+    def keys(grahas: Iterable[Any]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    fn = rm.functional
+    put(
+        at,
+        f"{rm.rules['functional']['scheme']} {rm.rules['shanti']['rik']} {rm.rules['devata']['sunWithKetu']}"
+        f" {fn.lagna.full_key} {keys(fn.yogakarakas)} {keys(fn.marakas)} {fn.badhaka.house}:{fn.badhaka.lord.full_key}",
+    )
+    for row in fn.rows:
+        put(
+            f"{at}-nature-{row.graha.full_key}",
+            f"{listed_or_dash(str(h) for h in row.houses)} {listed_or_dash(f'{c.kind}:{c.house}' for c in row.clauses)} {row.nature}",
+        )
+    for one in rm.subjects.subjects:
+        put(f"{at}-subject-{one.graha.full_key}", listed_or_dash(one.reasons))
+    running = rm.subjects.antardasha
+    if running is not None:
+        ds = running.shanti
+        holds = listed_or_dash("-" if h is None else str(h).lower() for h in running.holds)
+        put(
+            f"{at}-antardasha",
+            f"{ds.mahadasha.full_key} {ds.antardasha.full_key} {ds.chapter} {ds.verses} {ds.page}"
+            f" {listed_or_dash(ds.conditions)} {listed_or_dash(ds.remedies)} {holds}",
+        )
+    for sh in rm.shantis:
+        put(
+            f"{at}-shanti-{sh.graha.full_key}",
+            f"{sh.image} {sh.japa_thousands} {sh.samidh} {sh.food} {sh.dakshina} {sh.gem} {sh.substance or '-'}"
+            f" {sh.direction.full_key if sh.direction is not None else '-'} {sh.mandala} {sh.rik}",
+        )
+    dv = rm.ishta_devata
+    put(f"{at}-devata", f"{dv.atmakaraka.full_key} {dv.karakamsha.full_key}")
+    for name, one in (("rasi", dv.in_rasi), ("navamsha", dv.in_navamsha)):
+        devotions = listed_or_dash(
+            f"{d.graha.full_key}:{'|'.join(d.deities)}:{d.verse}:{str(d.with_ketu).lower()}" for d in one.devotions
+        )
+        put(f"{at}-devata-{name}", f"{one.rules['sunWithKetu']} {one.sign.full_key} {devotions} {keys(one.minor)}")
+
+
 def put_matter(at: str, matter: Any) -> None:
     """One matter's Tajika yogas, each row under `at`."""
     put(
@@ -775,6 +823,7 @@ def main() -> None:
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
             prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
+            remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
                 "orbs": {
@@ -1415,6 +1464,9 @@ def main() -> None:
             states = pq.links.states
             assert states is not None
             put(f"chart-{i}-prashna-links-states", f"R:{joined(g.full_key for g in states.retrograde)} C:{joined(g.full_key for g in states.combust)}")
+            rm = chart.remedies
+            assert rm is not None
+            put_remedies(f"chart-{i}-remedies", rm)
             pr = chart.progressions
             assert pr is not None and pr.progressed is not None and pr.directed is not None
             assert pr.contacts is not None

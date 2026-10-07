@@ -690,6 +690,7 @@ final class ChartArea extends _Area {
     HarmonicRequest? harmonic,
     MatchingRequest? matching,
     PrashnaRequest? prashna,
+    RemedyRequest? remedies,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -734,6 +735,7 @@ final class ChartArea extends _Area {
     harmonic: harmonic,
     matching: matching,
     prashna: prashna,
+    remedies: remedies,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -798,6 +800,7 @@ final class ChartArea extends _Area {
     HarmonicRequest? harmonic,
     MatchingRequest? matching,
     PrashnaRequest? prashna,
+    RemedyRequest? remedies,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -866,6 +869,7 @@ final class ChartArea extends _Area {
             harmonicJson: harmonic?._json,
             matchingJson: matching?._json,
             prashnaJson: prashna?._json,
+            remediesJson: remedies?._json,
           ),
         ),
       ),
@@ -13473,6 +13477,153 @@ Prashna _prashna(Map<String, Object?> raw) {
   );
 }
 
+/// Each batch's remedies, parsed once however many charts read them.
+final Expando<List<Remedies>> _remedies = Expando<List<Remedies>>('remedies');
+
+List<Remedies> _remediesOf(Charts batch) =>
+    _remedies[batch] ??= [
+      for (final raw in _sectionOf(batch.remedies)) _remediesFrom(raw),
+    ];
+
+/// A chart's remedies from the `remedies` section's JSON, its keys made
+/// members.
+Remedies _remediesFrom(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  List<Object?> each(Object? value) => value! as List<Object?>;
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  Rashi rashi(Object? key) => Rashi.byKey(key! as String) ?? Rashi.unknown;
+  List<Graha> grahas(Object? keys) =>
+      List<Graha>.unmodifiable([for (final key in each(keys)) graha(key)]);
+  List<T> keyed<T extends _Keyed>(List<T> values, Object? keys) =>
+      List<T>.unmodifiable([
+        for (final key in each(keys)) _keyedIn(values, key),
+      ]);
+  DevataRules devataRules(Object? value) => DevataRules(
+    sunWithKetu: _keyedIn(SunWithKetu.values, at(value)['sunWithKetu']),
+  );
+  IshtaDevata devata(Map<String, Object?> one) => IshtaDevata(
+    rules: devataRules(one['rules']),
+    sign: rashi(one['sign']),
+    devotions: List<Devotion>.unmodifiable([
+      for (final devotion in each(one['devotions']).map(at))
+        Devotion(
+          graha: graha(devotion['graha']),
+          deities: keyed(IshtaDeity.values, devotion['deities']),
+          verse: devotion['verse']! as int,
+          withKetu: devotion['withKetu']! as bool,
+        ),
+    ]),
+    minor: grahas(one['minor']),
+  );
+
+  final rules = at(raw['rules']);
+  final functional = at(raw['functional']);
+  final badhaka = at(functional['badhaka']);
+  final subjects = at(raw['subjects']);
+  final antardasha = subjects['antardasha'];
+  final devatas = at(raw['ishtaDevata']);
+  return Remedies(
+    rules: RemedyRules(
+      functional: FunctionalRules(
+        scheme: _keyedIn(
+          FunctionalScheme.values,
+          at(rules['functional'])['scheme'],
+        ),
+      ),
+      shanti: ShantiRules(
+        rik: _keyedIn(RikSource.values, at(rules['shanti'])['rik']),
+      ),
+      devata: devataRules(rules['devata']),
+    ),
+    functional: Functional(
+      lagna: rashi(functional['lagna']),
+      scheme: _keyedIn(FunctionalScheme.values, functional['scheme']),
+      rows: List<FunctionalRow>.unmodifiable([
+        for (final row in each(functional['rows']).map(at))
+          FunctionalRow(
+            graha: graha(row['graha']),
+            houses: List<int>.unmodifiable(each(row['houses']).cast<int>()),
+            clauses: List<FunctionalClause>.unmodifiable([
+              for (final clause in each(row['clauses']).map(at))
+                FunctionalClause(
+                  kind: _keyedIn(FunctionalClauseKind.values, clause['kind']),
+                  house: clause['house']! as int,
+                ),
+            ]),
+            nature: _keyedIn(FunctionalNature.values, row['nature']),
+          ),
+      ]),
+      yogakarakas: grahas(functional['yogakarakas']),
+      marakas: grahas(functional['marakas']),
+      badhaka: Badhaka(
+        house: badhaka['house']! as int,
+        lord: graha(badhaka['lord']),
+      ),
+    ),
+    subjects: RemedySubjects(
+      subjects: List<RemedySubject>.unmodifiable([
+        for (final one in each(subjects['subjects']).map(at))
+          RemedySubject(
+            graha: graha(one['graha']),
+            reasons: keyed(RemedyReason.values, one['reasons']),
+          ),
+      ]),
+      antardasha:
+          antardasha == null
+              ? null
+              : (() {
+                final printed = at(at(antardasha)['shanti']);
+                return AntardashaShanti(
+                  shanti: DashaShanti(
+                    mahadasha: graha(printed['mahadasha']),
+                    antardasha: graha(printed['antardasha']),
+                    chapter: printed['chapter']! as int,
+                    verses: printed['verses']! as String,
+                    page: printed['page']! as int,
+                    conditions: keyed(
+                      DashaShantiCondition.values,
+                      printed['conditions'],
+                    ),
+                    remedies: keyed(DashaRemedy.values, printed['remedies']),
+                  ),
+                  holds: List<bool?>.unmodifiable(
+                    each(at(antardasha)['holds']).cast<bool?>(),
+                  ),
+                );
+              })(),
+    ),
+    shantis: List<Shanti>.unmodifiable([
+      for (final one in each(raw['shantis']).map(at))
+        Shanti(
+          graha: graha(one['graha']),
+          image: _keyedIn(ImageMaterial.values, one['image']),
+          rik: one['rik']! as String,
+          japaThousands: one['japaThousands']! as int,
+          samidh: _keyedIn(Samidh.values, one['samidh']),
+          food: _keyedIn(ShantiFood.values, one['food']),
+          dakshina: _keyedIn(Dakshina.values, one['dakshina']),
+          gem: _keyedIn(Gem.values, one['gem']),
+          substance:
+              one['substance'] == null
+                  ? null
+                  : _keyedIn(Substance.values, one['substance']),
+          direction:
+              one['direction'] == null
+                  ? null
+                  : Direction.byKey(one['direction']! as String) ??
+                      Direction.unknown,
+          mandala: _keyedIn(MandalaPlace.values, one['mandala']),
+        ),
+    ]),
+    ishtaDevata: IshtaDevatas(
+      atmakaraka: graha(devatas['atmakaraka']),
+      karakamsha: rashi(devatas['karakamsha']),
+      inRasi: devata(at(devatas['inRasi'])),
+      inNavamsha: devata(at(devatas['inNavamsha'])),
+    ),
+  );
+}
+
 /// Tajika's sixteen yogas for one matter as the boundary's JSON writes
 /// them, in the shape a year's matters are read in.
 PrashnaLinks _prashnaLinks(Map<String, Object?> raw) {
@@ -14881,7 +15032,7 @@ final class TajikaMatter {
       unanswered.contains(yoga) ? null : held.any((one) => one.yoga == yoga);
 }
 
-/// A member of a prashna's closed sets, spelt by its key.
+/// A member of a closed set an answer spells by its key.
 abstract interface class _Keyed {
   String get key;
 }
@@ -14890,7 +15041,7 @@ abstract interface class _Keyed {
 /// a fault, because the SDK writes only the members it has.
 T _keyedIn<T extends _Keyed>(List<T> values, Object? key) => values.firstWhere(
   (member) => member.key == key,
-  orElse: () => throw StateError('a prashna spelling $key'),
+  orElse: () => throw StateError('a spelling this build does not know: $key'),
 );
 
 /// Whether Pisces rising counts both ways (*Shatpanchashika* I.3).
@@ -15437,6 +15588,1087 @@ final class Prashna {
 
   /// The sign of the querent's number; null unless one was given.
   final Rashi? numberSign;
+}
+
+/// How a graha's summary nature is derived from its lordships.
+enum FunctionalScheme implements _Keyed {
+  /// *Laghu Parashari* vv. 6 to 20 and BPHS ch. 13 vv. 1 to 13: the
+  /// lords of 3, 6 and 11 are evil, the 8th lord is not good unless it
+  /// is the lagna lord or a luminary, a kendra lord loses its natural
+  /// nature, the 2nd and 12th act by association, and a trikona lord is
+  /// good whatever else it owns (C329, C330); the default.
+  laghuParashari('LAGHU_PARASHARI'),
+
+  /// The baseline engine's: the lords of 1, 5 and 9 good, the lords of
+  /// 6, 8 and 12 bad unless they also own a trikona, and a yogakaraka
+  /// any other kendra lord that owns a trikona. No text read gives the
+  /// 12th lord as evil or exempts no one from the 8th (C331).
+  baseline('BASELINE');
+
+  const FunctionalScheme(this.key);
+
+  @override
+  final String key;
+}
+
+/// A graha's functional nature for a lagna, summarised.
+enum FunctionalNature implements _Keyed {
+  /// One graha owning a kendra and a trikona (LP v. 20).
+  yogakaraka('YOGAKARAKA'),
+
+  /// Good for the lagna: a trikona lord.
+  benefic('BENEFIC'),
+
+  /// Neither: a kendra lord that lost its natural nature, a lord of the
+  /// 2nd or 12th acting by association, or an 8th lord the text exempts.
+  neutral('NEUTRAL'),
+
+  /// Evil for the lagna: a lord of 3, 6 or 11, or of the 8th.
+  malefic('MALEFIC');
+
+  const FunctionalNature(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a clause says of a graha's lordship. Each names the verse it
+/// reads.
+enum FunctionalClauseKind implements _Keyed {
+  /// It owns the 1st (BPHS ch. 13 v. 12; LP v. 9).
+  lagnesha('LAGNESHA'),
+
+  /// It owns the 5th or the 9th, and gives good (LP v. 6).
+  trikonaLord('TRIKONA_LORD'),
+
+  /// It owns the 3rd, 6th or 11th, and gives evil (LP v. 6).
+  trishadayaLord('TRISHADAYA_LORD'),
+
+  /// It owns the 8th, the 12th from the 9th, and is not good (LP v. 9).
+  randhresha('RANDHRESHA'),
+
+  /// It owns the 8th and the 1st, so the 8th's blemish is void (LP v. 9;
+  /// BPHS ch. 13 v. 12).
+  randhreshaVoidLagnesha('RANDHRESHA_VOID_LAGNESHA'),
+
+  /// It owns the 8th and is the Sun or the Moon, which carry no 8th-lord
+  /// blemish (LP v. 11).
+  randhreshaVoidLuminary('RANDHRESHA_VOID_LUMINARY'),
+
+  /// A natural benefic owning a kendra, which then does not give good
+  /// (LP v. 7; the blemish ranked in vv. 10 and 11).
+  kendraBeneficLoses('KENDRA_BENEFIC_LOSES'),
+
+  /// A natural malefic owning a kendra, which then does not give evil
+  /// (LP v. 7).
+  kendraMaleficLoses('KENDRA_MALEFIC_LOSES'),
+
+  /// It owns the 2nd or the 12th, and gives the results of what it joins
+  /// (LP v. 8).
+  byAssociation('BY_ASSOCIATION'),
+
+  /// It owns a kendra and a trikona (LP v. 20).
+  yogakaraka('YOGAKARAKA'),
+
+  /// It owns the 2nd or the 7th, the maraka houses (LP vv. 23 to 25).
+  maraka('MARAKA'),
+
+  /// It owns the lagna's badhaka sthana: the 11th from a movable lagna,
+  /// the 9th from a fixed one, the 7th from a dual one.
+  badhakesha('BADHAKESHA');
+
+  const FunctionalClauseKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which text's ṛk is given for Rahu. The two texts agree for the other
+/// eight grahas (C343).
+enum RikSource implements _Keyed {
+  /// BPHS 84.18: *kayā naś citra*; the default.
+  bphs('BPHS'),
+
+  /// Yājñavalkya I.301: *kāṇḍāt*.
+  yajnavalkya('YAJNAVALKYA');
+
+  const RikSource(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a graha's image is made of (BPHS 84.4 = Yājñavalkya I.297).
+enum ImageMaterial implements _Keyed {
+  /// *tāmra*, the Sun's.
+  copper('COPPER'),
+
+  /// *sphaṭika*, the Moon's.
+  crystal('CRYSTAL'),
+
+  /// *raktacandana*, Mars's.
+  redSandalwood('RED_SANDALWOOD'),
+
+  /// *svarṇa*, Mercury's and Jupiter's ("*svarṇakāt ubhau*").
+  gold('GOLD'),
+
+  /// *rajata*, Venus's.
+  silver('SILVER'),
+
+  /// *ayas*, Saturn's.
+  iron('IRON'),
+
+  /// *sīsa*, Rahu's.
+  lead('LEAD'),
+
+  /// *kāṃsya*, Ketu's: bell metal.
+  bronze('BRONZE');
+
+  const ImageMaterial(this.key);
+
+  @override
+  final String key;
+}
+
+/// The wood a graha's fire is fed with (BPHS 84.21 = Yājñavalkya I.302).
+enum Samidh implements _Keyed {
+  /// *arka*, the Sun's.
+  arka('ARKA'),
+
+  /// *palāśa*, the Moon's.
+  palasha('PALASHA'),
+
+  /// *khadira*, Mars's.
+  khadira('KHADIRA'),
+
+  /// *apāmārga*, Mercury's.
+  apamarga('APAMARGA'),
+
+  /// *pippala* (aśvattha), Jupiter's.
+  pippala('PIPPALA'),
+
+  /// *udumbara*, Venus's.
+  udumbara('UDUMBARA'),
+
+  /// *śamī*, Saturn's.
+  shami('SHAMI'),
+
+  /// *dūrvā*, Rahu's.
+  durva('DURVA'),
+
+  /// *kuśa*, Ketu's.
+  kusha('KUSHA');
+
+  const Samidh(this.key);
+
+  @override
+  final String key;
+}
+
+/// The food Brahmins are fed for a graha (BPHS 84.23 = Yājñavalkya
+/// I.304–305).
+enum ShantiFood implements _Keyed {
+  /// *guḍaudana*, rice with jaggery: the Sun's.
+  gudaudana('GUDAUDANA'),
+
+  /// *pāyasa*, rice boiled in milk: the Moon's.
+  payasa('PAYASA'),
+
+  /// *haviṣya*, food fit for an offering: Mars's.
+  havishya('HAVISHYA'),
+
+  /// *kṣīra-ṣāṣṭika*, sixty-day rice in milk: Mercury's.
+  kshiraShashtika('KSHIRA_SHASHTIKA'),
+
+  /// *dadhyodana*, rice with curd: Jupiter's.
+  dadhyodana('DADHYODANA'),
+
+  /// *haviḥ*, which the 1952 gloss reads as rice with ghee: Venus's.
+  havis('HAVIS'),
+
+  /// *cūrṇa*, which the gloss reads as sesame powder with rice:
+  /// Saturn's.
+  churna('CHURNA'),
+
+  /// *māṃsa*, meat: Rahu's.
+  mamsa('MAMSA'),
+
+  /// *citrānna*, mixed rice: Ketu's.
+  chitranna('CHITRANNA');
+
+  const ShantiFood(this.key);
+
+  @override
+  final String key;
+}
+
+/// The fee given for a graha (BPHS 84.25 = Yājñavalkya I.306).
+enum Dakshina implements _Keyed {
+  /// *dhenu*, a milch cow: the Sun's.
+  milchCow('MILCH_COW'),
+
+  /// *śaṅkha*, a conch: the Moon's.
+  conch('CONCH'),
+
+  /// *anaḍvān*, a draught bull: Mars's.
+  bull('BULL'),
+
+  /// *hema*, gold: Mercury's.
+  gold('GOLD'),
+
+  /// *vāsas*, cloth: Jupiter's.
+  cloth('CLOTH'),
+
+  /// *haya*, a horse: Venus's.
+  horse('HORSE'),
+
+  /// *kṛṣṇā gauḥ*, a black cow: Saturn's.
+  blackCow('BLACK_COW'),
+
+  /// *āyasa*, iron, which the Mitākṣarā reads as an iron weapon:
+  /// Rahu's.
+  iron('IRON'),
+
+  /// *chāga*, a goat: Ketu's. The 1918 English "sheep" mistranslates
+  /// it (C344).
+  goat('GOAT');
+
+  const Dakshina(this.key);
+
+  @override
+  final String key;
+}
+
+/// The gem a graha owns (Jataka Parijata II.21). The verse states
+/// ownership only, and nothing about wearing a gem or giving it away.
+enum Gem implements _Keyed {
+  /// *māṇikya*, ruby: the Sun's.
+  ruby('RUBY'),
+
+  /// *muktāphala*, pearl: the Moon's.
+  pearl('PEARL'),
+
+  /// *vidruma*, coral: Mars's.
+  coral('CORAL'),
+
+  /// *marakata*, emerald: Mercury's.
+  emerald('EMERALD'),
+
+  /// *puṣparāga*, topaz: Jupiter's.
+  topaz('TOPAZ'),
+
+  /// *vajra*, diamond: Venus's.
+  diamond('DIAMOND'),
+
+  /// *nīla*, sapphire: Saturn's.
+  sapphire('SAPPHIRE'),
+
+  /// *gomeda*, hessonite: Rahu's, the first of "the other two".
+  hessonite('HESSONITE'),
+
+  /// *vaidūrya*, cat's eye: Ketu's (C347).
+  catsEye('CATS_EYE');
+
+  const Gem(this.key);
+
+  @override
+  final String key;
+}
+
+/// The substance a graha rules (Brihat Jataka II.12 = Jataka Parijata
+/// II.20). Neither verse gives one to the nodes (C346).
+enum Substance implements _Keyed {
+  /// *tāmra*: the Sun's.
+  copper('COPPER'),
+
+  /// *maṇi*: the Moon's.
+  gems('GEMS'),
+
+  /// *kāñcana*: Mars's.
+  gold('GOLD'),
+
+  /// *yukti*, which Iyer renders as brass: Mercury's.
+  alloy('ALLOY'),
+
+  /// *raupya*: Jupiter's. Iyer's note gives him gold when he is in
+  /// his own sign; the verse does not.
+  silver('SILVER'),
+
+  /// *muktā*: Venus's.
+  pearls('PEARLS'),
+
+  /// *ayas*: Saturn's.
+  iron('IRON');
+
+  const Substance(this.key);
+
+  @override
+  final String key;
+}
+
+/// Where a graha's image stands in the Matsya maṇḍala, which the
+/// Mitākṣarā quotes on Yājñavalkya I.298 for laying out the rite.
+enum MandalaPlace implements _Keyed {
+  /// The centre: the Sun.
+  centre('CENTRE'),
+
+  /// Venus.
+  east('EAST'),
+
+  /// The Moon.
+  southeast('SOUTHEAST'),
+
+  /// Mars.
+  south('SOUTH'),
+
+  /// Rahu.
+  southwest('SOUTHWEST'),
+
+  /// Saturn.
+  west('WEST'),
+
+  /// Ketu.
+  northwest('NORTHWEST'),
+
+  /// Jupiter.
+  north('NORTH'),
+
+  /// Mercury.
+  northeast('NORTHEAST');
+
+  const MandalaPlace(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whose devotee the Sun with Ketu makes (C354). The 1899 and 1923
+/// prints give vv. 70–71 with their fruits exchanged and read
+/// *ravi-bhakti*; the recension and Jaimini's *Upadeśa Sūtras* read
+/// Śiva for the Sun and Gaurī for the Moon.
+enum SunWithKetu implements _Keyed {
+  /// Śiva, the recension's *śiva-bhakti*; the default; the default.
+  shiva('SHIVA'),
+
+  /// Sūrya, the prints' *ravi-bhakti*.
+  surya('SURYA');
+
+  const SunWithKetu(this.key);
+
+  @override
+  final String key;
+}
+
+/// A deity a verse, or the baseline's table, names.
+enum IshtaDeity implements _Keyed {
+  /// Śiva.
+  shiva('SHIVA'),
+
+  /// Gaurī, worshipped by a Śākta (v. 70 as the recension pairs it).
+  gauri('GAURI'),
+
+  /// Pārvatī, as the baseline names her beside Gaurī.
+  parvati('PARVATI'),
+
+  /// Lakṣmī, *samudra-tanayā*, the ocean's daughter (v. 72).
+  lakshmi('LAKSHMI'),
+
+  /// Skanda, Kārttikeya (vv. 73 and 74).
+  skanda('SKANDA'),
+
+  /// Viṣṇu (v. 73).
+  vishnu('VISHNU'),
+
+  /// Durgā in her tāmasī form, with the service of spirits (v. 74).
+  durga('DURGA'),
+
+  /// Heramba, Gaṇeśa (v. 74).
+  heramba('HERAMBA'),
+
+  /// Sūrya, the 1899 and 1923 prints' *ravi-bhakti* (C354).
+  surya('SURYA'),
+
+  /// The *kṣudra-devatā*: minor deities (vv. 75 and 76).
+  minor('MINOR'),
+
+  /// Candra, in the baseline's table.
+  chandra('CHANDRA'),
+
+  /// Sarasvatī, in the baseline's table.
+  saraswati('SARASWATI'),
+
+  /// Narasiṁha, in the baseline's table.
+  narasimha('NARASIMHA'),
+
+  /// Hanumān, in the baseline's table.
+  hanuman('HANUMAN'),
+
+  /// Dattātreya, in the baseline's table.
+  dattatreya('DATTATREYA'),
+
+  /// Śani, in the baseline's table.
+  shani('SHANI'),
+
+  /// Kṛṣṇa, in the baseline's table.
+  krishna('KRISHNA'),
+
+  /// Bṛhaspati, in the baseline's table.
+  brihaspati('BRIHASPATI');
+
+  const IshtaDeity(this.key);
+
+  @override
+  final String key;
+}
+
+/// Why a graha is a subject of a remedy.
+enum RemedyReason implements _Keyed {
+  /// It is the running mahādaśā's lord.
+  mahadasha('MAHADASHA'),
+
+  /// It is the running antardaśā's lord.
+  antardasha('ANTARDASHA'),
+
+  /// It stands in its sign of debilitation.
+  debilitated('DEBILITATED'),
+
+  /// It is combust.
+  combust('COMBUST'),
+
+  /// It stands in the 6th, 8th or 12th from the lagna.
+  dusthana('DUSTHANA'),
+
+  /// Its lordships make it a malefic for the lagna (step 1).
+  functionalMalefic('FUNCTIONAL_MALEFIC'),
+
+  /// It owns the 2nd or the 7th (*Laghu Parashari* vv. 23–25).
+  maraka('MARAKA'),
+
+  /// It owns the badhaka house.
+  badhakesha('BADHAKESHA');
+
+  const RemedyReason(this.key);
+
+  @override
+  final String key;
+}
+
+/// A condition an antardaśā's śānti is given under. Houses are counted
+/// from the lagna unless a variant says otherwise.
+enum DashaShantiCondition implements _Keyed {
+  /// The antardaśā lord is the lord of the 2nd or the 7th
+  /// (*dvitīya-dyūna-nātha*, *dvitīya-saptamādhīśa*): 53 rows. Four
+  /// rows print *dvitīye dyūna-nāthe* as two words, which is read as
+  /// the same compound (C348).
+  lordOfSecondOrSeventh('LORD_OF_SECOND_OR_SEVENTH'),
+
+  /// The antardaśā lord is the lord of the 7th
+  /// (*saptamādhipa-doṣeṇa*).
+  lordOfSeventh('LORD_OF_SEVENTH'),
+
+  /// The antardaśā graha stands in the 2nd or the 7th.
+  inSecondOrSeventh('IN_SECOND_OR_SEVENTH'),
+
+  /// It stands in the 2nd, the 7th or the 8th
+  /// (*dvitīya-dyūna-randhra-sthe*, Moon/Saturn).
+  inSecondSeventhOrEighth('IN_SECOND_SEVENTH_OR_EIGHTH'),
+
+  /// The 2nd or 7th lord, "*randhra-riṣpha-samanvite*": with the 8th
+  /// or the 12th. The verse does not say whether that means placed
+  /// there or joined with their lords.
+  withEighthOrTwelfth('WITH_EIGHTH_OR_TWELFTH'),
+
+  /// "*dvitīye dyūna-nāthe tu randhre randhrādhipo yadā*"
+  /// (Moon/Mars): the 2nd or 7th lord, when the 8th lord is in the
+  /// 8th.
+  eighthLordInEighth('EIGHTH_LORD_IN_EIGHTH'),
+
+  /// In the 6th or the 8th from the mahādaśā lord, or debilitated, or
+  /// joined with a malefic (Sun/Jupiter).
+  sixthOrEighthFromDashaLordOrWeak('SIXTH_OR_EIGHTH_FROM_DASHA_LORD_OR_WEAK'),
+
+  /// In the 6th, 8th or 12th from the mahādaśā lord **and** joined
+  /// with a malefic (Mars/Saturn).
+  dusthanaFromDashaLordWithMalefic('DUSTHANA_FROM_DASHA_LORD_WITH_MALEFIC'),
+
+  /// The node in the 2nd or the 7th **and** joined with that house's
+  /// lord (Sun/Rahu).
+  inSecondOrSeventhWithItsLord('IN_SECOND_OR_SEVENTH_WITH_ITS_LORD'),
+
+  /// "*dvitīya-dyūna-nāthena saṃbandhe tatra saṃsthite*" (Ketu/Ketu):
+  /// related to the 2nd or 7th lord and placed there.
+  relatedToSecondOrSeventhLord('RELATED_TO_SECOND_OR_SEVENTH_LORD'),
+
+  /// "*nidhanādhipa-doṣeṇa*", the 8th lord's fault, joined with the
+  /// 2nd or 7th lord (Ketu/Moon).
+  eighthLordWithSecondOrSeventhLord('EIGHTH_LORD_WITH_SECOND_OR_SEVENTH_LORD'),
+
+  /// The node joined with the lords of the 2nd and the 7th
+  /// (Saturn/Rahu).
+  withSecondOrSeventhLords('WITH_SECOND_OR_SEVENTH_LORDS'),
+
+  /// The lord of the 8th or the 7th, or standing in the 2nd
+  /// (Saturn/Mars).
+  lordOfEighthOrSeventhOrInSecond('LORD_OF_EIGHTH_OR_SEVENTH_OR_IN_SECOND'),
+
+  /// The lord of the 2nd and the 6th, as the 1923 print reads
+  /// Jupiter/Moon. The 1899 print reads *ṣaṣṭhamādhīśe*, which is not
+  /// a well-formed compound and is one syllable from *saptamādhīśe*,
+  /// "the 7th lord" (C349).
+  lordOfSecondAndSixth('LORD_OF_SECOND_AND_SIXTH'),
+
+  /// "*dvitīya-dyūna-nāthe tu saptama-sthānam āśritaḥ*" (Rahu/Rahu):
+  /// a locative, then a nominative, so the verse does not say which
+  /// stands in the 7th.
+  secondOrSeventhLordInSeventh('SECOND_OR_SEVENTH_LORD_IN_SEVENTH'),
+
+  /// The 2nd or 7th lord, then "*yutekṣite*", joined or aspected,
+  /// without naming by what (Jupiter/Venus).
+  joinedOrAspected('JOINED_OR_ASPECTED');
+
+  const DashaShantiCondition(this.key);
+
+  @override
+  final String key;
+}
+
+/// A rite or gift an antardaśā's śānti prescribes, keyed by the verse's
+/// own words.
+enum DashaRemedy implements _Keyed {
+  /// *mṛtyuñjaya-japa*: the Mṛtyuñjaya mantra.
+  mrityunjayaJapa('MRITYUNJAYA_JAPA'),
+
+  /// *mahā-mṛtyuñjaya-japa*.
+  mahaMrityunjayaJapa('MAHA_MRITYUNJAYA_JAPA'),
+
+  /// *rudra-jāpya*.
+  rudraJapa('RUDRA_JAPA'),
+
+  /// *durgā-japa*.
+  durgaJapa('DURGA_JAPA'),
+
+  /// *durgā-devī-japa*.
+  durgaDeviJapa('DURGA_DEVI_JAPA'),
+
+  /// *durgā-lakṣmī-japa*.
+  durgaLakshmiJapa('DURGA_LAKSHMI_JAPA'),
+
+  /// *durgā-pāṭha*: the Durgā text recited.
+  durgaPatha('DURGA_PATHA'),
+
+  /// *viṣṇu-sāhasraka*: Viṣṇu's thousand names.
+  vishnuSahasranama('VISHNU_SAHASRANAMA'),
+
+  /// *śiva-sāhasraka*: Śiva's thousand names.
+  shivaSahasranama('SHIVA_SAHASRANAMA'),
+
+  /// *āditya-hṛdaya*: the hymn to the Sun.
+  adityaHridayaJapa('ADITYA_HRIDAYA_JAPA'),
+
+  /// *iṣṭa-jāpya*: japa to one's chosen deity.
+  ishtaJapa('ISHTA_JAPA'),
+
+  /// "*subrahma-japa-dāna*" as printed (Sun/Mars); the word is unclear
+  /// and is kept as it stands (C348).
+  subrahmaJapaDana('SUBRAHMA_JAPA_DANA'),
+
+  /// *śānti*, by rule (*yathāvidhi*, *vidhivat*, *vidhānataḥ*).
+  shanti('SHANTI'),
+
+  /// A śānti by one's own *gṛhya* rules.
+  grihyaShanti('GRIHYA_SHANTI'),
+
+  /// *śānti-homa*.
+  shantiHoma('SHANTI_HOMA'),
+
+  /// *ayuta-homa*: ten thousand oblations.
+  ayutaHoma('AYUTA_HOMA'),
+
+  /// *tila-homa*: oblations of sesame.
+  tilaHoma('TILA_HOMA'),
+
+  /// *darśa-śānti*, as both prints read Ketu/Sun: a śānti of the new
+  /// moon (C350).
+  darshaShanti('DARSHA_SHANTI'),
+
+  /// A rite pleasing the Sun (*sūrya-prīti*).
+  suryaPriti('SURYA_PRITI'),
+
+  /// *sūrya-pūjā*.
+  suryaPuja('SURYA_PUJA'),
+
+  /// A rite pleasing the Moon (*candra-prītikara*).
+  chandraPriti('CHANDRA_PRITI'),
+
+  /// A gift pleasing Mercury (*budha-prītikara dāna*).
+  budhaPritiDana('BUDHA_PRITI_DANA'),
+
+  /// *śiva-pūjā*.
+  shivaPuja('SHIVA_PUJA'),
+
+  /// *brāhmaṇa-arcana*: worship of a Brahmin.
+  brahmanaArcana('BRAHMANA_ARCANA'),
+
+  /// Feeding gods and Brahmins.
+  devaBrahmanaBhojana('DEVA_BRAHMANA_BHOJANA'),
+
+  /// *chāga*: a goat.
+  chagaDana('CHAGA_DANA'),
+
+  /// *śvetā gauḥ* and *mahiṣī*: a white cow and a she-buffalo, which
+  /// the text always gives together.
+  shvetaGoMahishi('SHVETA_GO_MAHISHI'),
+
+  /// *kṛṣṇā gauḥ* and *mahiṣī*: a black cow and a she-buffalo.
+  krishnaGoMahishi('KRISHNA_GO_MAHISHI'),
+
+  /// *śvetā gauḥ* and *rajata*: a white cow and silver (Moon/Venus).
+  shvetaGoRajata('SHVETA_GO_RAJATA'),
+
+  /// *go-dāna*: a cow.
+  goDana('GO_DANA'),
+
+  /// *dhenu*: a milch cow.
+  dhenuDana('DHENU_DANA'),
+
+  /// Tawny (*kapila*) cows.
+  kapilaGoDana('KAPILA_GO_DANA'),
+
+  /// *svarṇa-dhenu*: a cow of gold.
+  svarnaDhenu('SVARNA_DHENU'),
+
+  /// Cow, land and gold.
+  goBhuHiranyaDana('GO_BHU_HIRANYA_DANA'),
+
+  /// *anaḍvān*: a draught bull.
+  anadvanDana('ANADVAN_DANA'),
+
+  /// *aśva*: a horse.
+  ashvaDana('ASHVA_DANA'),
+
+  /// *nāga-dāna*: an image of a serpent.
+  nagaDana('NAGA_DANA'),
+
+  /// *svarṇa*, *hiraṇya*: gold.
+  svarnaDana('SVARNA_DANA'),
+
+  /// An image of gold.
+  svarnaPratimaDana('SVARNA_PRATIMA_DANA'),
+
+  /// An image of silver.
+  rajataPratimaDana('RAJATA_PRATIMA_DANA'),
+
+  /// *anna*: food.
+  annaDana('ANNA_DANA'),
+
+  /// *vastra*: cloth.
+  vastraDana('VASTRA_DANA'),
+
+  /// Jaggery, ghee, curd and rice.
+  gudaGhritaDadhiTandula('GUDA_GHRITA_DADHI_TANDULA');
+
+  const DashaRemedy(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which scheme judges the grahas' functional natures.
+final class FunctionalRules extends _Value {
+  const FunctionalRules({this.scheme = FunctionalScheme.laghuParashari});
+
+  final FunctionalScheme scheme;
+
+  Map<String, Object?> get _record => {'scheme': scheme.key};
+
+  @override
+  List<Object?> get _fields => [scheme];
+}
+
+/// Which text's ṛk Rahu's śānti gives.
+final class ShantiRules extends _Value {
+  const ShantiRules({this.rik = RikSource.bphs});
+
+  final RikSource rik;
+
+  Map<String, Object?> get _record => {'rik': rik.key};
+
+  @override
+  List<Object?> get _fields => [rik];
+}
+
+/// Whom the Sun with Ketu is devoted to (C354).
+final class DevataRules extends _Value {
+  const DevataRules({this.sunWithKetu = SunWithKetu.shiva});
+
+  final SunWithKetu sunWithKetu;
+
+  Map<String, Object?> get _record => {'sunWithKetu': sunWithKetu.key};
+
+  @override
+  List<Object?> get _fields => [sunWithKetu];
+}
+
+/// The readings remedies are given under, one knob per crux, the texts'
+/// own by default (`03-design/remedies.md`).
+final class RemedyRules extends _Value {
+  const RemedyRules({
+    this.functional = const FunctionalRules(),
+    this.shanti = const ShantiRules(),
+    this.devata = const DevataRules(),
+  });
+
+  final FunctionalRules functional;
+  final ShantiRules shanti;
+  final DevataRules devata;
+
+  Map<String, Object?> get _record => {
+    'functional': functional._record,
+    'shanti': shanti._record,
+    'devata': devata._record,
+  };
+
+  @override
+  List<Object?> get _fields => [functional, shanti, devata];
+}
+
+/// The remedies to read in every chart of a request
+/// (`03-design/remedies.md`). An [at] reads the Vimśottarī periods running
+/// then, so it asks for that daśā too.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */
+///     remedies: const RemedyRequest(at: 2460676.5,
+///         rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya))));
+/// final whom = chart.remedies?.subjects.subjects;
+/// ```
+final class RemedyRequest {
+  const RemedyRequest({this.at, this.rules = const RemedyRules()});
+
+  /// The instant, a Julian day in UT, whose running mahādaśā and
+  /// antardaśā are read; none when null, and refused by `remedies.at`
+  /// when not finite.
+  final double? at;
+
+  /// The readings.
+  final RemedyRules rules;
+
+  String get _json {
+    final instant = at;
+    if (instant != null && !instant.isFinite) {
+      throw ArgumentError.value(instant, 'remedies.at', 'a finite Julian day');
+    }
+    return jsonEncode(<String, Object?>{
+      if (instant != null) 'at': instant,
+      'rules': rules._record,
+    });
+  }
+}
+
+/// A Laghu Parashari clause that made a graha's nature, and the house it
+/// read.
+final class FunctionalClause extends _Value {
+  const FunctionalClause({required this.kind, required this.house});
+
+  final FunctionalClauseKind kind;
+  final int house;
+
+  @override
+  List<Object?> get _fields => [kind, house];
+}
+
+/// What the lagna's lordships make of one graha.
+final class FunctionalRow extends _Value {
+  const FunctionalRow({
+    required this.graha,
+    required this.houses,
+    required this.clauses,
+    required this.nature,
+  });
+
+  final Graha graha;
+
+  /// The houses it lords, counted from the lagna.
+  final List<int> houses;
+  final List<FunctionalClause> clauses;
+  final FunctionalNature nature;
+
+  @override
+  List<Object?> get _fields => [graha, houses, clauses, nature];
+}
+
+/// The bādhaka house, the 11th from a movable lagna, the 9th from a fixed
+/// and the 7th from a dual, and its lord.
+final class Badhaka extends _Value {
+  const Badhaka({required this.house, required this.lord});
+
+  final int house;
+  final Graha lord;
+
+  @override
+  List<Object?> get _fields => [house, lord];
+}
+
+/// What a lagna's lordships make of the seven grahas (Laghu Parashari).
+final class Functional extends _Value {
+  const Functional({
+    required this.lagna,
+    required this.scheme,
+    required this.rows,
+    required this.yogakarakas,
+    required this.marakas,
+    required this.badhaka,
+  });
+
+  final Rashi lagna;
+  final FunctionalScheme scheme;
+
+  /// The seven grahas that own signs, Sun to Saturn.
+  final List<FunctionalRow> rows;
+  final List<Graha> yogakarakas;
+
+  /// The lords of the 2nd and the 7th (LP v. 23).
+  final List<Graha> marakas;
+  final Badhaka badhaka;
+
+  @override
+  List<Object?> get _fields => [
+    lagna,
+    scheme,
+    rows,
+    yogakarakas,
+    marakas,
+    badhaka,
+  ];
+}
+
+/// A graha a remedy is for, and every reason.
+final class RemedySubject extends _Value {
+  const RemedySubject({required this.graha, required this.reasons});
+
+  final Graha graha;
+  final List<RemedyReason> reasons;
+
+  @override
+  List<Object?> get _fields => [graha, reasons];
+}
+
+/// What BPHS prints for one antardaśā.
+final class DashaShanti extends _Value {
+  const DashaShanti({
+    required this.mahadasha,
+    required this.antardasha,
+    required this.chapter,
+    required this.verses,
+    required this.page,
+    required this.conditions,
+    required this.remedies,
+  });
+
+  final Graha mahadasha;
+  final Graha antardasha;
+  final int chapter;
+
+  /// The verses that hold the condition and the rite.
+  final String verses;
+
+  /// The printed page.
+  final int page;
+
+  /// The conditions, any of which brings the evil; empty when the verses
+  /// name none.
+  final List<DashaShantiCondition> conditions;
+
+  /// The rites, all of which are prescribed; empty when none is printed.
+  final List<DashaRemedy> remedies;
+
+  @override
+  List<Object?> get _fields => [
+    mahadasha,
+    antardasha,
+    chapter,
+    verses,
+    page,
+    conditions,
+    remedies,
+  ];
+}
+
+/// The running antardaśā's śānti and whether each condition holds.
+final class AntardashaShanti extends _Value {
+  const AntardashaShanti({required this.shanti, required this.holds});
+
+  final DashaShanti shanti;
+
+  /// Whether each condition holds, in the printed order: null where the
+  /// verse leaves it open (C348, C351).
+  final List<bool?> holds;
+
+  @override
+  List<Object?> get _fields => [shanti, holds];
+}
+
+/// Whom a remedy is for.
+final class RemedySubjects extends _Value {
+  const RemedySubjects({required this.subjects, required this.antardasha});
+
+  /// Each graha with at least one reason, in catalogue order, unranked.
+  final List<RemedySubject> subjects;
+
+  /// The running antardaśā's śānti; null without [RemedyRequest.at].
+  final AntardashaShanti? antardasha;
+
+  @override
+  List<Object?> get _fields => [subjects, antardasha];
+}
+
+/// A graha's śānti (BPHS ch. 84).
+final class Shanti extends _Value {
+  const Shanti({
+    required this.graha,
+    required this.image,
+    required this.rik,
+    required this.japaThousands,
+    required this.samidh,
+    required this.food,
+    required this.dakshina,
+    required this.gem,
+    required this.substance,
+    required this.direction,
+    required this.mandala,
+  });
+
+  final Graha graha;
+
+  /// The material its image is made of (BPHS 84.4).
+  final ImageMaterial image;
+
+  /// Its ṛk's opening words in IAST, as BPHS 84.17–18 prints them, or
+  /// Yājñavalkya I.301 for Rahu under [RikSource.yajnavalkya].
+  final String rik;
+
+  /// Its japa count in thousands (BPHS 84.19–20).
+  final int japaThousands;
+  final Samidh samidh;
+  final ShantiFood food;
+  final Dakshina dakshina;
+  final Gem gem;
+
+  /// The substance it rules (Brihat Jataka II.12); null for the nodes.
+  final Substance? substance;
+
+  /// Its direction (Brihat Jataka II.5); null for Ketu, which the verse
+  /// leaves out (C345).
+  final Direction? direction;
+
+  /// Its place in the Matsya maṇḍala.
+  final MandalaPlace mandala;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    image,
+    rik,
+    japaThousands,
+    samidh,
+    food,
+    dakshina,
+    gem,
+    substance,
+    direction,
+    mandala,
+  ];
+}
+
+/// A graha in the 12th from the kārakāṁśa, and the deities its verse names.
+final class Devotion extends _Value {
+  const Devotion({
+    required this.graha,
+    required this.deities,
+    required this.verse,
+    required this.withKetu,
+  });
+
+  final Graha graha;
+
+  /// The deities its verse names, either of them where it says *vā*.
+  final List<IshtaDeity> deities;
+
+  /// The verse, in the 1923 print's ch. 9.
+  final int verse;
+
+  /// Whether Ketu stands in the same sign (C355); always false of the
+  /// nodes.
+  final bool withKetu;
+
+  @override
+  List<Object?> get _fields => [graha, deities, verse, withKetu];
+}
+
+/// The 12th from the kārakāṁśa in one chart, read as BPHS vv. 70–76 read
+/// it.
+final class IshtaDevata extends _Value {
+  const IshtaDevata({
+    required this.rules,
+    required this.sign,
+    required this.devotions,
+    required this.minor,
+  });
+
+  final DevataRules rules;
+
+  /// The 12th sign from the kārakāṁśa.
+  final Rashi sign;
+
+  /// Each graha in it with its devotion, in catalogue order; empty when the
+  /// sign is empty.
+  final List<Devotion> devotions;
+
+  /// Saturn or Venus there in a sign a natural malefic rules: devotion to
+  /// minor deities (vv. 75–76).
+  final List<Graha> minor;
+
+  @override
+  List<Object?> get _fields => [rules, sign, devotions, minor];
+}
+
+/// The ishṭa-devatā, in the rāśi chart and in the navāṁśa.
+final class IshtaDevatas extends _Value {
+  const IshtaDevatas({
+    required this.atmakaraka,
+    required this.karakamsha,
+    required this.inRasi,
+    required this.inNavamsha,
+  });
+
+  final Graha atmakaraka;
+  final Rashi karakamsha;
+  final IshtaDevata inRasi;
+  final IshtaDevata inNavamsha;
+
+  @override
+  List<Object?> get _fields => [atmakaraka, karakamsha, inRasi, inNavamsha];
+}
+
+/// A chart's remedies: whom to propitiate, why and how, and the chosen
+/// deity (`03-design/remedies.md`).
+final class Remedies {
+  const Remedies({
+    required this.rules,
+    required this.functional,
+    required this.subjects,
+    required this.shantis,
+    required this.ishtaDevata,
+  });
+
+  /// The readings it was given under, every member filled.
+  final RemedyRules rules;
+  final Functional functional;
+  final RemedySubjects subjects;
+
+  /// The graha-śānti of each subject, in their order.
+  final List<Shanti> shantis;
+  final IshtaDevatas ishtaDevata;
 }
 
 /// A return's own chart, read down to what Tajika reads from it.
@@ -16840,6 +18072,16 @@ final class Chart {
   /// (`03-design/prashna.md`).
   Prashna? get prashna {
     final all = _prashnasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart's remedies: what the lagna's lordships make of the seven
+  /// grahas, whom a remedy is for and why, each subject's graha-śānti, the
+  /// running antardaśā's śānti under [RemedyRequest.at], and the
+  /// ishṭa-devatā in both charts. Null unless `remedies` asked for them
+  /// (`03-design/remedies.md`).
+  Remedies? get remedies {
+    final all = _remediesOf(batch);
     return index < all.length ? all[index] : null;
   }
 

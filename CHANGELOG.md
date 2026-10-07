@@ -2290,6 +2290,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   A document without that daśā is refused by `dashas`.
   `RemedyRequest::from_json` reads the record a binding will send.
   **Numbers:** none move.
+- **Remedies in every binding** (`remedies.md`). A chart request's
+  `remedies` record (`{at, rules}`) reads every chart's remedies, and
+  asks for the Vimśottarī daśā itself when `at` is given. The C ABI gains
+  `remedies_json` on `ts_chart_request` and section 121 `remedies`,
+  canonical JSON with one answer a chart. Node answers `chart.remedies`
+  with catalogue keys in full, Python with frozen dataclasses over
+  catalogue members, and Dart with final classes over its own enums. Its
+  deities are `IshtaDeity` in Node and Dart, because the catalogue's
+  `Deity` is the nakshatras' own. A refusal names the field under
+  `remedies`, and Dart refuses a non-finite `at` before it is sent. The
+  five parity runners print every nature, subject, śānti and devotion,
+  and they agree. **Numbers:** none move.
 - **Prashna in every binding** (`prashna.md` step 4). A chart request's
   `prashna` record (`{question: {house, number}, rules}`) reads every
   chart of a batch as the chart of its question's moment, and asks for the
