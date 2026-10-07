@@ -1,7 +1,8 @@
 //! The rules the SDK ships as data (`03-design/rules-engine.md`).
 //!
 //! [`arishtas`] holds the evils at birth and their antidotes: BPHS chs. 9
-//! and 10, Brihat Jataka ch. 6 and Saravali chs. 10 to 12.
+//! and 10, Brihat Jataka ch. 6, Saravali chs. 10 to 12 and Jataka Parijata
+//! ch. 4.
 //! [`gandantas`] holds the three gandantas of BPHS ch. 92 and its Abhukta
 //! Moola, the SDK's first rules read from a text rather than mirrored from an
 //! implementation. [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
@@ -46,6 +47,8 @@ const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 /// Kalyana Varma's evils at birth, Saravali ch. 10, each with its life span.
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
+/// Jataka Parijata ch. 4's evils at birth, their years and their antidotes.
+const PARIJATA: &str = include_str!("../rules/classical-parijata.json");
 /// The Nabhasa yogas of BPHS ch. 35.
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
 /// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
@@ -70,6 +73,8 @@ const RAJA: &str = include_str!("../rules/classical-raja.json");
 const MARANA: &str = include_str!("../rules/classical-marana.json");
 /// BPHS ch. 43's combinations for the class of life.
 const AYUR: &str = include_str!("../rules/classical-ayur.json");
+/// Jataka Parijata ch. 4's middle and long lives.
+const PARIJATA_AYUR: &str = include_str!("../rules/classical-parijata-ayur.json");
 /// BPHS ch. 42's combinations for penury.
 const PENURY: &str = include_str!("../rules/classical-penury.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
@@ -116,6 +121,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PENURY));
     rules.append(&mut read(RAJA));
     rules.append(&mut read(AYUR));
+    rules.append(&mut read(PARIJATA_AYUR));
     rules.append(&mut read(MARANA));
     rules
 });
@@ -123,6 +129,7 @@ static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     let mut rules = read(ARISHTA);
     rules.append(&mut read(BALARISHTA));
     rules.append(&mut read(SARAVALI));
+    rules.append(&mut read(PARIJATA));
     rules
 });
 
@@ -230,7 +237,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (46, 3));
+        assert_eq!((strength, points), (57, 3));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -251,7 +258,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 1009);
+        assert_eq!(rules.len(), 1087);
         for rule in &rules {
             let rank = rule
                 .source

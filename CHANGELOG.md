@@ -2157,6 +2157,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Jataka Parijata ch. 4** (C319). Seventy-eight rules from Sastri's
+  1932 translation: 59 evils to the child, the mother and the father, 28 of
+  them with the span the verse gives (a month, two, or the year of death);
+  8 antidotes the evils name with Saravali's two Rahu rules; and 11 middle
+  and long lives with their `life-class`. Where the translation and the
+  printed Sanskrit part (vv. 25, 29), the Sanskrit is followed. **Numbers:**
+  none for an existing rule; a consumer asking for every arishta receives
+  the new ones.
 - **BPHS's strength-bound arishta verses.** Four rules ship that waited on
   a strength measure: ch. 9 v. 23's seven weak in the apoklimas, v. 26's
   Moon among malefics aspected by a strong one, and ch. 10 vv. 3 and 4's

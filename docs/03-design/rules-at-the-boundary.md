@@ -8,7 +8,7 @@ through `teistro::rules`, `teistro::RuleInputs` and the longevity readings.
 
 ## 1. Purpose and scope
 
-The kernel ships 1009 rules, a house reading, the dasha delivery of a result,
+The kernel ships 1087 rules, a house reading, the dasha delivery of a result,
 the three pairs, the three spans of life and the marakas. None of it is
 reachable outside Rust. This page decides how a consumer in any binding asks
 a chart for them and reads the answer.

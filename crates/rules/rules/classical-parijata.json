@@ -1,0 +1,5655 @@
+{
+  "rules": [
+    {
+      "key": "PARIJATA_MOON_IN_A_DUSTHANA_ASPECTED_BY_RAHU",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "4",
+        "rank": 1,
+        "note": "The Moon in the sixth, eighth or twelfth aspected by Rahu: the child dies, even with Jupiter in the lagna. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "RAHU",
+          "target": "MOON"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_AT_GANDANTA_WITH_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Moon in a nakshatra's gandanta portion, aspected by or joined with a malefic: early death. The verse's second figure, the Moon at her mrityu bhaga under a malefic's aspect, reads ch. 1 v. 57's table, which the arishta packs do not name. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-at-gandanta",
+          "planet": "MOON"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "MOON"
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": "MOON",
+              "except": [
+                "MOON"
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_IN_A_CRUEL_FIFTH_OR_NINTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "6",
+        "rank": 1,
+        "note": "The fifth or the ninth a cruel (odd) sign and occupied by the Sun: the father dies soon. The verse gives one relation to each of the seven; the brother, the maternal uncle and the mother's parents have no category and are not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SUN",
+          "houses": [
+            5,
+            9
+          ],
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_IN_A_CRUEL_FIFTH_OR_NINTH",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "6",
+        "rank": 1,
+        "note": "The fifth or the ninth a cruel (odd) sign and occupied by the Moon: the mother dies soon. The verse gives one relation to each of the seven; the brother, the maternal uncle and the mother's parents have no category and are not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MOON",
+          "houses": [
+            5,
+            9
+          ],
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_CRUEL_FIFTH_OR_NINTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "6",
+        "rank": 1,
+        "note": "The fifth or the ninth a cruel (odd) sign and occupied by the Saturn: the child itself dies soon. The verse gives one relation to each of the seven; the brother, the maternal uncle and the mother's parents have no category and are not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SATURN",
+          "houses": [
+            5,
+            9
+          ],
+          "signs": [
+            "ARIES",
+            "GEMINI",
+            "LEO",
+            "LIBRA",
+            "SAGITTARIUS",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_AND_MOON_FOURTH_SATURN_SEVENTH",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Sun and the Moon together in the fourth and Saturn in the seventh: the mother dies. The second half, a malefic in the sixth for a brother, has no category and is not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LAGNA_AND_MOON_AFFLICTED_JUPITER_OUT_OF_THE_KENDRAS",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lagna and the Moon aspected by malefics, neither aspected by nor joined with a benefic, and Jupiter not in a kendra: the mother dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-house",
+          "from": "any-malefic",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1,
+            "from": "MOON",
+            "except": [
+              "MOON"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-kendra",
+            "planet": "JUPITER"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_WITH_SATURN_SUN_TWELFTH_MARS_FOURTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "9",
+        "rank": 1,
+        "note": "The Moon joined with Saturn, the Sun in the twelfth and Mars in the fourth: the mother perishes with the child. The OCR's \"1 ah\" is the twelfth (\u0930\u093f\u0903\u092b\u0917\u0943\u0939) on the page. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "MOON",
+            "SATURN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LAGNA_AND_MOON_HEMMED_UNASPECTED",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "10",
+        "rank": 1,
+        "note": "The lagna and the Moon each between malefics and devoid of benefic aspect: the mother and the child die, together or apart. The translator's note bounds the hemming within 5\u00b0, which the verse does not. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                2
+              ],
+              "atLeast": 1,
+              "from": "MOON",
+              "except": [
+                "MOON"
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                12
+              ],
+              "atLeast": 1,
+              "from": "MOON",
+              "except": [
+                "MOON"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-benefic",
+            "houseRuled": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFICS_IN_THE_DUSTHANAS_VENUS_OR_JUPITER_HEMMED",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "11",
+        "rank": 1,
+        "note": "Malefics in the sixth, the eighth and the twelfth with no benefic among them, and Venus or Jupiter between malefics: the mother and the child die forthwith. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              6,
+              8,
+              12
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1,
+                  "from": "VENUS",
+                  "except": [
+                    "VENUS"
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1,
+                  "from": "VENUS",
+                  "except": [
+                    "VENUS"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1,
+                  "from": "JUPITER",
+                  "except": [
+                    "JUPITER"
+                  ]
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1,
+                  "from": "JUPITER",
+                  "except": [
+                    "JUPITER"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFIC_FOURTH_FROM_THE_MOON_UNRELIEVED",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "13",
+        "rank": 1,
+        "note": "A malefic in the fourth from the Moon, not aspected by or joined with a benefic: the mother dies. v. 12, the lord of the month of pregnancy, reads the conception and is not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "MOON",
+                "houses": [
+                  4
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": "SELF"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              4
+            ],
+            "atLeast": 1,
+            "from": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFICS_TENTH_FROM_THE_MOON_WITH_THE_SUN",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "13",
+        "rank": 1,
+        "note": "Malefics in the tenth from the Moon with the Sun among them: the mother dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "MOON",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 2,
+          "from": "MOON"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_STRONG_SUN_THIRD_FROM_VENUS_WITH_SATURN",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "14",
+        "rank": 1,
+        "note": "A strong Sun in the third from Venus, aspected by or joined with Saturn, and the Moon waning or with a malefic: the mother and the child die quickly. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SUN",
+          "reference": "VENUS",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "SUN"
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "SATURN"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "panchanga-paksha",
+              "paksha": "krishna"
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": "MOON",
+              "except": [
+                "MOON"
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_OR_MARS_EIGHTH_WANING_MOON_AFFLICTED",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "15",
+        "rank": 1,
+        "note": "The Sun or Mars in the eighth, and the waning Moon aspected by malefics and by no benefic: the mother dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                8
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                8
+              ]
+            }
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MARS_OR_SATURN_TRINE_FROM_VENUS_OR_THE_MOON",
+      "category": "arishta-mother",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "16",
+        "rank": 1,
+        "note": "By day Mars in the fifth or ninth from Venus, by night Saturn in the fifth or ninth from the Moon, and the Moon weak, aspected by malefics and by no benefic: the mother dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "MARS",
+                  "reference": "VENUS",
+                  "houses": [
+                    5,
+                    9
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "SATURN",
+                  "reference": "MOON",
+                  "houses": [
+                    5,
+                    9
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_AND_SATURN_TWELFTH_WANING_MOON_SEVENTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "19",
+        "rank": 1,
+        "note": "The Sun and Saturn in the twelfth and the waning Moon in the seventh: the father is lost quickly, or in three years when a benefic aspects the Moon. The two times are the verse's and the rule holds for both. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_AND_SATURN_IN_A_MOVABLE_SIGN",
+      "category": "arishta-father",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "20",
+        "rank": 1,
+        "note": "Saturn and the Sun together in a movable sign: the father goes abroad and dies there. The first half, a night birth with the Moon in a movable sign aspected by Mercury, sends the father on a journey and is not an arishta. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "SUN",
+            "SATURN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_WANING_MOON_IN_LAGNA_MALEFIC_IN_A_KENDRA_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "21",
+        "rank": 1,
+        "note": "The waning Moon in the lagna and a malefic in a kendra or the eighth: the child dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10,
+            8
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_BENEFIC_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "21",
+        "rank": 1,
+        "note": "A benefic in the eighth or the sixth aspected by a malefic: the child goes to Yama's abode. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "benefic"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6,
+                  8
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-malefic",
+                "target": "SELF"
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_MARS_SUN_TOGETHER_IN_SIXTH_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "22",
+        "rank": 1,
+        "note": "Saturn, Mars and the Sun together in the eighth or the sixth, neither joined with nor aspected by a benefic: the child dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "SATURN",
+            "MARS",
+            "SUN"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1,
+            "from": "SUN",
+            "except": [
+              "SUN"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SUN"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "MARS"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SATURN"
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MARS_SEVENTH_IN_A_CANCER_NAVAMSHA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "23",
+        "rank": 1,
+        "note": "Mars in the seventh in a navamsha the Moon owns, unaspected by benefics: the child dies when the Moon comes to the 77th nakshatra from the birth star, which is a day of the Moon's course and not a span. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MARS"
+          },
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MARS"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_MARS_SUN_IN_FIFTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "24",
+        "rank": 1,
+        "note": "Saturn, Mars and the Sun in the fifth: the child dies at the coming of the 77th star from the birth star. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MARS_IN_THE_MOONS_OR_LAGNAS_NAVAMSHA_MOON_FIFTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "25",
+        "rank": 1,
+        "note": "Mars in a navamsha the Moon owns or in the lagna's own navamsha (\u0932\u0917\u094d\u0928\u093e\u0902\u0936\u0915\u0947), unaspected by Jupiter, and the Moon in the fifth: the child dies quickly. The translation's \"or the rising sign\" is read as the Sanskrit's navamsha of the lagna. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": {
+                "navamsha": "MARS"
+              },
+              "signs": [
+                "CANCER"
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": {
+                "navamsha": "MARS"
+              },
+              "as": {
+                "navamsha": "LAGNA"
+              }
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "JUPITER",
+            "target": "MARS"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LAGNA_LORD_DEBILITATED_SATURN_FIFTH_OR_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "26",
+        "rank": 1,
+        "note": "The lagna lord debilitated and Saturn in the fifth or seventh: the child, almost still-born, dies after much suffering. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-debilitated",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5,
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_ANGULAR_AFFLICTED_NO_BENEFIC_IN_A_KENDRA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "28",
+        "rank": 1,
+        "note": "The Moon in the lagna, the sixth, the eighth or the twelfth, aspected by a malefic and by no benefic, and no benefic in a kendra: the child dies. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_ANGULAR_MOON_WATERY_BENEFICS_AWAY",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "29",
+        "rank": 1,
+        "note": "Saturn in the seventh or the lagna, the Moon in a watery lagna or in Scorpio, and the benefics away from the kendras: the Yavanas say the child dies quickly. The Sanskrit reads \u0915\u0947\u0928\u094d\u0926\u094d\u0930\u093e\u092a\u0917\u0924\u0947\u0937\u0941, the benefics gone from the kendras; the translation's \"in the Kendras\" is not followed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "MOON",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "CANCER",
+                    "SCORPIO",
+                    "PISCES"
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "planet-in-sign",
+              "planet": "MOON",
+              "signs": [
+                "SCORPIO"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MARS_SUN_SATURN_IN_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "31",
+        "rank": 1,
+        "note": "Mars, the Sun and Saturn in the eighth: the child dies in a month. v. 30 needs the twilight and is not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 1,
+          "unit": "months"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_KETU_IN_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "31",
+        "rank": 1,
+        "note": "Ketu in the lagna: the child passes off in two months. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "KETU",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 2,
+          "unit": "months"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_RETROGRADE_SATURN_ASPECTED_BY_A_STRONG_MARS",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "40",
+        "rank": 1,
+        "note": "A retrograde Saturn in a sign of Mars, a kendra, an enemy's sign or the eighth, aspected by a strong Mars: two years of life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-retrograde",
+          "planet": "SATURN"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-sign",
+              "planet": "SATURN",
+              "signs": [
+                "ARIES",
+                "SCORPIO"
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                1,
+                4,
+                7,
+                10,
+                8
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": "SATURN",
+              "dignities": [
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 2,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_JUPITER_EIGHTH_IN_A_SIGN_OF_MARS_ASPECTED_BY_FOUR",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "41",
+        "rank": 1,
+        "note": "Jupiter in a sign of Mars in the eighth, aspected by the Sun, the Moon, Mars and Saturn and not by Venus: death in three years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ],
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "JUPITER"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "VENUS",
+            "target": "JUPITER"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 3,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MERCURY_IN_CANCER_SIXTH_OR_EIGHTH_ASPECTED_BY_THE_MOON",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "42",
+        "rank": 1,
+        "note": "Cancer the sixth or the eighth, Mercury in it and the Moon aspecting him: death in four years, whatever the strength. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MERCURY",
+          "houses": [
+            6,
+            8
+          ],
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 4,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_FOUR_TOGETHER_WITH_THE_MOON_AND_MARS",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "43",
+        "rank": 1,
+        "note": "The Sun, the Moon, Mars and Jupiter in one sign; or Mars, Jupiter, Saturn and the Moon; or the Sun, Saturn, Mars and the Moon: death in five years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "MOON",
+                "MARS",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "JUPITER",
+                "SATURN",
+                "MOON"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "SATURN",
+                "MARS",
+                "MOON"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 5,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_CANCER_NAVAMSHA_LAGNA_LORD_ASPECTED_BY_THE_MOON",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "44",
+        "rank": 1,
+        "note": "Saturn in a navamsha the Moon owns, aspected by her, and the lagna lord aspected by her too: six years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 6,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_SATURN_MARS_IN_LAGNA_WANING_MOON_IN_A_VENUS_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "46",
+        "rank": 1,
+        "note": "The Sun, Saturn and Mars in the lagna, the seventh a sign of Venus holding the waning Moon, and Jupiter not aspecting her: death in seven or eight years. The verse names both, so no span is given. v. 45's named decanates (fetters, serpent, bird, noose) are not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MOON",
+          "houses": [
+            7
+          ],
+          "signs": [
+            "TAURUS",
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "JUPITER",
+            "target": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_MOON_MARS_IN_FIFTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "47",
+        "rank": 1,
+        "note": "The Sun, the Moon and Mars in the fifth: death in the ninth year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 9th year\" is before 9 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 9,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFIC_LAGNA_LORD_TWELFTH_FROM_THE_MOON",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "48",
+        "rank": 1,
+        "note": "The lagna lord a malefic, in the twelfth from the Moon and aspected by malefics: death in nine years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 1
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "lordOf": 1
+          },
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 9,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LAGNA_LORD_IN_THE_MOONS_NAVAMSHA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "48",
+        "rank": 1,
+        "note": "The lagna lord in the navamsha the Moon occupies, or itself the lord of that navamsha: death in nine years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "navamsha": {
+                  "lordOf": 1
+                }
+              },
+              "as": {
+                "navamsha": "MOON"
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": 1
+              },
+              "as": {
+                "lordOf": {
+                  "navamsha": "MOON"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 9,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_CAPRICORN_NAVAMSHA_ASPECTED_BY_MERCURY",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "49",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Capricorn, aspected by the mercury: the child lives ten years, hated since its birth. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 10,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_SCORPIO_NAVAMSHA_ASPECTED_BY_SUN",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "52",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Scorpio, aspected by the sun: twelve years, hated by the father; the verse asks for the Sun's aspect alone. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "SUN",
+              "target": "SATURN"
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "then": {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": "SATURN"
+                },
+                "planets": [
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "JUPITER",
+                  "VENUS",
+                  "RAHU",
+                  "KETU"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 12,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_LIBRA_NAVAMSHA_ASPECTED_BY_JUPITER",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "53",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Libra, aspected by the jupiter: disliked by the father, death in the 13th year; Jupiter's aspect alone. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 13th year\" is before 13 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SATURN"
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "for-any",
+                "then": {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": "SATURN"
+                },
+                "planets": [
+                  "SUN",
+                  "MOON",
+                  "MARS",
+                  "MERCURY",
+                  "VENUS",
+                  "RAHU",
+                  "KETU"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 13,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_VIRGO_NAVAMSHA_ASPECTED_BY_MERCURY",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "54",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Virgo, aspected by the mercury: ill-tempered, death in the 14th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 14th year\" is before 14 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 14,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_LEO_NAVAMSHA_ASPECTED_BY_RAHU",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "55",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Leo, aspected by the rahu: hurt by a weapon, death in the 15th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 15th year\" is before 15 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "RAHU",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 15,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_CANCER_NAVAMSHA_ASPECTED_BY_KETU",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "56",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Cancer, aspected by the ketu: hurt by a snake, death in the 16th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 16th year\" is before 16 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "KETU",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 16,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_GEMINI_NAVAMSHA_ASPECTED_BY_LAGNA_LORD",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "57",
+        "rank": 1,
+        "note": "Saturn in a navamsha of Gemini, aspected by the lagna lord: a hero in war, death in the 17th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 17th year\" is before 17 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "GEMINI"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 17,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MERCURY_WITH_THE_SUN_ASPECTED_BY_BENEFICS",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "50",
+        "rank": 1,
+        "note": "Mercury joined with the Sun and aspected by benefics: death in eleven years, though brought up in comfort. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "MERCURY",
+            "SUN"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 11,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_IN_LEO_SUN_AND_SATURN_EIGHTH_VENUS_ASPECTING",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "51",
+        "rank": 1,
+        "note": "The Sun lord of the Moon's sign and in the eighth with Saturn, Venus aspecting them: death in the 12th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 12th year\" is before 12 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "SUN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 12,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LORDS_OF_ONE_AND_EIGHT_EXCHANGED_NOT_BENEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "58",
+        "rank": 1,
+        "note": "The lords of the lagna and the eighth in each other's houses and neither a benefic: death in the 18th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 18th year\" is before 18 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 1,
+          "house2": 8
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-is",
+            "planet": {
+              "lordOf": 1
+            },
+            "class": "benefic"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-is",
+            "planet": {
+              "lordOf": 8
+            },
+            "class": "benefic"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 18,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_LORDS_OF_ONE_AND_EIGHT_NOT_BENEFIC_JUPITER_NOT_TWELFTH_OR_SIXTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "58",
+        "rank": 1,
+        "note": "The lords of the lagna and the eighth not benign and Jupiter in neither the twelfth nor the sixth: death in the 18th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 18th year\" is before 18 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-is",
+            "planet": {
+              "lordOf": 1
+            },
+            "class": "benefic"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-is",
+            "planet": {
+              "lordOf": 8
+            },
+            "class": "benefic"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-house",
+            "planet": "JUPITER",
+            "houses": [
+              6,
+              12
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 18,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_ASPECTED_BY_RAHU",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "59",
+        "rank": 1,
+        "note": "Saturn in a navamsha Jupiter owns, aspected by Rahu, and the lagna lord aspected by no benefic: the child dies at once; with the lagna lord exalted it lives nineteen years, which the next rule reads. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "RAHU",
+          "target": "SATURN"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": {
+              "lordOf": 1
+            },
+            "dignities": [
+              "EXALTED",
+              "DEEP_EXALTED"
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_A_JUPITER_NAVAMSHA_LAGNA_LORD_EXALTED",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "59",
+        "rank": 1,
+        "note": "The same figure with the lagna lord exalted: the child lives nineteen years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "RAHU",
+          "target": "SATURN"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 1
+          },
+          "dignities": [
+            "EXALTED",
+            "DEEP_EXALTED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 19,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFICS_IN_KENDRAS_UNASPECTED_MOON_SIXTH_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "60",
+        "rank": 1,
+        "note": "Malefics in the kendras that neither the Moon nor another benefic aspects, and the Moon in the sixth or the eighth: the child lives happily to the end of the 20th year. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-is",
+                  "planet": "SELF",
+                  "class": "malefic"
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1,
+                    4,
+                    7,
+                    10
+                  ]
+                },
+                {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "any-benefic",
+                      "target": "SELF"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": "MOON",
+                      "target": "SELF"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 20,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_WITH_JUPITER_IN_A_SCORPIO_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "61",
+        "rank": 1,
+        "note": "The Sun with Jupiter in the lagna, the lagna Scorpio, and the lord of the eighth in a kendra: death in the 22nd year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 22th year\" is before 22 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 8
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 22,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SATURN_IN_LAGNA_IN_AN_ENEMY_SIGN_BENEFICS_APOKLIMA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "62",
+        "rank": 1,
+        "note": "Saturn in the lagna in an enemy's sign and the benefics in the apoklimas: death in the 26th or the 27th year. The verse names both, so no span is given. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "ENEMY",
+            "GREAT_ENEMY"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            9,
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              2,
+              4,
+              5,
+              7,
+              8,
+              10,
+              11
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFIC_EIGHTH_LORD_ASPECTED_BY_JUPITER_AND_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "63",
+        "rank": 1,
+        "note": "The lord of the eighth a malefic, aspected by Jupiter and by a malefic, and the lord of the Moon's sign in the eighth: death in the 28th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 28th year\" is before 28 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-is",
+          "planet": {
+            "lordOf": 8
+          },
+          "class": "malefic"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "JUPITER",
+          "target": {
+            "lordOf": 8
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": {
+            "lordOf": 8
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": "MOON"
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 28,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_SUN_MOON_SATURN_IN_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "64",
+        "rank": 1,
+        "note": "The Sun in the eighth with the Moon and Saturn: death in the 29th year. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 29th year\" is before 29 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 29,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MOON_BETWEEN_THE_LORDS_OF_ONE_AND_EIGHT_JUPITER_TWELFTH",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "65",
+        "rank": 1,
+        "note": "The Moon between the lords of the lagna and the eighth, and Jupiter in the twelfth: death in the 27th or the 30th year. The verse names both, so no span is given. The translation's \"Janma Rasi\" is the Sanskrit's \u091c\u0928\u094d\u092e, read as the lagna. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 8
+                  },
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": {
+                    "lordOf": 8
+                  },
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_EIGHTH_LORD_IN_A_KENDRA_LAGNA_LORD_WEAK",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "66",
+        "rank": 1,
+        "note": "The lord of the eighth in a kendra and the lagna lord without strength: no fewer than thirty years, death in the 32nd. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 32th year\" is before 32 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 8
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 32,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_WANING_MOON_EIGHTH_LORD_WITH_A_MALEFIC_WEAK_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "67",
+        "rank": 1,
+        "note": "The Moon waning, the lord of the eighth with a malefic in a kendra or the eighth, and the lagna without strength and holding a malefic: death in the 32nd year. A chart whose strength does not reach the lagna never holds it. The verse gives the year the death falls in, so the span is the year it ends by: \"in the 32th year\" is before 32 completed. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-kendra",
+              "houseRuled": 8
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 8,
+              "houseOccupied": 8
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": {
+            "lordOf": 8
+          },
+          "except": [
+            {
+              "lordOf": 8
+            }
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": "LAGNA"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 32,
+          "unit": "years"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_MALEFIC_IN_A_DUSTHANA_LAGNA_LORD_WEAK_UNRELIEVED",
+      "category": "arishta",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "68",
+        "rank": 1,
+        "note": "A malefic in the sixth, eighth or twelfth, and the lagna lord weak and neither joined with nor aspected by a benefic: short-lived or childless. vv. 69 and 70 read the malefics' shadvargas and are not built; the scan lacks pp. 214 and 215, and vv. 71 to 73 are unread. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6,
+            8,
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1,
+            "from": {
+              "lordOf": 1
+            },
+            "except": [
+              {
+                "lordOf": 1
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS"
+        },
+        {
+          "type": "rule",
+          "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "PARIJATA_BHANGA_FULL_MOON_DIGNIFIED_AND_UNAFFLICTED",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "74",
+        "rank": 1,
+        "note": "The full Moon exalted, in her own sign or a friend's, aspected by a benefic and neither aspected by nor joined with a malefic: she destroys distress as the Sun destroys hoarfrost. The verse's vargas are read as signs, and \"full\" as the bright half. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "shukla"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "DEEP_EXALTED",
+            "EXALTED",
+            "MOOLTRIKONA",
+            "OWN_SIGN",
+            "GREAT_FRIEND",
+            "FRIEND"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1,
+            "from": "MOON",
+            "except": [
+              "MOON"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_MOON_SIXTH_OR_EIGHTH_BY_THE_PAKSHA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "75",
+        "rank": 1,
+        "note": "A night birth in the bright half or a day birth in the dark, the Moon in the sixth or eighth aspected by benefics and malefics: she protects the child like a father. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "shukla"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "krishna"
+                },
+                {
+                  "type": "birth-by-day"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_STRONG_JUPITER_IN_A_KENDRA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "76",
+        "rank": 1,
+        "note": "Jupiter in a kendra and of exceeding strength destroys a multitude of evils. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_OR_TRIKONA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "77",
+        "rank": 1,
+        "note": "The lagna lord strong in a kendra or a trikona: the child survives an evil conjunction. v. 78, some grahas exalted and others in their own signs, counts no number and is not built; vv. 79 and 80 are Saravali's Rahu, which ships, and the evils here name those two rules. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_BRIGHT_MOON_IN_A_BENEFICS_SIGN_ASPECTED_BY_BENEFICS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "81",
+        "rank": 1,
+        "note": "The Moon in a benefic's varga, aspected by benefics and shining full averts all ills, as Garuda removes poison. The varga is read as the sign, and \"full\" as the bright half. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "shukla"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES",
+            "TAURUS",
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_MOONS_DISPOSITOR_IN_LAGNA_ASPECTED_BY_BENEFICS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "82",
+        "rank": 1,
+        "note": "The lord of the Moon's sign in the lagna aspected by benefics averts the evil. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": "MOON"
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": {
+            "lordOf": "MOON"
+          }
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_EXALTED_MOON_ASPECTED_BY_VENUS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "82",
+        "rank": 1,
+        "note": "The Moon exalted and aspected by Venus averts the evil. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-dignity",
+          "planet": "MOON",
+          "dignities": [
+            "EXALTED",
+            "DEEP_EXALTED"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "MOON"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BHANGA_STRONG_LAGNA_LORD_IN_A_KENDRA_BENEFICS_ONLY",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "83",
+        "rank": 1,
+        "note": "The lagna lord of great strength in a kendra, aspected by benefics and not by malefics, wards off death and gives long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

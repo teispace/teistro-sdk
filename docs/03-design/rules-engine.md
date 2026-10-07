@@ -419,6 +419,33 @@ v. 3, a strong Jupiter in the lagna, answers 2, and v. 4, a strong lagna lord
 in a kendra (`{"lordOf": 1}`), answers 25. Every evil now names six antidotes,
 and the corpus's cancelled evils rose from 324 to 350.
 
+**Jataka Parijata ch. 4, the last arishta source (2026-10-07).** Read from
+V. Subrahmanya Sastri's 1932 translation (vol. I pp. 173 to 232), each verse
+against its page, the printed Sanskrit followed where the translation parts
+from it (C319). It ships as two packs: `classical-parijata.json`, 59 evils
+(the child, the mother and the father) and 8 antidotes, each evil naming the
+eight and Saravali's two Rahu antidotes, which the chapter repeats; and
+`classical-parijata-ayur.json`, eleven middle and long lives, each with its
+`life-class`. Twenty-eight evils carry a `life-span`: a month, two months, or
+the year the death falls in (C319). The chapter's own copies of other texts
+are not written twice: vv. 17, 18, 32 to 39 and 99 are Brihat Jataka's, and
+v. 27 is BPHS ch. 9 v. 23, all of which ship. What it asks and the language
+cannot say is recorded in the notes: the month lord of the pregnancy (v. 12),
+the twilight (v. 30), the named decanates (v. 45), the shadvargas (vv. 69 and
+70), a count of dignified grahas (v. 78), a chain of lords (v. 93), and the
+relations that have no category (the brother, the uncle). The scan lacks
+pp. 214, 215, 230 and 231, so vv. 71 to 73 and 100 to 104 are unread.
+
+Over the corpus, 31 of the 59 evils answer 1 to 27 charts and 28 answer none,
+and the new evils add 83 cancellations to the corpus's 350 (433), all their
+own, since a strong lagna lord in a kendra or trikona (v. 77, 29 charts) and a
+strong Jupiter in a kendra (v. 76, 17) are common. Each reference the pack is the first to use
+was probed alone before its zero was believed: the lagna lord as an aspect's
+target, the Moon's dispositor, the lagna's navamsha and the navamsha of
+Saturn all answer charts. One clause cannot: v. 67 asks the lagna's own
+strength, which no shipped measure reaches, so that rule holds nowhere and
+says why.
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's
@@ -1368,8 +1395,8 @@ condition is one sentence and a rule a passage carrying everything it holds
 beside its conditions, from one vocabulary that the trace reads too: a step
 now prints "holds: the lord of house 10 stands in a kendra" where it printed
 the schema's own `planet-in-kendra`. `cargo xtask rule-doc <pack|category|key>`
-prints the passages and the pass measures them: 1666 rules' 5544 conditions
-are written 2623 ways, which say 2619 things and read as 2619 sentences, so
+prints the passages and the pass measures them: 1744 rules' 6505 conditions
+are written 2792 ways, which say 2788 things and read as 2788 sentences, so
 no two meanings share a sentence. The three single-armed combinators it found
 in a shipped pack were simplified when it first ran.
 
