@@ -1,0 +1,54 @@
+---
+title: ts_numerology_profile
+description: "Reads a name and a birth date under numerology's two systems and answers with the profile as canonical JSON: the name under each system, word by word with every reduction step, Balliett's birth number, Cheiro's day and year, and the baseline engine's own numbers under the baseline rules only (`03-design/numerology.md`)."
+---
+
+Reads a name and a birth date under numerology's two systems and answers with the profile as canonical JSON: the name under each system, word by word with every reduction step, Balliett's birth number, Cheiro's day and year, and the baseline engine's own numbers under the baseline rules only (`03-design/numerology.md`).
+
+`request_json` is `{"name", "date", "rules"}`: the name in the 26 Latin letters, the date as `{"year", "month", "day"}` in the Gregorian calendar, and the `NumerologyRules` with every field optional. A character outside A to Z while `rules.nonLatin` refuses, a name with no letter, or a date the calendar does not have is `INVALID_ARG`, named under `numerology`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_numerology_profile(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.numerology_profile(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.numerologyProfile(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/numerology.rs`.

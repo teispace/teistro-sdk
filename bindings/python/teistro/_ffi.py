@@ -3851,6 +3851,13 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_naam_milan.restype = ctypes.c_int32
+        self.ts_numerology_profile: Any = library.ts_numerology_profile
+        self.ts_numerology_profile.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_numerology_profile.restype = ctypes.c_int32
         self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
         self.ts_ephemeris_manifest.argtypes = [
             ctypes.POINTER(_Context),
@@ -4555,6 +4562,35 @@ class TeistroContext:
         owned.clear()
         blob = _take_blob(self._lib, _out_blob)
         return blob
+
+    def numerology_profile(self, request_json: str) -> str:
+        """Reads a name and a birth date under numerology's two systems and
+        answers with the profile as canonical JSON: the name under each
+        system, word by word with every reduction step, Balliett's birth
+        number, Cheiro's day and year, and the baseline engine's own numbers
+        under the baseline rules only (`03-design/numerology.md`).
+
+        `request_json` is `{"name", "date", "rules"}`: the name in the 26
+        Latin letters, the date as `{"year", "month", "day"}` in the Gregorian
+        calendar, and the `NumerologyRules` with every field optional. A
+        character outside A to Z while `rules.nonLatin` refuses, a name with
+        no letter, or a date the calendar does not have is `INVALID_ARG`,
+        named under `numerology`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_numerology_profile(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
 
     def ephemeris_manifest(self) -> str:
         """What the context's engine says it offers beyond this library's own

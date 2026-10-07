@@ -1852,6 +1852,108 @@ export interface NaamMilan {
   readonly porutham: Porutham;
 }
 
+/**
+ * The readings numerology is computed under; each optional, each the
+ * source's own when absent (`03-design/numerology.md`, C320 to C328).
+ */
+export interface NumerologyRules {
+  /** Which totals stop a Pythagorean reduction: `'ELEVEN_TWENTY_TWO'` (Balliett, the default), `'NONE'`, or `'ELEVEN_TWENTY_TWO_THIRTY_THREE'` (the baseline's). */
+  readonly masters?: 'NONE' | 'ELEVEN_TWENTY_TWO' | 'ELEVEN_TWENTY_TWO_THIRTY_THREE';
+  /** Each word reduced and then added (`'BY_WORD'`, the default), or every letter added at once (`'WHOLE'`, the baseline's). */
+  readonly nameReduction?: 'BY_WORD' | 'WHOLE';
+  /** A Chaldean name's compound: its words' singles added (`'SUM_OF_SINGLES'`, Cheiro p. 72, the default), or its letters' total (`'LETTER_TOTAL'`, the baseline's). */
+  readonly chaldeanCompound?: 'SUM_OF_SINGLES' | 'LETTER_TOTAL';
+  /** The Pythagorean birth number: month, day and year each reduced (`'BY_PART'`, Balliett p. 19, the default), or every digit added (`'DIGIT_SUM'`, the baseline's). */
+  readonly birthReduction?: 'BY_PART' | 'DIGIT_SUM';
+  /** A character outside A to Z: `'REFUSE'`d (the default), or skipped (`'SKIP'`, the baseline's). */
+  readonly nonLatin?: 'REFUSE' | 'SKIP';
+}
+
+/** A Gregorian birth date. */
+export interface BirthDate {
+  readonly year: number;
+  /** 1 to 12. */
+  readonly month: number;
+  /** 1 to the month's length. */
+  readonly day: number;
+}
+
+/** A number reduced: every sum, so "33, so 6" and "38, so 11" read back. */
+export interface Reduction {
+  /** The sums in order: the number reduced, then each digit sum. */
+  readonly steps: readonly number[];
+  /** Where it stopped: one digit, or a master the rules keep. */
+  readonly number: number;
+}
+
+/** One letter of a word and what the system's table makes it worth. */
+export interface NumerologyLetter {
+  /** The letter, upper case. */
+  readonly letter: string;
+  readonly value: number;
+}
+
+/** One word of a name. */
+export interface WordNumber {
+  /** The word as written. */
+  readonly text: string;
+  readonly letters: readonly NumerologyLetter[];
+  /** The letters added. */
+  readonly total: number;
+  readonly reduction: Reduction;
+}
+
+/** A name read under one system. */
+export interface NameNumber {
+  readonly system: 'PYTHAGOREAN' | 'CHALDEAN';
+  /** Every word, in order, so either reduction can be read back. */
+  readonly words: readonly WordNumber[];
+  /** What the final reduction started from. */
+  readonly total: number;
+  /** Cheiro's compound number, for the Chaldean system only. */
+  readonly compound: number | null;
+  readonly reduction: Reduction;
+}
+
+/** Balliett's birth number. */
+export interface BirthNumber {
+  readonly month: Reduction;
+  readonly day: Reduction;
+  readonly year: Reduction;
+  /** The parts that are not masters, added and reduced; null when every part is a master. */
+  readonly sum: Reduction | null;
+  /** The parts that are masters, which stand apart from the sum (Balliett p. 90): month, day, year. */
+  readonly apart: readonly number[];
+}
+
+/** Cheiro's numbers of a date, which are "not added together" (p. 93). */
+export interface ChaldeanDate {
+  /** The day of the month, reduced. */
+  readonly birth: Reduction;
+  /** The year's digits reduced. */
+  readonly year: Reduction;
+}
+
+/** The numbers only the baseline engine computes, with no public-domain source. */
+export interface BaselineNumerology {
+  /** The vowels A, E, I, O and U under Balliett's cycle. */
+  readonly soul: Reduction;
+  /** The other letters. */
+  readonly personality: Reduction;
+  /** The date's digit sum under Cheiro, which he forbids (p. 93). */
+  readonly chaldeanDestiny: Reduction;
+}
+
+/** Everything numerology says of a name and a birth date. */
+export interface NumerologyProfile {
+  readonly pythagoreanName: NameNumber;
+  readonly pythagoreanBirth: BirthNumber;
+  readonly chaldeanName: NameNumber;
+  readonly chaldeanBirth: ChaldeanDate;
+  /** The baseline engine's own numbers, present only under every baseline reading. */
+  readonly baseline: BaselineNumerology | null;
+}
+
 /** Mars's house from one reference. */
 export interface KujaReading {
   /** The place the house is counted from. */
@@ -5632,6 +5734,24 @@ export declare class MatchingArea {
   naam(bride: string, groom: string, rules?: NaamRules): NaamMilan;
 }
 
+/**
+ * `sdk.numerology` — a name and a birth date under Balliett's letter cycle
+ * and Cheiro's Chaldean table. It reads no sky.
+ */
+export declare class NumerologyArea {
+  /**
+   * Everything numerology says of a name and a birth date. A character
+   * outside A to Z is refused as `numerology.name` unless
+   * `rules.nonLatin` is `'SKIP'`; a date the calendar does not have, as
+   * `numerology.date`.
+   *
+   * @example
+   * const read = ctx.numerology.profile('Henry Elder', { year: 1872, month: 1, day: 17 });
+   * console.log(read.pythagoreanName.reduction.number, read.chaldeanBirth.birth.number);
+   */
+  profile(name: string, date: BirthDate, rules?: NumerologyRules): NumerologyProfile;
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -5662,6 +5782,8 @@ export declare class Context {
   readonly almanac: AlmanacArea;
   /** What matches without a chart: two names, star to star. */
   readonly matching: MatchingArea;
+  /** What a name and a birth date say under numerology's two systems. */
+  readonly numerology: NumerologyArea;
   /** The id of the profile the settings came from. */
   readonly profile: string;
   /** The resolved settings, as their canonical document. */

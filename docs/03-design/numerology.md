@@ -1,6 +1,6 @@
 # Numerology: Balliett's cycle and Cheiro's table (the `numerology` module)
 
-Status: `built` (the kernel, `crates/numerology`), 2026-10-07; the boundary and the bindings follow.
+Status: `built`, 2026-10-07: the kernel (`crates/numerology`), the boundary and every binding.
 
 Numerology reads a name and a civil date. It reads no sky, so it is an
 area of its own, like naam milan: `sdk.numerology()`. Two systems are
@@ -90,6 +90,8 @@ Gregorian month lengths:
 
 - `System::{Pythagorean, Chaldean}`, each with its `table()`:
   `BALLIETT` and `CHEIRO`, `[u8; 26]`.
+- `WordNumber.letters` is a list of `Letter { letter, value }`, so a
+  binding reads each letter by name rather than as a pair.
 - `NumerologyRules { masters, name_reduction, chaldean_compound,
   birth_reduction, non_latin }`, `Default` the sources' and
   `NumerologyRules::baseline()` every `BASELINE` value; read from JSON
@@ -116,12 +118,32 @@ Gregorian month lengths:
   chaldean_destiny })` only under `NumerologyRules::baseline()`, so the
   baseline's numbers are never mistaken for the texts'.
 
-The façade re-exports the crate as `teistro::numerology`. **Next:**
-`sdk.numerology().profile(name, date, rules)` in every binding, which
-`check-areas` requires to land in all of them at once; at the boundary
-one entry point taking `{"name", "date", "rules"}` and answering the
-profile as canonical JSON, one name at a time, a refusal named
-`numerology.name` with the character and its place.
+The façade re-exports the crate as `teistro::numerology` and asks it as
+`sdk.numerology().profile(name, date, rules)`, an area of its own in
+every binding (`surface-areas.md`).
+
+**The boundary** is one entry point, `ts_numerology_profile`, taking
+`{"name", "date", "rules"}` (`teistro::NumerologyRequest`) and answering
+the profile as canonical JSON, one name at a time. The answer is one
+nested document per call, so it crosses as the façade's own
+serialisation rather than as a blob, and each binding parses it into its
+own types. This is the pattern the other Phase 8 modules reuse. A
+refusal is named under `numerology`: `numerology.name` with the
+character and its place, `numerology.date` for a date the calendar does
+not have (`BirthDate` is read through `BirthDate::new`, so JSON cannot
+carry 29 February of a common year past it), and
+`numerology.rules.<key>` for a reading misspelt.
+
+| binding | the date | the rules | the answer |
+|---|---|---|---|
+| Rust | `BirthDate::new(y, m, d)?` | `NumerologyRules` | `Profile` |
+| Node | `{ year, month, day }` | `{ masters, ... }`, each optional | a frozen `NumerologyProfile` |
+| Python | `datetime.date` | a `NumerologyRules` `TypedDict` | a frozen `NumerologyProfile` dataclass |
+| Dart | `BirthDate(y, m, d)` | `NumerologyRules(...)`, `.baseline()` | `NumerologyProfile` |
+
+A civil date never crosses as an instant, and no binding takes one:
+JavaScript's `Date` and Dart's `DateTime` carry a zone, and moving a
+birth by a day is the baseline's defect.
 
 ## The acceptance tests
 
@@ -149,6 +171,12 @@ Held now, in `crates/numerology/src/tests.rs`:
 - **Refusals:** "Kṛṣṇa" refused at its second character, and read as K
   and A under `SKIP`; "", spaces and separators alone refused; 29
   February of a common year refused.
+- **At the boundary** (`crates/ffi/tests/abi.rs`): the crossed JSON is
+  the façade's to the byte, and each refusal is named down to its field.
+- **In every binding:** Henry Elder and John Wanamaker read in Node,
+  Python and Dart to the printed numbers, and the five parity runners
+  print both requests (the second under every baseline reading, with
+  the baseline's numbers) value for value alike.
 
 Still to hold: the remaining printed names (Canary, Pink, Green, Blue),
 Cheiro's seventeen printed aliases one by one, a measured page over

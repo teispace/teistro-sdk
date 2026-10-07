@@ -213,6 +213,17 @@ fn digit_sum(mut n: u32) -> u32 {
     sum
 }
 
+/// One letter of a word and what the system's table makes it worth.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct Letter {
+    /// The letter, upper case.
+    pub letter: char,
+    /// Its value in the table.
+    pub value: u8,
+}
+
 /// One word of a name.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -221,7 +232,7 @@ pub struct WordNumber {
     /// The word as written.
     pub text: String,
     /// Each letter read, upper case, with its value.
-    pub letters: Vec<(char, u8)>,
+    pub letters: Vec<Letter>,
     /// The letters added.
     pub total: u32,
     /// The total reduced.
@@ -308,7 +319,10 @@ fn words(
                         .get(usize::from(upper as u8 - b'A'))
                         .copied()
                         .unwrap_or_default();
-                    letters.push((upper, value));
+                    letters.push(Letter {
+                        letter: upper,
+                        value,
+                    });
                 }
                 _ if non_latin == NonLatin::Skip => {}
                 _ => {
@@ -329,7 +343,7 @@ fn words(
         if letters.is_empty() {
             continue;
         }
-        let total = letters.iter().map(|&(_, value)| u32::from(value)).sum();
+        let total = letters.iter().map(|letter| u32::from(letter.value)).sum();
         words.push(WordNumber {
             text: text.to_string(),
             letters,
@@ -347,9 +361,12 @@ fn words(
     Ok(words)
 }
 
-/// A Gregorian birth date, validated.
+/// A Gregorian birth date, validated: read from JSON through
+/// [`BirthDate::new`], so a date the calendar does not have is refused
+/// where it is read.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(try_from = "DateParts")]
 pub struct BirthDate {
     /// The year, astronomical (1 BCE is 0).
     pub year: i32,
@@ -357,6 +374,24 @@ pub struct BirthDate {
     pub month: u8,
     /// The day of the month.
     pub day: u8,
+}
+
+/// A birth date as written, before the calendar has checked it.
+#[derive(Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+struct DateParts {
+    year: i32,
+    month: u8,
+    day: u8,
+}
+
+impl TryFrom<DateParts> for BirthDate {
+    type Error = Error;
+
+    fn try_from(parts: DateParts) -> Result<BirthDate, Error> {
+        BirthDate::new(parts.year, parts.month, parts.day)
+    }
 }
 
 impl BirthDate {
@@ -593,8 +628,8 @@ pub fn profile(name: &str, date: BirthDate, rules: &NumerologyRules) -> Result<P
             .iter()
             .flat_map(|word| word.letters.iter());
         let (vowels, consonants): (Vec<_>, Vec<_>) =
-            letters.partition(|(letter, _)| matches!(letter, 'A' | 'E' | 'I' | 'O' | 'U'));
-        let sum = |part: &[&(char, u8)]| part.iter().map(|(_, value)| u32::from(*value)).sum();
+            letters.partition(|letter| matches!(letter.letter, 'A' | 'E' | 'I' | 'O' | 'U'));
+        let sum = |part: &[&Letter]| part.iter().map(|letter| u32::from(letter.value)).sum();
         let dated = digits(u32::from(date.day)).number
             + digits(u32::from(date.month)).number
             + digits(date.year_digits()).number;

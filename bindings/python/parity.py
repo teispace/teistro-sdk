@@ -13,6 +13,7 @@ not that they agree with a literal written here.
 
 from __future__ import annotations
 
+import datetime
 import sys
 from dataclasses import fields as dataclass_fields
 from typing import Any, Iterable, Optional, Sequence, cast
@@ -23,6 +24,8 @@ from teistro import (
     AshtaKoota,
     Context,
     NaamRules,
+    NumerologyRules,
+    Reduction,
     Porutham,
     BhakootKoota,
     DhinamPorutham,
@@ -331,6 +334,48 @@ def put_porutham(prefix: str, ten: Porutham) -> None:
         )
 
 
+def put_numerology(ctx: Context) -> None:
+    """Two numerology requests, as every runner asks them: Balliett's own
+    example under the sources' readings, and her John Wanamaker under every
+    baseline reading."""
+
+    def steps(reduction: Reduction) -> str:
+        return "/".join(str(step) for step in reduction.steps)
+
+    baseline: NumerologyRules = {
+        "masters": "ELEVEN_TWENTY_TWO_THIRTY_THREE",
+        "nameReduction": "WHOLE",
+        "chaldeanCompound": "LETTER_TOTAL",
+        "birthReduction": "DIGIT_SUM",
+        "nonLatin": "SKIP",
+    }
+    asked: list[tuple[str, datetime.date, Optional[NumerologyRules]]] = [
+        ("Henry Elder", datetime.date(1872, 1, 17), None),
+        ("John Wanamaker", datetime.date(1838, 7, 11), baseline),
+    ]
+    for n, (name, born, rules) in enumerate(asked):
+        read = ctx.numerology.profile(name, born, rules)
+        for system, named in (("pythagorean", read.pythagorean_name), ("chaldean", read.chaldean_name)):
+            compound = "NONE" if named.compound is None else str(named.compound)
+            put(f"numerology-{n}-{system}", f"{named.total} {compound} {steps(named.reduction)}")
+            for at, word in enumerate(named.words):
+                letters = ",".join(f"{letter.letter}{letter.value}" for letter in word.letters)
+                put(f"numerology-{n}-{system}-word-{at}", f"{word.text} {letters} {word.total} {steps(word.reduction)}")
+        birth = read.pythagorean_birth
+        summed = "NONE" if birth.sum is None else steps(birth.sum)
+        apart = ",".join(str(part) for part in birth.apart) or "-"
+        put(
+            f"numerology-{n}-birth",
+            f"{steps(birth.month)} {steps(birth.day)} {steps(birth.year)} {summed} {apart}",
+        )
+        put(f"numerology-{n}-chaldean-birth", f"{steps(read.chaldean_birth.birth)} {steps(read.chaldean_birth.year)}")
+        own = read.baseline
+        put(
+            f"numerology-{n}-baseline",
+            "NONE" if own is None else f"{steps(own.soul)} {steps(own.personality)} {steps(own.chaldean_destiny)}",
+        )
+
+
 def put_naam(ctx: Context) -> None:
     """Two pairs of names, as every runner asks them: a Devanagari pair
     whose groom's syllable is Abhijit's, placed in Shravana, and an IAST
@@ -402,6 +447,7 @@ def main() -> None:
     put("settings-hash", ctx.settings_hash)
     put("settings-fnv", fnv(ctx.settings_json))
     put_naam(ctx)
+    put_numerology(ctx)
 
     # ── The calendars ─────────────────────────────────────────────────
     day = date(Calendar.GREGORIAN, 2015, 4, 14)
@@ -2027,6 +2073,7 @@ def main() -> None:
         ("keys.id", ctx.keys.id),
         ("keys.name", ctx.keys.name),
         ("matching.naam", ctx.matching.naam),
+        ("numerology.profile", ctx.numerology.profile),
         ("frame.canonical", ctx.frame.canonical),
         ("frame.pack", ctx.frame.pack),
         ("frame.unpack", ctx.frame.unpack),

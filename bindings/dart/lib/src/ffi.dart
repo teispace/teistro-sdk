@@ -1770,6 +1770,8 @@ typedef TsPanchangaDaysNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsPanchangaDaysDart = int Function(ffi.Pointer<Context>, ffi.Pointer<PanchangaRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1830,6 +1832,7 @@ final class TeistroLibrary {
         ts_positions = library.lookupFunction<TsPositionsNative, TsPositionsDart>('ts_positions'),
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
+        ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
@@ -2091,6 +2094,20 @@ final class TeistroLibrary {
   /// `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
   /// `naam.groom`.
   final TsNaamMilanDart ts_naam_milan;
+
+  /// Reads a name and a birth date under numerology's two systems and
+  /// answers with the profile as canonical JSON: the name under each
+  /// system, word by word with every reduction step, Balliett's birth
+  /// number, Cheiro's day and year, and the baseline engine's own numbers
+  /// under the baseline rules only (`03-design/numerology.md`).
+  ///
+  /// `request_json` is `{"name", "date", "rules"}`: the name in the 26
+  /// Latin letters, the date as `{"year", "month", "day"}` in the Gregorian
+  /// calendar, and the `NumerologyRules` with every field optional. A
+  /// character outside A to Z while `rules.nonLatin` refuses, a name with
+  /// no letter, or a date the calendar does not have is `INVALID_ARG`,
+  /// named under `numerology`.
+  final TsNumerologyProfileDart ts_numerology_profile;
 
   /// What the context's engine says it offers beyond this library's own
   /// operations: its manifest, as the engine wrote it.
@@ -4915,6 +4932,29 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_naam_milan(_handle, rawrequestJson, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// Reads a name and a birth date under numerology's two systems and
+  /// answers with the profile as canonical JSON: the name under each
+  /// system, word by word with every reduction step, Balliett's birth
+  /// number, Cheiro's day and year, and the baseline engine's own numbers
+  /// under the baseline rules only (`03-design/numerology.md`).
+  ///
+  /// `request_json` is `{"name", "date", "rules"}`: the name in the 26
+  /// Latin letters, the date as `{"year", "month", "day"}` in the Gregorian
+  /// calendar, and the `NumerologyRules` with every field optional. A
+  /// character outside A to Z while `rules.nonLatin` refuses, a name with
+  /// no letter, or a date the calendar does not have is `INVALID_ARG`,
+  /// named under `numerology`.
+  String numerologyProfile(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_numerology_profile(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

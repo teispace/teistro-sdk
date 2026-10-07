@@ -518,6 +518,36 @@ for (const [n, [bride, groom, rules]] of [
   putPorutham(`naam-${n}`, read.porutham);
 }
 
+// Two numerology requests, as every runner asks them: Balliett's own
+// example under the sources' readings, and her John Wanamaker under every
+// baseline reading.
+const steps = (reduction) => reduction.steps.join('/');
+for (const [n, [name, date, rules]] of [
+  ['Henry Elder', { year: 1872, month: 1, day: 17 }, undefined],
+  [
+    'John Wanamaker',
+    { year: 1838, month: 7, day: 11 },
+    { masters: 'ELEVEN_TWENTY_TWO_THIRTY_THREE', nameReduction: 'WHOLE', chaldeanCompound: 'LETTER_TOTAL', birthReduction: 'DIGIT_SUM', nonLatin: 'SKIP' },
+  ],
+].entries()) {
+  const read = ctx.numerology.profile(name, date, rules);
+  for (const [system, named] of [['pythagorean', read.pythagoreanName], ['chaldean', read.chaldeanName]]) {
+    put(`numerology-${n}-${system}`, `${named.total} ${named.compound ?? 'NONE'} ${steps(named.reduction)}`);
+    named.words.forEach((word, at) => {
+      const letters = word.letters.map((letter) => `${letter.letter}${letter.value}`).join(',');
+      put(`numerology-${n}-${system}-word-${at}`, `${word.text} ${letters} ${word.total} ${steps(word.reduction)}`);
+    });
+  }
+  const birth = read.pythagoreanBirth;
+  put(
+    `numerology-${n}-birth`,
+    `${steps(birth.month)} ${steps(birth.day)} ${steps(birth.year)} ${birth.sum === null ? 'NONE' : steps(birth.sum)} ${birth.apart.length === 0 ? '-' : birth.apart.join(',')}`,
+  );
+  put(`numerology-${n}-chaldean-birth`, `${steps(read.chaldeanBirth.birth)} ${steps(read.chaldeanBirth.year)}`);
+  const own = read.baseline;
+  put(`numerology-${n}-baseline`, own === null ? 'NONE' : `${steps(own.soul)} ${steps(own.personality)} ${steps(own.chaldeanDestiny)}`);
+}
+
 for (const chart of charts) {
   const i = chart.index;
   put(`chart-${i}-content-hash`, chart.provenance.contentHash);
@@ -1555,6 +1585,7 @@ for (const [path, member] of [
   ['keys.id', shape.keys.id],
   ['keys.name', shape.keys.name],
   ['matching.naam', shape.matching.naam],
+  ['numerology.profile', shape.numerology.profile],
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],

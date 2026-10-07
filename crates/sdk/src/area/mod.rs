@@ -26,6 +26,7 @@ mod interpret;
 mod intl;
 mod keys;
 mod matching;
+mod numerology;
 mod time;
 
 use teistro_calendar::solar::drik::DrikSun;
@@ -84,4 +85,5 @@ pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
 pub use matching::MatchingArea;
+pub use numerology::NumerologyArea;
 pub use time::TimeArea;

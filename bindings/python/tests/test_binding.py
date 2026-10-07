@@ -2381,6 +2381,45 @@ class AnEngine(WithLibrary):
                     ctx.matching.naam(bride, groom, rules)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_name_and_a_birth_date_read_under_numerology_without_a_chart(self) -> None:
+        """Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6, born
+        17 January 1872 1 + 8 + 9 = 18 = 9; Cheiro p. 70: Henry 18/9 and
+        Elder 19/1, their singles 10; Balliett p. 90: 11 July 1838 is
+        "9, 11"; refusals named by field (`03-design/numerology.md`)."""
+        from datetime import date
+
+        from teistro import NumerologyLetter, NumerologyProfile, NumerologyRules, Reduction
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            read: NumerologyProfile = ctx.numerology.profile("Henry Elder", date(1872, 1, 17))
+            name = read.pythagorean_name
+            self.assertEqual(
+                [(word.text, word.total, word.reduction.number) for word in name.words],
+                [("Henry", 34, 7), ("Elder", 26, 8)],
+            )
+            self.assertEqual(name.words[0].letters[0], NumerologyLetter("H", 8))
+            self.assertEqual((name.system, name.compound, name.reduction), ("PYTHAGOREAN", None, Reduction((15, 6), 6)))
+            self.assertEqual(read.pythagorean_birth.sum, Reduction((18, 9), 9))
+            self.assertEqual(read.pythagorean_birth.apart, ())
+            self.assertEqual((read.chaldean_name.system, read.chaldean_name.compound), ("CHALDEAN", 10))
+            self.assertEqual(read.chaldean_birth.birth.number, 8)
+            self.assertIsNone(read.baseline)
+
+            kept: NumerologyRules = {"masters": "ELEVEN_TWENTY_TWO"}
+            wanamaker = ctx.numerology.profile("John Wanamaker", date(1838, 7, 11), kept).pythagorean_birth
+            self.assertEqual((wanamaker.sum and wanamaker.sum.number, wanamaker.apart), (9, (11,)))
+
+            refusals: list[tuple[tuple[str, Any, Any], str]] = [
+                (("Kṛṣṇa", date(1990, 1, 1), None), "numerology.name"),
+                (("Rama", date(1990, 1, 1), {"master": "NONE"}), "numerology.rules.master"),
+                (("Rama", date(1990, 1, 1), "NONE"), "rules"),
+                (("Rama", "1990-01-01", None), "date"),
+            ]
+            for (asked, born, rules), field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.numerology.profile(asked, born, rules)
+                self.assertEqual(caught.exception.field, field)
+
     def test_a_chart_carries_its_avakahada_whose_syllable_names_the_birth_pada(self) -> None:
         """The avakahada crosses whole, and its syllable names the child
         back to the Moon's own star and pada (C297): read as a name, in

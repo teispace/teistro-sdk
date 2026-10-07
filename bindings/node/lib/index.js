@@ -5571,6 +5571,42 @@ export class MatchingArea extends Area {
 }
 
 /**
+ * `sdk.numerology` — a name and a birth date under Balliett's letter cycle
+ * and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to C328).
+ * It reads no sky.
+ */
+export class NumerologyArea extends Area {
+  /**
+   * Everything numerology says of a name and a birth date: the name under
+   * both systems, word by word with every reduction step, Balliett's birth
+   * number, Cheiro's day and year, and the baseline engine's own numbers
+   * under the baseline rules only.
+   *
+   * The name is read in the 26 Latin letters; anything else is refused,
+   * named `numerology.name`, unless `rules.nonLatin` is `'SKIP'`. A date
+   * the Gregorian calendar does not have is refused as `numerology.date`.
+   *
+   * @param {string} name the name, in Latin letters
+   * @param {{ year: number, month: number, day: number }} date the Gregorian birth date
+   * @param {object} [rules] `{ masters, nameReduction, chaldeanCompound, birthReduction, nonLatin }`, each optional
+   * @returns {object}
+   */
+  profile(name, date, rules) {
+    if (typeof date !== 'object' || date === null || Array.isArray(date)) {
+      throw new TypeError('date: expected a Gregorian date, e.g. { year: 1872, month: 1, day: 17 }');
+    }
+    const request = { name, date: { year: date.year, month: date.month, day: date.day } };
+    if (rules !== undefined && rules !== null) {
+      if (typeof rules !== 'object' || Array.isArray(rules)) {
+        throw new TypeError("rules: expected a numerology rules record, e.g. { masters: 'NONE' }");
+      }
+      request.rules = rules;
+    }
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.numerologyProfile(JSON.stringify(request)))));
+  }
+}
+
+/**
  * `sdk.almanac` — a day, or a run of days, with its limbs.
  *
  * The boundary calls this `panchanga` and the area takes the consumer's
@@ -5751,6 +5787,8 @@ export class Context {
     this.almanac = new AlmanacArea(reach);
     /** What matches without a chart: two names, star to star. */
     this.matching = new MatchingArea(reach);
+    /** What a name and a birth date say under numerology's two systems. */
+    this.numerology = new NumerologyArea(reach);
     this.#engine = new Engine(reach);
   }
 

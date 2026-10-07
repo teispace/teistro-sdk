@@ -26,6 +26,7 @@ import json
 import math
 import os
 import sys
+from datetime import date as _date
 from dataclasses import dataclass, field, replace
 from dataclasses import fields as dataclass_fields
 from functools import cached_property
@@ -589,6 +590,15 @@ __all__ = [
     "BirthSyllable",
     "VargaKoota",
     "NaamMilan",
+    "NumerologyRules",
+    "Reduction",
+    "NumerologyLetter",
+    "WordNumber",
+    "NameNumber",
+    "BirthNumber",
+    "ChaldeanDate",
+    "BaselineNumerology",
+    "NumerologyProfile",
     "KujaRules",
     "KujaReading",
     "KujaSide",
@@ -1975,6 +1985,37 @@ class MatchingArea(_Area):
         )
 
 
+class NumerologyArea(_Area):
+    """`sdk.numerology` — a name and a birth date under Balliett's letter
+    cycle and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to
+    C328). It reads no sky."""
+
+    def profile(self, name: str, date: _date, rules: Optional[NumerologyRules] = None) -> NumerologyProfile:
+        """Everything numerology says of a name and a birth date: the name
+        under both systems, word by word with every reduction step,
+        Balliett's birth number, Cheiro's day and year, and the baseline
+        engine's own numbers under every baseline reading only.
+
+        The name is read in the 26 Latin letters; anything else is refused,
+        named `numerology.name`, unless `rules["nonLatin"]` is `"SKIP"`.
+
+        >>> read = sdk.numerology.profile("Henry Elder", datetime.date(1872, 1, 17))  # doctest: +SKIP
+        """
+        if not isinstance(date, _date):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "date is a datetime.date, such as datetime.date(1872, 1, 17)",
+                field="date",
+            )
+        request: Dict[str, Any] = {
+            "name": name,
+            "date": {"year": date.year, "month": date.month, "day": date.day},
+        }
+        written = _record_json(rules, "rules", "{'masters': 'NONE'}")
+        if written is not None:
+            request["rules"] = json.loads(written)
+        return NumerologyProfile._of(json.loads(self._context.inner.numerology_profile(json.dumps(request))))
+
 class Context:
     """A context, and everything a consumer asks of one.
 
@@ -2059,6 +2100,11 @@ class Context:
     def matching(self) -> MatchingArea:
         """What matches without a chart: two names, star to star."""
         return MatchingArea(self)
+
+    @cached_property
+    def numerology(self) -> NumerologyArea:
+        """What a name and a birth date say under numerology's two systems."""
+        return NumerologyArea(self)
 
     # ── The context itself ────────────────────────────────────────────
 
@@ -4851,6 +4897,183 @@ class NaamMilan:
     porutham: Porutham
     """The ten considerations of the two name stars, as a chart's
     `porutham` reads two Moons."""
+
+
+class NumerologyRules(TypedDict, total=False):
+    """The readings numerology is computed under, each the source's own when
+    absent (`03-design/numerology.md`, C320 to C328): `masters`, which
+    totals stop a Pythagorean reduction (`"ELEVEN_TWENTY_TWO"`, Balliett's;
+    `"NONE"`; `"ELEVEN_TWENTY_TWO_THIRTY_THREE"`, the baseline's);
+    `nameReduction`, each word reduced then added (`"BY_WORD"`) or every
+    letter at once (`"WHOLE"`); `chaldeanCompound`, the words' singles
+    added (`"SUM_OF_SINGLES"`, Cheiro p. 72) or the letters' total
+    (`"LETTER_TOTAL"`); `birthReduction`, month, day and year each reduced
+    (`"BY_PART"`, Balliett p. 19) or every digit (`"DIGIT_SUM"`); and
+    `nonLatin`, a character outside A to Z `"REFUSE"`d or `"SKIP"`ped.
+
+    >>> plain: NumerologyRules = {"masters": "NONE"}
+    """
+
+    masters: Literal["NONE", "ELEVEN_TWENTY_TWO", "ELEVEN_TWENTY_TWO_THIRTY_THREE"]
+    nameReduction: Literal["BY_WORD", "WHOLE"]
+    chaldeanCompound: Literal["SUM_OF_SINGLES", "LETTER_TOTAL"]
+    birthReduction: Literal["BY_PART", "DIGIT_SUM"]
+    nonLatin: Literal["REFUSE", "SKIP"]
+
+
+@dataclass(frozen=True)
+class Reduction:
+    """A number reduced: every sum, so "33, so 6" and "38, so 11" read
+    back."""
+
+    steps: Tuple[int, ...]
+    """The sums in order: the number reduced, then each digit sum."""
+
+    number: int
+    """Where it stopped: one digit, or a master the rules keep."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "Reduction":
+        return Reduction(steps=tuple(raw["steps"]), number=raw["number"])
+
+
+@dataclass(frozen=True)
+class NumerologyLetter:
+    """One letter of a word and what the system's table makes it worth."""
+
+    letter: str
+    """The letter, upper case."""
+
+    value: int
+
+
+@dataclass(frozen=True)
+class WordNumber:
+    """One word of a name."""
+
+    text: str
+    """The word as written."""
+
+    letters: Tuple[NumerologyLetter, ...]
+    total: int
+    """The letters added."""
+
+    reduction: Reduction
+
+
+@dataclass(frozen=True)
+class NameNumber:
+    """A name read under one system."""
+
+    system: Literal["PYTHAGOREAN", "CHALDEAN"]
+    words: Tuple[WordNumber, ...]
+    """Every word, in order, so either reduction can be read back."""
+
+    total: int
+    """What the final reduction started from."""
+
+    compound: Optional[int]
+    """Cheiro's compound number, for the Chaldean system only."""
+
+    reduction: Reduction
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "NameNumber":
+        return NameNumber(
+            system=raw["system"],
+            words=tuple(
+                WordNumber(
+                    text=word["text"],
+                    letters=tuple(NumerologyLetter(letter["letter"], letter["value"]) for letter in word["letters"]),
+                    total=word["total"],
+                    reduction=Reduction._of(word["reduction"]),
+                )
+                for word in raw["words"]
+            ),
+            total=raw["total"],
+            compound=raw["compound"],
+            reduction=Reduction._of(raw["reduction"]),
+        )
+
+
+@dataclass(frozen=True)
+class BirthNumber:
+    """Balliett's birth number."""
+
+    month: Reduction
+    day: Reduction
+    year: Reduction
+    sum: Optional[Reduction]
+    """The parts that are not masters, added and reduced; `None` when every
+    part is a master."""
+
+    apart: Tuple[int, ...]
+    """The parts that are masters, which stand apart from the sum
+    (Balliett p. 90), in the order month, day, year."""
+
+
+@dataclass(frozen=True)
+class ChaldeanDate:
+    """Cheiro's numbers of a date, which are "not added together" (p. 93)."""
+
+    birth: Reduction
+    """The day of the month, reduced."""
+
+    year: Reduction
+    """The year's digits reduced."""
+
+
+@dataclass(frozen=True)
+class BaselineNumerology:
+    """The numbers only the baseline engine computes, with no public-domain
+    source in hand."""
+
+    soul: Reduction
+    """The vowels A, E, I, O and U under Balliett's cycle."""
+
+    personality: Reduction
+    """The other letters."""
+
+    chaldean_destiny: Reduction
+    """The date's digit sum under Cheiro, which he forbids (p. 93)."""
+
+
+@dataclass(frozen=True)
+class NumerologyProfile:
+    """Everything numerology says of a name and a birth date."""
+
+    pythagorean_name: NameNumber
+    pythagorean_birth: BirthNumber
+    chaldean_name: NameNumber
+    chaldean_birth: ChaldeanDate
+    baseline: Optional[BaselineNumerology]
+    """The baseline engine's own numbers, present only under every
+    baseline reading, so they are never mistaken for the texts'."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "NumerologyProfile":
+        birth = raw["pythagoreanBirth"]
+        chaldean = raw["chaldeanBirth"]
+        own = raw["baseline"]
+        return NumerologyProfile(
+            pythagorean_name=NameNumber._of(raw["pythagoreanName"]),
+            pythagorean_birth=BirthNumber(
+                month=Reduction._of(birth["month"]),
+                day=Reduction._of(birth["day"]),
+                year=Reduction._of(birth["year"]),
+                sum=None if birth["sum"] is None else Reduction._of(birth["sum"]),
+                apart=tuple(birth["apart"]),
+            ),
+            chaldean_name=NameNumber._of(raw["chaldeanName"]),
+            chaldean_birth=ChaldeanDate(birth=Reduction._of(chaldean["birth"]), year=Reduction._of(chaldean["year"])),
+            baseline=None
+            if own is None
+            else BaselineNumerology(
+                soul=Reduction._of(own["soul"]),
+                personality=Reduction._of(own["personality"]),
+                chaldean_destiny=Reduction._of(own["chaldeanDestiny"]),
+            ),
+        )
 
 
 @dataclass(frozen=True)

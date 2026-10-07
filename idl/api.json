@@ -22,6 +22,7 @@
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
+    "crates/ffi/src/numerology.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs"
   ],
@@ -15284,6 +15285,57 @@
         "blob": "naam"
       },
       "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "ts_numerology_profile",
+      "doc": "Reads a name and a birth date under numerology's two systems and\nanswers with the profile as canonical JSON: the name under each\nsystem, word by word with every reduction step, Balliett's birth\nnumber, Cheiro's day and year, and the baseline engine's own numbers\nunder the baseline rules only (`03-design/numerology.md`).\n\n`request_json` is `{\"name\", \"date\", \"rules\"}`: the name in the 26\nLatin letters, the date as `{\"year\", \"month\", \"day\"}` in the Gregorian\ncalendar, and the `NumerologyRules` with every field optional. A\ncharacter outside A to Z while `rules.nonLatin` refuses, a name with\nno letter, or a date the calendar does not have is `INVALID_ARG`,\nnamed under `numerology`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/numerology.rs"
     },
     {
       "name": "ts_ephemeris_manifest",

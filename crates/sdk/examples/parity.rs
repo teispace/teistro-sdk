@@ -799,6 +799,7 @@ fn the_surface(report: &mut Report) {
         ("keys.id", "present"),
         ("keys.name", "present"),
         ("matching.naam", "present"),
+        ("numerology.profile", "present"),
         ("time.civil_of", "present"),
         ("time.convert", "present"),
         ("time.delta_t", "present"),
@@ -2554,6 +2555,112 @@ fn the_porutham(report: &mut Report, prefix: &str, ten: &teistro::Porutham) {
             report,
             &format!("{prefix}-porutham-{}", row.reading.koota().full_key()),
             format!("{} {} {reading}", flag(row.agrees), flag(row.lifted)),
+        );
+    }
+}
+
+/// The numerology requests every runner sends: Balliett's own example
+/// under the sources' readings, and her John Wanamaker under every
+/// baseline reading, which also answers the baseline's numbers.
+const NUMEROLOGY_JSON: [&str; 2] = [
+    r#"{"name":"Henry Elder","date":{"year":1872,"month":1,"day":17}}"#,
+    r#"{"name":"John Wanamaker","date":{"year":1838,"month":7,"day":11},"rules":{"masters":"ELEVEN_TWENTY_TWO_THIRTY_THREE","nameReduction":"WHOLE","chaldeanCompound":"LETTER_TOTAL","birthReduction":"DIGIT_SUM","nonLatin":"SKIP"}}"#,
+];
+
+/// A reduction as every runner prints it: its steps joined by `/`.
+fn steps(reduction: &teistro::numerology::Reduction) -> String {
+    reduction
+        .steps
+        .iter()
+        .map(u32::to_string)
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+/// Each numerology request as the other three print it: each system's
+/// name, word by word with every letter, the two birth numbers, and the
+/// baseline's own numbers or `NONE`.
+fn the_numerology(report: &mut Report) {
+    for (index, request) in NUMEROLOGY_JSON.iter().enumerate() {
+        let read = teistro::NumerologyRequest::from_json(request)
+            .and_then(|asked| asked.answer())
+            .expect("a name and a date numerology reads");
+        let prefix = format!("numerology-{index}");
+        for (system, name) in [
+            ("pythagorean", &read.pythagorean_name),
+            ("chaldean", &read.chaldean_name),
+        ] {
+            put(
+                report,
+                &format!("{prefix}-{system}"),
+                format!(
+                    "{} {} {}",
+                    name.total,
+                    name.compound
+                        .map_or_else(|| "NONE".to_owned(), |n| n.to_string()),
+                    steps(&name.reduction)
+                ),
+            );
+            for (at, word) in name.words.iter().enumerate() {
+                let letters: Vec<String> = word
+                    .letters
+                    .iter()
+                    .map(|letter| format!("{}{}", letter.letter, letter.value))
+                    .collect();
+                put(
+                    report,
+                    &format!("{prefix}-{system}-word-{at}"),
+                    format!(
+                        "{} {} {} {}",
+                        word.text,
+                        letters.join(","),
+                        word.total,
+                        steps(&word.reduction)
+                    ),
+                );
+            }
+        }
+        let birth = &read.pythagorean_birth;
+        let apart: Vec<String> = birth.apart.iter().map(u32::to_string).collect();
+        put(
+            report,
+            &format!("{prefix}-birth"),
+            format!(
+                "{} {} {} {} {}",
+                steps(&birth.month),
+                steps(&birth.day),
+                steps(&birth.year),
+                birth.sum.as_ref().map_or_else(|| "NONE".to_owned(), steps),
+                if apart.is_empty() {
+                    "-".to_owned()
+                } else {
+                    apart.join(",")
+                }
+            ),
+        );
+        put(
+            report,
+            &format!("{prefix}-chaldean-birth"),
+            format!(
+                "{} {}",
+                steps(&read.chaldean_birth.birth),
+                steps(&read.chaldean_birth.year)
+            ),
+        );
+        put(
+            report,
+            &format!("{prefix}-baseline"),
+            read.baseline.as_ref().map_or_else(
+                || "NONE".to_owned(),
+                |own| {
+                    format!(
+                        "{} {} {}",
+                        steps(&own.soul),
+                        steps(&own.personality),
+                        steps(&own.chaldean_destiny)
+                    )
+                },
+            ),
         );
     }
 }
@@ -5299,6 +5406,7 @@ fn main() {
     the_constants(&mut report);
     the_surface(&mut report);
     the_naam(&mut report);
+    the_numerology(&mut report);
     let place = Place::new(
         Latitude::try_new(27.7172).expect("a latitude"),
         Longitude::try_new(85.324).expect("a longitude"),

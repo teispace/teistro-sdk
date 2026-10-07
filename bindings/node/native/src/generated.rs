@@ -4177,6 +4177,37 @@ impl Context {
         Ok(take_blob(&mut out_blob))
     }
 
+    /// Reads a name and a birth date under numerology's two systems and
+    /// answers with the profile as canonical JSON: the name under each
+    /// system, word by word with every reduction step, Balliett's birth
+    /// number, Cheiro's day and year, and the baseline engine's own numbers
+    /// under the baseline rules only (`03-design/numerology.md`).
+    ///
+    /// `request_json` is `{"name", "date", "rules"}`: the name in the 26
+    /// Latin letters, the date as `{"year", "month", "day"}` in the Gregorian
+    /// calendar, and the `NumerologyRules` with every field optional. A
+    /// character outside A to Z while `rules.nonLatin` refuses, a name with
+    /// no letter, or a date the calendar does not have is `INVALID_ARG`,
+    /// named under `numerology`.
+    #[napi]
+    pub fn numerology_profile(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::numerology::ts_numerology_profile(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// What the context's engine says it offers beyond this library's own
     /// operations: its manifest, as the engine wrote it.
     ///
