@@ -10,7 +10,7 @@ use teistro_core::catalogue::Nakshatra;
 
 use crate::{
     AbhijitPada, KootaRules, LatinName, NaamRules, NameRules, NameSyllable, NameVarga, Native,
-    VargaRelation, ashta_koota, birth_syllable, naam_milan, name_syllable, varga_koota,
+    VargaRelation, ashta_koota, birth_syllable, naam_milan, name_check, name_syllable, varga_koota,
 };
 
 /// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
@@ -310,4 +310,52 @@ fn iast_of(printed: &str) -> String {
         out.push('a');
     }
     out
+}
+
+#[test]
+fn a_name_is_read_against_the_birth_pada_as_facts() {
+    // C334: every printed syllable is its own pada's name, and the next
+    // pada's syllable is the same star and another pada.
+    for nakshatra in Nakshatra::ALL {
+        for pada in 1..=4 {
+            let prescribed = birth_syllable(nakshatra, pada).unwrap();
+            let own = name_check(
+                &prescribed.devanagari,
+                NameRules::default(),
+                nakshatra,
+                pada,
+            )
+            .unwrap();
+            assert!(own.same_star && own.same_pada, "{nakshatra:?} {pada}");
+            assert_eq!(own.read.cell, own.prescribed.cell);
+            let next = birth_syllable(nakshatra, pada % 4 + 1).unwrap();
+            let beside =
+                name_check(&next.devanagari, NameRules::default(), nakshatra, pada).unwrap();
+            assert!(
+                beside.same_star && !beside.same_pada,
+                "{nakshatra:?} {pada}"
+            );
+        }
+    }
+    // Another star's syllable is answered, not refused.
+    let other = name_check("राम", NameRules::default(), Nakshatra::Ashwini, 1).unwrap();
+    assert_eq!(other.read.nakshatra, Some(Nakshatra::Chitra));
+    assert!(!other.same_star && !other.same_pada);
+    // Abhijit's row is no star's, even beside Uttara Ashadha's 4th pada.
+    let abhijit = name_check("जूही", NameRules::default(), Nakshatra::UttaraAshadha, 4).unwrap();
+    assert_eq!(abhijit.read.nakshatra, None);
+    assert!(!abhijit.same_star && !abhijit.same_pada);
+    // Refusals name their field.
+    assert_eq!(
+        name_check("Ram", NameRules::default(), Nakshatra::Ashwini, 1)
+            .unwrap_err()
+            .field(),
+        Some("name")
+    );
+    assert_eq!(
+        name_check("राम", NameRules::default(), Nakshatra::Ashwini, 0)
+            .unwrap_err()
+            .field(),
+        Some("pada")
+    );
 }
