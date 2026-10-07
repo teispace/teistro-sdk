@@ -240,11 +240,14 @@ Each names its field under `prashna`.
      Gemini lagna's 7th from Taurus holds this.
    - The rising varga is the navāṁśa's lord. The `SHADVARGA` knob, the
      baseline's score and Tajika's Moon knob come with steps 2 and 3.
-2. **The Tajika links**, over the existing ithasala, with:
+2. **The Tajika links**, partly built. When a house is asked,
+   `Prashna::links` holds `crates/tajika`'s sixteen yogas judged between
+   the lagna lord and the lord of that house, with each graha's
+   retrogression and combustion from `Placed`. The nakta example of
+   vv. 18–19 passes as printed: Virgo rising, Mercury in Leo, Jupiter in
+   Pisces, the Moon carrying the light. Still to come:
    - the Moon's Tajika facts (*śūnyamārga*, *bhānte*);
-   - the akṣara-lagna and the six points;
-   - the nakta example of vv. 18–19 as its test: Virgo rising, Mercury
-     in Leo, Jupiter in Pisces, the Moon carrying.
+   - the akṣara-lagna and the six points.
 3. **The `BASELINE` values**, transcribed from the baseline engine's
    source, each test naming the rank-1 rule it departs from.
 4. **The façade and every binding**, over the JSON-answer boundary that

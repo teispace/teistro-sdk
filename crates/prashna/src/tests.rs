@@ -25,6 +25,7 @@ fn sky(lagna_deg: f64, lagna_navamsha: Rashi, at: [f64; 9]) -> PrashnaSky {
             longitude_deg,
             navamsha: Rashi::Aries,
             retrograde: false,
+            combust: false,
         }),
         strength: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
     }
@@ -322,4 +323,37 @@ fn the_keys_are_what_serde_writes() {
     let rules: PrashnaRules = serde_json::from_str(r#"{"timing": "MOON_DAYS"}"#).unwrap();
     assert_eq!(rules.timing, TimingRule::MoonDays);
     assert!(serde_json::from_str::<PrashnaRules>(r#"{"time": "MOON_DAYS"}"#).is_err());
+}
+
+#[test]
+fn the_prashna_tantras_nakta_example_is_read_as_printed() {
+    // Tajika Nilakanthi, Prashna Tantra vv. 18–19: Virgo rising, a
+    // question about a woman (the 7th, Pisces, Jupiter's). Mercury, the
+    // lagna lord, in Leo; Jupiter in Pisces; the two do not aspect. The
+    // fast Moon in Sagittarius has passed Mercury's trine and comes to
+    // Jupiter's square, carrying the light: the woman is won through
+    // another's hand.
+    let virgo = sky(
+        160.0,
+        Rashi::Virgo,
+        [165.0, 252.0, 280.0, 130.0, 350.0, 190.0, 310.0, 40.0, 220.0],
+    );
+    let links = read(&virgo, Question { house: Some(7) }, rules())
+        .unwrap()
+        .links
+        .unwrap();
+    assert_eq!(
+        (links.lagnesha, links.karyesha),
+        (Graha::Mercury, Graha::Jupiter)
+    );
+    let nakta = links
+        .held
+        .iter()
+        .find(|held| held.yoga == teistro_tajika::YearYoga::Nakta)
+        .unwrap();
+    assert_eq!(nakta.through, Some(Graha::Moon));
+    assert_eq!(
+        read(&virgo, Question::default(), rules()).unwrap().links,
+        None
+    );
 }

@@ -1931,6 +1931,7 @@ dependencies = [
  "serde_json",
  "teistro-aspect",
  "teistro-core",
+ "teistro-tajika",
 ]
 
 [[package]]
