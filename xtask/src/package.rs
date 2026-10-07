@@ -154,6 +154,7 @@ fn stage_platform(
     fs::create_dir_all(dist)?;
     let shared = built.join(platform.shared(LIBRARY_STEM));
     let addon = built.join(platform.shared(ADDON_STEM));
+    crate::floor::check(platform, &[&shared, &addon]).map_err(io::Error::other)?;
 
     let library = gzipped_library(dist, platform, version, &shared)?;
     let bundle = c_bundle(root, dist, platform, version, built)?;

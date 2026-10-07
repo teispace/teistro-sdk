@@ -27,6 +27,18 @@ Everything is built natively on its own runner. Nothing is
 cross-compiled, because a cross-built library is a library nobody ran the
 test suite on, and the runners are free.
 
+**The glibc floor is 2.28.** A Linux library asks the loader for the
+glibc symbol versions of the machine that linked it, so one built on
+`ubuntu-latest` (glibc 2.39) refuses to load on Debian 11, RHEL 8 or
+Ubuntu 22.04, and nothing in the build says so. The floor is a field of
+the row (`glibc_floor`), and `package` reads every file it ships from
+the version-needed table inside it (`xtask/src/floor.rs`): a file that
+needs a version above the floor is not packaged. 2.28 is RHEL 8's and
+Debian 10's, the oldest still supported, and the floor Node 22's own
+Linux builds and `manylinux_2_28` wheels ask of a consumer already.
+`check-package` packages the host, so verify's Linux rows hold the floor
+on every dispatch and not only on a release.
+
 **Next row: musl.** `Platform` already carries `libc`, the platform
 packages already declare it, and npm already refuses a glibc package on a
 musl host with it; what is missing is the two rows and the `musl-tools`
