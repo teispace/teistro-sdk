@@ -8,6 +8,12 @@
 //! derived from them by the text's precedence, so a reader sees why as well
 //! as what.
 //!
+//! The second is **graha-śānti**: what BPHS ch. 84 and *Yājñavalkya*
+//! I.295–307 prescribe for each graha (the image, the ṛk, the japa, the
+//! samidh, the food and the fee), with the gem *Jataka Parijata* II.21
+//! gives it and the direction and substance of *Brihat Jataka* II.5 and
+//! II.12, each value the verse's own word ([`shanti`]).
+//!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
 //! use teistro_remedies::{FunctionalRules, Nature, functional};
@@ -22,11 +28,18 @@
 #![doc(html_no_source)]
 
 mod functional;
+mod shanti;
 
+#[cfg(test)]
+mod shanti_tests;
 #[cfg(test)]
 mod tests;
 
 pub use functional::{
     Badhaka, Clause, ClauseKind, Functional, FunctionalRow, FunctionalRules, Nature, Scheme,
     functional,
+};
+pub use shanti::{
+    Dakshina, Food, Gem, ImageMaterial, MandalaPlace, OFFERINGS, RikSource, Samidh, Shanti,
+    ShantiRules, Substance, shanti,
 };

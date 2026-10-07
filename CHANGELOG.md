@@ -2225,6 +2225,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   badhakesha), and the summary nature by the text's precedence. The
   baseline engine's reading, the lords of 6, 8 and 12 bad, is
   `Scheme::Baseline`. **Numbers:** none move; a new module.
+- **Remedies, step 2: graha-śānti** (`remedies.md`, C343 to C347).
+  `teistro::remedies::shanti(graha, rules)` gives each graha's image,
+  ṛk, japa in thousands, samidh, food and dakṣiṇā from BPHS ch. 84
+  read beside *Yājñavalkya* I.295–307, the gem *Jataka Parijata* II.21
+  gives it, and its substance and direction from *Brihat Jataka* II.12
+  and II.5. Each value is the verse word: Mars's japa is 10 and
+  Saturn's 23, Ketu's fee a goat, and Ketu has no direction and the
+  nodes no substance. Rahu's ṛk, the one cell the two texts part on,
+  is `RikSource`. **Numbers:** none move; a new table.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's

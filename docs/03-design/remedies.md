@@ -1,7 +1,8 @@
 # Remedies: functional nature, graha-śānti and the subjects of a remedy (the `remedies` module)
 
-Status: `built` for step 1 (functional nature, `crates/remedies`),
-2026-10-07; steps 2 to 4 are designed below and not built.
+Status: `built` for step 1 (functional nature, `crates/remedies`) and
+step 2's per-graha table (graha-śānti), 2026-10-07; the antardaśā
+śāntis and steps 3 and 4 are designed below and not built.
 
 Phase 8 lists remedies after matching. The baseline engine reaches them
 from a controller, and 39 interpretation readings wait on them to name
@@ -96,18 +97,44 @@ read (C333).
 
 ## The steps that remain
 
-2. **What is done for a graha.** BPHS (the 1952 print) ch. 84 and
-   *Yājñavalkya* I.295 to 307 give each graha's image, Vedic ṛk, samidh,
-   food and dakṣiṇā. BPHS 84.19–20 gives its japa in thousands (7, 11,
-   10, 9, 19, 16, 23, 18, 17); the English print's 11 000 for Mars
-   misreads *diśaḥ*. *Jataka Parijata* II.21 gives the gem each graha
-   *owns*; Tagore's *Mani-mala* (1879, rank 2) prints it as gems *given
-   away* and a different list to *wear*. The plan:
-   - the japa count and the gem owned become catalogue attributes on
-     `graha`;
-   - the ṛk, dakṣiṇā, samidh, food and image become rank 1 records;
-   - the baseline's bījas, grains, fingers, carats and ring metals become
-     a `BASELINE` pack, marked unsourced.
+2. **What is done for a graha** (built, C343 to C347).
+   `shanti(graha, rules)` answers one graha's graha-śānti, each value
+   the verse word read on the page:
+   - **From BPHS (the 1952 print) ch. 84**, read beside *Yājñavalkya*
+     I.295–307:
+     - the image's material (v. 4);
+     - the ṛk (vv. 17–18);
+     - the japa in thousands (vv. 19–20: 7, 11, 10, 9, 19, 16, 23, 18,
+       17);
+     - the samidh (v. 21), the food (v. 23) and the dakṣiṇā (v. 25);
+     - the 108 or 28 offerings (v. 22) as `OFFERINGS`.
+   - **From the other texts:**
+     - the gem a graha owns (*Jataka Parijata* II.21);
+     - the substance it rules (*Brihat Jataka* II.12 = *Jataka
+       Parijata* II.20);
+     - its direction (*Brihat Jataka* II.5);
+     - its place in the Matsya maṇḍala the Mitākṣarā quotes.
+   - **The two texts agree verse by verse except for Rahu's ṛk.**
+     `RikSource` chooses between them (C343). Yājñavalkya gives no japa
+     counts.
+   - **The translations differ from the verse in three places**, and
+     the verse word wins (C344):
+     - Mars's *diśaḥ* is 10, not the English print's 11 000;
+     - Saturn's *tri-pakṣāḥ* is 23, its digits read right to left;
+     - Ketu's *chāga* is a goat, not the 1918 English "sheep".
+   - **The nodes get nothing the verses do not give them.** Ketu has no
+     direction (C345) and the nodes rule no substance (C346). Ketu's gem
+     is *Jataka Parijata*'s *vaidūrya*; BPHS 2.32's *nīlamaṇi* waits for
+     its page image (C347).
+   - **Commentary stays out of the values.** The Mitākṣarā's yellow
+     cloth and grey horse, and the 1952 Hindi's cow with her calf, are
+     notes on this page, not values.
+   - **Still to come:**
+     - the antardaśā śāntis of BPHS (1923) chs. 37–45, 79 rows, each
+       conditioned on a lordship or a placement, become rule records
+       once their conditions are transcribed;
+     - the baseline engine's bījas, grains, fingers, carats and ring
+       metals become a `BASELINE` pack, marked unsourced.
 3. **Whom a remedy is for.** BPHS 84.26 and *Yājñavalkya* I.307 name the
    graha ill-placed (*duḥstha*) for the person at the time. The answer
    is a list of subjects, each with its reasons:
