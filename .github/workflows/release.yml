@@ -307,4 +307,4 @@ jobs:
       - name: The Python package, published
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: pypi-dist
+          packages-dir: dist/pypi-dist
