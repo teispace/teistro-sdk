@@ -1024,12 +1024,19 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   // ch. 10: the ashtakavarga spans, the seven's years summed, and the
   // candidate Mars names carries their sum.
   const spans = answered.longevity.ashtakavarga;
-  assert.deepEqual(spans.rules, { measures: 'parijata', divisor: 'thirty', reductions: 'verse' });
+  assert.deepEqual(spans.rules, { measures: 'parijata', divisor: 'thirty', reductions: 'verse', occupied: 'reduced' });
+  // v. 48: the lagna's own ashtakavarga holds 49 bindus.
+  assert.equal(spans.lagna.bindus.reduce((sum, b) => sum + b, 0), 49);
   assert.equal(spans.grahas.length, 7);
   const bhinna = spans.grahas.reduce((sum, giver) => sum + giver.years, 0);
   assert.ok(Math.abs(bhinna - spans.bhinna) < 1e-9, String(bhinna));
   assert.equal(choice.candidates.find((c) => c.ayus === 'bhinnashtakavarga').years, spans.bhinna);
-  const balabhadra = { measures: 'bphs', divisor: 'seven-over-twenty-seven', reductions: 'balabhadra' };
+  const balabhadra = {
+    measures: 'bphs',
+    divisor: 'seven-over-twenty-seven',
+    reductions: 'balabhadra',
+    occupied: 'raw',
+  };
   const byBalabhadra = ctx.chart.found({ ...request, rules: { longevity: true, ashtakavarga: balabhadra } })
     .rules.longevity.ashtakavarga;
   assert.deepEqual(byBalabhadra.rules, balabhadra);

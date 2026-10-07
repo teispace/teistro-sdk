@@ -885,7 +885,14 @@ void _engineTests() {
       'measures': 'parijata',
       'divisor': 'thirty',
       'reductions': 'verse',
+      'occupied': 'reduced',
     });
+    // v. 48: the lagna's own ashtakavarga holds 49 bindus.
+    expect(
+      ((spans['lagna']! as Map<String, Object?>)['bindus']! as List<Object?>)
+          .fold<num>(0, (sum, b) => sum + (b! as num)),
+      49,
+    );
     final givers =
         (spans['grahas']! as List<Object?>).cast<Map<String, Object?>>();
     expect(
@@ -904,6 +911,7 @@ void _engineTests() {
                       measures: AyusSignMeasures.bphs,
                       divisor: AyusDivisor.sevenOverTwentySeven,
                       reductions: AshtakaReductions.balabhadra,
+                      occupied: OccupiedBindus.raw,
                     ),
                   ),
                 )!['longevity']!
@@ -913,6 +921,7 @@ void _engineTests() {
       'measures': 'bphs',
       'divisor': 'seven-over-twenty-seven',
       'reductions': 'balabhadra',
+      'occupied': 'raw',
     });
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),

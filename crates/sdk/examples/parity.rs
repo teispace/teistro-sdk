@@ -127,11 +127,18 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             &format!("chart-{index}-rules-chakrayus"),
             number(chakrayus),
         );
-        let (bhinna, samudaya) = reading
+        let (bhinna, samudaya, occupied) = reading
             .longevity
             .as_ref()
             .and_then(|longevity| longevity.ashtakavarga)
-            .map_or((0.0, 0.0), |spans| (spans.bhinna, spans.samudaya));
+            .map_or((0.0, 0.0, 0.0), |spans| {
+                (spans.bhinna, spans.samudaya, spans.occupied)
+            });
+        put(
+            report,
+            &format!("chart-{index}-rules-occupied"),
+            number(occupied),
+        );
         put(
             report,
             &format!("chart-{index}-rules-bhinna"),

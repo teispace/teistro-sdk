@@ -427,3 +427,82 @@ fn balabhadra_takes_only_the_greatest_reduction_from_the_same_years() {
     // Mercury and Venus beside the Sun nearly always have.
     assert_eq!(kept, [99, 121, 431]);
 }
+
+/// The lagna's own ashtakavarga holds 49 bindus on every chart, v. 50's
+/// span counts each graha's bindus in the seven's signs, and v. 49's two
+/// clauses are reported, never a verdict.
+#[test]
+fn the_lagna_s_ashtakavarga_and_the_span_of_the_seven_s_signs() {
+    use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter};
+    use teistro_rules::longevity::{AshtakavargaAyusRules, Bindus, OccupiedBindus};
+    use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus};
+
+    let seven = [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Saturn,
+    ];
+    let (mut occupied, mut raw, mut lagna) = (Vec::new(), Vec::new(), Vec::new());
+    let mut called = [0_u32; 2];
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+        let sign = |body: Body| chart.placement(body).sign;
+        let ashtakavarga = AshtakavargaChart {
+            lagna: sign(Body::Lagna),
+            signs: seven.map(|graha| sign(Body::Graha(graha))),
+        };
+        let given = Bindus {
+            grahas: bindus(&ashtakavarga, MoonBinduFromJupiter::Twelfth),
+            ekadhipatya: Ekadhipatya::Bphs,
+        };
+        let spans = evaluator.ashtakavarga_ayus(&given, AshtakavargaAyusRules::default());
+        let unreduced = evaluator.ashtakavarga_ayus(
+            &given,
+            AshtakavargaAyusRules {
+                occupied: OccupiedBindus::Raw,
+                ..AshtakavargaAyusRules::default()
+            },
+        );
+        let sum: u32 = spans.lagna.bindus.iter().map(|b| u32::from(*b)).sum();
+        assert_eq!(sum, 49, "{}", path.display());
+        for (giver, whole) in spans.grahas.iter().zip(&unreduced.grahas) {
+            assert!(giver.occupied_bindus <= whole.occupied_bindus);
+            assert!(
+                (giver.occupied_years - f64::from(giver.occupied_bindus) * giver.factor).abs()
+                    < 1e-12
+            );
+        }
+        occupied.push(spans.occupied);
+        raw.push(unreduced.occupied);
+        lagna.push(spans.lagna.years);
+        called[0] += u32::from(spans.called_for.moon_joined_outside_a_kendra);
+        called[1] += u32::from(spans.called_for.tenth_benefic_and_malefic);
+    }
+    let summary = |years: &[f64]| {
+        let round = |value: f64| (value * 100.0).round() / 100.0;
+        let low = years.iter().copied().fold(f64::INFINITY, f64::min);
+        let high = years.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+        (
+            round(low),
+            round(years.iter().sum::<f64>() / 93.0),
+            round(high),
+        )
+    };
+    // v. 50 over the 93 charts: the reduced bindus give a life, the raw ones
+    // about twice the longest (C318); the lagna's years are under a twelve.
+    assert_eq!(
+        [summary(&occupied), summary(&raw), summary(&lagna)],
+        [
+            (27.62, 70.54, 128.69),
+            (148.04, 229.1, 315.48),
+            (2.53, 5.38, 8.53)
+        ]
+    );
+    // v. 49 calls for it on 31 charts by the Moon and 2 by the tenth.
+    assert_eq!(called, [31, 2]);
+}

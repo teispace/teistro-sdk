@@ -2157,6 +2157,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **The lagna's ashtakavarga and the last of ch. 10's spans**
+  (`ayurdaya-spans.md`, C318). The ashtakavarga spans gain `lagna`, the
+  lagna's years from its own ashtakavarga (Parasara's table, v. 48's
+  note), `occupied`, v. 50's span from each graha's bindus in the seven's
+  signs, and `called_for`, v. 49's two clauses; `ashtakavarga.occupied`
+  chooses the reduced bindus (default) or the raw. Parity compares
+  `occupied`. **Numbers:** none; new readings.
 - **Balabhadra's reductions of the ashtakavarga years**
   (`ayurdaya-spans.md`, C317). `ashtakavarga.reductions` chooses v. 46's
   (default) or the note's: the greatest of a half or a third only. The

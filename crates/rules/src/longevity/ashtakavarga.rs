@@ -23,10 +23,12 @@
 //! 365, both reported.
 //!
 //! The sign measures are *Jataka Parijata*'s, Virgo 5, where BPHS's
-//! translator reads 6 (C311). Not read: the lagna's own years, which some
-//! add (v. 48), from an ashtakavarga the SDK does not compute; v. 50's
-//! other Bhinnashtakavarga span, whose "reductions mentioned already" the
-//! text does not name.
+//! translator reads 6 (C311). The lagna's own years, which "some" add
+//! (v. 48), come from its own ashtakavarga, Parasara's as the note gives it
+//! (p. 693), reported beside the seven's and never added to them. v. 50's
+//! other span counts each graha's bindus in the seven's signs, reduced by
+//! vv. 39 to 42 and its years by v. 46 or the note (C318), and v. 49's two
+//! clauses for when the ashtakavarga span applies are reported.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -36,6 +38,7 @@ use teistro_strength::ashtakavarga::{AshtakavargaReading, GRAHA_MEASURES, RASHI_
 use super::ayurdaya::{Enmity, by_exaltation, in_enemy_sign};
 use crate::eval::Evaluator;
 use crate::language::{Body, House};
+use crate::reference::Class;
 
 /// The seven, the Sun to Saturn, as an ashtakavarga lists them.
 const GRAHAS: [Graha; 7] = [
@@ -51,6 +54,19 @@ const GRAHAS: [Graha; 7] = [
 /// Each sign's measure as *Jataka Parijata* ch. 10 v. 44 prints it, Aries
 /// to Pisces: Virgo 5.
 pub const PARIJATA_RASHI_MEASURES: [u16; 12] = [7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12];
+
+/// The nine, whose company v. 49 and Balabhadra's reductions count.
+const NINE: [Graha; 9] = [
+    Graha::Sun,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+    Graha::Rahu,
+    Graha::Ketu,
+];
 
 /// A nakshatra year's days, twelve months of 27, in which v. 71 counts
 /// Samudaya.
@@ -109,6 +125,59 @@ pub enum AshtakaReductions {
     Balabhadra,
 }
 
+/// Which bindus v. 50's span counts in the seven's signs (C318).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum OccupiedBindus {
+    /// After the trine and single-lord reductions (vv. 39 to 42), which
+    /// "the reductions mentioned already" name first.
+    #[default]
+    Reduced,
+    /// As the ashtakavarga gives them.
+    Raw,
+}
+
+/// The lagna's own ashtakavarga, Parasara's as the note to v. 48 gives it
+/// (p. 693): the houses from the Sun, the Moon, Mars, Mercury, Jupiter,
+/// Venus, Saturn and the lagna itself in which each gives the lagna a
+/// bindu, 49 in all.
+pub const LAGNA_ASHTAKAVARGA: [&[u8]; 8] = [
+    &[3, 4, 6, 10, 11, 12],
+    &[3, 6, 10, 11, 12],
+    &[1, 3, 6, 10, 11],
+    &[1, 2, 4, 6, 8, 10, 11],
+    &[1, 2, 4, 5, 6, 7, 9, 10, 11],
+    &[1, 2, 3, 4, 5, 8, 9],
+    &[1, 3, 4, 6, 10, 11],
+    &[3, 6, 10, 11],
+];
+
+/// The lagna's ashtakavarga for the seven's `signs`, the Sun to Saturn, and
+/// the `lagna`'s, Aries to Pisces.
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_rules::longevity::lagna_bindus;
+///
+/// let bindus = lagna_bindus(&[Rashi::Aries; 7], Rashi::Aries);
+/// assert_eq!(bindus.iter().map(|b| u32::from(*b)).sum::<u32>(), 49);
+/// // Every contributor in Aries: the table's own column of sums.
+/// assert_eq!(bindus, [5, 3, 6, 5, 2, 7, 1, 2, 2, 7, 7, 2]);
+/// ```
+#[must_use]
+pub fn lagna_bindus(signs: &[Rashi; 7], lagna: Rashi) -> [u8; 12] {
+    let mut bindus = [0_u8; 12];
+    for (from, houses) in signs.iter().chain([&lagna]).zip(LAGNA_ASHTAKAVARGA) {
+        for house in houses {
+            let sign = (*from as usize + usize::from(*house) - 1) % 12;
+            if let Some(cell) = bindus.get_mut(sign) {
+                *cell += 1;
+            }
+        }
+    }
+    bindus
+}
+
 /// The choices the ashtakavarga spans are read under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -119,6 +188,8 @@ pub struct AshtakavargaAyusRules {
     pub divisor: Divisor,
     /// How each graha's years are reduced.
     pub reductions: AshtakaReductions,
+    /// Which bindus v. 50's span counts.
+    pub occupied: OccupiedBindus,
 }
 
 /// A chart's raw ashtakavargas and how they are reduced.
@@ -163,6 +234,33 @@ pub struct AshtakaGiver {
     pub factor: f64,
     /// Its years.
     pub years: f64,
+    /// Its bindus in the seven's signs (v. 50).
+    pub occupied_bindus: u32,
+    /// Those as years under the same factor (v. 50).
+    pub occupied_years: f64,
+}
+
+/// The lagna's years from its own ashtakavarga (v. 48), as a graha's are.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct LagnaAshtaka {
+    /// Its bindus by sign, Aries to Pisces, before the reductions.
+    pub bindus: [u8; 12],
+    /// Its reduced bindus times the sign measures.
+    pub rashi_pinda: u32,
+    /// Its reduced bindus in the seven's signs times their measures.
+    pub graha_pinda: u32,
+    /// The two as years, which "some" add to the seven's (v. 48).
+    pub years: f64,
+}
+
+/// When v. 49 calls for the ashtakavarga span, clause by clause.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct CalledFor {
+    /// The Moon outside the kendras with another graha in her sign.
+    pub moon_joined_outside_a_kendra: bool,
+    /// The tenth occupied by a benefic and a malefic, by the readings'
+    /// classes.
+    pub tenth_benefic_and_malefic: bool,
 }
 
 /// The ashtakavarga spans of a chart.
@@ -175,6 +273,13 @@ pub struct AshtakavargaAyus {
     /// That sum in solar years: years of 360 days over 30, by v. 34, and
     /// nakshatra years of 324 over 7 by 27, as the note converts them.
     pub bhinna_solar: f64,
+    /// v. 50's span: the seven's bindus in their own signs, as years, under
+    /// the same factors.
+    pub occupied: f64,
+    /// The lagna's years (v. 48), which "some" add to the seven's.
+    pub lagna: LagnaAshtaka,
+    /// When v. 49 calls for the ashtakavarga span.
+    pub called_for: CalledFor,
     /// The gathered ashtakavarga's span, Samudaya (v. 71): the product
     /// below, less a hundred years once when over a hundred (C314).
     pub samudaya: f64,
@@ -277,6 +382,15 @@ impl Evaluator<'_> {
                 AshtakaReductions::Verse => factor(graha, at.longitude, at.retrograde, at.combust),
                 AshtakaReductions::Balabhadra => self.balabhadra_factor(graha),
             };
+            let counted = match rules.occupied {
+                OccupiedBindus::Reduced => reduced,
+                OccupiedBindus::Raw => raw,
+            };
+            let occupied_bindus = signs
+                .iter()
+                .filter_map(|sign| counted.get(*sign as usize % 12))
+                .map(|figure| u32::from(*figure))
+                .sum();
             AshtakaGiver {
                 graha,
                 rashi_pinda,
@@ -284,6 +398,8 @@ impl Evaluator<'_> {
                 basic,
                 factor,
                 years: basic * factor,
+                occupied_bindus,
+                occupied_years: f64::from(occupied_bindus) * factor,
             }
         });
         let mut sarva = [0_u16; 12];
@@ -310,9 +426,25 @@ impl Evaluator<'_> {
             Divisor::Thirty => SAVANA_YEAR,
             Divisor::SevenOverTwentySeven => NAKSHATRA_YEAR,
         };
+        let lagna_sign = chart.placement(Body::Lagna).sign;
+        let lagna_raw = lagna_bindus(&signs, lagna_sign);
+        let (rashi_pinda, graha_pinda) = pindas(
+            &reduce(lagna_raw.map(u16::from), &occupied, bindus.ekadhipatya),
+            &signs,
+            rules.measures,
+        );
+        let lagna = LagnaAshtaka {
+            bindus: lagna_raw,
+            rashi_pinda,
+            graha_pinda,
+            years: pinda_years(rashi_pinda + graha_pinda, rules.divisor),
+        };
         AshtakavargaAyus {
             grahas,
             bhinna,
+            occupied: grahas.iter().map(|giver| giver.occupied_years).sum(),
+            lagna,
+            called_for: self.called_for(),
             bhinna_solar: bhinna * year / SOLAR_YEAR,
             samudaya,
             samudaya_product: product,
@@ -323,6 +455,30 @@ impl Evaluator<'_> {
 }
 
 impl Evaluator<'_> {
+    /// v. 49's two clauses: the Moon joined outside the kendras, or the
+    /// tenth held by a benefic and a malefic. "Another planet" is any of
+    /// the nine, as in Balabhadra's reductions.
+    fn called_for(&self) -> CalledFor {
+        let chart = self.chart();
+        let lagna = chart.placement(Body::Lagna).sign;
+        let sign_of = |graha: Graha| chart.placement(Body::Graha(graha)).sign;
+        let moon = sign_of(Graha::Moon);
+        let kendra = matches!(House::between(lagna, moon).get(), 1 | 4 | 7 | 10);
+        let joined = NINE
+            .iter()
+            .any(|other| *other != Graha::Moon && sign_of(*other) == moon);
+        let in_tenth: Vec<Graha> = NINE
+            .iter()
+            .copied()
+            .filter(|graha| House::between(lagna, sign_of(*graha)).get() == 10)
+            .collect();
+        let has = |class: Class| in_tenth.iter().any(|graha| self.of_class(*graha, class));
+        CalledFor {
+            moon_joined_outside_a_kendra: !kendra && joined,
+            tenth_benefic_and_malefic: has(Class::Benefic) && has(Class::Malefic),
+        }
+    }
+
     /// What of a graha's years Balabhadra's reductions leave: one less the
     /// greatest share that applies (the note to v. 46). Its bhava is whole
     /// signs from the lagna, and "another planet" any of the nine.
@@ -331,9 +487,8 @@ impl Evaluator<'_> {
         let at = chart.placement(Body::Graha(graha));
         let lagna = chart.placement(Body::Lagna);
         let sign_of = |other: Graha| chart.placement(Body::Graha(other)).sign;
-        let joined = GRAHAS
+        let joined = NINE
             .iter()
-            .chain(&[Graha::Rahu, Graha::Ketu])
             .any(|other| *other != graha && sign_of(*other) == at.sign);
         let debilitated = graha
             .attributes()

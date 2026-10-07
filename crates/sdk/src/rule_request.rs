@@ -268,6 +268,7 @@ impl RuleRequest {
     ///     measures: SignMeasures::Bphs,
     ///     divisor: Divisor::SevenOverTwentySeven,
     ///     reductions: AshtakaReductions::Balabhadra,
+    ///     ..AshtakavargaAyusRules::default()
     /// };
     /// let read = RuleRequest::from_json(
     ///     r#"{"longevity": true, "ashtakavarga": {"measures": "bphs", "divisor": "seven-over-twenty-seven", "reductions": "balabhadra"}}"#,

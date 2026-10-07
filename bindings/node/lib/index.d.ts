@@ -3419,6 +3419,8 @@ export interface AshtakavargaAyusRules {
   readonly divisor?: 'thirty' | 'seven-over-twenty-seven';
   /** How each graha's years are reduced: v. 46's, or Balabhadra's greatest share only (C317). */
   readonly reductions?: 'verse' | 'balabhadra';
+  /** Which bindus v. 50's span counts in the seven's signs: reduced, or raw (C318). */
+  readonly occupied?: 'reduced' | 'raw';
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

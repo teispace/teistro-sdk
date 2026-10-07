@@ -17,8 +17,9 @@ mod pairs;
 mod rasmi;
 
 pub use ashtakavarga::{
-    AshtakaGiver, AshtakaReductions, AshtakavargaAyus, AshtakavargaAyusRules, Bindus, Divisor,
-    PARIJATA_RASHI_MEASURES, SignMeasures, pinda_years, pindas,
+    AshtakaGiver, AshtakaReductions, AshtakavargaAyus, AshtakavargaAyusRules, Bindus, CalledFor,
+    Divisor, LAGNA_ASHTAKAVARGA, LagnaAshtaka, OccupiedBindus, PARIJATA_RASHI_MEASURES,
+    SignMeasures, lagna_bindus, pinda_years, pindas,
 };
 pub use ayurdaya::{
     Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, JEEVASARMAN_YEARS,
