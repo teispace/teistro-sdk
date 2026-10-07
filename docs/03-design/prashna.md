@@ -200,8 +200,8 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 - `timing`: `STRONGEST_GRAHA` (default), `FIRST_OCCUPIED`, `MOON_DAYS`
   or `BASELINE`;
 - `mook`: `SHATPANCHASHIKA` (default), `MOON_HOUSE` or `BASELINE`;
-- `score`: off by default, `BASELINE` adds the baseline's −10..+10
-  points beside the clauses and never replaces them;
+- `score`: `OFF` by default, `BASELINE` adds the baseline's points
+  beside the clauses and never replaces them;
 - `moon_benefic`: Tajika's existing knob, reused.
 
 `PrashnaRules::baseline()` sets every `BASELINE` value at once.
@@ -255,8 +255,24 @@ Each names its field under `prashna`.
    (C352). The akṣara-lagna and the six points are open (C353): two
    prints carry vv. 12–15 without a gloss, and the root leaves four
    readings unsettled.
-3. **The `BASELINE` values**, transcribed from the baseline engine's
-   source, each test naming the rank-1 rule it departs from.
+3. **The `BASELINE` values**, built, transcribed from the baseline
+   engine's source as it runs:
+   - `ScoreRule::Baseline` puts its points beside the clauses: the lagna
+     lord in a kendra or trikona (+2) or a dusthana (−2), the waxing Moon
+     (+1), its void Moon over grahas held still (−3), benefics and
+     malefics in kendras (±1 each, the Moon always a benefic), and the
+     Moon applying by conjunction distance alone (±1); over 1 is yes,
+     under −1 no;
+   - `MookRule::Baseline` takes its strongest graha, 2 for a kendra and
+     1 for a trikona, the first in its order (Sun, Moon, Mercury, Venus,
+     Mars, Jupiter, Saturn) taking a tie;
+   - `number_sign` and `Question::number` give (n − 1) mod 12 from Aries.
+
+   **Found:** the baseline scores three dignity factors (the lagna lord
+   exalted, own sign, debilitated) and its topic two, but the planets it
+   scores never carry those flags, so none of the five ever fires. They
+   are left out, so a migrating consumer gets the answers the baseline
+   actually gave.
 4. **The façade and every binding**, over the JSON-answer boundary that
    numerology uses.
 

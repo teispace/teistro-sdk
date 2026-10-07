@@ -2256,6 +2256,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   "at birth or in a query", so a prashna now carries `moon`.
   `KshinaRule` gives the gloss's span of the waning Moon and the one it
   quotes as "some say". **Numbers:** none move.
+- **Prashna, step 3: the baseline's readings** (`prashna.md`, C337,
+  C339, C340). `PrashnaRules::baseline()` now reaches every one:
+  `ScoreRule::Baseline` (the points and their factors, beside the
+  clauses), `MookRule::Baseline` (the topic by kendra and trikona) and
+  `number_sign` for a querent's 1–108 (`Question::number`). Each is
+  transcribed as the engine runs: five dignity factors it names but never
+  sets are left out. `Question::about(house)` is new. **Numbers:** none
+  under the defaults.
 - **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
   `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
   (the 1923 print) prescribe for each of the 81 antardaśās: the verses,

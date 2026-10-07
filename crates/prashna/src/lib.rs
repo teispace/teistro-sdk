@@ -50,8 +50,11 @@ use teistro_tajika::{
     year_yogas_with_states,
 };
 
+mod baseline;
 #[cfg(test)]
 mod tests;
+
+pub use baseline::{Answer, Factor, FactorKind, Score, ScoreRule, number_sign};
 
 /// The nine grahas a prashna places, in the order [`PrashnaSky`] holds
 /// them.
@@ -310,6 +313,10 @@ pub enum MookRule {
     /// *Jnanaprakasha*, quoted in *Tajika Nilakanthi*: the house the Moon
     /// stands in, or the lagna lord's when he is the stronger.
     MoonHouse,
+    /// `BASELINE`: the baseline engine's strongest graha, 2 points for a
+    /// kendra and 1 for a trikona, the first in its order taking a tie;
+    /// its house is the topic. Unsourced (C339).
+    Baseline,
 }
 
 /// The readings a prashna is given under.
@@ -326,6 +333,8 @@ pub struct PrashnaRules {
     /// How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna
     /// Tantra vv. 73–74).
     pub moon: MoonRules,
+    /// Whether the baseline engine's points come beside the clauses.
+    pub score: ScoreRule,
 }
 
 impl PrashnaRules {
@@ -335,7 +344,8 @@ impl PrashnaRules {
         PrashnaRules {
             pisces: PiscesRising::BothWays,
             timing: TimingRule::Baseline,
-            mook: MookRule::Shatpanchashika,
+            mook: MookRule::Baseline,
+            score: ScoreRule::Baseline,
             moon: MoonRules {
                 kshina: teistro_tajika::KshinaRule::DarkEighthToBrightEighth,
             },
@@ -351,6 +361,27 @@ pub struct Question {
     /// The house the matter belongs to, 1 to 12, when the question names
     /// one (the kārya bhāva).
     pub house: Option<u8>,
+    /// The number the querent chose, 1 to 108, read only by the
+    /// unsourced [`number_sign`] (C340).
+    pub number: Option<u8>,
+}
+
+impl Question {
+    /// A question about the matter of `house`, 1 to 12 (checked by
+    /// [`read`]).
+    ///
+    /// ```
+    /// use teistro_prashna::Question;
+    ///
+    /// assert_eq!(Question::about(7).house, Some(7));
+    /// ```
+    #[must_use]
+    pub const fn about(house: u8) -> Question {
+        Question {
+            house: Some(house),
+            number: None,
+        }
+    }
 }
 
 /// Which way a clause tells.
@@ -571,13 +602,19 @@ pub struct Prashna {
     /// v. 74 reads "at birth or in a query": each clause of vv. 73–74
     /// that holds, none weighed.
     pub moon: MoonWeakness,
+    /// The baseline engine's points, under [`ScoreRule::Baseline`] only.
+    pub score: Option<Score>,
+    /// The sign of the querent's number, when one is given: the
+    /// baseline engine's rule, unsourced (C340).
+    pub number_sign: Option<Rashi>,
 }
 
 /// Reads a query chart.
 ///
 /// # Errors
 ///
-/// A house outside 1 to 12 (`house`), or an input that is not a finite
+/// A house outside 1 to 12 (`house`), a number outside 1 to 108
+/// (`number`), or an input that is not a finite
 /// number, naming its field.
 pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result<Prashna, Error> {
     sky.check()?;
@@ -594,6 +631,11 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
         mook: mook(sky, rules.mook)?,
         links: links(sky, question)?,
         moon: moon_weakness(&annual(sky)?, rules.moon)?,
+        score: match rules.score {
+            ScoreRule::Off => None,
+            ScoreRule::Baseline => Some(baseline::score(sky)?),
+        },
+        number_sign: question.number.map(number_sign).transpose()?,
     })
 }
 
@@ -880,6 +922,7 @@ fn mook(sky: &PrashnaSky, rule: MookRule) -> Result<Mook, Error> {
             let stronger = sky.strength_of(lord) > sky.strength_of(Graha::Moon);
             (if stronger { lord } else { Graha::Moon }, false)
         }
+        MookRule::Baseline => baseline::topic(sky)?,
     };
     let house = sky.house_of(graha).ok_or_else(unplaced)?;
     Ok(Mook {

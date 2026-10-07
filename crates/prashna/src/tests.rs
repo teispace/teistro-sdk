@@ -11,8 +11,9 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_tajika::{KshinaRule, MoonClause, MoonRules};
 
 use crate::{
-    Change, ClauseKind, Favour, MookRule, Outcome, Person, PiscesRising, Placed, PrashnaRules,
-    PrashnaSky, Question, Thought, TimingRule, Unit, read,
+    Answer, Change, ClauseKind, FactorKind, Favour, MookRule, Outcome, Person, PiscesRising,
+    Placed, PrashnaRules, PrashnaSky, Question, Score, ScoreRule, Thought, TimingRule, Unit,
+    number_sign, read,
 };
 
 /// A sky with the lagna at `lagna_deg` and the nine grahas, Sun to Ketu,
@@ -106,7 +107,7 @@ fn a_house_asked_about_is_judged_by_its_lord_and_who_aspects_it() {
     // Gemini rising, the 7th asked: Sagittarius, Jupiter's sign. Jupiter,
     // Venus and the Moon in Gemini aspect it fully (the 7th), and so does
     // Mars from Taurus (his 8th), a malefic.
-    let question = Question { house: Some(7) };
+    let question = Question::about(7);
     let answer = read(&gemini(), question, rules()).unwrap();
     let karya: Vec<(Option<Graha>, Favour)> = answer
         .verdict
@@ -301,7 +302,7 @@ fn a_dual_lagna_stays_in_its_first_half_and_changes_in_its_second() {
 #[test]
 fn a_house_out_of_range_or_a_number_that_is_not_one_is_refused() {
     for house in [0, 13] {
-        let error = read(&gemini(), Question { house: Some(house) }, rules()).unwrap_err();
+        let error = read(&gemini(), Question::about(house), rules()).unwrap_err();
         assert_eq!(error.field(), Some("house"));
     }
     let mut broken = gemini();
@@ -339,7 +340,7 @@ fn the_prashna_tantras_nakta_example_is_read_as_printed() {
         Rashi::Virgo,
         [165.0, 252.0, 280.0, 130.0, 350.0, 190.0, 310.0, 40.0, 220.0],
     );
-    let links = read(&virgo, Question { house: Some(7) }, rules())
+    let links = read(&virgo, Question::about(7), rules())
         .unwrap()
         .links
         .unwrap();
@@ -381,4 +382,131 @@ fn the_moon_is_read_in_a_query_as_at_birth() {
     };
     assert!(kshina(KshinaRule::DarkEighthToBrightEighth));
     assert!(!kshina(KshinaRule::DarkEleventhToNewMoon));
+}
+
+/// Aries rising; in the order of [`crate::GRAHAS`]: the Sun and Mercury in
+/// Cancer (4th), the Moon at `moon_deg` in Aries (1st), Mars in Capricorn
+/// (10th), Jupiter in Leo (5th), Venus in Gemini (3rd), Saturn in Libra
+/// (7th), Rahu in Pisces and Ketu in Virgo.
+fn aries(moon_deg: f64) -> PrashnaSky {
+    sky(
+        10.0,
+        Rashi::Aries,
+        [
+            100.0, moon_deg, 280.0, 110.0, 125.0, 60.0, 200.0, 331.0, 151.0,
+        ],
+    )
+}
+
+fn scored(sky: &PrashnaSky) -> Score {
+    let rules = PrashnaRules {
+        score: ScoreRule::Baseline,
+        ..rules()
+    };
+    read(sky, Question::default(), rules)
+        .unwrap()
+        .score
+        .unwrap()
+}
+
+#[test]
+fn the_baseline_scores_what_it_runs() {
+    // Mars, the lagna lord, in the 10th (+2); the Moon waning; Moon and
+    // Mercury in kendras (+2), the Sun, Mars and Saturn (−3); the Moon at
+    // 15° Aries meets Mercury's square at 20° before the sign ends, and
+    // Venus is the nearest ahead of her (+1).
+    let score = scored(&aries(15.0));
+    let factors: Vec<(FactorKind, i8)> = score
+        .factors
+        .iter()
+        .map(|factor| (factor.kind, factor.points))
+        .collect();
+    assert_eq!(
+        factors,
+        [
+            (FactorKind::LagnaLordKendraOrTrikona, 2),
+            (FactorKind::BeneficsInKendras, 2),
+            (FactorKind::MaleficsInKendras, -3),
+            (FactorKind::MoonApplyingToBenefic, 1),
+        ]
+    );
+    assert_eq!((score.points, score.answer), (2, Answer::Yes));
+    assert!(!score.void);
+    // At 28° she perfects nothing held still before Taurus: −3, and
+    // the answer turns uncertain.
+    let late = scored(&aries(28.0));
+    assert!(late.void);
+    assert_eq!((late.points, late.answer), (-1, Answer::Uncertain));
+    assert_eq!(late.applying_to, Some(Graha::Venus));
+    // Off by default, and the sourced verdict is there either way.
+    let plain = read(&aries(15.0), Question::default(), rules()).unwrap();
+    assert_eq!(plain.score, None);
+    assert_eq!(rules().score, ScoreRule::Off);
+}
+
+#[test]
+fn the_baselines_topic_breaks_a_tie_in_its_own_order() {
+    // The Moon alone scores 3 (the 1st is a kendra and a trikona).
+    let topic = |sky: &PrashnaSky| {
+        let rules = PrashnaRules {
+            mook: MookRule::Baseline,
+            ..rules()
+        };
+        read(sky, Question::default(), rules).unwrap().mook
+    };
+    let moon = topic(&aries(15.0));
+    assert_eq!(
+        (moon.graha, moon.house, moon.tie, moon.person),
+        (Graha::Moon, 1, false, None)
+    );
+    // Everything in Gemini but Mercury (4th) and Mars (10th), 2 each: the
+    // baseline lists Mercury before Mars, as the catalogue does not.
+    let tied = sky(
+        10.0,
+        Rashi::Aries,
+        [70.0, 75.0, 280.0, 100.0, 65.0, 66.0, 68.0, 331.0, 151.0],
+    );
+    let read_tied = topic(&tied);
+    assert_eq!(
+        (read_tied.graha, read_tied.house, read_tied.tie),
+        (Graha::Mercury, 4, true)
+    );
+}
+
+#[test]
+fn the_baselines_number_counts_signs_from_aries() {
+    assert_eq!(number_sign(1).unwrap(), Rashi::Aries);
+    assert_eq!(number_sign(13).unwrap(), Rashi::Aries);
+    assert_eq!(number_sign(108).unwrap(), Rashi::Pisces);
+    assert!(number_sign(0).is_err() && number_sign(109).is_err());
+    let asked = Question {
+        number: Some(14),
+        ..Question::default()
+    };
+    assert_eq!(
+        read(&aries(15.0), asked, rules()).unwrap().number_sign,
+        Some(Rashi::Taurus)
+    );
+    assert_eq!(
+        read(&aries(15.0), Question::default(), rules())
+            .unwrap()
+            .number_sign,
+        None
+    );
+}
+
+#[test]
+fn the_default_reaches_no_baseline_value_and_baseline_reaches_all() {
+    let (default, baseline) = (PrashnaRules::default(), PrashnaRules::baseline());
+    assert_ne!(default.timing, TimingRule::Baseline);
+    assert_ne!(default.mook, MookRule::Baseline);
+    assert_eq!(default.score, ScoreRule::Off);
+    assert_eq!(
+        (baseline.timing, baseline.mook, baseline.score),
+        (
+            TimingRule::Baseline,
+            MookRule::Baseline,
+            ScoreRule::Baseline
+        )
+    );
 }
