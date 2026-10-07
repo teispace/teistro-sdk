@@ -530,6 +530,51 @@ fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::R
     written.push(stage_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
     written.push(stage_python(root, dist, version, merged)?);
+    written.extend(python_wheels(root, dist, version, merged)?);
+    Ok(written)
+}
+
+/// Where the platform wheels are staged, beside the Python package they
+/// are built from.
+const WHEELS: &str = "pypi/wheels";
+
+/// A wheel for every platform the matrix built, each carrying that
+/// platform's library (`wheel.rs`). The library is the one the platform's
+/// gzipped archive holds, checked against the digest its manifest
+/// recorded before it is packed, so a wheel carries the bits the release
+/// lists.
+fn python_wheels(
+    root: &Path,
+    dist: &Path,
+    version: &str,
+    merged: &Value,
+) -> io::Result<Vec<String>> {
+    let staged = dist.join("pypi").join("teistro");
+    let into = dist.join(WHEELS);
+    if into.exists() {
+        fs::remove_dir_all(&into)?;
+    }
+    let mut written = Vec::new();
+    for (name, manifest) in merged["platforms"].as_object().into_iter().flatten() {
+        let platform = Platform::by_name(name)
+            .ok_or_else(|| io::Error::other(format!("{name} is not a shipped platform")))?;
+        let archive = manifest["archives"][0]["file"].as_str().ok_or_else(|| {
+            io::Error::other(format!("{name}'s manifest names no library archive"))
+        })?;
+        let mut library = Vec::new();
+        io::copy(
+            &mut flate2::read::GzDecoder::new(File::open(dist.join(archive))?),
+            &mut library,
+        )?;
+        let recorded = manifest["library"]["sha256"].as_str().unwrap_or_default();
+        if hex(&Sha256::digest(&library)) != recorded {
+            return Err(io::Error::other(format!(
+                "{archive} does not hold the library {name}'s manifest records"
+            )));
+        }
+        let wheel = crate::wheel::write(&staged, &into, version, &platform, &library)?;
+        written.push(rel(root, &into.join(wheel)));
+    }
     Ok(written)
 }
 

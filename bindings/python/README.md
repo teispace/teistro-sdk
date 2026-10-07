@@ -28,15 +28,17 @@ compiler to run and no wheel per interpreter version.
 
 ```sh
 pip install teistro
-teistro-install
 ```
 
-The package carries no binaries: a wheel that shipped one for every
-platform would make every consumer download all of them. `teistro-install`
-fetches the shared library for this machine from the release this
-package's version was cut from, checks it against a digest recorded when
-it was built, and writes it to `.teistro/<version>/`, which is one of the
-first places `Teistro.open()` looks.
+Each release publishes one wheel per platform, and each wheel carries
+only that platform's shared library in `teistro/_lib/`, so pip picks the
+one for this machine and nothing else is downloaded. Where no wheel fits
+(another libc, another architecture), pip falls back to the source
+distribution, which carries no binary; then `teistro-install` fetches
+the shared library for this machine from the release this package's
+version was cut from, checks it against a digest recorded when it was
+built, and writes it to `.teistro/<version>/`, which is one of the first
+places `Teistro.open()` looks.
 
 The download is refused, and nothing is written, when the bytes are not
 the ones that were built. On a machine with no network, install from a

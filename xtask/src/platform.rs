@@ -35,6 +35,12 @@ pub(crate) struct Platform {
     /// 2026, and the floor Node 22's own Linux builds and `manylinux_2_28`
     /// wheels already ask of a consumer, so the SDK asks nothing more.
     pub(crate) glibc_floor: Option<(u32, u32)>,
+    /// The platform tag of this row's Python wheel (`wheel.rs`): the
+    /// oldest system the library loads on, in the words pip matches a
+    /// host against. A Linux row's is its glibc floor, as `manylinux`
+    /// spells it; a macOS row's is the deployment target `rustc` builds
+    /// for by default, which `wheel.rs` reads back out of the library.
+    pub(crate) wheel_tag: &'static str,
 }
 
 /// Every platform the release matrix builds.
@@ -52,6 +58,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         libc: Some("glibc"),
         runner: "ubuntu-latest",
         glibc_floor: Some((2, 28)),
+        wheel_tag: "manylinux_2_28_x86_64",
     },
     Platform {
         triple: "aarch64-unknown-linux-gnu",
@@ -60,6 +67,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         libc: Some("glibc"),
         runner: "ubuntu-24.04-arm",
         glibc_floor: Some((2, 28)),
+        wheel_tag: "manylinux_2_28_aarch64",
     },
     Platform {
         triple: "aarch64-apple-darwin",
@@ -68,6 +76,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         libc: None,
         runner: "macos-latest",
         glibc_floor: None,
+        wheel_tag: "macosx_11_0_arm64",
     },
     Platform {
         triple: "x86_64-apple-darwin",
@@ -83,6 +92,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         // made in three places and one of them was missed.
         runner: "macos-15-intel",
         glibc_floor: None,
+        wheel_tag: "macosx_10_12_x86_64",
     },
     Platform {
         triple: "x86_64-pc-windows-msvc",
@@ -91,6 +101,7 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         libc: None,
         runner: "windows-latest",
         glibc_floor: None,
+        wheel_tag: "win_amd64",
     },
 ];
 
@@ -128,6 +139,7 @@ impl Platform {
                 libc: None,
                 runner: "none",
                 glibc_floor: None,
+                wheel_tag: "unknown",
             };
         };
         Self::by_triple(triple).unwrap_or_else(|| unreachable!("the triple came from the table"))
@@ -267,6 +279,21 @@ mod tests {
         assert_eq!(linux.venv_bin(), "bin");
         let windows = Platform::by_name("win32-x64").expect("a shipped platform");
         assert_eq!(windows.venv_bin(), "Scripts");
+    }
+
+    #[test]
+    fn a_linux_wheel_is_tagged_with_its_glibc_floor() {
+        for platform in PLATFORMS {
+            if let Some((major, minor)) = platform.glibc_floor {
+                let cpu = platform.triple.split('-').next().unwrap_or_default();
+                assert_eq!(
+                    platform.wheel_tag,
+                    format!("manylinux_{major}_{minor}_{cpu}"),
+                    "{}",
+                    platform.name()
+                );
+            }
+        }
     }
 
     #[test]
