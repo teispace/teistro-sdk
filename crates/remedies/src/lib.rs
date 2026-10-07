@@ -32,11 +32,14 @@
 mod dasha;
 mod functional;
 mod shanti;
+mod subjects;
 
 #[cfg(test)]
 mod dasha_tests;
 #[cfg(test)]
 mod shanti_tests;
+#[cfg(test)]
+mod subjects_tests;
 #[cfg(test)]
 mod tests;
 
@@ -48,4 +51,7 @@ pub use functional::{
 pub use shanti::{
     Dakshina, Food, Gem, ImageMaterial, MandalaPlace, OFFERINGS, RikSource, Samidh, Shanti,
     ShantiRules, Substance, shanti,
+};
+pub use subjects::{
+    AntardashaShanti, NINE, Reason, RemedySky, Running, Subject, Subjects, holds, subjects,
 };
