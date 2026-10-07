@@ -690,6 +690,17 @@ fn rays_and_choice_hold(name: &str, longevity: &teistro::Longevity) -> Option<Ay
             Ayus::Samudaya => Some(ashtakavarga.samudaya),
         };
         assert_eq!(candidate.years, years, "{name}");
+        // v. 34's solar years, Samudaya's by its own 324 days a year.
+        let days = if candidate.ayus == Ayus::Samudaya {
+            324.0
+        } else {
+            360.0
+        };
+        let solar = candidate
+            .solar_years
+            .zip(years)
+            .map(|(solar, years)| solar * 365.0 - years * days);
+        assert!(solar.is_some_and(|gap| gap.abs() < 1e-9), "{name}");
     }
     choice.ayus
 }

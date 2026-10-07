@@ -2157,6 +2157,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Each span in solar years** (`ayurdaya-spans.md`, C315). Each of
+  v. 33's candidates carries `solar_years` beside `years`: *Jataka
+  Parijata* ch. 5 v. 34's 360 over 365, and Samudaya's own 324 over 365
+  (ch. 10 v. 71). **Numbers:** none; a new field.
 - **The two ashtakavarga spans** (`ayurdaya-spans.md`, C311 to C314).
   The longevity readings gain `ashtakavarga`, *Jataka Parijata* ch. 10:
   each graha's years from its own reduced ashtakavarga (vv. 44 to 46),

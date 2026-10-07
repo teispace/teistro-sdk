@@ -1026,6 +1026,9 @@ class AnEngine(WithLibrary):
         choice = answered["longevity"]["choice"]
         self.assertEqual(len(choice["candidates"]), 8)
         self.assertIs(choice["all_weighed"], True)
+        # v. 34: each span in solar years too, 360 days a year to 365.
+        pinda = next(c for c in choice["candidates"] if c["ayus"] == "pinda")
+        self.assertAlmostEqual(pinda["solar_years"] * 365, pinda["years"] * 360)
         # v. 27: the dashas' span, a cycle of 120 years less what had run.
         self.assertTrue(100.0 <= answered["longevity"]["dasayus"]["years"] <= 120.0)
         # v. 26: the wheel of time's span, the note's figure's portion by default.

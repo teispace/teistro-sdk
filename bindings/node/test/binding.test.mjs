@@ -1008,6 +1008,9 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   const choice = answered.longevity.choice;
   assert.equal(choice.candidates.length, 8);
   assert.equal(choice.all_weighed, true);
+  // v. 34: each span in solar years too, 360 days a year to 365.
+  const pinda = choice.candidates.find((c) => c.ayus === 'pinda');
+  assert.ok(Math.abs(pinda.solar_years * 365 - pinda.years * 360) < 1e-9, String(pinda.solar_years));
   // v. 27: the dashas' span, a cycle of 120 years less what had run.
   const { years } = answered.longevity.dasayus;
   assert.ok(years >= 100 && years <= 120, String(years));
