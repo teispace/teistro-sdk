@@ -918,12 +918,17 @@ The order below puts what blocks a release first.
    that `publish` needs; an install check whose toolchain is missing fails
    in a release run instead of skipping.
 3. **Supply chain.**
-   - A CycloneDX SBOM per artefact, built with `cargo-auditable`.
-   - GitHub build-provenance attestations.
-   - `cargo audit` in CI.
-   - Trusted publishing on npm (npm 11.5.1 or later), PyPI (with PEP 740
-     attestations), pub.dev and crates.io.
-   - Maven Central with a Portal token and a PGP signature.
+   - **Built 2026-10-08:** a CycloneDX SBOM per artefact, with every
+     library and addon built through `cargo-auditable`
+     (`06-cicd/03-release-process.md`, Provenance).
+   - **Built 2026-10-08:** GitHub build-provenance attestations.
+   - **Held:** advisories are checked by `cargo deny check`, which reads
+     the RustSec database `cargo audit` reads.
+   - **Built 2026-10-08:** trusted publishing on npm (npm 11.5.1 or later),
+     PyPI (with PEP 740 attestations) and pub.dev. crates.io follows when
+     the crates are published, which the release does not do yet.
+   - Maven Central with a Portal token and a PGP signature, with the Java
+     binding (6).
 4. **Python platform wheels.** The binding is ctypes, so one
    `py3-none-<platform>` wheel per platform, written by xtask, replaces
    the download on first use.

@@ -2250,6 +2250,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   rite because none is printed. Jupiter/Moon's condition differs between
   the 1899 and 1923 prints and stays open. **Numbers:** none move; a new
   table.
+- **What each shipped file is made of, and who built it**
+  (`06-cicd/03-release-process.md`, Provenance). Every shared library and
+  Node addon is built through `cargo auditable` and carries its crates in
+  a `.dep-v0` section, which `package` reads back. Every artefact has a
+  CycloneDX bill of materials from `cargo tree` for its own package and
+  target, with the lock file's checksums. The bills sit inside the C
+  bundle, the npm packages and the wasm package, are attached to the
+  release and are listed in `checksums.txt`. The release attests every
+  file's build provenance. npm and PyPI publish by the runner's OIDC token
+  (trusted publishing, PEP 740 attestations); the PyPI step used
+  `twine upload`, which exchanges no token and would have failed at the
+  first release. **Numbers:** none move.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's
