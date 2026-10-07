@@ -1567,6 +1567,7 @@ dependencies = [
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-prashna",
  "teistro-remedies",
  "teistro-render-svg",
  "teistro-rules",
@@ -1918,6 +1919,17 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-prashna"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-aspect",
  "teistro-core",
 ]
 
