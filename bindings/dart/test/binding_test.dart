@@ -847,6 +847,14 @@ void _engineTests() {
     final choice = longevity['choice']! as Map<String, Object?>;
     expect(choice['candidates'], hasLength(8));
     expect(choice['all_weighed'], isTrue);
+    // v. 34: each span in solar years too, 360 days a year to 365.
+    final pinda = (choice['candidates']! as List<Object?>)
+        .cast<Map<String, Object?>>()
+        .firstWhere((c) => c['ayus'] == 'pinda');
+    expect(
+      (pinda['solar_years']! as num) * 365,
+      closeTo((pinda['years']! as num) * 360, 1e-9),
+    );
     // v. 27: the dashas' span, a cycle of 120 years less what had run.
     final dasayus = longevity['dasayus']! as Map<String, Object?>;
     expect(dasayus['years']! as num, inInclusiveRange(100, 120));

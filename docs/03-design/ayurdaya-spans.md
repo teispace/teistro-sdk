@@ -203,3 +203,15 @@ Decided:
   literal and `samudaya_product` carries the product before it. v. 71
   calls the span Nakshatra Ayus and gives it in solar years by 324 over
   365 (p. 706): `samudaya_solar`.
+
+## The years a span is counted in (ch. 5 v. 34, C315)
+
+"The Ayus in years, months, etc, multiplied by 360 and divided by 365 is
+termed Sourayus, i.e. the period of life in solar years" (p. 261); the
+book's index calls the span "in years of 360 days". It follows v. 33, so
+it is read for each span v. 33 names: every candidate carries
+`solar_years` beside `years`. Samudaya is the exception its own verse
+makes, counted in nakshatra years of 324 days and converted by 324 over
+365. Balabhadra's note converts his 7-over-27 years the same way, after
+his reductions; neither is read, so the note's divisor, when chosen, is
+converted as v. 34 says.

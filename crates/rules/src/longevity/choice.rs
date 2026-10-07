@@ -9,6 +9,11 @@
 //! where the SDK computes that span; which is strongest is a clause of the
 //! strengths, never a verdict, and a tie or a missing strength says so
 //! rather than falling through to an answer.
+//!
+//! v. 34 gives each span in solar years, Sourayus: "the Ayus in years,
+//! months, etc, multiplied by 360 and divided by 365" (p. 261). Samudaya
+//! is counted in nakshatra years of 324 days, and its own verse converts
+//! it by 324 over 365 instead (ch. 10 v. 71, C315).
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
@@ -20,6 +25,9 @@ use super::dasayus::Dasayus;
 use super::rasmi::Rasmi;
 use crate::chart::Strengths;
 use crate::language::Body;
+
+/// A year of 360 days in solar years, v. 34's conversion.
+const SAVANA_TO_SOLAR: f64 = 360.0 / 365.0;
 
 /// The eight spans of life *Jataka Parijata* ch. 5 v. 1 names.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -86,6 +94,9 @@ pub struct Candidate {
     /// the two ashtakavarga spans as ch. 10 reads them; none for a span not
     /// among those `computed`.
     pub years: Option<f64>,
+    /// Those years as solar years (v. 34, C315): times 360 over 365, and
+    /// Samudaya's by its own 324 over 365.
+    pub solar_years: Option<f64>,
 }
 
 /// The spans already computed, whose years a candidate carries; each left
@@ -149,20 +160,26 @@ pub fn span_choice(
     let spans = computed.ayurdaya;
     let candidates = NAMES.map(|(by, ayus)| {
         let measured = strengths.of.get(by.index()).copied().flatten();
+        let years = match ayus {
+            Ayus::Pinda => spans.map(|spans| spans.pindayu.years),
+            Ayus::Nisarga => spans.map(|spans| spans.nisargayu.years),
+            Ayus::Amsa => spans.map(|spans| spans.amsayu.years),
+            Ayus::Rasmi => computed.rasmi.map(|rays| rays.years),
+            Ayus::Nakshatra => computed.dasayus.map(|span| span.years),
+            Ayus::Kalachakra => computed.chakrayus.map(|span| span.years),
+            Ayus::Bhinnashtakavarga => computed.ashtakavarga.map(|spans| spans.bhinna),
+            Ayus::Samudaya => computed.ashtakavarga.map(|spans| spans.samudaya),
+        };
+        let solar_years = match ayus {
+            Ayus::Samudaya => computed.ashtakavarga.map(|spans| spans.samudaya_solar),
+            _ => years.map(|years| years * SAVANA_TO_SOLAR),
+        };
         Candidate {
             by,
             strength: measured.or(if by == Body::Lagna { lagna } else { None }),
             ayus,
-            years: match ayus {
-                Ayus::Pinda => spans.map(|spans| spans.pindayu.years),
-                Ayus::Nisarga => spans.map(|spans| spans.nisargayu.years),
-                Ayus::Amsa => spans.map(|spans| spans.amsayu.years),
-                Ayus::Rasmi => computed.rasmi.map(|rays| rays.years),
-                Ayus::Nakshatra => computed.dasayus.map(|span| span.years),
-                Ayus::Kalachakra => computed.chakrayus.map(|span| span.years),
-                Ayus::Bhinnashtakavarga => computed.ashtakavarga.map(|spans| spans.bhinna),
-                Ayus::Samudaya => computed.ashtakavarga.map(|spans| spans.samudaya),
-            },
+            years,
+            solar_years,
         }
     });
     let greatest = candidates
