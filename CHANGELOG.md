@@ -2248,6 +2248,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   query chart's retrogression and combustion (`Placed::combust` is new).
   The Prashna Tantra's nakta example (vv. 18–19) passes as printed.
   **Numbers:** none move.
+- **The Moon's Tajika weaknesses** (`prashna.md`, C352).
+  `teistro::tajika::moon_weakness(sky, rules)` reports each clause of
+  Tajika Nilakanthi's Samjna Tantra vv. 73–74 that holds for the Moon,
+  read from the 1893 print's page images, and `shunya_marga(graha, sky)`
+  says whether a graha travels the empty road of vv. 55–56. Both come
+  "at birth or in a query", so a prashna now carries `moon`.
+  `KshinaRule` gives the gloss's span of the waning Moon and the one it
+  quotes as "some say". **Numbers:** none move.
 - **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
   `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
   (the 1923 print) prescribe for each of the 81 antardaśās: the verses,

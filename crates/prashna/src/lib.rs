@@ -45,7 +45,10 @@ use teistro_aspect::drishti;
 use teistro_core::Error;
 use teistro_core::catalogue::{Graha, Modality, Parity, Rashi, Rising};
 use teistro_core::house::House;
-use teistro_tajika::{AnnualSky, AnnualStates, YearYogas, YogaRules, year_yogas_with_states};
+use teistro_tajika::{
+    AnnualSky, AnnualStates, MoonRules, MoonWeakness, YearYogas, YogaRules, moon_weakness,
+    year_yogas_with_states,
+};
 
 #[cfg(test)]
 mod tests;
@@ -320,6 +323,9 @@ pub struct PrashnaRules {
     pub timing: TimingRule,
     /// Which rule reads an unspoken question.
     pub mook: MookRule,
+    /// How the Moon's weaknesses are read (Tajika Nilakanthi, Samjna
+    /// Tantra vv. 73–74).
+    pub moon: MoonRules,
 }
 
 impl PrashnaRules {
@@ -330,6 +336,9 @@ impl PrashnaRules {
             pisces: PiscesRising::BothWays,
             timing: TimingRule::Baseline,
             mook: MookRule::Shatpanchashika,
+            moon: MoonRules {
+                kshina: teistro_tajika::KshinaRule::DarkEighthToBrightEighth,
+            },
         }
     }
 }
@@ -558,6 +567,10 @@ pub struct Prashna {
     /// Nilakanthi's Prashna Tantra, vv. 9–21): present only when a
     /// house is asked.
     pub links: Option<YearYogas>,
+    /// The Moon's weaknesses, which Tajika Nilakanthi's Samjna Tantra
+    /// v. 74 reads "at birth or in a query": each clause of vv. 73–74
+    /// that holds, none weighed.
+    pub moon: MoonWeakness,
 }
 
 /// Reads a query chart.
@@ -580,6 +593,7 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
         timing: timing(sky, rules.timing)?,
         mook: mook(sky, rules.mook)?,
         links: links(sky, question)?,
+        moon: moon_weakness(&annual(sky)?, rules.moon)?,
     })
 }
 
@@ -591,20 +605,6 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
 fn links(sky: &PrashnaSky, question: Question) -> Result<Option<YearYogas>, Error> {
     let Some(house) = question.house.and_then(|house| House::try_from(house).ok()) else {
         return Ok(None);
-    };
-    let at = |graha: Graha| {
-        sky.of(graha)
-            .map(|placed| placed.longitude_deg)
-            .ok_or_else(unplaced)
-    };
-    let annual = AnnualSky {
-        sun_deg: at(Graha::Sun)?,
-        moon_deg: at(Graha::Moon)?,
-        mars_deg: at(Graha::Mars)?,
-        mercury_deg: at(Graha::Mercury)?,
-        jupiter_deg: at(Graha::Jupiter)?,
-        venus_deg: at(Graha::Venus)?,
-        saturn_deg: at(Graha::Saturn)?,
     };
     let those = |state: fn(&Placed) -> bool| -> Vec<Graha> {
         GRAHAS
@@ -618,7 +618,32 @@ fn links(sky: &PrashnaSky, question: Question) -> Result<Option<YearYogas>, Erro
         retrograde: those(|placed| placed.retrograde),
         combust: those(|placed| placed.combust),
     };
-    year_yogas_with_states(sky.lagna_deg, house, &annual, &states, YogaRules::default()).map(Some)
+    year_yogas_with_states(
+        sky.lagna_deg,
+        house,
+        &annual(sky)?,
+        &states,
+        YogaRules::default(),
+    )
+    .map(Some)
+}
+
+/// The seven's longitudes, as Tajika reads a sky.
+fn annual(sky: &PrashnaSky) -> Result<AnnualSky, Error> {
+    let at = |graha: Graha| {
+        sky.of(graha)
+            .map(|placed| placed.longitude_deg)
+            .ok_or_else(unplaced)
+    };
+    Ok(AnnualSky {
+        sun_deg: at(Graha::Sun)?,
+        moon_deg: at(Graha::Moon)?,
+        mars_deg: at(Graha::Mars)?,
+        mercury_deg: at(Graha::Mercury)?,
+        jupiter_deg: at(Graha::Jupiter)?,
+        venus_deg: at(Graha::Venus)?,
+        saturn_deg: at(Graha::Saturn)?,
+    })
 }
 
 /// The clause a graha makes by its disposition, if it has one.

@@ -8,6 +8,7 @@
 )]
 
 use teistro_core::catalogue::{Graha, Rashi};
+use teistro_tajika::{KshinaRule, MoonClause, MoonRules};
 
 use crate::{
     Change, ClauseKind, Favour, MookRule, Outcome, Person, PiscesRising, Placed, PrashnaRules,
@@ -356,4 +357,28 @@ fn the_prashna_tantras_nakta_example_is_read_as_printed() {
         read(&virgo, Question::default(), rules()).unwrap().links,
         None
     );
+}
+
+#[test]
+fn the_moon_is_read_in_a_query_as_at_birth() {
+    // The nakta sky: the Moon 87° past the Sun, inside the gloss's dark
+    // 8th to bright 8th but not the dark 11th to the new Moon.
+    let virgo = sky(
+        160.0,
+        Rashi::Virgo,
+        [165.0, 252.0, 280.0, 130.0, 350.0, 190.0, 310.0, 40.0, 220.0],
+    );
+    let kshina = |kshina: KshinaRule| {
+        let rules = PrashnaRules {
+            moon: MoonRules { kshina },
+            ..rules()
+        };
+        read(&virgo, Question::default(), rules)
+            .unwrap()
+            .moon
+            .clauses
+            .contains(&MoonClause::Kshina)
+    };
+    assert!(kshina(KshinaRule::DarkEighthToBrightEighth));
+    assert!(!kshina(KshinaRule::DarkEleventhToNewMoon));
 }
