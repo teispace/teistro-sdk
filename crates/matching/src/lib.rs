@@ -41,8 +41,9 @@ pub use kuja::{
     KujaSide, kuja, kuja_side,
 };
 pub use name::{
-    AbhijitPada, BirthSyllable, LatinName, NaamMilan, NaamRules, NameRules, NameSyllable,
-    NameVarga, VargaKoota, VargaRelation, birth_syllable, naam_milan, name_syllable, varga_koota,
+    AbhijitPada, BirthSyllable, LatinName, NaamMilan, NaamRules, NameCheck, NameRules,
+    NameSyllable, NameVarga, VargaKoota, VargaRelation, birth_syllable, naam_milan, name_check,
+    name_syllable, varga_koota,
 };
 pub use native::Native;
 pub use porutham::{

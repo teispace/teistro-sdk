@@ -343,6 +343,22 @@ syllable, and each of those readings by the same catalogue members the
 kootas use. It is a gathering, not new doctrine, so it carries no rules
 of its own.
 
+**A name is checked as facts, not scored** (C334). Nāmakaraṇa asks
+whether a name begins with the letter of the birth pada. The commentary
+gives the letter of its star, and the cakra gives each pada its own
+cell. So `name_check(name, rules, nakshatra, pada)` answers three
+things:
+
+- the name's own cell;
+- the pada's prescribed syllable;
+- `same_star` and `same_pada`.
+
+A name that falls in another star is answered, not refused. The baseline
+engine instead scores a Latin spelling against a table of variants by
+edit distance (100 for exact, 90 for a prefix, then 70 to 89 "similar").
+That would guess the very English spellings C293 refuses, so it is not
+shipped. A matcher of spellings is the application's.
+
 ## The surface
 
 - `crates/matching`: `Native { nakshatra, pada, rashi, navamsha }`, read
@@ -390,7 +406,9 @@ of its own.
   nakshatra_lord, rashi_lord, varna, yoni, gana, nadi, syllable }` in
   `crates/matching`, with `birth_syllable(nakshatra, pada) ->
   BirthSyllable { cell, devanagari, iast, varga }` reading the pada's
-  own cell. `ChartRequest::with_avakahada` fills `Document::avakahada`.
+  own cell, and `name_check(name, rules, nakshatra, pada) -> NameCheck
+  { read, prescribed, same_star, same_pada }` reading a name against it
+  (C334). `ChartRequest::with_avakahada` fills `Document::avakahada`.
   `with_everything` leaves it out, as it leaves out the Sthira dasa,
   since a tropical chart refuses it under the field `avakahada`. At the
   boundary the bit is `TS_CHART_AVAKAHADA`. The section `avakahada`

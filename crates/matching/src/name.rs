@@ -578,6 +578,68 @@ pub fn birth_syllable(nakshatra: Nakshatra, pada: u8) -> Result<BirthSyllable, E
     })
 }
 
+/// A name read against the syllable a birth names a child by
+/// (nāmakaraṇa, C297 and C334): where the name's first syllable falls in
+/// the śatapada cakra, the birth pada's own cell, and whether the two are
+/// one star and one pada. Facts, not a score.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct NameCheck {
+    /// The name's first syllable, as [`name_syllable`] reads it.
+    pub read: NameSyllable,
+    /// The birth pada's syllable, as [`birth_syllable`] gives it.
+    pub prescribed: BirthSyllable,
+    /// Whether the name begins in the birth star's row: "the letter of
+    /// its star". Never for a syllable in Abhijit's row, which is no
+    /// star's.
+    pub same_star: bool,
+    /// Whether it begins in the birth pada's own cell, the syllable the
+    /// rule prescribes.
+    pub same_pada: bool,
+}
+
+/// Reads a name against a birth's nakshatra and pada: the name's first
+/// syllable in the śatapada cakra beside the syllable *Muhurta
+/// Chintamani*'s nāmakarma commentary prescribes for the pada, and
+/// whether they share a star and a pada (C334). A name the cakra reads in
+/// another star is answered, not refused; the reader decides.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_matching::{NameRules, name_check};
+///
+/// // चू is Ashwini's first pada; चे its second.
+/// let named = name_check("चूडामणि", NameRules::default(), Nakshatra::Ashwini, 1)?;
+/// assert!(named.same_pada);
+/// let other = name_check("चेतन", NameRules::default(), Nakshatra::Ashwini, 1)?;
+/// assert!(other.same_star && !other.same_pada);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`name_syllable`] for the name, named `name`, and as
+/// [`birth_syllable`] for a `pada` outside 1 to 4, named `pada`.
+pub fn name_check(
+    name: &str,
+    rules: NameRules,
+    nakshatra: Nakshatra,
+    pada: u8,
+) -> Result<NameCheck, Error> {
+    let prescribed = birth_syllable(nakshatra, pada)?;
+    let read = name_syllable(name, rules)?;
+    // A cell is a pada: four to a star's row, so the row is the star.
+    let same_star = read.nakshatra.is_some() && read.cell / 4 == prescribed.cell / 4;
+    let same_pada = read.cell == prescribed.cell;
+    Ok(NameCheck {
+        read,
+        prescribed,
+        same_star,
+        same_pada,
+    })
+}
+
 /// The readings two names are matched under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]

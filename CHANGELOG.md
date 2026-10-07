@@ -2225,6 +2225,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   badhakesha), and the summary nature by the text's precedence. The
   baseline engine's reading, the lords of 6, 8 and 12 bad, is
   `Scheme::Baseline`. **Numbers:** none move; a new module.
+- **A name checked against its birth pada** (`matching.md`, C334).
+  `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
+  name's first syllable in the śatapada cakra beside the pada's
+  prescribed syllable, and answers `same_star` and `same_pada` as facts,
+  not a score. A name in another star is answered rather than refused.
+  **Numbers:** none move.
 - **Numerology, the kernel** (`numerology.md`, C320 to C328). A new
   crate, `teistro-numerology`, re-exported as `teistro::numerology`,
   reads a name and a civil date under Balliett's letter cycle (1908)
