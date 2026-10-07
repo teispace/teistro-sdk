@@ -32,6 +32,7 @@ members = [
     "crates/western",
     "crates/matching",
     "crates/numerology",
+    "crates/prashna",
     "crates/remedies",
     "crates/render-svg",
     "crates/serial",

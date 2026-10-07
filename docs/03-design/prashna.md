@@ -1,7 +1,8 @@
 # Prashna: the query chart read as Shatpanchashika and the Tajika print it (the `prashna` module)
 
-Status: `designed`, 2026-10-07. Nothing is built yet; the steps are at
-the end.
+Status: step 1 `built` (`crates/prashna`), 2026-10-07: the verdict,
+change, timing and the unspoken question. Steps 2 to 4 are designed and
+not built.
 
 A prashna is a chart cast for the moment a question is asked. Casting it
 is already done: the chart kind `PRASHNA` exists, and the chart is an
@@ -221,15 +222,29 @@ Each names its field under `prashna`.
 
 ## Steps
 
-1. **The kernel** (`crates/prashna`): the verdict clauses, change,
-   timing (three sourced rules), mook (both readings and the class),
-   and the Moon's Tajika facts. Each rule is held to its verse's own
-   example:
-   - V.5's Taurus/Virgo 60 and 5 days;
-   - the nakta example of vv. 18–19: Virgo rising, Mercury in Leo,
-     Jupiter in Pisces, the Moon carrying.
-2. **The Tajika links**, over the existing ithasala, and the akṣara-lagna
-   and six points.
+1. **The kernel** (`crates/prashna`), built. It covers:
+   - the verdict clauses and their three outcomes;
+   - change;
+   - timing: the three sourced rules and `BASELINE`;
+   - mook: both readings and the class of the thing thought of.
+
+   V.5's example passes as printed: Taurus rising and Virgo give 60
+   days, or 5 when retrograde. The kernel takes a `PrashnaSky` of
+   longitudes, navāṁśas and Shadbala totals, so it reads no ephemeris.
+
+   **How it reads the verses:**
+   - A clause's graha is benefic or malefic by the gloss's list, and the
+     nodes, which the list leaves out, make no clause.
+   - An aspect is a full aspect under `crates/aspect`'s graded drishti,
+     a special aspect included. The test that found Mars aspecting a
+     Gemini lagna's 7th from Taurus holds this.
+   - The rising varga is the navāṁśa's lord. The `SHADVARGA` knob, the
+     baseline's score and Tajika's Moon knob come with steps 2 and 3.
+2. **The Tajika links**, over the existing ithasala, with:
+   - the Moon's Tajika facts (*śūnyamārga*, *bhānte*);
+   - the akṣara-lagna and the six points;
+   - the nakta example of vv. 18–19 as its test: Virgo rising, Mercury
+     in Leo, Jupiter in Pisces, the Moon carrying.
 3. **The `BASELINE` values**, transcribed from the baseline engine's
    source, each test naming the rank-1 rule it departs from.
 4. **The façade and every binding**, over the JSON-answer boundary that

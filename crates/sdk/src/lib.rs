@@ -304,6 +304,9 @@ pub use teistro_matching::{
 // Numerology: a name and a civil date under Balliett's cycle and Cheiro's
 // table, which reads no sky (`03-design/numerology.md`).
 pub use teistro_numerology as numerology;
+// Prashna: the query chart read as Shatpanchashika prints it
+// (`03-design/prashna.md`).
+pub use teistro_prashna as prashna;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 pub use teistro_remedies as remedies;

@@ -2234,6 +2234,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   Saturn's 23, Ketu's fee a goat, and Ketu has no direction and the
   nodes no substance. Rahu's ṛk, the one cell the two texts part on,
   is `RikSource`. **Numbers:** none move; a new table.
+- **Prashna, step 1: the kernel** (`prashna.md`, C335 to C342).
+  `teistro::prashna::read(sky, question, rules)` reads a query chart as
+  *Shatpanchashika* prints it: the verdict's clauses with I.4's three
+  outcomes (never a score), whether the matter stays or changes
+  (II.1–2), when (II.14–15 by default, V.5 and II.17 by name, the
+  baseline engine's lagna-modality rule as `BASELINE`), and whom an
+  unspoken question is about (VII.7–8, or the Moon's house). **Numbers:**
+  none move; a new module.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's
