@@ -12,7 +12,9 @@
 //! I.295–307 prescribe for each graha (the image, the ṛk, the japa, the
 //! samidh, the food and the fee), with the gem *Jataka Parijata* II.21
 //! gives it and the direction and substance of *Brihat Jataka* II.5 and
-//! II.12, each value the verse's own word ([`shanti`]).
+//! II.12, each value the verse's own word ([`shanti`]). With it come
+//! the 81 antardaśā śāntis of BPHS chs. 37 to 45, each condition the
+//! predicate the verse states ([`dasha_shanti`]).
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
@@ -27,14 +29,18 @@
 
 #![doc(html_no_source)]
 
+mod dasha;
 mod functional;
 mod shanti;
 
+#[cfg(test)]
+mod dasha_tests;
 #[cfg(test)]
 mod shanti_tests;
 #[cfg(test)]
 mod tests;
 
+pub use dasha::{Condition, DashaShanti, Remedy, dasha_shanti, dasha_shantis};
 pub use functional::{
     Badhaka, Clause, ClauseKind, Functional, FunctionalRow, FunctionalRules, Nature, Scheme,
     functional,
