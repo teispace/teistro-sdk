@@ -79,7 +79,7 @@ grades nothing — and a kind supplies a key space, never a vocabulary.
 |---|---:|---|---:|---:|---|
 | `auspicious-kaal` | 5 | `panchanga::Muhurtas`' two named muhurtas | 2 | 2 of 5 | Vijaya, Godhuli and the Amrit kaal, which the SDK does not compute |
 | `ayurdaya-balarishta` | 4 | nothing: whether a balarishta stands is a rule's outcome, not a value | 0 | 0 of 4 | a four-valued status the SDK does not keep |
-| `ayurdaya-classical-rule` | 5 | the shipped Brihat Jataka balarishta rules | 11 | 0 of 5 | five verse citations from an edition the SDK does not ship |
+| `ayurdaya-classical-rule` | 5 | the shipped Brihat Jataka balarishta rules | 19 | 0 of 5 | five verse citations from an edition the SDK does not ship |
 | `ayurdaya-harana` | 4 | `longevity::Reductions`' fields | 4 | 0 of 4 | the four Sanskrit names, which map one to one onto the fields |
 | `ayurdaya-maraka` | 9 | `longevity::maraka::Reason` | 20 | 0 of 9 | a coarser classification: nine classes against the verses' twenty reasons |
 | `ayurdaya-maraka-trigger` | 3 | nothing: the 64th navamsha and the 22nd drekkana are maraka *reasons* here | 0 | 0 of 3 | a vocabulary of triggers the SDK does not separate out |

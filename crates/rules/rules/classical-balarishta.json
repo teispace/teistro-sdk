@@ -1,6 +1,65 @@
 {
   "rules": [
     {
+      "key": "BJ_MOON_AND_THREE_MALEFICS_IN_THE_KENDRAS",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon and three malefics holding the four kendras, one in each: the child dies. The verse's first figure, a birth in the twilight with the lunar hora rising and malefics in the last navamsas of signs, needs the twilight and is not built. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        }
+      ]
+    },
+    {
       "key": "BJ_MALEFICS_IN_TWELFTH_AND_SECOND",
       "category": "arishta",
       "source": {
@@ -154,6 +213,352 @@
               10
             ],
             "atLeast": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_WITH_A_MALEFIC_UNSUPPORTED",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Moon attended by a malefic in the rising sign or the seventh, eighth or twelfth, no benefic in a kendra and none aspecting her: the child dies soon after birth. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            7,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in the sixth or the eighth aspected by a malefic, and by no benefic: the child dies soon after birth. The translator's note records Yavaneswara's and Mandavya's escapes, which are not the verse's and do not ship. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BENEFICS_ALONE",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in the sixth or the eighth aspected by benefics alone: the child dies after eight years. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 8.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_IN_SIXTH_OR_EIGHTH_ASPECTED_BY_BOTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Moon in the sixth or the eighth aspected by a benefic and a malefic: the child dies four years after birth. The verse's two figures of a month, a benefic there aspected by powerful malefics and the lagna lord in the seventh defeated in planetary war, are not built. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-benefic",
+          "target": "MOON"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-malefic",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 4.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "BJ_WANING_MOON_IN_LAGNA_MALEFICS_IN_EIGHTH_AND_KENDRAS",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "7",
+        "rank": 1,
+        "note": "The waning Moon in the rising sign with malefics in the eighth and the kendras: the child dies. \"The Kendras\" is read as a malefic in at least one of the other three. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_BETWEEN_MALEFICS_IN_FOURTH_SEVENTH_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon in the fourth, seventh or eighth between malefics, one in the sign on either side of her: the child dies. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            4,
+            7,
+            8
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_BETWEEN_MALEFICS_IN_LAGNA_MALEFICS_SEVENTH_AND_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "7",
+        "rank": 1,
+        "note": "The Moon in the rising sign between malefics, malefics in the seventh and the eighth, and no powerful benefic aspecting her: both the mother and the child die; if one aspects her, the translator adds, the mother escapes. Read from N. Chidambaram Iyer's 1905 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "MERCURY",
+              "JUPITER",
+              "VENUS"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-strong",
+                  "planet": "SELF"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": "MOON"
+                }
+              ]
+            }
           }
         }
       ]

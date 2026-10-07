@@ -229,7 +229,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (41, 3));
+        assert_eq!((strength, points), (42, 3));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -250,7 +250,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 997);
+        assert_eq!(rules.len(), 1005);
         for rule in &rules {
             let rank = rule
                 .source
