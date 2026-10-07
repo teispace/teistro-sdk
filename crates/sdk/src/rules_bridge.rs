@@ -465,7 +465,7 @@ fn rashi_of(longitude: f64) -> Result<Rashi, Error> {
 }
 
 /// The navamsha sign of a sidereal longitude, under the catalogue's scheme.
-fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
+pub(crate) fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
     varga_sign(Varga::D9, longitude)
 }
 

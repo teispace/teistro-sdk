@@ -67,6 +67,7 @@ mod muhurta_request;
 mod naam_request;
 mod numerology_request;
 mod plan_request;
+mod prashna_request;
 mod progressed;
 mod progressions_request;
 mod returns;
@@ -209,6 +210,7 @@ pub use teistro_gochar::hits::{Hit, NatalPoint};
 pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
+pub use crate::prashna_request::PrashnaRequest;
 // The essential dignities of the Hellenistic and later Western tradition:
 // the terms, the triplicities, the faces and the sect that chooses among
 // them (`03-design/essential-dignities.md`).

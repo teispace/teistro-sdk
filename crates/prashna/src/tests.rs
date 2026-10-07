@@ -303,7 +303,7 @@ fn a_dual_lagna_stays_in_its_first_half_and_changes_in_its_second() {
 fn a_house_out_of_range_or_a_number_that_is_not_one_is_refused() {
     for house in [0, 13] {
         let error = read(&gemini(), Question::about(house), rules()).unwrap_err();
-        assert_eq!(error.field(), Some("house"));
+        assert_eq!(error.field(), Some("question.house"));
     }
     let mut broken = gemini();
     broken.lagna_deg = f64::NAN;

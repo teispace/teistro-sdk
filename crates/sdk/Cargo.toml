@@ -179,6 +179,10 @@ name = "kp"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "prashna"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 

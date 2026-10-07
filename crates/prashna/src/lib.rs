@@ -613,15 +613,16 @@ pub struct Prashna {
 ///
 /// # Errors
 ///
-/// A house outside 1 to 12 (`house`), a number outside 1 to 108
-/// (`number`), or an input that is not a finite
+/// A house outside 1 to 12 (`question.house`), a number outside 1 to
+/// 108 (`question.number`), or an input that is not a finite
 /// number, naming its field.
 pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result<Prashna, Error> {
     sky.check()?;
     if let Some(house) = question.house
         && !(1..=12).contains(&house)
     {
-        return Err(Error::invalid_arg(format!("house {house} is not 1 to 12")).with_field("house"));
+        return Err(Error::invalid_arg(format!("house {house} is not 1 to 12"))
+            .with_field("question.house"));
     }
     Ok(Prashna {
         rules,
@@ -635,7 +636,11 @@ pub fn read(sky: &PrashnaSky, question: Question, rules: PrashnaRules) -> Result
             ScoreRule::Off => None,
             ScoreRule::Baseline => Some(baseline::score(sky)?),
         },
-        number_sign: question.number.map(number_sign).transpose()?,
+        number_sign: question
+            .number
+            .map(number_sign)
+            .transpose()
+            .map_err(|error| error.under("question"))?,
     })
 }
 
