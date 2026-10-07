@@ -1,0 +1,688 @@
+{
+  "rules": [
+    {
+      "key": "PARIJATA_MIDDLE_LIFE_WEAK_LAGNA_LORD_JUPITER_ANGULAR",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "84",
+        "rank": 1,
+        "note": "The lagna lord without strength, Jupiter in a kendra or a trikona, and a malefic in the sixth, eighth or twelfth: the middle span, from the 33rd year to the 70th. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": 1
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6,
+            8,
+            12
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "medium"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_FULL_LIFE_BENEFICS_IN_KENDRAS_WITH_THE_LAGNA_LORD",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "85",
+        "rank": 1,
+        "note": "Benefics in a kendra, and the lagna lord joined with them or aspected by Jupiter: the full span. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": {
+                "lordOf": 1
+              },
+              "except": [
+                {
+                  "lordOf": 1
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": {
+                "lordOf": 1
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_LAGNA_LORD_IN_A_KENDRA_WITH_JUPITER_AND_VENUS",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "86",
+        "rank": 1,
+        "note": "The lagna lord in a kendra, joined with or aspected by Jupiter and Venus: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "JUPITER",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": {
+                "lordOf": 1
+              },
+              "except": [
+                {
+                  "lordOf": 1
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": {
+                "lordOf": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "VENUS",
+              "houses": [
+                1
+              ],
+              "atLeast": 1,
+              "from": {
+                "lordOf": 1
+              },
+              "except": [
+                {
+                  "lordOf": 1
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "VENUS",
+              "target": {
+                "lordOf": 1
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_THREE_EXALTED_EIGHTH_LORD_IN_A_CLEAN_LAGNA",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "87",
+        "rank": 1,
+        "note": "Three grahas exalted, and the lord of the eighth in the lagna with no malefic there: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "planet-dignity",
+            "planet": "SELF",
+            "dignities": [
+              "EXALTED",
+              "DEEP_EXALTED"
+            ]
+          },
+          "atLeast": 3
+        },
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 8,
+          "houseOccupied": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_SATURN_OR_EIGHTH_LORD_WITH_AN_EXALTED_GRAHA",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "89",
+        "rank": 1,
+        "note": "Saturn or the lord of the eighth joined with a graha in its exaltation: long life. v. 88's three in the eighth in exaltation, a friend's sign and their own varga is not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "for-any",
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": "SATURN"
+                    }
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "for-any",
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 8
+                    }
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": {
+                        "lordOf": 8
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-dignity",
+                    "planet": "SELF",
+                    "dignities": [
+                      "EXALTED",
+                      "DEEP_EXALTED"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALEFICS_IN_UPACHAYAS_BENEFICS_ANGULAR_STRONG_LAGNA_LORD",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "90",
+        "rank": 1,
+        "note": "Malefics in the third, sixth and eleventh, benefics in kendras or trikonas, and the lagna lord strong: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3,
+            6,
+            11
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1,
+              2,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              12
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_BENEFICS_SIXTH_TO_EIGHTH_MALEFICS_IN_UPACHAYAS",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "91",
+        "rank": 1,
+        "note": "Benefics together in the sixth, seventh or eighth, and malefics in the third, sixth and eleventh: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            6,
+            7,
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3,
+            6,
+            11
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1,
+              2,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              12
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_MALEFICS_ELEVENTH_AND_SIXTH_LAGNA_LORD_ANGULAR",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "92",
+        "rank": 1,
+        "note": "Malefics in the eleventh and the sixth and the lagna lord in a kendra: long life, the majority of astrologers agree. The verse's second figure is lost in the OCR and not built; v. 93's chain of lords is not built. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            11
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DUAL_LAGNA_ITS_LORD_ANGULAR_OR_DIGNIFIED",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "94",
+        "rank": 1,
+        "note": "A dual lagna whose lord is in a kendra, its own sign, its exaltation or its moolatrikona: long life and fortune. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-kendra",
+              "houseRuled": 1
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 1
+              },
+              "dignities": [
+                "DEEP_EXALTED",
+                "EXALTED",
+                "MOOLTRIKONA",
+                "OWN_SIGN"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_DUAL_LAGNA_TWO_MALEFICS_ANGULAR_FROM_ITS_LORD",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "95",
+        "rank": 1,
+        "note": "A dual lagna, and two malefics in kendras from its lord: long life. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 2,
+          "from": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "PARIJATA_NAVAMSHAS_BY_NATURE_HUNDRED_YEARS",
+      "category": "ayur",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "4",
+        "verse": "96",
+        "rank": 1,
+        "note": "The Sun, Saturn and Mars in movable navamshas, Jupiter and Venus in fixed ones, and the rest in dual ones: a hundred years. Read from V. Subrahmanya Sastri's 1932 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SUN"
+          },
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SATURN"
+          },
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MARS"
+          },
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "JUPITER"
+          },
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "VENUS"
+          },
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MOON"
+          },
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MERCURY"
+          },
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    }
+  ]
+}

@@ -802,7 +802,7 @@ fn the_limb_reading_rules_are_answered_rather_than_excused() {
         .filter(|rule| rule.reads_panchanga())
         .cloned()
         .collect();
-    assert_eq!(every.len(), 12, "the shipped rules that read a limb");
+    assert_eq!(every.len(), 22, "the shipped rules that read a limb");
 
     let (_, document) = common::reading("{}", |request| request.with_rule_inputs(&every));
     let inputs = teistro::RuleInputs::of(&document).expect("the rules read it");

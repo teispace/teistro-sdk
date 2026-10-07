@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 22 630 items, 243 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 22 986 items, 247 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 750 701 bytes of JSON over the 93 charts, 29 577 bytes a
-chart, 35 694 bytes for the widest and 121 bytes an item. The verses'
+golden file: 2 805 360 bytes of JSON over the 93 charts, 30 165 bytes a
+chart, 36 242 bytes for the widest and 122 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -23,12 +23,12 @@ packed.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every key a composer can emit is carried by every strict locale | **holds** | 0 of 140 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22630 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22630 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22630 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 22630 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22986 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22986 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22986 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 22986 disagree |
 
-Every one of the 45 260 renderings — 22 630 in each of 2 strict
+Every one of the 45 972 renderings — 22 986 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -73,12 +73,12 @@ about.
 | `sdk.phala.yoga` | 0 |
 | `sdk.phala.yoni` | 0 |
 | `sdk.reading.effect` | 2449 |
-| `sdk.reading.lifeClass` | 214 |
-| `sdk.reading.lifeSpan` | 100 |
-| `sdk.reading.participants` | 3350 |
+| `sdk.reading.lifeClass` | 289 |
+| `sdk.reading.lifeSpan` | 176 |
+| `sdk.reading.participants` | 3527 |
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
-| `sdk.reading.status` | 348 |
+| `sdk.reading.status` | 376 |
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.ashtakavarga` | 0 |
 | `sdk.reason.bhavaBala` | 0 |
@@ -107,7 +107,7 @@ about.
 | `sdk.reason.strength.score` | 497 |
 | `sdk.reason.vimshopaka` | 0 |
 
-**The verse's own statement is not translated.** 2449 of the 22 630
+**The verse's own statement is not translated.** 2449 of the 22 986
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -119,7 +119,7 @@ translation there would be worse than the visible seam.
 **Where a locale has been given a reading, the seam closes**, and the
 measurement says how far. A readings pack is loaded here the way a
 consumer loads one, and `readings` asks the **base** locale for each
-rule: 12 of the 377 rules this pass composes carry a reading, and they
+rule: 12 of the 455 rules this pass composes carry a reading, and they
 produced 229 `sdk.reading.says` items, said in each locale's own words
 instead of the verse's English.
 
@@ -235,11 +235,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 457 of 457 | 0 of 457 |
-| `hi-Deva-IN` | `base` | 0 of 457 | 398 of 457 |
-| `ne-Deva-NP` | `strict` | 457 of 457 | 422 of 457 |
-| `sa-Deva` | `base` | 0 of 457 | 398 of 457 |
-| `sa-Latn` | `base` | 0 of 457 | 391 of 457 |
+| `en-Latn` | `strict` | 460 of 460 | 0 of 460 |
+| `hi-Deva-IN` | `base` | 0 of 460 | 399 of 460 |
+| `ne-Deva-NP` | `strict` | 460 of 460 | 425 of 460 |
+| `sa-Deva` | `base` | 0 of 460 | 399 of 460 |
+| `sa-Latn` | `base` | 0 of 460 | 392 of 460 |
 
 ## What a rich renderer gets
 
@@ -253,8 +253,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 457 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 457 | 42 | `b` |
+| `en-Latn` | 21 of 460 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 460 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -276,7 +276,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 914 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 920 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -294,7 +294,7 @@ also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 69 of 70 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 914 renderings.
+own message, with no fallback and nothing to warn about: 920 renderings.
 What this chart cannot reach is named below, with the reason it needs
 another. A key missing from both fails, and so does a key excused that
 this chart emits — which is not a hypothetical: **three of the four
@@ -638,6 +638,8 @@ BPHS_MARS_AND_THIRD_LORD_OR_EIGHTH_LORD_AND_SATURN_AFFLICTED_SHORT: a short life
 BPHS_MARS_AND_THIRD_LORD_OR_EIGHTH_LORD_AND_SATURN_AFFLICTED_SHORT: Mars and Rahu take part
 BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG: a long life
 BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG: Jupiter and Sun take part
+PARIJATA_DUAL_LAGNA_ITS_LORD_ANGULAR_OR_DIGNIFIED: a long life
+PARIJATA_DUAL_LAGNA_ITS_LORD_ANGULAR_OR_DIGNIFIED: Jupiter takes part
 BPHS_FIXED_THIRD_PLACE_OF_DEATH: death in one's own house
 BPHS_BENEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_BENEFIC_DEATH_IN_A_SHRINE: death in a shrine
 BPHS_BENEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_BENEFIC_DEATH_IN_A_SHRINE: Jupiter and Venus take part
@@ -885,6 +887,8 @@ BPHS_MARS_AND_THIRD_LORD_OR_EIGHTH_LORD_AND_SATURN_AFFLICTED_SHORT: अल्प
 BPHS_MARS_AND_THIRD_LORD_OR_EIGHTH_LORD_AND_SATURN_AFFLICTED_SHORT: मंगल र राहु संलग्न छन्
 BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG: पूर्णायु
 BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG: गुरु र सूर्य संलग्न छन्
+PARIJATA_DUAL_LAGNA_ITS_LORD_ANGULAR_OR_DIGNIFIED: पूर्णायु
+PARIJATA_DUAL_LAGNA_ITS_LORD_ANGULAR_OR_DIGNIFIED: गुरु संलग्न छ
 BPHS_FIXED_THIRD_PLACE_OF_DEATH: death in one's own house
 BPHS_BENEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_BENEFIC_DEATH_IN_A_SHRINE: death in a shrine
 BPHS_BENEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_BENEFIC_DEATH_IN_A_SHRINE: गुरु र शुक्र संलग्न छन्

@@ -603,14 +603,14 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         present += answered.len();
         charts += 1;
     }
-    // About 59 of the set's 895 rules hold a chart, which is why only the present
+    // About 60 of the set's 906 rules hold a chart, which is why only the present
     // are carried; Tromsø's two are read without the points a rule named, and
     // only the two charts at the built-in ephemeris's edges are refused.
     let refused: Vec<(&str, teistro::Status)> = refused
         .iter()
         .map(|(name, status)| (name.as_str(), *status))
         .collect();
-    assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
+    assert_eq!((charts, present, set.rules().len()), (53, 3197, 906));
     // Every chart names one span, over all eight, and the SDK computes
     // each.
     let named: Vec<(&str, u32)> = named.iter().map(|(ayus, n)| (ayus.as_str(), *n)).collect();
