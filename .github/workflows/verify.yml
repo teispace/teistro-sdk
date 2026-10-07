@@ -65,6 +65,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      # A Linux row links against its glibc floor, not the runner's
+      # (`xtask/src/floor.rs`); `check-package` packages the host with it.
+      - name: The linker that holds a Linux build to its glibc floor
+        if: runner.os == 'Linux'
+        run: pip install -r xtask/zigbuild-requirements.txt
       - name: One version across the workspace and both packages
         run: cargo xtask check-versions
       - name: The C binding against the generated header
