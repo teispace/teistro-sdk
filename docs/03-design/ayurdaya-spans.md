@@ -204,6 +204,21 @@ Decided:
   calls the span Nakshatra Ayus and gives it in solar years by 324 over
   365 (p. 706): `samudaya_solar`.
 
+## Jeevasarman's span (ch. 5 v. 17, C316)
+
+"Jeevasarmin lays down in accordance with his own doctrine that the
+(maximum) period of life given by each planet is 1/7th of the maximum
+aggregate period (i.e. 120 years and 5 days)" (p. 247). The note gives
+the seventh as 17 years, 1 month, 22 days, 8 ghatikas and 34.3
+vighatikas, which is (120 + 5/360) / 7 in years of 360 days to the
+printed place, and says it is worked as Pindayu is, with its reductions,
+"when the Lagna, the Sun and the Moon are all weak". So
+`ayurdaya.jeevasarman` is Pindayu's span with that seventh for every
+graha and the same lagna; over the 93 rules charts it runs 52.0 to 101.4
+years, mean 80.1, against Pindayu's 85.0. Which charts call for it is
+left to the reader: "all weak" has no threshold for the lagna in the
+SDK's measures.
+
 ## The years a span is counted in (ch. 5 v. 34, C315)
 
 "The Ayus in years, months, etc, multiplied by 360 and divided by 365 is

@@ -988,6 +988,8 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
     assert.equal(held.result.present, true);
   }
   assert.equal(typeof answered.longevity.ayurdaya.pindayu.years, 'number');
+  // Jeevasarman's span, worked as Pindayu (Jataka Parijata ch. 5 v. 17).
+  assert.equal(answered.longevity.ayurdaya.jeevasarman.method, 'jeevasarman');
   assert.equal(answered.longevity.ayurdaya.rules.enmity, 'natural', "BPHS's readings by default");
   assert.ok(Object.isFrozen(answered.present[0].result), 'a reading handed out is a reading kept');
   // The spans read as *Jataka Parijata* reads them, and a choice nothing reads refused.

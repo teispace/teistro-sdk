@@ -11,12 +11,15 @@
 mod common;
 
 use common::{chart_at, files_in};
-use teistro_rules::longevity::{AyurdayaRules, Giver, Method, Nisarga, full_years};
+use teistro_core::catalogue::Graha;
+use teistro_rules::longevity::{
+    AyurdayaRules, Giver, JEEVASARMAN_YEARS, Method, Nisarga, full_years,
+};
 use teistro_rules::{Evaluator, Readings};
 
 #[test]
 fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
-    let mut spans: [Vec<f64>; 3] = [Vec::new(), Vec::new(), Vec::new()];
+    let mut spans: [Vec<f64>; 4] = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
     for (path, file) in files_in("doshas") {
         let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::TEXTS);
@@ -30,9 +33,29 @@ fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
             path.display()
         );
         let reading = evaluator.ayurdaya(AyurdayaRules::default());
-        for (at, span) in [reading.pindayu, reading.nisargayu, reading.amsayu]
+        // Jeevasarman's span is Pindayu's worked with a seventh of 120 years
+        // and 5 days for every graha: the same share of its full years, and
+        // the same lagna.
+        for (pinda, jeeva) in reading
+            .pindayu
+            .contributions
             .iter()
-            .enumerate()
+            .zip(&reading.jeevasarman.contributions)
+        {
+            let share = match pinda.giver {
+                Giver::Graha(graha) => full_years(Method::Pindayu, graha).unwrap(),
+                Giver::Lagna => JEEVASARMAN_YEARS,
+            };
+            assert!((pinda.basic / share - jeeva.basic / JEEVASARMAN_YEARS).abs() < 1e-12);
+        }
+        for (at, span) in [
+            reading.pindayu,
+            reading.nisargayu,
+            reading.amsayu,
+            reading.jeevasarman,
+        ]
+        .iter()
+        .enumerate()
         {
             let sum: f64 = span.contributions.iter().map(|given| given.net).sum();
             assert!((sum - span.years).abs() < 1e-9);
@@ -43,7 +66,10 @@ fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
                 );
                 match (span.method, given.giver) {
                     // Half at deep debilitation, the whole at deep exaltation.
-                    (Method::Pindayu | Method::Nisargayu, Giver::Graha(graha)) => {
+                    (
+                        Method::Pindayu | Method::Nisargayu | Method::Jeevasarman,
+                        Giver::Graha(graha),
+                    ) => {
                         let full = full_years(span.method, graha).unwrap();
                         assert!(given.basic >= full / 2.0 - 1e-9 && given.basic <= full + 1e-9);
                     }
@@ -66,13 +92,15 @@ fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
         .collect();
     // Lowest, mean and highest over the 93, in years of 360 days: Pindayu and
     // Nisargayu near their full 127 and 120 less the reductions; Amsayu near
-    // the 48 that eight givers of 0 to 12 years average, less the same.
+    // the 48 that eight givers of 0 to 12 years average, less the same; and
+    // Jeevasarman's near its full 120 and 5 days, less them.
     assert_eq!(
         summary,
         [
             (56.84, 85.01, 109.09),
             (38.43, 78.94, 99.29),
-            (20.37, 38.92, 66.14)
+            (20.37, 38.92, 66.14),
+            (52.03, 80.1, 101.44)
         ]
     );
 }
@@ -324,4 +352,14 @@ fn the_rays_reproduce_the_translator_s_figure_to_its_last_place() {
     // nature and in the fourth from him): the doubling was the dwadasamsa's.
     let by_sign = Evaluator::new(&chart, Readings::TEXTS).rasmi(RasmiRules::VERSE);
     assert!(!by_sign.grahas[3].doubled);
+}
+
+/// Jeevasarman's full years are the note's "17 years, 1 month, 22 days, 8
+/// ghatikas and 34.3 vighatikas" (*Jataka Parijata* ch. 5 v. 17, p. 247),
+/// a seventh of 120 years and 5 days of 360.
+#[test]
+fn jeevasarman_gives_a_seventh_of_120_years_and_5_days() {
+    let printed = 17.0 + 1.0 / 12.0 + (22.0 + (8.0 + 34.3 / 60.0) / 60.0) / 360.0;
+    assert!((JEEVASARMAN_YEARS - printed).abs() < 1e-7);
+    assert_eq!(full_years(Method::Jeevasarman, Graha::Rahu), None);
 }

@@ -21,8 +21,9 @@ pub use ashtakavarga::{
     PARIJATA_RASHI_MEASURES, SignMeasures, pinda_years, pindas,
 };
 pub use ayurdaya::{
-    Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, Method, Nisarga,
-    Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years, visible_half_share,
+    Ayurdaya, AyurdayaRules, Combine, Contribution, EnemyExempt, Enmity, Giver, JEEVASARMAN_YEARS,
+    Method, Nisarga, Reductions, RisingTakes, Span, by_exaltation, by_navamsha, full_years,
+    visible_half_share,
 };
 pub use chakrayus::{
     ChakraGiver, ChakraPortion, Chakrayus, ChakrayusRules, chakra_years, untraversed,

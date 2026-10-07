@@ -83,7 +83,7 @@ grades nothing — and a kind supplies a key space, never a vocabulary.
 | `ayurdaya-harana` | 4 | `longevity::Reductions`' fields | 4 | 0 of 4 | the four Sanskrit names, which map one to one onto the fields |
 | `ayurdaya-maraka` | 9 | `longevity::maraka::Reason` | 20 | 0 of 9 | a coarser classification: nine classes against the verses' twenty reasons |
 | `ayurdaya-maraka-trigger` | 3 | nothing: the 64th navamsha and the 22nd drekkana are maraka *reasons* here | 0 | 0 of 3 | a vocabulary of triggers the SDK does not separate out |
-| `ayurdaya-method` | 3 | `longevity::Method` | 3 | 3 of 3 | nothing: every key is the SDK's own spelling |
+| `ayurdaya-method` | 3 | `longevity::Method` | 4 | 3 of 3 | nothing: every key is the SDK's own spelling |
 | `ayurdaya-tier` | 4 | `LifeClass` | 7 | 1 of 4 | three Sanskrit names, which map one to one onto `short`, `medium` and `long` |
 | `ayurdaya-vulnerability` | 9 | `longevity::Vulnerability`, a struct with no members to name | 0 | 0 of 9 | three severity bands and six conditions the SDK does not grade |
 | `shadbala-strength` | 28 | `GrahaShadbala::strong`, a verdict against the required rupas | 2 | 0 of 28 | four bands the corpus does not record, and a composite graha key |

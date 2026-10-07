@@ -479,7 +479,7 @@ pub struct Present<'r> {
 pub struct Longevity {
     /// The three pairs, when the chart carried its hora lagna.
     pub three_pairs: Option<ThreePairs>,
-    /// The three spans.
+    /// The three spans and Jeevasarman's, which is worked as Pindayu.
     pub ayurdaya: Ayurdaya,
     /// The seven grahas' rays, the class of life their sum gives, and
     /// Rasmija ayurdaya.

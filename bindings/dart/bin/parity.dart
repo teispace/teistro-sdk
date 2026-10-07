@@ -910,6 +910,10 @@ void main() {
       (ayurdaya['pindayu']! as Map<String, Object?>)['years'],
     );
     put(
+      'chart-$i-rules-jeevasarman',
+      (ayurdaya['jeevasarman']! as Map<String, Object?>)['years'],
+    );
+    put(
       'chart-$i-rules-rays',
       (longevity['rasmi']! as Map<String, Object?>)['total'],
     );

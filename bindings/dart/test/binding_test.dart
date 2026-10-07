@@ -791,6 +791,11 @@ void _engineTests() {
     final longevity = answered['longevity']! as Map<String, Object?>;
     final ayurdaya = longevity['ayurdaya']! as Map<String, Object?>;
     expect((ayurdaya['pindayu']! as Map<String, Object?>)['years'], isA<num>());
+    // Jeevasarman's span, worked as Pindayu (Jataka Parijata ch. 5 v. 17).
+    expect(
+      (ayurdaya['jeevasarman']! as Map<String, Object?>)['method'],
+      'jeevasarman',
+    );
     expect((ayurdaya['rules']! as Map<String, Object?>)['enmity'], 'natural');
     // The spans read as *Jataka Parijata* reads them, and a choice nothing
     // reads refused.

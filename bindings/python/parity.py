@@ -863,6 +863,7 @@ def main() -> None:
             assert answered is not None
             put(f"chart-{i}-rules-present", ",".join(held["rule"] for held in answered["present"]))
             put(f"chart-{i}-rules-pindayu", answered["longevity"]["ayurdaya"]["pindayu"]["years"])
+            put(f"chart-{i}-rules-jeevasarman", answered["longevity"]["ayurdaya"]["jeevasarman"]["years"])
             put(f"chart-{i}-rules-rays", answered["longevity"]["rasmi"]["total"])
             put(f"chart-{i}-rules-span", answered["longevity"]["choice"]["ayus"] or "")
             dasayus = answered["longevity"]["dasayus"]

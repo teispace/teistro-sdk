@@ -19,6 +19,10 @@
 //! Varahamihira's rules, reads them otherwise: which graha keeps its years
 //! in an enemy's sign, whose enmity, and whose years a rising malefic
 //! takes (cruxes C302 to C304). Years are the texts' own, of 360 days.
+//!
+//! **Jeevasarman's** span (*Jataka Parijata* ch. 5 v. 17, C316) is worked
+//! "as in the Pindayurdaya", reductions and lagna alike, but every graha
+//! gives a seventh of 120 years and 5 days at its deep exaltation.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -53,6 +57,10 @@ pub enum Method {
     Nisargayu,
     /// From the navamshas each has gone.
     Amsayu,
+    /// Jeevasarman's: from each graha's distance to its deep exaltation as
+    /// Pindayu, but a seventh of 120 years and 5 days at it for every
+    /// graha (*Jataka Parijata* ch. 5 v. 17, C316).
+    Jeevasarman,
 }
 
 impl Method {
@@ -62,7 +70,12 @@ impl Method {
     /// `state-readings-measured.md` reads the size of this vocabulary from
     /// the type, after a prose sentence put the maraka reasons at fifteen
     /// when [`super::Reason::ALL`] has twenty.
-    pub const ALL: [Method; 3] = [Method::Pindayu, Method::Nisargayu, Method::Amsayu];
+    pub const ALL: [Method; 4] = [
+        Method::Pindayu,
+        Method::Nisargayu,
+        Method::Amsayu,
+        Method::Jeevasarman,
+    ];
 }
 
 /// How several reductions on one graha combine.
@@ -236,6 +249,9 @@ pub struct Ayurdaya {
     pub nisargayu: Span,
     /// Amsayu.
     pub amsayu: Span,
+    /// Jeevasarman's span, which *Jataka Parijata*'s note reads "when the
+    /// Lagna, the Sun and the Moon are all weak".
+    pub jeevasarman: Span,
     /// The choices it was read under.
     pub rules: AyurdayaRules,
 }
@@ -274,14 +290,23 @@ const PINDAYU_YEARS: [f64; 7] = [19.0, 25.0, 15.0, 12.0, 15.0, 21.0, 20.0];
 /// the verse lists them from the Moon, and they sum to 120.
 const NISARGAYU_YEARS: [f64; 7] = [20.0, 1.0, 2.0, 9.0, 18.0, 20.0, 50.0];
 
-/// A graha's full years in Pindayu or its listed years in Nisargayu; none in
-/// Amsayu, which counts navamshas, or for a node.
+/// Each graha's full years at deep exaltation in Jeevasarman's span: "1/7th
+/// of 120 years, 5 days or 17 years, 1 month, 22 days, 8 ghatikas and 34.3
+/// vighatikas" (*Jataka Parijata* ch. 5 v. 17, p. 247), in years of 360
+/// days.
+pub const JEEVASARMAN_YEARS: f64 = (120.0 + 5.0 / 360.0) / 7.0;
+
+/// A graha's full years in Pindayu or Jeevasarman's span or its listed years
+/// in Nisargayu; none in Amsayu, which counts navamshas, or for a node.
 #[must_use]
 pub fn full_years(method: Method, graha: Graha) -> Option<f64> {
     let table = match method {
         Method::Pindayu => &PINDAYU_YEARS,
         Method::Nisargayu => &NISARGAYU_YEARS,
         Method::Amsayu => return None,
+        Method::Jeevasarman => {
+            return GRAHAS.contains(&graha).then_some(JEEVASARMAN_YEARS);
+        }
     };
     let at = GRAHAS.iter().position(|seven| *seven == graha)?;
     table.get(at).copied()
@@ -347,6 +372,7 @@ impl Evaluator<'_> {
             pindayu: self.span(Method::Pindayu, rules),
             nisargayu: self.span(Method::Nisargayu, rules),
             amsayu: self.span(Method::Amsayu, rules),
+            jeevasarman: self.span(Method::Jeevasarman, rules),
             rules,
         }
     }
@@ -364,7 +390,7 @@ impl Evaluator<'_> {
             let full = full_years(method, graha).unwrap_or(0.0);
             let basic = match (method, rules.nisarga) {
                 (Method::Nisargayu, Nisarga::Listed) => full,
-                (Method::Pindayu | Method::Nisargayu, _) => {
+                (Method::Pindayu | Method::Nisargayu | Method::Jeevasarman, _) => {
                     by_exaltation(graha, at.longitude, full).unwrap_or(full)
                 }
                 (Method::Amsayu, _) => {
