@@ -369,6 +369,7 @@ const charts = geo.chart.foundMany({
   lots: { fortune: 'REVERSED_WHILE_MOON_UP' },
   considerations: { moonLateFromDeg: 25 },
   perfection: { house: 7, rules: { horizonDays: 120 } },
+  prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
     orbs: {
@@ -432,6 +433,35 @@ put('chart-graha-count', charts.decoded.grahaCount);
 
 /** A clause as every runner prints it: 1 held, 0 not. */
 const flag = (value) => (value ? 1 : 0);
+
+/** A pair as every runner writes it, the degrees rounded alike. */
+function pairSaid(p) {
+  return `${p.faster}>${p.slower}:${p.drishti}:${p.yoga ?? '-'}:${p.apartDeg.toFixed(6)}`;
+}
+
+/** A yoga that held, and what made it; `-` wherever there is none. */
+function heldSaid(h) {
+  return [
+    h.yoga,
+    h.through ?? '-',
+    h.entering ?? '-',
+    h.between === null ? '-' : 'pair',
+    h.legs === null ? '-' : h.legs.map(pairSaid).join('/'),
+    h.afflictions === null
+      ? '-'
+      : [h.afflictions.lagnesha, h.afflictions.karyesha]
+          .map((clauses) => (clauses.length === 0 ? 'none' : clauses.join('+')))
+          .join('/'),
+  ].join(':');
+}
+
+/** One matter's Tajika yogas, each row under `at`. */
+function matterSaid(at, m) {
+  put(at, `${m.sign} ${m.lagnesha}>${m.karyesha} ${m.sameLord}`);
+  put(`${at}-pair`, m.between === null ? '-' : pairSaid(m.between));
+  put(`${at}-unanswered`, m.unanswered.join(','));
+  put(`${at}-held`, m.held.map(heldSaid).join(' '));
+}
 
 /** An Ashta Koota as every runner prints it, under `prefix`. */
 function putAshta(prefix, matched) {
@@ -882,6 +912,29 @@ for (const chart of charts) {
     ),
   );
   put(`chart-${i}-perfection-rules`, `${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}`);
+  const pr = chart.prashna;
+  const some = (value) => value ?? '-';
+  const pRules = pr.rules;
+  put(
+    `chart-${i}-prashna`,
+    `${pRules.pisces} ${pRules.timing} ${pRules.mook} ${pRules.moon.kshina} ${pRules.score} ${pr.verdict.outcome} ${pr.change} ${some(pr.numberSign)}`,
+  );
+  pr.verdict.clauses.forEach((at, n) => put(`chart-${i}-prashna-clause-${n}`, `${at.kind} ${some(at.graha)} ${at.favour}`));
+  const tm = pr.timing;
+  put(
+    `chart-${i}-prashna-timing`,
+    `${tm.rule} ${tm.graha} ${tm.tie} ${tm.count} ${tm.multiplier} ${some(tm.amount)} ${tm.unit} ${list(tm.between)}`,
+  );
+  const mk = pr.mook;
+  put(`chart-${i}-prashna-mook`, `${mk.rule} ${mk.graha} ${mk.tie} ${mk.house} ${some(mk.person)} ${mk.thought}`);
+  put(`chart-${i}-prashna-moon`, list(pr.moon.clauses));
+  const sc = pr.score;
+  put(
+    `chart-${i}-prashna-score`,
+    `${sc.points} ${sc.answer} ${sc.void} ${some(sc.applyingTo)} ${list(sc.factors.map((f) => `${f.kind}:${f.points}`))}`,
+  );
+  matterSaid(`chart-${i}-prashna-links`, pr.links);
+  put(`chart-${i}-prashna-links-states`, `R:${list(pr.links.states.retrograde)} C:${list(pr.links.states.combust)}`);
   const { progressed: pg, directed: dr, contacts } = chart.progressions;
   put(
     `chart-${i}-progressed`,
@@ -1135,21 +1188,6 @@ const sahamSaid = (p) =>
     `${p.lordVishwa} ${p.lordHarsha} ${p.inNodeAxis}`,
     p.seven.map((s) => `${s.drishti}/${s.relation}/${+s.company}`).join(' '),
   ].join(' | ');
-const pairSaid = (p) =>
-  `${p.faster}>${p.slower}:${p.drishti}:${p.yoga ?? '-'}:${p.apartDeg.toFixed(6)}`;
-const heldSaid = (h) =>
-  [
-    h.yoga,
-    h.through ?? '-',
-    h.entering ?? '-',
-    h.between === null ? '-' : 'pair',
-    h.legs === null ? '-' : h.legs.map(pairSaid).join('/'),
-    h.afflictions === null
-      ? '-'
-      : [h.afflictions.lagnesha, h.afflictions.karyesha]
-          .map((clauses) => (clauses.length === 0 ? 'none' : clauses.join('+')))
-          .join('/'),
-  ].join(':');
 for (const reading of ['SIDEREAL', 'TROPICAL', 'MEAN']) {
   const years = geo.chart.foundMany({
     instants: [2460482.5, 2460600.25],
@@ -1186,10 +1224,7 @@ for (const reading of ['SIDEREAL', 'TROPICAL', 'MEAN']) {
       const at = `chart-${i}-varsha-${reading}-${one.year}`;
       put(`${at}-states`, `R:${one.annual.retrograde.join(',')} C:${one.annual.combust.join(',')}`);
       for (const m of one.annual.matters) {
-        put(`${at}-matter-${m.house}`, `${m.sign} ${m.lagnesha}>${m.karyesha} ${m.sameLord}`);
-        put(`${at}-matter-${m.house}-pair`, m.between === null ? '-' : pairSaid(m.between));
-        put(`${at}-matter-${m.house}-unanswered`, m.unanswered.join(','));
-        put(`${at}-matter-${m.house}-held`, m.held.map(heldSaid).join(' '));
+        matterSaid(`${at}-matter-${m.house}`, m);
       }
       for (const p of one.annual.sahams) put(`${at}-saham-${p.saham}`, sahamSaid(p));
       for (const d of one.annual.dashas) {

@@ -2265,6 +2265,21 @@ pub struct ChartRequest {
     /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub matching_json: Option<String>,
+    /// Every chart read as a prashna, the chart of the moment a question
+    /// was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
+    /// a JSON object, every member optional: `question` (`house`, the
+    /// matter's house 1 to 12, which the verdict's I.3 clauses and the
+    /// Tajika links read; `number`, the querent's 1 to 108, read only by
+    /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
+    /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
+    /// default). A prashna reads the seven's Shadbala, so asking for one
+    /// asks for the `shadbala` sections too. Each chart's reading comes
+    /// back in the `prashna` section. Null for none, which costs nothing
+    /// (`03-design/prashna.md`). Refusals are named from the record every
+    /// binding calls `prashna`, as `prashna.question.house`.
+    /// Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prashna_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2302,6 +2317,7 @@ pub struct HeldChartRequest {
     western_houses_json: Option<std::ffi::CString>,
     harmonic_json: Option<std::ffi::CString>,
     matching_json: Option<std::ffi::CString>,
+    prashna_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2397,6 +2413,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             matching_json: self
                 .matching_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            prashna_json: self
+                .prashna_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2531,6 +2551,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            prashna_json: self
+                .prashna_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2586,6 +2611,7 @@ impl ChartRequest {
             western_houses_json: unsafe { lent_text(raw.western_houses_json) },
             harmonic_json: unsafe { lent_text(raw.harmonic_json) },
             matching_json: unsafe { lent_text(raw.matching_json) },
+            prashna_json: unsafe { lent_text(raw.prashna_json) },
         }
     }
 }

@@ -2271,6 +2271,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   refusal of the question is named under `prashna.question`.
   `PrashnaRequest::from_json` reads the record a binding will send.
   **Numbers:** none move.
+- **Prashna in every binding** (`prashna.md` step 4). A chart request's
+  `prashna` record (`{question: {house, number}, rules}`) reads every
+  chart of a batch as the chart of its question's moment, and asks for the
+  Shadbala it weighs. The C ABI gains `prashna_json` on
+  `ts_chart_request` and section 120 `prashna`, canonical JSON with one
+  reading a chart. Node answers `chart.prashna` with catalogue keys in
+  full; Python gives frozen dataclasses over catalogue members; Dart gives
+  final classes over its own enums. The Tajika links read as a year's
+  matter does, with the states they were judged on. The parity runners now
+  print the same matter through one shared function, the varsha's and the
+  prashna's alike, and all five agree. **Numbers:** none move.
 - **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
   `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
   (the 1923 print) prescribe for each of the 81 antardaśās: the verses,

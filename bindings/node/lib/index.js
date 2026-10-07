@@ -1050,6 +1050,21 @@ export class Chart {
   }
 
   /**
+   * The chart read as a prashna, the chart of the moment a question was
+   * asked (`prashna: { question: { house: 7 } }`): the verdict's clauses
+   * with *Shatpanchashika* I.4's three outcomes, whether the matter stays,
+   * when, what an unspoken question is about, the Tajika links between
+   * the lagna lord and the asked house's lord, and the Moon's weaknesses;
+   * the baseline engine's points only under `rules: { score: 'BASELINE' }`.
+   * `null` unless asked (`03-design/prashna.md`).
+   *
+   * @returns {object|null}
+   */
+  get prashna() {
+    return prashnasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The seven planets' essential dignities (`dignities: { sectRule, rules,
    * scores }`), with the chart's sect and everything that made them;
    * `null` unless asked for (`03-design/essential-dignities.md`).
@@ -2624,6 +2639,11 @@ export class ChartArea extends Area {
           "a Western houses request record, e.g. {} or { system: 'house_system.KOCH' }",
         ),
         harmonicJson: recordJson(request.harmonic, 'harmonic', 'a harmonic request record, e.g. { number: 9 }'),
+        prashnaJson: recordJson(
+          request.prashna,
+          'prashna',
+          "a prashna request record, e.g. { question: { house: 7 } } or { rules: { mook: 'MOON_HOUSE' } }",
+        ),
         matchingJson: recordJson(
           request.matching,
           'matching',
@@ -4659,13 +4679,99 @@ const KPS = new WeakMap();
  * @returns {object[]}
  */
 function kpsOf(batch) {
-  let parsed = KPS.get(batch);
-  if (parsed === undefined) {
-    const json = batch.decoded.kp;
-    parsed = json ? JSON.parse(json).map((chart) => deepFreeze(kpFrom(chart))) : [];
-    KPS.set(batch, parsed);
-  }
-  return parsed;
+  return sectionOf(KPS, batch, 'kp', kpFrom);
+}
+
+/** Each batch's prashnas, parsed once however many charts read them. */
+const PRASHNAS = new WeakMap();
+
+/**
+ * Every chart's prashna in a batch: the `prashna` section's JSON, one entry
+ * a chart, catalogue keys in full and the Tajika links in the shape a
+ * year's `matters` take (`03-design/prashna.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function prashnasOf(batch) {
+  return sectionOf(PRASHNAS, batch, 'prashna', prashnaFrom);
+}
+
+/**
+ * A chart's prashna as the boundary's JSON writes it, its bare keys made
+ * full.
+ */
+function prashnaFrom(read) {
+  const graha = (key) => (key === null ? null : `graha.${key}`);
+  const { verdict, timing, mook, links, score, numberSign } = read;
+  return {
+    ...read,
+    verdict: { ...verdict, clauses: verdict.clauses.map((clause) => ({ ...clause, graha: graha(clause.graha) })) },
+    timing: { ...timing, graha: graha(timing.graha), between: timing.between.map(graha) },
+    mook: { ...mook, graha: graha(mook.graha) },
+    links: links === null ? null : yogasFrom(links),
+    score: score === null ? null : { ...score, applyingTo: graha(score.applyingTo) },
+    numberSign: numberSign === null ? null : `rashi.${numberSign}`,
+  };
+}
+
+/**
+ * Tajika's sixteen yogas for one matter as the boundary's JSON writes them,
+ * in the shape `mattersOf` gives a year's: a pair as `pairAt` reads it, an
+ * affliction as the clauses that hold, and the states it was judged on.
+ */
+function yogasFrom(matter) {
+  const graha = (key) => (key === null ? null : `graha.${key}`);
+  const pair = (one) =>
+    one === null
+      ? null
+      : {
+          faster: graha(one.faster),
+          slower: graha(one.slower),
+          drishti: one.drishti,
+          yoga: one.yoga,
+          orbDeg: one.orbDeg,
+          apartDeg: one.apartDeg,
+        };
+  const afflicted = (one) =>
+    [
+      ['RETROGRADE', one.retrograde],
+      ['COMBUST', one.combust],
+      ['DEBILITATED', one.debilitated],
+      ['TRIKA', one.trika],
+      ['UNDER_MALEFIC', one.underMalefic],
+    ]
+      .filter(([, holds]) => holds)
+      .map(([clause]) => clause);
+  const held = matter.held.map((one) => ({
+    yoga: one.yoga,
+    between: pair(one.between),
+    through: graha(one.through),
+    entering: graha(one.entering),
+    legs: one.legs === null ? null : one.legs.map(pair),
+    afflictions:
+      one.afflictions === null
+        ? null
+        : { lagnesha: afflicted(one.afflictions[0]), karyesha: afflicted(one.afflictions[1]) },
+  }));
+  const { unanswered } = matter;
+  return {
+    house: matter.house,
+    sign: `rashi.${matter.sign}`,
+    lagnesha: graha(matter.lagnesha),
+    karyesha: graha(matter.karyesha),
+    sameLord: matter.sameLord,
+    between: pair(matter.between),
+    held,
+    unanswered,
+    states:
+      matter.states === null
+        ? null
+        : { retrograde: matter.states.retrograde.map(graha), combust: matter.states.combust.map(graha) },
+    // `null` where the reading could not answer for the yoga, which is not
+    // the same answer as `false`.
+    holds: (yoga) => (unanswered.includes(yoga) ? null : held.some((one) => one.yoga === yoga)),
+  };
 }
 
 /**
@@ -4729,13 +4835,15 @@ function kpFrom({ chart, significators, ruling }) {
  * @param {WeakMap<Charts, object[]>} cache
  * @param {Charts} batch
  * @param {string} name
+ * @param {(chart: object) => object} [from] each chart's entry in this
+ *   layer's shape, the entry as written when left out
  * @returns {object[]}
  */
-function sectionOf(cache, batch, name) {
+function sectionOf(cache, batch, name, from = (chart) => chart) {
   let parsed = cache.get(batch);
   if (parsed === undefined) {
     const json = batch.decoded[name];
-    parsed = json ? JSON.parse(json).map((chart) => deepFreeze(chart)) : [];
+    parsed = json ? JSON.parse(json).map((chart) => deepFreeze(from(chart))) : [];
     cache.set(batch, parsed);
   }
   return parsed;

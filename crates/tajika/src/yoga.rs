@@ -697,6 +697,7 @@ fn malefic_reaches(from: Rashi, to: Rashi) -> bool {
 )]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Affliction {
     /// Whose.
     pub graha: Graha,
@@ -905,6 +906,7 @@ fn favoured(strength: Strength, lagna: Rashi, sky: &AnnualSky, moon: MoonBenefic
 /// One of the sixteen, found holding, with what made it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Held {
     /// Which of the sixteen.
     pub yoga: YearYoga,
@@ -945,6 +947,7 @@ impl Held {
 /// Every one of the sixteen this build can answer for, for one matter.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct YearYogas {
     /// The house the question was asked about, counted from the annual
     /// lagna by whole signs.

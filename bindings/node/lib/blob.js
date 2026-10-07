@@ -1729,6 +1729,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 119, 'avakahada_syllables');
     out.avakahadaSyllables = text(blob, at);
   }
+  {
+    const at = section(blob, 120, 'prashna');
+    out.prashna = text(blob, at);
+  }
   return out;
 }
 

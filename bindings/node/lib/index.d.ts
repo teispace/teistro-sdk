@@ -2508,6 +2508,154 @@ export interface KpRequest {
   readonly anyAyanamsha?: boolean;
 }
 
+/** A question put to the chart of its moment, every member optional (`03-design/prashna.md`). */
+export interface PrashnaRequest {
+  /** What was asked. */
+  readonly question?: {
+    /** The matter's house, 1 to 12: the verdict's I.3 clauses and the Tajika links read it. */
+    readonly house?: number;
+    /** The querent's number, 1 to 108, read only by the baseline engine's unsourced rule (C340). */
+    readonly number?: number;
+  };
+  /** The readings; the texts' own when left out. */
+  readonly rules?: PrashnaRules;
+}
+
+/** The readings a prashna is given under, one knob per crux. */
+export interface PrashnaRules {
+  /** How Pisces rises: both ways (the default) or by the head. */
+  readonly pisces?: 'BOTH_WAYS' | 'SHIRSHODAYA';
+  /** Which rule times the matter; `BASELINE` is unsourced. */
+  readonly timing?: 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
+  /** Which rule reads an unspoken question; `BASELINE` is unsourced. */
+  readonly mook?: 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
+  /** How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352). */
+  readonly moon?: { readonly kshina?: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
+  /** Whether the baseline engine's points come beside the clauses: `OFF` by default. */
+  readonly score?: 'OFF' | 'BASELINE';
+}
+
+/** A chart read as a prashna (`03-design/prashna.md`). */
+export interface Prashna {
+  /** The readings it was given under, every member filled. */
+  readonly rules: Required<PrashnaRules>;
+  /** Whether the matter succeeds: the clauses and *Shatpanchashika* I.4's outcome over them. */
+  readonly verdict: {
+    readonly clauses: readonly PrashnaClause[];
+    readonly outcome: 'SUCCEEDS' | 'WITH_DIFFICULTY' | 'FAILS';
+  };
+  /** Whether the matter stays as it is (II.1–2). */
+  readonly change: 'STAYS' | 'CHANGES';
+  /** When the matter comes to pass. */
+  readonly timing: PrashnaTiming;
+  /** What an unspoken question is about. */
+  readonly mook: PrashnaMook;
+  /** The Tajika yogas between the lagna lord and the asked house's lord; `null` when no house was asked. */
+  readonly links: PrashnaLinks | null;
+  /** The Moon's weaknesses that hold, in the verses' order (Samjna Tantra vv. 73–74, C352). */
+  readonly moon: {
+    readonly rules: { readonly kshina: 'DARK_EIGHTH_TO_BRIGHT_EIGHTH' | 'DARK_ELEVENTH_TO_NEW_MOON' };
+    readonly clauses: readonly MoonWeaknessClause[];
+  };
+  /** The baseline engine's points; `null` unless `rules.score` is `BASELINE`. Unsourced. */
+  readonly score: PrashnaScore | null;
+  /** The sign of the querent's number by the baseline's rule; `null` unless a number was given. */
+  readonly numberSign: Rashi | null;
+}
+
+/** One clause of the verdict, naming its verse by its kind. */
+export interface PrashnaClause {
+  readonly kind: 'LAGNA_RISING' | 'IN_LAGNA' | 'RISING_NAVAMSHA' | 'ASPECTS_LAGNA' | 'ASPECTS_MOON' | 'KARYA_HOUSE';
+  /** The graha it is about; `null` for how the lagna rises. */
+  readonly graha: Graha | null;
+  readonly favour: 'FOR' | 'AGAINST' | 'BOTH';
+}
+
+/** When the matter comes to pass. */
+export interface PrashnaTiming {
+  readonly rule: 'STRONGEST_GRAHA' | 'FIRST_OCCUPIED' | 'MOON_DAYS' | 'BASELINE';
+  /** The graha the count was taken from. */
+  readonly graha: Graha;
+  /** Whether that graha won a tie in strength (C338). */
+  readonly tie: boolean;
+  /** The count, 1 to 12. */
+  readonly count: number;
+  /** What the count is multiplied by. */
+  readonly multiplier: number;
+  /** The time; `null` where the rule gives none. */
+  readonly amount: number | null;
+  readonly unit: 'DAYS' | 'MONTHS' | 'YEARS';
+  /** The grahas standing between the lagna and the Moon, under `MOON_DAYS`. */
+  readonly between: readonly Graha[];
+}
+
+/** What an unspoken question is about. */
+export interface PrashnaMook {
+  readonly rule: 'SHATPANCHASHIKA' | 'MOON_HOUSE' | 'BASELINE';
+  /** The graha whose house was read. */
+  readonly graha: Graha;
+  /** Whether that graha won a tie in strength. */
+  readonly tie: boolean;
+  /** The house read, 1 to 12. */
+  readonly house: number;
+  /** The person, under `SHATPANCHASHIKA` only. */
+  readonly person:
+    | 'QUERENT'
+    | 'FRIEND'
+    | 'ENEMY'
+    | 'BROTHER'
+    | 'MOTHER_OR_SISTER'
+    | 'SON'
+    | 'WIFE'
+    | 'RELIGIOUS'
+    | 'GURU'
+    | 'UNSPECIFIED'
+    | null;
+  /** The class of the thing thought of (I.7). */
+  readonly thought: 'MINERAL' | 'ROOT' | 'LIVING';
+}
+
+/** A prashna's Tajika links: a year's matter, with the states it was judged on. */
+export interface PrashnaLinks extends TajikaMatter {
+  /** Which of the seven are retrograde and which combust; `null` when not given. */
+  readonly states: { readonly retrograde: readonly Graha[]; readonly combust: readonly Graha[] } | null;
+}
+
+/** A clause of the Samjna Tantra vv. 73–74 that weakens the Moon. */
+export type MoonWeaknessClause =
+  | 'TWELFTH_FROM_SUN'
+  | 'SCORPIO_FIRST_HALF'
+  | 'LIBRA_LAST_HALF'
+  | 'UNSEEN_BY_LORD'
+  | 'UNSEEN_BY_ALL'
+  | 'SHUNYA_MARGA'
+  | 'KSHINA'
+  | 'BHANTE'
+  | 'HUNGRY_ASPECT';
+
+/** The baseline engine's points for a query chart. Unsourced (C337). */
+export interface PrashnaScore {
+  readonly points: number;
+  readonly answer: 'YES' | 'NO' | 'UNCERTAIN';
+  /** Each factor that gave points, in the baseline's order. */
+  readonly factors: readonly {
+    readonly kind:
+      | 'LAGNA_LORD_KENDRA_OR_TRIKONA'
+      | 'LAGNA_LORD_DUSTHANA'
+      | 'MOON_WAXING'
+      | 'MOON_VOID'
+      | 'BENEFICS_IN_KENDRAS'
+      | 'MALEFICS_IN_KENDRAS'
+      | 'MOON_APPLYING_TO_BENEFIC'
+      | 'MOON_APPLYING_TO_MALEFIC';
+    readonly points: number;
+  }[];
+  /** The baseline's void Moon, over grahas held still. */
+  readonly void: boolean;
+  /** The graha nearest ahead of the Moon by conjunction distance; `null` when none is within 180°. */
+  readonly applyingTo: Graha | null;
+}
+
 /** An arc of the zodiac, half-open, in nanoarcseconds (divide by `3.6e12` for degrees). */
 export interface KpSpan {
   readonly start: number;
@@ -3995,6 +4143,14 @@ export declare class Chart {
    */
   readonly kp: KpReading | null;
   /**
+   * The chart read as a prashna, the chart of the moment a question was
+   * asked: the verdict's clauses, whether the matter stays, when, what an
+   * unspoken question is about, the Tajika links when a house is asked
+   * and the Moon's weaknesses; `null` unless `prashna` asked
+   * (`03-design/prashna.md`).
+   */
+  readonly prashna: Prashna | null;
+  /**
    * The seven planets' essential dignities and the chart's sect; `null`
    * unless `dignities` asked (`03-design/essential-dignities.md`).
    */
@@ -5194,6 +5350,13 @@ export interface ChartRequest {
    * (`03-design/kp.md`). None by default.
    */
   readonly kp?: KpRequest;
+  /**
+   * The question to read every chart as the chart of its moment, read
+   * back as each chart's `prashna` (`03-design/prashna.md`). A prashna
+   * weighs the seven by their Shadbala, so it asks for that too. None by
+   * default; `{}` reads the texts' own rules with no house asked.
+   */
+  readonly prashna?: PrashnaRequest;
   /**
    * The seven planets' essential dignities to read in every chart, read
    * back as each chart's `dignities` (`03-design/essential-dignities.md`).

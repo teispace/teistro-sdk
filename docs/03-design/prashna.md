@@ -279,9 +279,11 @@ Each names its field under `prashna`.
    motion and combustion under the context's settings, and the seven's
    Shadbala, refusing a document without it (`shadbala`); `prashna_sky`
    answers what it read. `PrashnaRequest::from_json` takes the record a
-   binding will send, refusals named under `prashna`. The bindings follow
-   KP's pattern: a `prashna_json` member of the chart request and a
-   `prashna` section of canonical JSON, one reading a chart.
+   binding will send, refusals named under `prashna`. Every binding is
+   built on KP's pattern: a `prashna_json` member of the chart request,
+   which also asks for the Shadbala, and section 120 `prashna`, canonical
+   JSON with one reading a chart. Node, Python and Dart read it as
+   `chart.prashna`, with the links in a year's matter's shape.
 
 ## Acceptance
 

@@ -188,6 +188,44 @@ def put(key: str, value: Any) -> None:
         report[key] = str(value)
 
 
+def pair_said(p: Any) -> str:
+    """A pair as every runner writes it, the degrees rounded alike."""
+    yoga = p.yoga.key if p.yoga is not None else "-"
+    return f"{p.faster.full_key}>{p.slower.full_key}:{p.drishti.key}:{yoga}:{p.apart_deg:.6f}"
+
+
+def clauses_said(clauses: Any) -> str:
+    return "+".join(c.key for c in clauses) if clauses else "none"
+
+
+def held_said(h: Any) -> str:
+    """A yoga that held, and what made it; `-` wherever there is none."""
+    return ":".join([
+        h.yoga.key,
+        h.through.full_key if h.through is not None else "-",
+        h.entering.full_key if h.entering is not None else "-",
+        "pair" if h.between is not None else "-",
+        "/".join(pair_said(leg) for leg in h.legs) if h.legs is not None else "-",
+        (
+            f"{clauses_said(h.afflictions.lagnesha)}/{clauses_said(h.afflictions.karyesha)}"
+            if h.afflictions is not None
+            else "-"
+        ),
+    ])
+
+
+def put_matter(at: str, matter: Any) -> None:
+    """One matter's Tajika yogas, each row under `at`."""
+    put(
+        at,
+        f"{matter.sign.full_key} {matter.lagnesha.full_key}>"
+        f"{matter.karyesha.full_key} {str(matter.same_lord).lower()}",
+    )
+    put(f"{at}-pair", pair_said(matter.between) if matter.between is not None else "-")
+    put(f"{at}-unanswered", ",".join(y.key for y in matter.unanswered))
+    put(f"{at}-held", " ".join(held_said(h) for h in matter.held))
+
+
 def listed(items: Iterable[str]) -> str:
     """The items joined by spaces, or `none`."""
     return " ".join(items) or "none"
@@ -736,6 +774,7 @@ def main() -> None:
             lots={"fortune": "REVERSED_WHILE_MOON_UP"},
             considerations={"moonLateFromDeg": 25},
             perfection={"house": 7, "rules": {"horizonDays": 120}},
+            prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
                 "orbs": {
@@ -1335,6 +1374,47 @@ def main() -> None:
                 f"chart-{i}-perfection-rules",
                 f"{','.join(number(orb) for orb in pf.rules.orbs_deg)} {int(pf.rules.within_sign)}",
             )
+            pq = chart.prashna
+            assert pq is not None and pq.links is not None and pq.score is not None
+
+            def joined(items: Iterable[str]) -> str:
+                return ",".join(items) or "-"
+
+            def lower(flag: bool) -> str:
+                return str(flag).lower()
+
+            rq = pq.rules
+            put(
+                f"chart-{i}-prashna",
+                f"{rq['pisces']} {rq['timing']} {rq['mook']} {rq['moon']['kshina']} {rq['score']}"
+                f" {pq.verdict.outcome} {pq.change} {pq.number_sign.full_key if pq.number_sign else '-'}",
+            )
+            for n, clause in enumerate(pq.verdict.clauses):
+                about = clause.graha.full_key if clause.graha is not None else "-"
+                put(f"chart-{i}-prashna-clause-{n}", f"{clause.kind} {about} {clause.favour}")
+            tm = pq.timing
+            put(
+                f"chart-{i}-prashna-timing",
+                f"{tm.rule} {tm.graha.full_key} {lower(tm.tie)} {tm.count} {tm.multiplier}"
+                f" {'-' if tm.amount is None else tm.amount} {tm.unit} {joined(g.full_key for g in tm.between)}",
+            )
+            mk = pq.mook
+            put(
+                f"chart-{i}-prashna-mook",
+                f"{mk.rule} {mk.graha.full_key} {lower(mk.tie)} {mk.house} {mk.person or '-'} {mk.thought}",
+            )
+            put(f"chart-{i}-prashna-moon", joined(pq.moon.clauses))
+            ps = pq.score
+            put(
+                f"chart-{i}-prashna-score",
+                f"{ps.points} {ps.answer} {lower(ps.void)}"
+                f" {ps.applying_to.full_key if ps.applying_to is not None else '-'}"
+                f" {joined(f'{f.kind}:{f.points}' for f in ps.factors)}",
+            )
+            put_matter(f"chart-{i}-prashna-links", pq.links)
+            states = pq.links.states
+            assert states is not None
+            put(f"chart-{i}-prashna-links-states", f"R:{joined(g.full_key for g in states.retrograde)} C:{joined(g.full_key for g in states.combust)}")
             pr = chart.progressions
             assert pr is not None and pr.progressed is not None and pr.directed is not None
             assert pr.contacts is not None
@@ -1587,27 +1667,6 @@ def main() -> None:
         # Each reading also asks the sixteen yogas a different way, so all
         # three ways cross: every matter under the source's readings, every
         # matter under Tambira's "some authorities", and no matter at all.
-        def pair_said(p: Any) -> str:
-            yoga = p.yoga.key if p.yoga is not None else "-"
-            return f"{p.faster.full_key}>{p.slower.full_key}:{p.drishti.key}:{yoga}:{p.apart_deg:.6f}"
-
-        def clauses_said(clauses: Any) -> str:
-            return "+".join(c.key for c in clauses) if clauses else "none"
-
-        def held_said(h: Any) -> str:
-            return ":".join([
-                h.yoga.key,
-                h.through.full_key if h.through is not None else "-",
-                h.entering.full_key if h.entering is not None else "-",
-                "pair" if h.between is not None else "-",
-                "/".join(pair_said(leg) for leg in h.legs) if h.legs is not None else "-",
-                (
-                    f"{clauses_said(h.afflictions.lagnesha)}/{clauses_said(h.afflictions.karyesha)}"
-                    if h.afflictions is not None
-                    else "-"
-                ),
-            ])
-
         def saham_said(p: Any) -> str:
             """One saham as every runner prints it."""
             axis = "null" if p.in_node_axis is None else str(p.in_node_axis).lower()
@@ -1686,15 +1745,7 @@ def main() -> None:
                         f"C:{','.join(g.full_key for g in annual.combust)}",
                     )
                     for matter in annual.matters:
-                        asked = f"{stem}-matter-{matter.house}"
-                        put(
-                            asked,
-                            f"{matter.sign.full_key} {matter.lagnesha.full_key}>"
-                            f"{matter.karyesha.full_key} {str(matter.same_lord).lower()}",
-                        )
-                        put(f"{asked}-pair", pair_said(matter.between) if matter.between is not None else "-")
-                        put(f"{asked}-unanswered", ",".join(y.key for y in matter.unanswered))
-                        put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
+                        put_matter(f"{stem}-matter-{matter.house}", matter)
                     for point in annual.sahams:
                         put(f"{stem}-saham-{point.saham.key}", saham_said(point))
                     for year_dasha in annual.dashas:

@@ -689,6 +689,7 @@ final class ChartArea extends _Area {
     WesternHouseRequest? westernHouses,
     HarmonicRequest? harmonic,
     MatchingRequest? matching,
+    PrashnaRequest? prashna,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -732,6 +733,7 @@ final class ChartArea extends _Area {
     westernHouses: westernHouses,
     harmonic: harmonic,
     matching: matching,
+    prashna: prashna,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -795,6 +797,7 @@ final class ChartArea extends _Area {
     WesternHouseRequest? westernHouses,
     HarmonicRequest? harmonic,
     MatchingRequest? matching,
+    PrashnaRequest? prashna,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -862,6 +865,7 @@ final class ChartArea extends _Area {
             westernHousesJson: westernHouses?._json,
             harmonicJson: harmonic?._json,
             matchingJson: matching?._json,
+            prashnaJson: prashna?._json,
           ),
         ),
       ),
@@ -13369,6 +13373,180 @@ List<Object?> _dateFields(CalendarDate date) => [
   date.computedDay,
 ];
 
+/// Each batch's prashnas, parsed once however many charts read them.
+final Expando<List<Prashna>> _prashnas = Expando<List<Prashna>>('prashna');
+
+List<Prashna> _prashnasOf(Charts batch) =>
+    _prashnas[batch] ??= [
+      for (final raw in _sectionOf(batch.prashna)) _prashna(raw),
+    ];
+
+/// A chart's prashna from the `prashna` section's JSON, its keys made
+/// members and its links a year's matter.
+Prashna _prashna(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  List<Object?> each(Object? value) => value! as List<Object?>;
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  Graha? some(Object? key) => key == null ? null : graha(key);
+  List<Graha> grahas(Object? keys) => [
+    for (final key in each(keys)) graha(key),
+  ];
+  PrashnaMoonRules moonRules(Object? value) => PrashnaMoonRules(
+    kshina: _keyedIn(KshinaRule.values, at(value)['kshina']),
+  );
+
+  final rules = at(raw['rules']);
+  final verdict = at(raw['verdict']);
+  final timing = at(raw['timing']);
+  final mook = at(raw['mook']);
+  final moon = at(raw['moon']);
+  final links = raw['links'];
+  final score = raw['score'];
+  final sign = raw['numberSign'];
+  return Prashna(
+    rules: PrashnaRules(
+      pisces: _keyedIn(PiscesRising.values, rules['pisces']),
+      timing: _keyedIn(TimingRule.values, rules['timing']),
+      mook: _keyedIn(MookRule.values, rules['mook']),
+      moon: moonRules(rules['moon']),
+      score: _keyedIn(ScoreRule.values, rules['score']),
+    ),
+    verdict: PrashnaVerdict(
+      clauses: List<PrashnaClause>.unmodifiable([
+        for (final clause in each(verdict['clauses']).map(at))
+          PrashnaClause(
+            kind: _keyedIn(PrashnaClauseKind.values, clause['kind']),
+            graha: some(clause['graha']),
+            favour: _keyedIn(Favour.values, clause['favour']),
+          ),
+      ]),
+      outcome: _keyedIn(PrashnaOutcome.values, verdict['outcome']),
+    ),
+    change: _keyedIn(PrashnaChange.values, raw['change']),
+    timing: PrashnaTiming(
+      rule: _keyedIn(TimingRule.values, timing['rule']),
+      graha: graha(timing['graha']),
+      tie: timing['tie']! as bool,
+      count: timing['count']! as int,
+      multiplier: timing['multiplier']! as int,
+      amount: timing['amount'] as int?,
+      unit: _keyedIn(PrashnaUnit.values, timing['unit']),
+      between: grahas(timing['between']),
+    ),
+    mook: PrashnaMook(
+      rule: _keyedIn(MookRule.values, mook['rule']),
+      graha: graha(mook['graha']),
+      tie: mook['tie']! as bool,
+      house: mook['house']! as int,
+      person:
+          mook['person'] == null
+              ? null
+              : _keyedIn(PrashnaPerson.values, mook['person']),
+      thought: _keyedIn(PrashnaThought.values, mook['thought']),
+    ),
+    links: links == null ? null : _prashnaLinks(at(links)),
+    moon: MoonWeakness(
+      rules: moonRules(moon['rules']),
+      clauses: List<MoonWeaknessClause>.unmodifiable([
+        for (final key in each(moon['clauses']))
+          _keyedIn(MoonWeaknessClause.values, key),
+      ]),
+    ),
+    score:
+        score == null
+            ? null
+            : PrashnaScore(
+              points: at(score)['points']! as int,
+              answer: _keyedIn(PrashnaAnswer.values, at(score)['answer']),
+              factors: List<PrashnaFactor>.unmodifiable([
+                for (final factor in each(at(score)['factors']).map(at))
+                  PrashnaFactor(
+                    kind: _keyedIn(PrashnaFactorKind.values, factor['kind']),
+                    points: factor['points']! as int,
+                  ),
+              ]),
+              isVoid: at(score)['void']! as bool,
+              applyingTo: some(at(score)['applyingTo']),
+            ),
+    numberSign:
+        sign == null ? null : Rashi.byKey(sign as String) ?? Rashi.unknown,
+  );
+}
+
+/// Tajika's sixteen yogas for one matter as the boundary's JSON writes
+/// them, in the shape a year's matters are read in.
+PrashnaLinks _prashnaLinks(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  List<Object?> each(Object? value) => value! as List<Object?>;
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  Graha? some(Object? key) => key == null ? null : graha(key);
+  List<Graha> grahas(Object? keys) => [
+    for (final key in each(keys)) graha(key),
+  ];
+  T member<T>(T? Function(String) byKey, Object? key) =>
+      byKey(key! as String) ?? (throw StateError('a prashna spelling $key'));
+  TajikaBetween? pair(Object? value) {
+    if (value == null) return null;
+    final one = at(value);
+    return TajikaBetween(
+      faster: graha(one['faster']),
+      slower: graha(one['slower']),
+      drishti: member(TajikaDrishti.byKey, one['drishti']),
+      yoga: one['yoga'] == null ? null : member(TajikaYoga.byKey, one['yoga']),
+      orbDeg: (one['orbDeg']! as num).toDouble(),
+      apartDeg: (one['apartDeg']! as num).toDouble(),
+    );
+  }
+
+  List<Affliction> afflicted(Map<String, Object?> one) => [
+    if (one['retrograde']! as bool) Affliction.retrograde,
+    if (one['combust']! as bool) Affliction.combust,
+    if (one['debilitated']! as bool) Affliction.debilitated,
+    if (one['trika']! as bool) Affliction.trika,
+    if (one['underMalefic']! as bool) Affliction.underMalefic,
+  ];
+
+  final states = raw['states'];
+  return PrashnaLinks(
+    house: raw['house']! as int,
+    sign: Rashi.byKey(raw['sign']! as String) ?? Rashi.unknown,
+    lagnesha: graha(raw['lagnesha']),
+    karyesha: graha(raw['karyesha']),
+    sameLord: raw['sameLord']! as bool,
+    between: pair(raw['between']),
+    held: [
+      for (final one in each(raw['held']).map(at))
+        HeldYearYoga(
+          yoga: member(YearYoga.byKey, one['yoga']),
+          between: pair(one['between']),
+          through: some(one['through']),
+          entering: some(one['entering']),
+          legs:
+              one['legs'] == null
+                  ? null
+                  : [for (final leg in each(one['legs'])) pair(leg)!],
+          afflictions:
+              one['afflictions'] == null
+                  ? null
+                  : Afflictions(
+                    lagnesha: afflicted(at(each(one['afflictions'])[0])),
+                    karyesha: afflicted(at(each(one['afflictions'])[1])),
+                  ),
+        ),
+    ],
+    unanswered: [
+      for (final key in each(raw['unanswered'])) member(YearYoga.byKey, key),
+    ],
+    states:
+        states == null
+            ? null
+            : AnnualStatesRead(
+              retrograde: grahas(at(states)['retrograde']),
+              combust: grahas(at(states)['combust']),
+            ),
+  );
+}
+
 /// Each batch's KP readings, parsed once however many charts read them.
 final Expando<List<KpReading>> _kps = Expando<List<KpReading>>('kp');
 
@@ -14701,6 +14879,564 @@ final class TajikaMatter {
   /// not the same answer as false.
   bool? holds(YearYoga yoga) =>
       unanswered.contains(yoga) ? null : held.any((one) => one.yoga == yoga);
+}
+
+/// A member of a prashna's closed sets, spelt by its key.
+abstract interface class _Keyed {
+  String get key;
+}
+
+/// The member of [values] spelt [key]; a key this build does not know is
+/// a fault, because the SDK writes only the members it has.
+T _keyedIn<T extends _Keyed>(List<T> values, Object? key) => values.firstWhere(
+  (member) => member.key == key,
+  orElse: () => throw StateError('a prashna spelling $key'),
+);
+
+/// Whether Pisces rising counts both ways (*Shatpanchashika* I.3).
+enum PiscesRising implements _Keyed {
+  /// Both ways, as the verse reads it; the default.
+  bothWays('BOTH_WAYS'),
+
+  /// As a shirshodaya sign alone.
+  shirshodaya('SHIRSHODAYA');
+
+  const PiscesRising(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a matter is timed (C338).
+enum TimingRule implements _Keyed {
+  /// By the strongest graha; the default.
+  strongestGraha('STRONGEST_GRAHA'),
+
+  /// By the first occupied house from the lagna.
+  firstOccupied('FIRST_OCCUPIED'),
+
+  /// In days, by the grahas between the lagna and the Moon.
+  moonDays('MOON_DAYS'),
+
+  /// The baseline engine's. Unsourced.
+  baseline('BASELINE');
+
+  const TimingRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// How an unspoken question is read (C339).
+enum MookRule implements _Keyed {
+  /// *Shatpanchashika*'s own; the default.
+  shatpanchashika('SHATPANCHASHIKA'),
+
+  /// By the Moon's house.
+  moonHouse('MOON_HOUSE'),
+
+  /// The baseline engine's. Unsourced.
+  baseline('BASELINE');
+
+  const MookRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// When the Moon is kshina, waning to weakness (Samjna Tantra v. 73, C352).
+enum KshinaRule implements _Keyed {
+  /// From the dark eighth to the bright eighth, the gloss's; the default.
+  darkEighthToBrightEighth('DARK_EIGHTH_TO_BRIGHT_EIGHTH'),
+
+  /// From the dark eleventh to the new Moon, its "some say".
+  darkEleventhToNewMoon('DARK_ELEVENTH_TO_NEW_MOON');
+
+  const KshinaRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whether a prashna carries the baseline engine's points.
+enum ScoreRule implements _Keyed {
+  /// No points: the verdict's clauses are the answer (C337); the default.
+  off('OFF'),
+
+  /// The baseline engine's points beside the clauses. Unsourced.
+  baseline('BASELINE');
+
+  const ScoreRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// How the Moon's weaknesses are read.
+final class PrashnaMoonRules extends _Value {
+  const PrashnaMoonRules({this.kshina = KshinaRule.darkEighthToBrightEighth});
+
+  /// When she is kshina.
+  final KshinaRule kshina;
+
+  Map<String, Object?> get _record => {'kshina': kshina.key};
+
+  @override
+  List<Object?> get _fields => [kshina];
+}
+
+/// The readings a prashna is given under, one a crux, the texts' own by
+/// default (`03-design/prashna.md`).
+final class PrashnaRules extends _Value {
+  const PrashnaRules({
+    this.pisces = PiscesRising.bothWays,
+    this.timing = TimingRule.strongestGraha,
+    this.mook = MookRule.shatpanchashika,
+    this.moon = const PrashnaMoonRules(),
+    this.score = ScoreRule.off,
+  });
+
+  final PiscesRising pisces;
+  final TimingRule timing;
+  final MookRule mook;
+  final PrashnaMoonRules moon;
+  final ScoreRule score;
+
+  Map<String, Object?> get _record => {
+    'pisces': pisces.key,
+    'timing': timing.key,
+    'mook': mook.key,
+    'moon': moon._record,
+    'score': score.key,
+  };
+
+  @override
+  List<Object?> get _fields => [pisces, timing, mook, moon, score];
+}
+
+/// A question to read every chart of a request as the chart of its moment
+/// (`03-design/prashna.md`). A prashna weighs the seven by their Shadbala,
+/// so it asks for that too.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */
+///     prashna: const PrashnaRequest(house: 7,
+///         rules: PrashnaRules(mook: MookRule.moonHouse)));
+/// final outcome = chart.prashna?.verdict.outcome;
+/// ```
+final class PrashnaRequest {
+  const PrashnaRequest({
+    this.house,
+    this.number,
+    this.rules = const PrashnaRules(),
+  });
+
+  /// The matter's house, 1 to 12, which the verdict's I.3 clauses and the
+  /// Tajika links read; refused by `prashna.question.house` outside it.
+  final int? house;
+
+  /// The querent's number, 1 to 108, read only by the baseline engine's
+  /// unsourced rule (C340); refused by `prashna.question.number` outside it.
+  final int? number;
+
+  /// The readings.
+  final PrashnaRules rules;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'question': {
+      if (house != null) 'house': house,
+      if (number != null) 'number': number,
+    },
+    'rules': rules._record,
+  });
+}
+
+/// The verse a clause of the verdict reads.
+enum PrashnaClauseKind implements _Keyed {
+  /// How the lagna rises.
+  lagnaRising('LAGNA_RISING'),
+
+  /// A graha in the lagna.
+  inLagna('IN_LAGNA'),
+
+  /// The lagna's navamsha.
+  risingNavamsha('RISING_NAVAMSHA'),
+
+  /// A graha aspecting the lagna.
+  aspectsLagna('ASPECTS_LAGNA'),
+
+  /// A graha aspecting the Moon.
+  aspectsMoon('ASPECTS_MOON'),
+
+  /// The house asked about.
+  karyaHouse('KARYA_HOUSE');
+
+  const PrashnaClauseKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which way a clause tells.
+enum Favour implements _Keyed {
+  /// For the matter.
+  forIt('FOR'),
+
+  /// Against it.
+  against('AGAINST'),
+
+  /// Both ways.
+  both('BOTH');
+
+  const Favour(this.key);
+
+  @override
+  final String key;
+}
+
+/// *Shatpanchashika* I.4's outcome over the clauses (C337).
+enum PrashnaOutcome implements _Keyed {
+  succeeds('SUCCEEDS'),
+  withDifficulty('WITH_DIFFICULTY'),
+  fails('FAILS');
+
+  const PrashnaOutcome(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whether the matter stays (II.1–2).
+enum PrashnaChange implements _Keyed {
+  stays('STAYS'),
+  changes('CHANGES');
+
+  const PrashnaChange(this.key);
+
+  @override
+  final String key;
+}
+
+/// The unit a matter is timed in.
+enum PrashnaUnit implements _Keyed {
+  days('DAYS'),
+  months('MONTHS'),
+  years('YEARS');
+
+  const PrashnaUnit(this.key);
+
+  @override
+  final String key;
+}
+
+/// Who an unspoken question is about, under *Shatpanchashika*.
+enum PrashnaPerson implements _Keyed {
+  querent('QUERENT'),
+  friend('FRIEND'),
+  enemy('ENEMY'),
+  brother('BROTHER'),
+  motherOrSister('MOTHER_OR_SISTER'),
+  son('SON'),
+  wife('WIFE'),
+  religious('RELIGIOUS'),
+  guru('GURU'),
+  unspecified('UNSPECIFIED');
+
+  const PrashnaPerson(this.key);
+
+  @override
+  final String key;
+}
+
+/// The class of the thing an unspoken question thinks of.
+enum PrashnaThought implements _Keyed {
+  mineral('MINERAL'),
+  root('ROOT'),
+  living('LIVING');
+
+  const PrashnaThought(this.key);
+
+  @override
+  final String key;
+}
+
+/// A clause of the Samjna Tantra vv. 73–74 on the Moon's weakness (C352).
+enum MoonWeaknessClause implements _Keyed {
+  /// In the twelfth from the Sun.
+  twelfthFromSun('TWELFTH_FROM_SUN'),
+
+  /// In the first half of Scorpio.
+  scorpioFirstHalf('SCORPIO_FIRST_HALF'),
+
+  /// In the last half of Libra.
+  libraLastHalf('LIBRA_LAST_HALF'),
+
+  /// Unseen by her sign's lord.
+  unseenByLord('UNSEEN_BY_LORD'),
+
+  /// Unseen by every graha.
+  unseenByAll('UNSEEN_BY_ALL'),
+
+  /// On the empty road.
+  shunyaMarga('SHUNYA_MARGA'),
+
+  /// Kshina, under [PrashnaMoonRules.kshina].
+  kshina('KSHINA'),
+
+  /// In her sign's last navamsha.
+  bhante('BHANTE'),
+
+  /// Aspected inimically by Mars in the bright half or Saturn in the dark.
+  hungryAspect('HUNGRY_ASPECT');
+
+  const MoonWeaknessClause(this.key);
+
+  @override
+  final String key;
+}
+
+/// The baseline's answer over its points.
+enum PrashnaAnswer implements _Keyed {
+  /// More than 1 point.
+  yes('YES'),
+
+  /// Fewer than −1.
+  no('NO'),
+
+  /// −1 to 1.
+  uncertain('UNCERTAIN');
+
+  const PrashnaAnswer(this.key);
+
+  @override
+  final String key;
+}
+
+/// A factor the baseline scores.
+enum PrashnaFactorKind implements _Keyed {
+  lagnaLordKendraOrTrikona('LAGNA_LORD_KENDRA_OR_TRIKONA'),
+  lagnaLordDusthana('LAGNA_LORD_DUSTHANA'),
+  moonWaxing('MOON_WAXING'),
+  moonVoid('MOON_VOID'),
+  beneficsInKendras('BENEFICS_IN_KENDRAS'),
+  maleficsInKendras('MALEFICS_IN_KENDRAS'),
+  moonApplyingToBenefic('MOON_APPLYING_TO_BENEFIC'),
+  moonApplyingToMalefic('MOON_APPLYING_TO_MALEFIC');
+
+  const PrashnaFactorKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// One clause of the verdict, and which way it tells.
+final class PrashnaClause extends _Value {
+  const PrashnaClause({
+    required this.kind,
+    required this.graha,
+    required this.favour,
+  });
+
+  final PrashnaClauseKind kind;
+
+  /// The graha it is about; null for how the lagna rises.
+  final Graha? graha;
+  final Favour favour;
+
+  @override
+  List<Object?> get _fields => [kind, graha, favour];
+}
+
+/// Whether the matter succeeds: every clause that holds, and the outcome
+/// over them, never a score (C337).
+final class PrashnaVerdict extends _Value {
+  const PrashnaVerdict({required this.clauses, required this.outcome});
+
+  final List<PrashnaClause> clauses;
+  final PrashnaOutcome outcome;
+
+  @override
+  List<Object?> get _fields => [clauses, outcome];
+}
+
+/// When the matter comes to pass, and the rule and graha that timed it.
+final class PrashnaTiming extends _Value {
+  const PrashnaTiming({
+    required this.rule,
+    required this.graha,
+    required this.tie,
+    required this.count,
+    required this.multiplier,
+    required this.amount,
+    required this.unit,
+    required this.between,
+  });
+
+  final TimingRule rule;
+  final Graha graha;
+
+  /// Whether that graha won a tie in strength (C338).
+  final bool tie;
+  final int count;
+  final int multiplier;
+
+  /// The time; null where the rule gives none.
+  final int? amount;
+  final PrashnaUnit unit;
+
+  /// The grahas between the lagna and the Moon, under [TimingRule.moonDays].
+  final List<Graha> between;
+
+  @override
+  List<Object?> get _fields => [
+    rule,
+    graha,
+    tie,
+    count,
+    multiplier,
+    amount,
+    unit,
+    between,
+  ];
+}
+
+/// What an unspoken question is about.
+final class PrashnaMook extends _Value {
+  const PrashnaMook({
+    required this.rule,
+    required this.graha,
+    required this.tie,
+    required this.house,
+    required this.person,
+    required this.thought,
+  });
+
+  final MookRule rule;
+
+  /// The graha whose house was read.
+  final Graha graha;
+  final bool tie;
+  final int house;
+
+  /// The person; null but under [MookRule.shatpanchashika].
+  final PrashnaPerson? person;
+  final PrashnaThought thought;
+
+  @override
+  List<Object?> get _fields => [rule, graha, tie, house, person, thought];
+}
+
+/// Which of the seven are retrograde and which combust: what Tajika's
+/// yogas were judged on.
+final class AnnualStatesRead extends _Value {
+  const AnnualStatesRead({required this.retrograde, required this.combust});
+
+  final List<Graha> retrograde;
+  final List<Graha> combust;
+
+  @override
+  List<Object?> get _fields => [retrograde, combust];
+}
+
+/// A prashna's Tajika links: a year's matter between the lagna lord and
+/// the asked house's lord, with the states it was judged on.
+final class PrashnaLinks extends TajikaMatter {
+  const PrashnaLinks({
+    required super.house,
+    required super.sign,
+    required super.lagnesha,
+    required super.karyesha,
+    required super.sameLord,
+    required super.between,
+    required super.held,
+    required super.unanswered,
+    required this.states,
+  });
+
+  /// The states the yogas were judged on; null where none were given.
+  final AnnualStatesRead? states;
+}
+
+/// The clauses of the Samjna Tantra vv. 73–74 that hold for the Moon, in
+/// the verses' order, none weighed (C352).
+final class MoonWeakness extends _Value {
+  const MoonWeakness({required this.rules, required this.clauses});
+
+  final PrashnaMoonRules rules;
+  final List<MoonWeaknessClause> clauses;
+
+  @override
+  List<Object?> get _fields => [rules, clauses];
+}
+
+/// One factor of the baseline's points, and what it gave.
+final class PrashnaFactor extends _Value {
+  const PrashnaFactor({required this.kind, required this.points});
+
+  final PrashnaFactorKind kind;
+  final int points;
+
+  @override
+  List<Object?> get _fields => [kind, points];
+}
+
+/// The baseline engine's points for a query chart. Unsourced (C337).
+final class PrashnaScore extends _Value {
+  const PrashnaScore({
+    required this.points,
+    required this.answer,
+    required this.factors,
+    required this.isVoid,
+    required this.applyingTo,
+  });
+
+  final int points;
+  final PrashnaAnswer answer;
+  final List<PrashnaFactor> factors;
+
+  /// The baseline's void Moon, over grahas held still.
+  final bool isVoid;
+
+  /// The graha nearest ahead of the Moon by conjunction distance.
+  final Graha? applyingTo;
+
+  @override
+  List<Object?> get _fields => [points, answer, factors, isVoid, applyingTo];
+}
+
+/// A chart read as a prashna (`03-design/prashna.md`).
+final class Prashna {
+  const Prashna({
+    required this.rules,
+    required this.verdict,
+    required this.change,
+    required this.timing,
+    required this.mook,
+    required this.links,
+    required this.moon,
+    required this.score,
+    required this.numberSign,
+  });
+
+  /// The readings it was given under, every member filled.
+  final PrashnaRules rules;
+  final PrashnaVerdict verdict;
+
+  /// Whether the matter stays (II.1–2).
+  final PrashnaChange change;
+  final PrashnaTiming timing;
+  final PrashnaMook mook;
+
+  /// The Tajika links; null when no house was asked.
+  final PrashnaLinks? links;
+  final MoonWeakness moon;
+
+  /// The baseline's points; null unless [PrashnaRules.score] is
+  /// [ScoreRule.baseline].
+  final PrashnaScore? score;
+
+  /// The sign of the querent's number; null unless one was given.
+  final Rashi? numberSign;
 }
 
 /// A return's own chart, read down to what Tajika reads from it.
@@ -16092,6 +16828,18 @@ final class Chart {
   /// nanoarcseconds, exact.
   KpReading? get kp {
     final all = _kpsOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart read as a prashna, the chart of the moment a question was
+  /// asked: the verdict's clauses with *Shatpanchashika* I.4's three
+  /// outcomes, whether the matter stays, when, what an unspoken question
+  /// is about, the Tajika links when a house is asked and the Moon's
+  /// weaknesses; the baseline engine's points only under
+  /// [ScoreRule.baseline]. Null unless `prashna` asked for it
+  /// (`03-design/prashna.md`).
+  Prashna? get prashna {
+    final all = _prashnasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

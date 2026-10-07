@@ -4030,3 +4030,50 @@ test('a chart carries its dashas, their periods, and the chain at an instant', (
   );
   ctx.dispose();
 });
+
+/**
+ * A prashna crosses whole: the chart of the question's moment read with its
+ * Shadbala asked for on the caller's behalf, every catalogue key in full,
+ * the links in a year's shape, and a bad house refused by its record's name
+ * (`03-design/prashna.md`).
+ */
+test('a chart carries its prashna', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).prashna, null);
+
+  const plain = ctx.chart.found({ instant, ...at, prashna: {} }).prashna;
+  assert.equal(plain.links, null, 'no house, no links');
+  assert.equal(plain.score, null, 'no points unless asked');
+  assert.equal(plain.rules.mook, 'SHATPANCHASHIKA');
+  assert.ok(['SUCCEEDS', 'WITH_DIFFICULTY', 'FAILS'].includes(plain.verdict.outcome));
+  assert.ok(Object.isFrozen(plain.verdict.clauses), 'frozen to its leaves');
+
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE', mook: 'BASELINE' } },
+  }).prashna;
+  // Keys in full, as every other accessor gives them.
+  assert.ok(read.timing.graha.startsWith('graha.'));
+  assert.ok(read.mook.graha.startsWith('graha.'));
+  assert.ok(read.verdict.clauses.every((clause) => clause.graha === null || clause.graha.startsWith('graha.')));
+  assert.equal(read.numberSign, 'rashi.TAURUS');
+  assert.equal(read.links.house, 7);
+  assert.ok(read.links.sign.startsWith('rashi.') && read.links.lagnesha.startsWith('graha.'));
+  assert.deepEqual(Object.keys(read.links.between).sort(), ['apartDeg', 'drishti', 'faster', 'orbDeg', 'slower', 'yoga']);
+  assert.equal(typeof read.links.holds('ITHASALA'), 'boolean');
+  assert.ok(['YES', 'NO', 'UNCERTAIN'].includes(read.score.answer));
+  assert.equal(
+    read.score.factors.reduce((sum, factor) => sum + factor.points, 0),
+    read.score.points,
+    'the points are the factors added',
+  );
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, prashna: { question: { house: 13 } } }),
+    (error) => error.field === 'prashna.question.house',
+  );
+  ctx.dispose();
+});

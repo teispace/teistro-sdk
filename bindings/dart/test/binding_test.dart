@@ -4385,6 +4385,69 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its prashna', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    Prashna? found(PrashnaRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              prashna: asked,
+            )
+            .prashna;
+    expect(found(null), isNull);
+
+    final plain = found(const PrashnaRequest())!;
+    expect(plain.links, isNull, reason: 'no house, no links');
+    expect(plain.score, isNull, reason: 'no points unless asked');
+    expect(plain.rules, const PrashnaRules(), reason: 'the texts\' own');
+    expect(plain.mook.person, isNotNull);
+
+    final read =
+        found(
+          const PrashnaRequest(
+            house: 7,
+            number: 14,
+            rules: PrashnaRules(
+              score: ScoreRule.baseline,
+              mook: MookRule.baseline,
+            ),
+          ),
+        )!;
+    expect(read.numberSign, Rashi.taurus);
+    expect(read.mook.person, isNull, reason: 'a person only the verse names');
+    final links = read.links!;
+    expect(links.house, 7);
+    expect(links.sameLord, links.between == null);
+    expect(links.states, isNotNull);
+    expect(links.holds(YearYoga.ithasala), isNotNull);
+    final score = read.score!;
+    expect(
+      score.factors.fold<int>(0, (sum, factor) => sum + factor.points),
+      score.points,
+      reason: 'the points are the factors added',
+    );
+
+    for (final (bad, field) in [
+      (const PrashnaRequest(house: 13), 'prashna.question.house'),
+      (const PrashnaRequest(number: 109), 'prashna.question.number'),
+    ]) {
+      expect(
+        () => found(bad),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

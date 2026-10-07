@@ -1875,6 +1875,153 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_lots(report, geo, index, document);
     the_considerations(report, geo, index, document);
     the_perfection(report, geo, index, document);
+    the_prashna(report, geo, index, document);
+}
+
+/// The prashna every runner asks for: the seventh house, a querent's
+/// number, and the baseline's points beside the texts' clauses.
+const PRASHNA_JSON: &str = r#"{"question":{"house":7,"number":14},"rules":{"score":"BASELINE"}}"#;
+
+/// A prashna as the other three print it: the rules and the answers in
+/// one row, then each clause, the timing, the unspoken question, the
+/// Moon's weaknesses, the baseline's points and the Tajika links as a
+/// year's matter.
+fn the_prashna(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::PrashnaRequest::from_json(PRASHNA_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .prashna(document, &asked)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-prashna{what}");
+    let rules = &read.rules;
+    put(
+        report,
+        &key(""),
+        format!(
+            "{} {} {} {} {} {} {} {}",
+            wire_key(&rules.pisces),
+            wire_key(&rules.timing),
+            wire_key(&rules.mook),
+            wire_key(&rules.moon.kshina),
+            wire_key(&rules.score),
+            wire_key(&read.verdict.outcome),
+            wire_key(&read.change),
+            read.number_sign.map_or("-", |sign| sign.full_key())
+        ),
+    );
+    for (k, clause) in read.verdict.clauses.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-clause-{k}")),
+            format!(
+                "{} {} {}",
+                wire_key(&clause.kind),
+                graha_or_dash(clause.graha),
+                wire_key(&clause.favour)
+            ),
+        );
+    }
+    let timing = &read.timing;
+    put(
+        report,
+        &key("-timing"),
+        format!(
+            "{} {} {} {} {} {} {} {}",
+            wire_key(&timing.rule),
+            timing.graha.full_key(),
+            timing.tie,
+            timing.count,
+            timing.multiplier,
+            timing
+                .amount
+                .map_or_else(|| String::from("-"), |amount| amount.to_string()),
+            wire_key(&timing.unit),
+            full_keys(&timing.between)
+        ),
+    );
+    let mook = &read.mook;
+    put(
+        report,
+        &key("-mook"),
+        format!(
+            "{} {} {} {} {} {}",
+            wire_key(&mook.rule),
+            mook.graha.full_key(),
+            mook.tie,
+            mook.house,
+            mook.person
+                .map_or_else(|| String::from("-"), |person| wire_key(&person)),
+            wire_key(&mook.thought)
+        ),
+    );
+    put(
+        report,
+        &key("-moon"),
+        dashed(read.moon.clauses.iter().map(wire_key)),
+    );
+    prashna_beside(report, &key, &read);
+}
+
+/// What a prashna carries beside the texts' clauses: the baseline's
+/// points, and the Tajika links as a year's matter with their states.
+fn prashna_beside(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::prashna::Prashna,
+) {
+    if let Some(score) = &read.score {
+        put(
+            report,
+            &key("-score"),
+            format!(
+                "{} {} {} {} {}",
+                score.points,
+                wire_key(&score.answer),
+                score.void,
+                graha_or_dash(score.applying_to),
+                dashed(score.factors.iter().map(|factor| format!(
+                    "{}:{}",
+                    wire_key(&factor.kind),
+                    factor.points
+                )))
+            ),
+        );
+    }
+    if let Some(links) = &read.links {
+        let at = |what: &str| key(&format!("-links{what}"));
+        matter_said(report, &at, links);
+        if let Some(states) = &links.states {
+            put(
+                report,
+                &at("-states"),
+                format!(
+                    "R:{} C:{}",
+                    full_keys(&states.retrograde),
+                    full_keys(&states.combust)
+                ),
+            );
+        }
+    }
+}
+
+/// A graha's full key, or `-` for none.
+fn graha_or_dash(graha: Option<Graha>) -> &'static str {
+    graha.map_or("-", |graha| graha.full_key())
+}
+
+/// Grahas' full keys joined by commas, `-` for none.
+fn full_keys(grahas: &[Graha]) -> String {
+    dashed(grahas.iter().map(|graha| graha.full_key().to_owned()))
+}
+
+/// Items joined by commas, `-` for none.
+fn dashed(items: impl Iterator<Item = String>) -> String {
+    let items: Vec<String> = items.collect();
+    if items.is_empty() {
+        String::from("-")
+    } else {
+        items.join(",")
+    }
 }
 
 /// The progressions every runner asks for: a life in 2050 under the noon
@@ -3907,46 +4054,53 @@ fn the_matters(
                 matter.house.get()
             ))
         };
-        put(
-            report,
-            &at(""),
-            format!(
-                "{} {}>{} {}",
-                matter.sign.full_key(),
-                matter.lagnesha.full_key(),
-                matter.karyesha.full_key(),
-                matter.same_lord
-            ),
-        );
-        put(
-            report,
-            &at("-pair"),
-            matter
-                .between
-                .as_ref()
-                .map_or_else(|| String::from("-"), pair_said),
-        );
-        put(
-            report,
-            &at("-unanswered"),
-            matter
-                .unanswered
-                .iter()
-                .map(wire_key)
-                .collect::<Vec<String>>()
-                .join(","),
-        );
-        put(
-            report,
-            &at("-held"),
-            matter
-                .held
-                .iter()
-                .map(held_said)
-                .collect::<Vec<String>>()
-                .join(" "),
-        );
+        matter_said(report, &at, matter);
     }
+}
+
+/// One matter's Tajika yogas as every runner writes them, each row under
+/// `at`: the question, the lords' pair, what could not be answered and
+/// every yoga that held.
+fn matter_said(report: &mut Report, at: &dyn Fn(&str) -> String, matter: &teistro::YearYogas) {
+    put(
+        report,
+        &at(""),
+        format!(
+            "{} {}>{} {}",
+            matter.sign.full_key(),
+            matter.lagnesha.full_key(),
+            matter.karyesha.full_key(),
+            matter.same_lord
+        ),
+    );
+    put(
+        report,
+        &at("-pair"),
+        matter
+            .between
+            .as_ref()
+            .map_or_else(|| String::from("-"), pair_said),
+    );
+    put(
+        report,
+        &at("-unanswered"),
+        matter
+            .unanswered
+            .iter()
+            .map(wire_key)
+            .collect::<Vec<String>>()
+            .join(","),
+    );
+    put(
+        report,
+        &at("-held"),
+        matter
+            .held
+            .iter()
+            .map(held_said)
+            .collect::<Vec<String>>()
+            .join(" "),
+    );
 }
 
 /// A pair as every runner writes it; the degrees inside a string, so the
