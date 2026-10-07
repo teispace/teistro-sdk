@@ -2215,6 +2215,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   `{ letter, value }` records. The five parity runners agree on Henry
   Elder and on John Wanamaker under every baseline reading. **Numbers:**
   none move.
+- **Remedies, step 1: functional nature** (`remedies.md`, C329 to C333).
+  A new crate, `teistro-remedies`, re-exported as `teistro::remedies`,
+  reads what a lagna's lordships make of the seven grahas after *Laghu
+  Parashari* vv. 6–25 and BPHS ch. 13: every clause with its verse (a
+  trikona lord, a lord of 3, 6 or 11, an 8th lord voided for the
+  lagnesha or a luminary, a kendra lord losing its natural nature, a
+  2nd or 12th lord by association, a yogakaraka, a maraka, the
+  badhakesha), and the summary nature by the text's precedence. The
+  baseline engine's reading, the lords of 6, 8 and 12 bad, is
+  `Scheme::Baseline`. **Numbers:** none move; a new module.
 - **Numerology, the kernel** (`numerology.md`, C320 to C328). A new
   crate, `teistro-numerology`, re-exported as `teistro::numerology`,
   reads a name and a civil date under Balliett's letter cycle (1908)

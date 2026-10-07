@@ -1567,6 +1567,7 @@ dependencies = [
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-remedies",
  "teistro-render-svg",
  "teistro-rules",
  "teistro-serial",
@@ -1912,6 +1913,16 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-timezone"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-remedies"
 version = "0.0.0"
 dependencies = [
  "schemars",
