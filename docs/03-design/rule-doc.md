@@ -9,7 +9,7 @@ Phase 6's interpretation layer ([`../07-roadmap/00-roadmap.md`](../07-roadmap/00
 
 ## 1. Purpose and scope
 
-The kernel ships 1087 rules as JSON. The people who can say whether a rule is
+The kernel ships 1095 rules as JSON. The people who can say whether a rule is
 *right* read verses, not `{"type": "planet-in-kendra-from", …}`. This page
 decides how a rule becomes English: one sentence for a condition, one short
 passage for a whole rule, from the kernel's own types, byte-stable, and held
@@ -156,7 +156,7 @@ that category. It is a workspace command
 and not a shipped binary, because the SDK ships the renderer as a library and
 the prose belongs wherever the consumer puts it — a page, a tooltip, a diff.
 
-The full text of 1087 rules is **not** checked in: it is some 400 KB of
+The full text of 1095 rules is **not** checked in: it is some 400 KB of
 derived words, and a generated page the size of the pack it derives from
 buys a reviewer nothing that the command does not. What is checked in is the
 measurement, which carries one rendered sentence for each of the 64 kinds —
@@ -177,7 +177,7 @@ regenerates and diffs it, as every other measured page is held. It reports:
    their own rather than failed, and the identities that decide "one meaning"
    — a combinator with one condition in it, and the two spellings of a chara
    karaka's house — are named in the pass and nowhere else. A dropped field
-   shows here as soon as two rules differ only in that field, which over 1087
+   shows here as soon as two rules differ only in that field, which over 1095
    rules is the usual case rather than the lucky one.
 2. **Coverage.** Each of the 64 kinds with how often it occurs, and one
    rendered example for each: the table a reviewer reads to argue about the

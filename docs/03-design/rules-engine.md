@@ -446,6 +446,28 @@ Saturn all answer charts. One clause cannot: v. 67 asks the lagna's own
 strength, which no shipped measure reaches, so that rule holds nowhere and
 says why.
 
+**BPHS ch. 9's last evils, built (2026-10-07).** Ch. 9 vv. 12 and 15 to 20
+and ch. 10 v. 6 ship, read in the same two prints (one lower in ch. 9, and
+v. 6 is their 48). Where the English translation in hand parts from them,
+the Sanskrit is followed: v. 12's Moon joined by a malefic stands in the
+ninth (*dharma*), the seventh or the lagna, not the eighth. V. 15's
+"eastern half of the wheel" is read as the houses from the tenth to the
+third, with the nodes left out, since one of them always stands in each
+half. V. 16's hemmed lagna is joined to either pair of malefics (the
+twelfth and sixth, or the eighth and second). Ch. 10 v. 6, the Sun in the
+twelfth with Libra rising, is an antidote, so every evil names seven. Three
+answer no chart, and each zero was probed and is the corpus's:
+- v. 12's Moon with a malefic in those houses stands in two charts, one
+  with a benefic aspecting her and one with a benefic beside her;
+- v. 15's Scorpio rising answers 12 charts and its halves none;
+- v. 6's Libra lagna answers 8 charts and its Sun in the twelfth 4, but
+  never both.
+
+The rest answer 1 to 8 charts, and the corpus's cancelled evils rose from
+433 to 446. V. 13, which needs the twilight and the Moon's hora, is not
+built, and v. 34 is v. 39 again: Saturn, Mars and the Moon in the lagna,
+the seventh and the sixth.
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's
@@ -1395,8 +1417,8 @@ condition is one sentence and a rule a passage carrying everything it holds
 beside its conditions, from one vocabulary that the trace reads too: a step
 now prints "holds: the lord of house 10 stands in a kendra" where it printed
 the schema's own `planet-in-kendra`. `cargo xtask rule-doc <pack|category|key>`
-prints the passages and the pass measures them: 1744 rules' 6505 conditions
-are written 2792 ways, which say 2788 things and read as 2788 sentences, so
+prints the passages and the pass measures them: 1752 rules' 6622 conditions
+are written 2806 ways, which say 2802 things and read as 2802 sentences, so
 no two meanings share a sentence. The three single-armed combinators it found
 in a shipped pack were simplified when it first ran.
 

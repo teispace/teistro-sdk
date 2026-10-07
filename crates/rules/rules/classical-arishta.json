@@ -55,6 +55,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -138,6 +142,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -199,6 +207,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -279,6 +291,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -337,6 +353,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -398,6 +418,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -459,6 +483,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -527,6 +555,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -628,6 +660,580 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_WITH_A_MALEFIC_IN_NINTH_SEVENTH_OR_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "12",
+        "rank": 1,
+        "note": "The Moon joined by a malefic in the ninth, the seventh or the lagna, and neither aspected nor joined by a benefic, brings the child's death. Both prints name the ninth (dharma) where the English translation in hand reads the eighth; the rule follows the Sanskrit. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 11 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            7,
+            9
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-aspecting",
+            "planets": "any-benefic",
+            "target": "MOON",
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1,
+            "from": "MOON",
+            "except": [
+              "MOON"
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_EAST_BENEFICS_WEST_SCORPIO_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "15",
+        "rank": 1,
+        "note": "Scorpio rising, the malefics in the eastern half of the wheel and the benefics in the western: death, with no need to weigh it further. The eastern half is read as the six houses from the tenth to the third, the half the meridian cuts off around the lagna, and the western as the fourth to the ninth. The nodes are left out: they stand six houses apart, so one is always in each half, and with them the verse could never hold. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 14 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9
+            ],
+            "atLeast": 1,
+            "except": [
+              "RAHU",
+              "KETU"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              10,
+              11,
+              12,
+              1,
+              2,
+              3
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_LAGNA_HEMMED_MALEFICS_IN_DUSTHANAS",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "16",
+        "rank": 1,
+        "note": "Malefics in the twelfth and sixth, or in the eighth and second, with the lagna hemmed between malefics: death, the verse says, for certain. The hemming is read as a condition joined to either pair, as the translation in hand also reads it. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 15 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_IN_LAGNA_AND_SEVENTH_MOON_AFFLICTED",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "17",
+        "rank": 1,
+        "note": "Malefics in the lagna and the seventh, the Moon joined by a malefic and unaspected by any benefic: an early death. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 16 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-aspecting",
+            "planets": "any-benefic",
+            "target": "MOON",
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_WANING_MOON_IN_LAGNA_MALEFICS_KENDRA_AND_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "18",
+        "rank": 1,
+        "note": "The waning Moon in the lagna with malefics in a kendra and in the eighth: the child dies, without doubt. The kendra is read from the lagna and may be the lagna itself. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 17 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1,
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_HEMMED_IN_LAGNA_EIGHTH_TWELFTH_OR_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "19",
+        "rank": 1,
+        "note": "The Moon hemmed between malefics in the lagna, the eighth, the twelfth or the seventh: death before long. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 18 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            7,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_HEMMED_IN_LAGNA_MALEFIC_SEVENTH_OR_EIGHTH",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "20",
+        "rank": 1,
+        "note": "The Moon in the lagna hemmed between malefics, with a malefic in the seventh or eighth: the child dies, and the mother with it. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 19 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7,
+            8
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -712,6 +1318,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -771,6 +1381,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -843,6 +1457,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -897,6 +1515,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -977,6 +1599,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1061,6 +1687,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1116,6 +1746,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1201,6 +1835,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1257,6 +1895,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1328,6 +1970,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1389,6 +2035,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1470,6 +2120,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1548,6 +2202,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1623,6 +2281,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1726,6 +2388,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1787,6 +2453,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1842,6 +2512,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1903,6 +2577,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1958,6 +2636,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2022,6 +2704,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2085,6 +2771,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2157,6 +2847,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2208,6 +2902,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2280,6 +2978,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2331,6 +3033,10 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -2481,6 +3187,32 @@
                 }
               ]
             }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_SUN_TWELFTH_LIBRA_LAGNA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "6",
+        "rank": 1,
+        "note": "The Sun in the twelfth for one born with Libra rising: a life of a hundred years, and a long-lived child. It stands among the antidotes, so every evil names it. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 48 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "lagna-in-sign",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            12
           ]
         }
       ]

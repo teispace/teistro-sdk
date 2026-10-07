@@ -120,7 +120,7 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
     assert_eq!(crowded_houses, 48);
     // What a consumer receives: 7657 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (7657, 455));
+    assert_eq!((held, composed), (7696, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.

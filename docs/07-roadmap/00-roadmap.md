@@ -899,6 +899,94 @@ Exit: the parity checklist is green; the interleaved benchmark shows the
 SDK through Node not slower than the baseline engine on the full chart; every
 binding installs from its artefact in a throwaway project.
 
+## Completion plan (2026-10-07)
+
+The maintainer delegated every open decision on 2026-10-07: each is
+measured, decided and recorded as a crux or ADR here, and the finished SDK
+goes to review by astrologers and researchers. Research, sourcing and
+design drafts may run in parallel; builds and tests run one at a time.
+The order below puts what blocks a release first.
+
+### Track A: release blockers (Phase 9), first
+
+1. **A glibc floor.** Every Linux artefact is built on the current
+   Ubuntu runner, so its symbol versions are likely too new for Debian 11
+   and 12, RHEL 8 and 9 and Ubuntu 20.04 and 22.04. Build Linux in a
+   `manylinux_2_28` container, gate the highest `GLIBC_` symbol the
+   library needs, and add musl and Windows arm64 rows.
+2. **Publish waits for verify.** `verify.yml` becomes a reusable workflow
+   that `publish` needs; an install check whose toolchain is missing fails
+   in a release run instead of skipping.
+3. **Supply chain.**
+   - A CycloneDX SBOM per artefact, built with `cargo-auditable`.
+   - GitHub build-provenance attestations.
+   - `cargo audit` in CI.
+   - Trusted publishing on npm (npm 11.5.1 or later), PyPI (with PEP 740
+     attestations), pub.dev and crates.io.
+   - Maven Central with a Portal token and a PGP signature.
+4. **Python platform wheels.** The binding is ctypes, so one
+   `py3-none-<platform>` wheel per platform, written by xtask, replaces
+   the download on first use.
+5. **Tree-shaking and size.**
+   - `/*#__PURE__*/` on the generated catalogue's top-level calls.
+   - esbuild, Vite and webpack fixtures proving that `/catalogue` alone
+     ships no `.wasm`.
+   - ADR-0005's profiles as cargo features, giving one wasm module per
+     profile behind subpath exports, each with its gzipped size budget.
+     Per-crate size is measured first.
+6. **The Java binding**: Panama FFM, emitted from `idl/api.json` like the
+   others, with a Java 22 floor and tests on Java 25. Android, which has
+   no FFM, stays v1.x.
+7. **Generated pages**: `SIZES.md` and `CONFORMANCE.md`; Horizons and
+   CSPICE rows in `ACCURACY.md` from a dated run recorded in the corpus;
+   the docs site's guides with executed examples; a check after publishing
+   that installs every binding from its registry.
+
+### Track B: applications (Phase 8)
+
+Baseline golden vectors are produced by an exporter per module in the
+baseline engine's existing exporter pattern. The baseline engine's tests
+check shape only, so a module's vectors are recorded once, black-box.
+Where its answer departs from the classical text, the classical clause is
+the default and the baseline's choice ships as a marked rank-2 knob,
+each difference counted on a generated page (the C89 and C289 precedent).
+
+| order | module | size | first source |
+|---|---|---|---|
+| 1 | numerology | S | Balliett 1908, Sepharial 1911 (PD) |
+| 2 | namakarana | S | Muhurta Chintamani's syllables, already built |
+| 3 | remedies | M | Laghu Parashari 1875 and 1894, Mani-mala 1879, BPHS shanti chapters; unblocks 39 readings |
+| 4 | rashifal | M | Phaladeepika gochar with its vedha; the snapshot at sunrise, not 06:00 |
+| 5 | prashna | M–L | Prasna Marga 1926 Sanskrit, Shatpanchashika 1858, Tajika Nilakanthi; KP 1–249 built |
+| 6 | rectification | L | BPHS ch. 2 vv. 67–78, BJ IV.21 and ch. V, Svarodaya v. 193; stages pluggable, intervals within one grid cell of a black-box baseline run |
+| 7 | research | S | statistics over chart batches, a shuffled-event null |
+| 8 | pakshi | M | Agastya Tamil prints 1863–1880, which need a reader of Tamil |
+| 9 | lalkitab | M–L | facts only, cited by edition: the books are likely in copyright to 2042 |
+
+### Track C: Phase 6 and 7 remainders, interleaved
+
+- **The arishta corpus.** BPHS ch. 9 vv. 12 and 15 to 20 and ch. 10 v. 6
+  (in progress); Phaladeepika ch. 13 and 14 against the 1965 print's
+  Sanskrit.
+- **Saravali's readings**, chs. 22 to 31 and 49 to 51: Santhanam's
+  edition is in hand in print, with its Sanskrit.
+- **Ibn Ezra's weights.**
+- **Rudra, Maheshwara and the Sudasa** wait on a legible Jaimini.
+
+### Track D: the MCP server (Q35), last
+
+It is decided to build it after Track A step 3, as a thin server over the
+Rust façade. The design stays in Q35.
+
+### Estimate
+
+- **Track A**: about three weeks.
+- **Track B**: four to five weeks, run alongside A, since the research
+  runs in parallel and the builds are serial.
+- **Track C**: a running stream.
+- **v1.0 release candidate**: early to mid November 2026, the
+  maintainer's review of the finished SDK, then the astrologers'.
+
 ## v1.0 release and baseline migration
 
 The baseline engine replaces `packages/` with the SDK; production golden vectors confirm
