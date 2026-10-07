@@ -2271,6 +2271,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   refusal of the question is named under `prashna.question`.
   `PrashnaRequest::from_json` reads the record a binding will send.
   **Numbers:** none move.
+- **Remedies: the ishṭa-devatā** (`remedies.md` step 4, C354 to C356).
+  `teistro::remedies::ishta_devata(karakamsha, signs, rules)` reads BPHS
+  (1923) ch. 9 vv. 70–76: each graha in the 12th sign from the
+  kārakāṁśa with the deity its verse names and whether Ketu shares the
+  sign, and Saturn or Venus there in a malefic's sign as a devotee of
+  minor deities. The prints exchange vv. 70–71's fruits; the recension's
+  pairing is the default and the prints' *ravi-bhakti* a knob.
+  `baseline_ishta_devata(moon)` gives the baseline's Moon-sign table.
+  `House::VYAYA` is new. **Numbers:** none move.
 - **Prashna in every binding** (`prashna.md` step 4). A chart request's
   `prashna` record (`{question: {house, number}, rules}`) reads every
   chart of a batch as the chart of its question's moment, and asks for the

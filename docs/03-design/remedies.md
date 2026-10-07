@@ -1,8 +1,8 @@
 # Remedies: functional nature, graha-śānti and the subjects of a remedy (the `remedies` module)
 
 Status: `built` for step 1 (functional nature, `crates/remedies`) and
-step 2 (graha-śānti and the antardaśā śāntis) and step 3 (the subjects
-of a remedy), 2026-10-07; step 4 is designed below and not built.
+step 2 (graha-śānti and the antardaśā śāntis), step 3 (the subjects
+of a remedy) and step 4's kernel (the ishṭa-devatā), 2026-10-07.
 
 Phase 8 lists remedies after matching. The baseline engine reaches them
 from a controller, and 39 interpretation readings wait on them to name
@@ -165,9 +165,26 @@ read (C333).
      (C349), and any lordship of a node (C351). Each answers `None`.
    - **An active dosha** as a reason waits for the rules engine's
      doshas to be read here.
-4. **The ishṭa-devatā.** BPHS (1923) ch. 9 vv. 70–75 reads it from the
-   grahas in the 12th from the karakamsha. The baseline instead looks up
-   its 12 sign-keyed records by the Moon's sign.
+4. **The ishṭa-devatā** (built in the kernel, C354 to C356). BPHS (1923)
+   ch. 9 vv. 70–76, ch. 33 vv. 68–74 in the later recension, reads it
+   from the grahas in the 12th sign from the kārakāṁśa.
+   `ishta_devata(karakamsha, signs, rules)` answers each graha there
+   with the deity its verse names and whether Ketu shares the sign, and
+   Saturn or Venus there in a sign the Sun, Mars or Saturn rules as a
+   devotee of minor deities.
+   - **The prints exchange vv. 70–71's fruits.** The recension pairs the
+     Sun with Śiva and the Moon with Gaurī; the prints' *ravi-bhakti* is
+     the knob `SunWithKetu::Surya` (C354).
+   - **"With Ketu" is reported, not read in.** Rahu never stands with
+     Ketu, so the series cannot all be conjunctions (C355).
+   - **The chart is the caller's** (C130): the façade will answer the
+     rasi chart and the navāṁśa both.
+   - **The baseline's table** keys twelve pairs by the Moon's sign;
+     `baseline_ishta_devata` is reached only when asked (C356).
+   - **Not built:** vv. 66–69 (a benefic exalted in the 12th; Ketu there
+     and liberation), which turn on aspects the chapter does not define,
+     and vv. 77–79's same reading from the amātyakāraka, which waits on
+     the Jaimini reading exposing the amātya.
 
 The 39 waiting readings become sayable at step 3, when each has a
 subject graha.
