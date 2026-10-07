@@ -299,6 +299,9 @@ pub use teistro_matching::{
     PoruthamReading, PoruthamRow, PoruthamRules, avakahada, birth_syllable, naam_milan,
     name_syllable,
 };
+// Numerology: a name and a civil date under Balliett's cycle and Cheiro's
+// table, which reads no sky (`03-design/numerology.md`).
+pub use teistro_numerology as numerology;
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).
 pub use crate::returns::BodyReturn;

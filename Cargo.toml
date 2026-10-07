@@ -31,6 +31,7 @@ members = [
     "crates/hellenistic",
     "crates/western",
     "crates/matching",
+    "crates/numerology",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",

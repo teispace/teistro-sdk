@@ -2204,6 +2204,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   over 27 and by 360 over 365 under 30, which v. 33's Bhinnashtakavarga
   candidate carries as its solar years. **Numbers:** none under the
   defaults.
+- **Numerology, the kernel** (`numerology.md`, C320 to C328). A new
+  crate, `teistro-numerology`, re-exported as `teistro::numerology`,
+  reads a name and a civil date under Balliett's letter cycle (1908)
+  and Cheiro's Chaldean table, each held to its printed examples:
+  names reduced by word, 11 and 22 standing only in the Pythagorean,
+  the birth number reduced by part with a master part standing apart,
+  and Cheiro's day and year never added. The baseline engine's 33, its
+  letter-total compound, its whole-date digit sum and its soul and
+  personality numbers are `BASELINE` values of the same rules, so a
+  migrating consumer can reproduce them. **Numbers:** none move; the
+  bindings follow.
 - **Jeevasarman's span** (`ayurdaya-spans.md`, C316). The three spans
   gain a fourth, `ayurdaya.jeevasarman`, *Jataka Parijata* ch. 5 v. 17:
   Pindayu's method with a seventh of 120 years and 5 days for every
