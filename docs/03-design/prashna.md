@@ -252,7 +252,9 @@ Each names its field under `prashna`.
    Pisces, the Moon carrying the light. `Prashna::moon` reports each
    clause of the Samjna Tantra vv. 73–74 that holds, read by
    `crates/tajika`'s `moon_weakness` with the empty road of vv. 55–56
-   (C352). Still to come: the akṣara-lagna and the six points.
+   (C352). The akṣara-lagna and the six points are open (C353): two
+   prints carry vv. 12–15 without a gloss, and the root leaves four
+   readings unsettled.
 3. **The `BASELINE` values**, transcribed from the baseline engine's
    source, each test naming the rank-1 rule it departs from.
 4. **The façade and every binding**, over the JSON-answer boundary that
