@@ -1043,8 +1043,11 @@ class AnEngine(WithLibrary):
         # candidate Mars names carries their sum.
         spans = answered["longevity"]["ashtakavarga"]
         self.assertEqual(
-            spans["rules"], {"measures": "parijata", "divisor": "thirty", "reductions": "verse"}
+            spans["rules"],
+            {"measures": "parijata", "divisor": "thirty", "reductions": "verse", "occupied": "reduced"},
         )
+        # v. 48: the lagna's own ashtakavarga holds 49 bindus.
+        self.assertEqual(sum(spans["lagna"]["bindus"]), 49)
         self.assertAlmostEqual(sum(giver["years"] for giver in spans["grahas"]), spans["bhinna"])
         mars = next(c for c in choice["candidates"] if c["ayus"] == "bhinnashtakavarga")
         self.assertEqual(mars["years"], spans["bhinna"])
@@ -1052,6 +1055,7 @@ class AnEngine(WithLibrary):
             "measures": "bphs",
             "divisor": "seven-over-twenty-seven",
             "reductions": "balabhadra",
+            "occupied": "raw",
         }
         by_balabhadra = found({"longevity": True, "ashtakavarga": balabhadra})
         assert by_balabhadra is not None

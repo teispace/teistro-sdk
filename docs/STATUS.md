@@ -1052,14 +1052,19 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the ashtakavarga spans' last two clauses** (ch. 10 vv. 48
-   and 50, vol. II pp. 692 to 693). v. 48's "some" add the lagna's
-   years from its own ashtakavarga, which the SDK does not compute, and
-   v. 50 gives a second Bhinnashtakavarga span from the bindus in the
-   seven's signs "subject to the reductions mentioned already"; read
-   both page images and decide whether either is a span or a note
-   before code. Balabhadra's reductions (C317) and Jeevasarman's span
-   (C316) are built. C6 was read in
+0. **Next: the arishta rules of *Brihat Jataka* ch. 6** (the roadmap's
+   Phase 6, "a sourcing question rather than a coding one": 36 of about
+   120 arishta rules are built). Find a public-domain translation on the
+   Internet Archive (N. Chidambaram Iyer's 1885 or Swami Vijnanananda's
+   1912), read ch. 6 off the page images, and write each rule against
+   its verse, never from memory; then BPHS chs. 9 and 10's gap from a
+   public-domain print. Merge the longevity stack (#296 to #300) as its
+   CI goes green. *Jataka Parijata*'s spans of life are read end to end:
+   ch. 5's eight spans, v. 33's choice, v. 34's solar years, Jeevasarman's
+   span (C316), and ch. 10's ashtakavarga spans with Balabhadra's
+   reductions (C317), the lagna's ashtakavarga, v. 49's clauses and
+   v. 50's span (C318). Left unread on purpose: v. 47, which states no
+   amount. C6 was read in
    *Jataka Parijata* chs. 17 and 18 and stays open: no dasha year is
    stated, and Dasayus's 360-day years under v. 34 (C315) are recorded
    on C6 as evidence, not a decision. Every
@@ -4519,6 +4524,7 @@ on pub.dev (checked 2026-09-07).
 | 2026-10-03 | **Progressions across the boundary** (`western-progressions.md` step 5). One `progressions` record asks every chart of a batch for its progressed chart and direction at an instant of life and its contacts in a window; four sections answer it, and Node, wasm, Python and Dart read `chart.progressions`. The ABI test holds every cell bitwise equal to the façade's, and the parity runners agree on all 17107 values. **Found:** the boundary founded each progressed chart (and the solar arc's) with every section the batch asked for, drawings and strengths included, while writing only grahas and angles; it now founds them on the batch's place and clock alone, and the ABI test asks every section to hold that nothing changes. Next: step 6, the measured page of the angle methods. |
 | 2026-10-03 | **The progressed angles, measured** (`western-progressions.md` step 6, `progressed-angles-measured.md`). 54 of the corpus's births read under every `AngleMethod` to age 80: a method's midheaven stands at most 7.54° from Leo's and its ascendant 10.97°. The true and mean arcs stay within the equation of the centre's bound (3.83°) along the ecliptic and the equation of time's (7.65°) along the equator, and the quotidian is Leo's meridian at every birthday and opposite it half a year on. **Found, and fixed:** (1) `western-tropical-default` left the polar day `UNDEFINED`, so no Western chart could be founded inside one (Tromsø's midsummer birth); it now reckons `CIVIL_MIDNIGHT`, version 2. (2) Under `CIVIL_MIDNIGHT` the last polar day ended at midnight and the first real day began at its sunrise, so the small hours between belonged to no day; the last polar day now runs to the first real sunrise, and any other miss is internal. (3) A refused ephemeris cell surfaced as `PROVIDER` where a refused request was `OUT_OF_RANGE`; both are `OUT_OF_RANGE` now. The conformance profile's `NEAREST_EVENT` still refuses 5 of 432 progressed charts at 2 polar births, by design, and the page counts them. |
 | 2026-10-04 | **Harmonics, designed and built end to end** (`western-harmonics.md`, C252 to C254). The roadmap's last `western` technique. John Addey's *Harmonics in Astrology* (1976, the Internet Archive's open scan) gives the chart as each longitude multiplied, the angles included (pp. 100–102), the orb shrinking with the harmonic so every harmonic chart takes the full circle's (p. 130, 12° chosen of his 12° to 15°), and equal houses from the harmonic Ascendant as his readings count them. Churchill's 9th harmonic, recast at the time Addey adopts, holds every statement on pp. 97–98: the Moon on Saturn in the third, Venus rising, Pluto in the tenth, the harmonic Mars opposite the radical Moon. Addey calls the 9th the navamsa, and in the sidereal zodiac it is exactly Parashara's D9, so the harmonic reads the chart's own zodiac (C253) and a test reads 40 sidereal charts' 9th harmonics back as the SDK's D9 sign for sign. A point is a graha, the ascendant or the midheaven, crossing as an angle cell beside a graha cell; a row names the multiple k of 360°/n the pair stands at in the radix. Sections 108 to 110; the five runners agree on 17508 values. |
+| 2026-10-07 | **Ch. 10 vv. 47 to 50, decided and built** (`ayurdaya-spans.md`, C318). The note's Lagnarekha chakra (p. 693) and its prose agree in all 96 cells, so the lagna's ashtakavarga is a table, not an inference (49 bindus on every chart). v. 50's "reductions mentioned already" was measured both ways: raw bindus give 148 to 315 years, reduced 27.6 to 128.7, so reduced is the default and raw a choice. v. 49 reports two clauses. |
 | 2026-10-07 | **Balabhadra's reductions, decided and built** (`ayurdaya-spans.md`, C317). Read from the p. 691 image, where the OCR had lost the Sanskrit: a half or a third, the greatest only, then 324 over 365. **Decided:** a `reductions` knob, and the solar conversion follows the divisor, since 7 over 27 counts nakshatra years in v. 71 and in the note alike. 431 of 651 grahas are halved, most for company. |
 | 2026-10-07 | **Jeevasarman's span, built** (`ayurdaya-spans.md`, C316). v. 17's note (p. 247) works it as Pindayu with a seventh of 120 years and 5 days for every graha; the printed 17 y 1 m 22 d 8 gh 34.3 vig is that seventh in 360-day years to the last place, a second confirmation of C315's year. Over 93 charts it averages 80.1 years. |
 | 2026-10-07 | **Each span in solar years** (`ayurdaya-spans.md`, C315). *Jataka Parijata* ch. 5 v. 34 (p. 261) converts a span by 360 over 365, and the book's index calls the span "in years of 360 days"; v. 71 converts Samudaya by 324 over 365. **Decided:** both reported, `solar_years` beside `years` on each of v. 33's candidates. The same reading names C6's next source: the dasha year in *Jataka Parijata* chs. 17 and 18. |

@@ -430,10 +430,16 @@ impl Evaluator<'_> {
     /// Whether a graha is a malefic under the readings, as a rule's
     /// `planet-is` asks.
     fn is_malefic(&self, graha: Graha) -> bool {
+        self.of_class(graha, Class::Malefic)
+    }
+
+    /// Whether a graha is of `class` under the readings, as a rule's
+    /// `planet-is` asks.
+    pub(super) fn of_class(&self, graha: Graha, class: Class) -> bool {
         self.holds(
             &Condition::PlanetIs {
                 planet: BodyRef::Body(Body::Graha(graha)),
-                class: Class::Malefic,
+                class,
             },
             &mut Participants::default(),
         )

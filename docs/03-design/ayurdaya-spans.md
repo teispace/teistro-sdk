@@ -204,6 +204,32 @@ Decided:
   calls the span Nakshatra Ayus and gives it in solar years by 324 over
   365 (p. 706): `samudaya_solar`.
 
+## Ch. 10 vv. 47 to 50 (C318)
+
+- **v. 48 (p. 692):** the seven's years summed are the span; "some …
+  upon the authority of great teachers (like Parasara)" add the lagna's,
+  from the Lagna ashtakavarga. The note prints Parasara's table (p. 693):
+  the lagna's bindus from the Sun in the 3rd, 4th, 6th, 10th, 11th and
+  12th, the Moon 3, 6, 10, 11, 12, Mars 1, 3, 6, 10, 11, Mercury 1, 2, 4,
+  6, 8, 10, 11, Jupiter 1, 2, 4, 5, 6, 7, 9, 10, 11, Venus 1, 2, 3, 4, 5,
+  8, 9, Saturn 1, 3, 4, 6, 10, 11 and the lagna 3, 6, 10, 11, 49 in all;
+  its column of sums and its prose agree in every cell. `lagna` reports
+  the lagna's years by the same pindas, 2.5 to 8.5 over the 93 rules
+  charts, and is never added to `bhinna`.
+- **v. 49 (p. 694):** the ashtakavarga span is the one to calculate
+  "when the Moon occupies any bhava other than a Kendra and is in
+  conjunction with another planet", or when the tenth holds benefic and
+  malefic planets. `called_for` reports the two clauses: 31 and 2 of the
+  93 charts.
+- **v. 50:** each graha's bindus in the signs the seven occupy are its
+  years, "subject to the reductions mentioned already", and the note sums
+  the seven. Raw, they give 148 to 315 years over the 93 charts; after
+  vv. 39 to 42's reductions and each graha's own factor, 27.6 to 128.7,
+  mean 70.5. `occupied` is the reduced reading, `occupied: "raw"` the
+  other.
+- **v. 47** reduces a graha in a malefic's or an enemy's varga by no
+  amount the verse states, so it is not read.
+
 ## Balabhadra's reductions (ch. 10 v. 46's note, C317)
 
 The note sets Mantreswara's and Balabhadra's verses beside v. 46 (p. 691):

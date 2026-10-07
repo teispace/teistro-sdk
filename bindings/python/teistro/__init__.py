@@ -7578,6 +7578,7 @@ class AshtakavargaAyusRules(TypedDict, total=False):
     measures: Literal["parijata", "bphs"]
     divisor: Literal["thirty", "seven-over-twenty-seven"]
     reductions: Literal["verse", "balabhadra"]
+    occupied: Literal["reduced", "raw"]
 
 
 class RuleRequest(TypedDict, total=False):
