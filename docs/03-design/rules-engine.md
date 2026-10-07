@@ -405,6 +405,20 @@ that fires too often is worse than one that is missing. They arrive with a
 strength measure. So does ch. 9 v. 22's rising decanate, which wants the
 drekkana of the lagna rather than of a body.
 
+**The strength-bound verses, built (2026-10-07).** With `planet-strong` and
+`planet-weak` reading the chart's strength measure, all four ship, read in the
+Sanskrit of the 1899 and 1923 prints, which agree and number ch. 9 one lower
+and ch. 10 from 44. Ch. 9 v. 23 is the seven in the apoklimas and each
+`planet-weak` (the nodes carry no strength to lack, and *Jataka Parijata*
+ch. 4 v. 27 restates the verse as "the Sun and other planets"); it answers no
+chart, while one such graha stands in 49 and three in 9, so the zero is the
+corpus's. Ch. 9 v. 26 is the Moon joined by a malefic, standing seventh or
+eighth from one (so the malefic is seventh or sixth from her), and aspected by
+a strong malefic, which `for-any` binds with `planet-is`; it answers 8. Ch. 10
+v. 3, a strong Jupiter in the lagna, answers 2, and v. 4, a strong lagna lord
+in a kendra (`{"lordOf": 1}`), answers 25. Every evil now names six antidotes,
+and the corpus's cancelled evils rose from 324 to 350.
+
 **A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
 when the rule it names holds, read from the set an evaluator is given
 (`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's
@@ -422,8 +436,8 @@ The four general rules of vv. 43 to 45 — the Sun for the father, the Moon for
 the mother, malefics aspecting, hemming, or standing in the fourth, sixth or
 eighth from them — answer 40 to 73 of the 93 recorded charts, and their notes
 say why: the verses close by asking that the occupants' strength be estimated,
-which the kernel cannot yet do, so they state the principle rather than a
-graded reading.
+a weighing they do not reduce to a condition, so they state the principle
+rather than a graded reading.
 
 **Varahamihira beside Parashara (2026-09-16).** Brihat Jataka ch. 6, read in
 N. Chidambaram Iyer's 1885 translation, gives eleven more Balarishta rules:
@@ -437,9 +451,9 @@ within its sign and is refused inside an `in-varga` like every other longitude.
 
 Several of these verses escape through a *powerful* benefic — a powerful
 Jupiter aspecting all four grahas, a powerful Venus, Mercury or Jupiter with
-the Moon. Those escapes are recorded in each rule's note and not built, so the
-rule states the evil the verse states and no cancellation fires on a strength
-the kernel cannot measure.
+the Moon. Those escapes were first recorded in each rule's note and not built;
+once `planet-strong` read the chart's strength measure they shipped as each
+rule's cancellation, which a chart carrying no strength never fires.
 
 **An outcome, and Saravali's spans (2026-09-16).** Kalyana Varma grades each
 evil the one way the texts ever grade one: by the span of life it leaves — three
@@ -1354,8 +1368,8 @@ condition is one sentence and a rule a passage carrying everything it holds
 beside its conditions, from one vocabulary that the trace reads too: a step
 now prints "holds: the lord of house 10 stands in a kendra" where it printed
 the schema's own `planet-in-kendra`. `cargo xtask rule-doc <pack|category|key>`
-prints the passages and the pass measures them: 1662 rules' 5453 conditions
-are written 2614 ways, which say 2610 things and read as 2610 sentences, so
+prints the passages and the pass measures them: 1666 rules' 5544 conditions
+are written 2623 ways, which say 2619 things and read as 2619 sentences, so
 no two meanings share a sentence. The three single-armed combinators it found
 in a shipped pack were simplified when it first ran.
 

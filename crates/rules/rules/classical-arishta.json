@@ -47,6 +47,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -122,6 +130,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -175,6 +191,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -247,6 +271,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -297,6 +329,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -350,6 +390,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -403,6 +451,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -463,6 +519,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -556,6 +620,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -632,6 +704,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -683,6 +763,86 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_ALL_IN_APOKLIMAS_WITHOUT_STRENGTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "23",
+        "rank": 1,
+        "note": "All the grahas in the apoklimas, the third, sixth, ninth and twelfth, and bereft of strength: a life of six months or two. The seven are read, since the nodes carry no strength to lack; the verse's two spans are not an outcome, because it names both. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 22 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3,
+                  6,
+                  9,
+                  12
+                ]
+              },
+              {
+                "type": "planet-weak",
+                "planet": "SELF"
+              }
+            ]
+          },
+          "atLeast": 7
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -729,6 +889,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -801,6 +969,98 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_WITH_A_MALEFIC_STRONG_MALEFICS_ASPECTING",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "26",
+        "rank": 1,
+        "note": "The Moon in the seventh or eighth from a malefic and joined by one, with strong malefics aspecting her: the birth destroys the mother. A malefic the Moon is seventh from stands seventh from her, and one she is eighth from stands sixth; one strong malefic's aspect is read for the verse's plural. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 25 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6,
+            7
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON",
+          "except": [
+            "MOON"
+          ]
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "MOON"
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -848,6 +1108,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -925,6 +1193,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -973,6 +1249,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1036,6 +1320,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1089,6 +1381,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1162,6 +1462,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1232,6 +1540,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1299,6 +1615,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1394,6 +1718,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1447,6 +1779,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1494,6 +1834,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1547,6 +1895,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1594,6 +1950,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1650,6 +2014,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1705,6 +2077,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1717,7 +2097,7 @@
         "chapter": "9",
         "verse": "43-45",
         "rank": 1,
-        "note": "The Sun indicates the father: malefics aspecting him or hemming him bring the father evils. The same verses read the Moon for the mother. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+        "note": "The Sun indicates the father: malefics aspecting him or hemming him bring the father evils. The same verses read the Moon for the mother. The verses close by asking that the occupants' strength be estimated, a weighing the verses do not reduce to a condition, so this rule answers broadly: it is the principle, not a graded reading."
       },
       "conditions": [
         {
@@ -1769,6 +2149,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1781,7 +2169,7 @@
         "chapter": "9",
         "verse": "43-45",
         "rank": 1,
-        "note": "Malefics in the sixth, eighth or fourth from the Sun bring the father inauspicious results. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+        "note": "Malefics in the sixth, eighth or fourth from the Sun bring the father inauspicious results. The verses close by asking that the occupants' strength be estimated, a weighing the verses do not reduce to a condition, so this rule answers broadly: it is the principle, not a graded reading."
       },
       "conditions": [
         {
@@ -1812,6 +2200,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1824,7 +2220,7 @@
         "chapter": "9",
         "verse": "43-45",
         "rank": 1,
-        "note": "The Moon indicates the mother: malefics aspecting her or hemming her bring the mother evils. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+        "note": "The Moon indicates the mother: malefics aspecting her or hemming her bring the mother evils. The verses close by asking that the occupants' strength be estimated, a weighing the verses do not reduce to a condition, so this rule answers broadly: it is the principle, not a graded reading."
       },
       "conditions": [
         {
@@ -1876,6 +2272,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1888,7 +2292,7 @@
         "chapter": "9",
         "verse": "43-45",
         "rank": 1,
-        "note": "Malefics in the sixth, eighth or fourth from the Moon are adverse for the mother. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+        "note": "Malefics in the sixth, eighth or fourth from the Moon are adverse for the mother. The verses close by asking that the occupants' strength be estimated, a weighing the verses do not reduce to a condition, so this rule answers broadly: it is the principle, not a graded reading."
       },
       "conditions": [
         {
@@ -1919,6 +2323,14 @@
         {
           "type": "rule",
           "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA"
         }
       ],
       "fullCancellationThreshold": 1
@@ -1931,7 +2343,7 @@
         "chapter": "10",
         "verse": "2",
         "rank": 1,
-        "note": "Mercury, Jupiter or Venus in a kendra from the lagna destroys all the evils, as the Sun eliminates darkness. The antidotes stand in their own chapter, so they ship as rules of their own rather than as each evil's cancellation; a rule that carries them awaits a way to name a condition once and reference it."
+        "note": "Mercury, Jupiter or Venus in a kendra from the lagna destroys all the evils, as the Sun eliminates darkness. The antidotes stand in their own chapter, so they ship as rules of their own, which every evil names as a cancellation."
       },
       "conditions": [
         {
@@ -1968,6 +2380,53 @@
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_STRONG_JUPITER_IN_LAGNA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "3",
+        "rank": 1,
+        "note": "A strong Jupiter alone in the lagna destroys the whole mass of evils, as devotion to Shiva destroys sin. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 45 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_STRONG_LAGNA_LORD_IN_KENDRA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "4",
+        "rank": 1,
+        "note": "The lagna lord alone, strong and in a kendra, destroys every evil, as Shiva destroyed Tripura. Read in the Sanskrit of the 1899 and 1923 prints, which agree (their verse 46 of the chapter)."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-kendra",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-strong",
+          "planet": {
+            "lordOf": 1
+          }
         }
       ]
     },

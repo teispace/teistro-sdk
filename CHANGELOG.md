@@ -2157,6 +2157,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **BPHS's strength-bound arishta verses.** Four rules ship that waited on
+  a strength measure: ch. 9 v. 23's seven weak in the apoklimas, v. 26's
+  Moon among malefics aspected by a strong one, and ch. 10 vv. 3 and 4's
+  antidotes, a strong Jupiter in the lagna and a strong lagna lord in a
+  kendra. **Numbers:** an arishta that held on a chart with a strong
+  Jupiter in the lagna or a strong lagna lord in a kendra is now cancelled
+  there (350 cancellations over the corpus, from 324); nothing else moves.
 - **The rest of Brihat Jataka ch. 6.** Eight more of Varahamihira's
   Balarishta rules ship, read off the 1905 print's page images: v. 1's
   Moon and three malefics holding the kendras, v. 5's afflicted Moon
