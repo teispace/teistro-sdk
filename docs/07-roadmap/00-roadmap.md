@@ -914,6 +914,9 @@ The order below puts what blocks a release first.
    and 12, RHEL 8 and 9 and Ubuntu 20.04 and 22.04. Build Linux in a
    `manylinux_2_28` container, gate the highest `GLIBC_` symbol the
    library needs, and add musl and Windows arm64 rows.
+   **Built:** the floor, linked by cargo-zigbuild and gated by
+   `xtask/src/floor.rs` rather than a container, and the Windows arm64
+   row (2026-10-08). The musl row remains.
 2. **Publish waits for verify.** `verify.yml` becomes a reusable workflow
    that `publish` needs; an install check whose toolchain is missing fails
    in a release run instead of skipping.

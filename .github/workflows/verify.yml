@@ -3,7 +3,7 @@
 #
 # The fast check stays Rust-only and runs on every push (ADR-0014). This
 # runs nightly, on demand, and before a release, because a C compiler, a
-# Node and a Dart on five platforms is minutes of machine time and a
+# Node and a Dart on every platform is minutes of machine time and a
 # contributor should not wait for it to see a typo.
 #
 # A skip is not a pass. Each gate prints `skip` with the tool it wanted,
@@ -57,6 +57,8 @@ jobs:
             platform: darwin-x64
           - os: windows-latest
             platform: win32-x64
+          - os: windows-11-arm
+            platform: win32-arm64
     steps:
       - uses: actions/checkout@v5
         with:

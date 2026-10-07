@@ -48,9 +48,10 @@ pub(crate) struct Platform {
 /// The order is the order artefacts are listed in and the order the
 /// matrix runs in: the two Linux architectures first, because they are
 /// the pair Phase 1's determinism criterion compares, then macOS, then
-/// Windows. A musl row is the next one to add; the field is already
-/// carried so that adding it changes this table and nothing else.
-pub(crate) const PLATFORMS: [Platform; 5] = [
+/// Windows, x64 then Arm. A musl row is the next one to add; the field
+/// is already carried so that adding it changes this table and nothing
+/// else.
+pub(crate) const PLATFORMS: [Platform; 6] = [
     Platform {
         triple: "x86_64-unknown-linux-gnu",
         os: "linux",
@@ -103,6 +104,16 @@ pub(crate) const PLATFORMS: [Platform; 5] = [
         glibc_floor: None,
         wheel_tag: "win_amd64",
     },
+    // Windows on Arm, built and run natively on GitHub's Arm image rather
+    // than cross-compiled from x64, for the reason every row is native.
+    Platform {
+        triple: "aarch64-pc-windows-msvc",
+        os: "win32",
+        cpu: "arm64",
+        libc: None,
+        runner: "windows-11-arm",
+        glibc_floor: None,
+    },
 ];
 
 impl Platform {
@@ -122,6 +133,8 @@ impl Platform {
             "x86_64-apple-darwin"
         } else if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
             "x86_64-pc-windows-msvc"
+        } else if cfg!(all(target_os = "windows", target_arch = "aarch64")) {
+            "aarch64-pc-windows-msvc"
         } else {
             // A platform the SDK does not ship for still builds and tests;
             // the shape of its file names is the only thing needed, and

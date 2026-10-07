@@ -1,4 +1,4 @@
-# The release: one tag, five platforms, five packages.
+# The release: one tag, every platform, every package.
 #
 # A tag `vX.Y.Z` is pushed at a commit whose workspace already declares
 # X.Y.Z (`cargo xtask version` moves it, `check-versions` holds it, and
@@ -98,6 +98,8 @@ jobs:
             platform: darwin-x64
           - os: windows-latest
             platform: win32-x64
+          - os: windows-11-arm
+            platform: win32-arm64
     steps:
       - uses: actions/checkout@v5
         with:
@@ -282,7 +284,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -eu
-          # `sdk-*` is the five platform packages and `sdk-wasm`, which
+          # `sdk-*` is every platform package and `sdk-wasm`, which
           # depends on none of them; `package stage` refused to stage a
           # release missing any of the six.
           for package in dist/npm/@teistro/sdk-*; do
