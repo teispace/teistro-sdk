@@ -1042,11 +1042,17 @@ class AnEngine(WithLibrary):
         # ch. 10: the ashtakavarga spans, the seven's years summed, and the
         # candidate Mars names carries their sum.
         spans = answered["longevity"]["ashtakavarga"]
-        self.assertEqual(spans["rules"], {"measures": "parijata", "divisor": "thirty"})
+        self.assertEqual(
+            spans["rules"], {"measures": "parijata", "divisor": "thirty", "reductions": "verse"}
+        )
         self.assertAlmostEqual(sum(giver["years"] for giver in spans["grahas"]), spans["bhinna"])
         mars = next(c for c in choice["candidates"] if c["ayus"] == "bhinnashtakavarga")
         self.assertEqual(mars["years"], spans["bhinna"])
-        balabhadra: AshtakavargaAyusRules = {"measures": "bphs", "divisor": "seven-over-twenty-seven"}
+        balabhadra: AshtakavargaAyusRules = {
+            "measures": "bphs",
+            "divisor": "seven-over-twenty-seven",
+            "reductions": "balabhadra",
+        }
         by_balabhadra = found({"longevity": True, "ashtakavarga": balabhadra})
         assert by_balabhadra is not None
         self.assertEqual(by_balabhadra["longevity"]["ashtakavarga"]["rules"], balabhadra)

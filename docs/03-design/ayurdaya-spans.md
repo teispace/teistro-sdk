@@ -204,6 +204,21 @@ Decided:
   calls the span Nakshatra Ayus and gives it in solar years by 324 over
   365 (p. 706): `samudaya_solar`.
 
+## Balabhadra's reductions (ch. 10 v. 46's note, C317)
+
+The note sets Mantreswara's and Balabhadra's verses beside v. 46 (p. 691):
+the years are halved for another graha in the same bhava, at
+debilitation or under the Sun's rays, and lose a third in an enemy's
+house, in the visible half, or for the Sun and the Moon with the nodes;
+only the greatest is taken, and the net is multiplied by 324 and divided
+by 365. `reductions: "balabhadra"` reads it, the nine grahas counting as
+company in a whole-sign bhava and "with the nodes" read as Rahu's or
+Ketu's sign. The 7-over-27 years are nakshatra years, as v. 71's are, so
+`bhinna_solar` converts by 324 over 365 under that divisor and by v. 34's
+360 under 30, whichever reductions are chosen. Over the 93 rules charts'
+651 grahas, 99 keep their years, 121 two thirds and 431 half: company in
+the sign halves most, Mercury and Venus being near the Sun.
+
 ## Jeevasarman's span (ch. 5 v. 17, C316)
 
 "Jeevasarmin lays down in accordance with his own doctrine that the

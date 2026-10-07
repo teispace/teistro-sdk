@@ -15,7 +15,7 @@ use teistro_core::catalogue::Graha;
 use teistro_rules::longevity::{
     AyurdayaRules, Giver, JEEVASARMAN_YEARS, Method, Nisarga, full_years,
 };
-use teistro_rules::{Evaluator, Readings};
+use teistro_rules::{Body, Evaluator, Readings};
 
 #[test]
 fn every_span_is_the_sum_of_what_its_givers_give_within_their_bounds() {
@@ -362,4 +362,68 @@ fn jeevasarman_gives_a_seventh_of_120_years_and_5_days() {
     let printed = 17.0 + 1.0 / 12.0 + (22.0 + (8.0 + 34.3 / 60.0) / 60.0) / 360.0;
     assert!((JEEVASARMAN_YEARS - printed).abs() < 1e-7);
     assert_eq!(full_years(Method::Jeevasarman, Graha::Rahu), None);
+}
+
+/// Balabhadra's reductions leave a whole, two thirds or a half of the same
+/// basic years v. 46 starts from, and the note's 7 over 27 counts nakshatra
+/// years, which the solar sum converts by 324 over 365.
+#[test]
+fn balabhadra_takes_only_the_greatest_reduction_from_the_same_years() {
+    use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter};
+    use teistro_rules::longevity::{AshtakaReductions, AshtakavargaAyusRules, Bindus, Divisor};
+    use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus};
+
+    let seven = [
+        Graha::Sun,
+        Graha::Moon,
+        Graha::Mars,
+        Graha::Mercury,
+        Graha::Jupiter,
+        Graha::Venus,
+        Graha::Saturn,
+    ];
+    let mut kept = [0_u32; 3];
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS);
+        let sign = |body: Body| chart.placement(body).sign;
+        let ashtakavarga = AshtakavargaChart {
+            lagna: sign(Body::Lagna),
+            signs: seven.map(|graha| sign(Body::Graha(graha))),
+        };
+        let raw = Bindus {
+            grahas: bindus(&ashtakavarga, MoonBinduFromJupiter::Twelfth),
+            ekadhipatya: Ekadhipatya::Bphs,
+        };
+        let verse = evaluator.ashtakavarga_ayus(&raw, AshtakavargaAyusRules::default());
+        let note = AshtakavargaAyusRules {
+            divisor: Divisor::SevenOverTwentySeven,
+            reductions: AshtakaReductions::Balabhadra,
+            ..AshtakavargaAyusRules::default()
+        };
+        let balabhadra = evaluator.ashtakavarga_ayus(&raw, note);
+        let thirty = evaluator.ashtakavarga_ayus(
+            &raw,
+            AshtakavargaAyusRules {
+                reductions: AshtakaReductions::Balabhadra,
+                ..AshtakavargaAyusRules::default()
+            },
+        );
+        for (with_verse, with_note) in verse.grahas.iter().zip(&thirty.grahas) {
+            assert_eq!(with_verse.basic, with_note.basic, "{}", path.display());
+            let at = [1.0, 2.0 / 3.0, 0.5]
+                .iter()
+                .position(|kept| (with_note.factor - kept).abs() < 1e-12);
+            assert!(at.is_some(), "{}: {with_note:?}", path.display());
+            if let Some(count) = at.and_then(|at| kept.get_mut(at)) {
+                *count += 1;
+            }
+        }
+        assert!((verse.bhinna_solar * 365.0 - verse.bhinna * 360.0).abs() < 1e-9);
+        assert!((balabhadra.bhinna_solar * 365.0 - balabhadra.bhinna * 324.0).abs() < 1e-9);
+    }
+    // Over the 93 charts' 651 grahas, how many keep all, two thirds and
+    // half: two in three are halved, most for company in their sign, which
+    // Mercury and Venus beside the Sun nearly always have.
+    assert_eq!(kept, [99, 121, 431]);
 }

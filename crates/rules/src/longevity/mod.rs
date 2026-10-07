@@ -17,7 +17,7 @@ mod pairs;
 mod rasmi;
 
 pub use ashtakavarga::{
-    AshtakaGiver, AshtakavargaAyus, AshtakavargaAyusRules, Bindus, Divisor,
+    AshtakaGiver, AshtakaReductions, AshtakavargaAyus, AshtakavargaAyusRules, Bindus, Divisor,
     PARIJATA_RASHI_MEASURES, SignMeasures, pinda_years, pindas,
 };
 pub use ayurdaya::{

@@ -2157,6 +2157,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Balabhadra's reductions of the ashtakavarga years**
+  (`ayurdaya-spans.md`, C317). `ashtakavarga.reductions` chooses v. 46's
+  (default) or the note's: the greatest of a half or a third only. The
+  spans gain `bhinna_solar`, converted by 324 over 365 under the note's 7
+  over 27 and by 360 over 365 under 30, which v. 33's Bhinnashtakavarga
+  candidate carries as its solar years. **Numbers:** none under the
+  defaults.
 - **Jeevasarman's span** (`ayurdaya-spans.md`, C316). The three spans
   gain a fourth, `ayurdaya.jeevasarman`, *Jataka Parijata* ch. 5 v. 17:
   Pindayu's method with a seventh of 120 years and 5 days for every

@@ -881,7 +881,11 @@ void _engineTests() {
     // ch. 10: the ashtakavarga spans, the seven's years summed, and the
     // candidate Mars names carries their sum.
     final spans = longevity['ashtakavarga']! as Map<String, Object?>;
-    expect(spans['rules'], {'measures': 'parijata', 'divisor': 'thirty'});
+    expect(spans['rules'], {
+      'measures': 'parijata',
+      'divisor': 'thirty',
+      'reductions': 'verse',
+    });
     final givers =
         (spans['grahas']! as List<Object?>).cast<Map<String, Object?>>();
     expect(
@@ -899,6 +903,7 @@ void _engineTests() {
                     ashtakavarga: AshtakavargaAyusRules(
                       measures: AyusSignMeasures.bphs,
                       divisor: AyusDivisor.sevenOverTwentySeven,
+                      reductions: AshtakaReductions.balabhadra,
                     ),
                   ),
                 )!['longevity']!
@@ -907,6 +912,7 @@ void _engineTests() {
     expect(byBalabhadra['rules'], {
       'measures': 'bphs',
       'divisor': 'seven-over-twenty-seven',
+      'reductions': 'balabhadra',
     });
     expect(
       () => found(const RuleRequest(rasmi: RasmiRules.verse)),

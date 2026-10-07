@@ -260,14 +260,17 @@ impl RuleRequest {
     ///
     /// ```
     /// use teistro::RuleRequest;
-    /// use teistro::rules::longevity::{AshtakavargaAyusRules, Divisor, SignMeasures};
+    /// use teistro::rules::longevity::{
+    ///     AshtakaReductions, AshtakavargaAyusRules, Divisor, SignMeasures,
+    /// };
     ///
     /// let balabhadra = AshtakavargaAyusRules {
     ///     measures: SignMeasures::Bphs,
     ///     divisor: Divisor::SevenOverTwentySeven,
+    ///     reductions: AshtakaReductions::Balabhadra,
     /// };
     /// let read = RuleRequest::from_json(
-    ///     r#"{"longevity": true, "ashtakavarga": {"measures": "bphs", "divisor": "seven-over-twenty-seven"}}"#,
+    ///     r#"{"longevity": true, "ashtakavarga": {"measures": "bphs", "divisor": "seven-over-twenty-seven", "reductions": "balabhadra"}}"#,
     /// )?;
     /// assert_eq!(read, RuleRequest::default().with_ashtakavarga(balabhadra));
     /// assert_eq!(read.rule_set()?.ashtakavarga(), Some(balabhadra));

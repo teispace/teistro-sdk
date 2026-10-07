@@ -95,7 +95,8 @@ pub struct Candidate {
     /// among those `computed`.
     pub years: Option<f64>,
     /// Those years as solar years (v. 34, C315): times 360 over 365, and
-    /// Samudaya's by its own 324 over 365.
+    /// Samudaya's by its own 324 over 365, as Bhinnashtakavargaja's are
+    /// under the note's 7 over 27.
     pub solar_years: Option<f64>,
 }
 
@@ -172,6 +173,7 @@ pub fn span_choice(
         };
         let solar_years = match ayus {
             Ayus::Samudaya => computed.ashtakavarga.map(|spans| spans.samudaya_solar),
+            Ayus::Bhinnashtakavarga => computed.ashtakavarga.map(|spans| spans.bhinna_solar),
             _ => years.map(|years| years * SAVANA_TO_SOLAR),
         };
         Candidate {
