@@ -106,6 +106,8 @@ impl House {
         Rashi::from_id(index).unwrap_or(from)
     }
 
+    /// The twelfth, *vyaya*, the house of loss and of liberation.
+    pub const VYAYA: House = House(12);
     /// The four kendras.
     pub const KENDRAS: [House; 4] = [House(1), House(4), House(7), House(10)];
     /// The three trikonas.

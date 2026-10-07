@@ -30,12 +30,15 @@
 #![doc(html_no_source)]
 
 mod dasha;
+mod devata;
 mod functional;
 mod shanti;
 mod subjects;
 
 #[cfg(test)]
 mod dasha_tests;
+#[cfg(test)]
+mod devata_tests;
 #[cfg(test)]
 mod shanti_tests;
 #[cfg(test)]
@@ -44,6 +47,9 @@ mod subjects_tests;
 mod tests;
 
 pub use dasha::{Condition, DashaShanti, Remedy, dasha_shanti, dasha_shantis};
+pub use devata::{
+    Deity, DevataRules, Devotion, IshtaDevata, SunWithKetu, baseline_ishta_devata, ishta_devata,
+};
 pub use functional::{
     Badhaka, Clause, ClauseKind, Functional, FunctionalRow, FunctionalRules, Nature, Scheme,
     functional,
