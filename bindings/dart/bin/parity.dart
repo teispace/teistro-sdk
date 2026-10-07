@@ -120,6 +120,44 @@ void put(String key, Object? value) {
   };
 }
 
+/// A pair as every runner writes it, the degrees rounded alike.
+String pairSaid(TajikaBetween p) =>
+    '${p.faster.fullKey}>${p.slower.fullKey}:${p.drishti.key}:'
+    '${p.yoga?.key ?? '-'}:${p.apartDeg.toStringAsFixed(6)}';
+
+String clausesSaid(List<Affliction> clauses) =>
+    clauses.isEmpty ? 'none' : clauses.map((c) => c.key).join('+');
+
+/// A yoga that held, and what made it; `-` wherever there is none.
+String heldSaid(HeldYearYoga h) => [
+  h.yoga.key,
+  h.through?.fullKey ?? '-',
+  h.entering?.fullKey ?? '-',
+  h.between == null ? '-' : 'pair',
+  h.legs?.map(pairSaid).join('/') ?? '-',
+  if (h.afflictions case final a?)
+    '${clausesSaid(a.lagnesha)}/${clausesSaid(a.karyesha)}'
+  else
+    '-',
+].join(':');
+
+/// One matter's Tajika yogas, each row under [at].
+void putMatter(String at, TajikaMatter m) {
+  put(
+    at,
+    '${m.sign.fullKey} ${m.lagnesha.fullKey}>${m.karyesha.fullKey} ${m.sameLord}',
+  );
+  put('$at-pair', m.between == null ? '-' : pairSaid(m.between!));
+  put('$at-unanswered', m.unanswered.map((y) => y.key).join(','));
+  put('$at-held', m.held.map(heldSaid).join(' '));
+}
+
+/// The items joined by commas, or `-`.
+String joined(Iterable<String> items) {
+  final all = items.join(',');
+  return all.isEmpty ? '-' : all;
+}
+
 /// The items joined by spaces, or `none`.
 String listed(Iterable<String> items) {
   final joined = items.join(' ');
@@ -766,6 +804,11 @@ void main() {
     perfection: const PerfectionRequest.ofHouse(
       7,
       rules: PerfectionRules(horizonDays: 120),
+    ),
+    prashna: const PrashnaRequest(
+      house: 7,
+      number: 14,
+      rules: PrashnaRules(score: ScoreRule.baseline),
     ),
     westernAspects: const WesternAspectRequest(
       aspects: [
@@ -1487,6 +1530,48 @@ void main() {
       'chart-$i-perfection-rules',
       '${pf.rules.orbsDeg.map(number).join(',')} ${flag(pf.rules.withinSign)}',
     );
+    final pq = chart.prashna!;
+    final rq = pq.rules;
+    put(
+      'chart-$i-prashna',
+      '${rq.pisces.key} ${rq.timing.key} ${rq.mook.key} ${rq.moon.kshina.key} '
+          '${rq.score.key} ${pq.verdict.outcome.key} ${pq.change.key} '
+          '${pq.numberSign?.fullKey ?? '-'}',
+    );
+    for (final (n, clause) in pq.verdict.clauses.indexed) {
+      put(
+        'chart-$i-prashna-clause-$n',
+        '${clause.kind.key} ${clause.graha?.fullKey ?? '-'} ${clause.favour.key}',
+      );
+    }
+    final tm = pq.timing;
+    put(
+      'chart-$i-prashna-timing',
+      '${tm.rule.key} ${tm.graha.fullKey} ${tm.tie} ${tm.count} '
+          '${tm.multiplier} ${tm.amount ?? '-'} ${tm.unit.key} '
+          '${joined(tm.between.map((g) => g.fullKey))}',
+    );
+    final mk = pq.mook;
+    put(
+      'chart-$i-prashna-mook',
+      '${mk.rule.key} ${mk.graha.fullKey} ${mk.tie} ${mk.house} '
+          '${mk.person?.key ?? '-'} ${mk.thought.key}',
+    );
+    put('chart-$i-prashna-moon', joined(pq.moon.clauses.map((c) => c.key)));
+    final ps = pq.score!;
+    put(
+      'chart-$i-prashna-score',
+      '${ps.points} ${ps.answer.key} ${ps.isVoid} '
+          '${ps.applyingTo?.fullKey ?? '-'} '
+          '${joined(ps.factors.map((f) => '${f.kind.key}:${f.points}'))}',
+    );
+    final links = pq.links!;
+    putMatter('chart-$i-prashna-links', links);
+    put(
+      'chart-$i-prashna-links-states',
+      'R:${joined(links.states!.retrograde.map((g) => g.fullKey))} '
+          'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
+    );
     final pr = chart.progressions!;
     final pg = pr.progressed!;
     final dr = pr.directed!;
@@ -1803,22 +1888,6 @@ void main() {
   // Each reading also asks the sixteen yogas a different way, so all three
   // ways cross: every matter under the source's readings, every matter
   // under Tambira's "some authorities", and no matter at all.
-  String pairSaid(TajikaBetween p) =>
-      '${p.faster.fullKey}>${p.slower.fullKey}:${p.drishti.key}:'
-      '${p.yoga?.key ?? '-'}:${p.apartDeg.toStringAsFixed(6)}';
-  String clausesSaid(List<Affliction> clauses) =>
-      clauses.isEmpty ? 'none' : clauses.map((c) => c.key).join('+');
-  String heldSaid(HeldYearYoga h) => [
-    h.yoga.key,
-    h.through?.fullKey ?? '-',
-    h.entering?.fullKey ?? '-',
-    h.between == null ? '-' : 'pair',
-    h.legs?.map(pairSaid).join('/') ?? '-',
-    if (h.afflictions case final a?)
-      '${clausesSaid(a.lagnesha)}/${clausesSaid(a.karyesha)}'
-    else
-      '-',
-  ].join(':');
   // One saham as every runner prints it: its place, its clauses, its
   // lord's strengths and how the seven stand to it.
   String sahamSaid(TajikaSaham p) => [
@@ -1921,14 +1990,7 @@ void main() {
               'C:${annual.combust.map((g) => g.fullKey).join(',')}',
         );
         for (final m in annual.matters) {
-          final at = '$stem-matter-${m.house}';
-          put(
-            at,
-            '${m.sign.fullKey} ${m.lagnesha.fullKey}>${m.karyesha.fullKey} ${m.sameLord}',
-          );
-          put('$at-pair', m.between == null ? '-' : pairSaid(m.between!));
-          put('$at-unanswered', m.unanswered.map((y) => y.key).join(','));
-          put('$at-held', m.held.map(heldSaid).join(' '));
+          putMatter('$stem-matter-${m.house}', m);
         }
         for (final p in annual.sahams) {
           put('$stem-saham-${p.saham.key}', sahamSaid(p));

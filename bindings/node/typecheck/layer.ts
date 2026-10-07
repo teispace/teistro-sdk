@@ -107,6 +107,8 @@ import type {
   KpLords,
   KpReading,
   KpRequest,
+  Prashna,
+  PrashnaRequest,
   PlanetDignity,
   Reception,
   Term,
@@ -800,6 +802,59 @@ function theKpReading(ctx: Context): string {
 }
 
 void theKpReading;
+
+// A prashna read all the way down, and a request in every field.
+function thePrashna(ctx: Context): string {
+  const asked: PrashnaRequest = {
+    question: { house: 7, number: 14 },
+    rules: {
+      pisces: 'SHIRSHODAYA',
+      timing: 'BASELINE',
+      mook: 'MOON_HOUSE',
+      moon: { kshina: 'DARK_ELEVENTH_TO_NEW_MOON' },
+      score: 'BASELINE',
+    },
+  };
+  const read: Prashna | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    prashna: asked,
+  }).prashna;
+  if (read === null) return 'none';
+  const clauses = read.verdict.clauses.map((c) => `${c.kind} ${c.graha ?? '-'} ${c.favour}`);
+  const { timing, mook, links, moon, score } = read;
+  const when = `${timing.rule} ${timing.graha} ${timing.tie} ${timing.count} ${timing.multiplier} ${timing.amount ?? '-'} ${timing.unit} ${timing.between.join()}`;
+  const about = `${mook.rule} ${mook.graha} ${mook.tie} ${mook.house} ${mook.person ?? '-'} ${mook.thought}`;
+  const tied =
+    links === null
+      ? '-'
+      : `${links.house} ${links.sign} ${links.lagnesha} ${links.karyesha} ${links.sameLord} ` +
+        `${links.between?.orbDeg ?? '-'} ${links.held.map((h) => `${h.yoga} ${h.through ?? '-'}`).join()} ` +
+        `${links.states?.combust.join() ?? '-'} ${String(links.holds('NAKTA'))}`;
+  const points =
+    score === null
+      ? '-'
+      : `${score.points} ${score.answer} ${score.factors.map((f) => `${f.kind} ${f.points}`).join()} ${score.void} ${score.applyingTo ?? '-'}`;
+  // @ts-expect-error a house is a number
+  const wrong: PrashnaRequest = { question: { house: '7' } };
+  return [
+    read.rules.mook,
+    read.verdict.outcome,
+    read.change,
+    ...clauses,
+    when,
+    about,
+    tied,
+    moon.rules.kshina,
+    moon.clauses.join(),
+    points,
+    read.numberSign ?? '-',
+    String(wrong),
+  ].join();
+}
+
+void thePrashna;
 
 // The essential dignities read all the way down, and a request in every
 // field, a table's lords in either spelling.

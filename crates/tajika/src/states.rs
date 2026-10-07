@@ -40,7 +40,7 @@ use crate::drishti::speed_rank;
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct AnnualStates {
     /// The planets going backwards through the zodiac.
     pub retrograde: Vec<Graha>,

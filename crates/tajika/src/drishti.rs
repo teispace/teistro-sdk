@@ -271,6 +271,7 @@ pub struct DrishtiRules {
 /// How two planets of an annual chart stand to each other.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Between {
     /// The faster of the two, by the tradition's ranking.
     pub faster: Graha,

@@ -694,6 +694,21 @@ __all__ = [
     "KpReason",
     "KpRejection",
     "KpRulingRules",
+    # Prashna: the chart of a question's moment, read as the texts print it.
+    "PrashnaRequest",
+    "PrashnaQuestion",
+    "PrashnaRules",
+    "PrashnaMoonRules",
+    "Prashna",
+    "PrashnaVerdict",
+    "PrashnaClause",
+    "PrashnaTiming",
+    "PrashnaMook",
+    "PrashnaLinks",
+    "AnnualStatesRead",
+    "MoonWeakness",
+    "PrashnaScore",
+    "PrashnaFactor",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -1670,6 +1685,7 @@ class ChartArea(_Area):
         western_houses: Optional[WesternHouseRequest] = None,
         harmonic: Optional[HarmonicRequest] = None,
         matching: Optional[MatchingRequest] = None,
+        prashna: Optional[PrashnaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1727,6 +1743,7 @@ class ChartArea(_Area):
             western_houses=western_houses,
             harmonic=harmonic,
             matching=matching,
+            prashna=prashna,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1774,6 +1791,7 @@ class ChartArea(_Area):
         western_houses: Optional[WesternHouseRequest] = None,
         harmonic: Optional[HarmonicRequest] = None,
         matching: Optional[MatchingRequest] = None,
+        prashna: Optional[PrashnaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1858,6 +1876,7 @@ class ChartArea(_Area):
             ),
             harmonic_json=_record_json(harmonic, "harmonic", "{'number': 9}"),
             matching_json=_matching_json(matching),
+            prashna_json=_record_json(prashna, "prashna", "{'question': {'house': 7}}"),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -7402,6 +7421,171 @@ class TajikaMatter:
         return any(one.yoga == yoga for one in self.held)
 
 
+class PrashnaQuestion(TypedDict, total=False):
+    """What a prashna asks: `house`, the matter's house 1 to 12, which the
+    verdict's I.3 clauses and the Tajika links read; and `number`, the
+    querent's 1 to 108, read only by the baseline engine's unsourced rule
+    (C340)."""
+
+    house: int
+    number: int
+
+
+class PrashnaMoonRules(TypedDict, total=False):
+    """How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352):
+    `kshina`, `DARK_EIGHTH_TO_BRIGHT_EIGHTH` (the gloss's, the default) or
+    `DARK_ELEVENTH_TO_NEW_MOON` (its "some say")."""
+
+    kshina: str
+
+
+class PrashnaRules(TypedDict, total=False):
+    """The readings a prashna is given under, one knob per crux, the texts'
+    own by default: `pisces` (`BOTH_WAYS` or `SHIRSHODAYA`), `timing`
+    (`STRONGEST_GRAHA`, `FIRST_OCCUPIED`, `MOON_DAYS` or the unsourced
+    `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
+    `moon` and `score` (`OFF` or `BASELINE`)."""
+
+    pisces: str
+    timing: str
+    mook: str
+    moon: PrashnaMoonRules
+    score: str
+
+
+class PrashnaRequest(TypedDict, total=False):
+    """A question to read every chart of a request as the chart of its
+    moment (`03-design/prashna.md`), every field optional. A prashna weighs
+    the seven by their Shadbala, so it asks for that too.
+
+    >>> asked: PrashnaRequest = {"question": {"house": 7}, "rules": {"mook": "MOON_HOUSE"}}
+    """
+
+    question: PrashnaQuestion
+    rules: PrashnaRules
+
+
+@dataclass(frozen=True)
+class PrashnaClause:
+    """One clause of the verdict, naming its verse by `kind` (`LAGNA_RISING`,
+    `IN_LAGNA`, `RISING_NAVAMSHA`, `ASPECTS_LAGNA`, `ASPECTS_MOON` or
+    `KARYA_HOUSE`) and telling `FOR`, `AGAINST` or `BOTH`."""
+
+    kind: str
+    graha: Optional[Graha]
+    """The graha it is about; `None` for how the lagna rises."""
+    favour: str
+
+
+@dataclass(frozen=True)
+class PrashnaVerdict:
+    """Whether the matter succeeds: every clause that holds, and
+    *Shatpanchashika* I.4's outcome over them (`SUCCEEDS`,
+    `WITH_DIFFICULTY` or `FAILS`), never a score (C337)."""
+
+    clauses: Tuple[PrashnaClause, ...]
+    outcome: str
+
+
+@dataclass(frozen=True)
+class PrashnaTiming:
+    """When the matter comes to pass, and the rule and graha that timed it."""
+
+    rule: str
+    graha: Graha
+    tie: bool
+    """Whether that graha won a tie in strength (C338)."""
+    count: int
+    multiplier: int
+    amount: Optional[int]
+    """The time; `None` where the rule gives none."""
+    unit: str
+    between: Tuple[Graha, ...]
+    """The grahas between the lagna and the Moon, under `MOON_DAYS`."""
+
+
+@dataclass(frozen=True)
+class PrashnaMook:
+    """What an unspoken question is about: the graha whose house was read,
+    the person under `SHATPANCHASHIKA` (`None` otherwise), and the class of
+    the thing thought of (`MINERAL`, `ROOT` or `LIVING`)."""
+
+    rule: str
+    graha: Graha
+    tie: bool
+    house: int
+    person: Optional[str]
+    thought: str
+
+
+@dataclass(frozen=True)
+class AnnualStatesRead:
+    """Which of the seven are retrograde and which combust: what Tajika's
+    yogas were judged on."""
+
+    retrograde: Tuple[Graha, ...]
+    combust: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class PrashnaLinks(TajikaMatter):
+    """A prashna's Tajika links: a year's matter between the lagna lord and
+    the asked house's lord, with the states it was judged on."""
+
+    states: Optional[AnnualStatesRead] = None
+
+
+@dataclass(frozen=True)
+class MoonWeakness:
+    """The clauses of the Samjna Tantra vv. 73–74 that hold for the Moon, in
+    the verses' order, none weighed (C352)."""
+
+    rules: PrashnaMoonRules
+    clauses: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PrashnaFactor:
+    """One factor of the baseline's points, and what it gave."""
+
+    kind: str
+    points: int
+
+
+@dataclass(frozen=True)
+class PrashnaScore:
+    """The baseline engine's points for a query chart. Unsourced (C337)."""
+
+    points: int
+    answer: str
+    """`YES` over 1, `NO` under −1, `UNCERTAIN` between."""
+    factors: Tuple[PrashnaFactor, ...]
+    void: bool
+    """The baseline's void Moon, over grahas held still."""
+    applying_to: Optional[Graha]
+    """The graha nearest ahead of the Moon by conjunction distance."""
+
+
+@dataclass(frozen=True)
+class Prashna:
+    """A chart read as a prashna (`03-design/prashna.md`)."""
+
+    rules: PrashnaRules
+    """The readings it was given under, every member filled."""
+    verdict: PrashnaVerdict
+    change: str
+    """`STAYS` or `CHANGES` (II.1–2)."""
+    timing: PrashnaTiming
+    mook: PrashnaMook
+    links: Optional[PrashnaLinks]
+    """The Tajika links; `None` when no house was asked."""
+    moon: MoonWeakness
+    score: Optional[PrashnaScore]
+    """The baseline's points; `None` unless `rules.score` is `BASELINE`."""
+    number_sign: Optional[Rashi]
+    """The sign of the querent's number; `None` unless one was given."""
+
+
 @dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
@@ -8289,6 +8473,124 @@ def _lots_json(lots: Optional[Union[LotRequest, LotRules]]) -> Optional[str]:
     if not isinstance(lots, (Mapping, LotRules)):
         return _record_json(lots, "lots", example)
     return _record_json(_written(lots), "lots", example)
+
+
+def _prashna(raw: Mapping[str, Any]) -> Prashna:
+    """A chart's prashna from the `prashna` section's JSON, its keys made
+    members and its links a year's matter."""
+
+    def graha(key: Optional[str]) -> Optional[Graha]:
+        return None if key is None else _member(Graha, key)
+
+    def some(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    timing = raw["timing"]
+    mook = raw["mook"]
+    links = raw["links"]
+    score = raw["score"]
+    sign = raw["numberSign"]
+    return Prashna(
+        rules=raw["rules"],
+        verdict=PrashnaVerdict(
+            clauses=tuple(
+                PrashnaClause(kind=c["kind"], graha=graha(c["graha"]), favour=c["favour"])
+                for c in raw["verdict"]["clauses"]
+            ),
+            outcome=raw["verdict"]["outcome"],
+        ),
+        change=raw["change"],
+        timing=PrashnaTiming(
+            rule=timing["rule"],
+            graha=some(timing["graha"]),
+            tie=timing["tie"],
+            count=timing["count"],
+            multiplier=timing["multiplier"],
+            amount=timing["amount"],
+            unit=timing["unit"],
+            between=tuple(some(key) for key in timing["between"]),
+        ),
+        mook=PrashnaMook(
+            rule=mook["rule"],
+            graha=some(mook["graha"]),
+            tie=mook["tie"],
+            house=mook["house"],
+            person=mook["person"],
+            thought=mook["thought"],
+        ),
+        links=None if links is None else _links(links),
+        moon=MoonWeakness(rules=raw["moon"]["rules"], clauses=tuple(raw["moon"]["clauses"])),
+        score=None
+        if score is None
+        else PrashnaScore(
+            points=score["points"],
+            answer=score["answer"],
+            factors=tuple(PrashnaFactor(kind=f["kind"], points=f["points"]) for f in score["factors"]),
+            void=score["void"],
+            applying_to=graha(score["applyingTo"]),
+        ),
+        number_sign=None if sign is None else _member(Rashi, sign),
+    )
+
+
+def _links(raw: Mapping[str, Any]) -> PrashnaLinks:
+    """Tajika's sixteen yogas for one matter as the boundary's JSON writes
+    them, in the shape `_matters` gives a year's."""
+
+    def graha(key: Optional[str]) -> Optional[Graha]:
+        return None if key is None else _member(Graha, key)
+
+    def pair(one: Optional[Mapping[str, Any]]) -> Optional[TajikaBetween]:
+        if one is None:
+            return None
+        yoga = one["yoga"]
+        return TajikaBetween(
+            faster=_member(Graha, one["faster"]),
+            slower=_member(Graha, one["slower"]),
+            drishti=_member(TajikaDrishti, one["drishti"]),
+            yoga=None if yoga is None else _member(TajikaYoga, yoga),
+            orb_deg=float(one["orbDeg"]),
+            apart_deg=float(one["apartDeg"]),
+        )
+
+    def afflicted(one: Mapping[str, Any]) -> List[Affliction]:
+        clauses = (("RETROGRADE", "retrograde"), ("COMBUST", "combust"), ("DEBILITATED", "debilitated"),
+                   ("TRIKA", "trika"), ("UNDER_MALEFIC", "underMalefic"))
+        return [_member(Affliction, key) for key, name in clauses if one[name]]
+
+    def held(one: Mapping[str, Any]) -> HeldYearYoga:
+        legs = one["legs"]
+        afflictions = one["afflictions"]
+        first, second = (None, None) if legs is None else (pair(legs[0]), pair(legs[1]))
+        return HeldYearYoga(
+            yoga=_member(YearYoga, one["yoga"]),
+            between=pair(one["between"]),
+            through=graha(one["through"]),
+            entering=graha(one["entering"]),
+            legs=None if first is None or second is None else (first, second),
+            afflictions=None
+            if afflictions is None
+            else Afflictions(lagnesha=afflicted(afflictions[0]), karyesha=afflicted(afflictions[1])),
+        )
+
+    states = raw["states"]
+    return PrashnaLinks(
+        house=raw["house"],
+        sign=_member(Rashi, raw["sign"]),
+        lagnesha=_member(Graha, raw["lagnesha"]),
+        karyesha=_member(Graha, raw["karyesha"]),
+        same_lord=raw["sameLord"],
+        between=pair(raw["between"]),
+        held=[held(one) for one in raw["held"]],
+        unanswered=[_member(YearYoga, key) for key in raw["unanswered"]],
+        states=None
+        if states is None
+        else AnnualStatesRead(
+            retrograde=tuple(_member(Graha, key) for key in states["retrograde"]),
+            combust=tuple(_member(Graha, key) for key in states["combust"]),
+        ),
+    )
 
 
 def _kp_reading(raw: Mapping[str, Any]) -> KpReading:
@@ -9789,6 +10091,18 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def prashna(self) -> Optional[Prashna]:
+        """The chart read as a prashna, the chart of the moment a question
+        was asked: the verdict's clauses with *Shatpanchashika* I.4's three
+        outcomes, whether the matter stays, when, what an unspoken question
+        is about, the Tajika links when a house is asked and the Moon's
+        weaknesses; the baseline engine's points only under
+        `rules={'score': 'BASELINE'}`. `None` unless `prashna=` asked for it
+        (`03-design/prashna.md`)."""
+        parsed = self.batch._prashnas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dignities(self) -> Optional[Dignities]:
         """The seven planets' essential dignities and the chart's sect, with
         everything that made them; `None` unless `dignities=` asked for them
@@ -10427,6 +10741,13 @@ class ChartBatch:
             )
             for chart in range(c.length)
         ]
+
+    @cached_property
+    def _prashnas(self) -> list[Prashna]:
+        """Every chart's prashna, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.prashna
+        return [_prashna(raw) for raw in json.loads(text)] if text else []
 
     @cached_property
     def _kps(self) -> list[KpReading]:

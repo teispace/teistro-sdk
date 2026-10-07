@@ -571,16 +571,7 @@ pub fn charts() -> BlobSchema {
                 "chalit",
                 "The twelve bhavas of each chart's chalit, the same shape as `houses`.",
             ),
-            SectionSchema::fixed(
-                7,
-                "zodiac",
-                "The zodiac the batch is measured in. The offset itself moves with the instant, so it is a column of `charts` rather than a field here.",
-                vec![
-                    ColumnDef::new("frame_bits", Scalar::U32, "The frame the positions were asked for, packed as the port packs it."),
-                    ColumnDef::new("ayanamsha_kind", Scalar::U8, "0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define."),
-                    ColumnDef::new("ayanamsha", Scalar::U16, "Which catalogued ayanamsha, when the kind is 1.").of_enum("Ayanamsha"),
-                ],
-            ),
+            chart_zodiac_section(7),
             day_section(8).of_shape(DAY_SHAPE),
             chart_timing_section(9),
             SectionSchema::bytes(
@@ -650,8 +641,36 @@ pub fn charts() -> BlobSchema {
         .chain(chart_matching_sections(111))
         .chain(chart_marriage_dosha_sections(116))
         .chain(chart_avakahada_sections(118))
+        .chain([chart_prashna_section(120)])
         .collect(),
     }
+}
+
+/// The zodiac a chart batch is measured in, once for the batch.
+fn chart_zodiac_section(id: u32) -> SectionSchema {
+    SectionSchema::fixed(
+        id,
+        "zodiac",
+        "The zodiac the batch is measured in. The offset itself moves with the instant, so it is a column of `charts` rather than a field here.",
+        vec![
+            ColumnDef::new(
+                "frame_bits",
+                Scalar::U32,
+                "The frame the positions were asked for, packed as the port packs it.",
+            ),
+            ColumnDef::new(
+                "ayanamsha_kind",
+                Scalar::U8,
+                "0 for none, 1 for a catalogued ayanamsha, 2 for one the settings define.",
+            ),
+            ColumnDef::new(
+                "ayanamsha",
+                Scalar::U16,
+                "Which catalogued ayanamsha, when the kind is 1.",
+            )
+            .of_enum("Ayanamsha"),
+        ],
+    )
 }
 
 /// What a chart batch decided once: where, what kind, and how many of what.
@@ -2357,6 +2376,15 @@ fn chart_marriage_dosha_sections(first: u32) -> [SectionSchema; 2] {
             ],
         ),
     ]
+}
+
+/// Every chart read as a prashna (`03-design/prashna.md`).
+fn chart_prashna_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "prashna",
+        "UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, verdict, change, timing, mook, links, moon, score, numberSign}` (`03-design/prashna.md`). `verdict` is `{clauses, outcome}`, each clause `{kind, graha, favour}` naming its verse by `kind`, and `outcome` `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` (*Shatpanchashika* I.4, C337). `change` is `STAYS` or `CHANGES`. `timing` is `{rule, graha, tie, count, multiplier, amount, unit, between}`, `amount` null where the rule gives none. `mook` is `{rule, graha, tie, house, person, thought}`, `person` null but under `SHATPANCHASHIKA`. `links` is the Tajika yogas between the lagna lord and the asked house's lord, as a year's `matters` carry them, null when no house was asked. `moon` is `{rules, clauses}`, each clause a key of the Samjna Tantra vv. 73-74 (C352). `score` is the baseline engine's `{points, answer, factors, void, applyingTo}`, null unless `rules.score` is `BASELINE`; `numberSign` the sign of the querent's number, null unless one was given. Empty when `prashna_json` asked for none.",
+    )
 }
 
 /// Every chart's avakahada from `first`: the Moon's readings a row a

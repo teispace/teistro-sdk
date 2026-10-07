@@ -307,6 +307,7 @@ fn chart_request(
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )
@@ -1585,6 +1586,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1737,6 +1739,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1887,6 +1890,7 @@ fn a_chart_request_answers_the_transits() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2109,6 +2113,7 @@ fn a_chart_request_answers_the_hit_list() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2284,6 +2289,7 @@ fn a_chart_request_answers_sade_sati() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2547,6 +2553,7 @@ fn a_chart_request_answers_the_dignities() {
                 western_houses_json: ptr::null(),
                 harmonic_json: ptr::null(),
                 matching_json: ptr::null(),
+                prashna_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2827,6 +2834,7 @@ fn a_chart_request_answers_the_fortitudes() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4135,6 +4143,7 @@ fn a_chart_request_answers_kp() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4336,6 +4345,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4449,6 +4459,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4591,6 +4602,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4738,6 +4750,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5516,6 +5529,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5631,6 +5645,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5815,6 +5830,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             western_houses_json: ptr::null(),
             harmonic_json: ptr::null(),
             matching_json: ptr::null(),
+            prashna_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6103,6 +6119,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 western_houses_json: ptr::null(),
                 harmonic_json: ptr::null(),
                 matching_json: ptr::null(),
+                prashna_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -9406,4 +9423,133 @@ fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+}
+
+/// Prashna crosses: a request's `prashna_json` answers every chart as the
+/// chart of its question's moment, canonical JSON in the `prashna`
+/// section, the façade's own reading over the Shadbala the request asks
+/// for itself, spelled as the section's description says; none asked is
+/// an empty section, and a refusal names the field under `prashna`
+/// (`03-design/prashna.md`).
+#[test]
+fn a_chart_request_answers_prashna() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = chart_request(&births, (27.7172, 85.324), 20_700);
+    let text = r#"{"question":{"house":7,"number":14},"rules":{"score":"BASELINE"}}"#;
+    let json = CString::new(text).unwrap();
+    let section = |asked: &TsChartRequest| {
+        let bytes = chart_blob(&ctx, asked)
+            .unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("prashna").unwrap().to_vec()).unwrap()
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&section(&TsChartRequest {
+        prashna_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own reading, over a document carrying its Shadbala.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock).with_shadbala(),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::PrashnaRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::prashna::Prashna> = natal
+        .iter()
+        .map(|document| sdk.chart().prashna(document, &asked).unwrap())
+        .collect();
+    let canonical: serde_json::Value =
+        serde_json::from_str(&teistro_core::envelope::canonical_json(&expected)).unwrap();
+    assert_eq!(crossed, canonical);
+
+    // Spelled as the section says, member for member.
+    let keys = |value: &serde_json::Value| {
+        let mut keys: Vec<String> = value.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    };
+    let one = &crossed[0];
+    assert_eq!(
+        keys(one),
+        [
+            "change",
+            "links",
+            "mook",
+            "moon",
+            "numberSign",
+            "rules",
+            "score",
+            "timing",
+            "verdict"
+        ]
+    );
+    assert_eq!(keys(&one["verdict"]), ["clauses", "outcome"]);
+    assert_eq!(
+        keys(&one["timing"]),
+        [
+            "amount",
+            "between",
+            "count",
+            "graha",
+            "multiplier",
+            "rule",
+            "tie",
+            "unit"
+        ]
+    );
+    assert_eq!(
+        keys(&one["mook"]),
+        ["graha", "house", "person", "rule", "thought", "tie"]
+    );
+    assert_eq!(keys(&one["moon"]), ["clauses", "rules"]);
+    assert_eq!(
+        keys(&one["score"]),
+        ["answer", "applyingTo", "factors", "points", "void"]
+    );
+    assert_eq!(
+        keys(&one["links"]),
+        [
+            "between",
+            "held",
+            "house",
+            "karyesha",
+            "lagnesha",
+            "sameLord",
+            "sign",
+            "states",
+            "unanswered"
+        ]
+    );
+    assert_eq!(one["numberSign"], "TAURUS");
+
+    // None asked is an empty section.
+    assert_eq!(section(&base), "");
+
+    // A refusal names the field under the record.
+    let bad = CString::new(r#"{"question":{"house":13}}"#).unwrap();
+    let refused = chart_blob(
+        &ctx,
+        &TsChartRequest {
+            prashna_json: bad.as_ptr(),
+            ..base
+        },
+    );
+    assert_eq!(refused, Err(Status::InvalidArg));
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("prashna.question.house")
+    );
 }

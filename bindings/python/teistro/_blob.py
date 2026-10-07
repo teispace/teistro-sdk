@@ -4470,6 +4470,9 @@ class Charts:
     avakahada_syllables: str
     """UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `devanagari, iast`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for."""
 
+    prashna: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, verdict, change, timing, mook, links, moon, score, numberSign}` (`03-design/prashna.md`). `verdict` is `{clauses, outcome}`, each clause `{kind, graha, favour}` naming its verse by `kind`, and `outcome` `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` (*Shatpanchashika* I.4, C337). `change` is `STAYS` or `CHANGES`. `timing` is `{rule, graha, tie, count, multiplier, amount, unit, between}`, `amount` null where the rule gives none. `mook` is `{rule, graha, tie, house, person, thought}`, `person` null but under `SHATPANCHASHIKA`. `links` is the Tajika yogas between the lagna lord and the asked house's lord, as a year's `matters` carry them, null when no house was asked. `moon` is `{rules, clauses}`, each clause a key of the Samjna Tantra vv. 73-74 (C352). `score` is the baseline engine's `{points, answer, factors, void, applyingTo}`, null unless `rules.score` is `BASELINE`; `numberSign` the sign of the querent's number, null unless one was given. Empty when `prashna_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -4598,6 +4601,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_marriage_dosha_rows = blob.section(117, "marriage_dosha_rows")
     at_avakahada = blob.section(118, "avakahada")
     at_avakahada_syllables = blob.section(119, "avakahada_syllables")
+    at_prashna = blob.section(120, "prashna")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7177,6 +7181,7 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_avakahada.count,
         ),
         avakahada_syllables=blob.text(at_avakahada_syllables),
+        prashna=blob.text(at_prashna),
     )
 
 

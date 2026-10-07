@@ -1279,6 +1279,21 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
   external ffi.Pointer<ffi.Char> matchingJson;
 
+  /// Every chart read as a prashna, the chart of the moment a question
+  /// was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
+  /// a JSON object, every member optional: `question` (`house`, the
+  /// matter's house 1 to 12, which the verdict's I.3 clauses and the
+  /// Tajika links read; `number`, the querent's 1 to 108, read only by
+  /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
+  /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
+  /// default). A prashna reads the seven's Shadbala, so asking for one
+  /// asks for the `shadbala` sections too. Each chart's reading comes
+  /// back in the `prashna` section. Null for none, which costs nothing
+  /// (`03-design/prashna.md`). Refusals are named from the record every
+  /// binding calls `prashna`, as `prashna.question.house`.
+  /// Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
+  external ffi.Pointer<ffi.Char> prashnaJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3201,7 +3216,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3626,6 +3641,21 @@ final class ChartRequest {
   /// Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
   final String? matchingJson;
 
+  /// Every chart read as a prashna, the chart of the moment a question
+  /// was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
+  /// a JSON object, every member optional: `question` (`house`, the
+  /// matter's house 1 to 12, which the verdict's I.3 clauses and the
+  /// Tajika links read; `number`, the querent's 1 to 108, read only by
+  /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
+  /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
+  /// default). A prashna reads the seven's Shadbala, so asking for one
+  /// asks for the `shadbala` sections too. Each chart's reading comes
+  /// back in the `prashna` section. Null for none, which costs nothing
+  /// (`03-design/prashna.md`). Refusals are named from the record every
+  /// binding calls `prashna`, as `prashna.question.house`.
+  /// Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
+  final String? prashnaJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3731,6 +3761,9 @@ final class ChartRequest {
     raw.matchingJson = matchingJson == null
         ? ffi.nullptr
         : matchingJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.prashnaJson = prashnaJson == null
+        ? ffi.nullptr
+        : prashnaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3822,6 +3855,9 @@ final class ChartRequest {
         matchingJson: raw.matchingJson == ffi.nullptr
             ? null
             : raw.matchingJson.cast<pkg_ffi.Utf8>().toDartString(),
+        prashnaJson: raw.prashnaJson == ffi.nullptr
+            ? null
+            : raw.prashnaJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

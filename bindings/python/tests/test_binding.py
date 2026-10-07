@@ -1403,6 +1403,40 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=births[0], sade_sati=bad, **at)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_prashna(self) -> None:
+        """A prashna crosses whole, its keys made members and its links a
+        year's matter, Shadbala asked for on the caller's behalf, and a bad
+        house refused by its record's name (`03-design/prashna.md`)."""
+        from teistro import PrashnaLinks, Rashi, TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).prashna)
+            plain = ctx.chart.found(instant=instant, prashna={}, **at).prashna
+            assert plain is not None
+            self.assertIsNone(plain.links)
+            self.assertIsNone(plain.score)
+            self.assertEqual(plain.rules["mook"], "SHATPANCHASHIKA")
+            self.assertIn(plain.verdict.outcome, ("SUCCEEDS", "WITH_DIFFICULTY", "FAILS"))
+            read = ctx.chart.found(
+                instant=instant,
+                prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE", "mook": "BASELINE"}},
+                **at,
+            ).prashna
+            assert read is not None and read.links is not None and read.score is not None
+            self.assertIsInstance(read.timing.graha, Graha)
+            self.assertIsInstance(read.mook.graha, Graha)
+            self.assertEqual(read.number_sign, Rashi.TAURUS)
+            self.assertIsInstance(read.links, PrashnaLinks)
+            self.assertEqual(read.links.house, 7)
+            self.assertIsInstance(read.links.holds(YearYoga.ITHASALA), bool)
+            self.assertEqual(sum(factor.points for factor in read.score.factors), read.score.points)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
+            self.assertEqual(refused.exception.field, "prashna.question.house")
+
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each
         planet, a horary number's lagna is the exact start of its sub while

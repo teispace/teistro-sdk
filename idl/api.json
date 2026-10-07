@@ -12454,6 +12454,21 @@
             "example": "{\"partner\":{\"instant\":2447892.5,\"place\":{\"latitude\":27.7172,\"longitude\":85.324,\"altitude\":1400}},\"partnerRole\":\"BRIDE\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "prashna_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart read as a prashna, the chart of the moment a question\nwas asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as\na JSON object, every member optional: `question` (`house`, the\nmatter's house 1 to 12, which the verdict's I.3 clauses and the\nTajika links read; `number`, the querent's 1 to 108, read only by\nthe baseline engine's unsourced rule, C340) and `rules` (`pisces`,\n`timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by\ndefault). A prashna reads the seven's Shadbala, so asking for one\nasks for the `shadbala` sections too. Each chart's reading comes\nback in the `prashna` section. Null for none, which costs nothing\n(`03-design/prashna.md`). Refusals are named from the record every\nbinding calls `prashna`, as `prashna.question.house`.",
+          "meta": {
+            "example": "{\"question\":{\"house\":7},\"rules\":{\"mook\":\"MOON_HOUSE\"}}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -21213,6 +21228,13 @@
           "id": 119,
           "name": "avakahada_syllables",
           "doc": "UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 120,
+          "name": "prashna",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, verdict, change, timing, mook, links, moon, score, numberSign}` (`03-design/prashna.md`). `verdict` is `{clauses, outcome}`, each clause `{kind, graha, favour}` naming its verse by `kind`, and `outcome` `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` (*Shatpanchashika* I.4, C337). `change` is `STAYS` or `CHANGES`. `timing` is `{rule, graha, tie, count, multiplier, amount, unit, between}`, `amount` null where the rule gives none. `mook` is `{rule, graha, tie, house, person, thought}`, `person` null but under `SHATPANCHASHIKA`. `links` is the Tajika yogas between the lagna lord and the asked house's lord, as a year's `matters` carry them, null when no house was asked. `moon` is `{rules, clauses}`, each clause a key of the Samjna Tantra vv. 73-74 (C352). `score` is the baseline engine's `{points, answer, factors, void, applyingTo}`, null unless `rules.score` is `BASELINE`; `numberSign` the sign of the querent's number, null unless one was given. Empty when `prashna_json` asked for none.",
           "kind": "bytes",
           "fields": []
         }

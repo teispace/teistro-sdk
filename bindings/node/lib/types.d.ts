@@ -1162,6 +1162,23 @@ export interface ChartRequest {
    * @nullable
    */
   readonly matchingJson?: string;
+  /**
+   * Every chart read as a prashna, the chart of the moment a question
+   * was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
+   * a JSON object, every member optional: `question` (`house`, the
+   * matter's house 1 to 12, which the verdict's I.3 clauses and the
+   * Tajika links read; `number`, the querent's 1 to 108, read only by
+   * the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
+   * `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
+   * default). A prashna reads the seven's Shadbala, so asking for one
+   * asks for the `shadbala` sections too. Each chart's reading comes
+   * back in the `prashna` section. Null for none, which costs nothing
+   * (`03-design/prashna.md`). Refusals are named from the record every
+   * binding calls `prashna`, as `prashna.question.house`.
+   * @example {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}
+   * @nullable
+   */
+  readonly prashnaJson?: string;
 }
 
 /**

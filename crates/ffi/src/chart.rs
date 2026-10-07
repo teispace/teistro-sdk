@@ -1798,6 +1798,20 @@ pub struct TsChartRequest {
     /// binding calls `matching`, as `matching.partnerRole`.
     /// `api: nullable example={"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}`
     pub matching_json: *const c_char,
+    /// Every chart read as a prashna, the chart of the moment a question
+    /// was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as
+    /// a JSON object, every member optional: `question` (`house`, the
+    /// matter's house 1 to 12, which the verdict's I.3 clauses and the
+    /// Tajika links read; `number`, the querent's 1 to 108, read only by
+    /// the baseline engine's unsourced rule, C340) and `rules` (`pisces`,
+    /// `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by
+    /// default). A prashna reads the seven's Shadbala, so asking for one
+    /// asks for the `shadbala` sections too. Each chart's reading comes
+    /// back in the `prashna` section. Null for none, which costs nothing
+    /// (`03-design/prashna.md`). Refusals are named from the record every
+    /// binding calls `prashna`, as `prashna.question.house`.
+    /// `api: nullable example={"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}`
+    pub prashna_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -7330,10 +7344,32 @@ pub struct Composed<'a> {
     /// Every chart matched with the record's partner, in the batch's order
     /// (`matching.md`); empty when none was asked for.
     pub matchings: &'a [teistro::Matched],
+    /// Every chart read as a prashna, as canonical JSON (`prashna.md`);
+    /// empty when none was asked for.
+    pub prashna: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
     pub hashes: &'a [teistro::Hash],
+}
+
+impl Composed<'_> {
+    /// Writes the sections the composers answered as text, each as it
+    /// came: the drawings, the rules, the plans, KP and prashna. The
+    /// writer takes sections in any order, so these need not sit among
+    /// the columns they follow in the schema.
+    fn write_texts(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        for (name, text) in [
+            ("svgs", self.svgs),
+            ("rules", self.rules),
+            ("plans", self.plans),
+            ("kp", self.kp),
+            ("prashna", self.prashna),
+        ] {
+            writer.bytes(name, text.as_bytes())?;
+        }
+        Ok(())
+    }
 }
 
 /// counts saying so.
@@ -7363,15 +7399,11 @@ pub fn encode(
     registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
     let Composed {
-        svgs,
-        rules,
-        plans,
         praveshas,
         gochar,
         gochar_instants,
         hits,
         sade_sati,
-        kp,
         hashes,
         ..
     } = composed;
@@ -7434,9 +7466,7 @@ pub fn encode(
         by.bhavas.write(&mut writer)?;
         by.states.write(&mut writer)?;
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
-        writer.bytes("svgs", svgs.as_bytes())?;
-        writer.bytes("rules", rules.as_bytes())?;
-        writer.bytes("plans", plans.as_bytes())?;
+        composed.write_texts(&mut writer)?;
         by.years.write(&mut writer)?;
         by.dashas.write(&mut writer)?;
         by.ashtakavarga.write(&mut writer)?;
@@ -7449,7 +7479,6 @@ pub fn encode(
         by.jaimini.write(&mut writer)?;
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
-        writer.bytes("kp", kp.as_bytes())?;
         hellenistic.write(&mut writer)?;
         progressions.write(&mut writer)?;
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
@@ -8432,6 +8461,24 @@ unsafe fn kp_request_of(
     }))
 }
 
+/// Every chart read as a prashna, as the canonical JSON the `prashna`
+/// section carries: an array with one reading a chart, or nothing at all
+/// when none was asked for.
+fn prashna_json(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::PrashnaRequest>,
+) -> Result<String, Error> {
+    let Some(asked) = asked else {
+        return Ok(String::new());
+    };
+    let readings = documents
+        .iter()
+        .map(|document| sdk.chart().prashna(document, asked))
+        .collect::<Result<Vec<_>, Error>>()?;
+    Ok(teistro_core::envelope::canonical_json(&readings))
+}
+
 /// Every chart's KP reading as the canonical JSON the `kp` section carries:
 /// an array with one reading a chart, or nothing at all when none was asked
 /// for, as `drawings` is.
@@ -9091,9 +9138,26 @@ struct AskedRecords {
     western_houses: Option<teistro::HouseRequest>,
     harmonic: Option<teistro::HarmonicRequest>,
     matching: Option<teistro::PartnerMatching>,
+    prashna: Option<teistro::PrashnaRequest>,
 }
 
 impl AskedRecords {
+    /// The chart request with what these records need of the charts
+    /// themselves: the lots a chart reports are the lots its time lords
+    /// release from, so one `lots` record sets both; and a prashna weighs
+    /// the seven by their Shadbala, so one `prashna` record asks for it.
+    fn widen(&self, request: ChartRequest) -> ChartRequest {
+        let request = match self.lots {
+            Some(rules) => request.with_lot_rules(rules),
+            None => request,
+        };
+        if self.prashna.is_some() {
+            request.with_shadbala()
+        } else {
+            request
+        }
+    }
+
     /// Every record `asked` carries; `clock` is the request's own, which a
     /// KP record naming none takes.
     ///
@@ -9145,6 +9209,9 @@ impl AskedRecords {
                     .transpose()?,
                 matching: optional_text(asked.matching_json, "matching_json")?
                     .map(teistro::PartnerMatching::from_json)
+                    .transpose()?,
+                prashna: optional_text(asked.prashna_json, "prashna_json")?
+                    .map(teistro::PrashnaRequest::from_json)
                     .transpose()?,
             })
             .and_then(AskedRecords::one_table)
@@ -9297,12 +9364,7 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: the entry point's contract — each record null, or a
         // NUL-terminated string.
         let records = unsafe { AskedRecords::of(&asked, clock) }?;
-        // The lots a chart reports are the lots its time lords release
-        // from, so one `lots` record sets both.
-        let request = match records.lots {
-            Some(rules) => request.with_lot_rules(rules),
-            None => request,
-        };
+        let request = records.widen(request);
         let ReadCharts {
             founded,
             hashes,
@@ -9348,6 +9410,7 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let western = WesternTables::of(ctx.sdk(), &founded.value, &records, clock)?;
         let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
+        let prashna = prashna_json(ctx.sdk(), &founded.value, records.prashna.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -9382,6 +9445,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 western_houses: &western.houses,
                 harmonics: &western.harmonics,
                 matchings: &matchings,
+                prashna: &prashna,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

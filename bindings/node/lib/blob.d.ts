@@ -5421,6 +5421,10 @@ export interface Charts {
    * UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.
    */
   readonly avakahadaSyllables: string;
+  /**
+   * UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, verdict, change, timing, mook, links, moon, score, numberSign}` (`03-design/prashna.md`). `verdict` is `{clauses, outcome}`, each clause `{kind, graha, favour}` naming its verse by `kind`, and `outcome` `SUCCEEDS`, `WITH_DIFFICULTY` or `FAILS` (*Shatpanchashika* I.4, C337). `change` is `STAYS` or `CHANGES`. `timing` is `{rule, graha, tie, count, multiplier, amount, unit, between}`, `amount` null where the rule gives none. `mook` is `{rule, graha, tie, house, person, thought}`, `person` null but under `SHATPANCHASHIKA`. `links` is the Tajika yogas between the lagna lord and the asked house's lord, as a year's `matters` carry them, null when no house was asked. `moon` is `{rules, clauses}`, each clause a key of the Samjna Tantra vv. 73-74 (C352). `score` is the baseline engine's `{points, answer, factors, void, applyingTo}`, null unless `rules.score` is `BASELINE`; `numberSign` the sign of the querent's number, null unless one was given. Empty when `prashna_json` asked for none.
+   */
+  readonly prashna: string;
 }
 
 /**
