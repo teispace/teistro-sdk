@@ -2242,6 +2242,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   baseline engine's lagna-modality rule as `BASELINE`), and whom an
   unspoken question is about (VII.7–8, or the Moon's house). **Numbers:**
   none move; a new module.
+- **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
+  `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
+  (the 1923 print) prescribe for each of the 81 antardaśās: the verses,
+  the page, the condition as the predicate the verse states, and the
+  rites keyed by the verse's words. Venus/Moon and Venus/Mars carry no
+  rite because none is printed. Jupiter/Moon's condition differs between
+  the 1899 and 1923 prints and stays open. **Numbers:** none move; a new
+  table.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's

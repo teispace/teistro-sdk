@@ -1,8 +1,8 @@
 # Remedies: functional nature, graha-śānti and the subjects of a remedy (the `remedies` module)
 
 Status: `built` for step 1 (functional nature, `crates/remedies`) and
-step 2's per-graha table (graha-śānti), 2026-10-07; the antardaśā
-śāntis and steps 3 and 4 are designed below and not built.
+step 2 (graha-śānti and the antardaśā śāntis), 2026-10-07; steps 3 and
+4 are designed below and not built.
 
 Phase 8 lists remedies after matching. The baseline engine reaches them
 from a controller, and 39 interpretation readings wait on them to name
@@ -129,10 +129,20 @@ read (C333).
    - **Commentary stays out of the values.** The Mitākṣarā's yellow
      cloth and grey horse, and the 1952 Hindi's cow with her calf, are
      notes on this page, not values.
+   - **The antardaśā śāntis** (built, C348 to C350). `dasha_shanti(md,
+     ad)` gives what BPHS (the 1923 print) chs. 37–45 print for each of
+     the 81 antardaśās: the verses, the page, the condition and the
+     rites. The table holds:
+     - 53 conditions on the antardaśā lord ruling the 2nd or 7th, 4 on
+       the 7th alone, 10 on a placement in the 2nd or 7th, and 13 of
+       their own;
+     - 79 rows with a rite. Venus/Moon prints neither a condition nor a
+       rite, and Venus/Mars prints a condition and no rite.
+
+     A condition is the predicate the verse states. Whether it holds
+     for a chart is step 3's question. Jupiter/Moon's "lord of the 2nd
+     and 6th" differs between the prints and stays open (C349).
    - **Still to come:**
-     - the antardaśā śāntis of BPHS (1923) chs. 37–45, 79 rows, each
-       conditioned on a lordship or a placement, become rule records
-       once their conditions are transcribed;
      - the baseline engine's bījas, grains, fingers, carats and ring
        metals become a `BASELINE` pack, marked unsourced.
 3. **Whom a remedy is for.** BPHS 84.26 and *Yājñavalkya* I.307 name the
