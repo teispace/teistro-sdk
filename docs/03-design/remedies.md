@@ -190,6 +190,23 @@ read (C333).
 The 39 waiting readings become sayable at step 3, when each has a
 subject graha.
 
+## Through the façade and the bindings
+
+`sdk.chart().remedies(&document, &RemedyRequest)` reads every step off
+one chart: the lagna's functional natures, the subjects with their
+reasons, each subject's graha-śānti, and the ishṭa-devatā in both charts.
+`RemedyRequest` is `{at, rules}`. `rules` holds `functional`, `shanti`
+and `devata`, each the texts' own when left out. `at` is the Julian day
+whose running Vimśottarī mahādaśā and antardaśā name subjects and bring
+the antardaśā's printed śānti. It is Vimśottarī because chs. 37–45
+prescribe for its antardaśās. Without `at` no daśā is read, since the
+kernel reads no clock. With it, a document carrying no Vimśottarī daśā
+is refused by `dashas`.
+
+The bindings follow prashna's pattern: a `remedies_json` member of the
+chart request, which asks for the Vimśottarī daśā itself, and a
+`remedies` section of canonical JSON, one answer a chart.
+
 ## The acceptance tests
 
 Held now, in `crates/remedies/src/tests.rs`:

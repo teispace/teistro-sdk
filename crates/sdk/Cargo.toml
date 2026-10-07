@@ -187,6 +187,10 @@ name = "ishta_devata"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "remedies"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 

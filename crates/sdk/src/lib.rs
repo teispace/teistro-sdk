@@ -71,6 +71,7 @@ mod plan_request;
 mod prashna_request;
 mod progressed;
 mod progressions_request;
+mod remedy_request;
 mod returns;
 mod rule_request;
 mod rules_bridge;
@@ -212,6 +213,7 @@ pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 pub use crate::prashna_request::PrashnaRequest;
+pub use crate::remedy_request::RemedyRequest;
 // The essential dignities of the Hellenistic and later Western tradition:
 // the terms, the triplicities, the faces and the sect that chooses among
 // them (`03-design/essential-dignities.md`).
