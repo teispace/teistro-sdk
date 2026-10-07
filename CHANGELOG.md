@@ -2264,6 +2264,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   transcribed as the engine runs: five dignity factors it names but never
   sets are left out. `Question::about(house)` is new. **Numbers:** none
   under the defaults.
+- **Prashna through the façade** (`prashna.md` step 4).
+  `sdk.chart().prashna(&document, &PrashnaRequest)` reads the chart cast
+  for the moment of the question, and `prashna_sky` says what it read.
+  A document without its Shadbala is refused, naming `shadbala`, and a
+  refusal of the question is named under `prashna.question`.
+  `PrashnaRequest::from_json` reads the record a binding will send.
+  **Numbers:** none move.
 - **Remedies: the antardaśā śāntis** (`remedies.md`, C348 to C350).
   `teistro::remedies::dasha_shanti(md, ad)` gives what BPHS chs. 37–45
   (the 1923 print) prescribe for each of the 81 antardaśās: the verses,

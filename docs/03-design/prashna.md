@@ -273,8 +273,15 @@ Each names its field under `prashna`.
    scores never carry those flags, so none of the five ever fires. They
    are left out, so a migrating consumer gets the answers the baseline
    actually gave.
-4. **The façade and every binding**, over the JSON-answer boundary that
-   numerology uses.
+4. **The façade and every binding.** The Rust façade is built:
+   `sdk.chart().prashna(&document, &PrashnaRequest)` reads the chart the
+   caller cast for the moment, its lagna and navāṁśa, the nine grahas'
+   motion and combustion under the context's settings, and the seven's
+   Shadbala, refusing a document without it (`shadbala`); `prashna_sky`
+   answers what it read. `PrashnaRequest::from_json` takes the record a
+   binding will send, refusals named under `prashna`. The bindings follow
+   KP's pattern: a `prashna_json` member of the chart request and a
+   `prashna` section of canonical JSON, one reading a chart.
 
 ## Acceptance
 

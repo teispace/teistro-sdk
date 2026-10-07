@@ -78,7 +78,7 @@ impl KshinaRule {
 /// The choices the verses leave to a reader.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct MoonRules {
     /// Which span of the waning Moon is *kṣīṇa*.
     pub kshina: KshinaRule,
