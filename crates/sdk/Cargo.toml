@@ -25,6 +25,7 @@ teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }
 teistro-hellenistic = { path = "../hellenistic" }
 teistro-matching = { path = "../matching" }
+teistro-numerology = { path = "../numerology" }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret" }
 teistro-intl = { path = "../intl", default-features = false }
