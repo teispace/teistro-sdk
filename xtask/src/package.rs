@@ -119,15 +119,32 @@ fn shipped() -> String {
 /// The target is always named, even when it is the host, so that the
 /// output directory is the same shape on every runner and a cross-built
 /// artefact is never mistaken for a native one.
+///
+/// A glibc row links with `cargo zigbuild` against its floor's glibc
+/// (`x86_64-unknown-linux-gnu.2.28`) rather than the runner's, still on
+/// its own runner, so the build is native and only the symbol versions it
+/// asks for change; `floor::check` then reads them back. The output
+/// directory drops the suffix, so it is the same as a plain build's.
 fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
+    let (subcommand, target, hint) = match platform.glibc_floor {
+        Some((major, minor)) => (
+            "zigbuild",
+            format!("{}.{major}.{minor}", platform.triple),
+            format!(
+                " (a glibc row links against GLIBC_{major}.{minor} with cargo-zigbuild: \
+                 `pip install -r {ZIGBUILD_REQUIREMENTS}`)"
+            ),
+        ),
+        None => ("build", platform.triple.to_string(), String::new()),
+    };
     step(
         Command::new(cargo())
             .args([
-                "build",
+                subcommand,
                 "--release",
                 "--quiet",
                 "--target",
-                platform.triple,
+                &target,
                 "-p",
                 "teistro-ffi",
                 "-p",
@@ -136,12 +153,16 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
             .current_dir(root),
         "",
         &format!(
-            "the library and the addon did not build for {}",
+            "the library and the addon did not build for {}{hint}",
             platform.triple
         ),
     )?;
     Ok(root.join("target").join(platform.triple).join("release"))
 }
+
+/// The pinned cargo-zigbuild and zig, which the workflows install from
+/// the same file a failing local build names.
+const ZIGBUILD_REQUIREMENTS: &str = "xtask/zigbuild-requirements.txt";
 
 /// Writes everything one platform ships, and its manifest.
 fn stage_platform(

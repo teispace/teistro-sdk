@@ -94,6 +94,14 @@ jobs:
         with:
           node-version: "22"
       - uses: dart-lang/setup-dart@v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # A Linux row links against its glibc floor, not the runner's, and
+      # `package` refuses a file that asks for more (`xtask/src/floor.rs`).
+      - name: The linker that holds a Linux build to its glibc floor
+        if: runner.os == 'Linux'
+        run: pip install -r xtask/zigbuild-requirements.txt
       - name: What this platform ships
         run: cargo xtask package ${{ matrix.platform }}
       - name: The packages installed into throwaway projects and run
