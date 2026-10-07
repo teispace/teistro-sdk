@@ -91,6 +91,15 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
             number(pindayu),
         );
         put(report, &format!("chart-{index}-rules-rays"), number(rays));
+        let jeevasarman = reading
+            .longevity
+            .as_ref()
+            .map_or(0.0, |longevity| longevity.ayurdaya.jeevasarman.years);
+        put(
+            report,
+            &format!("chart-{index}-rules-jeevasarman"),
+            number(jeevasarman),
+        );
         // The span v. 33 names, by the key every binding reads, or nothing.
         let span = reading
             .longevity

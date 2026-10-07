@@ -998,6 +998,8 @@ class AnEngine(WithLibrary):
             self.assertIsInstance(held["rule"], str)
             self.assertIs(held["result"]["present"], True)
         self.assertIsInstance(answered["longevity"]["ayurdaya"]["pindayu"]["years"], float)
+        # Jeevasarman's span, worked as Pindayu (Jataka Parijata ch. 5 v. 17).
+        self.assertEqual(answered["longevity"]["ayurdaya"]["jeevasarman"]["method"], "jeevasarman")
         self.assertEqual(answered["longevity"]["ayurdaya"]["rules"]["enmity"], "natural")
         # The spans read as *Jataka Parijata* reads them, and a choice
         # nothing reads refused.

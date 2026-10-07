@@ -582,6 +582,7 @@ for (const chart of charts) {
   });
   put(`chart-${i}-rules-present`, chart.rules.present.map((held) => held.rule).join(','));
   put(`chart-${i}-rules-pindayu`, chart.rules.longevity.ayurdaya.pindayu.years);
+  put(`chart-${i}-rules-jeevasarman`, chart.rules.longevity.ayurdaya.jeevasarman.years);
   put(`chart-${i}-rules-rays`, chart.rules.longevity.rasmi.total);
   put(`chart-${i}-rules-span`, chart.rules.longevity.choice.ayus ?? '');
   put(`chart-${i}-rules-dasayus`, chart.rules.longevity.dasayus?.years ?? 0);

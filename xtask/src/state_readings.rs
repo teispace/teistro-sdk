@@ -244,7 +244,7 @@ const VOCABULARIES: [Vocabulary; 10] = [
     vocabulary(
         "ayurdaya-method",
         "`longevity::Method`",
-        3,
+        4,
         3,
         "nothing: every key is the SDK's own spelling",
     ),

@@ -2157,6 +2157,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   beside `rules`. Sections 113 and 114 carry the ten with `TsDhinamRule`
   and `TsRajju` held to serde, and Node, Python and Dart read
   `chart.porutham`, the five runners agreeing on every value.
+- **Jeevasarman's span** (`ayurdaya-spans.md`, C316). The three spans
+  gain a fourth, `ayurdaya.jeevasarman`, *Jataka Parijata* ch. 5 v. 17:
+  Pindayu's method with a seventh of 120 years and 5 days for every
+  graha, held to the note's 17 years, 1 month, 22 days, 8 ghatikas and
+  34.3 vighatikas. `longevity::Method` gains `Jeevasarman`; parity
+  compares its years. **Numbers:** none; a new span.
 - **Each span in solar years** (`ayurdaya-spans.md`, C315). Each of
   v. 33's candidates carries `solar_years` beside `years`: *Jataka
   Parijata* ch. 5 v. 34's 360 over 365, and Samudaya's own 324 over 365
