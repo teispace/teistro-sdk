@@ -9,8 +9,8 @@ Status: `built`, 2026-09-06. The research is in
 |---|---|---|
 | `fast-check` | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate the Rust toolchain alone can run (`check-docs`, `check-fixtures`, `check-catalogue`, `check-calendars`, `check-time`, `check-accuracy`, `check-intl`, `check-ffi`, `check-lints`); on a pull request, that every commit is signed off |
 | `hash-matrix` | nightly and on demand | `cargo xtask hashes` on Linux x86-64, Linux aarch64 and macOS aarch64; the two Linux runs compared value by value (a difference fails the job) and macOS reported against them (a difference is published, not failed) |
-| `verify` | nightly, on demand, and inside every release | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on all five platforms |
-| `release` | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published to npm, pub.dev and the release page |
+| `verify` | nightly, on demand, and inside every release | the bindings' own gates (`check-c`, `check-node`, `check-dart`, `check-parity`) and `check-package` on every platform |
+| `release` | a `v*` tag, or a dispatch that publishes nothing | every platform built, merged, staged and published to npm, pub.dev and the release page |
 | `docs` | every push to `main`, a pull request that touches the site, a tag | the site builds and renders every generated reference page; a tag publishes it to GitHub Pages |
 | `benchmarks` | every pull request, on demand | `cargo xtask bench` under callgrind, compared with the base commit measured in the same job: above 3% fails, above 1% is reported |
 
@@ -41,7 +41,7 @@ that skip a failure, apart from the three skips excused by design
 | page | contents | state |
 |---|---|---|
 | [`01-pipelines.md`](01-pipelines.md) | the four workflows, their triggers and the cost policy | built |
-| [`02-build-matrix.md`](02-build-matrix.md) | the five platforms, what each produces, and how the packages are proved | built |
+| [`02-build-matrix.md`](02-build-matrix.md) | the platforms, what each produces, and how the packages are proved | built |
 | [`03-release-process.md`](03-release-process.md) | one version, cutting a release, what the tag starts, provenance, what a consumer installs | built |
 | `04-local-verify.md` | a `cargo xtask verify` that runs the whole matrix locally, and the Linux container that reproduces it | planned |
 | [`05-docs-deploy.md`](05-docs-deploy.md) | what the site generates, the three gates that hold it, and how it is published | built |

@@ -5,16 +5,16 @@ Status: `built`, 2026-09-06.
 Six workflows, and one rule that decides which of them a change waits
 for: **the fast check runs on every push and needs the Rust toolchain and
 nothing else** (ADR-0014). Everything that needs a C compiler, a Node, a
-Dart, or five machines runs on a schedule or before a release, because a
+Dart, or a machine for each platform runs on a schedule or before a release, because a
 contributor should see red within minutes and a nightly that is always
 red teaches people to ignore it.
 
 | workflow | when | what it proves |
 |---|---|---|
 | [`fast-check`](../../.github/workflows/fast-check.yml) | every push to `main`, every pull request | format, lint, the dependency policy, the workspace's tests, and every gate one toolchain can run; on a pull request, that every commit is signed off |
-| [`verify`](../../.github/workflows/verify.yml) | nightly, on demand, and inside every release | the bindings on five platforms: the C header against a C compiler, the Node and Dart bindings against the real library, the two against each other, and the packages installed into throwaway projects and run |
+| [`verify`](../../.github/workflows/verify.yml) | nightly, on demand, and inside every release | the bindings on every platform: the C header against a C compiler, the Node and Dart bindings against the real library, the two against each other, and the packages installed into throwaway projects and run |
 | [`hash-matrix`](../../.github/workflows/hash-matrix.yml) | nightly, on demand | the same source computes the same numbers on another architecture, value by value |
-| [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | five platforms built, merged, staged and published |
+| [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | every platform built, merged, staged and published |
 | [`docs`](../../.github/workflows/docs.yml) | every push to `main`, a pull request touching the site, a tag | the site builds and renders every generated reference page; a tag publishes it |
 | [`benchmarks`](../../.github/workflows/benchmarks.yml) | every pull request, on demand | the instruction count of every section of the fixed scenario, against the base commit measured in the same job |
 
@@ -110,6 +110,6 @@ credentials, and nothing else.
 
 CI on a public repository costs nothing in money and something in
 patience, which is the budget being spent. The fast check is minutes; the
-nightly matrix is five machines and runs while nobody is waiting; the
+nightly matrix is a machine a platform and runs while nobody is waiting; the
 release matrix runs when a tag is pushed. Nothing runs the full matrix on
 a pull request, and nothing publishes without a tag.

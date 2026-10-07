@@ -2406,6 +2406,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   antardaśā's printed śānti comes with each of its conditions judged by
   `holds`, or left open (`None`) where the verse does not state a
   predicate. **Numbers:** none move.
+- **Windows on Arm ships** (`06-cicd/02-build-matrix.md`). `win32-arm64`
+  (`aarch64-pc-windows-msvc`) is a row of the platform table, built, tested
+  and packaged natively on GitHub's `windows-11-arm` image like every other
+  row: its library, its C bundle and `@teistro/sdk-win32-arm64`, which
+  `@teistro/sdk` now lists. The Dart and Python installers already named
+  the platform from the host. **Numbers:** none move.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's

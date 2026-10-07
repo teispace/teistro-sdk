@@ -17,6 +17,7 @@ is adding a row there and repeating it in the two workflow matrices.
 | `darwin-arm64` | `aarch64-apple-darwin` | `macos-latest` | `darwin` / `arm64` |
 | `darwin-x64` | `x86_64-apple-darwin` | `macos-15-intel` | `darwin` / `x64` |
 | `win32-x64` | `x86_64-pc-windows-msvc` | `windows-latest` | `win32` / `x64` |
+| `win32-arm64` | `aarch64-pc-windows-msvc` | `windows-11-arm` | `win32` / `arm64` |
 
 The short name is Node's `process.platform` and `process.arch`, and Dart's
 installer builds the same string from `Abi.current()`. One name means one
@@ -78,7 +79,7 @@ arrived in.
 - `manifest.json`, every platform's artefacts and digests;
 - `checksums.txt`, in the format `sha256sum -c` reads;
 - `npm/@teistro/sdk/`, the package a consumer installs, which depends on
-  all five platform packages as `optionalDependencies` and carries no
+  every platform package as `optionalDependencies` and carries no
   addon of its own;
 - `pub/teistro/`, the Dart package, with `lib/src/prebuilt.dart` rewritten
   from the merged manifest so that its installer checks a download against
