@@ -158,10 +158,14 @@ fixed = months, dual = years, counted from the lagna lord's house
   that definition (C341).
 - **Tajika's *śūnyamārga*** (Samjna Tantra vv. 55–56, n60) is a
   different fact: a graha with no dignity and **no aspect received**.
-- **vv. 72–74** (n66) count the Moon weak in a query as well as at birth
-  when she is *śūnyamārga*, waning, at the end of a sign ("bhānte"; the
-  gloss reads the last navāṁśa), or hit by a hostile aspect of Mars in
-  the bright half or of Saturn in the dark.
+- **vv. 73–74** (n66) count the Moon weak in a query as well as at birth
+  when she is 12th from the Sun, in Scorpio's first half or Libra's last
+  half (the gloss names the halves), unseen by her sign's lord or by every
+  graha, *śūnyamārga*, waning (the gloss: from the dark 8th to the bright
+  8th; "some" say the dark 11th to the new Moon), at the end of a sign
+  ("bhānte"; the gloss reads the last navāṁśa), or under the hungry aspect,
+  from the 1st, 4th, 7th or 10th, of Mars in the bright half or of Saturn
+  in the dark (C352).
 - Each ships as a fact of its own; none is an alias for another.
 
 ## The surface
@@ -245,9 +249,10 @@ Each names its field under `prashna`.
    the lagna lord and the lord of that house, with each graha's
    retrogression and combustion from `Placed`. The nakta example of
    vv. 18–19 passes as printed: Virgo rising, Mercury in Leo, Jupiter in
-   Pisces, the Moon carrying the light. Still to come:
-   - the Moon's Tajika facts (*śūnyamārga*, *bhānte*);
-   - the akṣara-lagna and the six points.
+   Pisces, the Moon carrying the light. `Prashna::moon` reports each
+   clause of the Samjna Tantra vv. 73–74 that holds, read by
+   `crates/tajika`'s `moon_weakness` with the empty road of vv. 55–56
+   (C352). Still to come: the akṣara-lagna and the six points.
 3. **The `BASELINE` values**, transcribed from the baseline engine's
    source, each test naming the rank-1 rule it departs from.
 4. **The façade and every binding**, over the JSON-answer boundary that
