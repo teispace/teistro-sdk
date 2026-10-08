@@ -2307,8 +2307,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   (`aarch64-pc-windows-msvc`) is a row of the platform table, built, tested
   and packaged natively on GitHub's `windows-11-arm` image like every other
   row: its library, its C bundle and `@teistro/sdk-win32-arm64`, which
-  `@teistro/sdk` now lists. The Dart and Python installers already named
-  the platform from the host. **Numbers:** none move.
+  `@teistro/sdk` now lists, and a `win_arm64` Python wheel. The Dart
+  installer and `teistro-install` already named the platform from the
+  host. The C gates drive clang there, because the image's MinGW gcc
+  links x64 only. **Numbers:** none move.
 - **A name checked against its birth pada** (`matching.md`, C334).
   `teistro::matching::name_check(name, rules, nakshatra, pada)` reads a
   name's first syllable in the śatapada cakra beside the pada's
