@@ -151,7 +151,7 @@ export function altitude(value) {
 }
 
 /** Every Kind by name. */
-export const Kind = Object.freeze({
+export const Kind = /* @__PURE__ */ Object.freeze({
   Graha: 'graha',
   Rashi: 'rashi',
   Nakshatra: 'nakshatra',
@@ -223,7 +223,7 @@ export const Kind = Object.freeze({
  * Every Kind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const KindById = new Map([
+export const KindById = /* @__PURE__ */ new Map([
   [1, 'graha'],
   [2, 'rashi'],
   [3, 'nakshatra'],
@@ -292,7 +292,7 @@ export const KindById = new Map([
 ]);
 
 /** Every Graha by name. */
-export const Graha = Object.freeze({
+export const Graha = /* @__PURE__ */ Object.freeze({
   Sun: 'graha.SUN',
   Moon: 'graha.MOON',
   Mars: 'graha.MARS',
@@ -311,7 +311,7 @@ export const Graha = Object.freeze({
  * Every Graha by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GrahaById = new Map([
+export const GrahaById = /* @__PURE__ */ new Map([
   [0, 'graha.SUN'],
   [1, 'graha.MOON'],
   [2, 'graha.MARS'],
@@ -327,7 +327,7 @@ export const GrahaById = new Map([
 ]);
 
 /** Every Rashi by name. */
-export const Rashi = Object.freeze({
+export const Rashi = /* @__PURE__ */ Object.freeze({
   Aries: 'rashi.ARIES',
   Taurus: 'rashi.TAURUS',
   Gemini: 'rashi.GEMINI',
@@ -346,7 +346,7 @@ export const Rashi = Object.freeze({
  * Every Rashi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RashiById = new Map([
+export const RashiById = /* @__PURE__ */ new Map([
   [0, 'rashi.ARIES'],
   [1, 'rashi.TAURUS'],
   [2, 'rashi.GEMINI'],
@@ -362,7 +362,7 @@ export const RashiById = new Map([
 ]);
 
 /** Every Nakshatra by name. */
-export const Nakshatra = Object.freeze({
+export const Nakshatra = /* @__PURE__ */ Object.freeze({
   Ashwini: 'nakshatra.ASHWINI',
   Bharani: 'nakshatra.BHARANI',
   Krittika: 'nakshatra.KRITTIKA',
@@ -396,7 +396,7 @@ export const Nakshatra = Object.freeze({
  * Every Nakshatra by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NakshatraById = new Map([
+export const NakshatraById = /* @__PURE__ */ new Map([
   [0, 'nakshatra.ASHWINI'],
   [1, 'nakshatra.BHARANI'],
   [2, 'nakshatra.KRITTIKA'],
@@ -427,7 +427,7 @@ export const NakshatraById = new Map([
 ]);
 
 /** Every Tithi by name. */
-export const Tithi = Object.freeze({
+export const Tithi = /* @__PURE__ */ Object.freeze({
   ShuklaPratipada: 'tithi.SHUKLA_PRATIPADA',
   ShuklaDvitiya: 'tithi.SHUKLA_DVITIYA',
   ShuklaTritiya: 'tithi.SHUKLA_TRITIYA',
@@ -464,7 +464,7 @@ export const Tithi = Object.freeze({
  * Every Tithi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TithiById = new Map([
+export const TithiById = /* @__PURE__ */ new Map([
   [0, 'tithi.SHUKLA_PRATIPADA'],
   [1, 'tithi.SHUKLA_DVITIYA'],
   [2, 'tithi.SHUKLA_TRITIYA'],
@@ -498,7 +498,7 @@ export const TithiById = new Map([
 ]);
 
 /** Every Karana by name. */
-export const Karana = Object.freeze({
+export const Karana = /* @__PURE__ */ Object.freeze({
   Bava: 'karana.BAVA',
   Balava: 'karana.BALAVA',
   Kaulava: 'karana.KAULAVA',
@@ -516,7 +516,7 @@ export const Karana = Object.freeze({
  * Every Karana by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const KaranaById = new Map([
+export const KaranaById = /* @__PURE__ */ new Map([
   [0, 'karana.BAVA'],
   [1, 'karana.BALAVA'],
   [2, 'karana.KAULAVA'],
@@ -531,7 +531,7 @@ export const KaranaById = new Map([
 ]);
 
 /** Every Yoga by name. */
-export const Yoga = Object.freeze({
+export const Yoga = /* @__PURE__ */ Object.freeze({
   Vishkambha: 'yoga.VISHKAMBHA',
   Priti: 'yoga.PRITI',
   Ayushman: 'yoga.AYUSHMAN',
@@ -565,7 +565,7 @@ export const Yoga = Object.freeze({
  * Every Yoga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const YogaById = new Map([
+export const YogaById = /* @__PURE__ */ new Map([
   [0, 'yoga.VISHKAMBHA'],
   [1, 'yoga.PRITI'],
   [2, 'yoga.AYUSHMAN'],
@@ -596,7 +596,7 @@ export const YogaById = new Map([
 ]);
 
 /** Every Vara by name. */
-export const Vara = Object.freeze({
+export const Vara = /* @__PURE__ */ Object.freeze({
   Ravivara: 'vara.RAVIVARA',
   Somavara: 'vara.SOMAVARA',
   Mangalavara: 'vara.MANGALAVARA',
@@ -610,7 +610,7 @@ export const Vara = Object.freeze({
  * Every Vara by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VaraById = new Map([
+export const VaraById = /* @__PURE__ */ new Map([
   [0, 'vara.RAVIVARA'],
   [1, 'vara.SOMAVARA'],
   [2, 'vara.MANGALAVARA'],
@@ -621,7 +621,7 @@ export const VaraById = new Map([
 ]);
 
 /** Every Masa by name. */
-export const Masa = Object.freeze({
+export const Masa = /* @__PURE__ */ Object.freeze({
   Chaitra: 'masa.CHAITRA',
   Vaishakha: 'masa.VAISHAKHA',
   Jyeshtha: 'masa.JYESHTHA',
@@ -640,7 +640,7 @@ export const Masa = Object.freeze({
  * Every Masa by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MasaById = new Map([
+export const MasaById = /* @__PURE__ */ new Map([
   [0, 'masa.CHAITRA'],
   [1, 'masa.VAISHAKHA'],
   [2, 'masa.JYESHTHA'],
@@ -656,7 +656,7 @@ export const MasaById = new Map([
 ]);
 
 /** Every Ritu by name. */
-export const Ritu = Object.freeze({
+export const Ritu = /* @__PURE__ */ Object.freeze({
   Vasanta: 'ritu.VASANTA',
   Grishma: 'ritu.GRISHMA',
   Varsha: 'ritu.VARSHA',
@@ -669,7 +669,7 @@ export const Ritu = Object.freeze({
  * Every Ritu by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RituById = new Map([
+export const RituById = /* @__PURE__ */ new Map([
   [0, 'ritu.VASANTA'],
   [1, 'ritu.GRISHMA'],
   [2, 'ritu.VARSHA'],
@@ -679,7 +679,7 @@ export const RituById = new Map([
 ]);
 
 /** Every Ayana by name. */
-export const Ayana = Object.freeze({
+export const Ayana = /* @__PURE__ */ Object.freeze({
   Uttarayana: 'ayana.UTTARAYANA',
   Dakshinayana: 'ayana.DAKSHINAYANA',
 });
@@ -688,13 +688,13 @@ export const Ayana = Object.freeze({
  * Every Ayana by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AyanaById = new Map([
+export const AyanaById = /* @__PURE__ */ new Map([
   [0, 'ayana.UTTARAYANA'],
   [1, 'ayana.DAKSHINAYANA'],
 ]);
 
 /** Every Paksha by name. */
-export const Paksha = Object.freeze({
+export const Paksha = /* @__PURE__ */ Object.freeze({
   Shukla: 'paksha.SHUKLA',
   Krishna: 'paksha.KRISHNA',
 });
@@ -703,13 +703,13 @@ export const Paksha = Object.freeze({
  * Every Paksha by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PakshaById = new Map([
+export const PakshaById = /* @__PURE__ */ new Map([
   [0, 'paksha.SHUKLA'],
   [1, 'paksha.KRISHNA'],
 ]);
 
 /** Every Samvatsara by name. */
-export const Samvatsara = Object.freeze({
+export const Samvatsara = /* @__PURE__ */ Object.freeze({
   Prabhava: 'samvatsara.PRABHAVA',
   Vibhava: 'samvatsara.VIBHAVA',
   Shukla: 'samvatsara.SHUKLA',
@@ -776,7 +776,7 @@ export const Samvatsara = Object.freeze({
  * Every Samvatsara by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SamvatsaraById = new Map([
+export const SamvatsaraById = /* @__PURE__ */ new Map([
   [0, 'samvatsara.PRABHAVA'],
   [1, 'samvatsara.VIBHAVA'],
   [2, 'samvatsara.SHUKLA'],
@@ -840,7 +840,7 @@ export const SamvatsaraById = new Map([
 ]);
 
 /** Every Tatwa by name. */
-export const Tatwa = Object.freeze({
+export const Tatwa = /* @__PURE__ */ Object.freeze({
   Agni: 'tatwa.AGNI',
   Prithvi: 'tatwa.PRITHVI',
   Vayu: 'tatwa.VAYU',
@@ -852,7 +852,7 @@ export const Tatwa = Object.freeze({
  * Every Tatwa by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TatwaById = new Map([
+export const TatwaById = /* @__PURE__ */ new Map([
   [0, 'tatwa.AGNI'],
   [1, 'tatwa.PRITHVI'],
   [2, 'tatwa.VAYU'],
@@ -861,7 +861,7 @@ export const TatwaById = new Map([
 ]);
 
 /** Every Varna by name. */
-export const Varna = Object.freeze({
+export const Varna = /* @__PURE__ */ Object.freeze({
   Brahmin: 'varna.BRAHMIN',
   Kshatriya: 'varna.KSHATRIYA',
   Vaishya: 'varna.VAISHYA',
@@ -873,7 +873,7 @@ export const Varna = Object.freeze({
  * Every Varna by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VarnaById = new Map([
+export const VarnaById = /* @__PURE__ */ new Map([
   [0, 'varna.BRAHMIN'],
   [1, 'varna.KSHATRIYA'],
   [2, 'varna.VAISHYA'],
@@ -882,7 +882,7 @@ export const VarnaById = new Map([
 ]);
 
 /** Every Gana by name. */
-export const Gana = Object.freeze({
+export const Gana = /* @__PURE__ */ Object.freeze({
   Deva: 'gana.DEVA',
   Manushya: 'gana.MANUSHYA',
   Rakshasa: 'gana.RAKSHASA',
@@ -892,14 +892,14 @@ export const Gana = Object.freeze({
  * Every Gana by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GanaById = new Map([
+export const GanaById = /* @__PURE__ */ new Map([
   [0, 'gana.DEVA'],
   [1, 'gana.MANUSHYA'],
   [2, 'gana.RAKSHASA'],
 ]);
 
 /** Every Nadi by name. */
-export const Nadi = Object.freeze({
+export const Nadi = /* @__PURE__ */ Object.freeze({
   Aadi: 'nadi.AADI',
   Madhya: 'nadi.MADHYA',
   Antya: 'nadi.ANTYA',
@@ -909,14 +909,14 @@ export const Nadi = Object.freeze({
  * Every Nadi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NadiById = new Map([
+export const NadiById = /* @__PURE__ */ new Map([
   [0, 'nadi.AADI'],
   [1, 'nadi.MADHYA'],
   [2, 'nadi.ANTYA'],
 ]);
 
 /** Every Yoni by name. */
-export const Yoni = Object.freeze({
+export const Yoni = /* @__PURE__ */ Object.freeze({
   Horse: 'yoni.HORSE',
   Elephant: 'yoni.ELEPHANT',
   Goat: 'yoni.GOAT',
@@ -937,7 +937,7 @@ export const Yoni = Object.freeze({
  * Every Yoni by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const YoniById = new Map([
+export const YoniById = /* @__PURE__ */ new Map([
   [0, 'yoni.HORSE'],
   [1, 'yoni.ELEPHANT'],
   [2, 'yoni.GOAT'],
@@ -955,7 +955,7 @@ export const YoniById = new Map([
 ]);
 
 /** Every Deity by name. */
-export const Deity = Object.freeze({
+export const Deity = /* @__PURE__ */ Object.freeze({
   AshwiniKumara: 'deity.ASHWINI_KUMARA',
   Yama: 'deity.YAMA',
   Agni: 'deity.AGNI',
@@ -999,7 +999,7 @@ export const Deity = Object.freeze({
  * Every Deity by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DeityById = new Map([
+export const DeityById = /* @__PURE__ */ new Map([
   [0, 'deity.ASHWINI_KUMARA'],
   [1, 'deity.YAMA'],
   [2, 'deity.AGNI'],
@@ -1040,7 +1040,7 @@ export const DeityById = new Map([
 ]);
 
 /** Every Dignity by name. */
-export const Dignity = Object.freeze({
+export const Dignity = /* @__PURE__ */ Object.freeze({
   DeepExalted: 'dignity.DEEP_EXALTED',
   Exalted: 'dignity.EXALTED',
   Mooltrikona: 'dignity.MOOLTRIKONA',
@@ -1058,7 +1058,7 @@ export const Dignity = Object.freeze({
  * Every Dignity by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DignityById = new Map([
+export const DignityById = /* @__PURE__ */ new Map([
   [0, 'dignity.DEEP_EXALTED'],
   [1, 'dignity.EXALTED'],
   [2, 'dignity.MOOLTRIKONA'],
@@ -1073,7 +1073,7 @@ export const DignityById = new Map([
 ]);
 
 /** Every Relationship by name. */
-export const Relationship = Object.freeze({
+export const Relationship = /* @__PURE__ */ Object.freeze({
   GreatFriend: 'relationship.GREAT_FRIEND',
   Friend: 'relationship.FRIEND',
   Neutral: 'relationship.NEUTRAL',
@@ -1085,7 +1085,7 @@ export const Relationship = Object.freeze({
  * Every Relationship by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RelationshipById = new Map([
+export const RelationshipById = /* @__PURE__ */ new Map([
   [0, 'relationship.GREAT_FRIEND'],
   [1, 'relationship.FRIEND'],
   [2, 'relationship.NEUTRAL'],
@@ -1094,7 +1094,7 @@ export const RelationshipById = new Map([
 ]);
 
 /** Every AvasthaBaladi by name. */
-export const AvasthaBaladi = Object.freeze({
+export const AvasthaBaladi = /* @__PURE__ */ Object.freeze({
   Bala: 'avastha_baladi.BALA',
   Kumara: 'avastha_baladi.KUMARA',
   Yuva: 'avastha_baladi.YUVA',
@@ -1106,7 +1106,7 @@ export const AvasthaBaladi = Object.freeze({
  * Every AvasthaBaladi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaBaladiById = new Map([
+export const AvasthaBaladiById = /* @__PURE__ */ new Map([
   [0, 'avastha_baladi.BALA'],
   [1, 'avastha_baladi.KUMARA'],
   [2, 'avastha_baladi.YUVA'],
@@ -1115,7 +1115,7 @@ export const AvasthaBaladiById = new Map([
 ]);
 
 /** Every State by name. */
-export const State = Object.freeze({
+export const State = /* @__PURE__ */ Object.freeze({
   Retrograde: 'state.RETROGRADE',
   Stationary: 'state.STATIONARY',
   Combust: 'state.COMBUST',
@@ -1134,7 +1134,7 @@ export const State = Object.freeze({
  * Every State by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const StateById = new Map([
+export const StateById = /* @__PURE__ */ new Map([
   [0, 'state.RETROGRADE'],
   [1, 'state.STATIONARY'],
   [2, 'state.COMBUST'],
@@ -1150,7 +1150,7 @@ export const StateById = new Map([
 ]);
 
 /** Every Ayanamsha by name. */
-export const Ayanamsha = Object.freeze({
+export const Ayanamsha = /* @__PURE__ */ Object.freeze({
   FaganBradley: 'ayanamsha.FAGAN_BRADLEY',
   Lahiri: 'ayanamsha.LAHIRI',
   Deluce: 'ayanamsha.DELUCE',
@@ -1204,7 +1204,7 @@ export const Ayanamsha = Object.freeze({
  * Every Ayanamsha by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AyanamshaById = new Map([
+export const AyanamshaById = /* @__PURE__ */ new Map([
   [0, 'ayanamsha.FAGAN_BRADLEY'],
   [1, 'ayanamsha.LAHIRI'],
   [2, 'ayanamsha.DELUCE'],
@@ -1255,7 +1255,7 @@ export const AyanamshaById = new Map([
 ]);
 
 /** Every HouseSystem by name. */
-export const HouseSystem = Object.freeze({
+export const HouseSystem = /* @__PURE__ */ Object.freeze({
   WholeSign: 'house_system.WHOLE_SIGN',
   Placidus: 'house_system.PLACIDUS',
   Koch: 'house_system.KOCH',
@@ -1284,7 +1284,7 @@ export const HouseSystem = Object.freeze({
  * Every HouseSystem by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const HouseSystemById = new Map([
+export const HouseSystemById = /* @__PURE__ */ new Map([
   [0, 'house_system.WHOLE_SIGN'],
   [1, 'house_system.PLACIDUS'],
   [2, 'house_system.KOCH'],
@@ -1310,7 +1310,7 @@ export const HouseSystemById = new Map([
 ]);
 
 /** Every Varga by name. */
-export const Varga = Object.freeze({
+export const Varga = /* @__PURE__ */ Object.freeze({
   D1: 'varga.D1',
   D2: 'varga.D2',
   D3: 'varga.D3',
@@ -1338,7 +1338,7 @@ export const Varga = Object.freeze({
  * Every Varga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VargaById = new Map([
+export const VargaById = /* @__PURE__ */ new Map([
   [0, 'varga.D1'],
   [1, 'varga.D2'],
   [2, 'varga.D3'],
@@ -1363,7 +1363,7 @@ export const VargaById = new Map([
 ]);
 
 /** Every DashaSystem by name. */
-export const DashaSystem = Object.freeze({
+export const DashaSystem = /* @__PURE__ */ Object.freeze({
   Vimshottari: 'dasha_system.VIMSHOTTARI',
   Ashtottari: 'dasha_system.ASHTOTTARI',
   Dwadashottari: 'dasha_system.DWADASHOTTARI',
@@ -1415,7 +1415,7 @@ export const DashaSystem = Object.freeze({
  * Every DashaSystem by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DashaSystemById = new Map([
+export const DashaSystemById = /* @__PURE__ */ new Map([
   [0, 'dasha_system.VIMSHOTTARI'],
   [1, 'dasha_system.ASHTOTTARI'],
   [2, 'dasha_system.DWADASHOTTARI'],
@@ -1464,7 +1464,7 @@ export const DashaSystemById = new Map([
 ]);
 
 /** Every BalaScheme by name. */
-export const BalaScheme = Object.freeze({
+export const BalaScheme = /* @__PURE__ */ Object.freeze({
   Parashara: 'bala_scheme.PARASHARA',
   ParasharaExtended: 'bala_scheme.PARASHARA_EXTENDED',
 });
@@ -1473,13 +1473,13 @@ export const BalaScheme = Object.freeze({
  * Every BalaScheme by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BalaSchemeById = new Map([
+export const BalaSchemeById = /* @__PURE__ */ new Map([
   [0, 'bala_scheme.PARASHARA'],
   [1, 'bala_scheme.PARASHARA_EXTENDED'],
 ]);
 
 /** Every Koota by name. */
-export const Koota = Object.freeze({
+export const Koota = /* @__PURE__ */ Object.freeze({
   Varna: 'koota.VARNA',
   Vashya: 'koota.VASHYA',
   Tara: 'koota.TARA',
@@ -1498,7 +1498,7 @@ export const Koota = Object.freeze({
  * Every Koota by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const KootaById = new Map([
+export const KootaById = /* @__PURE__ */ new Map([
   [0, 'koota.VARNA'],
   [1, 'koota.VASHYA'],
   [2, 'koota.TARA'],
@@ -1514,7 +1514,7 @@ export const KootaById = new Map([
 ]);
 
 /** Every CharaKaraka by name. */
-export const CharaKaraka = Object.freeze({
+export const CharaKaraka = /* @__PURE__ */ Object.freeze({
   Atmakaraka: 'chara_karaka.ATMAKARAKA',
   Amatyakaraka: 'chara_karaka.AMATYAKARAKA',
   Bhratrikaraka: 'chara_karaka.BHRATRIKARAKA',
@@ -1529,7 +1529,7 @@ export const CharaKaraka = Object.freeze({
  * Every CharaKaraka by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const CharaKarakaById = new Map([
+export const CharaKarakaById = /* @__PURE__ */ new Map([
   [0, 'chara_karaka.ATMAKARAKA'],
   [1, 'chara_karaka.AMATYAKARAKA'],
   [2, 'chara_karaka.BHRATRIKARAKA'],
@@ -1541,7 +1541,7 @@ export const CharaKarakaById = new Map([
 ]);
 
 /** Every ChartKind by name. */
-export const ChartKind = Object.freeze({
+export const ChartKind = /* @__PURE__ */ Object.freeze({
   Natal: 'chart_kind.NATAL',
   Transit: 'chart_kind.TRANSIT',
   Event: 'chart_kind.EVENT',
@@ -1555,7 +1555,7 @@ export const ChartKind = Object.freeze({
  * Every ChartKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ChartKindById = new Map([
+export const ChartKindById = /* @__PURE__ */ new Map([
   [0, 'chart_kind.NATAL'],
   [1, 'chart_kind.TRANSIT'],
   [2, 'chart_kind.EVENT'],
@@ -1566,7 +1566,7 @@ export const ChartKindById = new Map([
 ]);
 
 /** Every Point by name. */
-export const Point = Object.freeze({
+export const Point = /* @__PURE__ */ Object.freeze({
   Lagna: 'point.LAGNA',
   Mc: 'point.MC',
   Descendant: 'point.DESCENDANT',
@@ -1622,7 +1622,7 @@ export const Point = Object.freeze({
  * Every Point by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PointById = new Map([
+export const PointById = /* @__PURE__ */ new Map([
   [0, 'point.LAGNA'],
   [1, 'point.MC'],
   [2, 'point.DESCENDANT'],
@@ -1675,7 +1675,7 @@ export const PointById = new Map([
 ]);
 
 /** Every MuhurtaNature by name. */
-export const MuhurtaNature = Object.freeze({
+export const MuhurtaNature = /* @__PURE__ */ Object.freeze({
   Dhruva: 'muhurta_nature.DHRUVA',
   Chara: 'muhurta_nature.CHARA',
   Ugra: 'muhurta_nature.UGRA',
@@ -1689,7 +1689,7 @@ export const MuhurtaNature = Object.freeze({
  * Every MuhurtaNature by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MuhurtaNatureById = new Map([
+export const MuhurtaNatureById = /* @__PURE__ */ new Map([
   [0, 'muhurta_nature.DHRUVA'],
   [1, 'muhurta_nature.CHARA'],
   [2, 'muhurta_nature.UGRA'],
@@ -1700,7 +1700,7 @@ export const MuhurtaNatureById = new Map([
 ]);
 
 /** Every Modality by name. */
-export const Modality = Object.freeze({
+export const Modality = /* @__PURE__ */ Object.freeze({
   Chara: 'modality.CHARA',
   Sthira: 'modality.STHIRA',
   Dwiswabhava: 'modality.DWISWABHAVA',
@@ -1710,14 +1710,14 @@ export const Modality = Object.freeze({
  * Every Modality by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ModalityById = new Map([
+export const ModalityById = /* @__PURE__ */ new Map([
   [0, 'modality.CHARA'],
   [1, 'modality.STHIRA'],
   [2, 'modality.DWISWABHAVA'],
 ]);
 
 /** Every Nature by name. */
-export const Nature = Object.freeze({
+export const Nature = /* @__PURE__ */ Object.freeze({
   Benefic: 'nature.BENEFIC',
   Malefic: 'nature.MALEFIC',
   Neutral: 'nature.NEUTRAL',
@@ -1727,14 +1727,14 @@ export const Nature = Object.freeze({
  * Every Nature by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NatureById = new Map([
+export const NatureById = /* @__PURE__ */ new Map([
   [0, 'nature.BENEFIC'],
   [1, 'nature.MALEFIC'],
   [2, 'nature.NEUTRAL'],
 ]);
 
 /** Every Guna by name. */
-export const Guna = Object.freeze({
+export const Guna = /* @__PURE__ */ Object.freeze({
   Sattva: 'guna.SATTVA',
   Rajas: 'guna.RAJAS',
   Tamas: 'guna.TAMAS',
@@ -1744,14 +1744,14 @@ export const Guna = Object.freeze({
  * Every Guna by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GunaById = new Map([
+export const GunaById = /* @__PURE__ */ new Map([
   [0, 'guna.SATTVA'],
   [1, 'guna.RAJAS'],
   [2, 'guna.TAMAS'],
 ]);
 
 /** Every Direction by name. */
-export const Direction = Object.freeze({
+export const Direction = /* @__PURE__ */ Object.freeze({
   East: 'direction.EAST',
   West: 'direction.WEST',
   North: 'direction.NORTH',
@@ -1766,7 +1766,7 @@ export const Direction = Object.freeze({
  * Every Direction by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DirectionById = new Map([
+export const DirectionById = /* @__PURE__ */ new Map([
   [0, 'direction.EAST'],
   [1, 'direction.WEST'],
   [2, 'direction.NORTH'],
@@ -1778,7 +1778,7 @@ export const DirectionById = new Map([
 ]);
 
 /** Every Gender by name. */
-export const Gender = Object.freeze({
+export const Gender = /* @__PURE__ */ Object.freeze({
   Male: 'gender.MALE',
   Female: 'gender.FEMALE',
   Neutral: 'gender.NEUTRAL',
@@ -1788,14 +1788,14 @@ export const Gender = Object.freeze({
  * Every Gender by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GenderById = new Map([
+export const GenderById = /* @__PURE__ */ new Map([
   [0, 'gender.MALE'],
   [1, 'gender.FEMALE'],
   [2, 'gender.NEUTRAL'],
 ]);
 
 /** Every Calendar by name. */
-export const Calendar = Object.freeze({
+export const Calendar = /* @__PURE__ */ Object.freeze({
   Gregorian: 'calendar.GREGORIAN',
   Julian: 'calendar.JULIAN',
   Mixed: 'calendar.MIXED',
@@ -1808,7 +1808,7 @@ export const Calendar = Object.freeze({
  * Every Calendar by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const CalendarById = new Map([
+export const CalendarById = /* @__PURE__ */ new Map([
   [0, 'calendar.GREGORIAN'],
   [1, 'calendar.JULIAN'],
   [2, 'calendar.MIXED'],
@@ -1818,7 +1818,7 @@ export const CalendarById = new Map([
 ]);
 
 /** Every Era by name. */
-export const Era = Object.freeze({
+export const Era = /* @__PURE__ */ Object.freeze({
   Vikrama: 'era.VIKRAMA',
   Shaka: 'era.SHAKA',
   Kali: 'era.KALI',
@@ -1834,7 +1834,7 @@ export const Era = Object.freeze({
  * Every Era by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const EraById = new Map([
+export const EraById = /* @__PURE__ */ new Map([
   [0, 'era.VIKRAMA'],
   [1, 'era.SHAKA'],
   [2, 'era.KALI'],
@@ -1847,7 +1847,7 @@ export const EraById = new Map([
 ]);
 
 /** Every BodyClass by name. */
-export const BodyClass = Object.freeze({
+export const BodyClass = /* @__PURE__ */ Object.freeze({
   Luminary: 'body_class.LUMINARY',
   Planet: 'body_class.PLANET',
   Node: 'body_class.NODE',
@@ -1858,7 +1858,7 @@ export const BodyClass = Object.freeze({
  * Every BodyClass by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BodyClassById = new Map([
+export const BodyClassById = /* @__PURE__ */ new Map([
   [0, 'body_class.LUMINARY'],
   [1, 'body_class.PLANET'],
   [2, 'body_class.NODE'],
@@ -1866,7 +1866,7 @@ export const BodyClassById = new Map([
 ]);
 
 /** Every Parity by name. */
-export const Parity = Object.freeze({
+export const Parity = /* @__PURE__ */ Object.freeze({
   Odd: 'parity.ODD',
   Even: 'parity.EVEN',
 });
@@ -1875,13 +1875,13 @@ export const Parity = Object.freeze({
  * Every Parity by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ParityById = new Map([
+export const ParityById = /* @__PURE__ */ new Map([
   [0, 'parity.ODD'],
   [1, 'parity.EVEN'],
 ]);
 
 /** Every Rising by name. */
-export const Rising = Object.freeze({
+export const Rising = /* @__PURE__ */ Object.freeze({
   Sirshodaya: 'rising.SIRSHODAYA',
   Prishtodaya: 'rising.PRISHTODAYA',
   Ubhayodaya: 'rising.UBHAYODAYA',
@@ -1891,14 +1891,14 @@ export const Rising = Object.freeze({
  * Every Rising by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RisingById = new Map([
+export const RisingById = /* @__PURE__ */ new Map([
   [0, 'rising.SIRSHODAYA'],
   [1, 'rising.PRISHTODAYA'],
   [2, 'rising.UBHAYODAYA'],
 ]);
 
 /** Every Sex by name. */
-export const Sex = Object.freeze({
+export const Sex = /* @__PURE__ */ Object.freeze({
   Male: 'sex.MALE',
   Female: 'sex.FEMALE',
 });
@@ -1907,13 +1907,13 @@ export const Sex = Object.freeze({
  * Every Sex by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SexById = new Map([
+export const SexById = /* @__PURE__ */ new Map([
   [0, 'sex.MALE'],
   [1, 'sex.FEMALE'],
 ]);
 
 /** Every TithiClass by name. */
-export const TithiClass = Object.freeze({
+export const TithiClass = /* @__PURE__ */ Object.freeze({
   Nanda: 'tithi_class.NANDA',
   Bhadra: 'tithi_class.BHADRA',
   Jaya: 'tithi_class.JAYA',
@@ -1925,7 +1925,7 @@ export const TithiClass = Object.freeze({
  * Every TithiClass by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TithiClassById = new Map([
+export const TithiClassById = /* @__PURE__ */ new Map([
   [0, 'tithi_class.NANDA'],
   [1, 'tithi_class.BHADRA'],
   [2, 'tithi_class.JAYA'],
@@ -1934,7 +1934,7 @@ export const TithiClassById = new Map([
 ]);
 
 /** Every Auspiciousness by name. */
-export const Auspiciousness = Object.freeze({
+export const Auspiciousness = /* @__PURE__ */ Object.freeze({
   Auspicious: 'auspiciousness.AUSPICIOUS',
   Inauspicious: 'auspiciousness.INAUSPICIOUS',
   Mixed: 'auspiciousness.MIXED',
@@ -1945,7 +1945,7 @@ export const Auspiciousness = Object.freeze({
  * Every Auspiciousness by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AuspiciousnessById = new Map([
+export const AuspiciousnessById = /* @__PURE__ */ new Map([
   [0, 'auspiciousness.AUSPICIOUS'],
   [1, 'auspiciousness.INAUSPICIOUS'],
   [2, 'auspiciousness.MIXED'],
@@ -1953,7 +1953,7 @@ export const AuspiciousnessById = new Map([
 ]);
 
 /** Every Degeneracy by name. */
-export const Degeneracy = Object.freeze({
+export const Degeneracy = /* @__PURE__ */ Object.freeze({
   None: 'degeneracy.NONE',
   PolarUndefined: 'degeneracy.POLAR_UNDEFINED',
 });
@@ -1962,13 +1962,13 @@ export const Degeneracy = Object.freeze({
  * Every Degeneracy by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DegeneracyById = new Map([
+export const DegeneracyById = /* @__PURE__ */ new Map([
   [0, 'degeneracy.NONE'],
   [1, 'degeneracy.POLAR_UNDEFINED'],
 ]);
 
 /** Every AyanamshaCategory by name. */
-export const AyanamshaCategory = Object.freeze({
+export const AyanamshaCategory = /* @__PURE__ */ Object.freeze({
   VedicStandard: 'ayanamsha_category.VEDIC_STANDARD',
   VedicClassical: 'ayanamsha_category.VEDIC_CLASSICAL',
   StarAnchored: 'ayanamsha_category.STAR_ANCHORED',
@@ -1982,7 +1982,7 @@ export const AyanamshaCategory = Object.freeze({
  * Every AyanamshaCategory by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AyanamshaCategoryById = new Map([
+export const AyanamshaCategoryById = /* @__PURE__ */ new Map([
   [0, 'ayanamsha_category.VEDIC_STANDARD'],
   [1, 'ayanamsha_category.VEDIC_CLASSICAL'],
   [2, 'ayanamsha_category.STAR_ANCHORED'],
@@ -1993,7 +1993,7 @@ export const AyanamshaCategoryById = new Map([
 ]);
 
 /** Every DashaFamily by name. */
-export const DashaFamily = Object.freeze({
+export const DashaFamily = /* @__PURE__ */ Object.freeze({
   Udu: 'dasha_family.UDU',
   Rashi: 'dasha_family.RASHI',
   Kalachakra: 'dasha_family.KALACHAKRA',
@@ -2010,7 +2010,7 @@ export const DashaFamily = Object.freeze({
  * Every DashaFamily by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DashaFamilyById = new Map([
+export const DashaFamilyById = /* @__PURE__ */ new Map([
   [0, 'dasha_family.UDU'],
   [1, 'dasha_family.RASHI'],
   [2, 'dasha_family.KALACHAKRA'],
@@ -2024,7 +2024,7 @@ export const DashaFamilyById = new Map([
 ]);
 
 /** Every AvasthaJagradadi by name. */
-export const AvasthaJagradadi = Object.freeze({
+export const AvasthaJagradadi = /* @__PURE__ */ Object.freeze({
   Jagrat: 'avastha_jagradadi.JAGRAT',
   Swapna: 'avastha_jagradadi.SWAPNA',
   Sushupti: 'avastha_jagradadi.SUSHUPTI',
@@ -2034,14 +2034,14 @@ export const AvasthaJagradadi = Object.freeze({
  * Every AvasthaJagradadi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaJagradadiById = new Map([
+export const AvasthaJagradadiById = /* @__PURE__ */ new Map([
   [0, 'avastha_jagradadi.JAGRAT'],
   [1, 'avastha_jagradadi.SWAPNA'],
   [2, 'avastha_jagradadi.SUSHUPTI'],
 ]);
 
 /** Every AvasthaDeeptadi by name. */
-export const AvasthaDeeptadi = Object.freeze({
+export const AvasthaDeeptadi = /* @__PURE__ */ Object.freeze({
   Deepta: 'avastha_deeptadi.DEEPTA',
   Swastha: 'avastha_deeptadi.SWASTHA',
   Mudita: 'avastha_deeptadi.MUDITA',
@@ -2057,7 +2057,7 @@ export const AvasthaDeeptadi = Object.freeze({
  * Every AvasthaDeeptadi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaDeeptadiById = new Map([
+export const AvasthaDeeptadiById = /* @__PURE__ */ new Map([
   [0, 'avastha_deeptadi.DEEPTA'],
   [1, 'avastha_deeptadi.SWASTHA'],
   [2, 'avastha_deeptadi.MUDITA'],
@@ -2070,7 +2070,7 @@ export const AvasthaDeeptadiById = new Map([
 ]);
 
 /** Every AvasthaLajjitadi by name. */
-export const AvasthaLajjitadi = Object.freeze({
+export const AvasthaLajjitadi = /* @__PURE__ */ Object.freeze({
   Lajjita: 'avastha_lajjitadi.LAJJITA',
   Garvita: 'avastha_lajjitadi.GARVITA',
   Kshudha: 'avastha_lajjitadi.KSHUDHA',
@@ -2083,7 +2083,7 @@ export const AvasthaLajjitadi = Object.freeze({
  * Every AvasthaLajjitadi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaLajjitadiById = new Map([
+export const AvasthaLajjitadiById = /* @__PURE__ */ new Map([
   [0, 'avastha_lajjitadi.LAJJITA'],
   [1, 'avastha_lajjitadi.GARVITA'],
   [2, 'avastha_lajjitadi.KSHUDHA'],
@@ -2093,7 +2093,7 @@ export const AvasthaLajjitadiById = new Map([
 ]);
 
 /** Every AvasthaSayanadi by name. */
-export const AvasthaSayanadi = Object.freeze({
+export const AvasthaSayanadi = /* @__PURE__ */ Object.freeze({
   Shayana: 'avastha_sayanadi.SHAYANA',
   Upaveshana: 'avastha_sayanadi.UPAVESHANA',
   Netrapani: 'avastha_sayanadi.NETRAPANI',
@@ -2112,7 +2112,7 @@ export const AvasthaSayanadi = Object.freeze({
  * Every AvasthaSayanadi by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaSayanadiById = new Map([
+export const AvasthaSayanadiById = /* @__PURE__ */ new Map([
   [0, 'avastha_sayanadi.SHAYANA'],
   [1, 'avastha_sayanadi.UPAVESHANA'],
   [2, 'avastha_sayanadi.NETRAPANI'],
@@ -2128,7 +2128,7 @@ export const AvasthaSayanadiById = new Map([
 ]);
 
 /** Every PointFamily by name. */
-export const PointFamily = Object.freeze({
+export const PointFamily = /* @__PURE__ */ Object.freeze({
   Angle: 'point_family.ANGLE',
   SpecialLagna: 'point_family.SPECIAL_LAGNA',
   UpagrahaSolar: 'point_family.UPAGRAHA_SOLAR',
@@ -2143,7 +2143,7 @@ export const PointFamily = Object.freeze({
  * Every PointFamily by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PointFamilyById = new Map([
+export const PointFamilyById = /* @__PURE__ */ new Map([
   [0, 'point_family.ANGLE'],
   [1, 'point_family.SPECIAL_LAGNA'],
   [2, 'point_family.UPAGRAHA_SOLAR'],
@@ -2155,7 +2155,7 @@ export const PointFamilyById = new Map([
 ]);
 
 /** Every Star by name. */
-export const Star = Object.freeze({
+export const Star = /* @__PURE__ */ Object.freeze({
   Sheratan: 'star.SHERATAN',
   Bharani: 'star.BHARANI',
   Alcyone: 'star.ALCYONE',
@@ -2290,7 +2290,7 @@ export const Star = Object.freeze({
  * Every Star by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const StarById = new Map([
+export const StarById = /* @__PURE__ */ new Map([
   [0, 'star.SHERATAN'],
   [1, 'star.BHARANI'],
   [2, 'star.ALCYONE'],
@@ -2422,7 +2422,7 @@ export const StarById = new Map([
 ]);
 
 /** Every StarClass by name. */
-export const StarClass = Object.freeze({
+export const StarClass = /* @__PURE__ */ Object.freeze({
   Star: 'star_class.STAR',
   RadioSource: 'star_class.RADIO_SOURCE',
   Direction: 'star_class.DIRECTION',
@@ -2432,14 +2432,14 @@ export const StarClass = Object.freeze({
  * Every StarClass by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const StarClassById = new Map([
+export const StarClassById = /* @__PURE__ */ new Map([
   [0, 'star_class.STAR'],
   [1, 'star_class.RADIO_SOURCE'],
   [2, 'star_class.DIRECTION'],
 ]);
 
 /** Every Choghadiya by name. */
-export const Choghadiya = Object.freeze({
+export const Choghadiya = /* @__PURE__ */ Object.freeze({
   Udveg: 'choghadiya.UDVEG',
   Char: 'choghadiya.CHAR',
   Laabh: 'choghadiya.LAABH',
@@ -2453,7 +2453,7 @@ export const Choghadiya = Object.freeze({
  * Every Choghadiya by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ChoghadiyaById = new Map([
+export const ChoghadiyaById = /* @__PURE__ */ new Map([
   [0, 'choghadiya.UDVEG'],
   [1, 'choghadiya.CHAR'],
   [2, 'choghadiya.LAABH'],
@@ -2464,7 +2464,7 @@ export const ChoghadiyaById = new Map([
 ]);
 
 /** Every Kaala by name. */
-export const Kaala = Object.freeze({
+export const Kaala = /* @__PURE__ */ Object.freeze({
   RahuKaala: 'kaala.RAHU_KAALA',
   Yamaghanda: 'kaala.YAMAGHANDA',
   GulikaKaala: 'kaala.GULIKA_KAALA',
@@ -2474,14 +2474,14 @@ export const Kaala = Object.freeze({
  * Every Kaala by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const KaalaById = new Map([
+export const KaalaById = /* @__PURE__ */ new Map([
   [0, 'kaala.RAHU_KAALA'],
   [1, 'kaala.YAMAGHANDA'],
   [2, 'kaala.GULIKA_KAALA'],
 ]);
 
 /** Every Panchaka by name. */
-export const Panchaka = Object.freeze({
+export const Panchaka = /* @__PURE__ */ Object.freeze({
   Mrityu: 'panchaka.MRITYU',
   Agni: 'panchaka.AGNI',
   Raja: 'panchaka.RAJA',
@@ -2493,7 +2493,7 @@ export const Panchaka = Object.freeze({
  * Every Panchaka by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PanchakaById = new Map([
+export const PanchakaById = /* @__PURE__ */ new Map([
   [0, 'panchaka.MRITYU'],
   [1, 'panchaka.AGNI'],
   [2, 'panchaka.RAJA'],
@@ -2502,7 +2502,7 @@ export const PanchakaById = new Map([
 ]);
 
 /** Every MuhurtaYoga by name. */
-export const MuhurtaYoga = Object.freeze({
+export const MuhurtaYoga = /* @__PURE__ */ Object.freeze({
   AmritSiddhi: 'muhurta_yoga.AMRIT_SIDDHI',
   SarvarthaSiddhi: 'muhurta_yoga.SARVARTHA_SIDDHI',
   Siddha: 'muhurta_yoga.SIDDHA',
@@ -2514,7 +2514,7 @@ export const MuhurtaYoga = Object.freeze({
  * Every MuhurtaYoga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MuhurtaYogaById = new Map([
+export const MuhurtaYogaById = /* @__PURE__ */ new Map([
   [0, 'muhurta_yoga.AMRIT_SIDDHI'],
   [1, 'muhurta_yoga.SARVARTHA_SIDDHI'],
   [2, 'muhurta_yoga.SIDDHA'],
@@ -2523,7 +2523,7 @@ export const MuhurtaYogaById = new Map([
 ]);
 
 /** Every ChartLayout by name. */
-export const ChartLayout = Object.freeze({
+export const ChartLayout = /* @__PURE__ */ Object.freeze({
   NorthIndian: 'chart_layout.NORTH_INDIAN',
   SouthIndian: 'chart_layout.SOUTH_INDIAN',
   EastIndian: 'chart_layout.EAST_INDIAN',
@@ -2536,7 +2536,7 @@ export const ChartLayout = Object.freeze({
  * Every ChartLayout by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ChartLayoutById = new Map([
+export const ChartLayoutById = /* @__PURE__ */ new Map([
   [0, 'chart_layout.NORTH_INDIAN'],
   [1, 'chart_layout.SOUTH_INDIAN'],
   [2, 'chart_layout.EAST_INDIAN'],
@@ -2546,7 +2546,7 @@ export const ChartLayoutById = new Map([
 ]);
 
 /** Every Vaiseshikamsa by name. */
-export const Vaiseshikamsa = Object.freeze({
+export const Vaiseshikamsa = /* @__PURE__ */ Object.freeze({
   Kimshuka: 'vaiseshikamsa.KIMSHUKA',
   Vyanjana: 'vaiseshikamsa.VYANJANA',
   Chamara: 'vaiseshikamsa.CHAMARA',
@@ -2583,7 +2583,7 @@ export const Vaiseshikamsa = Object.freeze({
  * Every Vaiseshikamsa by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VaiseshikamsaById = new Map([
+export const VaiseshikamsaById = /* @__PURE__ */ new Map([
   [0, 'vaiseshikamsa.KIMSHUKA'],
   [1, 'vaiseshikamsa.VYANJANA'],
   [2, 'vaiseshikamsa.CHAMARA'],
@@ -2617,7 +2617,7 @@ export const VaiseshikamsaById = new Map([
 ]);
 
 /** Every AvasthaCheshta by name. */
-export const AvasthaCheshta = Object.freeze({
+export const AvasthaCheshta = /* @__PURE__ */ Object.freeze({
   Drishti: 'avastha_cheshta.DRISHTI',
   Cheshta: 'avastha_cheshta.CHESHTA',
   Vicheshta: 'avastha_cheshta.VICHESHTA',
@@ -2627,14 +2627,14 @@ export const AvasthaCheshta = Object.freeze({
  * Every AvasthaCheshta by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AvasthaCheshtaById = new Map([
+export const AvasthaCheshtaById = /* @__PURE__ */ new Map([
   [0, 'avastha_cheshta.DRISHTI'],
   [1, 'avastha_cheshta.CHESHTA'],
   [2, 'avastha_cheshta.VICHESHTA'],
 ]);
 
 /** Every BlackoutKind by name. */
-export const BlackoutKind = Object.freeze({
+export const BlackoutKind = /* @__PURE__ */ Object.freeze({
   Chaturmas: 'blackout_kind.CHATURMAS',
   AdhikaMasa: 'blackout_kind.ADHIKA_MASA',
   Samsarpa: 'blackout_kind.SAMSARPA',
@@ -2653,7 +2653,7 @@ export const BlackoutKind = Object.freeze({
  * Every BlackoutKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BlackoutKindById = new Map([
+export const BlackoutKindById = /* @__PURE__ */ new Map([
   [0, 'blackout_kind.CHATURMAS'],
   [1, 'blackout_kind.ADHIKA_MASA'],
   [2, 'blackout_kind.SAMSARPA'],
@@ -2669,7 +2669,7 @@ export const BlackoutKindById = new Map([
 ]);
 
 /** Every LunarEclipseKind by name. */
-export const LunarEclipseKind = Object.freeze({
+export const LunarEclipseKind = /* @__PURE__ */ Object.freeze({
   Penumbral: 'lunar_eclipse_kind.PENUMBRAL',
   Partial: 'lunar_eclipse_kind.PARTIAL',
   Total: 'lunar_eclipse_kind.TOTAL',
@@ -2679,14 +2679,14 @@ export const LunarEclipseKind = Object.freeze({
  * Every LunarEclipseKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const LunarEclipseKindById = new Map([
+export const LunarEclipseKindById = /* @__PURE__ */ new Map([
   [0, 'lunar_eclipse_kind.PENUMBRAL'],
   [1, 'lunar_eclipse_kind.PARTIAL'],
   [2, 'lunar_eclipse_kind.TOTAL'],
 ]);
 
 /** Every SolarEclipseKind by name. */
-export const SolarEclipseKind = Object.freeze({
+export const SolarEclipseKind = /* @__PURE__ */ Object.freeze({
   Partial: 'solar_eclipse_kind.PARTIAL',
   Annular: 'solar_eclipse_kind.ANNULAR',
   Total: 'solar_eclipse_kind.TOTAL',
@@ -2697,7 +2697,7 @@ export const SolarEclipseKind = Object.freeze({
  * Every SolarEclipseKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SolarEclipseKindById = new Map([
+export const SolarEclipseKindById = /* @__PURE__ */ new Map([
   [0, 'solar_eclipse_kind.PARTIAL'],
   [1, 'solar_eclipse_kind.ANNULAR'],
   [2, 'solar_eclipse_kind.TOTAL'],
@@ -2705,7 +2705,7 @@ export const SolarEclipseKindById = new Map([
 ]);
 
 /** Every Status by name. */
-export const Status = Object.freeze({
+export const Status = /* @__PURE__ */ Object.freeze({
   Ok: 'OK',
   InvalidArg: 'INVALID_ARG',
   OutOfRange: 'OUT_OF_RANGE',
@@ -2723,7 +2723,7 @@ export const Status = Object.freeze({
  * Every Status by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const StatusById = new Map([
+export const StatusById = /* @__PURE__ */ new Map([
   [0, 'OK'],
   [-1, 'INVALID_ARG'],
   [-2, 'OUT_OF_RANGE'],
@@ -2738,7 +2738,7 @@ export const StatusById = new Map([
 ]);
 
 /** Every Body by name. */
-export const Body = Object.freeze({
+export const Body = /* @__PURE__ */ Object.freeze({
   Sun: 'SUN',
   Moon: 'MOON',
   Mercury: 'MERCURY',
@@ -2759,7 +2759,7 @@ export const Body = Object.freeze({
  * Every Body by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BodyById = new Map([
+export const BodyById = /* @__PURE__ */ new Map([
   [0, 'SUN'],
   [1, 'MOON'],
   [2, 'MERCURY'],
@@ -2777,7 +2777,7 @@ export const BodyById = new Map([
 ]);
 
 /** Every TimeScale by name. */
-export const TimeScale = Object.freeze({
+export const TimeScale = /* @__PURE__ */ Object.freeze({
   Ut1: 'UT1',
   Tt: 'TT',
 });
@@ -2786,13 +2786,13 @@ export const TimeScale = Object.freeze({
  * Every TimeScale by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TimeScaleById = new Map([
+export const TimeScaleById = /* @__PURE__ */ new Map([
   [0, 'UT1'],
   [1, 'TT'],
 ]);
 
 /** Every DistanceUnit by name. */
-export const DistanceUnit = Object.freeze({
+export const DistanceUnit = /* @__PURE__ */ Object.freeze({
   AstronomicalUnits: 'ASTRONOMICAL_UNITS',
   MeanDistances: 'MEAN_DISTANCES',
 });
@@ -2801,13 +2801,13 @@ export const DistanceUnit = Object.freeze({
  * Every DistanceUnit by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DistanceUnitById = new Map([
+export const DistanceUnitById = /* @__PURE__ */ new Map([
   [0, 'ASTRONOMICAL_UNITS'],
   [1, 'MEAN_DISTANCES'],
 ]);
 
 /** Every SpeedModel by name. */
-export const SpeedModel = Object.freeze({
+export const SpeedModel = /* @__PURE__ */ Object.freeze({
   Derivative: 'DERIVATIVE',
   Rule: 'RULE',
 });
@@ -2816,13 +2816,13 @@ export const SpeedModel = Object.freeze({
  * Every SpeedModel by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SpeedModelById = new Map([
+export const SpeedModelById = /* @__PURE__ */ new Map([
   [0, 'DERIVATIVE'],
   [1, 'RULE'],
 ]);
 
 /** Every Astronomy by name. */
-export const Astronomy = Object.freeze({
+export const Astronomy = /* @__PURE__ */ Object.freeze({
   Modern: 'MODERN',
   Classical: 'CLASSICAL',
 });
@@ -2831,13 +2831,13 @@ export const Astronomy = Object.freeze({
  * Every Astronomy by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AstronomyById = new Map([
+export const AstronomyById = /* @__PURE__ */ new Map([
   [0, 'MODERN'],
   [1, 'CLASSICAL'],
 ]);
 
 /** Every Centre by name. */
-export const Centre = Object.freeze({
+export const Centre = /* @__PURE__ */ Object.freeze({
   Geocentric: 'GEOCENTRIC',
   Topocentric: 'TOPOCENTRIC',
   Heliocentric: 'HELIOCENTRIC',
@@ -2848,7 +2848,7 @@ export const Centre = Object.freeze({
  * Every Centre by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const CentreById = new Map([
+export const CentreById = /* @__PURE__ */ new Map([
   [0, 'GEOCENTRIC'],
   [1, 'TOPOCENTRIC'],
   [2, 'HELIOCENTRIC'],
@@ -2856,7 +2856,7 @@ export const CentreById = new Map([
 ]);
 
 /** Every Equinox by name. */
-export const Equinox = Object.freeze({
+export const Equinox = /* @__PURE__ */ Object.freeze({
   OfDate: 'OF_DATE',
   J2000: 'J2000',
 });
@@ -2865,13 +2865,13 @@ export const Equinox = Object.freeze({
  * Every Equinox by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const EquinoxById = new Map([
+export const EquinoxById = /* @__PURE__ */ new Map([
   [0, 'OF_DATE'],
   [1, 'J2000'],
 ]);
 
 /** Every Coordinates by name. */
-export const Coordinates = Object.freeze({
+export const Coordinates = /* @__PURE__ */ Object.freeze({
   Ecliptic: 'ECLIPTIC',
   Equatorial: 'EQUATORIAL',
 });
@@ -2880,13 +2880,13 @@ export const Coordinates = Object.freeze({
  * Every Coordinates by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const CoordinatesById = new Map([
+export const CoordinatesById = /* @__PURE__ */ new Map([
   [0, 'ECLIPTIC'],
   [1, 'EQUATORIAL'],
 ]);
 
 /** Every ProviderCode by name. */
-export const ProviderCode = Object.freeze({
+export const ProviderCode = /* @__PURE__ */ Object.freeze({
   Ok: 'OK',
   Unsupported: 'UNSUPPORTED',
   OutOfRange: 'OUT_OF_RANGE',
@@ -2899,7 +2899,7 @@ export const ProviderCode = Object.freeze({
  * Every ProviderCode by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ProviderCodeById = new Map([
+export const ProviderCodeById = /* @__PURE__ */ new Map([
   [0, 'OK'],
   [-1, 'UNSUPPORTED'],
   [-2, 'OUT_OF_RANGE'],
@@ -2909,7 +2909,7 @@ export const ProviderCodeById = new Map([
 ]);
 
 /** Every Ephemeris by name. */
-export const Ephemeris = Object.freeze({
+export const Ephemeris = /* @__PURE__ */ Object.freeze({
   None: 'NONE',
   Builtin: 'BUILTIN',
   Test: 'TEST',
@@ -2920,7 +2920,7 @@ export const Ephemeris = Object.freeze({
  * Every Ephemeris by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const EphemerisById = new Map([
+export const EphemerisById = /* @__PURE__ */ new Map([
   [0, 'NONE'],
   [1, 'BUILTIN'],
   [2, 'TEST'],
@@ -2928,7 +2928,7 @@ export const EphemerisById = new Map([
 ]);
 
 /** Every Resolution by name. */
-export const Resolution = Object.freeze({
+export const Resolution = /* @__PURE__ */ Object.freeze({
   Defined: 'DEFINED',
   Tabular: 'TABULAR',
   Computed: 'COMPUTED',
@@ -2939,7 +2939,7 @@ export const Resolution = Object.freeze({
  * Every Resolution by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ResolutionById = new Map([
+export const ResolutionById = /* @__PURE__ */ new Map([
   [0, 'DEFINED'],
   [1, 'TABULAR'],
   [2, 'COMPUTED'],
@@ -2947,7 +2947,7 @@ export const ResolutionById = new Map([
 ]);
 
 /** Every Reading by name. */
-export const Reading = Object.freeze({
+export const Reading = /* @__PURE__ */ Object.freeze({
   Sandhi: 'SANDHI',
   Madhya: 'MADHYA',
 });
@@ -2956,13 +2956,13 @@ export const Reading = Object.freeze({
  * Every Reading by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ReadingById = new Map([
+export const ReadingById = /* @__PURE__ */ new Map([
   [0, 'SANDHI'],
   [1, 'MADHYA'],
 ]);
 
 /** Every Burning by name. */
-export const Burning = Object.freeze({
+export const Burning = /* @__PURE__ */ Object.freeze({
   None: 'NONE',
   Combust: 'COMBUST',
   Deep: 'DEEP',
@@ -2972,14 +2972,14 @@ export const Burning = Object.freeze({
  * Every Burning by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BurningById = new Map([
+export const BurningById = /* @__PURE__ */ new Map([
   [0, 'NONE'],
   [1, 'COMBUST'],
   [2, 'DEEP'],
 ]);
 
 /** Every Quadrant by name. */
-export const Quadrant = Object.freeze({
+export const Quadrant = /* @__PURE__ */ Object.freeze({
   Kendra: 'KENDRA',
   Panapara: 'PANAPARA',
   Apoklima: 'APOKLIMA',
@@ -2989,14 +2989,14 @@ export const Quadrant = Object.freeze({
  * Every Quadrant by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const QuadrantById = new Map([
+export const QuadrantById = /* @__PURE__ */ new Map([
   [0, 'KENDRA'],
   [1, 'PANAPARA'],
   [2, 'APOKLIMA'],
 ]);
 
 /** Every Strength by name. */
-export const Strength = Object.freeze({
+export const Strength = /* @__PURE__ */ Object.freeze({
   None: 'NONE',
   Quarter: 'QUARTER',
   Half: 'HALF',
@@ -3008,7 +3008,7 @@ export const Strength = Object.freeze({
  * Every Strength by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const StrengthById = new Map([
+export const StrengthById = /* @__PURE__ */ new Map([
   [0, 'NONE'],
   [1, 'QUARTER'],
   [2, 'HALF'],
@@ -3017,7 +3017,7 @@ export const StrengthById = new Map([
 ]);
 
 /** Every Balance by name. */
-export const Balance = Object.freeze({
+export const Balance = /* @__PURE__ */ Object.freeze({
   Spatial: 'SPATIAL',
   Temporal: 'TEMPORAL',
 });
@@ -3026,13 +3026,13 @@ export const Balance = Object.freeze({
  * Every Balance by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BalanceById = new Map([
+export const BalanceById = /* @__PURE__ */ new Map([
   [0, 'SPATIAL'],
   [1, 'TEMPORAL'],
 ]);
 
 /** Every Shodhana by name. */
-export const Shodhana = Object.freeze({
+export const Shodhana = /* @__PURE__ */ Object.freeze({
   EachGraha: 'EACH_GRAHA',
   Sarva: 'SARVA',
 });
@@ -3041,13 +3041,13 @@ export const Shodhana = Object.freeze({
  * Every Shodhana by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ShodhanaById = new Map([
+export const ShodhanaById = /* @__PURE__ */ new Map([
   [0, 'EACH_GRAHA'],
   [1, 'SARVA'],
 ]);
 
 /** Every Ekadhipatya by name. */
-export const Ekadhipatya = Object.freeze({
+export const Ekadhipatya = /* @__PURE__ */ Object.freeze({
   Bphs: 'BPHS',
   EmptyToZero: 'EMPTY_TO_ZERO',
 });
@@ -3056,13 +3056,13 @@ export const Ekadhipatya = Object.freeze({
  * Every Ekadhipatya by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const EkadhipatyaById = new Map([
+export const EkadhipatyaById = /* @__PURE__ */ new Map([
   [0, 'BPHS'],
   [1, 'EMPTY_TO_ZERO'],
 ]);
 
 /** Every VimshopakaScoring by name. */
-export const VimshopakaScoring = Object.freeze({
+export const VimshopakaScoring = /* @__PURE__ */ Object.freeze({
   Bphs: 'BPHS',
   SaptavargajaVirupas: 'SAPTAVARGAJA_VIRUPAS',
 });
@@ -3071,13 +3071,13 @@ export const VimshopakaScoring = Object.freeze({
  * Every VimshopakaScoring by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VimshopakaScoringById = new Map([
+export const VimshopakaScoringById = /* @__PURE__ */ new Map([
   [0, 'BPHS'],
   [1, 'SAPTAVARGAJA_VIRUPAS'],
 ]);
 
 /** Every BrahmaRule by name. */
-export const BrahmaRule = Object.freeze({
+export const BrahmaRule = /* @__PURE__ */ Object.freeze({
   Verses: 'VERSES',
   TranslatorsNote: 'TRANSLATORS_NOTE',
 });
@@ -3086,13 +3086,13 @@ export const BrahmaRule = Object.freeze({
  * Every BrahmaRule by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BrahmaRuleById = new Map([
+export const BrahmaRuleById = /* @__PURE__ */ new Map([
   [0, 'VERSES'],
   [1, 'TRANSLATORS_NOTE'],
 ]);
 
 /** Every BrahmaOutcome by name. */
-export const BrahmaOutcome = Object.freeze({
+export const BrahmaOutcome = /* @__PURE__ */ Object.freeze({
   Found: 'FOUND',
   NoLordQualifies: 'NO_LORD_QUALIFIES',
   NoPlanetInTheSixth: 'NO_PLANET_IN_THE_SIXTH',
@@ -3103,7 +3103,7 @@ export const BrahmaOutcome = Object.freeze({
  * Every BrahmaOutcome by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BrahmaOutcomeById = new Map([
+export const BrahmaOutcomeById = /* @__PURE__ */ new Map([
   [0, 'FOUND'],
   [1, 'NO_LORD_QUALIFIES'],
   [2, 'NO_PLANET_IN_THE_SIXTH'],
@@ -3111,7 +3111,7 @@ export const BrahmaOutcomeById = new Map([
 ]);
 
 /** Every GocharFrom by name. */
-export const GocharFrom = Object.freeze({
+export const GocharFrom = /* @__PURE__ */ Object.freeze({
   Moon: 'MOON',
   Lagna: 'LAGNA',
 });
@@ -3120,13 +3120,13 @@ export const GocharFrom = Object.freeze({
  * Every GocharFrom by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GocharFromById = new Map([
+export const GocharFromById = /* @__PURE__ */ new Map([
   [0, 'MOON'],
   [1, 'LAGNA'],
 ]);
 
 /** Every Reckoning by name. */
-export const Reckoning = Object.freeze({
+export const Reckoning = /* @__PURE__ */ Object.freeze({
   Sign: 'SIGN',
   Degree: 'DEGREE',
 });
@@ -3135,13 +3135,13 @@ export const Reckoning = Object.freeze({
  * Every Reckoning by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ReckoningById = new Map([
+export const ReckoningById = /* @__PURE__ */ new Map([
   [0, 'SIGN'],
   [1, 'DEGREE'],
 ]);
 
 /** Every Sect by name. */
-export const Sect = Object.freeze({
+export const Sect = /* @__PURE__ */ Object.freeze({
   Day: 'DAY',
   Night: 'NIGHT',
 });
@@ -3150,13 +3150,13 @@ export const Sect = Object.freeze({
  * Every Sect by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SectById = new Map([
+export const SectById = /* @__PURE__ */ new Map([
   [0, 'DAY'],
   [1, 'NIGHT'],
 ]);
 
 /** Every SectRule by name. */
-export const SectRule = Object.freeze({
+export const SectRule = /* @__PURE__ */ Object.freeze({
   Horizon: 'HORIZON',
   Daylight: 'DAYLIGHT',
   Day: 'DAY',
@@ -3167,7 +3167,7 @@ export const SectRule = Object.freeze({
  * Every SectRule by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SectRuleById = new Map([
+export const SectRuleById = /* @__PURE__ */ new Map([
   [0, 'HORIZON'],
   [1, 'DAYLIGHT'],
   [2, 'DAY'],
@@ -3175,7 +3175,7 @@ export const SectRuleById = new Map([
 ]);
 
 /** Every Terms by name. */
-export const Terms = Object.freeze({
+export const Terms = /* @__PURE__ */ Object.freeze({
   Egyptian: 'EGYPTIAN',
   PtolemaicLilly: 'PTOLEMAIC_LILLY',
   PtolemaicAshmand: 'PTOLEMAIC_ASHMAND',
@@ -3187,7 +3187,7 @@ export const Terms = Object.freeze({
  * Every Terms by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TermsById = new Map([
+export const TermsById = /* @__PURE__ */ new Map([
   [0, 'EGYPTIAN'],
   [1, 'PTOLEMAIC_LILLY'],
   [2, 'PTOLEMAIC_ASHMAND'],
@@ -3196,7 +3196,7 @@ export const TermsById = new Map([
 ]);
 
 /** Every Triplicities by name. */
-export const Triplicities = Object.freeze({
+export const Triplicities = /* @__PURE__ */ Object.freeze({
   Ptolemy: 'PTOLEMY',
   Lilly: 'LILLY',
 });
@@ -3205,13 +3205,13 @@ export const Triplicities = Object.freeze({
  * Every Triplicities by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TriplicitiesById = new Map([
+export const TriplicitiesById = /* @__PURE__ */ new Map([
   [0, 'PTOLEMY'],
   [1, 'LILLY'],
 ]);
 
 /** Every Accident by name. */
-export const Accident = Object.freeze({
+export const Accident = /* @__PURE__ */ Object.freeze({
   Direct: 'DIRECT',
   Retrograde: 'RETROGRADE',
   Swift: 'SWIFT',
@@ -3242,7 +3242,7 @@ export const Accident = Object.freeze({
  * Every Accident by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AccidentById = new Map([
+export const AccidentById = /* @__PURE__ */ new Map([
   [0, 'DIRECT'],
   [1, 'RETROGRADE'],
   [2, 'SWIFT'],
@@ -3270,7 +3270,7 @@ export const AccidentById = new Map([
 ]);
 
 /** Every Partile by name. */
-export const Partile = Object.freeze({
+export const Partile = /* @__PURE__ */ Object.freeze({
   SameDegree: 'SAME_DEGREE',
   Within: 'WITHIN',
 });
@@ -3279,13 +3279,13 @@ export const Partile = Object.freeze({
  * Every Partile by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PartileById = new Map([
+export const PartileById = /* @__PURE__ */ new Map([
   [0, 'SAME_DEGREE'],
   [1, 'WITHIN'],
 ]);
 
 /** Every Siege by name. */
-export const Siege = Object.freeze({
+export const Siege = /* @__PURE__ */ Object.freeze({
   SameSign: 'SAME_SIGN',
   Within: 'WITHIN',
 });
@@ -3294,13 +3294,13 @@ export const Siege = Object.freeze({
  * Every Siege by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SiegeById = new Map([
+export const SiegeById = /* @__PURE__ */ new Map([
   [0, 'SAME_SIGN'],
   [1, 'WITHIN'],
 ]);
 
 /** Every PlaceReading by name. */
-export const PlaceReading = Object.freeze({
+export const PlaceReading = /* @__PURE__ */ Object.freeze({
   Degree: 'DEGREE',
   Sign: 'SIGN',
 });
@@ -3309,13 +3309,13 @@ export const PlaceReading = Object.freeze({
  * Every PlaceReading by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PlaceReadingById = new Map([
+export const PlaceReadingById = /* @__PURE__ */ new Map([
   [0, 'DEGREE'],
   [1, 'SIGN'],
 ]);
 
 /** Every FortuneRule by name. */
-export const FortuneRule = Object.freeze({
+export const FortuneRule = /* @__PURE__ */ Object.freeze({
   DayAndNight: 'DAY_AND_NIGHT',
   ReversedByNight: 'REVERSED_BY_NIGHT',
   ReversedWhileMoonUp: 'REVERSED_WHILE_MOON_UP',
@@ -3325,14 +3325,14 @@ export const FortuneRule = Object.freeze({
  * Every FortuneRule by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const FortuneRuleById = new Map([
+export const FortuneRuleById = /* @__PURE__ */ new Map([
   [0, 'DAY_AND_NIGHT'],
   [1, 'REVERSED_BY_NIGHT'],
   [2, 'REVERSED_WHILE_MOON_UP'],
 ]);
 
 /** Every Lot by name. */
-export const Lot = Object.freeze({
+export const Lot = /* @__PURE__ */ Object.freeze({
   Fortune: 'FORTUNE',
   Daimon: 'DAIMON',
   Basis: 'BASIS',
@@ -3353,7 +3353,7 @@ export const Lot = Object.freeze({
  * Every Lot by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const LotById = new Map([
+export const LotById = /* @__PURE__ */ new Map([
   [0, 'FORTUNE'],
   [1, 'DAIMON'],
   [2, 'BASIS'],
@@ -3371,7 +3371,7 @@ export const LotById = new Map([
 ]);
 
 /** Every RadicalGround by name. */
-export const RadicalGround = Object.freeze({
+export const RadicalGround = /* @__PURE__ */ Object.freeze({
   OneLord: 'ONE_LORD',
   Triplicity: 'TRIPLICITY',
   Nature: 'NATURE',
@@ -3381,14 +3381,14 @@ export const RadicalGround = Object.freeze({
  * Every RadicalGround by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RadicalGroundById = new Map([
+export const RadicalGroundById = /* @__PURE__ */ new Map([
   [0, 'ONE_LORD'],
   [1, 'TRIPLICITY'],
   [2, 'NATURE'],
 ]);
 
 /** Every PtolemaicAspect by name. */
-export const PtolemaicAspect = Object.freeze({
+export const PtolemaicAspect = /* @__PURE__ */ Object.freeze({
   Conjunction: 'CONJUNCTION',
   Sextile: 'SEXTILE',
   Square: 'SQUARE',
@@ -3400,7 +3400,7 @@ export const PtolemaicAspect = Object.freeze({
  * Every PtolemaicAspect by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PtolemaicAspectById = new Map([
+export const PtolemaicAspectById = /* @__PURE__ */ new Map([
   [0, 'CONJUNCTION'],
   [1, 'SEXTILE'],
   [2, 'SQUARE'],
@@ -3409,7 +3409,7 @@ export const PtolemaicAspectById = new Map([
 ]);
 
 /** Every ApplicationKind by name. */
-export const ApplicationKind = Object.freeze({
+export const ApplicationKind = /* @__PURE__ */ Object.freeze({
   BothDirect: 'BOTH_DIRECT',
   BothRetrograde: 'BOTH_RETROGRADE',
   AgainstRetrograde: 'AGAINST_RETROGRADE',
@@ -3419,14 +3419,14 @@ export const ApplicationKind = Object.freeze({
  * Every ApplicationKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ApplicationKindById = new Map([
+export const ApplicationKindById = /* @__PURE__ */ new Map([
   [0, 'BOTH_DIRECT'],
   [1, 'BOTH_RETROGRADE'],
   [2, 'AGAINST_RETROGRADE'],
 ]);
 
 /** Every ImpedimentKind by name. */
-export const ImpedimentKind = Object.freeze({
+export const ImpedimentKind = /* @__PURE__ */ Object.freeze({
   Prohibition: 'PROHIBITION',
   Frustration: 'FRUSTRATION',
   Refranation: 'REFRANATION',
@@ -3436,14 +3436,14 @@ export const ImpedimentKind = Object.freeze({
  * Every ImpedimentKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ImpedimentKindById = new Map([
+export const ImpedimentKindById = /* @__PURE__ */ new Map([
   [0, 'PROHIBITION'],
   [1, 'FRUSTRATION'],
   [2, 'REFRANATION'],
 ]);
 
 /** Every Way by name. */
-export const Way = Object.freeze({
+export const Way = /* @__PURE__ */ Object.freeze({
   Conjunction: 'CONJUNCTION',
   SextileOrTrine: 'SEXTILE_OR_TRINE',
   Square: 'SQUARE',
@@ -3457,7 +3457,7 @@ export const Way = Object.freeze({
  * Every Way by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const WayById = new Map([
+export const WayById = /* @__PURE__ */ new Map([
   [0, 'CONJUNCTION'],
   [1, 'SEXTILE_OR_TRINE'],
   [2, 'SQUARE'],
@@ -3468,7 +3468,7 @@ export const WayById = new Map([
 ]);
 
 /** Every HitKind by name. */
-export const HitKind = Object.freeze({
+export const HitKind = /* @__PURE__ */ Object.freeze({
   SignIngress: 'SIGN_INGRESS',
   NakshatraIngress: 'NAKSHATRA_INGRESS',
   Station: 'STATION',
@@ -3479,7 +3479,7 @@ export const HitKind = Object.freeze({
  * Every HitKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const HitKindById = new Map([
+export const HitKindById = /* @__PURE__ */ new Map([
   [0, 'SIGN_INGRESS'],
   [1, 'NAKSHATRA_INGRESS'],
   [2, 'STATION'],
@@ -3487,7 +3487,7 @@ export const HitKindById = new Map([
 ]);
 
 /** Every Motion by name. */
-export const Motion = Object.freeze({
+export const Motion = /* @__PURE__ */ Object.freeze({
   Direct: 'DIRECT',
   Retrograde: 'RETROGRADE',
 });
@@ -3496,13 +3496,13 @@ export const Motion = Object.freeze({
  * Every Motion by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MotionById = new Map([
+export const MotionById = /* @__PURE__ */ new Map([
   [0, 'DIRECT'],
   [1, 'RETROGRADE'],
 ]);
 
 /** Every WesternAspect by name. */
-export const WesternAspect = Object.freeze({
+export const WesternAspect = /* @__PURE__ */ Object.freeze({
   Conjunction: 'CONJUNCTION',
   SemiSextile: 'SEMI_SEXTILE',
   SemiSquare: 'SEMI_SQUARE',
@@ -3518,7 +3518,7 @@ export const WesternAspect = Object.freeze({
  * Every WesternAspect by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const WesternAspectById = new Map([
+export const WesternAspectById = /* @__PURE__ */ new Map([
   [0, 'CONJUNCTION'],
   [1, 'SEMI_SEXTILE'],
   [2, 'SEMI_SQUARE'],
@@ -3531,7 +3531,7 @@ export const WesternAspectById = new Map([
 ]);
 
 /** Every AspectPhase by name. */
-export const AspectPhase = Object.freeze({
+export const AspectPhase = /* @__PURE__ */ Object.freeze({
   Entering: 'ENTERING',
   Exact: 'EXACT',
   Leaving: 'LEAVING',
@@ -3541,14 +3541,14 @@ export const AspectPhase = Object.freeze({
  * Every AspectPhase by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AspectPhaseById = new Map([
+export const AspectPhaseById = /* @__PURE__ */ new Map([
   [0, 'ENTERING'],
   [1, 'EXACT'],
   [2, 'LEAVING'],
 ]);
 
 /** Every NodeVedha by name. */
-export const NodeVedha = Object.freeze({
+export const NodeVedha = /* @__PURE__ */ Object.freeze({
   LikeTheSun: 'LIKE_THE_SUN',
   None: 'NONE',
 });
@@ -3557,13 +3557,13 @@ export const NodeVedha = Object.freeze({
  * Every NodeVedha by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NodeVedhaById = new Map([
+export const NodeVedhaById = /* @__PURE__ */ new Map([
   [0, 'LIKE_THE_SUN'],
   [1, 'NONE'],
 ]);
 
 /** Every NodeObstruction by name. */
-export const NodeObstruction = Object.freeze({
+export const NodeObstruction = /* @__PURE__ */ Object.freeze({
   NotEachOther: 'NOT_EACH_OTHER',
   EachOtherToo: 'EACH_OTHER_TOO',
   None: 'NONE',
@@ -3573,14 +3573,14 @@ export const NodeObstruction = Object.freeze({
  * Every NodeObstruction by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NodeObstructionById = new Map([
+export const NodeObstructionById = /* @__PURE__ */ new Map([
   [0, 'NOT_EACH_OTHER'],
   [1, 'EACH_OTHER_TOO'],
   [2, 'NONE'],
 ]);
 
 /** Every GocharVerdict by name. */
-export const GocharVerdict = Object.freeze({
+export const GocharVerdict = /* @__PURE__ */ Object.freeze({
   Good: 'GOOD',
   Obstructed: 'OBSTRUCTED',
   NotGood: 'NOT_GOOD',
@@ -3590,14 +3590,14 @@ export const GocharVerdict = Object.freeze({
  * Every GocharVerdict by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GocharVerdictById = new Map([
+export const GocharVerdictById = /* @__PURE__ */ new Map([
   [0, 'GOOD'],
   [1, 'OBSTRUCTED'],
   [2, 'NOT_GOOD'],
 ]);
 
 /** Every Fruition by name. */
-export const Fruition = Object.freeze({
+export const Fruition = /* @__PURE__ */ Object.freeze({
   First: 'FIRST',
   Middle: 'MIDDLE',
   Last: 'LAST',
@@ -3608,7 +3608,7 @@ export const Fruition = Object.freeze({
  * Every Fruition by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const FruitionById = new Map([
+export const FruitionById = /* @__PURE__ */ new Map([
   [0, 'FIRST'],
   [1, 'MIDDLE'],
   [2, 'LAST'],
@@ -3616,7 +3616,7 @@ export const FruitionById = new Map([
 ]);
 
 /** Every AshtakavargaGoodFrom by name. */
-export const AshtakavargaGoodFrom = Object.freeze({
+export const AshtakavargaGoodFrom = /* @__PURE__ */ Object.freeze({
   Five: 'FIVE',
   Four: 'FOUR',
 });
@@ -3625,13 +3625,13 @@ export const AshtakavargaGoodFrom = Object.freeze({
  * Every AshtakavargaGoodFrom by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AshtakavargaGoodFromById = new Map([
+export const AshtakavargaGoodFromById = /* @__PURE__ */ new Map([
   [0, 'FIVE'],
   [1, 'FOUR'],
 ]);
 
 /** Every KakshyaLord by name. */
-export const KakshyaLord = Object.freeze({
+export const KakshyaLord = /* @__PURE__ */ Object.freeze({
   Saturn: 'SATURN',
   Jupiter: 'JUPITER',
   Mars: 'MARS',
@@ -3646,7 +3646,7 @@ export const KakshyaLord = Object.freeze({
  * Every KakshyaLord by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const KakshyaLordById = new Map([
+export const KakshyaLordById = /* @__PURE__ */ new Map([
   [0, 'SATURN'],
   [1, 'JUPITER'],
   [2, 'MARS'],
@@ -3658,7 +3658,7 @@ export const KakshyaLordById = new Map([
 ]);
 
 /** Every SarvaStanding by name. */
-export const SarvaStanding = Object.freeze({
+export const SarvaStanding = /* @__PURE__ */ Object.freeze({
   Above: 'ABOVE',
   Even: 'EVEN',
   Below: 'BELOW',
@@ -3668,14 +3668,14 @@ export const SarvaStanding = Object.freeze({
  * Every SarvaStanding by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SarvaStandingById = new Map([
+export const SarvaStandingById = /* @__PURE__ */ new Map([
   [0, 'ABOVE'],
   [1, 'EVEN'],
   [2, 'BELOW'],
 ]);
 
 /** Every DashaPhase by name. */
-export const DashaPhase = Object.freeze({
+export const DashaPhase = /* @__PURE__ */ Object.freeze({
   Commencement: 'COMMENCEMENT',
   Middle: 'MIDDLE',
   End: 'END',
@@ -3685,14 +3685,14 @@ export const DashaPhase = Object.freeze({
  * Every DashaPhase by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DashaPhaseById = new Map([
+export const DashaPhaseById = /* @__PURE__ */ new Map([
   [0, 'COMMENCEMENT'],
   [1, 'MIDDLE'],
   [2, 'END'],
 ]);
 
 /** Every DayPart by name. */
-export const DayPart = Object.freeze({
+export const DayPart = /* @__PURE__ */ Object.freeze({
   Daylight: 'DAYLIGHT',
   Night: 'NIGHT',
 });
@@ -3701,13 +3701,13 @@ export const DayPart = Object.freeze({
  * Every DayPart by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DayPartById = new Map([
+export const DayPartById = /* @__PURE__ */ new Map([
   [0, 'DAYLIGHT'],
   [1, 'NIGHT'],
 ]);
 
 /** Every Sunrise by name. */
-export const Sunrise = Object.freeze({
+export const Sunrise = /* @__PURE__ */ Object.freeze({
   CentreNoRefraction: 'CENTRE_NO_REFRACTION',
   UpperLimbRefraction: 'UPPER_LIMB_REFRACTION',
   LowerLimbRefraction: 'LOWER_LIMB_REFRACTION',
@@ -3718,7 +3718,7 @@ export const Sunrise = Object.freeze({
  * Every Sunrise by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SunriseById = new Map([
+export const SunriseById = /* @__PURE__ */ new Map([
   [0, 'CENTRE_NO_REFRACTION'],
   [1, 'UPPER_LIMB_REFRACTION'],
   [2, 'LOWER_LIMB_REFRACTION'],
@@ -3726,7 +3726,7 @@ export const SunriseById = new Map([
 ]);
 
 /** Every GhatiReckoning by name. */
-export const GhatiReckoning = Object.freeze({
+export const GhatiReckoning = /* @__PURE__ */ Object.freeze({
   Civil: 'CIVIL',
   Proportional: 'PROPORTIONAL',
 });
@@ -3735,13 +3735,13 @@ export const GhatiReckoning = Object.freeze({
  * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const GhatiReckoningById = new Map([
+export const GhatiReckoningById = /* @__PURE__ */ new Map([
   [0, 'CIVIL'],
   [1, 'PROPORTIONAL'],
 ]);
 
 /** Every HoraReckoning by name. */
-export const HoraReckoning = Object.freeze({
+export const HoraReckoning = /* @__PURE__ */ Object.freeze({
   Proportional: 'PROPORTIONAL',
   Equal: 'EQUAL',
 });
@@ -3750,13 +3750,13 @@ export const HoraReckoning = Object.freeze({
  * Every HoraReckoning by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const HoraReckoningById = new Map([
+export const HoraReckoningById = /* @__PURE__ */ new Map([
   [0, 'PROPORTIONAL'],
   [1, 'EQUAL'],
 ]);
 
 /** Every DayState by name. */
-export const DayState = Object.freeze({
+export const DayState = /* @__PURE__ */ Object.freeze({
   Normal: 'NORMAL',
   Polar: 'POLAR',
 });
@@ -3765,13 +3765,13 @@ export const DayState = Object.freeze({
  * Every DayState by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DayStateById = new Map([
+export const DayStateById = /* @__PURE__ */ new Map([
   [0, 'NORMAL'],
   [1, 'POLAR'],
 ]);
 
 /** Every PolarKind by name. */
-export const PolarKind = Object.freeze({
+export const PolarKind = /* @__PURE__ */ Object.freeze({
   Day: 'DAY',
   Night: 'NIGHT',
 });
@@ -3780,13 +3780,13 @@ export const PolarKind = Object.freeze({
  * Every PolarKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PolarKindById = new Map([
+export const PolarKindById = /* @__PURE__ */ new Map([
   [0, 'DAY'],
   [1, 'NIGHT'],
 ]);
 
 /** Every PolarDayPolicy by name. */
-export const PolarDayPolicy = Object.freeze({
+export const PolarDayPolicy = /* @__PURE__ */ Object.freeze({
   Undefined: 'UNDEFINED',
   NearestEvent: 'NEAREST_EVENT',
   CivilMidnight: 'CIVIL_MIDNIGHT',
@@ -3796,14 +3796,14 @@ export const PolarDayPolicy = Object.freeze({
  * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const PolarDayPolicyById = new Map([
+export const PolarDayPolicyById = /* @__PURE__ */ new Map([
   [0, 'UNDEFINED'],
   [1, 'NEAREST_EVENT'],
   [2, 'CIVIL_MIDNIGHT'],
 ]);
 
 /** Every VarsheshaChosen by name. */
-export const VarsheshaChosen = Object.freeze({
+export const VarsheshaChosen = /* @__PURE__ */ Object.freeze({
   Strongest: 'STRONGEST',
   MostPortfolios: 'MOST_PORTFOLIOS',
   MunthaLordUnaspected: 'MUNTHA_LORD_UNASPECTED',
@@ -3820,7 +3820,7 @@ export const VarsheshaChosen = Object.freeze({
  * Every VarsheshaChosen by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VarsheshaChosenById = new Map([
+export const VarsheshaChosenById = /* @__PURE__ */ new Map([
   [0, 'STRONGEST'],
   [1, 'MOST_PORTFOLIOS'],
   [2, 'MUNTHA_LORD_UNASPECTED'],
@@ -3834,7 +3834,7 @@ export const VarsheshaChosenById = new Map([
 ]);
 
 /** Every TajikaDrishti by name. */
-export const TajikaDrishti = Object.freeze({
+export const TajikaDrishti = /* @__PURE__ */ Object.freeze({
   Friendly: 'FRIENDLY',
   SecretlyFriendly: 'SECRETLY_FRIENDLY',
   Inimical: 'INIMICAL',
@@ -3846,7 +3846,7 @@ export const TajikaDrishti = Object.freeze({
  * Every TajikaDrishti by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TajikaDrishtiById = new Map([
+export const TajikaDrishtiById = /* @__PURE__ */ new Map([
   [0, 'FRIENDLY'],
   [1, 'SECRETLY_FRIENDLY'],
   [2, 'INIMICAL'],
@@ -3855,7 +3855,7 @@ export const TajikaDrishtiById = new Map([
 ]);
 
 /** Every TajikaYoga by name. */
-export const TajikaYoga = Object.freeze({
+export const TajikaYoga = /* @__PURE__ */ Object.freeze({
   IthasalaVartamana: 'ITHASALA_VARTAMANA',
   IthasalaPoorna: 'ITHASALA_POORNA',
   IthasalaBhavishyat: 'ITHASALA_BHAVISHYAT',
@@ -3866,7 +3866,7 @@ export const TajikaYoga = Object.freeze({
  * Every TajikaYoga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TajikaYogaById = new Map([
+export const TajikaYogaById = /* @__PURE__ */ new Map([
   [0, 'ITHASALA_VARTAMANA'],
   [1, 'ITHASALA_POORNA'],
   [2, 'ITHASALA_BHAVISHYAT'],
@@ -3874,7 +3874,7 @@ export const TajikaYogaById = new Map([
 ]);
 
 /** Every YearYoga by name. */
-export const YearYoga = Object.freeze({
+export const YearYoga = /* @__PURE__ */ Object.freeze({
   Ikabala: 'IKABALA',
   Induvara: 'INDUVARA',
   Ithasala: 'ITHASALA',
@@ -3897,7 +3897,7 @@ export const YearYoga = Object.freeze({
  * Every YearYoga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const YearYogaById = new Map([
+export const YearYogaById = /* @__PURE__ */ new Map([
   [0, 'IKABALA'],
   [1, 'INDUVARA'],
   [2, 'ITHASALA'],
@@ -3917,7 +3917,7 @@ export const YearYogaById = new Map([
 ]);
 
 /** Every Saham by name. */
-export const Saham = Object.freeze({
+export const Saham = /* @__PURE__ */ Object.freeze({
   Punya: 'PUNYA',
   Guru: 'GURU',
   Vidya: 'VIDYA',
@@ -3965,7 +3965,7 @@ export const Saham = Object.freeze({
  * Every Saham by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SahamById = new Map([
+export const SahamById = /* @__PURE__ */ new Map([
   [0, 'PUNYA'],
   [1, 'GURU'],
   [2, 'VIDYA'],
@@ -4010,7 +4010,7 @@ export const SahamById = new Map([
 ]);
 
 /** Every TajikaRelation by name. */
-export const TajikaRelation = Object.freeze({
+export const TajikaRelation = /* @__PURE__ */ Object.freeze({
   Own: 'OWN',
   Friend: 'FRIEND',
   Neutral: 'NEUTRAL',
@@ -4021,7 +4021,7 @@ export const TajikaRelation = Object.freeze({
  * Every TajikaRelation by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const TajikaRelationById = new Map([
+export const TajikaRelationById = /* @__PURE__ */ new Map([
   [0, 'OWN'],
   [1, 'FRIEND'],
   [2, 'NEUTRAL'],
@@ -4029,7 +4029,7 @@ export const TajikaRelationById = new Map([
 ]);
 
 /** Every VashyaRelation by name. */
-export const VashyaRelation = Object.freeze({
+export const VashyaRelation = /* @__PURE__ */ Object.freeze({
   Mutual: 'MUTUAL',
   OneWay: 'ONE_WAY',
   Food: 'FOOD',
@@ -4040,7 +4040,7 @@ export const VashyaRelation = Object.freeze({
  * Every VashyaRelation by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VashyaRelationById = new Map([
+export const VashyaRelationById = /* @__PURE__ */ new Map([
   [0, 'MUTUAL'],
   [1, 'ONE_WAY'],
   [2, 'FOOD'],
@@ -4048,7 +4048,7 @@ export const VashyaRelationById = new Map([
 ]);
 
 /** Every YoniRelation by name. */
-export const YoniRelation = Object.freeze({
+export const YoniRelation = /* @__PURE__ */ Object.freeze({
   Same: 'SAME',
   Neutral: 'NEUTRAL',
   GreatEnemy: 'GREAT_ENEMY',
@@ -4058,14 +4058,14 @@ export const YoniRelation = Object.freeze({
  * Every YoniRelation by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const YoniRelationById = new Map([
+export const YoniRelationById = /* @__PURE__ */ new Map([
   [0, 'SAME'],
   [1, 'NEUTRAL'],
   [2, 'GREAT_ENEMY'],
 ]);
 
 /** Every MaitriRelation by name. */
-export const MaitriRelation = Object.freeze({
+export const MaitriRelation = /* @__PURE__ */ Object.freeze({
   OneLord: 'ONE_LORD',
   MutualFriends: 'MUTUAL_FRIENDS',
   FriendNeutral: 'FRIEND_NEUTRAL',
@@ -4079,7 +4079,7 @@ export const MaitriRelation = Object.freeze({
  * Every MaitriRelation by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MaitriRelationById = new Map([
+export const MaitriRelationById = /* @__PURE__ */ new Map([
   [0, 'ONE_LORD'],
   [1, 'MUTUAL_FRIENDS'],
   [2, 'FRIEND_NEUTRAL'],
@@ -4090,7 +4090,7 @@ export const MaitriRelationById = new Map([
 ]);
 
 /** Every BhakootDosha by name. */
-export const BhakootDosha = Object.freeze({
+export const BhakootDosha = /* @__PURE__ */ Object.freeze({
   None: 'NONE',
   SixEight: 'SIX_EIGHT',
   FiveNine: 'FIVE_NINE',
@@ -4101,7 +4101,7 @@ export const BhakootDosha = Object.freeze({
  * Every BhakootDosha by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const BhakootDoshaById = new Map([
+export const BhakootDoshaById = /* @__PURE__ */ new Map([
   [0, 'NONE'],
   [1, 'SIX_EIGHT'],
   [2, 'FIVE_NINE'],
@@ -4109,7 +4109,7 @@ export const BhakootDoshaById = new Map([
 ]);
 
 /** Every DhinamRule by name. */
-export const DhinamRule = Object.freeze({
+export const DhinamRule = /* @__PURE__ */ Object.freeze({
   Count: 'COUNT',
   SecondRoundQuarter: 'SECOND_ROUND_QUARTER',
   VadhaVainasika: 'VADHA_VAINASIKA',
@@ -4127,7 +4127,7 @@ export const DhinamRule = Object.freeze({
  * Every DhinamRule by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DhinamRuleById = new Map([
+export const DhinamRuleById = /* @__PURE__ */ new Map([
   [0, 'COUNT'],
   [1, 'SECOND_ROUND_QUARTER'],
   [2, 'VADHA_VAINASIKA'],
@@ -4142,7 +4142,7 @@ export const DhinamRuleById = new Map([
 ]);
 
 /** Every Rajju by name. */
-export const Rajju = Object.freeze({
+export const Rajju = /* @__PURE__ */ Object.freeze({
   Padha: 'PADHA',
   Ooru: 'OORU',
   Nabhi: 'NABHI',
@@ -4154,7 +4154,7 @@ export const Rajju = Object.freeze({
  * Every Rajju by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const RajjuById = new Map([
+export const RajjuById = /* @__PURE__ */ new Map([
   [0, 'PADHA'],
   [1, 'OORU'],
   [2, 'NABHI'],
@@ -4163,7 +4163,7 @@ export const RajjuById = new Map([
 ]);
 
 /** Every DoshaSystem by name. */
-export const DoshaSystem = Object.freeze({
+export const DoshaSystem = /* @__PURE__ */ Object.freeze({
   AshtaKoota: 'ASHTA_KOOTA',
   Porutham: 'PORUTHAM',
   Kuja: 'KUJA',
@@ -4173,14 +4173,14 @@ export const DoshaSystem = Object.freeze({
  * Every DoshaSystem by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DoshaSystemById = new Map([
+export const DoshaSystemById = /* @__PURE__ */ new Map([
   [0, 'ASHTA_KOOTA'],
   [1, 'PORUTHAM'],
   [2, 'KUJA'],
 ]);
 
 /** Every MatchRole by name. */
-export const MatchRole = Object.freeze({
+export const MatchRole = /* @__PURE__ */ Object.freeze({
   Bride: 'BRIDE',
   Groom: 'GROOM',
 });
@@ -4189,13 +4189,13 @@ export const MatchRole = Object.freeze({
  * Every MatchRole by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MatchRoleById = new Map([
+export const MatchRoleById = /* @__PURE__ */ new Map([
   [0, 'BRIDE'],
   [1, 'GROOM'],
 ]);
 
 /** Every HarshaGrade by name. */
-export const HarshaGrade = Object.freeze({
+export const HarshaGrade = /* @__PURE__ */ Object.freeze({
   Nirbala: 'NIRBALA',
   Alpabali: 'ALPABALI',
   MadhyaBali: 'MADHYA_BALI',
@@ -4207,7 +4207,7 @@ export const HarshaGrade = Object.freeze({
  * Every HarshaGrade by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const HarshaGradeById = new Map([
+export const HarshaGradeById = /* @__PURE__ */ new Map([
   [0, 'NIRBALA'],
   [1, 'ALPABALI'],
   [2, 'MADHYA_BALI'],
@@ -4216,7 +4216,7 @@ export const HarshaGradeById = new Map([
 ]);
 
 /** Every SahamStrong by name. */
-export const SahamStrong = Object.freeze({
+export const SahamStrong = /* @__PURE__ */ Object.freeze({
   LordExalted: 'LORD_EXALTED',
   LordOwnSign: 'LORD_OWN_SIGN',
   LordOwnHudda: 'LORD_OWN_HUDDA',
@@ -4235,7 +4235,7 @@ export const SahamStrong = Object.freeze({
  * Every SahamStrong by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SahamStrongById = new Map([
+export const SahamStrongById = /* @__PURE__ */ new Map([
   [0, 'LORD_EXALTED'],
   [1, 'LORD_OWN_SIGN'],
   [2, 'LORD_OWN_HUDDA'],
@@ -4251,7 +4251,7 @@ export const SahamStrongById = new Map([
 ]);
 
 /** Every SahamWeak by name. */
-export const SahamWeak = Object.freeze({
+export const SahamWeak = /* @__PURE__ */ Object.freeze({
   LordWeakVishwa: 'LORD_WEAK_VISHWA',
   LordLacksHarsha: 'LORD_LACKS_HARSHA',
   LordApart: 'LORD_APART',
@@ -4263,7 +4263,7 @@ export const SahamWeak = Object.freeze({
  * Every SahamWeak by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SahamWeakById = new Map([
+export const SahamWeakById = /* @__PURE__ */ new Map([
   [0, 'LORD_WEAK_VISHWA'],
   [1, 'LORD_LACKS_HARSHA'],
   [2, 'LORD_APART'],
@@ -4272,7 +4272,7 @@ export const SahamWeakById = new Map([
 ]);
 
 /** Every Affliction by name. */
-export const Affliction = Object.freeze({
+export const Affliction = /* @__PURE__ */ Object.freeze({
   Retrograde: 'RETROGRADE',
   Combust: 'COMBUST',
   Debilitated: 'DEBILITATED',
@@ -4284,7 +4284,7 @@ export const Affliction = Object.freeze({
  * Every Affliction by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const AfflictionById = new Map([
+export const AfflictionById = /* @__PURE__ */ new Map([
   [0, 'RETROGRADE'],
   [1, 'COMBUST'],
   [2, 'DEBILITATED'],
@@ -4293,7 +4293,7 @@ export const AfflictionById = new Map([
 ]);
 
 /** Every Scale by name. */
-export const Scale = Object.freeze({
+export const Scale = /* @__PURE__ */ Object.freeze({
   Ut1: 'UT1',
   Tt: 'TT',
   Utc: 'UTC',
@@ -4303,14 +4303,14 @@ export const Scale = Object.freeze({
  * Every Scale by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ScaleById = new Map([
+export const ScaleById = /* @__PURE__ */ new Map([
   [0, 'UT1'],
   [1, 'TT'],
   [2, 'UTC'],
 ]);
 
 /** Every ZoneKind by name. */
-export const ZoneKind = Object.freeze({
+export const ZoneKind = /* @__PURE__ */ Object.freeze({
   Iana: 'IANA',
   Fixed: 'FIXED',
   LocalMean: 'LOCAL_MEAN',
@@ -4320,14 +4320,14 @@ export const ZoneKind = Object.freeze({
  * Every ZoneKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ZoneKindById = new Map([
+export const ZoneKindById = /* @__PURE__ */ new Map([
   [0, 'IANA'],
   [1, 'FIXED'],
   [2, 'LOCAL_MEAN'],
 ]);
 
 /** Every ZoneSource by name. */
-export const ZoneSource = Object.freeze({
+export const ZoneSource = /* @__PURE__ */ Object.freeze({
   Iana: 'IANA',
   LocalMean: 'LOCAL_MEAN',
   Manual: 'MANUAL',
@@ -4337,14 +4337,14 @@ export const ZoneSource = Object.freeze({
  * Every ZoneSource by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ZoneSourceById = new Map([
+export const ZoneSourceById = /* @__PURE__ */ new Map([
   [0, 'IANA'],
   [1, 'LOCAL_MEAN'],
   [2, 'MANUAL'],
 ]);
 
 /** Every ZoneEra by name. */
-export const ZoneEra = Object.freeze({
+export const ZoneEra = /* @__PURE__ */ Object.freeze({
   Current: 'CURRENT',
   Historical: 'HISTORICAL',
   BeforeRules: 'BEFORE_RULES',
@@ -4354,14 +4354,14 @@ export const ZoneEra = Object.freeze({
  * Every ZoneEra by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ZoneEraById = new Map([
+export const ZoneEraById = /* @__PURE__ */ new Map([
   [0, 'CURRENT'],
   [1, 'HISTORICAL'],
   [2, 'BEFORE_RULES'],
 ]);
 
 /** Every Dst by name. */
-export const Dst = Object.freeze({
+export const Dst = /* @__PURE__ */ Object.freeze({
   None: 'NONE',
   Gap: 'GAP',
   Overlap: 'OVERLAP',
@@ -4371,14 +4371,14 @@ export const Dst = Object.freeze({
  * Every Dst by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DstById = new Map([
+export const DstById = /* @__PURE__ */ new Map([
   [0, 'NONE'],
   [1, 'GAP'],
   [2, 'OVERLAP'],
 ]);
 
 /** Every Chosen by name. */
-export const Chosen = Object.freeze({
+export const Chosen = /* @__PURE__ */ Object.freeze({
   Earlier: 'EARLIER',
   Later: 'LATER',
 });
@@ -4387,13 +4387,13 @@ export const Chosen = Object.freeze({
  * Every Chosen by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ChosenById = new Map([
+export const ChosenById = /* @__PURE__ */ new Map([
   [0, 'EARLIER'],
   [1, 'LATER'],
 ]);
 
 /** Every ZoneWarning by name. */
-export const ZoneWarning = Object.freeze({
+export const ZoneWarning = /* @__PURE__ */ Object.freeze({
   OffsetDiffersFromCurrentRules: 'OFFSET_DIFFERS_FROM_CURRENT_RULES',
   DstAmbiguous: 'DST_AMBIGUOUS',
   DstGapShifted: 'DST_GAP_SHIFTED',
@@ -4406,7 +4406,7 @@ export const ZoneWarning = Object.freeze({
  * Every ZoneWarning by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const ZoneWarningById = new Map([
+export const ZoneWarningById = /* @__PURE__ */ new Map([
   [0, 'OFFSET_DIFFERS_FROM_CURRENT_RULES'],
   [1, 'DST_AMBIGUOUS'],
   [2, 'DST_GAP_SHIFTED'],
@@ -4416,7 +4416,7 @@ export const ZoneWarningById = new Map([
 ]);
 
 /** Every DeltaTSource by name. */
-export const DeltaTSource = Object.freeze({
+export const DeltaTSource = /* @__PURE__ */ Object.freeze({
   Table: 'TABLE',
   Model: 'MODEL',
   LeapSeconds: 'LEAP_SECONDS',
@@ -4427,7 +4427,7 @@ export const DeltaTSource = Object.freeze({
  * Every DeltaTSource by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const DeltaTSourceById = new Map([
+export const DeltaTSourceById = /* @__PURE__ */ new Map([
   [0, 'TABLE'],
   [1, 'MODEL'],
   [2, 'LEAP_SECONDS'],
@@ -4435,7 +4435,7 @@ export const DeltaTSourceById = new Map([
 ]);
 
 /** Every LunarMonth by name. */
-export const LunarMonth = Object.freeze({
+export const LunarMonth = /* @__PURE__ */ Object.freeze({
   Amanta: 'AMANTA',
   Purnimanta: 'PURNIMANTA',
 });
@@ -4444,13 +4444,13 @@ export const LunarMonth = Object.freeze({
  * Every LunarMonth by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const LunarMonthById = new Map([
+export const LunarMonthById = /* @__PURE__ */ new Map([
   [0, 'AMANTA'],
   [1, 'PURNIMANTA'],
 ]);
 
 /** Every MoonEvent by name. */
-export const MoonEvent = Object.freeze({
+export const MoonEvent = /* @__PURE__ */ Object.freeze({
   Rise: 'RISE',
   Set: 'SET',
 });
@@ -4459,13 +4459,13 @@ export const MoonEvent = Object.freeze({
  * Every MoonEvent by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MoonEventById = new Map([
+export const MoonEventById = /* @__PURE__ */ new Map([
   [0, 'RISE'],
   [1, 'SET'],
 ]);
 
 /** Every YogaCause by name. */
-export const YogaCause = Object.freeze({
+export const YogaCause = /* @__PURE__ */ Object.freeze({
   VaraNakshatra: 'VARA_NAKSHATRA',
   VaraTithiNakshatra: 'VARA_TITHI_NAKSHATRA',
 });
@@ -4474,13 +4474,13 @@ export const YogaCause = Object.freeze({
  * Every YogaCause by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const YogaCauseById = new Map([
+export const YogaCauseById = /* @__PURE__ */ new Map([
   [0, 'VARA_NAKSHATRA'],
   [1, 'VARA_TITHI_NAKSHATRA'],
 ]);
 
 /** Every MonthKind by name. */
-export const MonthKind = Object.freeze({
+export const MonthKind = /* @__PURE__ */ Object.freeze({
   Nija: 'NIJA',
   Adhika: 'ADHIKA',
   Kshaya: 'KSHAYA',
@@ -4490,14 +4490,14 @@ export const MonthKind = Object.freeze({
  * Every MonthKind by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const MonthKindById = new Map([
+export const MonthKindById = /* @__PURE__ */ new Map([
   [0, 'NIJA'],
   [1, 'ADHIKA'],
   [2, 'KSHAYA'],
 ]);
 
 /** Every Sunrises by name. */
-export const Sunrises = Object.freeze({
+export const Sunrises = /* @__PURE__ */ Object.freeze({
   Opening: 'OPENING',
   Next: 'NEXT',
   Both: 'BOTH',
@@ -4508,7 +4508,7 @@ export const Sunrises = Object.freeze({
  * Every Sunrises by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const SunrisesById = new Map([
+export const SunrisesById = /* @__PURE__ */ new Map([
   [0, 'OPENING'],
   [1, 'NEXT'],
   [2, 'BOTH'],
@@ -4516,7 +4516,7 @@ export const SunrisesById = new Map([
 ]);
 
 /** Every NameVarga by name. */
-export const NameVarga = Object.freeze({
+export const NameVarga = /* @__PURE__ */ Object.freeze({
   Garuda: 'GARUDA',
   Cat: 'CAT',
   Lion: 'LION',
@@ -4531,7 +4531,7 @@ export const NameVarga = Object.freeze({
  * Every NameVarga by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const NameVargaById = new Map([
+export const NameVargaById = /* @__PURE__ */ new Map([
   [0, 'GARUDA'],
   [1, 'CAT'],
   [2, 'LION'],
@@ -4543,7 +4543,7 @@ export const NameVargaById = new Map([
 ]);
 
 /** Every VargaRelation by name. */
-export const VargaRelation = Object.freeze({
+export const VargaRelation = /* @__PURE__ */ Object.freeze({
   Same: 'SAME',
   Enemy: 'ENEMY',
   Neutral: 'NEUTRAL',
@@ -4553,7 +4553,7 @@ export const VargaRelation = Object.freeze({
  * Every VargaRelation by the id the boundary carries, so a column of ids or a
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
-export const VargaRelationById = new Map([
+export const VargaRelationById = /* @__PURE__ */ new Map([
   [0, 'SAME'],
   [1, 'ENEMY'],
   [2, 'NEUTRAL'],

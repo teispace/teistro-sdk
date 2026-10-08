@@ -2332,6 +2332,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **The catalogue tree-shakes** (`07-roadmap/00-roadmap.md`, Track A
+  item 5). The generated tables of `catalogue.js` are marked
+  `/* @__PURE__ */`, so a bundle that imports one member keeps only that
+  member. Bundling one member of `/catalogue` took 38 to 68 kB with
+  esbuild, Vite and webpack before, and 278 to 288 bytes after. The three
+  bundlers are pinned in `bindings/wasm/bundlers`, and `check-wasm` bundles
+  the installed wasm package with each. That bundle must ship no `.wasm`
+  and weigh at most 1 kB; the package's entry must ship the module.
+  Bundling the entry also got some 40 kB smaller. **Numbers:** none move.
 - **Remedies, step 3: whom a remedy is for** (`remedies.md`, C351).
   `teistro::remedies::subjects(sky, functional)` answers each graha with
   every reason that makes it a subject: the running daśā lords,

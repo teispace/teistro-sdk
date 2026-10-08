@@ -35,7 +35,12 @@
 //!    deploy bundles it (which resolves `#native` through the `workerd`
 //!    condition) and run by `workerd test`. Its answer too must equal
 //!    Node's to the bit.
-//! 6. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
+//! 6. **Shaken by the bundlers**, from the installed package: esbuild,
+//!    Vite and webpack, pinned in `bindings/wasm/bundlers`, each bundle
+//!    one member of `/catalogue` and must ship no module and at most
+//!    [`SHAKEN_MOST`] bytes; each also bundles the entry, which must ship
+//!    the module, so the first measurement is known to be able to see one.
+//! 7. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
 //!    over it fails, and so does more than 5% under it, since a budget
 //!    that loose would let the saving go unnoticed.
 //!
@@ -67,6 +72,13 @@ pub(crate) const STAGED: &str = "target/wasm/package";
 const CONSUMER: &str = "target/wasm/consumer";
 /// The Workers check: its Worker, its runner, and the pinned tools.
 const WORKERD: &str = "bindings/wasm/workerd";
+/// The tree-shaking check: its runner and the pinned bundlers.
+const BUNDLERS: &str = "bindings/wasm/bundlers";
+/// The most a bundle importing one member of `/catalogue` may weigh. The
+/// three bundlers wrote 278 to 288 bytes on 2026-10-08, and 38 to 68 kB
+/// before the generated tables were marked pure: the budget sits between
+/// the two, near enough to the first to catch a table that stops shaking.
+const SHAKEN_MOST: u64 = 1024;
 /// The Node package, whose layer and manifest the wasm package is made of.
 const NODE: &str = "bindings/node";
 /// The Node package's loader, the one file of its layer the wasm package
@@ -410,6 +422,62 @@ fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
     )
 }
 
+/// The installed package bundled by each pinned bundler: one member of
+/// `/catalogue` ships no module and stays under [`SHAKEN_MOST`]; the
+/// entry ships the module.
+fn shaken(root: &Path) -> Result<(), ()> {
+    let dir = root.join(BUNDLERS);
+    for bundler in ["esbuild", "vite", "webpack"] {
+        if pinned_npm_tool(&dir, bundler).is_none() {
+            crate::skip::skip(format_args!(
+                "the tree-shaking check: the pinned {bundler} is not installed and could not be (needs `npm`)"
+            ));
+            return Ok(());
+        }
+    }
+    let rows = probe_by(root, "bundlers/run.mjs", &[root.join(CONSUMER).as_os_str()]).map_err(
+        |error| println!("FAIL  the bundlers did not bundle the installed package: {error}"),
+    )?;
+    let rows = rows.as_array().cloned().unwrap_or_default();
+    if rows.is_empty() {
+        println!("FAIL  the bundlers reported no bundle");
+        return Err(());
+    }
+    let mut failed = false;
+    for row in &rows {
+        let bundler = row["bundler"].as_str().unwrap_or("?");
+        let entry = row["entry"].as_str().unwrap_or("?");
+        let bytes = row["bytes"].as_u64().unwrap_or(u64::MAX);
+        let wasm = row["wasm"].as_bool().unwrap_or(false);
+        let complaint = match entry {
+            "catalogue" if wasm => Some(String::from("ships the module")),
+            "catalogue" if bytes > SHAKEN_MOST => {
+                Some(format!("weighs {bytes} bytes, over {SHAKEN_MOST}"))
+            }
+            "catalogue" => None,
+            _ if !wasm => Some(String::from(
+                "does not ship the module, so the check cannot see one",
+            )),
+            _ => None,
+        };
+        match complaint {
+            Some(why) => {
+                failed = true;
+                println!("FAIL  {bundler} bundling `{entry}` {why}");
+            }
+            None => println!(
+                "ok    {bundler} bundles `{entry}` in {bytes} bytes{}",
+                if wasm {
+                    ", with the module"
+                } else {
+                    ", without the module"
+                }
+            ),
+        }
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
 /// The staged package packed, installed into an empty project, and run by
 /// the Node package's own consumer.
 fn consumer(root: &Path, staged: &Path) -> Result<(), ()> {
@@ -498,6 +566,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             browser(root, &staged, &node)
                 .and_then(|()| consumer(root, &staged))
                 .and_then(|()| workerd(root, &node))
+                .and_then(|()| shaken(root))
         });
     // The suite was copied in to run from inside the package; it is not
     // part of what a consumer installs.

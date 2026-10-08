@@ -935,9 +935,14 @@ The order below puts what blocks a release first.
    **Built** (2026-10-08): `xtask/src/wheel.rs`, tagged per row by
    `Platform::wheel_tag`, the download kept for hosts no wheel fits.
 5. **Tree-shaking and size.**
-   - `/*#__PURE__*/` on the generated catalogue's top-level calls.
-   - esbuild, Vite and webpack fixtures proving that `/catalogue` alone
-     ships no `.wasm`.
+   - **Built 2026-10-08:** `/* @__PURE__ */` on the generated catalogue's
+     top-level calls. One member of `/catalogue` bundled weighed 38 to
+     68 kB before, and 278 to 288 bytes after.
+   - **Built 2026-10-08:** esbuild, Vite and webpack, pinned in
+     `bindings/wasm/bundlers`, bundle the installed wasm package under
+     `check-wasm`. One member of `/catalogue` must ship no `.wasm` and
+     weigh at most 1 kB. The entry must ship the module, which shows the
+     check can see one.
    - ADR-0005's profiles as cargo features, giving one wasm module per
      profile behind subpath exports, each with its gzipped size budget.
      Per-crate size is measured first.
