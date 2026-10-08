@@ -162,7 +162,21 @@ impl Platform {
     /// `cfg!` itself, so there is one answer to "what is this machine"
     /// and one place to correct it.
     pub(crate) fn host() -> Self {
-        let triple = if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
+        // musl first: a musl Linux is a Linux, so the glibc test below
+        // would claim it.
+        let triple = if cfg!(all(
+            target_os = "linux",
+            target_env = "musl",
+            target_arch = "x86_64"
+        )) {
+            "x86_64-unknown-linux-musl"
+        } else if cfg!(all(
+            target_os = "linux",
+            target_env = "musl",
+            target_arch = "aarch64"
+        )) {
+            "aarch64-unknown-linux-musl"
+        } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
             "x86_64-unknown-linux-gnu"
         } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
             "aarch64-unknown-linux-gnu"
