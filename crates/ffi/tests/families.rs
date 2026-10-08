@@ -14,15 +14,20 @@ use teistro_core::Status;
 use teistro_core::catalogue::Calendar;
 use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
+#[cfg(feature = "chart")]
 use teistro_ffi::chart::TsChartRequest;
 use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+#[cfg(feature = "chart")]
 use teistro_ffi::schemas;
 use teistro_ffi::string::{TsString, ts_string_free};
+#[cfg(feature = "chart")]
 use teistro_idl::blob::Reader;
 
 mod common;
 
-use common::{Ctx, chart_blob, chart_request, sized};
+use common::{Ctx, sized};
+#[cfg(feature = "chart")]
+use common::{chart_blob, chart_request};
 
 /// An entry point that reads one JSON request and answers JSON.
 type JsonEntry = unsafe extern "C" fn(
@@ -74,17 +79,19 @@ fn muhurta_status(ctx: &Ctx, text: &str) -> Status {
     status
 }
 
-/// Every module family answers in a build with it and is refused as
-/// `CAPABILITY`, naming the record, in one without it; and a chart that
-/// asks for no family is answered in every build, which proves each
-/// left-out family's list of empty sections: the blob writer refuses a
-/// section missing from it, or one named twice (`wasm-profiles.md`).
+/// Every family read off a chart answers in a build with it and is
+/// refused as `CAPABILITY`, naming the record, in one without it; and a
+/// chart that asks for no family is answered in every build with the
+/// chart area, which proves each left-out family's list of empty
+/// sections: the blob writer refuses a section missing from it, or one
+/// named twice (`wasm-profiles.md`).
 ///
-/// A build without the families runs it with
+/// A build with the chart area and no other family runs it with
 /// `cargo test -p teistro-ffi --no-default-features --features
-/// builtin-compact --test families`.
+/// builtin-compact,chart --test families`.
+#[cfg(feature = "chart")]
 #[test]
-fn every_family_answers_in_its_build_and_is_refused_without_it() {
+fn every_chart_family_answers_in_its_build_and_is_refused_without_it() {
     let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
     let instants = [2_451_545.0];
     let place = (27.7172, 85.324);
@@ -147,7 +154,13 @@ fn every_family_answers_in_its_build_and_is_refused_without_it() {
             );
         }
     }
+}
 
+/// The families with entry points of their own answer in a build with
+/// them and are refused as `CAPABILITY` in one without.
+#[test]
+fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
+    let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
     let entries: [(&str, bool, JsonEntry); 2] = [
         (
             "numerology",
@@ -170,4 +183,45 @@ fn every_family_answers_in_its_build_and_is_refused_without_it() {
         !cfg!(feature = "muhurta"),
         "muhurta: {muhurta:?}"
     );
+}
+
+/// A build without the chart area refuses each of its entry points, and a
+/// consumer's own dasha system, as `CAPABILITY` naming `chart`, which is
+/// the `panchanga` profile (`wasm-profiles.md`).
+///
+/// Run with `cargo test -p teistro-ffi --no-default-features --features
+/// builtin-compact --test families`.
+#[cfg(not(feature = "chart"))]
+#[test]
+fn the_chart_area_is_refused_without_it() {
+    let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
+    let mut blob = TsBlob::empty();
+    let mut json = TsString::empty();
+    let key = CString::new("NORTH_INDIAN").unwrap();
+    // SAFETY: a live context; the refusing build reads nothing else.
+    let statuses = unsafe {
+        [
+            (
+                "ts_chart_found",
+                teistro_ffi::chart::ts_chart_found(ctx.handle, core::ptr::null(), &raw mut blob),
+            ),
+            (
+                "ts_chart_layout_row",
+                teistro_ffi::chart::ts_chart_layout_row(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naam_milan",
+                teistro_ffi::naam::ts_naam_milan(ctx.handle, key.as_ptr(), &raw mut blob),
+            ),
+        ]
+    };
+    for (entry, status) in statuses {
+        assert_eq!(status, Status::Capability, "{entry}");
+        let (_, message, _, hint, _) = ctx.last_error();
+        assert!(message.contains("`chart`"), "{entry}: {message}");
+        assert!(hint.is_some_and(|hint| hint.contains("full")), "{entry}");
+    }
+    let refused = Ctx::with_dashas("[]").expect_err("a dasha system needs the chart area");
+    assert_eq!(refused.0, Status::Capability);
+    assert_eq!(refused.2.as_deref(), Some("options.dashas_json"));
 }

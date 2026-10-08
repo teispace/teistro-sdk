@@ -15,7 +15,9 @@ use core::ptr;
 use std::ffi::CString;
 
 use teistro_core::Status;
+#[cfg(feature = "chart")]
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
+#[cfg(feature = "chart")]
 use teistro_ffi::chart::{TsChartRequest, ts_chart_found};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
@@ -218,6 +220,7 @@ pub(crate) fn sized<T>(mut value: T, set: impl FnOnce(&mut T, u32)) -> T {
     value
 }
 
+#[cfg(feature = "chart")]
 /// A chart request for `instants` at a place and clock, asking for
 /// nothing beside the charts: a test sets the one record it reads with
 /// `..chart_request(...)`.
@@ -276,6 +279,7 @@ pub(crate) fn chart_request(
 }
 
 /// The blob a chart request answers, or the status it was refused with.
+#[cfg(feature = "chart")]
 pub(crate) fn chart_blob(ctx: &Ctx, asked: &TsChartRequest) -> Result<Vec<u8>, Status> {
     let mut blob = TsBlob::empty();
     // SAFETY: a live context, a valid request and a valid slot.

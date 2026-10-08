@@ -422,8 +422,16 @@ impl TsContext {
             }
         }
         if let Some(json) = texts.dashas_json {
+            #[cfg(feature = "chart")]
             for definition in dashas_of(json)? {
                 building = building.dasha_system(definition);
+            }
+            // A dasha system is the chart area's, so a build without it
+            // refuses one by its field rather than dropping it unread.
+            #[cfg(not(feature = "chart"))]
+            {
+                let _ = json;
+                return Err(crate::family::left_out("chart").with_field("options.dashas_json"));
             }
         }
         // One entry, never a chain: a C caller names one ephemeris and
@@ -727,6 +735,7 @@ fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
 /// A consumer's dasha system definitions, each read strictly; the context's
 /// registry checks each by the rules a shipped row passes and names it by
 /// its place.
+#[cfg(feature = "chart")]
 fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::DashaDefinition>, Error> {
     const ROOT: &str = "options.dashas_json";
     let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;

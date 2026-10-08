@@ -22,26 +22,26 @@ teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
-teistro-dasha = { path = "../dasha" }
-teistro-hellenistic = { path = "../hellenistic" }
-teistro-matching = { path = "../matching" }
+teistro-dasha = { path = "../dasha", optional = true }
+teistro-hellenistic = { path = "../hellenistic", optional = true }
+teistro-matching = { path = "../matching", optional = true }
 teistro-numerology = { path = "../numerology", optional = true }
 teistro-prashna = { path = "../prashna", optional = true }
 teistro-remedies = { path = "../remedies", optional = true }
 teistro-rashifal = { path = "../rashifal", optional = true }
 teistro-houses = { path = "../houses" }
-teistro-interpret = { path = "../interpret" }
+teistro-interpret = { path = "../interpret", optional = true }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
-teistro-rules = { path = "../rules" }
-teistro-strength = { path = "../strength" }
+teistro-rules = { path = "../rules", optional = true }
+teistro-strength = { path = "../strength", optional = true }
 teistro-tajika = { path = "../tajika", optional = true }
-teistro-gochar = { path = "../gochar" }
+teistro-gochar = { path = "../gochar", optional = true }
 teistro-kp = { path = "../kp", optional = true }
 teistro-muhurta = { path = "../muhurta", optional = true }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
-teistro-serial = { path = "../serial" }
+teistro-serial = { path = "../serial", optional = true }
 teistro-siddhanta = { path = "../siddhanta" }
 teistro-geometry = { path = "../geometry" }
 teistro-render-svg = { path = "../render-svg", optional = true }
@@ -72,16 +72,28 @@ default = ["builtin-standard", "full"]
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
-kp = ["dep:teistro-kp"]
+full = ["chart", "kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
+# The chart area: `ChartArea`, the interpretation area and the crates only
+# they reach. Every family read off a chart requires it.
+chart = [
+    "dep:teistro-dasha",
+    "dep:teistro-gochar",
+    "dep:teistro-hellenistic",
+    "dep:teistro-interpret",
+    "dep:teistro-matching",
+    "dep:teistro-rules",
+    "dep:teistro-serial",
+    "dep:teistro-strength",
+]
+kp = ["chart", "dep:teistro-kp"]
 muhurta = ["dep:teistro-muhurta"]
 numerology = ["dep:teistro-numerology"]
-prashna = ["dep:teistro-prashna"]
-rashifal = ["dep:teistro-rashifal"]
-remedies = ["dep:teistro-remedies"]
-svg = ["dep:teistro-render-svg"]
-tajika = ["dep:teistro-tajika"]
-western = ["dep:teistro-western"]
+prashna = ["chart", "dep:teistro-prashna"]
+rashifal = ["chart", "dep:teistro-rashifal"]
+remedies = ["chart", "dep:teistro-remedies"]
+svg = ["chart", "dep:teistro-render-svg"]
+tajika = ["chart", "dep:teistro-tajika"]
+western = ["chart", "dep:teistro-western"]
 builtin-ephemeris = ["dep:teistro-ephemeris-builtin"]
 builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]

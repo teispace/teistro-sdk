@@ -29,8 +29,10 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo test
 
 It runs as parallel jobs. `checks` runs the format, the lints, the
 dependency policy, the tests and the documentation. `families` builds
-the boundary, its tests and the wasm module with no module family, which is the
-wasm `panchanga` profile, and runs the family test on that build
+the façade, the boundary, its tests and the wasm module with no module
+family, which is the wasm `panchanga` profile. It runs the family test
+there, and again with the chart area alone, where each family read off a
+chart is refused and writes its sections empty
 (`03-design/wasm-profiles.md`). The measured pages are split across
 three `pages` shards. Each shard holds a third
 of the pages by their measured time on CI, so the run takes about as
