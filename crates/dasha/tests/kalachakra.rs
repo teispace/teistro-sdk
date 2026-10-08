@@ -102,7 +102,7 @@ fn every_recorded_kalachakra_is_reproduced() {
             tally.same(
                 u64::from(dasha.pada()),
                 file["pada_index"].as_u64().unwrap(),
-                || format!("{at}"),
+                || at.clone(),
             );
 
             let balance = dasha.balance();
@@ -134,7 +134,7 @@ fn every_recorded_kalachakra_is_reproduced() {
             for (period, cells) in periods.iter().zip(recorded_rows) {
                 rows += 1;
                 tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
-                    format!("{at}")
+                    at.clone()
                 });
                 let sign = Rashi::from_id(u16::try_from(cells[1].as_u64().unwrap()).unwrap());
                 tally.same(period.sign, sign, || format!("{at} {}", period.path));
@@ -164,7 +164,7 @@ fn every_recorded_kalachakra_is_reproduced() {
                     tally.same(
                         u64::from(*period.path.indices().last().unwrap()),
                         link[1].as_u64().unwrap(),
-                        || format!("{at}"),
+                        || at.clone(),
                     );
                     worst = worst
                         .max((period.interval.from.get() - jd(&link[4])).abs())

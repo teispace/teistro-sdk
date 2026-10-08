@@ -56,6 +56,10 @@ impl Tally {
 
     /// One comparison that must agree exactly.
     #[track_caller]
+    #[allow(
+        clippy::needless_pass_by_value,
+        reason = "taken by value as `assert_eq!` takes them, so a call reads as one"
+    )]
     pub(crate) fn same<A: PartialEq<B> + Debug, B: Debug>(
         &mut self,
         ours: A,

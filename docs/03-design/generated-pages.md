@@ -193,17 +193,22 @@ the fixtures it covers, so a reader sees which run attributed it.
 
 ### 2.3 Where the numbers come from
 
-- **Rule and table sections are live.** Every pass that decides a corpus
-  section already computes its comparison. Each gains one more `Output`:
-  a score file `docs/05-testing/conformance/<section>.json` (compared,
-  agree, explained by entry, unexplained). It is written beside its page
-  and held by **that pass's own `check-`**, so no number is computed
-  twice and CI pays nothing extra (`price-a-pass-on-ci`).
-  `CONFORMANCE.md` is rendered from the score files.
+- **Every section is live, scored by the crates' corpus tests.** Found
+  while building: the xtask passes that read a corpus section weigh rival
+  readings for a measured page; the comparison the SDK answers for is the
+  crate's corpus test, which already fails on a miss. So each such test
+  compares through one shared `Tally`
+  (`crates/core/tests/support/conformance.rs`): every comparison counted
+  as attempted, a miss failing unless a named entry explains it, and one
+  score line written to `scores.jsonl` when `TEISTRO_CONFORMANCE_DIR` is
+  set. `cargo xtask conformance` runs those tests and renders the page;
+  nothing is computed twice and no score file is checked in. A failed
+  test records nothing, so an unexplained miss fails the gate rather than
+  reaching the page.
 - **The default tier is live too.** `builtin-standard` is the default
-  feature, so fast-check's corpus test can write its report to
-  `docs/05-testing/conformance/positions-builtin-standard.json` through
-  the same score shape.
+  feature, so the builtin crate's corpus test scores positions through
+  the same tally, naming each `KNOWN` divergence with the misses it
+  explains.
 - **The other tiers are recorded.** Verify's `ephemeris tier` jobs already
   write `target/kit/corpus-<tier>.json`. They upload it, and
   `cargo xtask conformance --from DIR` records it with the run id.
@@ -318,6 +323,10 @@ re-checks.
 2. **`CONFORMANCE.md`, live half**: the score-file `Output` in each corpus
    pass, the section list held to `corpus.json`, `check-conformance` in
    fast-check. Positions over the default tier.
+   **Done** (2026-10-08), through the crates' tests rather than the
+   passes (§2.3); `baseline/names.json` and `teimeris` are declared
+   unscored with their reasons. Not built yet: the check that each named
+   entry exists, and the corpus tag against the submodule's pin.
 3. **`CONFORMANCE.md`, recorded half**: verify uploads the tier reports,
    `conformance --from`, the exact live comparison in verify. Then the
    dated same-ephemeris and native-frame columns from a run by hand.

@@ -13,7 +13,8 @@
     clippy::expect_used,
     clippy::indexing_slicing,
     clippy::print_stdout,
-    reason = "tests fail by panicking, read fixtures, and print the measurement under --nocapture"
+    clippy::too_many_lines,
+    reason = "tests fail by panicking, read fixtures, walk one corpus each and print the measurement under --nocapture"
 )]
 
 mod common;
@@ -102,7 +103,7 @@ fn every_sign_based_system_is_reproduced() {
             for (period, cells) in periods.iter().zip(recorded_rows) {
                 rows += 1;
                 tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
-                    format!("{at}")
+                    at.clone()
                 });
                 tally.same(period.sign, Some(sign(&cells[1])), || {
                     format!("{at} {}", period.path)
@@ -135,10 +136,8 @@ fn every_sign_based_system_is_reproduced() {
                         link[1].as_u64().unwrap(),
                         || format!("{at}: index at level {}", link[0]),
                     );
-                    tally.same(period.sign, Some(sign(&link[2])), || format!("{at}"));
-                    tally.same(period.lord.key(), link[3].as_str().unwrap(), || {
-                        format!("{at}")
-                    });
+                    tally.same(period.sign, Some(sign(&link[2])), || at.clone());
+                    tally.same(period.lord.key(), link[3].as_str().unwrap(), || at.clone());
                     worst = worst
                         .max((period.interval.from.get() - jd(&link[4])).abs())
                         .max((period.interval.to.get() - jd(&link[5])).abs());

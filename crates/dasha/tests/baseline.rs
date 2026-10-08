@@ -200,7 +200,7 @@ fn every_recorded_vimshottari_is_reproduced() {
                         .max((period.interval.from.get() - jd(&link["start_jd"])).abs())
                         .max((period.interval.to.get() - jd(&link["end_jd"])).abs());
                     tally.same(period.lord.key(), link["lord"].as_str().unwrap(), || {
-                        format!("{at}")
+                        at.clone()
                     });
                 }
             }
