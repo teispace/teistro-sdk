@@ -256,10 +256,26 @@ def put_remedies(at: str, rm: Any) -> None:
     dv = rm.ishta_devata
     put(f"{at}-devata", f"{dv.atmakaraka.full_key} {dv.karakamsha.full_key}")
     for name, one in (("rasi", dv.in_rasi), ("navamsha", dv.in_navamsha)):
-        devotions = listed_or_dash(
-            f"{d.graha.full_key}:{'|'.join(d.deities)}:{d.verse}:{str(d.with_ketu).lower()}" for d in one.devotions
+        put(
+            f"{at}-devata-{name}",
+            f"{one.rules['sunWithKetu']} {one.sign.full_key} {devotions_said(one.devotions)} {keys(one.minor)}",
         )
-        put(f"{at}-devata-{name}", f"{one.rules['sunWithKetu']} {one.sign.full_key} {devotions} {keys(one.minor)}")
+    am = dv.amatya
+    put(f"{at}-amatya", f"{am.graha.full_key} {am.amsha.full_key}")
+    for name, reading in (("rasi", am.in_rasi), ("navamsha", am.in_navamsha)):
+        put(
+            f"{at}-amatya-{name}",
+            f"{reading.twelfth.sign.full_key} {devotions_said(reading.twelfth.devotions)}"
+            f" {keys(reading.twelfth.minor)} {reading.sign.full_key} {reading.house}"
+            f" {devotions_said(reading.joined)}",
+        )
+
+
+def devotions_said(devotions: Any) -> str:
+    """Devotions as `graha:deity|deity:verse:withKetu`, joined by commas."""
+    return listed_or_dash(
+        f"{d.graha.full_key}:{'|'.join(d.deities)}:{d.verse}:{str(d.with_ketu).lower()}" for d in devotions
+    )
 
 
 def put_matter(at: str, matter: Any) -> None:

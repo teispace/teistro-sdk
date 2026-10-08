@@ -4125,6 +4125,16 @@ test('a chart carries its remedies', () => {
     assert.ok(one.sign.startsWith('rashi.'));
     assert.ok(one.devotions.every((devotion) => devotion.graha.startsWith('graha.') && devotion.deities.length > 0));
   }
+  const { amatya } = ishtaDevata;
+  assert.ok(amatya.graha.startsWith('graha.') && amatya.amsha.startsWith('rashi.'));
+  assert.notEqual(amatya.graha, ishtaDevata.atmakaraka, 'the amātya is not the ātmakāraka');
+  for (const one of [amatya.inRasi, amatya.inNavamsha]) {
+    assert.ok(one.sign.startsWith('rashi.') && one.twelfth.sign.startsWith('rashi.'));
+    assert.ok(one.house >= 1 && one.house <= 12);
+    assert.ok(one.joined.every((devotion) => devotion.graha.startsWith('graha.') && devotion.graha !== amatya.graha));
+    assert.ok(one.twelfth.minor.every((graha) => graha.startsWith('graha.')));
+  }
+  assert.equal(amatya.inNavamsha.sign, amatya.amsha, 'in the navāṁśa it stands in its own navāṁśa');
 
   assert.throws(
     () => ctx.chart.found({ instant, ...at, remedies: { rules: { devatas: {} } } }),

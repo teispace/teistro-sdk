@@ -4754,12 +4754,20 @@ function remediesOf(batch) {
 function remediesFrom({ rules, functional, subjects, shantis, ishtaDevata }) {
   const graha = (key) => `graha.${key}`;
   const rashi = (key) => `rashi.${key}`;
+  const devotions = (list) => list.map((devotion) => ({ ...devotion, graha: graha(devotion.graha) }));
   const devata = (one) => ({
     ...one,
     sign: rashi(one.sign),
-    devotions: one.devotions.map((devotion) => ({ ...devotion, graha: graha(devotion.graha) })),
+    devotions: devotions(one.devotions),
     minor: one.minor.map(graha),
   });
+  const amatyaDevata = (one) => ({
+    twelfth: devata(one.twelfth),
+    sign: rashi(one.sign),
+    house: one.house,
+    joined: devotions(one.joined),
+  });
+  const { amatya } = ishtaDevata;
   const { antardasha } = subjects;
   return {
     rules,
@@ -4795,6 +4803,12 @@ function remediesFrom({ rules, functional, subjects, shantis, ishtaDevata }) {
       karakamsha: rashi(ishtaDevata.karakamsha),
       inRasi: devata(ishtaDevata.inRasi),
       inNavamsha: devata(ishtaDevata.inNavamsha),
+      amatya: {
+        graha: graha(amatya.graha),
+        amsha: rashi(amatya.amsha),
+        inRasi: amatyaDevata(amatya.inRasi),
+        inNavamsha: amatyaDevata(amatya.inNavamsha),
+      },
     },
   };
 }

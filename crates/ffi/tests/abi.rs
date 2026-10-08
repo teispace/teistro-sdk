@@ -9680,11 +9680,19 @@ fn a_chart_request_answers_remedies() {
     );
     assert_eq!(
         keys(&one["ishtaDevata"]),
-        ["atmakaraka", "inNavamsha", "inRasi", "karakamsha"]
+        ["amatya", "atmakaraka", "inNavamsha", "inRasi", "karakamsha"]
     );
     assert_eq!(
         keys(&one["ishtaDevata"]["inRasi"]),
         ["devotions", "minor", "rules", "sign"]
+    );
+    assert_eq!(
+        keys(&one["ishtaDevata"]["amatya"]),
+        ["amsha", "graha", "inNavamsha", "inRasi"]
+    );
+    assert_eq!(
+        keys(&one["ishtaDevata"]["amatya"]["inRasi"]),
+        ["house", "joined", "sign", "twelfth"]
     );
 
     // None asked is an empty section.

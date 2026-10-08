@@ -130,6 +130,26 @@ fn placed_chart(
     Ok(chart)
 }
 
+/// The graha holding `karaka` under the chara kāraka `scheme`; every
+/// ruled chart ranks each of the scheme's kārakas.
+fn holder(
+    ruled: &teistro_rules::RuleChart,
+    scheme: CharaKarakas,
+    karaka: CharaKaraka,
+) -> Result<Graha, Error> {
+    GRAHAS_IN_ORDER
+        .into_iter()
+        .find(|&graha| {
+            let at = ruled.placement(teistro_rules::Body::Graha(graha));
+            let held = match scheme {
+                CharaKarakas::Eight => at.karaka8,
+                _ => at.karaka7,
+            };
+            held == Some(karaka)
+        })
+        .ok_or_else(|| Error::internal(format!("a chart ranks its {}", karaka.key())))
+}
+
 /// Each graha's degrees within its sign, the Sun to Ketu: what the
 /// Brahma graha is weighed by (BPHS ch. 46 v. 173).
 ///
@@ -1107,17 +1127,11 @@ impl<'a> ChartArea<'a> {
         let states = state(foundation, settings)?;
         let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
         let placed = |graha: Graha| ruled.placement(teistro_rules::Body::Graha(graha));
-        let atmakaraka = GRAHAS_IN_ORDER
-            .into_iter()
-            .find(|graha| {
-                let at = placed(*graha);
-                let held = match settings.jaimini.chara_karakas {
-                    CharaKarakas::Eight => at.karaka8,
-                    _ => at.karaka7,
-                };
-                held == Some(CharaKaraka::Atmakaraka)
-            })
-            .ok_or_else(|| Error::internal("a chart ranks an Atmakaraka"))?;
+        let atmakaraka = holder(
+            &ruled,
+            settings.jaimini.chara_karakas,
+            CharaKaraka::Atmakaraka,
+        )?;
         let signs = GRAHAS_IN_ORDER.map(|graha| placed(graha).sign);
         let navamshas = GRAHAS_IN_ORDER.map(|graha| placed(graha).navamsha);
         let degrees = degrees_in_sign(foundation)?;
@@ -1136,6 +1150,20 @@ impl<'a> ChartArea<'a> {
                 settings.jaimini.graha_arudha_exception,
             ),
         })
+    }
+
+    /// The graha a founded chart's chara kāraka scheme names `karaka`, under
+    /// the settings' `jaimini.chara_karakas`, as [`jaimini`](Self::jaimini)
+    /// names the Atmakaraka.
+    pub(crate) fn karaka_of(
+        self,
+        foundation: &ChartFoundation,
+        karaka: CharaKaraka,
+    ) -> Result<Graha, Error> {
+        let settings = self.context.settings();
+        let states = state(foundation, settings)?;
+        let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        holder(&ruled, settings.jaimini.chara_karakas, karaka)
     }
 
     /// Each sign's pada lord in a read document under the settings'
