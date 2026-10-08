@@ -44,7 +44,26 @@ pub trait ConceptionSky: Sky {
     ///
     /// Whatever the implementation cannot answer, unchanged.
     fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error>;
+
+    /// A graha's daily motion at an instant, degrees a day, negative while
+    /// it is retrograde. By default the difference of its longitude over
+    /// [`SPEED_STEP_DAYS`] either side, across 0° the short way; an
+    /// implementation whose ephemeris gives speeds answers them instead.
+    ///
+    /// # Errors
+    ///
+    /// Whatever [`ConceptionSky::graha_deg`] refuses.
+    fn graha_speed_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, Error> {
+        let before = self.graha_deg(graha, at.plus_days(-SPEED_STEP_DAYS)?)?;
+        let after = self.graha_deg(graha, at.plus_days(SPEED_STEP_DAYS)?)?;
+        Ok(((after - before + 540.0).rem_euclid(360.0) - 180.0) / (2.0 * SPEED_STEP_DAYS))
+    }
 }
+
+/// Half the span [`ConceptionSky::graha_speed_deg`] differences a
+/// longitude over by default, days: an hour, short enough that no graha's
+/// station falls inside it unnoticed by more than its own hour.
+pub const SPEED_STEP_DAYS: f64 = 1.0 / 24.0;
 
 // ── PRANAPADA_HOUSE ────────────────────────────────────────────────────
 

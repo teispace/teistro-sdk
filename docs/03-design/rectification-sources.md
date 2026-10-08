@@ -154,6 +154,23 @@ Iyer 1885 numbering; each is a clause a family could confirm or deny.
 | V.22 | **the attending women: as many as the grahas between the lagna and the Moon**, those in the visible half outside and the invisible inside; "some" reverse it, and the commentator says Varahamihira does not | no |
 | V.23 | the body from the lagna navamsha's lord, the complexion from the Moon's navamsha lord | navamsha |
 
+**Read for the build** (2026-10-09, both prints' OCR against each other):
+
+- **V.1.** Iyer: the Sun in the 9th or 8th. The 1912 gloss reads *madhyād
+  bhraṣṭe* as fallen from the 10th either way, the 11th, 12th, 9th or 8th
+  (X17). Neither says which aspects count as seeing (X16).
+- **V.2.** The 1912 note defines the Moon "between" Mercury and Venus: one
+  in the 12th from her and the other in the 2nd, or all three in one sign
+  with her degree between theirs.
+- **V.17.** The rising classes are I.10's; the commentator gives Pisces the
+  hands; the lagna lord's motion is the other reading, which he attributes
+  to Manittha (X18).
+- **V.18.** The gloss names three points of the sign for the oil (full,
+  half, none) and the wick (long, half, burnt), read at the nearest.
+- **V.22.** "Some" reverse the halves; the commentator cites the *Swalpa
+  Jataka* for Varahamihira's own, and trebles an exalted or retrograde
+  graha and doubles one in its own sign, which the SDK does not ship (X19).
+
 ## 3. Svarodaya
 
 | print | IA identifier | status |

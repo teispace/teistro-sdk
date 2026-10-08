@@ -203,3 +203,44 @@ fn the_conception_reports_are_what_the_charts_of_both_instants_say() {
     assert!((0.0..750.0).contains(&read.nisheka.count.span.days_before));
     assert!(read.nisheka.count.days_per_birth_minute.is_finite());
 }
+
+/// Step 5's report read back through the chart of the candidate.
+#[test]
+fn the_circumstances_are_what_the_candidates_chart_says() {
+    use teistro::rectification::{CircumstanceRules, Facts, Level, PresentationBy};
+
+    let sdk = sdk();
+    let at = JulianDay::literal(MOMENT);
+    let facts = Facts {
+        father_present: Some(true),
+        oil: Some(Level::Half),
+        ..Facts::default()
+    };
+    let rules = CircumstanceRules {
+        presentation_by: PresentationBy::LagnaLordMotion,
+        ..CircumstanceRules::default()
+    };
+    let read = sdk
+        .chart()
+        .circumstance(at, &kathmandu(), OFFSET, &facts, &rules)
+        .unwrap()
+        .value;
+    let birth = chart(&sdk, MOMENT);
+    let close = |a: f64, b: f64| (a - b).abs() < 1e-6;
+    assert!(close(read.sky.lagna_deg, birth.foundation.lagna_deg));
+    for graha in teistro::rectification::circumstance::SEVEN {
+        let founded = birth.foundation.graha(graha).unwrap();
+        assert!(
+            close(read.sky.of(graha), founded.longitude_deg),
+            "{graha:?}"
+        );
+    }
+    // The lord's motion differenced over two hours, against the chart's
+    // own speed.
+    let lord = birth.foundation.graha(read.presentation.lord).unwrap();
+    assert_eq!(read.sky.lord_retrograde, lord.speed_deg_per_day < 0.0);
+    let moon = birth.foundation.graha(Graha::Moon).unwrap().longitude_deg;
+    assert!(close(read.lamp.oil, 1.0 - moon.rem_euclid(30.0) / 30.0));
+    // Two facts given, two weighed, in the order the clauses run.
+    assert_eq!(read.weights.len(), 2);
+}

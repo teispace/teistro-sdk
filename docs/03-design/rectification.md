@@ -201,7 +201,11 @@ pub trait Stage {
 - `conception_count`: `NEXT_AFTER_DVADASHAMSHA` (default, Bhattotpala),
   `FROM_MOON_SIGN`, `FROM_ARIES`; `conception_rising`: `SIGN` or `NAVAMSHA`
   (X11);
-- `attendants`: `VISIBLE_OUTSIDE` (default, V.22) or `VISIBLE_INSIDE`;
+- `circumstance` (`CircumstanceRules`): `moonSees` `ANY_ASPECT` (default)
+  or `FULL` (X16); `sunFallen` `NINTH_OR_EIGHTH` (default) or
+  `EITHER_SIDE` (X17); `presentationBy` `RISING_SIGN` (default) or
+  `LAGNA_LORD_MOTION` (X18); `betweenBy` `DEGREE` (default) or `SIGN`, and
+  `outside` `VISIBLE` (default, V.22) or `INVISIBLE` (X19);
 - `tattva`: `OFF` (default), `SVARODAYA`, `BASELINE` (X12);
 - `seed_step`: the grid step that seeds edge finding and the baseline
   comparison (X15).
@@ -435,6 +439,51 @@ grid.
   edges and to compare with the baseline, and the comparison allows one cell
   of the baseline's final step.
 
+**X16. "The Moon not seeing the lagna" (V.1).** The verse says only
+*na paśyati*; BJ II.13 gives every graha its quarter, half, three-quarter
+and full aspects, so "not seeing" may mean no aspect at all or no full one.
+- **Decided:** any aspect sees (`ANY_ASPECT`), since II.13 is
+  Varahamihira's own measure of seeing; `FULL` is the knob value. The aspect
+  is counted from the Moon's sign to the lagna's, so the Moon in the lagna's
+  own sign does not see it, and the strength is reported either way.
+
+**X17. "The Sun fallen from the 10th" (V.1).** Iyer, following Bhattotpala,
+gives the 9th or 8th, the houses the Sun falls through after culminating;
+the 1912 gloss of *madhyād bhraṣṭe* gives the 11th, 12th, 9th or 8th,
+fallen either way.
+- **Decided:** `NINTH_OR_EIGHTH` by default, the commentator's; the
+  whereabouts are reported only where V.1's first half holds, since the
+  verse makes the Sun a further condition, not a clause of its own.
+
+**X18. The presentation (V.17).** As the rising sign rises (BJ I.10), head
+first, back first, and Pisces both ways, which the commentator reads as the
+hands; or by the lagna lord, direct a natural birth and retrograde an
+irregular one, the reading Manittha supports.
+- **Decided:** the rising sign by default, the core's own `Rising` table,
+  which matches I.10 sign for sign; the lord's motion as the knob value,
+  where a natural birth is the head and every other presentation agrees
+  with an irregular one. The lord's motion is differenced over an hour
+  either side (`ConceptionSky::graha_speed_deg`), and the façade's test
+  holds it to the chart's own speed. V.17's malefics in the 4th or 7th (a
+  hard labour) have no fact to weigh and are not read.
+
+**X19. The attendants (V.22).** "Between the lagna and the Moon" may count
+by degree or by sign; "some" put the visible half inside, and the
+commentator says Varahamihira, in his *Swalpa Jataka*, does not. The
+commentator also trebles a graha exalted or retrograde and doubles one in
+its own sign, which the verse does not say.
+- **Decided:** by degree in the zodiac's order from the rising degree by
+  default, the seven only (the nodes are not grahas V.22 counts); by sign
+  the lagna's own sign and the Moon's are not between. The visible half is
+  outside by default. The commentator's multiplying is not shipped: it is
+  his, not the verse's, and a family's count of women is weighed exactly,
+  so a reading that multiplies would need its own knob and a source that
+  states it.
+- **Found while building:** the oil and the wick are the only clauses that
+  see inside a sign, so they are the ones that can tell neighbouring
+  minutes apart; each is read as the nearest of the gloss's three points
+  (a sign's start, middle and end), so the levels change at 7.5° and 22.5°.
+
 ## Acceptance
 
 - Every clause in an answer names its verse and print.
@@ -487,6 +536,14 @@ grid.
    pranapada is 23°09′ past the lagna's degree and printed in the 2nd), and
    leaves the 1st inauspicious, as the gloss's list does.
 5. **`CIRCUMSTANCE`** over BJ V.1–2, 17, 18 and 22, clause by clause.
+   **Built** (2026-10-09): `crates/rectification/src/circumstance.rs` and
+   `ChartArea::circumstance`, read at an instant as step 4's reports are.
+   Every clause is reported whether or not a fact is given, and each fact
+   given is one weight; none bars. The tests write skies down placement by
+   placement (each of V.1's houses under both readings of X17, the hemmed
+   Moon across 0°, every rising class, the lamp at its thresholds, the
+   Moon on the lagna with no one between), and the façade's read-back holds
+   every placement and the lord's motion to the candidate's chart.
 6. **The `BASELINE` stages and the black-box export**, then the parity page.
 7. **`TATTVA` under `SVARODAYA`**, opt-in, after X12 is answered.
 8. **The façade and every binding**, on prashna's pattern: a request member,
