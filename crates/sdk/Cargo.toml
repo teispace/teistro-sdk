@@ -87,7 +87,7 @@ workspace = true
 # by reading the sources, so a target that stops naming the built-in
 # stops needing the line and one that starts cannot be added without it.
 #
-# `calendar` and `parity` are absent on purpose: the first names
+# `calendars` and `parity` are absent on purpose: the first names
 # `Ephemeris::None` (a calendar needs no ephemeris, which is its lesson)
 # and the second `Ephemeris::Test`. Neither is gated.
 

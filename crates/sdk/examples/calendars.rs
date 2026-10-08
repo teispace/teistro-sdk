@@ -19,7 +19,7 @@
 //! over a string.
 //!
 //! ```sh
-//! cargo run --release -p teistro --example calendar
+//! cargo run --release -p teistro --example calendars
 //! ```
 
 #![expect(clippy::print_stdout, reason = "an example is a program that prints")]
