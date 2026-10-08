@@ -1,7 +1,8 @@
 # Rectification: the birth time narrowed by the verses that test it (the `rectification` module)
 
-Status: step 3 `built` (`crates/rectification`, the purifier, the façade's
-`ChartArea::rectify`), 2026-10-08; steps 4 onwards open. The sources are read on
+Status: steps 3 and 4 `built` (`crates/rectification`: the purifier and the
+façade's `ChartArea::rectify`, 2026-10-08; the conception reports and
+`ChartArea::conception`, 2026-10-09); steps 5 onwards open. The sources are read on
 their pages ([`rectification-sources.md`](rectification-sources.md)); the cruxes
 are numbered X1 onwards and take C-numbers when they enter the register.
 Each was decided on 2026-10-08 as its recommendation reads, on the
@@ -35,8 +36,8 @@ The texts read, each on its page images unless marked:
   Purvakhanda ch. 2 vv. 67–78, pp. 11–13 (1923 leaves n40–n42). This is the
   roadmap's numbering. Sitaram Jha's print carries a different passage
   (its ch. 3 vv. 66–74) and is cited by verse number only.
-- **BPHS, the nisheka lagna**: the same prints, ch. 3 vv. 25–30 (1923 p. 15);
-  Jha ch. 4 vv. 24–30.
+- **BPHS, the nisheka lagna**: the same prints, ch. 3 vv. 25–30 (1923 p. 15;
+  Jha's ch. 4 vv. 25–30, pp. 35–36, with the only worked example).
 - **Brihat Jataka**: Vijnanananda 1912 for the Sanskrit (IV.21 on p. 89),
   Chidambaram Iyer 1885 for Bhattotpala's reading (pp. 37–50).
 - **Shiva Svarodaya**: Rama Prasad 1894 (v. 193, p. 217) and the 1899
@@ -367,12 +368,43 @@ are unstated.
 - **Decided:** `NISHEKA` reports the instant and its own purification;
   `CONCEPTION_MOON` is a weight; months of 30 days and Sripati's 9th bhava,
   each a knob; find a public-domain worked example before either weighs.
+- **Found** (2026-10-08): Jha's print numbers the passage **ch. 4 vv.
+  25–30** and works the only example found (p. 36): Mandi 9s 29°36′53″ less
+  Saturn 7s 13°24′27″ is 2s 16°12′26″, the 9th bhava (Sripati, his bhava
+  table) 6s 29°0′36″ less the lagna 10s 26°28′5″ is 8s 2°32′31″, and the
+  sum 10s 18°44′57″ is read as 10 months 18 days 44 ghatis 57 palas, the
+  lagna's lord visible so no Moon added. His gloss fixes the units (a sign
+  a month, a degree a day, a minute a ghati, a second a pala), the
+  invisible half (the six signs ahead of the lagna) and **Mandi at the start
+  of Saturn's eighth**, which he defends against the end. So `NISHEKA` has
+  its own `mandi_at`, `START` by default, apart from the purifier's `END`
+  (X5), and the example is its acceptance test to the second.
+- **Found while building:** the conception moves by a day for every degree
+  its arcs move, so its lagna turns while the birth moves by minutes. The
+  reports are therefore read at an instant (`ChartArea::conception`), not
+  over a run, and the count carries `daysPerBirthMinute`. And the
+  conception is a chart of its own: read in the birth's zodiac its lagna
+  was 0.0226° off its own chart's, the ayanamsha's drift over the 591 days
+  between them, so its sky is founded at its own instant.
 
 **X11. BJ IV.21's count.** From the sign after the dvadashamsha's sign
 (Bhattotpala, per Iyer), from the Moon's sign (the 1912 main text, Gargi), or
 from Aries; and the rising sign or navamsha.
 - **Decided:** Bhattotpala's as the default, the rest as knob values; read
   the 1864 *Vivṛti* page before shipping, since both translators summarise it.
+- **Read** (2026-10-08) on the lithograph's page (the "1864" and "1852" IA
+  items are two scans of one lithograph, one witness): Bhattotpala gives the
+  count from Aries to "some" and the count from the sign after the
+  dvadashamsha's to "others", and calls the second "the right explanation"
+  after Garga. With the Moon in sign `S` (Aries 0) and the dvadashamsha she
+  occupies `k` (1 to 12), the birth Moon's sign is `S + 2k − 1`; the 1912
+  main text's is `S + k − 1`, the Aries count's `k − 1`. Iyer's and the 1912
+  print's example (the middle of Aquarius's 8th dvadashamsha) gives Taurus,
+  Rohini by Bhattotpala's proportion, and Virgo by the 1912 main text; all
+  are tests, and the rival ordinal (the completed count) must not give
+  Aries. Pisces is a day sign to Iyer and either to the 1912 print
+  (`pisces`, `EITHER` by default); the rising fraction is measured in rising
+  time, as both translators do, and reported, never weighed.
 
 **X12. The tattvas.** v. 193's durations sum to v. 62's hour; vv. 63 and 70
 give other spans; the sex rules belong to questions and conception and
@@ -446,7 +478,14 @@ grid.
    finder; the `Stage` trait waits for the second stage, so its shape is
    fixed by two implementations, not one.
 4. **`PRANAPADA_HOUSE`, `NISHEKA` and `CONCEPTION_MOON`**, report and weight
-   only, with BJ IV.21's example.
+   only, with BJ IV.21's example. **Built** (2026-10-09):
+   `crates/rectification/src/conception.rs` and `ChartArea::conception`,
+   with Jha's two worked examples (the pranapada in the 2nd by sign, p. 31;
+   the nisheka to the second, p. 36) and BJ IV.21's printed counts as
+   tests, and the façade's read-back against the charts of both instants.
+   The pranapada's house counts by sign, which the example forces (its
+   pranapada is 23°09′ past the lagna's degree and printed in the 2nd), and
+   leaves the 1st inauspicious, as the gloss's list does.
 5. **`CIRCUMSTANCE`** over BJ V.1–2, 17, 18 and 22, clause by clause.
 6. **The `BASELINE` stages and the black-box export**, then the parity page.
 7. **`TATTVA` under `SVARODAYA`**, opt-in, after X12 is answered.
