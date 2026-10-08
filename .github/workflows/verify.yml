@@ -76,9 +76,11 @@ jobs:
           python-version: "3.13"
       # FFM was final in Java 22; the binding is compiled for 22 and tested
       # on 25, the LTS its audience runs (`03-design/java-binding.md` §3).
+      # Temurin publishes no JDK 25 for Windows on Arm; Microsoft's build
+      # of OpenJDK does, so that row takes it and every other row Temurin.
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: ${{ matrix.platform == 'win32-arm64' && 'microsoft' || 'temurin' }}
           java-version: "25"
       # A Linux row links against its glibc floor, not the runner's
       # (`xtask/src/floor.rs`); `check-package` packages the host with it.
