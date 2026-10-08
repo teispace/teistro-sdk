@@ -15,11 +15,10 @@
 //!    staged package, so `../lib/index.js` is the package's and its
 //!    `#native` resolves through the package's own `node` condition to
 //!    the wasm loader. Every call the suite makes goes through the wasm
-//!    glue *and* the loader a consumer gets.
-//! 1a. **Each profile's subpath** (`03-design/wasm-profiles.md`), both
-//!    entries under Node: what the profile keeps answers as the full
-//!    module does, to the bit, and the chart area is refused as a
-//!    capability.
+//!    glue *and* the loader a consumer gets. Then **each profile's
+//!    subpath** (`03-design/wasm-profiles.md`), both entries under Node:
+//!    what the profile keeps answers as the full module does, to the bit,
+//!    and the chart area is refused as a capability.
 //! 2. **In a headless browser**, unbundled, with `#native` mapped to the
 //!    web loader as a bundler maps it from the `default` condition. A Node
 //!    built-in anywhere on that path could not resolve there, so loading
