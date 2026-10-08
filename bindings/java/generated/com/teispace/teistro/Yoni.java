@@ -107,6 +107,11 @@ public enum Yoni implements Catalogued {
         return "yoni." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.YONI;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

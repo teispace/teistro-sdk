@@ -92,6 +92,11 @@ public enum Dignity implements Catalogued {
         return "dignity." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DIGNITY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

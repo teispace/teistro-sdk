@@ -72,6 +72,11 @@ public enum Vara implements Catalogued {
         return "vara." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.VARA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

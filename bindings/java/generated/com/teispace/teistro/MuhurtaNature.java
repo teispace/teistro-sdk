@@ -72,6 +72,11 @@ public enum MuhurtaNature implements Catalogued {
         return "muhurta_nature." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.MUHURTA_NATURE;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

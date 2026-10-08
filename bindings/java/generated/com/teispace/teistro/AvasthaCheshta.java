@@ -52,6 +52,11 @@ public enum AvasthaCheshta implements Catalogued {
         return "avastha_cheshta." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.AVASTHA_CHESHTA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

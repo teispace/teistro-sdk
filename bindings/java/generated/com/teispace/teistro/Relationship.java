@@ -62,6 +62,11 @@ public enum Relationship implements Catalogued {
         return "relationship." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.RELATIONSHIP;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

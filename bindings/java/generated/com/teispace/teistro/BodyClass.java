@@ -57,6 +57,11 @@ public enum BodyClass implements Catalogued {
         return "body_class." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.BODY_CLASS;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

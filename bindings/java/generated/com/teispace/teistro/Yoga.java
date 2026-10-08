@@ -172,6 +172,11 @@ public enum Yoga implements Catalogued {
         return "yoga." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.YOGA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

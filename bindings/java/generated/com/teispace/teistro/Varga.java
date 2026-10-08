@@ -142,6 +142,11 @@ public enum Varga implements Catalogued {
         return "varga." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.VARGA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

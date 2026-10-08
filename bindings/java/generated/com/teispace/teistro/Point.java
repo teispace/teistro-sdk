@@ -282,6 +282,11 @@ public enum Point implements Catalogued {
         return "point." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.POINT;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

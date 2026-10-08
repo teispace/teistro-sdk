@@ -47,6 +47,11 @@ public enum BalaScheme implements Catalogued {
         return "bala_scheme." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.BALA_SCHEME;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

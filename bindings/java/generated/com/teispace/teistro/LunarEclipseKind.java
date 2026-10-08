@@ -52,6 +52,11 @@ public enum LunarEclipseKind implements Catalogued {
         return "lunar_eclipse_kind." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.LUNAR_ECLIPSE_KIND;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

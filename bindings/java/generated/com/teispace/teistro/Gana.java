@@ -52,6 +52,11 @@ public enum Gana implements Catalogued {
         return "gana." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.GANA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

@@ -46,6 +46,16 @@ public final class BindingTest {
         throw new AssertionError("the call was not refused");
     }
 
+    private static IllegalArgumentException refused(java.util.function.Supplier<ChartOptions> options, Context sky,
+            Observer place) {
+        try {
+            sky.chart().found(2_460_000.0, place, 0, options.get());
+        } catch (IllegalArgumentException e) {
+            return e;
+        }
+        throw new AssertionError("the options were not refused");
+    }
+
     private static Context context(Teistro teistro) {
         return teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true).build());
     }
@@ -283,6 +293,33 @@ public final class BindingTest {
                 same("{\"a\":[1,\"x\\n\",null,\"graha.SUN\"]}",
                         Json.write(new java.util.LinkedHashMap<>(Map.of("a",
                                 java.util.Arrays.asList(1, "x\n", null, Graha.SUN)))), "JSON written");
+            }
+        });
+
+        tests.put("a chart is founded at an instant and a place", () -> {
+            try (Context sky = context(teistro)) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                ChartBatch batch = sky.chart().foundMany(new double[] {2_460_000.0, 2_460_001.0}, kathmandu, 20_700,
+                        ChartOptions.builder().state(true).dashas(DashaSystem.VIMSHOTTARI).build());
+                same(2, batch.size(), "a chart per instant");
+                same(ChartKind.NATAL, batch.kind(), "natal by default");
+                same(27.7172, batch.place().latitudeDeg().value(), "the place");
+                Chart chart = batch.get(1);
+                same(2_460_001.0, chart.instant(), "the instant asked for");
+                check(0 <= chart.lagnaDeg() && chart.lagnaDeg() < 360, "a lagna");
+                check(chart.ayanamsha().isPresent(), "the Nepali profile reads a catalogued ayanamsha");
+                same(64, chart.provenance().contentHash().length(), "the chart's own hash");
+                check(!chart.provenance().contentHash().equals(batch.provenance().contentHash()),
+                        "a chart's hash is its own, not the batch's");
+                same(sky.settingsHash(), chart.provenance().settingsHash(), "under the context's settings");
+                int seen = 0;
+                for (Chart each : batch) {
+                    same(seen, each.index(), "in order");
+                    seen += 1;
+                }
+                IllegalArgumentException typo = refused(() -> ChartOptions.builder().reading("kpp", Map.of()).build(),
+                        sky, kathmandu);
+                check(typo.getMessage().contains("`kpp`"), typo.getMessage());
             }
         });
 

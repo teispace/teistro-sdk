@@ -77,6 +77,11 @@ public enum CharaKaraka implements Catalogued {
         return "chara_karaka." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.CHARA_KARAKA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

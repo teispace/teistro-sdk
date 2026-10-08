@@ -47,6 +47,11 @@ public enum Sex implements Catalogued {
         return "sex." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.SEX;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

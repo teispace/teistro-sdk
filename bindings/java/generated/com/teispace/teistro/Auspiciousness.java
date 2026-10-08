@@ -57,6 +57,11 @@ public enum Auspiciousness implements Catalogued {
         return "auspiciousness." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.AUSPICIOUSNESS;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

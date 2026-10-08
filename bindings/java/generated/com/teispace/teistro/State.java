@@ -97,6 +97,11 @@ public enum State implements Catalogued {
         return "state." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.STATE;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

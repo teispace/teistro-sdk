@@ -62,6 +62,11 @@ public enum Tatwa implements Catalogued {
         return "tatwa." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.TATWA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

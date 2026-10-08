@@ -16,4 +16,11 @@ public interface Catalogued extends Member {
      * @return the full key
      */
     String fullKey();
+
+    /**
+     * The catalogue kind the member is one of.
+     *
+     * @return the kind
+     */
+    Kind kind();
 }

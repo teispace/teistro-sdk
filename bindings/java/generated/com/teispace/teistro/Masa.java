@@ -97,6 +97,11 @@ public enum Masa implements Catalogued {
         return "masa." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.MASA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

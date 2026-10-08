@@ -172,6 +172,11 @@ public enum Nakshatra implements Catalogued {
         return "nakshatra." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.NAKSHATRA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

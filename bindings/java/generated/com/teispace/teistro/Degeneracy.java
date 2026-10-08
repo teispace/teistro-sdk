@@ -47,6 +47,11 @@ public enum Degeneracy implements Catalogued {
         return "degeneracy." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DEGENERACY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.
