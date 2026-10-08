@@ -612,7 +612,7 @@ pub fn tables(api: &Api) -> String {
         let name = binding_type_name(&e.name);
         let _ = writeln!(
             out,
-            "/** Every {name} by name. */\nexport const {name} = Object.freeze({{"
+            "/** Every {name} by name. */\nexport const {name} = /* @__PURE__ */ Object.freeze({{"
         );
         for v in &e.values {
             let _ = writeln!(
@@ -625,7 +625,7 @@ pub fn tables(api: &Api) -> String {
         let _ = writeln!(out, "}});\n");
         let _ = writeln!(
             out,
-            "/**\n * Every {name} by the id the boundary carries, so a column of ids or a\n * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.\n */\nexport const {name}ById = new Map(["
+            "/**\n * Every {name} by the id the boundary carries, so a column of ids or a\n * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.\n */\nexport const {name}ById = /* @__PURE__ */ new Map(["
         );
         for v in &e.values {
             let _ = writeln!(
@@ -1000,7 +1000,7 @@ mod tests {
     fn the_tables_and_the_decoders_render() {
         let api = api();
         let tables = tables(&api);
-        assert!(tables.contains("export const Graha = Object.freeze({"));
+        assert!(tables.contains("export const Graha = /* @__PURE__ */ Object.freeze({"));
         assert!(tables.contains("  PurvaPhalguni: 'graha.PURVA_PHALGUNI',"));
         let js = decoders(&api);
         for expected in [

@@ -1,0 +1,12 @@
+{
+  "name": "teistro-wasm-bundlers-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The bundlers the wasm package's tree-shaking check builds with: esbuild, Vite and webpack, each bundling the installed package as a consumer's build does. Pinned here so every machine and every runner checks with the same three.",
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "vite": "8.3.3",
+    "webpack": "5.111.1"
+  }
+}
