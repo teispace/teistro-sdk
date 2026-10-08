@@ -44,6 +44,28 @@ pub(crate) fn shared_link(platform: &Platform, dir: &Path) -> Vec<OsString> {
     }
 }
 
+/// The C compiler the gates drive: `CC` when the environment names one.
+/// Otherwise `clang` on Windows on Arm, whose runner image's MinGW gcc is
+/// an x64 build that cannot read an Arm64 import library ("unhandled
+/// machine type 0xaa64"), and `cc` everywhere else.
+pub(crate) fn c_compiler() -> String {
+    std::env::var("CC").unwrap_or_else(|_| {
+        String::from(
+            if cfg!(all(target_os = "windows", target_arch = "aarch64")) {
+                "clang"
+            } else {
+                "cc"
+            },
+        )
+    })
+}
+
+/// A program the gates compile, named as this host runs it: `name.exe`
+/// on Windows, where a linker given no extension may not add one.
+pub(crate) fn executable(dir: &Path, name: &str) -> std::path::PathBuf {
+    dir.join(format!("{name}{}", std::env::consts::EXE_SUFFIX))
+}
+
 /// Whether a C consumer on this platform can link the **static**
 /// library, and what they must link beside it.
 ///

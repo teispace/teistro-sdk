@@ -16,13 +16,8 @@ use crate::platform::Platform;
 const SMOKE: &str = "bindings/c/tests/smoke.c";
 const HEADER_DIR: &str = "bindings/c/include";
 
-/// The compiler to use: `CC` when the environment names one, else `cc`.
-fn compiler() -> String {
-    std::env::var("CC").unwrap_or_else(|_| String::from("cc"))
-}
-
 pub(crate) fn check(root: &Path) -> i32 {
-    let cc = compiler();
+    let cc = crate::binding::c_compiler();
     if !present(&cc, "--version") {
         crate::skip::skip(format_args!(
             "no `{cc}` on this machine; the C binding's test needs a C compiler"
@@ -32,7 +27,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     if build(root, "teistro-ffi", "the library").is_err() {
         return 1;
     }
-    let out = root.join("target/release/teistro-c-smoke");
+    let out = crate::binding::executable(&root.join("target/release"), "teistro-c-smoke");
     let library = root.join("target/release");
     // The shared library, and on Windows its import library by path:
     // `-lteistro_ffi` would find the static one sitting beside it.
