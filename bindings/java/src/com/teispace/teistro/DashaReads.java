@@ -2,6 +2,7 @@ package com.teispace.teistro;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntPredicate;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.IntUnaryOperator;
@@ -21,7 +22,8 @@ final class DashaReads {
      * named some ({@code 03-design/dasha-kernels.md}). Ports {@code Chart.dashas}.
      */
     static List<Dasha> dashas(Chart chart) {
-        List<List<Dasha>> parsed = chart.batch().cached("dashas", () -> dashasOf(chart.batch().decoded()));
+        ChartBatch batch = chart.batch();
+        List<List<Dasha>> parsed = batch.cached("dashas", () -> dashasOf(batch.decoded(), batch.dashaNames()));
         return chart.index() < parsed.size() ? parsed.get(chart.index()) : List.of();
     }
 
@@ -30,7 +32,7 @@ final class DashaReads {
      * periods are <b>ragged</b> by each dasha's {@code period_count}, so a
      * chart's begin where the one before it ends.
      */
-    private static List<List<Dasha>> dashasOf(Charts decoded) {
+    private static List<List<Dasha>> dashasOf(Charts decoded, Map<Integer, String> names) {
         int per = Math.toIntExact(decoded.dashaCount());
         if (per == 0) {
             return List.of();
@@ -43,7 +45,7 @@ final class DashaReads {
             for (int j = 0; j < per; j += 1) {
                 int row = chart * per + j;
                 int count = Math.toIntExact(rows.periodCount(row));
-                dashas.add(dasha(decoded, row, start, count));
+                dashas.add(dasha(decoded, row, start, count, names));
                 start += count;
             }
             out.add(List.copyOf(dashas));
@@ -51,12 +53,17 @@ final class DashaReads {
         return List.copyOf(out);
     }
 
+    /** A dasha row's system: a registered one's key, or the catalogue's member. */
+    private static Object system(int id, Map<Integer, String> names) {
+        String registered = names.get(id);
+        return registered != null ? registered : DashaSystem.of(id);
+    }
+
     /**
-     * One dasha row and its periods. The system is the catalogue's member:
-     * a batch read here carries no context's names, so a system the context
-     * registered reads as {@link DashaSystem#UNKNOWN}.
+     * One dasha row and its periods. The system is the catalogue's member,
+     * or the {@code dasha_system.*} key of one the context registered.
      */
-    private static Dasha dasha(Charts decoded, int row, int start, int count) {
+    private static Dasha dasha(Charts decoded, int row, int start, int count, Map<Integer, String> names) {
         Charts.Dashas rows = decoded.dashas();
         Charts.DashaPeriods cells = decoded.dashaPeriods();
         boolean seeded = rows.seeded(row) != 0;
@@ -65,7 +72,7 @@ final class DashaReads {
                 cells::toJd, start, count, at -> signed);
         double spanFrom = rows.moonSpanFrom(row);
         return new Dasha(
-                DashaSystem.of(rows.system(row)),
+                system(rows.system(row), names),
                 seeded ? Nakshatra.of(rows.seed(row)) : null,
                 Graha.of(rows.firstLord(row)),
                 rows.overflow(row) != 0,

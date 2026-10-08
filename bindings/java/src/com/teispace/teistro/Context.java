@@ -4,7 +4,11 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.ref.Cleaner;
+import java.util.HashMap;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.teispace.teistro.blob.Positions;
@@ -62,11 +66,40 @@ public final class Context implements AutoCloseable {
         }
     }
 
-    private Context(Teistro teistro, MemorySegment handle) {
+    private final Supplier<Map<Integer, String>> dashaNames;
+
+    private Context(Teistro teistro, MemorySegment handle, String dashasJson) {
         this.lib = teistro.lib();
+        this.dashaNames = Lazy.of(() -> registered(dashasJson, "dasha_system."));
         this.frame = new FrameArea(teistro);
         this.state = new State(this.lib, handle);
         this.cleanable = CLEANER.register(this, state);
+    }
+
+    /** The keys of the dasha systems this context registered, by the id a batch carries. */
+    Map<Integer, String> dashaNames() {
+        return dashaNames.get();
+    }
+
+    /**
+     * What a context registered of one kind, turned round so a batch names a
+     * registered id by its full key: each row's {@code key} under the kind's
+     * prefix, resolved by this context.
+     */
+    private Map<Integer, String> registered(String json, String prefix) {
+        if (json == null) {
+            return Map.of();
+        }
+        Map<Integer, String> names = new HashMap<>();
+        if (Json.read(json) instanceof List<?> rows) {
+            for (Object row : rows) {
+                if (row instanceof Map<?, ?> fields && fields.get("key") instanceof String key) {
+                    String full = prefix + key;
+                    names.put((int) (keys().id(full) & 0xFFFF), full);
+                }
+            }
+        }
+        return Map.copyOf(names);
     }
 
     static Context open(Teistro teistro, ContextOptions options) {
@@ -95,7 +128,7 @@ public final class Context implements AutoCloseable {
                 });
                 throw refusal;
             }
-            return new Context(teistro, out.get(ValueLayout.ADDRESS, 0));
+            return new Context(teistro, out.get(ValueLayout.ADDRESS, 0), options.dashasJson());
         }
     }
 
