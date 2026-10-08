@@ -44,6 +44,88 @@ public final class Json {
     }
 
     /**
+     * Writes a value as JSON: a {@code Map} with string keys as an object in
+     * its own order, a {@code List} or an array of objects as an array, a
+     * {@code String}, a finite {@code Number}, a {@code Boolean}, a
+     * {@link Member} as its full key, and {@code null}.
+     *
+     * @param value the value
+     * @return its JSON text
+     * @throws IllegalArgumentException for a value JSON cannot say, naming where it is
+     */
+    public static String write(Object value) {
+        StringBuilder out = new StringBuilder();
+        write(out, value, "$");
+        return out.toString();
+    }
+
+    private static void write(StringBuilder out, Object value, String path) {
+        switch (value) {
+            case null -> out.append("null");
+            case String text -> quote(out, text);
+            case Boolean flag -> out.append(flag);
+            case Double number when !Double.isFinite(number) ->
+                    throw new IllegalArgumentException("`" + path + "` is " + number + ", which JSON cannot say");
+            case Float number when !Float.isFinite(number) ->
+                    throw new IllegalArgumentException("`" + path + "` is " + number + ", which JSON cannot say");
+            case Number number -> out.append(number);
+            case Member member -> quote(out, member instanceof Catalogued catalogued ? catalogued.fullKey() : member.key());
+            case Map<?, ?> map -> {
+                out.append('{');
+                boolean first = true;
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    if (!(entry.getKey() instanceof String key)) {
+                        throw new IllegalArgumentException("`" + path + "` has a key that is not a string: " + entry.getKey());
+                    }
+                    if (!first) {
+                        out.append(',');
+                    }
+                    first = false;
+                    quote(out, key);
+                    out.append(':');
+                    write(out, entry.getValue(), path + "." + key);
+                }
+                out.append('}');
+            }
+            case List<?> list -> {
+                out.append('[');
+                for (int i = 0; i < list.size(); i += 1) {
+                    if (i > 0) {
+                        out.append(',');
+                    }
+                    write(out, list.get(i), path + "[" + i + "]");
+                }
+                out.append(']');
+            }
+            case Object[] array -> write(out, java.util.Arrays.asList(array), path);
+            default -> throw new IllegalArgumentException(
+                    "`" + path + "` is a " + value.getClass().getName() + ", which JSON cannot say");
+        }
+    }
+
+    private static void quote(StringBuilder out, String text) {
+        out.append('"');
+        for (int i = 0; i < text.length(); i += 1) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '"' -> out.append("\\\"");
+                case '\\' -> out.append("\\\\");
+                case '\n' -> out.append("\\n");
+                case '\r' -> out.append("\\r");
+                case '\t' -> out.append("\\t");
+                default -> {
+                    if (c < 0x20) {
+                        out.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        out.append(c);
+                    }
+                }
+            }
+        }
+        out.append('"');
+    }
+
+    /**
      * Reads one JSON object.
      *
      * @param text the JSON text

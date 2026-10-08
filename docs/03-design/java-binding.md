@@ -580,7 +580,11 @@ un-publish, `03-release-process.md`, "Withdrawing").
    range by the name the caller wrote; a record per brand, checking its
    stated range; and `Calls`, package-private, a static method per entry
    point marshalled from the parameter roles as Python's are, with a
-   confined arena only where the call allocates. The decoders are next.
+   confined arena only where the call allocates. **Then** the decoders,
+   in `com.teispace.teistro.blob` so a section's name never meets an
+   enum's: a class per schema, a record per shared shape, and a class
+   per column section whose getters read a row from the copy `Calls`
+   took of the library's bytes, every offset checked before it is read.
 2. **The first slice, end to end.** `NativeLibrary` from
    `TEISTRO_LIBRARY` and `target/release` only, the handshake,
    `Teistro`, `Context` with `calendar().convert`, `time().resolve`,
@@ -602,8 +606,9 @@ un-publish, `03-release-process.md`, "Withdrawing").
    lock, and the library's own calls on `Teistro`; tested by a round trip
    through Bikram Sambat, a scale conversion and back, a frame packed and
    unpacked, and a month of 300 refused as `` `month` `` before it is
-   sent. `positions` and `intl().render` answer a result blob, so they
-   come with the decoders.
+   sent. **Then** `positions` and `intl().render` over the decoders,
+   with a JSON writer beside the reader; a blob cut short, of another
+   magic, version, schema or length is refused rather than misread.
 3. **The areas**, to `surface-areas.md`'s table, and `Parity.java`;
    `check-parity` gains Java.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.

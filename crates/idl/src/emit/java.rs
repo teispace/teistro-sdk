@@ -13,6 +13,7 @@
 //! is 64-bit, and the JDK ships for none of the others. The hand-written
 //! loader refuses an `ADDRESS` layout that is not eight bytes.
 
+mod blob;
 mod calls;
 mod values;
 
@@ -72,6 +73,7 @@ pub fn render(api: &Api) -> Vec<File> {
     });
     files.extend(values::files(api, &dir));
     files.extend(calls::files(api, &dir));
+    files.extend(blob::files(api));
     files.push(File {
         path: format!("{}/Native.java", FFI_PACKAGE.replace('.', "/")),
         text: render_native(api),
