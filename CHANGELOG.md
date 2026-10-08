@@ -2398,6 +2398,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **A Java binding, begun** (`03-design/java-binding.md` steps 1 and
+  2). `cargo xtask gen ffi` writes the Java layer from the description
+  into `bindings/java/generated`: every enum with its id, key and, for
+  a catalogue kind, `UNKNOWN`; `TeistroException`; and `Native`, the
+  raw FFM layer, with each struct's layout and padding, a handle per
+  field and a method handle per entry point. The hand-written layer opens
+  the library under the three build rules every loader applies and makes
+  a context that reads its profile, settings, hash and keys, with each
+  refusal carrying the library's record. `cargo xtask check-java`
+  compiles both at release 22 with every lint an error and runs the
+  tests against the real library, and verify runs it on Java 25.
+  **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type
   from it, so each request type has one deserialiser rather than one per

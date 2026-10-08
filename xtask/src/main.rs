@@ -20,6 +20,9 @@
 //!   hand and in the nightly matrix).
 //! - `check-dart`: the Dart binding's layer and decoders against the real
 //!   library, the package analysed and formatted.
+//! - `check-java`: the Java binding compiled at its floor's release with
+//!   every lint an error, and its tests against the real library (needs a
+//!   JDK).
 //! - `check-parity`: one scenario through both bindings, and the two
 //!   reports compared value by value.
 //! - `check-site`: the documentation site builds and renders every
@@ -274,6 +277,7 @@ mod interpret;
 mod interpretations;
 mod intl;
 mod jaimini;
+mod java_binding;
 mod kalachakra;
 mod kp;
 mod lints;
@@ -584,6 +588,7 @@ fn main() {
         Some("check-wasm") => wasm_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-python") => python_binding::check(&repo_root()),
+        Some("check-java") => java_binding::check(&repo_root()),
         Some("check-rust") => rust_binding::check(&repo_root()),
         Some("check-parity") => parity::check(&repo_root()),
         Some("check-lints") => lints::check(&repo_root()),
@@ -666,7 +671,7 @@ fn usage() -> i32 {
          vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
-         check-dart | check-python | check-rust | check-parity | check-lints | \
+         check-dart | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | bench [FILE] | \

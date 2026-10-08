@@ -8,6 +8,8 @@
 //! - [`node`]: the Node addon's napi glue over the C ABI;
 //! - [`dart`]: the Dart binding's `dart:ffi` layer, its typed classes and
 //!   its decoders;
+//! - [`java`]: the Java binding's FFM layer: the enums, the exception and
+//!   the raw layouts and method handles;
 //! - [`python`]: the Python binding's `ctypes` layer, its typed classes
 //!   and its decoders;
 //! - [`mdx`]: the documentation site's reference pages, one per entry
@@ -20,6 +22,7 @@
 
 pub mod c;
 pub mod dart;
+pub mod java;
 pub mod mdx;
 pub mod node;
 pub mod python;
