@@ -13,7 +13,7 @@ import com.teispace.teistro.record.Step;
  * body {@code j}.
  *
  * <pre>{@code
- * PositionGrid grid = new PositionGrid(sky.positions(new double[] {2_460_000.5}, List.of(Body.SUN)));
+ * PositionGrid grid = sky.positions(new double[] {2_460_000.5}, List.of(Body.SUN));
  * double sun = grid.at(0, 0).longitude();
  * }</pre>
  */

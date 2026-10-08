@@ -209,11 +209,19 @@ pub(crate) fn pinned_npm_tool(dir: &Path, package: &str) -> Option<PathBuf> {
 /// did not, with the line the gate prints either way.
 pub(crate) fn step(command: &mut Command, passed: &str, failed: &str) -> Result<(), ()> {
     let status = command.status();
-    if status.is_ok_and(|s| s.success()) {
+    if status.as_ref().is_ok_and(std::process::ExitStatus::success) {
         if !passed.is_empty() {
             println!("ok    {passed}");
         }
         Ok(())
+    } else if let Err(why) = status {
+        // A program that never started says why, or a command line past
+        // Windows's limit reads as the program having failed.
+        println!(
+            "FAIL  {failed}: `{}` did not start: {why}",
+            command.get_program().to_string_lossy()
+        );
+        Err(())
     } else {
         // **The program, on the failure line.** A step that prints only
         // what it wanted leaves a reader to guess which of several tools

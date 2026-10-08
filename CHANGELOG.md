@@ -2436,7 +2436,9 @@ the astronomical numbers do not move. Nothing else computes yet.
   rashifal and the engine's own functions. `check-parity` holds Java's
   runner to Node's on every value the other runners print, and
   `gen intl` writes Java's typed messages and entity forms, which
-  `intl().messages()` reads.
+  `intl().messages()` reads. The shared examples run in Java too and
+  print what the other bindings' print, but for the provider example,
+  which waits on a provider written in Java.
   **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type

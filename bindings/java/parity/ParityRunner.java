@@ -1043,8 +1043,8 @@ public final class ParityRunner {
             put("frame-coordinates", frame.coordinates().key());
             put("frame-bits", teistro.packFrame(frame));
             put("frame-round-trip", teistro.unpackFrame(teistro.packFrame(frame)).centre() == frame.centre());
-            PositionGrid sky = new PositionGrid(ctx.positions(new double[] {2451545.0, 2451546.0},
-                    List.of(Body.SUN, Body.MOON, Body.MARS)));
+            PositionGrid sky = ctx.positions(new double[] {2451545.0, 2451546.0},
+                    List.of(Body.SUN, Body.MOON, Body.MARS));
             put("cells", sky.cellCount());
             put("positions-scale", sky.timeScale().key());
             put("positions-bodies", join(",", sky.bodyKeys(), Body::key));
