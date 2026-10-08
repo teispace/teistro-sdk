@@ -56,6 +56,57 @@ public final class BindingTest {
         throw new AssertionError("the options were not refused");
     }
 
+    /** A straight-line Sun and Moon, counting its calls, throwing {@code fails} when it is set. */
+    private static class Line extends EphemerisProvider {
+        private final RuntimeException fails;
+        private final List<Body> bodies;
+        int calls;
+
+        Line(RuntimeException fails) {
+            this(fails, List.of(Body.SUN, Body.MOON));
+        }
+
+        Line(RuntimeException fails, List<Body> bodies) {
+            this.fails = fails;
+            this.bodies = bodies;
+        }
+
+        @Override
+        public String name() {
+            return "line";
+        }
+
+        @Override
+        public List<Body> bodies() {
+            return bodies;
+        }
+
+        @Override
+        public java.util.Optional<PositionAnswer> positions(PositionQuery query) {
+            calls += 1;
+            if (fails != null) {
+                throw fails;
+            }
+            double[] lon = new double[query.cellCount()];
+            for (int cell = 0; cell < lon.length; cell += 1) {
+                lon[cell] = (280.46 + 0.9856 * (query.jds()[cell / query.bodies().size()] - 2_451_545.0)) % 360.0;
+            }
+            double[] zeros = new double[lon.length];
+            double[] ones = new double[lon.length];
+            java.util.Arrays.fill(ones, 1.0);
+            return java.util.Optional.of(PositionAnswer.of(lon, zeros, ones));
+        }
+    }
+
+    private static IllegalArgumentException refusedProvider(java.util.function.Supplier<EphemerisProvider> provider) {
+        try {
+            Teistro.open().context(ContextOptions.builder().provider(provider.get()).build()).close();
+        } catch (IllegalArgumentException e) {
+            return e;
+        }
+        throw new AssertionError("the provider was not refused");
+    }
+
     private static Context context(Teistro teistro) {
         return teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true).build());
     }
@@ -462,6 +513,73 @@ public final class BindingTest {
             } catch (IllegalArgumentException expected) {
                 check(expected.getMessage().contains("12345"), "names the id");
             }
+        });
+
+        tests.put("a provider written in Java answers a chart, and a throw reaches the caller as itself", () -> {
+            Line line = new Line(null, List.of(Body.values()));
+            Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                    .provider(line).build())) {
+                same(java.util.Optional.of(line), sky.provider().map(p -> (Line) p), "the context names its provider");
+                Chart chart = sky.chart().found(2_451_545.0, place, 20700, ChartOptions.none());
+                check(line.calls > 0, "founding a chart asked the provider");
+                check(chart.lagnaDeg() >= 0 && chart.lagnaDeg() < 360, "a lagna");
+            }
+            IllegalStateException thrown = new IllegalStateException("the index is corrupt");
+            try (Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                    .provider(new Line(thrown)).build())) {
+                try {
+                    sky.positions(new double[] {2_451_545.0}, List.of(Body.SUN));
+                    throw new AssertionError("the provider's throw was swallowed");
+                } catch (IllegalStateException found) {
+                    check(found == thrown, "the provider's own exception, not a copy");
+                    check(found.getSuppressed().length == 1 && found.getSuppressed()[0] instanceof TeistroException,
+                            "the library's refusal is kept beside it");
+                }
+                // The next call starts clean: a throw is never read from an
+                // earlier call (`error-carries-its-record`).
+                TeistroException refusal = refusal(() -> sky.positions(new double[] {2_451_545.0}, List.of(Body.SATURN)));
+                check(refusal.getMessage().contains("SATURN"), "a later refusal is the library's own");
+            }
+        });
+
+        tests.put("a provider's column of the wrong length is refused, never padded", () -> {
+            EphemerisProvider short_ = new Line(null) {
+                @Override
+                public java.util.Optional<PositionAnswer> positions(PositionQuery query) {
+                    double[] one = new double[1];
+                    return java.util.Optional.of(PositionAnswer.of(one, one, one));
+                }
+            };
+            try (Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                    .provider(short_).build())) {
+                IllegalStateException found = null;
+                try {
+                    sky.positions(new double[] {2_451_545.0, 2_451_546.0}, List.of(Body.SUN));
+                } catch (IllegalStateException e) {
+                    found = e;
+                }
+                check(found != null && found.getMessage().contains("1 values in `lon` for 2 cells"),
+                        "the length named: " + found);
+            }
+        });
+
+        tests.put("a provider's binding is released with its context, every time", () -> {
+            for (int round = 0; round < 200; round += 1) {
+                Line line = new Line(null);
+                Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                        .provider(line).build());
+                sky.positions(new double[] {2_451_545.0 + round}, List.of(Body.SUN, Body.MOON));
+                sky.close();
+                sky.close();
+                same(1, line.calls, "round " + round + " asked once");
+            }
+            check(refusedProvider(() -> new Line(null) {
+                @Override
+                public String name() {
+                    return "";
+                }
+            }).getMessage().contains("must have a name"), "a nameless provider is refused before it is bound");
         });
 
         tests.put("JSON is read strictly", () -> {
