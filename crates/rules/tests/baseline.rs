@@ -14,6 +14,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{chart, chart_at, files, files_in, recorded_chart, rules, strings};
 use teistro_rules::{Body, Evaluator, Readings, Rule, RuleResult};
@@ -29,6 +33,7 @@ fn the_kernel_reproduces_every_recorded_yoga() {
     );
 
     let (mut charts, mut decisions, mut presences) = (0, 0, 0);
+    let mut tally = Tally::new("baseline/yogas", "the engine's reading");
     for (path, file) in files() {
         let chart = chart(&file["inputs"]);
         // The navamsha the reader computes is the chart's recorded D9, body for
@@ -53,7 +58,9 @@ fn the_kernel_reproduces_every_recorded_yoga() {
             explained(&evaluator, rule, &result);
             let at = format!("{} {}", path.display(), rule.key);
             let recorded = present.get(&rule.key);
-            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            tally.same(result.present, recorded.is_some(), || {
+                format!("{at}: presence")
+            });
             let Some(recorded) = recorded else {
                 continue;
             };
@@ -63,11 +70,9 @@ fn the_kernel_reproduces_every_recorded_yoga() {
                 .iter()
                 .map(|b| b.key().to_owned())
                 .collect();
-            assert_eq!(
-                participants,
-                strings(&recorded["planets"]),
-                "{at}: participants"
-            );
+            tally.same(participants, strings(&recorded["planets"]), || {
+                format!("{at}: participants")
+            });
             let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
             let recorded_houses: Vec<u64> = recorded["houses"]
                 .as_array()
@@ -75,24 +80,24 @@ fn the_kernel_reproduces_every_recorded_yoga() {
                 .iter()
                 .map(|h| h.as_u64().unwrap())
                 .collect();
-            assert_eq!(houses, recorded_houses, "{at}: houses");
+            tally.same(houses, recorded_houses, || format!("{at}: houses"));
             let fired: Vec<String> = result
                 .cancellations
                 .iter()
                 .map(|i| rule.cancellations[*i].condition.kind().to_owned())
                 .collect();
-            assert_eq!(
-                fired,
-                strings(&recorded["cancellations"]),
-                "{at}: cancellations"
-            );
-            assert_eq!(
+            tally.same(fired, strings(&recorded["cancellations"]), || {
+                format!("{at}: cancellations")
+            });
+            tally.same(
                 result.is_cancelled(),
-                recorded["cancelled"].as_bool().unwrap()
+                recorded["cancelled"].as_bool().unwrap(),
+                || format!("{at}: cancelled"),
             );
         }
     }
     assert_eq!((charts, decisions, presences), (93, 55_521, 5350));
+    tally.record();
 }
 
 /// An explanation answers what the evaluation answers, its conditions stop at
@@ -156,6 +161,10 @@ fn the_sdk_s_rules_for_the_neecha_bhanga_family_say_present_where_the_engine_s_c
     }
 
     let (mut decisions, mut presences, mut exact) = (0, 0, 0);
+    let mut tally = Tally::new(
+        "baseline/yogas",
+        "the SDK's rules for the eight the engine computes in code",
+    );
     for (path, file) in files() {
         let chart = chart(&file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
@@ -165,7 +174,9 @@ fn the_sdk_s_rules_for_the_neecha_bhanga_family_say_present_where_the_engine_s_c
             let result = evaluator.evaluate(rule);
             let at = format!("{} {}", path.display(), rule.key);
             let recorded = present.get(&rule.key);
-            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            tally.same(result.present, recorded.is_some(), || {
+                format!("{at}: presence")
+            });
             let Some(recorded) = recorded else {
                 continue;
             };
@@ -183,7 +194,7 @@ fn the_sdk_s_rules_for_the_neecha_bhanga_family_say_present_where_the_engine_s_c
             }
             ours.sort();
             theirs.sort();
-            assert_eq!(ours, theirs, "{at}: the grahas");
+            tally.same(ours, theirs, || format!("{at}: the grahas"));
             let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
             let recorded_houses: Vec<u64> = recorded["houses"]
                 .as_array()
@@ -191,10 +202,11 @@ fn the_sdk_s_rules_for_the_neecha_bhanga_family_say_present_where_the_engine_s_c
                 .iter()
                 .map(|h| h.as_u64().unwrap())
                 .collect();
-            assert_eq!(houses, recorded_houses, "{at}: houses");
+            tally.same(houses, recorded_houses, || format!("{at}: houses"));
         }
     }
     assert_eq!((decisions, presences, exact), (93 * 8, 202, 199));
+    tally.record();
 }
 
 #[test]

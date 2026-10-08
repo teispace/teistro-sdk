@@ -14,6 +14,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{chart, files_in, rules_in, strings};
 use teistro_rules::{
@@ -99,6 +103,7 @@ fn the_kernel_reproduces_every_recorded_dosha_the_language_can_say() {
     }
 
     let (mut charts, mut decisions, mut presences, mut with_panchanga) = (0, 0, 0, 0);
+    let mut tally = Tally::new("baseline/doshas", "the engine's reading");
     for (path, file) in files_in("doshas") {
         let chart = chart(&file["inputs"]);
         with_panchanga += usize::from(chart.panchanga.is_some());
@@ -110,7 +115,9 @@ fn the_kernel_reproduces_every_recorded_dosha_the_language_can_say() {
             let result = evaluator.evaluate(rule);
             let at = format!("{} {}", path.display(), rule.key);
             let recorded = present.get(&rule.key);
-            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            tally.same(result.present, recorded.is_some(), || {
+                format!("{at}: presence")
+            });
             let Some(recorded) = recorded else {
                 continue;
             };
@@ -123,21 +130,17 @@ fn the_kernel_reproduces_every_recorded_dosha_the_language_can_say() {
                     Found::Group(i) => rule.groups[*i].label.clone(),
                 })
                 .collect();
-            assert_eq!(
-                found,
-                strings(&recorded["present_from"]),
-                "{at}: found from"
-            );
+            tally.same(found, strings(&recorded["present_from"]), || {
+                format!("{at}: found from")
+            });
             let participants: Vec<String> = result
                 .participants
                 .iter()
                 .map(|b| b.key().to_owned())
                 .collect();
-            assert_eq!(
-                participants,
-                strings(&recorded["planets"]),
-                "{at}: participants"
-            );
+            tally.same(participants, strings(&recorded["planets"]), || {
+                format!("{at}: participants")
+            });
             let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
             let recorded_houses: Vec<u64> = recorded["houses"]
                 .as_array()
@@ -145,31 +148,30 @@ fn the_kernel_reproduces_every_recorded_dosha_the_language_can_say() {
                 .iter()
                 .map(|h| h.as_u64().unwrap())
                 .collect();
-            assert_eq!(houses, recorded_houses, "{at}: houses");
-            assert_eq!(
+            tally.same(houses, recorded_houses, || format!("{at}: houses"));
+            tally.same(
                 result.severity.map(u64::from),
                 recorded["severity"].as_u64(),
-                "{at}: severity"
+                || format!("{at}: severity"),
             );
             let fired: Vec<String> = result
                 .cancellations
                 .iter()
                 .map(|i| label(&rule.cancellations[*i]))
                 .collect();
-            assert_eq!(
-                fired,
-                strings(&recorded["cancellations"]),
-                "{at}: cancellations"
-            );
-            assert_eq!(
+            tally.same(fired, strings(&recorded["cancellations"]), || {
+                format!("{at}: cancellations")
+            });
+            tally.same(
                 result.status,
                 Some(status(recorded["net_status"].as_str().unwrap())),
-                "{at}: net status"
+                || format!("{at}: net status"),
             );
         }
     }
     assert_eq!((charts, with_panchanga), (93, 77));
     assert_eq!((decisions, presences), (93 * 35, 885));
+    tally.record();
 }
 
 /// The rules the SDK writes for the seventeen the engine computes in code
@@ -196,6 +198,10 @@ fn the_sdk_s_rules_say_present_where_the_engine_s_code_did() {
 
     let tables = Tables::classical();
     let (mut decisions, mut presences, mut reproduced) = (0, 0, 0);
+    let mut tally = Tally::new(
+        "baseline/doshas",
+        "the SDK's rules for the seventeen the engine computes in code",
+    );
     for (path, file) in files_in("doshas") {
         let chart = chart(&file["inputs"]);
         let evaluator =
@@ -206,31 +212,31 @@ fn the_sdk_s_rules_say_present_where_the_engine_s_code_did() {
             let result = evaluator.evaluate(rule);
             let at = format!("{} {}", path.display(), rule.key);
             let recorded = present.get(&rule.key);
-            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            tally.same(result.present, recorded.is_some(), || {
+                format!("{at}: presence")
+            });
             let Some(recorded) = recorded else {
                 continue;
             };
             presences += 1;
-            assert_eq!(
+            tally.same(
                 result.severity.map(u64::from),
                 recorded["severity"].as_u64(),
-                "{at}: severity"
+                || format!("{at}: severity"),
             );
-            assert_eq!(
+            tally.same(
                 result.status,
                 Some(status(recorded["net_status"].as_str().unwrap())),
-                "{at}: net status"
+                || format!("{at}: net status"),
             );
             let fired: Vec<String> = result
                 .cancellations
                 .iter()
                 .map(|i| label(&rule.cancellations[*i]))
                 .collect();
-            assert_eq!(
-                fired,
-                strings(&recorded["cancellations"]),
-                "{at}: cancellations"
-            );
+            tally.same(fired, strings(&recorded["cancellations"]), || {
+                format!("{at}: cancellations")
+            });
             let planets: Vec<String> = result
                 .participants
                 .iter()
@@ -253,8 +259,14 @@ fn the_sdk_s_rules_say_present_where_the_engine_s_code_did() {
                     7 + usize::from(rule.groups.is_empty() && rule.conditions.len() > 1),
                     "{at}"
                 );
+                tally.explained(
+                    "the seven grahas the nodes caught, named (doshas-measured.md)",
+                    1,
+                );
             } else {
-                assert_eq!(planets, strings(&recorded["planets"]), "{at}: planets");
+                tally.same(planets, strings(&recorded["planets"]), || {
+                    format!("{at}: planets")
+                });
                 let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
                 let recorded_houses: Vec<u64> = recorded["houses"]
                     .as_array()
@@ -262,12 +274,13 @@ fn the_sdk_s_rules_say_present_where_the_engine_s_code_did() {
                     .iter()
                     .map(|h| h.as_u64().unwrap())
                     .collect();
-                assert_eq!(houses, recorded_houses, "{at}: houses");
+                tally.same(houses, recorded_houses, || format!("{at}: houses"));
                 reproduced += 1;
             }
         }
     }
     assert_eq!((decisions, presences, reproduced), (93 * 17, 139, 135));
+    tally.record();
 }
 
 #[test]
