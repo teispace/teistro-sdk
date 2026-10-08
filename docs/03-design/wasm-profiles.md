@@ -120,7 +120,10 @@ one.
      record of a left-out family and reads its `CAPABILITY` back, naming
      the record. `families-are-forwarded` holds the three manifests to
      one set, read from the façade's optional crates.
-   - **Next slice:** the families the core path reaches into: the
+   - **Second slice:** `rashifal`, whose entry point is its own. The
+     ABI and key suites require `full`, and the `families` job lints
+     every test target without it.
+   - **Next:** the families the core path reaches into: the
      Hellenistic time lords (in the dasha path), `rules`, `interpret`,
      `dasha`, `strength`, `gochar` and `matching` (which the document
      reader names).

@@ -16,8 +16,9 @@ use core::ffi::c_char;
 use teistro_core::error::Status;
 
 use crate::context::TsContext;
+use crate::family::in_family;
 use crate::string::TsString;
-use crate::support::{text, with_context, write_plain};
+use crate::support::with_context;
 
 /// Reads periods of civil days at a place for each of the twelve signs and
 /// answers with an array of `{period, baseline}` as canonical JSON: the
@@ -34,7 +35,8 @@ use crate::support::{text, with_context, write_plain};
 /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
 /// and `YEARLY`. A key it does not read, a last day before the first, a
 /// clock off the clock or a graha named twice is `INVALID_ARG`, named
-/// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+/// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
+/// a build that leaves the `rashifal` family out.
 ///
 /// # Safety
 ///
@@ -47,12 +49,16 @@ pub unsafe extern "C" fn ts_rashifal(
     out_json: *mut TsString,
 ) -> Status {
     with_context(context, |ctx| {
-        // SAFETY: the entry point's contract.
-        let asked =
-            teistro::RashifalBatch::from_json(unsafe { text(request_json, "request_json") }?)?;
-        let answers = ctx.sdk().chart().rashifal_answers(&asked)?;
-        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answers.value));
-        // SAFETY: the entry point's contract.
-        unsafe { write_plain(out_json, "out_json", json) }
+        in_family!("rashifal", [ctx, request_json, out_json], {
+            // SAFETY: the entry point's contract.
+            let asked = teistro::RashifalBatch::from_json(unsafe {
+                crate::support::text(request_json, "request_json")
+            }?)?;
+            let answers = ctx.sdk().chart().rashifal_answers(&asked)?;
+            let json =
+                TsString::from_string(teistro_core::envelope::canonical_json(&answers.value));
+            // SAFETY: the entry point's contract.
+            unsafe { crate::support::write_plain(out_json, "out_json", json) }
+        })
     })
 }

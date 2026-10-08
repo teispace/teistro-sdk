@@ -2156,7 +2156,8 @@ final class TeistroLibrary {
   /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
   /// and `YEARLY`. A key it does not read, a last day before the first, a
   /// clock off the clock or a graha named twice is `INVALID_ARG`, named
-  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
+  /// a build that leaves the `rashifal` family out.
   final TsRashifalDart ts_rashifal;
 
   /// What the context's engine says it offers beyond this library's own
@@ -5064,7 +5065,8 @@ final class TeistroContext implements ffi.Finalizable {
   /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
   /// and `YEARLY`. A key it does not read, a last day before the first, a
   /// clock off the clock or a graha named twice is `INVALID_ARG`, named
-  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
+  /// a build that leaves the `rashifal` family out.
   String rashifal(String requestJson) {
     _alive();
     return pkg_ffi.using((arena) {

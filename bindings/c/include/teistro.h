@@ -9103,7 +9103,8 @@ ts_status ts_numerology_profile(const ts_context * context, const char * request
  * the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
  * and `YEARLY`. A key it does not read, a last day before the first, a
  * clock off the clock or a graha named twice is `INVALID_ARG`, named
- * under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+ * under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
+ * a build that leaves the `rashifal` family out.
  * Safety: `context` must be a live handle; `request_json` NUL-terminated;
  * `out_json` valid for a write.
  */

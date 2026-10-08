@@ -61,11 +61,12 @@ libloading = "0.8"
 default = ["builtin-standard", "full"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "kp", "muhurta", "numerology", "prashna", "remedies", "svg", "tajika", "western"]
+full = ["teistro/full", "kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
 kp = ["teistro/kp"]
 muhurta = ["teistro/muhurta"]
 numerology = ["teistro/numerology"]
 prashna = ["teistro/prashna"]
+rashifal = ["teistro/rashifal"]
 remedies = ["teistro/remedies"]
 svg = ["teistro/svg"]
 tajika = ["teistro/tajika"]
@@ -87,6 +88,18 @@ builtin-compact = ["builtin-ephemeris", "teistro/builtin-compact"]
 builtin-standard = ["builtin-ephemeris", "teistro/builtin-standard"]
 builtin-full = ["builtin-ephemeris", "teistro/builtin-full"]
 
+
+# The ABI suite reads every family's answers and the key suite holds
+# every family's spelling to its serde, so a build that leaves one out
+# skips them rather than failing to compile them; `tests/families.rs` is
+# what such a build runs.
+[[test]]
+name = "abi"
+required-features = ["full"]
+
+[[test]]
+name = "keys"
+required-features = ["full"]
 
 [dev-dependencies]
 teistro-idl = { path = "../idl" }
