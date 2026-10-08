@@ -311,6 +311,10 @@ re-checks.
 
 1. **Widen `generated-page-is-gated`** to `docs/05-testing` with the
    explicit list, proved red. This is cheap and covers `ACCURACY.md` today.
+   **Done:** a page anywhere under `docs` whose status line calls it
+   generated is held, whatever its name, and a gate may be named bare or
+   as the `cargo xtask` command; proved red on `ACCURACY.md` with its gate
+   removed and on the panchanga conventions page with its gate misspelt.
 2. **`CONFORMANCE.md`, live half**: the score-file `Output` in each corpus
    pass, the section list held to `corpus.json`, `check-conformance` in
    fast-check. Positions over the default tier.

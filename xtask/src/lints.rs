@@ -953,8 +953,35 @@ fn layers_do_not_shadow_a_kind(root: &Path, outcome: &mut Outcome) {
     }
 }
 
-/// Where the generated pages live, and the suffix that marks one.
+/// Where the measured pages live, and the suffix that marks one.
 const MEASURED: (&str, &str) = ("docs/03-design", "-measured.md");
+
+/// The tree every other generated page lives in, and what its status line
+/// says: a page anywhere under `docs` that calls itself generated is one,
+/// whatever its name (`ACCURACY.md` was outside the suffix's reach).
+const GENERATED: (&str, &str) = ("docs", "Status: `generated`");
+
+/// Every Markdown file under `dir`, as paths relative to `root`.
+fn markdown_under(root: &Path, dir: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    let mut pending = vec![root.join(dir)];
+    while let Some(here) = pending.pop() {
+        let Ok(entries) = std::fs::read_dir(&here) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                pending.push(path);
+            } else if path.extension().is_some_and(|ext| ext == "md")
+                && let Ok(relative) = path.strip_prefix(root)
+            {
+                found.push(relative.to_string_lossy().replace('\\', "/"));
+            }
+        }
+    }
+    found
+}
 
 /// That every generated page **names the gate that holds it**, or says it
 /// has none.
@@ -973,23 +1000,26 @@ const MEASURED: (&str, &str) = ("docs/03-design", "-measured.md");
 /// which must exist in `xtask`, or it says in as many words that it has
 /// none. Both ways fail — a page naming a gate that does not exist, and a
 /// page claiming neither.
+///
+/// A generated page is a `-measured.md` page of `03-design`, or any page
+/// under `docs` whose status line says `generated`: `ACCURACY.md` was
+/// generated and gated and this lint could not see it.
 fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "generated-page-is-gated";
-    let (dir, suffix) = MEASURED;
-    let Ok(entries) = std::fs::read_dir(root.join(dir)) else {
-        return;
-    };
+    let (measured, suffix) = MEASURED;
+    let (tree, status) = GENERATED;
     let Ok(xtask) = std::fs::read_to_string(root.join("xtask/src/main.rs")) else {
         return;
     };
     let mut pages: Vec<(String, String)> = Vec::new();
-    for entry in entries.flatten() {
-        let name = entry.file_name().to_string_lossy().into_owned();
-        if !name.ends_with(suffix) {
+    for file in markdown_under(root, tree) {
+        let Ok(text) = std::fs::read_to_string(root.join(&file)) else {
             continue;
-        }
-        if let Ok(text) = std::fs::read_to_string(entry.path()) {
-            pages.push((name, text));
+        };
+        let header = text.split("\n\n").take(2).collect::<String>();
+        let is_measured = file.starts_with(&format!("{measured}/")) && file.ends_with(suffix);
+        if is_measured || header.contains(status) {
+            pages.push((file, text));
         }
     }
     pages.sort();
@@ -1008,6 +1038,8 @@ fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
         } else {
             header
                 .split('`')
+                // Named bare or as the command that runs it.
+                .map(|piece| piece.strip_prefix("cargo xtask ").unwrap_or(piece))
                 .filter(|piece| piece.starts_with("check-"))
                 .collect()
         };
@@ -1016,7 +1048,7 @@ fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
             // does, rather than leaving a reader to assume there is one.
             if !declares_none {
                 outcome.failures.push(Finding {
-                    file: format!("{dir}/{name}"),
+                    file: name.clone(),
                     line: 3,
                     text: String::from(
                         "names no `check-` gate and does not say it has none; a generated page \
@@ -1030,7 +1062,7 @@ fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
         for gate in named {
             if !xtask.contains(&format!("Some(\"{gate}\")")) && !gate_in_passes(&xtask, gate) {
                 outcome.failures.push(Finding {
-                    file: format!("{dir}/{name}"),
+                    file: name.clone(),
                     line: 3,
                     text: format!("names `{gate}`, which `xtask` does not declare"),
                     rule: RULE,
