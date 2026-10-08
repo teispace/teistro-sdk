@@ -2430,7 +2430,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   decoded by a generated class whose columns read a row at a time,
   every offset checked, so `positions` and `intl().render` answer typed. `cargo xtask check-java`
   compiles both at release 22 with every lint an error and runs the
-  tests against the real library, and verify runs it on Java 25.
+  tests against the real library, and verify runs it on Java 25. A
+  founded chart answers every reading the other bindings do, as typed
+  records. Beside the chart are the almanac, matching, numerology,
+  rashifal and the engine's own functions.
   **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type
