@@ -781,6 +781,78 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         ))
     }
 
+    /// Some grahas' longitudes at one instant, in a zodiac the caller
+    /// holds, unstamped: what a caller judging thousands of instants of one
+    /// chart's sky needs, where [`Founder::longitudes`] would place all
+    /// nine and seal each answer.
+    ///
+    /// The zodiac is taken rather than computed at the instant, as for
+    /// [`Founder::ascendant_at`]: a chart is measured in one ayanamsha
+    /// throughout. Ketu is Rahu's opposite point, as the founding places
+    /// it.
+    ///
+    /// # Errors
+    ///
+    /// An instant outside the Delta T model's range, a graha the settings
+    /// do not place, or a provider that cannot place one.
+    pub fn longitudes_in(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+        grahas: &[Graha],
+    ) -> Result<Vec<f64>, Error> {
+        let completion = self.placing();
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        let asked: Vec<(Graha, Body)> = grahas
+            .iter()
+            .map(|&graha| {
+                let placed = if graha == Graha::Ketu {
+                    Graha::Rahu
+                } else {
+                    graha
+                };
+                body_of(placed, self.settings())
+                    .map(|(body, _)| (graha, body))
+                    .ok_or_else(|| {
+                        Error::unsupported(format!("the settings place no {}", graha.key()))
+                            .with_field("grahas")
+                    })
+            })
+            .collect::<Result<_, Error>>()?;
+        let bodies: Vec<Body> = asked.iter().map(|&(_, body)| body).collect();
+        let jds = [ut1.get()];
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, zodiac.request);
+        if zodiac.needs_observer() {
+            request.observer = Some(*place);
+        }
+        let completed: Completed = completion.positions(&request)?;
+        asked
+            .iter()
+            .enumerate()
+            .map(|(index, &(graha, body))| {
+                let cell = completed.columns.at(0, index).ok_or_else(|| {
+                    Error::internal(format!("the grid has no cell for {}", body.key()))
+                })?;
+                if cell.status != CellStatus::Ok {
+                    return Err(Error::unsupported(format!(
+                        "the provider could not place {}: {:?}",
+                        body.key(),
+                        cell.status
+                    ))
+                    .with_field("bodies"));
+                }
+                let tropical = cell.lon.rem_euclid(360.0);
+                let tropical = if graha == Graha::Ketu {
+                    (tropical + 180.0).rem_euclid(360.0)
+                } else {
+                    tropical
+                };
+                Ok(zodiac.of_tropical(tropical))
+            })
+            .collect()
+    }
+
     /// Every crossing of the grahas' longitudes over `lattices`, and every
     /// station when asked, between two instants: the events a transit hit
     /// list reads (`03-design/transit-hit-list.md`), in time order and each
