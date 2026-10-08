@@ -1,6 +1,6 @@
 ---
 title: Installing
-description: The Node package, the Dart package and the C bundle, and where each one finds the library.
+description: The Node, Dart, Python and Java packages and the C bundle, and where each one finds the library.
 ---
 
 Teistro is one library with several ways in. Each binding installs a
@@ -8,7 +8,7 @@ prebuilt binary rather than compiling one, and each checks that the
 library it loaded is the build its generated types were made from.
 
 <Callout type="warn">
-  Nothing is published yet: the version is `0.0.0`, and both packages are
+  Nothing is published yet: the version is `0.0.0`, and every package is
   marked unpublishable until a release is cut. Until then, build the
   library from source — the last section says how.
 </Callout>
@@ -117,6 +117,41 @@ and `$TEISTRO_LIBRARY` names a library outright.
   3.15.
 </Callout>
 
+## Java
+
+```xml
+<dependency>
+  <groupId>com.teispace</groupId>
+  <artifactId>teistro</artifactId>
+  <version>VERSION</version>
+</dependency>
+```
+
+Java 22 or later. The jar is a named module, `com.teispace.teistro`,
+and carries the library for every platform a release builds; a classifier
+jar (`<classifier>linux-x64</classifier>`, and so on) carries one, with
+the same classes, for an image that ships to one platform. On first use
+the library for this machine is written to `java.io.tmpdir`, checked
+against a digest compiled into the jar, and checked again every time it
+is reused. There is no install step.
+
+```java
+import com.teispace.teistro.*;
+
+Teistro teistro = Teistro.open();
+try (Context ctx = teistro.context(ContextOptions.builder()
+        .profile("nepali-default").locale("ne-Deva-NP").ephemeris(Ephemeris.BUILTIN).build())) {
+    double sun = ctx.positions(new double[] {2451545.0}, List.of(Body.SUN)).at(0, 0).longitude();
+}
+```
+
+Run with native access granted: `--enable-native-access=com.teispace.teistro`
+on the module path, `--enable-native-access=ALL-UNNAMED` on the class
+path. `-Dteistro.library` names a library outright, `-Dteistro.cache`
+moves the cache off a shared or `noexec` temporary directory, and
+`-Dteistro.platform` names the platform to load where detection reads
+the host wrongly.
+
 ## C, and everything that speaks C
 
 A release attaches one bundle per platform,
@@ -142,8 +177,7 @@ and a C compiler checks every struct's size against the library's on
 64-bit targets, so a mismatched build refuses to compile rather than
 computing quietly wrong answers.
 
-C++, Swift, Kotlin (Panama or JNI) and Java (FFM) consume this header
-directly.
+C++, Swift and Kotlin (Panama or JNI) consume this header directly.
 
 ## Choosing an ephemeris
 
@@ -154,7 +188,7 @@ names an **ordered chain** tried in order.
 An entry is one of three things: a **name** of an ephemeris the SDK
 carries (`BUILTIN`, `TEST`, `NONE`), a **descriptor** exported by an
 adapter's own package, or a **provider you write yourself** — a
-JavaScript, Dart or Python object the SDK calls into.
+JavaScript, Dart, Python or Java object the SDK calls into.
 
 ```js
 import { Context } from '@teistro/sdk';
@@ -176,6 +210,14 @@ final ctx = teistro.context(
 from teistro_ephemeris_teimeris import teimeris
 
 ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
+```
+
+```java
+import com.teispace.teistro.teimeris.Teimeris;
+
+Context ctx = sdk.context(ContextOptions.builder()
+        .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
+        .build());
 ```
 
 **A real engine is the intended path.** In most cases a consumer belongs
@@ -209,7 +251,7 @@ cd teistro-sdk
 cargo build --release -p teistro-ffi
 ```
 
-Both loaders look in `target/release` on their own, so a checkout needs
+Every loader looks in `target/release` on its own, so a checkout needs
 no install step at all.
 
 ## What every binding checks
