@@ -107,6 +107,8 @@ jobs:
         run: cargo xtask check-hits
       - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
         run: cargo xtask check-sade-sati
+      - name: Rashifal page (what each of the baseline engine's choices moves in a year of rashifal at Kathmandu)
+        run: cargo xtask check-rashifal
       - name: KP page (each sub lord's margin in minutes of birth time read back through the founder, over the recorded births)
         run: cargo xtask check-kp
       - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)

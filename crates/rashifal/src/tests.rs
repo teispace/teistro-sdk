@@ -196,3 +196,55 @@ fn sade_sati_at_its_peak_lowers_the_score() {
     let score = |read| baseline_score(read, &[false; 9], QUIET, Period::Daily).overall;
     assert!(score(peak) < score(calm));
 }
+
+#[test]
+fn the_baselines_tables_depart_where_its_report_says() {
+    use crate::baseline::baseline_gochar;
+    let rules = RashifalRules::default();
+    let from_aries = |at: &[(Graha, Rashi)]| {
+        let text = rashifal(&sky(at), &[], &rules)[0].gochar.clone();
+        let baseline = baseline_gochar(&text);
+        (text, baseline)
+    };
+    let verdict = |reading: &teistro_gochar::GocharReading, graha: Graha| {
+        reading.grahas[graha as usize].verdict
+    };
+    // D1: Venus in the 11th; Mars in the 3rd obstructs it by the text,
+    // in the 6th by the baseline.
+    let (text, baseline) = from_aries(&[
+        (Graha::Venus, Rashi::Aquarius),
+        (Graha::Mars, Rashi::Gemini),
+    ]);
+    assert_eq!(verdict(&text, Graha::Venus), Verdict::Obstructed);
+    assert_eq!(verdict(&baseline, Graha::Venus), Verdict::Good);
+    // D3: the Sun in the 11th and Saturn in its vedha 5th; the text spares
+    // father and son, the baseline does not.
+    let (text, baseline) = from_aries(&[
+        (Graha::Sun, Rashi::Aquarius),
+        (Graha::Saturn, Rashi::Leo),
+        (Graha::Moon, Rashi::Taurus),
+        (Graha::Mercury, Rashi::Taurus),
+        (Graha::Venus, Rashi::Taurus),
+        (Graha::Mars, Rashi::Taurus),
+        (Graha::Jupiter, Rashi::Taurus),
+    ]);
+    assert_eq!(verdict(&text, Graha::Sun), Verdict::Good);
+    assert_eq!(verdict(&baseline, Graha::Sun), Verdict::Obstructed);
+    // D2: Rahu in the 3rd; by the Sun's vedha the 9th obstructs it, by the
+    // baseline's the 12th.
+    let (text, baseline) = from_aries(&[
+        (Graha::Rahu, Rashi::Gemini),
+        (Graha::Ketu, Rashi::Sagittarius),
+        (Graha::Mars, Rashi::Pisces),
+    ]);
+    assert_eq!(text.grahas[Graha::Rahu as usize].vedha_house, Some(9));
+    assert_eq!(baseline.grahas[Graha::Rahu as usize].vedha_house, Some(12));
+    assert_eq!(verdict(&baseline, Graha::Rahu), Verdict::Obstructed);
+    // The houses, and so the good houses, are the text's.
+    for (ours, theirs) in text.grahas.iter().zip(&baseline.grahas) {
+        assert_eq!(
+            (ours.house, ours.good_house),
+            (theirs.house, theirs.good_house)
+        );
+    }
+}
