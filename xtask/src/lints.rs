@@ -1758,7 +1758,8 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
 }
 
 /// Every platform row of a workflow matrix runs on the runner the
-/// platform table names.
+/// platform table names, inside the container it names (a musl row's
+/// Alpine) or none.
 ///
 /// `xtask/src/platform.rs` says it is "the only place any of that is
 /// written", and it was not: the workflows kept their own copy of which
@@ -1801,11 +1802,19 @@ fn platform_runners(root: &Path, outcome: &mut Outcome) {
             ) else {
                 continue;
             };
+            let container = entry
+                .get("container")
+                .and_then(serde_yaml_ng::Value::as_str);
             let complaint = match crate::platform::Platform::by_name(platform) {
-                Some(row) if row.runner == os => continue,
-                Some(row) => format!(
+                Some(row) if row.runner == os && row.container == container => continue,
+                Some(row) if row.runner != os => format!(
                     "`{platform}` runs on `{os}`; the platform table says `{}`",
                     row.runner
+                ),
+                Some(row) => format!(
+                    "`{platform}` runs in `{}`; the platform table says `{}`",
+                    container.unwrap_or("no container"),
+                    row.container.unwrap_or("no container")
                 ),
                 None => format!("`{platform}` is not a row of the platform table"),
             };

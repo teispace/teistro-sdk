@@ -2406,6 +2406,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   antardaśā's printed śānti comes with each of its conditions judged by
   `holds`, or left open (`None`) where the verse does not state a
   predicate. **Numbers:** none move.
+- **musl ships** (`06-cicd/02-build-matrix.md`). `linux-x64-musl` and
+  `linux-arm64-musl` are rows of the platform table, each built, tested
+  and packaged in Alpine on the Linux runner of its architecture
+  (`xtask/alpine.sh`): its library, its C bundle,
+  `@teistro/sdk-linux-<cpu>-musl`, which `@teistro/sdk` now lists, and a
+  `musllinux_1_2` Python wheel. The Node and Python loaders name a musl
+  host `<os>-<cpu>-musl`. Dart ships no musl SDK, so the Dart package is
+  excused there. The table's new `container` field is held to both
+  workflows by `runner-matches-the-platform-table`. **Numbers:** none
+  move.
 - **Windows on Arm ships** (`06-cicd/02-build-matrix.md`). `win32-arm64`
   (`aarch64-pc-windows-msvc`) is a row of the platform table, built, tested
   and packaged natively on GitHub's `windows-11-arm` image like every other

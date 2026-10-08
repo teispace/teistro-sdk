@@ -18,6 +18,8 @@ is adding a row there and repeating it in the two workflow matrices.
 | `darwin-x64` | `x86_64-apple-darwin` | `macos-15-intel` | `darwin` / `x64` |
 | `win32-x64` | `x86_64-pc-windows-msvc` | `windows-latest` | `win32` / `x64` |
 | `win32-arm64` | `aarch64-pc-windows-msvc` | `windows-11-arm` | `win32` / `arm64` |
+| `linux-x64-musl` | `x86_64-unknown-linux-musl` | `ubuntu-latest`, in `alpine:3.21` | `linux` / `x64` / `musl` |
+| `linux-arm64-musl` | `aarch64-unknown-linux-musl` | `ubuntu-24.04-arm`, in `alpine:3.21` | `linux` / `arm64` / `musl` |
 
 The short name is Node's `process.platform` and `process.arch`, and Dart's
 installer builds the same string from `Abi.current()`. One name means one
@@ -40,11 +42,23 @@ Linux builds and `manylinux_2_28` wheels ask of a consumer already.
 `check-package` packages the host, so verify's Linux rows hold the floor
 on every dispatch and not only on a release.
 
-**Next row: musl.** `Platform` already carries `libc`, the platform
-packages already declare it, and npm already refuses a glibc package on a
-musl host with it; what is missing is the two rows and the `musl-tools`
-step. Until then an Alpine host installs no platform package and the
-loader says which one it wanted.
+**musl is built in Alpine.** A musl row's runner is the Linux runner of
+its architecture, and the row runs inside the container the table names
+(`container`), through `docker run` with the checkout mounted
+(`xtask/alpine.sh`). The container is the platform, so the build is still
+native and the packages are installed and run where they were built. The
+runner supports JavaScript actions inside an Alpine job container on x64
+only, so both rows enter the container the same way, by hand, rather than
+through the job's `container:`. A musl target links its C runtime statically by default, and
+a static runtime cannot make a shared library, so `.cargo/config.toml`
+turns `crt-static` off for both triples, as Alpine's own Rust does. musl
+has no symbol versions and so no floor to read back; the wheel is tagged
+`musllinux_1_2`, which every Alpine since 3.13 meets. The loaders name a
+musl host `<os>-<cpu>-musl`: Node from its process report, which names a
+glibc and none under musl, and Python from `confstr`. Dart ships no musl
+SDK, so `check-package` excuses the Dart package there, and verify's musl
+rows leave out the parity check, which compares the Dart runner with the
+rest.
 
 ## What each platform produces
 

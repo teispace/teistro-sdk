@@ -24,7 +24,22 @@ const require = createRequire(import.meta.url);
  * the host, which are the same words npm matched `os` and `cpu` against.
  */
 export function platformPackage() {
-  return `@teistro/sdk-${process.platform}-${process.arch}`;
+  return `@teistro/sdk-${hostPlatform()}`;
+}
+
+/**
+ * This host as the release names it: `<os>-<cpu>`, with `-musl` on a
+ * Linux whose C library is musl, the one operating system with two.
+ *
+ * Node's report names the glibc it runs on and has no such field under
+ * musl, which is how npm itself tells the two apart when it matches a
+ * package's `libc`.
+ */
+export function hostPlatform() {
+  const name = `${process.platform}-${process.arch}`;
+  if (process.platform !== 'linux') return name;
+  const header = process.report?.getReport?.().header;
+  return header && !header.glibcVersionRuntime ? `${name}-musl` : name;
 }
 
 /**
@@ -61,7 +76,7 @@ function loadAddon() {
   const found = candidates.find((path) => existsSync(path));
   if (!found) {
     throw new Error(
-      `no Teistro addon for ${process.platform}-${process.arch}. Looked in:\n  ${candidates.join(
+      `no Teistro addon for ${hostPlatform()}. Looked in:\n  ${candidates.join(
         '\n  ',
       )}\nInstall the prebuilt addon with \`npm install ${platformPackage()}\` (npm normally does that for you), build it with \`cargo build --release -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
     );
