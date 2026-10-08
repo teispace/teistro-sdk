@@ -26,6 +26,7 @@ mod interpret;
 mod intl;
 mod keys;
 mod matching;
+#[cfg(feature = "numerology")]
 mod numerology;
 mod time;
 
@@ -76,7 +77,9 @@ pub(crate) fn drik_sun<'p>(
     )
 }
 
-pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays, MuhurtaDays};
+#[cfg(feature = "muhurta")]
+pub use almanac::MuhurtaDays;
+pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays};
 pub use calendar::CalendarArea;
 pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;
@@ -85,5 +88,6 @@ pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
 pub use matching::MatchingArea;
+#[cfg(feature = "numerology")]
 pub use numerology::NumerologyArea;
 pub use time::TimeArea;

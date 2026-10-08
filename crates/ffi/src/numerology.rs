@@ -15,8 +15,9 @@ use core::ffi::c_char;
 use teistro_core::error::Status;
 
 use crate::context::TsContext;
+use crate::family::in_family;
 use crate::string::TsString;
-use crate::support::{text, with_context, write_plain};
+use crate::support::with_context;
 
 /// Reads a name and a birth date under numerology's two systems and
 /// answers with the profile as canonical JSON: the name under each
@@ -42,11 +43,14 @@ pub unsafe extern "C" fn ts_numerology_profile(
     out_json: *mut TsString,
 ) -> Status {
     with_context(context, |_| {
-        // SAFETY: the entry point's contract.
-        let asked =
-            teistro::NumerologyRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
-        let json = TsString::from_string(teistro_core::envelope::canonical_json(&asked.answer()?));
-        // SAFETY: the entry point's contract.
-        unsafe { write_plain(out_json, "out_json", json) }
+        in_family!("numerology", [request_json, out_json], {
+            // SAFETY: the entry point's contract.
+            let text = unsafe { crate::support::text(request_json, "request_json") }?;
+            let asked = teistro::NumerologyRequest::from_json(text)?;
+            let json =
+                TsString::from_string(teistro_core::envelope::canonical_json(&asked.answer()?));
+            // SAFETY: the entry point's contract.
+            unsafe { crate::support::write_plain(out_json, "out_json", json) }
+        })
     })
 }

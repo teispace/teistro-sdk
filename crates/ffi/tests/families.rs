@@ -1,0 +1,158 @@
+//! The module families at the boundary (`03-design/wasm-profiles.md`):
+//! each answers in a build with it, and a build without it refuses a call
+//! into it as `CAPABILITY`, naming the record.
+#![allow(
+    unsafe_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "tests cross the boundary and fail by panicking"
+)]
+
+use std::ffi::CString;
+
+use teistro_core::Status;
+use teistro_core::catalogue::Calendar;
+use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
+use teistro_ffi::blob::{TsBlob, ts_blob_free};
+use teistro_ffi::chart::TsChartRequest;
+use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+use teistro_ffi::schemas;
+use teistro_ffi::string::{TsString, ts_string_free};
+use teistro_idl::blob::Reader;
+
+mod common;
+
+use common::{Ctx, chart_blob, chart_request, sized};
+
+/// The status `ts_numerology_profile` answers `request` with.
+fn numerology_status(ctx: &Ctx, request: &str) -> Status {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::numerology::ts_numerology_profile(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_string_free(&raw mut json) };
+    status
+}
+
+/// The status two days of almanac answer with a muhurta record of `text`.
+fn muhurta_status(ctx: &Ctx, text: &str) -> Status {
+    let muhurta = CString::new(text).unwrap();
+    let request = sized(
+        TsPanchangaRequest {
+            struct_size: 0,
+            calendar: Calendar::Gregorian.id(),
+            reserved: 0,
+            from_year: 2026,
+            from_month: 11,
+            from_day: 20,
+            to_month: 11,
+            to_day: 21,
+            to_year: 2026,
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            sections: 0,
+            muhurta_json: muhurta.as_ptr(),
+            festivals_json: core::ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    let status = unsafe { ts_panchanga_days(ctx.handle, &raw const request, &raw mut blob) };
+    // SAFETY: a descriptor the library wrote, or the empty one.
+    unsafe { ts_blob_free(&raw mut blob) };
+    status
+}
+
+/// Every module family answers in a build with it and is refused as
+/// `CAPABILITY`, naming the record, in one without it; and a chart that
+/// asks for no family is answered in every build, which proves each
+/// left-out family's list of empty sections: the blob writer refuses a
+/// section missing from it, or one named twice (`wasm-profiles.md`).
+///
+/// A build without the families runs it with
+/// `cargo test -p teistro-ffi --no-default-features --features
+/// builtin-compact --test families`.
+#[test]
+fn every_family_answers_in_its_build_and_is_refused_without_it() {
+    let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
+    let instants = [2_451_545.0];
+    let place = (27.7172, 85.324);
+    let bare = chart_request(&instants, place, 20_700);
+    let blob = chart_blob(&ctx, &bare).expect("a chart asking for no family is answered");
+    assert!(Reader::parse(&blob, &schemas::charts()).is_ok());
+
+    let record = CString::new("{}").unwrap();
+    let text = record.as_ptr();
+    /// A record field of the request, its family and the root it is
+    /// refused by.
+    macro_rules! field {
+        ($family:literal, $root:literal, $field:ident) => {
+            (
+                $family,
+                cfg!(feature = $family),
+                $root,
+                (|request, text| request.$field = text)
+                    as fn(&mut TsChartRequest, *const core::ffi::c_char),
+            )
+        };
+    }
+    let fields = [
+        field!("kp", "kp", kp_json),
+        field!("prashna", "prashna", prashna_json),
+        field!("remedies", "remedies", remedies_json),
+        field!("svg", "theme", theme_json),
+        field!("tajika", "varsha", varsha_json),
+        field!("western", "progressions", progressions_json),
+        field!("western", "westernAspects", western_aspects_json),
+        field!("western", "synastry", synastry_json),
+        field!("western", "parallels", parallels_json),
+        field!("western", "antiscia", antiscia_json),
+        field!("western", "midpoints", midpoints_json),
+        field!("western", "westernHouses", western_houses_json),
+        field!("western", "harmonic", harmonic_json),
+    ];
+    for (family, built, root, set) in fields {
+        let mut asked = chart_request(&instants, place, 20_700);
+        set(&mut asked, text);
+        let answered = chart_blob(&ctx, &asked);
+        if built {
+            assert_ne!(
+                answered.err(),
+                Some(Status::Capability),
+                "{family} is built: `{root}`"
+            );
+        } else {
+            assert_eq!(
+                answered.err(),
+                Some(Status::Capability),
+                "{family} is left out: `{root}`"
+            );
+            let (_, message, field, hint, _) = ctx.last_error();
+            assert_eq!(field.as_deref(), Some(root), "the refusal names the record");
+            assert!(message.contains(&format!("`{family}`")), "{message}");
+            assert!(
+                hint.is_some_and(|hint| hint.contains("full")),
+                "the hint names the full build"
+            );
+        }
+    }
+
+    let numerology = numerology_status(&ctx, "{}");
+    assert_eq!(
+        numerology == Status::Capability,
+        !cfg!(feature = "numerology"),
+        "numerology: {numerology:?}"
+    );
+    let muhurta = muhurta_status(&ctx, "{}");
+    assert_eq!(
+        muhurta == Status::Capability,
+        !cfg!(feature = "muhurta"),
+        "muhurta: {muhurta:?}"
+    );
+}

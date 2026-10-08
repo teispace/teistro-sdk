@@ -12,8 +12,8 @@ use teistro_matching::{
 use teistro_serial::Document;
 
 use crate::area::ChartArea;
+use crate::partner::Partner;
 use crate::reading::ChartRequest;
-use crate::western_aspects::Partner;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.

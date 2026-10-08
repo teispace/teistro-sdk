@@ -29,7 +29,6 @@
 use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
-use teistro::render_svg::Theme;
 use teistro::{ChartRequest, PlanInputs, PlanRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
@@ -936,28 +935,6 @@ pub enum TsWesternAspect {
     Quincunx = 7,
     /// 180°.
     Opposition = 8,
-}
-
-impl TsWesternAspect {
-    /// The code an aspect crosses as, or none for a member added to the
-    /// non-exhaustive `WesternAspect` before it was given one here; the
-    /// spelling gate (`tests/keys.rs`) fails on that member until it is.
-    #[must_use]
-    pub const fn of(aspect: teistro::WesternAspect) -> Option<TsWesternAspect> {
-        use teistro::WesternAspect;
-        Some(match aspect {
-            WesternAspect::Conjunction => TsWesternAspect::Conjunction,
-            WesternAspect::SemiSextile => TsWesternAspect::SemiSextile,
-            WesternAspect::SemiSquare => TsWesternAspect::SemiSquare,
-            WesternAspect::Sextile => TsWesternAspect::Sextile,
-            WesternAspect::Square => TsWesternAspect::Square,
-            WesternAspect::Trine => TsWesternAspect::Trine,
-            WesternAspect::Sesquiquadrate => TsWesternAspect::Sesquiquadrate,
-            WesternAspect::Quincunx => TsWesternAspect::Quincunx,
-            WesternAspect::Opposition => TsWesternAspect::Opposition,
-            _ => return None,
-        })
-    }
 }
 
 /// Where in an aspect's window a hit falls (C146).
@@ -3777,7 +3754,7 @@ impl MarriageDoshaColumns {
     }
 }
 
-fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
+pub(crate) fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
     if read == 0 || read == charts {
         Ok(())
     } else {
@@ -3788,7 +3765,7 @@ fn one_a_chart(read: usize, charts: usize, what: &str) -> Result<(), Error> {
 }
 
 /// The refusal for a value the encoder has no code for yet.
-fn no_code(what: &str) -> Error {
+pub(crate) fn no_code(what: &str) -> Error {
     Error::internal(format!("{what} has no code at the boundary yet"))
 }
 
@@ -3921,50 +3898,9 @@ impl HellenisticColumns {
     }
 }
 
-/// Every chart's progressions (`western-progressions.md`): a row a chart in
-/// `progressions`, the progressed and directed planets a row a graha in
-/// `progressed_grahas` and `directed_grahas` when the record named an
-/// instant of life, and the contacts in `progressed_contacts`, ragged by
-/// that row's count.
-#[derive(Default)]
-struct ProgressionColumns {
-    life: Vec<f64>,
-    sky: Vec<f64>,
-    armc_deg: Vec<f64>,
-    ascendant_deg: Vec<f64>,
-    midheaven_deg: Vec<f64>,
-    arc_deg: Vec<f64>,
-    directed_ascendant_deg: Vec<f64>,
-    directed_midheaven_deg: Vec<f64>,
-    contact_count: Vec<u32>,
-    contacts_asked: Vec<u8>,
-    progressed_graha: Vec<u16>,
-    progressed_longitude_deg: Vec<f64>,
-    progressed_tropical_deg: Vec<f64>,
-    progressed_speed: Vec<f64>,
-    directed_graha: Vec<u16>,
-    directed_longitude_deg: Vec<f64>,
-    contact_life: Vec<f64>,
-    contact_sky: Vec<f64>,
-    contact_graha: Vec<u16>,
-    contact_to_lagna: Vec<u8>,
-    contact_to_graha: Vec<u16>,
-    contact_angle: Vec<u16>,
-    contact_motion: Vec<u8>,
-}
-
-/// The Western aspect tables a batch was asked for, written together since
-/// their sections stand together: each chart's own, and each chart's with
-/// the record's partner; and last, each chart's match with its partner.
+/// The matching tables a batch was asked for, written together since their
+/// sections stand together: each chart's match with the record's partner.
 struct AspectTables {
-    own: WesternAspectColumns,
-    across: SynastryColumns,
-    declined: DeclinationColumns,
-    reflected: AntisciaColumns,
-    between: MidpointColumns,
-    davisons: DavisonColumns,
-    houses: WesternHouseColumns,
-    harmonics: HarmonicColumns,
     matchings: MatchingColumns,
     poruthams: PoruthamColumns,
     kujas: KujaColumns,
@@ -3974,14 +3910,6 @@ struct AspectTables {
 impl AspectTables {
     fn of(composed: &Composed<'_>, charts: usize) -> Result<AspectTables, Error> {
         Ok(AspectTables {
-            own: WesternAspectColumns::of(composed.western_aspects, charts)?,
-            across: SynastryColumns::of(composed.synastry, charts)?,
-            declined: DeclinationColumns::of(composed.declinations, composed.parallels, charts)?,
-            reflected: AntisciaColumns::of(composed.antiscia, charts)?,
-            between: MidpointColumns::of(composed.midpoints, charts)?,
-            davisons: DavisonColumns::of(composed.davisons, charts)?,
-            houses: WesternHouseColumns::of(composed.western_houses, charts)?,
-            harmonics: HarmonicColumns::of(composed.harmonics, charts)?,
             matchings: MatchingColumns::of(composed.matchings, charts)?,
             poruthams: PoruthamColumns::of(composed.matchings)?,
             kujas: KujaColumns::of(composed.matchings),
@@ -3990,20 +3918,6 @@ impl AspectTables {
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        self.own.write(writer)?;
-        self.across.write(writer)?;
-        self.declined.write(writer)?;
-        self.across.write_parallels(writer)?;
-        self.reflected.write(writer)?;
-        self.across.write_antiscia(writer)?;
-        self.between.write(writer)?;
-        self.across.write_composites(writer)?;
-        self.davisons.write(writer)?;
-        self.across.write_midpoints(writer)?;
-        self.houses.write(writer)?;
-        self.across.write_composite_cusps(writer)?;
-        self.reflected.write_cusps(writer)?;
-        self.harmonics.write(writer)?;
         self.matchings.write(writer)?;
         self.poruthams.write(writer)?;
         self.kujas.write(writer)?;
@@ -4011,984 +3925,13 @@ impl AspectTables {
     }
 }
 
-/// `harmonics`, `harmonic_points` and `harmonic_rows`: each chart's
-/// harmonic chart, its points and the points meeting in it
-/// (`western-harmonics.md`).
-#[derive(Default)]
-struct HarmonicColumns {
-    number: Vec<u16>,
-    point_count: Vec<u32>,
-    row_count: Vec<u32>,
-    point: HarmonicPointCells,
-    longitude_deg: Vec<f64>,
-    house: Vec<u8>,
-    first: HarmonicPointCells,
-    second: HarmonicPointCells,
-    apart_deg: Vec<f64>,
-    multiple: Vec<u16>,
-    orb_deg: Vec<f64>,
-}
-
-/// A harmonic chart's point as the boundary carries it: the angle, 0 for
-/// a graha, 1 for the ascendant and 2 for the midheaven, and the graha's
-/// id, 0 for an angle.
-#[derive(Default)]
-struct HarmonicPointCells {
-    angle: Vec<u8>,
-    graha: Vec<u16>,
-}
-
-impl HarmonicPointCells {
-    fn push(&mut self, point: teistro::HarmonicPoint) {
-        let (angle, graha) = match point {
-            teistro::HarmonicPoint::Graha { graha } => (0, graha.id()),
-            teistro::HarmonicPoint::Ascendant => (1, 0),
-            teistro::HarmonicPoint::Midheaven => (2, 0),
-        };
-        self.angle.push(angle);
-        self.graha.push(graha);
-    }
-
-    fn columns(&self) -> [ColumnData<'_>; 2] {
-        [ColumnData::U8(&self.angle), ColumnData::U16(&self.graha)]
-    }
-}
-
-impl HarmonicColumns {
-    fn of(read: &[teistro::HarmonicChart], charts: usize) -> Result<HarmonicColumns, Error> {
-        one_a_chart(read.len(), charts, "harmonic")?;
-        let mut columns = HarmonicColumns::default();
-        for one in read {
-            columns.number.push(one.harmonic);
-            columns.point_count.push(row_count(one.points.len())?);
-            columns.row_count.push(row_count(one.rows.len())?);
-            for placed in &one.points {
-                columns.point.push(placed.point);
-                columns.longitude_deg.push(placed.longitude_deg);
-                columns.house.push(placed.house.get());
-            }
-            for row in &one.rows {
-                columns.first.push(row.first);
-                columns.second.push(row.second);
-                columns.apart_deg.push(row.apart_deg);
-                columns.multiple.push(row.multiple);
-                columns.orb_deg.push(row.orb_deg);
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "harmonics",
-            self.number.len(),
-            &[
-                ColumnData::U16(&self.number),
-                ColumnData::U32(&self.point_count),
-                ColumnData::U32(&self.row_count),
-            ],
-        )?;
-        let [angle, graha] = self.point.columns();
-        writer.columns(
-            "harmonic_points",
-            self.longitude_deg.len(),
-            &[
-                angle,
-                graha,
-                ColumnData::F64(&self.longitude_deg),
-                ColumnData::U8(&self.house),
-            ],
-        )?;
-        let [first_angle, first_graha] = self.first.columns();
-        let [second_angle, second_graha] = self.second.columns();
-        writer.columns(
-            "harmonic_rows",
-            self.apart_deg.len(),
-            &[
-                first_angle,
-                first_graha,
-                second_angle,
-                second_graha,
-                ColumnData::F64(&self.apart_deg),
-                ColumnData::U16(&self.multiple),
-                ColumnData::F64(&self.orb_deg),
-            ],
-        )
-    }
-}
-
-/// `western_houses`, `western_house_cusps` and `western_house_planets`:
-/// each chart's Western division, its twelve cusps and its planets'
-/// houses (`western-houses.md`).
-#[derive(Default)]
-struct WesternHouseColumns {
-    system: Vec<u16>,
-    ascendant_deg: Vec<f64>,
-    reach_deg: Vec<f64>,
-    planet_count: Vec<u32>,
-    cusp_deg: Vec<f64>,
-    graha: Vec<u16>,
-    house: Vec<u8>,
-    with_ascendant: Vec<u8>,
-}
-
-impl WesternHouseColumns {
-    fn of(read: &[teistro::WesternHouses], charts: usize) -> Result<WesternHouseColumns, Error> {
-        one_a_chart(read.len(), charts, "westernHouses")?;
-        let mut columns = WesternHouseColumns::default();
-        for one in read {
-            columns.system.push(one.system.id());
-            columns.ascendant_deg.push(one.frame.ascendant_deg);
-            columns.reach_deg.push(one.frame.reach_deg);
-            columns.planet_count.push(row_count(one.planets.len())?);
-            columns.cusp_deg.extend(one.frame.cusps_deg);
-            for placed in &one.planets {
-                columns.graha.push(placed.graha.id());
-                columns.house.push(placed.house.get());
-                columns.with_ascendant.push(u8::from(placed.with_ascendant));
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "western_houses",
-            self.system.len(),
-            &[
-                ColumnData::U16(&self.system),
-                ColumnData::F64(&self.ascendant_deg),
-                ColumnData::F64(&self.reach_deg),
-                ColumnData::U32(&self.planet_count),
-            ],
-        )?;
-        writer.columns(
-            "western_house_cusps",
-            self.cusp_deg.len(),
-            &[ColumnData::F64(&self.cusp_deg)],
-        )?;
-        writer.columns(
-            "western_house_planets",
-            self.graha.len(),
-            &[
-                ColumnData::U16(&self.graha),
-                ColumnData::U8(&self.house),
-                ColumnData::U8(&self.with_ascendant),
-            ],
-        )
-    }
-}
-
-/// `synastry_davisons`: each chart's Davison birth with the synastry's
-/// partner, when asked (`western-composites.md`, C248).
-#[derive(Default)]
-struct DavisonColumns {
-    instant: Vec<f64>,
-    latitude_deg: Vec<f64>,
-    longitude_deg: Vec<f64>,
-    altitude_m: Vec<f64>,
-    utc_offset_seconds: Vec<i32>,
-}
-
-impl DavisonColumns {
-    fn of(read: &[teistro::Partner], charts: usize) -> Result<DavisonColumns, Error> {
-        one_a_chart(read.len(), charts, "davisons")?;
-        let mut columns = DavisonColumns::default();
-        for birth in read {
-            columns.instant.push(birth.instant.get());
-            columns.latitude_deg.push(birth.place.latitude.get());
-            columns.longitude_deg.push(birth.place.longitude.get());
-            columns.altitude_m.push(birth.place.altitude.get());
-            columns.utc_offset_seconds.push(birth.utc_offset.seconds());
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_davisons",
-            self.instant.len(),
-            &[
-                ColumnData::F64(&self.instant),
-                ColumnData::F64(&self.latitude_deg),
-                ColumnData::F64(&self.longitude_deg),
-                ColumnData::F64(&self.altitude_m),
-                ColumnData::I32(&self.utc_offset_seconds),
-            ],
-        )
-    }
-}
-
-/// `midpoints` and `midpoint_rows`: each chart's planets equally distant
-/// from two others (`western-midpoints.md`).
-#[derive(Default)]
-struct MidpointColumns {
-    count: Vec<u32>,
-    rows: MidpointRowColumns,
-}
-
-/// The equal distances, one chart's own or across a synastry, as the row
-/// sections cross them; the synastry's carry whose pair it is besides.
-#[derive(Default)]
-struct MidpointRowColumns {
-    first: Vec<u16>,
-    second: Vec<u16>,
-    middle: Vec<u16>,
-    partners_pair: Vec<u8>,
-    far: Vec<u8>,
-    distance_deg: Vec<f64>,
-    from_axis_deg: Vec<f64>,
-    orb_deg: Vec<f64>,
-}
-
-impl MidpointRowColumns {
-    fn push(&mut self, row: &teistro::MidpointRow) {
-        self.first.push(row.first.id());
-        self.second.push(row.second.id());
-        self.middle.push(row.middle.id());
-        self.far.push(u8::from(row.far));
-        self.distance_deg.push(row.distance_deg);
-        self.from_axis_deg.push(row.from_axis_deg);
-        self.orb_deg.push(row.orb_deg);
-    }
-
-    fn push_across(&mut self, row: &teistro::SynastryMidpointRow) {
-        self.first.push(row.first.id());
-        self.second.push(row.second.id());
-        self.middle.push(row.middle.id());
-        self.partners_pair.push(u8::from(row.partners_pair));
-        self.far.push(u8::from(row.far));
-        self.distance_deg.push(row.distance_deg);
-        self.from_axis_deg.push(row.from_axis_deg);
-        self.orb_deg.push(row.orb_deg);
-    }
-
-    /// The rows as `section`, with `partners_pair` after `middle` when
-    /// `across`.
-    fn write(
-        &self,
-        writer: &mut Writer<'_>,
-        section: &str,
-        across: bool,
-    ) -> Result<(), teistro_idl::blob::BlobError> {
-        let mut columns = vec![
-            ColumnData::U16(&self.first),
-            ColumnData::U16(&self.second),
-            ColumnData::U16(&self.middle),
-        ];
-        if across {
-            columns.push(ColumnData::U8(&self.partners_pair));
-        }
-        columns.extend([
-            ColumnData::U8(&self.far),
-            ColumnData::F64(&self.distance_deg),
-            ColumnData::F64(&self.from_axis_deg),
-            ColumnData::F64(&self.orb_deg),
-        ]);
-        writer.columns(section, self.first.len(), &columns)
-    }
-}
-
-impl MidpointColumns {
-    fn of(read: &[Vec<teistro::MidpointRow>], charts: usize) -> Result<MidpointColumns, Error> {
-        one_a_chart(read.len(), charts, "midpoints")?;
-        let mut columns = MidpointColumns::default();
-        for rows in read {
-            columns.count.push(row_count(rows.len())?);
-            for row in rows {
-                columns.rows.push(row);
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "midpoints",
-            self.count.len(),
-            &[ColumnData::U32(&self.count)],
-        )?;
-        self.rows.write(writer, "midpoint_rows", false)
-    }
-}
-
-/// `antiscia`, `antiscion_points` and `antiscion_rows`: each chart's
-/// planets reflected about the solstices and the equinoxes, and the pairs
-/// standing in one (`western-antiscia.md`).
-#[derive(Default)]
-struct AntisciaColumns {
-    point_count: Vec<u32>,
-    pair_count: Vec<u32>,
-    graha: Vec<u16>,
-    antiscion_deg: Vec<f64>,
-    contrantiscion_deg: Vec<f64>,
-    paired: Vec<u8>,
-    pairs: AntiscionRowColumns,
-    cusp_count: Vec<u32>,
-    cusp_system: Vec<u16>,
-    cusp_graha: Vec<u16>,
-    cusp_house: Vec<u8>,
-    cusp_contrary: Vec<u8>,
-}
-
-/// The pairs in antiscion, one chart's own or across two, as the row
-/// sections cross them.
-#[derive(Default)]
-struct AntiscionRowColumns {
-    first: Vec<u16>,
-    second: Vec<u16>,
-    contrary: Vec<u8>,
-    apart_deg: Vec<f64>,
-    orb_deg: Vec<f64>,
-}
-
-impl AntiscionRowColumns {
-    fn push(&mut self, row: &teistro::AntiscionRow) {
-        self.first.push(row.first.id());
-        self.second.push(row.second.id());
-        self.contrary.push(u8::from(row.contrary));
-        self.apart_deg.push(row.apart_deg);
-        self.orb_deg.push(row.orb_deg);
-    }
-
-    fn write(
-        &self,
-        writer: &mut Writer<'_>,
-        section: &str,
-    ) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            section,
-            self.first.len(),
-            &[
-                ColumnData::U16(&self.first),
-                ColumnData::U16(&self.second),
-                ColumnData::U8(&self.contrary),
-                ColumnData::F64(&self.apart_deg),
-                ColumnData::F64(&self.orb_deg),
-            ],
-        )
-    }
-}
-
-impl AntisciaColumns {
-    fn of(read: &[teistro::Antiscia], charts: usize) -> Result<AntisciaColumns, Error> {
-        one_a_chart(read.len(), charts, "antiscia")?;
-        let mut columns = AntisciaColumns::default();
-        for one in read {
-            columns.point_count.push(row_count(one.points.len())?);
-            columns.pair_count.push(row_count(one.pairs.len())?);
-            for point in &one.points {
-                columns.graha.push(point.graha.id());
-                columns.antiscion_deg.push(point.antiscion_deg);
-                columns.contrantiscion_deg.push(point.contrantiscion_deg);
-                columns
-                    .paired
-                    .push(u8::from(!one.unpaired.contains(&point.graha)));
-            }
-            for row in &one.pairs {
-                columns.pairs.push(row);
-            }
-            columns.cusp_count.push(row_count(one.on_cusps.len())?);
-            columns.cusp_system.push(
-                one.cusp_system
-                    .map_or(u16::MAX, teistro_core::catalogue::Catalogued::id),
-            );
-            for row in &one.on_cusps {
-                columns.cusp_graha.push(row.graha.id());
-                columns.cusp_house.push(row.house.get());
-                columns.cusp_contrary.push(u8::from(row.contrary));
-            }
-        }
-        Ok(columns)
-    }
-
-    /// `antiscion_cusp_rows`, the reflections upon a cusp's very degree,
-    /// written after every section before it.
-    fn write_cusps(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "antiscion_cusp_rows",
-            self.cusp_graha.len(),
-            &[
-                ColumnData::U16(&self.cusp_graha),
-                ColumnData::U8(&self.cusp_house),
-                ColumnData::U8(&self.cusp_contrary),
-            ],
-        )
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "antiscia",
-            self.point_count.len(),
-            &[
-                ColumnData::U32(&self.point_count),
-                ColumnData::U32(&self.pair_count),
-                ColumnData::U32(&self.cusp_count),
-                ColumnData::U16(&self.cusp_system),
-            ],
-        )?;
-        writer.columns(
-            "antiscion_points",
-            self.graha.len(),
-            &[
-                ColumnData::U16(&self.graha),
-                ColumnData::F64(&self.antiscion_deg),
-                ColumnData::F64(&self.contrantiscion_deg),
-                ColumnData::U8(&self.paired),
-            ],
-        )?;
-        self.pairs.write(writer, "antiscion_rows")
-    }
-}
-
-/// `declinations`, `declination_rows` and `parallel_rows`: each chart's
-/// distances from the equator and the parallels among its planets
-/// (`western-declinations.md`).
-#[derive(Default)]
-struct DeclinationColumns {
-    obliquity_deg: Vec<f64>,
-    lagna_deg: Vec<f64>,
-    midheaven_deg: Vec<f64>,
-    graha_count: Vec<u32>,
-    parallel_count: Vec<u32>,
-    graha: Vec<u16>,
-    declination_deg: Vec<f64>,
-    first: Vec<u16>,
-    second: Vec<u16>,
-    contrary: Vec<u8>,
-    apart_deg: Vec<f64>,
-    orb_deg: Vec<f64>,
-}
-
-impl DeclinationColumns {
-    fn of(
-        declinations: &[teistro::Declinations],
-        parallels: &[Vec<teistro::ParallelRow>],
-        charts: usize,
-    ) -> Result<DeclinationColumns, Error> {
-        one_a_chart(declinations.len(), charts, "declinations")?;
-        one_a_chart(parallels.len(), declinations.len(), "parallels")?;
-        let mut columns = DeclinationColumns::default();
-        for (read, rows) in declinations.iter().zip(parallels) {
-            columns.obliquity_deg.push(read.obliquity_deg);
-            columns.lagna_deg.push(read.lagna_deg);
-            columns.midheaven_deg.push(read.midheaven_deg);
-            columns.graha_count.push(row_count(read.grahas.len())?);
-            columns.parallel_count.push(row_count(rows.len())?);
-            for one in &read.grahas {
-                columns.graha.push(one.graha.id());
-                columns.declination_deg.push(one.declination_deg);
-            }
-            for row in rows {
-                columns.first.push(row.first.id());
-                columns.second.push(row.second.id());
-                columns.contrary.push(u8::from(row.contrary));
-                columns.apart_deg.push(row.apart_deg);
-                columns.orb_deg.push(row.orb_deg);
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "declinations",
-            self.obliquity_deg.len(),
-            &[
-                ColumnData::F64(&self.obliquity_deg),
-                ColumnData::F64(&self.lagna_deg),
-                ColumnData::F64(&self.midheaven_deg),
-                ColumnData::U32(&self.graha_count),
-                ColumnData::U32(&self.parallel_count),
-            ],
-        )?;
-        writer.columns(
-            "declination_rows",
-            self.graha.len(),
-            &[
-                ColumnData::U16(&self.graha),
-                ColumnData::F64(&self.declination_deg),
-            ],
-        )?;
-        writer.columns(
-            "parallel_rows",
-            self.first.len(),
-            &[
-                ColumnData::U16(&self.first),
-                ColumnData::U16(&self.second),
-                ColumnData::U8(&self.contrary),
-                ColumnData::F64(&self.apart_deg),
-                ColumnData::F64(&self.orb_deg),
-            ],
-        )
-    }
-}
-
-/// Every chart's Western aspects (`western-aspects.md`): a row a chart in
-/// `western_aspects` with its count, and the rows ragged under it in
-/// `western_aspect_rows`.
-#[derive(Default)]
-struct WesternAspectColumns {
-    count: Vec<u32>,
-    first: Vec<u16>,
-    second: Vec<u16>,
-    measures: AspectMeasures,
-    applying: Vec<u8>,
-}
-
-impl WesternAspectColumns {
-    fn of(
-        read: &[Vec<teistro::WesternAspectRow>],
-        charts: usize,
-    ) -> Result<WesternAspectColumns, Error> {
-        one_a_chart(read.len(), charts, "western aspects")?;
-        let mut columns = WesternAspectColumns::default();
-        for rows in read {
-            columns.count.push(row_count(rows.len())?);
-            for row in rows {
-                columns.first.push(row.first.id());
-                columns.second.push(row.second.id());
-                columns.measures.push(
-                    row.aspect,
-                    row.apart_deg,
-                    row.from_exact_deg,
-                    row.orb_deg,
-                )?;
-                columns.applying.push(u8::from(row.applying));
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "western_aspects",
-            self.count.len(),
-            &[ColumnData::U32(&self.count)],
-        )?;
-        let [aspect, apart, from_exact, orb] = self.measures.columns();
-        writer.columns(
-            "western_aspect_rows",
-            self.first.len(),
-            &[
-                ColumnData::U16(&self.first),
-                ColumnData::U16(&self.second),
-                aspect,
-                apart,
-                from_exact,
-                orb,
-                ColumnData::U8(&self.applying),
-            ],
-        )
-    }
-}
-
-/// `synastry` and `synastry_rows`: each chart's contacts with the record's
-/// partner (`western-synastry.md`); `synastry_parallels` and
-/// `synastry_parallel_rows`: the parallels across the two, when asked
-/// (`western-declinations.md`); `synastry_antiscia` and
-/// `synastry_antiscion_rows`: the antiscia across the two, when asked
-/// (`western-antiscia.md`).
-#[derive(Default)]
-struct SynastryColumns {
-    count: Vec<u32>,
-    parallel_count: Vec<u32>,
-    first: PointCells,
-    second: PointCells,
-    measures: AspectMeasures,
-    parallel_first: PointCells,
-    parallel_second: PointCells,
-    contrary: Vec<u8>,
-    parallel_apart_deg: Vec<f64>,
-    parallel_orb_deg: Vec<f64>,
-    antiscion_count: Vec<u32>,
-    antiscia: AntiscionRowColumns,
-    midpoint_count: Vec<u32>,
-    midpoints: MidpointRowColumns,
-    composite_lagna_deg: Vec<f64>,
-    composite_midheaven_deg: Vec<f64>,
-    composite_lagna_turned: Vec<u8>,
-    composite_count: Vec<u32>,
-    composite_graha: Vec<u16>,
-    composite_longitude_deg: Vec<f64>,
-    composite_speed_deg_per_day: Vec<f64>,
-    composite_cusp_count: Vec<u8>,
-    composite_cusp_deg: Vec<f64>,
-}
-
-impl SynastryColumns {
-    fn of(read: &[teistro::PartnerReading], charts: usize) -> Result<SynastryColumns, Error> {
-        one_a_chart(read.len(), charts, "synastries")?;
-        let mut columns = SynastryColumns::default();
-        for one in read {
-            columns.count.push(row_count(one.aspects.len())?);
-            if let Some(parallels) = &one.parallels {
-                columns.parallel_count.push(row_count(parallels.len())?);
-            }
-            for row in one.parallels.iter().flatten() {
-                columns.parallel_first.push(row.first);
-                columns.parallel_second.push(row.second);
-                columns.contrary.push(u8::from(row.contrary));
-                columns.parallel_apart_deg.push(row.apart_deg);
-                columns.parallel_orb_deg.push(row.orb_deg);
-            }
-            if let Some(antiscia) = &one.antiscia {
-                columns.antiscion_count.push(row_count(antiscia.len())?);
-            }
-            for row in one.antiscia.iter().flatten() {
-                columns.antiscia.push(row);
-            }
-            if let Some(midpoints) = &one.midpoints {
-                columns.midpoint_count.push(row_count(midpoints.len())?);
-            }
-            for row in one.midpoints.iter().flatten() {
-                columns.midpoints.push_across(row);
-            }
-            if let Some(composite) = &one.composite {
-                columns.composite_lagna_deg.push(composite.lagna_deg);
-                columns
-                    .composite_midheaven_deg
-                    .push(composite.midheaven_deg);
-                columns
-                    .composite_lagna_turned
-                    .push(u8::from(composite.lagna_turned));
-                columns
-                    .composite_count
-                    .push(row_count(composite.planets.len())?);
-                let cusps = composite
-                    .cusps_deg
-                    .as_ref()
-                    .map_or(&[][..], |cusps| &cusps[..]);
-                columns
-                    .composite_cusp_count
-                    .push(u8::from(composite.cusps_deg.is_some()) * 12);
-                columns.composite_cusp_deg.extend_from_slice(cusps);
-                for at in &composite.planets {
-                    columns.composite_graha.push(at.graha.id());
-                    columns.composite_longitude_deg.push(at.longitude_deg);
-                    columns
-                        .composite_speed_deg_per_day
-                        .push(at.speed_deg_per_day);
-                }
-            }
-            for row in &one.aspects {
-                columns.first.push(row.first);
-                columns.second.push(row.second);
-                columns.measures.push(
-                    row.aspect,
-                    row.apart_deg,
-                    row.from_exact_deg,
-                    row.orb_deg,
-                )?;
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry",
-            self.count.len(),
-            &[ColumnData::U32(&self.count)],
-        )?;
-        let [first_lagna, first_graha] = self.first.columns();
-        let [second_lagna, second_graha] = self.second.columns();
-        let [aspect, apart, from_exact, orb] = self.measures.columns();
-        writer.columns(
-            "synastry_rows",
-            self.measures.aspect.len(),
-            &[
-                first_lagna,
-                first_graha,
-                second_lagna,
-                second_graha,
-                aspect,
-                apart,
-                from_exact,
-                orb,
-            ],
-        )
-    }
-
-    /// `synastry_parallels` and `synastry_parallel_rows`, after the
-    /// declinations'.
-    fn write_parallels(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_parallels",
-            self.parallel_count.len(),
-            &[ColumnData::U32(&self.parallel_count)],
-        )?;
-        let [first_lagna, first_graha] = self.parallel_first.columns();
-        let [second_lagna, second_graha] = self.parallel_second.columns();
-        writer.columns(
-            "synastry_parallel_rows",
-            self.contrary.len(),
-            &[
-                first_lagna,
-                first_graha,
-                second_lagna,
-                second_graha,
-                ColumnData::U8(&self.contrary),
-                ColumnData::F64(&self.parallel_apart_deg),
-                ColumnData::F64(&self.parallel_orb_deg),
-            ],
-        )
-    }
-
-    /// `synastry_antiscia` and `synastry_antiscion_rows`, after the
-    /// antiscia's.
-    fn write_antiscia(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_antiscia",
-            self.antiscion_count.len(),
-            &[ColumnData::U32(&self.antiscion_count)],
-        )?;
-        self.antiscia.write(writer, "synastry_antiscion_rows")
-    }
-
-    /// `synastry_midpoints` and `synastry_midpoint_rows`, after the
-    /// composites and the Davison births.
-    fn write_midpoints(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_midpoints",
-            self.midpoint_count.len(),
-            &[ColumnData::U32(&self.midpoint_count)],
-        )?;
-        self.midpoints.write(writer, "synastry_midpoint_rows", true)
-    }
-
-    /// `synastry_composites` and `synastry_composite_rows`, after the
-    /// equal distances.
-    fn write_composites(
-        &self,
-        writer: &mut Writer<'_>,
-    ) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_composites",
-            self.composite_count.len(),
-            &[
-                ColumnData::F64(&self.composite_lagna_deg),
-                ColumnData::F64(&self.composite_midheaven_deg),
-                ColumnData::U8(&self.composite_lagna_turned),
-                ColumnData::U32(&self.composite_count),
-                ColumnData::U8(&self.composite_cusp_count),
-            ],
-        )?;
-        writer.columns(
-            "synastry_composite_rows",
-            self.composite_graha.len(),
-            &[
-                ColumnData::U16(&self.composite_graha),
-                ColumnData::F64(&self.composite_longitude_deg),
-                ColumnData::F64(&self.composite_speed_deg_per_day),
-            ],
-        )
-    }
-
-    /// `synastry_composite_cusps`, each composite's twelve cusps when it
-    /// has them, written after the Western houses.
-    fn write_composite_cusps(
-        &self,
-        writer: &mut Writer<'_>,
-    ) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "synastry_composite_cusps",
-            self.composite_cusp_deg.len(),
-            &[ColumnData::F64(&self.composite_cusp_deg)],
-        )
-    }
-}
-
-/// How many rows a chart holds in a ragged section, as its count column
-/// says.
-fn row_count(rows: usize) -> Result<u32, Error> {
-    u32::try_from(rows).map_err(|_| Error::internal("more rows than a section can count"))
-}
-
-/// The four cells a Western aspect row measures, whichever two points
-/// stand at it, in the order the schema's `western_aspect_measures` lists.
-#[derive(Default)]
-struct AspectMeasures {
-    aspect: Vec<u8>,
-    apart_deg: Vec<f64>,
-    from_exact_deg: Vec<f64>,
-    orb_deg: Vec<f64>,
-}
-
-impl AspectMeasures {
-    fn push(
-        &mut self,
-        aspect: teistro::WesternAspect,
-        apart_deg: f64,
-        from_exact_deg: f64,
-        orb_deg: f64,
-    ) -> Result<(), Error> {
-        let code = TsWesternAspect::of(aspect)
-            .ok_or_else(|| no_code(&format!("the aspect {}", aspect.key())))?;
-        self.aspect.push(code as u8);
-        self.apart_deg.push(apart_deg);
-        self.from_exact_deg.push(from_exact_deg);
-        self.orb_deg.push(orb_deg);
-        Ok(())
-    }
-
-    fn columns(&self) -> [ColumnData<'_>; 4] {
-        [
-            ColumnData::U8(&self.aspect),
-            ColumnData::F64(&self.apart_deg),
-            ColumnData::F64(&self.from_exact_deg),
-            ColumnData::F64(&self.orb_deg),
-        ]
-    }
-}
-
-/// A natal point as two cells a row, as the schema's `point_columns`
-/// names them.
-#[derive(Default)]
-struct PointCells {
-    lagna: Vec<u8>,
-    graha: Vec<u16>,
-}
-
-impl PointCells {
-    fn push(&mut self, point: teistro::NatalPoint) {
-        let (lagna, graha) = point_cells(Some(point));
-        self.lagna.push(lagna);
-        self.graha.push(graha);
-    }
-
-    fn columns(&self) -> [ColumnData<'_>; 2] {
-        [ColumnData::U8(&self.lagna), ColumnData::U16(&self.graha)]
-    }
-}
-
 /// A natal point as the boundary carries it: 1 and 0 for the lagna, 0 and
 /// the graha's id for a graha, and 0 and 0 for none.
-fn point_cells(point: Option<teistro::NatalPoint>) -> (u8, u16) {
+pub(crate) fn point_cells(point: Option<teistro::NatalPoint>) -> (u8, u16) {
     match point {
         Some(teistro::NatalPoint::Lagna) => (1, 0),
         Some(teistro::NatalPoint::Graha { graha }) => (0, graha.id()),
         None => (0, 0),
-    }
-}
-
-impl ProgressionColumns {
-    fn of(read: &[teistro::Progressions], charts: usize) -> Result<ProgressionColumns, Error> {
-        one_a_chart(read.len(), charts, "progressions")?;
-        let mut columns = ProgressionColumns::default();
-        for one in read {
-            let progressed = one.progressed.as_ref();
-            let directed = one.directed.as_ref();
-            columns
-                .life
-                .push(progressed.map_or(f64::NAN, |p| p.life.get()));
-            columns
-                .sky
-                .push(progressed.map_or(f64::NAN, |p| p.sky.get()));
-            columns
-                .armc_deg
-                .push(progressed.map_or(f64::NAN, |p| p.armc_deg));
-            columns
-                .ascendant_deg
-                .push(progressed.map_or(f64::NAN, |p| p.angles.ascendant_deg));
-            columns
-                .midheaven_deg
-                .push(progressed.map_or(f64::NAN, |p| p.angles.midheaven_deg));
-            columns
-                .arc_deg
-                .push(directed.map_or(f64::NAN, |d| d.arc_deg));
-            columns
-                .directed_ascendant_deg
-                .push(directed.map_or(f64::NAN, |d| d.ascendant_deg));
-            columns
-                .directed_midheaven_deg
-                .push(directed.map_or(f64::NAN, |d| d.midheaven_deg));
-            columns
-                .contacts_asked
-                .push(u8::from(one.contacts.is_some()));
-            let contacts = one.contacts.as_deref().unwrap_or_default();
-            columns.contact_count.push(
-                u32::try_from(contacts.len())
-                    .map_err(|_| Error::internal("more contacts than a section can count"))?,
-            );
-            let placed = progressed.map(|p| &p.chart.value.foundation);
-            for at in placed
-                .into_iter()
-                .flat_map(|f| f.grahas.iter().chain(&f.outer))
-            {
-                columns.progressed_graha.push(at.graha.id());
-                columns.progressed_longitude_deg.push(at.longitude_deg);
-                columns.progressed_tropical_deg.push(at.tropical_deg);
-                columns.progressed_speed.push(at.speed_deg_per_day);
-            }
-            for at in directed.map_or(&[][..], |d| d.planets.as_slice()) {
-                columns.directed_graha.push(at.graha.id());
-                columns.directed_longitude_deg.push(at.longitude_deg);
-            }
-            for contact in contacts {
-                columns.contact_life.push(contact.life.get());
-                columns.contact_sky.push(contact.sky.get());
-                columns.contact_graha.push(contact.graha.id());
-                let (to_lagna, to_graha) = point_cells(Some(contact.to));
-                columns.contact_to_lagna.push(to_lagna);
-                columns.contact_to_graha.push(to_graha);
-                columns.contact_angle.push(contact.angle);
-                columns
-                    .contact_motion
-                    .push(TsMotion::from(contact.motion) as u8);
-            }
-        }
-        Ok(columns)
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "progressions",
-            self.life.len(),
-            &[
-                ColumnData::F64(&self.life),
-                ColumnData::F64(&self.sky),
-                ColumnData::F64(&self.armc_deg),
-                ColumnData::F64(&self.ascendant_deg),
-                ColumnData::F64(&self.midheaven_deg),
-                ColumnData::F64(&self.arc_deg),
-                ColumnData::F64(&self.directed_ascendant_deg),
-                ColumnData::F64(&self.directed_midheaven_deg),
-                ColumnData::U32(&self.contact_count),
-                ColumnData::U8(&self.contacts_asked),
-            ],
-        )?;
-        writer.columns(
-            "progressed_grahas",
-            self.progressed_graha.len(),
-            &[
-                ColumnData::U16(&self.progressed_graha),
-                ColumnData::F64(&self.progressed_longitude_deg),
-                ColumnData::F64(&self.progressed_tropical_deg),
-                ColumnData::F64(&self.progressed_speed),
-            ],
-        )?;
-        writer.columns(
-            "directed_grahas",
-            self.directed_graha.len(),
-            &[
-                ColumnData::U16(&self.directed_graha),
-                ColumnData::F64(&self.directed_longitude_deg),
-            ],
-        )?;
-        writer.columns(
-            "progressed_contacts",
-            self.contact_life.len(),
-            &[
-                ColumnData::F64(&self.contact_life),
-                ColumnData::F64(&self.contact_sky),
-                ColumnData::U16(&self.contact_graha),
-                ColumnData::U8(&self.contact_to_lagna),
-                ColumnData::U16(&self.contact_to_graha),
-                ColumnData::U16(&self.contact_angle),
-                ColumnData::U8(&self.contact_motion),
-            ],
-        )
     }
 }
 
@@ -6171,648 +5114,18 @@ impl VargaColumns {
     }
 }
 
-/// Every chart's annual-chart instants, concatenated and ragged.
-///
-/// The count is per chart and not per batch for a reason the pass
-/// measured: the request settles how many returns are *wanted* and the
-/// ephemeris settles how many there *are*
-/// (`03-design/annual-chart-measured.md`).
-struct PraveshaColumns {
-    counts: Vec<u32>,
-    years: Vec<u16>,
-    jds: Vec<f64>,
-    muntha_signs: Vec<u16>,
-    muntha_lords: Vec<u16>,
-    muntha_degs: Vec<f64>,
-    /// The `annual_charts` section, one row per return or none at all.
-    annual: AnnualColumns,
-    /// How many of `natal` each chart holds: `cast.natal_saham_count`.
-    natal_counts: Vec<u32>,
-    /// The births' own sahams, the `natal_sahams` section.
-    natal: SahamColumns,
-}
-
-/// The years' own charts, parallel to `praveshas` row for row when a place
-/// was asked for and empty when none was.
-///
-/// All or none, never some: every year of a batch is founded at the one
-/// place the request named, so a year with no chart is a year whose
-/// founding failed, and that is refused rather than written as a gap.
-#[derive(Default)]
-struct AnnualColumns {
-    lagnas: Vec<f64>,
-    daylight: Vec<u8>,
-    janma_lagna: Vec<u16>,
-    varsha_lagna: Vec<u16>,
-    tri_rashi: Vec<u16>,
-    dina_ratri: Vec<u16>,
-    year_lord: Vec<u16>,
-    chosen: Vec<u8>,
-    year_lord_vishwa: Vec<i32>,
-    moon_passed_over: Vec<u8>,
-    claim_counts: Vec<u8>,
-    yoga_counts: Vec<u8>,
-    retrograde: Vec<u8>,
-    combust: Vec<u8>,
-    matter_counts: Vec<u8>,
-    /// The `year_claims` section: every year's claimants concatenated, in
-    /// the order each year ranks them, ragged by `claim_count`.
-    claims: ClaimColumns,
-    /// The `year_yogas` section: every year's yoga-making pairs, ragged by
-    /// `yoga_count`.
-    yogas: YogaColumns,
-    /// The `year_matters` section and the two under it, ragged by
-    /// `matter_count`.
-    matters: MatterColumns,
-    saham_counts: Vec<u8>,
-    /// The `year_sahams` section, ragged by `saham_count`, and the seven
-    /// rows under each.
-    sahams: SahamColumns,
-    /// The `year_harsha` section, seven rows a year.
-    harsha: HarshaColumns,
-    dasha_counts: Vec<u8>,
-    /// The `year_dashas` section and the two under it, ragged by
-    /// `dasha_count`; written after the births' sahams, whose ids come
-    /// first.
-    dashas: YearDashaColumns,
-}
-
-/// A chart's sahams, flat and ragged, each where it fell, what it fell in
-/// and its strength clause by clause, with the seven planets' facts under
-/// each (`03-design/tajika-saham-strength.md`).
-///
-/// One shape for the years' sahams and the births', so each binding
-/// decodes a saham in one place.
-#[derive(Default)]
-struct SahamColumns {
-    saham: Vec<u8>,
-    longitude_deg: Vec<f64>,
-    sign: Vec<u16>,
-    lord: Vec<u16>,
-    house: Vec<u8>,
-    added_sign: Vec<u8>,
-    strong: Vec<u16>,
-    weak: Vec<u8>,
-    lord_vishwa: Vec<i32>,
-    lord_harsha: Vec<u8>,
-    node_axis: Vec<u8>,
-    /// Seven rows under each saham, the catalogue's order.
-    seven_graha: Vec<u16>,
-    seven_drishti: Vec<u8>,
-    seven_relation: Vec<u8>,
-    seven_company: Vec<u8>,
-}
-
-/// What a saham row's `node_axis` holds when the chart placed no nodes.
-const NODE_AXIS_UNREAD: u8 = 2;
-
-impl SahamColumns {
-    fn push(&mut self, one: &teistro::SahamStrength) {
-        let place = &one.place;
-        self.saham.push(TsSaham::from(one.saham) as u8);
-        self.longitude_deg.push(place.longitude_deg);
-        self.sign.push(place.sign.id());
-        self.lord.push(place.lord.id());
-        self.house.push(place.house.get());
-        self.added_sign.push(u8::from(place.added_sign));
-        self.strong
-            .push(one.strong().iter().fold(0, |bits, (clause, holds)| {
-                if *holds {
-                    bits | 1_u16 << TsSahamStrong::from(*clause) as u8
-                } else {
-                    bits
-                }
-            }));
-        self.weak
-            .push(one.weak().iter().fold(0, |bits, (clause, holds)| {
-                if *holds {
-                    bits | 1_u8 << TsSahamWeak::from(*clause) as u8
-                } else {
-                    bits
-                }
-            }));
-        self.lord_vishwa.push(sub_sub(one.lord_vishwa));
-        self.lord_harsha
-            .push(TsHarshaGrade::from(one.lord_harsha) as u8);
-        self.node_axis
-            .push(one.in_node_axis.map_or(NODE_AXIS_UNREAD, u8::from));
-        for (at, graha) in teistro::tajika::SEVEN.iter().enumerate() {
-            self.seven_graha.push(graha.id());
-            self.seven_drishti.push(
-                one.aspects
-                    .get(at)
-                    .map_or(TsTajikaDrishti::None, |drishti| {
-                        TsTajikaDrishti::from(*drishti)
-                    }) as u8,
-            );
-            self.seven_relation.push(
-                one.relations
-                    .get(at)
-                    .map_or(TsTajikaRelation::Neutral, |relation| {
-                        TsTajikaRelation::from(*relation)
-                    }) as u8,
-            );
-            self.seven_company
-                .push(u8::from(one.company.get(at).copied().unwrap_or(false)));
-        }
-    }
-
-    /// The sahams under `name`, and their seven rows under `seven`.
-    fn write(
-        &self,
-        writer: &mut Writer<'_>,
-        name: &str,
-        seven: &str,
-    ) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            name,
-            self.saham.len(),
-            &[
-                ColumnData::U8(&self.saham),
-                ColumnData::F64(&self.longitude_deg),
-                ColumnData::U16(&self.sign),
-                ColumnData::U16(&self.lord),
-                ColumnData::U8(&self.house),
-                ColumnData::U8(&self.added_sign),
-                ColumnData::U16(&self.strong),
-                ColumnData::U8(&self.weak),
-                ColumnData::I32(&self.lord_vishwa),
-                ColumnData::U8(&self.lord_harsha),
-                ColumnData::U8(&self.node_axis),
-            ],
-        )?;
-        writer.columns(
-            seven,
-            self.seven_graha.len(),
-            &[
-                ColumnData::U16(&self.seven_graha),
-                ColumnData::U8(&self.seven_drishti),
-                ColumnData::U8(&self.seven_relation),
-                ColumnData::U8(&self.seven_company),
-            ],
-        )
-    }
-}
-
-/// Every founded year's Harsha bala: seven rows each, the catalogue's
-/// order (`03-design/tajika-harsha.md`).
-#[derive(Default)]
-struct HarshaColumns {
-    graha: Vec<u16>,
-    house: Vec<u8>,
-    sthana: Vec<u8>,
-    uchcha_swakshetra: Vec<u8>,
-    stri_purusha: Vec<u8>,
-    dina_ratri: Vec<u8>,
-    total: Vec<u8>,
-    grade: Vec<u8>,
-}
-
-impl HarshaColumns {
-    fn push(&mut self, seven: &[teistro::Harsha; 7]) {
-        for one in seven {
-            self.graha.push(one.graha.id());
-            self.house.push(one.house.get());
-            self.sthana.push(u8::from(one.sthana));
-            self.uchcha_swakshetra.push(u8::from(one.uchcha_swakshetra));
-            self.stri_purusha.push(u8::from(one.stri_purusha));
-            self.dina_ratri.push(u8::from(one.dina_ratri));
-            self.total
-                .push(u8::try_from(one.total.units()).unwrap_or(u8::MAX));
-            self.grade.push(TsHarshaGrade::from(one.grade) as u8);
-        }
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "year_harsha",
-            self.graha.len(),
-            &[
-                ColumnData::U16(&self.graha),
-                ColumnData::U8(&self.house),
-                ColumnData::U8(&self.sthana),
-                ColumnData::U8(&self.uchcha_swakshetra),
-                ColumnData::U8(&self.stri_purusha),
-                ColumnData::U8(&self.dina_ratri),
-                ColumnData::U8(&self.total),
-                ColumnData::U8(&self.grade),
-            ],
-        )
-    }
-}
-
-/// How two planets stand, as the matter sections carry it: `year_yogas`'
-/// own columns and a presence flag on the yoga, because a pair the matter
-/// sections carry may make none.
-///
-/// One shape for the matter's own pair and for every leg, so each binding
-/// decodes a pair in one place.
-#[derive(Default)]
-struct PairColumns {
-    faster: Vec<u16>,
-    slower: Vec<u16>,
-    drishti: Vec<u8>,
-    yoga: Vec<u8>,
-    yoga_present: Vec<u8>,
-    orb_deg: Vec<f64>,
-    apart_deg: Vec<f64>,
-}
-
-impl PairColumns {
-    fn push(&mut self, pair: Option<&teistro::Between>) {
-        let Some(pair) = pair else {
-            // Absent: a row of noughts, read only when the section's own
-            // flag says the pair is there.
-            self.faster.push(0);
-            self.slower.push(0);
-            self.drishti.push(0);
-            self.yoga.push(0);
-            self.yoga_present.push(0);
-            self.orb_deg.push(0.0);
-            self.apart_deg.push(0.0);
-            return;
-        };
-        self.faster.push(pair.faster.id());
-        self.slower.push(pair.slower.id());
-        self.drishti.push(TsTajikaDrishti::from(pair.drishti) as u8);
-        self.yoga
-            .push(pair.yoga.map_or(0, |yoga| TsTajikaYoga::from(yoga) as u8));
-        self.yoga_present.push(u8::from(pair.yoga.is_some()));
-        self.orb_deg.push(pair.orb_deg);
-        self.apart_deg.push(pair.apart_deg);
-    }
-
-    /// The seven columns, in the order every pair-carrying section
-    /// declares them.
-    fn data(&self) -> [ColumnData<'_>; 7] {
-        [
-            ColumnData::U16(&self.faster),
-            ColumnData::U16(&self.slower),
-            ColumnData::U8(&self.drishti),
-            ColumnData::U8(&self.yoga),
-            ColumnData::U8(&self.yoga_present),
-            ColumnData::F64(&self.orb_deg),
-            ColumnData::F64(&self.apart_deg),
-        ]
-    }
-}
-
-/// Every year's matters, flat and ragged, with the yogas each holds and
-/// the legs each of those stands on.
-#[derive(Default)]
-struct MatterColumns {
-    house: Vec<u8>,
-    sign: Vec<u16>,
-    lagnesha: Vec<u16>,
-    karyesha: Vec<u16>,
-    same_lord: Vec<u8>,
-    /// The lords' own relation, present unless `same_lord`.
-    pair: PairColumns,
-    unanswered: Vec<u16>,
-    held_count: Vec<u8>,
-    held: HeldColumns,
-}
-
-/// Every matter's held yogas, flat and ragged by `held_count`.
-#[derive(Default)]
-struct HeldColumns {
-    yoga: Vec<u8>,
-    by_pair: Vec<u8>,
-    through: Vec<u16>,
-    through_present: Vec<u8>,
-    entering: Vec<u16>,
-    entering_present: Vec<u8>,
-    afflictions_present: Vec<u8>,
-    lagnesha_afflictions: Vec<u8>,
-    karyesha_afflictions: Vec<u8>,
-    leg_count: Vec<u8>,
-    /// The `matter_legs` section, ragged by `leg_count`.
-    legs: PairColumns,
-}
-
 /// A graha as a column carries one where it may be absent: its id and a
 /// presence flag, since graha id 0 is the Sun and no sentinel is free.
-fn graha_or_absent(graha: Option<teistro::catalogue::Graha>) -> (u16, u8) {
+pub(crate) fn graha_or_absent(graha: Option<teistro::catalogue::Graha>) -> (u16, u8) {
     graha.map_or((0, 0), |graha| (graha.id(), 1))
 }
 
 /// Grahas as a bit set: bit `n` is the graha with catalogue id `n`, the
 /// nine in sixteen bits.
-fn graha_mask(grahas: &[teistro::catalogue::Graha]) -> u16 {
+pub(crate) fn graha_mask(grahas: &[teistro::catalogue::Graha]) -> u16 {
     grahas.iter().fold(0, |bits, graha| {
         bits | 1_u16.checked_shl(u32::from(graha.id())).unwrap_or(0)
     })
-}
-
-/// Planets as a bit set in a byte: only the seven cross here, ids 0 to 6.
-fn graha_bits(grahas: &[teistro::catalogue::Graha]) -> u8 {
-    u8::try_from(graha_mask(grahas) & 0x7F).unwrap_or(0)
-}
-
-impl MatterColumns {
-    fn push(&mut self, matter: &teistro::YearYogas) -> Result<(), Error> {
-        self.house.push(matter.house.get());
-        self.sign.push(matter.sign.id());
-        self.lagnesha.push(matter.lagnesha.id());
-        self.karyesha.push(matter.karyesha.id());
-        self.same_lord.push(u8::from(matter.same_lord));
-        self.pair.push(matter.between.as_ref());
-        self.unanswered
-            .push(matter.unanswered.iter().fold(0, |bits, yoga| {
-                bits | 1_u16 << TsYearYoga::from(*yoga) as u8
-            }));
-        self.held_count
-            .push(u8::try_from(matter.held.len()).unwrap_or(u8::MAX));
-        for held in &matter.held {
-            // A yoga's `between` is the matter's own pair or nothing, which
-            // is why it crosses as a flag; were that ever not so, the flag
-            // would lie, and the batch is refused instead.
-            if held.between.is_some() && held.between != matter.between {
-                return Err(Error::new(
-                    Status::Internal,
-                    format!(
-                        "{:?} for house {} carries a pair other than the matter's own",
-                        held.yoga,
-                        matter.house.get()
-                    ),
-                ));
-            }
-            let held_rows = &mut self.held;
-            held_rows.yoga.push(TsYearYoga::from(held.yoga) as u8);
-            held_rows.by_pair.push(u8::from(held.between.is_some()));
-            let (through, present) = graha_or_absent(held.through);
-            held_rows.through.push(through);
-            held_rows.through_present.push(present);
-            let (entering, present) = graha_or_absent(held.entering);
-            held_rows.entering.push(entering);
-            held_rows.entering_present.push(present);
-            let [lagnesha, karyesha] = held
-                .afflictions
-                .map_or([0, 0], |both| both.map(TsAffliction::bits));
-            held_rows
-                .afflictions_present
-                .push(u8::from(held.afflictions.is_some()));
-            held_rows.lagnesha_afflictions.push(lagnesha);
-            held_rows.karyesha_afflictions.push(karyesha);
-            let legs = held.legs.as_ref().map_or(&[][..], |legs| &legs[..]);
-            held_rows
-                .leg_count
-                .push(u8::try_from(legs.len()).unwrap_or(u8::MAX));
-            for leg in legs {
-                held_rows.legs.push(Some(leg));
-            }
-        }
-        Ok(())
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        let mut columns = vec![
-            ColumnData::U8(&self.house),
-            ColumnData::U16(&self.sign),
-            ColumnData::U16(&self.lagnesha),
-            ColumnData::U16(&self.karyesha),
-            ColumnData::U8(&self.same_lord),
-        ];
-        columns.extend(self.pair.data());
-        columns.extend([
-            ColumnData::U16(&self.unanswered),
-            ColumnData::U8(&self.held_count),
-        ]);
-        writer.columns("year_matters", self.house.len(), &columns)?;
-        let held = &self.held;
-        writer.columns(
-            "matter_yogas",
-            held.yoga.len(),
-            &[
-                ColumnData::U8(&held.yoga),
-                ColumnData::U8(&held.by_pair),
-                ColumnData::U16(&held.through),
-                ColumnData::U8(&held.through_present),
-                ColumnData::U16(&held.entering),
-                ColumnData::U8(&held.entering_present),
-                ColumnData::U8(&held.afflictions_present),
-                ColumnData::U8(&held.lagnesha_afflictions),
-                ColumnData::U8(&held.karyesha_afflictions),
-                ColumnData::U8(&held.leg_count),
-            ],
-        )?;
-        writer.columns("matter_legs", held.legs.faster.len(), &held.legs.data())
-    }
-}
-
-/// Every year's yoga-making pairs, flat and ragged.
-#[derive(Default)]
-struct YogaColumns {
-    faster: Vec<u16>,
-    slower: Vec<u16>,
-    drishti: Vec<u8>,
-    yoga: Vec<u8>,
-    orb_deg: Vec<f64>,
-    apart_deg: Vec<f64>,
-}
-
-impl YogaColumns {
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "year_yogas",
-            self.faster.len(),
-            &[
-                ColumnData::U16(&self.faster),
-                ColumnData::U16(&self.slower),
-                ColumnData::U8(&self.drishti),
-                ColumnData::U8(&self.yoga),
-                ColumnData::F64(&self.orb_deg),
-                ColumnData::F64(&self.apart_deg),
-            ],
-        )
-    }
-}
-
-/// Every year's claimants on the lordship, flat and ragged.
-#[derive(Default)]
-struct ClaimColumns {
-    graha: Vec<u16>,
-    vishwa: Vec<i32>,
-    portfolios: Vec<u8>,
-    aspects_lagna: Vec<u8>,
-}
-
-impl ClaimColumns {
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "year_claims",
-            self.graha.len(),
-            &[
-                ColumnData::U16(&self.graha),
-                ColumnData::I32(&self.vishwa),
-                ColumnData::U8(&self.portfolios),
-                ColumnData::U8(&self.aspects_lagna),
-            ],
-        )
-    }
-}
-
-impl AnnualColumns {
-    fn push(&mut self, year: &teistro::AnnualChart) -> Result<(), Error> {
-        let bearers = &year.bearers;
-        self.lagnas.push(year.lagna_deg);
-        self.daylight.push(u8::from(bearers.by_day));
-        self.janma_lagna.push(bearers.janma_lagna.id());
-        self.varsha_lagna.push(bearers.varsha_lagna.id());
-        self.tri_rashi.push(bearers.tri_rashi.id());
-        self.dina_ratri.push(bearers.dina_ratri.id());
-        let lord = &year.year_lord;
-        self.year_lord.push(lord.graha.id());
-        self.chosen.push(TsVarsheshaChosen::from(lord.chosen) as u8);
-        self.year_lord_vishwa.push(sub_sub(lord.vishwa));
-        self.moon_passed_over.push(u8::from(lord.moon_passed_over));
-        self.claim_counts
-            .push(u8::try_from(lord.claims.len()).unwrap_or(u8::MAX));
-        self.yoga_counts
-            .push(u8::try_from(year.yogas.len()).unwrap_or(u8::MAX));
-        for pair in &year.yogas {
-            self.yogas.faster.push(pair.faster.id());
-            self.yogas.slower.push(pair.slower.id());
-            self.yogas
-                .drishti
-                .push(TsTajikaDrishti::from(pair.drishti) as u8);
-            // Only pairs that make one are here, so the fallback is dead.
-            self.yogas.yoga.push(
-                pair.yoga
-                    .map_or(u8::MAX, |yoga| TsTajikaYoga::from(yoga) as u8),
-            );
-            self.yogas.orb_deg.push(pair.orb_deg);
-            self.yogas.apart_deg.push(pair.apart_deg);
-        }
-        for claim in &lord.claims {
-            self.claims.graha.push(claim.graha.id());
-            self.claims.vishwa.push(sub_sub(claim.vishwa));
-            self.claims.portfolios.push(claim.portfolios);
-            self.claims
-                .aspects_lagna
-                .push(u8::from(claim.aspects_lagna));
-        }
-        self.retrograde.push(graha_bits(&year.states.retrograde));
-        self.combust.push(graha_bits(&year.states.combust));
-        self.matter_counts
-            .push(u8::try_from(year.matters.len()).unwrap_or(u8::MAX));
-        self.saham_counts
-            .push(u8::try_from(year.sahams.len()).unwrap_or(u8::MAX));
-        for one in &year.sahams {
-            self.sahams.push(one);
-        }
-        self.harsha.push(&year.harsha);
-        self.dasha_counts
-            .push(u8::try_from(year.dashas.len()).unwrap_or(u8::MAX));
-        for dasha in &year.dashas {
-            self.dashas.push(dasha);
-        }
-        year.matters
-            .iter()
-            .try_for_each(|matter| self.matters.push(matter))
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "annual_charts",
-            self.lagnas.len(),
-            &[
-                ColumnData::F64(&self.lagnas),
-                ColumnData::U8(&self.daylight),
-                ColumnData::U16(&self.janma_lagna),
-                ColumnData::U16(&self.varsha_lagna),
-                ColumnData::U16(&self.tri_rashi),
-                ColumnData::U16(&self.dina_ratri),
-                ColumnData::U16(&self.year_lord),
-                ColumnData::U8(&self.chosen),
-                ColumnData::I32(&self.year_lord_vishwa),
-                ColumnData::U8(&self.moon_passed_over),
-                ColumnData::U8(&self.claim_counts),
-                ColumnData::U8(&self.yoga_counts),
-                ColumnData::U8(&self.retrograde),
-                ColumnData::U8(&self.combust),
-                ColumnData::U8(&self.matter_counts),
-                ColumnData::U8(&self.saham_counts),
-                ColumnData::U8(&self.dasha_counts),
-            ],
-        )?;
-        self.claims.write(writer)?;
-        self.yogas.write(writer)?;
-        self.matters.write(writer)?;
-        self.sahams
-            .write(writer, "year_sahams", "year_saham_seven")?;
-        self.harsha.write(writer)
-    }
-}
-
-/// A strength as the boundary carries it: exact, in sub-sub units, of
-/// which a unit holds 3600.
-///
-/// An integer and not a float, because the source works to sub-sub units
-/// and two office-bearers a sub-sub unit apart decide a year between them.
-fn sub_sub(bala: teistro::Bala) -> i32 {
-    i32::try_from(bala.as_sub_sub()).unwrap_or(i32::MAX)
-}
-
-impl PraveshaColumns {
-    fn of(varsha: &[teistro::Varsha]) -> Result<PraveshaColumns, Error> {
-        let mut counts = Vec::with_capacity(varsha.len());
-        let mut years = Vec::new();
-        let mut jds = Vec::new();
-        let mut muntha_signs = Vec::new();
-        let mut muntha_lords = Vec::new();
-        let mut muntha_degs = Vec::new();
-        let mut annual = AnnualColumns::default();
-        let mut natal_counts = Vec::with_capacity(varsha.len());
-        let mut natal = SahamColumns::default();
-        for chart in varsha {
-            natal_counts.push(u32::try_from(chart.natal_sahams.len()).unwrap_or(u32::MAX));
-            for one in &chart.natal_sahams {
-                natal.push(one);
-            }
-            let found = &chart.years;
-            counts.push(u32::try_from(found.len()).unwrap_or(u32::MAX));
-            for one in found {
-                years.push(one.pravesha.year);
-                jds.push(one.pravesha.at.get());
-                muntha_signs.push(one.muntha.sign.id());
-                muntha_lords.push(one.muntha.lord.id());
-                muntha_degs.push(one.muntha.longitude_deg);
-                if let Some(year) = &one.annual {
-                    annual.push(year)?;
-                }
-            }
-        }
-        Ok(PraveshaColumns {
-            counts,
-            years,
-            jds,
-            muntha_signs,
-            muntha_lords,
-            muntha_degs,
-            annual,
-            natal_counts,
-            natal,
-        })
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "praveshas",
-            self.years.len(),
-            &[
-                ColumnData::U16(&self.years),
-                ColumnData::F64(&self.jds),
-                ColumnData::U16(&self.muntha_signs),
-                ColumnData::U16(&self.muntha_lords),
-                ColumnData::F64(&self.muntha_degs),
-            ],
-        )?;
-        self.annual.write(writer)?;
-        self.natal
-            .write(writer, "natal_sahams", "natal_saham_seven")?;
-        self.annual.dashas.write(writer)
-    }
 }
 
 /// One row per chart, in the order `cast` declares its columns.
@@ -6930,7 +5243,7 @@ struct DashaColumns {
 /// `year_dasha_periods`, so a period is laid out, and decoded, in one
 /// place.
 #[derive(Default)]
-struct PeriodColumns {
+pub(crate) struct PeriodColumns {
     level: Vec<u8>,
     index: Vec<u8>,
     has_sign: Vec<u8>,
@@ -6941,7 +5254,7 @@ struct PeriodColumns {
 }
 
 impl PeriodColumns {
-    fn with_capacity(periods: usize) -> PeriodColumns {
+    pub(crate) fn with_capacity(periods: usize) -> PeriodColumns {
         PeriodColumns {
             level: Vec::with_capacity(periods),
             index: Vec::with_capacity(periods),
@@ -6953,7 +5266,7 @@ impl PeriodColumns {
         }
     }
 
-    fn push(&mut self, period: &teistro::dasha::PeriodRow) {
+    pub(crate) fn push(&mut self, period: &teistro::dasha::PeriodRow) {
         let places: Vec<u8> = period
             .path
             .split('/')
@@ -6970,7 +5283,7 @@ impl PeriodColumns {
         self.to.push(period.interval.to.get());
     }
 
-    fn write(
+    pub(crate) fn write(
         &self,
         writer: &mut Writer<'_>,
         section: &str,
@@ -7132,94 +5445,6 @@ impl DashaColumns {
     }
 }
 
-/// Every year's annual dashas (`03-design/annual-dashas.md`): a row a
-/// year a system, ragged by `annual_charts.dasha_count`, with each one's
-/// ring and periods ragged under it.
-#[derive(Default)]
-struct YearDashaColumns {
-    system: Vec<u16>,
-    seeded: Vec<u8>,
-    seed: Vec<u16>,
-    first: Vec<u8>,
-    remaining: Vec<f64>,
-    from: Vec<f64>,
-    to: Vec<f64>,
-    share_count: Vec<u8>,
-    period_count: Vec<u32>,
-    /// The `year_dasha_shares` section, ragged by `share_count`.
-    shares: ShareColumns,
-    /// The `year_dasha_periods` section, ragged by `period_count`.
-    periods: PeriodColumns,
-}
-
-/// The lords a year's dasha runs round, each with its weight.
-#[derive(Default)]
-struct ShareColumns {
-    lord: Vec<u16>,
-    has_sign: Vec<u8>,
-    sign: Vec<u16>,
-    weight: Vec<f64>,
-}
-
-impl YearDashaColumns {
-    fn push(&mut self, dasha: &teistro::AnnualDasha) {
-        let ring = &dasha.ring;
-        self.system.push(dasha.system.id());
-        self.seeded.push(u8::from(dasha.seed.is_some()));
-        self.seed
-            .push(dasha.seed.map_or(0, teistro_core::catalogue::Nakshatra::id));
-        self.first.push(u8::try_from(ring.first).unwrap_or(u8::MAX));
-        self.remaining.push(ring.remaining.unwrap_or(f64::NAN));
-        self.from.push(dasha.year.from.get());
-        self.to.push(dasha.year.to.get());
-        self.share_count
-            .push(u8::try_from(ring.ring.len()).unwrap_or(u8::MAX));
-        self.period_count
-            .push(u32::try_from(dasha.periods.len()).unwrap_or(u32::MAX));
-        for share in &ring.ring {
-            self.shares.lord.push(share.lord.id());
-            self.shares.has_sign.push(u8::from(share.sign.is_some()));
-            self.shares
-                .sign
-                .push(share.sign.map_or(0, teistro_core::catalogue::Rashi::id));
-            self.shares.weight.push(share.weight);
-        }
-        for period in &dasha.periods {
-            self.periods.push(period);
-        }
-    }
-
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
-        writer.columns(
-            "year_dashas",
-            self.system.len(),
-            &[
-                ColumnData::U16(&self.system),
-                ColumnData::U8(&self.seeded),
-                ColumnData::U16(&self.seed),
-                ColumnData::U8(&self.first),
-                ColumnData::F64(&self.remaining),
-                ColumnData::F64(&self.from),
-                ColumnData::F64(&self.to),
-                ColumnData::U8(&self.share_count),
-                ColumnData::U32(&self.period_count),
-            ],
-        )?;
-        writer.columns(
-            "year_dasha_shares",
-            self.shares.lord.len(),
-            &[
-                ColumnData::U16(&self.shares.lord),
-                ColumnData::U8(&self.shares.has_sign),
-                ColumnData::U16(&self.shares.sign),
-                ColumnData::F64(&self.shares.weight),
-            ],
-        )?;
-        self.periods
-            .write(writer, "year_dasha_periods", SignedBy::Period)
-    }
-}
-
 struct BatchOnce {
     readings: Vec<FixedValue>,
     /// The `zodiac` section's row: the frame's bits, the ayanamsha's kind
@@ -7288,7 +5513,7 @@ pub struct Composed<'a> {
     pub plans: &'a str,
     /// Every chart's annual charts and its own sahams, in the batch's
     /// order (`annual-chart.md`); empty when none were asked for.
-    pub praveshas: &'a [teistro::Varsha],
+    pub praveshas: &'a [crate::family::tajika::Varsha],
     /// Every chart's transits at the instants `gochar` asked for, in the
     /// batch's order, and those instants (`gochar.md`); both empty when
     /// none were asked for.
@@ -7324,36 +5549,36 @@ pub struct Composed<'a> {
     pub perfections: &'a [(teistro::Matter, teistro::PerfectionRules)],
     /// Every chart's progressions, in the batch's order
     /// (`western-progressions.md`); empty when none were asked for.
-    pub progressions: &'a [teistro::Progressions],
+    pub progressions: &'a [crate::family::western::Progressions],
     /// Every chart's Western aspect table, in the batch's order
     /// (`western-aspects.md`); empty when none was asked for.
-    pub western_aspects: &'a [Vec<teistro::WesternAspectRow>],
+    pub western_aspects: &'a [crate::family::western::AspectRows],
     /// Every chart's synastry with the record's partner, in the batch's
     /// order (`western-synastry.md`); empty when none was asked for.
-    pub synastry: &'a [teistro::PartnerReading],
+    pub synastry: &'a [crate::family::western::PartnerReading],
     /// Every chart's declinations, in the batch's order
     /// (`western-declinations.md`); empty when no parallels were asked
     /// for.
-    pub declinations: &'a [teistro::Declinations],
+    pub declinations: &'a [crate::family::western::Declinations],
     /// Every chart's parallels, in the batch's order; empty when none were
     /// asked for.
-    pub parallels: &'a [Vec<teistro::ParallelRow>],
+    pub parallels: &'a [crate::family::western::ParallelRows],
     /// Every chart's antiscia, in the batch's order
     /// (`western-antiscia.md`); empty when none were asked for.
-    pub antiscia: &'a [teistro::Antiscia],
+    pub antiscia: &'a [crate::family::western::Antiscia],
     /// Every chart's equal distances, in the batch's order
     /// (`western-midpoints.md`); empty when none were asked for.
-    pub midpoints: &'a [Vec<teistro::MidpointRow>],
+    pub midpoints: &'a [crate::family::western::MidpointRows],
     /// Every chart's Davison birth with the synastry's partner, in the
     /// batch's order (`western-composites.md`); empty when none was asked
     /// for.
     pub davisons: &'a [teistro::Partner],
     /// Every chart's Western houses, in the batch's order
     /// (`western-houses.md`); empty when none were asked for.
-    pub western_houses: &'a [teistro::WesternHouses],
+    pub western_houses: &'a [crate::family::western::WesternHouses],
     /// Every chart's harmonic chart, in the batch's order
     /// (`western-harmonics.md`); empty when none was asked for.
-    pub harmonics: &'a [teistro::HarmonicChart],
+    pub harmonics: &'a [crate::family::western::HarmonicChart],
     /// Every chart matched with the record's partner, in the batch's order
     /// (`matching.md`); empty when none was asked for.
     pub matchings: &'a [teistro::Matched],
@@ -7440,7 +5665,7 @@ pub fn encode(
     let transits = GocharColumns::of(gochar, gochar_instants)?;
     let searches = Searches::of(hits, sade_sati, charts.len())?;
     let hellenistic = HellenisticColumns::of(&composed, charts.len())?;
-    let progressions = ProgressionColumns::of(composed.progressions, charts.len())?;
+    let western = crate::family::western::Columns::of(&composed, charts.len())?;
     let tables = AspectTables::of(&composed, charts.len())?;
     let summary = summary_values(
         place,
@@ -7498,7 +5723,7 @@ pub fn encode(
         transits.write(&mut writer)?;
         searches.write(&mut writer)?;
         hellenistic.write(&mut writer)?;
-        progressions.write(&mut writer)?;
+        western.write(&mut writer)?;
         GrahaColumns::of(charts, |c| &c.outer).write(&mut writer, "outer")?;
         tables.write(&mut writer)?;
         by.avakahada.write(&mut writer)?;
@@ -7542,25 +5767,6 @@ fn drawings_json(documents: &[Document]) -> String {
         .map(|document| &document.drawings)
         .collect();
     teistro_core::envelope::canonical_json(&per_chart)
-}
-
-/// Every chart's drawings written as SVG in one theme, as the canonical JSON
-/// the `svgs` section carries: one array of strings per chart, in the order
-/// the drawings were asked for.
-fn svgs_json(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    theme: &Theme,
-) -> Result<String, Error> {
-    let mut per_chart = Vec::with_capacity(documents.len());
-    for document in documents {
-        let mut svgs = Vec::with_capacity(document.drawings.len());
-        for index in 0..document.drawings.len() {
-            svgs.push(sdk.chart().svg(document, index, theme)?);
-        }
-        per_chart.push(svgs);
-    }
-    Ok(teistro_core::envelope::canonical_json(&per_chart))
 }
 
 /// A chart layout this context can draw in, shipped or registered, as its
@@ -7673,18 +5879,6 @@ pub enum TsTajikaDrishti {
     None = 4,
 }
 
-impl From<teistro::TajikaDrishti> for TsTajikaDrishti {
-    fn from(drishti: teistro::TajikaDrishti) -> TsTajikaDrishti {
-        match drishti {
-            teistro::TajikaDrishti::Friendly => TsTajikaDrishti::Friendly,
-            teistro::TajikaDrishti::SecretlyFriendly => TsTajikaDrishti::SecretlyFriendly,
-            teistro::TajikaDrishti::Inimical => TsTajikaDrishti::Inimical,
-            teistro::TajikaDrishti::SecretlyInimical => TsTajikaDrishti::SecretlyInimical,
-            teistro::TajikaDrishti::None => TsTajikaDrishti::None,
-        }
-    }
-}
-
 /// What two planets inside each other's orb are doing.
 ///
 /// Three of the four are kinds of Ithasala, the coming-together, which is
@@ -7704,17 +5898,6 @@ pub enum TsTajikaYoga {
     /// Ishrafa: the faster is a degree or more past the slower and
     /// drawing away.
     Ishrafa = 3,
-}
-
-impl From<teistro::TajikaYoga> for TsTajikaYoga {
-    fn from(yoga: teistro::TajikaYoga) -> TsTajikaYoga {
-        match yoga {
-            teistro::TajikaYoga::IthasalaVartamana => TsTajikaYoga::IthasalaVartamana,
-            teistro::TajikaYoga::IthasalaPoorna => TsTajikaYoga::IthasalaPoorna,
-            teistro::TajikaYoga::IthasalaBhavishyat => TsTajikaYoga::IthasalaBhavishyat,
-            teistro::TajikaYoga::Ishrafa => TsTajikaYoga::Ishrafa,
-        }
-    }
 }
 
 /// One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
@@ -7763,29 +5946,6 @@ pub enum TsYearYoga {
     Kuttha = 14,
     /// Both weak, in the trika houses, combust or retrograde.
     Durapha = 15,
-}
-
-impl From<teistro::YearYoga> for TsYearYoga {
-    fn from(yoga: teistro::YearYoga) -> TsYearYoga {
-        match yoga {
-            teistro::YearYoga::Ikabala => TsYearYoga::Ikabala,
-            teistro::YearYoga::Induvara => TsYearYoga::Induvara,
-            teistro::YearYoga::Ithasala => TsYearYoga::Ithasala,
-            teistro::YearYoga::Ishrafa => TsYearYoga::Ishrafa,
-            teistro::YearYoga::Nakta => TsYearYoga::Nakta,
-            teistro::YearYoga::Yamaya => TsYearYoga::Yamaya,
-            teistro::YearYoga::Manau => TsYearYoga::Manau,
-            teistro::YearYoga::Kamboola => TsYearYoga::Kamboola,
-            teistro::YearYoga::GairiKamboola => TsYearYoga::GairiKamboola,
-            teistro::YearYoga::Khallasara => TsYearYoga::Khallasara,
-            teistro::YearYoga::Rudda => TsYearYoga::Rudda,
-            teistro::YearYoga::DuhphaliKuttha => TsYearYoga::DuhphaliKuttha,
-            teistro::YearYoga::DutthotthaDavira => TsYearYoga::DutthotthaDavira,
-            teistro::YearYoga::Tambira => TsYearYoga::Tambira,
-            teistro::YearYoga::Kuttha => TsYearYoga::Kuttha,
-            teistro::YearYoga::Durapha => TsYearYoga::Durapha,
-        }
-    }
 }
 
 /// One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
@@ -7881,54 +6041,6 @@ pub enum TsSaham {
     Labha = 40,
 }
 
-impl From<teistro::Saham> for TsSaham {
-    fn from(saham: teistro::Saham) -> TsSaham {
-        match saham {
-            teistro::Saham::Punya => TsSaham::Punya,
-            teistro::Saham::Guru => TsSaham::Guru,
-            teistro::Saham::Vidya => TsSaham::Vidya,
-            teistro::Saham::Yasha => TsSaham::Yasha,
-            teistro::Saham::Mitra => TsSaham::Mitra,
-            teistro::Saham::Mahatmya => TsSaham::Mahatmya,
-            teistro::Saham::Asha => TsSaham::Asha,
-            teistro::Saham::Samarthya => TsSaham::Samarthya,
-            teistro::Saham::Bhratri => TsSaham::Bhratri,
-            teistro::Saham::Gaurava => TsSaham::Gaurava,
-            teistro::Saham::Pitri => TsSaham::Pitri,
-            teistro::Saham::Raja => TsSaham::Raja,
-            teistro::Saham::Matri => TsSaham::Matri,
-            teistro::Saham::Putra => TsSaham::Putra,
-            teistro::Saham::Jeeva => TsSaham::Jeeva,
-            teistro::Saham::Roga => TsSaham::Roga,
-            teistro::Saham::Karma => TsSaham::Karma,
-            teistro::Saham::Manmatha => TsSaham::Manmatha,
-            teistro::Saham::Kali => TsSaham::Kali,
-            teistro::Saham::Kshama => TsSaham::Kshama,
-            teistro::Saham::Shastra => TsSaham::Shastra,
-            teistro::Saham::Bandhu => TsSaham::Bandhu,
-            teistro::Saham::Mrityu => TsSaham::Mrityu,
-            teistro::Saham::Deshantara => TsSaham::Deshantara,
-            teistro::Saham::Artha => TsSaham::Artha,
-            teistro::Saham::Paradara => TsSaham::Paradara,
-            teistro::Saham::AnyaKarma => TsSaham::AnyaKarma,
-            teistro::Saham::Vanika => TsSaham::Vanika,
-            teistro::Saham::KaryaSiddhi => TsSaham::KaryaSiddhi,
-            teistro::Saham::Vivaha => TsSaham::Vivaha,
-            teistro::Saham::Prasava => TsSaham::Prasava,
-            teistro::Saham::Santaapa => TsSaham::Santaapa,
-            teistro::Saham::Shraddha => TsSaham::Shraddha,
-            teistro::Saham::Preeti => TsSaham::Preeti,
-            teistro::Saham::Jadya => TsSaham::Jadya,
-            teistro::Saham::Vyapara => TsSaham::Vyapara,
-            teistro::Saham::PaneeyaPaata => TsSaham::PaneeyaPaata,
-            teistro::Saham::Shatru => TsSaham::Shatru,
-            teistro::Saham::Jalapatha => TsSaham::Jalapatha,
-            teistro::Saham::Bandhana => TsSaham::Bandhana,
-            teistro::Saham::Labha => TsSaham::Labha,
-        }
-    }
-}
-
 /// How a planet stands to another by Tajika's friendship: the relation a
 /// saham's company is read by (`03-design/tajika-saham-strength.md`).
 ///
@@ -7944,17 +6056,6 @@ pub enum TsTajikaRelation {
     Neutral = 2,
     /// An enemy.
     Enemy = 3,
-}
-
-impl From<teistro::TajikaRelation> for TsTajikaRelation {
-    fn from(relation: teistro::TajikaRelation) -> TsTajikaRelation {
-        match relation {
-            teistro::TajikaRelation::Own => TsTajikaRelation::Own,
-            teistro::TajikaRelation::Friend => TsTajikaRelation::Friend,
-            teistro::TajikaRelation::Neutral => TsTajikaRelation::Neutral,
-            teistro::TajikaRelation::Enemy => TsTajikaRelation::Enemy,
-        }
-    }
 }
 
 /// How two signs stand in Vashya (`03-design/matching.md`, C260).
@@ -8231,18 +6332,6 @@ pub enum TsHarshaGrade {
     Extraordinary = 4,
 }
 
-impl From<teistro::HarshaGrade> for TsHarshaGrade {
-    fn from(grade: teistro::HarshaGrade) -> TsHarshaGrade {
-        match grade {
-            teistro::HarshaGrade::Nirbala => TsHarshaGrade::Nirbala,
-            teistro::HarshaGrade::Alpabali => TsHarshaGrade::Alpabali,
-            teistro::HarshaGrade::MadhyaBali => TsHarshaGrade::MadhyaBali,
-            teistro::HarshaGrade::PoornaBali => TsHarshaGrade::PoornaBali,
-            teistro::HarshaGrade::Extraordinary => TsHarshaGrade::Extraordinary,
-        }
-    }
-}
-
 /// A clause of the source's list of what makes a saham **strong**, in its
 /// order (`03-design/tajika-saham-strength.md`). Its ids are the bit
 /// positions of a saham row's `strong` column.
@@ -8277,25 +6366,6 @@ pub enum TsSahamStrong {
     LordAspectsLagna = 11,
 }
 
-impl From<teistro::StrongClause> for TsSahamStrong {
-    fn from(clause: teistro::StrongClause) -> TsSahamStrong {
-        match clause {
-            teistro::StrongClause::LordExalted => TsSahamStrong::LordExalted,
-            teistro::StrongClause::LordOwnSign => TsSahamStrong::LordOwnSign,
-            teistro::StrongClause::LordOwnHudda => TsSahamStrong::LordOwnHudda,
-            teistro::StrongClause::LordOwnDrekkana => TsSahamStrong::LordOwnDrekkana,
-            teistro::StrongClause::LordOwnNavamsha => TsSahamStrong::LordOwnNavamsha,
-            teistro::StrongClause::LordInFriendsSign => TsSahamStrong::LordInFriendsSign,
-            teistro::StrongClause::WithFriend => TsSahamStrong::WithFriend,
-            teistro::StrongClause::WithBenefic => TsSahamStrong::WithBenefic,
-            teistro::StrongClause::WithYearLord => TsSahamStrong::WithYearLord,
-            teistro::StrongClause::LordConjoins => TsSahamStrong::LordConjoins,
-            teistro::StrongClause::LordAspectsSaham => TsSahamStrong::LordAspectsSaham,
-            teistro::StrongClause::LordAspectsLagna => TsSahamStrong::LordAspectsLagna,
-        }
-    }
-}
-
 /// A clause of the source's list of what makes a saham **weak**, in its
 /// order. Its ids are the bit positions of a saham row's `weak` column.
 ///
@@ -8315,18 +6385,6 @@ pub enum TsSahamWeak {
     WithMalefic = 4,
 }
 
-impl From<teistro::WeakClause> for TsSahamWeak {
-    fn from(clause: teistro::WeakClause) -> TsSahamWeak {
-        match clause {
-            teistro::WeakClause::LordWeakVishwa => TsSahamWeak::LordWeakVishwa,
-            teistro::WeakClause::LordLacksHarsha => TsSahamWeak::LordLacksHarsha,
-            teistro::WeakClause::LordApart => TsSahamWeak::LordApart,
-            teistro::WeakClause::WithEnemy => TsSahamWeak::WithEnemy,
-            teistro::WeakClause::WithMalefic => TsSahamWeak::WithMalefic,
-        }
-    }
-}
-
 /// One of the five clauses of the source's **affliction**, which Rudda
 /// and Durapha read. Its ids are the bit positions of
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
@@ -8343,68 +6401,6 @@ pub enum TsAffliction {
     Trika = 3,
     /// Conjunct or inimically aspected by one of Tajika's malefics.
     UnderMalefic = 4,
-}
-
-impl TsAffliction {
-    /// An affliction's clauses as a bit set: bit `n` is the clause with
-    /// id `n`. The struct is destructured whole, so a clause added to
-    /// `teistro::Affliction` stops this compiling rather than crossing
-    /// unset.
-    fn bits(affliction: teistro::Affliction) -> u8 {
-        let teistro::Affliction {
-            graha: _,
-            retrograde,
-            combust,
-            debilitated,
-            trika,
-            under_malefic,
-        } = affliction;
-        [
-            (TsAffliction::Retrograde, retrograde),
-            (TsAffliction::Combust, combust),
-            (TsAffliction::Debilitated, debilitated),
-            (TsAffliction::Trika, trika),
-            (TsAffliction::UnderMalefic, under_malefic),
-        ]
-        .into_iter()
-        .filter(|(_, holds)| *holds)
-        .fold(0, |bits, (clause, _)| bits | 1 << clause as u8)
-    }
-}
-
-impl From<teistro::Chosen> for TsVarsheshaChosen {
-    fn from(chosen: teistro::Chosen) -> TsVarsheshaChosen {
-        match chosen {
-            teistro::Chosen::Strongest => TsVarsheshaChosen::Strongest,
-            teistro::Chosen::MostPortfolios => TsVarsheshaChosen::MostPortfolios,
-            teistro::Chosen::MunthaLordUnaspected => TsVarsheshaChosen::MunthaLordUnaspected,
-            teistro::Chosen::MunthaLordAllWeak => TsVarsheshaChosen::MunthaLordAllWeak,
-            teistro::Chosen::MunthaLordTied => TsVarsheshaChosen::MunthaLordTied,
-            teistro::Chosen::DinaRatriTied => TsVarsheshaChosen::DinaRatriTied,
-            teistro::Chosen::AnnualLagnaLordUnaspected => {
-                TsVarsheshaChosen::AnnualLagnaLordUnaspected
-            }
-            teistro::Chosen::StrongestUnaspected => TsVarsheshaChosen::StrongestUnaspected,
-            teistro::Chosen::MoonsIthasala => TsVarsheshaChosen::MoonsIthasala,
-            teistro::Chosen::MoonsSignLord => TsVarsheshaChosen::MoonsSignLord,
-        }
-    }
-}
-
-/// The annual charts a request's `varsha_json` asks for, none for null; the
-/// façade reads and checks the record ([`teistro::VarshaRequest::from_json`]),
-/// naming a refusal from its root, `varsha.through`.
-///
-/// # Safety
-///
-/// `varsha_json` null or a NUL-terminated string.
-unsafe fn varsha_request_of(
-    varsha_json: *const c_char,
-) -> Result<Option<teistro::VarshaRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(varsha_json, "varsha_json") }?
-        .map(teistro::VarshaRequest::from_json)
-        .transpose()
 }
 
 /// The transits a request's `gochar_json` asks for, none for null; the
@@ -8456,49 +6452,8 @@ fn hits_of(
     }
 }
 
-/// The KP reading a request's `kp_json` asks for, none for null; the
-/// façade reads the record ([`teistro::KpRequest::from_json`]), naming a
-/// refusal from its root, `kp.number`. A record naming no clock takes the
-/// chart request's own, which is the clock the charts were asked on.
-///
-/// # Safety
-///
-/// `kp_json` null or a NUL-terminated string.
-unsafe fn kp_request_of(
-    kp_json: *const c_char,
-    clock: UtcOffset,
-) -> Result<Option<teistro::KpRequest>, Error> {
-    // SAFETY: the caller's contract.
-    let Some(text) = unsafe { optional_text(kp_json, "kp_json") }? else {
-        return Ok(None);
-    };
-    let request = teistro::KpRequest::from_json(text)?;
-    Ok(Some(match request.clock() {
-        Some(_) => request,
-        None => request.on_clock(clock),
-    }))
-}
-
-/// Every chart's answer to a record, as the canonical JSON its section
-/// carries: an array with one answer a chart, or nothing at all when the
-/// record was not sent.
-fn each_json<A, T: serde::Serialize>(
-    documents: &[Document],
-    asked: Option<&A>,
-    answer: impl Fn(&Document, &A) -> Result<T, Error>,
-) -> Result<String, Error> {
-    let Some(asked) = asked else {
-        return Ok(String::new());
-    };
-    let answers = documents
-        .iter()
-        .map(|document| answer(document, asked))
-        .collect::<Result<Vec<_>, Error>>()?;
-    Ok(teistro_core::envelope::canonical_json(&answers))
-}
-
 /// The sections the façade answers a chart at a time from a record of its
-/// own, each the canonical JSON [`each_json`] writes.
+/// own, each the canonical JSON [`each_json`](crate::family::each_json) writes.
 struct ChartReadings {
     prashna: String,
     remedies: String,
@@ -8511,32 +6466,10 @@ impl ChartReadings {
         records: &AskedRecords,
     ) -> Result<Self, Error> {
         Ok(Self {
-            prashna: each_json(documents, records.prashna.as_ref(), |document, asked| {
-                sdk.chart().prashna(document, asked)
-            })?,
-            remedies: each_json(documents, records.remedies.as_ref(), |document, asked| {
-                sdk.chart().remedies(document, asked)
-            })?,
+            prashna: crate::family::prashna::json(sdk, documents, records.prashna.as_ref())?,
+            remedies: crate::family::remedies::json(sdk, documents, records.remedies.as_ref())?,
         })
     }
-}
-
-/// Every chart's KP reading as the canonical JSON the `kp` section carries:
-/// an array with one reading a chart, or nothing at all when none was asked
-/// for, as `drawings` is.
-fn kp_json(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::KpRequest>,
-) -> Result<String, Error> {
-    let Some(asked) = asked else {
-        return Ok(String::new());
-    };
-    let readings = documents
-        .iter()
-        .map(|document| sdk.chart().kp_reading(document, asked))
-        .collect::<Result<Vec<_>, Error>>()?;
-    Ok(teistro_core::envelope::canonical_json(&readings))
 }
 
 /// The dignities a request's `dignities_json` asks for, none for null; the
@@ -8602,50 +6535,6 @@ unsafe fn consideration_rules_of(
         .transpose()
 }
 
-/// The progressions a request's `progressions_json` asks for, none for
-/// null; the crate reads the record ([`teistro::ProgressionsRequest::from_json`]),
-/// which names a refusal from its root, `progressions.year`.
-///
-/// # Safety
-///
-/// `progressions_json` null or a NUL-terminated string.
-unsafe fn progressions_request_of(
-    progressions_json: *const c_char,
-) -> Result<Option<teistro::ProgressionsRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(progressions_json, "progressions_json") }?
-        .map(teistro::ProgressionsRequest::from_json)
-        .transpose()
-}
-
-/// Every chart's progressions, none when none was asked for: each birth
-/// read through the request, its progressed chart founded by `request`.
-///
-/// `request` is the batch's **foundation only** (its place, clock and
-/// kind): the boundary writes a progressed chart's grahas and angles and
-/// nothing else, so founding it with every section the batch asked for
-/// would compute drawings, strengths and dashas no column carries, twice
-/// per birth (the progressed chart and the solar arc's).
-fn progressions_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::ProgressionsRequest>,
-    request: &ChartRequest,
-) -> Result<Vec<teistro::Progressions>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .progressions(document, asked, request)
-                .map_err(|error| error.with_hint(format!("chart {at}")))
-        })
-        .collect()
-}
-
 /// Every chart matched with the record's partner, the partner founded once
 /// (`matching.md`); none when the record was null. A refusal is named under
 /// `matching`.
@@ -8662,130 +6551,6 @@ fn matchings_of(
                 .map_err(|error| error.under("matching"))
         },
     )
-}
-
-/// The Western tables a batch was asked for, read once: each chart's own
-/// aspects, its synastry with the record's partner, its declinations with
-/// the parallels among its planets, its antiscia and its equal distances.
-/// Each is empty when its record was null.
-struct WesternTables {
-    aspects: Vec<Vec<teistro::WesternAspectRow>>,
-    synastry: Vec<teistro::PartnerReading>,
-    declinations: Vec<teistro::Declinations>,
-    parallels: Vec<Vec<teistro::ParallelRow>>,
-    antiscia: Vec<teistro::Antiscia>,
-    midpoints: Vec<Vec<teistro::MidpointRow>>,
-    davisons: Vec<teistro::Partner>,
-    houses: Vec<teistro::WesternHouses>,
-    harmonics: Vec<teistro::HarmonicChart>,
-}
-
-impl WesternTables {
-    /// Every table `records` asks of `documents`; a refusal is named under
-    /// its record's root, and one read chart by chart says which chart.
-    /// `clock` is the batch's, which a Davison birth reads the charts on.
-    fn of(
-        sdk: &teistro::Context,
-        documents: &[Document],
-        records: &AskedRecords,
-        clock: UtcOffset,
-    ) -> Result<WesternTables, Error> {
-        let each = |root: &'static str| {
-            move |at: usize, error: Error| error.under(root).with_hint(format!("chart {at}"))
-        };
-        let aspects = chart_by_chart(
-            records.western_aspects.as_ref(),
-            documents,
-            "westernAspects",
-            |document, asked| sdk.chart().western_aspects(document, asked),
-        )?;
-        let synastry = records.synastry.as_ref().map_or_else(
-            || Ok(Vec::new()),
-            |asked| {
-                sdk.chart()
-                    .synastry_with(documents, asked)
-                    .map_err(|error| error.under("synastry"))
-            },
-        )?;
-        let (declinations, parallels) = match &records.parallels {
-            None => (Vec::new(), Vec::new()),
-            Some(asked) => documents
-                .iter()
-                .enumerate()
-                .map(|(at, document)| {
-                    let declined = sdk
-                        .chart()
-                        .declinations(document)
-                        .map_err(|error| each("parallels")(at, error))?;
-                    let parallels = teistro::western::parallels(&declined.grahas, asked)
-                        .map_err(|error| each("parallels")(at, error))?;
-                    Ok((declined, parallels))
-                })
-                .collect::<Result<Vec<_>, Error>>()?
-                .into_iter()
-                .unzip(),
-        };
-        Ok(WesternTables {
-            aspects,
-            synastry,
-            declinations,
-            parallels,
-            antiscia: chart_by_chart(
-                records.antiscia.as_ref(),
-                documents,
-                "antiscia",
-                |document, asked| sdk.chart().antiscia(document, asked),
-            )?,
-            midpoints: chart_by_chart(
-                records.midpoints.as_ref(),
-                documents,
-                "midpoints",
-                |document, asked| sdk.chart().midpoints(document, asked),
-            )?,
-            davisons: records
-                .synastry
-                .as_ref()
-                .map(|asked| asked.davisons(documents, clock))
-                .transpose()
-                .map_err(|error| error.under("synastry"))?
-                .flatten()
-                .unwrap_or_default(),
-            houses: chart_by_chart(
-                records.western_houses.as_ref(),
-                documents,
-                "westernHouses",
-                |document, asked| sdk.chart().western_houses(document, asked),
-            )?,
-            harmonics: chart_by_chart(
-                records.harmonic.as_ref(),
-                documents,
-                "harmonic",
-                |document, asked| sdk.chart().harmonic(document, asked),
-            )?,
-        })
-    }
-}
-
-/// One table a chart, each read by `read` under the asked record, or none
-/// when it was null; a refusal is named under the record's `root` and says
-/// which chart.
-fn chart_by_chart<A, T>(
-    asked: Option<&A>,
-    documents: &[Document],
-    root: &'static str,
-    read: impl Fn(&Document, &A) -> Result<T, Error>,
-) -> Result<Vec<T>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            read(document, asked)
-                .map_err(|error| error.under(root).with_hint(format!("chart {at}")))
-        })
-        .collect()
 }
 
 /// The perfection a request's `perfection_json` asks for, none for null;
@@ -8978,7 +6743,7 @@ struct Sections {
     vaiseshikamsa: VaiseshikamsaColumns,
     dasha_phala: DashaPhalaColumns,
     jaimini: JaiminiColumns,
-    years: PraveshaColumns,
+    years: crate::family::tajika::PraveshaColumns,
     avakahada: AvakahadaColumns,
 }
 
@@ -8987,7 +6752,7 @@ impl Sections {
         documents: &[Document],
         graha_count: usize,
         registered: &teistro::dasha::DashaSystems,
-        praveshas: &[teistro::Varsha],
+        praveshas: &[crate::family::tajika::Varsha],
     ) -> Result<Sections, Error> {
         Ok(Sections {
             vargas: VargaColumns::of(documents, graha_count)?,
@@ -9003,7 +6768,7 @@ impl Sections {
             vaiseshikamsa: VaiseshikamsaColumns::of(documents),
             dasha_phala: DashaPhalaColumns::of(documents),
             jaimini: JaiminiColumns::of(documents),
-            years: PraveshaColumns::of(praveshas)?,
+            years: crate::family::tajika::PraveshaColumns::of(praveshas)?,
             avakahada: AvakahadaColumns::of(documents),
         })
     }
@@ -9091,30 +6856,6 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
     Ok((place, kind, clock))
 }
 
-/// Every chart's annual charts, empty when none were asked for.
-///
-/// Composed by the façade ([`teistro::ChartArea::varsha`]), one birth at a
-/// time; a refusal says which chart of the batch it was refused for.
-fn praveshas_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    birth_clock: teistro::UtcOffset,
-    asked: Option<&teistro::VarshaRequest>,
-) -> Result<Vec<teistro::Varsha>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .varsha(document, birth_clock, asked)
-                .map_err(|error| error.with_hint(format!("chart {at}")))
-        })
-        .collect()
-}
-
 /// Every chart's transits, empty when none were asked for: one batch per
 /// chart through the façade ([`teistro::ChartArea::gochar`]), which places
 /// the grahas at every instant in one request; a refusal says which chart
@@ -9158,30 +6899,23 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
 /// bad record is refused before a chart is paid for, and each refusal is
 /// named from the record's root as every binding writes it.
 struct AskedRecords {
-    theme: Option<Theme>,
+    theme: Option<crate::family::svg::Request>,
     rules: Option<RuleSet>,
     plans: PlanRequest,
-    varsha: Option<teistro::VarshaRequest>,
+    varsha: Option<crate::family::tajika::Request>,
     gochar: Option<teistro::GocharRequest>,
     hits: Option<teistro::HitRequest>,
     sade_sati: Option<teistro::SadeSatiRequest>,
-    kp: Option<teistro::KpRequest>,
+    kp: Option<crate::family::kp::Request>,
     dignities: Option<teistro::DignityRequest>,
     fortitudes: Option<teistro::FortitudeRequest>,
     lots: Option<teistro::LotRequest>,
     considerations: Option<teistro::ConsiderationRules>,
     perfection: Option<teistro::PerfectionRequest>,
-    progressions: Option<teistro::ProgressionsRequest>,
-    western_aspects: Option<teistro::AspectRequest>,
-    synastry: Option<teistro::PartnerSynastry>,
-    parallels: Option<teistro::ParallelRequest>,
-    antiscia: Option<teistro::AntisciaRequest>,
-    midpoints: Option<teistro::MidpointRequest>,
-    western_houses: Option<teistro::HouseRequest>,
-    harmonic: Option<teistro::HarmonicRequest>,
+    western: crate::family::western::Records,
     matching: Option<teistro::PartnerMatching>,
-    prashna: Option<teistro::PrashnaRequest>,
-    remedies: Option<teistro::RemedyRequest>,
+    prashna: Option<crate::family::prashna::Request>,
+    remedies: Option<crate::family::remedies::Request>,
 }
 
 impl AskedRecords {
@@ -9201,7 +6935,7 @@ impl AskedRecords {
             request
         };
         let vimshottari = KeyId::from(DashaSystem::Vimshottari);
-        if self.remedies.is_some_and(|asked| asked.at.is_some())
+        if crate::family::remedies::at_an_instant(self.remedies.as_ref())
             && !request.dashas().contains(&vimshottari)
         {
             let dashas: Vec<_> = request
@@ -9228,52 +6962,25 @@ impl AskedRecords {
         // which is what every binding calls it, so its refusal stands.
         unsafe {
             Ok(AskedRecords {
-                theme: optional_text(asked.theme_json, "theme_json")?
-                    .map(Theme::from_json)
-                    .transpose()?,
+                theme: crate::family::svg::request_of(asked.theme_json)?,
                 rules: rule_set_of(asked.rules_json)?,
                 plans: plan_request_of(asked.interpret_json)?,
-                varsha: varsha_request_of(asked.varsha_json)?,
+                varsha: crate::family::tajika::request_of(asked.varsha_json)?,
                 gochar: gochar_request_of(asked.gochar_json)?,
                 hits: hit_request_of(asked.hits_json)?,
                 sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
-                kp: kp_request_of(asked.kp_json, clock)?,
+                kp: crate::family::kp::request_of(asked.kp_json, clock)?,
                 dignities: dignity_request_of(asked.dignities_json)?,
                 fortitudes: fortitude_request_of(asked.fortitudes_json)?,
                 lots: lot_request_of(asked.lots_json)?,
                 considerations: consideration_rules_of(asked.considerations_json)?,
                 perfection: perfection_request_of(asked.perfection_json)?,
-                progressions: progressions_request_of(asked.progressions_json)?,
-                western_aspects: optional_text(asked.western_aspects_json, "western_aspects_json")?
-                    .map(teistro::AspectRequest::from_json)
-                    .transpose()?,
-                synastry: optional_text(asked.synastry_json, "synastry_json")?
-                    .map(teistro::PartnerSynastry::from_json)
-                    .transpose()?,
-                parallels: optional_text(asked.parallels_json, "parallels_json")?
-                    .map(teistro::ParallelRequest::from_json)
-                    .transpose()?,
-                antiscia: optional_text(asked.antiscia_json, "antiscia_json")?
-                    .map(teistro::AntisciaRequest::from_json)
-                    .transpose()?,
-                midpoints: optional_text(asked.midpoints_json, "midpoints_json")?
-                    .map(teistro::MidpointRequest::from_json)
-                    .transpose()?,
-                western_houses: optional_text(asked.western_houses_json, "western_houses_json")?
-                    .map(teistro::HouseRequest::from_json)
-                    .transpose()?,
-                harmonic: optional_text(asked.harmonic_json, "harmonic_json")?
-                    .map(teistro::HarmonicRequest::from_json)
-                    .transpose()?,
+                western: crate::family::western::Records::of(asked)?,
                 matching: optional_text(asked.matching_json, "matching_json")?
                     .map(teistro::PartnerMatching::from_json)
                     .transpose()?,
-                prashna: optional_text(asked.prashna_json, "prashna_json")?
-                    .map(teistro::PrashnaRequest::from_json)
-                    .transpose()?,
-                remedies: optional_text(asked.remedies_json, "remedies_json")?
-                    .map(teistro::RemedyRequest::from_json)
-                    .transpose()?,
+                prashna: crate::family::prashna::request_of(asked.prashna_json)?,
+                remedies: crate::family::remedies::request_of(asked.remedies_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -9439,11 +7146,8 @@ pub unsafe extern "C" fn ts_chart_found(
             plan_inputs(records.rules.as_ref(), records.sade_sati.as_ref()),
             records.plans,
         )?;
-        let svgs = match &records.theme {
-            Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
-            None => String::new(),
-        };
-        let praveshas = praveshas_of(
+        let svgs = crate::family::svg::json(ctx.sdk(), &founded.value, records.theme.as_ref())?;
+        let praveshas = crate::family::tajika::praveshas_of(
             ctx.sdk(),
             &founded.value,
             request.offset(),
@@ -9451,7 +7155,7 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let transits = gochar_of(ctx.sdk(), &founded.value, records.gochar.as_ref())?;
         let hits = hits_of(ctx.sdk(), &founded.value, records.hits.as_ref())?;
-        let kp = kp_json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
+        let kp = crate::family::kp::json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
         let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
         let fortitudes = fortitudes_of(ctx.sdk(), &founded.value, records.fortitudes.as_ref())?;
         let lots = lots_of(ctx.sdk(), &founded.value, records.lots)?;
@@ -9463,13 +7167,14 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let perfections =
             perfections_of(ctx.sdk(), &founded.value, records.perfection, &fortitudes)?;
-        let progressions = progressions_of(
+        let progressions = crate::family::western::progressions_of(
             ctx.sdk(),
             &founded.value,
-            records.progressions.as_ref(),
+            records.western.progressions.as_ref(),
             &ChartRequest::at(place, clock).with_kind(kind),
         )?;
-        let western = WesternTables::of(ctx.sdk(), &founded.value, &records, clock)?;
+        let western =
+            crate::family::western::Tables::of(ctx.sdk(), &founded.value, &records.western, clock)?;
         let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
         let readings = ChartReadings::of(ctx.sdk(), &founded.value, &records)?;
         let encoded = encode(
@@ -10010,17 +7715,5 @@ mod tests {
         codes.sort_unstable();
         codes.dedup();
         assert_eq!(codes.len(), BrahmaRule::ALL.len(), "{codes:?}");
-    }
-
-    /// The Brahma graha's two masks read back as the grahas they hold, the
-    /// nodes too, where the planets' byte holds only the seven.
-    #[test]
-    fn the_nine_grahas_mask_into_sixteen_bits() {
-        use super::{graha_bits, graha_mask};
-        use teistro::catalogue::Graha;
-        let nine = &Graha::ALL[..9];
-        assert_eq!(graha_mask(nine), 0x01FF);
-        assert_eq!(graha_mask(&[Graha::Ketu, Graha::Sun]), 0x0101);
-        assert_eq!(graha_bits(nine), 0x7F);
     }
 }

@@ -58,7 +58,18 @@ libloading = "0.8"
 # own rule, so asking for `builtin-full` beside the default leaves `full`
 # in force rather than a conflict.
 [features]
-default = ["builtin-standard"]
+default = ["builtin-standard", "full"]
+# The façade's module families, forwarded (`03-design/wasm-profiles.md`):
+# an entry point into one this build leaves out answers `CAPABILITY`.
+full = ["teistro/full", "kp", "muhurta", "numerology", "prashna", "remedies", "svg", "tajika", "western"]
+kp = ["teistro/kp"]
+muhurta = ["teistro/muhurta"]
+numerology = ["teistro/numerology"]
+prashna = ["teistro/prashna"]
+remedies = ["teistro/remedies"]
+svg = ["teistro/svg"]
+tajika = ["teistro/tajika"]
+western = ["teistro/western"]
 # Forwarded to the façade, which is where the built-in is now reached
 # from: the boundary no longer holds that crate, so a tier is a feature
 # of one crate rather than of two that could disagree.

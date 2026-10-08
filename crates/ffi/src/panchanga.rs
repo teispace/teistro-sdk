@@ -747,17 +747,12 @@ pub unsafe extern "C" fn ts_panchanga_days(
         // `asked_calendar`, so the two agreed by construction and by
         // nothing enforcing it.
         // SAFETY: the caller promises null or a NUL-terminated string.
-        let muhurta = unsafe { optional_text(asked.muhurta_json, "muhurta_json") }?
-            .map(teistro::MuhurtaRequest::from_json)
-            .transpose()?;
+        let muhurta = unsafe { crate::family::muhurta::request_of(asked.muhurta_json) }?;
         // SAFETY: as above.
         let festivals = unsafe { optional_text(asked.festivals_json, "festivals_json") }?
             .map(teistro::FestivalRequest::from_json)
             .transpose()?;
-        let mut beside = teistro::AlmanacRequest::new();
-        if let Some(muhurta) = muhurta {
-            beside = beside.with_muhurta(muhurta);
-        }
+        let mut beside = crate::family::muhurta::asking(teistro::AlmanacRequest::new(), muhurta);
         if let Some(festivals) = festivals {
             beside = beside.with_festivals(festivals);
         }
@@ -771,11 +766,11 @@ pub unsafe extern "C" fn ts_panchanga_days(
             beside = beside.with_nepal_sambat();
         }
         // The façade founds the days once for everything asked beside them.
-        let answered = ctx
+        let mut answered = ctx
             .sdk()
             .almanac()
             .asked(&from, &to, &place, clock, &beside)?;
-        let muhurta = written(answered.muhurta, teistro::muhurta::spelling::in_full)?;
+        let muhurta = crate::family::muhurta::json(&mut answered)?;
         let festivals = written(answered.festivals, teistro::festival::Observances::in_full)?;
         let years = written(answered.years, |years| teistro::LunarYear::in_full(years))?;
         let eclipses = written(answered.eclipses, teistro::EclipsesHere::in_full)?;
@@ -812,7 +807,7 @@ fn section(value: serde_json::Value, provenance: Provenance) -> String {
 
 /// A section answered beside the days as its canonical JSON, its members
 /// written in full by `in_full`, or empty when it was not asked for.
-fn written<T>(
+pub(crate) fn written<T>(
     answer: Option<teistro::Envelope<T>>,
     in_full: impl FnOnce(&T) -> Result<serde_json::Value, Error>,
 ) -> Result<String, Error> {

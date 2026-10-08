@@ -25,9 +25,9 @@ teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }
 teistro-hellenistic = { path = "../hellenistic" }
 teistro-matching = { path = "../matching" }
-teistro-numerology = { path = "../numerology" }
-teistro-prashna = { path = "../prashna" }
-teistro-remedies = { path = "../remedies" }
+teistro-numerology = { path = "../numerology", optional = true }
+teistro-prashna = { path = "../prashna", optional = true }
+teistro-remedies = { path = "../remedies", optional = true }
 teistro-rashifal = { path = "../rashifal" }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret" }
@@ -36,19 +36,19 @@ teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
 teistro-rules = { path = "../rules" }
 teistro-strength = { path = "../strength" }
-teistro-tajika = { path = "../tajika" }
+teistro-tajika = { path = "../tajika", optional = true }
 teistro-gochar = { path = "../gochar" }
-teistro-kp = { path = "../kp" }
-teistro-muhurta = { path = "../muhurta" }
+teistro-kp = { path = "../kp", optional = true }
+teistro-muhurta = { path = "../muhurta", optional = true }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
 teistro-siddhanta = { path = "../siddhanta" }
 teistro-geometry = { path = "../geometry" }
-teistro-render-svg = { path = "../render-svg" }
+teistro-render-svg = { path = "../render-svg", optional = true }
 teistro-state = { path = "../state" }
 teistro-time = { path = "../time" }
 teistro-vargas = { path = "../vargas" }
-teistro-western = { path = "../western" }
+teistro-western = { path = "../western", optional = true }
 teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
 
 [build-dependencies]
@@ -66,7 +66,21 @@ teistro-intl = { path = "../intl", default-features = false }
 # 2026-09-25, when a wasm module asked for `compact` and was 3 KB from
 # `standard`; the tier test in `crates/ffi/tests/tier.rs` now holds it.
 [features]
-default = ["builtin-standard"]
+default = ["builtin-standard", "full"]
+# A module family: a crate, its methods here and its re-exports, left out
+# of a build that does not name it (`03-design/wasm-profiles.md`). A build
+# without a family keeps every other answer; the boundary refuses a call
+# into the family as `CAPABILITY`. `full` names them all and is the
+# default, so a build that names none is the `panchanga` profile.
+full = ["kp", "muhurta", "numerology", "prashna", "remedies", "svg", "tajika", "western"]
+kp = ["dep:teistro-kp"]
+muhurta = ["dep:teistro-muhurta"]
+numerology = ["dep:teistro-numerology"]
+prashna = ["dep:teistro-prashna"]
+remedies = ["dep:teistro-remedies"]
+svg = ["dep:teistro-render-svg"]
+tajika = ["dep:teistro-tajika"]
+western = ["dep:teistro-western"]
 builtin-ephemeris = ["dep:teistro-ephemeris-builtin"]
 builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]

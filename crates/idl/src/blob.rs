@@ -588,6 +588,29 @@ impl<'s> Writer<'s> {
         Ok(())
     }
 
+    /// Writes a column or bytes section with nothing in it: what a request
+    /// that asked for none of it writes, and what a build that left the
+    /// section's module out writes in its place, so a reader of the
+    /// schema reads either as answering nothing.
+    ///
+    /// # Errors
+    ///
+    /// An unknown or repeated section, or a fixed one, which has exactly
+    /// one row and so no empty form.
+    pub fn empty(&mut self, name: &str) -> Result<(), BlobError> {
+        let (_, section) = self
+            .schema
+            .section(name)
+            .ok_or_else(|| BlobError::UnknownSection(name.to_string()))?;
+        match section.kind {
+            SectionKind::Columns => self.rows(name, &[]),
+            SectionKind::Bytes => self.bytes(name, &[]),
+            SectionKind::Fixed => Err(BlobError::Shape(format!(
+                "section `{name}` is fixed, which has one row and no empty form"
+            ))),
+        }
+    }
+
     /// The bytes, once every section is written.
     ///
     /// # Errors
@@ -940,6 +963,31 @@ mod tests {
         assert_eq!(lon[2].as_f64(), 3.5);
         assert_eq!(status[1].as_i64(), -1);
         assert_eq!(body[0].as_i64(), 7);
+    }
+
+    /// An empty section reads as the same section written with nothing:
+    /// a column section with no rows and every column there, a bytes
+    /// section of no bytes. A fixed section has no empty form.
+    #[test]
+    fn an_empty_section_reads_as_one_written_with_nothing() {
+        let schema = schema();
+        let mut writer = Writer::new(&schema);
+        assert!(matches!(writer.empty("summary"), Err(BlobError::Shape(_))));
+        writer
+            .fixed("summary", &[0.0.into(), 0_u64.into(), 0_i64.into()])
+            .unwrap();
+        writer.empty("rows").unwrap();
+        writer.empty("text").unwrap();
+        assert!(matches!(writer.empty("text"), Err(BlobError::Shape(_))));
+        assert!(matches!(
+            writer.empty("none"),
+            Err(BlobError::UnknownSection(_))
+        ));
+        let bytes = writer.finish().unwrap();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        assert_eq!(reader.count("rows"), Some(0));
+        assert_eq!(reader.column("rows", "body").unwrap(), Vec::new());
+        assert_eq!(reader.text("text").unwrap(), "");
     }
 
     /// A value too wide for its column is refused, not wrapped.

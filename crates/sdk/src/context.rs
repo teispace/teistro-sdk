@@ -22,9 +22,11 @@ use teistro_port_ephemeris::{
 use teistro_time::EmbeddedTzdb;
 
 use crate::BUNDLES;
+#[cfg(feature = "numerology")]
+use crate::area::NumerologyArea;
 use crate::area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
-    MatchingArea, NumerologyArea, TimeArea,
+    MatchingArea, TimeArea,
 };
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
@@ -303,6 +305,7 @@ impl Context {
     }
 
     /// What a name and a birth date say under numerology's two systems.
+    #[cfg(feature = "numerology")]
     #[must_use]
     pub fn numerology(&self) -> NumerologyArea<'_> {
         NumerologyArea::of(self)
