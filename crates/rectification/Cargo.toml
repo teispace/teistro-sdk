@@ -1,0 +1,31 @@
+[package]
+name = "teistro-rectification"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's rectification: the parts of a birth window the verses that test a birth time leave standing"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the types an answer carries, so
+# `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-core/schema", "teistro-points/schema"]
+
+[dependencies]
+teistro-core = { path = "../core" }
+teistro-points = { path = "../points" }
+teistro-vargas = { path = "../vargas" }
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

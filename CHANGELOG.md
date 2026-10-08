@@ -2398,6 +2398,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **Rectification's kernel, with the purifier** (`03-design/rectification.md`
+  step 3). `crates/rectification` narrows a birth window to the runs the
+  purifier of BPHS ch. 2 vv. 67–78 leaves standing. A human lagna must
+  stand in a trine of the pranapada, Gulika or the Moon, with v. 76's
+  extension for Gulika. Each run is cut where a clause changes, the edge
+  pinned to a hundredth of a second, and reports every clause with its
+  verses. The verse's pranapada, the reading that reproduces the gloss's
+  printed 3s 4°, and the SDK point are knobs, as are Gulika's end or
+  start of Saturn's eighth, the species, and bar or weight. The gloss's
+  figures are tests: 25 signs and 4° for 6;17 ghatis, Gulika at 16;37
+  ghatis. It reads no ephemeris; a caller's `Sky` gives the lagna, the
+  Sun, the Moon and the day. **Numbers:** none move.
 - **A Java binding, begun** (`03-design/java-binding.md` steps 1 and
   2). `cargo xtask gen ffi` writes the Java layer from the description
   into `bindings/java/generated`: every enum with its id, key and, for

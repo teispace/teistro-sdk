@@ -391,7 +391,10 @@ grid.
    the purifier bar removes over charts with trusted times (X8).
 3. **The kernel** (`crates/rectification`): the `Stage` trait, verdicts,
    edges, interval assembly, and `PURIFIER` with the BPHS examples passing.
-   It takes a sky per candidate and reads no ephemeris.
+   It takes a sky per candidate and reads no ephemeris. **Built with
+   `PURIFIER`** (2026-10-08): `narrow`, `Sky`, `Verdict` and the edge
+   finder; the `Stage` trait waits for the second stage, so its shape is
+   fixed by two implementations, not one.
 4. **`PRANAPADA_HOUSE`, `NISHEKA` and `CONCEPTION_MOON`**, report and weight
    only, with BJ IV.21's example.
 5. **`CIRCUMSTANCE`** over BJ V.1–2, 17, 18 and 22, clause by clause.
