@@ -1,6 +1,7 @@
 # Rectification: the birth time narrowed by the verses that test it (the `rectification` module)
 
-Status: `research`, 2026-10-08. Nothing built. The sources are read on
+Status: step 3 `built` (`crates/rectification`, the purifier, the façade's
+`ChartArea::rectify`), 2026-10-08; steps 4 onwards open. The sources are read on
 their pages ([`rectification-sources.md`](rectification-sources.md)); the cruxes
 are numbered X1 onwards and take C-numbers when they enter the register.
 Each was decided on 2026-10-08 as its recommendation reads, on the

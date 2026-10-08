@@ -960,6 +960,23 @@ The order below puts what blocks a release first.
    the docs site's guides with executed examples; a check after publishing
    that installs every binding from its registry.
 
+### The order to finish (2026-10-08)
+
+What is left, by what blocks a release and then by what the reviewers
+read:
+
+1. **The release candidate.** The Java binding to Maven Central
+   (`java-binding.md` steps 5 to 10); the generated pages (7); one
+   release run end to end with nothing published.
+2. **The modules the reviewers read, beside it.** Rectification's X6,
+   then its steps 4 to 8; prashna, remedies and research past step 1,
+   each researched from its sources first. Pakshi and Lal Kitab get their
+   pipeline and gates, and their content goes to a reader who can vet it.
+3. **Track C as a stream, and the MCP server last.**
+
+Research, source-reading and drafts run as two or three parallel agents;
+every build and test runs one at a time.
+
 ### Track B: applications (Phase 8)
 
 Baseline golden vectors are produced by an exporter per module in the
