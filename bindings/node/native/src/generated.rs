@@ -4257,6 +4257,37 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Reads periods of civil days at a place for each of the twelve signs and
+    /// answers with an array of `{period, baseline}` as canonical JSON: the
+    /// sky at the reference day's sunrise (or a clock time), each sign's
+    /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
+    /// and station of the period counted from each sign; `baseline` the
+    /// baseline engine's score of each sign when the request names a period
+    /// for it, absent otherwise.
+    ///
+    /// `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
+    /// "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
+    /// "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+    /// `{"year", "month", "day"}` and everything but `first`, the place and
+    /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
+    /// and `YEARLY`. A key it does not read, a last day before the first, a
+    /// clock off the clock or a graha named twice is `INVALID_ARG`, named
+    /// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+    #[napi]
+    pub fn rashifal(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::rashifal::ts_rashifal(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// What the context's engine says it offers beyond this library's own
     /// operations: its manifest, as the engine wrote it.
     ///

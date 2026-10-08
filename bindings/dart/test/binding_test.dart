@@ -5958,6 +5958,93 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a rashifal period is read for each of the twelve signs', () {
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final week = RashifalRequest(
+      first: Calendar.gregorian.date(2026, 10, 4),
+      last: Calendar.gregorian.date(2026, 10, 10),
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+    );
+    RashifalRequest like({
+      CalendarDate? last,
+      RashifalSnapshot? snapshot,
+      List<Graha>? events,
+      List<int>? spells,
+    }) => RashifalRequest(
+      first: week.first,
+      last: last ?? week.last,
+      place: week.place,
+      utcOffsetSeconds: week.utcOffsetSeconds,
+      snapshot: snapshot,
+      events: events,
+      spells: spells,
+    );
+
+    final read = ctx.chart.rashifal(week, baseline: BaselinePeriod.weekly);
+    final period = read.period;
+    expect(
+      [period.reference.calendar, period.reference.day],
+      [Calendar.gregorian, 7],
+    );
+    expect([period.transits.length, period.retrograde.length], [9, 9]);
+    final signs = [
+      for (final r in Rashi.values)
+        if (r.id >= 0) r,
+    ];
+    expect([for (final r in period.readings) r.rashi], signs);
+    // Each sign's houses are counted from itself: the Sun's sign is the
+    // same in every reading, its house one less from each next sign.
+    final sun = period.transits[0].sign;
+    for (final (index, reading) in period.readings.indexed) {
+      expect(reading.gochar.grahas[0].graha, Graha.sun);
+      expect(
+        reading.gochar.grahas[0].house,
+        (signs.indexOf(sun) - index) % 12 + 1,
+        reason: reading.rashi.key,
+      );
+      expect(reading.gochar.instant, period.instant);
+    }
+    expect(read.baseline, hasLength(12));
+    for (final score in read.baseline!) {
+      expect(score.overall, inInclusiveRange(0, 100));
+      expect(score.areas, hasLength(8));
+    }
+    expect(ctx.chart.rashifal(week).baseline, isNull);
+
+    // 06:00 at +05:45 is 00:15 UTC on the reference day.
+    final six = ctx.chart.rashifal(like(snapshot: const AtClock(hour: 6)));
+    expect(six.period.instant, closeTo(2461320.5 + 15 / 1440, 1e-9));
+    final mars = ctx.chart.rashifal(like(events: const [Graha.mars]));
+    expect([
+      for (final r in mars.period.readings)
+        for (final e in r.events) e.hit.graha,
+    ], everyElement(Graha.mars));
+    final [alone] = ctx.chart.rashifalMany([week]);
+    expect(alone.period.instant, period.instant);
+
+    for (final (request, field) in [
+      (
+        like(last: Calendar.gregorian.date(2026, 10, 3)),
+        'rashifal.periods[0].last',
+      ),
+      (like(spells: const [13]), 'rashifal.periods[0].spells'),
+    ]) {
+      expect(
+        () => ctx.chart.rashifal(request),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test('a chart carries its dashas, their periods and the chain', () {
     final ctx = context();
     final place = Observer(

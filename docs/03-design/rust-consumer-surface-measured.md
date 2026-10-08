@@ -2,9 +2,9 @@
 
 Status: `generated` by `cargo xtask rust-surface`, gated by `check-rust-surface`. Do not edit. Read from `idl/api.json`, the boundary's own description; from `crates/ffi/src/`, for what every function of it names and calls; from `crates/*/Cargo.toml`, for which crates depend on which; and from `bindings/node/lib/index.js`, the one ergonomic layer whose areas and the entry points they reach can both be read from one file.
 
-ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, and the obvious proposal is that it mirrors the other three: **10 areas and a root**, 42 operations, over one context. What that proposal is worth depends on how far a Rust consumer is from it today, which is the thing this page measures rather than argues. The design it decided is [`rust-consumer-surface.md`](rust-consumer-surface.md), and this page's second property is that design's acceptance test.
+ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, and the obvious proposal is that it mirrors the other three: **10 areas and a root**, 44 operations, over one context. What that proposal is worth depends on how far a Rust consumer is from it today, which is the thing this page measures rather than argues. The design it decided is [`rust-consumer-surface.md`](rust-consumer-surface.md), and this page's second property is that design's acceptance test.
 
-**The method**, because the number is only as good as it. Every function of the boundary crate is read for the SDK crates it names — by a path, or by a name its module imported — and for the boundary's own functions it calls, resolved through `use crate::<module>::…` and `crate::<module>::<name>` rather than by bare name. Those calls are then closed over until nothing new is added, so a function whose own lines name no crate still reaches whatever it calls: `ts_calendar_convert` names none, calls `system_of`, which calls `teistro-calendar`'s `shipped`. Which of the 50 entry points each area's operations reach comes from the Node layer, as [`surface-areas-measured.md`](surface-areas-measured.md) reads it.
+**The method**, because the number is only as good as it. Every function of the boundary crate is read for the SDK crates it names — by a path, or by a name its module imported — and for the boundary's own functions it calls, resolved through `use crate::<module>::…` and `crate::<module>::<name>` rather than by bare name. Those calls are then closed over until nothing new is added, so a function whose own lines name no crate still reaches whatever it calls: `ts_calendar_convert` names none, calls `system_of`, which calls `teistro-calendar`'s `shipped`. Which of the 51 entry points each area's operations reach comes from the Node layer, as [`surface-areas-measured.md`](surface-areas-measured.md) reads it.
 
 **A context and its areas need 13 of the SDK's crates**: `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-intl`, `teistro-panchanga`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time`.
 
@@ -14,10 +14,10 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 |---|---|---|
 | an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 10 disagree; more than one: `almanac (9)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (4)` |
 | every area reaches the boundary, so every area names crates | **holds** | 0 of 11 disagree; so every row of the table below is a measurement and not a gap |
-| an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 50 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
+| an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 51 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 13 disagree; so every area's composition has a home outside the C boundary |
 | and the boundary is inverted onto it, so the composition is written once | **holds** | 0 of 1 disagree; `teistro-ffi` depends on `teistro` |
-| every type an area's signature names is reachable from the crate root | **holds** | 0 of 179 disagree; so one dependency is enough to call an operation and read its answer |
+| every type an area's signature names is reachable from the crate root | falsified | 1 of 181 disagree; not reachable: `BaselineScore` |
 
 **The composition has one home**, and it is the façade: every crate a context needs is one the façade depends on, and the boundary depends on the façade rather than composing them itself. That is the state [the design page](rust-consumer-surface.md) asks for, and these two rows are its acceptance test.
 
@@ -84,6 +84,7 @@ Widest first. Read through the boundary's own helpers, because a body that names
 | `ts_key_parse` | `key` | 1 | `teistro-core` |
 | `ts_naam_milan` | `naam` | 1 | `teistro-core` |
 | `ts_numerology_profile` | `numerology` | 1 | `teistro-core` |
+| `ts_rashifal` | `rashifal` | 1 | `teistro-core` |
 | `ts_status_message` | `lib` | 1 | `teistro-core` |
 | `ts_abi_version` | `lib` | 0 | — |
 | `ts_blob_free` | `blob` | 0 | — |

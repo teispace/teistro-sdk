@@ -1,0 +1,54 @@
+---
+title: ts_rashifal
+description: "Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch."
+---
+
+Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress and station of the period counted from each sign; `baseline` the baseline engine's score of each sign when the request names a period for it, absent otherwise.
+
+`request_json` is `{"periods", "baseline"}`: each period `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as `{"year", "month", "day"}` and everything but `first`, the place and the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY` and `YEARLY`. A key it does not read, a last day before the first, a clock off the clock or a graha named twice is `INVALID_ARG`, named under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+ts_status ts_rashifal(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+context.rashifal(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+context.rashifal(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/rashifal.rs`.

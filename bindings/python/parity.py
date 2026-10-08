@@ -69,6 +69,9 @@ from teistro import (
     MessagePart,
     Body,
     Calendar,
+    CalendarDate,
+    Graha,
+    RashifalRequest,
     Ephemeris,
     ChartLayout,
     ChartKind,
@@ -476,6 +479,60 @@ def put_numerology(ctx: Context) -> None:
             f"numerology-{n}-baseline",
             "NONE" if own is None else f"{steps(own.soul)} {steps(own.personality)} {steps(own.chaldean_destiny)}",
         )
+
+
+def put_rashifal(geo: Context, place: Observer) -> None:
+    """The rashifal batch every runner sends: a week read at sunrise with
+    the baseline's weekly scores, and a day read at 06:00 reporting only
+    Mars's and Saturn's events."""
+    week: RashifalRequest = {
+        "first": date(Calendar.GREGORIAN, 2024, 6, 17),
+        "last": date(Calendar.GREGORIAN, 2024, 6, 23),
+        "place": place,
+        "utcOffsetSeconds": 20700,
+    }
+    one_day: RashifalRequest = {
+        "first": date(Calendar.GREGORIAN, 2024, 6, 17),
+        "place": place,
+        "utcOffsetSeconds": 20700,
+        "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0},
+        "events": [Graha.MARS, Graha.SATURN],
+    }
+
+    def ymd(day: CalendarDate) -> str:
+        return f"{day.year}-{day.month}-{day.day}"
+
+    for n, answer in enumerate(geo.chart.rashifal_many([week, one_day], "WEEKLY")):
+        period = answer.period
+        put(
+            f"rashifal-{n}-period",
+            f"{ymd(period.first)} {ymd(period.last)} {ymd(period.reference)} {number(period.instant)}",
+        )
+        limbs = period.panchanga
+        put(f"rashifal-{n}-panchanga", f"{limbs.tithi.full_key} {limbs.yoga.full_key} {limbs.muhurta_yogas}")
+        for g, (transit, backwards) in enumerate(zip(period.transits, period.retrograde)):
+            put(f"rashifal-{n}-transit-{g}", f"{transit.sign.full_key} {number(transit.degrees)} {int(backwards)}")
+        for r, reading in enumerate(period.readings):
+            saturn = reading.saturn
+            verdicts = ",".join(g.verdict.key for g in reading.gochar.grahas)
+            put(
+                f"rashifal-{n}-{r}",
+                f"{reading.rashi.full_key} {saturn.house} {saturn.sade_sati or '-'} {int(saturn.spell)} {verdicts} {len(reading.events)}",
+            )
+            for k, event in enumerate(reading.events):
+                hit = event.hit
+                put(
+                    f"rashifal-{n}-{r}-event-{k}",
+                    f"{number(hit.instant)} {hit.graha.full_key} {hit.event.kind.key} {event.sign.full_key} {event.house} {int(event.good_house)}",
+                )
+            if answer.baseline is not None:
+                score = answer.baseline[r]
+                named = ",".join(f"{k.graha.full_key}:{k.house}:{k.verdict.key}" for k in score.key_influences)
+                lucky = score.lucky
+                put(
+                    f"rashifal-{n}-{r}-baseline",
+                    f"{score.overall} {','.join(str(value) for _, value in score.areas)} {named or 'none'} {lucky.colour} {lucky.number} {lucky.day.full_key} {lucky.direction.full_key}",
+                )
 
 
 def put_naam(ctx: Context) -> None:
@@ -2085,6 +2142,8 @@ def main() -> None:
             "nepal-sambat",
             listed(f"{d.year}:{d.month}:{d.kind.key}:{d.paksha.full_key}" for d in nepal_sambat.value),
         )
+
+        put_rashifal(geo, place)
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test

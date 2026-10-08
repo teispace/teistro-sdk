@@ -733,6 +733,16 @@ __all__ = [
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
+    "RashifalRequest",
+    "SaturnStanding",
+    "RashifalEvent",
+    "RashiReading",
+    "RashifalPanchanga",
+    "RashifalPeriod",
+    "KeyInfluence",
+    "LuckyElements",
+    "BaselineScore",
+    "RashifalAnswer",
     "GocharReference",
     "GocharRules",
     "GrahaGochar",
@@ -1908,6 +1918,37 @@ class ChartArea(_Area):
             self._context._dasha_names,
         )
 
+
+    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalAnswer":
+        """One period of civil days at a place read for each of the twelve
+        signs (`03-design/rashifal.md`): the sky at sunrise on the middle
+        day, or at `snapshot`'s clock time; each sign's gochar from
+        Phaladeepika ch. 26, Saturn's standing from it, and every ingress
+        and station of the period counted from it. With `baseline`
+        (`"DAILY"`, `"WEEKLY"`, `"MONTHLY"` or `"YEARLY"`), each sign's score
+        as the baseline engine reckons it, `BASELINE` and unsourced (C361).
+
+        >>> # week = ctx.chart.rashifal({"first": first, "last": last, "place": place, "utcOffsetSeconds": 20700}, "WEEKLY")
+        >>> # leo = next(r for r in week.period.readings if r.rashi is Rashi.LEO)
+        """
+        return self.rashifal_many([request], baseline)[0]
+
+    def rashifal_many(
+        self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None
+    ) -> List["RashifalAnswer"]:
+        """Many periods, each read as `rashifal` reads it alone, under one
+        founder."""
+        if isinstance(requests, Mapping) or not isinstance(requests, Sequence):
+            raise TeistroError(
+                Status.INVALID_ARG,
+                "requests is a list of rashifal periods, such as [{'first': date, 'place': place, 'utcOffsetSeconds': 20700}]",
+                field="requests",
+            )
+        asked: Dict[str, Any] = {"periods": [_rashifal_period_asked(one) for one in requests]}
+        if baseline is not None:
+            asked["baseline"] = baseline
+        answered = self._context._through_provider(lambda: self._context.inner.rashifal(json.dumps(asked)))
+        return [_rashifal_answer(one) for one in json.loads(answered)]
 
 class AlmanacArea(_Area):
     """`sdk.almanac` — a day, or a run of days, with its limbs.
@@ -6356,6 +6397,152 @@ class GocharReading:
     unless `ashtakavarga` asked."""
 
 
+RashifalRequest = TypedDict(
+    "RashifalRequest",
+    {
+        "first": Required[CalendarDate],
+        "last": CalendarDate,
+        "place": Required[Observer],
+        "utcOffsetSeconds": Required[int],
+        "snapshot": Mapping[str, Any],
+        "events": Sequence[Union[Graha, str]],
+        "spells": Sequence[int],
+    },
+    total=False,
+)
+"""A period of civil days at a place, to read for each of the twelve signs
+(`03-design/rashifal.md`): `first` and `last` (the first when left out) in
+the first's calendar, `place`, `utcOffsetSeconds`; optionally `snapshot`,
+`{"at": "SUNRISE"}` by default or `{"at": "CLOCK", "hour": 6, "minute": 0}`
+(C358), `events`, the grahas whose ingresses and stations are reported
+(every one but the Moon by default, C360), and `spells`, Saturn's smaller
+spells (the 4th and 8th by default, C149).
+
+>>> # week: RashifalRequest = {"first": first, "place": place, "utcOffsetSeconds": 20700}
+"""
+
+
+@dataclass(frozen=True)
+class SaturnStanding:
+    """Saturn's house from a sign, its Sade Sati phase there, and whether the
+    house is one of the smaller spells."""
+
+    house: int
+    sade_sati: Optional[str]
+    """`"RISING"` (the 12th), `"PEAK"` (the 1st) or `"SETTING"` (the 2nd);
+    `None` outside Sade Sati."""
+
+    spell: bool
+
+
+@dataclass(frozen=True)
+class RashifalEvent:
+    """One event of a period, counted from a sign."""
+
+    hit: Hit
+    sign: Rashi
+    """The sign it happened in: the one entered, or the one a station stood
+    in."""
+
+    house: int
+    """That sign's house from the reading's sign, 1 to 12."""
+
+    good_house: bool
+    """Whether v. 2 makes the graha's transit of that house good."""
+
+
+@dataclass(frozen=True)
+class RashiReading:
+    """One sign's reading of a period, the sign taken as a reader's janma
+    rashi."""
+
+    rashi: Rashi
+    gochar: GocharReading
+    """Phaladeepika ch. 26's gochar from it at the period's instant."""
+
+    saturn: SaturnStanding
+    events: Tuple[RashifalEvent, ...]
+    """Every event of the period, in time order, counted from it."""
+
+
+@dataclass(frozen=True)
+class RashifalPanchanga:
+    """What the baseline's score reads of the reference day's panchanga at
+    sunrise."""
+
+    tithi: Tithi
+    yoga: Yoga
+    muhurta_yogas: int
+
+
+@dataclass(frozen=True)
+class RashifalPeriod:
+    """One period read for each of the twelve signs."""
+
+    first: CalendarDate
+    last: CalendarDate
+    reference: CalendarDate
+    """The day it is read at, the middle one (C359)."""
+
+    instant: float
+    """The instant it is read at, a UTC Julian day (C358)."""
+
+    transits: Tuple[Transit, ...]
+    """Each graha's sign and degrees then, the Sun to Ketu."""
+
+    retrograde: Tuple[bool, ...]
+    """Whether each was moving backwards then, the Sun to Ketu."""
+
+    panchanga: RashifalPanchanga
+    readings: Tuple[RashiReading, ...]
+    """Each sign's reading, Aries to Pisces."""
+
+
+@dataclass(frozen=True)
+class KeyInfluence:
+    """A graha the baseline's score names, with its house and verdict."""
+
+    graha: Graha
+    house: int
+    verdict: GocharVerdict
+
+
+@dataclass(frozen=True)
+class LuckyElements:
+    """A sign lord's lucky elements, as the baseline engine gives them."""
+
+    colour: str
+    number: int
+    day: Vara
+    direction: Direction
+
+
+@dataclass(frozen=True)
+class BaselineScore:
+    """The baseline engine's score of one sign's reading, `BASELINE` and
+    unsourced (C361)."""
+
+    overall: int
+    """0 to 100."""
+
+    areas: Tuple[Tuple[str, int], ...]
+    """The eight life areas and their scores, each 0 to 100, in the
+    baseline's order (`"OVERALL"` first)."""
+
+    key_influences: Tuple[KeyInfluence, ...]
+    lucky: LuckyElements
+
+
+@dataclass(frozen=True)
+class RashifalAnswer:
+    """One period's answer: the reading, and the baseline's twelve scores
+    when asked."""
+
+    period: RashifalPeriod
+    baseline: Optional[Tuple[BaselineScore, ...]]
+    """Aries to Pisces; `None` unless a baseline period was asked."""
+
+
 @dataclass(frozen=True)
 class Karakamsha:
     """A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1)."""
@@ -8781,6 +8968,148 @@ def _prashna(raw: Mapping[str, Any]) -> Prashna:
             applying_to=graha(score["applyingTo"]),
         ),
         number_sign=None if sign is None else _member(Rashi, sign),
+    )
+
+
+def _rashifal_period_asked(request: Any) -> Dict[str, Any]:
+    """A rashifal period as `ts_rashifal` reads it: the days by their parts,
+    the place by its; every other key as written, for the SDK to refuse
+    one it does not read by name."""
+    if not isinstance(request, Mapping):
+        raise TeistroError(
+            Status.INVALID_ARG,
+            "a rashifal period is a mapping, such as {'first': date, 'place': place, 'utcOffsetSeconds': 20700}",
+            field="rashifal",
+        )
+    rest = {key: value for key, value in request.items() if key not in ("first", "last", "place")}
+
+    def day(date: Any, what: str) -> CalendarDate:
+        if not isinstance(date, CalendarDate):
+            raise TeistroError(Status.INVALID_ARG, f"{what} is a CalendarDate", field=what)
+        return date
+
+    def parts(date: CalendarDate) -> Dict[str, int]:
+        return {"year": date.year, "month": date.month, "day": date.day}
+
+    first = day(request.get("first"), "first")
+    place = request.get("place")
+    if not isinstance(place, Observer):
+        raise TeistroError(Status.INVALID_ARG, "place is an Observer", field="place")
+    asked: Dict[str, Any] = {
+        **rest,
+        "first": parts(first),
+        "calendar": first.calendar.key,
+        "latitudeDeg": place.latitude_deg,
+        "longitudeDeg": place.longitude_deg,
+        "altitudeM": place.altitude_m,
+    }
+    if request.get("last") is not None:
+        asked["last"] = parts(day(request["last"], "last"))
+    if "events" in rest:
+        asked["events"] = [_member_key(graha) for graha in rest["events"]]
+    return asked
+
+
+def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
+    """One period's answer from `ts_rashifal`'s JSON, its keys made
+    members."""
+    period = raw["period"]
+
+    def transit(one: Mapping[str, Any]) -> Transit:
+        return Transit(sign=_member(Rashi, one["sign"]), degrees=one["degrees"])
+
+    def hit(one: Mapping[str, Any]) -> Hit:
+        event = one["event"]
+        happened: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+        if event["kind"] == "SIGN_INGRESS":
+            happened = SignIngress(into=_member(Rashi, event["into"]), motion=_member(Motion, event["motion"]))
+        elif event["kind"] == "STATION":
+            happened = Station(turns=_member(Motion, event["turns"]))
+        else:
+            raise TeistroError(Status.INTERNAL, f"a rashifal reported an event this build does not know: {event['kind']}")
+        return Hit(instant=one["instant"], graha=_member(Graha, one["graha"]), event=happened)
+
+    def gochar(one: Mapping[str, Any]) -> GocharReading:
+        rules = one["rules"]
+        return GocharReading(
+            instant=period["instant"],
+            reference=GocharReference(
+                from_=_member(GocharFrom, one["reference"]["from"]), sign=_member(Rashi, one["reference"]["sign"])
+            ),
+            rules=GocharRules(
+                node_vedha=_member(NodeVedha, rules["nodeVedha"]),
+                node_obstruction=_member(NodeObstruction, rules["nodeObstruction"]),
+                ashtakavarga_good_from=_member(AshtakavargaGoodFrom, rules["ashtakavargaGoodFrom"]),
+            ),
+            grahas=tuple(
+                GrahaGochar(
+                    graha=_member(Graha, g["graha"]),
+                    transit=transit(g["transit"]),
+                    house=g["house"],
+                    good_house=g["goodHouse"],
+                    vedha_house=g["vedhaHouse"],
+                    obstructed_by=tuple(_member(Graha, key) for key in g["obstructedBy"]),
+                    verdict=_member(GocharVerdict, g["verdict"]),
+                    fruition=_member(Fruition, g["fruition"]),
+                    fruitful_now=g["fruitfulNow"],
+                )
+                for g in one["grahas"]
+            ),
+            ashtakavarga=None,
+        )
+
+    def reading(one: Mapping[str, Any]) -> RashiReading:
+        saturn = one["saturn"]
+        return RashiReading(
+            rashi=_member(Rashi, one["rashi"]),
+            gochar=gochar(one["gochar"]),
+            saturn=SaturnStanding(house=saturn["house"], sade_sati=saturn["sadeSati"], spell=saturn["spell"]),
+            events=tuple(
+                RashifalEvent(
+                    hit=hit(e["event"]["hit"]),
+                    sign=_member(Rashi, e["event"]["sign"]),
+                    house=e["house"],
+                    good_house=e["goodHouse"],
+                )
+                for e in one["events"]
+            ),
+        )
+
+    def score(one: Mapping[str, Any]) -> BaselineScore:
+        lucky = one["lucky"]
+        return BaselineScore(
+            overall=one["overall"],
+            areas=tuple((area, value) for area, value in one["areas"]),
+            key_influences=tuple(
+                KeyInfluence(graha=_member(Graha, k["graha"]), house=k["house"], verdict=_member(GocharVerdict, k["verdict"]))
+                for k in one["keyInfluences"]
+            ),
+            lucky=LuckyElements(
+                colour=lucky["colour"],
+                number=lucky["number"],
+                day=_member(Vara, lucky["day"]),
+                direction=_member(Direction, lucky["direction"]),
+            ),
+        )
+
+    limbs = period["panchanga"]
+    baseline = raw.get("baseline")
+    return RashifalAnswer(
+        period=RashifalPeriod(
+            first=_serde_date(period["first"]),
+            last=_serde_date(period["last"]),
+            reference=_serde_date(period["reference"]),
+            instant=period["instant"],
+            transits=tuple(transit(one) for one in period["transits"]),
+            retrograde=tuple(period["retrograde"]),
+            panchanga=RashifalPanchanga(
+                tithi=_member(Tithi, limbs["tithi"]),
+                yoga=_member(Yoga, limbs["yoga"]),
+                muhurta_yogas=limbs["muhurtaYogas"],
+            ),
+            readings=tuple(reading(one) for one in period["readings"]),
+        ),
+        baseline=None if baseline is None else tuple(score(one) for one in baseline),
     )
 
 

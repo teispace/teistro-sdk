@@ -17,7 +17,9 @@ use teistro_rashifal::{PeriodEvent, RashifalRules, rashifal, reference_day};
 
 use crate::area::{AlmanacArea, ChartArea, system_of};
 use crate::hit_request::{motion, station};
-use crate::rashifal_request::{RashifalPeriod, RashifalRequest, Snapshot};
+use crate::rashifal_request::{
+    RashifalAnswer, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
+};
 
 /// How far apart the two places that tell a graha's motion are, in days:
 /// a minute, well inside the shortest stationary spell of any graha.
@@ -157,19 +159,40 @@ impl ChartArea<'_> {
         Ok(Envelope::sealing(periods, provenance))
     }
 
+    /// A batch as a binding asks it ([`RashifalBatch`]): each period read
+    /// as [`ChartArea::rashifal_many`] reads it, with the baseline engine's
+    /// score of each sign beside it when the batch names a period for it.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::rashifal_many`].
+    pub fn rashifal_answers(
+        self,
+        batch: &RashifalBatch,
+    ) -> Result<Envelope<Vec<RashifalAnswer>>, Error> {
+        let Envelope { value, provenance } = self.rashifal_many(&batch.periods)?;
+        let answers = value
+            .into_iter()
+            .map(|period| RashifalAnswer {
+                baseline: batch.baseline.map(|asked| {
+                    period
+                        .readings
+                        .iter()
+                        .map(|reading| period.baseline_score(reading.rashi, asked))
+                        .collect()
+                }),
+                period,
+            })
+            .collect();
+        Ok(Envelope::sealing(answers, provenance))
+    }
+
     /// What a period needs before the sky is placed: its reference day, the
     /// instant, that day's limbs and the window its events are found in.
     fn prepared(self, request: &RashifalRequest) -> Result<Prepared<'_>, Error> {
         request.check()?;
         let calendar = system_of(request.first().calendar)?;
-        let first = calendar.fixed_of(request.first())?;
-        let last = calendar.fixed_of(request.last())?;
-        let days = u32::try_from(first.days_until(last) + 1)
-            .ok()
-            .filter(|days| *days > 0)
-            .ok_or_else(|| {
-                Error::invalid_arg("a period's last day comes before its first").with_field("last")
-            })?;
+        let (first, last, days) = request.days()?;
         let middle = first.plus_days(i64::from(reference_day(days)));
         let reference = calendar.date_of(middle)?;
         let midnight = |day: FixedDay| local_midnight(day, request.offset());

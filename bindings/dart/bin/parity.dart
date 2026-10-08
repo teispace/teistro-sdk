@@ -2376,6 +2376,85 @@ void main() {
         '${d.year}:${d.month}:${d.kind.key}:${d.paksha.fullKey}',
     ]),
   );
+
+  // The rashifal batch every runner sends: a week read at sunrise with the
+  // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
+  // and Saturn's events.
+  String ymd(CalendarDate day) => '${day.year}-${day.month}-${day.day}';
+  final rashifal = geo.chart.rashifalMany([
+    RashifalRequest(
+      first: Calendar.gregorian.date(2024, 6, 17),
+      last: Calendar.gregorian.date(2024, 6, 23),
+      place: place,
+      utcOffsetSeconds: 20700,
+    ),
+    RashifalRequest(
+      first: Calendar.gregorian.date(2024, 6, 17),
+      place: place,
+      utcOffsetSeconds: 20700,
+      snapshot: const AtClock(hour: 6),
+      events: const [Graha.mars, Graha.saturn],
+    ),
+  ], baseline: BaselinePeriod.weekly);
+  for (final (n, answer) in rashifal.indexed) {
+    final period = answer.period;
+    put(
+      'rashifal-$n-period',
+      '${ymd(period.first)} ${ymd(period.last)} ${ymd(period.reference)} '
+          '${number(period.instant)}',
+    );
+    final limbs = period.panchanga;
+    put(
+      'rashifal-$n-panchanga',
+      '${limbs.tithi.fullKey} ${limbs.yoga.fullKey} ${limbs.muhurtaYogas}',
+    );
+    for (final (g, transit) in period.transits.indexed) {
+      put(
+        'rashifal-$n-transit-$g',
+        '${transit.sign.fullKey} ${number(transit.degrees)} '
+            '${flag(period.retrograde[g])}',
+      );
+    }
+    for (final (r, reading) in period.readings.indexed) {
+      final saturn = reading.saturn;
+      final verdicts = [
+        for (final g in reading.gochar.grahas) g.verdict.key,
+      ].join(',');
+      put(
+        'rashifal-$n-$r',
+        '${reading.rashi.fullKey} ${saturn.house} '
+            '${saturn.sadeSati?.key ?? '-'} ${flag(saturn.spell)} $verdicts '
+            '${reading.events.length}',
+      );
+      for (final (k, event) in reading.events.indexed) {
+        final hit = event.hit;
+        final kind = switch (hit.event) {
+          SignIngress() => 'SIGN_INGRESS',
+          Station() => 'STATION',
+          _ => 'OTHER',
+        };
+        put(
+          'rashifal-$n-$r-event-$k',
+          '${number(hit.instant)} ${hit.graha.fullKey} $kind '
+              '${event.sign.fullKey} ${event.house} ${flag(event.goodHouse)}',
+        );
+      }
+      if (answer.baseline case final scores?) {
+        final score = scores[r];
+        final named = [
+          for (final k in score.keyInfluences)
+            '${k.graha.fullKey}:${k.house}:${k.verdict.key}',
+        ];
+        final lucky = score.lucky;
+        put(
+          'rashifal-$n-$r-baseline',
+          '${score.overall} ${[for (final a in score.areas) a.score].join(',')} '
+              '${named.isEmpty ? 'none' : named.join(',')} ${lucky.colour} '
+              '${lucky.number} ${lucky.day.fullKey} ${lucky.direction.fullKey}',
+        );
+      }
+    }
+  }
   geo.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────

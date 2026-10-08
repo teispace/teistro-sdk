@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 50 entry points over 27 structs and 157 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 51 entry points over 27 structs and 157 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -124,6 +124,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_numerology_profile`](numerology/ts_numerology_profile) | Reads a name and a birth date under numerology's two systems and answers with the profile as canonical JSON: the name under each system, word by word with every reduction step, Balliett's birth number, Cheiro's day and year, and the baseline engine's own numbers under the baseline rules only (`03-design/numerology.md`). |
 
+### Rashifal
+
+| entry point | what it does |
+|---|---|
+| [`ts_rashifal`](rashifal/ts_rashifal) | Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. |
+
 ### Ephemeris
 
 | entry point | what it does |
@@ -167,5 +173,6 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/panchanga.rs`
 - `crates/ffi/src/naam.rs`
 - `crates/ffi/src/numerology.rs`
+- `crates/ffi/src/rashifal.rs`
 - `crates/ffi/src/ephemeris.rs`
 - `crates/ffi/src/provider.rs`

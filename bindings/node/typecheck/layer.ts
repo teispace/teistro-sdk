@@ -33,6 +33,9 @@ import type {
   NaamRules,
   NumerologyProfile,
   NumerologyRules,
+  RashifalAnswer,
+  RashifalRequest,
+  BaselineScore,
   NameSyllable,
   KootaReading,
   Kuja,
@@ -1427,6 +1430,41 @@ function theNumerology(ctx: Context): string {
 }
 
 void theNumerology;
+
+// A rashifal week read all the way down: a sign's gochar, Saturn, an event's
+// hit and the baseline's score.
+function theRashifal(ctx: Context): string {
+  const week: RashifalRequest = {
+    first: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 4 },
+    last: { year: 2026, month: 10, day: 10 },
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+    snapshot: { at: 'CLOCK', hour: 6, minute: 0 },
+    events: ['SATURN', 'graha.JUPITER'],
+  };
+  // @ts-expect-error a snapshot's clock needs its minute
+  const misread: RashifalRequest = { ...week, snapshot: { at: 'CLOCK', hour: 6 } };
+  const read: RashifalAnswer = ctx.chart.rashifal(week, 'WEEKLY');
+  const leo = read.period.readings[4];
+  const first = leo?.events[0];
+  const event = first?.event.hit.event;
+  const score: BaselineScore | undefined = read.baseline?.[4];
+  return [
+    read.period.reference.day,
+    read.period.panchanga.tithi,
+    leo?.gochar.grahas[0]?.verdict ?? 'NONE',
+    leo?.saturn.sadeSati ?? 'NONE',
+    first?.house ?? 0,
+    event?.kind === 'SIGN_INGRESS' ? event.into : 'NONE',
+    score?.areas[0]?.area ?? 'NONE',
+    score?.keyInfluences[0]?.graha ?? 'NONE',
+    score?.lucky.day ?? 'NONE',
+    ctx.chart.rashifalMany([week]).length,
+    String(misread),
+  ].join();
+}
+
+void theRashifal;
 
 // A chart's avakahada, read down to its syllable's own fields.
 function theAvakahada(ctx: Context): string {

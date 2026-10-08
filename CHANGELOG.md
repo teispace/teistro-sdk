@@ -2332,6 +2332,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   `rashifal_many` reads many periods under one founder. A last day before
   the first is refused naming `last`, a clock off the clock naming
   `snapshot`, a graha asked twice naming `events`. **Numbers:** none move.
+- **Rashifal in every binding** (`rashifal.md` step 4). `ts_rashifal`
+  takes a batch of periods as JSON (`RashifalBatch::from_json`), with an
+  optional baseline period, and answers each period's reading with the
+  baseline engine's twelve scores beside it when asked
+  (`ChartArea::rashifal_answers`). Node's `chart.rashifal` and
+  `rashifalMany`, Python's `chart.rashifal` and `rashifal_many`, and
+  Dart's `chart.rashifal` and `rashifalMany` read it into each language's
+  own types, with catalogue members in full. A refusal names the period
+  it came from, as `rashifal.periods[i].last`. The gochar types now
+  serialise camelCase, as every other answer does; nothing read their
+  JSON before. The five parity runners print each period's days, limbs
+  and transits, and each sign's verdicts, Saturn, events and baseline
+  score, and they agree. **Numbers:** none move.
 - **The ishṭa-devatā from the amātya** (`remedies.md` step 4, C357).
   BPHS (1923) ch. 9 vv. 76–79 read the same from the amātyakāraka, the
   graha next below the ātmakāraka in degrees.

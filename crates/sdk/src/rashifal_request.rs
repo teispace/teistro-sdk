@@ -2,14 +2,14 @@
 //! read for each of the twelve signs (`03-design/rashifal.md`).
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::CalendarDate;
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_calendar::{CalendarDate, FixedDay};
+use teistro_core::catalogue::{Calendar, Graha, Rashi};
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_gochar::Transit;
 use teistro_rashifal::RashiReading;
-use teistro_rashifal::baseline::Panchanga;
+use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period};
 
 /// The instant a period's sky is read at (C358).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -168,7 +168,8 @@ impl RashifalRequest {
         &self.spells
     }
 
-    /// Refuses what no period can be: a clock time off the clock, a spell
+    /// Refuses what no period can be: a day its calendar does not have, a
+    /// last day before the first, a clock time off the clock, a spell
     /// outside 1 to 12 or one of Sade Sati's own, or a graha asked twice.
     ///
     /// # Errors
@@ -183,6 +184,7 @@ impl RashifalRequest {
                     .with_field("snapshot"),
             );
         }
+        self.days()?;
         teistro_gochar::sade_sati::check_houses(&self.spells)
             .map_err(|refused| refused.with_field("spells"))?;
         for (at, graha) in self.events.iter().enumerate() {
@@ -194,6 +196,27 @@ impl RashifalRequest {
             }
         }
         Ok(())
+    }
+}
+
+impl RashifalRequest {
+    /// The first and last days as fixed days, and how many days the period
+    /// holds, at least one.
+    pub(crate) fn days(&self) -> Result<(FixedDay, FixedDay, u32), Error> {
+        let calendar = crate::area::system_of(self.first.calendar)?;
+        let first = calendar
+            .fixed_of(&self.first)
+            .map_err(|why| why.with_field("first"))?;
+        let last = calendar
+            .fixed_of(&self.last)
+            .map_err(|why| why.with_field("last"))?;
+        let days = u32::try_from(first.days_until(last) + 1)
+            .ok()
+            .filter(|days| *days > 0)
+            .ok_or_else(|| {
+                Error::invalid_arg("a period's last day comes before its first").with_field("last")
+            })?;
+        Ok((first, last, days))
     }
 }
 
@@ -233,11 +256,7 @@ impl RashifalPeriod {
     /// The baseline engine's score of one sign's reading for `period`,
     /// `BASELINE` and unsourced (C361).
     #[must_use]
-    pub fn baseline_score(
-        &self,
-        rashi: Rashi,
-        period: teistro_rashifal::baseline::Period,
-    ) -> teistro_rashifal::baseline::BaselineScore {
+    pub fn baseline_score(&self, rashi: Rashi, period: Period) -> BaselineScore {
         teistro_rashifal::baseline::baseline_score(
             self.of(rashi),
             &self.retrograde,
@@ -245,4 +264,166 @@ impl RashifalPeriod {
             period,
         )
     }
+}
+
+/// The record a binding writes a rashifal as, which a refusal is named
+/// under.
+const RASHIFAL: &str = "rashifal";
+
+/// A civil day as a request names it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct DayAsked {
+    year: i32,
+    month: u8,
+    day: u8,
+}
+
+/// One period as a binding writes it, camel-cased as every request record
+/// is: the days, the place and the offset, and optionally the snapshot,
+/// the grahas whose events are reported and Saturn's spells.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PeriodAsked {
+    #[serde(default)]
+    calendar: Option<Calendar>,
+    first: DayAsked,
+    #[serde(default)]
+    last: Option<DayAsked>,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    #[serde(default)]
+    altitude_m: f64,
+    utc_offset_seconds: i32,
+    #[serde(default)]
+    snapshot: Option<Snapshot>,
+    #[serde(default)]
+    events: Option<Vec<Graha>>,
+    #[serde(default)]
+    spells: Option<Vec<u8>>,
+}
+
+/// Many periods as a binding writes them, and the period the baseline
+/// engine's score is read for, when it is asked.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BatchAsked {
+    periods: Vec<PeriodAsked>,
+    #[serde(default)]
+    baseline: Option<Period>,
+}
+
+/// Periods to read, as a binding asks them: each a [`RashifalRequest`],
+/// and the baseline engine's score for each sign when `baseline` names
+/// the period it is read for.
+#[derive(Clone, Debug, PartialEq)]
+pub struct RashifalBatch {
+    /// The periods, in the order they are answered.
+    pub periods: Vec<RashifalRequest>,
+    /// The period the baseline's score is read for, or none.
+    pub baseline: Option<Period>,
+}
+
+impl RashifalBatch {
+    /// The record a binding sends, as JSON: `periods`, each with `first`
+    /// (and `last`, the first when left out) as `{"year", "month",
+    /// "day"}` in `calendar` (Gregorian when left out), `latitudeDeg`,
+    /// `longitudeDeg`, `altitudeM` and `utcOffsetSeconds`, and optionally
+    /// `snapshot`, `events` and `spells`; and `baseline`, a
+    /// [`Period`](teistro_rashifal::baseline::Period), when the baseline
+    /// engine's score is wanted.
+    ///
+    /// ```
+    /// use teistro::{RashifalBatch, Snapshot};
+    ///
+    /// let asked = RashifalBatch::from_json(
+    ///     r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4},
+    ///         "last": {"year": 2026, "month": 10, "day": 10},
+    ///         "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+    ///         "utcOffsetSeconds": 20700, "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0},
+    ///         "events": ["SATURN", "graha.JUPITER"]}], "baseline": "WEEKLY"}"#,
+    /// )?;
+    /// assert_eq!(asked.periods[0].snapshot(), Snapshot::Clock { hour: 6, minute: 0 });
+    /// assert_eq!(asked.periods[0].events().len(), 2);
+    /// let typo = RashifalBatch::from_json(
+    ///     r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4},
+    ///         "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700, "spell": [4]}]}"#,
+    /// )
+    /// .unwrap_err();
+    /// assert_eq!(typo.field(), Some("rashifal.periods[0].spell"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, no period at all, a place or offset out of range, and
+    /// whatever [`RashifalRequest::check`] refuses, each named under
+    /// `rashifal`.
+    pub fn from_json(text: &str) -> Result<RashifalBatch, Error> {
+        let asked: BatchAsked = teistro_core::strict::read(text, RASHIFAL)?;
+        if asked.periods.is_empty() {
+            return Err(Error::invalid_arg("no period to read").with_field("rashifal.periods"));
+        }
+        let periods = asked
+            .periods
+            .into_iter()
+            .enumerate()
+            .map(|(at, one)| {
+                let under = format!("{RASHIFAL}.periods[{at}]");
+                one.request()
+                    .and_then(|request| request.check().map(|()| request))
+                    .map_err(|why| why.under(&under))
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(RashifalBatch {
+            periods,
+            baseline: asked.baseline,
+        })
+    }
+}
+
+impl PeriodAsked {
+    fn request(self) -> Result<RashifalRequest, Error> {
+        let calendar = self.calendar.unwrap_or(Calendar::Gregorian);
+        let date = |day: DayAsked| CalendarDate::defined(calendar, day.year, day.month, day.day);
+        let place = Place::new(
+            Latitude::try_new(self.latitude_deg)
+                .map_err(|why| Error::from(why).with_field("latitudeDeg"))?,
+            Longitude::try_new(self.longitude_deg)
+                .map_err(|why| Error::from(why).with_field("longitudeDeg"))?,
+            Altitude::try_new(self.altitude_m)
+                .map_err(|why| Error::from(why).with_field("altitudeM"))?,
+        );
+        let offset = UtcOffset::try_from_seconds(self.utc_offset_seconds)
+            .map_err(|why| Error::from(why).with_field("utcOffsetSeconds"))?;
+        let mut request = RashifalRequest::between(
+            date(self.first),
+            date(self.last.unwrap_or(self.first)),
+            place,
+            offset,
+        );
+        if let Some(snapshot) = self.snapshot {
+            request = request.at(snapshot);
+        }
+        if let Some(events) = self.events {
+            request = request.with_events(events);
+        }
+        if let Some(spells) = self.spells {
+            request = request.with_spells(spells);
+        }
+        Ok(request)
+    }
+}
+
+/// One period's answer as a binding reads it: the period, and the
+/// baseline engine's score of each sign, Aries to Pisces, when it was
+/// asked.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RashifalAnswer {
+    /// The period read.
+    pub period: RashifalPeriod,
+    /// The baseline engine's score of each sign, `BASELINE` (C361).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub baseline: Option<Vec<BaselineScore>>,
 }
