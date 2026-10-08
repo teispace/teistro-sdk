@@ -213,6 +213,43 @@ const PARITY_MAIN: &str = "com.teispace.teistro.ParityRunner";
 /// Where the parity runner's classes are written, apart from the tests'.
 const PARITY_CLASSES: &str = "target/java-parity";
 
+/// The Teimeris adapter's Java package.
+const ADAPTER: &str = "adapters/ephemeris-teimeris/java";
+
+/// Compiles the Teimeris adapter's module against the binding's, and its
+/// typecheck consumer against both, each at the floor's release with every
+/// lint an error: the gate the other bindings' adapters get from their own
+/// type checkers. The consumer is compiled and never run, since it needs
+/// the engine's data.
+fn adapter(root: &Path, classes: &Path, main: &Path) -> Result<(), ()> {
+    let package = root.join(ADAPTER);
+    let module = classes.join("adapter");
+    let mut sources = Vec::new();
+    java_files(&package.join("src"), &mut sources);
+    step(
+        javac(&module)
+            .arg("--module-path")
+            .arg(main)
+            .arg(argfile(classes, "adapter", &sources)?)
+            .current_dir(root),
+        "",
+        &format!("{ADAPTER} does not compile clean"),
+    )?;
+    let mut consumer = Vec::new();
+    java_files(&package.join("typecheck"), &mut consumer);
+    let separator = if cfg!(windows) { ";" } else { ":" };
+    step(
+        javac(&classes.join("adapter-typecheck"))
+            .arg("--module-path")
+            .arg(format!("{}{separator}{}", main.display(), module.display()))
+            .args(["--add-modules", "com.teispace.teistro.teimeris"])
+            .arg(argfile(classes, "adapter-typecheck", &consumer)?)
+            .current_dir(root),
+        &format!("{ADAPTER} and its README's consumer compile against the binding"),
+        &format!("{ADAPTER}'s typecheck consumer does not compile"),
+    )
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("javac", "--version") || !present("java", "--version") {
         crate::skip::skip(
@@ -229,7 +266,8 @@ pub(crate) fn check(root: &Path) -> i32 {
             patched(&main, &classes.join(TESTS), MAIN, &library).current_dir(root),
             &format!("{PACKAGE}'s tests pass against the real library"),
             &format!("{PACKAGE}'s tests did not pass"),
-        )
+        )?;
+        adapter(root, &classes, &main)
     });
     let outcome = outcome.and_then(|()| {
         crate::examples::Binding::Java

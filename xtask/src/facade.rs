@@ -54,6 +54,10 @@ const DART: &str = "adapters/ephemeris-teimeris/dart/lib/engine.dart";
 /// Inside the importable package, for the same reason.
 const PYTHON: &str = "adapters/ephemeris-teimeris/python/teistro_ephemeris_teimeris/engine.py";
 
+/// In the adapter's own module, beside the hand-written descriptor.
+const JAVA: &str =
+    "adapters/ephemeris-teimeris/java/src/com/teispace/teistro/teimeris/TeimerisEngine.java";
+
 /// `snake_case` to `camelCase`, which is what Node and Dart spell a name
 /// in. The engine's own name is what crosses; this is only what a
 /// consumer writes.
@@ -98,6 +102,10 @@ struct Words {
     list_taken: &'static str,
     /// A value that may be null, with `{}` where its word goes.
     nullable: &'static str,
+    /// What a fractional and a whole number are called inside a list or
+    /// where they may be null: Java's `double` and `long` are not objects,
+    /// so `List<double>` does not exist. The plain words everywhere else.
+    boxed: (&'static str, &'static str),
 }
 
 impl Words {
@@ -111,6 +119,7 @@ impl Words {
         list: "readonly {}[]",
         list_taken: "readonly {}[]",
         nullable: "{} | null",
+        boxed: ("number", "number"),
     };
     const DART: Self = Self {
         text: "String",
@@ -119,6 +128,7 @@ impl Words {
         list: "List<{}>",
         list_taken: "List<{}>",
         nullable: "{}?",
+        boxed: ("double", "int"),
     };
     const PYTHON: Self = Self {
         text: "str",
@@ -127,6 +137,19 @@ impl Words {
         list: "list[{}]",
         list_taken: "Sequence[{}]",
         nullable: "{} | None",
+        boxed: ("float", "int"),
+    };
+    /// Java, whose integer word is `long` because the engine's integers
+    /// include `uint32_t` flag sets and `int64_t`, which an `int` would
+    /// wrap. A boxed word is already nullable, so `nullable` adds nothing.
+    const JAVA: Self = Self {
+        text: "String",
+        fractional: "double",
+        integer: "long",
+        list: "List<{}>",
+        list_taken: "List<{}>",
+        nullable: "{}",
+        boxed: ("Double", "Long"),
     };
 
     /// What one declared type is called here.
@@ -152,9 +175,12 @@ impl Words {
         whose: &str,
         list: &str,
     ) -> String {
+        let boxed = declared.list || declared.nullable;
         let one = match kind(declared.base, vocabulary, whose) {
             Kind::Text => self.text.to_string(),
+            Kind::Fractional if boxed => self.boxed.0.to_string(),
             Kind::Fractional => self.fractional.to_string(),
+            Kind::Integer if boxed => self.boxed.1.to_string(),
             Kind::Integer => self.integer.to_string(),
             Kind::Struct => pascal(declared.base),
         };
@@ -212,7 +238,7 @@ pub(crate) fn outputs(
 ) -> Vec<Output> {
     let described: Vec<Described<'_>> = callable.iter().map(|f| describe(f)).collect();
     // Every struct a callable function passes either way, with what it
-    // nests, in declaration order. One list for all four targets, so no
+    // nests, in declaration order. One list for every target, so no
     // façade names a struct another does not.
     let structs = reached(
         callable,
@@ -227,6 +253,7 @@ pub(crate) fn outputs(
         ),
         Output::new(DART, dart(version, &described, &structs, vocabulary)),
         Output::new(PYTHON, python(version, &described, &structs, vocabulary)),
+        Output::new(JAVA, java(version, &described, &structs, vocabulary)),
     ]
 }
 
@@ -1006,4 +1033,354 @@ fn pascal(name: &str) -> String {
     chars.next().map_or_else(String::new, |first| {
         format!("{}{}", first.to_ascii_uppercase(), chars.as_str())
     })
+}
+
+// ── Java ───────────────────────────────────────────────────────────────
+
+/// The Java façade: a class wrapping the SDK's own `Engine`, with a record
+/// per struct and per answer of more than one value nested in it, so the
+/// whole façade is one generated file beside the hand-written descriptor.
+///
+/// A class taken as a value, as Python's is: Java has no extension
+/// methods, and a wrapper is what ADR-0030's amendment asks for anyway.
+fn java(
+    version: &str,
+    described: &[Described<'_>],
+    structs: &[&Shape],
+    vocabulary: &Vocabulary,
+) -> String {
+    let mut out = header(version, "//");
+    let _ = writeln!(
+        out,
+        "\npackage com.teispace.teistro.teimeris;\n\nimport java.util.LinkedHashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Objects;\n\nimport com.teispace.teistro.Engine;\n\n/**\n * The engine's own operations, typed: pass {{@code sky.ephemeris()}}, and\n * every method calls the engine by its own name.\n */\npublic final class TeimerisEngine {{\n    private final Engine engine;\n\n    /**\n     * The façade over an engine.\n     *\n     * @param engine the engine a context computes on\n     */\n    public TeimerisEngine(Engine engine) {{\n        this.engine = Objects.requireNonNull(engine, \"engine\");\n    }}"
+    );
+    for one in described {
+        out.push_str(&java_method(one, vocabulary));
+    }
+    for shape in structs {
+        let fields: Vec<(&str, Declared<'_>)> = shape
+            .crossing()
+            .map(|field| (field.name.as_str(), Declared::field(field)))
+            .collect();
+        out.push_str(&java_record(
+            &pascal(&shape.name),
+            &format!("{{@code {}}}, as the engine declares it.", shape.name),
+            &fields,
+            true,
+            vocabulary,
+            &shape.name,
+        ));
+    }
+    for one in described.iter().filter(|one| one.gives.len() > 1) {
+        // The one namespace Python's records share with its structs, and
+        // the same day it would be caught.
+        assert!(
+            !structs
+                .iter()
+                .any(|shape| pascal(&shape.name) == pascal(one.name)),
+            "`{}` answers a record whose Java name is also a struct's",
+            one.name
+        );
+        out.push_str(&java_record(
+            &pascal(one.name),
+            &format!("What {{@code {}}} answers with.", one.name),
+            &one.gives,
+            false,
+            vocabulary,
+            one.name,
+        ));
+    }
+    out.push_str(JAVA_HELPERS);
+    out
+}
+
+/// The readers every method and record shares, and the argument map, which
+/// keeps a null (`Map.of` refuses one, and the engine takes a null for a
+/// key it lets a caller leave out).
+const JAVA_HELPERS: &str = r"
+    private static Map<String, Object> arguments(Object... pairs) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        for (int at = 0; at < pairs.length; at += 2) {
+            out.put((String) pairs[at], pairs[at + 1]);
+        }
+        return out;
+    }
+
+    private static Map<?, ?> object(Object value) {
+        return (Map<?, ?>) value;
+    }
+
+    private static List<?> list(Object value) {
+        return (List<?>) value;
+    }
+
+    private static String text(Object value) {
+        return (String) value;
+    }
+
+    // Through `Number`, because JSON keeps no distinction between the
+    // engine's `double` and its `int32_t`: a whole-valued double reads
+    // back as a `Long`.
+    private static double fractional(Object value) {
+        return ((Number) value).doubleValue();
+    }
+
+    private static long integer(Object value) {
+        return ((Number) value).longValue();
+    }
+}
+";
+
+/// One method of the Java façade.
+fn java_method(one: &Described<'_>, vocabulary: &Vocabulary) -> String {
+    let params: Vec<(String, String)> = one
+        .takes
+        .iter()
+        .map(|(key, declared)| {
+            let taken = Declared {
+                nullable: declared.nullable || one.nullable(key),
+                ..*declared
+            };
+            (
+                Words::JAVA.taken(&taken, vocabulary, one.name),
+                java_name(key),
+            )
+        })
+        .collect();
+    let pairs = one
+        .takes
+        .iter()
+        .zip(&params)
+        .map(|((key, declared), (_, spelling))| {
+            format!(
+                "\"{key}\", {}",
+                java_write(spelling, declared, one.nullable(key), vocabulary)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let call = format!("engine.call(\"{}\", arguments({pairs}))", one.name);
+    let (returns, body, answer) = match one.gives.as_slice() {
+        [] => (String::from("void"), format!("        {call};"), None),
+        [(only, declared)] => (
+            Words::JAVA.of(declared, vocabulary, one.name),
+            format!(
+                "        Map<?, ?> answered = object({call});\n        return {};",
+                java_read(
+                    &format!("answered.get(\"{only}\")"),
+                    declared,
+                    vocabulary,
+                    one.name
+                )
+            ),
+            Some(format!("{{@code {only}}}")),
+        ),
+        _ => (
+            pascal(one.name),
+            format!("        return {}.fromJson({call});", pascal(one.name)),
+            Some(String::from("every value it answers with")),
+        ),
+    };
+    let mut doc = format!("\n    /**\n     * {{@code {}}}.\n", one.name);
+    if one.mutates {
+        let _ = write!(doc, "     *\n     * <p>{MUTATES}\n");
+    }
+    if !params.is_empty() || answer.is_some() {
+        doc.push_str("     *\n");
+    }
+    for ((key, _), (_, spelling)) in one.takes.iter().zip(&params) {
+        let _ = writeln!(doc, "     * @param {spelling} {{@code {key}}}");
+    }
+    if let Some(answer) = answer {
+        let _ = writeln!(doc, "     * @return {answer}");
+    }
+    let signature = params
+        .iter()
+        .map(|(word, spelling)| format!("{word} {spelling}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!(
+        "{doc}     */\n    public {returns} {}({signature}) {{\n{body}\n    }}\n",
+        java_name(one.name)
+    )
+}
+
+/// A nested record: a struct, which crosses both ways, or an answer of
+/// more than one value, which is only read.
+fn java_record(
+    class: &str,
+    summary: &str,
+    fields: &[(&str, Declared<'_>)],
+    written: bool,
+    vocabulary: &Vocabulary,
+    whose: &str,
+) -> String {
+    let components = fields
+        .iter()
+        .map(|(key, declared)| {
+            format!(
+                "{} {}",
+                Words::JAVA.of(declared, vocabulary, whose),
+                java_name(key)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut params = String::new();
+    for (key, _) in fields {
+        let _ = writeln!(params, "     * @param {} {{@code {key}}}", java_name(key));
+    }
+    let reads = fields
+        .iter()
+        .map(|(key, declared)| {
+            java_read(&format!("json.get(\"{key}\")"), declared, vocabulary, whose)
+        })
+        .collect::<Vec<_>>()
+        .join(",\n                    ");
+    let mut out = format!(
+        "\n    /**\n     * {summary}\n     *\n{params}     */\n    public record {class}({components}) {{\n        /**\n         * Read from the object the engine answers with.\n         *\n         * @param answer the object\n         * @return the record\n         */\n        public static {class} fromJson(Object answer) {{\n            Map<?, ?> json = object(answer);\n            return new {class}(\n                    {reads});\n        }}\n"
+    );
+    if written {
+        let mut puts = String::new();
+        for (key, declared) in fields {
+            let _ = writeln!(
+                puts,
+                "            out.put(\"{key}\", {});",
+                java_write(&java_name(key), declared, declared.nullable, vocabulary)
+            );
+        }
+        let _ = write!(
+            out,
+            "\n        /**\n         * The object the engine reads, keyed by its own field names.\n         *\n         * @return the object\n         */\n        public Map<String, Object> toJson() {{\n            Map<String, Object> out = new LinkedHashMap<>();\n{puts}            return out;\n        }}\n"
+        );
+    }
+    out.push_str("    }\n");
+    out
+}
+
+/// Reading one value, in Java, from an expression that looks it up.
+fn java_read(
+    lookup: &str,
+    declared: &Declared<'_>,
+    vocabulary: &Vocabulary,
+    whose: &str,
+) -> String {
+    let one = |value: &str| match kind(declared.base, vocabulary, whose) {
+        Kind::Text => format!("text({value})"),
+        Kind::Fractional => format!("fractional({value})"),
+        Kind::Integer => format!("integer({value})"),
+        Kind::Struct => format!("{}.fromJson({value})", pascal(declared.base)),
+    };
+    let read = if declared.list {
+        format!(
+            "list({lookup}).stream().map(one -> {}).toList()",
+            one("one")
+        )
+    } else {
+        one(lookup)
+    };
+    if declared.nullable {
+        format!("{lookup} == null ? null : {read}")
+    } else {
+        read
+    }
+}
+
+/// Writing one value into a call or a struct, in Java: a struct as its
+/// object, a list of them element by element, anything else as itself.
+fn java_write(
+    spelling: &str,
+    declared: &Declared<'_>,
+    nullable: bool,
+    vocabulary: &Vocabulary,
+) -> String {
+    if vocabulary.shape(declared.base).is_none() {
+        return spelling.to_string();
+    }
+    match (declared.list, nullable) {
+        (true, _) => format!("{spelling}.stream().map(one -> one.toJson()).toList()"),
+        (false, true) => format!("{spelling} == null ? null : {spelling}.toJson()"),
+        (false, false) => format!("{spelling}.toJson()"),
+    }
+}
+
+/// A Java identifier for an engine name: `camelCase`, with a trailing
+/// underscore where that is a keyword, which no engine name has been yet.
+fn java_name(name: &str) -> String {
+    /// Every reserved word and literal `camel` could produce: the lower-case
+    /// ones, since a camel-cased name starts lower.
+    const RESERVED: [&str; 53] = [
+        "abstract",
+        "assert",
+        "boolean",
+        "break",
+        "byte",
+        "case",
+        "catch",
+        "char",
+        "class",
+        "const",
+        "continue",
+        "default",
+        "do",
+        "double",
+        "else",
+        "enum",
+        "extends",
+        "final",
+        "finally",
+        "float",
+        "for",
+        "goto",
+        "if",
+        "implements",
+        "import",
+        "instanceof",
+        "int",
+        "interface",
+        "long",
+        "native",
+        "new",
+        "package",
+        "private",
+        "protected",
+        "public",
+        "return",
+        "short",
+        "static",
+        "strictfp",
+        "super",
+        "switch",
+        "synchronized",
+        "this",
+        "throw",
+        "throws",
+        "transient",
+        "try",
+        "void",
+        "volatile",
+        "while",
+        "true",
+        "false",
+        "null",
+    ];
+    let camelled = camel(name);
+    if RESERVED.contains(&camelled.as_str()) {
+        format!("{camelled}_")
+    } else {
+        camelled
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_java_name_is_camel_cased_and_never_a_keyword() {
+        assert_eq!(java_name("jd_ut1"), "jdUt1");
+        assert_eq!(java_name("class"), "class_");
+        assert_eq!(java_name("default"), "default_");
+        assert_eq!(java_name("defaults"), "defaults");
+    }
 }
