@@ -145,6 +145,42 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # The musl rows: built and installed in Alpine on the Linux runner of
+  # each architecture, the container being the platform (`xtask/alpine.sh`).
+  # No Swatinem cache, which reads the runner's toolchain and not the
+  # container's.
+  musl:
+    name: build (${{ matrix.platform }})
+    needs: gate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64-musl
+            container: alpine:3.21
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64-musl
+            container: alpine:3.21
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: What this platform ships, installed into throwaway projects and run
+        run: >-
+          docker run --rm -v "$PWD:/w" -w /w -e TEISTRO_STRICT ${{ matrix.container }}
+          sh xtask/alpine.sh "package ${{ matrix.platform }}" check-package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.platform }}
+          path: |
+            target/dist/*.gz
+            target/dist/teistro-*.json
+            target/dist/npm/@teistro/sdk-*
+          if-no-files-found: error
+          retention-days: 7
+
   # The wasm package is the same layer over a wasm module, one artefact
   # for every host, so it is built here once rather than by each platform.
   # `check-wasm` is the gate that proves it: the Node suite through its own
@@ -183,7 +219,7 @@ jobs:
 
   stage:
     name: stage
-    needs: [gate, build, wasm]
+    needs: [gate, build, musl, wasm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

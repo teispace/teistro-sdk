@@ -15,6 +15,7 @@ import io
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from teistro import _install
 from teistro._prebuilt import PREBUILT_VERSION
@@ -38,10 +39,29 @@ TABLE = {PLATFORM: digest(LIBRARY)}
 class TheHost(unittest.TestCase):
     def test_it_names_itself_the_way_the_release_does(self) -> None:
         name = host_platform()
-        self.assertRegex(name, r"^[a-z0-9]+-[a-z0-9]+$")
-        system, _, cpu = name.partition("-")
+        self.assertRegex(name, r"^[a-z0-9]+-[a-z0-9]+(-musl)?$")
+        system, cpu, *libc = name.split("-")
         self.assertIn(system, ("linux", "darwin", "win32"))
         self.assertIn(cpu, ("x64", "arm64", "ia32", "riscv64"))
+        self.assertTrue(not libc or system == "linux", "only Linux names its C library")
+
+    def test_a_musl_linux_is_named_for_its_c_library(self) -> None:
+        """glibc answers `confstr` and `libc_ver`; musl answers neither."""
+
+        def unnamed(_name: str) -> str:
+            raise ValueError("unrecognized configuration name")
+
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch("teistro._install.sys.platform", "linux"))
+            stack.enter_context(mock.patch("teistro._install.platform.machine", lambda: "x86_64"))
+            stack.enter_context(mock.patch("teistro._install.os.confstr", unnamed))
+            stack.enter_context(mock.patch("teistro._install.platform.libc_ver", lambda: ("", "")))
+            self.assertEqual(host_platform(), "linux-x64-musl")
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch("teistro._install.sys.platform", "linux"))
+            stack.enter_context(mock.patch("teistro._install.platform.machine", lambda: "aarch64"))
+            stack.enter_context(mock.patch("teistro._install.os.confstr", lambda _name: "glibc 2.39"))
+            self.assertEqual(host_platform(), "linux-arm64")
 
     def test_the_library_has_the_platforms_own_file_name(self) -> None:
         name = library_file_name()

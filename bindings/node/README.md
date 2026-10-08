@@ -50,8 +50,9 @@ says which that is), and this repository's own `cargo build` output. When
 it finds none, the error names the package that was wanted and the command
 that builds one.
 
-A host no release covers — musl today, anything else tomorrow — installs
-no platform package. Build the addon from source (`cargo build --release
+A musl Linux, such as Alpine, gets its own platform package,
+`@teistro/sdk-linux-x64-musl` or `@teistro/sdk-linux-arm64-musl`. A host no
+release covers installs no platform package. Build the addon from source (`cargo build --release
 -p teistro-node`) and point `$TEISTRO_ADDON` at it.
 
 ## Using it
