@@ -11,4 +11,5 @@ module com.teispace.teistro {
     exports com.teispace.teistro.blob;
     exports com.teispace.teistro.record;
     exports com.teispace.teistro.ffi;
+    exports com.teispace.teistro.messages;
 }

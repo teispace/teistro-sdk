@@ -235,6 +235,15 @@ public final class Teistro implements AutoCloseable {
     }
 
     /**
+     * The catalogue schema version every result's provenance stamps.
+     *
+     * @return the catalogue version
+     */
+    public int catalogueVersion() {
+        return Boundary.call(() -> (int) lib.ts_catalogue_version.invokeExact());
+    }
+
+    /**
      * The SDK version the library is.
      *
      * @return the SDK version

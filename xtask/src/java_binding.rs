@@ -19,9 +19,9 @@ use crate::binding::{library, present, step};
 
 /// The binding's tree.
 const PACKAGE: &str = "bindings/java";
-/// Its source roots: what `cargo xtask gen ffi` writes, and what is
-/// written by hand.
-const SOURCES: [&str; 2] = ["generated", "src"];
+/// Its source roots: what `cargo xtask gen ffi` writes, the typed messages
+/// `cargo xtask gen intl` writes, and what is written by hand.
+const SOURCES: [&str; 3] = ["generated", "messages", "src"];
 /// The tests, patched into the module.
 const TESTS: &str = "test";
 /// The module every source is in.
@@ -65,6 +65,77 @@ fn javac(out: &Path) -> Command {
     command
 }
 
+/// Compiles the module into `classes/main` and one patched directory into
+/// `classes/<name>`, each at the floor's release with every lint an error,
+/// and answers the module's classes.
+fn compile(root: &Path, classes: &Path, patch: &str) -> Result<PathBuf, ()> {
+    let package = root.join(PACKAGE);
+    let main = classes.join("main");
+    let patched = classes.join(patch);
+    let _ = std::fs::remove_dir_all(classes);
+    let mut sources = Vec::new();
+    for dir in SOURCES {
+        java_files(&package.join(dir), &mut sources);
+    }
+    let mut patch_sources = Vec::new();
+    java_files(&package.join(patch), &mut patch_sources);
+    if sources.is_empty() || patch_sources.is_empty() {
+        println!("FAIL  {PACKAGE} has no sources or no {patch}; run `cargo xtask gen ffi`");
+        return Err(());
+    }
+    step(
+        javac(&main).args(&sources).current_dir(root),
+        &format!("{PACKAGE} compiles at release {FLOOR} with every lint an error"),
+        &format!("{PACKAGE} does not compile clean at release {FLOOR}"),
+    )?;
+    step(
+        javac(&patched)
+            .arg("--module-path")
+            .arg(&main)
+            .arg(format!(
+                "--patch-module={MODULE}={}",
+                package.join(patch).display()
+            ))
+            .args(&patch_sources)
+            .current_dir(root),
+        "",
+        &format!("{PACKAGE}/{patch} does not compile clean"),
+    )?;
+    Ok(main)
+}
+
+/// `java` running a class patched into the module against a named library.
+fn patched(main: &Path, patch: &Path, class: &str, library: &Path) -> Command {
+    let mut command = Command::new("java");
+    command
+        .arg(format!("--enable-native-access={MODULE}"))
+        .arg("--module-path")
+        .arg(main)
+        .arg(format!("--patch-module={MODULE}={}", patch.display()))
+        .args(["-m", &format!("{MODULE}/{class}")])
+        .env("TEISTRO_LIBRARY", library);
+    command
+}
+
+/// The parity runner, compiled and ready to run: `Parity.java` patched
+/// into the module as the tests are, so it walks the scenario through the
+/// binding a consumer would hold. `None` when it does not compile, which
+/// the parity gate counts as a runner tried and failed.
+pub(crate) fn parity(root: &Path, library: &Path) -> Option<Command> {
+    let classes = root.join(PARITY_CLASSES);
+    let main = compile(root, &classes, PARITY).ok()?;
+    let mut command = patched(&main, &classes.join(PARITY), PARITY_MAIN, library);
+    command.current_dir(root);
+    Some(command)
+}
+
+/// The parity runner's directory, patched into the module.
+const PARITY: &str = "parity";
+/// The parity program.
+const PARITY_MAIN: &str = "com.teispace.teistro.ParityRunner";
+/// Where the parity runner's classes are written, apart from the tests'.
+const PARITY_CLASSES: &str = "target/java-parity";
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("javac", "--version") || !present("java", "--version") {
         crate::skip::skip(
@@ -72,54 +143,13 @@ pub(crate) fn check(root: &Path) -> i32 {
         );
         return 0;
     }
-    let package = root.join(PACKAGE);
     let classes = root.join(CLASSES);
-    let main = classes.join("main");
-    let tests = classes.join("test");
-    let _ = std::fs::remove_dir_all(&classes);
     let Ok(library) = library(root) else {
         return 1;
     };
-    let mut sources = Vec::new();
-    for dir in SOURCES {
-        java_files(&package.join(dir), &mut sources);
-    }
-    let mut test_sources = Vec::new();
-    java_files(&package.join(TESTS), &mut test_sources);
-    if sources.is_empty() || test_sources.is_empty() {
-        println!("FAIL  {PACKAGE} has no sources or no tests; run `cargo xtask gen ffi`");
-        return 1;
-    }
-    let outcome = step(
-        javac(&main).args(&sources).current_dir(root),
-        &format!("{PACKAGE} compiles at release {FLOOR} with every lint an error"),
-        &format!("{PACKAGE} does not compile clean at release {FLOOR}"),
-    )
-    .and_then(|()| {
+    let outcome = compile(root, &classes, TESTS).and_then(|main| {
         step(
-            javac(&tests)
-                .arg("--module-path")
-                .arg(&main)
-                .arg(format!(
-                    "--patch-module={MODULE}={}",
-                    package.join(TESTS).display()
-                ))
-                .args(&test_sources)
-                .current_dir(root),
-            "",
-            &format!("{PACKAGE}/{TESTS} does not compile clean"),
-        )
-    })
-    .and_then(|()| {
-        step(
-            Command::new("java")
-                .arg(format!("--enable-native-access={MODULE}"))
-                .arg("--module-path")
-                .arg(&main)
-                .arg(format!("--patch-module={MODULE}={}", tests.display()))
-                .args(["-m", &format!("{MODULE}/{MAIN}")])
-                .env("TEISTRO_LIBRARY", &library)
-                .current_dir(root),
+            patched(&main, &classes.join(TESTS), MAIN, &library).current_dir(root),
             &format!("{PACKAGE}'s tests pass against the real library"),
             &format!("{PACKAGE}'s tests did not pass"),
         )

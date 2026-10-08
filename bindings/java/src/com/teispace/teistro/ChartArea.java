@@ -96,6 +96,25 @@ public final class ChartArea {
                 readings.get(20), readings.get(21), readings.get(22), readings.get(23));
     }
 
+    /**
+     * A layout this context can draw in, shipped or registered, as its row:
+     * a fresh mapping to copy, give a key of its own and register.
+     *
+     * @param layout a {@link ChartLayout}, or a layout's key, bare
+     *     ({@code NORTH_INDIAN}) or full ({@code chart_layout.ACME_KERALA})
+     * @return the row, as {@link Json#read} reads it
+     */
+    public Map<String, Object> layout(Object layout) {
+        String key = layout instanceof ChartLayout member ? member.fullKey() : String.valueOf(layout);
+        if (!(Json.read(context.locked((lib, raw) -> Calls.chartLayoutRow(lib, raw, key)))
+                instanceof Map<?, ?> row)) {
+            throw new TeistroException(Status.INTERNAL, "a layout's row is an object", "", "layout", "", "");
+        }
+        Map<String, Object> copy = new java.util.LinkedHashMap<>();
+        row.forEach((name, value) -> copy.put(String.valueOf(name), value));
+        return copy;
+    }
+
     /** A dasha system's id: a catalogued one's, or the id the context resolved a registered key to. */
     private int[] dashas(List<Object> systems) {
         int[] ids = new int[systems.size()];

@@ -1214,6 +1214,374 @@ fn rust_group(out: &mut String, group: &Group, paths: RustPaths<'_>, depth: usiz
     }
 }
 
+/// Java's reserved words and literals, which an identifier may not be.
+const JAVA_RESERVED: [&str; 53] = [
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extends",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "native",
+    "new",
+    "package",
+    "private",
+    "protected",
+    "public",
+    "return",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "transient",
+    "try",
+    "void",
+    "volatile",
+    "while",
+    "true",
+    "false",
+    "null",
+];
+
+/// A Java name for a group, a message or a form: camel case, with a
+/// trailing underscore where the name is reserved.
+fn java_name(segment: &str) -> String {
+    let name = camel(&snake(segment).trim_end_matches('_').replace('-', "_"));
+    if JAVA_RESERVED.contains(&name.as_str()) {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
+/// A Java constant for a context value or a key: snake case, upper.
+fn java_constant(value: &str) -> String {
+    let name = snake(value).to_ascii_uppercase();
+    if name.starts_with(|c: char| c.is_ascii_digit()) {
+        format!("_{name}")
+    } else {
+        name
+    }
+}
+
+fn java_type(kind: &ParamType) -> String {
+    match kind {
+        ParamType::Context(context) => pascal(context),
+        ParamType::Integer => String::from("long"),
+        ParamType::Number | ParamType::Instant => String::from("double"),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("{}Key", pascal(kind))
+        }
+        ParamType::String | ParamType::Entity(_) => String::from("String"),
+        ParamType::List => String::from("List<?>"),
+        ParamType::Date => String::from("DateValue"),
+        ParamType::Time => String::from("TimeValue"),
+        ParamType::DateTime => String::from("DateTimeValue"),
+        ParamType::Ghati => String::from("GhatiValue"),
+    }
+}
+
+/// A parameter as the renderer's JSON takes it, as [`python_value`] says.
+fn java_value(name: &str, kind: &ParamType) -> String {
+    let tagged = |tag: &str, value: String| format!("Map.of(\"{tag}\", {value})");
+    match kind {
+        ParamType::Context(_) => format!("{name}.value()"),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            tagged("$entity", format!("{name}.value()"))
+        }
+        ParamType::Entity(_) => tagged("$entity", name.to_string()),
+        ParamType::Date => tagged("$date", format!("{name}.json()")),
+        ParamType::Time => tagged("$time", format!("{name}.json()")),
+        ParamType::DateTime => tagged("$datetime", format!("{name}.json()")),
+        ParamType::Ghati => tagged("$ghati", format!("{name}.json()")),
+        ParamType::Instant => tagged("$instant", name.to_string()),
+        _ => name.to_string(),
+    }
+}
+
+const JAVA_VALUE_TYPES: &str = r#"    /**
+     * A date as a renderer takes it: its calendar's key and the numbers.
+     *
+     * @param calendar the calendar's key
+     * @param year the year
+     * @param month the month
+     * @param day the day
+     */
+    public record DateValue(String calendar, long year, long month, long day) {
+        Map<String, Object> json() {
+            return Map.of("calendar", calendar, "year", year, "month", month, "day", day);
+        }
+    }
+
+    /**
+     * A time of day as a renderer takes it.
+     *
+     * @param hour the hour
+     * @param minute the minute
+     * @param second the second
+     */
+    public record TimeValue(long hour, long minute, long second) {
+        Map<String, Object> json() {
+            return Map.of("hour", hour, "minute", minute, "second", second);
+        }
+    }
+
+    /**
+     * A date and a time together.
+     *
+     * @param date the date
+     * @param time the time
+     */
+    public record DateTimeValue(DateValue date, TimeValue time) {
+        Map<String, Object> json() {
+            return Map.of("date", date.json(), "time", time.json());
+        }
+    }
+
+    /**
+     * A ghati-pala count as a renderer takes it.
+     *
+     * @param ghati the ghatis
+     * @param pala the palas
+     * @param vipala the vipalas
+     */
+    public record GhatiValue(long ghati, long pala, long vipala) {
+        Map<String, Object> json() {
+            return Map.of("ghati", ghati, "pala", pala, "vipala", vipala);
+        }
+    }
+
+    /** What the accessors reach the locale engine through. */
+    public interface Renderer {
+        /**
+         * The message with a key, rendered with its parameters.
+         *
+         * @param key the message's key
+         * @param params its parameters, as the renderer's JSON takes them
+         * @return the text
+         */
+        String render(String key, Map<String, Object> params);
+
+        /**
+         * A catalogued entity's forms in the current locale.
+         *
+         * @param key the entity's full key
+         * @return its forms
+         */
+        EntityForms entity(String key);
+    }
+
+"#;
+
+/// An enum of closed values, each spelled as the engine writes it.
+fn java_enum(out: &mut String, name: &str, doc: &str, values: &[(String, String)]) {
+    let _ = writeln!(out, "    /** {doc} */\n    public enum {name} {{");
+    let constants: Vec<String> = values
+        .iter()
+        .map(|(constant, value)| {
+            format!("        /** `{value}`. */\n        {constant}(\"{value}\")")
+        })
+        .collect();
+    let _ = writeln!(
+        out,
+        "{};\n\n        private final String value;\n\n        {name}(String value) {{\n            this.value = value;\n        }}\n\n        /**\n         * The value as the engine writes it.\n         *\n         * @return the value\n         */\n        public String value() {{\n            return value;\n        }}\n    }}\n",
+        constants.join(",\n")
+    );
+}
+
+fn java_entity_forms(out: &mut String, model: &Model) {
+    let gender = model.contexts.contains_key("gender");
+    let mut components = Vec::new();
+    let mut docs = Vec::new();
+    let mut reads = Vec::new();
+    for form in &model.forms.0 {
+        components.push(format!("String {}", java_name(form)));
+        docs.push(format!(
+            "     * @param {} the `{form}` form; empty when the record lacks it",
+            java_name(form)
+        ));
+        reads.push(format!("text(forms, \"{form}\", \"\")"));
+    }
+    for form in &model.forms.1 {
+        components.push(format!("String {}", java_name(form)));
+        docs.push(format!(
+            "     * @param {} the `{form}` form, or null",
+            java_name(form)
+        ));
+        reads.push(format!("text(forms, \"{form}\", null)"));
+    }
+    components.push(String::from("String glyph"));
+    docs.push(String::from("     * @param glyph its glyph, or null"));
+    reads.push(String::from("text(forms, \"glyph\", null)"));
+    if gender {
+        components.push(String::from("Gender gender"));
+        docs.push(String::from(
+            "     * @param gender its grammatical gender, or null",
+        ));
+        reads.push(String::from("gender(text(forms, \"gender\", null))"));
+    }
+    components.push(String::from("Map<String, String> forms"));
+    docs.push(String::from(
+        "     * @param forms every form the locale carries, including any a loaded pack brought",
+    ));
+    reads.push(String::from("all(forms)"));
+    let _ = writeln!(
+        out,
+        "    /**\n     * A catalogued entity's forms in the current locale.\n     *\n{}\n     */\n    public record EntityForms({}) {{\n        /**\n         * The forms as the boundary hands them out, parsed.\n         *\n         * @param raw the parsed JSON object\n         * @return the forms\n         * @throws IllegalArgumentException for JSON that is not an object\n         */\n        public static EntityForms of(Object raw) {{\n            if (!(raw instanceof Map<?, ?> forms)) {{\n                throw new IllegalArgumentException(\"an entity's forms are an object, not \" + raw);\n            }}\n            return new EntityForms(\n                    {});\n        }}\n\n        private static String text(Map<?, ?> forms, String form, String absent) {{\n            return forms.get(form) instanceof String found ? found : absent;\n        }}\n\n        private static Map<String, String> all(Map<?, ?> forms) {{\n            Map<String, String> found = new TreeMap<>();\n            forms.forEach((name, value) -> {{\n                if (name instanceof String key && value instanceof String text) {{\n                    found.put(key, text);\n                }}\n            }});\n            return Collections.unmodifiableMap(found);\n        }}",
+        docs.join("\n"),
+        components.join(", "),
+        reads.join(",\n                    ")
+    );
+    if gender {
+        out.push_str("\n        private static Gender gender(String value) {\n            for (Gender member : Gender.values()) {\n                if (member.value().equals(value)) {\n                    return member;\n                }\n            }\n            return null;\n        }\n");
+    }
+    out.push_str("    }\n\n");
+}
+
+fn java_group(out: &mut String, name: &str, group: &Group, depth: usize) {
+    let pad = "    ".repeat(depth);
+    let _ = writeln!(
+        out,
+        "{pad}/** The messages under `{name}`, each rendered by its own key. */\n{pad}public static final class {name} {{\n{pad}    private final Renderer r;\n\n{pad}    {name}(Renderer r) {{\n{pad}        this.r = r;\n{pad}    }}"
+    );
+    java_members(out, name, group, depth);
+    let _ = writeln!(out, "{pad}}}\n");
+}
+
+/// A group's members: an accessor per child group, with its class nested
+/// beside it, and a method per message and per entity. `name` prefixes
+/// the nested classes' names, empty at the root.
+fn java_members(out: &mut String, name: &str, group: &Group, depth: usize) {
+    let pad = "    ".repeat(depth);
+    for (segment, node) in &group.children {
+        let member = java_name(segment);
+        match node {
+            Node::Group(child) => {
+                let class = format!("{name}{}", pascal(java_name(segment).trim_end_matches('_')));
+                let _ = writeln!(
+                    out,
+                    "\n{pad}    /**\n{pad}     * The messages under `{segment}`.\n{pad}     *\n{pad}     * @return the group\n{pad}     */\n{pad}    public {class} {member}() {{\n{pad}        return new {class}(r);\n{pad}    }}\n"
+                );
+                java_group(out, &class, child, depth + 1);
+            }
+            Node::Message(message) => {
+                let params: Vec<String> = message
+                    .params
+                    .iter()
+                    .map(|(n, k)| format!("{} {}", java_type(k), java_name(n)))
+                    .collect();
+                let mut docs = String::new();
+                for (n, _) in &message.params {
+                    let _ = write!(docs, "\n{pad}     * @param {} `{n}`", java_name(n));
+                }
+                let args = if message.params.is_empty() {
+                    String::from("Map.of()")
+                } else {
+                    let entries: Vec<String> = message
+                        .params
+                        .iter()
+                        .map(|(n, k)| format!("\"{n}\", {}", java_value(&java_name(n), k)))
+                        .collect();
+                    format!(
+                        "Map.ofEntries({})",
+                        entries
+                            .iter()
+                            .map(|e| format!("Map.entry({e})"))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    )
+                };
+                let _ = writeln!(
+                    out,
+                    "\n{pad}    /**\n{pad}     * `{}`\n{pad}     *{docs}\n{pad}     * @return the text\n{pad}     */\n{pad}    public String {member}({}) {{\n{pad}        return r.render(\"{}\", {args});\n{pad}    }}",
+                    message.key,
+                    params.join(", "),
+                    message.key,
+                );
+            }
+            Node::Entity(key) => {
+                let _ = writeln!(
+                    out,
+                    "\n{pad}    /**\n{pad}     * The forms of `{key}` in the current locale.\n{pad}     *\n{pad}     * @return the forms\n{pad}     */\n{pad}    public EntityForms {member}() {{\n{pad}        return r.entity(\"{key}\");\n{pad}    }}"
+                );
+            }
+        }
+    }
+}
+
+/// The Java surface, one file in `package`: an enum per context and per
+/// closed entity kind, the value shapes, an entity's forms, and the
+/// accessor tree as a nested class per group. Parameters are positional
+/// in name order, as Java has no named arguments. Keys and shapes only,
+/// never text.
+#[must_use]
+pub fn java(model: &Model, package: &str) -> String {
+    let mut out = format!(
+        "// Generated by teistro-intl from i18n/{}. Do not edit.\n// Keys and parameter shapes only; text comes from packs.\n\npackage {package};\n\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.TreeMap;\n\n/**\n * The typed accessors: every message of the SDK, by its key, and the\n * types its parameters take.\n */\n@SuppressWarnings(\"unused\")\npublic final class Messages {{\n    private final Renderer r;\n\n    /**\n     * The accessors over a renderer.\n     *\n     * @param r what the accessors reach the locale engine through\n     */\n    public Messages(Renderer r) {{\n        this.r = r;\n    }}\n\n",
+        model.locale
+    );
+    for (context, values) in &model.contexts {
+        let values: Vec<(String, String)> = values
+            .iter()
+            .map(|v| (java_constant(v), v.clone()))
+            .collect();
+        java_enum(
+            &mut out,
+            &pascal(context),
+            &format!("The `{context}` context, as a message selects on it."),
+            &values,
+        );
+    }
+    for (kind, keys) in &model.kinds {
+        if !closed_catalogue_kind(kind) {
+            continue;
+        }
+        let values: Vec<(String, String)> = keys
+            .iter()
+            .map(|key| (java_constant(key), format!("{kind}.{key}")))
+            .collect();
+        java_enum(
+            &mut out,
+            &format!("{}Key", pascal(kind)),
+            &format!("A `{kind}` as a message names it: the full catalogue key."),
+            &values,
+        );
+    }
+    out.push_str(JAVA_VALUE_TYPES);
+    java_entity_forms(&mut out, model);
+    java_members(&mut out, "", &model.root, 0);
+    out.push_str("}\n");
+    out
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::panic, reason = "tests fail by panicking")]

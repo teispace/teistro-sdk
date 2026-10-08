@@ -3,13 +3,26 @@ package com.teispace.teistro;
 import java.util.Map;
 
 import com.teispace.teistro.blob.IntlRender;
+import com.teispace.teistro.messages.Messages;
 
 /** {@code sky.intl()}: the locale, its messages and the scripts they are in. */
 public final class IntlArea {
     private final Context context;
+    private final Messages messages;
 
     IntlArea(Context context) {
         this.context = context;
+        this.messages = new Messages(new Messages.Renderer() {
+            @Override
+            public String render(String key, Map<String, Object> params) {
+                return IntlArea.this.render(key, params).text();
+            }
+
+            @Override
+            public Messages.EntityForms entity(String key) {
+                return IntlArea.this.entity(key);
+            }
+        });
     }
 
     /**
@@ -48,6 +61,30 @@ public final class IntlArea {
      */
     public IntlRender render(String key, Map<String, ?> params) {
         return renderJson(key, Json.write(params == null ? Map.of() : params));
+    }
+
+    /**
+     * A catalogued entity's forms in the current locale.
+     *
+     * @param key the entity's full key, {@code graha.SUN}
+     * @return its forms
+     */
+    public Messages.EntityForms entity(String key) {
+        return Messages.EntityForms.of(Json.read(context.locked((lib, raw) -> Calls.intlEntity(lib, raw, key))));
+    }
+
+    /**
+     * The typed accessors: every message of the SDK, by its key, each
+     * rendered in the context's locale.
+     *
+     * <pre>{@code
+     * String said = sky.intl().messages().sdk().reason().grahaInBhava(7, Messages.GrahaKey.JUPITER);
+     * }</pre>
+     *
+     * @return the accessors
+     */
+    public Messages messages() {
+        return messages;
     }
 
     /**
