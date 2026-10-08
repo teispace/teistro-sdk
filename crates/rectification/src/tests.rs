@@ -671,3 +671,406 @@ mod conception {
         assert!((navamsha.risen_fraction - 0.5).abs() < 1e-4);
     }
 }
+
+// ── step 5: CIRCUMSTANCE ───────────────────────────────────────────────
+
+mod circumstance {
+    use teistro_aspect::drishti::Strength;
+    use teistro_core::catalogue::{Graha, Rashi, Rising};
+    use teistro_core::error::Error;
+    use teistro_core::quantity::{JulianDay, Utc};
+
+    use super::{BASE, Line};
+    use crate::circumstance::{SEVEN, judged};
+    use crate::{
+        Attendants, BetweenBy, BirthSky, CircumstanceRules, ConceptionSky, Day, Facts, Indication,
+        Level, MoonSees, OutsideHalf, Presentation, PresentationBy, Sky, SunFallen, Whereabouts,
+        circumstance, hemmed,
+    };
+
+    /// A sky written down: the lagna, then the seven in [`SEVEN`]'s order.
+    fn sky(lagna_deg: f64, grahas_deg: [f64; 7]) -> BirthSky {
+        BirthSky {
+            lagna_deg,
+            grahas_deg,
+            lord_retrograde: false,
+        }
+    }
+
+    /// Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, all at once.
+    const QUIET: [f64; 7] = [100.0, 190.0, 40.0, 100.0, 130.0, 70.0, 160.0];
+
+    fn rules() -> CircumstanceRules {
+        CircumstanceRules::default()
+    }
+
+    #[test]
+    fn the_seven_are_read_in_their_own_order() {
+        let read = sky(0.0, [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
+        for (deg, graha) in (1..=7).map(f64::from).zip(SEVEN) {
+            assert_eq!(read.of(graha).to_bits(), deg.to_bits(), "{graha:?}");
+        }
+        assert!(read.of(Graha::Rahu).is_nan());
+    }
+
+    #[test]
+    fn the_moon_in_the_seventh_sees_the_lagna_and_the_father_is_there() {
+        // Aries rising, the Moon in Libra; Saturn in Virgo, Mars in Taurus,
+        // Mercury and Venus nowhere near her.
+        let read = judged(sky(10.0, QUIET), &Facts::default(), rules());
+        assert_eq!(read.father.moon_aspect, Strength::Full);
+        assert!(!read.father.unseen);
+        assert!(!read.father.away);
+        assert_eq!(read.father.whereabouts, None);
+    }
+
+    #[test]
+    fn the_moon_in_the_lagna_does_not_see_it() {
+        let mut grahas = QUIET;
+        grahas[1] = 20.0;
+        let read = judged(sky(10.0, grahas), &Facts::default(), rules());
+        assert_eq!(read.father.moon_aspect, Strength::None);
+        assert!(read.father.unseen);
+        assert!(read.father.away);
+    }
+
+    #[test]
+    fn a_partial_aspect_sees_unless_only_the_full_one_counts() {
+        // The Moon in Capricorn, an Aries lagna the 4th from her, which she
+        // sees with three quarters (BJ II.13); a drishti counts from the
+        // one looking.
+        let mut grahas = QUIET;
+        grahas[1] = 280.0;
+        let any = judged(sky(10.0, grahas), &Facts::default(), rules());
+        assert_eq!(any.father.moon_aspect, Strength::ThreeQuarters);
+        assert!(!any.father.unseen);
+        let full = judged(
+            sky(10.0, grahas),
+            &Facts::default(),
+            CircumstanceRules {
+                moon_sees: MoonSees::Full,
+                ..rules()
+            },
+        );
+        assert!(full.father.unseen);
+    }
+
+    #[test]
+    fn the_sun_fallen_places_the_father_by_its_sign() {
+        // The Moon in the lagna, unseeing; the Sun in each house from an
+        // Aries lagna, read by both readings of "fallen from the 10th".
+        for (sun_deg, house, iyer, either) in [
+            (
+                250.0,
+                9,
+                Some(Whereabouts::Returning),
+                Some(Whereabouts::Returning),
+            ),
+            (
+                220.0,
+                8,
+                Some(Whereabouts::OwnCountry),
+                Some(Whereabouts::OwnCountry),
+            ),
+            (280.0, 10, None, None),
+            (310.0, 11, None, Some(Whereabouts::OwnCountry)),
+            (340.0, 12, None, Some(Whereabouts::Returning)),
+            (190.0, 7, None, None),
+        ] {
+            let mut grahas = QUIET;
+            grahas[0] = sun_deg;
+            grahas[1] = 20.0;
+            for (fallen, expected) in [
+                (SunFallen::NinthOrEighth, iyer),
+                (SunFallen::EitherSide, either),
+            ] {
+                let read = judged(
+                    sky(10.0, grahas),
+                    &Facts::default(),
+                    CircumstanceRules {
+                        sun_fallen: fallen,
+                        ..rules()
+                    },
+                );
+                assert_eq!(read.father.sun_house, house);
+                assert_eq!(read.father.whereabouts, expected, "{sun_deg} {fallen:?}");
+            }
+        }
+        // A movable sign: the Sun in Aries, the 9th from Leo.
+        let mut grahas = QUIET;
+        grahas[0] = 10.0;
+        grahas[1] = 130.0;
+        let read = judged(sky(130.0, grahas), &Facts::default(), rules());
+        assert_eq!(read.father.sun_house, 9);
+        assert_eq!(read.father.whereabouts, Some(Whereabouts::Abroad));
+    }
+
+    #[test]
+    fn the_sun_fallen_says_nothing_while_the_moon_sees() {
+        let mut grahas = QUIET;
+        grahas[0] = 250.0;
+        let read = judged(sky(10.0, grahas), &Facts::default(), rules());
+        assert!(!read.father.unseen);
+        assert_eq!(read.father.whereabouts, None);
+    }
+
+    #[test]
+    fn saturn_rising_or_mars_setting_sends_the_father_away() {
+        let mut saturn = QUIET;
+        saturn[6] = 25.0;
+        let read = judged(sky(10.0, saturn), &Facts::default(), rules());
+        assert!(read.father.saturn_rising && read.father.away && !read.father.unseen);
+        let mut mars = QUIET;
+        mars[2] = 200.0;
+        let read = judged(sky(10.0, mars), &Facts::default(), rules());
+        assert!(read.father.mars_setting && read.father.away);
+    }
+
+    #[test]
+    fn the_moon_is_hemmed_from_both_sides_or_inside_one_sign() {
+        // Mercury in the 12th from her and Venus in the 2nd, either way round.
+        assert!(hemmed(45.0, 20.0, 70.0));
+        assert!(hemmed(45.0, 70.0, 20.0));
+        // Across 0°: the Moon in Aries, Mercury in Pisces.
+        assert!(hemmed(5.0, 350.0, 40.0));
+        // All three in Taurus, her degree between theirs or not.
+        assert!(hemmed(45.0, 40.0, 50.0));
+        assert!(!hemmed(55.0, 40.0, 50.0));
+        // Both on one side, or one with her and one beside her.
+        assert!(!hemmed(45.0, 20.0, 25.0));
+        assert!(!hemmed(45.0, 40.0, 70.0));
+        let mut grahas = QUIET;
+        grahas[3] = 170.0;
+        grahas[5] = 220.0;
+        let read = judged(sky(10.0, grahas), &Facts::default(), rules());
+        assert!(read.father.moon_hemmed && read.father.away);
+    }
+
+    #[test]
+    fn the_presentation_follows_how_the_sign_rises() {
+        for (at, lagna, rising, foretold) in [
+            (15.0, Rashi::Aries, Rising::Prishtodaya, Presentation::Feet),
+            (
+                105.0,
+                Rashi::Cancer,
+                Rising::Prishtodaya,
+                Presentation::Feet,
+            ),
+            (75.0, Rashi::Gemini, Rising::Sirshodaya, Presentation::Head),
+            (
+                315.0,
+                Rashi::Aquarius,
+                Rising::Sirshodaya,
+                Presentation::Head,
+            ),
+            (
+                345.0,
+                Rashi::Pisces,
+                Rising::Ubhayodaya,
+                Presentation::Hands,
+            ),
+        ] {
+            assert_eq!(Rashi::of_longitude(at), lagna);
+            let read = judged(sky(at, QUIET), &Facts::default(), rules());
+            assert_eq!(read.presentation.rising, rising, "{lagna:?}");
+            assert_eq!(read.presentation.foretold, foretold, "{lagna:?}");
+            assert!(read.presentation.agrees(foretold));
+        }
+    }
+
+    #[test]
+    fn the_lagna_lords_motion_tells_a_natural_birth_from_an_irregular_one() {
+        let by = CircumstanceRules {
+            presentation_by: PresentationBy::LagnaLordMotion,
+            ..rules()
+        };
+        let direct = judged(sky(10.0, QUIET), &Facts::default(), by);
+        assert_eq!(direct.presentation.lord, Graha::Mars);
+        assert_eq!(direct.presentation.foretold, Presentation::Head);
+        assert!(direct.presentation.agrees(Presentation::Head));
+        assert!(!direct.presentation.agrees(Presentation::Feet));
+        let retrograde = judged(
+            BirthSky {
+                lord_retrograde: true,
+                ..sky(10.0, QUIET)
+            },
+            &Facts::default(),
+            by,
+        );
+        assert_eq!(retrograde.presentation.foretold, Presentation::Feet);
+        assert!(retrograde.presentation.agrees(Presentation::Hands));
+        assert!(!retrograde.presentation.agrees(Presentation::Head));
+    }
+
+    #[test]
+    fn the_lamp_is_full_at_a_signs_start_and_spent_at_its_end() {
+        for (deg, level) in [
+            (0.0, Level::Full),
+            (7.4, Level::Full),
+            (7.5, Level::Half),
+            (15.0, Level::Half),
+            (22.5, Level::Half),
+            (22.6, Level::Spent),
+            (29.99, Level::Spent),
+        ] {
+            let mut grahas = QUIET;
+            grahas[1] = 180.0 + deg;
+            let read = judged(sky(90.0 + deg, grahas), &Facts::default(), rules());
+            assert_eq!(read.lamp.oil_level, level, "oil at {deg}");
+            assert_eq!(read.lamp.wick_level, level, "wick at {deg}");
+        }
+    }
+
+    /// The lagna at 0°, the Moon at 200°: Sun 50°, Mars 190°, Mercury 100°,
+    /// Jupiter 300°, Venus 210°, Saturn 10°.
+    const SPREAD: [f64; 7] = [50.0, 200.0, 190.0, 100.0, 300.0, 210.0, 10.0];
+
+    #[test]
+    fn the_grahas_between_the_lagna_and_the_moon_attend() {
+        let read = judged(sky(0.0, SPREAD), &Facts::default(), rules());
+        assert_eq!(
+            read.attending.between,
+            [Graha::Sun, Graha::Mars, Graha::Mercury, Graha::Saturn]
+        );
+        assert_eq!(read.attending.visible, [Graha::Mars]);
+        assert_eq!((read.attending.inside, read.attending.outside), (3, 1));
+        let reversed = judged(
+            sky(0.0, SPREAD),
+            &Facts::default(),
+            CircumstanceRules {
+                outside: OutsideHalf::Invisible,
+                ..rules()
+            },
+        );
+        assert_eq!(
+            (reversed.attending.inside, reversed.attending.outside),
+            (1, 3)
+        );
+        // By sign, the lagna's own and the Moon's own are not between.
+        let by_sign = judged(
+            sky(0.0, SPREAD),
+            &Facts::default(),
+            CircumstanceRules {
+                between_by: BetweenBy::Sign,
+                ..rules()
+            },
+        );
+        assert_eq!(by_sign.attending.between, [Graha::Sun, Graha::Mercury]);
+    }
+
+    #[test]
+    fn the_moon_on_the_lagna_has_no_one_between() {
+        let mut grahas = SPREAD;
+        grahas[1] = 0.0;
+        for between_by in [BetweenBy::Degree, BetweenBy::Sign] {
+            let read = judged(
+                sky(0.0, grahas),
+                &Facts::default(),
+                CircumstanceRules {
+                    between_by,
+                    ..rules()
+                },
+            );
+            assert!(read.attending.between.is_empty(), "{between_by:?}");
+            assert_eq!((read.attending.inside, read.attending.outside), (0, 0));
+        }
+    }
+
+    #[test]
+    fn a_fact_given_weighs_and_a_fact_absent_does_not() {
+        let none = judged(sky(0.0, SPREAD), &Facts::default(), rules());
+        assert_eq!(none.weights, []);
+        let facts = Facts {
+            father_present: Some(true),
+            presentation: Some(Presentation::Feet),
+            oil: Some(Level::Spent),
+            wick: Some(Level::Full),
+            attendants: Some(Attendants {
+                total: Some(4),
+                inside: Some(2),
+                outside: None,
+            }),
+        };
+        let read = judged(sky(0.0, SPREAD), &facts, rules());
+        let weighed: Vec<(Indication, bool)> = read
+            .weights
+            .iter()
+            .map(|weight| (weight.indication, weight.agrees))
+            .collect();
+        // The Moon in Libra sees an Aries lagna fully, but Saturn rises and
+        // Mars sets, so the father was away; Aries rises back first; the
+        // Moon at 20° of her sign leaves half the oil; the lagna at 0° an
+        // unburnt wick.
+        assert!(read.father.saturn_rising && read.father.mars_setting);
+        assert_eq!(
+            weighed,
+            [
+                (Indication::Father, false),
+                (Indication::Presentation, true),
+                (Indication::Oil, false),
+                (Indication::Wick, true),
+                (Indication::AttendantsTotal, true),
+                (Indication::AttendantsInside, false),
+            ]
+        );
+        assert_eq!(read.agreeing(), 3);
+        assert_eq!(Indication::Presentation.source(), "BJ V.17, I.10");
+    }
+
+    /// Saturn turning back through 0°, a degree a day, on the [`Line`] sky.
+    struct Backwards(Line);
+
+    impl Sky for Backwards {
+        fn ascendant_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+            self.0.ascendant_deg(at)
+        }
+        fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+            self.0.sun_deg(at)
+        }
+        fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+            self.0.moon_deg(at)
+        }
+        fn day(&self, at: JulianDay<Utc>) -> Result<Day, Error> {
+            self.0.day(at)
+        }
+    }
+
+    impl ConceptionSky for Backwards {
+        fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, Error> {
+            Ok(match graha {
+                Graha::Saturn => (BASE + 0.8 - at.get()).rem_euclid(360.0),
+                _ => self.0.graha_deg(graha, at)?,
+            })
+        }
+        fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+            self.0.midheaven_deg(at)
+        }
+    }
+
+    #[test]
+    fn a_retrograde_lord_is_read_across_zero_the_short_way() {
+        let sky = Backwards(Line { moon: 100.0 });
+        // At 0.8 days in, Saturn stands on 0°; the lagna, turning once a
+        // day from sunrise, is at 288°, Capricorn, whose lord is Saturn.
+        let at = JulianDay::literal(BASE + 0.8);
+        let speed = sky.graha_speed_deg(Graha::Saturn, at).expect("a speed");
+        assert!((speed + 1.0).abs() < 1e-6, "{speed}");
+        let read = circumstance(
+            &sky,
+            at,
+            &Facts::default(),
+            CircumstanceRules {
+                presentation_by: PresentationBy::LagnaLordMotion,
+                ..CircumstanceRules::default()
+            },
+        )
+        .expect("read");
+        assert_eq!(read.presentation.lord, Graha::Saturn);
+        assert!(read.sky.lord_retrograde);
+        assert_eq!(read.presentation.foretold, Presentation::Feet);
+        // The rising sign's reading never asks the motion.
+        let plain =
+            circumstance(&sky, at, &Facts::default(), CircumstanceRules::default()).expect("read");
+        assert!(!plain.sky.lord_retrograde);
+    }
+}

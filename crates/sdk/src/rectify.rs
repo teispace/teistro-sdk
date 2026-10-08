@@ -22,7 +22,8 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_rectification::{
-    Answer, Conception, ConceptionRules, ConceptionSky, Day, Rules, Sky, Window, conception, narrow,
+    Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, ConceptionSky, Day,
+    Facts, Rules, Sky, Window, circumstance, conception, narrow,
 };
 use teistro_time::ghati::Reckoning;
 
@@ -132,6 +133,52 @@ impl ChartArea<'_> {
         })
     }
 
+    /// What *Brihat Jataka* ch. V says a candidate birth time shows of the
+    /// birth (`03-design/rectification.md`, step 5): the father away
+    /// (V.1–2), the child's presentation (V.17), the lamp's oil and wick
+    /// (V.18) and the women attending (V.22), each weighed against what
+    /// the family remembers. A fact not given is read and not weighed, and
+    /// none of them bars.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # use teistro::rectification::{CircumstanceRules, Facts, Presentation};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let place: Place = todo!();
+    /// let facts = Facts { father_present: Some(false), presentation: Some(Presentation::Head), ..Facts::default() };
+    /// let at = JulianDay::literal(2_460_000.3);
+    /// let read = sdk.chart().circumstance(at, &place, UtcOffset::UTC, &facts, &CircumstanceRules::default())?.value;
+    /// println!("{} of {} facts agree; the father away: {}", read.agreeing(), read.weights.len(), read.father.away);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris, and whatever founding a chart at the
+    /// candidate refuses.
+    pub fn circumstance(
+        self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        offset: UtcOffset,
+        facts: &Facts,
+        rules: &CircumstanceRules,
+    ) -> Result<Envelope<Circumstance>, Error> {
+        let input = CircumstanceInput {
+            at,
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            facts,
+            rules,
+        };
+        self.over_sky(at, place, offset, &input, |sky| {
+            circumstance(sky, at, facts, *rules)
+        })
+    }
+
     /// Runs `read` over the sky of the chart founded at `founded_at`,
     /// sealing its answer under that chart's provenance and `input`'s hash.
     fn over_sky<T: Serialize, I: Serialize>(
@@ -184,6 +231,17 @@ struct ConceptionInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     rules: &'r ConceptionRules,
+}
+
+/// What a circumstance report was asked, which its input hash seals.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CircumstanceInput<'r> {
+    at: JulianDay<Utc>,
+    place: Place,
+    utc_offset_seconds: i32,
+    facts: &'r Facts,
+    rules: &'r CircumstanceRules,
 }
 
 /// The sky a chart founded at each instant would read.
