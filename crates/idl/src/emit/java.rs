@@ -15,6 +15,7 @@
 
 mod blob;
 mod calls;
+mod records;
 mod values;
 
 use std::fmt::Write;
@@ -74,6 +75,7 @@ pub fn render(api: &Api) -> Vec<File> {
     files.extend(values::files(api, &dir));
     files.extend(calls::files(api, &dir));
     files.extend(blob::files(api));
+    files.extend(records::files(api));
     files.push(File {
         path: format!("{}/Native.java", FFI_PACKAGE.replace('.', "/")),
         text: render_native(api),
