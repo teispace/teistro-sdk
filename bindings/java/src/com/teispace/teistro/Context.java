@@ -33,6 +33,10 @@ public final class Context implements AutoCloseable {
     private final IntlArea intl = new IntlArea(this);
     private final KeysArea keys = new KeysArea(this);
     private final ChartArea chart = new ChartArea(this);
+    private final AlmanacArea almanac = new AlmanacArea(this);
+    private final MatchingArea matching = new MatchingArea(this);
+    private final NumerologyArea numerology = new NumerologyArea(this);
+    private final Engine ephemeris = new Engine(this);
     private final FrameArea frame;
 
     /** The handle, apart from the context, so the cleaner can free it. */
@@ -194,6 +198,43 @@ public final class Context implements AutoCloseable {
      */
     public ChartArea chart() {
         return chart;
+    }
+
+    /**
+     * The almanac: a span of days at a place, with its muhurtas, festivals,
+     * years and eclipses on request.
+     *
+     * @return the almanac area of this context
+     */
+    public AlmanacArea almanac() {
+        return almanac;
+    }
+
+    /**
+     * Two births compared: the naam milan from names alone.
+     *
+     * @return the matching area of this context
+     */
+    public MatchingArea matching() {
+        return matching;
+    }
+
+    /**
+     * A name and a civil date read under the numerology tables.
+     *
+     * @return the numerology area of this context
+     */
+    public NumerologyArea numerology() {
+        return numerology;
+    }
+
+    /**
+     * The plugged-in engine's own functions, reached through the SDK.
+     *
+     * @return the engine of this context
+     */
+    public Engine ephemeris() {
+        return ephemeris;
     }
 
     /**

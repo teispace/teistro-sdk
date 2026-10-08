@@ -138,4 +138,37 @@ public final class ChartArea {
     static Set<String> readings() {
         return Set.copyOf(READINGS.stream().map(f -> f.replaceFirst("_json$", "")).toList());
     }
+
+    /**
+     * One period read for each of the twelve signs.
+     *
+     * @param request the period, its place and what to read
+     * @return the reading
+     */
+    public RashifalAnswer rashifal(RashifalRequest request) {
+        return RashifalReads.rashifal(context, request, null);
+    }
+
+    /**
+     * One period read for each of the twelve signs, with a baseline engine's
+     * scores beside the SDK's.
+     *
+     * @param request the period, its place and what to read
+     * @param baseline the baseline's name
+     * @return the reading
+     */
+    public RashifalAnswer rashifal(RashifalRequest request, String baseline) {
+        return RashifalReads.rashifal(context, request, baseline);
+    }
+
+    /**
+     * Several periods read in one call.
+     *
+     * @param requests the periods
+     * @param baseline the baseline's name, or null for none
+     * @return one reading per request, in order
+     */
+    public List<RashifalAnswer> rashifalMany(List<RashifalRequest> requests, String baseline) {
+        return RashifalReads.rashifalMany(context, requests, baseline);
+    }
 }

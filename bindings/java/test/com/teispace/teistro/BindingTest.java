@@ -323,6 +323,118 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart's day is the almanac's, and its date converts", () -> {
+            try (Context sky = context(teistro)) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                LocalDay day = sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().build()).day();
+                same(day, sky.almanac().day(day.date(), kathmandu, 20_700).day(), "one day, two areas");
+                same(Calendar.BIKRAM_SAMBAT, day.date().calendar(), "the profile's calendar");
+                same(List.of(2056, 9, 17), List.of(day.date().year(), day.date().month(), day.date().day()),
+                        "the Bikram Sambat date");
+                same(Vara.SHANIVARA, day.vara(), "a Saturday");
+                check(day.sunrise() < day.sunset() && day.sunset() < 2_451_545.0 && 2_451_545.0 < day.nextSunrise(),
+                        "the instant is in the day's night");
+                same(Sunrise.CENTRE_NO_REFRACTION, day.convention(), "the profile's sunrise");
+            }
+        });
+
+        tests.put("a chart carries its essential dignities in the Chaldean order", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("conformance-baseline")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+                Chart bare = sky.chart().found(2_460_676.5, kathmandu, 20_700, ChartOptions.builder().build());
+                check(bare.dignities().isEmpty(), "not asked, not read");
+                Dignities read = sky.chart().found(2_460_676.5, kathmandu, 20_700,
+                        ChartOptions.builder().dignities(Map.of()).build()).dignities().orElseThrow();
+                same(SectRule.HORIZON, read.sectRule(), "the horizon decides the sect");
+                same(List.of(Graha.SATURN, Graha.JUPITER, Graha.MARS, Graha.SUN, Graha.VENUS, Graha.MERCURY,
+                        Graha.MOON), read.planets().stream().map(PlanetDignity::planet).toList(), "the Chaldean order");
+                same(5, read.scores().house(), "Lilly's house score");
+            }
+        });
+
+        tests.put("every reading a chart was asked for reads back", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                ChartOptions everything = ChartOptions.builder().state(true).aspects(true).points(true).houses(true)
+                        .ashtakavarga(true).vimshopaka(true).vaiseshikamsa(true).dashaPhala(true).jaimini(true)
+                        .avakahada(true).outerPlanets(true).shadbala(true).bhavaBala(true)
+                        .vargas(Varga.D9).dashas(DashaSystem.VIMSHOTTARI).remedies(Map.of())
+                        .fortitudes(Map.of()).lots(Map.of()).westernAspects(Map.of())
+                        .westernHouses(Map.of()).antiscia(Map.of()).midpoints(Map.of()).parallels(Map.of())
+                        .build();
+                ChartBatch batch = sky.chart().foundMany(new double[] {2_447_995.489_583_333_5, 2_451_545.0},
+                        kathmandu, 20_700, everything);
+                for (Chart chart : batch) {
+                    same(9, chart.grahas().size(), "nine grahas");
+                    same(12, chart.houses().size(), "twelve bhavas");
+                    same(12, chart.chalit().size(), "twelve chalit bhavas");
+                    same(9, chart.states().size(), "a state per graha");
+                    check(!chart.points().isEmpty(), "the derived points");
+                    check(!chart.aspects().isEmpty(), "the drishti");
+                    check(!chart.bhavas().isEmpty(), "the served houses");
+                    check(!chart.outer().isEmpty(), "the outer planets");
+                    same(1, chart.vargas().size(), "the navamsha asked for");
+                    same(1, chart.dashas().size(), "the Vimshottari asked for");
+                    check(chart.ashtakavarga().isPresent(), "the ashtakavarga");
+                    check(chart.vimshopaka().isPresent(), "the vimshopaka");
+                    check(chart.vaiseshikamsa().isPresent(), "the vaiseshikamsa");
+                    check(chart.dashaPhala().isPresent(), "the dasha phala");
+                    check(chart.jaimini().isPresent(), "the jaimini reading");
+                    check(chart.avakahada().isPresent(), "the avakahada");
+                    check(chart.shadbala().isPresent(), "the shadbala");
+                    check(chart.bhavaBala().isPresent(), "the bhava bala");
+                    check(chart.kp().isEmpty(), "KP needs its own ayanamsha, and was not asked");
+                    check(chart.remedies().isPresent(), "the remedies");
+                    check(chart.fortitudes().isPresent(), "the fortitudes");
+                    check(chart.lots().isPresent(), "the lots");
+                    check(chart.westernAspects().isPresent(), "the western aspects");
+                    check(chart.westernHouses().isPresent(), "the western houses");
+                    check(chart.antiscia().isPresent(), "the antiscia");
+                    check(chart.midpoints().isPresent(), "the midpoints");
+                    check(chart.parallels().isPresent(), "the parallels");
+                    check(chart.prashna().isEmpty() && chart.matching().isEmpty() && chart.synastry().isEmpty(),
+                            "what was not asked is empty");
+                    check(chart.hits().isEmpty() && chart.gochar().isEmpty() && chart.drawings().isEmpty(),
+                            "and every list not asked for is empty");
+                    same(chart.states(), chart.states(), "read twice, the same");
+                    check(chart.timing() != null && chart.day() != null, "the timing and the day");
+                }
+                same(Graha.SUN, batch.get(0).grahas().get(0).graha(), "the Sun first");
+            }
+        });
+
+        tests.put("a chart founded under KP's ayanamsha carries its KP reading", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("kp-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Chart chart = sky.chart().found(2_447_995.489_583_333_5, kathmandu, 20_700,
+                        ChartOptions.builder().kp(Map.of()).build());
+                check(chart.kp().isPresent(), "the KP reading");
+            }
+        });
+
+        tests.put("the areas beside the chart answer", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                NumerologyProfile profile = sky.numerology().profile("Ram Bahadur", java.time.LocalDate.of(1990, 4, 14));
+                check(profile != null, "a numerology profile");
+                check(sky.matching().naam("सीता", "राम") != null, "a naam milan");
+                CalendarDate first = sky.chart().found(2_460_000.0, kathmandu, 20_700, ChartOptions.builder().build())
+                        .day().date();
+                Almanac week = sky.almanac().of(first,
+                        sky.calendar().dateOf(first.calendar(), sky.calendar().fixedOf(first) + 6), kathmandu, 20_700);
+                same(7, week.size(), "a day per date");
+                check(!week.get(0).tithi().isEmpty(), "the tithis");
+                RashifalAnswer read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
+                check(read.period() != null, "a rashifal period");
+                same(Status.UNSUPPORTED, refusal(() -> sky.ephemeris().names()).status(),
+                        "the built-in engine describes no operations of its own");
+            }
+        });
+
         tests.put("a closed enum refuses an id that is no member", () -> {
             try {
                 Status.of(12345);

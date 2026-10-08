@@ -611,6 +611,17 @@ un-publish, `03-release-process.md`, "Withdrawing").
    magic, version, schema or length is refused rather than misread.
 3. **The areas**, to `surface-areas.md`'s table, and `Parity.java`;
    `check-parity` gains Java.
+   **Begun 2026-10-08:** a founded chart's every reading, Vedic and
+   Western, as a typed record read from its batch's sections and parsed
+   once per batch; the almanac with its muhurta, festival, year and
+   eclipse sections; matching, numerology, rashifal and the engine's own
+   functions. Tests run each against the real library: a chart asked for
+   every reading at once, the day the almanac shares, the Chaldean order
+   of the dignities, KP under its own ayanamsha, and the areas beside the
+   chart. A registered dasha system reads as `DashaSystem.UNKNOWN`, not its
+   key, until `ChartBatch` carries the context's names. **Then**
+   `Parity.java`, which holds the rest field for field against the
+   other runners.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.
 5. **The provider, plugins and the engine**, with the throwing-provider
    test and the leak check.
