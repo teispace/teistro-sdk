@@ -147,3 +147,59 @@ fn a_refused_rule_names_its_field_before_any_sky_is_read() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("rectification.seedMinutes"));
 }
+
+/// Step 4's reports read back through the charts of the candidate and of
+/// the conception it counts back to.
+#[test]
+fn the_conception_reports_are_what_the_charts_of_both_instants_say() {
+    use teistro::rectification::ConceptionRules;
+
+    let sdk = sdk();
+    let at = JulianDay::literal(MOMENT);
+    let read = sdk
+        .chart()
+        .conception(at, &kathmandu(), OFFSET, &ConceptionRules::default())
+        .unwrap()
+        .value;
+    let birth = chart(&sdk, MOMENT);
+    let close = |a: f64, b: f64| (a - b).abs() < 1e-6;
+    let points = read.nisheka.count.points;
+    assert!(close(points.lagna_deg, birth.foundation.lagna_deg));
+    let saturn = birth.foundation.graha(Graha::Saturn).unwrap().longitude_deg;
+    assert!(close(points.saturn_deg, saturn));
+    let moon = birth.foundation.graha(Graha::Moon).unwrap().longitude_deg;
+    assert!(close(points.moon_deg, moon));
+    // Mandi at the start of Saturn's eighth is the SDK's Gulika point.
+    assert_eq!(
+        Rashi::of_longitude(points.mandi_deg),
+        point(&birth, Point::Gulika)
+    );
+    // The conception is the birth less the span, and its chart's lagna
+    // and Moon are the ones judged and counted.
+    let instant = read.nisheka.count.instant.get();
+    assert!(close(instant, MOMENT - read.nisheka.count.span.days_before));
+    let conceived = chart(&sdk, instant);
+    assert!(
+        close(read.nisheka.lagna_deg, conceived.foundation.lagna_deg),
+        "{} {} {}",
+        read.nisheka.lagna_deg,
+        conceived.foundation.lagna_deg,
+        read.nisheka.count.span.days_before
+    );
+    let conceived_moon = conceived
+        .foundation
+        .graha(Graha::Moon)
+        .unwrap()
+        .longitude_deg;
+    let count = teistro::rectification::moon_count(
+        conceived_moon,
+        teistro::rectification::ConceptionCount::default(),
+    );
+    assert_eq!(read.moon.predicted, count);
+    assert_eq!(read.moon.moon_sign, Rashi::of_longitude(moon));
+    assert!((0.0..1.0).contains(&read.moon.risen_fraction));
+    assert!((1..=12).contains(&read.pranapada_house.house));
+    // A gestation of some months, as the arcs can only give 0 to 25.
+    assert!((0.0..750.0).contains(&read.nisheka.count.span.days_before));
+    assert!(read.nisheka.count.days_per_birth_minute.is_finite());
+}

@@ -383,3 +383,291 @@ fn rules_cross_in_the_knob_spellings_the_design_names() {
     assert_eq!(partial.purify_as, PurifyAs::Weight);
     assert_eq!(partial.pranapada_rule, PranapadaRule::Verse);
 }
+
+// ── step 4: the reports beside the purifier ────────────────────────────
+
+mod conception {
+    use teistro_core::catalogue::{Graha, Nakshatra, Rashi};
+    use teistro_core::error::Error;
+    use teistro_core::quantity::{JulianDay, Utc};
+
+    use super::{BASE, Line, SKY};
+    use crate::purifier::Judge;
+    use crate::{
+        ConceptionCount, ConceptionMoonRules, ConceptionRising, ConceptionRules, ConceptionSky,
+        DayOrNight, InvisibleHalf, NinthBhava, NishekaMonth, NishekaPoints, NishekaRules, PiscesIs,
+        PranapadaHouseRules, PranapadaRule, Sky, conception, conception_moon, day_or_night,
+        moon_count, ninth_bhava_deg, nisheka_span, pranapada_deg, pranapada_house,
+    };
+
+    /// Signs, degrees, minutes and seconds as Jha prints them.
+    fn dms(signs: f64, deg: f64, min: f64, sec: f64) -> f64 {
+        signs * 30.0 + deg + min / 60.0 + sec / 3600.0
+    }
+
+    const SECOND: f64 = 1.0 / 3600.0;
+
+    impl ConceptionSky for Line {
+        fn graha_deg(&self, graha: Graha, _: JulianDay<Utc>) -> Result<f64, Error> {
+            Ok(match graha {
+                Graha::Saturn => 200.0,
+                Graha::Moon => self.moon,
+                _ => 50.0,
+            })
+        }
+        fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+            Ok((self.ascendant_deg(at)? - 90.0).rem_euclid(360.0))
+        }
+    }
+
+    /// Jha's worked nisheka (1952, p. 36): every printed figure.
+    fn jha() -> NishekaPoints {
+        NishekaPoints {
+            mandi_deg: dms(9.0, 29.0, 36.0, 53.0),
+            saturn_deg: dms(7.0, 13.0, 24.0, 27.0),
+            lagna_deg: dms(10.0, 26.0, 28.0, 5.0),
+            ninth_deg: dms(6.0, 29.0, 0.0, 36.0),
+            // The lagna's lord is Saturn, an Aquarius lagna's.
+            lagna_lord_deg: dms(7.0, 13.0, 24.0, 27.0),
+            moon_deg: dms(1.0, 10.0, 0.0, 0.0),
+        }
+    }
+
+    #[test]
+    fn jhas_nisheka_closes_to_the_printed_second() {
+        let span = nisheka_span(&jha(), NishekaRules::default());
+        assert!((span.saturn_to_mandi_deg - dms(2.0, 16.0, 12.0, 26.0)).abs() < SECOND / 10.0);
+        assert!((span.lagna_to_ninth_deg - dms(8.0, 2.0, 32.0, 31.0)).abs() < SECOND / 10.0);
+        assert!((span.arc_deg - dms(10.0, 18.0, 44.0, 57.0)).abs() < SECOND / 10.0);
+        let w = span.written;
+        assert_eq!((w.months, w.days, w.ghatis, w.palas), (10, 18, 44, 57));
+        // Saturn stands eight signs and more ahead of the lagna: visible,
+        // so the Moon adds nothing, as the example adds nothing.
+        assert_eq!(span.moon_added_deg, None);
+        // Thirty-day months: the arc in degrees is the days.
+        assert!((span.days_before - span.arc_deg).abs() < 1e-12);
+    }
+
+    #[test]
+    fn a_lord_in_the_invisible_half_adds_the_moons_elapsed_degrees() {
+        let lord_below = NishekaPoints {
+            // Three signs ahead of the lagna: below the horizon.
+            lagna_lord_deg: dms(1.0, 20.0, 0.0, 0.0),
+            ..jha()
+        };
+        let span = nisheka_span(&lord_below, NishekaRules::default());
+        assert_eq!(span.moon_added_deg, Some(10.0));
+        let plain = nisheka_span(&jha(), NishekaRules::default());
+        assert!((span.arc_deg - plain.arc_deg - 10.0).abs() < 1e-9);
+        // Inside the half-circle ahead of the lagna's degree, and in the
+        // 7th sign: the two readings of "the six signs ahead" part.
+        let edge = NishekaPoints {
+            lagna_lord_deg: dms(4.0, 10.0, 0.0, 0.0),
+            ..jha()
+        };
+        let by_longitude = nisheka_span(&edge, NishekaRules::default());
+        let by_sign = nisheka_span(
+            &edge,
+            NishekaRules {
+                invisible_half: InvisibleHalf::BySign,
+                ..NishekaRules::default()
+            },
+        );
+        assert_eq!(by_longitude.moon_added_deg, Some(10.0));
+        assert_eq!(by_sign.moon_added_deg, None);
+    }
+
+    #[test]
+    fn the_month_length_scales_only_the_whole_months() {
+        let solar = nisheka_span(
+            &jha(),
+            NishekaRules {
+                month: NishekaMonth::Solar,
+                ..NishekaRules::default()
+            },
+        );
+        let synodic = nisheka_span(
+            &jha(),
+            NishekaRules {
+                month: NishekaMonth::Synodic,
+                ..NishekaRules::default()
+            },
+        );
+        let rest = solar.arc_deg - 300.0;
+        assert!((solar.days_before - (10.0 * NishekaMonth::Solar.days() + rest)).abs() < 1e-9);
+        assert!((synodic.days_before - (10.0 * 29.530_588_853 + rest)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn the_ninth_bhava_is_sripatis_mid_point_or_a_named_rival() {
+        let (lagna, midheaven) = (dms(10.0, 26.0, 28.0, 5.0), 240.0);
+        let sripati = ninth_bhava_deg(lagna, midheaven, NinthBhava::Sripati);
+        assert_eq!(
+            sripati,
+            teistro_core::house::sripati_mid_points(lagna, midheaven)[8]
+        );
+        assert_eq!(
+            ninth_bhava_deg(lagna, midheaven, NinthBhava::WholeSign),
+            180.0
+        );
+        let equal = ninth_bhava_deg(lagna, midheaven, NinthBhava::Equal);
+        assert!((equal - (lagna + 240.0 - 360.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn jhas_pranapada_is_in_the_second_by_sign_and_auspicious() {
+        // 3;25 ghatis after sunrise is 205 palas; the Sun 9s 29°36′53″.
+        let hours = 205.0 * 24.0 / 3600.0;
+        let deg = pranapada_deg(PranapadaRule::Verse, dms(9.0, 29.0, 36.0, 53.0), hours)
+            .expect("pranapada");
+        assert!(
+            (deg - dms(11.0, 19.0, 36.0, 53.0)).abs() < SECOND / 10.0,
+            "{deg}"
+        );
+        let lagna = dms(10.0, 26.0, 28.0, 5.0);
+        let by_sign = super::super::conception::tests_support::judged(
+            deg,
+            lagna,
+            PranapadaHouseRules::default(),
+        );
+        assert_eq!((by_sign.house, by_sign.auspicious), (2, true));
+        // From the lagna's degree it is only 23°09′ on, the 1st, which the
+        // gloss does not list: the printed "2nd" fixes the count by sign.
+        assert!((deg - lagna) < 30.0);
+    }
+
+    #[test]
+    fn the_first_is_auspicious_only_when_asked() {
+        let rules = PranapadaHouseRules::default();
+        let asked = PranapadaHouseRules {
+            first_auspicious: true,
+            ..rules
+        };
+        let judged = |rules| super::super::conception::tests_support::judged(10.0, 5.0, rules);
+        assert!(!judged(rules).auspicious);
+        assert!(judged(asked).auspicious);
+        let at = JulianDay::literal(BASE + 0.1);
+        let read = pranapada_house(&SKY, at, rules).expect("read");
+        assert!((1..=12).contains(&read.house));
+    }
+
+    #[test]
+    fn bj_iv_21_counts_as_its_printed_examples() {
+        // The middle of the 8th dvadashamsha of Aquarius (Iyer; 1912 p. 90).
+        let moon = 300.0 + 18.75;
+        let next = moon_count(moon, ConceptionCount::NextAfterDvadashamsha);
+        assert_eq!((next.dvadashamsha, next.sign), (8, Rashi::Taurus));
+        assert_eq!(next.nakshatra, Some(Nakshatra::Rohini));
+        assert_eq!(
+            moon_count(moon, ConceptionCount::FromMoonSign).sign,
+            Rashi::Virgo
+        );
+        assert_eq!(
+            moon_count(moon, ConceptionCount::FromAries).sign,
+            Rashi::Scorpio
+        );
+        // The rival ordinal, the completed count 7, would give Aries or
+        // Pisces; the occupied one is counted.
+        assert_ne!(next.sign, Rashi::Aries);
+        assert_ne!(next.sign, Rashi::Pisces);
+        // A dvadashamsha begins at its own boundary.
+        assert_eq!(
+            moon_count(2.5, ConceptionCount::FromMoonSign).dvadashamsha,
+            2
+        );
+        assert_eq!(
+            moon_count(29.999, ConceptionCount::FromMoonSign).dvadashamsha,
+            12
+        );
+        assert_eq!(
+            moon_count(0.0, ConceptionCount::FromMoonSign).sign,
+            Rashi::Aries
+        );
+        assert_eq!(
+            moon_count(0.0, ConceptionCount::NextAfterDvadashamsha).sign,
+            Rashi::Taurus
+        );
+    }
+
+    #[test]
+    fn the_day_and_night_signs_are_bj_i_10s() {
+        assert_eq!(
+            day_or_night(Rashi::Sagittarius, PiscesIs::Either),
+            DayOrNight::Night
+        );
+        assert_eq!(day_or_night(Rashi::Leo, PiscesIs::Either), DayOrNight::Day);
+        assert_eq!(
+            day_or_night(Rashi::Pisces, PiscesIs::Either),
+            DayOrNight::Either
+        );
+        assert_eq!(day_or_night(Rashi::Pisces, PiscesIs::Day), DayOrNight::Day);
+        let nights = Rashi::ALL
+            .iter()
+            .filter(|s| day_or_night(**s, PiscesIs::Day) == DayOrNight::Night)
+            .count();
+        assert_eq!(nights, 6);
+    }
+
+    #[test]
+    fn the_conception_is_the_birth_less_the_span_and_its_lagna_is_judged() {
+        let birth = JulianDay::literal(BASE + 0.3);
+        let rules = ConceptionRules::default();
+        let read = conception(&SKY, birth, &rules, |_| Ok(SKY)).expect("conception");
+        let count = read.nisheka.count;
+        assert!((count.instant.get() - (birth.get() - count.span.days_before)).abs() < 1e-9);
+        let judged = Judge::new(&SKY, &rules.purifier)
+            .verdict(count.instant)
+            .expect("verdict");
+        assert_eq!(read.nisheka.verdict, judged);
+        assert!(count.days_per_birth_minute.is_finite());
+        // The conception sky is the one asked at the conception.
+        let other = Line { moon: 280.0 };
+        let elsewhere = conception(&SKY, birth, &rules, |_| Ok(other)).expect("conception");
+        assert_eq!(elsewhere.nisheka.count, count);
+        assert_eq!(
+            elsewhere.moon.predicted,
+            moon_count(280.0, ConceptionCount::default())
+        );
+        assert_eq!(elsewhere.moon.moon_sign, read.moon.moon_sign);
+    }
+
+    #[test]
+    fn the_conception_moon_reports_its_fraction_by_rising_time() {
+        // The lagna stands at 15° of a sign: half of it has risen, and on
+        // this sky every sign takes the same two hours.
+        let conception = JulianDay::literal(BASE + 15.0 / 360.0);
+        let birth = JulianDay::literal(BASE + 0.1);
+        let read = conception_moon(
+            &SKY,
+            &SKY,
+            birth,
+            conception,
+            ConceptionMoonRules::default(),
+        )
+        .expect("read");
+        assert!(
+            (read.risen_fraction - 0.5).abs() < 1e-5,
+            "{}",
+            read.risen_fraction
+        );
+        assert_eq!(read.rising, Rashi::Aries);
+        assert_eq!(read.predicted_part, DayOrNight::Night);
+        assert!(read.born_by_day);
+        assert!(!read.part_agrees);
+        assert!((read.elapsed_fraction - 0.1 / 0.5).abs() < 1e-9);
+        let navamsha = conception_moon(
+            &SKY,
+            &SKY,
+            birth,
+            conception,
+            ConceptionMoonRules {
+                rising: ConceptionRising::Navamsha,
+                ..ConceptionMoonRules::default()
+            },
+        )
+        .expect("read");
+        // 15° is the middle of Aries's 5th navamsha, Leo.
+        assert_eq!(navamsha.rising, Rashi::Leo);
+        assert!((navamsha.risen_fraction - 0.5).abs() < 1e-4);
+    }
+}

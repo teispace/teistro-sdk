@@ -197,6 +197,51 @@ pub fn house_of(longitude_deg: f64, cusps_deg: &[f64; 12], orb_deg: f64) -> Hous
     House::ALL.get(index).copied().unwrap_or(House::ALL[0])
 }
 
+/// Sripati's mid-points, as the sources build them: the lagna and the
+/// midheaven and their opposites mid-point the kendras, and the quadrant
+/// from the midheaven to the lagna, and from the lagna to the nadir, is
+/// each cut in three, the houses opposite following by six signs.
+///
+/// Shared because more than one module names Sripati's division as its
+/// source's own, whatever chalit a profile gives the chart: the Tajika
+/// sahams read a house's mid-point, and rectification's conception reads
+/// the 9th's (`03-design/rectification.md`, NISHEKA).
+///
+/// ```
+/// use teistro_core::house::sripati_mid_points;
+///
+/// let points = sripati_mid_points(0.0, 270.0);
+/// assert_eq!(points[0], 0.0);
+/// assert_eq!(points[9], 270.0);
+/// assert_eq!(points[3], 90.0);
+/// ```
+#[must_use]
+pub fn sripati_mid_points(lagna_deg: f64, midheaven_deg: f64) -> [f64; 12] {
+    let lagna = lagna_deg.rem_euclid(360.0);
+    let midheaven = midheaven_deg.rem_euclid(360.0);
+    let nadir = (midheaven + 180.0).rem_euclid(360.0);
+    let upper = (lagna - midheaven).rem_euclid(360.0) / 3.0;
+    let lower = (nadir - lagna).rem_euclid(360.0) / 3.0;
+    let at = |deg: f64| deg.rem_euclid(360.0);
+    let (second, third) = (at(lagna + lower), at(lagna + 2.0 * lower));
+    let (eleventh, twelfth) = (at(midheaven + upper), at(midheaven + 2.0 * upper));
+    let opposite = |deg: f64| at(deg + 180.0);
+    [
+        lagna,
+        second,
+        third,
+        nadir,
+        opposite(eleventh),
+        opposite(twelfth),
+        opposite(lagna),
+        opposite(second),
+        opposite(third),
+        midheaven,
+        eleventh,
+        twelfth,
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(

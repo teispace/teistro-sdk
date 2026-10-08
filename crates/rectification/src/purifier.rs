@@ -369,12 +369,12 @@ pub fn gulika_instant(
 }
 
 /// A sign so many signs on.
-fn nth(sign: Rashi, on: u8) -> Rashi {
+pub(crate) fn nth(sign: Rashi, on: u8) -> Rashi {
     Rashi::of_longitude(sign.start_deg() + 30.0 * f64::from(on))
 }
 
 /// A sign's index from Aries, 0 to 11.
-fn index(sign: Rashi) -> usize {
+pub(crate) fn index(sign: Rashi) -> usize {
     Rashi::ALL
         .iter()
         .position(|one| *one == sign)
@@ -382,12 +382,12 @@ fn index(sign: Rashi) -> usize {
 }
 
 /// The house the lagna stands in counted from a sign, one to twelve.
-fn house(from: Rashi, lagna: Rashi) -> u8 {
+pub(crate) fn house(from: Rashi, lagna: Rashi) -> u8 {
     u8::try_from((index(lagna) + 12 - index(from)) % 12 + 1).unwrap_or(1)
 }
 
 /// The navamsha of a longitude.
-fn navamsha(longitude_deg: f64) -> Result<Rashi, Error> {
+pub(crate) fn navamsha(longitude_deg: f64) -> Result<Rashi, Error> {
     let at = Nas::from_degrees(Degrees::try_new(longitude_deg.rem_euclid(360.0))?);
     Ok(teistro_vargas::sign(&Scheme::of(Varga::D9), at))
 }

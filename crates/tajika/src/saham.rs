@@ -32,6 +32,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::house::House;
+pub use teistro_core::house::sripati_mid_points;
 
 use crate::bala::{AnnualSky, finite_longitude, sign_of_longitude};
 
@@ -641,37 +642,6 @@ impl SahamSky {
             HousePoints::Equal => Ok(equal_houses(self.lagna_deg)),
         }
     }
-}
-
-/// Sripati's mid-points, as the source builds them: the lagna and the
-/// midheaven and their opposites mid-point the kendras, and the quadrant
-/// from the midheaven to the lagna, and from the lagna to the nadir, is
-/// each cut in three, the houses opposite following by six signs.
-#[must_use]
-pub fn sripati_mid_points(lagna_deg: f64, midheaven_deg: f64) -> [f64; 12] {
-    let lagna = lagna_deg.rem_euclid(360.0);
-    let midheaven = midheaven_deg.rem_euclid(360.0);
-    let nadir = (midheaven + 180.0).rem_euclid(360.0);
-    let upper = (lagna - midheaven).rem_euclid(360.0) / 3.0;
-    let lower = (nadir - lagna).rem_euclid(360.0) / 3.0;
-    let at = |deg: f64| deg.rem_euclid(360.0);
-    let (second, third) = (at(lagna + lower), at(lagna + 2.0 * lower));
-    let (eleventh, twelfth) = (at(midheaven + upper), at(midheaven + 2.0 * upper));
-    let opposite = |deg: f64| at(deg + 180.0);
-    [
-        lagna,
-        second,
-        third,
-        nadir,
-        opposite(eleventh),
-        opposite(twelfth),
-        opposite(lagna),
-        opposite(second),
-        opposite(third),
-        midheaven,
-        eleventh,
-        twelfth,
-    ]
 }
 
 fn equal_houses(lagna_deg: f64) -> [f64; 12] {

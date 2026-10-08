@@ -21,7 +21,9 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::EphemerisProvider;
-use teistro_rectification::{Answer, Day, Rules, Sky, Window, narrow};
+use teistro_rectification::{
+    Answer, Conception, ConceptionRules, ConceptionSky, Day, Rules, Sky, Window, conception, narrow,
+};
 use teistro_time::ghati::Reckoning;
 
 use crate::area::ChartArea;
@@ -68,6 +70,78 @@ impl ChartArea<'_> {
         rules: &Rules,
     ) -> Result<Envelope<Answer>, Error> {
         rules.check()?;
+        let middle = JulianDay::try_new(f64::midpoint(window.from.get(), window.to.get()))?;
+        let input = RectifyInput {
+            window,
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            rules,
+        };
+        self.over_sky(middle, place, offset, &input, |sky| {
+            narrow(window, sky, rules)
+        })
+    }
+
+    /// The reports a candidate birth time gives beside the purifier
+    /// (`03-design/rectification.md`, step 4): the pranapada's house as
+    /// Jha's print judges the birth, the conception BPHS ch. 3 vv. 25–29
+    /// counts back to with its lagna purified "as before", and the birth
+    /// Moon *Brihat Jataka* IV.21 reads from that conception, set against
+    /// the candidate's own.
+    ///
+    /// Read at one instant, not over the window's runs: the conception
+    /// moves by about a day for every degree its arcs move, so its lagna
+    /// turns while the birth moves by minutes; the answer's
+    /// `nisheka.count.daysPerBirthMinute` says how fast. None of the three bars.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # use teistro::rectification::ConceptionRules;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let place: Place = todo!();
+    /// let at = JulianDay::literal(2_460_000.3);
+    /// let read = sdk.chart().conception(at, &place, UtcOffset::UTC, &ConceptionRules::default())?.value;
+    /// let w = read.nisheka.count.span.written;
+    /// println!("conceived {} months {} days before; its lagna pure: {}", w.months, w.days, read.nisheka.verdict.pure);
+    /// println!("the Moon's sign agrees with BJ IV.21: {}", read.moon.sign_agrees);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::rectify`], at the candidate and at its conception.
+    pub fn conception(
+        self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        offset: UtcOffset,
+        rules: &ConceptionRules,
+    ) -> Result<Envelope<Conception>, Error> {
+        rules.purifier.check()?;
+        let input = ConceptionInput {
+            at,
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            rules,
+        };
+        self.over_sky(at, place, offset, &input, |sky| {
+            conception(sky, at, rules, |conceived| sky.refounded(conceived))
+        })
+    }
+
+    /// Runs `read` over the sky of the chart founded at `founded_at`,
+    /// sealing its answer under that chart's provenance and `input`'s hash.
+    fn over_sky<T: Serialize, I: Serialize>(
+        self,
+        founded_at: JulianDay<Utc>,
+        place: &Place,
+        offset: UtcOffset,
+        input: &I,
+        read: impl FnOnce(&ChartSky<'_, '_>) -> Result<T, Error>,
+    ) -> Result<Envelope<T>, Error> {
         let reckoning: Reckoning = self
             .context()
             .resolved()
@@ -76,8 +150,7 @@ impl ChartArea<'_> {
             .ghati_reckoning
             .try_into()?;
         self.founding(offset, |founder| {
-            let middle = JulianDay::try_new(f64::midpoint(window.from.get(), window.to.get()))?;
-            let chart = founder.found_one(middle, place, ChartKind::Natal)?;
+            let chart = founder.found_one(founded_at, place, ChartKind::Natal)?;
             let sky = ChartSky {
                 founder,
                 place: *place,
@@ -85,14 +158,9 @@ impl ChartArea<'_> {
                 reckoning,
                 luminaries: Cell::new(None),
             };
-            let answer = narrow(window, &sky, rules)?;
+            let answer = read(&sky)?;
             let mut provenance = chart.provenance;
-            provenance.input_hash = content_hash(&RectifyInput {
-                window,
-                place: *place,
-                utc_offset_seconds: offset.seconds(),
-                rules,
-            });
+            provenance.input_hash = content_hash(input);
             Ok(Envelope::sealing(answer, provenance))
         })
     }
@@ -106,6 +174,16 @@ struct RectifyInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     rules: &'r Rules,
+}
+
+/// What a conception report was asked, which its input hash seals.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ConceptionInput<'r> {
+    at: JulianDay<Utc>,
+    place: Place,
+    utc_offset_seconds: i32,
+    rules: &'r ConceptionRules,
 }
 
 /// The sky a chart founded at each instant would read.
@@ -123,7 +201,20 @@ struct ChartSky<'a, 'f> {
     luminaries: Cell<Option<(u64, [f64; 2])>>,
 }
 
-impl ChartSky<'_, '_> {
+impl<'a, 'f> ChartSky<'a, 'f> {
+    /// The sky of the chart founded at another instant: its own zodiac, the
+    /// same place and reckoning. The conception is a chart of its own.
+    fn refounded(&self, at: JulianDay<Utc>) -> Result<ChartSky<'a, 'f>, Error> {
+        let chart = self.founder.found_one(at, &self.place, ChartKind::Natal)?;
+        Ok(ChartSky {
+            founder: self.founder,
+            place: self.place,
+            zodiac: chart.value.zodiac,
+            reckoning: self.reckoning,
+            luminaries: Cell::new(None),
+        })
+    }
+
     /// The Sun and the Moon at an instant, read once for both.
     fn luminaries(&self, at: JulianDay<Utc>) -> Result<[f64; 2], Error> {
         let bits = at.get().to_bits();
@@ -185,6 +276,24 @@ impl Sky for ChartSky<'_, '_> {
                         / (day.next_sunrise.get() - day.sunset.get())
             }
         })
+    }
+}
+
+impl ConceptionSky for ChartSky<'_, '_> {
+    fn graha_deg(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, Error> {
+        let read = self
+            .founder
+            .longitudes_in(at, &self.place, &self.zodiac, &[graha])?;
+        read.first()
+            .copied()
+            .ok_or_else(|| Error::internal("one graha asked, and none answered"))
+    }
+
+    fn midheaven_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
+        Ok(self
+            .founder
+            .angles_at(at, &self.place, &self.zodiac)?
+            .midheaven_deg)
     }
 }
 
