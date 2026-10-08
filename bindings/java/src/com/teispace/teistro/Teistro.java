@@ -175,6 +175,57 @@ public final class Teistro implements AutoCloseable {
     }
 
     /**
+     * The SDK's canonical frame: apparent geocentric ecliptic of date, tropical.
+     *
+     * @return the frame
+     */
+    public Frame canonicalFrame() {
+        return Calls.frameCanonical(lib);
+    }
+
+    /**
+     * A frame's fields as the bits a position request carries.
+     *
+     * @param frame the frame
+     * @return its bits
+     */
+    public long packFrame(Frame frame) {
+        return Calls.framePack(lib, frame);
+    }
+
+    /**
+     * The frame a packed set of bits describes.
+     *
+     * @param bits the bits
+     * @return the frame
+     * @throws TeistroException for bits no frame packs to
+     */
+    public Frame unpackFrame(long bits) {
+        return Calls.frameUnpack(lib, bits);
+    }
+
+    /**
+     * The Julian day at the UTC midnight that begins a fixed day (fixed day 1
+     * is Monday, 1 January 1 CE).
+     *
+     * @param fixed the fixed day number
+     * @return its Julian day
+     */
+    public double julianDayOfFixed(long fixed) {
+        return Calls.calendarJdOfFixed(lib, fixed);
+    }
+
+    /**
+     * The fixed day number a Julian day falls on, and how far into it.
+     *
+     * @param jd the Julian day
+     * @return the fixed day and the fraction of it
+     */
+    public CalendarFixedOfJdResult fixedOfJulianDay(double jd) {
+        return Calls.calendarFixedOfJd(lib, jd);
+    }
+
+    /**
      * The ABI version the library implements.
      *
      * @return the ABI version

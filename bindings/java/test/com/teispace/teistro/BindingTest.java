@@ -80,10 +80,10 @@ public final class BindingTest {
 
         tests.put("a key and its id read back", () -> {
             try (Context sky = context(teistro)) {
-                int sun = sky.keyId("graha.SUN");
-                same(Kind.GRAHA.id(), sun >>> 16, "the kind is the high half");
-                same(Graha.SUN.id(), sun & 0xFFFF, "the member is the low half");
-                same("graha.SUN", sky.keyName(sun), "the name");
+                long sun = sky.keys().id("graha.SUN");
+                same((long) Kind.GRAHA.id(), sun >>> 16, "the kind is the high half");
+                same((long) Graha.SUN.id(), sun & 0xFFFF, "the member is the low half");
+                same("graha.SUN", sky.keys().name(sun), "the name");
                 same(Graha.SUN, Graha.of(Graha.SUN.id()), "of");
                 same(Graha.UNKNOWN, Graha.of(0xFFFE), "an unknown id from a newer library");
                 same(Graha.SUN, Graha.byKey("graha.SUN").orElseThrow(), "byKey, full");
@@ -93,12 +93,12 @@ public final class BindingTest {
 
         tests.put("a refusal carries its status, its field and its hint", () -> {
             try (Context sky = context(teistro)) {
-                TeistroException typo = refusal(() -> sky.keyId("graha.SUNN"));
+                TeistroException typo = refusal(() -> sky.keys().id("graha.SUNN"));
                 same(Status.UNSUPPORTED, typo.status(), "status");
                 same("UNKNOWN_KEY", typo.detail(), "detail");
                 check(typo.hint().contains("SUN"), "the hint names the near key: " + typo.hint());
                 // The second refusal carries the second record, not the first.
-                TeistroException other = refusal(() -> sky.keyId("rashi.ARIESS"));
+                TeistroException other = refusal(() -> sky.keys().id("rashi.ARIESS"));
                 check(other.hint().contains("ARIES"), "the second record: " + other.hint());
             }
         });
@@ -120,6 +120,88 @@ public final class BindingTest {
                 throw new AssertionError("a closed context answered");
             } catch (IllegalStateException expected) {
                 check(expected.getMessage().contains("closed"), "says why");
+            }
+        });
+
+        tests.put("a date converts between calendars and back to the same fixed day", () -> {
+            try (Context sky = context(teistro)) {
+                CalendarArea calendar = sky.calendar();
+                CalendarDate first = calendar.dateOf(Calendar.GREGORIAN, 1);
+                same(1, first.year(), "fixed day 1 is the year 1");
+                same(1, first.month(), "in January");
+                same(1, first.day(), "on its first");
+                same(1, calendar.weekdayOf(first), "a Monday");
+                CalendarDate today = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 10, 8,
+                        Resolution.DEFINED, 0, 0);
+                long fixed = calendar.fixedOf(today);
+                CalendarDate bs = calendar.convert(today, Calendar.BIKRAM_SAMBAT);
+                same(Calendar.BIKRAM_SAMBAT, bs.calendar(), "the calendar asked for");
+                same(2083, bs.year(), "Bikram Sambat runs 56 or 57 years ahead");
+                same(fixed, calendar.fixedOf(bs), "the same day");
+                same(today.day(), calendar.convert(bs, Calendar.GREGORIAN).day(), "and back");
+                check(calendar.isLeap(Calendar.GREGORIAN, 2024), "2024 is a leap year");
+                check(!calendar.isLeap(Calendar.GREGORIAN, 2100), "2100 is not");
+                same(28, calendar.monthLength(Calendar.GREGORIAN, 2026, 2), "February 2026");
+            }
+        });
+
+        tests.put("a value C cannot hold is refused by the name the caller wrote", () -> {
+            try (Context sky = context(teistro)) {
+                CalendarDate bad = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 300, 8,
+                        Resolution.DEFINED, 0, 0);
+                try {
+                    sky.calendar().fixedOf(bad);
+                    throw new AssertionError("a month of 300 was sent");
+                } catch (IllegalArgumentException expected) {
+                    check(expected.getMessage().contains("`month`"), expected.getMessage());
+                }
+                CalendarDate unknown = new CalendarDate(Calendar.UNKNOWN, null, 2026, 0, 1, 1,
+                        Resolution.DEFINED, 0, 0);
+                try {
+                    sky.calendar().fixedOf(unknown);
+                    throw new AssertionError("an unknown calendar was sent");
+                } catch (IllegalArgumentException expected) {
+                    check(expected.getMessage().contains("UNKNOWN"), expected.getMessage());
+                }
+                try {
+                    new Latitude(91);
+                    throw new AssertionError("a latitude of 91 was made");
+                } catch (IllegalArgumentException expected) {
+                    check(expected.getMessage().contains("[-90,90]"), expected.getMessage());
+                }
+            }
+        });
+
+        tests.put("the library's own calls need no context", () -> {
+            Frame canonical = teistro.canonicalFrame();
+            same(canonical, teistro.unpackFrame(teistro.packFrame(canonical)), "a frame packs and unpacks");
+            double jd = teistro.julianDayOfFixed(739_000);
+            same(739_000 + 1_721_424.5, jd, "fixed + 1721424.5");
+            CalendarFixedOfJdResult back = teistro.fixedOfJulianDay(jd + 0.25);
+            same(739_000L, back.value(), "the fixed day");
+            same(0.25, back.fraction(), "a quarter of it elapsed");
+        });
+
+        tests.put("an instant converts between scales and back", () -> {
+            try (Context sky = context(teistro)) {
+                double jd = 2_461_322.5;
+                TimeConversion tt = sky.time().convert(jd, Scale.UTC, Scale.TT);
+                same(Scale.TT, tt.to(), "the scale asked for");
+                check(tt.jd() > jd, "TT runs ahead of UTC");
+                TimeConversion utc = sky.time().convert(tt.jd(), Scale.TT, Scale.UTC);
+                check(Math.abs(utc.jd() - jd) < 1e-9, "and back: " + (utc.jd() - jd));
+                DeltaT delta = sky.time().deltaT(jd);
+                check(delta.seconds() > 60 && delta.seconds() < 80, "delta T near 69 s: " + delta.seconds());
+            }
+        });
+
+        tests.put("the intl area reads and sets the locale", () -> {
+            try (Context sky = context(teistro)) {
+                check(!sky.intl().locale().isEmpty(), "a locale");
+                sky.intl().setLocale("en-Latn");
+                same("en-Latn", sky.intl().locale(), "the locale set");
+                TeistroException bad = refusal(() -> sky.intl().setLocale("xx-NOPE"));
+                check(bad.status() != Status.OK, "an unknown locale is refused");
             }
         });
 

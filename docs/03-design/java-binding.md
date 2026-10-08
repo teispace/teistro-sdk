@@ -574,8 +574,13 @@ un-publish, `03-release-process.md`, "Withdrawing").
    so pruning can never reach a hand-written file; the hand-written layer
    is `bindings/java/src`. A struct's class is named as the boundary crate
    names it (`Native.TsString`), because the binding's name for it can be
-   a JDK type's (`String`). Value records, brands and the decoders are
-   next.
+   a JDK type's (`String`). **Then:** a record per struct a binding
+   shows, writing itself into its C struct and reading itself back, with
+   an unsigned field carried one size wider and refused outside its C
+   range by the name the caller wrote; a record per brand, checking its
+   stated range; and `Calls`, package-private, a static method per entry
+   point marshalled from the parameter roles as Python's are, with a
+   confined arena only where the call allocates. The decoders are next.
 2. **The first slice, end to end.** `NativeLibrary` from
    `TEISTRO_LIBRARY` and `target/release` only, the handshake,
    `Teistro`, `Context` with `calendar().convert`, `time().resolve`,
@@ -592,8 +597,13 @@ un-publish, `03-release-process.md`, "Withdrawing").
    `settingsHash`, `keyId` and `keyName`; `Json`, a strict reader. The
    tests, with no framework, run as `check-java` in verify on every row
    but the two musl ones: the struct sizes, a refusal after a refusal, a
-   refused constructor, a closed context. Positions, calendars, time and
-   intl come with the value records.
+   refused constructor, a closed context. **Then:** the calendar, time,
+   keys, frame and intl areas over `Calls`, each call under the context's
+   lock, and the library's own calls on `Teistro`; tested by a round trip
+   through Bikram Sambat, a scale conversion and back, a frame packed and
+   unpacked, and a month of 300 refused as `` `month` `` before it is
+   sent. `positions` and `intl().render` answer a result blob, so they
+   come with the decoders.
 3. **The areas**, to `surface-areas.md`'s table, and `Parity.java`;
    `check-parity` gains Java.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.
