@@ -10,7 +10,8 @@ package com.teispace.teistro;
  * @param locale the locale every render resolves from, or null
  * @param layoutsJson chart layouts of the caller's own, as JSON, or null
  * @param dashasJson dasha systems of the caller's own, as JSON, or null
- * @param ephemeris which of the SDK's own ephemerides to use
+ * @param ephemeris the ephemeris chain, tried in order: the SDK's own by
+ *     name or an adapter's {@link Plugin}; empty for none
  * @param testProvider whether the context runs on the library's test provider
  * @param provider an ephemeris written in Java, or null; the context owns
  *     its binding and releases it when closed
@@ -21,14 +22,19 @@ public record ContextOptions(
         String locale,
         String layoutsJson,
         String dashasJson,
-        Ephemeris ephemeris,
+        java.util.List<EphemerisChoice> ephemeris,
         boolean testProvider,
         EphemerisProvider provider) {
 
-    /** The options, with the ephemeris never null. */
+    /**
+     * The options, checked: a provider and a named ephemeris each answer the
+     * one question of what computes positions, so both together are refused.
+     */
     public ContextOptions {
-        if (ephemeris == null) {
-            ephemeris = Ephemeris.NONE;
+        ephemeris = ephemeris == null ? java.util.List.of() : java.util.List.copyOf(ephemeris);
+        if (provider != null && !ephemeris.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "a provider and an ephemeris each say what computes positions: give one of them");
         }
     }
 
@@ -48,7 +54,7 @@ public record ContextOptions(
         private String locale;
         private String layoutsJson;
         private String dashasJson;
-        private Ephemeris ephemeris = Ephemeris.NONE;
+        private java.util.List<EphemerisChoice> ephemeris = java.util.List.of();
         private boolean testProvider;
         private EphemerisProvider provider;
 
@@ -116,7 +122,24 @@ public record ContextOptions(
          * @return this builder
          */
         public Builder ephemeris(Ephemeris ephemeris) {
-            this.ephemeris = ephemeris;
+            this.ephemeris = java.util.List.of(EphemerisChoice.of(ephemeris));
+            return this;
+        }
+
+        /**
+         * An ephemeris chain, tried in order: the context opens on the first
+         * entry that opens, and when none does, one refusal names each.
+         *
+         * @param chain the entries, at least one
+         * @return this builder
+         * @throws IllegalArgumentException for a chain of none, which is a
+         *     mistake rather than a default
+         */
+        public Builder ephemeris(EphemerisChoice... chain) {
+            if (chain.length == 0) {
+                throw new IllegalArgumentException("an ephemeris chain that names nothing opens nothing");
+            }
+            this.ephemeris = java.util.List.of(chain);
             return this;
         }
 
