@@ -168,6 +168,16 @@ public final class Context implements AutoCloseable {
     }
 
     /**
+     * The context's settings, parsed: every group and knob, as
+     * {@link Json#read} reads them.
+     *
+     * @return the settings
+     */
+    public Object settings() {
+        return Json.read(settingsJson());
+    }
+
+    /**
      * The context's settings as canonical JSON: every group and knob, the
      * profile's values with the patch applied.
      *

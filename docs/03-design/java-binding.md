@@ -126,7 +126,7 @@ module of the same name.
 | `module-info.java` | exports `com.teispace.teistro` and `com.teispace.teistro.ffi` | by hand |
 | `test/` | the surface, the decoders against `target/tsrb`, the layouts against the library, the loader's refusals, the provider | by hand |
 | `example/*.java` | the shared examples (§11) | by hand |
-| `parity/Parity.java` | this binding's report for `check-parity` | by hand |
+| `parity/ParityRunner.java` | this binding's report for `check-parity` (not `Parity`, which the catalogue spells as an enum) | by hand |
 | `typecheck/Wrong.java` | the usages that must not compile, each with the error it must raise | by hand |
 
 The raw layer is **exported**, as Dart exposes `TeistroLibrary`
@@ -618,15 +618,20 @@ un-publish, `03-release-process.md`, "Withdrawing").
    functions. Tests run each against the real library: a chart asked for
    every reading at once, the day the almanac shares, the Chaldean order
    of the dignities, KP under its own ayanamsha, and the areas beside the
-   chart. A registered dasha system reads as `DashaSystem.UNKNOWN`, not its
-   key, until `ChartBatch` carries the context's names. **Then**
-   `Parity.java`, which holds the rest field for field against the
-   other runners.
+   chart. A registered dasha system reads back by its key, from the
+   names the context registered. **Built 2026-10-08:**
+   `parity/ParityRunner.java` prints every key the other runners print,
+   and `check-parity` holds Java to Node value for value; under
+   `TEISTRO_STRICT` a machine without a JDK fails the gate rather than
+   skipping it.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.
 5. **The provider, plugins and the engine**, with the throwing-provider
    test and the leak check.
 6. **Messages and records**: the Java target of `gen intl`, the
-   generated records over `Json`.
+   generated records over `Json`. **Begun 2026-10-08:** `gen intl`
+   writes `com.teispace.teistro.messages.Messages` into its own source
+   root, `bindings/java/messages`, with an accessor per message and
+   entity, and `IntlArea.messages()` and `entity(key)` read through it.
 7. **Packaging**: the jar with every native, the classifier jars, the
    digest table, the cache extraction, the POM and the bundle from
    `package stage`; the Maven consumer arm in `check-package`; the jar's

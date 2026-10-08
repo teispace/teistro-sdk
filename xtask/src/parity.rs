@@ -58,6 +58,7 @@ use crate::measure::plural;
 const NODE: &str = "bindings/node/parity.mjs";
 const DART: &str = "bindings/dart/bin/parity.dart";
 const PYTHON: &str = "bindings/python/parity.py";
+const JAVA: &str = "bindings/java/parity/ParityRunner.java";
 /// The Rust surface's runner, which is an example of its own crate
 /// rather than a script beside a binding: a Rust consumer runs an
 /// example, and `cargo` already knows how.
@@ -425,6 +426,7 @@ fn collect(
     } else {
         crate::skip::skip(format_args!("{PYTHON}: no `{python}` on this machine"));
     }
+    reports.extend(java(root, &mut attempted));
     // The Rust surface's own runner. No `present` check: it is an
     // example of a workspace crate, so a machine that can run this gate
     // can run it.
@@ -471,15 +473,38 @@ fn collect(
     Some((reports, attempted))
 }
 
+/// Whether this machine has a JDK to compile and run the Java runner.
+fn has_java() -> bool {
+    present("javac", "--version") && present("java", "--version")
+}
+
+/// The Java runner's report, counted as attempted when this machine has a
+/// JDK to try it with; `None` when it was skipped or failed.
+fn java(root: &Path, attempted: &mut usize) -> Option<Report> {
+    if !has_java() {
+        crate::skip::skip(format_args!(
+            "{JAVA}: no `javac` and `java` on this machine"
+        ));
+        return None;
+    }
+    *attempted += 1;
+    let library = root.join("target/release").join(library_artefact());
+    let Some(mut command) = crate::java_binding::parity(root, &library) else {
+        println!("FAIL  the Java runner did not compile");
+        return None;
+    };
+    run("Java", &mut command, &[], &[])
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let has_node = present("node", "--version");
     let has_dart = present("dart", "--version");
     let python = crate::binding::python();
     let has_python = present(&python, "--version");
-    let ran = has_node || has_dart || has_python;
+    let ran = has_node || has_dart || has_python || has_java();
     if !ran {
         crate::skip::skip(format_args!(
-            "no `node`, `dart` or `{python}` on this machine; the parity gate needs two of them"
+            "no `node`, `dart`, `{python}` or `java` on this machine; the parity gate needs two of them"
         ));
         return 0;
     }

@@ -12,7 +12,7 @@ use teistro_core::key::KeyId;
 
 use teistro_intl::derive::{Casing, derive, overrides_of};
 use teistro_intl::generate::{
-    Model, RustPaths, dart, javascript, python, rust, typescript_declarations,
+    Model, RustPaths, dart, java, javascript, python, rust, typescript_declarations,
 };
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::validate;
@@ -26,6 +26,10 @@ const NODE_MESSAGES: &str = "bindings/node/lib/messages.js";
 const NODE_MESSAGE_TYPES: &str = "bindings/node/lib/messages.d.ts";
 const DART_MESSAGES: &str = "bindings/dart/lib/src/messages.dart";
 const PYTHON_MESSAGES: &str = "bindings/python/teistro/messages.py";
+/// Java's, in a source root of its own so neither `gen ffi`'s pruning nor
+/// a hand-written file can meet it.
+const JAVA_MESSAGES: &str = "bindings/java/messages/com/teispace/teistro/messages/Messages.java";
+const JAVA_MESSAGES_PACKAGE: &str = "com.teispace.teistro.messages";
 /// The locale derived from another by transliteration, and the one it is
 /// derived from (`03-design/intl-engine-and-packs.md`, §3).
 const DERIVED: (&str, &str) = ("sa-Deva", "sa-Latn");
@@ -63,6 +67,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(NODE_MESSAGE_TYPES, typescript_declarations(&model)),
         Output::new(DART_MESSAGES, dart(&model)),
         Output::new(PYTHON_MESSAGES, python(&model)),
+        Output::new(JAVA_MESSAGES, java(&model, JAVA_MESSAGES_PACKAGE)),
     ]);
     outputs
 }
