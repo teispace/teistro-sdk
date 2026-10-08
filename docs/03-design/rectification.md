@@ -257,6 +257,9 @@ conformance corpus (`points-measured.md` §5).
 - **Decided:** the stage computes the verse's pranapada (`VERSE`); keep
   `SDK_POINT` as a knob value; raise the gap with the corpus point as a
   finding of its own and do not change `points` inside this module.
+- **Measured** (`rectification-measured.md`): at the recorded instants the
+  verse's pranapada and the SDK's point seldom share a sign, as two rates a
+  factor of five apart must; the gap stands as the finding of its own.
 
 **X3. The pranapada's start and the printed example.** v. 72 joins the
 count to the Sun's sign counting from its movable trine; v. 74 adds it to
@@ -303,6 +306,13 @@ impure": for a human native, a lagna no purifier holds is a contradiction.
 - **Decided:** a bar by default (`purify_as: BAR`), a weight on request.
   Measure, on a corpus of births with trusted times, how much of each day the
   bar removes and whether trusted times survive it, before the default ships.
+- **Measured** (`rectification-measured.md`, 2026-10-08): how much of each
+  recorded day every reading keeps. The bar with v. 76 keeps most of a day
+  and on some days all of it, because Gulika's four references with their
+  trines can cover the zodiac; without v. 76 it removes far more. So v. 76
+  decides how much the bar can say, which makes X6 the question to settle
+  before the default ships. The corpus's instants are synthetic, so whether
+  trusted times survive still waits for a corpus of them.
 
 **X9. Day and night.** The pranapada counts palas from sunrise through the
 night; Gulika's eighths switch to the night arc after sunset; a birth before
