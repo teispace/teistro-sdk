@@ -113,6 +113,7 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         libc: None,
         runner: "windows-11-arm",
         glibc_floor: None,
+        wheel_tag: "win_arm64",
     },
 ];
 
