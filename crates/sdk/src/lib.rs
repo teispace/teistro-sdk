@@ -71,6 +71,8 @@ mod plan_request;
 mod prashna_request;
 mod progressed;
 mod progressions_request;
+mod rashifal_area;
+mod rashifal_request;
 mod remedy_request;
 mod returns;
 mod rule_request;
@@ -315,6 +317,10 @@ pub use teistro_prashna as prashna;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 pub use teistro_remedies as remedies;
+// Rashifal: one period read for each of the twelve signs from
+// Phaladeepika ch. 26's gochar (`03-design/rashifal.md`).
+pub use crate::rashifal_request::{EVENT_GRAHAS, RashifalPeriod, RashifalRequest, Snapshot};
+pub use teistro_rashifal as rashifal;
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).
 pub use crate::returns::BodyReturn;

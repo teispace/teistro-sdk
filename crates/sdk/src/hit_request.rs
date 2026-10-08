@@ -558,15 +558,17 @@ pub(crate) fn hit_of(
             )
             .map(|aspect| (aspect, Some(chart))),
         },
-        TransitEventKind::Station { kind, .. } => Some((
-            HitEvent::Station {
-                turns: match kind {
-                    StationKind::Retrograde => Motion::Retrograde,
-                    StationKind::Direct => Motion::Direct,
-                },
-            },
-            None,
-        )),
+        TransitEventKind::Station { kind, .. } => Some((station(kind), None)),
+    }
+}
+
+/// The hit a station is: the way the graha turned.
+pub(crate) const fn station(kind: StationKind) -> HitEvent {
+    HitEvent::Station {
+        turns: match kind {
+            StationKind::Retrograde => Motion::Retrograde,
+            StationKind::Direct => Motion::Direct,
+        },
     }
 }
 

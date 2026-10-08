@@ -2312,6 +2312,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   the baseline engine's 0–100 score, eight areas, five key influences
   and lucky elements, `BASELINE` and unsourced. `teistro_gochar::good_house`
   is new. **Numbers:** none move; a new module.
+- **Rashifal through the façade** (`rashifal.md` step 2, C358 to C360).
+  `sdk.chart().rashifal(&RashifalRequest)` reads a period of civil days at
+  a place for each of the twelve signs. The sky is read at sunrise on the
+  middle day, or at a clock time when asked (`Snapshot::Clock`, the
+  baseline engine's 06:00). Every ingress and station of every graha but
+  the Moon is found exactly, the nodes included, from local midnight of
+  the first day to local midnight after the last. The answer carries
+  each graha's motion and the reference day's tithi, yoga and muhurta
+  yogas, so `RashifalPeriod::baseline_score` needs nothing more.
+  `rashifal_many` reads many periods under one founder. A last day before
+  the first is refused naming `last`, a clock off the clock naming
+  `snapshot`, a graha asked twice naming `events`. **Numbers:** none move.
 - **The ishṭa-devatā from the amātya** (`remedies.md` step 4, C357).
   BPHS (1923) ch. 9 vv. 76–79 read the same from the amātyakāraka, the
   graha next below the ātmakāraka in degrees.

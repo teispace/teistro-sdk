@@ -114,7 +114,7 @@ A new crate, `teistro-rashifal`, depending on `teistro-core` and
   elements, and is reached only when asked. It is `BASELINE` and
   unsourced (C361).
 
-The façade, `sdk.rashifal().period(&RashifalRequest)`, takes:
+The façade, `sdk.chart().rashifal(&RashifalRequest)`, takes:
 
 - **`place` and `offset`.** These are required. A reader's own place is
   the default a consumer gives, and Kathmandu is one value of it, not
@@ -127,14 +127,16 @@ The façade, `sdk.rashifal().period(&RashifalRequest)`, takes:
   (C358). `Snapshot::Clock(h, m)` is the baseline's 06:00.
 - **`events`.** The grahas whose ingresses and stations are found. All
   but the Moon by default (C360).
-- **`rules`.** The gochar group's knobs, as `sdk.chart().gochar` reads
-  them.
+- **`spells`.** Saturn's smaller spells, C149's 4th and 8th by default.
+  The gochar group's knobs come from the context's settings, as
+  `sdk.chart().gochar` reads them.
 
 It founds the nine longitudes once at the snapshot, through
 `Founder::longitudes`. It finds each ingress and station exactly with
-the hits machinery `sdk.chart().hits` already uses, and dates each event
-by the place's civil day. A batch form takes many periods and founds
-each reference day once.
+the hits machinery `sdk.chart().hits` already uses, and finds them from local
+midnight of the first day to local midnight after the last, so an
+ingress on the last evening is the period's. A batch form,
+`sdk.chart().rashifal_many`, takes many periods under one founder.
 
 ## The forks (cruxes)
 
@@ -171,7 +173,10 @@ each reference day once.
    event's house. `RashifalRules::default()` is the text read whole
    (`GocharRules::TEXT`) with C149's spells; a façade reads the gochar
    group from its settings.
-2. The façade: the request, sunrise, the events, the batch form.
+2. The façade: the request, sunrise, the events, the batch form:
+   **done**. A station is counted in the sign the graha stands in; the
+   panchanga the baseline score reads is the reference day's at
+   sunrise, whatever the snapshot.
 3. The measured page, `rashifal-measured.md`, under `check-rashifal`.
    It reads a year of days at Kathmandu and counts each of C361's
    differences.
