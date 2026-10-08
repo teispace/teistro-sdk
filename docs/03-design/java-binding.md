@@ -625,6 +625,16 @@ un-publish, `03-release-process.md`, "Withdrawing").
    `TEISTRO_STRICT` a machine without a JDK fails the gate rather than
    skipping it.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.
+   **Built 2026-10-08:** `bindings/java/example` holds a class per shared
+   example, named in Java's case and read back as the others' file name,
+   compiled from the unnamed module at release 22 with every lint an
+   error, so an example reaches only what the module exports.
+   `check-java` runs them and `check-parity` compares them line for line
+   with the other four sets; `your_own_ephemeris` is excused until step
+   5. `Civil` gives Java Python's `date`, `at` and `iana_zone`, and
+   `positions` answers a `PositionGrid` read cell by cell, as Python's
+   does. The module's sources reach `javac` through an argument file:
+   passed one by one they outgrew a Windows command line.
 5. **The provider, plugins and the engine**, with the throwing-provider
    test and the leak check.
 6. **Messages and records**: the Java target of `gen intl`, the

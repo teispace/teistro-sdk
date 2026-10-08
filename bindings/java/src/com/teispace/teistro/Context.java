@@ -295,10 +295,10 @@ public final class Context implements AutoCloseable {
      * body {@code j}.
      *
      * @param request the instants, bodies, scale, frame and observer
-     * @return the decoded grid
+     * @return the grid, read cell by cell with {@link PositionGrid#at}
      */
-    public Positions positions(PositionRequest request) {
-        return Positions.decode(locked((lib, raw) -> Calls.positions(lib, raw, request)));
+    public PositionGrid positions(PositionRequest request) {
+        return new PositionGrid(Positions.decode(locked((lib, raw) -> Calls.positions(lib, raw, request))));
     }
 
     /**
@@ -307,9 +307,9 @@ public final class Context implements AutoCloseable {
      *
      * @param instants the instants as Julian days, at least one
      * @param bodies the bodies, at least one
-     * @return the decoded grid
+     * @return the grid, read cell by cell with {@link PositionGrid#at}
      */
-    public Positions positions(double[] instants, java.util.List<Body> bodies) {
+    public PositionGrid positions(double[] instants, java.util.List<Body> bodies) {
         if (instants.length == 0) {
             throw new IllegalArgumentException("a request needs at least one instant");
         }

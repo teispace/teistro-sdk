@@ -51,6 +51,9 @@ pub(crate) enum Binding {
     Dart,
     /// `crates/sdk/examples/*.rs`, the façade's own.
     Rust,
+    /// `bindings/java/example/*.java`, a class per example named as the
+    /// others' file is, in Java's case: `BirthChart` is `birth_chart`.
+    Java,
 }
 
 /// A difference the comparison excuses: in `example`, as `binding` prints
@@ -82,10 +85,14 @@ impl Excused {
 /// ways: a difference not listed fails, and so does an entry that no
 /// longer excuses one.
 ///
-/// **Empty**, and the machinery kept: the four sets print alike, and a
-/// difference found later is either a defect to fix or an entry here
-/// naming the item that removes it.
-pub(crate) const EXCUSED: [Excused; 0] = [];
+/// One entry: Java has no provider written in Java yet, so it has no
+/// `your_own_ephemeris`. Every other example prints alike in all five.
+pub(crate) const EXCUSED: [Excused; 1] = [Excused {
+    example: "your_own_ephemeris",
+    binding: Binding::Java,
+    line: None,
+    reason: "a provider written in Java is `03-design/java-binding.md` step 5",
+}];
 
 /// The reading corpora under `packs/` the `phala` and `readings` examples
 /// load, each built into a directory of its own under [`PACKS`].
@@ -203,8 +210,13 @@ pub(crate) struct Ran {
 
 impl Binding {
     /// The four, in the order the gates report them.
-    pub(crate) const ALL: [Binding; 4] =
-        [Binding::Node, Binding::Python, Binding::Dart, Binding::Rust];
+    pub(crate) const ALL: [Binding; 5] = [
+        Binding::Node,
+        Binding::Python,
+        Binding::Dart,
+        Binding::Rust,
+        Binding::Java,
+    ];
 
     /// The binding's name, for a report line.
     pub(crate) const fn name(self) -> &'static str {
@@ -213,6 +225,7 @@ impl Binding {
             Binding::Python => "Python",
             Binding::Dart => "Dart",
             Binding::Rust => "Rust",
+            Binding::Java => "Java",
         }
     }
 
@@ -223,6 +236,7 @@ impl Binding {
             Binding::Python => "bindings/python",
             Binding::Dart => "bindings/dart",
             Binding::Rust => "crates/sdk",
+            Binding::Java => "bindings/java",
         }
     }
 
@@ -252,7 +266,25 @@ impl Binding {
             Binding::Python => "py",
             Binding::Dart => "dart",
             Binding::Rust => "rs",
+            Binding::Java => "java",
         }
+    }
+
+    /// The name the bindings share for an example, from its file's stem:
+    /// the stem itself, but for Java's class, whose `BirthChart` is
+    /// `birth_chart`.
+    fn shared_name(self, stem: &str) -> String {
+        if self != Binding::Java {
+            return stem.to_owned();
+        }
+        let mut name = String::with_capacity(stem.len() + 4);
+        for (index, c) in stem.chars().enumerate() {
+            if c.is_ascii_uppercase() && index > 0 {
+                name.push('_');
+            }
+            name.push(c.to_ascii_lowercase());
+        }
+        name
     }
 
     /// Every example, in name order; an error when there are none, which
@@ -335,6 +367,12 @@ impl Binding {
                     .current_dir(root);
                 command
             }
+            // Compiled once by `run`, so each example is a class to start.
+            Binding::Java => crate::java_binding::example(
+                root,
+                &example.file_stem().unwrap_or_default().to_string_lossy(),
+                &runtime.library,
+            ),
         }
     }
 
@@ -352,10 +390,15 @@ impl Binding {
         if self == Binding::Python {
             unshadowed(&examples, runtime)?;
         }
+        if self == Binding::Java {
+            crate::java_binding::compile_examples(root, &examples)?;
+        }
         for example in examples {
-            let name = example
-                .file_stem()
-                .map_or_else(String::new, |stem| stem.to_string_lossy().into_owned());
+            let name = self.shared_name(
+                &example
+                    .file_stem()
+                    .map_or_else(String::new, |stem| stem.to_string_lossy().into_owned()),
+            );
             let mut command = self.command(root, &example, runtime, &packs);
             let output = command.output().map_err(|e| {
                 println!(
@@ -492,6 +535,17 @@ mod tests {
 
     /// Alike is line for line, and a missing example is a difference in
     /// either direction.
+    #[test]
+    fn a_java_class_is_named_as_the_others_files_are() {
+        assert_eq!(Binding::Java.shared_name("BirthChart"), "birth_chart");
+        assert_eq!(Binding::Java.shared_name("Quickstart"), "quickstart");
+        assert_eq!(
+            Binding::Java.shared_name("YourOwnEphemeris"),
+            "your_own_ephemeris"
+        );
+        assert_eq!(Binding::Python.shared_name("birth_chart"), "birth_chart");
+    }
+
     #[test]
     fn examples_differ_by_name_or_by_output() {
         let node = vec![ran("a", "x\ny\n"), ran("b", "z\n")];

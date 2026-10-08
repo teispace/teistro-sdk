@@ -536,6 +536,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         Binding::Dart => has_dart,
         // Cargo is what runs this gate, so the Rust set is always here.
         Binding::Rust => true,
+        Binding::Java => has_java(),
     };
     let examples = examples_agree(root, present);
     values.max(examples)

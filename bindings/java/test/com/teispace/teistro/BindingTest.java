@@ -222,8 +222,10 @@ public final class BindingTest {
 
         tests.put("a positions grid decodes instants outermost", () -> {
             try (Context sky = context(teistro)) {
-                Positions grid = sky.positions(new double[] {2_451_545.0, 2_451_546.0},
+                PositionGrid read = sky.positions(new double[] {2_451_545.0, 2_451_546.0},
                         List.of(Body.SUN, Body.MOON, Body.MARS));
+                same(read.at(1, 1).longitude(), read.decoded().cells().lon(4), "a cell is read instants outermost");
+                Positions grid = read.decoded();
                 same(2L, grid.jdCount(), "two instants");
                 same(3L, grid.bodyCount(), "three bodies");
                 same((long) TimeScale.UT1.id(), grid.scale(), "the scale asked for");
