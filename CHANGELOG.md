@@ -2302,6 +2302,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   `remedies`, and Dart refuses a non-finite `at` before it is sent. The
   five parity runners print every nature, subject, śānti and devotion,
   and they agree. **Numbers:** none move.
+- **Rashifal, the kernel** (`rashifal.md` step 1, C358 to C361). A new
+  crate, `teistro-rashifal`. `rashifal(transits, events, rules)` reads
+  one period's snapshot and events for each of the twelve signs. Each
+  sign gets Phaladeepika ch. 26's gochar from it, Saturn's house with its
+  Sade Sati phase and C149's spells, and every event's house from it
+  with whether v. 2 calls that house good. `reference_day(days)` is the
+  middle day a period is read at. `baseline::baseline_score` reproduces
+  the baseline engine's 0–100 score, eight areas, five key influences
+  and lucky elements, `BASELINE` and unsourced. `teistro_gochar::good_house`
+  is new. **Numbers:** none move; a new module.
 - **The ishṭa-devatā from the amātya** (`remedies.md` step 4, C357).
   BPHS (1923) ch. 9 vv. 76–79 read the same from the amātyakāraka, the
   graha next below the ātmakāraka in degrees.
