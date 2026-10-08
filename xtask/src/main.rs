@@ -332,6 +332,7 @@ mod varshaphala;
 mod vimshopaka;
 mod vsop;
 mod wasm_binding;
+mod wasm_crates;
 mod western_aspects;
 mod western_houses;
 mod wheel;
@@ -593,6 +594,7 @@ fn main() {
         ),
         Some("chebyshev") => chebyshev::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("moon") => moon::generate(&repo_root()),
+        Some("wasm-crates") => wasm_crates::report(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-moon") => moon::check_generated(&repo_root()),
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
@@ -661,7 +663,7 @@ fn usage() -> i32 {
          {}\n\n\
          everything else:\n  \
          rule-doc PACK|CATEGORY|KEY | \
-         vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
+         vsop [DIR] | moon | wasm-crates [MODULE] | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-python | check-rust | check-parity | check-lints | \
