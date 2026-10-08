@@ -1601,6 +1601,10 @@ mod tests {
         assert_eq!(camel("grahaInBhava"), "grahaInBhava");
         assert_eq!(pascal("strength"), "Strength");
         assert_eq!(dart_name("in"), "in$");
+        assert_eq!(java_name("long"), "long_");
+        assert_eq!(java_name("grahaInBhava"), "grahaInBhava");
+        assert_eq!(java_constant("PURVA_PHALGUNI"), "PURVA_PHALGUNI");
+        assert_eq!(java_constant("1st"), "_1ST");
     }
 
     #[test]
@@ -1608,14 +1612,21 @@ mod tests {
         let model = model();
         let ts = typescript(&model);
         let dart = dart(&model);
+        let java = java(&model, "com.teispace.teistro.messages");
         for key in &model.keys {
             assert!(ts.contains(&format!("'{key}'")), "ts lacks {key}");
             assert!(dart.contains(&format!("'{key}'")), "dart lacks {key}");
+            assert!(java.contains(&format!("\"{key}\"")), "java lacks {key}");
         }
         for text in ["Welcome to", "conjoins", "rules house", "Jupiter", "वृश्चिक"] {
             assert!(!ts.contains(text), "ts leaks {text:?}");
             assert!(!dart.contains(text), "dart leaks {text:?}");
+            assert!(!java.contains(text), "java leaks {text:?}");
         }
+        assert!(java.contains("\npackage com.teispace.teistro.messages;\n"));
+        assert!(java.contains("public String grahaInBhava(long bhava, GrahaKey graha) {"));
+        assert!(java.contains("public String greeting(Gender gender, String name) {"));
+        assert!(java.contains("ASHWINI(\"nakshatra.ASHWINI\")"));
         assert!(ts.contains("grahaInBhava: (p: { bhava: number; graha: GrahaKey })"));
         assert!(ts.contains("greeting: (p: { gender: Gender; name: string })"));
         assert!(ts.contains("export type GrahaKey = 'graha.SUN'"));
