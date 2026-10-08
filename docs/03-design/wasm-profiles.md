@@ -74,7 +74,7 @@ one.
 2. **The boundary keeps its shape.** Every entry point exists in every
    profile. A call into a family the build left out answers
    `TS_ERR_CAPABILITY`, naming the family and the profile ("this build
-   is the `panchanga` profile, which leaves out `muhurta`"). A chart
+   is the `panchanga` profile, which leaves out `chart`"). A chart
    request asking for a left-out section is refused naming that field,
    never answered with the section missing. The generated glue is
    therefore one file for every profile, and only the `.wasm` differs.
@@ -148,6 +148,21 @@ one.
      against the full surface and build only with `full`.
 3. The `panchanga` module staged beside the full one, its subpath, its
    budget and its probe.
+   - **Done.** The profile keeps `muhurta`: an auspicious-day search is
+     what a patro shows beside the days, and it costs a tenth of the
+     profile gzipped. The wasm crate's `panchanga` feature builds it.
+     `check-wasm` builds it after the full module and binds it into
+     `wasm/panchanga/`. The staging writes `lib/panchanga.js` and its
+     three loaders from the package's own by rewriting the one import and
+     the module's path, and refuses a source that stops saying what the
+     rewrite expects. The manifest gains `exports["./panchanga"]`, typed
+     by the entry's own declarations, and the `#native-panchanga`
+     conditions in the resolver's order. `bindings/wasm/profile.mjs`
+     runs both entries under Node: the settings hash, a Bikram Sambat
+     conversion, each almanac day's content hash and the muhurta windows
+     must be equal, and a chart must be refused as `CAPABILITY` naming
+     `chart`. Each bundler must ship, for each entry, the module of its
+     own weight.
 4. Measure the shared base by module, and decide whether to shrink it.
 
 ## Open questions

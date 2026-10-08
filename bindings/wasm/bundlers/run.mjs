@@ -16,8 +16,14 @@
  *   side effects.
  * - `everything` imports the package's entry. It must ship the module:
  *   the control that shows the first measurement can see one at all.
+ * - `panchanga` imports the profile's subpath. It must ship the profile's
+ *   module and not the full one. A bundler that emits the module is told
+ *   apart by `wasmBytes`, what the emitted `.wasm` files weigh; one that
+ *   leaves `new URL(…)` for the consumer to serve (esbuild) by
+ *   `references`, the module paths its scripts name.
  *
- * Prints one JSON object: `{ answer: [{ bundler, entry, bytes, wasm }] }`,
+ * Prints one JSON object:
+ * `{ answer: [{ bundler, entry, bytes, wasm, wasmBytes, references }] }`,
  * or `{ error }` when a bundler failed.
  */
 
@@ -38,6 +44,7 @@ const require = createRequire(join(HERE, 'package.json'));
 const ENTRIES = {
   catalogue: "import { Graha } from '@teistro/sdk-wasm/catalogue';\nconsole.log(Graha.Sun);\n",
   everything: "import { Context } from '@teistro/sdk-wasm';\nconsole.log(typeof Context);\n",
+  panchanga: "import { Context } from '@teistro/sdk-wasm/panchanga';\nconsole.log(typeof Context);\n",
 };
 
 /** Every file under `directory`, as paths. */
@@ -49,19 +56,25 @@ function files(directory) {
 
 /**
  * What a bundle's output directory holds: the bytes of its JavaScript,
- * and whether the module came with it, as an emitted `.wasm` file or a
+ * the bytes of the modules it emitted, and whether a module came with it, as an emitted `.wasm` file or a
  * reference the bundle resolves at run time.
  */
 function measured(out) {
   const written = files(out);
   const scripts = written.filter((path) => /\.m?js$/.test(path));
   const bytes = scripts.reduce((total, path) => total + statSync(path).size, 0);
+  const modules = written.filter((path) => path.endsWith('.wasm'));
+  const wasmBytes = modules.reduce((total, path) => total + statSync(path).size, 0);
   // An inlined module is a data URI, whose base64 opens with `AGFzbQ`
   // (the module's magic, `\0asm`), and names no file.
   const wasm =
     written.some((path) => path.endsWith('.wasm')) ||
     scripts.some((path) => /\.wasm|AGFzbQ/.test(readFileSync(path, 'utf8')));
-  return { bytes, wasm };
+  // The glue's own fallback names the module bare, beside itself; a
+  // loader's path has a directory in it.
+  const named = scripts.flatMap((path) => readFileSync(path, 'utf8').match(/[\w./-]+\.wasm/g) ?? []);
+  const references = [...new Set(named.filter((path) => path.includes('/')))].sort();
+  return { bytes, wasm, wasmBytes, references };
 }
 
 const bundlers = {

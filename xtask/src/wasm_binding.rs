@@ -16,6 +16,10 @@
 //!    `#native` resolves through the package's own `node` condition to
 //!    the wasm loader. Every call the suite makes goes through the wasm
 //!    glue *and* the loader a consumer gets.
+//! 1a. **Each profile's subpath** (`03-design/wasm-profiles.md`), both
+//!    entries under Node: what the profile keeps answers as the full
+//!    module does, to the bit, and the chart area is refused as a
+//!    capability.
 //! 2. **In a headless browser**, unbundled, with `#native` mapped to the
 //!    web loader as a bundler maps it from the `default` condition. A Node
 //!    built-in anywhere on that path could not resolve there, so loading
@@ -38,9 +42,10 @@
 //! 6. **Shaken by the bundlers**, from the installed package: esbuild,
 //!    Vite and webpack, pinned in `bindings/wasm/bundlers`, each bundle
 //!    one member of `/catalogue` and must ship no module and at most
-//!    [`SHAKEN_MOST`] bytes; each also bundles the entry, which must ship
-//!    the module, so the first measurement is known to be able to see one.
-//! 7. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
+//!    [`SHAKEN_MOST`] bytes; each also bundles the entry and each
+//!    profile's subpath, which must ship their own module and no other,
+//!    so the first measurement is known to be able to see one.
+//! 7. **Each module held to its size budget** (`bindings/wasm/size.json`), both ways:
 //!    over it fails, and so does more than 5% under it, since a budget
 //!    that loose would let the saving go unnoticed.
 //!
@@ -104,6 +109,48 @@ const LOADERS: [(&str, &str); 3] = [
 ];
 /// The files every package carries whatever else is in it.
 const LEGAL: [&str; 2] = ["LICENSE", "NOTICE"];
+
+/// A profile's module, shipped beside the full one under a subpath of its
+/// own (`03-design/wasm-profiles.md`): the same layer over a module built
+/// with fewer families.
+struct Profile {
+    /// The subpath, the directory under `wasm/` the module is bound into,
+    /// and the wasm crate's feature that builds it.
+    name: &'static str,
+}
+
+/// The profiles the package ships beside its full module. `panchanga` is
+/// the calendars, the almanac and the muhurta search: what a patro needs,
+/// at three fifths of the full module gzipped.
+const PROFILES: [Profile; 1] = [Profile { name: "panchanga" }];
+
+impl Profile {
+    /// The import the profile's entry reads its native half from.
+    fn import(&self) -> String {
+        format!("#native-{}", self.name)
+    }
+
+    /// The profile's loader for one of [`LOADERS`]: `native.web.js`
+    /// becomes `native-panchanga.web.js`.
+    fn loader(&self, loader: &str) -> String {
+        format!(
+            "native-{}.{}",
+            self.name,
+            loader.strip_prefix("native.").unwrap_or(loader)
+        )
+    }
+}
+
+/// `text` with every `from` replaced by `to`, refused when there is none:
+/// a generated file made by rewriting another must fail when the source
+/// stops saying what the rewrite expects, not ship it unchanged.
+fn rewritten(text: &str, from: &str, to: &str, what: &str) -> io::Result<String> {
+    if text.contains(from) {
+        Ok(text.replace(from, to))
+    } else {
+        Err(io::Error::other(format!("{what} no longer says `{from}`")))
+    }
+}
 
 /// The `wasm-bindgen` version the lockfile resolved. The CLI must be that
 /// version exactly: the two halves of the bindings agree on a schema only
@@ -183,7 +230,34 @@ fn manifest(node: &Value) -> Value {
             .iter()
             .map(|(condition, file)| ((*condition).to_owned(), json!(format!("./lib/{file}"))))
             .collect();
-        fields.insert("imports".into(), json!({ "#native": loaders }));
+        let mut imports = serde_json::Map::new();
+        imports.insert("#native".into(), Value::Object(loaders));
+        for profile in &PROFILES {
+            let loaders: serde_json::Map<String, Value> = LOADERS
+                .iter()
+                .map(|(condition, file)| {
+                    (
+                        (*condition).to_owned(),
+                        json!(format!("./lib/{}", profile.loader(file))),
+                    )
+                })
+                .collect();
+            imports.insert(profile.import(), Value::Object(loaders));
+        }
+        fields.insert("imports".into(), Value::Object(imports));
+        // A profile's entry is the package's own layer, so its types are
+        // the entry's: a call it leaves out is still typed, and refused.
+        if let Some(exports) = fields.get_mut("exports").and_then(Value::as_object_mut) {
+            for profile in &PROFILES {
+                exports.insert(
+                    format!("./{}", profile.name),
+                    json!({
+                        "types": "./lib/index.d.ts",
+                        "default": format!("./lib/{}.js", profile.name),
+                    }),
+                );
+            }
+        }
         fields.insert(
             "files".into(),
             json!([
@@ -229,6 +303,34 @@ fn assemble(root: &Path, directory: &Path) -> io::Result<()> {
     fs::create_dir_all(&lib)?;
     copy_files(&root.join(NODE).join("lib"), &lib, &[NODE_LOADER])?;
     copy_files(&root.join(WASM).join("lib"), &lib, &[])?;
+    // Each profile's entry and loaders, written from the package's own so
+    // that nothing of the layer is kept twice: the entry reads its native
+    // half from the profile's import, and each loader its module from the
+    // profile's directory.
+    let index = fs::read_to_string(lib.join("index.js"))?;
+    for profile in &PROFILES {
+        fs::write(
+            lib.join(format!("{}.js", profile.name)),
+            rewritten(
+                &index,
+                "from '#native';",
+                &format!("from '{}';", profile.import()),
+                "the layer's index.js",
+            )?,
+        )?;
+        for (_, loader) in LOADERS {
+            let text = fs::read_to_string(lib.join(loader))?;
+            fs::write(
+                lib.join(profile.loader(loader)),
+                rewritten(
+                    &text,
+                    "'../wasm/teistro_wasm",
+                    &format!("'../wasm/{}/teistro_wasm", profile.name),
+                    loader,
+                )?,
+            )?;
+        }
+    }
     let node: Value =
         serde_json::from_str(&fs::read_to_string(root.join(NODE).join("package.json"))?)
             .map_err(io::Error::other)?;
@@ -253,26 +355,24 @@ fn assemble(root: &Path, directory: &Path) -> io::Result<()> {
     .map_err(io::Error::other)
 }
 
-/// Builds the module, binds it for the web and stages the package at
-/// `directory`, replacing whatever was there.
-pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
-    let Some(wanted) = locked_version(root) else {
-        println!("FAIL  Cargo.lock names no `wasm-bindgen`; the wasm crate has lost its binding");
-        return Err(());
-    };
-    let cli = wasm_bindgen(root, &wanted)?;
-    step(
-        Command::new(cargo())
-            .args(["build", "--quiet", "--profile", PROFILE, "-p", PACKAGE])
-            .args(["--target", "wasm32-unknown-unknown"])
-            .current_dir(root),
-        "",
-        "the wasm module did not build",
-    )?;
-    if directory.exists() {
-        fs::remove_dir_all(directory)
-            .map_err(|e| println!("FAIL  {}: {e}", directory.display()))?;
+/// Builds the module with the wasm crate's `features` (its defaults when
+/// there are none) and binds it for the web into `out`.
+fn module(root: &Path, cli: &Path, features: Option<&str>, out: &Path) -> Result<(), ()> {
+    let mut build = Command::new(cargo());
+    build
+        .args(["build", "--quiet", "--profile", PROFILE, "-p", PACKAGE])
+        .args(["--target", "wasm32-unknown-unknown"]);
+    if let Some(features) = features {
+        build.args(["--no-default-features", "--features", features]);
     }
+    step(
+        build.current_dir(root),
+        "",
+        &format!(
+            "the wasm module did not build ({})",
+            features.unwrap_or("full")
+        ),
+    )?;
     // `web` output instantiates from a URL or from bytes, which is what
     // both loaders need; the layer's own declarations are the package's
     // types, so the glue's are not written. The name section is a debugger's
@@ -283,12 +383,32 @@ pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
             .args(["--target", "web", "--no-typescript"])
             .args(["--remove-name-section", "--remove-producers-section"])
             .arg("--out-dir")
-            .arg(directory.join("wasm"))
+            .arg(out)
             .arg(MODULE)
             .current_dir(root),
         "",
         "wasm-bindgen could not bind the module",
-    )?;
+    )
+}
+
+/// Builds the modules, binds each for the web and stages the package at
+/// `directory`, replacing whatever was there. The profiles are built after
+/// the full module, one at a time, since each build writes the same file.
+pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
+    let Some(wanted) = locked_version(root) else {
+        println!("FAIL  Cargo.lock names no `wasm-bindgen`; the wasm crate has lost its binding");
+        return Err(());
+    };
+    let cli = wasm_bindgen(root, &wanted)?;
+    if directory.exists() {
+        fs::remove_dir_all(directory)
+            .map_err(|e| println!("FAIL  {}: {e}", directory.display()))?;
+    }
+    let wasm = directory.join("wasm");
+    module(root, &cli, None, &wasm)?;
+    for profile in &PROFILES {
+        module(root, &cli, Some(profile.name), &wasm.join(profile.name))?;
+    }
     assemble(root, directory)
         .map_err(|e| println!("FAIL  the wasm package could not be staged: {e}"))
 }
@@ -424,8 +544,9 @@ fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
 
 /// The installed package bundled by each pinned bundler: one member of
 /// `/catalogue` ships no module and stays under [`SHAKEN_MOST`]; the
-/// entry ships the module.
-fn shaken(root: &Path) -> Result<(), ()> {
+/// entry ships the full module, and each profile's subpath its own module
+/// and nothing else, told apart by what the emitted modules weigh.
+fn shaken(root: &Path, staged: &Path) -> Result<(), ()> {
     let dir = root.join(BUNDLERS);
     for bundler in ["esbuild", "vite", "webpack"] {
         if pinned_npm_tool(&dir, bundler).is_none() {
@@ -434,6 +555,26 @@ fn shaken(root: &Path) -> Result<(), ()> {
             ));
             return Ok(());
         }
+    }
+    let weight = |bound: PathBuf| {
+        fs::metadata(bound.join("teistro_wasm_bg.wasm"))
+            .map(|meta| meta.len())
+            .map_err(|e| println!("FAIL  the staged module could not be read: {e}"))
+    };
+    let wasm = staged.join("wasm");
+    // Each entry's module: its weight, and the end of the path a bundle
+    // that leaves the module to be served names it by.
+    let mut modules = vec![(
+        String::from("everything"),
+        weight(wasm.clone())?,
+        String::from("/wasm/teistro_wasm_bg.wasm"),
+    )];
+    for profile in &PROFILES {
+        modules.push((
+            profile.name.to_owned(),
+            weight(wasm.join(profile.name))?,
+            format!("/wasm/{}/teistro_wasm_bg.wasm", profile.name),
+        ));
     }
     let rows = probe_by(root, "bundlers/run.mjs", &[root.join(CONSUMER).as_os_str()]).map_err(
         |error| println!("FAIL  the bundlers did not bundle the installed package: {error}"),
@@ -449,15 +590,36 @@ fn shaken(root: &Path) -> Result<(), ()> {
         let entry = row["entry"].as_str().unwrap_or("?");
         let bytes = row["bytes"].as_u64().unwrap_or(u64::MAX);
         let wasm = row["wasm"].as_bool().unwrap_or(false);
-        let complaint = match entry {
-            "catalogue" if wasm => Some(String::from("ships the module")),
-            "catalogue" if bytes > SHAKEN_MOST => {
+        let shipped = row["wasmBytes"].as_u64().unwrap_or(0);
+        let references: Vec<&str> = row["references"]
+            .as_array()
+            .map(|paths| paths.iter().filter_map(Value::as_str).collect())
+            .unwrap_or_default();
+        let wanted = modules
+            .iter()
+            .find(|(name, _, _)| name == entry)
+            .map(|(_, weight, path)| (*weight, path.as_str()));
+        let complaint = match (entry, wanted) {
+            ("catalogue", _) if wasm => Some(String::from("ships the module")),
+            ("catalogue", _) if bytes > SHAKEN_MOST => {
                 Some(format!("weighs {bytes} bytes, over {SHAKEN_MOST}"))
             }
-            "catalogue" => None,
+            ("catalogue", _) => None,
+            (_, None) => Some(String::from("is an entry the check does not know")),
             _ if !wasm => Some(String::from(
                 "does not ship the module, so the check cannot see one",
             )),
+            (_, Some((weight, _))) if shipped > 0 && shipped != weight => Some(format!(
+                "ships {shipped} bytes of module where its own weighs {weight}"
+            )),
+            (_, Some((_, path)))
+                if shipped == 0
+                    && (references.is_empty() || !references.iter().all(|r| r.ends_with(path))) =>
+            {
+                Some(format!(
+                    "emits no module and names {references:?} where its own is `…{path}`"
+                ))
+            }
             _ => None,
         };
         match complaint {
@@ -467,12 +629,59 @@ fn shaken(root: &Path) -> Result<(), ()> {
             }
             None => println!(
                 "ok    {bundler} bundles `{entry}` in {bytes} bytes{}",
-                if wasm {
-                    ", with the module"
+                if shipped > 0 {
+                    format!(", with its module of {shipped} bytes")
+                } else if wasm {
+                    format!(", naming its module at {}", references.join(", "))
                 } else {
-                    ", without the module"
+                    String::from(", without the module")
                 }
             ),
+        }
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
+/// Each profile's entry under Node, from the staged package: what it
+/// keeps answers as the full module does, to the bit, and a call into the
+/// chart area, which every profile leaves out, is refused as a capability
+/// naming the family.
+fn profiles(root: &Path, staged: &Path) -> Result<(), ()> {
+    let mut failed = false;
+    for profile in &PROFILES {
+        let name = profile.name;
+        let answer = match probe_by(
+            root,
+            "profile.mjs",
+            &[staged.as_os_str(), std::ffi::OsStr::new(name)],
+        ) {
+            Ok(answer) => answer,
+            Err(error) => {
+                println!("FAIL  the `{name}` entry did not run under Node: {error}");
+                failed = true;
+                continue;
+            }
+        };
+        if answer["full"] == answer["profile"] && answer["full"].is_object() {
+            println!(
+                "ok    `{NPM_WASM}/{name}` answers the calendars, the almanac and the muhurta search as the full module does, to the bit"
+            );
+        } else {
+            println!(
+                "FAIL  `{NPM_WASM}/{name}` and the full module answer differently:\n  {name} {}\n  full {}",
+                answer["profile"], answer["full"]
+            );
+            failed = true;
+        }
+        let refusal = &answer["refusal"];
+        let message = refusal["message"].as_str().unwrap_or_default();
+        if refusal["status"] == "CAPABILITY" && message.contains("`chart`") {
+            println!("ok    `{NPM_WASM}/{name}` refuses a chart as a capability: {message}");
+        } else {
+            println!(
+                "FAIL  `{NPM_WASM}/{name}` did not refuse a chart as a capability naming `chart`: {refusal}"
+            );
+            failed = true;
         }
     }
     if failed { Err(()) } else { Ok(()) }
@@ -561,12 +770,13 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{NODE}/test/ did not pass against the staged wasm package"),
             )
         })
+        .and_then(|()| profiles(root, &staged))
         .and_then(|()| node_answer(root, &staged))
         .and_then(|node| {
             browser(root, &staged, &node)
                 .and_then(|()| consumer(root, &staged))
                 .and_then(|()| workerd(root, &node))
-                .and_then(|()| shaken(root))
+                .and_then(|()| shaken(root, &staged))
         });
     // The suite was copied in to run from inside the package; it is not
     // part of what a consumer installs.
@@ -591,29 +801,46 @@ fn megabytes(bytes: u64) -> String {
     format!("{}.{:02} MB", hundredths / 100, hundredths % 100)
 }
 
-/// The shipped module held to its budget, both ways: over it is a
-/// regression, and more than 5% under it is a budget that no longer
-/// protects the saving, so the gate says what to write instead. Gzip is
-/// the proxy for what a browser downloads; the raw size is what it
-/// compiles.
+/// Each shipped module held to its budget: the full one to the budget
+/// file's own `bytes` and `gzip`, each profile's to the object under its
+/// name.
 fn size(root: &Path, staged: &Path) -> Result<(), ()> {
-    use std::io::Write as _;
-    let module = fs::read(staged.join("wasm/teistro_wasm_bg.wasm"))
-        .map_err(|e| println!("FAIL  the staged module could not be read: {e}"))?;
-    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
-    let gzip = encoder
-        .write_all(&module)
-        .and_then(|()| encoder.finish())
-        .map_err(|e| println!("FAIL  the module could not be compressed: {e}"))?;
     let budget: Value = fs::read_to_string(root.join(BUDGET))
         .ok()
         .and_then(|text| serde_json::from_str(&text).ok())
         .ok_or_else(|| println!("FAIL  {BUDGET} is missing or not JSON"))?;
+    let wasm = staged.join("wasm");
+    let mut failed = held_to_budget("the module", &wasm, &budget, BUDGET).is_err();
+    for profile in &PROFILES {
+        failed |= held_to_budget(
+            &format!("the `{}` module", profile.name),
+            &wasm.join(profile.name),
+            &budget[profile.name],
+            &format!("{BUDGET}'s `{}`", profile.name),
+        )
+        .is_err();
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
+/// One module held to its budget, both ways: over it is a regression, and
+/// more than 5% under it is a budget that no longer protects the saving,
+/// so the gate says what to write instead. Gzip is the proxy for what a
+/// browser downloads; the raw size is what it compiles.
+fn held_to_budget(module: &str, bound: &Path, budget: &Value, at: &str) -> Result<(), ()> {
+    use std::io::Write as _;
+    let bytes = fs::read(bound.join("teistro_wasm_bg.wasm"))
+        .map_err(|e| println!("FAIL  {module} could not be read: {e}"))?;
+    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
+    let gzip = encoder
+        .write_all(&bytes)
+        .and_then(|()| encoder.finish())
+        .map_err(|e| println!("FAIL  {module} could not be compressed: {e}"))?;
     let mut failed = false;
-    for (name, measured) in [("bytes", module.len()), ("gzip", gzip.len())] {
+    for (name, measured) in [("bytes", bytes.len()), ("gzip", gzip.len())] {
         let measured = u64::try_from(measured).unwrap_or(u64::MAX);
         let Some(allowed) = budget[name].as_u64().filter(|allowed| *allowed > 0) else {
-            println!("FAIL  {BUDGET} sets no `{name}`; the module measures {measured}");
+            println!("FAIL  {at} sets no `{name}`; {module} measures {measured}");
             failed = true;
             continue;
         };
@@ -627,7 +854,7 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
         let suggested = (measured + measured / 50).div_ceil(10_000) * 10_000;
         if measured > allowed {
             println!(
-                "FAIL  the module's {name} is {} ({measured}), over its budget of {} by {:.1}%; if the growth is wanted, set `{name}` in {BUDGET} to {suggested}",
+                "FAIL  {module}'s {name} is {} ({measured}), over its budget of {} by {:.1}%; if the growth is wanted, set `{name}` in {at} to {suggested}",
                 megabytes(measured),
                 megabytes(allowed),
                 (ratio - 1.0) * 100.0
@@ -635,7 +862,7 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
             failed = true;
         } else if ratio < SLACK {
             println!(
-                "FAIL  the module's {name} is {} ({measured}), {:.1}% under its budget of {}; lower `{name}` in {BUDGET} to {suggested} so the saving is kept",
+                "FAIL  {module}'s {name} is {} ({measured}), {:.1}% under its budget of {}; lower `{name}` in {at} to {suggested} so the saving is kept",
                 megabytes(measured),
                 (1.0 - ratio) * 100.0,
                 megabytes(allowed)
@@ -645,7 +872,7 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
             // The exact figure on a pass too, so a budget can be re-measured
             // from any run on the runner that enforces it.
             println!(
-                "ok    the module's {name} is {} ({measured}) of its {} budget, {:.1}% left",
+                "ok    {module}'s {name} is {} ({measured}) of its {} budget, {:.1}% left",
                 megabytes(measured),
                 megabytes(allowed),
                 (1.0 - ratio) * 100.0
@@ -679,7 +906,7 @@ mod tests {
         });
         let wasm = manifest(&node);
         assert_eq!(wasm["name"], "@teistro/sdk-wasm");
-        for kept in ["version", "exports", "engines"] {
+        for kept in ["version", "engines"] {
             assert_eq!(wasm[kept], node[kept], "{kept}");
         }
         assert_eq!(wasm["repository"]["directory"], "bindings/wasm");
@@ -697,6 +924,17 @@ mod tests {
             "the order a resolver tries them"
         );
         assert_eq!(wasm["imports"]["#native"]["default"], "./lib/native.web.js");
+        // A profile is a subpath of the same layer over its own loaders.
+        assert_eq!(
+            wasm["imports"]["#native-panchanga"]["workerd"],
+            "./lib/native-panchanga.workerd.js"
+        );
+        assert_eq!(
+            wasm["exports"]["./panchanga"]["default"],
+            "./lib/panchanga.js"
+        );
+        assert_eq!(wasm["exports"]["./panchanga"]["types"], "./lib/index.d.ts");
+        assert_eq!(wasm["exports"]["."], node["exports"]["."]);
         assert!(wasm.get("optionalDependencies").is_none() && wasm.get("scripts").is_none());
     }
 

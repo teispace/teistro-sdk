@@ -79,14 +79,32 @@ napi-rs's own wasm target (`docs/03-design/wasm-binding.md`).
 - **One thread.** A context belongs to the thread that made it. For
   parallel work, make one context per Web Worker.
 
+## The `panchanga` profile
+
+A patro, a calendar widget or an almanac page needs the calendars, the
+days and the muhurta search, and not the charts. Import the subpath and
+the bundle carries a module about half the size:
+
+```js
+import { Calendar, Context } from '@teistro/sdk-wasm/panchanga';
+```
+
+It is the same layer and the same types over a module built without the
+chart area, so the code is unchanged. What it keeps answers exactly as
+the full module does, and a call into what it leaves out (a chart, a
+dasha, matching, the Western and KP readings) throws a `TeistroError`
+whose `status` is `'CAPABILITY'` and whose message names the family. A
+bundler that imports only the subpath ships only its module.
+
 ## Size
 
-The module is **4.8 MB, 1.3 MB gzipped**. It carries the `compact` tier of
+The module carries the `compact` tier of
 the built-in ephemeris, which is one arcminute and what ADR-0029 names for
 a browser. It is built for size (fat LTO, `opt-level = "s"`, measured to
 be as fast as the release build) and ships without its debug names.
-`bindings/wasm/size.json` is its budget, and `check-wasm` fails the build
-if it grows. For the arcsecond tiers, bring a provider.
+`bindings/wasm/size.json` holds its budget and the `panchanga` module's,
+each with what it last measured, and `check-wasm` fails the build if
+either grows. For the arcsecond tiers, bring a provider.
 
 ## Checked
 
