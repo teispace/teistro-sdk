@@ -2681,6 +2681,153 @@ export class ChartArea extends Area {
     );
     return new Charts(bytes, this.#dashaNames);
   }
+
+  /**
+   * One period of civil days at a place read for each of the twelve signs
+   * (`03-design/rashifal.md`): the sky at sunrise on the middle day, or at
+   * `snapshot`'s clock time; each sign's gochar from Phaladeepika ch. 26,
+   * Saturn's standing from it, and every ingress and station of the period
+   * counted from it. With `baseline`, each sign's score as the baseline
+   * engine reckons it, `BASELINE` and unsourced (C361).
+   *
+   * @example
+   * const week = ctx.chart.rashifal({
+   *   first: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 4 },
+   *   last: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 10 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   * }, 'WEEKLY');
+   * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   *
+   * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds`, and optionally `snapshot`, `events` and `spells`
+   * @param {string} [baseline] `'DAILY'`, `'WEEKLY'`, `'MONTHLY'` or `'YEARLY'`, for the baseline engine's score
+   * @returns {object}
+   */
+  rashifal(request, baseline) {
+    const [one] = this.rashifalMany([request], baseline);
+    return one;
+  }
+
+  /**
+   * Many periods, each read as `rashifal` reads it alone, under one founder.
+   *
+   * @param {object[]} requests
+   * @param {string} [baseline]
+   * @returns {object[]}
+   */
+  rashifalMany(requests, baseline) {
+    if (!Array.isArray(requests)) {
+      throw new TypeError('requests: expected an array of rashifal periods');
+    }
+    const asked = { periods: requests.map(rashifalPeriodAsked) };
+    if (baseline !== undefined && baseline !== null) asked.baseline = baseline;
+    const answers = JSON.parse(run(this, (inner) => inner.rashifal(JSON.stringify(asked))));
+    return deepFreeze(answers.map(rashifalAnswerFrom));
+  }
+}
+
+/**
+ * A rashifal period as `ts_rashifal` reads it, from the shape `rashifal`
+ * takes: the days as `date(...)` builds them, the place by its parts.
+ *
+ * @param {object} request
+ * @returns {object}
+ */
+function rashifalPeriodAsked(request) {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+    throw new TypeError('rashifal: expected a period, e.g. { first, place, utcOffsetSeconds }');
+  }
+  const day = (date, what) => ({
+    year: finite(date?.year, `${what}.year`),
+    month: finite(date?.month, `${what}.month`),
+    day: finite(date?.day, `${what}.day`),
+  });
+  // Everything else crosses as written, so a key the SDK does not read is
+  // refused by name there rather than dropped here.
+  const { first: given, last, place: where, utcOffsetSeconds, ...rest } = request;
+  const place = where ?? {};
+  const first = given ?? {};
+  const asked = {
+    ...rest,
+    first: day(first, 'first'),
+    latitudeDeg: finite(place.latitude, 'place.latitude'),
+    longitudeDeg: finite(place.longitude, 'place.longitude'),
+    altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+    utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+  };
+  if (first.calendar !== undefined) asked.calendar = first.calendar;
+  if (last !== undefined && last !== null) asked.last = day(last, 'last');
+  return asked;
+}
+
+/**
+ * One period's answer as `ts_rashifal` spells it, every catalogue member
+ * by its full key as the rest of the layer answers.
+ *
+ * @param {{ period: object, baseline?: object[] }} answer
+ * @returns {object}
+ */
+function rashifalAnswerFrom({ period, baseline }) {
+  const graha = (key) => `graha.${key}`;
+  const rashi = (key) => `rashi.${key}`;
+  const transit = (one) => ({ sign: rashi(one.sign), degrees: one.degrees });
+  const hitEvent = (event) => {
+    switch (event.kind) {
+      case 'SIGN_INGRESS':
+        return { kind: event.kind, into: rashi(event.into), motion: event.motion };
+      case 'STATION':
+        return { kind: event.kind, turns: event.turns };
+      default:
+        return { kind: event.kind };
+    }
+  };
+  const reading = (one) => ({
+    rashi: rashi(one.rashi),
+    gochar: {
+      instant: period.instant,
+      reference: { from: one.gochar.reference.from, sign: rashi(one.gochar.reference.sign) },
+      rules: one.gochar.rules,
+      grahas: one.gochar.grahas.map((g) => ({
+        ...g,
+        graha: graha(g.graha),
+        transit: transit(g.transit),
+        obstructedBy: g.obstructedBy.map(graha),
+      })),
+      ashtakavarga: null,
+    },
+    saturn: one.saturn,
+    events: one.events.map((from) => ({
+      event: {
+        hit: { instant: from.event.hit.instant, graha: graha(from.event.hit.graha), event: hitEvent(from.event.hit.event) },
+        sign: rashi(from.event.sign),
+      },
+      house: from.house,
+      goodHouse: from.goodHouse,
+    })),
+  });
+  const score = (one) => ({
+    overall: one.overall,
+    areas: one.areas.map(([area, value]) => ({ area, score: value })),
+    keyInfluences: one.keyInfluences.map((k) => ({ ...k, graha: graha(k.graha) })),
+    lucky: { ...one.lucky, day: `vara.${one.lucky.day}`, direction: `direction.${one.lucky.direction}` },
+  });
+  return {
+    period: {
+      first: dateFrom({ ...period.first, calendar: `calendar.${period.first.calendar}` }),
+      last: dateFrom({ ...period.last, calendar: `calendar.${period.last.calendar}` }),
+      reference: dateFrom({ ...period.reference, calendar: `calendar.${period.reference.calendar}` }),
+      instant: period.instant,
+      transits: period.transits.map(transit),
+      retrograde: period.retrograde,
+      panchanga: {
+        tithi: `tithi.${period.panchanga.tithi}`,
+        yoga: `yoga.${period.panchanga.yoga}`,
+        muhurtaYogas: period.panchanga.muhurtaYogas,
+      },
+      readings: period.readings.map(reading),
+    },
+    baseline: baseline === undefined ? null : baseline.map(score),
+  };
 }
 
 /** Each batch's dashas, decoded once however many charts read them. */

@@ -869,6 +869,101 @@ export interface Hit {
   readonly event: HitEvent;
 }
 
+/** The instant a rashifal period's sky is read at (C358). */
+export type RashifalSnapshot =
+  | { readonly at: 'SUNRISE' }
+  /** A clock time on the reference day at the request's offset; the baseline engine's is 06:00. */
+  | { readonly at: 'CLOCK'; readonly hour: number; readonly minute: number };
+
+/**
+ * A period of civil days at a place, to read for each of the twelve signs;
+ * everything but the days, the place and the offset is optional.
+ */
+export interface RashifalRequest {
+  /** The first day; its calendar is the period's, Gregorian when left out. */
+  readonly first: { readonly calendar?: Calendar; readonly year: number; readonly month: number; readonly day: number };
+  /** The last day, both ends included; the first when left out. */
+  readonly last?: { readonly year: number; readonly month: number; readonly day: number };
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The civil days' offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** Sunrise on the middle day by default (C358, C359). */
+  readonly snapshot?: RashifalSnapshot;
+  /** The grahas whose ingresses and stations are reported; every one but the Moon by default (C360). */
+  readonly events?: readonly GrahaName[];
+  /** The houses counted as Saturn's smaller spells; the 4th and 8th by default (C149). */
+  readonly spells?: readonly number[];
+}
+
+/** The period the baseline engine's score is weighed for. */
+export type BaselinePeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+/** Where Saturn stands in Sade Sati: the 12th, the 1st or the 2nd. */
+export type SadeSatiPhase = 'RISING' | 'PEAK' | 'SETTING';
+
+/** One event of a rashifal period, counted from a sign. */
+export interface RashifalEvent {
+  /** The event, and the sign it happened in: the one entered, or the one a station stood in. */
+  readonly event: { readonly hit: Hit; readonly sign: Rashi | 'unknown' };
+  /** That sign's house from the reading's sign, 1 to 12. */
+  readonly house: number;
+  /** Whether v. 2 makes the graha's transit of that house good. */
+  readonly goodHouse: boolean;
+}
+
+/** One sign's reading of a period. */
+export interface RashiReading {
+  /** The sign, taken as a reader's janma rashi. */
+  readonly rashi: Rashi | 'unknown';
+  /** Phaladeepika ch. 26's gochar from it at the period's instant. */
+  readonly gochar: GocharReading;
+  /** Saturn's house from it, its Sade Sati phase, and whether the house is one of the smaller spells. */
+  readonly saturn: { readonly house: number; readonly sadeSati: SadeSatiPhase | null; readonly spell: boolean };
+  /** Every event of the period, in time order, counted from it. */
+  readonly events: readonly RashifalEvent[];
+}
+
+/** One period read for each of the twelve signs. */
+export interface RashifalPeriod {
+  readonly first: CalendarDate;
+  readonly last: CalendarDate;
+  /** The day it is read at, the middle one (C359). */
+  readonly reference: CalendarDate;
+  /** The instant it is read at, a UTC Julian day (C358). */
+  readonly instant: number;
+  /** Each graha's sign and degrees then, the Sun to Ketu. */
+  readonly transits: readonly { readonly sign: Rashi | 'unknown'; readonly degrees: number }[];
+  /** Whether each was moving backwards then, the Sun to Ketu. */
+  readonly retrograde: readonly boolean[];
+  /** What the baseline's score reads of the reference day's panchanga at sunrise. */
+  readonly panchanga: { readonly tithi: Tithi | 'unknown'; readonly yoga: Yoga | 'unknown'; readonly muhurtaYogas: number };
+  /** Each sign's reading, Aries to Pisces. */
+  readonly readings: readonly RashiReading[];
+}
+
+/** The baseline engine's score of one sign's reading, `BASELINE` and unsourced (C361). */
+export interface BaselineScore {
+  /** 0 to 100. */
+  readonly overall: number;
+  /** The eight life areas, each 0 to 100, in the baseline's order. */
+  readonly areas: readonly {
+    readonly area: 'OVERALL' | 'CAREER' | 'FINANCE' | 'HEALTH' | 'RELATIONSHIPS' | 'FAMILY' | 'EDUCATION' | 'SPIRITUALITY';
+    readonly score: number;
+  }[];
+  /** The five grahas the baseline names, in its order. */
+  readonly keyInfluences: readonly { readonly graha: Graha | 'unknown'; readonly house: number; readonly verdict: GocharVerdict }[];
+  /** The sign lord's lucky elements. */
+  readonly lucky: { readonly colour: string; readonly number: number; readonly day: Vara | 'unknown'; readonly direction: Direction | 'unknown' };
+}
+
+/** One period's answer: the reading, and the baseline's twelve scores when asked. */
+export interface RashifalAnswer {
+  readonly period: RashifalPeriod;
+  /** Aries to Pisces; `null` unless a baseline period was asked. */
+  readonly baseline: readonly BaselineScore[] | null;
+}
+
 /**
  * The transit hit list to search against every chart of a request; every
  * field but the window is optional, and an absent one is the default.
@@ -6128,6 +6223,18 @@ export declare class ChartArea {
    * the batch. A batch of none is an empty result rather than an error.
    */
   foundMany(request: ChartBatchRequest): Charts;
+  /**
+   * One period of civil days at a place read for each of the twelve signs
+   * (`03-design/rashifal.md`); with `baseline`, the baseline engine's score
+   * of each sign for that period.
+   *
+   * @example
+   * const week = ctx.chart.rashifal({ first, last, place, utcOffsetSeconds: 20700 }, 'WEEKLY');
+   * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   */
+  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalAnswer;
+  /** Many periods, each read as `rashifal` reads it alone, under one founder. */
+  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswer[];
 }
 
 /**

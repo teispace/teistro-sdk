@@ -137,6 +137,7 @@ impl Transit {
 /// The readings the text leaves open, from the settings' `gochar` group.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct GocharRules {
     /// The nodes' vedha (crux C136).
     pub node_vedha: NodeVedha,
@@ -235,6 +236,7 @@ impl Fruition {
 /// One graha's transit read from the reference sign.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct GrahaGochar {
     /// Which graha.
     pub graha: Graha,
@@ -261,6 +263,7 @@ pub struct GrahaGochar {
 /// Every graha's transit read from one reference sign.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct GocharReading {
     /// What the houses are counted from: the natal Moon's sign by v. 1.
     pub reference: Reference,

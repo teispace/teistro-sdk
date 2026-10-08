@@ -169,6 +169,7 @@ impl SarvaStanding {
 /// One graha's transit judged by the natal Ashtakavarga.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct AshtakavargaTransit {
     /// Which graha, Sun to Saturn.
     pub graha: Graha,

@@ -876,6 +876,47 @@ final class ChartArea extends _Area {
     ),
     _context._registeredDashas,
   );
+
+  /// One period of civil days at a place read for each of the twelve signs
+  /// (`03-design/rashifal.md`): the sky at sunrise on the middle day, or at
+  /// [RashifalRequest.snapshot]'s clock time; each sign's gochar from
+  /// Phaladeepika ch. 26, Saturn's standing from it, and every ingress and
+  /// station of the period counted from it. With [baseline], each sign's
+  /// score as the baseline engine reckons it, `BASELINE` and unsourced
+  /// (C361).
+  ///
+  /// ```dart
+  /// final week = ctx.chart.rashifal(
+  ///   RashifalRequest(first: first, last: last, place: place, utcOffsetSeconds: 20700),
+  ///   baseline: BaselinePeriod.weekly,
+  /// );
+  /// final leo = week.period.readings[Rashi.leo.id];
+  /// ```
+  RashifalAnswer rashifal(
+    RashifalRequest request, {
+    BaselinePeriod? baseline,
+  }) => rashifalMany([request], baseline: baseline).single;
+
+  /// Many periods, each read as [rashifal] reads it alone, under one
+  /// founder.
+  List<RashifalAnswer> rashifalMany(
+    List<RashifalRequest> requests, {
+    BaselinePeriod? baseline,
+  }) => List<RashifalAnswer>.unmodifiable([
+    for (final raw
+        in jsonDecode(
+              _context._guarded(
+                () => _context._inner.rashifal(
+                  jsonEncode(<String, Object?>{
+                    'periods': [for (final one in requests) one._record],
+                    if (baseline case final baseline?) 'baseline': baseline.key,
+                  }),
+                ),
+              ),
+            )
+            as List<Object?>)
+      _rashifalAnswer(raw! as Map<String, Object?>),
+  ]);
 }
 
 /// `sdk.almanac` — a day, or a run of days, with its limbs.
@@ -2322,6 +2363,336 @@ final class GocharReading {
   /// The seven judged by the natal Ashtakavarga, Sun to Saturn; null unless
   /// `ashtakavarga` asked.
   final List<AshtakavargaTransit>? ashtakavarga;
+}
+
+/// The instant a rashifal period is read at (C358).
+sealed class RashifalSnapshot {
+  const RashifalSnapshot();
+
+  Map<String, Object?> get _record;
+}
+
+/// Sunrise on the reference day at the period's place, the default.
+final class AtSunrise extends RashifalSnapshot {
+  const AtSunrise();
+
+  @override
+  Map<String, Object?> get _record => const {'at': 'SUNRISE'};
+}
+
+/// A clock time on the reference day at the request's offset; the baseline
+/// engine's is 06:00.
+final class AtClock extends RashifalSnapshot {
+  const AtClock({required this.hour, this.minute = 0});
+
+  /// 0 to 23.
+  final int hour;
+
+  /// 0 to 59.
+  final int minute;
+
+  @override
+  Map<String, Object?> get _record => {
+    'at': 'CLOCK',
+    'hour': hour,
+    'minute': minute,
+  };
+}
+
+/// A period of civil days at a place, to read for each of the twelve signs
+/// (`03-design/rashifal.md`).
+///
+/// ```dart
+/// final week = RashifalRequest(first: first, last: last, place: place, utcOffsetSeconds: 20700);
+/// ```
+final class RashifalRequest {
+  const RashifalRequest({
+    required this.first,
+    this.last,
+    required this.place,
+    required this.utcOffsetSeconds,
+    this.snapshot,
+    this.events,
+    this.spells,
+  });
+
+  /// The first civil day, in its own calendar.
+  final CalendarDate first;
+
+  /// The last, in the first's calendar; the first when null.
+  final CalendarDate? last;
+
+  /// Where the days are kept.
+  final Observer place;
+
+  /// The civil clock's offset from UTC, in seconds.
+  final int utcOffsetSeconds;
+
+  /// The instant read; sunrise on the middle day when null.
+  final RashifalSnapshot? snapshot;
+
+  /// The grahas whose ingresses and stations are reported; every one but
+  /// the Moon when null (C360).
+  final List<Graha>? events;
+
+  /// Saturn's smaller spells, as houses; the 4th and 8th when null (C149).
+  final List<int>? spells;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'calendar': first.calendar.key,
+    'first': _dayParts(first),
+    if (last case final last?) 'last': _dayParts(last),
+    'latitudeDeg': place.latitudeDeg,
+    'longitudeDeg': place.longitudeDeg,
+    'altitudeM': place.altitudeM,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    if (snapshot case final snapshot?) 'snapshot': snapshot._record,
+    if (events case final events?)
+      'events': [for (final graha in events) graha.key],
+    if (spells case final spells?) 'spells': spells,
+  };
+}
+
+Map<String, Object?> _dayParts(CalendarDate date) => <String, Object?>{
+  'year': date.year,
+  'month': date.month,
+  'day': date.day,
+};
+
+/// The period the baseline engine's score is reckoned for.
+enum BaselinePeriod {
+  /// A day.
+  daily('DAILY'),
+
+  /// A week.
+  weekly('WEEKLY'),
+
+  /// A month.
+  monthly('MONTHLY'),
+
+  /// A year.
+  yearly('YEARLY');
+
+  const BaselinePeriod(this.key);
+
+  /// The key `ts_rashifal` reads.
+  final String key;
+}
+
+/// Where Saturn stands in Sade Sati: the 12th, the 1st or the 2nd.
+enum SadeSatiPhase {
+  /// The 12th.
+  rising('RISING'),
+
+  /// The 1st.
+  peak('PEAK'),
+
+  /// The 2nd.
+  setting('SETTING');
+
+  const SadeSatiPhase(this.key);
+
+  /// The key the answer spells it with.
+  final String key;
+}
+
+/// Saturn's house from a sign, its Sade Sati phase there, and whether the
+/// house is one of the smaller spells.
+final class SaturnStanding {
+  const SaturnStanding({
+    required this.house,
+    required this.sadeSati,
+    required this.spell,
+  });
+
+  /// 1 to 12.
+  final int house;
+
+  /// Null outside Sade Sati.
+  final SadeSatiPhase? sadeSati;
+
+  /// Whether the house is one of the smaller spells asked.
+  final bool spell;
+}
+
+/// One event of a rashifal period, counted from a sign.
+final class RashifalEvent {
+  const RashifalEvent({
+    required this.hit,
+    required this.sign,
+    required this.house,
+    required this.goodHouse,
+  });
+
+  /// The ingress or station.
+  final Hit hit;
+
+  /// The sign it happened in: the one entered, or the one a station stood
+  /// in.
+  final Rashi sign;
+
+  /// That sign's house from the reading's sign, 1 to 12.
+  final int house;
+
+  /// Whether v. 2 makes the graha's transit of that house good.
+  final bool goodHouse;
+}
+
+/// One sign's reading of a period, the sign taken as a reader's janma
+/// rashi.
+final class RashiReading {
+  const RashiReading({
+    required this.rashi,
+    required this.gochar,
+    required this.saturn,
+    required this.events,
+  });
+
+  /// The sign.
+  final Rashi rashi;
+
+  /// Phaladeepika ch. 26's gochar from it at the period's instant.
+  final GocharReading gochar;
+
+  /// Saturn's standing from it.
+  final SaturnStanding saturn;
+
+  /// Every event of the period, in time order, counted from it.
+  final List<RashifalEvent> events;
+}
+
+/// What the baseline's score reads of the reference day's panchanga at
+/// sunrise.
+final class RashifalPanchanga {
+  const RashifalPanchanga({
+    required this.tithi,
+    required this.yoga,
+    required this.muhurtaYogas,
+  });
+
+  /// The tithi.
+  final Tithi tithi;
+
+  /// The yoga.
+  final Yoga yoga;
+
+  /// How many muhurta yogas hold that day.
+  final int muhurtaYogas;
+}
+
+/// One period read for each of the twelve signs.
+final class RashifalPeriod {
+  const RashifalPeriod({
+    required this.first,
+    required this.last,
+    required this.reference,
+    required this.instant,
+    required this.transits,
+    required this.retrograde,
+    required this.panchanga,
+    required this.readings,
+  });
+
+  /// The first day.
+  final CalendarDate first;
+
+  /// The last day.
+  final CalendarDate last;
+
+  /// The day it is read at, the middle one (C359).
+  final CalendarDate reference;
+
+  /// The instant it is read at, a UTC Julian day (C358).
+  final double instant;
+
+  /// Each graha's sign and degrees then, the Sun to Ketu.
+  final List<Transit> transits;
+
+  /// Whether each was moving backwards then, the Sun to Ketu.
+  final List<bool> retrograde;
+
+  /// The reference day's limbs the baseline reads.
+  final RashifalPanchanga panchanga;
+
+  /// Each sign's reading, Aries to Pisces.
+  final List<RashiReading> readings;
+}
+
+/// A graha the baseline's score names, with its house and verdict.
+final class KeyInfluence {
+  const KeyInfluence({
+    required this.graha,
+    required this.house,
+    required this.verdict,
+  });
+
+  /// The graha.
+  final Graha graha;
+
+  /// Its house from the sign, 1 to 12.
+  final int house;
+
+  /// Its verdict there, under the baseline's tables.
+  final GocharVerdict verdict;
+}
+
+/// A sign lord's lucky elements, as the baseline engine gives them.
+final class LuckyElements {
+  const LuckyElements({
+    required this.colour,
+    required this.number,
+    required this.day,
+    required this.direction,
+  });
+
+  /// `RED`, `WHITE`, `GREEN`, `ORANGE`, `YELLOW` or `BLUE`.
+  final String colour;
+
+  /// 1 to 9.
+  final int number;
+
+  /// The lord's weekday.
+  final Vara day;
+
+  /// The lord's direction.
+  final Direction direction;
+}
+
+/// The baseline engine's score of one sign's reading, `BASELINE` and
+/// unsourced (C361).
+final class BaselineScore {
+  const BaselineScore({
+    required this.overall,
+    required this.areas,
+    required this.keyInfluences,
+    required this.lucky,
+  });
+
+  /// 0 to 100.
+  final int overall;
+
+  /// The eight life areas (`OVERALL`, `CAREER`, `FINANCE`, `HEALTH`,
+  /// `RELATIONSHIPS`, `FAMILY`, `EDUCATION`, `SPIRITUALITY`) and their
+  /// scores, each 0 to 100, in that order.
+  final List<({String area, int score})> areas;
+
+  /// The grahas the score names.
+  final List<KeyInfluence> keyInfluences;
+
+  /// The sign lord's lucky elements.
+  final LuckyElements lucky;
+}
+
+/// One period's answer: the reading, and the baseline's twelve scores when
+/// asked.
+final class RashifalAnswer {
+  const RashifalAnswer({required this.period, required this.baseline});
+
+  /// The reading.
+  final RashifalPeriod period;
+
+  /// Aries to Pisces; null unless a baseline period was asked.
+  final List<BaselineScore>? baseline;
 }
 
 /// A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1).
@@ -12371,6 +12742,160 @@ MuhurtaAnswer _muhurtaAnswer(String json) {
         ),
     ]),
     provenance: Provenance.fromJson(at(envelope['provenance'])),
+  );
+}
+
+/// One period's answer from `ts_rashifal`'s JSON, its keys made members.
+RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
+  final period = raw['period']! as Map<String, Object?>;
+  final instant = (period['instant']! as num).toDouble();
+  List<Map<String, Object?>> rows(Object? list) => [
+    for (final one in list! as List<Object?>) one! as Map<String, Object?>,
+  ];
+  Transit transit(Map<String, Object?> one) => Transit(
+    sign: _key(one['sign'], Rashi.byKey, Rashi.unknown),
+    degrees: (one['degrees']! as num).toDouble(),
+  );
+  Hit hit(Map<String, Object?> one) {
+    final event = one['event']! as Map<String, Object?>;
+    return Hit(
+      instant: (one['instant']! as num).toDouble(),
+      graha: _key(one['graha'], Graha.byKey, Graha.unknown),
+      event: switch (event['kind']) {
+        'SIGN_INGRESS' => SignIngress(
+          into: _key(event['into'], Rashi.byKey, Rashi.unknown),
+          motion: Motion.byKey(event['motion']! as String)!,
+        ),
+        'STATION' => Station(turns: Motion.byKey(event['turns']! as String)!),
+        final kind => throw StateError('a rashifal reported a $kind'),
+      },
+    );
+  }
+
+  GocharReading gochar(Map<String, Object?> one) {
+    final reference = one['reference']! as Map<String, Object?>;
+    final rules = one['rules']! as Map<String, Object?>;
+    return GocharReading(
+      instant: instant,
+      reference: GocharReference(
+        from: GocharFrom.byKey(reference['from']! as String)!,
+        sign: _key(reference['sign'], Rashi.byKey, Rashi.unknown),
+      ),
+      rules: GocharRules(
+        nodeVedha: NodeVedha.byKey(rules['nodeVedha']! as String)!,
+        nodeObstruction:
+            NodeObstruction.byKey(rules['nodeObstruction']! as String)!,
+        ashtakavargaGoodFrom:
+            AshtakavargaGoodFrom.byKey(
+              rules['ashtakavargaGoodFrom']! as String,
+            )!,
+      ),
+      grahas: List<GrahaGochar>.unmodifiable([
+        for (final g in rows(one['grahas']))
+          GrahaGochar(
+            graha: _key(g['graha'], Graha.byKey, Graha.unknown),
+            transit: transit(g['transit']! as Map<String, Object?>),
+            house: g['house']! as int,
+            goodHouse: g['goodHouse']! as bool,
+            vedhaHouse: g['vedhaHouse'] as int?,
+            obstructedBy: _keys(g['obstructedBy'], Graha.byKey, Graha.unknown),
+            verdict: GocharVerdict.byKey(g['verdict']! as String)!,
+            fruition: Fruition.byKey(g['fruition']! as String)!,
+            fruitfulNow: g['fruitfulNow']! as bool,
+          ),
+      ]),
+      ashtakavarga: null,
+    );
+  }
+
+  RashiReading reading(Map<String, Object?> one) {
+    final saturn = one['saturn']! as Map<String, Object?>;
+    final phase = saturn['sadeSati'] as String?;
+    return RashiReading(
+      rashi: _key(one['rashi'], Rashi.byKey, Rashi.unknown),
+      gochar: gochar(one['gochar']! as Map<String, Object?>),
+      saturn: SaturnStanding(
+        house: saturn['house']! as int,
+        sadeSati:
+            phase == null
+                ? null
+                : SadeSatiPhase.values.firstWhere((p) => p.key == phase),
+        spell: saturn['spell']! as bool,
+      ),
+      events: List<RashifalEvent>.unmodifiable([
+        for (final e in rows(one['events']))
+          RashifalEvent(
+            hit: hit(
+              (e['event']! as Map<String, Object?>)['hit']!
+                  as Map<String, Object?>,
+            ),
+            sign: _key(
+              (e['event']! as Map<String, Object?>)['sign'],
+              Rashi.byKey,
+              Rashi.unknown,
+            ),
+            house: e['house']! as int,
+            goodHouse: e['goodHouse']! as bool,
+          ),
+      ]),
+    );
+  }
+
+  BaselineScore score(Map<String, Object?> one) {
+    final lucky = one['lucky']! as Map<String, Object?>;
+    return BaselineScore(
+      overall: one['overall']! as int,
+      areas: List.unmodifiable([
+        for (final pair in one['areas']! as List<Object?>)
+          if (pair case [final String area, final int score])
+            (area: area, score: score),
+      ]),
+      keyInfluences: List<KeyInfluence>.unmodifiable([
+        for (final k in rows(one['keyInfluences']))
+          KeyInfluence(
+            graha: _key(k['graha'], Graha.byKey, Graha.unknown),
+            house: k['house']! as int,
+            verdict: GocharVerdict.byKey(k['verdict']! as String)!,
+          ),
+      ]),
+      lucky: LuckyElements(
+        colour: lucky['colour']! as String,
+        number: lucky['number']! as int,
+        day: _key(lucky['day'], Vara.byKey, Vara.unknown),
+        direction: _key(lucky['direction'], Direction.byKey, Direction.unknown),
+      ),
+    );
+  }
+
+  final limbs = period['panchanga']! as Map<String, Object?>;
+  final baseline = raw['baseline'] as List<Object?>?;
+  return RashifalAnswer(
+    period: RashifalPeriod(
+      first: _serdeDate(period['first']! as Map<String, Object?>),
+      last: _serdeDate(period['last']! as Map<String, Object?>),
+      reference: _serdeDate(period['reference']! as Map<String, Object?>),
+      instant: instant,
+      transits: List<Transit>.unmodifiable([
+        for (final one in rows(period['transits'])) transit(one),
+      ]),
+      retrograde: List<bool>.unmodifiable([
+        for (final one in period['retrograde']! as List<Object?>) one! as bool,
+      ]),
+      panchanga: RashifalPanchanga(
+        tithi: _key(limbs['tithi'], Tithi.byKey, Tithi.unknown),
+        yoga: _key(limbs['yoga'], Yoga.byKey, Yoga.unknown),
+        muhurtaYogas: limbs['muhurtaYogas']! as int,
+      ),
+      readings: List<RashiReading>.unmodifiable([
+        for (final one in rows(period['readings'])) reading(one),
+      ]),
+    ),
+    baseline:
+        baseline == null
+            ? null
+            : List<BaselineScore>.unmodifiable([
+              for (final one in baseline) score(one! as Map<String, Object?>),
+            ]),
   );
 }
 

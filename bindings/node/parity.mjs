@@ -1582,6 +1582,41 @@ for (const [name, rules] of [
   put('nepal-sambat-hash', nepalSambat.provenance.contentHash);
   put('nepal-sambat', listed(nepalSambat.value.map((d) => `${d.year}:${d.month}:${d.kind}:${d.paksha}`)));
 }
+
+// The rashifal batch every runner sends: a week read at sunrise with the
+// baseline's weekly scores, and a day read at 06:00 reporting only Mars's
+// and Saturn's events.
+{
+  const week = { first: gregorian(2024, 6, 17), last: gregorian(2024, 6, 23), place, utcOffsetSeconds: 20700 };
+  const day = { first: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700, snapshot: { at: 'CLOCK', hour: 6, minute: 0 }, events: ['MARS', 'SATURN'] };
+  const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
+  const bare = (key) => key.slice(key.indexOf('.') + 1);
+  geo.chart.rashifalMany([week, day], 'WEEKLY').forEach(({ period, baseline }, n) => {
+    const key = (what) => `rashifal-${n}${what}`;
+    put(key('-period'), `${ymd(period.first)} ${ymd(period.last)} ${ymd(period.reference)} ${number(period.instant)}`);
+    put(key('-panchanga'), `${period.panchanga.tithi} ${period.panchanga.yoga} ${period.panchanga.muhurtaYogas}`);
+    period.transits.forEach((transit, g) => {
+      put(key(`-transit-${g}`), `${transit.sign} ${number(transit.degrees)} ${period.retrograde[g] ? 1 : 0}`);
+    });
+    period.readings.forEach((reading, r) => {
+      const { saturn } = reading;
+      const verdicts = reading.gochar.grahas.map((g) => bare(g.verdict)).join(',');
+      put(key(`-${r}`), `${reading.rashi} ${saturn.house} ${saturn.sadeSati ?? '-'} ${saturn.spell ? 1 : 0} ${verdicts} ${reading.events.length}`);
+      reading.events.forEach((from, k) => {
+        const { hit, sign } = from.event;
+        put(key(`-${r}-event-${k}`), `${number(hit.instant)} ${hit.graha} ${hit.event.kind} ${sign} ${from.house} ${from.goodHouse ? 1 : 0}`);
+      });
+      const score = baseline?.[r];
+      if (score) {
+        const named = score.keyInfluences.map((k) => `${k.graha}:${k.house}:${bare(k.verdict)}`);
+        put(
+          key(`-${r}-baseline`),
+          `${score.overall} ${score.areas.map((a) => a.score).join(',')} ${named.length ? named.join(',') : 'none'} ${score.lucky.colour} ${score.lucky.number} ${score.lucky.day} ${score.lucky.direction}`,
+        );
+      }
+    });
+  });
+}
 geo.dispose();
 
 // ── The eclipses ───────────────────────────────────────────────────────

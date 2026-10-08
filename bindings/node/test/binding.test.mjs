@@ -4142,3 +4142,60 @@ test('a chart carries its remedies', () => {
   );
   ctx.dispose();
 });
+
+test('a rashifal period is read for each of the twelve signs', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const gregorian = (day) => ({ calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day });
+  const week = {
+    first: gregorian(4),
+    last: gregorian(10),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const read = ctx.chart.rashifal(week, 'WEEKLY');
+  assert.ok(Object.isFrozen(read) && Object.isFrozen(read.period.readings[0].gochar.grahas[0]), 'frozen');
+  const { period } = read;
+  assert.deepEqual([period.reference.calendar, period.reference.day], ['calendar.GREGORIAN', 7]);
+  assert.equal(period.transits.length, 9);
+  assert.equal(period.retrograde.length, 9);
+  assert.ok(period.panchanga.tithi.startsWith('tithi.') && period.panchanga.yoga.startsWith('yoga.'));
+  assert.deepEqual(
+    [period.readings.length, period.readings[0].rashi, period.readings[11].rashi],
+    [12, 'rashi.ARIES', 'rashi.PISCES'],
+  );
+  // Each sign's houses are counted from itself: the Sun's sign is the
+  // same in every reading, its house one less from each next sign.
+  const signs = period.readings.map((r) => r.rashi);
+  const sun = period.transits[0].sign;
+  for (const [index, reading] of period.readings.entries()) {
+    const house = ((signs.indexOf(sun) - index + 12) % 12) + 1;
+    assert.equal(reading.gochar.grahas[0].house, house, reading.rashi);
+    assert.equal(reading.gochar.grahas[0].graha, 'graha.SUN');
+    assert.equal(reading.gochar.instant, period.instant);
+  }
+  assert.equal(read.baseline.length, 12);
+  for (const score of read.baseline) {
+    assert.ok(score.overall >= 0 && score.overall <= 100);
+    assert.equal(score.areas.length, 8);
+    assert.ok(score.lucky.day.startsWith('vara.') && score.lucky.direction.startsWith('direction.'));
+  }
+  assert.equal(ctx.chart.rashifal(week).baseline, null);
+
+  // 06:00 at +05:45 is 00:15 UTC on the reference day.
+  const six = ctx.chart.rashifal({ ...week, snapshot: { at: 'CLOCK', hour: 6, minute: 0 } });
+  assert.ok(Math.abs(six.period.instant - (2461320.5 + 15 / 1440)) < 1e-9);
+  // A batch reads each period as it reads alone.
+  const [alone] = ctx.chart.rashifalMany([week]);
+  assert.deepEqual(alone, ctx.chart.rashifal(week));
+
+  for (const [request, field] of [
+    [{ ...week, last: gregorian(3) }, 'rashifal.periods[0].last'],
+    [{ ...week, events: ['MARS', 'graha.MARS'] }, 'rashifal.periods[0].events'],
+    [{ ...week, spell: [4] }, 'rashifal.periods[0].spell'],
+  ]) {
+    assert.throws(() => ctx.chart.rashifal(request), (error) => error instanceof TeistroError && error.field === field, field);
+  }
+  assert.throws(() => ctx.chart.rashifal(week, 'HOURLY'), (error) => error instanceof TeistroError && error.field === 'rashifal.baseline');
+  assert.throws(() => ctx.chart.rashifalMany(week), TypeError);
+  ctx.dispose();
+});

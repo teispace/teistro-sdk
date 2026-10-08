@@ -3899,6 +3899,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_numerology_profile.restype = ctypes.c_int32
+        self.ts_rashifal: Any = library.ts_rashifal
+        self.ts_rashifal.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_rashifal.restype = ctypes.c_int32
         self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
         self.ts_ephemeris_manifest.argtypes = [
             ctypes.POINTER(_Context),
@@ -4623,6 +4630,39 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_numerology_profile(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def rashifal(self, request_json: str) -> str:
+        """Reads periods of civil days at a place for each of the twelve signs and
+        answers with an array of `{period, baseline}` as canonical JSON: the
+        sky at the reference day's sunrise (or a clock time), each sign's
+        gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
+        and station of the period counted from each sign; `baseline` the
+        baseline engine's score of each sign when the request names a period
+        for it, absent otherwise.
+
+        `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
+        "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+        `{"year", "month", "day"}` and everything but `first`, the place and
+        the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
+        and `YEARLY`. A key it does not read, a last day before the first, a
+        clock off the clock or a graha named twice is `INVALID_ARG`, named
+        under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_rashifal(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

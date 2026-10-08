@@ -1349,6 +1349,64 @@ class AnEngine(WithLibrary):
 
             self.assertAlmostEqual(moon(lunar[0].instant), moon(2451545), delta=1 / 3600)
 
+    def test_a_rashifal_period_is_read_for_each_of_the_twelve_signs(self) -> None:
+        """A rashifal period crosses whole: twelve readings, Aries first,
+        each counting houses from its own sign; the baseline's scores only
+        when asked; a clock snapshot at the period's own offset; a batch each
+        period alone; and a bad request refused by the field written."""
+        from teistro import RashifalRequest, Tithi, Vara, Yoga, date
+
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        week: RashifalRequest = {
+            "first": date(Calendar.GREGORIAN, 2026, 10, 4),
+            "last": date(Calendar.GREGORIAN, 2026, 10, 10),
+            "place": place,
+            "utcOffsetSeconds": 20700,
+        }
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            read = ctx.chart.rashifal(week, "WEEKLY")
+            period = read.period
+            self.assertEqual((period.reference.calendar, period.reference.day), (Calendar.GREGORIAN, 7))
+            self.assertEqual((len(period.transits), len(period.retrograde)), (9, 9))
+            self.assertIsInstance(period.panchanga.tithi, Tithi)
+            self.assertIsInstance(period.panchanga.yoga, Yoga)
+            signs = [rashi for rashi in Rashi if rashi.value >= 0]
+            self.assertEqual([r.rashi for r in period.readings], signs)
+            sun = period.transits[0].sign
+            for index, reading in enumerate(period.readings):
+                self.assertEqual(reading.gochar.grahas[0].graha, Graha.SUN)
+                self.assertEqual(reading.gochar.grahas[0].house, (signs.index(sun) - index) % 12 + 1)
+                self.assertEqual(reading.gochar.instant, period.instant)
+            assert read.baseline is not None
+            self.assertEqual(len(read.baseline), 12)
+            for score in read.baseline:
+                self.assertTrue(0 <= score.overall <= 100)
+                self.assertEqual(len(score.areas), 8)
+                self.assertIsInstance(score.lucky.day, Vara)
+            self.assertIsNone(ctx.chart.rashifal(week).baseline)
+
+            # 06:00 at +05:45 is 00:15 UTC on the reference day.
+            six = ctx.chart.rashifal({**week, "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0}})
+            self.assertAlmostEqual(six.period.instant, 2461320.5 + 15 / 1440, delta=1e-9)
+            self.assertEqual(ctx.chart.rashifal_many([week]), [ctx.chart.rashifal(week)])
+            only_mars = ctx.chart.rashifal({**week, "events": [Graha.MARS]})
+            self.assertTrue(all(e.hit.graha is Graha.MARS for r in only_mars.period.readings for e in r.events))
+
+            refused: list[tuple[Any, str]] = [
+                ({**week, "last": date(Calendar.GREGORIAN, 2026, 10, 3)}, "rashifal.periods[0].last"),
+                ({**week, "events": [Graha.MARS, "graha.MARS"]}, "rashifal.periods[0].events"),
+                ({**week, "spell": [4]}, "rashifal.periods[0].spell"),
+            ]
+            for request, field in refused:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.chart.rashifal(request)
+                self.assertEqual(caught.exception.field, field)
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.rashifal(week, "HOURLY")
+            self.assertEqual(caught.exception.field, "rashifal.baseline")
+            with self.assertRaises(TeistroError):
+                ctx.chart.rashifal_many(week)  # type: ignore[arg-type]
+
     def test_a_chart_carries_its_sade_sati_each_period_whole(self) -> None:
         """Sade Sati crosses whole: `None` unless asked; each Sade Sati its
         three phases in order; a period asked about at one instant inside it

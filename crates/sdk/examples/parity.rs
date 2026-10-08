@@ -5605,6 +5605,140 @@ fn scored(window: &teistro::muhurta::Judgement) -> String {
 /// windows for different reasons, and the baseline scores them, so both
 /// the bars and the scores cross every layer; and a thread ceremony,
 /// whose unwanted placements cross with their houses and grahas.
+/// Each sign's line of a rashifal answer: Saturn, the verdicts, each
+/// event, and the baseline's score when asked.
+fn rashifal_signs(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    answer: &teistro::RashifalAnswer,
+) {
+    let period = &answer.period;
+    for (r, reading) in period.readings.iter().enumerate() {
+        let verdicts: Vec<String> = reading
+            .gochar
+            .grahas
+            .iter()
+            .map(|g| wire_key(&g.verdict))
+            .collect();
+        put(
+            report,
+            &key(&format!("-{r}")),
+            format!(
+                "{} {} {} {} {} {}",
+                reading.rashi.full_key(),
+                reading.saturn.house,
+                reading
+                    .saturn
+                    .sade_sati
+                    .map_or_else(|| "-".to_owned(), |phase| wire_key(&phase)),
+                u8::from(reading.saturn.spell),
+                verdicts.join(","),
+                reading.events.len()
+            ),
+        );
+        for (k, from) in reading.events.iter().enumerate() {
+            put(
+                report,
+                &key(&format!("-{r}-event-{k}")),
+                format!(
+                    "{} {} {} {} {} {}",
+                    number(from.event.hit.instant.get()),
+                    from.event.hit.graha.full_key(),
+                    wire_key(&from.event.hit.event),
+                    from.event.sign.full_key(),
+                    from.house,
+                    u8::from(from.good_house)
+                ),
+            );
+        }
+        if let Some(score) = answer.baseline.as_ref().and_then(|scores| scores.get(r)) {
+            let areas: Vec<String> = score
+                .areas
+                .iter()
+                .map(|(_, value)| value.to_string())
+                .collect();
+            let named = listed(score.key_influences.iter().map(|k| {
+                format!(
+                    "{}:{}:{}",
+                    k.graha.full_key(),
+                    k.house,
+                    wire_key(&k.verdict)
+                )
+            }));
+            put(
+                report,
+                &key(&format!("-{r}-baseline")),
+                format!(
+                    "{} {} {} {} {} {} {}",
+                    score.overall,
+                    areas.join(","),
+                    named.replace(' ', ","),
+                    wire_key(&score.lucky.colour),
+                    score.lucky.number,
+                    score.lucky.day.full_key(),
+                    score.lucky.direction.full_key()
+                ),
+            );
+        }
+    }
+}
+
+/// The rashifal batch every runner sends: a week read at sunrise with the
+/// baseline's weekly scores, and a day read at 06:00 reporting only Mars's
+/// and Saturn's events.
+const RASHIFAL_JSON: &str = r#"{"periods":[{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"last":{"year":2024,"month":6,"day":23},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700},{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"snapshot":{"at":"CLOCK","hour":6,"minute":0},"events":["MARS","SATURN"]}],"baseline":"WEEKLY"}"#;
+
+/// Each rashifal period as the other three print it: its days and
+/// instant, the reference day's limbs, each graha's transit, and each
+/// sign's Saturn, verdicts, events and baseline score.
+fn the_rashifal(report: &mut Report, geo: &Context) {
+    let batch = teistro::RashifalBatch::from_json(RASHIFAL_JSON).expect("a rashifal batch");
+    let answers = geo
+        .chart()
+        .rashifal_answers(&batch)
+        .expect("the test provider")
+        .value;
+    let day = |date: &teistro::CalendarDate| format!("{}-{}-{}", date.year, date.month, date.day);
+    for (n, answer) in answers.iter().enumerate() {
+        let period = &answer.period;
+        let key = |what: &str| format!("rashifal-{n}{what}");
+        put(
+            report,
+            &key("-period"),
+            format!(
+                "{} {} {} {}",
+                day(&period.first),
+                day(&period.last),
+                day(&period.reference),
+                number(period.instant.get())
+            ),
+        );
+        put(
+            report,
+            &key("-panchanga"),
+            format!(
+                "{} {} {}",
+                period.panchanga.tithi.full_key(),
+                period.panchanga.yoga.full_key(),
+                period.panchanga.muhurta_yogas
+            ),
+        );
+        for (g, (transit, backwards)) in period.transits.iter().zip(period.retrograde).enumerate() {
+            put(
+                report,
+                &key(&format!("-transit-{g}")),
+                format!(
+                    "{} {} {}",
+                    transit.sign.full_key(),
+                    number(transit.degrees),
+                    u8::from(backwards)
+                ),
+            );
+        }
+        rashifal_signs(report, &key, answer);
+    }
+}
+
 fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 25);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 27);
@@ -5742,6 +5876,7 @@ fn main() {
     let (geo, place, offset) = charts(&mut report);
     an_almanac(&mut report, &geo, &place, offset);
     a_muhurta(&mut report, &geo, &place, offset);
+    the_rashifal(&mut report, &geo);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);

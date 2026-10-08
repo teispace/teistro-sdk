@@ -9713,3 +9713,85 @@ fn a_chart_request_answers_remedies() {
         Some("remedies.rules.devatas")
     );
 }
+
+fn rashifal_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status =
+        unsafe { teistro_ffi::rashifal::ts_rashifal(ctx.handle, request.as_ptr(), &raw mut json) };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// A week at Kathmandu crosses as the façade reads it, each period as its
+/// own JSON with the baseline's twelve scores when asked, and a refusal is
+/// named under `rashifal`.
+#[test]
+fn a_rashifal_crosses_as_the_facade_reads_it() {
+    // A context without an ephemeris cannot place the sky.
+    let bare = Ctx::defaults();
+    let one = r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700}]}"#;
+    assert_eq!(rashifal_json(&bare, one).unwrap_err(), Status::Capability);
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let week = r#"{"first": {"year": 2026, "month": 10, "day": 4},
+        "last": {"year": 2026, "month": 10, "day": 10},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700}"#;
+    let request = format!(r#"{{"periods": [{week}], "baseline": "WEEKLY"}}"#);
+    let crossed = rashifal_json(&ctx, &request).unwrap();
+    let facade = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let kernel = facade
+        .chart()
+        .rashifal_answers(&teistro::RashifalBatch::from_json(&request).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        teistro_core::envelope::canonical_json(&kernel.value)
+    );
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    let period = &read[0]["period"];
+    assert_eq!(period["reference"]["day"], serde_json::json!(7));
+    assert_eq!(period["readings"].as_array().map(Vec::len), Some(12));
+    assert_eq!(period["transits"].as_array().map(Vec::len), Some(9));
+    assert_eq!(read[0]["baseline"].as_array().map(Vec::len), Some(12));
+    // No baseline asked, none answered.
+    let plain = rashifal_json(&ctx, &format!(r#"{{"periods": [{week}]}}"#)).unwrap();
+    let read: serde_json::Value = serde_json::from_str(&plain).unwrap();
+    assert_eq!(read[0].get("baseline"), None);
+
+    for (request, field) in [
+        (r#"{"periods": []}"#, "rashifal.periods"),
+        (
+            r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "last": {"year": 2026, "month": 10, "day": 3}, "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700}]}"#,
+            "rashifal.periods[0].last",
+        ),
+        (
+            r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "latitudeDeg": 95, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700}]}"#,
+            "rashifal.periods[0].latitudeDeg",
+        ),
+        (
+            r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700, "events": ["MARS", "graha.MARS"]}]}"#,
+            "rashifal.periods[0].events",
+        ),
+        (
+            r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4}, "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700}], "baseline": "HOURLY"}"#,
+            "rashifal.baseline",
+        ),
+    ] {
+        assert_eq!(
+            rashifal_json(&ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}

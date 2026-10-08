@@ -1801,6 +1801,8 @@ typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsRashifalNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsRashifalDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisCallNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -1862,6 +1864,7 @@ final class TeistroLibrary {
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
+        ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
@@ -2137,6 +2140,24 @@ final class TeistroLibrary {
   /// no letter, or a date the calendar does not have is `INVALID_ARG`,
   /// named under `numerology`.
   final TsNumerologyProfileDart ts_numerology_profile;
+
+  /// Reads periods of civil days at a place for each of the twelve signs and
+  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// sky at the reference day's sunrise (or a clock time), each sign's
+  /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
+  /// and station of the period counted from each sign; `baseline` the
+  /// baseline engine's score of each sign when the request names a period
+  /// for it, absent otherwise.
+  ///
+  /// `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
+  /// "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+  /// `{"year", "month", "day"}` and everything but `first`, the place and
+  /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
+  /// and `YEARLY`. A key it does not read, a last day before the first, a
+  /// clock off the clock or a graha named twice is `INVALID_ARG`, named
+  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+  final TsRashifalDart ts_rashifal;
 
   /// What the context's engine says it offers beyond this library's own
   /// operations: its manifest, as the engine wrote it.
@@ -5023,6 +5044,33 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_numerology_profile(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Reads periods of civil days at a place for each of the twelve signs and
+  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// sky at the reference day's sunrise (or a clock time), each sign's
+  /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
+  /// and station of the period counted from each sign; `baseline` the
+  /// baseline engine's score of each sign when the request names a period
+  /// for it, absent otherwise.
+  ///
+  /// `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
+  /// "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+  /// `{"year", "month", "day"}` and everything but `first`, the place and
+  /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
+  /// and `YEARLY`. A key it does not read, a last day before the first, a
+  /// clock off the clock or a graha named twice is `INVALID_ARG`, named
+  /// under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+  String rashifal(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_rashifal(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

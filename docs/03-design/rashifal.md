@@ -184,4 +184,10 @@ ingress on the last evening is the period's. A batch form,
    be read over its own verdicts as well as the text's. A year from July
    2026 holds the nodes' ingress and Saturn's; two years cost twice the
    almanac's days for no row the year lacks.
-4. Every binding: a section of its own, with the parity runners.
+4. Every binding: a call of its own, with the parity runners: **done**.
+   A rashifal is read for periods, not for a chart, so it crosses as its
+   own boundary call, `ts_rashifal`, rather than as a chart section: a
+   batch of periods in, each period's answer out as canonical JSON, the
+   baseline's scores beside the reading when a baseline period is asked.
+   A refusal names the period, `rashifal.periods[i]`, and the field in
+   it.

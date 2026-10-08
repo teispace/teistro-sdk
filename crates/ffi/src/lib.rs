@@ -53,6 +53,7 @@ pub mod numerology;
 pub mod panchanga;
 pub mod positions;
 pub mod provider;
+pub mod rashifal;
 pub mod schemas;
 pub mod string;
 mod support;
