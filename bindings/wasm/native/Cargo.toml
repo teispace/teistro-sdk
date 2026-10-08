@@ -37,6 +37,10 @@ default = ["builtin-compact", "full"]
 # The module families, forwarded to the boundary: `full` is the package's
 # module, and a profile's module names fewer (`03-design/wasm-profiles.md`).
 full = ["teistro-ffi/full"]
+muhurta = ["teistro-ffi/muhurta"]
+# The package's profiles, each a module of its own beside the full one:
+# `panchanga` is the calendars, the almanac and the muhurta search.
+panchanga = ["builtin-compact", "muhurta"]
 builtin-compact = ["teistro-ffi/builtin-compact"]
 builtin-standard = ["teistro-ffi/builtin-standard"]
 builtin-full = ["teistro-ffi/builtin-full"]

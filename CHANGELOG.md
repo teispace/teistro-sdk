@@ -2398,6 +2398,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **`@teistro/sdk-wasm/panchanga`** (`03-design/wasm-profiles.md` step
+  3). The wasm package ships a second module beside the full one, built
+  with the calendars, the almanac and the muhurta search and without the
+  chart area, under its own subpath. It is the package's own layer and
+  types over its own loaders, written by `check-wasm`'s staging from the
+  package's files, so nothing is kept twice. A bundle that imports only
+  the subpath ships only that module, about half the full one. Its
+  calendars, almanac and muhurta answers equal the full module's to the
+  bit, and a chart is refused as `CAPABILITY` naming `chart`;
+  `check-wasm` holds both, holds each bundler to shipping the module its
+  entry names, and holds the profile's module to a budget of its own in
+  `bindings/wasm/size.json`. fast-check lints the profile for wasm32.
+  **Numbers:** none move.
 - **Module families** (`03-design/wasm-profiles.md` step 2). KP,
   muhurta, numerology, prashna, rashifal, remedies, SVG, Tajika and
   Western are each an optional crate of `teistro` behind a feature of the

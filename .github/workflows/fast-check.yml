@@ -79,6 +79,8 @@ jobs:
         run: cargo clippy -p teistro-ffi --all-targets --no-default-features --features builtin-compact -- -D warnings
       - name: Lint the wasm module with no family, for wasm32
         run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features builtin-compact -- -D warnings
+      - name: Lint the wasm module's `panchanga` profile, for wasm32
+        run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features panchanga -- -D warnings
       - name: The chart area refused, with no family
         run: cargo test -p teistro-ffi --no-default-features --features builtin-compact --test families
       - name: Every chart family refused and every section written, with the chart area alone
