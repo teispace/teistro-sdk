@@ -1,0 +1,7 @@
+# Temurin 25's Alpine (musl) JDK, which `xtask/alpine.sh` installs: Alpine
+# 3.21 packages OpenJDK up to 21, below the Java binding's floor of 22.
+# One line per `uname -m`: the architecture, the SHA-256 Adoptium's API and
+# the release's own `.sha256.txt` both give, and the download. Read
+# 2026-10-09 from api.adoptium.net/v3/assets/latest/25/hotspot?os=alpine-linux.
+x86_64 f18648ee5ce45261f50dc9493fdae7ddebaa2a7a857cafda3e2a448a79c03dee https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_x64_alpine-linux_hotspot_25.0.4.1_1.tar.gz
+aarch64 8d19373d427017d86ac87cf6a47ba49746be864832f60b52b7e3b1531c6b2cb8 https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_aarch64_alpine-linux_hotspot_25.0.4.1_1.tar.gz

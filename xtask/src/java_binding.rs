@@ -19,23 +19,23 @@ use std::process::Command;
 use crate::binding::{library, present, step};
 
 /// The binding's tree.
-const PACKAGE: &str = "bindings/java";
+pub(crate) const PACKAGE: &str = "bindings/java";
 /// Its source roots: what `cargo xtask gen ffi` writes, the typed messages
 /// `cargo xtask gen intl` writes, and what is written by hand.
-const SOURCES: [&str; 3] = ["generated", "messages", "src"];
+pub(crate) const SOURCES: [&str; 3] = ["generated", "messages", "src"];
 /// The tests, patched into the module.
 const TESTS: &str = "test";
 /// The module every source is in.
-const MODULE: &str = "com.teispace.teistro";
+pub(crate) const MODULE: &str = "com.teispace.teistro";
 /// The test program.
 const MAIN: &str = "com.teispace.teistro.BindingTest";
 /// The release the binding is compiled for: FFM was final in Java 22.
-const FLOOR: &str = "22";
+pub(crate) const FLOOR: &str = "22";
 /// Where the classes are written.
 const CLASSES: &str = "target/java";
 
 /// Every `.java` file under a directory.
-fn java_files(dir: &Path, found: &mut Vec<PathBuf>) {
+pub(crate) fn java_files(dir: &Path, found: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
     };
@@ -56,7 +56,7 @@ fn java_files(dir: &Path, found: &mut Vec<PathBuf>) {
 /// a Windows command line holds, and `javac` never started there. Each
 /// path is quoted, with forward slashes, which `javac` reads on every
 /// platform and which leave no backslash for its quoting to escape.
-fn argfile(classes: &Path, name: &str, files: &[PathBuf]) -> Result<String, ()> {
+pub(crate) fn argfile(classes: &Path, name: &str, files: &[PathBuf]) -> Result<String, ()> {
     let file = classes.join(format!("{name}.args"));
     let mut text = String::new();
     for path in files {
@@ -71,7 +71,7 @@ fn argfile(classes: &Path, name: &str, files: &[PathBuf]) -> Result<String, ()> 
 }
 
 /// `javac` at the floor's release with every lint an error.
-fn javac(out: &Path) -> Command {
+pub(crate) fn javac(out: &Path) -> Command {
     let mut command = Command::new("javac");
     command
         .args([
@@ -141,7 +141,7 @@ fn compile(root: &Path, classes: &Path, patch: &str) -> Result<PathBuf, ()> {
 
 /// `java` running a class patched into the module against a named library.
 fn patched(main: &Path, patch: &Path, class: &str, library: &Path) -> Command {
-    let mut command = Command::new("java");
+    let mut command = crate::binding::java_command();
     command
         .arg(format!("--enable-native-access={MODULE}"))
         .arg("--module-path")
@@ -175,13 +175,8 @@ pub(crate) fn compile_examples(root: &Path, examples: &[PathBuf]) -> Result<(), 
 /// named library, from the package's directory.
 pub(crate) fn example(root: &Path, class: &str, library: &Path) -> Command {
     let classes = root.join(EXAMPLE_CLASSES);
-    let mut command = Command::new("java");
+    let mut command = crate::binding::java_command();
     command
-        // The examples print Devanagari and degree signs, and `System.out`
-        // writes the console's encoding, which on Windows is a code page
-        // that has neither: every verify row there printed `?` for them.
-        // The counterpart of the `PYTHONUTF8` Python's examples run under.
-        .args(["-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"])
         .arg(format!("--enable-native-access={MODULE}"))
         .arg("--module-path")
         .arg(classes.join("main"))

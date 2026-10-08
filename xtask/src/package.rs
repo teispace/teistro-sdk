@@ -517,8 +517,17 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
 }
 
 /// Writes the merged manifest, the checksum list and every package.
+///
+/// The Java package is staged first, since the merged manifest records
+/// it (`maven`) and the checksum list lists its files.
 fn write_stage(root: &Path, dist: &Path, version: &str, merged: &Value) -> io::Result<Vec<String>> {
     let mut written = Vec::new();
+    let mut merged = merged.clone();
+    if let Some((jars, record)) = crate::java_package::stage(root, dist, version, &merged)? {
+        written.extend(jars);
+        merged["maven"] = record;
+    }
+    let merged = &merged;
     let manifest = dist.join("manifest.json");
     fs::write(&manifest, format!("{}\n", to_json(merged)))?;
     written.push(rel(root, &manifest));
@@ -558,24 +567,32 @@ fn python_wheels(
     for (name, manifest) in merged["platforms"].as_object().into_iter().flatten() {
         let platform = Platform::by_name(name)
             .ok_or_else(|| io::Error::other(format!("{name} is not a shipped platform")))?;
-        let archive = manifest["archives"][0]["file"].as_str().ok_or_else(|| {
-            io::Error::other(format!("{name}'s manifest names no library archive"))
-        })?;
-        let mut library = Vec::new();
-        io::copy(
-            &mut flate2::read::GzDecoder::new(File::open(dist.join(archive))?),
-            &mut library,
-        )?;
-        let recorded = manifest["library"]["sha256"].as_str().unwrap_or_default();
-        if hex(&Sha256::digest(&library)) != recorded {
-            return Err(io::Error::other(format!(
-                "{archive} does not hold the library {name}'s manifest records"
-            )));
-        }
+        let library = verified_library(dist, name, manifest)?;
         let wheel = crate::wheel::write(&staged, &into, version, &platform, &library)?;
         written.push(rel(root, &into.join(wheel)));
     }
     Ok(written)
+}
+
+/// A platform's library, as its gzipped archive holds it, checked against
+/// the digest its manifest recorded: what every package that carries the
+/// library carries, so each carries the bits the release lists.
+pub(crate) fn verified_library(dist: &Path, name: &str, manifest: &Value) -> io::Result<Vec<u8>> {
+    let archive = manifest["archives"][0]["file"]
+        .as_str()
+        .ok_or_else(|| io::Error::other(format!("{name}'s manifest names no library archive")))?;
+    let mut library = Vec::new();
+    io::copy(
+        &mut flate2::read::GzDecoder::new(File::open(dist.join(archive))?),
+        &mut library,
+    )?;
+    let recorded = manifest["library"]["sha256"].as_str().unwrap_or_default();
+    if hex(&Sha256::digest(&library)) != recorded {
+        return Err(io::Error::other(format!(
+            "{archive} does not hold the library {name}'s manifest records"
+        )));
+    }
+    Ok(library)
 }
 
 /// Every archive's and every bill's digest, in the format `sha256sum -c`
@@ -596,6 +613,13 @@ fn checksum_list(merged: &Value) -> String {
                 ));
             }
         }
+    }
+    for file in merged["maven"]["files"].as_array().into_iter().flatten() {
+        lines.push(format!(
+            "{}  {}",
+            file["sha256"].as_str().unwrap_or_default(),
+            file["file"].as_str().unwrap_or_default()
+        ));
     }
     lines.sort();
     format!("{}\n", lines.join("\n"))
@@ -744,7 +768,7 @@ fn entry(path: &Path, name: &str) -> io::Result<Value> {
 
 /// Copies a directory recursively, skipping what a package never carries:
 /// build output, dependency trees and the tooling's own caches.
-fn copy_tree(from: &Path, to: &Path) -> io::Result<()> {
+pub(crate) fn copy_tree(from: &Path, to: &Path) -> io::Result<()> {
     fs::create_dir_all(to)?;
     for entry in fs::read_dir(from)? {
         let entry = entry?;

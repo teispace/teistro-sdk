@@ -1444,7 +1444,61 @@ const AWAITING_AN_EMITTER: [(&str, &str); 0] = [];
 /// the next run with the same `UnicodeEncodeError`. A rule over the
 /// source catches the third and fourth without another matrix run.
 fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
-    const RULE: &str = "python-runs-in-utf8-mode";
+    spawned_in_one_place(root, outcome, "python-runs-in-utf8-mode", |line| {
+        (line.contains("Command::new(") && line.to_lowercase().contains("python"))
+            || line.contains(r#"env::var("PYTHON")"#)
+    });
+}
+
+/// Java is spawned in one place, and that place sets UTF-8 output:
+/// `binding::java_command`, for the reason its doc comment gives. Born of
+/// the same fix as [`python_in_utf8`] landing in one of Java's gates.
+fn java_in_utf8(root: &Path, outcome: &mut Outcome) {
+    spawned_in_one_place(root, outcome, "java-runs-in-utf8", |line| {
+        line.contains(r#"Command::new("java")"#)
+    });
+}
+
+/// The Java loader's host table names every platform a release builds.
+///
+/// `Host.platform` maps what a JVM reports to a release's platform name,
+/// and the binding's test holds one row per platform. A platform added to
+/// `PLATFORMS` and not to that test would ship a jar whose loader names
+/// the host some other way, which no machine of ours would notice (list,
+/// don't infer).
+fn java_host_names_every_platform(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "java-host-names-every-platform";
+    const TEST: &str = "bindings/java/test/com/teispace/teistro/BindingTest.java";
+    let Ok(text) = std::fs::read_to_string(root.join(TEST)) else {
+        outcome.failures.push(Finding {
+            file: TEST.to_owned(),
+            line: 0,
+            text: "the Java binding's test is not there to read".to_owned(),
+            rule: RULE,
+        });
+        return;
+    };
+    for platform in crate::platform::PLATFORMS {
+        let name = platform.name();
+        if !text.contains(&format!("\"{name}\"}}")) {
+            outcome.failures.push(Finding {
+                file: TEST.to_owned(),
+                line: 0,
+                text: format!("no host row names `{name}`"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// Every line of `xtask`'s source outside its tests that `spawns` matches
+/// is a finding under `rule`, unless the line excuses itself.
+fn spawned_in_one_place(
+    root: &Path,
+    outcome: &mut Outcome,
+    rule: &'static str,
+    spawns: impl Fn(&str) -> bool,
+) {
     for path in sources(&root.join("xtask/src")) {
         // Not this file: a rule cannot be written without naming what it
         // looks for, and its own needles are not Python being spawned.
@@ -1460,22 +1514,16 @@ fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
             .display()
             .to_string();
         for (number, line) in outside_tests(&text) {
-            if line.trim_start().starts_with("//") {
-                continue;
-            }
-            let builds_one =
-                line.contains("Command::new(") && line.to_lowercase().contains("python");
-            let names_the_variable = line.contains(r#"env::var("PYTHON")"#);
-            if !builds_one && !names_the_variable {
+            if line.trim_start().starts_with("//") || !spawns(line) {
                 continue;
             }
             let finding = Finding {
                 file: shown.clone(),
                 line: number,
                 text: format!("`{}`", line.trim()),
-                rule: RULE,
+                rule,
             };
-            if excused(line, RULE) {
+            if excused(line, rule) {
                 outcome.allowed.push(finding);
             } else {
                 outcome.failures.push(finding);
@@ -2493,7 +2541,7 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
 }
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 24] = [
+const RULES: [&str; 26] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2504,6 +2552,8 @@ const RULES: [&str; 24] = [
     "gate-has-a-runner",
     "entry-point-is-reachable",
     "python-runs-in-utf8-mode",
+    "java-runs-in-utf8",
+    "java-host-names-every-platform",
     "runner-matches-the-platform-table",
     "node-is-tested-at-its-floor",
     "target-declares-the-feature-it-needs",
@@ -2565,6 +2615,8 @@ pub(crate) fn check(root: &Path) -> i32 {
     entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);
+    java_in_utf8(root, &mut outcome);
+    java_host_names_every_platform(root, &mut outcome);
     platform_runners(root, &mut outcome);
     node_is_tested_at_its_floor(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);

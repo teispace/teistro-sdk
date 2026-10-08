@@ -5,13 +5,15 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeSet;
 
 import com.teispace.teistro.ffi.Native;
 
@@ -47,16 +49,33 @@ public final class Teistro implements AutoCloseable {
         this.buildInfo = buildInfo;
     }
 
+    /** The system property naming the directory a packaged library is written under. */
+    public static final String CACHE_PROPERTY = NativeCache.CACHE_PROPERTY;
+
+    /** The system property naming this host's platform, for a host the detection misreads. */
+    public static final String PLATFORM_PROPERTY = Host.PLATFORM_PROPERTY;
+
     /**
-     * Opens the library: the one {@value #LIBRARY_PROPERTY} or
-     * {@value #LIBRARY_VARIABLE} names, else the workspace's release and then
-     * debug build, else the platform's loader by name. A library named
-     * outright that is missing is refused, and nothing else is tried.
+     * Opens the library, the first of:
+     *
+     * <ol>
+     *   <li>the one {@value #LIBRARY_PROPERTY} or {@value #LIBRARY_VARIABLE}
+     *       names, which is then the only one tried: a library named outright
+     *       that is missing is refused;
+     *   <li>the jar's own, for this host's platform, written once under
+     *       {@value #CACHE_PROPERTY} (else {@code java.io.tmpdir}) and hashed
+     *       against the digest it was staged with every time it is opened;
+     *   <li>the workspace's release and then debug build, from the working
+     *       directory upward;
+     *   <li>the platform's loader by name ({@code LD_LIBRARY_PATH},
+     *       {@code PATH} and the like).
+     * </ol>
      *
      * @return the library, checked against the build these declarations describe
      * @throws TeistroException with {@link Status#UNSUPPORTED} for a library
-     *     of another ABI or version, a sanitizer build, or an unoptimised
-     *     build that was searched for rather than named
+     *     of another ABI or version, a sanitizer build, an unoptimised build
+     *     that was searched for rather than named, or none found, naming each
+     *     place tried and why it was passed over
      */
     public static Teistro open() {
         String named = Optional.ofNullable(System.getProperty(LIBRARY_PROPERTY))
@@ -67,24 +86,58 @@ public final class Teistro implements AutoCloseable {
                 throw unsupported("the library named by " + LIBRARY_PROPERTY + " or " + LIBRARY_VARIABLE
                         + " is not a file: " + path);
             }
-            return checked(path, true);
+            return checked(lookup(path), path, true);
+        }
+        List<String> passed = new ArrayList<>();
+        String platform = Host.platform();
+        Teistro packaged = packaged(platform, passed);
+        if (packaged != null) {
+            return packaged;
         }
         for (Path candidate : workspaceCandidates()) {
             if (Files.isRegularFile(candidate)) {
-                return checked(candidate, false);
+                return checked(lookup(candidate), candidate, false);
             }
         }
-        throw unsupported("no Teistro library was found: set " + LIBRARY_PROPERTY + " or "
-                + LIBRARY_VARIABLE + " to its path, or build it with `cargo build --release -p teistro-ffi`");
+        passed.add("no workspace build above " + Path.of("").toAbsolutePath());
+        try {
+            return checked(byName(Host.fileName()), Path.of(Host.fileName()), false);
+        } catch (IllegalArgumentException notOnTheSearchPath) {
+            passed.add("the platform's loader has no " + Host.fileName());
+        }
+        throw unsupported("no Teistro library was found for " + platform + ": " + String.join("; ", passed)
+                + ". Set " + LIBRARY_PROPERTY + " or " + LIBRARY_VARIABLE + " to its path, "
+                + PLATFORM_PROPERTY + " if " + platform + " is not this host, or build it with "
+                + "`cargo build --release -p teistro-ffi`");
     }
 
-    /** The file name the platform gives the shared library. */
-    static String fileName() {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        if (os.startsWith("windows")) {
-            return "teistro_ffi.dll";
+    /** The jar's library for a platform, or null with why it was passed over. */
+    private static Teistro packaged(String platform, List<String> passed) {
+        String resource = "/native/" + platform + "/" + Host.fileName();
+        String digest = Prebuilt.DIGESTS.get(platform);
+        try (InputStream library = Teistro.class.getResourceAsStream(resource)) {
+            if (library == null) {
+                passed.add(digest == null
+                        ? "this jar carries no library"
+                        : "this jar carries the libraries of " + String.join(", ", new TreeSet<>(Prebuilt.DIGESTS.keySet()))
+                                + ", not " + platform + "'s");
+                return null;
+            }
+            if (digest == null) {
+                throw unsupported("this jar carries " + resource + " and no digest for it: a staging defect");
+            }
+            Path path = NativeCache.extract(library, digest, NativeCache.root(), Native.GENERATED_SDK_VERSION,
+                    Host.fileName());
+            try {
+                return checked(lookup(path), path, false);
+            } catch (IllegalArgumentException unmappable) {
+                throw unsupported("the jar's library was written to " + path + " and cannot be loaded from there ("
+                        + unmappable.getMessage() + "); if that directory is on a noexec mount, set -D"
+                        + CACHE_PROPERTY + " to one that is not");
+            }
+        } catch (IOException failed) {
+            throw unsupported("the jar's library for " + platform + " could not be written: " + failed.getMessage());
         }
-        return os.startsWith("mac") ? "libteistro_ffi.dylib" : "libteistro_ffi.so";
     }
 
     /** The workspace's builds, release first, from the working directory upward. */
@@ -92,20 +145,19 @@ public final class Teistro implements AutoCloseable {
         List<Path> found = new ArrayList<>();
         for (Path dir = Path.of("").toAbsolutePath(); dir != null; dir = dir.getParent()) {
             if (Files.isRegularFile(dir.resolve("Cargo.toml")) && Files.isDirectory(dir.resolve("target"))) {
-                found.add(dir.resolve("target/release").resolve(fileName()));
-                found.add(dir.resolve("target/debug").resolve(fileName()));
+                found.add(dir.resolve("target/release").resolve(Host.fileName()));
+                found.add(dir.resolve("target/debug").resolve(Host.fileName()));
                 break;
             }
         }
         return found;
     }
 
-    private static Teistro checked(Path path, boolean named) {
+    private static Teistro checked(SymbolLookup symbols, Path path, boolean named) {
         if (ValueLayout.ADDRESS.byteSize() != 8) {
             throw unsupported("this JVM's pointers are " + ValueLayout.ADDRESS.byteSize()
                     + " bytes; the binding describes the 64-bit boundary only");
         }
-        SymbolLookup symbols = lookup(path);
         Native lib = new Native(symbols);
         Map<String, Object> info = Json.object(Boundary.call(() -> Boundary.text((MemorySegment) lib.ts_build_info.invokeExact())));
         String refusal = refusal(info, named);
@@ -113,6 +165,11 @@ public final class Teistro implements AutoCloseable {
             throw unsupported(refusal + " (" + path + ")");
         }
         return new Teistro(lib, path, info);
+    }
+
+    @SuppressWarnings("restricted")
+    private static SymbolLookup byName(String fileName) {
+        return SymbolLookup.libraryLookup(fileName, Arena.global()).or(Linker.nativeLinker().defaultLookup());
     }
 
     @SuppressWarnings("restricted")

@@ -108,6 +108,7 @@ So the two are separated:
 | module names not yet written (`teistro-dasha`, `teistro-western`, `teistro-render-svg`, …) | at the release | **deliberately not held.** crates.io's placeholder policy covers a crate you are actively working on; a name for code that does not exist is the squatting it objects to. They are claimed as they are built |
 | `teistro` on PyPI | not yet | no credential on this machine; the name was free on 2026-09-10 |
 | pub.dev | at the release | pub.dev discourages placeholder packages and may remove one; the name is watched instead |
+| `com.teispace` on Maven Central | at the release | a namespace is verified by a DNS TXT record on `teispace.com`, which nobody else can add, so it needs no holding |
 | any standing publishing credential | at the release | unchanged, and preferably never — see trusted publishing below |
 
 The rule the original sentence was protecting survives intact: **no
@@ -124,6 +125,7 @@ hold.
 | npm | trusted publishing, through npm 11.5.1 or later, which the job installs | a package's first publish takes `NPM_TOKEN`, minted for it and revoked after, because a trusted publisher is configured on a package that exists. Then each of the seven packages names `release.yml` and the `release` environment as its trusted publisher, and the secret is deleted |
 | PyPI | trusted publishing through `pypa/gh-action-pypi-publish`, which also attaches a PEP 740 attestation to each file | a pending publisher for `teistro` naming `release.yml` and the `release` environment, which PyPI allows before the project exists |
 | pub.dev | automated publishing by the OIDC token | automated publishing enabled for `teistro`, on tags `v{{version}}` |
+| Maven Central | a Portal user token, since Central has no trusted publishing (none found 2026-10-08); `cargo xtask publish maven` signs every file with PGP, bundles the layout and uploads it to the Portal's publisher API, the token and passphrase on `curl`'s and `gpg`'s standard input | the `com.teispace` namespace verified by its TXT record; a PGP key whose public half is on `keys.openpgp.org` and whose fingerprint is in `SECURITY.md`, imported from `MAVEN_GPG_PRIVATE_KEY`; `MAVEN_CENTRAL_USERNAME`/`MAVEN_CENTRAL_PASSWORD` minted for the release and revoked after. The first release uploads `USER_MANAGED`, validated by Central and published by hand in the Portal; later ones pass `--automatic` |
 
 `twine upload` exchanges no token, so the step that used it would have
 failed for want of a credential. It was replaced before the first release

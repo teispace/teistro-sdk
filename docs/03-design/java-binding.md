@@ -403,8 +403,9 @@ named module on the module path and needs no `Automatic-Module-Name`.
 The POM has no dependencies.
 
 The publish guard every package has (`06-cicd/03-release-process.md`, "One
-version": private while the version is `0.0.0`) is a refusal in `package
-stage` to write a Maven bundle at `0.0.0`.
+version": private while the version is `0.0.0`) is a refusal in `cargo
+xtask publish maven` to upload at `0.0.0` (§13 step 7 says why it moved
+from `package stage`).
 
 ## 10. A provider written in Java
 
@@ -665,10 +666,36 @@ un-publish, `03-release-process.md`, "Withdrawing").
    digest table, the cache extraction, the POM and the bundle from
    `package stage`; the Maven consumer arm in `check-package`; the jar's
    platform list held to `PLATFORMS`, so a missing native fails at staging
-   and not on a machine we do not have (`PLAN_JAVA.md` §10).
+   and not on a machine we do not have (`PLAN_JAVA.md` §10). **Built
+   2026-10-09:** `xtask/src/java_package.rs` writes the layout from
+   `package stage` (the one zip writer now `xtask/src/zip.rs`, the wheel's
+   bytes unchanged by a golden test), the loader's `Host`, `NativeCache`
+   and `Prebuilt`, and `xtask/src/java_consumer.rs`'s two arms in
+   `check-package`, each with its red check; the musl rows run them in
+   Alpine on a pinned Temurin JDK. Two stagings of one commit gave the
+   same bytes. Four departures from §8–§9, each for a reason found while
+   specifying it:
+   - the `0.0.0` refusal is in `publish maven`, not `package stage`:
+     `check-package` stages at `0.0.0` on every verify row and must check
+     the layout, and the bundle cannot be written at stage since it holds
+     the signatures. Nothing at `0.0.0` reaches Central either way;
+   - the digest table is compiled in (`Prebuilt.java`, rewritten in a
+     staged copy of the sources, as `_prebuilt.py` and `prebuilt.dart`
+     are), so every jar's classes are the same bytes;
+   - the cached library is hashed on every load, and a cache directory
+     not its owner's alone is refused: `java.io.tmpdir` is `/tmp` on
+     Linux, where another user could plant the predictable path first;
+   - `-Dteistro.platform` names the platform to load, for a host the
+     detection misreads (no dead ends).
 8. **Central**: the namespace verified, the key published, `cargo xtask
    publish maven`, a `USER_MANAGED` dry run from a dispatch that uploads
-   and does not publish; then Sigstore bundles.
+   and does not publish; then Sigstore bundles. **Begun 2026-10-09:**
+   `cargo xtask publish maven [--automatic] [--dry-run] [--dist DIR]`
+   (`xtask/src/maven_publish.rs`) re-verifies the layout against the
+   manifest, signs with `gpg`, bundles and uploads by `curl` with the
+   token on standard input, and polls the deployment; `release.yml`'s
+   `publish` job runs it. The namespace, the key, the dispatch rehearsal
+   and Sigstore are still to do.
 9. **The Teimeris adapter's Java package** (`adapters/ephemeris-teimeris/`
    gains `java`), type-checked by `check-java` as the others are by their
    binding's gate.

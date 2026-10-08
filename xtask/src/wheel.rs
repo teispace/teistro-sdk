@@ -19,16 +19,15 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::{self, Write};
+use std::io;
 use std::path::Path;
 
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use flate2::Compression;
-use flate2::write::DeflateEncoder;
 use sha2::{Digest, Sha256};
 
 use crate::platform::Platform;
+use crate::zip::{self, Entry};
 
 /// The distribution's name, as the wheel's file and its `dist-info` spell
 /// it.
@@ -89,7 +88,14 @@ pub(crate) fn write(
 
     fs::create_dir_all(into)?;
     let name = format!("{NAME}-{version}-py3-none-{}.whl", platform.wheel_tag);
-    fs::write(into.join(&name), zip(&files)?)?;
+    let entries: Vec<(&String, Entry)> = files
+        .iter()
+        .map(|(path, data)| (path, Entry::Plain(data.clone())))
+        .collect();
+    fs::write(
+        into.join(&name),
+        zip::write(entries.iter().map(|(path, entry)| (*path, entry)))?,
+    )?;
     Ok(name)
 }
 
@@ -226,66 +232,6 @@ fn record(files: &BTreeMap<String, Vec<u8>>, own: &str) -> String {
     format!("{}{own},,\n", listed.concat())
 }
 
-/// A zip of `files`, each deflated and dated 1980-01-01 00:00, in key
-/// order.
-fn zip(files: &BTreeMap<String, Vec<u8>>) -> io::Result<Vec<u8>> {
-    /// 1980-01-01 in MS-DOS date format: day 1, month 1, year 0.
-    const DOS_DATE: u16 = 0x21;
-    let mut out = Vec::new();
-    let mut central = Vec::new();
-    for (name, data) in files {
-        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::best());
-        encoder.write_all(data)?;
-        let packed = encoder.finish()?;
-        let crc = crc32fast::hash(data);
-        let offset = u32::try_from(out.len()).map_err(io::Error::other)?;
-        let sizes = [
-            u32::try_from(packed.len()).map_err(io::Error::other)?,
-            u32::try_from(data.len()).map_err(io::Error::other)?,
-        ];
-        let name_length = u16::try_from(name.len()).map_err(io::Error::other)?;
-        // The fields every header shares: version needed (2.0), no flags,
-        // deflate, the time and date, the digest and both sizes, the name.
-        let common = |into: &mut Vec<u8>| {
-            for field in [20_u16, 0, 8, 0, DOS_DATE] {
-                into.extend(field.to_le_bytes());
-            }
-            into.extend(crc.to_le_bytes());
-            into.extend(sizes[0].to_le_bytes());
-            into.extend(sizes[1].to_le_bytes());
-            into.extend(name_length.to_le_bytes());
-        };
-        out.extend(0x0403_4b50_u32.to_le_bytes());
-        common(&mut out);
-        out.extend(0_u16.to_le_bytes());
-        out.extend(name.as_bytes());
-        out.extend(&packed);
-
-        central.extend(0x0201_4b50_u32.to_le_bytes());
-        // Made by Unix (3), zip 2.0, so the mode below is read.
-        central.extend(0x0314_u16.to_le_bytes());
-        common(&mut central);
-        for field in [0_u16, 0, 0, 0] {
-            central.extend(field.to_le_bytes());
-        }
-        central.extend((0o100_644_u32 << 16).to_le_bytes());
-        central.extend(offset.to_le_bytes());
-        central.extend(name.as_bytes());
-    }
-    let count = u16::try_from(files.len()).map_err(io::Error::other)?;
-    let start = u32::try_from(out.len()).map_err(io::Error::other)?;
-    let size = u32::try_from(central.len()).map_err(io::Error::other)?;
-    out.extend(&central);
-    out.extend(0x0605_4b50_u32.to_le_bytes());
-    for field in [0_u16, 0, count, count] {
-        out.extend(field.to_le_bytes());
-    }
-    out.extend(size.to_le_bytes());
-    out.extend(start.to_le_bytes());
-    out.extend(0_u16.to_le_bytes());
-    Ok(out)
-}
-
 /// Refuses a macOS library that needs a newer system than its wheel's tag
 /// says: pip would install it where the loader then refuses it.
 fn held_to_tag(platform: &Platform, library: &[u8]) -> Result<(), String> {
@@ -379,26 +325,6 @@ mod tests {
         assert_eq!(
             record(&files, "t-1.dist-info/RECORD"),
             "a.py,sha256=LXEWQrcmsEQBYnyp-6wy9chTD7GQPMTbAiWHF5IaSIE,1\nt-1.dist-info/RECORD,,\n"
-        );
-    }
-
-    #[test]
-    fn a_zip_holds_its_files_in_order() {
-        let files = BTreeMap::from([
-            ("b".to_string(), b"second".to_vec()),
-            ("a".to_string(), b"first".to_vec()),
-        ]);
-        let bytes = zip(&files).unwrap();
-        // The local headers in key order, and the end record counting two.
-        assert_eq!(&bytes[..4], b"PK\x03\x04");
-        assert_eq!(&bytes[30..31], b"a");
-        let end = bytes.len() - 22;
-        assert_eq!(&bytes[end..end + 4], b"PK\x05\x06");
-        assert_eq!(u16::from_le_bytes([bytes[end + 10], bytes[end + 11]]), 2);
-        assert_eq!(
-            zip(&files).unwrap(),
-            bytes,
-            "the same files, the same bytes"
         );
     }
 

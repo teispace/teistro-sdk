@@ -647,6 +647,108 @@ public final class BindingTest {
         });
 
         List<String> failed = new ArrayList<>();
+        tests.put("every release platform is named from what its JVM reports", () -> {
+            // One row per platform the release builds; `check-lints` holds
+            // this list to `xtask/src/platform.rs`.
+            String[][] hosts = {
+                {"Linux", "amd64", "false", "linux-x64"},
+                {"Linux", "aarch64", "false", "linux-arm64"},
+                {"Linux", "amd64", "true", "linux-x64-musl"},
+                {"Linux", "aarch64", "true", "linux-arm64-musl"},
+                {"Mac OS X", "aarch64", "false", "darwin-arm64"},
+                {"Mac OS X", "x86_64", "false", "darwin-x64"},
+                {"Windows 11", "amd64", "false", "win32-x64"},
+                {"Windows Server 2025", "aarch64", "false", "win32-arm64"},
+            };
+            for (String[] host : hosts) {
+                same(host[3], Host.platform(host[0], host[1], Boolean.parseBoolean(host[2])), host[0] + " " + host[1]);
+            }
+            // musl is a Linux question only, and an architecture no release
+            // builds is named as itself, so the refusal can say it.
+            same("darwin-arm64", Host.platform("Mac OS X", "aarch64", true), "no musl off Linux");
+            same("linux-riscv64", Host.platform("Linux", "riscv64", false), "an unbuilt architecture");
+            same("teistro_ffi.dll", Host.fileName("Windows 11"), "Windows");
+            same("libteistro_ffi.dylib", Host.fileName("Mac OS X"), "macOS");
+            same("libteistro_ffi.so", Host.fileName("Linux"), "Linux");
+        });
+
+        tests.put("a packaged library is written once, hashed, and refused when it is not the one staged", () -> {
+            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("teistro-cache-test");
+            byte[] bytes = "a library's bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            String digest = java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
+            java.util.function.Supplier<java.io.InputStream> stream = () -> new java.io.ByteArrayInputStream(bytes);
+            java.nio.file.Path written = NativeCache.extract(stream.get(), digest, root, "9.9.9", "lib.so");
+            same(digest, NativeCache.sha256(written), "written whole");
+            same(written, NativeCache.extract(stream.get(), digest, root, "9.9.9", "lib.so"), "found again");
+            // Bytes that do not hash to the staged digest leave nothing behind.
+            String other = "0".repeat(64);
+            try {
+                NativeCache.extract(stream.get(), other, root, "9.9.9", "lib.so");
+                throw new AssertionError("a mismatched library was written");
+            } catch (java.io.IOException expected) {
+                check(expected.getMessage().contains(other), "names the digest: " + expected.getMessage());
+            }
+            try (var left = java.nio.file.Files.list(root.resolve("teistro-9.9.9-" + other))) {
+                same(0L, left.count(), "no file left behind");
+            }
+            // A cached file someone changed is refused, not replaced.
+            if (root.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                java.nio.file.Files.setPosixFilePermissions(written,
+                        java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"));
+            }
+            java.nio.file.Files.write(written, "tampered".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            try {
+                NativeCache.extract(stream.get(), digest, root, "9.9.9", "lib.so");
+                throw new AssertionError("a tampered library was used");
+            } catch (java.io.IOException expected) {
+                check(expected.getMessage().contains("delete it"), "says what to do: " + expected.getMessage());
+            }
+        });
+
+        tests.put("threads extracting at once converge on one file", () -> {
+            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("teistro-cache-race");
+            byte[] bytes = new byte[1 << 20];
+            new java.util.Random(7).nextBytes(bytes);
+            String digest = java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(bytes));
+            List<java.util.concurrent.Future<java.nio.file.Path>> found = new ArrayList<>();
+            try (var pool = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+                for (int i = 0; i < 8; i++) {
+                    found.add(pool.submit(() -> NativeCache.extract(new java.io.ByteArrayInputStream(bytes), digest,
+                            root, "9.9.9", "lib.so")));
+                }
+            }
+            java.nio.file.Path first = found.get(0).get();
+            for (var one : found) {
+                same(first, one.get(), "one file");
+            }
+            try (var left = java.nio.file.Files.list(first.getParent())) {
+                same(1L, left.count(), "and no part files");
+            }
+        });
+
+        tests.put("a cache directory another may write to is refused", () -> {
+            java.nio.file.Path root = java.nio.file.Files.createTempDirectory("teistro-cache-shared");
+            if (!root.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                return;
+            }
+            java.nio.file.Path dir = java.nio.file.Files.createDirectory(root.resolve("teistro-9.9.9-" + "1".repeat(64)));
+            java.nio.file.Files.setPosixFilePermissions(dir,
+                    java.nio.file.attribute.PosixFilePermissions.fromString("rwxrwxrwx"));
+            try {
+                NativeCache.extract(new java.io.ByteArrayInputStream(new byte[0]), "1".repeat(64), root, "9.9.9",
+                        "lib.so");
+                throw new AssertionError("a shared directory was used");
+            } catch (java.io.IOException expected) {
+                check(expected.getMessage().contains(NativeCache.CACHE_PROPERTY), "says how: " + expected.getMessage());
+            }
+            java.nio.file.Path fresh = NativeCache.extract(new java.io.ByteArrayInputStream(new byte[0]),
+                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", root, "9.9.9", "lib.so");
+            same("rwx------", java.nio.file.attribute.PosixFilePermissions.toString(
+                    java.nio.file.Files.getPosixFilePermissions(fresh.getParent())), "a new directory is private");
+        });
+
         for (Map.Entry<String, Test> test : tests.entrySet()) {
             try {
                 test.getValue().run();
