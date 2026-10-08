@@ -5,7 +5,7 @@ description: "Reads periods of civil days at a place for each of the twelve sign
 
 Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress and station of the period counted from each sign; `baseline` the baseline engine's score of each sign when the request names a period for it, absent otherwise.
 
-`request_json` is `{"periods", "baseline"}`: each period `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as `{"year", "month", "day"}` and everything but `first`, the place and the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY` and `YEARLY`. A key it does not read, a last day before the first, a clock off the clock or a graha named twice is `INVALID_ARG`, named under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+`request_json` is `{"periods", "baseline"}`: each period `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as `{"year", "month", "day"}` and everything but `first`, the place and the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY` and `YEARLY`. A key it does not read, a last day before the first, a clock off the clock or a graha named twice is `INVALID_ARG`, named under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is a build that leaves the `rashifal` family out.
 
 <Tabs items={['C', 'Node', 'Dart']}>
 <Tab value="C">

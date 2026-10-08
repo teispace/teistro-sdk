@@ -24,14 +24,19 @@ mod common;
 
 use common::{Ctx, chart_blob, chart_request, sized};
 
-/// The status `ts_numerology_profile` answers `request` with.
-fn numerology_status(ctx: &Ctx, request: &str) -> Status {
+/// An entry point that reads one JSON request and answers JSON.
+type JsonEntry = unsafe extern "C" fn(
+    *const teistro_ffi::context::TsContext,
+    *const core::ffi::c_char,
+    *mut TsString,
+) -> Status;
+
+/// The status `entry` answers `request` with.
+fn json_status(ctx: &Ctx, entry: JsonEntry, request: &str) -> Status {
     let request = CString::new(request).unwrap();
     let mut json = TsString::empty();
     // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status = unsafe {
-        teistro_ffi::numerology::ts_numerology_profile(ctx.handle, request.as_ptr(), &raw mut json)
-    };
+    let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut json) };
     // SAFETY: a descriptor the library wrote, or the empty one.
     unsafe { ts_string_free(&raw mut json) };
     status
@@ -143,12 +148,22 @@ fn every_family_answers_in_its_build_and_is_refused_without_it() {
         }
     }
 
-    let numerology = numerology_status(&ctx, "{}");
-    assert_eq!(
-        numerology == Status::Capability,
-        !cfg!(feature = "numerology"),
-        "numerology: {numerology:?}"
-    );
+    let entries: [(&str, bool, JsonEntry); 2] = [
+        (
+            "numerology",
+            cfg!(feature = "numerology"),
+            teistro_ffi::numerology::ts_numerology_profile,
+        ),
+        (
+            "rashifal",
+            cfg!(feature = "rashifal"),
+            teistro_ffi::rashifal::ts_rashifal,
+        ),
+    ];
+    for (family, built, entry) in entries {
+        let status = json_status(&ctx, entry, "{}");
+        assert_eq!(status == Status::Capability, !built, "{family}: {status:?}");
+    }
     let muhurta = muhurta_status(&ctx, "{}");
     assert_eq!(
         muhurta == Status::Capability,

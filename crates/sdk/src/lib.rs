@@ -89,7 +89,9 @@ mod prashna_request;
 mod progressed;
 #[cfg(feature = "western")]
 mod progressions_request;
+#[cfg(feature = "rashifal")]
 mod rashifal_area;
+#[cfg(feature = "rashifal")]
 mod rashifal_request;
 #[cfg(feature = "remedies")]
 mod remedy_request;
@@ -369,9 +371,11 @@ pub use teistro_prashna as prashna;
 pub use teistro_remedies as remedies;
 // Rashifal: one period read for each of the twelve signs from
 // Phaladeepika ch. 26's gochar (`03-design/rashifal.md`).
+#[cfg(feature = "rashifal")]
 pub use crate::rashifal_request::{
     EVENT_GRAHAS, RashifalAnswer, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
 };
+#[cfg(feature = "rashifal")]
 pub use teistro_rashifal as rashifal;
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).

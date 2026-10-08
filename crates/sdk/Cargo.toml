@@ -28,7 +28,7 @@ teistro-matching = { path = "../matching" }
 teistro-numerology = { path = "../numerology", optional = true }
 teistro-prashna = { path = "../prashna", optional = true }
 teistro-remedies = { path = "../remedies", optional = true }
-teistro-rashifal = { path = "../rashifal" }
+teistro-rashifal = { path = "../rashifal", optional = true }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret" }
 teistro-intl = { path = "../intl", default-features = false }
@@ -72,11 +72,12 @@ default = ["builtin-standard", "full"]
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["kp", "muhurta", "numerology", "prashna", "remedies", "svg", "tajika", "western"]
+full = ["kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
 kp = ["dep:teistro-kp"]
 muhurta = ["dep:teistro-muhurta"]
 numerology = ["dep:teistro-numerology"]
 prashna = ["dep:teistro-prashna"]
+rashifal = ["dep:teistro-rashifal"]
 remedies = ["dep:teistro-remedies"]
 svg = ["dep:teistro-render-svg"]
 tajika = ["dep:teistro-tajika"]

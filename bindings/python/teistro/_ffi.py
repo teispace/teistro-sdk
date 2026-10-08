@@ -4656,7 +4656,8 @@ class TeistroContext:
         the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
         and `YEARLY`. A key it does not read, a last day before the first, a
         clock off the clock or a graha named twice is `INVALID_ARG`, named
-        under `rashifal`. A context without an ephemeris is `CAPABILITY`.
+        under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
+        a build that leaves the `rashifal` family out.
         """
         owned: list[Any] = []
         _request_json = request_json.encode("utf-8")

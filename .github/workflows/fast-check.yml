@@ -73,8 +73,8 @@ jobs:
           components: clippy
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
-      - name: Lint the boundary with no family
-        run: cargo clippy -p teistro-ffi --lib --no-default-features --features builtin-compact -- -D warnings
+      - name: Lint the boundary and its tests with no family
+        run: cargo clippy -p teistro-ffi --all-targets --no-default-features --features builtin-compact -- -D warnings
       - name: Lint the wasm module with no family, for wasm32
         run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features builtin-compact -- -D warnings
       - name: Every family refused and every section written, with no family

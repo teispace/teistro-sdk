@@ -29,7 +29,7 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo test
 
 It runs as parallel jobs. `checks` runs the format, the lints, the
 dependency policy, the tests and the documentation. `families` builds
-the boundary and the wasm module with no module family, which is the
+the boundary, its tests and the wasm module with no module family, which is the
 wasm `panchanga` profile, and runs the family test on that build
 (`03-design/wasm-profiles.md`). The measured pages are split across
 three `pages` shards. Each shard holds a third

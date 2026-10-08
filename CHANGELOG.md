@@ -2398,8 +2398,8 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
-- **Module families** (`03-design/wasm-profiles.md` step 2, first
-  slice). KP, muhurta, numerology, prashna, remedies, SVG, Tajika and
+- **Module families** (`03-design/wasm-profiles.md` step 2). KP,
+  muhurta, numerology, prashna, rashifal, remedies, SVG, Tajika and
   Western are each an optional crate of `teistro` behind a feature of the
   same name, forwarded by `teistro-ffi` and the wasm crate. `full` names
   them all and is the default, so every existing build is unchanged. A
