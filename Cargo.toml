@@ -28,6 +28,7 @@ members = [
     "crates/rules",
     "crates/interpret",
     "crates/tajika",
+    "crates/rectification",
     "crates/hellenistic",
     "crates/western",
     "crates/matching",
