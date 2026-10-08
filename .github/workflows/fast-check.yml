@@ -19,8 +19,11 @@ permissions:
   contents: read
 
 jobs:
-  fast-check:
-    name: fast-check
+  # Format, lint, the dependency policy, the unit tests and the
+  # documentation: everything but the measured pages, which run in the
+  # shards beside it.
+  checks:
+    name: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -51,6 +54,18 @@ jobs:
         run: cargo test --workspace
       - name: Documentation gates
         run: cargo xtask check-docs
+
+  # A third of the measured pages, balanced by each step's time on CI
+  # (the shards are rebalanced by hand when a page grows).
+  pages-1:
+    name: pages (1 of 3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: Golden-vector corpus (schema, manifest, settings hashes, forbidden terms)
         run: cargo xtask check-fixtures
       - name: Catalogue gate
@@ -59,80 +74,36 @@ jobs:
         run: cargo xtask check-calendars
       - name: Time tables gate (the IERS series and the leap-second list reproduce the checked-in tables)
         run: cargo xtask check-time
-      - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
-        run: cargo xtask check-accuracy
       - name: Lunar accuracy gate (the catalogued rates reproduce the checked-in page)
         run: cargo xtask check-moon
-      - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
-        run: cargo xtask check-intl
       - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
         run: cargo xtask check-ffi
-      - name: Bhava chalit falsification page (the measured disagreement reproduces)
-        run: cargo xtask check-chalit
       - name: Panchanga conventions page (the measured conventions of the recorded daily panchanga reproduce)
         run: cargo xtask check-panchanga
       - name: Varga tables page (the recorded divisional charts' derived tables reproduce)
         run: cargo xtask check-vargas
-      - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
-        run: cargo xtask check-state
       - name: Drishti page (the aspect systems' invariants and their counts over the corpus reproduce)
         run: cargo xtask check-aspect
-      - name: Derived points page (the recorded upagrahas and special lagnas reproduce)
-        run: cargo xtask check-points
       - name: Houses page (the degeneracy flag, the cusp signs and the shift reproduce)
         run: cargo xtask check-houses
-      - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)
-        run: cargo xtask check-serial
-      - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
-        run: cargo xtask check-schema
       - name: Document schema (the JSON Schema of a sealed chart document is what the types generate)
         run: cargo xtask check-document-schema
       - name: Almanac shape page (which of a day's lists are ragged, and what a rectangular layout would waste)
         run: cargo xtask check-almanac
       - name: Lunisolar month page (the sankranti count that decides adhika and kshaya, over a millennium)
         run: cargo xtask check-lunisolar
-      - name: Topocentric centre page (the parallax, the aberration and the points that take neither, over six recorded pairs)
-        run: cargo xtask check-topocentric
-      - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
-        run: cargo xtask check-batching
       - name: Absence page (proving a rise or a set does not happen without walking the window)
         run: cargo xtask check-absence
       - name: Classical chart page (which parts of a chart founded over the Surya Siddhanta are the text's)
         run: cargo xtask check-classical-chart
-      - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
-        run: cargo xtask check-jaimini
-      - name: Gochar page (how the transits' verdicts fall over the recorded births, and who obstructs whom over sixty years of sky)
-        run: cargo xtask check-gochar
-      - name: Hit list page (each ingress and exact aspect of a year read back through a founded chart, over the recorded births)
-        run: cargo xtask check-hits
-      - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
-        run: cargo xtask check-sade-sati
-      - name: Rashifal page (what each of the baseline engine's choices moves in a year of rashifal at Kathmandu)
-        run: cargo xtask check-rashifal
       - name: KP page (each sub lord's margin in minutes of birth time read back through the founder, over the recorded births)
         run: cargo xtask check-kp
-      - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)
-        run: cargo xtask check-muhurta
-      - name: Saait page (the committee's VS 2083 muhurta sheet, row by row, against the four rites' rules under its sky and the modern one, and the days of the year each rite leaves open)
-        run: cargo xtask check-saait
-      - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
-        run: cargo xtask check-festival
-      - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)
-        run: cargo xtask check-nepal-month
-      - name: Nepal Sambat page (the committee's 51 page headers of VS 2082 and 2083 against each page's first day, said in Nepali, and the year's count against the almanac's own lunar years over six centuries)
-        run: cargo xtask check-nepal-sambat
-      - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
-        run: cargo xtask check-samvatsara
-      - name: Ritu page (the season Nepal's daily panchanga printed against the shipped reading and every rival, and the ayana on the same days)
-        run: cargo xtask check-ritu
       - name: Nepal day page (the tithi, nakshatra and yoga ends, the vriddhi and kshaya days and the sunrise Nepal's daily panchanga printed against the committee's Surya Siddhanta and its rivals)
         run: cargo xtask check-nepal-day
       - name: Eclipses page (every solar and lunar eclipse of 1900 to 2100 against NASA's Five Millennium Canon, both ways, the placings and shadow rule chosen between, and 214 cities' local circumstances against NASA's bulletins)
         run: cargo xtask check-eclipses
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
-      - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
-        run: cargo xtask check-agreement
       - name: Pluto page (the fitted tables' span, size and worst error at each tier)
         run: cargo xtask check-pluto
       - name: Engine passthrough page (which of the engine's own functions the adapter offers, withholds and has not marshalled)
@@ -141,44 +112,22 @@ jobs:
         run: cargo xtask check-areas
       - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
         run: cargo xtask check-rust-surface
-      - name: Golden drawings (a real chart in every shipped layout, two locales and both themes, byte for byte)
-        run: cargo xtask check-render
       - name: Dasha page (the Vimshottari seed, balance, tree and cycle end, decided by the corpus)
         run: cargo xtask check-dashas
-      - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
-        run: cargo xtask check-dasha-systems
       - name: Rashi dashas page (the sign-based dashas decided over the corpus, beside the other schools' readings)
         run: cargo xtask check-rashi-dashas
       - name: Dasha coverage page (the catalogue against the build, every system it does not compute listed with its blocker and its refusal measured)
         run: cargo xtask check-dasha-coverage
-      - name: Annual chart page (the Sun's return to where it stood at birth, over every recorded birth, against the tropical and the mean rival)
-        run: cargo xtask check-varshaphala
       - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
         run: cargo xtask check-muntha
-      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
-        run: cargo xtask check-arudhas
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
-      - name: Sect page (Valens's horizon against the chart's own sunrise and sunset and the recorded day births)
-        run: cargo xtask check-sect
-      - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)
-        run: cargo xtask check-reception
-      - name: Fortitudes page (the accidental fortitudes' readings over the corpus, each crux's rival counted)
-        run: cargo xtask check-fortitudes
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
         run: cargo xtask check-lots
       - name: Outer planets page (Uranus, Neptune and Pluto against the corpus's recording, and C239's parallax)
         run: cargo xtask check-outer-planets
-      - name: Western aspects page (Leo's orbs and Lilly's moieties over the corpus, where the two models part, C240)
-        run: cargo xtask check-western-aspects
-      - name: Synastry page (every pair of the corpus's births read in the tropical zodiac and in each chart's own, where the two part, C241)
-        run: cargo xtask check-synastry
       - name: Declinations page (Leo's parallels over the corpus, contrary and aspected, and the planets past the obliquity, C243)
         run: cargo xtask check-declinations
-      - name: Antiscia page (Lilly's antiscia over the corpus under the moieties, Leo's orbs and 1°, and how many are parallels too, C244)
-        run: cargo xtask check-antiscia
-      - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
-        run: cargo xtask check-midpoints
       - name: Composites page (every pair of the corpus's births made one chart both ways, the turned lagna and the composite against the Davison, C247, C248)
         run: cargo xtask check-composites
       - name: Western houses page (the corpus's planets in Placidus against six other divisions, the ascendant's reach of one sidereal hour, C249, C250)
@@ -187,36 +136,136 @@ jobs:
         run: cargo xtask check-matching
       - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
         run: cargo xtask check-progressed-angles
-      - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
-        run: cargo xtask check-time-lords
-      - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
-        run: cargo xtask check-kalachakra
       - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)
         run: cargo xtask check-ashtakavarga
       - name: Vimshopaka page (the schemes' weights and scoring decided over the corpus, beside BPHS)
         run: cargo xtask check-vimshopaka
-      - name: Shadbala page (every component of the engine's reproduced over the corpus, beside BPHS ch. 27)
-        run: cargo xtask check-shadbala
       - name: Bhava bala page (the built module against every recorded house, each reading's forks measured)
         run: cargo xtask check-bhava-bala
       - name: Yogas page (every rule of the engine's evaluated over every recorded chart, each reading of its condition language measured)
         run: cargo xtask check-yogas
-      - name: Doshas page (the engine's dosha rules measured, and the seventeen it computes in code written as rules)
-        run: cargo xtask check-doshas
       - name: Rule prose page (every rule rendered to English, and the renderings two different meanings would share)
         run: cargo xtask check-rule-doc
-      - name: Composer page (every recorded chart's narrative plan said in each strict locale, without a fallback or a warning)
-        run: cargo xtask check-interpret
       - name: Rule readings page (every shipped rule's four-language reading, and both shortfalls listed by name rather than counted)
         run: cargo xtask check-interpretations
       - name: Binding exercise page (which of each binding's own surface its tests and examples ever touch)
         run: cargo xtask check-exercised
-      - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
-        run: cargo xtask check-state-readings
-      - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
-        run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)
         run: cargo xtask check-versions
+
+  pages-2:
+    name: pages (2 of 3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
+        run: cargo xtask check-accuracy
+      - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
+        run: cargo xtask check-intl
+      - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
+        run: cargo xtask check-state
+      - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)
+        run: cargo xtask check-serial
+      - name: Topocentric centre page (the parallax, the aberration and the points that take neither, over six recorded pairs)
+        run: cargo xtask check-topocentric
+      - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
+        run: cargo xtask check-jaimini
+      - name: Gochar page (how the transits' verdicts fall over the recorded births, and who obstructs whom over sixty years of sky)
+        run: cargo xtask check-gochar
+      - name: Hit list page (each ingress and exact aspect of a year read back through a founded chart, over the recorded births)
+        run: cargo xtask check-hits
+      - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)
+        run: cargo xtask check-muhurta
+      - name: Saait page (the committee's VS 2083 muhurta sheet, row by row, against the four rites' rules under its sky and the modern one, and the days of the year each rite leaves open)
+        run: cargo xtask check-saait
+      - name: Nepal Sambat page (the committee's 51 page headers of VS 2082 and 2083 against each page's first day, said in Nepali, and the year's count against the almanac's own lunar years over six centuries)
+        run: cargo xtask check-nepal-sambat
+      - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
+        run: cargo xtask check-samvatsara
+      - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
+        run: cargo xtask check-agreement
+      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
+        run: cargo xtask check-arudhas
+      - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)
+        run: cargo xtask check-reception
+      - name: Antiscia page (Lilly's antiscia over the corpus under the moieties, Leo's orbs and 1°, and how many are parallels too, C244)
+        run: cargo xtask check-antiscia
+      - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
+        run: cargo xtask check-time-lords
+      - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
+        run: cargo xtask check-kalachakra
+      - name: Doshas page (the engine's dosha rules measured, and the seventeen it computes in code written as rules)
+        run: cargo xtask check-doshas
+      - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
+        run: cargo xtask check-lints
+
+  pages-3:
+    name: pages (3 of 3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Bhava chalit falsification page (the measured disagreement reproduces)
+        run: cargo xtask check-chalit
+      - name: Derived points page (the recorded upagrahas and special lagnas reproduce)
+        run: cargo xtask check-points
+      - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
+        run: cargo xtask check-schema
+      - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
+        run: cargo xtask check-batching
+      - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
+        run: cargo xtask check-sade-sati
+      - name: Rashifal page (what each of the baseline engine's choices moves in a year of rashifal at Kathmandu)
+        run: cargo xtask check-rashifal
+      - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
+        run: cargo xtask check-festival
+      - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)
+        run: cargo xtask check-nepal-month
+      - name: Ritu page (the season Nepal's daily panchanga printed against the shipped reading and every rival, and the ayana on the same days)
+        run: cargo xtask check-ritu
+      - name: Golden drawings (a real chart in every shipped layout, two locales and both themes, byte for byte)
+        run: cargo xtask check-render
+      - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
+        run: cargo xtask check-dasha-systems
+      - name: Annual chart page (the Sun's return to where it stood at birth, over every recorded birth, against the tropical and the mean rival)
+        run: cargo xtask check-varshaphala
+      - name: Sect page (Valens's horizon against the chart's own sunrise and sunset and the recorded day births)
+        run: cargo xtask check-sect
+      - name: Fortitudes page (the accidental fortitudes' readings over the corpus, each crux's rival counted)
+        run: cargo xtask check-fortitudes
+      - name: Western aspects page (Leo's orbs and Lilly's moieties over the corpus, where the two models part, C240)
+        run: cargo xtask check-western-aspects
+      - name: Synastry page (every pair of the corpus's births read in the tropical zodiac and in each chart's own, where the two part, C241)
+        run: cargo xtask check-synastry
+      - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
+        run: cargo xtask check-midpoints
+      - name: Shadbala page (every component of the engine's reproduced over the corpus, beside BPHS ch. 27)
+        run: cargo xtask check-shadbala
+      - name: Composer page (every recorded chart's narrative plan said in each strict locale, without a fallback or a warning)
+        run: cargo xtask check-interpret
+      - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
+        run: cargo xtask check-state-readings
+
+  # The one check branch protection requires: it passes when every job
+  # above passed, so the jobs can run in parallel and the rule still names
+  # a single gate.
+  fast-check:
+    name: fast-check
+    if: always()
+    needs: [checks, pages-1, pages-2, pages-3]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every job of the fast check passed
+        run: |
+          echo '${{ toJSON(needs) }}'
+          test "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = false
 
   dco:
     name: dco

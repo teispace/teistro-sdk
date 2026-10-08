@@ -27,6 +27,16 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo test
 `check-time`, `check-accuracy`, `check-intl`, `check-ffi`, `check-lints`,
 `check-versions`.
 
+It runs as parallel jobs. `checks` runs the format, the lints, the
+dependency policy, the tests and the documentation, and the measured
+pages are split across three `pages` shards. Each shard holds a third
+of the pages by their measured time on CI, so the run takes about as
+long as its slowest job rather than the sum of all of them, which was
+27 minutes in one job on 2026-10-08. The job branch protection requires
+is still called `fast-check`: it runs once every other job has finished
+and passes only if all of them passed. A new page goes into the
+shortest shard.
+
 Each one exists because of a failure that is easy to make and invisible to
 a reader; the comment on the task names that failure. The newest,
 `check-versions`, holds the workspace, both package manifests, the
