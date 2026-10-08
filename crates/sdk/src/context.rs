@@ -12,6 +12,7 @@ use teistro_core::settings::{
     DEFAULT_PROFILE, Diagnostic, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
     Severity, Siddhanta,
 };
+#[cfg(feature = "chart")]
 use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
@@ -24,10 +25,9 @@ use teistro_time::EmbeddedTzdb;
 use crate::BUNDLES;
 #[cfg(feature = "numerology")]
 use crate::area::NumerologyArea;
-use crate::area::{
-    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
-    MatchingArea, TimeArea,
-};
+use crate::area::{AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
+#[cfg(feature = "chart")]
+use crate::area::{ChartArea, InterpretArea, MatchingArea};
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
 /// One context: built once, read many times.
@@ -64,6 +64,7 @@ pub struct Context {
     layouts: Layouts,
     /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
     /// are.
+    #[cfg(feature = "chart")]
     dashas: DashaSystems,
 }
 
@@ -279,6 +280,7 @@ impl Context {
 
     /// A chart founded from a birth record, and a batch of them founded
     /// in one crossing.
+    #[cfg(feature = "chart")]
     #[must_use]
     pub fn chart(&self) -> ChartArea<'_> {
         ChartArea::of(self)
@@ -286,6 +288,7 @@ impl Context {
 
     /// What a reading says, as a narrative plan of message keys and
     /// slots, which [`Context::intl`] renders in any locale.
+    #[cfg(feature = "chart")]
     #[must_use]
     pub fn interpret(&self) -> InterpretArea<'_> {
         InterpretArea::of(self)
@@ -299,6 +302,7 @@ impl Context {
     }
 
     /// What matches without a chart: two names, star to star.
+    #[cfg(feature = "chart")]
     #[must_use]
     pub fn matching(&self) -> MatchingArea<'_> {
         MatchingArea::of(self)
@@ -349,6 +353,7 @@ impl Context {
 
     /// The dasha systems a consumer registered with this context, beside the
     /// ones the catalogue has.
+    #[cfg(feature = "chart")]
     #[must_use]
     pub const fn dashas(&self) -> &DashaSystems {
         &self.dashas
@@ -369,6 +374,7 @@ pub struct ContextBuilder {
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
     layouts: Vec<Layout>,
+    #[cfg(feature = "chart")]
     dashas: Vec<DashaDefinition>,
 }
 
@@ -403,6 +409,7 @@ impl ContextBuilder {
     /// and refused by its place and field (`dashas[0].span`); a key the
     /// catalogue has is refused, so a system is added and never replaced
     /// (`03-design/dasha-kernels.md`, "A consumer's own system").
+    #[cfg(feature = "chart")]
     #[must_use]
     pub fn dasha_system(mut self, definition: impl Into<DashaDefinition>) -> ContextBuilder {
         self.dashas.push(definition.into());
@@ -512,19 +519,24 @@ impl ContextBuilder {
                 .map_err(|error| error.under(&format!("layouts[{index}]")))?;
         }
         layouts.seal();
-        let mut dashas = DashaSystems::new();
-        for (index, definition) in self.dashas.into_iter().enumerate() {
+        #[cfg(feature = "chart")]
+        let dashas = {
+            let mut dashas = DashaSystems::new();
+            for (index, definition) in self.dashas.into_iter().enumerate() {
+                dashas
+                    .register(definition)
+                    .map_err(|error| error.under(&format!("dashas[{index}]")))?;
+            }
+            dashas.seal();
             dashas
-                .register(definition)
-                .map_err(|error| error.under(&format!("dashas[{index}]")))?;
-        }
-        dashas.seal();
+        };
         Ok(Context {
             settings,
             provider,
             intl: RefCell::new(intl),
             delta_t,
             layouts,
+            #[cfg(feature = "chart")]
             dashas,
         })
     }

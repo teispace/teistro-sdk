@@ -2401,7 +2401,12 @@ the astronomical numbers do not move. Nothing else computes yet.
 - **Module families** (`03-design/wasm-profiles.md` step 2). KP,
   muhurta, numerology, prashna, rashifal, remedies, SVG, Tajika and
   Western are each an optional crate of `teistro` behind a feature of the
-  same name, forwarded by `teistro-ffi` and the wasm crate. `full` names
+  same name, forwarded by `teistro-ffi` and the wasm crate. Each of them
+  but muhurta and numerology requires `chart`, the chart area itself:
+  `ChartArea`, interpretation, matching and the rules, dasha, strength,
+  gochar, Hellenistic and document crates. So a build without any family
+  answers the calendars, the almanac, positions and intl, and refuses
+  `ts_chart_found`, `ts_chart_layout_row` and `ts_naam_milan`. `full` names
   them all and is the default, so every existing build is unchanged. A
   Rust consumer who leaves a family out loses its methods and
   re-exports. At the C boundary every entry point stays: a record of a

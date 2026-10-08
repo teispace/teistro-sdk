@@ -19,12 +19,15 @@
 
 mod almanac;
 mod calendar;
+#[cfg(feature = "chart")]
 mod chart;
 mod engine;
 mod frame;
+#[cfg(feature = "chart")]
 mod interpret;
 mod intl;
 mod keys;
+#[cfg(feature = "chart")]
 mod matching;
 #[cfg(feature = "numerology")]
 mod numerology;
@@ -81,12 +84,15 @@ pub(crate) fn drik_sun<'p>(
 pub use almanac::MuhurtaDays;
 pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays};
 pub use calendar::CalendarArea;
+#[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;
 pub use frame::FrameArea;
+#[cfg(feature = "chart")]
 pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
+#[cfg(feature = "chart")]
 pub use matching::MatchingArea;
 #[cfg(feature = "numerology")]
 pub use numerology::NumerologyArea;

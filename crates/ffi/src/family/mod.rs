@@ -9,12 +9,22 @@ use core::ffi::c_char;
 
 use teistro_core::error::{Error, Status};
 
+// The families read off a chart, which a build without the chart area
+// has no chart to read them off.
+#[cfg(not(feature = "chart"))]
+pub mod chart;
+#[cfg(feature = "chart")]
 pub(crate) mod kp;
 pub(crate) mod muhurta;
+#[cfg(feature = "chart")]
 pub(crate) mod prashna;
+#[cfg(feature = "chart")]
 pub(crate) mod remedies;
+#[cfg(feature = "chart")]
 pub(crate) mod svg;
+#[cfg(feature = "chart")]
 pub(crate) mod tajika;
+#[cfg(feature = "chart")]
 pub(crate) mod western;
 
 /// A left-out family's record and answer types: nothing can be one, so a
@@ -71,6 +81,7 @@ pub(crate) fn refused_if_sent(
 /// Every chart's answer to a record, as the canonical JSON its section
 /// carries: an array with one answer a chart, or nothing at all when the
 /// record was not sent.
+#[cfg(feature = "chart")]
 #[allow(dead_code, reason = "a build with no chart-record family answers none")]
 pub(crate) fn each_json<A, T: serde::Serialize>(
     documents: &[teistro_serial::Document],
@@ -103,6 +114,7 @@ macro_rules! in_family {
     }};
 }
 
+#[cfg(feature = "chart")]
 /// A family's answer type, `$alias`: the façade's `$ty`, or [`Absent`] in
 /// a build without `$family`, where no request can ask for one.
 macro_rules! answer {
@@ -158,6 +170,7 @@ macro_rules! record {
     };
 }
 
+#[cfg(feature = "chart")]
 /// A family a chart request asks for by one JSON record and the façade
 /// answers a chart at a time: the [`record!`] items, and `json` writing
 /// the section, with its twin.
@@ -190,4 +203,6 @@ macro_rules! chart_record {
     };
 }
 
-pub(crate) use {answer, chart_record, in_family, record};
+#[cfg(feature = "chart")]
+pub(crate) use {answer, chart_record};
+pub(crate) use {in_family, record};

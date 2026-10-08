@@ -70,6 +70,7 @@ impl<'a> KeysArea<'a> {
                 .layouts()
                 .id(name)
                 .filter(|id| id.is_registered()),
+            #[cfg(feature = "chart")]
             Kind::DashaSystem => self.context.dashas().id(name),
             _ => None,
         }
@@ -83,6 +84,7 @@ impl<'a> KeysArea<'a> {
                 .layouts()
                 .by_id(id)
                 .map(|layout| format!("{}.{}", Kind::ChartLayout.name(), layout.key)),
+            #[cfg(feature = "chart")]
             Kind::DashaSystem => self
                 .context
                 .dashas()

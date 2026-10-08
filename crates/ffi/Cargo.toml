@@ -37,7 +37,7 @@ teistro-idl = { path = "../idl", default-features = false }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
-teistro-serial = { path = "../serial" }
+teistro-serial = { path = "../serial", optional = true }
 teistro-geometry = { path = "../geometry" }
 teistro-state = { path = "../state" }
 teistro-vargas = { path = "../vargas" }
@@ -61,16 +61,18 @@ libloading = "0.8"
 default = ["builtin-standard", "full"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
-kp = ["teistro/kp"]
+full = ["teistro/full", "chart", "kp", "muhurta", "numerology", "prashna", "rashifal", "remedies", "svg", "tajika", "western"]
+# The chart area, and the document reader only it uses.
+chart = ["teistro/chart", "dep:teistro-serial"]
+kp = ["chart", "teistro/kp"]
 muhurta = ["teistro/muhurta"]
 numerology = ["teistro/numerology"]
-prashna = ["teistro/prashna"]
-rashifal = ["teistro/rashifal"]
-remedies = ["teistro/remedies"]
-svg = ["teistro/svg"]
-tajika = ["teistro/tajika"]
-western = ["teistro/western"]
+prashna = ["chart", "teistro/prashna"]
+rashifal = ["chart", "teistro/rashifal"]
+remedies = ["chart", "teistro/remedies"]
+svg = ["chart", "teistro/svg"]
+tajika = ["chart", "teistro/tajika"]
+western = ["chart", "teistro/western"]
 # Forwarded to the façade, which is where the built-in is now reached
 # from: the boundary no longer holds that crate, so a tier is a feature
 # of one crate rather than of two that could disagree.
@@ -89,8 +91,9 @@ builtin-standard = ["builtin-ephemeris", "teistro/builtin-standard"]
 builtin-full = ["builtin-ephemeris", "teistro/builtin-full"]
 
 
-# The ABI suite reads every family's answers and the key suite holds
-# every family's spelling to its serde, so a build that leaves one out
+# The ABI suite reads every family's answers, the key suite holds every
+# family's spelling to its serde and the description suite holds the whole
+# description to the library, so a build that leaves one out
 # skips them rather than failing to compile them; `tests/families.rs` is
 # what such a build runs.
 [[test]]
@@ -99,6 +102,10 @@ required-features = ["full"]
 
 [[test]]
 name = "keys"
+required-features = ["full"]
+
+[[test]]
+name = "description"
 required-features = ["full"]
 
 [dev-dependencies]

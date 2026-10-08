@@ -42,7 +42,12 @@
 
 pub mod blob;
 pub mod calendar;
+#[cfg(feature = "chart")]
 pub mod chart;
+pub mod chart_request;
+// The chart area's entry points in a build without it, each refusing.
+#[cfg(not(feature = "chart"))]
+pub use family::chart;
 pub mod context;
 pub mod day;
 pub mod ephemeris;
@@ -50,7 +55,10 @@ mod family;
 pub mod frame;
 pub mod intl;
 pub mod key;
+#[cfg(feature = "chart")]
 pub mod naam;
+#[cfg(not(feature = "chart"))]
+pub use family::chart as naam;
 pub mod numerology;
 pub mod panchanga;
 pub mod positions;

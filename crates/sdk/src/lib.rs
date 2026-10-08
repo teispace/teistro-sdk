@@ -46,6 +46,7 @@ mod area;
 mod composites;
 mod context;
 mod ephemeris;
+#[cfg(feature = "chart")]
 mod reading;
 #[cfg(feature = "svg")]
 mod render;
@@ -56,32 +57,39 @@ pub use area::MuhurtaDays;
 #[cfg(feature = "numerology")]
 pub use area::NumerologyArea;
 pub use area::{
-    AlmanacAnswer, AlmanacArea, AlmanacRequest, Answers, CalendarArea, ChartArea, EngineArea,
-    FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MatchingArea, Plans,
-    TimeArea,
+    AlmanacAnswer, AlmanacArea, AlmanacRequest, CalendarArea, EngineArea, FestivalDays, FrameArea,
+    IntlArea, KeysArea, TimeArea,
 };
+#[cfg(feature = "chart")]
+pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
 #[cfg(feature = "western")]
 mod antiscia;
 #[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
+#[cfg(feature = "chart")]
 mod gochar_request;
 #[cfg(feature = "western")]
 mod harmonics;
+#[cfg(feature = "chart")]
 mod hit_request;
 #[cfg(feature = "remedies")]
 mod ishta_devata;
 #[cfg(feature = "kp")]
 mod kp_request;
+#[cfg(feature = "chart")]
 mod matching_chart;
 #[cfg(feature = "western")]
 mod midpoints;
 #[cfg(feature = "muhurta")]
 mod muhurta_request;
+#[cfg(feature = "chart")]
 mod naam_request;
 #[cfg(feature = "numerology")]
 mod numerology_request;
+#[cfg(feature = "chart")]
 mod partner;
+#[cfg(feature = "chart")]
 mod plan_request;
 #[cfg(feature = "prashna")]
 mod prashna_request;
@@ -95,9 +103,13 @@ mod rashifal_area;
 mod rashifal_request;
 #[cfg(feature = "remedies")]
 mod remedy_request;
+#[cfg(feature = "chart")]
 mod returns;
+#[cfg(feature = "chart")]
 mod rule_request;
+#[cfg(feature = "chart")]
 mod rules_bridge;
+#[cfg(feature = "chart")]
 mod sade_sati_request;
 #[cfg(feature = "tajika")]
 mod varsha;
@@ -108,6 +120,7 @@ mod western_houses;
 
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
+#[cfg(feature = "chart")]
 pub use reading::ChartRequest;
 pub use scale::{Conversion, Scale};
 
@@ -178,9 +191,11 @@ pub use teistro_points::Points;
 // (`points::arudha::arudha_by`, crux C135).
 pub use teistro_points as points;
 pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
+#[cfg(feature = "chart")]
 pub use teistro_serial::{Document, Sealed};
 // The document's JSON Schema, for a consumer who stores one and wants to
 // check it before reading it back (`03-design/document-schema.md`).
+#[cfg(feature = "chart")]
 pub use teistro_serial::schema;
 pub use teistro_state::{Anka, GrahaState, Sayanadi};
 pub use teistro_vargas::chart::{Axis, VargaChart};
@@ -196,12 +211,15 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
+#[cfg(feature = "chart")]
 pub use crate::plan_request::{PlanInputs, PlanRequest};
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
+#[cfg(feature = "chart")]
 pub use crate::rule_request::{
     Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, ShippedRules,
 };
+#[cfg(feature = "chart")]
 pub use crate::rules_bridge::{
     MarakaWindow, RuleInputs, maraka_windows, rule_chart, rule_periods, rule_vargas,
 };
@@ -210,12 +228,17 @@ pub use crate::varsha::{
     AnnualChart, AnnualPlace, Askable, Asked, SahamStrengthReadings, Varsha, VarshaRequest,
     VarshaYear,
 };
+#[cfg(feature = "chart")]
 pub use teistro_dasha as dasha;
 // The Jaimini reading a chart answers, named without its module path.
+#[cfg(feature = "chart")]
 pub use teistro_dasha::jaimini::JaiminiReading;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
+#[cfg(feature = "chart")]
 pub use crate::gochar_request::GocharRequest;
+#[cfg(feature = "chart")]
 pub use crate::hit_request::{HitKind, HitRequest};
+#[cfg(feature = "chart")]
 pub use crate::sade_sati_request::SadeSatiRequest;
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
@@ -227,18 +250,23 @@ pub use teistro_astro::visibility::Criterion;
 // (`03-design/eclipses.md`); `almanac().eclipses` answers in these.
 pub use teistro_astro::eclipse;
 pub use teistro_astro::eclipse::EclipsesHere;
+#[cfg(feature = "chart")]
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,
 };
+#[cfg(feature = "chart")]
 pub use teistro_gochar as gochar;
+#[cfg(feature = "chart")]
 pub use teistro_gochar::GocharFrom;
 #[cfg(feature = "muhurta")]
 pub use teistro_muhurta as muhurta;
 // A hit list answers `Hit`s and is asked about `NatalPoint`s, so a consumer
 // names both without reaching into the module.
+#[cfg(feature = "chart")]
 pub use teistro_gochar::hits::{Hit, NatalPoint};
 // Sade Sati answers in its own module's types (`03-design/sade-sati.md`).
+#[cfg(feature = "chart")]
 pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 #[cfg(feature = "kp")]
@@ -250,7 +278,9 @@ pub use crate::remedy_request::RemedyRequest;
 // The essential dignities of the Hellenistic and later Western tradition:
 // the terms, the triplicities, the faces and the sect that chooses among
 // them (`03-design/essential-dignities.md`).
+#[cfg(feature = "chart")]
 pub use teistro_hellenistic as hellenistic;
+#[cfg(feature = "chart")]
 pub use teistro_hellenistic::{
     Accident, AccidentalRules, AccidentalScores, Almuten, AlmutenRules, Almutens, Application,
     ApplicationKind, AscendantClause, AspectTimeline, Collection, ConsiderationRules,
@@ -271,16 +301,21 @@ pub use crate::progressed::{
 };
 #[cfg(feature = "western")]
 pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsRequest};
+#[cfg(feature = "chart")]
 pub use teistro_interpret as interpret;
+#[cfg(feature = "chart")]
 pub use teistro_interpret::{Item, Plan};
 #[cfg(feature = "kp")]
 pub use teistro_kp as kp;
 #[cfg(feature = "kp")]
 pub use teistro_kp::{KpChart, KpNumber, KpReading};
+#[cfg(feature = "chart")]
 pub use teistro_rules as rules;
+#[cfg(feature = "chart")]
 pub use teistro_rules::longevity::{
     AshtakavargaAyusRules, AyurdayaRules, ChakrayusRules, RasmiRules,
 };
+#[cfg(feature = "chart")]
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths, ThreePairsRules};
 #[cfg(feature = "tajika")]
 pub use teistro_tajika as tajika;
@@ -345,12 +380,17 @@ pub use teistro_western::{
 // Matching: the Ashta Koota and the ten considerations of two charts'
 // Moons, the Kuja dosha of their Mars, and naam milan of two names, which
 // needs no chart (`03-design/matching.md`).
+#[cfg(feature = "chart")]
 pub use matching_chart::{Matched, PartnerMatching};
+#[cfg(feature = "chart")]
 pub use naam_request::NaamRequest;
 #[cfg(feature = "numerology")]
 pub use numerology_request::NumerologyRequest;
+#[cfg(feature = "chart")]
 pub use partner::Partner;
+#[cfg(feature = "chart")]
 pub use teistro_matching as matching;
+#[cfg(feature = "chart")]
 pub use teistro_matching::{
     AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaRules,
     MarriageDosha, MatchRole, NaamMilan, NaamRules, NameRules, NameSyllable, Native, Porutham,
@@ -379,6 +419,7 @@ pub use crate::rashifal_request::{
 pub use teistro_rashifal as rashifal;
 // A body's returns to its own natal place: the lunar return after Morin
 // (`03-design/western-returns.md`).
+#[cfg(feature = "chart")]
 pub use crate::returns::BodyReturn;
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
@@ -404,6 +445,7 @@ pub use teistro_tajika::{
 };
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).
+#[cfg(feature = "chart")]
 pub use teistro_strength as strength;
 // The typed accessor tree: every message of the SDK's locale as a value
 // of its own parameters. A **module** tree, because that is what a

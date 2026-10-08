@@ -123,10 +123,29 @@ one.
    - **Second slice:** `rashifal`, whose entry point is its own. The
      ABI and key suites require `full`, and the `families` job lints
      every test target without it.
-   - **Next:** the families the core path reaches into: the
-     Hellenistic time lords (in the dasha path), `rules`, `interpret`,
-     `dasha`, `strength`, `gochar` and `matching` (which the document
-     reader names).
+   - **Done: one `chart` family, not seven.** The crates the
+     `panchanga` profile drops are not leaves: the chara kārakas, the
+     Jaimini chart and the rashi dashas read the chart through
+     `teistro_rules::RuleChart`, interpret depends on rules, and rules
+     on the dashas and strengths. Gating each would make seven families
+     that require each other, with refusals inside the chart path. So
+     the chart area is one family, `chart`: the façade's `ChartArea`,
+     the interpretation area and the crates only they reach (rules,
+     interpret, dasha, strength, gochar, Hellenistic, matching). Every
+     chart family above requires it (`kp = ["chart", "dep:teistro-kp"]`).
+     At the boundary that is three entry points: `ts_chart_found`,
+     `ts_chart_layout_row` and `ts_naam_milan`. The `panchanga` profile
+     is then the calendars, the almanac, positions and intl, with or
+     without `muhurta`.
+
+     Building it moved what the almanac shares with the chart out of
+     the chart module: the day's enums and values (`day.rs`), and the
+     request struct (`chart_request.rs`), which the generated glue
+     builds in every profile. The chart and naam blob schemas live in
+     `schemas/charts.rs`. A context's own dasha systems are the chart
+     area's, so `options.dashas_json` is refused by its field in a
+     build without it. The façade's own tests and examples are written
+     against the full surface and build only with `full`.
 3. The `panchanga` module staged beside the full one, its subpath, its
    budget and its probe.
 4. Measure the shared base by module, and decide whether to shrink it.

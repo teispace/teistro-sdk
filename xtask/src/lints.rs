@@ -1511,12 +1511,14 @@ fn tiers_turn_on_their_base(root: &Path, outcome: &mut Outcome) {
 
 /// That every module family is in `full`, and forwarded whole.
 ///
-/// A family is a façade feature that turns on one optional crate and
-/// nothing else (`03-design/wasm-profiles.md`). Three manifests have to
-/// agree on the set: the façade's `full` names each family; the
-/// boundary's `full` is `teistro/full` plus each family, and each of its
-/// families is that family forwarded alone; the wasm crate's `full` is
-/// the boundary's. A family the façade gains and the boundary does not
+/// A family is a façade feature that turns on optional crates and the
+/// families it requires, and nothing else (`03-design/wasm-profiles.md`):
+/// `kp = ["chart", "dep:teistro-kp"]`. Three manifests have to agree on
+/// the set: the façade's `full` names each family; the boundary's `full`
+/// is `teistro/full` plus each family, and each of its families forwards
+/// the façade's and turns on the boundary's own copy of each family it
+/// requires (an optional crate of the boundary's own beside them is its
+/// business); the wasm crate's `full` is the boundary's. A family the façade gains and the boundary does not
 /// forward builds into every default library while each entry point into
 /// it answers `CAPABILITY`, and nothing compiled without the family would
 /// notice, since that build is right.
@@ -1549,7 +1551,13 @@ fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
         (wasm, "full", vec![String::from("teistro-ffi/full")]),
     ];
     for family in &families {
-        wanted.push((ffi, family, vec![format!("teistro/{family}")]));
+        let mut forwarded = vec![format!("teistro/{family}")];
+        forwarded.extend(
+            sdk.list(family)
+                .into_iter()
+                .filter(|required| families.contains(required)),
+        );
+        wanted.push((ffi, family, forwarded));
         // A profile's crate names only the families it keeps.
         if wasm.features.contains_key(family.as_str()) {
             wanted.push((wasm, family, vec![format!("teistro-ffi/{family}")]));
@@ -1558,6 +1566,9 @@ fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
     for (manifest, name, mut expected) in wanted {
         expected.sort();
         let mut found = manifest.list(name);
+        // The boundary's own optional crates, which the façade knows
+        // nothing of.
+        found.retain(|entry| !entry.starts_with("dep:"));
         found.sort();
         if found != expected {
             outcome.failures.push(manifest.finding(
@@ -1614,18 +1625,36 @@ impl Manifest {
             .unwrap_or_default()
     }
 
-    /// The module families: each feature that turns on one optional
-    /// Teistro crate other than an ephemeris and nothing else.
+    /// The module families: each feature that turns on at least one
+    /// optional Teistro crate other than an ephemeris, and otherwise only
+    /// other features of this table that do the same.
     fn families(&self) -> Vec<String> {
+        let crate_of =
+            |entry: &str| entry.starts_with("dep:teistro-") && !entry.contains("ephemeris");
         let mut families: Vec<String> = self
             .features
             .keys()
-            .filter(|name| {
-                matches!(self.list(name).as_slice(), [only]
-                    if only.starts_with("dep:teistro-") && !only.contains("ephemeris"))
-            })
+            .filter(|name| self.list(name).iter().any(|entry| crate_of(entry)))
             .cloned()
             .collect();
+        // Narrowed until every entry of every family is a crate or a
+        // family, so a feature that also turns on a tier is not one.
+        loop {
+            let before = families.len();
+            let kept: Vec<String> = families
+                .iter()
+                .filter(|name| {
+                    self.list(name)
+                        .iter()
+                        .all(|entry| crate_of(entry) || families.contains(entry))
+                })
+                .cloned()
+                .collect();
+            families = kept;
+            if families.len() == before {
+                break;
+            }
+        }
         families.sort();
         families
     }

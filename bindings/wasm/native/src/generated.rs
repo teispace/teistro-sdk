@@ -2337,9 +2337,9 @@ pub struct HeldChartRequest {
 
 impl HeldChartRequest {
     /// The C struct, borrowing this value's buffers.
-    pub fn as_c(&self) -> ffi::chart::TsChartRequest {
-        ffi::chart::TsChartRequest {
-            struct_size: core::mem::size_of::<ffi::chart::TsChartRequest>() as u32,
+    pub fn as_c(&self) -> ffi::chart_request::TsChartRequest {
+        ffi::chart_request::TsChartRequest {
+            struct_size: core::mem::size_of::<ffi::chart_request::TsChartRequest>() as u32,
             kind: self.kind,
             reserved: Default::default(),
             instants: self.instants.as_ptr(),
@@ -2589,7 +2589,7 @@ impl ChartRequest {
     ///
     /// Every pointer in `raw` must be valid as the struct documents, for
     /// the length of this call.
-    pub unsafe fn write(raw: &ffi::chart::TsChartRequest) -> Self {
+    pub unsafe fn write(raw: &ffi::chart_request::TsChartRequest) -> Self {
         ChartRequest {
             kind: chart_kind_to_str(raw.kind),
             instants: unsafe { slice_or_empty(raw.instants, raw.instant_count) }
