@@ -16,6 +16,7 @@
     "crates/ffi/src/key.rs",
     "crates/ffi/src/frame.rs",
     "crates/ffi/src/calendar.rs",
+    "crates/ffi/src/day.rs",
     "crates/ffi/src/chart.rs",
     "crates/ffi/src/time.rs",
     "crates/ffi/src/intl.rs",
@@ -6681,6 +6682,164 @@
       "source": "crates/ffi/src/calendar.rs"
     },
     {
+      "name": "TsDayPart",
+      "doc": "Which arc of its day an instant falls in.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Daylight",
+          "value": 0,
+          "doc": "Between sunrise and sunset.",
+          "key": "DAYLIGHT"
+        },
+        {
+          "name": "Night",
+          "value": 1,
+          "doc": "Between sunset and the next sunrise.",
+          "key": "NIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsSunrise",
+      "doc": "Which sunrise a day was reckoned from.\n\nThe named conventions only. A profile may ask for the centre of the\ndisc at a chosen altitude instead, which is a `Custom` convention;\na blob carries that as its altitude beside this, because a variant\nwith a payload cannot be an id (`03-design/chart-at-the-boundary.md`\n§8).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "CentreNoRefraction",
+          "value": 0,
+          "doc": "The centre of the disc on the geometric horizon.",
+          "key": "CENTRE_NO_REFRACTION"
+        },
+        {
+          "name": "UpperLimbRefraction",
+          "value": 1,
+          "doc": "The upper limb with refraction.",
+          "key": "UPPER_LIMB_REFRACTION"
+        },
+        {
+          "name": "LowerLimbRefraction",
+          "value": 2,
+          "doc": "The lower limb with refraction.",
+          "key": "LOWER_LIMB_REFRACTION"
+        },
+        {
+          "name": "CentreRefraction",
+          "value": 3,
+          "doc": "The centre of the disc with standard refraction.",
+          "key": "CENTRE_REFRACTION"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsGhatiReckoning",
+      "doc": "How the sixty ghatis of a day are measured.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Civil",
+          "value": 0,
+          "doc": "Twenty-four minutes each, from sunrise.",
+          "key": "CIVIL"
+        },
+        {
+          "name": "Proportional",
+          "value": 1,
+          "doc": "Thirty over the actual daylight and thirty over the actual night.",
+          "key": "PROPORTIONAL"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsHoraReckoning",
+      "doc": "How the twenty-four horas of a day are measured.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Proportional",
+          "value": 0,
+          "doc": "Twelve over the daylight and twelve over the night.",
+          "key": "PROPORTIONAL"
+        },
+        {
+          "name": "Equal",
+          "value": 1,
+          "doc": "Twenty-four of sixty minutes, from sunrise.",
+          "key": "EQUAL"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsDayState",
+      "doc": "Whether a day had a sunrise, and what was done when it had not.\n\nThe kind half of a tagged enum: a polar day carries which polar\nstate it was and which policy was applied, in `state_polar_kind` and\n`state_polar_policy` beside it, because a variant with a payload\ncannot be an id (`03-design/chart-at-the-boundary.md` §8).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Normal",
+          "value": 0,
+          "doc": "Sunrise and sunset occurred; the two fields beside this are zero.",
+          "key": "NORMAL"
+        },
+        {
+          "name": "Polar",
+          "value": 1,
+          "doc": "No horizon crossing, and the policy synthesised the bounds.",
+          "key": "POLAR"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsPolarKind",
+      "doc": "Which polar state a day without a sunrise was in.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Day",
+          "value": 0,
+          "doc": "The Sun stayed up.",
+          "key": "DAY"
+        },
+        {
+          "name": "Night",
+          "value": 1,
+          "doc": "The Sun stayed down.",
+          "key": "NIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
+      "name": "TsPolarDayPolicy",
+      "doc": "What the settings say a day without a sunrise is.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Undefined",
+          "value": 0,
+          "doc": "An undefined state: the day has no bounds.",
+          "key": "UNDEFINED"
+        },
+        {
+          "name": "NearestEvent",
+          "value": 1,
+          "doc": "The nearest rise or set stands in for the missing one.",
+          "key": "NEAREST_EVENT"
+        },
+        {
+          "name": "CivilMidnight",
+          "value": 2,
+          "doc": "Civil midnight stands in for it.",
+          "key": "CIVIL_MIDNIGHT"
+        }
+      ],
+      "source": "crates/ffi/src/day.rs"
+    },
+    {
       "name": "TsReading",
       "doc": "Which bound of a bhava a placement was read against.",
       "repr": "u8",
@@ -7936,164 +8095,6 @@
           "value": 2,
           "doc": "At its end.",
           "key": "END"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsDayPart",
-      "doc": "Which arc of its day an instant falls in.",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Daylight",
-          "value": 0,
-          "doc": "Between sunrise and sunset.",
-          "key": "DAYLIGHT"
-        },
-        {
-          "name": "Night",
-          "value": 1,
-          "doc": "Between sunset and the next sunrise.",
-          "key": "NIGHT"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsSunrise",
-      "doc": "Which sunrise a day was reckoned from.\n\nThe named conventions only. A profile may ask for the centre of the\ndisc at a chosen altitude instead, which is a `Custom` convention;\na blob carries that as its altitude beside this, because a variant\nwith a payload cannot be an id (`03-design/chart-at-the-boundary.md`\n§8).",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "CentreNoRefraction",
-          "value": 0,
-          "doc": "The centre of the disc on the geometric horizon.",
-          "key": "CENTRE_NO_REFRACTION"
-        },
-        {
-          "name": "UpperLimbRefraction",
-          "value": 1,
-          "doc": "The upper limb with refraction.",
-          "key": "UPPER_LIMB_REFRACTION"
-        },
-        {
-          "name": "LowerLimbRefraction",
-          "value": 2,
-          "doc": "The lower limb with refraction.",
-          "key": "LOWER_LIMB_REFRACTION"
-        },
-        {
-          "name": "CentreRefraction",
-          "value": 3,
-          "doc": "The centre of the disc with standard refraction.",
-          "key": "CENTRE_REFRACTION"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsGhatiReckoning",
-      "doc": "How the sixty ghatis of a day are measured.",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Civil",
-          "value": 0,
-          "doc": "Twenty-four minutes each, from sunrise.",
-          "key": "CIVIL"
-        },
-        {
-          "name": "Proportional",
-          "value": 1,
-          "doc": "Thirty over the actual daylight and thirty over the actual night.",
-          "key": "PROPORTIONAL"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsHoraReckoning",
-      "doc": "How the twenty-four horas of a day are measured.",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Proportional",
-          "value": 0,
-          "doc": "Twelve over the daylight and twelve over the night.",
-          "key": "PROPORTIONAL"
-        },
-        {
-          "name": "Equal",
-          "value": 1,
-          "doc": "Twenty-four of sixty minutes, from sunrise.",
-          "key": "EQUAL"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsDayState",
-      "doc": "Whether a day had a sunrise, and what was done when it had not.\n\nThe kind half of a tagged enum: a polar day carries which polar\nstate it was and which policy was applied, in `state_polar_kind` and\n`state_polar_policy` beside it, because a variant with a payload\ncannot be an id (`03-design/chart-at-the-boundary.md` §8).",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Normal",
-          "value": 0,
-          "doc": "Sunrise and sunset occurred; the two fields beside this are zero.",
-          "key": "NORMAL"
-        },
-        {
-          "name": "Polar",
-          "value": 1,
-          "doc": "No horizon crossing, and the policy synthesised the bounds.",
-          "key": "POLAR"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsPolarKind",
-      "doc": "Which polar state a day without a sunrise was in.",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Day",
-          "value": 0,
-          "doc": "The Sun stayed up.",
-          "key": "DAY"
-        },
-        {
-          "name": "Night",
-          "value": 1,
-          "doc": "The Sun stayed down.",
-          "key": "NIGHT"
-        }
-      ],
-      "source": "crates/ffi/src/chart.rs"
-    },
-    {
-      "name": "TsPolarDayPolicy",
-      "doc": "What the settings say a day without a sunrise is.",
-      "repr": "u8",
-      "values": [
-        {
-          "name": "Undefined",
-          "value": 0,
-          "doc": "An undefined state: the day has no bounds.",
-          "key": "UNDEFINED"
-        },
-        {
-          "name": "NearestEvent",
-          "value": 1,
-          "doc": "The nearest rise or set stands in for the missing one.",
-          "key": "NEAREST_EVENT"
-        },
-        {
-          "name": "CivilMidnight",
-          "value": 2,
-          "doc": "Civil midnight stands in for it.",
-          "key": "CIVIL_MIDNIGHT"
         }
       ],
       "source": "crates/ffi/src/chart.rs"

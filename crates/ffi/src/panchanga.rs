@@ -630,7 +630,7 @@ pub fn encode(
     let count_rows: Vec<Vec<FixedValue>> = days.iter().map(count_row).collect();
     let local_days: Vec<Vec<FixedValue>> = days
         .iter()
-        .map(|day| crate::chart::day_values(&day.day))
+        .map(|day| crate::day::day_values(&day.day))
         .collect();
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {

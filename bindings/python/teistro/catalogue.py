@@ -3665,6 +3665,98 @@ class Resolution(Member):
     """
 
 
+class DayPart(Member):
+    """Which arc of its day an instant falls in."""
+
+    DAYLIGHT = 0
+    """Between sunrise and sunset."""
+
+    NIGHT = 1
+    """Between sunset and the next sunrise."""
+
+
+class Sunrise(Member):
+    """Which sunrise a day was reckoned from.
+
+    The named conventions only. A profile may ask for the centre of the
+    disc at a chosen altitude instead, which is a `Custom` convention;
+    a blob carries that as its altitude beside this, because a variant
+    with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+    §8).
+    """
+
+    CENTRE_NO_REFRACTION = 0
+    """The centre of the disc on the geometric horizon."""
+
+    UPPER_LIMB_REFRACTION = 1
+    """The upper limb with refraction."""
+
+    LOWER_LIMB_REFRACTION = 2
+    """The lower limb with refraction."""
+
+    CENTRE_REFRACTION = 3
+    """The centre of the disc with standard refraction."""
+
+
+class GhatiReckoning(Member):
+    """How the sixty ghatis of a day are measured."""
+
+    CIVIL = 0
+    """Twenty-four minutes each, from sunrise."""
+
+    PROPORTIONAL = 1
+    """Thirty over the actual daylight and thirty over the actual night."""
+
+
+class HoraReckoning(Member):
+    """How the twenty-four horas of a day are measured."""
+
+    PROPORTIONAL = 0
+    """Twelve over the daylight and twelve over the night."""
+
+    EQUAL = 1
+    """Twenty-four of sixty minutes, from sunrise."""
+
+
+class DayState(Member):
+    """Whether a day had a sunrise, and what was done when it had not.
+
+    The kind half of a tagged enum: a polar day carries which polar
+    state it was and which policy was applied, in `state_polar_kind` and
+    `state_polar_policy` beside it, because a variant with a payload
+    cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+    """
+
+    NORMAL = 0
+    """Sunrise and sunset occurred; the two fields beside this are zero."""
+
+    POLAR = 1
+    """No horizon crossing, and the policy synthesised the bounds."""
+
+
+class PolarKind(Member):
+    """Which polar state a day without a sunrise was in."""
+
+    DAY = 0
+    """The Sun stayed up."""
+
+    NIGHT = 1
+    """The Sun stayed down."""
+
+
+class PolarDayPolicy(Member):
+    """What the settings say a day without a sunrise is."""
+
+    UNDEFINED = 0
+    """An undefined state: the day has no bounds."""
+
+    NEAREST_EVENT = 1
+    """The nearest rise or set stands in for the missing one."""
+
+    CIVIL_MIDNIGHT = 2
+    """Civil midnight stands in for it."""
+
+
 class Reading(Member):
     """Which bound of a bhava a placement was read against."""
 
@@ -4369,98 +4461,6 @@ class DashaPhase(Member):
 
     END = 2
     """At its end."""
-
-
-class DayPart(Member):
-    """Which arc of its day an instant falls in."""
-
-    DAYLIGHT = 0
-    """Between sunrise and sunset."""
-
-    NIGHT = 1
-    """Between sunset and the next sunrise."""
-
-
-class Sunrise(Member):
-    """Which sunrise a day was reckoned from.
-
-    The named conventions only. A profile may ask for the centre of the
-    disc at a chosen altitude instead, which is a `Custom` convention;
-    a blob carries that as its altitude beside this, because a variant
-    with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
-    §8).
-    """
-
-    CENTRE_NO_REFRACTION = 0
-    """The centre of the disc on the geometric horizon."""
-
-    UPPER_LIMB_REFRACTION = 1
-    """The upper limb with refraction."""
-
-    LOWER_LIMB_REFRACTION = 2
-    """The lower limb with refraction."""
-
-    CENTRE_REFRACTION = 3
-    """The centre of the disc with standard refraction."""
-
-
-class GhatiReckoning(Member):
-    """How the sixty ghatis of a day are measured."""
-
-    CIVIL = 0
-    """Twenty-four minutes each, from sunrise."""
-
-    PROPORTIONAL = 1
-    """Thirty over the actual daylight and thirty over the actual night."""
-
-
-class HoraReckoning(Member):
-    """How the twenty-four horas of a day are measured."""
-
-    PROPORTIONAL = 0
-    """Twelve over the daylight and twelve over the night."""
-
-    EQUAL = 1
-    """Twenty-four of sixty minutes, from sunrise."""
-
-
-class DayState(Member):
-    """Whether a day had a sunrise, and what was done when it had not.
-
-    The kind half of a tagged enum: a polar day carries which polar
-    state it was and which policy was applied, in `state_polar_kind` and
-    `state_polar_policy` beside it, because a variant with a payload
-    cannot be an id (`03-design/chart-at-the-boundary.md` §8).
-    """
-
-    NORMAL = 0
-    """Sunrise and sunset occurred; the two fields beside this are zero."""
-
-    POLAR = 1
-    """No horizon crossing, and the policy synthesised the bounds."""
-
-
-class PolarKind(Member):
-    """Which polar state a day without a sunrise was in."""
-
-    DAY = 0
-    """The Sun stayed up."""
-
-    NIGHT = 1
-    """The Sun stayed down."""
-
-
-class PolarDayPolicy(Member):
-    """What the settings say a day without a sunrise is."""
-
-    UNDEFINED = 0
-    """An undefined state: the day has no bounds."""
-
-    NEAREST_EVENT = 1
-    """The nearest rise or set stands in for the missing one."""
-
-    CIVIL_MIDNIGHT = 2
-    """Civil midnight stands in for it."""
 
 
 class VarsheshaChosen(Member):
@@ -6527,6 +6527,37 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "COMPUTED",
         3: "DIVERGENT",
     },
+    "DayPart": {
+        0: "DAYLIGHT",
+        1: "NIGHT",
+    },
+    "Sunrise": {
+        0: "CENTRE_NO_REFRACTION",
+        1: "UPPER_LIMB_REFRACTION",
+        2: "LOWER_LIMB_REFRACTION",
+        3: "CENTRE_REFRACTION",
+    },
+    "GhatiReckoning": {
+        0: "CIVIL",
+        1: "PROPORTIONAL",
+    },
+    "HoraReckoning": {
+        0: "PROPORTIONAL",
+        1: "EQUAL",
+    },
+    "DayState": {
+        0: "NORMAL",
+        1: "POLAR",
+    },
+    "PolarKind": {
+        0: "DAY",
+        1: "NIGHT",
+    },
+    "PolarDayPolicy": {
+        0: "UNDEFINED",
+        1: "NEAREST_EVENT",
+        2: "CIVIL_MIDNIGHT",
+    },
     "Reading": {
         0: "SANDHI",
         1: "MADHYA",
@@ -6762,37 +6793,6 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "COMMENCEMENT",
         1: "MIDDLE",
         2: "END",
-    },
-    "DayPart": {
-        0: "DAYLIGHT",
-        1: "NIGHT",
-    },
-    "Sunrise": {
-        0: "CENTRE_NO_REFRACTION",
-        1: "UPPER_LIMB_REFRACTION",
-        2: "LOWER_LIMB_REFRACTION",
-        3: "CENTRE_REFRACTION",
-    },
-    "GhatiReckoning": {
-        0: "CIVIL",
-        1: "PROPORTIONAL",
-    },
-    "HoraReckoning": {
-        0: "PROPORTIONAL",
-        1: "EQUAL",
-    },
-    "DayState": {
-        0: "NORMAL",
-        1: "POLAR",
-    },
-    "PolarKind": {
-        0: "DAY",
-        1: "NIGHT",
-    },
-    "PolarDayPolicy": {
-        0: "UNDEFINED",
-        1: "NEAREST_EVENT",
-        2: "CIVIL_MIDNIGHT",
     },
     "VarsheshaChosen": {
         0: "STRONGEST",
