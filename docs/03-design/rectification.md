@@ -293,14 +293,47 @@ conformance corpus, and `Mandi` the end.
 **X6. The relation.** v. 77 gives the trine; does it hold for all three
 purifiers, and does v. 76's extension (the 7th, the navamsha, its 7th) hold
 for Gulika alone?
-- **Decided:** the trine for every purifier, the extension for Gulika only,
-  as the verse attaches it to Gulika; each extension reported as its own
-  clause.
+- **Read** (2026-10-08) on the page images of the 1899 Gyan print (twice,
+  two scans), the 1923 Khemaraj print and Jha's 1952 note reproducing the
+  Bombay verses. The prints agree on vv. 75–77 but for a particle in v. 75
+  (*tadaiva* 1899, *tadeva* 1923). **No public-domain print glosses vv.
+  75–77**: the Subodhini passes from v. 78 to the pranapada example, and
+  Jha prints the verses only to reject them. In v. 76 every pronoun after
+  *gulikāt* returns to Gulika, so the extension is Gulika's; *kalatrataḥ*
+  reads best as the navamsha's 7th, four references in all. v. 77's
+  *tatra* points at Gulika's references, but v. 75's single notion of
+  purity, vv. 77–78's division of all twelve houses as a general relation,
+  and the Moon's having no other relation in the passage favour the trine
+  for all three; practice agrees (a modern Hindi edition's worked example
+  applies it to the pranapada, and Phaladeepika III.16 to Gulika and the
+  Moon).
+- **Decided:** the trine for every purifier, the extension for Gulika only;
+  each extension reported as its own clause. The basis is the text's
+  structure and received practice, with no gloss behind it, and the page
+  says so.
 
-**X7. "When the two are weak"** (v. 76). Weakness is not defined.
-- **Decided:** do not define it. Judge every purifier, report each, and bar
-  only when none holds (v. 75's *vā*). The answer says which purifier
-  passed, so a caller who reads v. 76 as a precedence can apply it.
+**X7. "When the two are weak"** (v. 76: *dvayor hīnabale 'py evaṃ gulikāt
+paricintayet*). The condition governs the whole sentence, extension
+included, so the extension is conditional, and v. 76 settles v. 75's *vā*
+as "any one purifier suffices". "The two" are most plainly the pranapada
+and the Moon, v. 75's purifiers beside Gulika; the Subodhini's own example
+uses *dvayor aikyam* for the lagna's and the pranapada's degrees, a second
+candidate. Weakness is not defined; Phaladeepika III.16's parallel
+(*tadvad vidhau balayute*, from the Moon "when the Moon is strong") leaves
+strength undefined too.
+- **Decided:** `gulika_extension: WHEN_TWO_FAIL` by default: the extension
+  counts when neither the pranapada nor the Moon purifies. It follows the
+  verse's grammar without inventing a strength, and it keeps exactly the
+  instants an extension always counted keeps (an instant either of the two
+  holds is pure already), so X8's measurement stands; what changes is the
+  report, where each clause says whether it counted (`counted`) and
+  `purified_by` names what made the instant pure. The reading is the SDK's
+  and the page says so. `ALWAYS` counts it without precedence; `NEVER`
+  drops it. A strength-based reading (a Moon strength from paksha bala or
+  shadbala, after Phaladeepika) is not the default: it would be an
+  invented threshold shaping the interval, which X4 refused. Add it as a
+  knob only with a source that defines the strength; the degree-pair
+  reading of "the two" only with a second source.
 
 **X8. A bar or a weight.** v. 75's verb is *vijānīyāt*, "one should know it
 impure": for a human native, a lagna no purifier holds is a contradiction.

@@ -122,6 +122,27 @@ pub enum GulikaAt {
     Start,
 }
 
+/// When v. 76's extension of Gulika (its 7th, its navamsha and that
+/// navamsha's 7th) counts toward a verdict (X7).
+///
+/// v. 76 opens "when the two are weak": the extension is the verse's
+/// fallback. No print defines weak, so the default reads it as "neither
+/// purifies", which keeps exactly the instants [`Always`](Self::Always)
+/// keeps (an instant either of the two holds is pure already) and differs
+/// only in what the verdict says counted. That reading is the SDK's.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum GulikaExtension {
+    /// Counted when neither the pranapada nor the Moon holds.
+    #[default]
+    WhenTwoFail,
+    /// Counted at every instant, without precedence.
+    Always,
+    /// Not judged: Gulika purifies by its own sign alone.
+    Never,
+}
+
 /// One test of the lagna against one point of one purifier.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -139,6 +160,10 @@ pub struct Clause {
     pub house: u8,
     /// Whether the house is one that purifies this native.
     pub held: bool,
+    /// Whether the clause counts toward the verdict: false only for v.
+    /// 76's extension while the pranapada or the Moon holds, under
+    /// [`GulikaExtension::WhenTwoFail`].
+    pub counted: bool,
 }
 
 impl Clause {
@@ -162,14 +187,19 @@ impl Clause {
 pub struct Verdict {
     /// Every clause judged, in the order pranapada, Gulika, Moon.
     pub clauses: Vec<Clause>,
-    /// Whether at least one clause held (v. 75).
+    /// Whether at least one counted clause held (v. 75).
     pub pure: bool,
 }
 
 impl Verdict {
-    /// The clauses that held.
+    /// The clauses that held, counted or not.
     pub fn held(&self) -> impl Iterator<Item = &Clause> {
         self.clauses.iter().filter(|clause| clause.held)
+    }
+
+    /// The clauses that held and counted: what made the instant pure.
+    pub fn purified_by(&self) -> impl Iterator<Item = &Clause> {
+        self.held().filter(|clause| clause.counted)
     }
 }
 
@@ -431,6 +461,7 @@ impl<'a> Judge<'a> {
                 lagna,
                 house,
                 held: houses.contains(&house),
+                counted: true,
             });
         };
         if self.rules.pranapada {
@@ -446,7 +477,7 @@ impl<'a> Judge<'a> {
             let deg = self.gulika_deg(&day, at)?;
             let sign = Rashi::of_longitude(deg);
             judge(Purifier::Gulika, Reference::Itself, sign);
-            if self.rules.gulika_extension {
+            if self.rules.gulika_extension != GulikaExtension::Never {
                 let amsha = navamsha(deg)?;
                 judge(Purifier::Gulika, Reference::Seventh, nth(sign, 6));
                 judge(Purifier::Gulika, Reference::Navamsha, amsha);
@@ -457,7 +488,17 @@ impl<'a> Judge<'a> {
             let sign = Rashi::of_longitude(self.sky.moon_deg(at)?);
             judge(Purifier::Moon, Reference::Itself, sign);
         }
-        let pure = clauses.iter().any(|clause| clause.held);
+        if self.rules.gulika_extension == GulikaExtension::WhenTwoFail {
+            let two_hold = clauses
+                .iter()
+                .any(|c| c.held && c.purifier != Purifier::Gulika);
+            for clause in &mut clauses {
+                if clause.reference != Reference::Itself {
+                    clause.counted = !two_hold;
+                }
+            }
+        }
+        let pure = clauses.iter().any(|clause| clause.held && clause.counted);
         Ok(Verdict { clauses, pure })
     }
 }

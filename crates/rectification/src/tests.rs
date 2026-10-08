@@ -13,8 +13,8 @@ use teistro_core::quantity::{JulianDay, Utc};
 
 use crate::purifier::Judge;
 use crate::{
-    Day, EDGE_TOLERANCE_DAYS, GulikaAt, Native, PranapadaRule, Purifier, PurifyAs, Reference,
-    Rules, Sky, Window, gulika_instant, narrow, pranapada_deg, pranapada_working,
+    Day, EDGE_TOLERANCE_DAYS, GulikaAt, GulikaExtension, Native, PranapadaRule, Purifier, PurifyAs,
+    Reference, Rules, Sky, Window, gulika_instant, narrow, pranapada_deg, pranapada_working,
 };
 
 /// A ghati in days.
@@ -195,6 +195,57 @@ fn gulikas_extension_adds_three_clauses_to_gulika_alone() {
     let gulika = verdict.clauses.get(1).expect("Gulika");
     let seventh = verdict.clauses.get(2).expect("its 7th");
     assert_eq!(gulika.sign.opposite(), seventh.sign);
+}
+
+/// X7: "when the two are weak" read as "neither purifies" keeps exactly
+/// the instants the extension always counted keeps, and says which
+/// clauses counted; without it Gulika reads its own sign alone.
+#[test]
+fn gulikas_extension_counts_only_when_the_two_fail() {
+    let rules = |gulika_extension| Rules {
+        gulika_extension,
+        ..Rules::default()
+    };
+    let (two_fail, always, never) = (
+        rules(GulikaExtension::WhenTwoFail),
+        rules(GulikaExtension::Always),
+        rules(GulikaExtension::Never),
+    );
+    let (by_two_fail, by_always, by_never) = (
+        Judge::new(&SKY, &two_fail),
+        Judge::new(&SKY, &always),
+        Judge::new(&SKY, &never),
+    );
+    let (mut fallback, mut withheld) = (0, 0);
+    for minute in 0..1440 {
+        let at = JulianDay::literal(BASE + f64::from(minute) / 1440.0);
+        let verdict = by_two_fail.verdict(at).expect("verdict");
+        let plain = by_always.verdict(at).expect("verdict");
+        assert_eq!(
+            verdict.pure, plain.pure,
+            "minute {minute}: the same instants"
+        );
+        assert!(plain.clauses.iter().all(|c| c.counted));
+        let two_hold = verdict.held().any(|c| c.purifier != Purifier::Gulika);
+        for clause in &verdict.clauses {
+            let extension = clause.reference != Reference::Itself;
+            assert_eq!(clause.counted, !(extension && two_hold), "minute {minute}");
+        }
+        if !two_hold
+            && verdict
+                .purified_by()
+                .any(|c| c.reference != Reference::Itself)
+        {
+            fallback += 1;
+        }
+        if two_hold && verdict.held().any(|c| !c.counted) {
+            withheld += 1;
+        }
+        let alone = by_never.verdict(at).expect("verdict");
+        assert_eq!(alone.clauses.len(), 3, "the three purifiers' own signs");
+    }
+    // Both cases happen on this sky, so neither branch is idle.
+    assert!(fallback > 0 && withheld > 0, "{fallback} and {withheld}");
 }
 
 #[test]

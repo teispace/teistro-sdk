@@ -32,7 +32,24 @@ then reproduces the Subodhini verses in a note as the reading of "a printed
 book" and rejects them as interpolated, saying the trine-from-lagna reading of
 birth-time correction is a later invention. Santhanam's translation (owned in
 print by the maintainer, not read here) is believed to follow Jha's ch. 3
-numbering; that needs checking against the print.
+numbering; that needs checking against the print. By its OCR, Santhanam's
+ch. 3 ends at the pranapada's calculation (vv. 71–74) and does not carry vv.
+75–78; that too waits on the print.
+
+**vv. 75–77, read again on the page images** (2026-10-08, for X6 and X7):
+the 1899 print on leaf n40 (p. 12) and on a second scan of it
+(`brihatparasharahorahiniditikagiridharalalsarmaparasurmabhattaed.sridhara_202003_201_s`,
+leaf n33, whose OCR's *ahīnabale* is an OCR slip; the image has the
+reph, *hīnabale*), the 1923 print on leaf n42 (p. 13), and Jha's note on
+leaf n43 (p. 32). They agree but for v. 75's particle, *tadaiva* in 1899 and
+*tadeva* in 1923. No public-domain print glosses vv. 75–77.
+
+**The nearest parallel is Phaladeepika III.16** (the sanskritdocuments
+e-text and Sastri's 1950 translation, pp. 31–32): Gulika's sign lord,
+navamsha lord and navamsha sign with their trines, then *tadvad vidhau
+balayute*, likewise from the Moon when it is strong, strength undefined.
+Sastri's preface says he corrected this verse's metre; the 1937 first
+edition's page would show the uncorrected text.
 
 ### Verse by verse (Subodhini text, 1923 page images)
 
