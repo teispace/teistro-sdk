@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.teispace.teistro.blob.BlobFormatException;
+import com.teispace.teistro.blob.IntlRender;
+import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
 
 /**
@@ -202,6 +205,78 @@ public final class BindingTest {
                 same("en-Latn", sky.intl().locale(), "the locale set");
                 TeistroException bad = refusal(() -> sky.intl().setLocale("xx-NOPE"));
                 check(bad.status() != Status.OK, "an unknown locale is refused");
+            }
+        });
+
+        tests.put("a positions grid decodes instants outermost", () -> {
+            try (Context sky = context(teistro)) {
+                Positions grid = sky.positions(new double[] {2_451_545.0, 2_451_546.0},
+                        List.of(Body.SUN, Body.MOON, Body.MARS));
+                same(2L, grid.jdCount(), "two instants");
+                same(3L, grid.bodyCount(), "three bodies");
+                same((long) TimeScale.UT1.id(), grid.scale(), "the scale asked for");
+                same(2_451_546.0, grid.instants().jd(1), "the instants in order");
+                same(Body.MOON, Body.of(grid.bodies().body(1)), "the bodies in order");
+                Positions.Cells cells = grid.cells();
+                same(6, cells.length(), "a cell per instant and body");
+                for (int row = 0; row < cells.length(); row += 1) {
+                    same(0, cells.status(row), "cell " + row + " has a value");
+                    check(0 <= cells.lon(row) && cells.lon(row) <= 360, "a longitude");
+                }
+                check(Math.abs(cells.lonSpeed(1)) > Math.abs(cells.lonSpeed(0)), "the Moon outruns the Sun");
+                check(Json.read(grid.steps()) instanceof List<?>, "the steps are a JSON list");
+                check(Json.object(grid.provenanceJson()).containsKey("settings_hash"), "provenance");
+                try {
+                    cells.lon(6);
+                    throw new AssertionError("a seventh cell was read");
+                } catch (IndexOutOfBoundsException expected) {
+                    // the section holds six
+                }
+            }
+        });
+
+        tests.put("bytes that are not a blob are refused, never misread", () -> {
+            try (Context sky = context(teistro)) {
+                PositionRequest request = new PositionRequest(TimeScale.UT1,
+                        teistro.packFrame(teistro.canonicalFrame()), true, null,
+                        new double[] {2_451_545.0}, List.of(Body.SUN));
+                byte[] raw = sky.locked((lib, handle) -> Calls.positions(lib, handle, request));
+                Positions.decode(raw);
+                java.util.function.Function<byte[], String> refused = bytes -> {
+                    try {
+                        Positions.decode(bytes);
+                    } catch (BlobFormatException e) {
+                        return e.getMessage();
+                    }
+                    throw new AssertionError("decoded");
+                };
+                check(refused.apply(java.util.Arrays.copyOf(raw, 16)).contains("header"), "too short");
+                byte[] magic = raw.clone();
+                magic[0] = 'N';
+                check(refused.apply(magic).contains("not a Teistro"), "the magic");
+                byte[] version = raw.clone();
+                version[4] = 99;
+                check(refused.apply(version).contains("version 99"), "the version");
+                check(refused.apply(java.util.Arrays.copyOf(raw, raw.length + 8)).contains("bytes"), "the length");
+                try {
+                    IntlRender.decode(raw);
+                    throw new AssertionError("another schema decoded");
+                } catch (BlobFormatException expected) {
+                    check(expected.getMessage().contains("schema"), expected.getMessage());
+                }
+            }
+        });
+
+        tests.put("a message renders in the context's locale", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .locale("en-Latn").testProvider(true).build())) {
+                IntlRender said = sky.intl().render("sdk.reason.grahaInBhava",
+                        Map.of("graha", Map.of("$entity", "graha.JUPITER"), "bhava", 7));
+                check(!said.text().isEmpty(), "some text");
+                same(0, said.isFallback(), "the locale carries it");
+                same("{\"a\":[1,\"x\\n\",null,\"graha.SUN\"]}",
+                        Json.write(new java.util.LinkedHashMap<>(Map.of("a",
+                                java.util.Arrays.asList(1, "x\n", null, Graha.SUN)))), "JSON written");
             }
         });
 

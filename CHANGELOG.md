@@ -2409,8 +2409,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   refusal carrying the library's record. Every struct a binding shows is
   a record that checks what its C struct cannot hold, naming the field
   as the caller wrote it; every brand is a record that checks its range;
-  and the calendar, time, keys, frame and intl areas answer through
-  generated calls, each under the context's lock. `cargo xtask check-java`
+  the calendar, time, keys, frame and intl areas answer through
+  generated calls, each under the context's lock; and a result blob is
+  decoded by a generated class whose columns read a row at a time,
+  every offset checked, so `positions` and `intl().render` answer typed. `cargo xtask check-java`
   compiles both at release 22 with every lint an error and runs the
   tests against the real library, and verify runs it on Java 25.
   **Numbers:** none move.

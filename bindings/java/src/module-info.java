@@ -8,5 +8,6 @@
  */
 module com.teispace.teistro {
     exports com.teispace.teistro;
+    exports com.teispace.teistro.blob;
     exports com.teispace.teistro.ffi;
 }

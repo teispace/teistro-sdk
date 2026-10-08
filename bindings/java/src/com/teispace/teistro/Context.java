@@ -7,6 +7,7 @@ import java.lang.ref.Cleaner;
 import java.util.HexFormat;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
 
 /**
@@ -192,6 +193,37 @@ public final class Context implements AutoCloseable {
      */
     public FrameArea frame() {
         return frame;
+    }
+
+    /**
+     * The positions of a grid of bodies at a grid of instants. The cells run
+     * instants outermost: cell {@code i * bodies + j} is instant {@code i},
+     * body {@code j}.
+     *
+     * @param request the instants, bodies, scale, frame and observer
+     * @return the decoded grid
+     */
+    public Positions positions(PositionRequest request) {
+        return Positions.decode(locked((lib, raw) -> Calls.positions(lib, raw, request)));
+    }
+
+    /**
+     * The positions of bodies at instants on UT1, in the canonical frame,
+     * with speeds, seen from the Earth's centre.
+     *
+     * @param instants the instants as Julian days, at least one
+     * @param bodies the bodies, at least one
+     * @return the decoded grid
+     */
+    public Positions positions(double[] instants, java.util.List<Body> bodies) {
+        if (instants.length == 0) {
+            throw new IllegalArgumentException("a request needs at least one instant");
+        }
+        if (bodies.isEmpty()) {
+            throw new IllegalArgumentException("a request needs at least one body");
+        }
+        long frame = Calls.framePack(lib, Calls.frameCanonical(lib));
+        return positions(new PositionRequest(TimeScale.UT1, frame, true, null, instants, bodies));
     }
 
     /** Frees the context. Closing twice does nothing. */

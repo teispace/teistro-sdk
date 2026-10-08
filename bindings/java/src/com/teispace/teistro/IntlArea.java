@@ -1,5 +1,9 @@
 package com.teispace.teistro;
 
+import java.util.Map;
+
+import com.teispace.teistro.blob.IntlRender;
+
 /** {@code sky.intl()}: the locale, its messages and the scripts they are in. */
 public final class IntlArea {
     private final Context context;
@@ -27,6 +31,34 @@ public final class IntlArea {
             Calls.intlSetLocale(lib, raw, tag);
             return null;
         });
+    }
+
+    /**
+     * A message rendered in the context's locale.
+     *
+     * <pre>{@code
+     * String said = sky.intl().render("sdk.reason.grahaInBhava",
+     *         Map.of("graha", Map.of("$entity", "graha.JUPITER"), "bhava", 7)).text();
+     * }</pre>
+     *
+     * @param key the message's key
+     * @param params its arguments, as {@link Json#write} writes them; an entity is
+     *     {@code {"$entity": "graha.JUPITER"}}
+     * @return the text, where it came from and what the renderer warned
+     */
+    public IntlRender render(String key, Map<String, ?> params) {
+        return renderJson(key, Json.write(params == null ? Map.of() : params));
+    }
+
+    /**
+     * A message rendered in the context's locale, its arguments given as JSON.
+     *
+     * @param key the message's key
+     * @param paramsJson its arguments as a JSON object
+     * @return the text, where it came from and what the renderer warned
+     */
+    public IntlRender renderJson(String key, String paramsJson) {
+        return IntlRender.decode(context.locked((lib, raw) -> Calls.intlRender(lib, raw, key, paramsJson)));
     }
 
     /**
