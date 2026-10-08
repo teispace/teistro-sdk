@@ -203,20 +203,35 @@ void putRemedies(String at, Remedies rm) {
     ('rasi', dv.inRasi),
     ('navamsha', dv.inNavamsha),
   ]) {
-    final devotions = joined(
-      one.devotions.map(
-        (d) =>
-            '${d.graha.fullKey}:${d.deities.map((x) => x.key).join('|')}:'
-            '${d.verse}:${d.withKetu}',
-      ),
-    );
     put(
       '$at-devata-$name',
-      '${one.rules.sunWithKetu.key} ${one.sign.fullKey} $devotions '
-          '${keys(one.minor)}',
+      '${one.rules.sunWithKetu.key} ${one.sign.fullKey} '
+          '${devotionsSaid(one.devotions)} ${keys(one.minor)}',
+    );
+  }
+  final am = dv.amatya;
+  put('$at-amatya', '${am.graha.fullKey} ${am.amsha.fullKey}');
+  for (final (name, one) in [
+    ('rasi', am.inRasi),
+    ('navamsha', am.inNavamsha),
+  ]) {
+    put(
+      '$at-amatya-$name',
+      '${one.twelfth.sign.fullKey} ${devotionsSaid(one.twelfth.devotions)} '
+          '${keys(one.twelfth.minor)} ${one.sign.fullKey} ${one.house} '
+          '${devotionsSaid(one.joined)}',
     );
   }
 }
+
+/// Devotions as `graha:deity|deity:verse:withKetu`, joined by commas.
+String devotionsSaid(List<Devotion> devotions) => joined(
+  devotions.map(
+    (d) =>
+        '${d.graha.fullKey}:${d.deities.map((x) => x.key).join('|')}:'
+        '${d.verse}:${d.withKetu}',
+  ),
+);
 
 String joined(Iterable<String> items) {
   final all = items.join(',');

@@ -165,7 +165,7 @@ read (C333).
      (C349), and any lordship of a node (C351). Each answers `None`.
    - **An active dosha** as a reason waits for the rules engine's
      doshas to be read here.
-4. **The ishṭa-devatā** (built in the kernel, C354 to C356). BPHS (1923)
+4. **The ishṭa-devatā** (built in the kernel, C354 to C357). BPHS (1923)
    ch. 9 vv. 70–76, ch. 33 vv. 68–74 in the later recension, reads it
    from the grahas in the 12th sign from the kārakāṁśa.
    `ishta_devata(karakamsha, signs, rules)` answers each graha there
@@ -182,10 +182,16 @@ read (C333).
      kārakāṁśa the chart's Jaimini reading names.
    - **The baseline's table** keys twelve pairs by the Moon's sign;
      `baseline_ishta_devata` is reached only when asked (C356).
+   - **From the amātya** (built, C357). vv. 76–79 read the same from
+     the amātyakāraka, the graha next below the ātmakāraka in degrees.
+     `amatya_devata(from, amatya, lagna, signs, rules)` answers the 12th
+     from `from` as the kārakāṁśa's, every natural malefic there in a
+     malefic's sign a devotee of minor deities (v. 78), and the amātya's
+     house from the lagna with the grahas joined to it (v. 79). The
+     façade counts from the amātya's navāṁśa in both charts, and
+     `IshtaDevatas.amatya` carries it.
    - **Not built:** vv. 66–69 (a benefic exalted in the 12th; Ketu there
-     and liberation), which turn on aspects the chapter does not define,
-     and vv. 77–79's same reading from the amātyakāraka, which waits on
-     the Jaimini reading exposing the amātya.
+     and liberation), which turn on aspects the chapter does not define.
 
 The 39 waiting readings become sayable at step 3, when each has a
 subject graha.
@@ -194,7 +200,8 @@ subject graha.
 
 `sdk.chart().remedies(&document, &RemedyRequest)` reads every step off
 one chart: the lagna's functional natures, the subjects with their
-reasons, each subject's graha-śānti, and the ishṭa-devatā in both charts.
+reasons, each subject's graha-śānti, and the ishṭa-devatā in both charts,
+from the kārakāṁśa and from the amātya.
 `RemedyRequest` is `{at, rules}`. `rules` holds `functional`, `shanti`
 and `devata`, each the texts' own when left out. `at` is the Julian day
 whose running Vimśottarī mahādaśā and antardaśā name subjects and bring

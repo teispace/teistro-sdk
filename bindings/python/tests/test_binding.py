@@ -1478,6 +1478,15 @@ class AnEngine(WithLibrary):
             for one in (devata.in_rasi, devata.in_navamsha):
                 self.assertIsInstance(one.sign, Rashi)
                 self.assertTrue(all(isinstance(d.graha, Graha) and d.deities for d in one.devotions))
+            amatya = devata.amatya
+            self.assertIsInstance(amatya.graha, Graha)
+            self.assertNotEqual(amatya.graha, devata.atmakaraka)
+            for reading in (amatya.in_rasi, amatya.in_navamsha):
+                self.assertIsInstance(reading.twelfth.sign, Rashi)
+                self.assertIn(reading.house, range(1, 13))
+                self.assertTrue(all(d.graha is not amatya.graha for d in reading.joined))
+                self.assertTrue(all(isinstance(g, Graha) for g in reading.twelfth.minor))
+            self.assertEqual(amatya.in_navamsha.sign, amatya.amsha)
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, remedies={"rules": {"devatas": {}}}, **at)  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "remedies.rules.devatas")

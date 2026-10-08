@@ -15,6 +15,14 @@
 //!   chart (C130); the caller passes the signs of the chart it reads, and
 //!   the façade answers both.
 //!
+//! - **The amātya.** vv. 76–79 read the same from the amātyakāraka, the
+//!   graha next below the ātmakāraka in degrees (v. 76): the 12th from it
+//!   gives the same devotions (v. 77), a malefic there in a malefic's sign
+//!   minor deities (v. 78), and the grahas joined to it in whichever house
+//!   it stands the fruits as before (v. 79). [`amatya_devata`] counts from
+//!   the sign the caller passes, which the façade takes as the amātya's
+//!   navāṁśa, the chapter's analogue of the kārakāṁśa (C357).
+//!
 //! The baseline engine looks a pair of deities up by the Moon's sign
 //! instead, in records written for the kārakāṁśa sign; no text gives
 //! such a table, so [`baseline_ishta_devata`] is reached only when asked.
@@ -123,14 +131,30 @@ pub struct IshtaDevata {
     /// Each graha in it with its devotion, in catalogue order; empty when
     /// the sign is empty, which the verses give no deity for.
     pub devotions: Vec<Devotion>,
-    /// Saturn or Venus there in a sign a natural malefic rules (Leo,
-    /// Aries, Scorpio, Capricorn or Aquarius): devotion to minor deities
-    /// (vv. 75 and 76), named beside its own devotion.
+    /// The grahas there that make a devotee of minor deities in a sign a
+    /// natural malefic rules (Leo, Aries, Scorpio, Capricorn or Aquarius),
+    /// each named beside its own devotion: Saturn or Venus from the
+    /// kārakāṁśa (vv. 75 and 76, in their order), and from the amātya
+    /// every natural malefic as well (v. 78, in catalogue order).
     pub minor: Vec<Graha>,
 }
 
 /// The signs a natural malefic rules: the Sun's, Mars's and Saturn's.
 const MALEFIC_LORDS: [Graha; 3] = [Graha::Sun, Graha::Mars, Graha::Saturn];
+
+/// The grahas vv. 75 and 76 name in the 12th from the kārakāṁśa.
+const MINOR_FROM_KARAKA: [Graha; 2] = [Graha::Saturn, Graha::Venus];
+
+/// The grahas the 12th from the amātya names: vv. 75 and 76's, carried
+/// over by v. 77, and v. 78's natural malefics.
+const MINOR_FROM_AMATYA: [Graha; 6] = [
+    Graha::Sun,
+    Graha::Mars,
+    Graha::Venus,
+    Graha::Saturn,
+    Graha::Rahu,
+    Graha::Ketu,
+];
 
 /// The deities and verse a graha in the 12th is given.
 fn devotion_of(graha: Graha, rules: DevataRules) -> (Vec<Deity>, u8) {
@@ -175,16 +199,50 @@ fn devotion_of(graha: Graha, rules: DevataRules) -> (Vec<Deity>, u8) {
 /// ```
 #[must_use]
 pub fn ishta_devata(karakamsha: Rashi, signs: &[Rashi; 9], rules: DevataRules) -> IshtaDevata {
-    let sign = House::VYAYA.sign_from(karakamsha);
-    let placed = |graha: Graha| {
-        NINE.iter()
-            .zip(signs)
-            .any(|(&one, &at)| one == graha && at == sign)
-    };
-    let ketu_there = placed(Graha::Ketu);
-    let devotions: Vec<Devotion> = NINE
-        .into_iter()
-        .filter(|&graha| placed(graha))
+    twelfth_from(karakamsha, signs, rules, &MINOR_FROM_KARAKA)
+}
+
+/// The 12th sign from `from` and its devotions, the grahas `minor` names
+/// there counted as minor deities' devotees in a malefic's sign.
+fn twelfth_from(
+    from: Rashi,
+    signs: &[Rashi; 9],
+    rules: DevataRules,
+    minor: &[Graha],
+) -> IshtaDevata {
+    let sign = House::VYAYA.sign_from(from);
+    let malefic_sign = MALEFIC_LORDS.contains(&sign.attributes().lord);
+    IshtaDevata {
+        rules,
+        sign,
+        devotions: devotions_in(sign, signs, rules, None),
+        minor: minor
+            .iter()
+            .copied()
+            .filter(|&graha| malefic_sign && placed(graha, sign, signs))
+            .collect(),
+    }
+}
+
+/// Whether `graha` stands in `sign`, the grahas placed by `signs` in the
+/// order of [`NINE`].
+fn placed(graha: Graha, sign: Rashi, signs: &[Rashi; 9]) -> bool {
+    NINE.iter()
+        .zip(signs)
+        .any(|(&one, &at)| one == graha && at == sign)
+}
+
+/// Each graha in `sign` but `except`, in catalogue order, with the
+/// devotion its verse names and whether Ketu shares the sign.
+fn devotions_in(
+    sign: Rashi,
+    signs: &[Rashi; 9],
+    rules: DevataRules,
+    except: Option<Graha>,
+) -> Vec<Devotion> {
+    let ketu_there = placed(Graha::Ketu, sign, signs);
+    NINE.into_iter()
+        .filter(|&graha| Some(graha) != except && placed(graha, sign, signs))
         .map(|graha| {
             let (deities, verse) = devotion_of(graha, rules);
             Devotion {
@@ -194,17 +252,68 @@ pub fn ishta_devata(karakamsha: Rashi, signs: &[Rashi; 9], rules: DevataRules) -
                 with_ketu: ketu_there && !matches!(graha, Graha::Rahu | Graha::Ketu),
             }
         })
-        .collect();
-    let malefic_sign = MALEFIC_LORDS.contains(&sign.attributes().lord);
-    let minor = [Graha::Saturn, Graha::Venus]
-        .into_iter()
-        .filter(|&graha| malefic_sign && placed(graha))
-        .collect();
-    IshtaDevata {
-        rules,
+        .collect()
+}
+
+/// The amātya's devotions in one chart, read as BPHS vv. 77–79 read them.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct AmatyaDevata {
+    /// The 12th from the sign counted from, read as the kārakāṁśa's
+    /// (v. 77), with every natural malefic there in a malefic's sign a
+    /// devotee of minor deities (v. 78).
+    pub twelfth: IshtaDevata,
+    /// The amātya's own sign in this chart.
+    pub sign: Rashi,
+    /// The house it stands in, by sign from this chart's lagna (v. 79's
+    /// *tanvādau*), 1 to 12.
+    pub house: u8,
+    /// Each graha joined to it in that sign, with the devotion its verse
+    /// names: v. 79's "the fruit as before".
+    pub joined: Vec<Devotion>,
+}
+
+/// The amātya's devotions from `from`, the sign the 12th is counted from
+/// (the façade passes the amātya's navāṁśa, C357), with `amatya` placed
+/// by `signs` in the order of [`NINE`] and its house counted from `lagna`.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_remedies::{DevataRules, amatya_devata};
+///
+/// // The amātya Mars in Aries with the Sun, its navāṁśa in Leo, a
+/// // Cancer lagna; Rahu stands in Cancer, the 12th from Leo, a sign the
+/// // Moon rules, so no minor deity.
+/// let mut signs = [Rashi::Libra; 9];
+/// signs[0] = Rashi::Aries;
+/// signs[2] = Rashi::Aries;
+/// signs[7] = Rashi::Cancer;
+/// signs[8] = Rashi::Capricorn;
+/// let read = amatya_devata(Rashi::Leo, Graha::Mars, Rashi::Cancer, &signs, DevataRules::default());
+/// assert_eq!(read.house, 10);
+/// assert_eq!(read.joined[0].graha, Graha::Sun);
+/// assert_eq!(read.twelfth.devotions[0].graha, Graha::Rahu);
+/// assert!(read.twelfth.minor.is_empty());
+/// ```
+#[must_use]
+pub fn amatya_devata(
+    from: Rashi,
+    amatya: Graha,
+    lagna: Rashi,
+    signs: &[Rashi; 9],
+    rules: DevataRules,
+) -> AmatyaDevata {
+    let sign = NINE
+        .iter()
+        .zip(signs)
+        .find_map(|(&one, &at)| (one == amatya).then_some(at))
+        .unwrap_or(from);
+    AmatyaDevata {
+        twelfth: twelfth_from(from, signs, rules, &MINOR_FROM_AMATYA),
         sign,
-        devotions,
-        minor,
+        house: House::between(lagna, sign).get(),
+        joined: devotions_in(sign, signs, rules, Some(amatya)),
     }
 }
 
@@ -243,4 +352,22 @@ pub struct IshtaDevatas {
     pub in_rasi: IshtaDevata,
     /// The 12th from it, the grahas placed by the navāṁśa.
     pub in_navamsha: IshtaDevata,
+    /// The same read from the amātyakāraka (vv. 76–79).
+    pub amatya: AmatyaDevatas,
+}
+
+/// The amātya's devotions in both charts, as [`IshtaDevatas`] reads the
+/// ātmakāraka's.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct AmatyaDevatas {
+    /// The amātyakāraka, under the chart's chara kāraka scheme.
+    pub graha: Graha,
+    /// Its navāṁśa sign, which the 12th is counted from.
+    pub amsha: Rashi,
+    /// Read with the grahas and the lagna placed by the rasi chart.
+    pub in_rasi: AmatyaDevata,
+    /// Read with the grahas and the lagna placed by the navāṁśa.
+    pub in_navamsha: AmatyaDevata,
 }

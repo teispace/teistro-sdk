@@ -726,6 +726,8 @@ __all__ = [
     "DashaShanti",
     "Shanti",
     "IshtaDevatas",
+    "AmatyaDevata",
+    "AmatyaDevatas",
     "IshtaDevata",
     "Devotion",
     # Gochar: the transits read against a chart, and their names.
@@ -7760,8 +7762,9 @@ class Shanti:
 
 @dataclass(frozen=True)
 class Devotion:
-    """A graha in the 12th from the kārakāṁśa, the deities its verse names
-    (in the 1923 print's ch. 9), and whether Ketu stands with it (C355)."""
+    """A graha in the 12th from the kārakāṁśa or the amātya, or joined to
+    the amātya, the deities its verse names (in the 1923 print's ch. 9),
+    and whether Ketu stands with it (C355)."""
 
     graha: Graha
     deities: Tuple[str, ...]
@@ -7773,7 +7776,9 @@ class Devotion:
 class IshtaDevata:
     """The 12th from the kārakāṁśa in one chart, read as BPHS vv. 70–76
     read it: its devotions in catalogue order (empty when the sign is
-    empty), and Saturn or Venus there in a malefic's sign (vv. 75–76)."""
+    empty), and the grahas there that make a devotee of minor deities in a
+    malefic's sign: Saturn or Venus from the kārakāṁśa (vv. 75–76), every
+    natural malefic too from the amātya (v. 78)."""
 
     rules: DevataRules
     sign: Rashi
@@ -7782,13 +7787,40 @@ class IshtaDevata:
 
 
 @dataclass(frozen=True)
+class AmatyaDevata:
+    """The amātya's devotions in one chart, read as BPHS vv. 77–79 read
+    them: the 12th from its navāṁśa, read as the kārakāṁśa's (vv. 77–78);
+    its own sign and its house from that chart's lagna, 1 to 12; and each
+    graha joined to it there with its devotion (v. 79)."""
+
+    twelfth: IshtaDevata
+    sign: Rashi
+    house: int
+    joined: Tuple[Devotion, ...]
+
+
+@dataclass(frozen=True)
+class AmatyaDevatas:
+    """The ishṭa-devatā read from the amātyakāraka (vv. 76–79): the graha
+    under the chart's chara kāraka scheme, its navāṁśa sign the 12th is
+    counted from (C357), and the reading in both charts."""
+
+    graha: Graha
+    amsha: Rashi
+    in_rasi: AmatyaDevata
+    in_navamsha: AmatyaDevata
+
+
+@dataclass(frozen=True)
 class IshtaDevatas:
-    """The ishṭa-devatā, in the rāśi chart and in the navāṁśa."""
+    """The ishṭa-devatā, in the rāśi chart and in the navāṁśa, and the
+    same read from the amātya."""
 
     atmakaraka: Graha
     karakamsha: Rashi
     in_rasi: IshtaDevata
     in_navamsha: IshtaDevata
+    amatya: AmatyaDevatas
 
 
 @dataclass(frozen=True)
@@ -8764,15 +8796,26 @@ def _remedies(raw: Mapping[str, Any]) -> Remedies:
         found: Rashi = _member(Rashi, key)
         return found
 
+    def devotions(raw: Any) -> Tuple[Devotion, ...]:
+        return tuple(
+            Devotion(graha=graha(d["graha"]), deities=tuple(d["deities"]), verse=d["verse"], with_ketu=d["withKetu"])
+            for d in raw
+        )
+
     def devata(one: Mapping[str, Any]) -> IshtaDevata:
         return IshtaDevata(
             rules=one["rules"],
             sign=rashi(one["sign"]),
-            devotions=tuple(
-                Devotion(graha=graha(d["graha"]), deities=tuple(d["deities"]), verse=d["verse"], with_ketu=d["withKetu"])
-                for d in one["devotions"]
-            ),
+            devotions=devotions(one["devotions"]),
             minor=tuple(graha(key) for key in one["minor"]),
+        )
+
+    def amatya_devata(one: Mapping[str, Any]) -> AmatyaDevata:
+        return AmatyaDevata(
+            twelfth=devata(one["twelfth"]),
+            sign=rashi(one["sign"]),
+            house=one["house"],
+            joined=devotions(one["joined"]),
         )
 
     functional = raw["functional"]
@@ -8809,6 +8852,12 @@ def _remedies(raw: Mapping[str, Any]) -> Remedies:
             karakamsha=rashi(devatas["karakamsha"]),
             in_rasi=devata(devatas["inRasi"]),
             in_navamsha=devata(devatas["inNavamsha"]),
+            amatya=AmatyaDevatas(
+                graha=graha(devatas["amatya"]["graha"]),
+                amsha=rashi(devatas["amatya"]["amsha"]),
+                in_rasi=amatya_devata(devatas["amatya"]["inRasi"]),
+                in_navamsha=amatya_devata(devatas["amatya"]["inNavamsha"]),
+            ),
         ),
     )
 

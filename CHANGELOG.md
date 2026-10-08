@@ -2302,6 +2302,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   `remedies`, and Dart refuses a non-finite `at` before it is sent. The
   five parity runners print every nature, subject, śānti and devotion,
   and they agree. **Numbers:** none move.
+- **The ishṭa-devatā from the amātya** (`remedies.md` step 4, C357).
+  BPHS (1923) ch. 9 vv. 76–79 read the same from the amātyakāraka, the
+  graha next below the ātmakāraka in degrees.
+  `teistro::remedies::amatya_devata(from, amatya, lagna, signs, rules)`
+  reads the 12th from `from` as the kārakāṁśa's, with every natural
+  malefic there in a malefic's sign a devotee of minor deities (v. 78),
+  and the amātya's house from the lagna with each graha joined to it and
+  its devotion (v. 79). `IshtaDevatas` gains `amatya`, counted from the
+  amātya's navāṁśa in both charts, and section 121 and every binding
+  carry it; the parity runners print it. **Numbers:** none move; section
+  121's content gains the field, so its hash changes.
 - **Prashna in every binding** (`prashna.md` step 4). A chart request's
   `prashna` record (`{question: {house, number}, rules}`) reads every
   chart of a batch as the chart of its question's moment, and asks for the

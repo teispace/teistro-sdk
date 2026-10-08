@@ -109,6 +109,8 @@ import type {
   KpRequest,
   Prashna,
   PrashnaRequest,
+  AmatyaDevata,
+  Devotion,
   Remedies,
   RemedyRequest,
   PlanetDignity,
@@ -896,6 +898,11 @@ function theRemedies(ctx: Context): string {
     (d) =>
       `${d.rules.sunWithKetu} ${d.sign} ${d.devotions.map((v) => `${v.graha} ${v.deities.join()} ${v.verse} ${v.withKetu}`).join()} ${d.minor.join()}`,
   );
+  const { amatya } = ishtaDevata;
+  const fromAmatya = [amatya.inRasi, amatya.inNavamsha].map(
+    (a: AmatyaDevata) =>
+      `${a.twelfth.sign} ${a.twelfth.minor.join()} ${a.sign} ${a.house} ${a.joined.map((v: Devotion) => `${v.graha} ${v.deities.join()}`).join()}`,
+  );
   // @ts-expect-error a rule is one of the texts'
   const wrong: RemedyRequest = { rules: { shanti: { rik: 'MANU' } } };
   return [
@@ -910,6 +917,8 @@ function theRemedies(ctx: Context): string {
     ishtaDevata.atmakaraka,
     ishtaDevata.karakamsha,
     ...devatas,
+    `${amatya.graha} ${amatya.amsha}`,
+    ...fromAmatya,
     String(wrong),
   ].join();
 }

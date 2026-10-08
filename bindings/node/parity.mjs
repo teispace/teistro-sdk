@@ -965,10 +965,19 @@ for (const chart of charts) {
   );
   const dv = rm.ishtaDevata;
   put(`chart-${i}-remedies-devata`, `${dv.atmakaraka} ${dv.karakamsha}`);
+  const devotions = (all) => list(all.map((d) => `${d.graha}:${d.deities.join('|')}:${d.verse}:${d.withKetu}`));
   for (const [name, one] of [['rasi', dv.inRasi], ['navamsha', dv.inNavamsha]]) {
     put(
       `chart-${i}-remedies-devata-${name}`,
-      `${one.rules.sunWithKetu} ${one.sign} ${list(one.devotions.map((d) => `${d.graha}:${d.deities.join('|')}:${d.verse}:${d.withKetu}`))} ${list(one.minor)}`,
+      `${one.rules.sunWithKetu} ${one.sign} ${devotions(one.devotions)} ${list(one.minor)}`,
+    );
+  }
+  const { amatya } = dv;
+  put(`chart-${i}-remedies-amatya`, `${amatya.graha} ${amatya.amsha}`);
+  for (const [name, one] of [['rasi', amatya.inRasi], ['navamsha', amatya.inNavamsha]]) {
+    put(
+      `chart-${i}-remedies-amatya-${name}`,
+      `${one.twelfth.sign} ${devotions(one.twelfth.devotions)} ${list(one.twelfth.minor)} ${one.sign} ${one.house} ${devotions(one.joined)}`,
     );
   }
   const { progressed: pg, directed: dr, contacts } = chart.progressions;

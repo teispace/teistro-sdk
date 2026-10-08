@@ -2729,6 +2729,17 @@ export interface Remedies {
     readonly inRasi: IshtaDevata;
     /** Read from the kārakāṁśa in the navāṁśa. */
     readonly inNavamsha: IshtaDevata;
+    /** The same read from the amātyakāraka (vv. 76–79). */
+    readonly amatya: {
+      /** The amātyakāraka, under the chart's chara kāraka scheme. */
+      readonly graha: Graha;
+      /** Its navāṁśa sign, which the 12th is counted from (C357). */
+      readonly amsha: Rashi;
+      /** Read with the grahas and the lagna placed by the rāśi chart. */
+      readonly inRasi: AmatyaDevata;
+      /** Read with the grahas and the lagna placed by the navāṁśa. */
+      readonly inNavamsha: AmatyaDevata;
+    };
   };
 }
 
@@ -2758,16 +2769,34 @@ export interface IshtaDevata {
   /** The twelfth sign from the kārakāṁśa. */
   readonly sign: Rashi;
   /** Each graha in it with its devotion, in catalogue order; empty when the sign is empty. */
-  readonly devotions: readonly {
-    readonly graha: Graha;
-    readonly deities: readonly IshtaDeity[];
-    /** The verse, in the 1923 print's ch. 9. */
-    readonly verse: number;
-    /** Whether Ketu stands in the same sign (C355); always false of the nodes. */
-    readonly withKetu: boolean;
-  }[];
-  /** Saturn or Venus there in a sign a natural malefic rules: devotion to minor deities (vv. 75–76). */
+  readonly devotions: readonly Devotion[];
+  /**
+   * The grahas there that make a devotee of minor deities in a sign a natural malefic rules:
+   * Saturn or Venus from the kārakāṁśa (vv. 75–76), every natural malefic too from the amātya (v. 78).
+   */
   readonly minor: readonly Graha[];
+}
+
+/** A graha and the devotion its verse names (BPHS, the 1923 print's ch. 9 vv. 70–74). */
+export interface Devotion {
+  readonly graha: Graha;
+  readonly deities: readonly IshtaDeity[];
+  /** The verse, in the 1923 print's ch. 9. */
+  readonly verse: number;
+  /** Whether Ketu stands in the same sign (C355); always false of the nodes. */
+  readonly withKetu: boolean;
+}
+
+/** The amātya's devotions in one chart, read as BPHS vv. 77–79 read them. */
+export interface AmatyaDevata {
+  /** The 12th from the amātya's navāṁśa, read as the kārakāṁśa's (vv. 77–78). */
+  readonly twelfth: IshtaDevata;
+  /** The amātya's own sign in this chart. */
+  readonly sign: Rashi;
+  /** Its house by sign from this chart's lagna, 1 to 12 (v. 79). */
+  readonly house: number;
+  /** Each graha joined to it in that sign, with its devotion (v. 79). */
+  readonly joined: readonly Devotion[];
 }
 
 /** A deity the ishṭa-devatā verses name (BPHS, the 1923 print's ch. 9 vv. 70–76). */

@@ -4500,6 +4500,14 @@ void _engineTests() {
       expect(one.sign, isNot(Rashi.unknown));
       expect(one.devotions.every((d) => d.deities.isNotEmpty), isTrue);
     }
+    final amatya = devata.amatya;
+    expect(amatya.graha, isNot(anyOf(Graha.unknown, devata.atmakaraka)));
+    for (final one in [amatya.inRasi, amatya.inNavamsha]) {
+      expect(one.twelfth.sign, isNot(Rashi.unknown));
+      expect(one.house, inInclusiveRange(1, 12));
+      expect(one.joined.every((d) => d.graha != amatya.graha), isTrue);
+    }
+    expect(amatya.inNavamsha.sign, amatya.amsha);
     expect(
       () => found(const RemedyRequest(at: double.nan)),
       throwsA(

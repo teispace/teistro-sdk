@@ -13501,19 +13501,26 @@ Remedies _remediesFrom(Map<String, Object?> raw) {
   DevataRules devataRules(Object? value) => DevataRules(
     sunWithKetu: _keyedIn(SunWithKetu.values, at(value)['sunWithKetu']),
   );
+  List<Devotion> devotions(Object? list) => List<Devotion>.unmodifiable([
+    for (final devotion in each(list).map(at))
+      Devotion(
+        graha: graha(devotion['graha']),
+        deities: keyed(IshtaDeity.values, devotion['deities']),
+        verse: devotion['verse']! as int,
+        withKetu: devotion['withKetu']! as bool,
+      ),
+  ]);
   IshtaDevata devata(Map<String, Object?> one) => IshtaDevata(
     rules: devataRules(one['rules']),
     sign: rashi(one['sign']),
-    devotions: List<Devotion>.unmodifiable([
-      for (final devotion in each(one['devotions']).map(at))
-        Devotion(
-          graha: graha(devotion['graha']),
-          deities: keyed(IshtaDeity.values, devotion['deities']),
-          verse: devotion['verse']! as int,
-          withKetu: devotion['withKetu']! as bool,
-        ),
-    ]),
+    devotions: devotions(one['devotions']),
     minor: grahas(one['minor']),
+  );
+  AmatyaDevata amatyaDevata(Map<String, Object?> one) => AmatyaDevata(
+    twelfth: devata(at(one['twelfth'])),
+    sign: rashi(one['sign']),
+    house: one['house']! as int,
+    joined: devotions(one['joined']),
   );
 
   final rules = at(raw['rules']);
@@ -13522,6 +13529,7 @@ Remedies _remediesFrom(Map<String, Object?> raw) {
   final subjects = at(raw['subjects']);
   final antardasha = subjects['antardasha'];
   final devatas = at(raw['ishtaDevata']);
+  final amatya = at(devatas['amatya']);
   return Remedies(
     rules: RemedyRules(
       functional: FunctionalRules(
@@ -13620,6 +13628,12 @@ Remedies _remediesFrom(Map<String, Object?> raw) {
       karakamsha: rashi(devatas['karakamsha']),
       inRasi: devata(at(devatas['inRasi'])),
       inNavamsha: devata(at(devatas['inNavamsha'])),
+      amatya: AmatyaDevatas(
+        graha: graha(amatya['graha']),
+        amsha: rashi(amatya['amsha']),
+        inRasi: amatyaDevata(at(amatya['inRasi'])),
+        inNavamsha: amatyaDevata(at(amatya['inNavamsha'])),
+      ),
     ),
   );
 }
@@ -16580,7 +16594,8 @@ final class Shanti extends _Value {
   ];
 }
 
-/// A graha in the 12th from the kārakāṁśa, and the deities its verse names.
+/// A graha in the 12th from the kārakāṁśa or the amātya, or joined to the
+/// amātya, and the deities its verse names.
 final class Devotion extends _Value {
   const Devotion({
     required this.graha,
@@ -16624,21 +16639,75 @@ final class IshtaDevata extends _Value {
   /// sign is empty.
   final List<Devotion> devotions;
 
-  /// Saturn or Venus there in a sign a natural malefic rules: devotion to
-  /// minor deities (vv. 75–76).
+  /// The grahas there that make a devotee of minor deities in a sign a
+  /// natural malefic rules: Saturn or Venus from the kārakāṁśa (vv. 75–76),
+  /// every natural malefic too from the amātya (v. 78).
   final List<Graha> minor;
 
   @override
   List<Object?> get _fields => [rules, sign, devotions, minor];
 }
 
-/// The ishṭa-devatā, in the rāśi chart and in the navāṁśa.
+/// The amātya's devotions in one chart, read as BPHS vv. 77–79 read them.
+final class AmatyaDevata extends _Value {
+  const AmatyaDevata({
+    required this.twelfth,
+    required this.sign,
+    required this.house,
+    required this.joined,
+  });
+
+  /// The 12th from the amātya's navāṁśa, read as the kārakāṁśa's
+  /// (vv. 77–78).
+  final IshtaDevata twelfth;
+
+  /// The amātya's own sign in this chart.
+  final Rashi sign;
+
+  /// Its house by sign from this chart's lagna, 1 to 12 (v. 79).
+  final int house;
+
+  /// Each graha joined to it in that sign, with its devotion (v. 79).
+  final List<Devotion> joined;
+
+  @override
+  List<Object?> get _fields => [twelfth, sign, house, joined];
+}
+
+/// The ishṭa-devatā read from the amātyakāraka (vv. 76–79).
+final class AmatyaDevatas extends _Value {
+  const AmatyaDevatas({
+    required this.graha,
+    required this.amsha,
+    required this.inRasi,
+    required this.inNavamsha,
+  });
+
+  /// The amātyakāraka, under the chart's chara kāraka scheme.
+  final Graha graha;
+
+  /// Its navāṁśa sign, which the 12th is counted from (C357).
+  final Rashi amsha;
+
+  /// Read with the grahas and the lagna placed by the rāśi chart.
+  final AmatyaDevata inRasi;
+
+  /// Read with the grahas and the lagna placed by the navāṁśa.
+  final AmatyaDevata inNavamsha;
+
+  @override
+  List<Object?> get _fields => [graha, amsha, inRasi, inNavamsha];
+}
+
+/// The ishṭa-devatā, in the rāśi chart and in the navāṁśa, and the same
+/// read from the amātya.
 final class IshtaDevatas extends _Value {
   const IshtaDevatas({
     required this.atmakaraka,
     required this.karakamsha,
     required this.inRasi,
     required this.inNavamsha,
+    required this.amatya,
   });
 
   final Graha atmakaraka;
@@ -16646,8 +16715,17 @@ final class IshtaDevatas extends _Value {
   final IshtaDevata inRasi;
   final IshtaDevata inNavamsha;
 
+  /// The same read from the amātyakāraka.
+  final AmatyaDevatas amatya;
+
   @override
-  List<Object?> get _fields => [atmakaraka, karakamsha, inRasi, inNavamsha];
+  List<Object?> get _fields => [
+    atmakaraka,
+    karakamsha,
+    inRasi,
+    inNavamsha,
+    amatya,
+  ];
 }
 
 /// A chart's remedies: whom to propitiate, why and how, and the chosen

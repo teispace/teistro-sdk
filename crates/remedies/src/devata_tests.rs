@@ -1,4 +1,4 @@
-//! The ishṭa-devatā against BPHS (1923) ch. 9 vv. 70–76 and the baseline's
+//! The ishṭa-devatā against BPHS (1923) ch. 9 vv. 70–79 and the baseline's
 //! table.
 
 #![allow(
@@ -10,7 +10,10 @@
 use teistro_core::catalogue::{Graha, Rashi};
 
 use crate::subjects::NINE;
-use crate::{Deity, DevataRules, IshtaDevata, SunWithKetu, baseline_ishta_devata, ishta_devata};
+use crate::{
+    Deity, DevataRules, IshtaDevata, SunWithKetu, amatya_devata, baseline_ishta_devata,
+    ishta_devata,
+};
 
 /// The kārakāṁśa every test counts from: Leo, so the 12th is Cancer.
 const KARAKAMSHA: Rashi = Rashi::Leo;
@@ -119,6 +122,79 @@ fn saturn_or_venus_in_a_malefics_sign_serves_minor_deities() {
     assert_eq!(
         ishta_devata(Rashi::Virgo, &signs, DevataRules::default()).minor,
         [Graha::Venus]
+    );
+}
+
+#[test]
+fn from_the_amatya_every_malefic_in_a_malefics_sign_serves_minor_deities() {
+    // The amātya's navāṁśa in Aquarius: the 12th is Capricorn, Saturn's,
+    // holding Mars, Jupiter and Rahu, Ketu opposite in Cancer.
+    let mut signs = sky(&[]);
+    for at in [2, 4, 7] {
+        signs[at] = Rashi::Capricorn;
+    }
+    signs[8] = Rashi::Cancer;
+    let read = amatya_devata(
+        Rashi::Aquarius,
+        Graha::Moon,
+        Rashi::Aries,
+        &signs,
+        DevataRules::default(),
+    );
+    assert_eq!(read.twelfth.sign, Rashi::Capricorn);
+    // v. 78 counts Mars and Rahu, never the benefic Jupiter; vv. 75–76 alone,
+    // from the kārakāṁśa, count neither.
+    assert_eq!(read.twelfth.minor, [Graha::Mars, Graha::Rahu]);
+    assert_eq!(read.twelfth.devotions.len(), 3);
+    assert_eq!(
+        ishta_devata(Rashi::Aquarius, &signs, DevataRules::default()).minor,
+        []
+    );
+    // In Cancer, the Moon's, no malefic serves them.
+    let mut signs = sky(&[]);
+    signs[2] = Rashi::Cancer;
+    let read = amatya_devata(
+        Rashi::Leo,
+        Graha::Moon,
+        Rashi::Aries,
+        &signs,
+        DevataRules::default(),
+    );
+    assert_eq!(read.twelfth.minor, []);
+    assert_eq!(read.twelfth.devotions[0].graha, Graha::Mars);
+}
+
+#[test]
+fn the_amatya_reads_the_grahas_joined_to_it_in_its_house() {
+    // The amātya Jupiter in Cancer with the Moon and Ketu; a Libra lagna
+    // puts Cancer in the 10th.
+    let signs = sky(&[Graha::Moon, Graha::Jupiter, Graha::Ketu]);
+    let read = amatya_devata(
+        Rashi::Leo,
+        Graha::Jupiter,
+        Rashi::Libra,
+        &signs,
+        DevataRules::default(),
+    );
+    assert_eq!((read.sign, read.house), (Rashi::Cancer, 10));
+    let joined: Vec<(Graha, bool)> = read
+        .joined
+        .iter()
+        .map(|one| (one.graha, one.with_ketu))
+        .collect();
+    // The amātya is not joined to itself; Ketu is reported beside the Moon.
+    assert_eq!(joined, [(Graha::Moon, true), (Graha::Ketu, false)]);
+    // Alone in its sign it is joined to nothing.
+    let alone = amatya_devata(
+        Rashi::Leo,
+        Graha::Moon,
+        Rashi::Aries,
+        &sky(&[Graha::Moon]),
+        DevataRules::default(),
+    );
+    assert_eq!(
+        (alone.sign, alone.house, alone.joined.len()),
+        (Rashi::Cancer, 4, 0)
     );
 }
 

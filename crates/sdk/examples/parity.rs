@@ -2128,17 +2128,50 @@ fn remedies_rites(
                 "{} {} {} {}",
                 wire_key(&one.rules.sun_with_ketu),
                 one.sign.full_key(),
-                dashed(one.devotions.iter().map(|devotion| format!(
-                    "{}:{}:{}:{}",
-                    devotion.graha.full_key(),
-                    devotion.deities.iter().map(wire_key).collect::<Vec<_>>().join("|"),
-                    devotion.verse,
-                    devotion.with_ketu
-                ))),
+                devotions_cell(&one.devotions),
                 full_keys(&one.minor)
             ),
         );
     }
+    let amatya = &devata.amatya;
+    put(
+        report,
+        &key("-amatya"),
+        format!("{} {}", amatya.graha.full_key(), amatya.amsha.full_key()),
+    );
+    for (chart, one) in [("rasi", &amatya.in_rasi), ("navamsha", &amatya.in_navamsha)] {
+        put(
+            report,
+            &key(&format!("-amatya-{chart}")),
+            format!(
+                "{} {} {} {} {} {}",
+                one.twelfth.sign.full_key(),
+                devotions_cell(&one.twelfth.devotions),
+                full_keys(&one.twelfth.minor),
+                one.sign.full_key(),
+                one.house,
+                devotions_cell(&one.joined)
+            ),
+        );
+    }
+}
+
+/// Devotions as `graha:deity|deity:verse:withKetu`, joined by commas.
+fn devotions_cell(devotions: &[teistro::remedies::Devotion]) -> String {
+    dashed(devotions.iter().map(|devotion| {
+        format!(
+            "{}:{}:{}:{}",
+            devotion.graha.full_key(),
+            devotion
+                .deities
+                .iter()
+                .map(wire_key)
+                .collect::<Vec<_>>()
+                .join("|"),
+            devotion.verse,
+            devotion.with_ketu
+        )
+    }))
 }
 
 /// A graha's full key, or `-` for none.
