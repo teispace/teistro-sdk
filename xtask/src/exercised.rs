@@ -233,20 +233,14 @@ const LAYERS: [Layer; 4] = [
 ///
 /// A surface is one file in three of the four languages and a directory in
 /// the fourth: Rust's areas are a module each, and reading the directory
-/// is what keeps an area added from being an area unmeasured.
+/// is what keeps an area added from being an area unmeasured. It is read
+/// to the bottom, because a module family's methods live in a child of
+/// its area (`area/chart/kp.rs`) and are the area's as much as the rest.
 fn declared(root: &Path, layer: &Layer) -> Result<BTreeSet<String>, String> {
     let path = root.join(layer.surface);
     if path.is_dir() {
         let mut found = BTreeSet::new();
-        let entries =
-            std::fs::read_dir(&path).map_err(|why| format!("{}: {why}", layer.surface))?;
-        let mut paths: Vec<_> = entries
-            .flatten()
-            .map(|entry| entry.path())
-            .filter(|path| path.extension().is_some_and(|kind| kind == "rs"))
-            .collect();
-        paths.sort();
-        for file in paths {
+        for file in crate::lints::sources(&path) {
             let text = std::fs::read_to_string(&file)
                 .map_err(|why| format!("{}: {why}", file.display()))?;
             found.extend((layer.declares)(&text));

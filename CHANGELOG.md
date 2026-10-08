@@ -2398,6 +2398,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **Module families** (`03-design/wasm-profiles.md` step 2, first
+  slice). KP, muhurta, numerology, prashna, remedies, SVG, Tajika and
+  Western are each an optional crate of `teistro` behind a feature of the
+  same name, forwarded by `teistro-ffi` and the wasm crate. `full` names
+  them all and is the default, so every existing build is unchanged. A
+  Rust consumer who leaves a family out loses its methods and
+  re-exports. At the C boundary every entry point stays: a record of a
+  left-out family is refused as `CAPABILITY`, naming the record and the
+  family, with a hint to build `full`. The chart blob keeps one schema,
+  because a left-out family writes its sections with no rows
+  (`Writer::empty`). fast-check builds the boundary and the wasm module
+  with no family. A lint, `families-are-forwarded`, holds the three
+  manifests to the façade's set. **Numbers:** none move.
 - **The catalogue tree-shakes** (`07-roadmap/00-roadmap.md`, Track A
   item 5). The generated tables of `catalogue.js` are marked
   `/* @__PURE__ */`, so a bundle that imports one member keeps only that

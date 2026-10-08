@@ -55,6 +55,31 @@ jobs:
       - name: Documentation gates
         run: cargo xtask check-docs
 
+  # The build with no module family, which is the wasm module's `panchanga`
+  # profile (docs/03-design/wasm-profiles.md): the boundary and the wasm
+  # module linted without one, and the family test run on it, which
+  # proves every left-out family's sections are written empty and every
+  # call into one is refused as CAPABILITY. A configuration no gate builds
+  # is already broken, and this one is built nowhere else.
+  families:
+    name: families
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Lint the boundary with no family
+        run: cargo clippy -p teistro-ffi --lib --no-default-features --features builtin-compact -- -D warnings
+      - name: Lint the wasm module with no family, for wasm32
+        run: cargo clippy -p teistro-wasm --lib --target wasm32-unknown-unknown --no-default-features --features builtin-compact -- -D warnings
+      - name: Every family refused and every section written, with no family
+        run: cargo test -p teistro-ffi --no-default-features --features builtin-compact --test families
+
   # A third of the measured pages, balanced by each step's time on CI
   # (the shards are rebalanced by hand when a page grows).
   pages-1:
@@ -259,7 +284,7 @@ jobs:
   fast-check:
     name: fast-check
     if: always()
-    needs: [checks, pages-1, pages-2, pages-3]
+    needs: [checks, families, pages-1, pages-2, pages-3]
     runs-on: ubuntu-latest
     steps:
       - name: Every job of the fast check passed

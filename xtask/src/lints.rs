@@ -1509,6 +1509,137 @@ fn tiers_turn_on_their_base(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// That every module family is in `full`, and forwarded whole.
+///
+/// A family is a façade feature that turns on one optional crate and
+/// nothing else (`03-design/wasm-profiles.md`). Three manifests have to
+/// agree on the set: the façade's `full` names each family; the
+/// boundary's `full` is `teistro/full` plus each family, and each of its
+/// families is that family forwarded alone; the wasm crate's `full` is
+/// the boundary's. A family the façade gains and the boundary does not
+/// forward builds into every default library while each entry point into
+/// it answers `CAPABILITY`, and nothing compiled without the family would
+/// notice, since that build is right.
+///
+/// The rule reads the set from the façade's optional crates, so a ninth
+/// family cannot be added without the lines that carry it.
+fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "families-are-forwarded";
+    const CRATES: [&str; 3] = ["crates/sdk", "crates/ffi", "bindings/wasm/native"];
+    let manifests = CRATES.map(|dir| Manifest::read(root, dir));
+    let [Some(sdk), Some(ffi), Some(wasm)] = &manifests else {
+        outcome.failures.push(Finding {
+            file: String::from("crates/sdk/Cargo.toml"),
+            line: 0,
+            text: String::from(
+                "a `[features]` table of the façade, the boundary or the wasm crate could not be read",
+            ),
+            rule: RULE,
+        });
+        return;
+    };
+    let families = sdk.families();
+    let mut wanted: Vec<(&Manifest, &str, Vec<String>)> = vec![
+        (sdk, "full", families.clone()),
+        (ffi, "full", {
+            let mut full = families.clone();
+            full.push(String::from("teistro/full"));
+            full
+        }),
+        (wasm, "full", vec![String::from("teistro-ffi/full")]),
+    ];
+    for family in &families {
+        wanted.push((ffi, family, vec![format!("teistro/{family}")]));
+        // A profile's crate names only the families it keeps.
+        if wasm.features.contains_key(family.as_str()) {
+            wanted.push((wasm, family, vec![format!("teistro-ffi/{family}")]));
+        }
+    }
+    for (manifest, name, mut expected) in wanted {
+        expected.sort();
+        let mut found = manifest.list(name);
+        found.sort();
+        if found != expected {
+            outcome.failures.push(manifest.finding(
+                name,
+                format!("`{name}` names {found:?} where the families make it {expected:?}"),
+                RULE,
+            ));
+        }
+    }
+    for manifest in manifests.iter().flatten() {
+        if !manifest.list("default").iter().any(|f| f == "full") {
+            outcome.failures.push(manifest.finding(
+                "default",
+                String::from("`default` leaves out `full`, so a plain build drops every family"),
+                RULE,
+            ));
+        }
+    }
+}
+
+/// A crate's manifest, kept as text for line numbers and parsed for its
+/// `[features]` table.
+struct Manifest {
+    dir: &'static str,
+    text: String,
+    features: toml::Table,
+}
+
+impl Manifest {
+    fn read(root: &Path, dir: &'static str) -> Option<Manifest> {
+        let text = std::fs::read_to_string(root.join(dir).join("Cargo.toml")).ok()?;
+        let parsed: toml::Table = text.parse().ok()?;
+        let features = parsed.get("features")?.as_table()?.clone();
+        Some(Manifest {
+            dir,
+            text,
+            features,
+        })
+    }
+
+    /// The feature's entries, or none when it is absent or not a list of
+    /// strings.
+    fn list(&self, name: &str) -> Vec<String> {
+        self.features
+            .get(name)
+            .and_then(toml::Value::as_array)
+            .map(|values| {
+                values
+                    .iter()
+                    .filter_map(toml::Value::as_str)
+                    .map(String::from)
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// The module families: each feature that turns on one optional
+    /// Teistro crate other than an ephemeris and nothing else.
+    fn families(&self) -> Vec<String> {
+        let mut families: Vec<String> = self
+            .features
+            .keys()
+            .filter(|name| {
+                matches!(self.list(name).as_slice(), [only]
+                    if only.starts_with("dep:teistro-") && !only.contains("ephemeris"))
+            })
+            .cloned()
+            .collect();
+        families.sort();
+        families
+    }
+
+    fn finding(&self, name: &str, text: String, rule: &'static str) -> Finding {
+        Finding {
+            file: format!("{}/Cargo.toml", self.dir),
+            line: line_of(&self.text, &format!("{name} = ")),
+            text,
+            rule,
+        }
+    }
+}
+
 /// Whether any source under `dir` gates on `feature`.
 fn gates_on(dir: &Path, feature: &str) -> bool {
     let needle = format!("feature = \"{feature}\"");
@@ -2214,7 +2345,7 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
 }
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 23] = [
+const RULES: [&str; 24] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2229,6 +2360,7 @@ const RULES: [&str; 23] = [
     "node-is-tested-at-its-floor",
     "target-declares-the-feature-it-needs",
     "a-tier-turns-on-its-base",
+    "families-are-forwarded",
     "serialised-type-describes-itself",
     "a-word-is-spelt-as-a-key",
     "every-predicate-is-listed",
@@ -2281,6 +2413,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     boundary_sources(root, &mut outcome);
     workflows_parse(root, &mut outcome);
     tiers_turn_on_their_base(root, &mut outcome);
+    families_are_forwarded(root, &mut outcome);
     entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);

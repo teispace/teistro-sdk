@@ -42,44 +42,66 @@
 //! that marshalling and nothing else.
 
 mod area;
+#[cfg(feature = "western")]
 mod composites;
 mod context;
 mod ephemeris;
 mod reading;
+#[cfg(feature = "svg")]
 mod render;
 mod scale;
 
+#[cfg(feature = "muhurta")]
+pub use area::MuhurtaDays;
+#[cfg(feature = "numerology")]
+pub use area::NumerologyArea;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, Answers, CalendarArea, ChartArea, EngineArea,
-    FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MatchingArea,
-    MuhurtaDays, NumerologyArea, Plans, TimeArea,
+    FestivalDays, FrameArea, InterpretArea, Interpreted, IntlArea, KeysArea, MatchingArea, Plans,
+    TimeArea,
 };
+#[cfg(feature = "western")]
 mod antiscia;
+#[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
 mod gochar_request;
+#[cfg(feature = "western")]
 mod harmonics;
 mod hit_request;
+#[cfg(feature = "remedies")]
 mod ishta_devata;
+#[cfg(feature = "kp")]
 mod kp_request;
 mod matching_chart;
+#[cfg(feature = "western")]
 mod midpoints;
+#[cfg(feature = "muhurta")]
 mod muhurta_request;
 mod naam_request;
+#[cfg(feature = "numerology")]
 mod numerology_request;
+mod partner;
 mod plan_request;
+#[cfg(feature = "prashna")]
 mod prashna_request;
+#[cfg(feature = "western")]
 mod progressed;
+#[cfg(feature = "western")]
 mod progressions_request;
 mod rashifal_area;
 mod rashifal_request;
+#[cfg(feature = "remedies")]
 mod remedy_request;
 mod returns;
 mod rule_request;
 mod rules_bridge;
 mod sade_sati_request;
+#[cfg(feature = "tajika")]
 mod varsha;
+#[cfg(feature = "western")]
 mod western_aspects;
+#[cfg(feature = "western")]
 mod western_houses;
 
 pub use context::{Context, ContextBuilder};
@@ -168,6 +190,7 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 // (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with
 // no dependency the façade lacks, and a consumer who never calls it has
 // its code removed by the linker.
+#[cfg(feature = "svg")]
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
@@ -180,6 +203,7 @@ pub use crate::rule_request::{
 pub use crate::rules_bridge::{
     MarakaWindow, RuleInputs, maraka_windows, rule_chart, rule_periods, rule_vargas,
 };
+#[cfg(feature = "tajika")]
 pub use crate::varsha::{
     AnnualChart, AnnualPlace, Askable, Asked, SahamStrengthReadings, Varsha, VarshaRequest,
     VarshaYear,
@@ -194,6 +218,7 @@ pub use crate::sade_sati_request::SadeSatiRequest;
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
 pub use crate::festival_request::{FestivalPack, FestivalRequest};
+#[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
 pub use teistro_astro::visibility::Criterion;
 // Eclipses: found over the sky, each with how a place sees it
@@ -206,6 +231,7 @@ pub use teistro_dasha::{
 };
 pub use teistro_gochar as gochar;
 pub use teistro_gochar::GocharFrom;
+#[cfg(feature = "muhurta")]
 pub use teistro_muhurta as muhurta;
 // A hit list answers `Hit`s and is asked about `NatalPoint`s, so a consumer
 // names both without reaching into the module.
@@ -213,8 +239,11 @@ pub use teistro_gochar::hits::{Hit, NatalPoint};
 // Sade Sati answers in its own module's types (`03-design/sade-sati.md`).
 pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
+#[cfg(feature = "kp")]
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
+#[cfg(feature = "prashna")]
 pub use crate::prashna_request::PrashnaRequest;
+#[cfg(feature = "remedies")]
 pub use crate::remedy_request::RemedyRequest;
 // The essential dignities of the Hellenistic and later Western tradition:
 // the terms, the triplicities, the faces and the sect that chooses among
@@ -233,21 +262,27 @@ pub use teistro_hellenistic::{
 };
 // Progressions and directions, the modern Western measures held to Leo's
 // *The Progressed Horoscope* (`03-design/western-progressions.md`).
+#[cfg(feature = "western")]
 pub use crate::progressed::{
     ContactRequest, Directed, DirectedPlanet, DirectionArc, Progressed, ProgressedContact,
     ProgressionRequest,
 };
+#[cfg(feature = "western")]
 pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsRequest};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
+#[cfg(feature = "kp")]
 pub use teistro_kp as kp;
+#[cfg(feature = "kp")]
 pub use teistro_kp::{KpChart, KpNumber, KpReading};
 pub use teistro_rules as rules;
 pub use teistro_rules::longevity::{
     AshtakavargaAyusRules, AyurdayaRules, ChakrayusRules, RasmiRules,
 };
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths, ThreePairsRules};
+#[cfg(feature = "tajika")]
 pub use teistro_tajika as tajika;
+#[cfg(feature = "tajika")]
 pub use teistro_tajika::{
     Affliction, AnnualDasha, AnnualDashaRules, AnnualStates, Bala, Between, Chosen, Claim,
     Drishti as TajikaDrishti, DrishtiRules, Favour, Held, MoonBenefic, MoonMayRule, MoonPartner,
@@ -256,41 +291,51 @@ pub use teistro_tajika::{
     SubDegree, TambiraMover, Tied as VarsheshaTied, Varshesha, VarsheshaRules, YearClock, YearYoga,
     YearYogas, Yoga as TajikaYoga, YogaRules,
 };
+#[cfg(feature = "western")]
 pub use teistro_western as western;
+#[cfg(feature = "western")]
 pub use teistro_western::{AngleMethod, ArcMeasure, Progression};
 // The Western aspects a chart holds, under Leo's orbs or Lilly's moieties
 // (`03-design/western-aspects.md`), and those between two charts
 // (`03-design/western-synastry.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{
     AspectOrb, AspectRequest, BodyOrb, OrbModel, SynastryRequest, SynastryRow, SynastryZodiac,
     WesternAspect, WesternAspectRow,
 };
-pub use western_aspects::{Partner, PartnerReading, PartnerSynastry};
+#[cfg(feature = "western")]
+pub use western_aspects::{PartnerReading, PartnerSynastry};
 // The declinations a chart's points stand at and Leo's parallels among
 // its planets (`03-design/western-declinations.md`).
+#[cfg(feature = "western")]
 pub use declinations::Declinations;
+#[cfg(feature = "western")]
 pub use teistro_western::{
     Declined, DeclinedPoint, ParallelRequest, ParallelRow, SynastryParallelRow,
 };
 // Each planet's reflections about the solstices and the equinoxes, and the
 // pairs standing in one (`03-design/western-antiscia.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{
     Antiscia, AntisciaRequest, Antiscion, AntiscionRow, CuspAntiscion, PlanetAt, antiscion_deg,
     contrantiscion_deg,
 };
 // A planet equally distant from two others along the zodiac, on either
 // point of their midpoint axis (`03-design/western-midpoints.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{
     DEFAULT_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow, SynastryMidpointRow,
 };
 // A chart's Western houses: Placidus unless asked, and Leo's ascendant
 // reaching one sidereal hour above it (`03-design/western-houses.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{
     ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
     LILLY_HOUSE_SYSTEM, WesternHouses,
 };
 // A chart's harmonics after Addey: every point multiplied by a whole
 // number, and the points meeting in it (`03-design/western-harmonics.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{
     ADDEY_HARMONIC_ORB_DEG, HarmonicChart, HarmonicPlaced, HarmonicPoint, HarmonicRequest,
     HarmonicRow, MAX_HARMONIC, MAX_HARMONIC_ORB_DEG,
@@ -300,7 +345,9 @@ pub use teistro_western::{
 // needs no chart (`03-design/matching.md`).
 pub use matching_chart::{Matched, PartnerMatching};
 pub use naam_request::NaamRequest;
+#[cfg(feature = "numerology")]
 pub use numerology_request::NumerologyRequest;
+pub use partner::Partner;
 pub use teistro_matching as matching;
 pub use teistro_matching::{
     AshtaKoota, Avakahada, BirthSyllable, KootaReading, KootaRow, KootaRules, Kuja, KujaRules,
@@ -310,12 +357,15 @@ pub use teistro_matching::{
 };
 // Numerology: a name and a civil date under Balliett's cycle and Cheiro's
 // table, which reads no sky (`03-design/numerology.md`).
+#[cfg(feature = "numerology")]
 pub use teistro_numerology as numerology;
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).
+#[cfg(feature = "prashna")]
 pub use teistro_prashna as prashna;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
+#[cfg(feature = "remedies")]
 pub use teistro_remedies as remedies;
 // Rashifal: one period read for each of the twelve signs from
 // Phaladeepika ch. 26's gochar (`03-design/rashifal.md`).
@@ -328,19 +378,23 @@ pub use teistro_rashifal as rashifal;
 pub use crate::returns::BodyReturn;
 // One chart of two: the composite from the midpoints of their positions,
 // and the Davison birth between them (`03-design/western-composites.md`).
+#[cfg(feature = "western")]
 pub use teistro_western::{ChartPoints, Composite};
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over
 // (`03-design/tajika-sahams.md`).
+#[cfg(feature = "tajika")]
 pub use teistro_tajika::{
     AddSign, HousePoints, RogaReading, Saham, SahamFormula, SahamPlace, SahamPoint, SahamReading,
     SahamRules, SahamTerm, SahamTriple,
 };
 // The Harsha bala: four places a planet of the annual chart is happy in
 // (`03-design/tajika-harsha.md`).
+#[cfg(feature = "tajika")]
 pub use teistro_tajika::{Harsha, HarshaGrade, HarshaRules, VenusPlace};
 // A saham's strength, clause by clause, and the readings it is judged under
 // (`03-design/tajika-saham-strength.md`).
+#[cfg(feature = "tajika")]
 pub use teistro_tajika::{
     Friendship, SahamNatures, SahamStrength, SahamStrengthRules, StrongClause, WeakClause,
 };

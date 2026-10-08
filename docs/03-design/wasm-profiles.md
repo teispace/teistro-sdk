@@ -78,6 +78,19 @@ one.
    request asking for a left-out section is refused naming that field,
    never answered with the section missing. The generated glue is
    therefore one file for every profile, and only the `.wasm` differs.
+
+   How the boundary stays whole without a `cfg` on every line:
+   - The façade moves each family's methods into its own `impl` block
+     in a file of its own, and gates the file. A Rust consumer who
+     leaves a family out loses its methods and its re-exports, and the
+     compiler names what is gone.
+   - The FFI wraps each family's entry point or block in one macro,
+     which compiles the body under the family's feature and a Capability
+     refusal naming the family otherwise.
+   - The chart blob keeps one schema. A left-out family writes its
+     sections with no rows (`Writer::empty`), exactly what a request
+     that did not ask for them writes, so a reader built for the full
+     schema reads every profile's blob.
 3. **One package, a subpath per profile.** `@teistro/sdk-wasm` stays the
    full module. `@teistro/sdk-wasm/panchanga` is the same layer with a
    loader that fetches `wasm/panchanga/teistro_wasm_bg.wasm`. A bundler
@@ -99,6 +112,18 @@ one.
    prints the table above, so the numbers can be read again.
 2. The `panchanga` family split in the façade and the FFI, behind
    features, with every refusal named. `full` stays the default.
+   - **Done, first slice:** `kp`, `muhurta`, `numerology`, `prashna`,
+     `remedies`, `svg`, `tajika` and `western`, each an optional crate
+     of the façade and a forwarded feature of the boundary and the wasm
+     crate. fast-check's `families` job builds the boundary and the wasm
+     module with none of them, and `tests/families.rs` sends every
+     record of a left-out family and reads its `CAPABILITY` back, naming
+     the record. `families-are-forwarded` holds the three manifests to
+     one set, read from the façade's optional crates.
+   - **Next slice:** the families the core path reaches into: the
+     Hellenistic time lords (in the dasha path), `rules`, `interpret`,
+     `dasha`, `strength`, `gochar` and `matching` (which the document
+     reader names).
 3. The `panchanga` module staged beside the full one, its subpath, its
    budget and its probe.
 4. Measure the shared base by module, and decide whether to shrink it.

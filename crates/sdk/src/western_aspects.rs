@@ -6,7 +6,6 @@ use serde_json::{Map, Value};
 use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{
@@ -16,25 +15,12 @@ use teistro_western::{
 };
 
 use crate::area::ChartArea;
+use crate::partner::Partner;
 use crate::reading::ChartRequest;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
 const SYNASTRY: &str = "synastry";
-
-/// A second birth, which every chart of a batch is read against.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Partner {
-    /// The birth's instant.
-    pub instant: JulianDay<Utc>,
-    /// Where it happened.
-    pub place: Place,
-    /// Its civil clock, which a chart's day is reckoned by; UTC when left
-    /// out.
-    #[serde(rename = "utcOffsetSeconds", default)]
-    pub utc_offset: UtcOffset,
-}
 
 /// A synastry against a partner's birth, as a binding asks it: the
 /// partner, and the [`SynastryRequest`] laid flat beside it.

@@ -33,7 +33,10 @@ wasm-bindgen = "0.2"
 # package ships is built at one of them, which is most of its size.
 [features]
 # ADR-0029: a browser runs on `compact` unless it brings a provider.
-default = ["builtin-compact"]
+default = ["builtin-compact", "full"]
+# The module families, forwarded to the boundary: `full` is the package's
+# module, and a profile's module names fewer (`03-design/wasm-profiles.md`).
+full = ["teistro-ffi/full"]
 builtin-compact = ["teistro-ffi/builtin-compact"]
 builtin-standard = ["teistro-ffi/builtin-standard"]
 builtin-full = ["teistro-ffi/builtin-full"]

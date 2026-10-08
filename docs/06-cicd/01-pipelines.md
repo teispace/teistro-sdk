@@ -28,8 +28,11 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo test
 `check-versions`.
 
 It runs as parallel jobs. `checks` runs the format, the lints, the
-dependency policy, the tests and the documentation, and the measured
-pages are split across three `pages` shards. Each shard holds a third
+dependency policy, the tests and the documentation. `families` builds
+the boundary and the wasm module with no module family, which is the
+wasm `panchanga` profile, and runs the family test on that build
+(`03-design/wasm-profiles.md`). The measured pages are split across
+three `pages` shards. Each shard holds a third
 of the pages by their measured time on CI, so the run takes about as
 long as its slowest job rather than the sum of all of them, which was
 27 minutes in one job on 2026-10-08. The job branch protection requires

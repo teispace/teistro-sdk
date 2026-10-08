@@ -208,7 +208,7 @@ jobs:
       - name: The boundary carries this tier too
         run: >
           cargo test -p teistro-ffi
-          --no-default-features --features builtin-${{ matrix.tier }}
+          --no-default-features --features builtin-${{ matrix.tier }},full
       - name: And the library builds with no built-in at all, which
           ADR-0008 requires stay possible
         if: matrix.tier == 'standard'

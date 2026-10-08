@@ -10,7 +10,8 @@ use teistro_serial::Document;
 use teistro_western::{ChartPoints, Composite, HouseRequest, Placed, SynastryZodiac, composite};
 
 use crate::area::ChartArea;
-use crate::western_aspects::{Partner, angle_in, planets_in};
+use crate::partner::Partner;
+use crate::western_aspects::{angle_in, planets_in};
 
 impl ChartArea<'_> {
     /// The **composite** of two charts (Townley; Astrolog, C247): each
