@@ -17,6 +17,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{BOUND_DAYS, jd, tree};
 use serde_json::Value;
@@ -57,6 +61,7 @@ fn chart(inputs: &Value) -> RashiChart {
 
 #[test]
 fn every_sign_based_system_is_reproduced() {
+    let mut tally = Tally::new("baseline/rashi-dashas", "the engine's reading");
     let files: Vec<_> = ["charts", "variants"]
         .into_iter()
         .flat_map(|dir| common::files(&format!("rashi-dashas/{dir}")))
@@ -93,17 +98,18 @@ fn every_sign_based_system_is_reproduced() {
             let depth = usize::try_from(recorded["tree_depth"].as_u64().unwrap()).unwrap();
             let periods = tree(&dasha, depth);
             let recorded_rows = recorded["periods"].as_array().unwrap();
-            assert_eq!(periods.len(), recorded_rows.len(), "{at}: rows");
+            tally.same(periods.len(), recorded_rows.len(), || format!("{at}: rows"));
             for (period, cells) in periods.iter().zip(recorded_rows) {
                 rows += 1;
-                assert_eq!(period.path.to_string(), cells[0].as_str().unwrap(), "{at}");
-                assert_eq!(period.sign, Some(sign(&cells[1])), "{at} {}", period.path);
-                assert_eq!(
-                    period.lord.key(),
-                    cells[2].as_str().unwrap(),
-                    "{at} {}",
-                    period.path
-                );
+                tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
+                    format!("{at}")
+                });
+                tally.same(period.sign, Some(sign(&cells[1])), || {
+                    format!("{at} {}", period.path)
+                });
+                tally.same(period.lord.key(), cells[2].as_str().unwrap(), || {
+                    format!("{at} {}", period.path)
+                });
                 worst = worst
                     .max((period.interval.from.get() - jd(&cells[3])).abs())
                     .max((period.interval.to.get() - jd(&cells[4])).abs());
@@ -119,19 +125,20 @@ fn every_sign_based_system_is_reproduced() {
                 let links = active["chain"].as_array().unwrap();
                 if links.is_empty() {
                     past_end += 1;
-                    assert!(chain.is_empty(), "{at}: the cycle had ended");
+                    tally.holds(chain.is_empty(), || format!("{at}: the cycle had ended"));
                     continue;
                 }
-                assert_eq!(chain.len(), links.len(), "{at}: chain depth");
+                tally.same(chain.len(), links.len(), || format!("{at}: chain depth"));
                 for (period, link) in chain.iter().zip(links) {
-                    assert_eq!(
+                    tally.same(
                         u64::from(*period.path.indices().last().unwrap()),
                         link[1].as_u64().unwrap(),
-                        "{at}: index at level {}",
-                        link[0]
+                        || format!("{at}: index at level {}", link[0]),
                     );
-                    assert_eq!(period.sign, Some(sign(&link[2])), "{at}");
-                    assert_eq!(period.lord.key(), link[3].as_str().unwrap(), "{at}");
+                    tally.same(period.sign, Some(sign(&link[2])), || format!("{at}"));
+                    tally.same(period.lord.key(), link[3].as_str().unwrap(), || {
+                        format!("{at}")
+                    });
                     worst = worst
                         .max((period.interval.from.get() - jd(&link[4])).abs())
                         .max((period.interval.to.get() - jd(&link[5])).abs());
@@ -163,6 +170,7 @@ fn every_sign_based_system_is_reproduced() {
         RASHI_ROWS.len(),
         "every row this build ships is measured or listed as unrecorded"
     );
+    tally.record();
 }
 
 /// How many of the recorded answers each of BPHS ch. 46's readings moves

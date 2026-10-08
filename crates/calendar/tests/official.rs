@@ -15,8 +15,12 @@
     reason = "tests fail by panicking and read a small fixture"
 )]
 
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
 use std::path::Path;
 
+use conformance::Tally;
 use serde_json::Value;
 use teistro_calendar::bikram_sambat::{Engine, KATHMANDU};
 use teistro_calendar::{BikramSambat, CalendarSystem, FixedDay, MonthStartRule};
@@ -51,6 +55,10 @@ fn printed_time(text: &str) -> (i64, f64) {
 
 #[test]
 fn the_engine_reproduces_the_committees_sankrantis_and_month_starts() {
+    let mut tally = Tally::new(
+        "official",
+        "the Surya Siddhanta under punya-kala, against the committee's printed sankrantis and months",
+    );
     let fixture = fixture();
     let text = SuryaSiddhanta::text();
     let table = BikramSambat::shipped();
@@ -74,10 +82,7 @@ fn the_engine_reproduces_the_committees_sankrantis_and_month_starts() {
         let row = engine.year(year).expect("the year");
         let ours_utc = row.sankrantis[sign].get();
         let minutes = (ours_utc - committee_utc) * 1440.0;
-        assert!(
-            minutes.abs() < INSTANT_TOLERANCE_MINUTES,
-            "BS {year} sign {sign}: SDK {ours_utc} against the committee {committee_utc}: {minutes:+.1} min"
-        );
+        tally.holds(minutes.abs() < INSTANT_TOLERANCE_MINUTES, || format!("BS {year} sign {sign}: SDK {ours_utc} against the committee {committee_utc}: {minutes:+.1} min"));
         worst_minutes = worst_minutes.max(minutes.abs());
 
         // The month the sankranti begins (Mesha begins Baisakh) starts on
@@ -93,7 +98,7 @@ fn the_engine_reproduces_the_committees_sankrantis_and_month_starts() {
         let start: FixedDay = row
             .start
             .plus_days(row.months[..sign].iter().map(|m| i64::from(*m)).sum());
-        assert_eq!(start, expected, "BS {year} month {}", sign + 1);
+        tally.same(start, expected, || format!("BS {year} month {}", sign + 1));
         compared += 1;
     }
     assert_eq!(compared, 24);
@@ -110,6 +115,9 @@ fn the_engine_reproduces_the_committees_sankrantis_and_month_starts() {
             .find(|(y, _)| *y == year)
             .map(|(_, months)| months)
             .expect("an official row");
-        assert_eq!(engine.year(year).unwrap().months, official, "BS {year}");
+        tally.same(engine.year(year).unwrap().months, official, || {
+            format!("BS {year}")
+        });
     }
+    tally.record();
 }

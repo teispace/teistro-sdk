@@ -22,6 +22,10 @@
     reason = "a test fails by panicking, and the report is worth reading"
 )]
 
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_ephemeris_builtin::tables::TIER_NAME;
 use teistro_ephemeris_kit::{Bounds, run};
@@ -91,6 +95,16 @@ fn the_built_in_ephemeris_reproduces_the_corpus_within_its_tiers_band() {
             .map(|divergence| divergence.name)
             .collect::<Vec<_>>()
     );
+    let mut tally = Tally::new(
+        "baseline",
+        format!("positions over the built-in {TIER_NAME} tier"),
+    );
+    let fields = report.results.iter().flat_map(|result| &result.fields);
+    tally.agreed(fields.filter(|field| field.within).count());
+    for (divergence, count) in judged.explained_by {
+        tally.explained(divergence.name, count);
+    }
+    tally.record();
 }
 
 /// Under `sdk-only` a chart over the built-in ephemeris is its native

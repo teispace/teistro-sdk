@@ -20,6 +20,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{BOUND_DAYS, jd, tree};
 use serde_json::Value;
@@ -103,6 +107,7 @@ fn the_row(key: &str, stated: &Value) -> &'static UduRow {
 
 #[test]
 fn every_other_nakshatra_seeded_system_is_reproduced() {
+    let mut tally = Tally::new("baseline/dasha-systems", "the engine's reading");
     let files: Vec<_> = ["charts", "variants"]
         .into_iter()
         .flat_map(|dir| common::files(&format!("dasha-systems/{dir}")))
@@ -150,18 +155,21 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
 
                 // The first lord and the balance.
                 let first = dasha.mahadashas().next().unwrap();
-                assert_eq!(
+                tally.same(
                     first.lord.key(),
                     recorded["first_lord"].as_str().unwrap(),
-                    "{at}"
+                    || format!("{at}"),
                 );
                 let balance = dasha.balance();
                 let written = &recorded["balance"];
-                assert!(
+                tally.holds(
                     (balance.days - jd(&written["total_days"])).abs() < BOUND_DAYS,
-                    "{at}: balance {} against {}",
-                    balance.days,
-                    written["total_days"]
+                    || {
+                        format!(
+                            "{at}: balance {} against {}",
+                            balance.days, written["total_days"]
+                        )
+                    },
                 );
                 let parts = [
                     u64::from(balance.written.years),
@@ -172,22 +180,23 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                 ];
                 let recorded_parts = ["years", "months", "days", "hours", "minutes"]
                     .map(|part| written[part].as_u64().unwrap());
-                assert_eq!(parts, recorded_parts, "{at}: the written balance");
+                tally.same(parts, recorded_parts, || {
+                    format!("{at}: the written balance")
+                });
 
                 // Every period of the recorded tree, in its order.
                 let depth = usize::try_from(recorded["tree_depth"].as_u64().unwrap()).unwrap();
                 let periods = tree(&dasha, depth);
                 let recorded_rows = recorded["periods"].as_array().unwrap();
-                assert_eq!(periods.len(), recorded_rows.len(), "{at}: rows");
+                tally.same(periods.len(), recorded_rows.len(), || format!("{at}: rows"));
                 for (period, cells) in periods.iter().zip(recorded_rows) {
                     rows += 1;
-                    assert_eq!(period.path.to_string(), cells[0].as_str().unwrap(), "{at}");
-                    assert_eq!(
-                        period.lord.key(),
-                        cells[1].as_str().unwrap(),
-                        "{at} {}",
-                        period.path
-                    );
+                    tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
+                        format!("{at}")
+                    });
+                    tally.same(period.lord.key(), cells[1].as_str().unwrap(), || {
+                        format!("{at} {}", period.path)
+                    });
                     worst = worst
                         .max((period.interval.from.get() - jd(&cells[2])).abs())
                         .max((period.interval.to.get() - jd(&cells[3])).abs());
@@ -204,18 +213,19 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                     let links = active["chain"].as_array().unwrap();
                     if links.is_empty() {
                         past_end += 1;
-                        assert!(chain.is_empty(), "{at}: the cycle had ended");
+                        tally.holds(chain.is_empty(), || format!("{at}: the cycle had ended"));
                         continue;
                     }
-                    assert_eq!(chain.len(), links.len(), "{at}: chain depth");
+                    tally.same(chain.len(), links.len(), || format!("{at}: chain depth"));
                     for (period, link) in chain.iter().zip(links) {
-                        assert_eq!(
+                        tally.same(
                             u64::from(*period.path.indices().last().unwrap()),
                             link[1].as_u64().unwrap(),
-                            "{at}: index at level {}",
-                            link[0]
+                            || format!("{at}: index at level {}", link[0]),
                         );
-                        assert_eq!(period.lord.key(), link[2].as_str().unwrap(), "{at}");
+                        tally.same(period.lord.key(), link[2].as_str().unwrap(), || {
+                            format!("{at}")
+                        });
                         worst = worst
                             .max((period.interval.from.get() - jd(&link[3])).abs())
                             .max((period.interval.to.get() - jd(&link[4])).abs());
@@ -239,4 +249,5 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
         .filter(|system| !seen.contains(system))
         .collect();
     assert_eq!(unmeasured, elsewhere);
+    tally.record();
 }

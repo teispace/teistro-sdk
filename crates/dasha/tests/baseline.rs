@@ -20,6 +20,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{BOUND_DAYS, jd, tree};
 use serde_json::Value;
@@ -81,6 +85,7 @@ fn agrees(period: &Period, path: &str, lord: &str, start: f64, end: f64, worst: 
 
 #[test]
 fn every_recorded_vimshottari_is_reproduced() {
+    let mut tally = Tally::new("baseline", "Vimshottari under the engine's reading");
     let records = records();
     assert_eq!(records.len(), 93, "the corpus's dashas");
     let (mut methods, mut rows, mut children, mut chains, mut past_end) = (0, 0, 0, 0, 0);
@@ -94,15 +99,14 @@ fn every_recorded_vimshottari_is_reproduced() {
             // The balance, and how it is written.
             let balance = dasha.balance();
             let remaining = recorded["remaining_fraction"].as_f64().unwrap();
-            assert!(
+            tally.holds(
                 (balance.remaining - remaining).abs() < BOUND_FRACTION,
-                "{at}: remaining {} against {remaining}",
-                balance.remaining
+                || format!("{at}: remaining {} against {remaining}", balance.remaining),
             );
             let written = &recorded["balance"];
-            assert!(
+            tally.holds(
                 (balance.days - written["total_days"].as_f64().unwrap()).abs() < BOUND_DAYS,
-                "{at}: balance days"
+                || format!("{at}: balance days"),
             );
             let parts = [
                 written["years"].as_u64(),
@@ -119,25 +123,25 @@ fn every_recorded_vimshottari_is_reproduced() {
                 balance.written.minutes.into(),
             ]
             .map(Some);
-            assert_eq!(ours, parts, "{at}: the written balance");
+            tally.same(ours, parts, || format!("{at}: the written balance"));
 
             // Every period of the recorded tree, in its order.
             let depth = usize::try_from(recorded["tree_depth"].as_u64().unwrap()).unwrap();
             let periods = tree(&dasha, depth);
             let recorded_rows = recorded["periods"].as_array().unwrap();
-            assert_eq!(periods.len(), recorded_rows.len(), "{at}: rows");
+            tally.same(periods.len(), recorded_rows.len(), || format!("{at}: rows"));
             for (period, row) in periods.iter().zip(recorded_rows) {
                 rows += 1;
-                assert!(
+                tally.holds(
                     agrees(
                         period,
                         row[0].as_str().unwrap(),
                         row[1].as_str().unwrap(),
                         jd(&row[2]),
                         jd(&row[3]),
-                        &mut worst
+                        &mut worst,
                     ),
-                    "{at}: {period:?} against {row}"
+                    || format!("{at}: {period:?} against {row}"),
                 );
             }
 
@@ -151,21 +155,23 @@ fn every_recorded_vimshottari_is_reproduced() {
                 }
                 let ours: Vec<Period> = dasha.children(&period).collect();
                 let kids = kids.as_array().unwrap();
-                assert_eq!(ours.len(), kids.len(), "{at}: children of {path}");
+                tally.same(ours.len(), kids.len(), || {
+                    format!("{at}: children of {path}")
+                });
                 for (child, kid) in ours.iter().zip(kids) {
                     children += 1;
                     let index = kid[0].as_u64().unwrap().to_string();
                     let expected_path = format!("{path}/{index}");
-                    assert!(
+                    tally.holds(
                         agrees(
                             child,
                             &expected_path,
                             kid[1].as_str().unwrap(),
                             jd(&kid[2]),
                             jd(&kid[3]),
-                            &mut worst
+                            &mut worst,
                         ),
-                        "{at}: child {expected_path}"
+                        || format!("{at}: child {expected_path}"),
                     );
                 }
             }
@@ -178,21 +184,24 @@ fn every_recorded_vimshottari_is_reproduced() {
                 let chain = dasha.at(instant, Depth::try_new(5).unwrap());
                 if recorded_chain.is_empty() {
                     past_end += 1;
-                    assert!(chain.is_empty(), "{at}: the cycle had ended");
+                    tally.holds(chain.is_empty(), || format!("{at}: the cycle had ended"));
                     continue;
                 }
-                assert_eq!(chain.len(), recorded_chain.len(), "{at}: chain depth");
+                tally.same(chain.len(), recorded_chain.len(), || {
+                    format!("{at}: chain depth")
+                });
                 for (period, link) in chain.iter().zip(recorded_chain) {
-                    assert_eq!(
+                    tally.same(
                         u64::from(*period.path.indices().last().unwrap()),
                         link["index"].as_u64().unwrap(),
-                        "{at}: index at level {}",
-                        link["level"]
+                        || format!("{at}: index at level {}", link["level"]),
                     );
                     worst = worst
                         .max((period.interval.from.get() - jd(&link["start_jd"])).abs())
                         .max((period.interval.to.get() - jd(&link["end_jd"])).abs());
-                    assert_eq!(period.lord.key(), link["lord"].as_str().unwrap(), "{at}");
+                    tally.same(period.lord.key(), link["lord"].as_str().unwrap(), || {
+                        format!("{at}")
+                    });
                 }
             }
         }
@@ -202,6 +211,7 @@ fn every_recorded_vimshottari_is_reproduced() {
     );
     assert_eq!(methods, 148);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
+    tally.record();
 }
 
 /// A consumer's system registered with Vimshottari's table runs the same

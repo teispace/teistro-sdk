@@ -16,8 +16,12 @@
     reason = "tests fail by panicking and read a small fixture"
 )]
 
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
 use std::path::Path;
 
+use conformance::Tally;
 use serde_json::Value;
 use teistro_calendar::gregorian::fixed_from_gregorian;
 use teistro_core::catalogue::Graha;
@@ -74,6 +78,10 @@ fn arcminutes_apart(ours_deg: f64, theirs_deg: f64) -> f64 {
 
 #[test]
 fn the_committees_sun_is_the_texts_to_a_few_arcseconds() {
+    let mut tally = Tally::new(
+        "official",
+        "the Surya Siddhanta's Sun, against the committee's printed Sun",
+    );
     let text = SuryaSiddhanta::text();
     let mut compared = 0;
     for row in fixture()["planets_at_sunrise"].as_array().unwrap() {
@@ -84,14 +92,21 @@ fn the_committees_sun_is_the_texts_to_a_few_arcseconds() {
         let ours = text.sun(at).longitude.get();
         let theirs = printed_degrees(row["positions"]["SUN"].as_str().unwrap());
         let arcsec = arcminutes_apart(ours, theirs) * 60.0;
-        assert!(arcsec.abs() < 6.0, "{}: {arcsec:+.1}\"", row["gregorian"]);
+        tally.holds(arcsec.abs() < 6.0, || {
+            format!("{}: {arcsec:+.1}\"", row["gregorian"])
+        });
         compared += 1;
     }
     assert_eq!(compared, 2);
+    tally.record();
 }
 
 #[test]
 fn the_committees_moon_is_the_texts_with_four_revolutions_off_the_apsis() {
+    let mut tally = Tally::new(
+        "official",
+        "the Surya Siddhanta's Moon with the committee's bija, against its printed Moon and tithi ends",
+    );
     let text = SuryaSiddhanta::text();
     let corrected = SuryaSiddhanta::new(
         Parameters::TEXT.with_bija(&COMMITTEE_MOON_BIJA),
@@ -107,16 +122,15 @@ fn the_committees_moon_is_the_texts_with_four_revolutions_off_the_apsis() {
         let theirs = printed_degrees(row["positions"]["MOON"].as_str().unwrap());
         let plain = arcminutes_apart(text.moon(at).longitude.get(), theirs);
         let with_bija = arcminutes_apart(corrected.moon(at).longitude.get(), theirs);
-        assert!(
-            with_bija.abs() < 1.0,
-            "{}: {with_bija:+.2}'",
-            row["gregorian"]
-        );
-        assert!(
-            with_bija.abs() <= plain.abs(),
-            "{}: the bija must not move the Moon away ({plain:+.2}' to {with_bija:+.2}')",
-            row["gregorian"]
-        );
+        tally.holds(with_bija.abs() < 1.0, || {
+            format!("{}: {with_bija:+.2}'", row["gregorian"])
+        });
+        tally.holds(with_bija.abs() <= plain.abs(), || {
+            format!(
+                "{}: the bija must not move the Moon away ({plain:+.2}' to {with_bija:+.2}')",
+                row["gregorian"]
+            )
+        });
     }
     // At the printed tithi ends: the Moon less the Sun is the tithi's
     // boundary within the arcminute a printed minute resolves.
@@ -129,13 +143,11 @@ fn the_committees_moon_is_the_texts_with_four_revolutions_off_the_apsis() {
         let elongation = (corrected.moon(at).longitude.get() - corrected.sun(at).longitude.get())
             .rem_euclid(360.0);
         let arcmin = arcminutes_apart(elongation, target);
-        assert!(
-            arcmin.abs() < 1.0,
-            "{} {}: {arcmin:+.2}'",
-            end["gregorian"],
-            end["tithi"]
-        );
+        tally.holds(arcmin.abs() < 1.0, || {
+            format!("{} {}: {arcmin:+.2}'", end["gregorian"], end["tithi"])
+        });
     }
+    tally.record();
 }
 
 #[test]
@@ -143,6 +155,10 @@ fn the_committees_star_planets_are_not_the_texts() {
     // The committee prints modern positions for the five and the node
     // (`docs/calendars/bikram-sambat.md`, R2); the text's Saturn and node
     // are degrees away from them on every printed row.
+    let mut tally = Tally::new(
+        "official",
+        "the Surya Siddhanta's Saturn and node, against the committee's printed ones",
+    );
     let text = SuryaSiddhanta::text();
     for row in fixture()["planets_at_sunrise"].as_array().unwrap() {
         let at = instant(
@@ -162,6 +178,13 @@ fn the_committees_star_planets_are_not_the_texts() {
                 "{} {key}: {degrees:+.2}°",
                 row["gregorian"]
             );
+            // Compared, and explained: the committee prints modern
+            // positions for these, not the text's.
+            tally.explained(
+                "the committee's star planets are modern (bikram-sambat.md, R2)",
+                1,
+            );
         }
     }
+    tally.record();
 }
