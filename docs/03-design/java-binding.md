@@ -566,6 +566,16 @@ un-publish, `03-release-process.md`, "Withdrawing").
    strays under `bindings/java/src/main/java/com/teispace/teistro/` as it
    prunes the reference; `check-ffi` holds them. Constants, enums,
    layouts, handles, value records, brands, the exception, the decoders.
+   **Begun 2026-10-08:** the constants, the enums with `Member` and
+   `Catalogued`, the exception, and `Native`: each struct's layout with
+   its padding, its size, alignment and offsets, a `VarHandle` per value
+   field, a descriptor per callback and a method handle per entry point.
+   The generated tree is its own source root, `bindings/java/generated`,
+   so pruning can never reach a hand-written file; the hand-written layer
+   is `bindings/java/src`. A struct's class is named as the boundary crate
+   names it (`Native.TsString`), because the binding's name for it can be
+   a JDK type's (`String`). Value records, brands and the decoders are
+   next.
 2. **The first slice, end to end.** `NativeLibrary` from
    `TEISTRO_LIBRARY` and `target/release` only, the handshake,
    `Teistro`, `Context` with `calendar().convert`, `time().resolve`,
@@ -575,6 +585,15 @@ un-publish, `03-release-process.md`, "Withdrawing").
    layer, the struct handshake, an owned string, a blob, the error record
    and the build refusal in one program, and is the smallest thing that
    does.
+   **Begun 2026-10-08:** `Teistro.open()` with the property, the variable
+   and the workspace search and the three build rules; `Context` with its
+   lock, its cleaner, a constructor's owned record read and freed, and a
+   method's record read under the lock; `profile`, `settingsJson`,
+   `settingsHash`, `keyId` and `keyName`; `Json`, a strict reader. The
+   tests, with no framework, run as `check-java` in verify on every row
+   but the two musl ones: the struct sizes, a refusal after a refusal, a
+   refused constructor, a closed context. Positions, calendars, time and
+   intl come with the value records.
 3. **The areas**, to `surface-areas.md`'s table, and `Parity.java`;
    `check-parity` gains Java.
 4. **The shared examples**, `Binding::Java` in `xtask/src/examples.rs`.

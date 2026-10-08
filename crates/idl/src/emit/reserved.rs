@@ -26,6 +26,68 @@ pub const DART: &[&str] = &[
     "assert",
 ];
 
+/// Java's reserved keywords and literals, which no identifier may be
+/// (JLS §3.9 and §3.10.3, with `_`). The contextual ones (`record`,
+/// `var`, `yield` …) are legal as a field or a method's name and are left
+/// out. Java is camel case, so the rule is Dart's: `native` becomes
+/// `nativeValue`.
+pub const JAVA: &[&str] = &[
+    "_",
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extends",
+    "false",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "native",
+    "new",
+    "null",
+    "package",
+    "private",
+    "protected",
+    "public",
+    "return",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "transient",
+    "true",
+    "try",
+    "void",
+    "volatile",
+    "while",
+];
+
 /// Python's hard keywords, which no identifier may be.
 pub const PYTHON: &[&str] = &[
     "False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue",
@@ -185,7 +247,8 @@ pub fn renamed(name: &str, list: &[&str], suffix: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        DART, PYTHON, PYTHON_ENUM, PYTHON_SOFT, RUST, TYPESCRIPT, is_reserved, renamed, rust_ident,
+        DART, JAVA, PYTHON, PYTHON_ENUM, PYTHON_SOFT, RUST, TYPESCRIPT, is_reserved, renamed,
+        rust_ident,
     };
 
     /// A keyword becomes a raw identifier, and the four that cannot be
@@ -203,7 +266,7 @@ mod tests {
     fn every_list_is_sorted_within_itself_and_free_of_repeats() {
         // A list a reader scans has to be scannable, and a word entered
         // twice is a word someone thought was missing.
-        for list in [DART, PYTHON, PYTHON_SOFT, PYTHON_ENUM, TYPESCRIPT] {
+        for list in [DART, JAVA, PYTHON, PYTHON_SOFT, PYTHON_ENUM, TYPESCRIPT] {
             let mut sorted: Vec<&str> = list.to_vec();
             sorted.sort_unstable();
             sorted.dedup();
@@ -226,5 +289,10 @@ mod tests {
         assert!(!is_reserved("from", TYPESCRIPT), "contextual, not reserved");
         assert!(!is_reserved("match", PYTHON), "soft, and legal");
         assert!(is_reserved("match", PYTHON_SOFT));
+        assert_eq!(renamed("native", JAVA, "Value"), "nativeValue");
+        assert!(
+            !is_reserved("record", JAVA),
+            "contextual, and legal as a field"
+        );
     }
 }

@@ -915,11 +915,12 @@ The order below puts what blocks a release first.
    `manylinux_2_28` container, gate the highest `GLIBC_` symbol the
    library needs, and add musl and Windows arm64 rows.
    **Built:** the floor, linked by cargo-zigbuild and gated by
-   `xtask/src/floor.rs` rather than a container, and the Windows arm64
-   row (2026-10-08). The musl row remains.
+   `xtask/src/floor.rs` rather than a container, the Windows arm64 row
+   and the two musl rows, built and tested in Alpine (2026-10-08).
 2. **Publish waits for verify.** `verify.yml` becomes a reusable workflow
    that `publish` needs; an install check whose toolchain is missing fails
-   in a release run instead of skipping.
+   in a release run instead of skipping. **Built:** `release.yml` calls
+   `verify.yml` (`workflow_call`) and its publish job needs it.
 3. **Supply chain.**
    - **Built 2026-10-08:** a CycloneDX SBOM per artefact, with every
      library and addon built through `cargo-auditable`
@@ -946,12 +947,14 @@ The order below puts what blocks a release first.
      `check-wasm`. One member of `/catalogue` must ship no `.wasm` and
      weigh at most 1 kB. The entry must ship the module, which shows the
      check can see one.
-   - ADR-0005's profiles as cargo features, giving one wasm module per
-     profile behind subpath exports, each with its gzipped size budget.
-     Per-crate size is measured first.
+   - **Built 2026-10-08:** ADR-0005's profiles as cargo features
+     (`03-design/wasm-profiles.md`): the module families, the `panchanga`
+     module behind `@teistro/sdk-wasm/panchanga` with its own budget and
+     probe, and the shared base measured by function, which made JSON
+     parse once.
 6. **The Java binding**: Panama FFM, emitted from `idl/api.json` like the
    others, with a Java 22 floor and tests on Java 25. Android, which has
-   no FFM, stays v1.x.
+   no FFM, stays v1.x. Designed in `03-design/java-binding.md`.
 7. **Generated pages**: `SIZES.md` and `CONFORMANCE.md`; Horizons and
    CSPICE rows in `ACCURACY.md` from a dated run recorded in the corpus;
    the docs site's guides with executed examples; a check after publishing
