@@ -28,6 +28,7 @@ teistro-matching = { path = "../matching" }
 teistro-numerology = { path = "../numerology" }
 teistro-prashna = { path = "../prashna" }
 teistro-remedies = { path = "../remedies" }
+teistro-rashifal = { path = "../rashifal" }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret" }
 teistro-intl = { path = "../intl", default-features = false }
@@ -308,4 +309,8 @@ required-features = ["builtin-ephemeris"]
 
 [[example]]
 name = "your_own_ephemeris"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "rashifal"
 required-features = ["builtin-ephemeris"]

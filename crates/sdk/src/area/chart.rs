@@ -301,7 +301,7 @@ impl<'a> ChartArea<'a> {
     ///
     /// A context with no ephemeris, a civil calendar the SDK does not
     /// ship, or whatever `work` refuses.
-    fn founding<T>(
+    pub(crate) fn founding<T>(
         self,
         offset: UtcOffset,
         work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
