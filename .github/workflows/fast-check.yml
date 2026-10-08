@@ -195,8 +195,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
         run: cargo xtask check-accuracy
-      - name: Conformance document gate (the corpus tests reproduce the checked-in scores)
-        run: cargo xtask check-conformance
       - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
         run: cargo xtask check-intl
       - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
@@ -247,6 +245,10 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      # Here and not in pages 2, the critical path: it compiles the
+      # corpus tests of every crate that scores a section.
+      - name: Conformance document gate (the corpus tests reproduce the checked-in scores)
+        run: cargo xtask check-conformance
       - name: Bhava chalit falsification page (the measured disagreement reproduces)
         run: cargo xtask check-chalit
       - name: Derived points page (the recorded upagrahas and special lagnas reproduce)
