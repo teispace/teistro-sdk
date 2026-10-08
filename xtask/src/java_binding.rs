@@ -177,6 +177,11 @@ pub(crate) fn example(root: &Path, class: &str, library: &Path) -> Command {
     let classes = root.join(EXAMPLE_CLASSES);
     let mut command = Command::new("java");
     command
+        // The examples print Devanagari and degree signs, and `System.out`
+        // writes the console's encoding, which on Windows is a code page
+        // that has neither: every verify row there printed `?` for them.
+        // The counterpart of the `PYTHONUTF8` Python's examples run under.
+        .args(["-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"])
         .arg(format!("--enable-native-access={MODULE}"))
         .arg("--module-path")
         .arg(classes.join("main"))

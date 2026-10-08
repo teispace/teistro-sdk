@@ -12,10 +12,14 @@ cargo build --release -p teistro-ffi
 cargo xtask check-java    # compiles the module and these into target/java-examples
 cd bindings/java
 TEISTRO_LIBRARY=../../target/release/libteistro_ffi.dylib \
-java --enable-native-access=com.teispace.teistro \
+java -Dstdout.encoding=UTF-8 --enable-native-access=com.teispace.teistro \
   --module-path ../../target/java-examples/main --add-modules com.teispace.teistro \
   -cp ../../target/java-examples/example BirthChart
 ```
+
+`-Dstdout.encoding=UTF-8` because the examples print Devanagari and
+degree signs, and `System.out` writes the console's encoding: on Windows
+that is a code page with neither, and every one of them prints as `?`.
 
 | file | the scenario | what it is really teaching |
 |---|---|---|
