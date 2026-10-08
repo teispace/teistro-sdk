@@ -3,3 +3,13 @@
 # second language to install and the tasks can be tested like any crate.
 [alias]
 xtask = "run --quiet --package xtask --"
+
+# A musl target links its C runtime statically by default, and a static
+# runtime cannot make the shared library and the addon the SDK ships, so
+# the musl rows (`xtask/src/platform.rs`) link it dynamically, as Alpine's
+# own Rust does.
+[target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=-crt-static"]
+
+[target.aarch64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=-crt-static"]

@@ -360,6 +360,13 @@ fn dart_consumer(
     platform: &Platform,
     version: &str,
 ) -> Result<(), ()> {
+    if platform.libc == Some("musl") {
+        crate::skip::excused(
+            "the Dart package",
+            "the Dart SDK is built for glibc only, so no Dart runs on a musl host",
+        );
+        return Ok(());
+    }
     if !present("dart", "--version") {
         crate::skip::skip("the Dart package: no `dart` on this machine");
         return Ok(());

@@ -27,6 +27,11 @@ pub(crate) struct Platform {
     pub(crate) libc: Option<&'static str>,
     /// The GitHub runner that builds this platform in the release matrix.
     pub(crate) runner: &'static str,
+    /// The container image the row is built and tested inside, on its
+    /// runner, where the runner's own system is not the platform's: a
+    /// musl row runs in Alpine on the Linux runner of its architecture,
+    /// still natively. `None` where the runner is the platform.
+    pub(crate) container: Option<&'static str>,
     /// The oldest glibc a build for this platform must load on, which
     /// `package` holds every shipped file to (`floor.rs`). `None` where
     /// the C library is not glibc.
@@ -48,16 +53,15 @@ pub(crate) struct Platform {
 /// The order is the order artefacts are listed in and the order the
 /// matrix runs in: the two Linux architectures first, because they are
 /// the pair Phase 1's determinism criterion compares, then macOS, then
-/// Windows, x64 then Arm. A musl row is the next one to add; the field
-/// is already carried so that adding it changes this table and nothing
-/// else.
-pub(crate) const PLATFORMS: [Platform; 6] = [
+/// Windows, x64 then Arm, then the two musl rows.
+pub(crate) const PLATFORMS: [Platform; 8] = [
     Platform {
         triple: "x86_64-unknown-linux-gnu",
         os: "linux",
         cpu: "x64",
         libc: Some("glibc"),
         runner: "ubuntu-latest",
+        container: None,
         glibc_floor: Some((2, 28)),
         wheel_tag: "manylinux_2_28_x86_64",
     },
@@ -67,6 +71,7 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         cpu: "arm64",
         libc: Some("glibc"),
         runner: "ubuntu-24.04-arm",
+        container: None,
         glibc_floor: Some((2, 28)),
         wheel_tag: "manylinux_2_28_aarch64",
     },
@@ -76,6 +81,7 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         cpu: "arm64",
         libc: None,
         runner: "macos-latest",
+        container: None,
         glibc_floor: None,
         wheel_tag: "macosx_11_0_arm64",
     },
@@ -92,6 +98,7 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         // workflows to this field now, because the correction had to be
         // made in three places and one of them was missed.
         runner: "macos-15-intel",
+        container: None,
         glibc_floor: None,
         wheel_tag: "macosx_10_12_x86_64",
     },
@@ -101,6 +108,7 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         cpu: "x64",
         libc: None,
         runner: "windows-latest",
+        container: None,
         glibc_floor: None,
         wheel_tag: "win_amd64",
     },
@@ -112,10 +120,40 @@ pub(crate) const PLATFORMS: [Platform; 6] = [
         cpu: "arm64",
         libc: None,
         runner: "windows-11-arm",
+        container: None,
         glibc_floor: None,
         wheel_tag: "win_arm64",
     },
+    // musl, built and run in Alpine on the Linux runner of each
+    // architecture: the container is the platform, the runner only hosts
+    // it, so nothing is cross-compiled. musl has no symbol versions, so
+    // there is no floor to read back; the wheel asks for musl 1.2, which
+    // every Alpine since 3.13 carries.
+    Platform {
+        triple: "x86_64-unknown-linux-musl",
+        os: "linux",
+        cpu: "x64",
+        libc: Some("musl"),
+        runner: "ubuntu-latest",
+        container: Some(ALPINE),
+        glibc_floor: None,
+        wheel_tag: "musllinux_1_2_x86_64",
+    },
+    Platform {
+        triple: "aarch64-unknown-linux-musl",
+        os: "linux",
+        cpu: "arm64",
+        libc: Some("musl"),
+        runner: "ubuntu-24.04-arm",
+        container: Some(ALPINE),
+        glibc_floor: None,
+        wheel_tag: "musllinux_1_2_aarch64",
+    },
 ];
+
+/// The Alpine image the musl rows run in: its Node is 22, the floor every
+/// package gate runs on, and its musl is 1.2.
+pub(crate) const ALPINE: &str = "alpine:3.21";
 
 impl Platform {
     /// The platform this build is running on.
@@ -152,6 +190,7 @@ impl Platform {
                 cpu: "unknown",
                 libc: None,
                 runner: "none",
+                container: None,
                 glibc_floor: None,
                 wheel_tag: "unknown",
             };
@@ -307,6 +346,17 @@ mod tests {
                     platform.name()
                 );
             }
+        }
+    }
+
+    #[test]
+    fn a_musl_row_is_named_and_tagged_for_musl() {
+        for platform in PLATFORMS.iter().filter(|p| p.libc == Some("musl")) {
+            let cpu = platform.triple.split('-').next().unwrap_or_default();
+            assert_eq!(platform.wheel_tag, format!("musllinux_1_2_{cpu}"));
+            assert!(platform.name().ends_with("-musl"), "{}", platform.name());
+            assert!(platform.container.is_some(), "{}", platform.name());
+            assert_eq!(platform.glibc_floor, None, "{}", platform.name());
         }
     }
 

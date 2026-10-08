@@ -20,6 +20,7 @@ import argparse
 import ctypes
 import gzip
 import hashlib
+import os
 import platform
 import sys
 from pathlib import Path
@@ -54,7 +55,8 @@ def library_file_name() -> str:
 
 
 def host_platform() -> str:
-    """This host as the release names it: `<os>-<cpu>`.
+    """This host as the release names it: `<os>-<cpu>`, with `-musl` on a
+    Linux whose C library is musl.
 
     In the words Node's `process.platform` and `process.arch` use, so that
     one release page names one artefact for every binding.
@@ -70,7 +72,18 @@ def host_platform() -> str:
         "i686": "ia32",
         "riscv64": "riscv64",
     }.get(machine, machine)
-    return f"{system}-{cpu}"
+    return f"{system}-{cpu}-musl" if system == "linux" and _is_musl() else f"{system}-{cpu}"
+
+
+def _is_musl() -> bool:
+    """Whether this Linux's C library is musl: glibc names its version to
+    `confstr` and to `platform.libc_ver`, and musl to neither."""
+    try:
+        if os.confstr("CS_GNU_LIBC_VERSION"):
+            return False
+    except (OSError, ValueError):
+        pass
+    return platform.libc_ver()[0] != "glibc"
 
 
 def install_directory(project: Optional[Path] = None) -> Path:
