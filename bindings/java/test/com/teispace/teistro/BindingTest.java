@@ -435,6 +435,24 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a consumer's dasha system reads back by its key, as the row it copies", () -> {
+            String shashti = "[{\"kernel\":\"UDU\",\"key\":\"ACME_SHASHTI\",\"lords\":["
+                    + "{\"graha\":\"JUPITER\",\"years\":10},{\"graha\":\"SUN\",\"years\":10},"
+                    + "{\"graha\":\"MARS\",\"years\":10},{\"graha\":\"MOON\",\"years\":6},"
+                    + "{\"graha\":\"MERCURY\",\"years\":6},{\"graha\":\"VENUS\",\"years\":6},"
+                    + "{\"graha\":\"SATURN\",\"years\":6},{\"graha\":\"RAHU\",\"years\":6}],"
+                    + "\"reference\":\"ASHWINI\",\"groups\":[3,4,3,4,3,4,3,4],"
+                    + "\"wheel\":\"WITH_ABHIJIT\",\"repeats\":false}]";
+            try (Context sky = teistro.context(ContextOptions.builder().testProvider(true).dashasJson(shashti).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                List<Dasha> read = sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder()
+                        .dashas("dasha_system.ACME_SHASHTI", DashaSystem.SHASHTIHAYANI).build()).dashas();
+                same("dasha_system.ACME_SHASHTI", read.get(0).system(), "the consumer's key, not UNKNOWN");
+                same(DashaSystem.SHASHTIHAYANI, read.get(1).system(), "the catalogue's member");
+                same(read.get(1).periods(), read.get(0).periods(), "period for period as the text's row");
+            }
+        });
+
         tests.put("a closed enum refuses an id that is no member", () -> {
             try {
                 Status.of(12345);

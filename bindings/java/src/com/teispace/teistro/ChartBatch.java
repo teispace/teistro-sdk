@@ -2,6 +2,7 @@ package com.teispace.teistro;
 
 import java.util.AbstractList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -18,9 +19,17 @@ public final class ChartBatch extends AbstractList<Chart> {
     private final Supplier<Provenance> provenance;
     private final ConcurrentHashMap<String, Object> parsed = new ConcurrentHashMap<>();
 
-    ChartBatch(Charts decoded) {
+    private final Map<Integer, String> dashaNames;
+
+    ChartBatch(Charts decoded, Map<Integer, String> dashaNames) {
         this.decoded = decoded;
+        this.dashaNames = dashaNames;
         this.provenance = Lazy.of(() -> Provenance.of(Json.read(decoded.provenanceJson())));
+    }
+
+    /** The keys of the dasha systems the founding context registered, by id. */
+    Map<Integer, String> dashaNames() {
+        return dashaNames;
     }
 
     /**

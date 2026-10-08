@@ -61,7 +61,8 @@ public final class ChartArea {
      */
     public ChartBatch foundMany(double[] instants, Observer place, int utcOffsetSeconds, ChartOptions options) {
         ChartRequest request = request(instants, place, utcOffsetSeconds, options);
-        return new ChartBatch(Charts.decode(context.locked((lib, raw) -> Calls.chartFound(lib, raw, request))));
+        return new ChartBatch(Charts.decode(context.locked((lib, raw) -> Calls.chartFound(lib, raw, request))),
+                context.dashaNames());
     }
 
     private ChartRequest request(double[] instants, Observer place, int utcOffsetSeconds, ChartOptions options) {
