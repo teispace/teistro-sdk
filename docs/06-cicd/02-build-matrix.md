@@ -55,7 +55,11 @@ turns `crt-static` off for both triples, as Alpine's own Rust does. musl
 has no symbol versions and so no floor to read back; the wheel is tagged
 `musllinux_1_2`, which every Alpine since 3.13 meets. The loaders name a
 musl host `<os>-<cpu>-musl`: Node from its process report, which names a
-glibc and none under musl, and Python from `confstr`. Dart ships no musl
+glibc and none under musl, Python from `confstr`, and Java from the
+dynamic loader its process mapped. The Alpine container gets Temurin 25's
+musl JDK pinned by digest (`xtask/temurin-alpine.txt`), since Alpine 3.21
+packages none at Java's floor, and no Maven: `check-package` excuses the
+Maven arm there. Dart ships no musl
 SDK, so `check-package` excuses the Dart package there, and verify's musl
 rows leave out the parity check, which compares the Dart runner with the
 rest.
@@ -97,7 +101,15 @@ arrived in.
   addon of its own;
 - `pub/teistro/`, the Dart package, with `lib/src/prebuilt.dart` rewritten
   from the merged manifest so that its installer checks a download against
-  a digest taken from the build.
+  a digest taken from the build;
+- `maven/com/teispace/teistro/<version>/`, the Java package in Maven's
+  repository layout (`xtask/src/java_package.rs`): a default jar carrying
+  every platform's library, a classifier jar per platform carrying one,
+  the sources and javadoc jars, the POM, and each file's `.md5`, `.sha1`,
+  `.sha256` and `.sha512`. Written by `javac` and `javadoc` alone, the jars
+  by the same fixed-date zip writer as the wheels, so two stagings of one
+  commit are the same bytes; `cargo xtask publish maven` signs and uploads
+  it.
 
 A release stages every platform. `--partial` stages what one machine
 built, for trying the packaging out; it says so in what it prints, and the
@@ -106,7 +118,7 @@ release workflow never passes it.
 ## Proving it works
 
 `cargo xtask check-package` packages this host, stages, and then installs
-what it built into three throwaway projects under `target/dist/check`:
+what it built into throwaway projects under `target/dist/check`:
 
 - the C bundle unpacked, `bindings/c/tests/smoke.c` compiled against its
   header and linked both statically and dynamically, and run — the
@@ -120,7 +132,19 @@ what it built into three throwaway projects under `target/dist/check`:
 - a Dart project depending on the staged package, `dart run
   teistro:install --from` the archive the release would publish, and
   [`consumer.dart`](../../bindings/dart/packaging/consumer.dart) run with
-  nothing in the environment to help it find the library.
+  nothing in the environment to help it find the library;
+- the staged jar described as the module `com.teispace.teistro@<version>`,
+  its entries held to the merged manifest, and
+  [`Consumer.java`](../../bindings/java/packaging/Consumer.java) run on the
+  module path against the default jar and the host's classifier jar. The
+  library it loads must lie under the cache it was given, since the
+  workspace's own build is found from inside the checkout; a second run
+  must reuse the cache, and a cached file with other bytes must be refused
+  by its digest. Then Maven resolves the coordinate from the staged
+  repository by `file://`, both jars, and the consumer runs on the class
+  path; a layout with one wrong byte in a `.sha1` must fail to resolve
+  with Maven's checksum message. Maven needs the network once, for its
+  dependency plugin; the Teistro artefact never comes from it.
 
 Each consumer asserts the four facts the C smoke test prints — the Bikram
 Sambat date, the resolved instant and zone, the rendered Nepali message,

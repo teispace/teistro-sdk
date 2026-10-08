@@ -50,6 +50,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         node_consumer(root, &dist, &check, &platform),
         dart_consumer(root, &dist, &check, &platform, &version),
         python_consumer(root, &dist, &check, &platform, &version),
+        crate::java_consumer::check(root, &dist, &check, &platform, &version),
         adapter_consumer(root, &dist, &check, &platform),
     ];
     let failed = outcomes.iter().filter(|outcome| outcome.is_err()).count();
@@ -562,7 +563,7 @@ fn run_python_consumer(root: &Path, into: &Path, venv: &Path, what: &str) -> Res
 }
 
 /// Writes a file, reporting where it could not.
-fn write(path: &Path, text: &str) -> Result<(), ()> {
+pub(crate) fn write(path: &Path, text: &str) -> Result<(), ()> {
     fs::create_dir_all(path.parent().unwrap_or(path))
         .and_then(|()| fs::write(path, text))
         .map_err(|err| println!("FAIL  cannot write {}: {err}", path.display()))

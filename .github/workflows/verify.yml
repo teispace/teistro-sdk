@@ -142,10 +142,10 @@ jobs:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
-      - name: The C, Node and Python bindings, and the packages installed
+      - name: The C, Node, Python and Java bindings, and the packages installed
         run: >-
           docker run --rm -v "$PWD:/w" -w /w -e TEISTRO_STRICT ${{ matrix.container }}
-          sh xtask/alpine.sh check-c check-node check-python check-package
+          sh xtask/alpine.sh check-c check-node check-python check-java check-package
 
   # The staged wasm package against the Node binding's own suite,
   # unchanged, and in headless Chrome, whose answer must equal Node's to

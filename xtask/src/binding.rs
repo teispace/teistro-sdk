@@ -140,6 +140,18 @@ pub(crate) fn python_command(program: impl AsRef<std::ffi::OsStr>) -> Command {
     command
 }
 
+/// `java`, with standard output and error in UTF-8: every program this
+/// SDK runs under Java prints what it returns, and `System.out` writes the
+/// console's encoding, which on Windows is a code page with no Devanagari
+/// and no degree sign -- every verify row there printed `?` for them. The
+/// counterpart of [`python_command`], held the same way by `check-lints`'s
+/// `java-runs-in-utf8`.
+pub(crate) fn java_command() -> Command {
+    let mut command = Command::new("java"); // lint: java-runs-in-utf8 the one builder
+    command.args(["-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"]);
+    command
+}
+
 /// Cargo, as the environment names it.
 pub(crate) fn cargo() -> String {
     std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"))

@@ -282,12 +282,15 @@ mod interpretations;
 mod intl;
 mod jaimini;
 mod java_binding;
+mod java_consumer;
+mod java_package;
 mod kalachakra;
 mod kp;
 mod lints;
 mod lots;
 mod lunisolar;
 mod matching;
+mod maven_publish;
 mod measure;
 mod midpoints;
 mod moon;
@@ -346,6 +349,7 @@ mod western_aspects;
 mod western_houses;
 mod wheel;
 mod yogas;
+mod zip;
 
 use std::env;
 use std::fs;
@@ -624,6 +628,7 @@ fn main() {
             [_, tag] => release::check_tag(&repo_root(), tag),
             _ => usage(),
         },
+        Some("publish") => publish(&args),
         Some("package") => match args.get(1).map(String::as_str) {
             Some("stage") => package::stage(&repo_root(), args.iter().any(|a| a == "--partial")),
             Some("wasm") => package::wasm(&repo_root()),
@@ -672,6 +677,15 @@ fn main() {
     process::exit(skip::verdict(code));
 }
 
+/// `publish <REGISTRY>`: the registries a release uploads to from this
+/// command rather than from its own tool.
+fn publish(args: &[String]) -> i32 {
+    match args.get(1).map(String::as_str) {
+        Some("maven") => maven_publish::run(&repo_root(), args.get(2..).unwrap_or_default()),
+        _ => usage(),
+    }
+}
+
 fn usage() -> i32 {
     let passes: Vec<String> = PASSES
         .iter()
@@ -689,7 +703,8 @@ fn usage() -> i32 {
          check-dart | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
-         package [TARGET] | package wasm | package stage [--partial] | bench [FILE] | \
+         package [TARGET] | package wasm | package stage [--partial] | \
+         publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
          calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi",
         passes.join("\n  ")
