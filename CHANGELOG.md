@@ -2398,6 +2398,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   with the minimum its library's load commands name, and `check-package`
   installs the host's wheel into a fresh environment and runs the consumer
   program. **Numbers:** none move.
+- **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
+  `teistro_core::strict` parses text into a value and reads every type
+  from it, so each request type has one deserialiser rather than one per
+  input, which made both wasm modules smaller by the same amount of code.
+  `strict::parse` refuses a key given twice in one object, naming its
+  path: before, a key given twice in a settings patch was refused by
+  serde, and in a record read by `strict::read` the last one silently
+  won. A settings refusal now names the field and no longer the line and
+  column. **Numbers:** none move; a parsed number keeps its bits.
 - **`@teistro/sdk-wasm/panchanga`** (`03-design/wasm-profiles.md` step
   3). The wasm package ships a second module beside the full one, built
   with the calendars, the almanac and the muhurta search and without the

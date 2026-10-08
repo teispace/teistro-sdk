@@ -164,6 +164,22 @@ one.
      `chart`. Each bundler must ship, for each entry, the module of its
      own weight.
 4. Measure the shared base by module, and decide whether to shrink it.
+   - **Measured, one lever taken.** In the `panchanga` module, read by
+     function from its name section, deserialisation was two fifths of
+     the code: every request type was instantiated once over JSON text
+     and again over a parsed `Value`, each wrapped by
+     `serde_path_to_error`. `strict` now parses text once into a value,
+     refusing a key given twice by its path (a value keeps the last
+     silently, which `read` had accepted until then), and reads every
+     type from that. The text reader's copies went, and both modules
+     lost the same amount of code. What stays is the value reader's one
+     copy per type and the buffering serde does for internally tagged
+     enums, which the request shapes need.
+   - **The data is not a lever.** A third of the raw module is data, and
+     two items are most of it: the locale bundles (one copy each,
+     checked against the bundles the build wrote) and the time-zone
+     database. Both are needed by every profile, and gzip already takes
+     them to a fraction.
 
 ## Open questions
 
