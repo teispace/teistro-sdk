@@ -150,6 +150,48 @@ impl Runtime {
     }
 }
 
+/// Refuses a Python example named as a standard library module.
+///
+/// Python puts a script's own directory first on `sys.path`, so
+/// `example/calendar.py` was imported in place of the standard `calendar`
+/// by anything that asked for it. On Alpine `urllib` does, while the SDK
+/// is still importing, and the example failed there alone; a consumer who
+/// copies the file next to their own code meets the same thing. The
+/// names come from the interpreter that runs the examples
+/// (`sys.stdlib_module_names`), so a module a later Python adds is
+/// refused by that Python.
+fn unshadowed(examples: &[PathBuf], runtime: &Runtime) -> Result<(), ()> {
+    let output = crate::binding::python_command(&runtime.python)
+        .args([
+            "-c",
+            "import sys; print('\\n'.join(sorted(sys.stdlib_module_names)))",
+        ])
+        .output()
+        .map_err(|e| println!("FAIL  `{}` did not start: {e}", runtime.python))?;
+    let names = String::from_utf8_lossy(&output.stdout).into_owned();
+    let shadowing: Vec<String> = examples
+        .iter()
+        .filter_map(|example| example.file_stem()?.to_str().map(str::to_owned))
+        .filter(|stem| names.lines().any(|name| name == stem))
+        .collect();
+    if output.status.success() && !names.is_empty() && shadowing.is_empty() {
+        return Ok(());
+    }
+    if shadowing.is_empty() {
+        println!(
+            "FAIL  `{}` did not name its standard library modules",
+            runtime.python
+        );
+    }
+    for stem in shadowing {
+        println!(
+            "FAIL  bindings/python/example/{stem}.py is named as the standard library's `{stem}`, \
+             which it replaces for everything the example imports; rename it in every binding"
+        );
+    }
+    Err(())
+}
+
 /// One example that ran, and what it printed.
 pub(crate) struct Ran {
     /// Its file name without the extension, which is what the bindings
@@ -306,7 +348,11 @@ impl Binding {
         let directory = self.directory();
         let packs = packs(root)?;
         let mut ran = Vec::new();
-        for example in self.examples(root)? {
+        let examples = self.examples(root)?;
+        if self == Binding::Python {
+            unshadowed(&examples, runtime)?;
+        }
+        for example in examples {
             let name = example
                 .file_stem()
                 .map_or_else(String::new, |stem| stem.to_string_lossy().into_owned());

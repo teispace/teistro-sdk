@@ -17,7 +17,7 @@ lengths, then one month laid out as a grid with its Gregorian span.
 
 Run it:
 
-    PYTHONPATH=. python3 example/calendar.py
+    PYTHONPATH=. python3 example/calendars.py
 """
 
 from __future__ import annotations
