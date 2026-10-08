@@ -113,6 +113,27 @@ public final class Context implements AutoCloseable {
     }
 
     static Context open(Teistro teistro, ContextOptions options) {
+        List<EphemerisChoice> chain = options.ephemeris();
+        if (chain.size() <= 1) {
+            return open(teistro, options, chain.isEmpty() ? null : chain.get(0));
+        }
+        // With more than one, every refusal is kept and reported together:
+        // a chain that said only why its last entry failed would hide the
+        // one the caller wanted.
+        List<String> refusals = new java.util.ArrayList<>();
+        for (EphemerisChoice entry : chain) {
+            try {
+                return open(teistro, options, entry);
+            } catch (TeistroException refusal) {
+                refusals.add(entry.named() + ": " + refusal.getMessage());
+            }
+        }
+        throw new IllegalArgumentException(
+                "no ephemeris in the chain could be opened:\n  " + String.join("\n  ", refusals));
+    }
+
+    /** Opens on one entry of the chain: none, one of the SDK's own, or a plugin. */
+    private static Context open(Teistro teistro, ContextOptions options, EphemerisChoice entry) {
         Native lib = teistro.lib();
         HostProvider host = options.provider() == null ? null : new HostProvider(lib, options.provider());
         try (Arena arena = Arena.ofConfined()) {
@@ -124,28 +145,65 @@ public final class Context implements AutoCloseable {
             Native.TsContextOptions.LOCALE.set(raw, 0L, Boundary.cString(arena, options.locale()));
             Native.TsContextOptions.LAYOUTS_JSON.set(raw, 0L, Boundary.cString(arena, options.layoutsJson()));
             Native.TsContextOptions.DASHAS_JSON.set(raw, 0L, Boundary.cString(arena, options.dashasJson()));
-            Native.TsContextOptions.EPHEMERIS.set(raw, 0L, (byte) options.ephemeris().id());
+            Ephemeris named = entry instanceof EphemerisChoice.Own own ? own.ephemeris() : Ephemeris.NONE;
+            Native.TsContextOptions.EPHEMERIS.set(raw, 0L, (byte) named.id());
             MemorySegment out = arena.allocate(ValueLayout.ADDRESS);
             MemorySegment error = Boundary.errorRecord(arena);
-            // A typed local: `invokeExact` reads a conditional as `Object`.
-            MemorySegment vtable = host == null ? MemorySegment.NULL : host.vtable();
-            int status = Boundary.call(() -> (int) lib.ts_context_new.invokeExact(
-                    raw, vtable, MemorySegment.NULL, out, error));
+            int status;
+            if (entry instanceof Plugin plugin) {
+                status = withPlugin(lib, arena, plugin, raw, out, error);
+            } else {
+                // A typed local: `invokeExact` reads a conditional as `Object`.
+                MemorySegment vtable = host == null ? MemorySegment.NULL : host.vtable();
+                status = Boundary.call(() -> (int) lib.ts_context_new.invokeExact(
+                        raw, vtable, MemorySegment.NULL, out, error));
+            }
             if (status != Status.OK.id()) {
                 if (host != null) {
                     host.close();
                 }
-                // A constructor's record crosses whole and owns its strings,
-                // so it is read before it is freed (`owned-error-record`).
-                TeistroException refusal = Boundary.refusal(status, error);
-                Boundary.call(() -> {
-                    lib.ts_error_free.invokeExact(error);
-                    return null;
-                });
-                throw refusal;
+                throw refused(lib, status, error);
             }
             return new Context(teistro, out.get(ValueLayout.ADDRESS, 0), options.dashasJson(), host);
         }
+    }
+
+    /**
+     * Loads an adapter and opens the context on it. The context takes its own
+     * reference to the adapter, so the handle loaded here is freed at once:
+     * what keeps the library loaded is the context.
+     */
+    private static int withPlugin(Native lib, Arena arena, Plugin plugin, MemorySegment raw, MemorySegment out,
+            MemorySegment error) {
+        MemorySegment loaded = arena.allocate(ValueLayout.ADDRESS);
+        MemorySegment path = Boundary.cString(arena, plugin.path());
+        MemorySegment config = Boundary.cString(arena, Json.write(plugin.config()));
+        int status = Boundary.call(() -> (int) lib.ts_provider_load.invokeExact(path, config, loaded, error));
+        if (status != Status.OK.id()) {
+            return status;
+        }
+        MemorySegment provider = loaded.get(ValueLayout.ADDRESS, 0);
+        try {
+            return Boundary.call(() -> (int) lib.ts_context_new_with_provider.invokeExact(raw, provider, out, error));
+        } finally {
+            Boundary.call(() -> {
+                lib.ts_provider_free.invokeExact(provider);
+                return null;
+            });
+        }
+    }
+
+    /**
+     * A constructor's refusal: its record crosses whole and owns its strings,
+     * so it is read before it is freed (`owned-error-record`).
+     */
+    private static TeistroException refused(Native lib, int status, MemorySegment error) {
+        TeistroException refusal = Boundary.refusal(status, error);
+        Boundary.call(() -> {
+            lib.ts_error_free.invokeExact(error);
+            return null;
+        });
+        return refusal;
     }
 
     private MemorySegment handle() {

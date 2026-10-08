@@ -648,8 +648,14 @@ un-publish, `03-release-process.md`, "Withdrawing").
    beside it. A column of the wrong length is refused, never padded.
    The tests found a chart through a Java provider, take a throw back as
    the same object, then a later refusal as the library's own, and bind
-   and release two hundred providers. **Then** plugins and the
-   overrides beyond `positions`.
+   and release two hundred providers. **Built** the same day: `Plugin`
+   and the ephemeris chain (`EphemerisChoice`, sealed over the SDK's own
+   and a plugin), tried in order, with one refusal naming every entry when
+   none opens, and a provider with a named ephemeris refused. The plugin
+   test loads a real Teimeris adapter where `TEISTRO_TEIMERIS_ADAPTER`
+   names one, and reads the engine's own functions through it. The
+   overrides beyond `positions` wait, as they do in every binding's
+   provider.
 6. **Messages and records**: the Java target of `gen intl`, the
    generated records over `Json`. **Begun 2026-10-08:** `gen intl`
    writes `com.teispace.teistro.messages.Messages` into its own source

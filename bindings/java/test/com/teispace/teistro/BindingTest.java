@@ -582,6 +582,58 @@ public final class BindingTest {
             }).getMessage().contains("must have a name"), "a nameless provider is refused before it is bound");
         });
 
+        tests.put("an ephemeris chain is tried in order and refuses naming each", () -> {
+            // An adapter that is not there, then the built-in: the fallback
+            // the caller wrote down.
+            try (Context fell = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                    .ephemeris(Plugin.of("/nowhere/adapter.so"), EphemerisChoice.of(Ephemeris.BUILTIN)).build())) {
+                double sun = fell.positions(new double[] {2_451_545.0}, List.of(Body.SUN)).at(0, 0).longitude();
+                check(Math.abs(sun - 280.37) < 0.5, "the built-in answered: " + sun);
+            }
+            IllegalArgumentException none = null;
+            try {
+                teistro.context(ContextOptions.builder().ephemeris(Plugin.of("/a.so"), Plugin.of("/b.so")).build());
+            } catch (IllegalArgumentException e) {
+                none = e;
+            }
+            check(none != null && none.getMessage().contains("/a.so") && none.getMessage().contains("/b.so"),
+                    "one refusal names each entry: " + none);
+            IllegalArgumentException empty = null;
+            try {
+                ContextOptions.builder().ephemeris(new EphemerisChoice[0]);
+            } catch (IllegalArgumentException e) {
+                empty = e;
+            }
+            check(empty != null && empty.getMessage().contains("names nothing"), "a chain of none is a mistake");
+            IllegalArgumentException both = null;
+            try {
+                ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).provider(new Line(null)).build();
+            } catch (IllegalArgumentException e) {
+                both = e;
+            }
+            check(both != null && both.getMessage().contains("give one of them"), "a provider and an ephemeris");
+        });
+
+        tests.put("an ephemeris is plugged in by naming its platform binary", () -> {
+            // Runs only where the adapter is built, as every binding's plugin
+            // test does: a checkout has neither the adapter nor its data.
+            String adapter = System.getenv("TEISTRO_TEIMERIS_ADAPTER");
+            if (adapter == null || adapter.isEmpty()) {
+                System.out.println("      (no TEISTRO_TEIMERIS_ADAPTER: the plugin itself was not loaded)");
+                return;
+            }
+            try (Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
+                    .ephemeris(Plugin.of(adapter)).build())) {
+                double sun = sky.positions(new double[] {2_451_545.0}, List.of(Body.SUN)).at(0, 0).longitude();
+                check(Math.abs(sun - 280.37) < 0.5, "a real engine answered: " + sun);
+                // And its own functions came with it, which no SDK operation
+                // offers.
+                same("teimeris", ((Map<?, ?>) sky.ephemeris().manifest()).get("engine"), "the engine's manifest");
+                same("Sun", ((Map<?, ?>) sky.ephemeris().call("tm_body_name", Map.of("body", 0))).get("buf"),
+                        "the engine's own function");
+            }
+        });
+
         tests.put("JSON is read strictly", () -> {
             same(List.of(1L, 2.5, "x", true), Json.read("[1, 2.5, \"x\", true]"), "values");
             for (String bad : List.of("{\"a\": 1, \"a\": 2}", "[1,]", "01", "[1] [2]", "\"\\q\"")) {
