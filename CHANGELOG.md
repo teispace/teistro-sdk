@@ -2312,6 +2312,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   the baseline engine's 0–100 score, eight areas, five key influences
   and lucky elements, `BASELINE` and unsourced. `teistro_gochar::good_house`
   is new. **Numbers:** none move; a new module.
+- **Rashifal, measured** (`rashifal.md` step 3, C361).
+  `rashifal-measured.md`, under `check-rashifal`, reads every day from
+  July 2026 to June 2027 at Kathmandu for all twelve signs and counts
+  what each of the baseline engine's choices moves: its vedha tables, its
+  06:00 clock, the events its scan cannot report, and the day its
+  panchanga is taken from. `teistro::rashifal::baseline::baseline_gochar`
+  re-judges a reading by the baseline's own tables, `BASELINE`, so its
+  score can be read over its own verdicts. **Numbers:** a new page.
 - **Rashifal through the façade** (`rashifal.md` step 2, C358 to C360).
   `sdk.chart().rashifal(&RashifalRequest)` reads a period of civil days at
   a place for each of the twelve signs. The sky is read at sunrise on the

@@ -179,5 +179,9 @@ ingress on the last evening is the period's. A batch form,
    sunrise, whatever the snapshot.
 3. The measured page, `rashifal-measured.md`, under `check-rashifal`.
    It reads a year of days at Kathmandu and counts each of C361's
-   differences.
+   differences: **done**. `baseline::baseline_gochar` re-judges a reading
+   by the baseline engine's own vedha tables (D1 to D3), so its score can
+   be read over its own verdicts as well as the text's. A year from July
+   2026 holds the nodes' ingress and Saturn's; two years cost twice the
+   almanac's days for no row the year lacks.
 4. Every binding: a section of its own, with the parity runners.

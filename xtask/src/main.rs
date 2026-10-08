@@ -120,6 +120,10 @@
 //!   spells over the recorded births and a century, every bound read back
 //!   through the gochar, the two reckonings against each other, and the
 //!   baseline engine's merge rule against the circuit.
+//! - `rashifal` and `check-rashifal`: what each of the baseline engine's
+//!   choices moves in a rashifal over a year at Kathmandu — its vedha
+//!   tables, its 06:00 clock, the events its scan cannot report and the
+//!   day its panchanga is taken from.
 //! - `kp` and `check-kp`: how far a KP reading holds over the recorded
 //!   births — each sub lord's margin in minutes of birth time, read back
 //!   through the founder, the lords Krishnamurti's and VP291's ayanamshas
@@ -295,6 +299,7 @@ mod points;
 mod progressed_angles;
 mod python_binding;
 mod rashi_dashas;
+mod rashifal;
 mod reception;
 mod release;
 mod render;
@@ -365,6 +370,7 @@ const PASSES: &[Pass] = &[
     ("gochar", gochar::generate, gochar::check_generated),
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
+    ("rashifal", rashifal::generate, rashifal::check_generated),
     ("kp", kp::generate, kp::check_generated),
     ("muhurta", muhurta::generate, muhurta::check_generated),
     ("festival", festival::generate, festival::check_generated),

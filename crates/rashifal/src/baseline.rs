@@ -13,9 +13,9 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Direction, Graha, Rashi, Tithi, TithiClass, Vara, Yoga};
-use teistro_gochar::Verdict;
 use teistro_gochar::hits::HitEvent;
 use teistro_gochar::sade_sati::Phase;
+use teistro_gochar::{GRAHAS, GocharReading, Verdict};
 
 use crate::RashiReading;
 
@@ -374,4 +374,74 @@ pub fn baseline_score(
 /// A sign's lord.
 fn lord_of(rashi: Rashi) -> Graha {
     rashi.attributes().lord
+}
+
+/// The baseline engine's vedha table, the Sun to Ketu: Phaladeepika ch.
+/// 26's but for Venus's 11th and 12th exchanged (D1) and the nodes' vedha,
+/// which is Saturn's in the 3rd and 6th and the Sun's in the 10th and 11th
+/// (D2).
+const BASELINE_VEDHA: [&[(u8, u8)]; 9] = [
+    &[(3, 9), (6, 12), (10, 4), (11, 5)],
+    &[(1, 5), (3, 9), (6, 12), (7, 2), (10, 4), (11, 8)],
+    &[(3, 12), (6, 9), (11, 5)],
+    &[(2, 5), (4, 3), (6, 9), (8, 1), (10, 8), (11, 12)],
+    &[(2, 12), (5, 4), (7, 3), (9, 10), (11, 8)],
+    &[
+        (1, 8),
+        (2, 7),
+        (3, 1),
+        (4, 10),
+        (5, 9),
+        (8, 5),
+        (9, 11),
+        (11, 6),
+        (12, 3),
+    ],
+    &[(3, 12), (6, 9), (11, 5)],
+    &[(3, 12), (6, 9), (10, 4), (11, 5)],
+    &[(3, 12), (6, 9), (10, 4), (11, 5)],
+];
+
+/// Whether `other` obstructs `graha` as the baseline engine reads it:
+/// every graha but itself, the nodes and the Moon included, save the Sun
+/// and the Moon each other, its one exemption (D3).
+const fn baseline_obstructs(other: Graha, graha: Graha) -> bool {
+    !matches!(
+        (graha, other),
+        (Graha::Sun, Graha::Moon) | (Graha::Moon, Graha::Sun)
+    ) && other as usize != graha as usize
+}
+
+/// A reading re-judged by the baseline engine's own tables (D1 to D3),
+/// `BASELINE`: the same houses, each good transit's vedha house and its
+/// obstructors from [`BASELINE_VEDHA`] and [`baseline_obstructs`]. The
+/// good houses are the text's, which the baseline's agree with. The
+/// reading's `rules` are kept as they came and no longer describe its
+/// verdicts.
+#[must_use]
+pub fn baseline_gochar(reading: &GocharReading) -> GocharReading {
+    let houses = reading.grahas.each_ref().map(|one| one.house);
+    let mut judged = reading.clone();
+    for one in &mut judged.grahas {
+        let vedha = BASELINE_VEDHA
+            .get(one.graha as usize)
+            .and_then(|table| table.iter().find(|(good, _)| *good == one.house))
+            .map(|(_, vedha)| *vedha);
+        one.vedha_house = vedha;
+        one.obstructed_by = vedha.map_or_else(Vec::new, |vedha| {
+            GRAHAS
+                .into_iter()
+                .filter(|other| {
+                    baseline_obstructs(*other, one.graha)
+                        && houses.get(*other as usize) == Some(&vedha)
+                })
+                .collect()
+        });
+        one.verdict = match (one.good_house, one.obstructed_by.is_empty()) {
+            (false, _) => Verdict::NotGood,
+            (true, true) => Verdict::Good,
+            (true, false) => Verdict::Obstructed,
+        };
+    }
+    judged
 }
