@@ -1587,6 +1587,93 @@ fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
             ));
         }
     }
+    dependents_name_their_families(root, &families, outcome);
+}
+
+/// That a crate taking the façade or the boundary without its default
+/// features names the families it uses.
+///
+/// Inside the workspace, cargo unifies features, so such a crate builds
+/// with whatever another member turned on and its own line is never
+/// tested; a job that builds it alone (the ephemeris tiers build the
+/// provider kit so) gets no family at all. The kit failed every tier job
+/// exactly so. The boundary and the wasm crate are exempt: their own
+/// `full` forwards the families, which the rule above holds.
+fn dependents_name_their_families(root: &Path, families: &[String], outcome: &mut Outcome) {
+    const RULE: &str = "families-are-forwarded";
+    const HELD: [&str; 2] = ["teistro", "teistro-ffi"];
+    let mut manifests: Vec<PathBuf> = ["crates", "bindings"]
+        .iter()
+        .flat_map(|top| {
+            std::fs::read_dir(root.join(top))
+                .into_iter()
+                .flatten()
+                .flatten()
+        })
+        .flat_map(|entry| {
+            [
+                entry.path().join("Cargo.toml"),
+                entry.path().join("native/Cargo.toml"),
+            ]
+        })
+        .chain([root.join("xtask/Cargo.toml")])
+        .filter(|path| path.is_file())
+        .collect();
+    manifests.sort();
+    for path in manifests {
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(parsed) = text.parse::<toml::Table>() else {
+            continue;
+        };
+        let forwards = parsed
+            .get("features")
+            .and_then(toml::Value::as_table)
+            .is_some_and(|features| features.contains_key("full"));
+        if forwards {
+            continue;
+        }
+        for table in ["dependencies", "dev-dependencies", "build-dependencies"] {
+            let Some(dependencies) = parsed.get(table).and_then(toml::Value::as_table) else {
+                continue;
+            };
+            for held in HELD {
+                let Some(entry) = dependencies.get(held).and_then(toml::Value::as_table) else {
+                    continue;
+                };
+                let defaults_off =
+                    entry.get("default-features").and_then(toml::Value::as_bool) == Some(false);
+                let named = entry
+                    .get("features")
+                    .and_then(toml::Value::as_array)
+                    .is_some_and(|features| {
+                        features
+                            .iter()
+                            .filter_map(toml::Value::as_str)
+                            .any(|feature| {
+                                feature == "full" || families.iter().any(|family| family == feature)
+                            })
+                    });
+                if defaults_off && !named {
+                    let shown = path
+                        .strip_prefix(root)
+                        .unwrap_or(&path)
+                        .display()
+                        .to_string()
+                        .replace('\\', "/");
+                    outcome.failures.push(Finding {
+                        line: line_of(&text, &format!("{held} = ")),
+                        file: shown,
+                        text: format!(
+                            "takes `{held}` without its default features and names no family, so built alone it has none; add `features = [\"full\"]` or the families it uses"
+                        ),
+                        rule: RULE,
+                    });
+                }
+            }
+        }
+    }
 }
 
 /// A crate's manifest, kept as text for line numbers and parsed for its
