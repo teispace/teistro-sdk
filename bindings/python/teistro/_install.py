@@ -78,6 +78,10 @@ def host_platform() -> str:
 def _is_musl() -> bool:
     """Whether this Linux's C library is musl: glibc names its version to
     `confstr` and to `platform.libc_ver`, and musl to neither."""
+    # Windows has no `confstr`, and mypy reads the rest as unreachable
+    # there rather than as a missing attribute; no Windows host asks.
+    if sys.platform == "win32":
+        return False
     try:
         if os.confstr("CS_GNU_LIBC_VERSION"):
             return False
