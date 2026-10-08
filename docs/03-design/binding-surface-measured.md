@@ -63,24 +63,27 @@ ADR-0007 recorded a defect found by hand: Diplomat emitted a Dart enum
 member called `true`, which is not a Dart identifier. The Dart emitter
 has renamed reserved words ever since, and nothing has ever counted what
 that rule catches or asked the same question of another language. This
-section asks it of all three, over every identifier each must spell —
-a member of an enum, a field of a struct, a parameter, and the name a
-call gets in the binding.
+section asks it of every target, over every identifier each must spell
+— a member of an enum, a field of a struct, a parameter, and the name
+a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
 | Dart | 1746 | 1 | 0 | 0 | 0 |
 | TypeScript | 405 | 0 | 0 | 1 | 0 |
 | Python | 1746 | 0 | 1 | 2 | 0 |
+| Java | 1746 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1746 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 405 looked at |
 | no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1746 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1746 looked at |
 | renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1746 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 405 disagree |
 | renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1746 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1746 disagree |
 
 What Dart renames:
 
@@ -95,6 +98,10 @@ What Python renames:
 - TsTimeConversion: `from` → `from_`
 - ts_time_convert: `from` → `from_`
 - ts_intl_transliterate: `from` → `from_`
+
+What Java renames:
+
+- CapabilitiesC: `native` → `nativeValue`
 
 The two languages are caught in **different places**, which is the
 result worth having. Dart spells a member as a camel-case identifier, so

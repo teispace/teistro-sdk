@@ -39,6 +39,8 @@
 
 use std::fmt::Write as _;
 
+use teistro_idl::emit::reserved;
+
 use crate::engine::{Declared, Described, Function, Shape, Vocabulary, describe, reached};
 use crate::generated::Output;
 
@@ -1304,72 +1306,11 @@ fn java_write(
     }
 }
 
-/// A Java identifier for an engine name: `camelCase`, with a trailing
-/// underscore where that is a keyword, which no engine name has been yet.
+/// A Java identifier for an engine name: `camelCase`, renamed by the rule
+/// the binding's own emitter applies, so the SDK and its adapter never
+/// spell one keyword two ways.
 fn java_name(name: &str) -> String {
-    /// Every reserved word and literal `camel` could produce: the lower-case
-    /// ones, since a camel-cased name starts lower.
-    const RESERVED: [&str; 53] = [
-        "abstract",
-        "assert",
-        "boolean",
-        "break",
-        "byte",
-        "case",
-        "catch",
-        "char",
-        "class",
-        "const",
-        "continue",
-        "default",
-        "do",
-        "double",
-        "else",
-        "enum",
-        "extends",
-        "final",
-        "finally",
-        "float",
-        "for",
-        "goto",
-        "if",
-        "implements",
-        "import",
-        "instanceof",
-        "int",
-        "interface",
-        "long",
-        "native",
-        "new",
-        "package",
-        "private",
-        "protected",
-        "public",
-        "return",
-        "short",
-        "static",
-        "strictfp",
-        "super",
-        "switch",
-        "synchronized",
-        "this",
-        "throw",
-        "throws",
-        "transient",
-        "try",
-        "void",
-        "volatile",
-        "while",
-        "true",
-        "false",
-        "null",
-    ];
-    let camelled = camel(name);
-    if RESERVED.contains(&camelled.as_str()) {
-        format!("{camelled}_")
-    } else {
-        camelled
-    }
+    reserved::renamed(&camel(name), reserved::JAVA, "Value")
 }
 
 #[cfg(test)]
@@ -1379,8 +1320,8 @@ mod tests {
     #[test]
     fn a_java_name_is_camel_cased_and_never_a_keyword() {
         assert_eq!(java_name("jd_ut1"), "jdUt1");
-        assert_eq!(java_name("class"), "class_");
-        assert_eq!(java_name("default"), "default_");
+        assert_eq!(java_name("class"), "classValue");
+        assert_eq!(java_name("default"), "defaultValue");
         assert_eq!(java_name("defaults"), "defaults");
     }
 }

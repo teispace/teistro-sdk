@@ -124,6 +124,12 @@ fn python_member(v: &EnumValue) -> String {
     v.key.clone()
 }
 
+/// As the Java emitter's `constant` spells a member: its key upper-cased,
+/// which no Java keyword is, so the rule is asked and cannot fire.
+fn java_member(v: &EnumValue) -> String {
+    v.key.to_ascii_uppercase()
+}
+
 fn dart_lower(name: &str) -> String {
     camel(&snake(name))
 }
@@ -132,7 +138,7 @@ fn python_lower(name: &str) -> String {
     snake(name)
 }
 
-const TARGETS: [Target; 3] = [
+const TARGETS: [Target; 4] = [
     Target {
         language: "Dart",
         member: Some(dart_member),
@@ -153,6 +159,13 @@ const TARGETS: [Target; 3] = [
         lower: python_lower,
         reserved: reserved::PYTHON,
         suffix: "_",
+    },
+    Target {
+        language: "Java",
+        member: Some(java_member),
+        lower: dart_lower,
+        reserved: reserved::JAVA,
+        suffix: "Value",
     },
 ];
 
@@ -541,7 +554,7 @@ fn marshalling(out: &mut String, api: &Api) {
 fn spelling(out: &mut String, api: &Api) {
     let _ = write!(
         out,
-        "## 2. What a binding may not spell\n\nADR-0007 recorded a defect found by hand: Diplomat emitted a Dart enum\nmember called `true`, which is not a Dart identifier. The Dart emitter\nhas renamed reserved words ever since, and nothing has ever counted what\nthat rule catches or asked the same question of another language. This\nsection asks it of all three, over every identifier each must spell — a\nmember of an enum, a field of a struct, a parameter, and the name a call\ngets in the binding.\n\n"
+        "## 2. What a binding may not spell\n\nADR-0007 recorded a defect found by hand: Diplomat emitted a Dart enum\nmember called `true`, which is not a Dart identifier. The Dart emitter\nhas renamed reserved words ever since, and nothing has ever counted what\nthat rule catches or asked the same question of another language. This\nsection asks it of every target, over every identifier each must spell — a\nmember of an enum, a field of a struct, a parameter, and the name a call\ngets in the binding.\n\n"
     );
     let measured: Vec<Names> = TARGETS.iter().map(|t| names(api, t)).collect();
     let _ = writeln!(
