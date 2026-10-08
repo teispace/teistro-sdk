@@ -16,6 +16,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use serde_json::Value;
 use teistro_core::angle::Nas;
@@ -29,6 +33,10 @@ fn corpus() -> std::path::PathBuf {
 
 #[test]
 fn the_kernel_answers_pyjhora_s_vimshottari_from_its_moon() {
+    let mut tally = Tally::new(
+        "pyjhora/vimshottari",
+        "four year lengths, each start within its year's drift from the kernel's",
+    );
     let manifest: Value =
         serde_json::from_str(&std::fs::read_to_string(corpus().join("manifest.json")).unwrap())
             .unwrap();
@@ -98,12 +106,13 @@ fn the_kernel_answers_pyjhora_s_vimshottari_from_its_moon() {
                     let off = (child.interval.from.get().max(birth.instant.get())
                         - row[2].as_f64().unwrap().max(birth.instant.get()))
                     .abs();
-                    assert!(
-                        off <= bound,
-                        "{name} {duration}: {} under {} starts {off} days apart, past {bound}",
-                        child.lord.key(),
-                        maha.lord.key()
-                    );
+                    tally.holds(off <= bound, || {
+                        format!(
+                            "{name} {duration}: {} under {} starts {off} days apart, past {bound}",
+                            child.lord.key(),
+                            maha.lord.key()
+                        )
+                    });
                     let slot = worst.entry(duration).or_insert(0.0);
                     *slot = slot.max(off);
                     matched += 1;
@@ -142,4 +151,10 @@ fn the_kernel_answers_pyjhora_s_vimshottari_from_its_moon() {
     // does not write against the dasha's own year. Counted, so a change to
     // either reading shows (`03-design/dasha-kernels.md`, "PyJHora, beside the kernel").
     assert_eq!((written_agree, balances), (75, 212));
+    tally.agreed(written_agree);
+    tally.explained(
+        "the written balance's day, begun or whole (dasha-kernels.md)",
+        balances - written_agree,
+    );
+    tally.record();
 }

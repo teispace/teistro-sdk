@@ -15,6 +15,10 @@
 )]
 
 mod common;
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
 
 use common::{BOUND_DAYS, jd, tree};
 use teistro_core::angle::Nas;
@@ -29,6 +33,7 @@ use teistro_dasha::{Birth, KalachakraDasha, KalachakraRules, Timeline};
 
 #[test]
 fn every_recorded_kalachakra_is_reproduced() {
+    let mut tally = Tally::new("baseline/kalachakra", "the engine's reading");
     let manifest = common::read("kalachakra/manifest.json");
     let years: Vec<u64> = manifest["rules"]["sign_years"]
         .as_array()
@@ -94,17 +99,17 @@ fn every_recorded_kalachakra_is_reproduced() {
             };
             let dasha =
                 KalachakraDasha::new(&birth, rules).unwrap_or_else(|err| panic!("{at}: {err}"));
-            assert_eq!(
+            tally.same(
                 u64::from(dasha.pada()),
                 file["pada_index"].as_u64().unwrap(),
-                "{at}"
+                || format!("{at}"),
             );
 
             let balance = dasha.balance();
             let written = &recorded["balance"];
-            assert!(
+            tally.holds(
                 (balance.days - jd(&written["total_days"])).abs() < BOUND_DAYS,
-                "{at}: balance"
+                || format!("{at}: balance"),
             );
             let parts = [
                 u64::from(balance.written.years),
@@ -113,11 +118,11 @@ fn every_recorded_kalachakra_is_reproduced() {
                 balance.written.hours.into(),
                 balance.written.minutes.into(),
             ];
-            assert_eq!(
+            tally.same(
                 parts,
                 ["years", "months", "days", "hours", "minutes"]
                     .map(|p| written[p].as_u64().unwrap()),
-                "{at}: the written balance"
+                || format!("{at}: the written balance"),
             );
 
             let periods = tree(
@@ -125,18 +130,17 @@ fn every_recorded_kalachakra_is_reproduced() {
                 usize::try_from(recorded["tree_depth"].as_u64().unwrap()).unwrap(),
             );
             let recorded_rows = recorded["periods"].as_array().unwrap();
-            assert_eq!(periods.len(), recorded_rows.len(), "{at}: rows");
+            tally.same(periods.len(), recorded_rows.len(), || format!("{at}: rows"));
             for (period, cells) in periods.iter().zip(recorded_rows) {
                 rows += 1;
-                assert_eq!(period.path.to_string(), cells[0].as_str().unwrap(), "{at}");
+                tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
+                    format!("{at}")
+                });
                 let sign = Rashi::from_id(u16::try_from(cells[1].as_u64().unwrap()).unwrap());
-                assert_eq!(period.sign, sign, "{at} {}", period.path);
-                assert_eq!(
-                    period.lord.key(),
-                    cells[2].as_str().unwrap(),
-                    "{at} {}",
-                    period.path
-                );
+                tally.same(period.sign, sign, || format!("{at} {}", period.path));
+                tally.same(period.lord.key(), cells[2].as_str().unwrap(), || {
+                    format!("{at} {}", period.path)
+                });
                 worst = worst
                     .max((period.interval.from.get() - jd(&cells[3])).abs())
                     .max((period.interval.to.get() - jd(&cells[4])).abs());
@@ -152,15 +156,15 @@ fn every_recorded_kalachakra_is_reproduced() {
                 let links = active["chain"].as_array().unwrap();
                 if links.is_empty() {
                     past_end += 1;
-                    assert!(chain.is_empty(), "{at}: the cycles had ended");
+                    tally.holds(chain.is_empty(), || format!("{at}: the cycles had ended"));
                     continue;
                 }
-                assert_eq!(chain.len(), links.len(), "{at}: chain depth");
+                tally.same(chain.len(), links.len(), || format!("{at}: chain depth"));
                 for (period, link) in chain.iter().zip(links) {
-                    assert_eq!(
+                    tally.same(
                         u64::from(*period.path.indices().last().unwrap()),
                         link[1].as_u64().unwrap(),
-                        "{at}"
+                        || format!("{at}"),
                     );
                     worst = worst
                         .max((period.interval.from.get() - jd(&link[4])).abs())
@@ -174,4 +178,5 @@ fn every_recorded_kalachakra_is_reproduced() {
     );
     assert_eq!(answers, 148);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
+    tally.record();
 }

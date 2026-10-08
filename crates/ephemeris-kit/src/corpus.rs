@@ -370,7 +370,7 @@ impl CorpusReport {
             .iter()
             .filter(|divergence| divergence.applies_to(&self.implementation.provider_class))
             .collect();
-        let mut used = vec![false; applicable.len()];
+        let mut used = vec![0_usize; applicable.len()];
         let mut unexplained = Vec::new();
         let mut explained = 0;
         for result in &self.results {
@@ -388,7 +388,7 @@ impl CorpusReport {
                 {
                     Some(at) => {
                         if let Some(slot) = used.get_mut(at) {
-                            *slot = true;
+                            *slot += 1;
                         }
                         explained += 1;
                     }
@@ -396,15 +396,16 @@ impl CorpusReport {
                 }
             }
         }
+        let by: Vec<(&Divergence, usize)> = applicable.into_iter().zip(used).collect();
         Judged {
             unexplained,
-            idle: applicable
-                .into_iter()
-                .zip(used)
-                .filter(|(_, used)| !used)
-                .map(|(divergence, _)| divergence)
+            idle: by
+                .iter()
+                .filter(|(_, count)| *count == 0)
+                .map(|(divergence, _)| *divergence)
                 .collect(),
             explained,
+            explained_by: by.into_iter().filter(|(_, count)| *count > 0).collect(),
         }
     }
 
@@ -608,6 +609,8 @@ pub struct Judged<'k> {
     pub idle: Vec<&'k Divergence>,
     /// How many misses the divergences explained.
     pub explained: usize,
+    /// How many misses each divergence explained, those that explained one.
+    pub explained_by: Vec<(&'k Divergence, usize)>,
 }
 
 impl Judged<'_> {

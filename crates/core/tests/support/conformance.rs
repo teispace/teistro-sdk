@@ -36,7 +36,7 @@ pub(crate) struct Tally {
     /// `fixtures/corpus.json` names it.
     section: &'static str,
     /// What the comparisons were made under (`the engine's reading`).
-    reading: &'static str,
+    reading: String,
     /// Every comparison made, explained misses included.
     compared: usize,
     /// The misses each named entry explains, in the order first met.
@@ -45,10 +45,10 @@ pub(crate) struct Tally {
 
 impl Tally {
     /// A tally for one section under one reading.
-    pub(crate) fn new(section: &'static str, reading: &'static str) -> Self {
+    pub(crate) fn new(section: &'static str, reading: impl Into<String>) -> Self {
         Self {
             section,
-            reading,
+            reading: reading.into(),
             compared: 0,
             explained: Vec::new(),
         }
@@ -56,10 +56,10 @@ impl Tally {
 
     /// One comparison that must agree exactly.
     #[track_caller]
-    pub(crate) fn same<T: PartialEq + Debug>(
+    pub(crate) fn same<A: PartialEq<B> + Debug, B: Debug>(
         &mut self,
-        ours: T,
-        recorded: T,
+        ours: A,
+        recorded: B,
         what: impl Fn() -> String,
     ) {
         self.compared += 1;
@@ -88,6 +88,12 @@ impl Tally {
     pub(crate) fn holds(&mut self, agrees: bool, what: impl Fn() -> String) {
         self.compared += 1;
         assert!(agrees, "{}", what());
+    }
+
+    /// `count` comparisons that agreed, where the test decides agreement
+    /// itself (a convention it counts rather than fails on).
+    pub(crate) fn agreed(&mut self, count: usize) {
+        self.compared += count;
     }
 
     /// `count` comparisons that miss, each explained by `entry`: compared,
@@ -131,7 +137,7 @@ impl Tally {
         let line = format!(
             "{{\"section\":{},\"reading\":{},\"compared\":{},\"explained\":[{explained}]}}\n",
             quoted(self.section),
-            quoted(self.reading),
+            quoted(&self.reading),
             self.compared,
         );
         let path = std::path::Path::new(&dir).join(FILE);
