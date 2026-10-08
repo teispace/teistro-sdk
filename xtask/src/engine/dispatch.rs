@@ -205,7 +205,7 @@ pub(crate) fn passthrough_imports(generated: &str) -> String {
 ///
 /// Emitted for exactly these and no others, so a reader is generated
 /// only where something reads one: a struct nothing callable mentions
-/// would be dead code in the adapter and a name in four façades.
+/// would be dead code in the adapter and a name in every façade.
 ///
 /// # Panics
 ///

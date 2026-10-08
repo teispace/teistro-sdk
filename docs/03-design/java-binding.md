@@ -698,7 +698,18 @@ un-publish, `03-release-process.md`, "Withdrawing").
    and Sigstore are still to do.
 9. **The Teimeris adapter's Java package** (`adapters/ephemeris-teimeris/`
    gains `java`), type-checked by `check-java` as the others are by their
-   binding's gate.
+   binding's gate. **Built 2026-10-09:** the module
+   `com.teispace.teistro.teimeris`, with `Teimeris.builder()` for the
+   chain and `TeimerisEngine`, a target of `cargo xtask engine` beside Node, Dart and Python:
+   one generated file, a record per struct and per answer of more than one
+   value nested in the class, a whole number a `long` since the engine's
+   integers include `uint32_t` and `int64_t`. `check-java` compiles the
+   module and a README-shaped consumer read all the way down; the façade
+   was also run against the built adapter, structs, lists and records both
+   ways. **Found:** the consumer first passed the built-in to a chain as
+   `Ephemeris.BUILTIN`, which a chain does not take; the gate refused it,
+   and the README says `EphemerisChoice.of(Ephemeris.BUILTIN)`. Shipping
+   the adapter's binary in a jar of its own waits on its release.
 10. **The pages**: `bindings/java/README.md` with the native-access flag,
     the Windows encoding note and the coordinates for Maven, Gradle and
     sbt (only Maven gated, and said so); the site's guides; the build

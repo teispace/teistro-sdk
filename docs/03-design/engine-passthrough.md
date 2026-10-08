@@ -384,7 +384,7 @@ easiest.
 
 ## 7. How it is held
 
-- `check-engine` regenerates the page, the dispatch and the four façades
+- `check-engine` regenerates the page, the dispatch and every façade
   and fails on any byte of difference.
 - The adapter's own `tests/passthrough.rs`, against the real engine: a
   struct crosses both ways and its extent in neither, a field is refused
