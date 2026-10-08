@@ -2,6 +2,7 @@ package com.teispace.teistro;
 
 import java.util.AbstractList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.teispace.teistro.blob.Charts;
@@ -15,6 +16,7 @@ import com.teispace.teistro.record.Provenance;
 public final class ChartBatch extends AbstractList<Chart> {
     private final Charts decoded;
     private final Supplier<Provenance> provenance;
+    private final ConcurrentHashMap<String, Object> parsed = new ConcurrentHashMap<>();
 
     ChartBatch(Charts decoded) {
         this.decoded = decoded;
@@ -28,6 +30,28 @@ public final class ChartBatch extends AbstractList<Chart> {
      */
     public Charts decoded() {
         return decoded;
+    }
+
+    /**
+     * What a reader parses from the batch's blob, parsed once however many
+     * charts read it: a JSON section's records, a section's rows grouped by
+     * chart. {@code name} is the reader's own and says what it holds.
+     *
+     * <p>Parsed outside the map, so one reader may ask for another's
+     * parse; two threads asking at once may both parse, and both get the
+     * value the first one kept.
+     */
+    @SuppressWarnings("unchecked")
+    <T> T cached(String name, Supplier<T> parse) {
+        Object found = parsed.get(name);
+        if (found == null) {
+            Object fresh = parse.get();
+            found = parsed.putIfAbsent(name, fresh);
+            if (found == null) {
+                found = fresh;
+            }
+        }
+        return (T) found;
     }
 
     /**
