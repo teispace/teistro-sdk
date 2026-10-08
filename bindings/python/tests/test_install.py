@@ -46,7 +46,8 @@ class TheHost(unittest.TestCase):
         self.assertTrue(not libc or system == "linux", "only Linux names its C library")
 
     def test_a_musl_linux_is_named_for_its_c_library(self) -> None:
-        """glibc answers `confstr` and `libc_ver`; musl answers neither."""
+        """glibc answers `confstr` and `libc_ver`; musl answers neither.
+        Windows' `os` has no `confstr`, so the patch creates it."""
 
         def unnamed(_name: str) -> str:
             raise ValueError("unrecognized configuration name")
@@ -54,13 +55,13 @@ class TheHost(unittest.TestCase):
         with contextlib.ExitStack() as stack:
             stack.enter_context(mock.patch("teistro._install.sys.platform", "linux"))
             stack.enter_context(mock.patch("teistro._install.platform.machine", lambda: "x86_64"))
-            stack.enter_context(mock.patch("teistro._install.os.confstr", unnamed))
+            stack.enter_context(mock.patch("teistro._install.os.confstr", unnamed, create=True))
             stack.enter_context(mock.patch("teistro._install.platform.libc_ver", lambda: ("", "")))
             self.assertEqual(host_platform(), "linux-x64-musl")
         with contextlib.ExitStack() as stack:
             stack.enter_context(mock.patch("teistro._install.sys.platform", "linux"))
             stack.enter_context(mock.patch("teistro._install.platform.machine", lambda: "aarch64"))
-            stack.enter_context(mock.patch("teistro._install.os.confstr", lambda _name: "glibc 2.39"))
+            stack.enter_context(mock.patch("teistro._install.os.confstr", lambda _name: "glibc 2.39", create=True))
             self.assertEqual(host_platform(), "linux-arm64")
 
     def test_the_library_has_the_platforms_own_file_name(self) -> None:
