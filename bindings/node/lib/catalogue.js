@@ -2946,6 +2946,117 @@ export const ResolutionById = /* @__PURE__ */ new Map([
   [3, 'DIVERGENT'],
 ]);
 
+/** Every DayPart by name. */
+export const DayPart = /* @__PURE__ */ Object.freeze({
+  Daylight: 'DAYLIGHT',
+  Night: 'NIGHT',
+});
+
+/**
+ * Every DayPart by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DayPartById = /* @__PURE__ */ new Map([
+  [0, 'DAYLIGHT'],
+  [1, 'NIGHT'],
+]);
+
+/** Every Sunrise by name. */
+export const Sunrise = /* @__PURE__ */ Object.freeze({
+  CentreNoRefraction: 'CENTRE_NO_REFRACTION',
+  UpperLimbRefraction: 'UPPER_LIMB_REFRACTION',
+  LowerLimbRefraction: 'LOWER_LIMB_REFRACTION',
+  CentreRefraction: 'CENTRE_REFRACTION',
+});
+
+/**
+ * Every Sunrise by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SunriseById = /* @__PURE__ */ new Map([
+  [0, 'CENTRE_NO_REFRACTION'],
+  [1, 'UPPER_LIMB_REFRACTION'],
+  [2, 'LOWER_LIMB_REFRACTION'],
+  [3, 'CENTRE_REFRACTION'],
+]);
+
+/** Every GhatiReckoning by name. */
+export const GhatiReckoning = /* @__PURE__ */ Object.freeze({
+  Civil: 'CIVIL',
+  Proportional: 'PROPORTIONAL',
+});
+
+/**
+ * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GhatiReckoningById = /* @__PURE__ */ new Map([
+  [0, 'CIVIL'],
+  [1, 'PROPORTIONAL'],
+]);
+
+/** Every HoraReckoning by name. */
+export const HoraReckoning = /* @__PURE__ */ Object.freeze({
+  Proportional: 'PROPORTIONAL',
+  Equal: 'EQUAL',
+});
+
+/**
+ * Every HoraReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HoraReckoningById = /* @__PURE__ */ new Map([
+  [0, 'PROPORTIONAL'],
+  [1, 'EQUAL'],
+]);
+
+/** Every DayState by name. */
+export const DayState = /* @__PURE__ */ Object.freeze({
+  Normal: 'NORMAL',
+  Polar: 'POLAR',
+});
+
+/**
+ * Every DayState by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DayStateById = /* @__PURE__ */ new Map([
+  [0, 'NORMAL'],
+  [1, 'POLAR'],
+]);
+
+/** Every PolarKind by name. */
+export const PolarKind = /* @__PURE__ */ Object.freeze({
+  Day: 'DAY',
+  Night: 'NIGHT',
+});
+
+/**
+ * Every PolarKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PolarKindById = /* @__PURE__ */ new Map([
+  [0, 'DAY'],
+  [1, 'NIGHT'],
+]);
+
+/** Every PolarDayPolicy by name. */
+export const PolarDayPolicy = /* @__PURE__ */ Object.freeze({
+  Undefined: 'UNDEFINED',
+  NearestEvent: 'NEAREST_EVENT',
+  CivilMidnight: 'CIVIL_MIDNIGHT',
+});
+
+/**
+ * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PolarDayPolicyById = /* @__PURE__ */ new Map([
+  [0, 'UNDEFINED'],
+  [1, 'NEAREST_EVENT'],
+  [2, 'CIVIL_MIDNIGHT'],
+]);
+
 /** Every Reading by name. */
 export const Reading = /* @__PURE__ */ Object.freeze({
   Sandhi: 'SANDHI',
@@ -3689,117 +3800,6 @@ export const DashaPhaseById = /* @__PURE__ */ new Map([
   [0, 'COMMENCEMENT'],
   [1, 'MIDDLE'],
   [2, 'END'],
-]);
-
-/** Every DayPart by name. */
-export const DayPart = /* @__PURE__ */ Object.freeze({
-  Daylight: 'DAYLIGHT',
-  Night: 'NIGHT',
-});
-
-/**
- * Every DayPart by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const DayPartById = /* @__PURE__ */ new Map([
-  [0, 'DAYLIGHT'],
-  [1, 'NIGHT'],
-]);
-
-/** Every Sunrise by name. */
-export const Sunrise = /* @__PURE__ */ Object.freeze({
-  CentreNoRefraction: 'CENTRE_NO_REFRACTION',
-  UpperLimbRefraction: 'UPPER_LIMB_REFRACTION',
-  LowerLimbRefraction: 'LOWER_LIMB_REFRACTION',
-  CentreRefraction: 'CENTRE_REFRACTION',
-});
-
-/**
- * Every Sunrise by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const SunriseById = /* @__PURE__ */ new Map([
-  [0, 'CENTRE_NO_REFRACTION'],
-  [1, 'UPPER_LIMB_REFRACTION'],
-  [2, 'LOWER_LIMB_REFRACTION'],
-  [3, 'CENTRE_REFRACTION'],
-]);
-
-/** Every GhatiReckoning by name. */
-export const GhatiReckoning = /* @__PURE__ */ Object.freeze({
-  Civil: 'CIVIL',
-  Proportional: 'PROPORTIONAL',
-});
-
-/**
- * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const GhatiReckoningById = /* @__PURE__ */ new Map([
-  [0, 'CIVIL'],
-  [1, 'PROPORTIONAL'],
-]);
-
-/** Every HoraReckoning by name. */
-export const HoraReckoning = /* @__PURE__ */ Object.freeze({
-  Proportional: 'PROPORTIONAL',
-  Equal: 'EQUAL',
-});
-
-/**
- * Every HoraReckoning by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const HoraReckoningById = /* @__PURE__ */ new Map([
-  [0, 'PROPORTIONAL'],
-  [1, 'EQUAL'],
-]);
-
-/** Every DayState by name. */
-export const DayState = /* @__PURE__ */ Object.freeze({
-  Normal: 'NORMAL',
-  Polar: 'POLAR',
-});
-
-/**
- * Every DayState by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const DayStateById = /* @__PURE__ */ new Map([
-  [0, 'NORMAL'],
-  [1, 'POLAR'],
-]);
-
-/** Every PolarKind by name. */
-export const PolarKind = /* @__PURE__ */ Object.freeze({
-  Day: 'DAY',
-  Night: 'NIGHT',
-});
-
-/**
- * Every PolarKind by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const PolarKindById = /* @__PURE__ */ new Map([
-  [0, 'DAY'],
-  [1, 'NIGHT'],
-]);
-
-/** Every PolarDayPolicy by name. */
-export const PolarDayPolicy = /* @__PURE__ */ Object.freeze({
-  Undefined: 'UNDEFINED',
-  NearestEvent: 'NEAREST_EVENT',
-  CivilMidnight: 'CIVIL_MIDNIGHT',
-});
-
-/**
- * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const PolarDayPolicyById = /* @__PURE__ */ new Map([
-  [0, 'UNDEFINED'],
-  [1, 'NEAREST_EVENT'],
-  [2, 'CIVIL_MIDNIGHT'],
 ]);
 
 /** Every VarsheshaChosen by name. */

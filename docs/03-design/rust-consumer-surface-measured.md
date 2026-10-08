@@ -12,7 +12,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 10 disagree; more than one: `almanac (9)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (4)` |
+| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 10 disagree; more than one: `almanac (5)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (4)` |
 | every area reaches the boundary, so every area names crates | **holds** | 0 of 11 disagree; so every row of the table below is a measurement and not a gap |
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 51 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 13 disagree; so every area's composition has a home outside the C boundary |
@@ -26,7 +26,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | area | crates | which |
 |---|---|---|
 | `(root)` | 3 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris` |
-| `almanac` | 9 | `teistro-aspect`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-houses`, `teistro-panchanga`, `teistro-serial`, `teistro-state`, `teistro-time` |
+| `almanac` | 5 | `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-panchanga`, `teistro-time` |
 | `calendar` | 2 | `teistro-calendar`, `teistro-core` |
 | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `engine` | 2 | `teistro-core`, `teistro-port-ephemeris` |
@@ -44,7 +44,7 @@ Widest first. Read through the boundary's own helpers, because a body that names
 | entry point | module | crates | which |
 |---|---|---|---|
 | `ts_chart_found` | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
-| `ts_panchanga_days` | `panchanga` | 9 | `teistro-aspect`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-houses`, `teistro-panchanga`, `teistro-serial`, `teistro-state`, `teistro-time` |
+| `ts_panchanga_days` | `panchanga` | 5 | `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-panchanga`, `teistro-time` |
 | `ts_time_civil` | `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
 | `ts_positions` | `positions` | 3 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris` |
 | `ts_time_convert` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |

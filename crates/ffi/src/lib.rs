@@ -44,6 +44,7 @@ pub mod blob;
 pub mod calendar;
 pub mod chart;
 pub mod context;
+pub mod day;
 pub mod ephemeris;
 mod family;
 pub mod frame;

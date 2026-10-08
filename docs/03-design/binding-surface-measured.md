@@ -9,7 +9,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 The description carries 19 exported constants, 157 enums of 1341 members
 in all, 2 opaque handle types, 10 callback types, 27 structs, 51 entry
-points and 5 result-blob schemas, extracted from 22 source files. A
+points and 5 result-blob schemas, extracted from 23 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
 

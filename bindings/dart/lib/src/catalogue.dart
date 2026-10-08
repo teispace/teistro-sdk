@@ -4886,6 +4886,261 @@ enum Resolution {
   }
 }
 
+/// Which arc of its day an instant falls in.
+enum DayPart {
+  /// Between sunrise and sunset.
+  daylight(0, 'DAYLIGHT'),
+  /// Between sunset and the next sunrise.
+  night(1, 'NIGHT');
+
+  const DayPart(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DayPart byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DayPart'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DayPart? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which sunrise a day was reckoned from.
+///
+/// The named conventions only. A profile may ask for the centre of the
+/// disc at a chosen altitude instead, which is a `Custom` convention;
+/// a blob carries that as its altitude beside this, because a variant
+/// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+/// §8).
+enum Sunrise {
+  /// The centre of the disc on the geometric horizon.
+  centreNoRefraction(0, 'CENTRE_NO_REFRACTION'),
+  /// The upper limb with refraction.
+  upperLimbRefraction(1, 'UPPER_LIMB_REFRACTION'),
+  /// The lower limb with refraction.
+  lowerLimbRefraction(2, 'LOWER_LIMB_REFRACTION'),
+  /// The centre of the disc with standard refraction.
+  centreRefraction(3, 'CENTRE_REFRACTION');
+
+  const Sunrise(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Sunrise byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Sunrise'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Sunrise? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How the sixty ghatis of a day are measured.
+enum GhatiReckoning {
+  /// Twenty-four minutes each, from sunrise.
+  civil(0, 'CIVIL'),
+  /// Thirty over the actual daylight and thirty over the actual night.
+  proportional(1, 'PROPORTIONAL');
+
+  const GhatiReckoning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static GhatiReckoning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a GhatiReckoning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static GhatiReckoning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How the twenty-four horas of a day are measured.
+enum HoraReckoning {
+  /// Twelve over the daylight and twelve over the night.
+  proportional(0, 'PROPORTIONAL'),
+  /// Twenty-four of sixty minutes, from sunrise.
+  equal(1, 'EQUAL');
+
+  const HoraReckoning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static HoraReckoning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a HoraReckoning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static HoraReckoning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Whether a day had a sunrise, and what was done when it had not.
+///
+/// The kind half of a tagged enum: a polar day carries which polar
+/// state it was and which policy was applied, in `state_polar_kind` and
+/// `state_polar_policy` beside it, because a variant with a payload
+/// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+enum DayState {
+  /// Sunrise and sunset occurred; the two fields beside this are zero.
+  normal(0, 'NORMAL'),
+  /// No horizon crossing, and the policy synthesised the bounds.
+  polar(1, 'POLAR');
+
+  const DayState(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DayState byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DayState'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DayState? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which polar state a day without a sunrise was in.
+enum PolarKind {
+  /// The Sun stayed up.
+  day(0, 'DAY'),
+  /// The Sun stayed down.
+  night(1, 'NIGHT');
+
+  const PolarKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static PolarKind byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a PolarKind'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static PolarKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What the settings say a day without a sunrise is.
+enum PolarDayPolicy {
+  /// An undefined state: the day has no bounds.
+  undefined(0, 'UNDEFINED'),
+  /// The nearest rise or set stands in for the missing one.
+  nearestEvent(1, 'NEAREST_EVENT'),
+  /// Civil midnight stands in for it.
+  civilMidnight(2, 'CIVIL_MIDNIGHT');
+
+  const PolarDayPolicy(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static PolarDayPolicy byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a PolarDayPolicy'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static PolarDayPolicy? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which bound of a bhava a placement was read against.
 enum Reading {
   /// From one sandhi to the next: the bhava as a span between cusps.
@@ -6408,261 +6663,6 @@ enum DashaPhase {
 
   /// The member with a key, or `null` for one this build does not know.
   static DashaPhase? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// Which arc of its day an instant falls in.
-enum DayPart {
-  /// Between sunrise and sunset.
-  daylight(0, 'DAYLIGHT'),
-  /// Between sunset and the next sunrise.
-  night(1, 'NIGHT');
-
-  const DayPart(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static DayPart byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a DayPart'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static DayPart? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// Which sunrise a day was reckoned from.
-///
-/// The named conventions only. A profile may ask for the centre of the
-/// disc at a chosen altitude instead, which is a `Custom` convention;
-/// a blob carries that as its altitude beside this, because a variant
-/// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
-/// §8).
-enum Sunrise {
-  /// The centre of the disc on the geometric horizon.
-  centreNoRefraction(0, 'CENTRE_NO_REFRACTION'),
-  /// The upper limb with refraction.
-  upperLimbRefraction(1, 'UPPER_LIMB_REFRACTION'),
-  /// The lower limb with refraction.
-  lowerLimbRefraction(2, 'LOWER_LIMB_REFRACTION'),
-  /// The centre of the disc with standard refraction.
-  centreRefraction(3, 'CENTRE_REFRACTION');
-
-  const Sunrise(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static Sunrise byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a Sunrise'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static Sunrise? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// How the sixty ghatis of a day are measured.
-enum GhatiReckoning {
-  /// Twenty-four minutes each, from sunrise.
-  civil(0, 'CIVIL'),
-  /// Thirty over the actual daylight and thirty over the actual night.
-  proportional(1, 'PROPORTIONAL');
-
-  const GhatiReckoning(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static GhatiReckoning byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a GhatiReckoning'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static GhatiReckoning? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// How the twenty-four horas of a day are measured.
-enum HoraReckoning {
-  /// Twelve over the daylight and twelve over the night.
-  proportional(0, 'PROPORTIONAL'),
-  /// Twenty-four of sixty minutes, from sunrise.
-  equal(1, 'EQUAL');
-
-  const HoraReckoning(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static HoraReckoning byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a HoraReckoning'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static HoraReckoning? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// Whether a day had a sunrise, and what was done when it had not.
-///
-/// The kind half of a tagged enum: a polar day carries which polar
-/// state it was and which policy was applied, in `state_polar_kind` and
-/// `state_polar_policy` beside it, because a variant with a payload
-/// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
-enum DayState {
-  /// Sunrise and sunset occurred; the two fields beside this are zero.
-  normal(0, 'NORMAL'),
-  /// No horizon crossing, and the policy synthesised the bounds.
-  polar(1, 'POLAR');
-
-  const DayState(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static DayState byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a DayState'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static DayState? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// Which polar state a day without a sunrise was in.
-enum PolarKind {
-  /// The Sun stayed up.
-  day(0, 'DAY'),
-  /// The Sun stayed down.
-  night(1, 'NIGHT');
-
-  const PolarKind(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static PolarKind byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a PolarKind'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static PolarKind? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// What the settings say a day without a sunrise is.
-enum PolarDayPolicy {
-  /// An undefined state: the day has no bounds.
-  undefined(0, 'UNDEFINED'),
-  /// The nearest rise or set stands in for the missing one.
-  nearestEvent(1, 'NEAREST_EVENT'),
-  /// Civil midnight stands in for it.
-  civilMidnight(2, 'CIVIL_MIDNIGHT');
-
-  const PolarDayPolicy(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static PolarDayPolicy byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a PolarDayPolicy'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static PolarDayPolicy? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

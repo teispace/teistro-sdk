@@ -6109,6 +6109,190 @@ export declare const Resolution: {
 export declare const ResolutionById: ReadonlyMap<number, Resolution>;
 
 /**
+ * Which arc of its day an instant falls in.
+ */
+export type DayPart = 'DAYLIGHT' | 'NIGHT';
+
+/** Every DayPart by name; the values are the strings the union accepts. */
+export declare const DayPart: {
+  /**
+   * Between sunrise and sunset.
+   */
+  readonly Daylight: 'DAYLIGHT';
+  /**
+   * Between sunset and the next sunrise.
+   */
+  readonly Night: 'NIGHT';
+};
+
+/**
+ * Every DayPart by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DayPartById: ReadonlyMap<number, DayPart>;
+
+/**
+ * Which sunrise a day was reckoned from.
+ *
+ * The named conventions only. A profile may ask for the centre of the
+ * disc at a chosen altitude instead, which is a `Custom` convention;
+ * a blob carries that as its altitude beside this, because a variant
+ * with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
+ * §8).
+ */
+export type Sunrise = 'CENTRE_NO_REFRACTION' | 'UPPER_LIMB_REFRACTION' | 'LOWER_LIMB_REFRACTION' | 'CENTRE_REFRACTION';
+
+/** Every Sunrise by name; the values are the strings the union accepts. */
+export declare const Sunrise: {
+  /**
+   * The centre of the disc on the geometric horizon.
+   */
+  readonly CentreNoRefraction: 'CENTRE_NO_REFRACTION';
+  /**
+   * The upper limb with refraction.
+   */
+  readonly UpperLimbRefraction: 'UPPER_LIMB_REFRACTION';
+  /**
+   * The lower limb with refraction.
+   */
+  readonly LowerLimbRefraction: 'LOWER_LIMB_REFRACTION';
+  /**
+   * The centre of the disc with standard refraction.
+   */
+  readonly CentreRefraction: 'CENTRE_REFRACTION';
+};
+
+/**
+ * Every Sunrise by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SunriseById: ReadonlyMap<number, Sunrise>;
+
+/**
+ * How the sixty ghatis of a day are measured.
+ */
+export type GhatiReckoning = 'CIVIL' | 'PROPORTIONAL';
+
+/** Every GhatiReckoning by name; the values are the strings the union accepts. */
+export declare const GhatiReckoning: {
+  /**
+   * Twenty-four minutes each, from sunrise.
+   */
+  readonly Civil: 'CIVIL';
+  /**
+   * Thirty over the actual daylight and thirty over the actual night.
+   */
+  readonly Proportional: 'PROPORTIONAL';
+};
+
+/**
+ * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GhatiReckoningById: ReadonlyMap<number, GhatiReckoning>;
+
+/**
+ * How the twenty-four horas of a day are measured.
+ */
+export type HoraReckoning = 'PROPORTIONAL' | 'EQUAL';
+
+/** Every HoraReckoning by name; the values are the strings the union accepts. */
+export declare const HoraReckoning: {
+  /**
+   * Twelve over the daylight and twelve over the night.
+   */
+  readonly Proportional: 'PROPORTIONAL';
+  /**
+   * Twenty-four of sixty minutes, from sunrise.
+   */
+  readonly Equal: 'EQUAL';
+};
+
+/**
+ * Every HoraReckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HoraReckoningById: ReadonlyMap<number, HoraReckoning>;
+
+/**
+ * Whether a day had a sunrise, and what was done when it had not.
+ *
+ * The kind half of a tagged enum: a polar day carries which polar
+ * state it was and which policy was applied, in `state_polar_kind` and
+ * `state_polar_policy` beside it, because a variant with a payload
+ * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+ */
+export type DayState = 'NORMAL' | 'POLAR';
+
+/** Every DayState by name; the values are the strings the union accepts. */
+export declare const DayState: {
+  /**
+   * Sunrise and sunset occurred; the two fields beside this are zero.
+   */
+  readonly Normal: 'NORMAL';
+  /**
+   * No horizon crossing, and the policy synthesised the bounds.
+   */
+  readonly Polar: 'POLAR';
+};
+
+/**
+ * Every DayState by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DayStateById: ReadonlyMap<number, DayState>;
+
+/**
+ * Which polar state a day without a sunrise was in.
+ */
+export type PolarKind = 'DAY' | 'NIGHT';
+
+/** Every PolarKind by name; the values are the strings the union accepts. */
+export declare const PolarKind: {
+  /**
+   * The Sun stayed up.
+   */
+  readonly Day: 'DAY';
+  /**
+   * The Sun stayed down.
+   */
+  readonly Night: 'NIGHT';
+};
+
+/**
+ * Every PolarKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PolarKindById: ReadonlyMap<number, PolarKind>;
+
+/**
+ * What the settings say a day without a sunrise is.
+ */
+export type PolarDayPolicy = 'UNDEFINED' | 'NEAREST_EVENT' | 'CIVIL_MIDNIGHT';
+
+/** Every PolarDayPolicy by name; the values are the strings the union accepts. */
+export declare const PolarDayPolicy: {
+  /**
+   * An undefined state: the day has no bounds.
+   */
+  readonly Undefined: 'UNDEFINED';
+  /**
+   * The nearest rise or set stands in for the missing one.
+   */
+  readonly NearestEvent: 'NEAREST_EVENT';
+  /**
+   * Civil midnight stands in for it.
+   */
+  readonly CivilMidnight: 'CIVIL_MIDNIGHT';
+};
+
+/**
+ * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PolarDayPolicyById: ReadonlyMap<number, PolarDayPolicy>;
+
+/**
  * Which bound of a bhava a placement was read against.
  */
 export type Reading = 'SANDHI' | 'MADHYA';
@@ -7430,190 +7614,6 @@ export declare const DashaPhase: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const DashaPhaseById: ReadonlyMap<number, DashaPhase>;
-
-/**
- * Which arc of its day an instant falls in.
- */
-export type DayPart = 'DAYLIGHT' | 'NIGHT';
-
-/** Every DayPart by name; the values are the strings the union accepts. */
-export declare const DayPart: {
-  /**
-   * Between sunrise and sunset.
-   */
-  readonly Daylight: 'DAYLIGHT';
-  /**
-   * Between sunset and the next sunrise.
-   */
-  readonly Night: 'NIGHT';
-};
-
-/**
- * Every DayPart by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const DayPartById: ReadonlyMap<number, DayPart>;
-
-/**
- * Which sunrise a day was reckoned from.
- *
- * The named conventions only. A profile may ask for the centre of the
- * disc at a chosen altitude instead, which is a `Custom` convention;
- * a blob carries that as its altitude beside this, because a variant
- * with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
- * §8).
- */
-export type Sunrise = 'CENTRE_NO_REFRACTION' | 'UPPER_LIMB_REFRACTION' | 'LOWER_LIMB_REFRACTION' | 'CENTRE_REFRACTION';
-
-/** Every Sunrise by name; the values are the strings the union accepts. */
-export declare const Sunrise: {
-  /**
-   * The centre of the disc on the geometric horizon.
-   */
-  readonly CentreNoRefraction: 'CENTRE_NO_REFRACTION';
-  /**
-   * The upper limb with refraction.
-   */
-  readonly UpperLimbRefraction: 'UPPER_LIMB_REFRACTION';
-  /**
-   * The lower limb with refraction.
-   */
-  readonly LowerLimbRefraction: 'LOWER_LIMB_REFRACTION';
-  /**
-   * The centre of the disc with standard refraction.
-   */
-  readonly CentreRefraction: 'CENTRE_REFRACTION';
-};
-
-/**
- * Every Sunrise by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const SunriseById: ReadonlyMap<number, Sunrise>;
-
-/**
- * How the sixty ghatis of a day are measured.
- */
-export type GhatiReckoning = 'CIVIL' | 'PROPORTIONAL';
-
-/** Every GhatiReckoning by name; the values are the strings the union accepts. */
-export declare const GhatiReckoning: {
-  /**
-   * Twenty-four minutes each, from sunrise.
-   */
-  readonly Civil: 'CIVIL';
-  /**
-   * Thirty over the actual daylight and thirty over the actual night.
-   */
-  readonly Proportional: 'PROPORTIONAL';
-};
-
-/**
- * Every GhatiReckoning by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const GhatiReckoningById: ReadonlyMap<number, GhatiReckoning>;
-
-/**
- * How the twenty-four horas of a day are measured.
- */
-export type HoraReckoning = 'PROPORTIONAL' | 'EQUAL';
-
-/** Every HoraReckoning by name; the values are the strings the union accepts. */
-export declare const HoraReckoning: {
-  /**
-   * Twelve over the daylight and twelve over the night.
-   */
-  readonly Proportional: 'PROPORTIONAL';
-  /**
-   * Twenty-four of sixty minutes, from sunrise.
-   */
-  readonly Equal: 'EQUAL';
-};
-
-/**
- * Every HoraReckoning by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const HoraReckoningById: ReadonlyMap<number, HoraReckoning>;
-
-/**
- * Whether a day had a sunrise, and what was done when it had not.
- *
- * The kind half of a tagged enum: a polar day carries which polar
- * state it was and which policy was applied, in `state_polar_kind` and
- * `state_polar_policy` beside it, because a variant with a payload
- * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
- */
-export type DayState = 'NORMAL' | 'POLAR';
-
-/** Every DayState by name; the values are the strings the union accepts. */
-export declare const DayState: {
-  /**
-   * Sunrise and sunset occurred; the two fields beside this are zero.
-   */
-  readonly Normal: 'NORMAL';
-  /**
-   * No horizon crossing, and the policy synthesised the bounds.
-   */
-  readonly Polar: 'POLAR';
-};
-
-/**
- * Every DayState by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const DayStateById: ReadonlyMap<number, DayState>;
-
-/**
- * Which polar state a day without a sunrise was in.
- */
-export type PolarKind = 'DAY' | 'NIGHT';
-
-/** Every PolarKind by name; the values are the strings the union accepts. */
-export declare const PolarKind: {
-  /**
-   * The Sun stayed up.
-   */
-  readonly Day: 'DAY';
-  /**
-   * The Sun stayed down.
-   */
-  readonly Night: 'NIGHT';
-};
-
-/**
- * Every PolarKind by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const PolarKindById: ReadonlyMap<number, PolarKind>;
-
-/**
- * What the settings say a day without a sunrise is.
- */
-export type PolarDayPolicy = 'UNDEFINED' | 'NEAREST_EVENT' | 'CIVIL_MIDNIGHT';
-
-/** Every PolarDayPolicy by name; the values are the strings the union accepts. */
-export declare const PolarDayPolicy: {
-  /**
-   * An undefined state: the day has no bounds.
-   */
-  readonly Undefined: 'UNDEFINED';
-  /**
-   * The nearest rise or set stands in for the missing one.
-   */
-  readonly NearestEvent: 'NEAREST_EVENT';
-  /**
-   * Civil midnight stands in for it.
-   */
-  readonly CivilMidnight: 'CIVIL_MIDNIGHT';
-};
-
-/**
- * Every PolarDayPolicy by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const PolarDayPolicyById: ReadonlyMap<number, PolarDayPolicy>;
 
 /**
  * Which step of the year lord's chain decided it
