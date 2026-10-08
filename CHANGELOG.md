@@ -2409,7 +2409,11 @@ the astronomical numbers do not move. Nothing else computes yet.
   start of Saturn's eighth, the species, and bar or weight. The gloss's
   figures are tests: 25 signs and 4° for 6;17 ghatis, Gulika at 16;37
   ghatis. It reads no ephemeris; a caller's `Sky` gives the lagna, the
-  Sun, the Moon and the day. **Numbers:** none move.
+  Sun, the Moon, the day and the ishtakaal. `sdk.chart().rectify` judges
+  over the context's own chart: every clause reads back as the chart
+  founded at that instant reads it. The pranapada counts the chart's
+  ishtakaal under its ghati reckoning (thirty ghatis of daylight by
+  default), not clock hours from sunrise. **Numbers:** none move.
 - **A Java binding, begun** (`03-design/java-binding.md` steps 1 and
   2). `cargo xtask gen ffi` writes the Java layer from the description
   into `bindings/java/generated`: every enum with its id, key and, for

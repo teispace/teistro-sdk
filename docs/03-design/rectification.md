@@ -309,6 +309,12 @@ night; Gulika's eighths switch to the night arc after sunset; a birth before
 sunrise belongs to the previous day.
 - **Decided:** the chart's own day (its sunrise, its ishtakaal, its
   `chart_day` rule) for every stage, so a stage never reckons a second day.
+- **Found building it** (2026-10-08): the chart's ishtakaal is counted
+  under its ghati reckoning, proportional by default, so the verse's
+  "fifteen palas a sign" runs faster or slower than six clock minutes as
+  the daylight is shorter or longer than twelve hours. `Sky::ishtakaal_hours`
+  carries the chart's count, and the façade's read-back test holds every
+  clause to the chart founded at its instant.
 
 **X10. The conception check.** BPHS gives the conception instant, BJ IV.21
 a test at conception; neither says to compose them. Its units (a sign a

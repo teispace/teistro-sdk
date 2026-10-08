@@ -484,14 +484,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let completion = self.completion();
         let (zodiac, turning, zodiac_from) = self.zodiac(&completion, tt)?;
-        let day = chart_day(
-            self.model,
-            self.calendar,
-            self.clock,
-            place,
-            instant,
-            self.settings().day.polar_day_policy,
-        )?;
+        let day = self.day_at(instant, place)?;
 
         // Two divisions, each read the way its own system is read. The
         // chalit is built from the cusps of the system it *reads*, which
@@ -1036,6 +1029,29 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             place,
             zodiac,
             self.settings().houses.polar_policy,
+        )
+    }
+
+    /// The day an instant belongs to at a place, as a chart founded here
+    /// reckons it: the same solar model, calendar, clock and polar policy,
+    /// so an instant before sunrise is in the night of the day before.
+    ///
+    /// What a caller judging many instants of one chart's sky needs
+    /// beside [`Founder::ascendant_at`]: rectification asks it for every
+    /// instant it judges, and its pranapada and Gulika are read off the
+    /// day this answers.
+    ///
+    /// # Errors
+    ///
+    /// As [`chart_day`].
+    pub fn day_at(&self, at: JulianDay<Utc>, place: &Place) -> Result<ChartDay, Error> {
+        chart_day(
+            self.model,
+            self.calendar,
+            self.clock,
+            place,
+            at,
+            self.settings().day.polar_day_policy,
         )
     }
 
