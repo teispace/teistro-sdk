@@ -47,10 +47,13 @@ public final class Context implements AutoCloseable {
     private static final class State implements Runnable {
         private final Native lib;
         private MemorySegment handle;
+        /** The provider written in Java, released after the handle. */
+        private final HostProvider host;
 
-        State(Native lib, MemorySegment handle) {
+        State(Native lib, MemorySegment handle, HostProvider host) {
             this.lib = lib;
             this.handle = handle;
+            this.host = host;
         }
 
         @Override
@@ -58,21 +61,28 @@ public final class Context implements AutoCloseable {
             if (handle != null) {
                 MemorySegment freed = handle;
                 handle = null;
-                Boundary.call(() -> {
-                    lib.ts_context_free.invokeExact(freed);
-                    return null;
-                });
+                try {
+                    Boundary.call(() -> {
+                        lib.ts_context_free.invokeExact(freed);
+                        return null;
+                    });
+                } finally {
+                    // Only once the library holds no pointer into it.
+                    if (host != null) {
+                        host.close();
+                    }
+                }
             }
         }
     }
 
     private final Supplier<Map<Integer, String>> dashaNames;
 
-    private Context(Teistro teistro, MemorySegment handle, String dashasJson) {
+    private Context(Teistro teistro, MemorySegment handle, String dashasJson, HostProvider host) {
         this.lib = teistro.lib();
         this.dashaNames = Lazy.of(() -> registered(dashasJson, "dasha_system."));
         this.frame = new FrameArea(teistro);
-        this.state = new State(this.lib, handle);
+        this.state = new State(this.lib, handle, host);
         this.cleanable = CLEANER.register(this, state);
     }
 
@@ -104,6 +114,7 @@ public final class Context implements AutoCloseable {
 
     static Context open(Teistro teistro, ContextOptions options) {
         Native lib = teistro.lib();
+        HostProvider host = options.provider() == null ? null : new HostProvider(lib, options.provider());
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment raw = arena.allocate(Native.TsContextOptions.LAYOUT);
             Native.TsContextOptions.STRUCT_SIZE.set(raw, 0L, (int) Native.TsContextOptions.SIZE);
@@ -116,9 +127,14 @@ public final class Context implements AutoCloseable {
             Native.TsContextOptions.EPHEMERIS.set(raw, 0L, (byte) options.ephemeris().id());
             MemorySegment out = arena.allocate(ValueLayout.ADDRESS);
             MemorySegment error = Boundary.errorRecord(arena);
+            // A typed local: `invokeExact` reads a conditional as `Object`.
+            MemorySegment vtable = host == null ? MemorySegment.NULL : host.vtable();
             int status = Boundary.call(() -> (int) lib.ts_context_new.invokeExact(
-                    raw, MemorySegment.NULL, MemorySegment.NULL, out, error));
+                    raw, vtable, MemorySegment.NULL, out, error));
             if (status != Status.OK.id()) {
+                if (host != null) {
+                    host.close();
+                }
                 // A constructor's record crosses whole and owns its strings,
                 // so it is read before it is freed (`owned-error-record`).
                 TeistroException refusal = Boundary.refusal(status, error);
@@ -128,7 +144,7 @@ public final class Context implements AutoCloseable {
                 });
                 throw refusal;
             }
-            return new Context(teistro, out.get(ValueLayout.ADDRESS, 0), options.dashasJson());
+            return new Context(teistro, out.get(ValueLayout.ADDRESS, 0), options.dashasJson(), host);
         }
     }
 
@@ -152,10 +168,39 @@ public final class Context implements AutoCloseable {
     <T> T locked(Call<T> call) {
         lock.lock();
         try {
-            return call.run(lib, handle());
+            HostProvider host = state.host;
+            if (host == null) {
+                return call.run(lib, handle());
+            }
+            host.clear();
+            try {
+                return call.run(lib, handle());
+            } catch (TeistroException refusal) {
+                throw thrown(host.raised(), refusal);
+            }
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * What a provider written in Java threw, thrown on the caller's side,
+     * with the library's refusal kept beside it; the refusal itself when the
+     * provider threw nothing. Only a code crosses the C boundary, so without
+     * this a provider's own message would be lost.
+     */
+    private static RuntimeException thrown(Throwable raised, TeistroException refusal) {
+        if (raised == null) {
+            return refusal;
+        }
+        raised.addSuppressed(refusal);
+        if (raised instanceof RuntimeException unchecked) {
+            return unchecked;
+        }
+        if (raised instanceof Error error) {
+            throw error;
+        }
+        return new ProviderException((Exception) raised);
     }
 
     /**
@@ -318,6 +363,15 @@ public final class Context implements AutoCloseable {
         }
         long frame = Calls.framePack(lib, Calls.frameCanonical(lib));
         return positions(new PositionRequest(TimeScale.UT1, frame, true, null, instants, bodies));
+    }
+
+    /**
+     * The provider written in Java this context asks, if it was made with one.
+     *
+     * @return the provider
+     */
+    public java.util.Optional<EphemerisProvider> provider() {
+        return java.util.Optional.ofNullable(state.host).map(HostProvider::provider);
     }
 
     /** Frees the context. Closing twice does nothing. */

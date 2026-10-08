@@ -630,13 +630,26 @@ un-publish, `03-release-process.md`, "Withdrawing").
    compiled from the unnamed module at release 22 with every lint an
    error, so an example reaches only what the module exports.
    `check-java` runs them and `check-parity` compares them line for line
-   with the other four sets; `your_own_ephemeris` is excused until step
-   5. `Civil` gives Java Python's `date`, `at` and `iana_zone`, and
+   with the other four sets. `Civil` gives Java Python's `date`, `at` and `iana_zone`, and
    `positions` answers a `PositionGrid` read cell by cell, as Python's
    does. The module's sources reach `javac` through an argument file:
    passed one by one they outgrew a Windows command line.
 5. **The provider, plugins and the engine**, with the throwing-provider
    test and the leak check.
+   **Begun 2026-10-08:** `EphemerisProvider`, Python's contract with
+   its defaults, bound by `HostProvider`: two upcall stubs and the
+   capabilities described once, in a shared arena the context closes
+   after it frees the handle. Every upcall catches everything, because an
+   exception that escapes an FFM upcall ends the JVM. What the provider
+   threw is thrown on the caller's side from `Context.locked`, so every
+   call a provider answers carries it, not `positions` alone: an
+   unchecked exception as itself, a checked one as a
+   `ProviderException`'s cause, with the library's refusal suppressed
+   beside it. A column of the wrong length is refused, never padded.
+   The tests found a chart through a Java provider, take a throw back as
+   the same object, then a later refusal as the library's own, and bind
+   and release two hundred providers. **Then** plugins and the
+   overrides beyond `positions`.
 6. **Messages and records**: the Java target of `gen intl`, the
    generated records over `Json`. **Begun 2026-10-08:** `gen intl`
    writes `com.teispace.teistro.messages.Messages` into its own source

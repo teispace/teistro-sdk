@@ -31,10 +31,7 @@ java --enable-native-access=com.teispace.teistro \
 | [`Interpretation.java`](Interpretation.java) | the same birth record said in English and in Nepali | a **composer** turns what was read into a narrative plan — message keys and their slots, no words — and the locale engine says it, so one plan says one chart in every locale. The plan comes back in the same crossing as the chart, an item's `params` are `intl.render`'s own params with no conversion between them, a reading needs the rules whose answers it says, and what a composer cannot say it leaves out rather than guessing |
 | [`Readings.java`](Readings.java) | the same birth record's yogas and doshas said in each language's own words | the reading corpus is **loaded, not embedded**: a pack is bytes, read here from the files `teistro-intl build` writes (`cargo xtask check-parity` builds them into `target/packs`, or name another directory with `TEISTRO_PACKS`), and `ctx.intl().loadPack` is the one call whatever the bytes came from. Loading changes what the `readings` composer says and not how it is called, and the record holds the whole passage and its named facets beside the sentence the plan carries |
 | [`Phala.java`](Phala.java) | what the chart *is*, read aloud: a graha in a bhava, the lagna's sign, each limb of the day | two corpora, one engine: a pack **merges** into a record rather than replacing it, so `nakshatra.ASHWINI` keeps its name and gains the two corpora's forms, read through `forms`; the `phala` composer says only what a loaded pack has words for, and asking for it founds the chart with what it reads, the panchanga's limbs among them |
-
-`your_own_ephemeris`, the provider contract, is the one shared example
-Java lacks: a provider written in Java is `03-design/java-binding.md`
-step 5, and `check-parity` lists it as excused until then.
+| [`YourOwnEphemeris.java`](YourOwnEphemeris.java) | putting your own engine behind the SDK | the provider contract in full — one call per grid, refusing a frame so the SDK completes it, coverage checked before you are asked, and an exception that reaches the caller as itself, or as a `ProviderException`'s cause when it is checked |
 
 ## What these examples do not do
 
@@ -42,5 +39,6 @@ They all name `Ephemeris.BUILTIN`, the analytic ephemeris the SDK carries,
 so that they run anywhere with nothing to install. It is the fallback and
 not the intended path: in most cases a consumer belongs on a real engine —
 Teimeris, Swiss Ephemeris — installed as its own package under its own
-licence and named the same way, and every one of these programs is
-unchanged, which is what the port is for.
+licence and named the same way. Do that, or hand in an ephemeris of your
+own as [`YourOwnEphemeris.java`](YourOwnEphemeris.java) shows, and every
+one of these programs is unchanged, which is what the port is for.

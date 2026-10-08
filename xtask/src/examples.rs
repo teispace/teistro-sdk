@@ -85,14 +85,10 @@ impl Excused {
 /// ways: a difference not listed fails, and so does an entry that no
 /// longer excuses one.
 ///
-/// One entry: Java has no provider written in Java yet, so it has no
-/// `your_own_ephemeris`. Every other example prints alike in all five.
-pub(crate) const EXCUSED: [Excused; 1] = [Excused {
-    example: "your_own_ephemeris",
-    binding: Binding::Java,
-    line: None,
-    reason: "a provider written in Java is `03-design/java-binding.md` step 5",
-}];
+/// **Empty**, and the machinery kept: the five sets print alike, and a
+/// difference found later is either a defect to fix or an entry here
+/// naming the item that removes it.
+pub(crate) const EXCUSED: [Excused; 0] = [];
 
 /// The reading corpora under `packs/` the `phala` and `readings` examples
 /// load, each built into a directory of its own under [`PACKS`].

@@ -12,6 +12,8 @@ package com.teispace.teistro;
  * @param dashasJson dasha systems of the caller's own, as JSON, or null
  * @param ephemeris which of the SDK's own ephemerides to use
  * @param testProvider whether the context runs on the library's test provider
+ * @param provider an ephemeris written in Java, or null; the context owns
+ *     its binding and releases it when closed
  */
 public record ContextOptions(
         String profile,
@@ -20,7 +22,8 @@ public record ContextOptions(
         String layoutsJson,
         String dashasJson,
         Ephemeris ephemeris,
-        boolean testProvider) {
+        boolean testProvider,
+        EphemerisProvider provider) {
 
     /** The options, with the ephemeris never null. */
     public ContextOptions {
@@ -47,6 +50,7 @@ public record ContextOptions(
         private String dashasJson;
         private Ephemeris ephemeris = Ephemeris.NONE;
         private boolean testProvider;
+        private EphemerisProvider provider;
 
         private Builder() {}
 
@@ -128,12 +132,25 @@ public record ContextOptions(
         }
 
         /**
+         * An ephemeris written in Java, which the SDK asks for every
+         * position: the port's contract, as {@link EphemerisProvider} says.
+         *
+         * @param provider the provider
+         * @return this builder
+         */
+        public Builder provider(EphemerisProvider provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        /**
          * The options.
          *
          * @return the options
          */
         public ContextOptions build() {
-            return new ContextOptions(profile, settingsJson, locale, layoutsJson, dashasJson, ephemeris, testProvider);
+            return new ContextOptions(profile, settingsJson, locale, layoutsJson, dashasJson, ephemeris, testProvider,
+                    provider);
         }
     }
 }

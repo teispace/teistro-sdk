@@ -2437,8 +2437,9 @@ the astronomical numbers do not move. Nothing else computes yet.
   runner to Node's on every value the other runners print, and
   `gen intl` writes Java's typed messages and entity forms, which
   `intl().messages()` reads. The shared examples run in Java too and
-  print what the other bindings' print, but for the provider example,
-  which waits on a provider written in Java.
+  print what the other bindings' print, the provider example among
+  them: an `EphemerisProvider` written in Java answers the SDK through
+  FFM upcalls, and what it throws reaches the caller as itself.
   **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type
