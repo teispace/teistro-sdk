@@ -1,7 +1,7 @@
 package com.teispace.teistro;
 
-import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.ref.Cleaner;
 import java.util.HexFormat;
@@ -27,6 +27,11 @@ public final class Context implements AutoCloseable {
     private final State state;
     private final Cleaner.Cleanable cleanable;
     private final ReentrantLock lock = new ReentrantLock();
+    private final CalendarArea calendar = new CalendarArea(this);
+    private final TimeArea time = new TimeArea(this);
+    private final IntlArea intl = new IntlArea(this);
+    private final KeysArea keys = new KeysArea(this);
+    private final FrameArea frame;
 
     /** The handle, apart from the context, so the cleaner can free it. */
     private static final class State implements Runnable {
@@ -51,9 +56,10 @@ public final class Context implements AutoCloseable {
         }
     }
 
-    private Context(Native lib, MemorySegment handle) {
-        this.lib = lib;
-        this.state = new State(lib, handle);
+    private Context(Teistro teistro, MemorySegment handle) {
+        this.lib = teistro.lib();
+        this.frame = new FrameArea(teistro);
+        this.state = new State(this.lib, handle);
         this.cleanable = CLEANER.register(this, state);
     }
 
@@ -83,7 +89,7 @@ public final class Context implements AutoCloseable {
                 });
                 throw refusal;
             }
-            return new Context(lib, out.get(ValueLayout.ADDRESS, 0));
+            return new Context(teistro, out.get(ValueLayout.ADDRESS, 0));
         }
     }
 
@@ -94,27 +100,22 @@ public final class Context implements AutoCloseable {
         return state.handle;
     }
 
-    /**
-     * The exception for a status a context method answered, from this
-     * context's own record of it: read under the lock, before anything else
-     * touches the context.
-     */
-    private TeistroException refused(int status) {
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment error = Boundary.errorRecord(arena);
-            MemorySegment context = handle();
-            int read = Boundary.call(() -> (int) lib.ts_context_last_error.invokeExact(context, error));
-            if (read != Status.OK.id()) {
-                Status code = Status.of(status);
-                return new TeistroException(code, code.key(), "", "", "", "");
-            }
-            return Boundary.refusal(status, error);
-        }
+    /** A call on the live handle, under the context's lock. */
+    @FunctionalInterface
+    interface Call<T> {
+        T run(Native lib, MemorySegment context);
     }
 
-    private void check(int status) {
-        if (status != Status.OK.id()) {
-            throw refused(status);
+    /**
+     * Runs a call on the live handle while holding the lock, so a refusal is
+     * read from the record of this call and not a later one.
+     */
+    <T> T locked(Call<T> call) {
+        lock.lock();
+        try {
+            return call.run(lib, handle());
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -124,15 +125,7 @@ public final class Context implements AutoCloseable {
      * @return the profile's id
      */
     public String profile() {
-        lock.lock();
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment out = arena.allocate(Native.TsStr.LAYOUT);
-            MemorySegment context = handle();
-            check(Boundary.call(() -> (int) lib.ts_context_profile.invokeExact(context, out)));
-            return Boundary.borrowed(out);
-        } finally {
-            lock.unlock();
-        }
+        return locked(Calls::profile);
     }
 
     /**
@@ -142,22 +135,7 @@ public final class Context implements AutoCloseable {
      * @return the settings
      */
     public String settingsJson() {
-        lock.lock();
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment out = arena.allocate(Native.TsString.LAYOUT);
-            MemorySegment context = handle();
-            check(Boundary.call(() -> (int) lib.ts_context_settings_json.invokeExact(context, out)));
-            try {
-                return Boundary.owned(out);
-            } finally {
-                Boundary.call(() -> {
-                    lib.ts_string_free.invokeExact(out);
-                    return null;
-                });
-            }
-        } finally {
-            lock.unlock();
-        }
+        return locked(Calls::settingsJson);
     }
 
     /**
@@ -167,54 +145,53 @@ public final class Context implements AutoCloseable {
      * @return the hash
      */
     public String settingsHash() {
-        lock.lock();
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment out = arena.allocate(Native.TsHash.LAYOUT);
-            MemorySegment context = handle();
-            check(Boundary.call(() -> (int) lib.ts_context_settings_hash.invokeExact(context, out)));
-            byte[] bytes = out.asSlice(Native.TsHash.BYTES_OFFSET, 32).toArray(ValueLayout.JAVA_BYTE);
-            return HexFormat.of().formatHex(bytes);
-        } finally {
-            lock.unlock();
-        }
+        return HexFormat.of().formatHex(locked(Calls::settingsHash).bytes());
     }
 
     /**
-     * A catalogue key's packed id.
+     * The calendars: dates by fixed day, conversion, month lengths, leap
+     * years and weekdays.
      *
-     * @param key the key, full ({@code graha.SUN}) or bare where it is unambiguous
-     * @return the packed id, the kind in the high half
-     * @throws TeistroException with {@link Status#UNSUPPORTED} for an unknown key, with a suggestion
+     * @return the calendar area of this context
      */
-    public int keyId(String key) {
-        lock.lock();
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment text = Boundary.cString(arena, key);
-            MemorySegment out = arena.allocate(ValueLayout.JAVA_INT);
-            MemorySegment context = handle();
-            check(Boundary.call(() -> (int) lib.ts_key_parse.invokeExact(context, text, out)));
-            return out.get(ValueLayout.JAVA_INT, 0);
-        } finally {
-            lock.unlock();
-        }
+    public CalendarArea calendar() {
+        return calendar;
     }
 
     /**
-     * A packed id's key.
+     * The time scales and zones.
      *
-     * @param id the packed id
-     * @return the full key
+     * @return the time area of this context
      */
-    public String keyName(int id) {
-        lock.lock();
-        try (Arena arena = Arena.ofConfined()) {
-            MemorySegment out = arena.allocate(Native.TsStr.LAYOUT);
-            MemorySegment context = handle();
-            check(Boundary.call(() -> (int) lib.ts_key_name.invokeExact(context, id, out)));
-            return Boundary.borrowed(out);
-        } finally {
-            lock.unlock();
-        }
+    public TimeArea time() {
+        return time;
+    }
+
+    /**
+     * The locale, its messages and the scripts they are in.
+     *
+     * @return the intl area of this context
+     */
+    public IntlArea intl() {
+        return intl;
+    }
+
+    /**
+     * Catalogue keys and their packed ids.
+     *
+     * @return the keys area of this context
+     */
+    public KeysArea keys() {
+        return keys;
+    }
+
+    /**
+     * The coordinate conventions a request is expressed in.
+     *
+     * @return the frame area
+     */
+    public FrameArea frame() {
+        return frame;
     }
 
     /** Frees the context. Closing twice does nothing. */

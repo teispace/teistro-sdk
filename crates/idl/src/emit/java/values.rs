@@ -63,7 +63,7 @@ pub(super) fn files(api: &Api, dir: &str) -> Vec<File> {
 
 /// The Java type a scalar is carried in: one size wider when it is
 /// unsigned, so every C value has a Java one.
-const fn carrier(scalar: Scalar) -> &'static str {
+pub(super) const fn carrier(scalar: Scalar) -> &'static str {
     match scalar {
         Scalar::U8 | Scalar::U16 | Scalar::I8 | Scalar::I16 | Scalar::I32 => "int",
         Scalar::U32 | Scalar::U64 | Scalar::I64 | Scalar::Usize | Scalar::Isize => "long",
@@ -87,7 +87,7 @@ const fn boxed(carrier: &str) -> &str {
 
 /// The raw layout's Java type for a scalar, which a `VarHandle` reads and
 /// writes exactly.
-const fn raw(scalar: Scalar) -> &'static str {
+pub(super) const fn raw(scalar: Scalar) -> &'static str {
     match scalar {
         Scalar::U8 | Scalar::I8 => "byte",
         Scalar::U16 | Scalar::I16 => "short",
@@ -119,10 +119,15 @@ fn element(field: &FieldDef) -> Scalar {
 
 /// The enum a field stands for, by its binding name.
 fn enum_of(field: &FieldDef) -> Option<String> {
-    field.meta.enum_name.as_deref().map(binding_type_name).or_else(|| match &field.ty {
-        TypeRef::Enum { name } => Some(binding_type_name(name)),
-        _ => None,
-    })
+    field
+        .meta
+        .enum_name
+        .as_deref()
+        .map(binding_type_name)
+        .or_else(|| match &field.ty {
+            TypeRef::Enum { name } => Some(binding_type_name(name)),
+            _ => None,
+        })
 }
 
 /// Whether a field may hold no value.
@@ -399,9 +404,21 @@ fn render_brand(api: &Api, brand: &str, field: &FieldDef) -> String {
     let mut out = preamble(api, PACKAGE);
     let doc = format!(
         "A {brand}{}{}.\n\nIts own type, so it cannot be passed where another quantity is wanted.\n\n@param value the {brand}{}",
-        if unit.is_empty() { String::new() } else { format!(" in {unit}") },
-        if range.is_empty() { String::new() } else { format!(", {range}") },
-        if unit.is_empty() { String::new() } else { format!(" in {unit}") },
+        if unit.is_empty() {
+            String::new()
+        } else {
+            format!(" in {unit}")
+        },
+        if range.is_empty() {
+            String::new()
+        } else {
+            format!(", {range}")
+        },
+        if unit.is_empty() {
+            String::new()
+        } else {
+            format!(" in {unit}")
+        },
     );
     // The `@param` tag must reach Javadoc as a tag.
     out.push_str(&javadoc(&doc, "").replace("&#64;param", "@param"));
@@ -468,7 +485,10 @@ fn render_compact(out: &mut String, api: &Api, name: &str, shown: &[(&FieldDef, 
         let field = identifier(&f.name);
         let ty = java_type(api, f, role);
         if !absent(f, role) && is_reference(&ty) {
-            let _ = writeln!(body, "        Objects.requireNonNull({field}, \"{field}\");");
+            let _ = writeln!(
+                body,
+                "        Objects.requireNonNull({field}, \"{field}\");"
+            );
         }
         if ty.ends_with("[]") {
             let _ = writeln!(body, "        {field} = {field}.clone();");
@@ -518,28 +538,42 @@ fn write_plain(api: &Api, s: &StructDef, f: &FieldDef, value: &str) -> String {
     } else {
         value.to_string()
     };
-    let raw_value = match scalar {
-        Scalar::U8 => format!("Values.u8({label}, {carried})"),
-        Scalar::U16 => format!("Values.u16({label}, {carried})"),
-        Scalar::U32 => format!("Values.u32({label}, {carried})"),
-        Scalar::I8 => format!("Values.i8({label}, {carried})"),
-        Scalar::I16 => format!("Values.i16({label}, {carried})"),
-        _ => {
-            let from = if f.meta.brand.is_some() {
-                "double"
-            } else if enum_of(f).is_some() {
-                "int"
-            } else {
-                carrier(scalar)
-            };
-            if from == raw(scalar) {
-                carried
-            } else {
-                format!("({}) {carried}", raw(scalar))
-            }
-        }
+    let from = if f.meta.brand.is_some() {
+        "double"
+    } else if enum_of(f).is_some() {
+        "int"
+    } else {
+        carrier(scalar)
     };
+    let raw_value = narrow(scalar, from, &label, &carried);
     format!("{h}.set(raw, 0L, {raw_value});")
+}
+
+/// A carried value as the raw type its scalar is stored as: an unsigned or
+/// narrow one checked against its C range by `label`, a cast only where
+/// the Java types differ.
+pub(super) fn narrow(scalar: Scalar, from: &str, label: &str, value: &str) -> String {
+    match scalar {
+        Scalar::U8 => format!("Values.u8({label}, {value})"),
+        Scalar::U16 => format!("Values.u16({label}, {value})"),
+        Scalar::U32 => format!("Values.u32({label}, {value})"),
+        Scalar::I8 => format!("Values.i8({label}, {value})"),
+        Scalar::I16 => format!("Values.i16({label}, {value})"),
+        _ if from == raw(scalar) => value.to_string(),
+        _ => format!("({}) {value}", raw(scalar)),
+    }
+}
+
+/// A raw value read out as the Java type it is carried in: an unsigned
+/// one widened without its sign.
+pub(super) fn widen(scalar: Scalar, got: &str) -> String {
+    match scalar {
+        Scalar::U8 => format!("Byte.toUnsignedInt({got})"),
+        Scalar::U16 => format!("Short.toUnsignedInt({got})"),
+        Scalar::U32 => format!("Integer.toUnsignedLong({got})"),
+        Scalar::I8 | Scalar::I16 => format!("(int) {got}"),
+        _ => got.to_string(),
+    }
 }
 
 /// `into`: the value written into the C struct a call takes, which may be
@@ -559,10 +593,13 @@ fn render_into(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole]) 
         let label = literal(&identifier(&f.name));
         let line = match role {
             FieldRole::Handshake | FieldRole::Reserved => continue,
-            FieldRole::Flag => format!("{h}.set(raw, 0L, ({}) ({field} ? 1 : 0));", raw(stored(api, f))),
-            FieldRole::BitSet { .. } => format!(
-                "{h}.set(raw, 0L, Values.u32({label}, Values.bits({label}, {field})));"
+            FieldRole::Flag => format!(
+                "{h}.set(raw, 0L, ({}) ({field} ? 1 : 0));",
+                raw(stored(api, f))
             ),
+            FieldRole::BitSet { .. } => {
+                format!("{h}.set(raw, 0L, Values.u32({label}, Values.bits({label}, {field})));")
+            }
             FieldRole::Count { of } => {
                 let size = match s.fields.iter().find(|x| &x.name == of) {
                     Some(array) if enum_of(array).is_some() => format!("{}.size()", identifier(of)),
@@ -571,7 +608,11 @@ fn render_into(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole]) 
                 format!("{h}.set(raw, 0L, ({}) {size});", raw(stored(api, f)))
             }
             FieldRole::Presence { of } => {
-                format!("{h}.set(raw, 0L, ({}) ({} == null ? 0 : 1));", raw(stored(api, f)), identifier(of))
+                format!(
+                    "{h}.set(raw, 0L, ({}) ({} == null ? 0 : 1));",
+                    raw(stored(api, f)),
+                    identifier(of)
+                )
             }
             FieldRole::Array { .. } | FieldRole::Column => {
                 let written = match (enum_of(f), element(f)) {
@@ -580,7 +621,12 @@ fn render_into(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole]) 
                     (None, Scalar::I32) => format!("Values.i32s(arena, {field})"),
                     (None, Scalar::U32) => format!("Values.u32s(arena, {label}, {field})"),
                     (None, Scalar::U16) => format!("Values.u16s(arena, {label}, {field})"),
-                    _ => unplaced(&format!("{}.{}", s.name, f.name), &crate::layout::LayoutError::Unknown(String::from("an array of this element"))),
+                    _ => unplaced(
+                        &format!("{}.{}", s.name, f.name),
+                        &crate::layout::LayoutError::Unknown(String::from(
+                            "an array of this element",
+                        )),
+                    ),
                 };
                 format!("{h}.set(raw, 0L, {written});")
             }
@@ -622,13 +668,10 @@ fn render_into(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole]) 
 /// unsigned one widened without its sign.
 fn read_carried(api: &Api, s: &StructDef, f: &FieldDef) -> String {
     let scalar = stored(api, f);
-    let got = format!("(({}) {}.get(raw, 0L))", raw(scalar), handle(s, f));
+    let got = format!("({}) {}.get(raw, 0L)", raw(scalar), handle(s, f));
     match scalar {
-        Scalar::U8 => format!("Byte.toUnsignedInt{got}"),
-        Scalar::U16 => format!("Short.toUnsignedInt{got}"),
-        Scalar::U32 => format!("Integer.toUnsignedLong{got}"),
-        Scalar::I8 | Scalar::I16 => format!("(int) {got}"),
-        _ => got,
+        Scalar::U8 | Scalar::U16 | Scalar::U32 | Scalar::I8 | Scalar::I16 => widen(scalar, &got),
+        _ => format!("({got})"),
     }
 }
 
@@ -666,10 +709,7 @@ fn render_of(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], na
             ),
             FieldRole::Array { count } => {
                 let count_field = s.fields.iter().find(|x| &x.name == count);
-                let n = count_field.map_or_else(
-                    || String::from("0L"),
-                    |c| read_carried(api, s, c),
-                );
+                let n = count_field.map_or_else(|| String::from("0L"), |c| read_carried(api, s, c));
                 let pointer = format!("(MemorySegment) {h}.get(raw, 0L)");
                 match (enum_of(f), element(f)) {
                     (Some(e), Scalar::U16) => format!("Values.u16Members({pointer}, {n}, {e}::of)"),
@@ -677,7 +717,12 @@ fn render_of(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], na
                     (None, Scalar::I32) => format!("Values.i32s({pointer}, {n})"),
                     (None, Scalar::U32) => format!("Values.u32s({pointer}, {n})"),
                     (None, Scalar::U16) => format!("Values.u16s({pointer}, {n})"),
-                    _ => unplaced(&format!("{}.{}", s.name, f.name), &crate::layout::LayoutError::Unknown(String::from("an array of this element"))),
+                    _ => unplaced(
+                        &format!("{}.{}", s.name, f.name),
+                        &crate::layout::LayoutError::Unknown(String::from(
+                            "an array of this element",
+                        )),
+                    ),
                 }
             }
             // A column is the caller's to allocate and the library's to
@@ -702,14 +747,16 @@ fn render_of(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], na
                 screaming(&f.name)
             ),
             FieldRole::Optional { flag } => {
-                let present = s
-                    .fields
-                    .iter()
-                    .find(|x| &x.name == flag)
-                    .map_or_else(
-                        || String::from("false"),
-                        |x| format!("(({}) {}.get(raw, 0L)) != 0", raw(stored(api, x)), handle(s, x)),
-                    );
+                let present = s.fields.iter().find(|x| &x.name == flag).map_or_else(
+                    || String::from("false"),
+                    |x| {
+                        format!(
+                            "(({}) {}.get(raw, 0L)) != 0",
+                            raw(stored(api, x)),
+                            handle(s, x)
+                        )
+                    },
+                );
                 let value = match &f.ty {
                     TypeRef::Struct { name } => format!(
                         "{}.of(raw.asSlice(Native.{}.{}_OFFSET, Native.{name}.SIZE))",

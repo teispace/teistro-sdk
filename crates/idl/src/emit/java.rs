@@ -13,6 +13,7 @@
 //! is 64-bit, and the JDK ships for none of the others. The hand-written
 //! loader refuses an `ADDRESS` layout that is not eight bytes.
 
+mod calls;
 mod values;
 
 use std::fmt::Write;
@@ -70,6 +71,7 @@ pub fn render(api: &Api) -> Vec<File> {
         text: render_exception(api),
     });
     files.extend(values::files(api, &dir));
+    files.extend(calls::files(api, &dir));
     files.push(File {
         path: format!("{}/Native.java", FFI_PACKAGE.replace('.', "/")),
         text: render_native(api),
@@ -652,11 +654,21 @@ mod tests {
             .unwrap();
         // A keyword is renamed, an unsigned byte is carried as an int and
         // checked by the name the caller wrote, and nothing is cast twice.
-        assert!(pair.text.contains("public record Pair(\n        int flag,\n        double nativeValue) {"));
+        assert!(
+            pair.text
+                .contains("public record Pair(\n        int flag,\n        double nativeValue) {")
+        );
         assert!(pair.text.contains("Values.u8(\"flag\", flag)"));
         assert!(pair.text.contains("NATIVE.set(raw, 0L, nativeValue);"));
-        assert!(pair.text.contains("Byte.toUnsignedInt((byte) Native.TsPair.FLAG.get(raw, 0L))"));
-        assert!(files.iter().any(|f| f.path == "com/teispace/teistro/Values.java"));
+        assert!(
+            pair.text
+                .contains("Byte.toUnsignedInt((byte) Native.TsPair.FLAG.get(raw, 0L))")
+        );
+        assert!(
+            files
+                .iter()
+                .any(|f| f.path == "com/teispace/teistro/Values.java")
+        );
     }
 
     #[test]

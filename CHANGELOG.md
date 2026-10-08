@@ -2406,7 +2406,11 @@ the astronomical numbers do not move. Nothing else computes yet.
   field and a method handle per entry point. The hand-written layer opens
   the library under the three build rules every loader applies and makes
   a context that reads its profile, settings, hash and keys, with each
-  refusal carrying the library's record. `cargo xtask check-java`
+  refusal carrying the library's record. Every struct a binding shows is
+  a record that checks what its C struct cannot hold, naming the field
+  as the caller wrote it; every brand is a record that checks its range;
+  and the calendar, time, keys, frame and intl areas answer through
+  generated calls, each under the context's lock. `cargo xtask check-java`
   compiles both at release 22 with every lint an error and runs the
   tests against the real library, and verify runs it on Java 25.
   **Numbers:** none move.
