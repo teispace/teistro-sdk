@@ -158,7 +158,7 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                 tally.same(
                     first.lord.key(),
                     recorded["first_lord"].as_str().unwrap(),
-                    || format!("{at}"),
+                    || at.clone(),
                 );
                 let balance = dasha.balance();
                 let written = &recorded["balance"];
@@ -192,7 +192,7 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                 for (period, cells) in periods.iter().zip(recorded_rows) {
                     rows += 1;
                     tally.same(period.path.to_string(), cells[0].as_str().unwrap(), || {
-                        format!("{at}")
+                        at.clone()
                     });
                     tally.same(period.lord.key(), cells[1].as_str().unwrap(), || {
                         format!("{at} {}", period.path)
@@ -223,9 +223,7 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                             link[1].as_u64().unwrap(),
                             || format!("{at}: index at level {}", link[0]),
                         );
-                        tally.same(period.lord.key(), link[2].as_str().unwrap(), || {
-                            format!("{at}")
-                        });
+                        tally.same(period.lord.key(), link[2].as_str().unwrap(), || at.clone());
                         worst = worst
                             .max((period.interval.from.get() - jd(&link[3])).abs())
                             .max((period.interval.to.get() - jd(&link[4])).abs());

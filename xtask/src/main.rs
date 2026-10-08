@@ -253,6 +253,7 @@ mod chebyshev;
 mod classical;
 mod classical_chart;
 mod composites;
+mod conformance;
 mod consumer;
 mod dart_binding;
 mod dasha_coverage;
@@ -369,6 +370,11 @@ type Pass = (&'static str, fn(&Path) -> i32, fn(&Path) -> i32);
 /// gone stale on three passes, which is the whole argument. A slice and
 /// not an array, so that adding a row is one line and not two.
 const PASSES: &[Pass] = &[
+    (
+        "conformance",
+        conformance::generate,
+        conformance::check_generated,
+    ),
     ("chalit", chalit::generate, chalit::check_generated),
     (
         "classical-chart",

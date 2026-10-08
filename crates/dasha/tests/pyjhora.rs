@@ -12,7 +12,8 @@
     clippy::expect_used,
     clippy::panic,
     clippy::indexing_slicing,
-    reason = "tests fail by panicking and index what they read"
+    clippy::too_many_lines,
+    reason = "tests fail by panicking, index what they read and walk one corpus each"
 )]
 
 mod common;
