@@ -5,7 +5,8 @@
 //! The kernel reads no ephemeris; this is the [`Sky`] it asks. Every
 //! instant is read as a chart founded at it would read it: the lagna by
 //! [`Founder::ascendant_at`] in the zodiac of the chart founded at the
-//! window's middle, the Sun and the Moon by [`Founder::longitudes`], the
+//! window's middle, the Sun and the Moon by [`Founder::longitudes_in`] in
+//! that zodiac too, the
 //! day by [`Founder::day_at`] and the ishtakaal by the settings' ghati
 //! reckoning, so a judged instant never reckons a second day (X9).
 
@@ -82,7 +83,7 @@ impl ChartArea<'_> {
                 place: *place,
                 zodiac: chart.value.zodiac,
                 reckoning,
-                grahas: Cell::new(None),
+                luminaries: Cell::new(None),
             };
             let answer = narrow(window, &sky, rules)?;
             let mut provenance = chart.provenance;
@@ -116,33 +117,32 @@ struct ChartSky<'a, 'f> {
     zodiac: ChartZodiac,
     /// How the chart counts its ghatis, which the pranapada counts in.
     reckoning: Reckoning,
-    /// The grahas of the last instant asked, by its bits: the purifier
-    /// asks the Sun and then the Moon of one instant, which is one request.
-    grahas: Cell<Option<(u64, [f64; 9])>>,
+    /// The Sun and the Moon of the last instant asked, by its bits: the
+    /// purifier asks the Sun and then the Moon of one instant, which is one
+    /// request.
+    luminaries: Cell<Option<(u64, [f64; 2])>>,
 }
 
 impl ChartSky<'_, '_> {
-    fn graha(&self, graha: Graha, at: JulianDay<Utc>) -> Result<f64, Error> {
+    /// The Sun and the Moon at an instant, read once for both.
+    fn luminaries(&self, at: JulianDay<Utc>) -> Result<[f64; 2], Error> {
         let bits = at.get().to_bits();
-        let row = match self.grahas.get() {
-            Some((held, row)) if held == bits => row,
-            _ => {
-                let row = self
-                    .founder
-                    .longitudes(&[at], &self.place)?
-                    .value
-                    .into_iter()
-                    .next()
-                    .ok_or_else(|| {
-                        Error::internal("the provider answered no row for an instant")
-                    })?;
-                self.grahas.set(Some((bits, row)));
-                row
-            }
+        if let Some((held, both)) = self.luminaries.get()
+            && held == bits
+        {
+            return Ok(both);
+        }
+        let read = self.founder.longitudes_in(
+            at,
+            &self.place,
+            &self.zodiac,
+            &[Graha::Sun, Graha::Moon],
+        )?;
+        let [sun, moon] = read[..] else {
+            return Err(Error::internal("two grahas asked, and not two answered"));
         };
-        row.get(graha as usize)
-            .copied()
-            .ok_or_else(|| Error::internal(format!("no place for {}", graha.key())))
+        self.luminaries.set(Some((bits, [sun, moon])));
+        Ok([sun, moon])
     }
 }
 
@@ -152,11 +152,11 @@ impl Sky for ChartSky<'_, '_> {
     }
 
     fn sun_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
-        self.graha(Graha::Sun, at)
+        Ok(self.luminaries(at)?[0])
     }
 
     fn moon_deg(&self, at: JulianDay<Utc>) -> Result<f64, Error> {
-        self.graha(Graha::Moon, at)
+        Ok(self.luminaries(at)?[1])
     }
 
     fn day(&self, at: JulianDay<Utc>) -> Result<Day, Error> {
