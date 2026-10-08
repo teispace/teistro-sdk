@@ -231,6 +231,8 @@ jobs:
         run: cargo xtask check-kalachakra
       - name: Doshas page (the engine's dosha rules measured, and the seventeen it computes in code written as rules)
         run: cargo xtask check-doshas
+      - name: Rectification page (how much of a day the purifier keeps under each reading, and the verse's pranapada against the SDK's point, X2 and X8)
+        run: cargo xtask check-rectification
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
         run: cargo xtask check-lints
 

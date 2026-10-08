@@ -89,6 +89,9 @@
 //!   every recorded birth against its two rivals, the tropical return and
 //!   the mean one, with what each costs the lagna —
 //!   `annual-chart-measured.md`.
+//! - `rectification` and `check-rectification`: how much of a day the
+//!   purifier keeps under each reading, and the verse's pranapada against
+//!   the SDK's point — `rectification-measured.md`.
 //! - `muntha` and `check-muntha`: the birth lagna progressed one sign for
 //!   each completed year, held over every recorded birth against the
 //!   **recording's** lagna — its only input — with the margin each lagna
@@ -305,6 +308,7 @@ mod python_binding;
 mod rashi_dashas;
 mod rashifal;
 mod reception;
+mod rectification;
 mod release;
 mod render;
 mod ritu;
@@ -444,6 +448,11 @@ const PASSES: &[Pass] = &[
         varshaphala::check_generated,
     ),
     ("muntha", muntha::generate, muntha::check_generated),
+    (
+        "rectification",
+        rectification::generate,
+        rectification::check_generated,
+    ),
     (
         "dasha-systems",
         dasha_systems::generate,
