@@ -337,6 +337,11 @@ public enum Samvatsara implements Catalogued {
         return "samvatsara." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.SAMVATSARA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

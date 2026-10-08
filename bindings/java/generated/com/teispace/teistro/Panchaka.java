@@ -62,6 +62,11 @@ public enum Panchaka implements Catalogued {
         return "panchaka." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.PANCHAKA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

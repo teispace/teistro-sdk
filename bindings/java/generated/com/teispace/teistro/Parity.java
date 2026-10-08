@@ -47,6 +47,11 @@ public enum Parity implements Catalogued {
         return "parity." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.PARITY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

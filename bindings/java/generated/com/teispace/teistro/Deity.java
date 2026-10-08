@@ -222,6 +222,11 @@ public enum Deity implements Catalogued {
         return "deity." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DEITY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

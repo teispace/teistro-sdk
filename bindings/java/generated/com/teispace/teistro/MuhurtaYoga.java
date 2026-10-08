@@ -62,6 +62,11 @@ public enum MuhurtaYoga implements Catalogued {
         return "muhurta_yoga." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.MUHURTA_YOGA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

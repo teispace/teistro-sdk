@@ -47,6 +47,11 @@ public enum Paksha implements Catalogued {
         return "paksha." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.PAKSHA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

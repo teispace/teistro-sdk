@@ -97,6 +97,11 @@ public enum Graha implements Catalogued {
         return "graha." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.GRAHA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

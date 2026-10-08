@@ -57,6 +57,11 @@ public enum SolarEclipseKind implements Catalogued {
         return "solar_eclipse_kind." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.SOLAR_ECLIPSE_KIND;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

@@ -67,6 +67,11 @@ public enum Calendar implements Catalogued {
         return "calendar." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.CALENDAR;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

@@ -97,6 +97,11 @@ public enum Koota implements Catalogued {
         return "koota." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.KOOTA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

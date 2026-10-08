@@ -77,6 +77,11 @@ public enum Direction implements Catalogued {
         return "direction." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DIRECTION;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

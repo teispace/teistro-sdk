@@ -52,6 +52,11 @@ public enum Nadi implements Catalogued {
         return "nadi." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.NADI;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

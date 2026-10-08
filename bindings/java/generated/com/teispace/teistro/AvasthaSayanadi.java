@@ -97,6 +97,11 @@ public enum AvasthaSayanadi implements Catalogued {
         return "avastha_sayanadi." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.AVASTHA_SAYANADI;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

@@ -97,6 +97,11 @@ public enum BlackoutKind implements Catalogued {
         return "blackout_kind." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.BLACKOUT_KIND;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

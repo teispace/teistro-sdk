@@ -97,6 +97,11 @@ public enum Rashi implements Catalogued {
         return "rashi." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.RASHI;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

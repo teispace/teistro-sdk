@@ -62,6 +62,11 @@ public enum Varna implements Catalogued {
         return "varna." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.VARNA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

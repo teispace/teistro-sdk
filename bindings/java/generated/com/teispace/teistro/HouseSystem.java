@@ -147,6 +147,11 @@ public enum HouseSystem implements Catalogued {
         return "house_system." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.HOUSE_SYSTEM;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

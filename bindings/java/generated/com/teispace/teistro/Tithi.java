@@ -187,6 +187,11 @@ public enum Tithi implements Catalogued {
         return "tithi." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.TITHI;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

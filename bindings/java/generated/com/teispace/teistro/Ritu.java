@@ -67,6 +67,11 @@ public enum Ritu implements Catalogued {
         return "ritu." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.RITU;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

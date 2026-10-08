@@ -161,7 +161,7 @@ fn member_interfaces(api: &Api, which: &str) -> String {
     if which == "Member" {
         out.push_str("/**\n * An enum of the boundary: the id the C ABI carries, and the key every\n * pack, fixture and serialised result spells the member with.\n */\npublic interface Member {\n    /**\n     * The id the C boundary carries.\n     *\n     * @return the id\n     */\n    int id();\n\n    /**\n     * The key every pack, fixture and serialised result spells.\n     *\n     * @return the key\n     */\n    String key();\n}\n");
     } else {
-        out.push_str("/**\n * A member of a catalogue kind, whose members a registry may add to: an id\n * this build does not know reads as the enum's {@code UNKNOWN}, so a\n * caller matching on a result stays exhaustive against a newer library.\n */\npublic interface Catalogued extends Member {\n    /**\n     * The key with its kind, as every pack and fixture spells it\n     * ({@code graha.SUN}).\n     *\n     * @return the full key\n     */\n    String fullKey();\n}\n");
+        out.push_str("/**\n * A member of a catalogue kind, whose members a registry may add to: an id\n * this build does not know reads as the enum's {@code UNKNOWN}, so a\n * caller matching on a result stays exhaustive against a newer library.\n */\npublic interface Catalogued extends Member {\n    /**\n     * The key with its kind, as every pack and fixture spells it\n     * ({@code graha.SUN}).\n     *\n     * @return the full key\n     */\n    String fullKey();\n\n    /**\n     * The catalogue kind the member is one of.\n     *\n     * @return the kind\n     */\n    Kind kind();\n}\n");
     }
     out
 }
@@ -228,8 +228,9 @@ fn render_enum(api: &Api, e: &EnumDef) -> String {
     if let Some(kind) = &e.kind {
         let _ = writeln!(
             out,
-            "    @Override\n    public String fullKey() {{\n        return {} + key;\n    }}\n",
-            literal(&format!("{kind}."))
+            "    @Override\n    public String fullKey() {{\n        return {} + key;\n    }}\n\n    @Override\n    public Kind kind() {{\n        return Kind.{};\n    }}\n",
+            literal(&format!("{kind}.")),
+            constant(kind)
         );
         let _ = writeln!(
             out,

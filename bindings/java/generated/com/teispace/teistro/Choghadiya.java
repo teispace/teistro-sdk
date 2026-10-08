@@ -72,6 +72,11 @@ public enum Choghadiya implements Catalogued {
         return "choghadiya." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.CHOGHADIYA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

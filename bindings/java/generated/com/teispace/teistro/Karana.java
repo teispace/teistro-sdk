@@ -92,6 +92,11 @@ public enum Karana implements Catalogued {
         return "karana." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.KARANA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

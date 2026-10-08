@@ -262,6 +262,11 @@ public enum DashaSystem implements Catalogued {
         return "dasha_system." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DASHA_SYSTEM;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

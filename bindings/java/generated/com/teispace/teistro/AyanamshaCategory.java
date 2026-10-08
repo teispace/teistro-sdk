@@ -72,6 +72,11 @@ public enum AyanamshaCategory implements Catalogued {
         return "ayanamsha_category." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.AYANAMSHA_CATEGORY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

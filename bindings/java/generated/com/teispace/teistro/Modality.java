@@ -52,6 +52,11 @@ public enum Modality implements Catalogued {
         return "modality." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.MODALITY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

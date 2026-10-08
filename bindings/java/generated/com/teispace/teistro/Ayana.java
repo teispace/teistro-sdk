@@ -47,6 +47,11 @@ public enum Ayana implements Catalogued {
         return "ayana." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.AYANA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

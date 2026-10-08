@@ -52,6 +52,11 @@ public enum StarClass implements Catalogued {
         return "star_class." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.STAR_CLASS;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

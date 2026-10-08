@@ -187,6 +187,11 @@ public enum Vaiseshikamsa implements Catalogued {
         return "vaiseshikamsa." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.VAISESHIKAMSA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

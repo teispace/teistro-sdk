@@ -82,6 +82,11 @@ public enum Era implements Catalogued {
         return "era." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.ERA;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

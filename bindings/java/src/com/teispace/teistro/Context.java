@@ -32,6 +32,7 @@ public final class Context implements AutoCloseable {
     private final TimeArea time = new TimeArea(this);
     private final IntlArea intl = new IntlArea(this);
     private final KeysArea keys = new KeysArea(this);
+    private final ChartArea chart = new ChartArea(this);
     private final FrameArea frame;
 
     /** The handle, apart from the context, so the cleaner can free it. */
@@ -184,6 +185,15 @@ public final class Context implements AutoCloseable {
      */
     public KeysArea keys() {
         return keys;
+    }
+
+    /**
+     * Charts founded at an instant and a place.
+     *
+     * @return the chart area of this context
+     */
+    public ChartArea chart() {
+        return chart;
     }
 
     /**

@@ -52,6 +52,11 @@ public enum Rising implements Catalogued {
         return "rising." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.RISING;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

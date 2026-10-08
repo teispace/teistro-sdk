@@ -87,6 +87,11 @@ public enum DashaFamily implements Catalogued {
         return "dasha_family." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.DASHA_FAMILY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

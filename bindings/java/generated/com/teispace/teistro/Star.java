@@ -677,6 +677,11 @@ public enum Star implements Catalogued {
         return "star." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.STAR;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

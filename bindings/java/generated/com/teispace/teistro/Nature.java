@@ -52,6 +52,11 @@ public enum Nature implements Catalogued {
         return "nature." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.NATURE;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

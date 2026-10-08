@@ -77,6 +77,11 @@ public enum PointFamily implements Catalogued {
         return "point_family." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.POINT_FAMILY;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.

@@ -72,6 +72,11 @@ public enum ChartKind implements Catalogued {
         return "chart_kind." + key;
     }
 
+    @Override
+    public Kind kind() {
+        return Kind.CHART_KIND;
+    }
+
     /**
      * The member with an id, or {@link #UNKNOWN} for one this build does not
      * know.
