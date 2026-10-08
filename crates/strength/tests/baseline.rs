@@ -14,6 +14,11 @@
 
 use std::path::Path;
 
+#[path = "../../core/tests/support/conformance.rs"]
+mod conformance;
+
+use conformance::Tally;
+
 use serde_json::Value;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana, Vimshopaka};
@@ -70,6 +75,7 @@ fn every_recorded_ashtakavarga_is_reproduced_under_the_engine_s_reading() {
         moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
     };
     let files = files("ashtakavarga");
+    let mut tally = Tally::new("baseline/ashtakavarga", "the engine's reading");
     for (name, file) in &files {
         let chart = AshtakavargaChart {
             lagna: sign(&file["inputs"]["lagna_sign_index"]),
@@ -78,44 +84,46 @@ fn every_recorded_ashtakavarga_is_reproduced_under_the_engine_s_reading() {
         let reading = AshtakavargaReading::of(&chart, rules);
         let recorded = &file["ekadhipatya"]["classical"];
         for (graha, key) in reading.grahas.iter().zip(GRAHAS) {
-            assert_eq!(
+            tally.same(
                 graha.bindus.map(u64::from).to_vec(),
                 numbers(&file["bav"][key]),
-                "{name:?} {key}: bindus"
+                || format!("{name:?} {key}: bindus"),
             );
-            assert_eq!(
+            tally.same(
                 u64::from(graha.graha_pinda),
                 recorded["graha_pinda"][key].as_u64().unwrap(),
-                "{name:?} {key}"
+                || format!("{name:?} {key}"),
             );
-            assert_eq!(
+            tally.same(
                 u64::from(graha.yoga_pinda),
                 recorded["yoga_pinda"][key].as_u64().unwrap(),
-                "{name:?} {key}"
+                || format!("{name:?} {key}"),
             );
         }
-        assert_eq!(
+        tally.same(
             reading.sarva.map(u64::from).to_vec(),
             numbers(&file["sav"]),
-            "{name:?}: sum"
+            || format!("{name:?}: sum"),
         );
-        assert_eq!(
+        tally.same(
             reading.trikona.map(u64::from).to_vec(),
             numbers(&file["sav_trikona"]),
-            "{name:?}: trine"
+            || format!("{name:?}: trine"),
         );
-        assert_eq!(
+        tally.same(
             reading.reduced.map(u64::from).to_vec(),
             numbers(&recorded["sav_reduced"]),
-            "{name:?}: reduced"
+            || format!("{name:?}: reduced"),
         );
     }
     assert_eq!(files.len(), 77);
+    tally.record();
 }
 
 #[test]
 fn every_recorded_vimshopaka_is_reproduced_under_the_engine_s_reading() {
     let files = files("vimshopaka");
+    let mut tally = Tally::new("baseline/vimshopaka", "the engine's reading");
     for (name, file) in &files {
         let chart = VimshopakaChart::from_fn(|varga, graha| {
             sign(&file["inputs"]["sign_index"][varga.key()][graha.key()])
@@ -137,16 +145,14 @@ fn every_recorded_vimshopaka_is_reproduced_under_the_engine_s_reading() {
                 .iter()
                 .zip(ours)
             {
-                assert!(
-                    (value - recorded[*key].as_f64().unwrap()).abs() < 1e-9,
-                    "{name:?} {:?} {key}: {value} against {}",
-                    graha.graha,
-                    recorded[*key]
-                );
+                tally.within(value, recorded[*key].as_f64().unwrap(), 1e-9, || {
+                    format!("{name:?} {:?} {key}", graha.graha)
+                });
             }
         }
     }
     assert_eq!(files.len(), 93);
+    tally.record();
 }
 
 fn fixture(name: &str) -> Value {
@@ -224,6 +230,7 @@ fn shadbala_chart(file: &Value) -> ShadbalaChart {
 #[test]
 fn every_recorded_shadbala_is_reproduced_under_the_engine_s_reading() {
     let files = files("shadbala");
+    let mut tally = Tally::new("baseline/shadbala", "the engine's reading");
     for (name, file) in &files {
         let reading = ShadbalaReading::of(&shadbala_chart(file), ShadbalaRules::RECORDING_ENGINE);
         for graha in &reading.grahas {
@@ -259,26 +266,25 @@ fn every_recorded_shadbala_is_reproduced_under_the_engine_s_reading() {
                     .fold(recorded, |v, key| &v[key])
                     .as_f64()
                     .unwrap();
-                assert!(
-                    (value - expected).abs() < 1e-9,
-                    "{name:?} {:?} {path}: {value} against {expected}",
-                    graha.graha
-                );
+                tally.within(value, expected, 1e-9, || {
+                    format!("{name:?} {:?} {path}", graha.graha)
+                });
             }
-            assert_eq!(
+            tally.same(
                 graha.strong,
                 recorded["is_sufficient"].as_bool().unwrap(),
-                "{name:?} {:?}",
-                graha.graha
+                || format!("{name:?} {:?}", graha.graha),
             );
         }
     }
     assert_eq!(files.len(), 71);
+    tally.record();
 }
 
 #[test]
 fn every_recorded_bhava_bala_is_reproduced_under_the_engine_s_reading() {
     let files = files("bhava-bala");
+    let mut tally = Tally::new("baseline/bhava-bala", "the engine's reading");
     for (name, file) in &files {
         let inputs = &file["inputs"];
         let lagna = f64::from(u8::try_from(inputs["lagna_sign_index"].as_u64().unwrap()).unwrap());
@@ -314,13 +320,12 @@ fn every_recorded_bhava_bala_is_reproduced_under_the_engine_s_reading() {
                 ("total", ours.virupas),
             ] {
                 let expected = recorded[key].as_f64().unwrap();
-                assert!(
-                    (value - expected).abs() <= 0.005 + 1e-9,
-                    "{name:?} bhava {} {key}: {value} against {expected}",
-                    ours.bhava
-                );
+                tally.within(value, expected, 0.005 + 1e-9, || {
+                    format!("{name:?} bhava {} {key}", ours.bhava)
+                });
             }
         }
     }
     assert_eq!(files.len(), 71);
+    tally.record();
 }
