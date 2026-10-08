@@ -73,7 +73,7 @@ fn c_consumer(
     platform: &Platform,
     version: &str,
 ) -> Result<(), ()> {
-    let cc = std::env::var("CC").unwrap_or_else(|_| String::from("cc"));
+    let cc = crate::binding::c_compiler();
     if !present(&cc, "--version") {
         crate::skip::skip(format_args!("the C bundle: no `{cc}` on this machine"));
         return Ok(());
@@ -102,7 +102,7 @@ fn c_consumer(
     let smoke = root.join("bindings/c/tests/smoke.c");
     match crate::binding::static_link(platform) {
         StaticLink::With(beside) => {
-            let statically = into.join("smoke-static");
+            let statically = crate::binding::executable(&into, "smoke-static");
             step(
                 Command::new(&cc)
                     .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
@@ -133,7 +133,7 @@ fn c_consumer(
         }
     }
 
-    let dynamically = into.join("smoke-shared");
+    let dynamically = crate::binding::executable(&into, "smoke-shared");
     step(
         Command::new(&cc)
             .args(["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"])
