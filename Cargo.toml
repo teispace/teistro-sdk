@@ -34,6 +34,7 @@ members = [
     "crates/numerology",
     "crates/prashna",
     "crates/remedies",
+    "crates/rashifal",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",

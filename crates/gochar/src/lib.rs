@@ -342,6 +342,26 @@ fn pairs(graha: Graha, rules: GocharRules) -> impl Iterator<Item = (u8, Option<u
         .map(move |(good, vedha)| (*good, obstructable.then_some(*vedha)))
 }
 
+/// Whether v. 2 makes `graha`'s transit of `house` (1 to 12, from the
+/// reference) good; the nodes as the Sun.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_gochar::good_house;
+///
+/// assert!(good_house(Graha::Jupiter, 5));
+/// assert!(!good_house(Graha::Jupiter, 6));
+/// assert!(good_house(Graha::Ketu, 10));
+/// ```
+#[must_use]
+pub fn good_house(graha: Graha, house: u8) -> bool {
+    let table = match graha {
+        Graha::Rahu | Graha::Ketu => SUN,
+        other => VEDHA.get(other as usize).copied().unwrap_or(&[]),
+    };
+    table.iter().any(|&(good, _)| good == house)
+}
+
 /// The house `sign` stands in counted from `reference`, 1 to 12.
 fn house(reference: Rashi, sign: Rashi) -> u8 {
     u8::try_from((sign as usize + 12 - reference as usize) % 12 + 1).unwrap_or(1)

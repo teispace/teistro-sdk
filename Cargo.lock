@@ -1935,6 +1935,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-rashifal"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-gochar",
+]
+
+[[package]]
 name = "teistro-remedies"
 version = "0.0.0"
 dependencies = [
