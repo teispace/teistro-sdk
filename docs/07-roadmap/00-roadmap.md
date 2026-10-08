@@ -977,6 +977,13 @@ read:
 Research, source-reading and drafts run as two or three parallel agents;
 every build and test runs one at a time.
 
+8. **A real plugin in CI.** No workflow loads an adapter, so every
+   binding's plugin test skips there and passes only where a contributor
+   names one with `TEISTRO_TEIMERIS_ADAPTER`. Teimeris is a private
+   repository, so one verify row needs a read-only token in a secret to
+   check it out beside the SDK, build the adapter and name it. The token
+   is the maintainer's to create.
+
 ### Track B: applications (Phase 8)
 
 Baseline golden vectors are produced by an exporter per module in the
