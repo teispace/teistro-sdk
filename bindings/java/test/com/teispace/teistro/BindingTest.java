@@ -9,6 +9,8 @@ import com.teispace.teistro.blob.BlobFormatException;
 import com.teispace.teistro.blob.IntlRender;
 import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
+import com.teispace.teistro.record.Provenance;
+import com.teispace.teistro.record.Step;
 
 /**
  * The binding's tests, with no test framework: each is a method, a failure
@@ -226,6 +228,10 @@ public final class BindingTest {
                 check(Math.abs(cells.lonSpeed(1)) > Math.abs(cells.lonSpeed(0)), "the Moon outruns the Sun");
                 check(Json.read(grid.steps()) instanceof List<?>, "the steps are a JSON list");
                 check(Json.object(grid.provenanceJson()).containsKey("settings_hash"), "provenance");
+                Provenance provenance = Provenance.of(Json.read(grid.provenanceJson()));
+                same(sky.settingsHash(), provenance.settingsHash(), "the provenance is the context's settings");
+                List<Step> steps = ((List<?>) Json.read(grid.steps())).stream().map(Step::of).toList();
+                check(!steps.isEmpty() && !steps.get(0).name().isEmpty(), "the steps decode as records");
                 try {
                     cells.lon(6);
                     throw new AssertionError("a seventh cell was read");
