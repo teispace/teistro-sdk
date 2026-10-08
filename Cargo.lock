@@ -1569,6 +1569,7 @@ dependencies = [
  "teistro-port-ephemeris",
  "teistro-prashna",
  "teistro-rashifal",
+ "teistro-rectification",
  "teistro-remedies",
  "teistro-render-svg",
  "teistro-rules",

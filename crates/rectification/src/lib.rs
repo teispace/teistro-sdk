@@ -100,6 +100,19 @@ pub trait Sky {
     /// Whatever the implementation cannot answer, unchanged: a polar day
     /// it will not reckon among them.
     fn day(&self, at: JulianDay<Utc>) -> Result<Day, Error>;
+
+    /// The ishtakaal of an instant in its day, in hours of twenty-four-
+    /// minute ghatis: what the pranapada counts its palas from (v. 71).
+    /// The chart's own ghati reckoning decides it (X9), so a chart that
+    /// gives the daylight thirty ghatis whatever its length answers that.
+    /// By default the clock's hours since the day's sunrise.
+    ///
+    /// # Errors
+    ///
+    /// Whatever the implementation cannot answer, unchanged.
+    fn ishtakaal_hours(&self, at: JulianDay<Utc>, day: &Day) -> Result<f64, Error> {
+        Ok((at.get() - day.sunrise.get()) * 24.0)
+    }
 }
 
 /// The day an instant belongs to: its sunrise, sunset and the next

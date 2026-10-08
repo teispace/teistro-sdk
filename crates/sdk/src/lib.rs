@@ -101,6 +101,8 @@ mod progressions_request;
 mod rashifal_area;
 #[cfg(feature = "rashifal")]
 mod rashifal_request;
+#[cfg(feature = "rectification")]
+mod rectify;
 #[cfg(feature = "remedies")]
 mod remedy_request;
 #[cfg(feature = "chart")]
@@ -405,6 +407,10 @@ pub use teistro_numerology as numerology;
 // (`03-design/prashna.md`).
 #[cfg(feature = "prashna")]
 pub use teistro_prashna as prashna;
+// Rectification: the parts of a birth window the verses that test a
+// birth time leave standing (`03-design/rectification.md`).
+#[cfg(feature = "rectification")]
+pub use teistro_rectification as rectification;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 #[cfg(feature = "remedies")]

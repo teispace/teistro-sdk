@@ -434,7 +434,7 @@ impl<'a> Judge<'a> {
             });
         };
         if self.rules.pranapada {
-            let hours = (at.get() - day.sunrise.get()) * 24.0;
+            let hours = self.sky.ishtakaal_hours(at, &day)?;
             let deg = pranapada_deg(self.rules.pranapada_rule, self.sky.sun_deg(at)?, hours)?;
             judge(
                 Purifier::Pranapada,
