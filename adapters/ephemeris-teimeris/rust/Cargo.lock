@@ -519,12 +519,21 @@ dependencies = [
  "teistro-dasha",
  "teistro-geometry",
  "teistro-gochar",
+ "teistro-hellenistic",
  "teistro-houses",
  "teistro-interpret",
  "teistro-intl",
+ "teistro-kp",
+ "teistro-matching",
+ "teistro-muhurta",
+ "teistro-numerology",
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-prashna",
+ "teistro-rashifal",
+ "teistro-rectification",
+ "teistro-remedies",
  "teistro-render-svg",
  "teistro-rules",
  "teistro-serial",
@@ -534,6 +543,7 @@ dependencies = [
  "teistro-tajika",
  "teistro-time",
  "teistro-vargas",
+ "teistro-western",
 ]
 
 [[package]]
@@ -550,6 +560,7 @@ name = "teistro-astro"
 version = "0.0.0"
 dependencies = [
  "serde",
+ "serde_json",
  "teistro-core",
  "teistro-port-ephemeris",
 ]
@@ -653,6 +664,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-hellenistic"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-houses"
 version = "0.0.0"
 dependencies = [
@@ -670,6 +689,7 @@ dependencies = [
  "teistro-aspect",
  "teistro-chart",
  "teistro-core",
+ "teistro-gochar",
  "teistro-houses",
  "teistro-intl",
  "teistro-rules",
@@ -694,10 +714,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-kp"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-aspect",
+ "teistro-core",
+ "teistro-dasha",
+]
+
+[[package]]
+name = "teistro-matching"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-muhurta"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-panchanga",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
+name = "teistro-numerology"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-calendar",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-panchanga"
 version = "0.0.0"
 dependencies = [
  "serde",
+ "serde_json",
  "teistro-astro",
  "teistro-calendar",
  "teistro-chart",
@@ -734,6 +797,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-prashna"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-aspect",
+ "teistro-core",
+ "teistro-tajika",
+]
+
+[[package]]
+name = "teistro-rashifal"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
+ "teistro-gochar",
+]
+
+[[package]]
+name = "teistro-rectification"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
+ "teistro-points",
+ "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-remedies"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-render-svg"
 version = "0.0.0"
 dependencies = [
@@ -751,8 +851,10 @@ dependencies = [
  "serde_json",
  "teistro-aspect",
  "teistro-core",
+ "teistro-dasha",
  "teistro-points",
  "teistro-state",
+ "teistro-strength",
 ]
 
 [[package]]
@@ -767,6 +869,7 @@ dependencies = [
  "teistro-dasha",
  "teistro-geometry",
  "teistro-houses",
+ "teistro-matching",
  "teistro-panchanga",
  "teistro-points",
  "teistro-state",
@@ -839,6 +942,17 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-port-ephemeris",
+]
+
+[[package]]
+name = "teistro-western"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-aspect",
+ "teistro-astro",
+ "teistro-core",
+ "teistro-gochar",
 ]
 
 [[package]]
