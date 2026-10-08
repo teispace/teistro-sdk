@@ -61,8 +61,8 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
 pub use purifier::{
-    Clause, GulikaAt, Native, PranapadaRule, PranapadaWorking, Purifier, PurifyAs, Reference,
-    Verdict, gulika_instant, pranapada_deg, pranapada_working,
+    Clause, GulikaAt, GulikaExtension, Native, PranapadaRule, PranapadaWorking, Purifier, PurifyAs,
+    Reference, Verdict, gulika_instant, pranapada_deg, pranapada_working,
 };
 
 /// The longest window a rectification takes, in hours: the bound the
@@ -221,10 +221,6 @@ impl Window {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default)]
-#[allow(
-    clippy::struct_excessive_bools,
-    reason = "one switch per purifier and one for v. 76, each a crux of its own (X6, X7)"
-)]
 pub struct Rules {
     /// The species v. 77 and v. 78 name, which decides the houses that
     /// purify: a human's are the sign and its trines.
@@ -235,9 +231,9 @@ pub struct Rules {
     pub gulika: bool,
     /// Whether the Moon may purify (v. 75).
     pub moon: bool,
-    /// Whether Gulika's 7th, its navamsha and that navamsha's 7th also
-    /// purify, as v. 76 attaches them to Gulika alone (X6).
-    pub gulika_extension: bool,
+    /// When Gulika's 7th, its navamsha and that navamsha's 7th also
+    /// purify, as v. 76 attaches them to Gulika alone (X6, X7).
+    pub gulika_extension: GulikaExtension,
     /// Whether a lagna no purifier holds is removed or only weighed (X8).
     pub purify_as: PurifyAs,
     /// How the pranapada is reckoned (X2, X3).
@@ -258,7 +254,7 @@ impl Default for Rules {
             pranapada: true,
             gulika: true,
             moon: true,
-            gulika_extension: true,
+            gulika_extension: GulikaExtension::WhenTwoFail,
             purify_as: PurifyAs::Bar,
             pranapada_rule: PranapadaRule::Verse,
             gulika_at: GulikaAt::End,
