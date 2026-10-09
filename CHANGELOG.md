@@ -2535,6 +2535,11 @@ the astronomical numbers do not move. Nothing else computes yet.
   finite number. **Numbers:** a recombined study whose replicates share
   one value reads them with no spread, where the last bit of their mean
   had read as one.
+- **Research, measured** (`03-design/research-measured.md`, held by
+  `check-research`): each correction's error rate on null labellings,
+  the exact p against the permutation p's interval, a planted effect,
+  the Gauquelin artefact against the recombined control, and null event
+  studies under each shuffle.
 - **A timed study names its shuffle** (`03-design/research.md` step 7,
   C362 to C365). `EventStudy::new` takes the `EventShuffle`, and the
   record and every binding require it, where it had defaulted to the
