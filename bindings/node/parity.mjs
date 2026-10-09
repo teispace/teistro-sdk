@@ -383,6 +383,7 @@ const charts = geo.chart.foundMany({
         { kind: 'ACCIDENT', on: 2471000.5, heldOut: true },
       ],
     },
+    svarodaya: { minutes: 20 },
   },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
@@ -548,6 +549,14 @@ function putRectification(prefix, read) {
       `${held.event} ${held.kind} ${number(held.scoreAtFit)} ${number(held.baseline)} ${held.supported}`,
     ),
   );
+  const { at, runs } = read.svarodaya;
+  const runSaid = (one) => `${number(one.from)} ${number(one.to)} ${one.nadi} ${one.turn} ${one.tattva} ${one.sex}`;
+  put(
+    `${prefix}-svarodaya`,
+    `${number(at.sunrise)} ${number(at.nextSunrise)} ${at.tithi} ${at.sunriseNadi} ${number(at.junctions[0])}:${number(at.junctions[1])} ${runs.length}`,
+  );
+  put(`${prefix}-svarodaya-at`, runSaid(at.run));
+  runs.forEach((one, k) => put(`${prefix}-svarodaya-${k}`, runSaid(one)));
 }
 
 /** An Ashta Koota as every runner prints it, under `prefix`. */

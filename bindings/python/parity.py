@@ -89,6 +89,7 @@ from teistro import (
     RectificationRequest,
     ReportedTimeNote,
     StageNote,
+    SvarodayaRun,
     TattvaSexNote,
     Scale,
     Teistro,
@@ -294,6 +295,7 @@ RECTIFICATION: RectificationRequest = {
         "sex": "MALE",
         "events": [{"kind": "MARRIAGE", "on": 2469000.5}, {"kind": "ACCIDENT", "on": 2471000.5, "heldOut": True}],
     },
+    "svarodaya": {"minutes": 20},
 }
 """The rectification every runner asks of each chart."""
 
@@ -395,6 +397,22 @@ def put_rectification(at: str, rc: Rectification) -> None:
             f"{at}-baseline-held-{k}",
             f"{held.event} {held.kind} {number(held.score_at_fit)} {number(held.baseline)} {lower(held.supported)}",
         )
+    sv = rc.svarodaya
+    assert sv is not None
+    sa = sv.at
+    put(
+        f"{at}-svarodaya",
+        f"{number(sa.sunrise)} {number(sa.next_sunrise)} {sa.tithi.full_key} {sa.sunrise_nadi}"
+        f" {number(sa.junctions[0])}:{number(sa.junctions[1])} {len(sv.runs)}",
+    )
+    put(f"{at}-svarodaya-at", run_said(sa.run))
+    for k, one in enumerate(sv.runs):
+        put(f"{at}-svarodaya-{k}", run_said(one))
+
+
+def run_said(run: SvarodayaRun) -> str:
+    """A Svarodaya run as every runner spells it."""
+    return f"{number(run.from_jd)} {number(run.to_jd)} {run.nadi} {run.turn} {run.tattva} {run.sex}"
 
 
 def devotions_said(devotions: Any) -> str:

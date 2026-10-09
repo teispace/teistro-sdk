@@ -4543,6 +4543,7 @@ void _engineTests() {
     expect(purified.conception, isNull, reason: 'only what was asked');
     expect(purified.circumstance, isNull);
     expect(purified.baseline, isNull);
+    expect(purified.svarodaya, isNull);
     final standing = purified.purified!;
     final runs = [...standing.intervals, ...standing.removed];
     expect(runs, isNotEmpty);
@@ -4612,6 +4613,31 @@ void _engineTests() {
           (e) => e.field,
           'field',
           'rectification.purify.minutes',
+        ),
+      ),
+    );
+
+    const told = RectificationRequest(svarodaya: SvarodayaRequest(minutes: 20));
+    final sv = found(told)!.svarodaya!;
+    expect(sv.at.tithi, isNot(Tithi.unknown));
+    expect(sv.runs, isNotEmpty);
+    expect(sv.runs.first.from, closeTo(instant - 20 / 1440, 1e-6));
+    expect(sv.runs.last.to, closeTo(instant + 20 / 1440, 1e-6));
+    for (var k = 1; k < sv.runs.length; k++) {
+      expect(sv.runs[k].from, sv.runs[k - 1].to, reason: 'the runs tile');
+    }
+    expect(sv.at.run.from, lessThanOrEqualTo(instant));
+    expect(sv.at.run.to, greaterThan(instant));
+    final female = sv.at.run.nadi == SvarodayaNadi.moon;
+    expect(sv.at.run.sex, female ? Sex.female : Sex.male);
+    const idle = RectificationRequest(svarodaya: SvarodayaRequest(minutes: 0));
+    expect(
+      () => found(idle),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rectification.svarodaya.minutes',
         ),
       ),
     );

@@ -1271,7 +1271,8 @@ public final class ParityRunner {
                         "circumstance", map("facts", map("fatherPresent", false)),
                         "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
                                 map("kind", "MARRIAGE", "on", 2469000.5),
-                                map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true)))))
+                                map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true))),
+                        "svarodaya", map("minutes", 20)))
                 .westernAspects(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs)))
@@ -2003,10 +2004,17 @@ public final class ParityRunner {
         };
     }
 
+    /** One Svarodaya run as every runner spells it. */
+    private static String svarodayaRunSaid(SvarodayaAround.Run run) {
+        return number(run.from()) + " " + number(run.to()) + " " + run.nadi() + " " + run.turn() + " " + run.tattva()
+                + " " + run.sex().key();
+    }
+
     /**
      * A chart read as a birth time to rectify: the purifier's runs and the
      * clauses each held, the conception's answers, the circumstances and
-     * their weights, and the baseline's interval, stages and best candidate.
+     * their weights, the baseline's interval, stages and best candidate, and
+     * the Svarodaya's reading and runs.
      */
     private static void rectification(String at, Rectification rc) {
         Purified purified = rc.purified().orElseThrow();
@@ -2073,6 +2081,15 @@ public final class ParityRunner {
             BaselineRectification.HoldOut held = baseline.holdOut().get(k);
             put(at + "-baseline-held-" + k, held.event() + " " + held.kind() + " " + number(held.scoreAtFit()) + " "
                     + number(held.baseline()) + " " + lower(held.supported()));
+        }
+        SvarodayaAround svarodaya = rc.svarodaya().orElseThrow();
+        SvarodayaAround.Reading reading = svarodaya.at();
+        put(at + "-svarodaya", number(reading.sunrise()) + " " + number(reading.nextSunrise()) + " "
+                + reading.tithi().fullKey() + " " + reading.sunriseNadi() + " " + number(reading.junctions().get(0))
+                + ":" + number(reading.junctions().get(1)) + " " + svarodaya.runs().size());
+        put(at + "-svarodaya-at", svarodayaRunSaid(reading.run()));
+        for (int k = 0; k < svarodaya.runs().size(); k += 1) {
+            put(at + "-svarodaya-" + k, svarodayaRunSaid(svarodaya.runs().get(k)));
         }
     }
 

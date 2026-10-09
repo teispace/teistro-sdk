@@ -4919,7 +4919,7 @@ function rectificationsOf(batch) {
  * A chart's rectification as the boundary's JSON writes it, its bare keys
  * made full and its members left out `null`.
  */
-function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null }) {
+function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null, svarodaya = null }) {
   const graha = (key) => `graha.${key}`;
   const rashi = (key) => `rashi.${key}`;
   const nakshatra = (key) => (key === null ? null : `nakshatra.${key}`);
@@ -4975,6 +4975,7 @@ function rectificationFrom({ purified = null, conception = null, circumstance = 
             })),
             stages: baseline.stages.map((stage) => ({ ...stage, notes: stage.notes.map(note) })),
           },
+    svarodaya: svarodaya === null ? null : { ...svarodaya, at: { ...svarodaya.at, tithi: `tithi.${svarodaya.at.tithi}` } },
   };
 }
 

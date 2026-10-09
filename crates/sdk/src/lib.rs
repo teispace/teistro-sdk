@@ -280,6 +280,7 @@ pub use crate::prashna_request::PrashnaRequest;
 #[cfg(feature = "rectification")]
 pub use crate::rectification_request::{
     BaselineAsked, CircumstanceAsked, DashaAsked, Purify, Rectification, RectificationRequest,
+    SvarodayaAround, SvarodayaAsked,
 };
 #[cfg(feature = "remedies")]
 pub use crate::remedy_request::RemedyRequest;

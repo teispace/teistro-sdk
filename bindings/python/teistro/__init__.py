@@ -775,6 +775,10 @@ __all__ = [
     "ReportedTimeNote",
     "EventFitNote",
     "HeldOutEvent",
+    "SvarodayaRequest",
+    "SvarodayaAround",
+    "Svarodaya",
+    "SvarodayaRun",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -8238,6 +8242,13 @@ class BaselineRectificationRequest(TypedDict, total=False):
     dasha: BaselineDashaRules
 
 
+class SvarodayaRequest(TypedDict, total=False):
+    """The Shiva Svarodaya over the `minutes` either side of the chart's
+    instant: more than none and at most 1080."""
+
+    minutes: Required[float]
+
+
 class RectificationRequest(TypedDict, total=False):
     """A chart read as a birth time to rectify, the chart's instant the time
     on record (`03-design/rectification.md`), every member optional and
@@ -8250,6 +8261,7 @@ class RectificationRequest(TypedDict, total=False):
     conception: ConceptionRules
     circumstance: CircumstanceRequest
     baseline: BaselineRectificationRequest
+    svarodaya: SvarodayaRequest
 
 
 @dataclass(frozen=True)
@@ -8735,6 +8747,58 @@ class BaselineAnswer:
 
 
 @dataclass(frozen=True)
+class SvarodayaRun:
+    """One stretch of a day under one nadi and one tattva (Shiva
+    Svarodaya)."""
+
+    from_jd: float
+    """Where it starts, as a Julian day (UTC)."""
+    to_jd: float
+    """Where it ends."""
+    nadi: str
+    """The nadi flowing: `MOON`, the left (ida), female, or `SUN`, the right
+    (pingala), male (v. 60)."""
+    turn: int
+    """Its turn in the day, 0 the one rising at sunrise, to 23."""
+    tattva: str
+    """The tattva flowing in it: `PRITHVI`, `JALA`, `AGNI`, `VAYU` or
+    `AKASHA`."""
+    sex: str
+    """The sex v. 60 gives the nadi: `MALE` or `FEMALE`."""
+
+
+@dataclass(frozen=True)
+class Svarodaya:
+    """The nadi and the tattva at the chart's instant, and the day they are
+    counted in."""
+
+    sunrise: float
+    """The sunrise the turns are counted from, as a Julian day (UTC)."""
+    next_sunrise: float
+    """The sunrise that ends the day."""
+    tithi: Tithi
+    """The tithi at the sunrise, which gives its nadi."""
+    sunrise_nadi: str
+    """The nadi rising at the sunrise: `MOON` or `SUN` (v. 62)."""
+    run: SvarodayaRun
+    """The run the instant falls in."""
+    junctions: Tuple[float, float]
+    """The turn's junctions, where the sushumna flows for a moment: its start
+    and its end."""
+
+
+@dataclass(frozen=True)
+class SvarodayaAround:
+    """The Shiva Svarodaya around the chart's instant: the reading at it and
+    every run of the window."""
+
+    at: Svarodaya
+    """The nadi and the tattva at the chart's instant."""
+    runs: Tuple[SvarodayaRun, ...]
+    """Every run of the window, in order and clipped to it."""
+
+
+@dataclass(frozen=True)
 class Rectification:
     """A chart read as a birth time to rectify (`03-design/rectification.md`):
     each reading the request asked for, `None` for one it did not."""
@@ -8747,6 +8811,8 @@ class Rectification:
     """The circumstances at the chart's instant."""
     baseline: Optional[BaselineAnswer]
     """The baseline engine's cascade around it."""
+    svarodaya: Optional[SvarodayaAround]
+    """The Shiva Svarodaya around it."""
 
 
 @dataclass(frozen=True)
@@ -9959,11 +10025,44 @@ def _rectification(raw: Mapping[str, Any]) -> Rectification:
     conception = raw.get("conception")
     circumstance = raw.get("circumstance")
     baseline = raw.get("baseline")
+    svarodaya = raw.get("svarodaya")
     return Rectification(
         purified=None if purified is None else _purified(purified),
         conception=None if conception is None else _conception(conception),
         circumstance=None if circumstance is None else _circumstance(circumstance),
         baseline=None if baseline is None else _rectification_baseline(baseline),
+        svarodaya=None if svarodaya is None else _svarodaya(svarodaya),
+    )
+
+
+def _svarodaya_run(raw: Mapping[str, Any]) -> SvarodayaRun:
+    """One Svarodaya run, from its JSON."""
+    return SvarodayaRun(
+        from_jd=raw["from"],
+        to_jd=raw["to"],
+        nadi=raw["nadi"],
+        turn=raw["turn"],
+        tattva=raw["tattva"],
+        sex=raw["sex"],
+    )
+
+
+def _svarodaya(raw: Mapping[str, Any]) -> SvarodayaAround:
+    """The Shiva Svarodaya around a chart's instant, from its JSON, its tithi
+    made a member."""
+    at = raw["at"]
+    start, end = at["junctions"]
+    tithi: Tithi = _member(Tithi, at["tithi"])
+    return SvarodayaAround(
+        at=Svarodaya(
+            sunrise=at["sunrise"],
+            next_sunrise=at["nextSunrise"],
+            tithi=tithi,
+            sunrise_nadi=at["sunriseNadi"],
+            run=_svarodaya_run(at["run"]),
+            junctions=(start, end),
+        ),
+        runs=tuple(_svarodaya_run(one) for one in raw["runs"]),
     )
 
 

@@ -237,6 +237,7 @@ const rectificationAsked = RectificationRequest(
       LifeEvent(kind: LifeEventKind.accident, on: 2471000.5, heldOut: true),
     ],
   ),
+  svarodaya: SvarodayaRequest(minutes: 20),
 );
 
 /// A purifier's verdict and each clause it judged, colon-joined.
@@ -372,7 +373,25 @@ void putRectification(String at, Rectification rc) {
           '${number(held.baseline)} ${held.supported}',
     );
   }
+  final sv = rc.svarodaya!;
+  final sa = sv.at;
+  put(
+    '$at-svarodaya',
+    '${number(sa.sunrise)} ${number(sa.nextSunrise)} ${sa.tithi.fullKey} '
+        '${sa.sunriseNadi.key} '
+        '${number(sa.junctions.$1)}:${number(sa.junctions.$2)} '
+        '${sv.runs.length}',
+  );
+  put('$at-svarodaya-at', runSaid(sa.run));
+  for (final (k, one) in sv.runs.indexed) {
+    put('$at-svarodaya-$k', runSaid(one));
+  }
 }
+
+/// A Svarodaya run as every runner spells it.
+String runSaid(SvarodayaRun run) =>
+    '${number(run.from)} ${number(run.to)} ${run.nadi.key} ${run.turn} '
+    '${run.tattva.key} ${run.sex.key}';
 
 /// Devotions as `graha:deity|deity:verse:withKetu`, joined by commas.
 String devotionsSaid(List<Devotion> devotions) => joined(

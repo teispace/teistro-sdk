@@ -18,7 +18,8 @@ use teistro_rectification::baseline::{
     Accuracy, BaselineAnswer, BaselineRequest, LifeEvent, Sex, baseline_dasha_rules,
 };
 use teistro_rectification::{
-    Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, Facts, Rules, Window,
+    Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, Facts, Rules, Svarodaya,
+    SvarodayaRun, Window,
 };
 use teistro_serial::Document;
 
@@ -150,6 +151,27 @@ impl BaselineAsked {
     }
 }
 
+/// The Shiva Svarodaya's nadis and tattvas over the minutes either side
+/// of the chart's instant.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SvarodayaAsked {
+    /// How far either side of the chart's instant the window runs,
+    /// minutes, as [`Purify::minutes`].
+    pub minutes: f64,
+}
+
+/// The Shiva Svarodaya around a chart's instant: the reading at it and
+/// every run of the window.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SvarodayaAround {
+    /// The nadi and the tattva at the chart's instant.
+    pub at: Svarodaya,
+    /// Every run of the window, in order and clipped to it.
+    pub runs: Vec<SvarodayaRun>,
+}
+
 /// A chart read as a birth time to rectify.
 ///
 /// ```
@@ -181,6 +203,11 @@ pub struct RectificationRequest {
     /// ([`ChartArea::rectify_baseline`]).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub baseline: Option<BaselineAsked>,
+    /// The Shiva Svarodaya's nadis and tattvas around the chart's instant
+    /// ([`ChartArea::svarodaya`], [`ChartArea::svarodaya_runs`]): a report
+    /// the text does not make at a birth.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub svarodaya: Option<SvarodayaAsked>,
 }
 
 impl RectificationRequest {
@@ -220,6 +247,9 @@ pub struct Rectification {
     /// The baseline engine's cascade around it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub baseline: Option<BaselineAnswer>,
+    /// The Shiva Svarodaya around it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub svarodaya: Option<SvarodayaAround>,
 }
 
 impl ChartArea<'_> {
@@ -249,7 +279,7 @@ impl ChartArea<'_> {
                         .rules
                         .check()
                         .map_err(|error| rebased(error, "purify.rules"))?;
-                    let window = window_around(at, purify.minutes)?;
+                    let window = window_around(at, purify.minutes, "purify.minutes")?;
                     let read = self.rectify(window, place, offset, &purify.rules);
                     Some(read.map_err(|error| rebased(error, "purify"))?.value)
                 }
@@ -276,11 +306,26 @@ impl ChartArea<'_> {
                 }
                 None => None,
             };
+            let svarodaya = match asked.svarodaya {
+                Some(asked) => {
+                    let window = window_around(at, asked.minutes, "svarodaya.minutes")?;
+                    let reading = self.svarodaya(at, place, offset).and_then(|reading| {
+                        let runs = self.svarodaya_runs(window, place, offset)?;
+                        Ok(SvarodayaAround {
+                            at: reading.value,
+                            runs: runs.value,
+                        })
+                    });
+                    Some(reading.map_err(|error| rebased(error, "svarodaya"))?)
+                }
+                None => None,
+            };
             Ok(Rectification {
                 purified,
                 conception,
                 circumstance,
                 baseline,
+                svarodaya,
             })
         };
         read().map_err(|error| error.under(RECTIFICATION))
@@ -305,12 +350,12 @@ fn rebased(error: Error, member: &str) -> Error {
 }
 
 /// The window `minutes` either side of an instant, its refusal named by
-/// the field a binding sent.
-fn window_around(at: JulianDay<Utc>, minutes: f64) -> Result<Window, Error> {
-    let refused = |error: Error| error.with_field("purify.minutes");
+/// `field`, the one a binding sent.
+fn window_around(at: JulianDay<Utc>, minutes: f64, field: &str) -> Result<Window, Error> {
+    let refused = |error: Error| error.with_field(field);
     if !(minutes.is_finite() && minutes > 0.0) {
         return Err(refused(Error::invalid_arg(format!(
-            "a purifier window runs some minutes either side of the chart, and {minutes} is none"
+            "a window runs some minutes either side of the chart, and {minutes} is none"
         ))));
     }
     let half = minutes / 1440.0;

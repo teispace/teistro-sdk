@@ -14260,6 +14260,37 @@ Rectification _rectification(Map<String, Object?> raw) {
     conception: some(raw['conception'], _conception),
     circumstance: some(raw['circumstance'], _circumstance),
     baseline: some(raw['baseline'], _rectificationBaseline),
+    svarodaya: some(raw['svarodaya'], _svarodaya),
+  );
+}
+
+/// One Svarodaya run, from its JSON.
+SvarodayaRun _svarodayaRun(Map<String, Object?> raw) => SvarodayaRun(
+  from: _real(raw['from']),
+  to: _real(raw['to']),
+  nadi: _keyedIn(SvarodayaNadi.values, raw['nadi']),
+  turn: raw['turn']! as int,
+  tattva: _keyedIn(Tattva.values, raw['tattva']),
+  sex: Sex.byKey(raw['sex']! as String) ?? Sex.unknown,
+);
+
+/// The Shiva Svarodaya around a chart's instant, from its JSON, its tithi
+/// made a member.
+SvarodayaAround _svarodaya(Map<String, Object?> raw) {
+  final at = _object(raw['at']);
+  final junctions = _array(at['junctions']);
+  return SvarodayaAround(
+    at: Svarodaya(
+      sunrise: _real(at['sunrise']),
+      nextSunrise: _real(at['nextSunrise']),
+      tithi: Tithi.byKey(at['tithi']! as String) ?? Tithi.unknown,
+      sunriseNadi: _keyedIn(SvarodayaNadi.values, at['sunriseNadi']),
+      run: _svarodayaRun(_object(at['run'])),
+      junctions: (_real(junctions[0]), _real(junctions[1])),
+    ),
+    runs: List<SvarodayaRun>.unmodifiable(
+      _array(raw['runs']).map(_object).map(_svarodayaRun),
+    ),
   );
 }
 
@@ -18611,6 +18642,57 @@ final class BaselineRectificationRequest {
   };
 }
 
+/// One of the two nadis that alternate through the day (Shiva
+/// Svarodaya).
+enum SvarodayaNadi implements _Keyed {
+  /// The Moon's, the left (ida): female (v. 60).
+  moon('MOON'),
+
+  /// The Sun's, the right (pingala): male (v. 60).
+  sun('SUN');
+
+  const SvarodayaNadi(this.key);
+
+  @override
+  final String key;
+}
+
+/// The five tattvas, in the cycle's order.
+enum Tattva implements _Keyed {
+  /// Earth.
+  prithvi('PRITHVI'),
+
+  /// Water.
+  jala('JALA'),
+
+  /// Fire.
+  agni('AGNI'),
+
+  /// Air.
+  vayu('VAYU'),
+
+  /// Ether.
+  akasha('AKASHA');
+
+  const Tattva(this.key);
+
+  @override
+  final String key;
+}
+
+/// The Shiva Svarodaya over the [minutes] either side of the chart's
+/// instant.
+final class SvarodayaRequest {
+  const SvarodayaRequest({required this.minutes});
+
+  /// How far either side of the chart's instant the window runs, minutes:
+  /// more than none and at most 1080, refused by
+  /// `rectification.svarodaya.minutes` otherwise.
+  final double minutes;
+
+  Map<String, Object?> get _record => {'minutes': minutes};
+}
+
 /// A chart read as a birth time to rectify, the chart's instant the time
 /// on record (`03-design/rectification.md`). Each reading answers only
 /// when asked.
@@ -18629,6 +18711,7 @@ final class RectificationRequest {
     this.conception,
     this.circumstance,
     this.baseline,
+    this.svarodaya,
   });
 
   /// The purifier of BPHS ch. 2 vv. 67–78 over a window around the
@@ -18645,12 +18728,17 @@ final class RectificationRequest {
   /// The baseline engine's cascade around the chart's instant.
   final BaselineRectificationRequest? baseline;
 
+  /// The Shiva Svarodaya's nadi and tattva at the chart's instant, and
+  /// every run of a window around it.
+  final SvarodayaRequest? svarodaya;
+
   String get _json => jsonEncode(<String, Object?>{
     if (purify case final purify?) 'purify': purify._record,
     if (conception case final conception?) 'conception': conception._record,
     if (circumstance case final circumstance?)
       'circumstance': circumstance._record,
     if (baseline case final baseline?) 'baseline': baseline._record,
+    if (svarodaya case final svarodaya?) 'svarodaya': svarodaya._record,
   });
 }
 
@@ -19523,6 +19611,96 @@ final class BaselineAnswer {
   final List<HeldOutEvent> holdOut;
 }
 
+/// One stretch of a day under one nadi and one tattva (Shiva Svarodaya).
+final class SvarodayaRun extends _Value {
+  const SvarodayaRun({
+    required this.from,
+    required this.to,
+    required this.nadi,
+    required this.turn,
+    required this.tattva,
+    required this.sex,
+  });
+
+  /// Where it starts, as a Julian day (UTC).
+  final double from;
+
+  /// Where it ends.
+  final double to;
+
+  /// The nadi flowing.
+  final SvarodayaNadi nadi;
+
+  /// Its turn in the day, 0 the one rising at sunrise, to 23.
+  final int turn;
+
+  /// The tattva flowing in it.
+  final Tattva tattva;
+
+  /// The sex v. 60 gives the nadi.
+  final Sex sex;
+
+  @override
+  List<Object?> get _fields => [from, to, nadi, turn, tattva, sex];
+}
+
+/// The nadi and the tattva at the chart's instant, and the day they are
+/// counted in.
+final class Svarodaya extends _Value {
+  const Svarodaya({
+    required this.sunrise,
+    required this.nextSunrise,
+    required this.tithi,
+    required this.sunriseNadi,
+    required this.run,
+    required this.junctions,
+  });
+
+  /// The sunrise the turns are counted from, as a Julian day (UTC).
+  final double sunrise;
+
+  /// The sunrise that ends the day.
+  final double nextSunrise;
+
+  /// The tithi at the sunrise, which gives its nadi.
+  final Tithi tithi;
+
+  /// The nadi rising at the sunrise (v. 62).
+  final SvarodayaNadi sunriseNadi;
+
+  /// The run the instant falls in.
+  final SvarodayaRun run;
+
+  /// The turn's junctions, where the sushumna flows for a moment: its start
+  /// and its end.
+  final (double, double) junctions;
+
+  @override
+  List<Object?> get _fields => [
+    sunrise,
+    nextSunrise,
+    tithi,
+    sunriseNadi,
+    run,
+    junctions,
+  ];
+}
+
+/// The Shiva Svarodaya around the chart's instant: the reading at it and
+/// every run of the window.
+final class SvarodayaAround extends _Value {
+  const SvarodayaAround({required this.at, required this.runs});
+
+  /// The nadi and the tattva at the chart's instant.
+  final Svarodaya at;
+
+  /// Every run of the window, in order and clipped to it.
+  final List<SvarodayaRun> runs;
+
+  @override
+  List<Object?> get _fields => [at, runs];
+}
+
 /// A chart read as a birth time to rectify (`03-design/rectification.md`):
 /// each reading the request asked for, null for one it did not.
 final class Rectification {
@@ -19531,6 +19709,7 @@ final class Rectification {
     required this.conception,
     required this.circumstance,
     required this.baseline,
+    required this.svarodaya,
   });
 
   /// What the purifier leaves standing of the window.
@@ -19544,6 +19723,9 @@ final class Rectification {
 
   /// The baseline engine's cascade around it.
   final BaselineAnswer? baseline;
+
+  /// The Shiva Svarodaya around it.
+  final SvarodayaAround? svarodaya;
 }
 
 /// A return's own chart, read down to what Tajika reads from it.
