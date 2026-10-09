@@ -25,6 +25,8 @@ use teistro_time::EmbeddedTzdb;
 use crate::BUNDLES;
 #[cfg(feature = "numerology")]
 use crate::area::NumerologyArea;
+#[cfg(feature = "research")]
+use crate::area::ResearchArea;
 use crate::area::{AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
 #[cfg(feature = "chart")]
 use crate::area::{ChartArea, InterpretArea, MatchingArea};
@@ -313,6 +315,16 @@ impl Context {
     #[must_use]
     pub fn numerology(&self) -> NumerologyArea<'_> {
         NumerologyArea::of(self)
+    }
+
+    /// Counts and permutation tests over a batch of births: how often each
+    /// rule of a set holds in each group, whether groups differ, whether
+    /// rules are delivered at life events more than chance, and whether a
+    /// sample departs from its own recombined population.
+    #[cfg(feature = "research")]
+    #[must_use]
+    pub fn research(&self) -> ResearchArea<'_> {
+        ResearchArea::of(self)
     }
 
     /// The operations your **ephemeris** brings with it, beyond the ones
