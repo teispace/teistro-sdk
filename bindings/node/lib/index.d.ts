@@ -6953,6 +6953,198 @@ export declare class NumerologyArea {
   profile(name: string, date: BirthDate, rules?: NumerologyRules): NumerologyProfile;
 }
 
+/** A birth of a study (`03-design/research.md`). */
+export interface ResearchBirth {
+  /** The instant, a Julian day in UTC. */
+  readonly instant: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /**
+   * How far either side the recorded time may be wrong, 0 to 720 minutes; a
+   * rule whose answer differs at either edge is counted unstable on the chart.
+   */
+  readonly uncertaintyMinutes?: number;
+}
+
+/** A study's seed: a number, or a `bigint` past `Number.MAX_SAFE_INTEGER`. */
+export type ResearchSeed = number | bigint;
+
+/** The direction a test looks in, declared before the data. */
+export type ResearchAlternative = 'GREATER' | 'LESS' | 'TWO_SIDED';
+
+/** How many threads count the permutations; the answer is the same bits for each. */
+export type ResearchParallelism = 'ONE' | { readonly THREADS: number };
+
+/** What a study's charts are read for, beside its births. */
+export interface ResearchStudy {
+  /** The predicates, one per rule, as a chart request's `rules` record. */
+  readonly rules: RuleRequest;
+  /** When a rule counts as holding: standing (the default) or merely formed. */
+  readonly holds?: 'STANDING' | 'FORMED';
+}
+
+/** Who is in which group, one label per birth, and the strata labels move within. */
+export interface ResearchDesign {
+  readonly groups: readonly number[];
+  readonly strata?: readonly number[];
+}
+
+/** A permutation test of a design's groups. */
+export interface ResearchGroupTest {
+  readonly seed: ResearchSeed;
+  /** 1 to 10 000 000, fixed in the request. */
+  readonly permutations: number;
+  readonly contrast:
+    | { readonly kind: 'CASE_VS_REST'; readonly case: number }
+    | { readonly kind: 'ANY_DIFFERENCE' };
+  readonly alternative?: ResearchAlternative;
+  /** Every interval's confidence, in (0, 1); 0.95 when left out. */
+  readonly level?: number;
+  /** When given, each row says which methods put it at or under this. */
+  readonly alpha?: number;
+  readonly parallelism?: ResearchParallelism;
+}
+
+/** A test of events against the shuffled-event null. */
+export interface ResearchEventTest {
+  readonly seed: ResearchSeed;
+  readonly permutations: number;
+  readonly alternative?: ResearchAlternative;
+  /** Refuse a pairing that puts an event before a birth, or permute only among those that do not. */
+  readonly afterBirth?: 'REFUSE' | 'RESTRICT_PAIRINGS';
+  readonly level?: number;
+  readonly alpha?: number;
+  readonly parallelism?: ResearchParallelism;
+}
+
+/** One subject of an event study: a birth and the event of its life. */
+export interface ResearchSubject {
+  readonly birth: ResearchBirth;
+  /** When the event happened, a Julian day in UTC. */
+  readonly event: number;
+}
+
+/** A predicate's charts in one group. */
+export interface ResearchGroupCount {
+  readonly present: number;
+  readonly absent: number;
+  /** Not read, and left out of the denominator. */
+  readonly unreadable: number;
+  /** Different answers inside the time uncertainty, and left out of the denominator. */
+  readonly unstable: number;
+}
+
+/** An estimate with its interval at the test's level. */
+export interface ResearchInterval {
+  readonly estimate: number;
+  readonly low: number;
+  readonly high: number;
+}
+
+/** One predicate's row of a study's counts. */
+export interface ResearchCountRow {
+  readonly predicate: string;
+  /** Its charts in each group, groups in index order. */
+  readonly counts: readonly ResearchGroupCount[];
+}
+
+/** One predicate's row of a test. */
+export interface ResearchRow extends ResearchCountRow {
+  /**
+   * The statistic under the observed labels; `null` when it is unbounded, a
+   * recombined sample beyond replicates that all agree.
+   */
+  readonly observed: number | null;
+  /** `(exceed + 1)/(m + 1)`, never zero, with its Clopper–Pearson interval. */
+  readonly p: { readonly exceed: number; readonly value: number; readonly low: number; readonly high: number };
+  /** The hypergeometric p of the same statistic, where it applies. */
+  readonly exact?: number;
+  readonly adjusted: {
+    readonly maxT: number;
+    readonly holm: number;
+    readonly bonferroni: number;
+    readonly bh: number;
+    readonly by: number;
+  };
+  /** The cases against the rest, for a case-against-rest test. */
+  readonly effect?: {
+    readonly riskCase: ResearchInterval;
+    readonly riskRest: ResearchInterval;
+    readonly riskDifference: ResearchInterval;
+    readonly riskRatio: ResearchInterval | null;
+    readonly oddsRatio: number | null;
+    readonly cohenH: number;
+  };
+  /** The share observed against the share the null expects, for a one-group study. */
+  readonly expected?: { readonly observed: number; readonly expected: number; readonly ratio?: number };
+  readonly underAlpha?: {
+    readonly raw: boolean;
+    readonly maxT: boolean;
+    readonly holm: boolean;
+    readonly bonferroni: boolean;
+    readonly bh: boolean;
+    readonly by: boolean;
+  };
+}
+
+/** A study's counts, with the provenance whose `inputHash` is its pre-registration. */
+export interface ResearchCounts {
+  readonly rows: readonly ResearchCountRow[];
+  readonly provenance: Provenance;
+}
+
+/** A test's rows, per predicate and never a single verdict. */
+export interface ResearchTested {
+  readonly rows: readonly ResearchRow[];
+  readonly permutations: number;
+  /** The smallest p-value the permutations can give, `1/(m + 1)`. */
+  readonly resolution: number;
+  /** The generator and shuffle, so a reader can rerun the study. */
+  readonly shuffle: string;
+  readonly provenance: Provenance;
+}
+
+/** `sdk.research` — counts and permutation tests over a batch of births. */
+export declare class ResearchArea {
+  /**
+   * How often each rule holds in each group.
+   *
+   * @example
+   * const table = ctx.research.counts({ births, rules: { shipped: ['YOGAS'] }, design: { groups } });
+   */
+  counts(request: ResearchStudy & { readonly births: readonly ResearchBirth[]; readonly design: ResearchDesign }): ResearchCounts;
+  /** Whether the design's groups differ on each rule, labels permuted. */
+  compare(
+    request: ResearchStudy & {
+      readonly births: readonly ResearchBirth[];
+      readonly design: ResearchDesign;
+      readonly test: ResearchGroupTest;
+    },
+  ): ResearchTested;
+  /** Whether each rule is commoner than in the sample's recombined population. */
+  expected(
+    request: ResearchStudy & {
+      readonly births: readonly ResearchBirth[];
+      readonly control: { readonly seed: ResearchSeed; readonly replicates: number; readonly strata?: readonly number[] };
+      readonly test?: { readonly alternative?: ResearchAlternative; readonly level?: number; readonly alpha?: number };
+    },
+  ): ResearchTested;
+  /** Whether each rule is delivered by a dasha at the subjects' own events more often than chance. */
+  timed(
+    request: ResearchStudy & {
+      readonly subjects: readonly ResearchSubject[];
+      readonly dasha: DashaSystem | DashaKey;
+      /** 1 (the mahadasha) to 6; 2 when left out. */
+      readonly depth?: number;
+      readonly shuffle?: 'EVENT_DATES' | 'AGES_AT_EVENT';
+      readonly strata?: readonly number[];
+      readonly test: ResearchEventTest;
+    },
+  ): ResearchTested;
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -6985,6 +7177,8 @@ export declare class Context {
   readonly matching: MatchingArea;
   /** What a name and a birth date say under numerology's two systems. */
   readonly numerology: NumerologyArea;
+  /** Counts and permutation tests over a batch of births. */
+  readonly research: ResearchArea;
   /** The id of the profile the settings came from. */
   readonly profile: string;
   /** The resolved settings, as their canonical document. */

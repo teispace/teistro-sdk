@@ -6133,6 +6133,136 @@ export class NumerologyArea extends Area {
 }
 
 /**
+ * `sdk.research` — counts and permutation tests over a batch of births
+ * (`03-design/research.md`). Every rule of the request is a predicate,
+ * read once on every chart, and the predicates are one family for the
+ * corrections. A study's answer carries its provenance, whose
+ * `inputHash` seals the births, the rules, the design and the test: the
+ * study's pre-registration, published before its data are collected.
+ *
+ * A birth is `{ instant, place, utcOffsetSeconds, uncertaintyMinutes }`,
+ * the instant a Julian day in UTC and the last optional. A seed is a
+ * number or, past `Number.MAX_SAFE_INTEGER`, a `bigint`.
+ */
+export class ResearchArea extends Area {
+  /**
+   * How often each rule holds in each group, the charts it cannot be
+   * read on and those it is unstable on counted apart. No null and no
+   * shuffle.
+   *
+   * @example
+   * const table = ctx.research.counts({
+   *   births,
+   *   rules: { shipped: ['YOGAS'] },
+   *   design: { groups: births.map((_, i) => i % 2) },
+   * });
+   * const first = table.rows[0].counts[1].present;
+   *
+   * @param {object} request
+   * @param {object[]} request.births the births, in the order the design labels them
+   * @param {object} request.rules the rules, as a chart request's `rules` record
+   * @param {string} [request.holds] `'STANDING'` (the default) or `'FORMED'`
+   * @param {object} request.design `{ groups, strata }`, one group per birth, `strata` optional
+   * @returns {object}
+   */
+  counts(request) {
+    return researchOf('COUNTS', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether the design's groups differ on each rule, the labels permuted
+   * (within strata when the design has them), with the family's
+   * corrections and the effect sizes.
+   *
+   * @example
+   * const tested = ctx.research.compare({
+   *   births,
+   *   rules: { shipped: ['YOGAS'] },
+   *   design: { groups },
+   *   test: { seed: 7, permutations: 9999, contrast: { kind: 'CASE_VS_REST', case: 1 } },
+   * });
+   * const holm = tested.rows[0].adjusted.holm;
+   *
+   * @param {object} request as `counts` takes it, with `test`: `{ seed, permutations, contrast, alternative, level, alpha, parallelism }`
+   * @returns {object}
+   */
+  compare(request) {
+    return researchOf('COMPARE', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether each rule is commoner (or rarer) in this sample than in its
+   * own recombined population: the sample refounded with clock times
+   * shuffled among its births, date and place kept (Gauquelin's control).
+   *
+   * @param {object} request the `births` and `rules`, `control` `{ seed, replicates, strata }` and an optional `test` `{ alternative, level, alpha }`
+   * @returns {object}
+   */
+  expected(request) {
+    return researchOf('EXPECTED', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+
+  /**
+   * Whether each rule is delivered by a dasha's running periods at the
+   * subjects' own events more (or less) often than at events shuffled
+   * among them.
+   *
+   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism }`; and optionally `depth` (2), `shuffle` (`'EVENT_DATES'` or `'AGES_AT_EVENT'`) and `strata`
+   * @returns {object}
+   */
+  timed(request) {
+    return researchOf('TIMED', request, (json) => run(this, (inner) => inner.research(json)));
+  }
+}
+
+/**
+ * A study's request as the boundary reads it, crossed by `cross`: each
+ * birth flattened, each seed a number or a decimal string, and every other
+ * field crossing as written, so a field the study does not read is refused
+ * by name there rather than dropped here.
+ */
+function researchOf(study, request, cross) {
+  if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+    throw new TypeError('research: expected a request, e.g. { births, rules, design }');
+  }
+  const birth = (given, what) => {
+    const place = given?.place ?? {};
+    const out = {
+      instant: finite(given?.instant, `${what}.instant`),
+      latitudeDeg: finite(place.latitude, `${what}.place.latitude`),
+      longitudeDeg: finite(place.longitude, `${what}.place.longitude`),
+      altitudeM: finite(place.altitude ?? 0, `${what}.place.altitude`),
+      utcOffsetSeconds: finite(given?.utcOffsetSeconds, `${what}.utcOffsetSeconds`),
+    };
+    if (given?.uncertaintyMinutes !== undefined) {
+      out.uncertaintyMinutes = finite(given.uncertaintyMinutes, `${what}.uncertaintyMinutes`);
+    }
+    return out;
+  };
+  const seeded = (record) =>
+    record === undefined || record === null || typeof record.seed !== 'bigint'
+      ? record
+      : { ...record, seed: record.seed.toString() };
+  const list = (given, what) => {
+    if (!Array.isArray(given)) throw new TypeError(`${what}: expected an array`);
+    return given;
+  };
+  const { births, subjects, test, control, ...rest } = request;
+  const asked = { ...rest, study };
+  if (births !== undefined) asked.births = list(births, 'births').map((b, i) => birth(b, `births[${i}]`));
+  if (subjects !== undefined) {
+    asked.subjects = list(subjects, 'subjects').map((s, i) => ({
+      birth: birth(s?.birth, `subjects[${i}].birth`),
+      event: finite(s?.event, `subjects[${i}].event`),
+    }));
+  }
+  if (test !== undefined) asked.test = seeded(test);
+  if (control !== undefined) asked.control = seeded(control);
+  const { value, provenance } = JSON.parse(cross(JSON.stringify(asked)));
+  return deepFreeze({ ...value, provenance: decodeProvenance(provenance) });
+}
+
+/**
  * `sdk.almanac` — a day, or a run of days, with its limbs.
  *
  * The boundary calls this `panchanga` and the area takes the consumer's
@@ -6390,6 +6520,8 @@ export class Context {
     this.matching = new MatchingArea(reach);
     /** What a name and a birth date say under numerology's two systems. */
     this.numerology = new NumerologyArea(reach);
+    /** Counts and permutation tests over a batch of births. */
+    this.research = new ResearchArea(reach);
     this.#engine = new Engine(reach);
   }
 

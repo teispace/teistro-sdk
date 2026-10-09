@@ -65,6 +65,7 @@ pub mod panchanga;
 pub mod positions;
 pub mod provider;
 pub mod rashifal;
+pub mod research;
 pub mod schemas;
 pub mod string;
 mod support;

@@ -327,6 +327,10 @@ name = "readings"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "research"
+required-features = ["builtin-ephemeris", "research"]
+
+[[example]]
 name = "birth_chart"
 required-features = ["builtin-ephemeris"]
 

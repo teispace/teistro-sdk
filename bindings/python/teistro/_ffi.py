@@ -3957,6 +3957,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_rashifal.restype = ctypes.c_int32
+        self.ts_research: Any = library.ts_research
+        self.ts_research.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_research.restype = ctypes.c_int32
         self.ts_ephemeris_manifest: Any = library.ts_ephemeris_manifest
         self.ts_ephemeris_manifest.argtypes = [
             ctypes.POINTER(_Context),
@@ -4750,6 +4757,47 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_rashifal(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def research(self, request_json: str) -> str:
+        """Runs a study over a batch of births and answers with `{value,
+        provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+        study, each row `{predicate, counts}` with every group's `{present,
+        absent, unreadable, unstable}`; for any other study it is `{rows,
+        permutations, resolution, shuffle}`, each row adding `observed`, `p`
+        (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+        bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+        four only where they apply. `provenance.input_hash` seals the study
+        and is what a study publishes before its data are collected.
+
+        `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+        `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+        request's rules are, and what the study reads: `births` and `design`
+        (and a `test` for `COMPARE`); `births`, `control` and an optional
+        `test` for `EXPECTED`; `subjects`, `dasha`, `test` and optionally
+        `depth`, `shuffle` and `strata` for `TIMED`. A birth is `{instant,
+        latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+        uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+        number or a decimal string. A key it does not read, a field the study
+        does not read or misses, or a value out of range is `INVALID_ARG`,
+        named under `research`, as `research.test.seed`; what the study
+        refuses once it runs is named as the façade names it. A context
+        without an ephemeris is `CAPABILITY`, as is a build that leaves the
+        `research` family out.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_research(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

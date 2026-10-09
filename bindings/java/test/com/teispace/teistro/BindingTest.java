@@ -437,6 +437,42 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a study counts and tests its rules over a batch of births", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+                List<ResearchBirth> births = new java.util.ArrayList<>();
+                for (int i = 0; i < 6; i += 1) {
+                    births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
+                }
+                Map<String, Object> yogas = Map.of("shipped", List.of("YOGAS"));
+                Map<String, Object> design = Map.of("groups", List.of(0, 1, 0, 1, 0, 1));
+                ResearchCounts table = sky.research().counts(births, yogas, design, null);
+                check(!table.rows().isEmpty(), "a row per rule");
+                for (ResearchCounts.Row row : table.rows()) {
+                    for (ResearchCounts.Group group : row.counts()) {
+                        same(3, group.present() + group.absent() + group.unreadable() + group.unstable(),
+                                row.predicate());
+                    }
+                }
+                // A seed past Long.MAX_VALUE is a BigInteger, and the same seed in every binding.
+                java.math.BigInteger widest = java.math.BigInteger.TWO.pow(64).subtract(java.math.BigInteger.ONE);
+                ResearchTested tested = sky.research().compare(births, yogas, design, Map.of("seed", widest,
+                        "permutations", 199, "contrast", Map.of("kind", "CASE_VS_REST", "case", 1), "alpha", 0.05),
+                        null);
+                same(199, tested.permutations(), "the permutations asked");
+                same(1.0 / 200, tested.resolution(), "the resolution they give");
+                for (ResearchTested.Row row : tested.rows()) {
+                    check(row.p().value() >= tested.resolution(), "never under the resolution");
+                    check(row.adjusted().maxT() >= row.p().value(), "an adjustment never lowers a p-value");
+                    check(row.underAlpha() != null, "alpha was given");
+                }
+                check(!tested.provenance().inputHash().equals(table.provenance().inputHash()), "another study");
+                TeistroException refused = refusal(() -> sky.research().timed(List.of(), yogas,
+                        DashaSystem.VIMSHOTTARI, Map.of("seed", 1, "permutations", 19), null));
+                same("research.subjects", refused.field(), "named by its record");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

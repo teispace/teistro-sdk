@@ -679,6 +679,44 @@ final class Calls {
     }
 
     /**
+     * `ts_research`: Runs a study over a batch of births and answers with `{value,
+     * provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+     * study, each row `{predicate, counts}` with every group's `{present,
+     * absent, unreadable, unstable}`; for any other study it is `{rows,
+     * permutations, resolution, shuffle}`, each row adding `observed`, `p`
+     * (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+     * bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+     * four only where they apply. `provenance.input_hash` seals the study
+     * and is what a study publishes before its data are collected.
+     *
+     * `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+     * `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+     * request's rules are, and what the study reads: `births` and `design`
+     * (and a `test` for `COMPARE`); `births`, `control` and an optional
+     * `test` for `EXPECTED`; `subjects`, `dasha`, `test` and optionally
+     * `depth`, `shuffle` and `strata` for `TIMED`. A birth is `{instant,
+     * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+     * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+     * number or a decimal string. A key it does not read, a field the study
+     * does not read or misses, or a value out of range is `INVALID_ARG`,
+     * named under `research`, as `research.test.seed`; what the study
+     * refuses once it runs is named as the façade names it. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `research` family out.
+     */
+    static String research(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_research.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_ephemeris_manifest`: What the context's engine says it offers beyond this library's own
      * operations: its manifest, as the engine wrote it.
      *

@@ -40,6 +40,7 @@ public final class Context implements AutoCloseable {
     private final AlmanacArea almanac = new AlmanacArea(this);
     private final MatchingArea matching = new MatchingArea(this);
     private final NumerologyArea numerology = new NumerologyArea(this);
+    private final ResearchArea research = new ResearchArea(this);
     private final Engine ephemeris = new Engine(this);
     private final FrameArea frame;
 
@@ -372,6 +373,15 @@ public final class Context implements AutoCloseable {
      */
     public NumerologyArea numerology() {
         return numerology;
+    }
+
+    /**
+     * Counts and permutation tests over a batch of births.
+     *
+     * @return the research area of this context
+     */
+    public ResearchArea research() {
+        return research;
     }
 
     /**

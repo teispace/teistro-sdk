@@ -4133,6 +4133,46 @@ test('an almanac reads a native\'s bird over its days', () => {
   );
 });
 
+/**
+ * A study crosses with its provenance, whose input hash is its
+ * pre-registration: the same study under a seed sent as a number and as a
+ * bigint is one study, and a field it does not read is refused by name
+ * (`03-design/research.md`).
+ */
+test('a study counts and tests its rules over a batch of births', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const births = [0, 1, 2, 3, 4, 5].map((i) => ({ instant: 2447000.25 + 977.3 * i, place, utcOffsetSeconds: 20700 }));
+  const rules = { shipped: ['YOGAS'] };
+  const design = { groups: [0, 1, 0, 1, 0, 1] };
+  const counted = ctx.research.counts({ births, rules, design });
+  assert.ok(counted.rows.length > 0);
+  for (const row of counted.rows) {
+    const [rest, cases] = row.counts;
+    assert.equal(rest.present + rest.absent + rest.unreadable + rest.unstable, 3, row.predicate);
+    assert.equal(cases.present + cases.absent + cases.unreadable + cases.unstable, 3, row.predicate);
+  }
+  const contrast = { kind: 'CASE_VS_REST', case: 1 };
+  const tested = ctx.research.compare({ births, rules, design, test: { seed: 9, permutations: 19, contrast } });
+  const big = ctx.research.compare({ births, rules, design, test: { seed: 9n, permutations: 19, contrast } });
+  assert.equal(tested.provenance.inputHash, big.provenance.inputHash, 'one seed, however it is written');
+  assert.equal(tested.permutations, 19);
+  assert.equal(tested.resolution, 1 / 20);
+  assert.ok(tested.rows.every((row) => row.p.value >= tested.resolution && row.adjusted.maxT >= row.p.value));
+  assert.notEqual(tested.provenance.inputHash, counted.provenance.inputHash);
+  assert.ok(Object.isFrozen(tested.rows[0].adjusted), 'frozen to its leaves');
+  const huge = ctx.research.compare({ births, rules, design, test: { seed: 2n ** 64n - 1n, permutations: 19, contrast } });
+  assert.notEqual(huge.provenance.inputHash, tested.provenance.inputHash);
+  assert.throws(
+    () => ctx.research.counts({ births, rules, design, dasha: 'dasha_system.VIMSHOTTARI' }),
+    (error) => error.field === 'research.dasha',
+  );
+  assert.throws(
+    () => ctx.research.compare({ births, rules, design }),
+    (error) => error.field === 'research.test',
+  );
+});
+
 test('a chart carries its Lal Kitab', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };

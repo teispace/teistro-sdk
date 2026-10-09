@@ -161,7 +161,7 @@ fn every_chart_family_answers_in_its_build_and_is_refused_without_it() {
 #[test]
 fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
     let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
-    let entries: [(&str, bool, JsonEntry); 3] = [
+    let entries: [(&str, bool, JsonEntry); 4] = [
         (
             "numerology",
             cfg!(feature = "numerology"),
@@ -176,6 +176,11 @@ fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
             "rashifal",
             cfg!(feature = "rashifal"),
             teistro_ffi::rashifal::ts_rashifal,
+        ),
+        (
+            "research",
+            cfg!(feature = "research"),
+            teistro_ffi::research::ts_research,
         ),
     ];
     for (family, built, entry) in entries {

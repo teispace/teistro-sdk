@@ -75,6 +75,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Lint the façade with no family
         run: cargo clippy -p teistro --lib --no-default-features --features builtin-compact -- -D warnings
+      - name: Lint the façade with each family that shares the request parts alone
+        run: for f in pakshi rashifal research; do cargo clippy -p teistro --lib --no-default-features --features "builtin-compact,$f" -- -D warnings || exit 1; done
       - name: Lint the boundary and its tests with no family
         run: cargo clippy -p teistro-ffi --all-targets --no-default-features --features builtin-compact -- -D warnings
       - name: Lint the wasm module with no family, for wasm32

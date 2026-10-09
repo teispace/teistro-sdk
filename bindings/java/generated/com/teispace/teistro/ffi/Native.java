@@ -3771,6 +3771,7 @@ public final class Native {
         "ts_numerology_profile",
         "ts_pakshi",
         "ts_rashifal",
+        "ts_research",
         "ts_ephemeris_manifest",
         "ts_ephemeris_call",
         "ts_provider_load",
@@ -4179,6 +4180,34 @@ public final class Native {
     public final MethodHandle ts_rashifal;
 
     /**
+     * Runs a study over a batch of births and answers with `{value,
+     * provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+     * study, each row `{predicate, counts}` with every group's `{present,
+     * absent, unreadable, unstable}`; for any other study it is `{rows,
+     * permutations, resolution, shuffle}`, each row adding `observed`, `p`
+     * (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+     * bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+     * four only where they apply. `provenance.input_hash` seals the study
+     * and is what a study publishes before its data are collected.
+     *
+     * `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+     * `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+     * request's rules are, and what the study reads: `births` and `design`
+     * (and a `test` for `COMPARE`); `births`, `control` and an optional
+     * `test` for `EXPECTED`; `subjects`, `dasha`, `test` and optionally
+     * `depth`, `shuffle` and `strata` for `TIMED`. A birth is `{instant,
+     * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+     * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+     * number or a decimal string. A key it does not read, a field the study
+     * does not read or misses, or a value out of range is `INVALID_ARG`,
+     * named under `research`, as `research.test.seed`; what the study
+     * refuses once it runs is named as the façade names it. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `research` family out.
+     */
+    public final MethodHandle ts_research;
+
+    /**
      * What the context's engine says it offers beyond this library's own
      * operations: its manifest, as the engine wrote it.
      *
@@ -4300,6 +4329,7 @@ public final class Native {
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_rashifal = linker.downcallHandle(symbols.find("ts_rashifal").orElseThrow(() -> missing("ts_rashifal")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_research = linker.downcallHandle(symbols.find("ts_research").orElseThrow(() -> missing("ts_research")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_ephemeris_manifest = linker.downcallHandle(symbols.find("ts_ephemeris_manifest").orElseThrow(() -> missing("ts_ephemeris_manifest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_ephemeris_call = linker.downcallHandle(symbols.find("ts_ephemeris_call").orElseThrow(() -> missing("ts_ephemeris_call")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_provider_load = linker.downcallHandle(symbols.find("ts_provider_load").orElseThrow(() -> missing("ts_provider_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

@@ -2747,6 +2747,97 @@ void main() {
       }
     }
   }
+
+  // The studies every runner sends (`03-design/research.md`): eight births
+  // at Kathmandu a few years apart, the shipped yogas as the predicates,
+  // compared by alternate labels, read against their own recombined
+  // population, and each delivered by the Vimshottari at an event of its
+  // life under the age shuffle.
+  final kathmandu = Observer(
+    latitudeDeg: Latitude(27.7172),
+    longitudeDeg: Longitude(85.324),
+    altitudeM: Altitude(0),
+  );
+  final births = [
+    for (var i = 0; i < 8; i++)
+      ResearchBirth(
+        instant: 2447000.25 + 977.3 * i,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      ),
+  ];
+  const yogas = RuleRequest(shipped: [ShippedRules.yogas]);
+  final groups = ResearchDesign(groups: [for (var i = 0; i < 8; i++) i % 2]);
+  String optional(double? value) => value == null ? 'none' : number(value);
+  String counted(List<ResearchGroupCount> counts) => counts
+      .map((c) => '${c.present}:${c.absent}:${c.unreadable}:${c.unstable}')
+      .join(',');
+  void putTested(String name, ResearchTested answer) {
+    put('research-$name-hash', answer.provenance.inputHash);
+    put(
+      'research-$name-test',
+      '${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}',
+    );
+    for (final (k, r) in answer.rows.indexed) {
+      put(
+        'research-$name-row-$k',
+        '${r.predicate} ${counted(r.counts)} ${optional(r.observed)} '
+            '${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} '
+            '${number(r.adjusted.holm)} ${number(r.adjusted.bh)} '
+            '${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} '
+            '${optional(r.expected?.expected)}',
+      );
+    }
+  }
+
+  final table = geo.research.counts(
+    births: births,
+    rules: yogas,
+    holds: ResearchHolds.formed,
+    design: groups,
+  );
+  put('research-counts-hash', table.provenance.inputHash);
+  for (final (k, r) in table.rows.indexed) {
+    put('research-counts-row-$k', '${r.predicate} ${counted(r.counts)}');
+  }
+  putTested(
+    'compare',
+    geo.research.compare(
+      births: births,
+      rules: yogas,
+      design: groups,
+      test: ResearchGroupTest(
+        seed: BigInt.from(5),
+        permutations: 199,
+        contrast: const ResearchContrast.caseVsRest(1),
+        alpha: 0.05,
+      ),
+    ),
+  );
+  putTested(
+    'expected',
+    geo.research.expected(
+      births: births,
+      rules: yogas,
+      control: ResearchControl(seed: BigInt.from(4), replicates: 3),
+    ),
+  );
+  putTested(
+    'timed',
+    geo.research.timed(
+      subjects: [
+        for (final (i, birth) in births.indexed)
+          ResearchSubject(
+            birth: birth,
+            event: birth.instant + 9000.5 + 211 * i,
+          ),
+      ],
+      rules: yogas,
+      dasha: DashaSystem.vimshottari,
+      shuffle: ResearchEventShuffle.agesAtEvent,
+      test: ResearchEventTest(seed: BigInt.from(3), permutations: 49),
+    ),
+  );
   geo.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────
@@ -2894,6 +2985,10 @@ void main() {
     ('almanac.of', ctx.almanac.of),
     ('almanac.day', ctx.almanac.day),
     ('almanac.pakshi', ctx.almanac.pakshi),
+    ('research.counts', ctx.research.counts),
+    ('research.compare', ctx.research.compare),
+    ('research.expected', ctx.research.expected),
+    ('research.timed', ctx.research.timed),
     ('engine.names', ctx.engine.names),
     ('engine.signature', ctx.engine.signature),
     ('engine.call', ctx.engine.call),

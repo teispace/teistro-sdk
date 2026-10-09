@@ -4503,6 +4503,79 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a study counts and tests its rules over a batch of births', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(0),
+    );
+    final births = [
+      for (var i = 0; i < 6; i++)
+        ResearchBirth(
+          instant: 2447000.25 + 977.3 * i,
+          place: kathmandu,
+          utcOffsetSeconds: 20700,
+        ),
+    ];
+    const yogas = RuleRequest(shipped: [ShippedRules.yogas]);
+    const design = ResearchDesign(groups: [0, 1, 0, 1, 0, 1]);
+    final table = ctx.research.counts(
+      births: births,
+      rules: yogas,
+      design: design,
+    );
+    expect(table.rows, isNotEmpty);
+    for (final row in table.rows) {
+      for (final group in row.counts) {
+        expect(
+          group.present + group.absent + group.unreadable + group.unstable,
+          3,
+          reason: row.predicate,
+        );
+      }
+    }
+    // A seed past what a signed 64-bit int holds is the same seed here.
+    final widest = (BigInt.one << 64) - BigInt.one;
+    final tested = ctx.research.compare(
+      births: births,
+      rules: yogas,
+      design: design,
+      test: ResearchGroupTest(
+        seed: widest,
+        permutations: 199,
+        contrast: const ResearchContrast.caseVsRest(1),
+        alpha: 0.05,
+      ),
+    );
+    expect(tested.permutations, 199);
+    expect(tested.resolution, 1 / 200);
+    for (final row in tested.rows) {
+      expect(row.p.value, greaterThanOrEqualTo(tested.resolution));
+      expect(row.adjusted.maxT, greaterThanOrEqualTo(row.p.value));
+      expect(row.underAlpha, isNotNull);
+    }
+    expect(tested.provenance.inputHash, isNot(table.provenance.inputHash));
+    expect(
+      () => ctx.research.timed(
+        subjects: const [],
+        rules: yogas,
+        dasha: DashaSystem.vimshottari,
+        test: ResearchEventTest(seed: BigInt.one, permutations: 19),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'research.subjects',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its Lal Kitab', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
