@@ -532,6 +532,17 @@ public record ChartOptions(
         }
 
         /**
+         * The rectification: each reading asked by its member, as
+         * {@code Map.of("purify", Map.of("minutes", 30))}.
+         *
+         * @param request the request object, or its JSON
+         * @return this builder
+         */
+        public Builder rectification(Object request) {
+            return json("rectification_json", request);
+        }
+
+        /**
          * The options.
          *
          * @return the options

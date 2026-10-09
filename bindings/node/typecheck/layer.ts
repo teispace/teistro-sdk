@@ -116,6 +116,9 @@ import type {
   Devotion,
   Remedies,
   RemedyRequest,
+  Rectification,
+  RectificationRequest,
+  BaselineNote,
   PlanetDignity,
   Reception,
   Term,
@@ -862,6 +865,88 @@ function thePrashna(ctx: Context): string {
 }
 
 void thePrashna;
+
+// A rectification read all the way down, a note narrowed by its kind, and
+// a request in every field.
+function theRectification(ctx: Context): string {
+  const asked: RectificationRequest = {
+    purify: {
+      minutes: 30,
+      rules: {
+        native: 'HUMAN',
+        pranapada: true,
+        gulika: true,
+        moon: true,
+        gulikaExtension: 'ALWAYS',
+        purifyAs: 'WEIGHT',
+        pranapadaRule: 'VERSE',
+        gulikaAt: 'START',
+        seedMinutes: 1,
+      },
+    },
+    conception: {
+      pranapadaHouse: { count: 'SRIPATI_BHAVA', firstAuspicious: true },
+      nisheka: { month: 'SOLAR', mandiAt: 'END', ninth: 'EQUAL', saturn: 'BHAVA_MADHYA', invisibleHalf: 'BY_SIGN' },
+      moon: { count: 'FROM_ARIES', rising: 'NAVAMSHA', pisces: 'DAY' },
+    },
+    circumstance: {
+      facts: { fatherPresent: true, presentation: 'HEAD', oil: 'HALF', wick: 'SPENT', attendants: { total: 3 } },
+      rules: { moonSees: 'FULL', sunFallen: 'EITHER_SIDE', presentationBy: 'LAGNA_LORD_MOTION', betweenBy: 'SIGN', outside: 'INVISIBLE' },
+    },
+    baseline: {
+      uncertaintyMinutes: 60,
+      accuracy: 'EXACT',
+      events: [{ id: 'wedding', kind: 'MARRIAGE', on: 2460000.5, precision: 'MONTH', confidence: 'PROBABLE' }],
+      sex: 'FEMALE',
+      coverage: 0.9,
+      dasha: { yearLength: 'SAVANA_360', birthPeriod: 'ELAPSED' },
+    },
+  };
+  const read: Rectification | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    rectification: asked,
+  }).rectification;
+  if (read === null) return 'none';
+  const { purified, conception, circumstance, baseline } = read;
+  const runs =
+    purified === null
+      ? '-'
+      : purified.intervals
+          .map((run) => `${run.from} ${run.verdict.pure} ${run.verdict.clauses.map((c) => `${c.purifier} ${c.sign}`).join()}`)
+          .join();
+  const conceived =
+    conception === null
+      ? '-'
+      : `${conception.nisheka.count.instant} ${conception.nisheka.count.span.moonAddedDeg ?? '-'} ` +
+        `${conception.moon.predicted.nakshatra ?? '-'} ${conception.moon.nakshatraAgrees ?? '-'} ${conception.pranapadaHouse.house}`;
+  const born =
+    circumstance === null
+      ? '-'
+      : `${circumstance.father.moonAspect} ${circumstance.father.whereabouts ?? '-'} ${circumstance.presentation.lord} ` +
+        `${circumstance.attending.visible.join()} ${circumstance.weights.map((w) => w.indication).join()}`;
+  const said = (note: BaselineNote): string => {
+    switch (note.kind) {
+      case 'TATTVA_SEX':
+        return `${note.sex} ${note.admittedMinutes}`;
+      case 'REPORTED_TIME':
+        return `${note.accuracy} ${note.uncertaintyMinutes}`;
+      case 'EVENT_FIT':
+        return `${note.id ?? '-'} ${note.eventKind} ${note.lords.join()}`;
+    }
+  };
+  const cascade =
+    baseline === null
+      ? '-'
+      : `${baseline.suggested} ${baseline.candidates[0]?.lagnaNakshatra ?? '-'} ` +
+        `${baseline.stages.flatMap((stage) => stage.notes.map(said)).join()} ${baseline.holdOut.map((h) => h.kind).join()}`;
+  // @ts-expect-error the window is a number of minutes
+  const wrong: RectificationRequest = { purify: { minutes: '30' } };
+  return [runs, conceived, born, cascade, String(wrong)].join();
+}
+
+void theRectification;
 
 // Remedies read all the way down, and a request in every field.
 function theRemedies(ctx: Context): string {

@@ -1549,6 +1549,77 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, remedies={"rules": {"devatas": {}}}, **at)  # type: ignore[arg-type]
             self.assertEqual(refused.exception.field, "remedies.rules.devatas")
 
+    def test_a_chart_carries_its_rectification(self) -> None:
+        """A rectification crosses whole, its catalogue keys made members, each
+        reading only when asked, every stage note narrowed by its class, and
+        a window of no minutes refused by its record's name
+        (`03-design/rectification.md`)."""
+        from teistro import EventFitNote, ReportedTimeNote, TattvaSexNote
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).rectification)
+            purified = ctx.chart.found(instant=instant, rectification={"purify": {"minutes": 20}}, **at).rectification
+            assert purified is not None and purified.purified is not None
+            self.assertIsNone(purified.conception)
+            self.assertIsNone(purified.circumstance)
+            self.assertIsNone(purified.baseline)
+            runs = purified.purified.intervals + purified.purified.removed
+            self.assertTrue(runs)
+            self.assertGreater(purified.purified.grid.cells, 0)
+            clauses = [c for run in runs for c in run.verdict.clauses]
+            self.assertTrue(all(isinstance(c.sign, Rashi) and isinstance(c.lagna, Rashi) for c in clauses))
+            read = ctx.chart.found(
+                instant=instant,
+                rectification={
+                    "purify": {"minutes": 20},
+                    "conception": {},
+                    "circumstance": {"facts": {"fatherPresent": False}},
+                    "baseline": {
+                        "uncertaintyMinutes": 30,
+                        "sex": "MALE",
+                        "events": [
+                            {"kind": "MARRIAGE", "on": instant + 25 * 365.25},
+                            {"kind": "ACCIDENT", "on": instant + 30 * 365.25, "heldOut": True},
+                        ],
+                    },
+                },
+                **at,
+            ).rectification
+            assert read is not None and read.purified is not None and read.conception is not None
+            assert read.circumstance is not None and read.baseline is not None
+            moon = read.conception.moon
+            self.assertIsInstance(moon.moon_sign, Rashi)
+            self.assertIsInstance(moon.rising, Rashi)
+            self.assertIsInstance(moon.predicted.sign, Rashi)
+            self.assertTrue(moon.moon_nakshatra is None or isinstance(moon.moon_nakshatra, Nakshatra))
+            self.assertIn(read.conception.pranapada_house.house, range(1, 13))
+            circumstance = read.circumstance
+            self.assertEqual(len(circumstance.sky.grahas_deg), 7)
+            self.assertIsInstance(circumstance.presentation.lord, Graha)
+            self.assertIn(circumstance.presentation.rising, ("SIRSHODAYA", "PRISHTODAYA", "UBHAYODAYA"))
+            self.assertTrue(all(isinstance(g, Graha) for g in circumstance.attending.between))
+            self.assertEqual([w.indication for w in circumstance.weights], ["FATHER"])
+            baseline = read.baseline
+            self.assertTrue(baseline.candidates)
+            self.assertIsInstance(baseline.candidates[0].lagna, Rashi)
+            self.assertIsInstance(baseline.candidates[0].lagna_nakshatra, Nakshatra)
+            self.assertLess(baseline.window.from_jd, baseline.window.to_jd)
+            self.assertEqual((baseline.events_used, baseline.events_held_out, len(baseline.hold_out)), (1, 1, 1))
+            notes = [note for stage in baseline.stages for note in stage.notes]
+            sexed = [note for note in notes if isinstance(note, TattvaSexNote)]
+            self.assertEqual([(note.kind, note.sex) for note in sexed], [("TATTVA_SEX", "MALE")])
+            reported = [note for note in notes if isinstance(note, ReportedTimeNote)]
+            self.assertEqual([note.uncertainty_minutes for note in reported], [30])
+            fits = [note for note in notes if isinstance(note, EventFitNote)]
+            self.assertEqual([(note.event, note.id, note.event_kind) for note in fits], [(0, None, "MARRIAGE")])
+            self.assertTrue(all(isinstance(g, Graha) for g in fits[0].lords))
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, rectification={"purify": {"minutes": 0}}, **at)
+            self.assertEqual(refused.exception.field, "rectification.purify.minutes")
+
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each
         planet, a horary number's lagna is the exact start of its sub while

@@ -640,5 +640,20 @@ within one cell of the baseline's final step.
    staying inside the answer, and events that narrow it. With nothing to
    differ, the parity page is the test's table.
 7. **`TATTVA` under `SVARODAYA`**, opt-in. X12 is decided (2026-10-09).
+   **Built** (2026-10-09): `crates/rectification/src/svarodaya.rs`,
+   `ChartArea::svarodaya` at an instant and `ChartArea::svarodaya_runs`
+   over a window, a report and never a bar. The kernel tests hold v. 62's
+   three-day runs over all thirty tithis, a day tiled by twenty-four turns
+   of v. 197's five, ether closing each turn, and the rival "a ghari each"
+   reading refused at half an hour into a turn; the façade's test holds the
+   day and the tithi at its sunrise to the almanac's. The record member
+   and the bindings' readers follow on step 8's pattern.
 8. **The façade and every binding**, on prashna's pattern: a request member,
-   one section, parity across the runners.
+   one section, parity across the runners. **Built** (2026-10-09): the
+   `rectification` record (`purify`, `conception`, `circumstance`,
+   `baseline`, its `dasha` a partial override of the baseline's own) on
+   `ts_chart_request`, section 122, and `chart.rectification` in Node,
+   Python, Dart and Java, every catalogue key in full and a member not
+   asked for none. The six runners agree value for value on both parity
+   charts, and the record's test refuses any key on the wire that is not
+   camelCase, which caught the stage notes' own fields.

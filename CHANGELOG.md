@@ -2470,6 +2470,25 @@ the astronomical numbers do not move. Nothing else computes yet.
   each held-out event is supported. Rank 2 and unsourced, a call of its
   own beside the verses' `rectify`. Run beside the baseline engine on
   shared cases, it answers the same intervals to a second.
+- **Rectification in every binding** (`03-design/rectification.md`
+  step 8). A chart request's `rectification` record reads each chart as
+  a birth time to rectify, around its own instant and place on the
+  request's clock: `purify` (the purifier over minutes either side),
+  `conception`, `circumstance` (with the family's facts) and `baseline`
+  (the baseline engine's cascade, its `dasha` naming only what it
+  changes). Node, Python, Dart and Java answer `chart.rectification`,
+  catalogue keys in full and each member none unless asked; every runner
+  prints the same values. The baseline's stage notes now name their own
+  fields in camelCase (`admittedMinutes`, `uncertaintyMinutes`,
+  `eventKind`), as the rest of the answer does.
+- **The Shiva Svarodaya's nadi and tattva** (`03-design/rectification.md`
+  step 7, X12). `sdk.chart().svarodaya` reads them at an instant and
+  `svarodaya_runs` over a window: the nadi the tithi at sunrise starts,
+  its turn of two and a half ghatis, and the tattva flowing in it in the
+  order air, fire, earth, water, with ether at the junction, at the
+  verse's palas, read in the 1899 Sanskrit where Rama Prasad's English
+  mistranslates two verses. A report, never a bar: no verse reads either
+  at a birth.
 - **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
   artefact weighs, raw and gzipped, recorded from the verify run that
   built it: each platform's library, C bundle, Node addon, wheel and jar,

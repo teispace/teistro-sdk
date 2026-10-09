@@ -279,7 +279,7 @@ pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 pub use crate::prashna_request::PrashnaRequest;
 #[cfg(feature = "rectification")]
 pub use crate::rectification_request::{
-    BaselineAsked, CircumstanceAsked, Purify, Rectification, RectificationRequest,
+    BaselineAsked, CircumstanceAsked, DashaAsked, Purify, Rectification, RectificationRequest,
 };
 #[cfg(feature = "remedies")]
 pub use crate::remedy_request::RemedyRequest;

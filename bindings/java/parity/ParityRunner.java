@@ -1267,6 +1267,11 @@ public final class ParityRunner {
                 .perfection(map("house", 7, "rules", map("horizonDays", 120)))
                 .prashna(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE")))
                 .remedies(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA"))))
+                .rectification(map("purify", map("minutes", 20), "conception", map(),
+                        "circumstance", map("facts", map("fatherPresent", false)),
+                        "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
+                                map("kind", "MARRIAGE", "on", 2469000.5),
+                                map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true)))))
                 .westernAspects(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs)))
@@ -1783,6 +1788,7 @@ public final class ParityRunner {
         perfection(c, chart.perfection().orElseThrow());
         prashna(c, chart.prashna().orElseThrow());
         putRemedies(c + "-remedies", chart.remedies().orElseThrow());
+        rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();
         put(c + "-western-aspect-count", String.valueOf(westernAspects.size()));
@@ -1976,6 +1982,98 @@ public final class ParityRunner {
         putMatter(c + "-prashna-links", links.matter());
         AnnualStatesRead states = Objects.requireNonNull(links.states(), "the prashna's links have no states");
         put(c + "-prashna-links-states", "R:" + grahaKeys(states.retrograde()) + " C:" + grahaKeys(states.combust()));
+    }
+
+    /** The purifier's verdict as every runner spells it: whether pure, then each clause colon-joined. */
+    private static String verdictSaid(Purified.Verdict verdict) {
+        return lower(verdict.pure()) + " " + orDash(join(",", verdict.clauses(), clause -> clause.purifier() + ":"
+                + clause.reference() + ":" + clause.sign().fullKey() + ":" + clause.lagna().fullKey() + ":"
+                + clause.house() + ":" + lower(clause.held()) + ":" + lower(clause.counted())));
+    }
+
+    /** One stage note as every runner spells it: its kind, then its fields in declaration order, colon-joined. */
+    private static String noteSaid(BaselineNote note) {
+        return switch (note) {
+            case BaselineNote.TattvaSex sex -> "TATTVA_SEX:" + sex.sex() + ":" + number(sex.admittedMinutes()) + ":"
+                    + sex.penalised() + ":" + sex.of();
+            case BaselineNote.ReportedTime time -> "REPORTED_TIME:" + time.accuracy() + ":"
+                    + number(time.uncertaintyMinutes());
+            case BaselineNote.EventFit fit -> "EVENT_FIT:" + fit.event() + ":" + fit.id().orElse("-") + ":"
+                    + fit.eventKind() + ":" + grahaKeys(fit.lords()) + ":" + number(fit.contribution());
+        };
+    }
+
+    /**
+     * A chart read as a birth time to rectify: the purifier's runs and the
+     * clauses each held, the conception's answers, the circumstances and
+     * their weights, and the baseline's interval, stages and best candidate.
+     */
+    private static void rectification(String at, Rectification rc) {
+        Purified purified = rc.purified().orElseThrow();
+        put(at + "-purified", purified.grid().cells() + " " + number(purified.grid().stepDays()) + " "
+                + purified.intervals().size() + " " + purified.removed().size() + " "
+                + orDash(numbers(",", purified.edges())));
+        List<Purified.Run> runs = new ArrayList<>(purified.intervals());
+        runs.addAll(purified.removed());
+        for (int k = 0; k < runs.size(); k += 1) {
+            Purified.Run run = runs.get(k);
+            put(at + "-purified-" + k, number(run.from()) + " " + number(run.to()) + " " + verdictSaid(run.verdict()));
+        }
+        Conception conception = rc.conception().orElseThrow();
+        Conception.PranapadaHouse pranapada = conception.pranapadaHouse();
+        Conception.Nisheka nisheka = conception.nisheka();
+        Conception.MonthsBefore written = nisheka.count().span().written();
+        put(at + "-conception", number(conception.birth()) + " " + pranapada.house() + " "
+                + lower(pranapada.auspicious()) + " " + number(nisheka.count().instant()) + " " + written.months() + ":"
+                + written.days() + ":" + written.ghatis() + ":" + written.palas() + " " + number(nisheka.lagnaDeg())
+                + " " + verdictSaid(nisheka.verdict()));
+        Conception.Moon moon = conception.moon();
+        put(at + "-conception-moon", moon.predicted().dvadashamsha() + " " + moon.predicted().sign().fullKey() + " "
+                + moon.predicted().nakshatra().map(Nakshatra::fullKey).orElse("-") + " " + moon.moonSign().fullKey()
+                + " " + moon.moonNakshatra().map(Nakshatra::fullKey).orElse("-") + " " + lower(moon.signAgrees()) + " "
+                + moon.nakshatraAgrees().map(ParityRunner::lower).orElse("-") + " " + moon.rising().fullKey() + " "
+                + moon.predictedPart() + " " + lower(moon.bornByDay()) + " " + lower(moon.partAgrees()) + " "
+                + number(moon.risenFraction()) + " " + number(moon.elapsedFraction()) + " "
+                + number(pranapada.pranapadaDeg()));
+        Circumstance circumstance = rc.circumstance().orElseThrow();
+        Circumstance.Father father = circumstance.father();
+        Circumstance.Presentation presentation = circumstance.presentation();
+        Circumstance.Lamp lamp = circumstance.lamp();
+        Circumstance.Attending attending = circumstance.attending();
+        put(at + "-circumstance", father.moonAspect().key() + " " + lower(father.unseen()) + " "
+                + lower(father.saturnRising()) + " " + lower(father.marsSetting()) + " " + lower(father.moonHemmed())
+                + " " + lower(father.away()) + " " + father.whereabouts().orElse("-") + " " + father.sunHouse() + " "
+                + lower(circumstance.sky().lordRetrograde()));
+        put(at + "-circumstance-birth", presentation.by() + " " + presentation.rising().key() + " "
+                + presentation.lord().fullKey() + " " + lower(presentation.lordRetrograde()) + " "
+                + presentation.foretold() + " " + number(lamp.oil()) + ":" + lamp.oilLevel() + " " + number(lamp.wick())
+                + ":" + lamp.wickLevel() + " " + grahaKeys(attending.between()) + " " + grahaKeys(attending.visible())
+                + " " + attending.inside() + " " + attending.outside());
+        put(at + "-circumstance-weights", orDash(join(",", circumstance.weights(),
+                weight -> weight.indication() + ":" + lower(weight.agrees()))));
+        BaselineRectification baseline = rc.baseline().orElseThrow();
+        put(at + "-baseline", number(baseline.window().fromJd()) + " " + number(baseline.window().toJd()) + " "
+                + number(baseline.sunrise()) + " "
+                + orDash(join(",", baseline.intervals(), span -> number(span.fromJd()) + ":" + number(span.toJd())))
+                + " " + number(baseline.intervalWidthMinutes()) + " " + number(baseline.resolutionMinutes()) + " "
+                + number(baseline.suggested()) + " " + number(baseline.concentration()) + " "
+                + baseline.candidates().size() + " " + baseline.eventsUsed() + " " + baseline.eventsHeldOut());
+        for (int k = 0; k < baseline.stages().size(); k += 1) {
+            BaselineRectification.Stage stage = baseline.stages().get(k);
+            put(at + "-baseline-stage-" + k, stage.stage() + " " + lower(stage.applied()) + " " + lower(stage.flat())
+                    + " " + number(stage.resolutionMinutes()) + " "
+                    + orDash(join(",", stage.notes(), ParityRunner::noteSaid)));
+        }
+        if (!baseline.candidates().isEmpty()) {
+            BaselineRectification.Ranked best = baseline.candidates().get(0);
+            put(at + "-baseline-best", number(best.at()) + " " + number(best.probability()) + " "
+                    + number(best.logPosterior()) + " " + best.lagna().fullKey() + " " + best.lagnaNakshatra().fullKey());
+        }
+        for (int k = 0; k < baseline.holdOut().size(); k += 1) {
+            BaselineRectification.HoldOut held = baseline.holdOut().get(k);
+            put(at + "-baseline-held-" + k, held.event() + " " + held.kind() + " " + number(held.scoreAtFit()) + " "
+                    + number(held.baseline()) + " " + lower(held.supported()));
+        }
     }
 
     /** A chart's progressions and directions. */

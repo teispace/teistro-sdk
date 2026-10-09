@@ -4199,3 +4199,58 @@ test('a rashifal period is read for each of the twelve signs', () => {
   assert.throws(() => ctx.chart.rashifalMany(week), TypeError);
   ctx.dispose();
 });
+
+/**
+ * A rectification crosses whole: each reading the record names around the
+ * chart's instant, catalogue keys in full, a member not asked for `null`,
+ * and a bad window refused by the field the caller sent
+ * (`03-design/rectification.md`).
+ */
+test('a chart carries its rectification', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2460482.5;
+  assert.equal(ctx.chart.found({ instant, ...at }).rectification, null);
+
+  const only = ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 20 } } }).rectification;
+  assert.equal(only.conception, null, 'not asked, not read');
+  assert.equal(only.baseline, null);
+  assert.ok(only.purified.intervals.length + only.purified.removed.length > 0);
+  assert.ok(Object.isFrozen(only.purified.intervals), 'frozen to its leaves');
+
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    rectification: {
+      conception: {},
+      circumstance: { facts: { fatherPresent: false } },
+      baseline: {
+        uncertaintyMinutes: 30,
+        sex: 'MALE',
+        events: [{ id: 'wedding', kind: 'MARRIAGE', on: 2469000.5 }, { kind: 'ACCIDENT', on: 2471000.5, heldOut: true }],
+      },
+    },
+  }).rectification;
+  assert.equal(read.purified, null);
+  // Keys in full, as every other accessor gives them.
+  assert.ok(read.conception.moon.moonSign.startsWith('rashi.'));
+  assert.ok(read.conception.nisheka.verdict.clauses.every((c) => c.sign.startsWith('rashi.') && c.lagna.startsWith('rashi.')));
+  assert.ok(read.circumstance.presentation.lord.startsWith('graha.'));
+  assert.deepEqual(read.circumstance.weights.map((w) => w.indication), ['FATHER']);
+  const { baseline } = read;
+  assert.ok(baseline.candidates.every((c) => c.lagna.startsWith('rashi.') && c.lagnaNakshatra.startsWith('nakshatra.')));
+  const notes = baseline.stages.flatMap((stage) => stage.notes);
+  assert.deepEqual([...new Set(notes.map((n) => n.kind))].sort(), ['EVENT_FIT', 'REPORTED_TIME', 'TATTVA_SEX']);
+  const fit = notes.find((n) => n.kind === 'EVENT_FIT');
+  assert.equal(fit.id, 'wedding');
+  assert.ok(fit.lords.every((lord) => lord.startsWith('graha.')));
+  assert.equal(typeof notes.find((n) => n.kind === 'TATTVA_SEX').admittedMinutes, 'number');
+  assert.equal(baseline.eventsHeldOut, 1);
+  assert.equal(baseline.holdOut[0].kind, 'ACCIDENT');
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 0 } } }),
+    (error) => error.field === 'rectification.purify.minutes',
+  );
+  ctx.dispose();
+});

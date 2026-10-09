@@ -691,6 +691,7 @@ final class ChartArea extends _Area {
     MatchingRequest? matching,
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
+    RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -736,6 +737,7 @@ final class ChartArea extends _Area {
     matching: matching,
     prashna: prashna,
     remedies: remedies,
+    rectification: rectification,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -801,6 +803,7 @@ final class ChartArea extends _Area {
     MatchingRequest? matching,
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
+    RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -870,6 +873,7 @@ final class ChartArea extends _Area {
             matchingJson: matching?._json,
             prashnaJson: prashna?._json,
             remediesJson: remedies?._json,
+            rectificationJson: rectification?._json,
           ),
         ),
       ),
@@ -14237,6 +14241,290 @@ PrashnaLinks _prashnaLinks(Map<String, Object?> raw) {
   );
 }
 
+/// Each batch's rectifications, parsed once however many charts read them.
+final Expando<List<Rectification>> _rectifications =
+    Expando<List<Rectification>>('rectification');
+
+List<Rectification> _rectificationsOf(Charts batch) =>
+    _rectifications[batch] ??= [
+      for (final raw in _sectionOf(batch.rectification)) _rectification(raw),
+    ];
+
+/// A chart's rectification from the `rectification` section's JSON, its
+/// keys made members and each reading not asked for null.
+Rectification _rectification(Map<String, Object?> raw) {
+  T? some<T>(Object? value, T Function(Map<String, Object?>) read) =>
+      value == null ? null : read(value as Map<String, Object?>);
+  return Rectification(
+    purified: some(raw['purified'], _purified),
+    conception: some(raw['conception'], _conception),
+    circumstance: some(raw['circumstance'], _circumstance),
+    baseline: some(raw['baseline'], _rectificationBaseline),
+  );
+}
+
+Map<String, Object?> _object(Object? value) => value! as Map<String, Object?>;
+
+List<Object?> _array(Object? value) => value! as List<Object?>;
+
+double _real(Object? value) => (value! as num).toDouble();
+
+Rashi _rashi(Object? key) => Rashi.byKey(key! as String) ?? Rashi.unknown;
+
+Nakshatra? _nakshatra(Object? key) =>
+    key == null ? null : Nakshatra.byKey(key as String) ?? Nakshatra.unknown;
+
+Strength _strength(Object? key) =>
+    Strength.byKey(key! as String) ?? (throw StateError('no Strength $key'));
+
+Graha _graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+
+List<Graha> _grahas(Object? keys) =>
+    List<Graha>.unmodifiable([for (final key in _array(keys)) _graha(key)]);
+
+/// The member of [values] spelt [key], or null for none.
+T? _keyedOrNull<T extends _Keyed>(List<T> values, Object? key) =>
+    key == null ? null : _keyedIn(values, key);
+
+/// The purifier's verdict at an instant, from its JSON.
+PurifierVerdict _purifierVerdict(Map<String, Object?> raw) => PurifierVerdict(
+  clauses: List<PurifierClause>.unmodifiable([
+    for (final clause in _array(raw['clauses']).map(_object))
+      PurifierClause(
+        purifier: _keyedIn(Purifier.values, clause['purifier']),
+        reference: _keyedIn(PurifierReference.values, clause['reference']),
+        sign: _rashi(clause['sign']),
+        lagna: _rashi(clause['lagna']),
+        house: clause['house']! as int,
+        held: clause['held']! as bool,
+        counted: clause['counted']! as bool,
+      ),
+  ]),
+  pure: raw['pure']! as bool,
+);
+
+/// What the purifier leaves standing, from its JSON.
+Purified _purified(Map<String, Object?> raw) {
+  List<PurifierRun> runs(Object? list) => List<PurifierRun>.unmodifiable([
+    for (final run in _array(list).map(_object))
+      PurifierRun(
+        from: _real(run['from']),
+        to: _real(run['to']),
+        verdict: _purifierVerdict(_object(run['verdict'])),
+      ),
+  ]);
+  final grid = _object(raw['grid']);
+  return Purified(
+    intervals: runs(raw['intervals']),
+    removed: runs(raw['removed']),
+    edges: List<double>.unmodifiable(_array(raw['edges']).map(_real)),
+    grid: PurifierGrid(
+      stepDays: _real(grid['stepDays']),
+      cells: grid['cells']! as int,
+    ),
+  );
+}
+
+/// The conception reports, from their JSON.
+Conception _conception(Map<String, Object?> raw) {
+  final house = _object(raw['pranapadaHouse']);
+  final nisheka = _object(raw['nisheka']);
+  final count = _object(nisheka['count']);
+  final points = _object(count['points']);
+  final span = _object(count['span']);
+  final written = _object(span['written']);
+  final moon = _object(raw['moon']);
+  final predicted = _object(moon['predicted']);
+  final added = span['moonAddedDeg'];
+  return Conception(
+    birth: _real(raw['birth']),
+    pranapadaHouse: PranapadaHouse(
+      pranapadaDeg: _real(house['pranapadaDeg']),
+      lagnaDeg: _real(house['lagnaDeg']),
+      house: house['house']! as int,
+      auspicious: house['auspicious']! as bool,
+    ),
+    nisheka: Nisheka(
+      count: NishekaCount(
+        points: NishekaPoints(
+          mandiDeg: _real(points['mandiDeg']),
+          saturnDeg: _real(points['saturnDeg']),
+          lagnaDeg: _real(points['lagnaDeg']),
+          ninthDeg: _real(points['ninthDeg']),
+          lagnaLordDeg: _real(points['lagnaLordDeg']),
+          moonDeg: _real(points['moonDeg']),
+        ),
+        span: NishekaSpan(
+          saturnToMandiDeg: _real(span['saturnToMandiDeg']),
+          lagnaToNinthDeg: _real(span['lagnaToNinthDeg']),
+          moonAddedDeg: added == null ? null : _real(added),
+          arcDeg: _real(span['arcDeg']),
+          written: MonthsBefore(
+            months: written['months']! as int,
+            days: written['days']! as int,
+            ghatis: written['ghatis']! as int,
+            palas: written['palas']! as int,
+          ),
+          daysBefore: _real(span['daysBefore']),
+        ),
+        instant: _real(count['instant']),
+        daysPerBirthMinute: _real(count['daysPerBirthMinute']),
+      ),
+      lagnaDeg: _real(nisheka['lagnaDeg']),
+      verdict: _purifierVerdict(_object(nisheka['verdict'])),
+    ),
+    moon: ConceptionMoon(
+      predicted: MoonCount(
+        dvadashamsha: predicted['dvadashamsha']! as int,
+        sign: _rashi(predicted['sign']),
+        nakshatra: _nakshatra(predicted['nakshatra']),
+      ),
+      moonSign: _rashi(moon['moonSign']),
+      moonNakshatra: _nakshatra(moon['moonNakshatra']),
+      signAgrees: moon['signAgrees']! as bool,
+      nakshatraAgrees: moon['nakshatraAgrees'] as bool?,
+      rising: _rashi(moon['rising']),
+      predictedPart: _keyedIn(DayOrNight.values, moon['predictedPart']),
+      bornByDay: moon['bornByDay']! as bool,
+      partAgrees: moon['partAgrees']! as bool,
+      risenFraction: _real(moon['risenFraction']),
+      elapsedFraction: _real(moon['elapsedFraction']),
+    ),
+  );
+}
+
+/// *Brihat Jataka* ch. V's circumstances, from their JSON.
+Circumstance _circumstance(Map<String, Object?> raw) {
+  final sky = _object(raw['sky']);
+  final father = _object(raw['father']);
+  final presentation = _object(raw['presentation']);
+  final lamp = _object(raw['lamp']);
+  final attending = _object(raw['attending']);
+  return Circumstance(
+    sky: BirthSky(
+      lagnaDeg: _real(sky['lagnaDeg']),
+      grahasDeg: List<double>.unmodifiable(_array(sky['grahasDeg']).map(_real)),
+      lordRetrograde: sky['lordRetrograde']! as bool,
+    ),
+    father: FatherReading(
+      moonAspect: _strength(father['moonAspect']),
+      unseen: father['unseen']! as bool,
+      saturnRising: father['saturnRising']! as bool,
+      marsSetting: father['marsSetting']! as bool,
+      moonHemmed: father['moonHemmed']! as bool,
+      away: father['away']! as bool,
+      whereabouts: _keyedOrNull(
+        FatherWhereabouts.values,
+        father['whereabouts'],
+      ),
+      sunHouse: father['sunHouse']! as int,
+    ),
+    presentation: PresentationReading(
+      by: _keyedIn(PresentationBy.values, presentation['by']),
+      rising: Rising.byKey(presentation['rising']! as String) ?? Rising.unknown,
+      lord: _graha(presentation['lord']),
+      lordRetrograde: presentation['lordRetrograde']! as bool,
+      foretold: _keyedIn(BirthPresentation.values, presentation['foretold']),
+    ),
+    lamp: Lamp(
+      oil: _real(lamp['oil']),
+      oilLevel: _keyedIn(LampLevel.values, lamp['oilLevel']),
+      wick: _real(lamp['wick']),
+      wickLevel: _keyedIn(LampLevel.values, lamp['wickLevel']),
+    ),
+    attending: Attending(
+      between: _grahas(attending['between']),
+      visible: _grahas(attending['visible']),
+      inside: attending['inside']! as int,
+      outside: attending['outside']! as int,
+    ),
+    weights: List<CircumstanceWeight>.unmodifiable([
+      for (final weight in _array(raw['weights']).map(_object))
+        CircumstanceWeight(
+          indication: _keyedIn(
+            CircumstanceIndication.values,
+            weight['indication'],
+          ),
+          agrees: weight['agrees']! as bool,
+        ),
+    ]),
+  );
+}
+
+/// A baseline stage's note by its `kind`; a kind this build does not know
+/// is a fault, because the SDK writes only the notes it has.
+StageNote _stageNote(Map<String, Object?> raw) => switch (raw['kind']) {
+  'TATTVA_SEX' => TattvaSexNote(
+    sex: Sex.byKey(raw['sex']! as String) ?? Sex.unknown,
+    admittedMinutes: _real(raw['admittedMinutes']),
+    penalised: raw['penalised']! as int,
+    of: raw['of']! as int,
+  ),
+  'REPORTED_TIME' => ReportedTimeNote(
+    accuracy: _keyedIn(BirthTimeAccuracy.values, raw['accuracy']),
+    uncertaintyMinutes: _real(raw['uncertaintyMinutes']),
+  ),
+  'EVENT_FIT' => EventFitNote(
+    event: raw['event']! as int,
+    id: raw['id'] as String?,
+    eventKind: _keyedIn(LifeEventKind.values, raw['eventKind']),
+    lords: _grahas(raw['lords']),
+    contribution: _real(raw['contribution']),
+  ),
+  final kind => throw StateError('a rectification stage note $kind'),
+};
+
+/// The baseline engine's cascade, from its JSON.
+BaselineAnswer _rectificationBaseline(Map<String, Object?> raw) {
+  Interval interval(Map<String, Object?> one) =>
+      Interval(from: _real(one['from']), to: _real(one['to']));
+  return BaselineAnswer(
+    window: interval(_object(raw['window'])),
+    sunrise: _real(raw['sunrise']),
+    intervals: List<Interval>.unmodifiable(
+      _array(raw['intervals']).map(_object).map(interval),
+    ),
+    intervalWidthMinutes: _real(raw['intervalWidthMinutes']),
+    resolutionMinutes: _real(raw['resolutionMinutes']),
+    suggested: _real(raw['suggested']),
+    concentration: _real(raw['concentration']),
+    candidates: List<RankedCandidate>.unmodifiable([
+      for (final one in _array(raw['candidates']).map(_object))
+        RankedCandidate(
+          at: _real(one['at']),
+          probability: _real(one['probability']),
+          logPosterior: _real(one['logPosterior']),
+          lagna: _rashi(one['lagna']),
+          lagnaNakshatra: _nakshatra(one['lagnaNakshatra'])!,
+        ),
+    ]),
+    stages: List<StageOutcome>.unmodifiable([
+      for (final stage in _array(raw['stages']).map(_object))
+        StageOutcome(
+          stage: _keyedIn(BaselineStage.values, stage['stage']),
+          applied: stage['applied']! as bool,
+          flat: stage['flat']! as bool,
+          resolutionMinutes: _real(stage['resolutionMinutes']),
+          notes: List<StageNote>.unmodifiable(
+            _array(stage['notes']).map(_object).map(_stageNote),
+          ),
+        ),
+    ]),
+    eventsUsed: raw['eventsUsed']! as int,
+    eventsHeldOut: raw['eventsHeldOut']! as int,
+    holdOut: List<HeldOutEvent>.unmodifiable([
+      for (final held in _array(raw['holdOut']).map(_object))
+        HeldOutEvent(
+          event: held['event']! as int,
+          kind: _keyedIn(LifeEventKind.values, held['kind']),
+          scoreAtFit: _real(held['scoreAtFit']),
+          baseline: _real(held['baseline']),
+          supported: held['supported']! as bool,
+        ),
+    ]),
+  );
+}
+
 /// Each batch's KP readings, parsed once however many charts read them.
 final Expando<List<KpReading>> _kps = Expando<List<KpReading>>('kp');
 
@@ -17274,6 +17562,1990 @@ final class Remedies {
   final IshtaDevatas ishtaDevata;
 }
 
+/// The species BPHS ch. 2 vv. 77–78 assign the twelve houses to, which
+/// decides the houses that purify.
+enum PurifierNative implements _Keyed {
+  /// A human: the sign and its trines, houses 1, 5 and 9 (v. 77); the
+  /// default.
+  human('HUMAN'),
+
+  /// A beast: houses 2, 6 and 10 (v. 77).
+  beast('BEAST'),
+
+  /// A bird: houses 3, 7 and 11 (v. 78).
+  bird('BIRD'),
+
+  /// A creeping or water creature: houses 4, 8 and 12 (v. 78).
+  creeper('CREEPER');
+
+  const PurifierNative(this.key);
+
+  @override
+  final String key;
+}
+
+/// When v. 76's extension of Gulika (its 7th, its navamsha and that
+/// navamsha's 7th) counts toward a verdict (X7).
+enum GulikaExtension implements _Keyed {
+  /// Counted when neither the pranapada nor the Moon holds; the default.
+  whenTwoFail('WHEN_TWO_FAIL'),
+
+  /// Counted at every instant, without precedence.
+  always('ALWAYS'),
+
+  /// Not judged: Gulika purifies by its own sign alone.
+  never('NEVER');
+
+  const GulikaExtension(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whether a lagna no purifier holds is removed or only weighed (X8).
+enum PurifyAs implements _Keyed {
+  /// Removed: v. 75 calls it "the birth of a plant"; the default.
+  bar('BAR'),
+
+  /// Kept, its verdict saying it is impure.
+  weight('WEIGHT');
+
+  const PurifyAs(this.key);
+
+  @override
+  final String key;
+}
+
+/// How the pranapada is reckoned (X2, X3).
+enum PranapadaRule implements _Keyed {
+  /// The verse: the Sun's longitude shifted by v. 74, then a sign every
+  /// fifteen palas since sunrise.
+  verse('VERSE'),
+
+  /// The reading that reproduces the gloss's printed answer (p. 13).
+  printedExample('PRINTED_EXAMPLE'),
+
+  /// The SDK's own pranapada point, settled against the conformance
+  /// corpus.
+  sdkPoint('SDK_POINT');
+
+  const PranapadaRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which end of Saturn's eighth of the day or night is Gulika for the
+/// purifier (X5), or Mandi for the nisheka.
+enum SaturnEighthEnd implements _Keyed {
+  /// Its end, where the Subodhini's gloss puts Gulika.
+  end('END'),
+
+  /// Its start, as Jha's gloss to v. 70 takes Mandi.
+  start('START');
+
+  const SaturnEighthEnd(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a house is counted from the lagna to a point.
+enum HouseCount implements _Keyed {
+  /// By sign from the lagna's sign, as Jha's worked example forces.
+  sign('SIGN'),
+
+  /// By Sripati's bhava, the sandhis halfway between the mid-points.
+  sripatiBhava('SRIPATI_BHAVA');
+
+  const HouseCount(this.key);
+
+  @override
+  final String key;
+}
+
+/// How long the "month" BPHS ch. 3 v. 28 reads a sign as.
+enum NishekaMonth implements _Keyed {
+  /// Thirty days, so a degree is a day: Jha's units.
+  thirtyDays('THIRTY_DAYS'),
+
+  /// A twelfth of the sidereal year.
+  solar('SOLAR'),
+
+  /// A synodic month.
+  synodic('SYNODIC');
+
+  const NishekaMonth(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which point v. 27's "the lagna to the 9th bhava" measures to.
+enum NinthBhava implements _Keyed {
+  /// Sripati's mid-point of the 9th, as Jha's worked example uses.
+  sripati('SRIPATI'),
+
+  /// The start of the 9th sign from the lagna's.
+  wholeSign('WHOLE_SIGN'),
+
+  /// Eight signs past the lagna's degree.
+  equal('EQUAL');
+
+  const NinthBhava(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which point of Saturn v. 27's "where Saturn stands" measures from.
+enum SaturnTerm implements _Keyed {
+  /// Saturn's longitude, as Jha's example takes it.
+  longitude('LONGITUDE'),
+
+  /// The Sripati mid-point of the bhava Saturn stands in.
+  bhavaMadhya('BHAVA_MADHYA');
+
+  const SaturnTerm(this.key);
+
+  @override
+  final String key;
+}
+
+/// How v. 28's "the invisible half" is read.
+enum InvisibleHalf implements _Keyed {
+  /// The half-circle ahead of the lagna's degree.
+  byLongitude('BY_LONGITUDE'),
+
+  /// The 1st to the 6th signs from the lagna's.
+  bySign('BY_SIGN');
+
+  const InvisibleHalf(this.key);
+
+  @override
+  final String key;
+}
+
+/// How *Brihat Jataka* IV.21's count runs from the Moon's dvadashamsha
+/// at conception to the sign she holds at birth (X11).
+enum ConceptionCount implements _Keyed {
+  /// From the sign after the dvadashamsha's: Bhattotpala after Garga,
+  /// and Iyer.
+  nextAfterDvadashamsha('NEXT_AFTER_DVADASHAMSHA'),
+
+  /// The dvadashamsha's own sign, counted from the Moon's: the 1912 main
+  /// text.
+  fromMoonSign('FROM_MOON_SIGN'),
+
+  /// As many signs from Aries: the view Bhattotpala gives to "some".
+  fromAries('FROM_ARIES');
+
+  const ConceptionCount(this.key);
+
+  @override
+  final String key;
+}
+
+/// What of the conception's rising point *Brihat Jataka* IV.21 classes
+/// as a day or a night sign.
+enum ConceptionRising implements _Keyed {
+  /// The rising sign: the verse and the 1912 main text.
+  sign('SIGN'),
+
+  /// The rising navamsha: Iyer and the 1912 notes.
+  navamsha('NAVAMSHA');
+
+  const ConceptionRising(this.key);
+
+  @override
+  final String key;
+}
+
+/// What Pisces is, which the prints class two ways.
+enum ConceptionPisces implements _Keyed {
+  /// Strong by day or by night, so a birth may be either (1912).
+  either('EITHER'),
+
+  /// A day sign (Iyer's BJ I.10 note).
+  day('DAY');
+
+  const ConceptionPisces(this.key);
+
+  @override
+  final String key;
+}
+
+/// A day or a night birth, or either.
+enum DayOrNight implements _Keyed {
+  /// By day.
+  day('DAY'),
+
+  /// By night.
+  night('NIGHT'),
+
+  /// Either.
+  either('EITHER');
+
+  const DayOrNight(this.key);
+
+  @override
+  final String key;
+}
+
+/// What came first at the birth (*Brihat Jataka* V.17).
+enum BirthPresentation implements _Keyed {
+  /// The head: a sign that rises head first.
+  head('HEAD'),
+
+  /// The feet: a sign that rises back first.
+  feet('FEET'),
+
+  /// The hands: Pisces, which rises both ways.
+  hands('HANDS');
+
+  const BirthPresentation(this.key);
+
+  @override
+  final String key;
+}
+
+/// How much of the lamp's oil or wick was left, at the three points
+/// V.18's gloss names: a sign's start, its middle and its end.
+enum LampLevel implements _Keyed {
+  /// Full oil, an unburnt wick.
+  full('FULL'),
+
+  /// Half.
+  half('HALF'),
+
+  /// No oil, a wick burnt down.
+  spent('SPENT');
+
+  const LampLevel(this.key);
+
+  @override
+  final String key;
+}
+
+/// What "the Moon not seeing the lagna" asks of her aspect (X16).
+enum MoonSees implements _Keyed {
+  /// Any aspect at all, a quarter or more.
+  anyAspect('ANY_ASPECT'),
+
+  /// Only the full aspect, from the 7th.
+  full('FULL');
+
+  const MoonSees(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which houses are "fallen from the 10th" for the Sun in V.1 (X17).
+enum SunFallen implements _Keyed {
+  /// The 9th or the 8th: Iyer's 1885 translation, after Bhattotpala.
+  ninthOrEighth('NINTH_OR_EIGHTH'),
+
+  /// The 8th, 9th, 11th or 12th: fallen from the 10th either way.
+  eitherSide('EITHER_SIDE');
+
+  const SunFallen(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which reading of V.17's presentation is asked (X18).
+enum PresentationBy implements _Keyed {
+  /// As the rising sign rises (BJ I.10).
+  risingSign('RISING_SIGN'),
+
+  /// By the lagna lord's motion: direct a natural birth, retrograde an
+  /// irregular one.
+  lagnaLordMotion('LAGNA_LORD_MOTION');
+
+  const PresentationBy(this.key);
+
+  @override
+  final String key;
+}
+
+/// How "the grahas between the lagna and the Moon" are counted (X19).
+enum BetweenBy implements _Keyed {
+  /// By degree, in the zodiac's order.
+  degree('DEGREE'),
+
+  /// By sign: a graha in a sign after the lagna's and before the Moon's.
+  sign('SIGN');
+
+  const BetweenBy(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which half of the attendants V.22 puts outside the room.
+enum OutsideHalf implements _Keyed {
+  /// The visible half outside, the invisible inside: Varahamihira's own.
+  visible('VISIBLE'),
+
+  /// The reverse, which V.22 gives as some others'.
+  invisible('INVISIBLE');
+
+  const OutsideHalf(this.key);
+
+  @override
+  final String key;
+}
+
+/// Where V.1 puts an absent father, by the Sun's sign.
+enum FatherWhereabouts implements _Keyed {
+  /// A movable sign: in a foreign country.
+  abroad('ABROAD'),
+
+  /// A fixed sign: in his own country, away from the house.
+  ownCountry('OWN_COUNTRY'),
+
+  /// A dual sign: on his way back.
+  returning('RETURNING');
+
+  const FatherWhereabouts(this.key);
+
+  @override
+  final String key;
+}
+
+/// The clause a circumstance's weight comes from.
+enum CircumstanceIndication implements _Keyed {
+  /// The father away or present (V.1–2).
+  father('FATHER'),
+
+  /// The presentation (V.17).
+  presentation('PRESENTATION'),
+
+  /// The oil (V.18).
+  oil('OIL'),
+
+  /// The wick (V.18).
+  wick('WICK'),
+
+  /// How many attended (V.22).
+  attendantsTotal('ATTENDANTS_TOTAL'),
+
+  /// How many inside (V.22).
+  attendantsInside('ATTENDANTS_INSIDE'),
+
+  /// How many outside (V.22).
+  attendantsOutside('ATTENDANTS_OUTSIDE');
+
+  const CircumstanceIndication(this.key);
+
+  @override
+  final String key;
+}
+
+/// What may purify a lagna (BPHS ch. 2).
+enum Purifier implements _Keyed {
+  /// The pranapada, a sign every fifteen palas from sunrise (vv. 71–74).
+  pranapada('PRANAPADA'),
+
+  /// Gulika, the lagna at Saturn's eighth of the day or night
+  /// (vv. 67–70).
+  gulika('GULIKA'),
+
+  /// The Moon (v. 75).
+  moon('MOON');
+
+  const Purifier(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which point of a purifier a clause reads: the purifier itself, or one
+/// of the three v. 76 attaches to Gulika.
+enum PurifierReference implements _Keyed {
+  /// The purifier's own sign.
+  itself('ITSELF'),
+
+  /// The sign seventh from it.
+  seventh('SEVENTH'),
+
+  /// Its navamsha.
+  navamsha('NAVAMSHA'),
+
+  /// The sign seventh from its navamsha.
+  navamshaSeventh('NAVAMSHA_SEVENTH');
+
+  const PurifierReference(this.key);
+
+  @override
+  final String key;
+}
+
+/// How far the reported time is trusted, which weighs its prior.
+enum BirthTimeAccuracy implements _Keyed {
+  /// A time read off a clock at the birth.
+  exact('EXACT'),
+
+  /// A time remembered to the hour or so; the default.
+  approximate('APPROXIMATE'),
+
+  /// A time already rectified once.
+  rectified('RECTIFIED'),
+
+  /// No time worth weighing: the prior on it is flat.
+  unknown('UNKNOWN');
+
+  const BirthTimeAccuracy(this.key);
+
+  @override
+  final String key;
+}
+
+/// What happened, which decides the houses and karakas a period's lord
+/// is scored against.
+enum LifeEventKind implements _Keyed {
+  /// A marriage.
+  marriage('MARRIAGE'),
+
+  /// An engagement.
+  engagement('ENGAGEMENT'),
+
+  /// A child born.
+  childBirth('CHILD_BIRTH'),
+
+  /// A miscarriage.
+  miscarriage('MISCARRIAGE'),
+
+  /// A first job.
+  firstJob('FIRST_JOB'),
+
+  /// A change of job.
+  jobChange('JOB_CHANGE'),
+
+  /// A job lost.
+  jobLoss('JOB_LOSS'),
+
+  /// A promotion.
+  promotion('PROMOTION'),
+
+  /// A business started.
+  businessStart('BUSINESS_START'),
+
+  /// An education begun or finished.
+  education('EDUCATION'),
+
+  /// A move of home.
+  relocation('RELOCATION'),
+
+  /// Travel abroad.
+  foreignTravel('FOREIGN_TRAVEL'),
+
+  /// Property bought.
+  property('PROPERTY'),
+
+  /// A vehicle bought.
+  vehicle('VEHICLE'),
+
+  /// Surgery.
+  surgery('SURGERY'),
+
+  /// An accident.
+  accident('ACCIDENT'),
+
+  /// An illness.
+  illness('ILLNESS'),
+
+  /// A death in the family.
+  deathInFamily('DEATH_IN_FAMILY'),
+
+  /// A lawsuit.
+  litigation('LITIGATION'),
+
+  /// A spiritual initiation.
+  spiritualInitiation('SPIRITUAL_INITIATION'),
+
+  /// Anything else.
+  other('OTHER');
+
+  const LifeEventKind(this.key);
+
+  @override
+  final String key;
+}
+
+/// How finely an event's date is known, which sets the window it is
+/// fitted over.
+enum DatePrecision implements _Keyed {
+  /// The day: a window of one day; the default.
+  day('DAY'),
+
+  /// The month: 31 days.
+  month('MONTH'),
+
+  /// The year: 366 days.
+  year('YEAR');
+
+  const DatePrecision(this.key);
+
+  @override
+  final String key;
+}
+
+/// How sure the family is of an event, which weighs it.
+enum EventConfidence implements _Keyed {
+  /// Certain; the default.
+  certain('CERTAIN'),
+
+  /// Probable.
+  probable('PROBABLE'),
+
+  /// Uncertain.
+  uncertain('UNCERTAIN');
+
+  const EventConfidence(this.key);
+
+  @override
+  final String key;
+}
+
+/// The length of a dasha's year.
+enum DashaYearLength implements _Keyed {
+  /// The Julian year of 365.25 days.
+  julian36525('JULIAN_365_25'),
+
+  /// The savana year of 360 days.
+  savana360('SAVANA_360'),
+
+  /// The sidereal year.
+  sidereal('SIDEREAL'),
+
+  /// The tropical year.
+  tropical('TROPICAL'),
+
+  /// The lunar year.
+  lunar('LUNAR'),
+
+  /// The nakshatra year of 324 days.
+  nakshatra324('NAKSHATRA_324');
+
+  const DashaYearLength(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a dasha answers past the end of its cycle.
+enum AfterCycle implements _Keyed {
+  /// Nothing: the periods end.
+  end('END'),
+
+  /// The cycle again.
+  repeat('REPEAT');
+
+  const AfterCycle(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a seed outside a conditional dasha's cycle does.
+enum SeedOverflow implements _Keyed {
+  /// It wraps to the cycle's start.
+  wrapToStart('WRAP_TO_START'),
+
+  /// It is refused.
+  reject('REJECT');
+
+  const SeedOverflow(this.key);
+
+  @override
+  final String key;
+}
+
+/// How Ashtottari's lords share the nakshatras, which chooses its row.
+enum AshtottariGrouping implements _Keyed {
+  /// Three nakshatras each.
+  threeEach('THREE_EACH'),
+
+  /// Four and three in turn.
+  fourAndThree('FOUR_AND_THREE');
+
+  const AshtottariGrouping(this.key);
+
+  @override
+  final String key;
+}
+
+/// Which stage of the baseline's cascade an outcome is.
+enum BaselineStage implements _Keyed {
+  /// The reported time and the tattva of the sex.
+  prior('PRIOR'),
+
+  /// The events against the dasha's periods.
+  dashaBoundary('DASHA_BOUNDARY');
+
+  const BaselineStage(this.key);
+
+  @override
+  final String key;
+}
+
+/// The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78). A reading
+/// left null is the texts' own.
+final class PurifierRules {
+  const PurifierRules({
+    this.native,
+    this.pranapada,
+    this.gulika,
+    this.moon,
+    this.gulikaExtension,
+    this.purifyAs,
+    this.pranapadaRule,
+    this.gulikaAt,
+    this.seedMinutes,
+  });
+
+  /// The species, which decides the houses that purify.
+  final PurifierNative? native;
+
+  /// Whether the pranapada may purify (v. 74).
+  final bool? pranapada;
+
+  /// Whether Gulika may purify (v. 75).
+  final bool? gulika;
+
+  /// Whether the Moon may purify (v. 75).
+  final bool? moon;
+
+  /// When Gulika's 7th, its navamsha and that navamsha's 7th also purify.
+  final GulikaExtension? gulikaExtension;
+
+  /// Whether a lagna no purifier holds is removed or only weighed.
+  final PurifyAs? purifyAs;
+
+  /// How the pranapada is reckoned.
+  final PranapadaRule? pranapadaRule;
+
+  /// Which end of Saturn's eighth is Gulika; [SaturnEighthEnd.end] by
+  /// default.
+  final SaturnEighthEnd? gulikaAt;
+
+  /// The seed step, in minutes: the window is sampled this often and every
+  /// change between two samples is found exactly. A minute by default.
+  final double? seedMinutes;
+
+  Map<String, Object?> get _record => {
+    if (native case final native?) 'native': native.key,
+    if (pranapada case final pranapada?) 'pranapada': pranapada,
+    if (gulika case final gulika?) 'gulika': gulika,
+    if (moon case final moon?) 'moon': moon,
+    if (gulikaExtension case final reach?) 'gulikaExtension': reach.key,
+    if (purifyAs case final purifyAs?) 'purifyAs': purifyAs.key,
+    if (pranapadaRule case final rule?) 'pranapadaRule': rule.key,
+    if (gulikaAt case final gulikaAt?) 'gulikaAt': gulikaAt.key,
+    if (seedMinutes case final minutes?) 'seedMinutes': minutes,
+  };
+}
+
+/// The purifier over the [minutes] either side of the chart's instant.
+final class PurifyRequest {
+  const PurifyRequest({
+    required this.minutes,
+    this.rules = const PurifierRules(),
+  });
+
+  /// How far either side of the chart's instant the window runs, minutes:
+  /// more than none and at most 1080, refused by
+  /// `rectification.purify.minutes` otherwise.
+  final double minutes;
+
+  /// The purifier's readings.
+  final PurifierRules rules;
+
+  Map<String, Object?> get _record => {
+    'minutes': minutes,
+    'rules': rules._record,
+  };
+}
+
+/// How the pranapada's house is judged (Jha's print ch. 3 vv. 71–74). A
+/// reading left null is the texts' own.
+final class PranapadaHouseRules {
+  const PranapadaHouseRules({this.pranapada, this.count, this.firstAuspicious});
+
+  /// How the pranapada is reckoned; the verse's by default.
+  final PranapadaRule? pranapada;
+
+  /// How its house is counted from the lagna; by sign by default.
+  final HouseCount? count;
+
+  /// Whether the 1st is auspicious; not by default, as the gloss lists 2,
+  /// 5, 9, 4, 10 and 11.
+  final bool? firstAuspicious;
+
+  Map<String, Object?> get _record => {
+    if (pranapada case final pranapada?) 'pranapada': pranapada.key,
+    if (count case final count?) 'count': count.key,
+    if (firstAuspicious case final first?) 'firstAuspicious': first,
+  };
+}
+
+/// How the nisheka counts back (BPHS ch. 3 vv. 25–29). A reading left
+/// null is the texts' own.
+final class NishekaRules {
+  const NishekaRules({
+    this.month,
+    this.mandiAt,
+    this.ninth,
+    this.saturn,
+    this.invisibleHalf,
+  });
+
+  /// The month a sign is read as.
+  final NishekaMonth? month;
+
+  /// Which end of Saturn's eighth Mandi is; [SaturnEighthEnd.start] by
+  /// default, as Jha.
+  final SaturnEighthEnd? mandiAt;
+
+  /// The 9th bhava's point.
+  final NinthBhava? ninth;
+
+  /// Saturn's point.
+  final SaturnTerm? saturn;
+
+  /// The invisible half.
+  final InvisibleHalf? invisibleHalf;
+
+  Map<String, Object?> get _record => {
+    if (month case final month?) 'month': month.key,
+    if (mandiAt case final mandiAt?) 'mandiAt': mandiAt.key,
+    if (ninth case final ninth?) 'ninth': ninth.key,
+    if (saturn case final saturn?) 'saturn': saturn.key,
+    if (invisibleHalf case final half?) 'invisibleHalf': half.key,
+  };
+}
+
+/// How *Brihat Jataka* IV.21 is read. A reading left null is the texts'
+/// own.
+final class ConceptionMoonRules {
+  const ConceptionMoonRules({this.count, this.rising, this.pisces});
+
+  /// The count to the birth Moon's sign.
+  final ConceptionCount? count;
+
+  /// What of the rising point is classed.
+  final ConceptionRising? rising;
+
+  /// Pisces's class.
+  final ConceptionPisces? pisces;
+
+  Map<String, Object?> get _record => {
+    if (count case final count?) 'count': count.key,
+    if (rising case final rising?) 'rising': rising.key,
+    if (pisces case final pisces?) 'pisces': pisces.key,
+  };
+}
+
+/// What the conception reports read under: the purifier's rules, which
+/// judge the conception's lagna (v. 29: "as before"), and each report's
+/// own.
+final class ConceptionRules {
+  const ConceptionRules({
+    this.purifier = const PurifierRules(),
+    this.pranapadaHouse = const PranapadaHouseRules(),
+    this.nisheka = const NishekaRules(),
+    this.moon = const ConceptionMoonRules(),
+  });
+
+  final PurifierRules purifier;
+  final PranapadaHouseRules pranapadaHouse;
+  final NishekaRules nisheka;
+  final ConceptionMoonRules moon;
+
+  Map<String, Object?> get _record => {
+    'purifier': purifier._record,
+    'pranapadaHouse': pranapadaHouse._record,
+    'nisheka': nisheka._record,
+    'moon': moon._record,
+  };
+}
+
+/// The women who attended, as many as the family can say.
+final class AttendantFacts {
+  const AttendantFacts({this.total, this.inside, this.outside});
+
+  /// How many in all.
+  final int? total;
+
+  /// How many inside the room.
+  final int? inside;
+
+  /// How many outside it.
+  final int? outside;
+
+  Map<String, Object?> get _record => {
+    if (total case final total?) 'total': total,
+    if (inside case final inside?) 'inside': inside,
+    if (outside case final outside?) 'outside': outside,
+  };
+}
+
+/// What the family remembers of the birth. Every fact is optional, and a
+/// clause whose fact is null is reported and not weighed.
+final class BirthFacts {
+  const BirthFacts({
+    this.fatherPresent,
+    this.presentation,
+    this.oil,
+    this.wick,
+    this.attendants,
+  });
+
+  /// Whether the father was there at the birth (V.1–2).
+  final bool? fatherPresent;
+
+  /// What came first (V.17).
+  final BirthPresentation? presentation;
+
+  /// How full the lamp's oil was (V.18).
+  final LampLevel? oil;
+
+  /// How much of the lamp's wick was left (V.18).
+  final LampLevel? wick;
+
+  /// The women who attended (V.22).
+  final AttendantFacts? attendants;
+
+  Map<String, Object?> get _record => {
+    if (fatherPresent case final present?) 'fatherPresent': present,
+    if (presentation case final came?) 'presentation': came.key,
+    if (oil case final oil?) 'oil': oil.key,
+    if (wick case final wick?) 'wick': wick.key,
+    if (attendants case final attendants?) 'attendants': attendants._record,
+  };
+}
+
+/// The knobs *Brihat Jataka* ch. V's circumstances take, one per crux. A
+/// reading left null is the texts' own.
+final class CircumstanceRules {
+  const CircumstanceRules({
+    this.moonSees,
+    this.sunFallen,
+    this.presentationBy,
+    this.betweenBy,
+    this.outside,
+  });
+
+  /// What the Moon's not seeing the lagna asks (X16).
+  final MoonSees? moonSees;
+
+  /// Which houses the Sun has fallen to (X17).
+  final SunFallen? sunFallen;
+
+  /// Which reading of the presentation (X18).
+  final PresentationBy? presentationBy;
+
+  /// How the grahas between the lagna and the Moon are counted (X19).
+  final BetweenBy? betweenBy;
+
+  /// Which half of them is outside the room (V.22).
+  final OutsideHalf? outside;
+
+  Map<String, Object?> get _record => {
+    if (moonSees case final moonSees?) 'moonSees': moonSees.key,
+    if (sunFallen case final sunFallen?) 'sunFallen': sunFallen.key,
+    if (presentationBy case final by?) 'presentationBy': by.key,
+    if (betweenBy case final betweenBy?) 'betweenBy': betweenBy.key,
+    if (outside case final outside?) 'outside': outside.key,
+  };
+}
+
+/// What the family remembers of the birth, and the readings it is weighed
+/// under.
+final class CircumstanceRequest {
+  const CircumstanceRequest({
+    this.facts = const BirthFacts(),
+    this.rules = const CircumstanceRules(),
+  });
+
+  /// The facts given; one left null is read and not weighed.
+  final BirthFacts facts;
+
+  /// The readings.
+  final CircumstanceRules rules;
+
+  Map<String, Object?> get _record => {
+    'facts': facts._record,
+    'rules': rules._record,
+  };
+}
+
+/// A dated life event, which the baseline's event fit scores the dasha's
+/// periods against.
+final class LifeEvent {
+  const LifeEvent({
+    required this.kind,
+    required this.on,
+    this.id,
+    this.until,
+    this.precision,
+    this.confidence,
+    this.heldOut = false,
+  });
+
+  /// What happened.
+  final LifeEventKind kind;
+
+  /// When it began, as a Julian day (UTC).
+  final double on;
+
+  /// The caller's name for it, which its notes carry back.
+  final String? id;
+
+  /// When it ended, where it ran over days.
+  final double? until;
+
+  /// How finely [on] is known, where [until] is not given.
+  final DatePrecision? precision;
+
+  /// How sure the family is.
+  final EventConfidence? confidence;
+
+  /// Kept out of the fit and tested against it afterwards instead.
+  final bool heldOut;
+
+  Map<String, Object?> get _record => {
+    if (id case final id?) 'id': id,
+    'kind': kind.key,
+    'on': on,
+    if (until case final until?) 'until': until,
+    if (precision case final precision?) 'precision': precision.key,
+    if (confidence case final confidence?) 'confidence': confidence.key,
+    'heldOut': heldOut,
+  };
+}
+
+/// The Vimshottari the baseline's event fit reads. A reading left null is
+/// the baseline engine's own.
+final class BaselineDashaRules {
+  const BaselineDashaRules({
+    this.balance,
+    this.yearLength,
+    this.birthPeriod,
+    this.afterCycle,
+    this.seedOverflow,
+    this.ashtottariGrouping,
+  });
+
+  /// How the balance is measured.
+  final Balance? balance;
+
+  /// The length of a year.
+  final DashaYearLength? yearLength;
+
+  /// How the birth period is divided among its sub-periods.
+  final BirthPeriod? birthPeriod;
+
+  /// What is answered past the end of the cycle.
+  final AfterCycle? afterCycle;
+
+  /// What a seed outside a conditional cycle does.
+  final SeedOverflow? seedOverflow;
+
+  /// How Ashtottari's lords share the nakshatras.
+  final AshtottariGrouping? ashtottariGrouping;
+
+  Map<String, Object?> get _record => {
+    if (balance case final balance?) 'balance': balance.key,
+    if (yearLength case final yearLength?) 'yearLength': yearLength.key,
+    if (birthPeriod case final birthPeriod?) 'birthPeriod': birthPeriod.key,
+    if (afterCycle case final afterCycle?) 'afterCycle': afterCycle.key,
+    if (seedOverflow case final overflow?) 'seedOverflow': overflow.key,
+    if (ashtottariGrouping case final grouping?)
+      'ashtottariGrouping': grouping.key,
+  };
+}
+
+/// The baseline engine's unsourced cascade around the chart's instant,
+/// the time on record.
+final class BaselineRectificationRequest {
+  const BaselineRectificationRequest({
+    required this.uncertaintyMinutes,
+    this.accuracy,
+    this.events = const [],
+    this.sex,
+    this.coverage,
+    this.dasha = const BaselineDashaRules(),
+  });
+
+  /// The window's half-width, minutes, 1 to 720.
+  final double uncertaintyMinutes;
+
+  /// How far the reported time is trusted;
+  /// [BirthTimeAccuracy.approximate] by default.
+  final BirthTimeAccuracy? accuracy;
+
+  /// The dated events.
+  final List<LifeEvent> events;
+
+  /// The child's sex, for the tattva prior; none skips it.
+  final Sex? sex;
+
+  /// The share of the posterior the intervals hold, 0.5 to 0.99; 0.8 by
+  /// default.
+  final double? coverage;
+
+  /// The dasha the event fit reads.
+  final BaselineDashaRules dasha;
+
+  Map<String, Object?> get _record => {
+    'uncertaintyMinutes': uncertaintyMinutes,
+    if (accuracy case final accuracy?) 'accuracy': accuracy.key,
+    'events': [for (final event in events) event._record],
+    if (sex case final sex?) 'sex': sex.key,
+    if (coverage case final coverage?) 'coverage': coverage,
+    'dasha': dasha._record,
+  };
+}
+
+/// A chart read as a birth time to rectify, the chart's instant the time
+/// on record (`03-design/rectification.md`). Each reading answers only
+/// when asked.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */
+///     rectification: const RectificationRequest(
+///         purify: PurifyRequest(minutes: 30),
+///         circumstance: CircumstanceRequest(
+///             facts: BirthFacts(fatherPresent: false))));
+/// final standing = chart.rectification?.purified?.intervals;
+/// ```
+final class RectificationRequest {
+  const RectificationRequest({
+    this.purify,
+    this.conception,
+    this.circumstance,
+    this.baseline,
+  });
+
+  /// The purifier of BPHS ch. 2 vv. 67–78 over a window around the
+  /// chart's instant.
+  final PurifyRequest? purify;
+
+  /// The pranapada's house, the nisheka and the conception Moon at the
+  /// chart's instant.
+  final ConceptionRules? conception;
+
+  /// *Brihat Jataka* ch. V's circumstances at the chart's instant.
+  final CircumstanceRequest? circumstance;
+
+  /// The baseline engine's cascade around the chart's instant.
+  final BaselineRectificationRequest? baseline;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (purify case final purify?) 'purify': purify._record,
+    if (conception case final conception?) 'conception': conception._record,
+    if (circumstance case final circumstance?)
+      'circumstance': circumstance._record,
+    if (baseline case final baseline?) 'baseline': baseline._record,
+  });
+}
+
+/// One test of the lagna against one point of one purifier.
+final class PurifierClause extends _Value {
+  const PurifierClause({
+    required this.purifier,
+    required this.reference,
+    required this.sign,
+    required this.lagna,
+    required this.house,
+    required this.held,
+    required this.counted,
+  });
+
+  /// The purifier read.
+  final Purifier purifier;
+
+  /// Which of its points.
+  final PurifierReference reference;
+
+  /// The sign that point stands in.
+  final Rashi sign;
+
+  /// The lagna's sign.
+  final Rashi lagna;
+
+  /// The lagna's house counted from that sign, 1 to 12.
+  final int house;
+
+  /// Whether the house is one that purifies this native.
+  final bool held;
+
+  /// Whether the clause counts toward the verdict: false only for v. 76's
+  /// extension while the pranapada or the Moon holds, under
+  /// [GulikaExtension.whenTwoFail].
+  final bool counted;
+
+  @override
+  List<Object?> get _fields => [
+    purifier,
+    reference,
+    sign,
+    lagna,
+    house,
+    held,
+    counted,
+  ];
+}
+
+/// What the purifier finds at an instant: every clause, and whether any
+/// held.
+final class PurifierVerdict extends _Value {
+  const PurifierVerdict({required this.clauses, required this.pure});
+
+  /// Every clause judged, in the order pranapada, Gulika, Moon.
+  final List<PurifierClause> clauses;
+
+  /// Whether at least one counted clause held (v. 75).
+  final bool pure;
+
+  @override
+  List<Object?> get _fields => [clauses, pure];
+}
+
+/// One run of the window between two edges, with what was judged in it.
+final class PurifierRun extends _Value {
+  const PurifierRun({
+    required this.from,
+    required this.to,
+    required this.verdict,
+  });
+
+  /// Where it starts, as a Julian day (UTC): the window's start or a
+  /// clause edge.
+  final double from;
+
+  /// Where it ends: a clause edge or the window's end.
+  final double to;
+
+  /// The verdict every instant of it shares.
+  final PurifierVerdict verdict;
+
+  @override
+  List<Object?> get _fields => [from, to, verdict];
+}
+
+/// The grid that seeded the edges, so a run reproduces.
+final class PurifierGrid extends _Value {
+  const PurifierGrid({required this.stepDays, required this.cells});
+
+  /// The seed step, in days.
+  final double stepDays;
+
+  /// How many cells the window was cut into.
+  final int cells;
+
+  @override
+  List<Object?> get _fields => [stepDays, cells];
+}
+
+/// What the purifier of BPHS ch. 2 vv. 67–78 leaves standing of the
+/// window around the chart's instant.
+final class Purified extends _Value {
+  const Purified({
+    required this.intervals,
+    required this.removed,
+    required this.edges,
+    required this.grid,
+  });
+
+  /// The maximal runs no bar removed, in order; under [PurifyAs.weight]
+  /// every run, its verdict saying whether it is pure.
+  final List<PurifierRun> intervals;
+
+  /// The runs a bar removed, in order, each verdict naming every clause
+  /// that failed.
+  final List<PurifierRun> removed;
+
+  /// Every instant inside the window where a clause changes, Julian days
+  /// (UTC).
+  final List<double> edges;
+
+  /// The seed grid.
+  final PurifierGrid grid;
+
+  @override
+  List<Object?> get _fields => [intervals, removed, edges, grid];
+}
+
+/// The pranapada's house from the lagna, and the birth it judges.
+final class PranapadaHouse extends _Value {
+  const PranapadaHouse({
+    required this.pranapadaDeg,
+    required this.lagnaDeg,
+    required this.house,
+    required this.auspicious,
+  });
+
+  /// The pranapada, degrees.
+  final double pranapadaDeg;
+
+  /// The lagna, degrees.
+  final double lagnaDeg;
+
+  /// Its house from the lagna, 1 to 12.
+  final int house;
+
+  /// Whether that house is auspicious (Jha's ch. 3 vv. 73–74).
+  final bool auspicious;
+
+  @override
+  List<Object?> get _fields => [pranapadaDeg, lagnaDeg, house, auspicious];
+}
+
+/// The points BPHS ch. 3 v. 27 reads at the birth.
+final class NishekaPoints extends _Value {
+  const NishekaPoints({
+    required this.mandiDeg,
+    required this.saturnDeg,
+    required this.lagnaDeg,
+    required this.ninthDeg,
+    required this.lagnaLordDeg,
+    required this.moonDeg,
+  });
+
+  /// Mandi, degrees.
+  final double mandiDeg;
+
+  /// Saturn's point, degrees.
+  final double saturnDeg;
+
+  /// The lagna, degrees.
+  final double lagnaDeg;
+
+  /// The 9th bhava's point, degrees.
+  final double ninthDeg;
+
+  /// The lagna's lord's longitude, degrees.
+  final double lagnaLordDeg;
+
+  /// The Moon, degrees.
+  final double moonDeg;
+
+  @override
+  List<Object?> get _fields => [
+    mandiDeg,
+    saturnDeg,
+    lagnaDeg,
+    ninthDeg,
+    lagnaLordDeg,
+    moonDeg,
+  ];
+}
+
+/// The arc v. 28 reads, written as v. 28 reads it.
+final class MonthsBefore extends _Value {
+  const MonthsBefore({
+    required this.months,
+    required this.days,
+    required this.ghatis,
+    required this.palas,
+  });
+
+  /// Signs, read as months.
+  final int months;
+
+  /// Degrees, read as days.
+  final int days;
+
+  /// Arc-minutes, read as ghatis.
+  final int ghatis;
+
+  /// Arc-seconds, read as palas.
+  final int palas;
+
+  @override
+  List<Object?> get _fields => [months, days, ghatis, palas];
+}
+
+/// v. 27's two arcs, their sum, and the span before birth they give.
+final class NishekaSpan extends _Value {
+  const NishekaSpan({
+    required this.saturnToMandiDeg,
+    required this.lagnaToNinthDeg,
+    required this.moonAddedDeg,
+    required this.arcDeg,
+    required this.written,
+    required this.daysBefore,
+  });
+
+  /// From Saturn forward to Mandi, degrees.
+  final double saturnToMandiDeg;
+
+  /// From the lagna forward to the 9th bhava, degrees.
+  final double lagnaToNinthDeg;
+
+  /// The Moon's degrees elapsed in her sign, added when the lagna's lord
+  /// is in the invisible half (v. 28); null otherwise.
+  final double? moonAddedDeg;
+
+  /// The whole arc, degrees.
+  final double arcDeg;
+
+  /// The arc written as months, days, ghatis and palas, to the second.
+  final MonthsBefore written;
+
+  /// The span before birth, in days, under the month length.
+  final double daysBefore;
+
+  @override
+  List<Object?> get _fields => [
+    saturnToMandiDeg,
+    lagnaToNinthDeg,
+    moonAddedDeg,
+    arcDeg,
+    written,
+    daysBefore,
+  ];
+}
+
+/// The conception a birth counts back to: the points read at the birth,
+/// the span they give, and the instant.
+final class NishekaCount extends _Value {
+  const NishekaCount({
+    required this.points,
+    required this.span,
+    required this.instant,
+    required this.daysPerBirthMinute,
+  });
+
+  /// The points read at the birth.
+  final NishekaPoints points;
+
+  /// The span they give.
+  final NishekaSpan span;
+
+  /// The conception, the birth less the span, as a Julian day (UTC).
+  final double instant;
+
+  /// How many days the conception moves when the birth moves a minute
+  /// later: why it is read at an instant.
+  final double daysPerBirthMinute;
+
+  @override
+  List<Object?> get _fields => [points, span, instant, daysPerBirthMinute];
+}
+
+/// The conception BPHS counts back to (ch. 3 vv. 27–29), and its lagna
+/// judged.
+final class Nisheka extends _Value {
+  const Nisheka({
+    required this.count,
+    required this.lagnaDeg,
+    required this.verdict,
+  });
+
+  /// The count back from the birth.
+  final NishekaCount count;
+
+  /// The conception's lagna, degrees, in the conception chart's own
+  /// zodiac.
+  final double lagnaDeg;
+
+  /// That lagna under the purifier, at the birth's place (v. 29: "purify
+  /// it as before").
+  final PurifierVerdict verdict;
+
+  @override
+  List<Object?> get _fields => [count, lagnaDeg, verdict];
+}
+
+/// What *Brihat Jataka* IV.21 predicts from the Moon at conception.
+final class MoonCount extends _Value {
+  const MoonCount({
+    required this.dvadashamsha,
+    required this.sign,
+    required this.nakshatra,
+  });
+
+  /// The dvadashamsha the Moon occupies in her sign, 1 to 12.
+  final int dvadashamsha;
+
+  /// The sign the Moon holds at birth.
+  final Rashi sign;
+
+  /// The nakshatra Bhattotpala's proportion places her in, under
+  /// [ConceptionCount.nextAfterDvadashamsha] only.
+  final Nakshatra? nakshatra;
+
+  @override
+  List<Object?> get _fields => [dvadashamsha, sign, nakshatra];
+}
+
+/// *Brihat Jataka* IV.21 read at the conception and set against the
+/// birth; its fractions are reported and not weighed.
+final class ConceptionMoon extends _Value {
+  const ConceptionMoon({
+    required this.predicted,
+    required this.moonSign,
+    required this.moonNakshatra,
+    required this.signAgrees,
+    required this.nakshatraAgrees,
+    required this.rising,
+    required this.predictedPart,
+    required this.bornByDay,
+    required this.partAgrees,
+    required this.risenFraction,
+    required this.elapsedFraction,
+  });
+
+  /// The count from the conception's Moon.
+  final MoonCount predicted;
+
+  /// The birth's Moon sign.
+  final Rashi moonSign;
+
+  /// The birth's Moon nakshatra.
+  final Nakshatra? moonNakshatra;
+
+  /// Whether the birth's Moon is in the predicted sign.
+  final bool signAgrees;
+
+  /// Whether it is in the predicted nakshatra; null where none is
+  /// predicted.
+  final bool? nakshatraAgrees;
+
+  /// The conception's rising sign or navamsha.
+  final Rashi rising;
+
+  /// Its class: a day or a night birth.
+  final DayOrNight predictedPart;
+
+  /// Whether the birth is by day.
+  final bool bornByDay;
+
+  /// Whether the birth's day or night is the predicted one.
+  final bool partAgrees;
+
+  /// How much of the rising sign or navamsha had risen at conception, by
+  /// rising time.
+  final double risenFraction;
+
+  /// How much of the birth's day or night had passed.
+  final double elapsedFraction;
+
+  @override
+  List<Object?> get _fields => [
+    predicted,
+    moonSign,
+    moonNakshatra,
+    signAgrees,
+    nakshatraAgrees,
+    rising,
+    predictedPart,
+    bornByDay,
+    partAgrees,
+    risenFraction,
+    elapsedFraction,
+  ];
+}
+
+/// The three reports the chart's instant gives beside the purifier.
+final class Conception extends _Value {
+  const Conception({
+    required this.birth,
+    required this.pranapadaHouse,
+    required this.nisheka,
+    required this.moon,
+  });
+
+  /// The birth read, as a Julian day (UTC).
+  final double birth;
+
+  /// The pranapada's house, as Jha's print judges the birth.
+  final PranapadaHouse pranapadaHouse;
+
+  /// The conception BPHS counts back to.
+  final Nisheka nisheka;
+
+  /// *Brihat Jataka* IV.21 read at that conception against the birth.
+  final ConceptionMoon moon;
+
+  @override
+  List<Object?> get _fields => [birth, pranapadaHouse, nisheka, moon];
+}
+
+/// The sky the circumstances read: the lagna, the seven grahas and
+/// whether the lagna's lord is retrograde.
+final class BirthSky extends _Value {
+  const BirthSky({
+    required this.lagnaDeg,
+    required this.grahasDeg,
+    required this.lordRetrograde,
+  });
+
+  /// The lagna, degrees.
+  final double lagnaDeg;
+
+  /// The seven grahas' longitudes, degrees, Sun to Saturn.
+  final List<double> grahasDeg;
+
+  /// Whether the lagna's lord is retrograde, read only by
+  /// [PresentationBy.lagnaLordMotion].
+  final bool lordRetrograde;
+
+  @override
+  List<Object?> get _fields => [lagnaDeg, grahasDeg, lordRetrograde];
+}
+
+/// *Brihat Jataka* V.1–2: whether the father was away, and where.
+final class FatherReading extends _Value {
+  const FatherReading({
+    required this.moonAspect,
+    required this.unseen,
+    required this.saturnRising,
+    required this.marsSetting,
+    required this.moonHemmed,
+    required this.away,
+    required this.whereabouts,
+    required this.sunHouse,
+  });
+
+  /// The Moon's aspect on the lagna's sign (BJ II.13).
+  final Strength moonAspect;
+
+  /// V.1: the Moon does not see the lagna, as [MoonSees] asks.
+  final bool unseen;
+
+  /// V.2: Saturn in the lagna.
+  final bool saturnRising;
+
+  /// V.2: Mars in the 7th.
+  final bool marsSetting;
+
+  /// V.2: the Moon between Mercury and Venus.
+  final bool moonHemmed;
+
+  /// Whether any of them holds: the father away.
+  final bool away;
+
+  /// Where V.1 puts him, where it holds and the Sun has fallen from the
+  /// 10th; null otherwise.
+  final FatherWhereabouts? whereabouts;
+
+  /// The Sun's house from the lagna, by sign.
+  final int sunHouse;
+
+  @override
+  List<Object?> get _fields => [
+    moonAspect,
+    unseen,
+    saturnRising,
+    marsSetting,
+    moonHemmed,
+    away,
+    whereabouts,
+    sunHouse,
+  ];
+}
+
+/// V.17's presentation as the sky foretells it.
+final class PresentationReading extends _Value {
+  const PresentationReading({
+    required this.by,
+    required this.rising,
+    required this.lord,
+    required this.lordRetrograde,
+    required this.foretold,
+  });
+
+  /// The reading asked.
+  final PresentationBy by;
+
+  /// How the rising sign rises.
+  final Rising rising;
+
+  /// The lagna's lord.
+  final Graha lord;
+
+  /// Whether it is retrograde.
+  final bool lordRetrograde;
+
+  /// What the reading foretells.
+  final BirthPresentation foretold;
+
+  @override
+  List<Object?> get _fields => [by, rising, lord, lordRetrograde, foretold];
+}
+
+/// V.18's lamp as the sky foretells it.
+final class Lamp extends _Value {
+  const Lamp({
+    required this.oil,
+    required this.oilLevel,
+    required this.wick,
+    required this.wickLevel,
+  });
+
+  /// The oil left, one at the start of the Moon's sign and none at its end.
+  final double oil;
+
+  /// Its nearest level.
+  final LampLevel oilLevel;
+
+  /// The wick left, one at the start of the rising sign and none at its
+  /// end.
+  final double wick;
+
+  /// Its nearest level.
+  final LampLevel wickLevel;
+
+  @override
+  List<Object?> get _fields => [oil, oilLevel, wick, wickLevel];
+}
+
+/// V.22's attendants as the sky foretells them.
+final class Attending extends _Value {
+  const Attending({
+    required this.between,
+    required this.visible,
+    required this.inside,
+    required this.outside,
+  });
+
+  /// The grahas between the lagna and the Moon, as [BetweenBy] counts.
+  final List<Graha> between;
+
+  /// Those of them in the visible half.
+  final List<Graha> visible;
+
+  /// How many inside the room.
+  final int inside;
+
+  /// How many outside it.
+  final int outside;
+
+  @override
+  List<Object?> get _fields => [between, visible, inside, outside];
+}
+
+/// One fact given, set against the clause that reads it.
+final class CircumstanceWeight extends _Value {
+  const CircumstanceWeight({required this.indication, required this.agrees});
+
+  /// The clause.
+  final CircumstanceIndication indication;
+
+  /// Whether the fact agrees with what the sky foretold.
+  final bool agrees;
+
+  @override
+  List<Object?> get _fields => [indication, agrees];
+}
+
+/// *Brihat Jataka* ch. V's circumstances at the chart's instant.
+final class Circumstance extends _Value {
+  const Circumstance({
+    required this.sky,
+    required this.father,
+    required this.presentation,
+    required this.lamp,
+    required this.attending,
+    required this.weights,
+  });
+
+  /// The sky the clauses read.
+  final BirthSky sky;
+
+  /// V.1–2.
+  final FatherReading father;
+
+  /// V.17.
+  final PresentationReading presentation;
+
+  /// V.18.
+  final Lamp lamp;
+
+  /// V.22.
+  final Attending attending;
+
+  /// One per fact given, in [CircumstanceIndication]'s order; none for a
+  /// fact absent.
+  final List<CircumstanceWeight> weights;
+
+  @override
+  List<Object?> get _fields => [
+    sky,
+    father,
+    presentation,
+    lamp,
+    attending,
+    weights,
+  ];
+}
+
+/// One candidate birth time, ranked.
+final class RankedCandidate extends _Value {
+  const RankedCandidate({
+    required this.at,
+    required this.probability,
+    required this.logPosterior,
+    required this.lagna,
+    required this.lagnaNakshatra,
+  });
+
+  /// The instant, as a Julian day (UTC).
+  final double at;
+
+  /// Its share of the posterior.
+  final double probability;
+
+  /// Its log-posterior, the stages summed.
+  final double logPosterior;
+
+  /// Its lagna's sign.
+  final Rashi lagna;
+
+  /// Its lagna's nakshatra.
+  final Nakshatra lagnaNakshatra;
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    probability,
+    logPosterior,
+    lagna,
+    lagnaNakshatra,
+  ];
+}
+
+/// What a baseline stage says it did, one class a note.
+sealed class StageNote extends _Value {
+  const StageNote();
+
+  /// The note's kind as the boundary spells it.
+  String get kind;
+}
+
+/// The tattva prior: how many candidates a tattva of the other sex
+/// penalised.
+final class TattvaSexNote extends StageNote {
+  const TattvaSexNote({
+    required this.sex,
+    required this.admittedMinutes,
+    required this.penalised,
+    required this.of,
+  });
+
+  /// The sex.
+  final Sex sex;
+
+  /// The minutes of every 90 that admit it.
+  final double admittedMinutes;
+
+  /// The candidates penalised, not excluded.
+  final int penalised;
+
+  /// The candidates.
+  final int of;
+
+  @override
+  String get kind => 'TATTVA_SEX';
+
+  @override
+  List<Object?> get _fields => [sex, admittedMinutes, penalised, of];
+}
+
+/// The reported time's prior.
+final class ReportedTimeNote extends StageNote {
+  const ReportedTimeNote({
+    required this.accuracy,
+    required this.uncertaintyMinutes,
+  });
+
+  /// How far it is trusted.
+  final BirthTimeAccuracy accuracy;
+
+  /// Its uncertainty, minutes.
+  final double uncertaintyMinutes;
+
+  @override
+  String get kind => 'REPORTED_TIME';
+
+  @override
+  List<Object?> get _fields => [accuracy, uncertaintyMinutes];
+}
+
+/// One event's fit.
+final class EventFitNote extends StageNote {
+  const EventFitNote({
+    required this.event,
+    required this.id,
+    required this.eventKind,
+    required this.lords,
+    required this.contribution,
+  });
+
+  /// Its index in the request.
+  final int event;
+
+  /// The caller's name for it; null where it was given none.
+  final String? id;
+
+  /// What happened.
+  final LifeEventKind eventKind;
+
+  /// The period lords that fit it, mahadasha first, where any did.
+  final List<Graha> lords;
+
+  /// Its best score over every candidate, weighted.
+  final double contribution;
+
+  @override
+  String get kind => 'EVENT_FIT';
+
+  @override
+  List<Object?> get _fields => [event, id, eventKind, lords, contribution];
+}
+
+/// One baseline stage's outcome.
+final class StageOutcome extends _Value {
+  const StageOutcome({
+    required this.stage,
+    required this.applied,
+    required this.flat,
+    required this.resolutionMinutes,
+    required this.notes,
+  });
+
+  /// The stage.
+  final BaselineStage stage;
+
+  /// Whether it ran.
+  final bool applied;
+
+  /// Whether it told no candidate from another.
+  final bool flat;
+
+  /// The finest it can tell, minutes.
+  final double resolutionMinutes;
+
+  /// What it says it did.
+  final List<StageNote> notes;
+
+  @override
+  List<Object?> get _fields => [stage, applied, flat, resolutionMinutes, notes];
+}
+
+/// A held-out event tested against the fit.
+final class HeldOutEvent extends _Value {
+  const HeldOutEvent({
+    required this.event,
+    required this.kind,
+    required this.scoreAtFit,
+    required this.baseline,
+    required this.supported,
+  });
+
+  /// Its index in the request.
+  final int event;
+
+  /// What happened.
+  final LifeEventKind kind;
+
+  /// Its score at the posterior's mode.
+  final double scoreAtFit;
+
+  /// Its mean score over candidates spread across the grid.
+  final double baseline;
+
+  /// Whether the mode fits it by more than the margin over the spread.
+  final bool supported;
+
+  @override
+  List<Object?> get _fields => [event, kind, scoreAtFit, baseline, supported];
+}
+
+/// The baseline engine's unsourced cascade around the chart's instant.
+final class BaselineAnswer {
+  const BaselineAnswer({
+    required this.window,
+    required this.sunrise,
+    required this.intervals,
+    required this.intervalWidthMinutes,
+    required this.resolutionMinutes,
+    required this.suggested,
+    required this.concentration,
+    required this.candidates,
+    required this.stages,
+    required this.eventsUsed,
+    required this.eventsHeldOut,
+    required this.holdOut,
+  });
+
+  /// The window searched.
+  final Interval window;
+
+  /// The sunrise the tattva cycle counted from, as a Julian day (UTC).
+  final double sunrise;
+
+  /// The intervals holding the request's coverage of the posterior.
+  final List<Interval> intervals;
+
+  /// Their width in all, minutes, never finer than the resolution.
+  final double intervalWidthMinutes;
+
+  /// The finest the stages that told candidates apart can tell, minutes.
+  final double resolutionMinutes;
+
+  /// The posterior's mode, as a Julian day (UTC).
+  final double suggested;
+
+  /// How concentrated the posterior is, 0 (flat) to 1.
+  final double concentration;
+
+  /// The most probable candidates, most probable first.
+  final List<RankedCandidate> candidates;
+
+  /// Each stage's outcome.
+  final List<StageOutcome> stages;
+
+  /// The events fitted.
+  final int eventsUsed;
+
+  /// The events held out.
+  final int eventsHeldOut;
+
+  /// The held-out events, tested.
+  final List<HeldOutEvent> holdOut;
+}
+
+/// A chart read as a birth time to rectify (`03-design/rectification.md`):
+/// each reading the request asked for, null for one it did not.
+final class Rectification {
+  const Rectification({
+    required this.purified,
+    required this.conception,
+    required this.circumstance,
+    required this.baseline,
+  });
+
+  /// What the purifier leaves standing of the window.
+  final Purified? purified;
+
+  /// The conception reports at the chart's instant.
+  final Conception? conception;
+
+  /// The circumstances at the chart's instant.
+  final Circumstance? circumstance;
+
+  /// The baseline engine's cascade around it.
+  final BaselineAnswer? baseline;
+}
+
 /// A return's own chart, read down to what Tajika reads from it.
 final class AnnualChart {
   const AnnualChart({
@@ -18685,6 +20957,17 @@ final class Chart {
   /// (`03-design/remedies.md`).
   Remedies? get remedies {
     final all = _remediesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart read as a birth time to rectify, its instant the time on
+  /// record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
+  /// the window around it, the conception reports, *Brihat Jataka* ch. V's
+  /// circumstances and the baseline engine's unsourced cascade, each null
+  /// unless the request asked for it. Null unless `rectification` asked for
+  /// any (`03-design/rectification.md`).
+  Rectification? get rectification {
+    final all = _rectificationsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

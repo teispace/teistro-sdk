@@ -347,7 +347,7 @@ mod baseline {
     #[test]
     fn the_record_reads_what_the_facade_reads_around_the_chart() {
         use teistro::rectification::{CircumstanceRules, ConceptionRules, Facts, Rules, Window};
-        use teistro::{BaselineAsked, CircumstanceAsked, Purify, RectificationRequest};
+        use teistro::{BaselineAsked, CircumstanceAsked, DashaAsked, Purify, RectificationRequest};
 
         let sdk = sdk();
         let at = JulianDay::literal(TRUE_JD);
@@ -376,9 +376,11 @@ mod baseline {
                 events: events(&sdk),
                 sex: Some(Sex::Male),
                 coverage: 0.8,
-                dasha: baseline_dasha_rules(),
+                dasha: DashaAsked::default(),
             }),
         };
+        // A dasha left out is the baseline engine's own.
+        assert_eq!(DashaAsked::default().rules(), baseline_dasha_rules());
         let read = sdk
             .chart()
             .rectification(&document, OFFSET, &asked)
