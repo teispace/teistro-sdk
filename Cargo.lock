@@ -1586,6 +1586,7 @@ dependencies = [
  "teistro-matching",
  "teistro-muhurta",
  "teistro-numerology",
+ "teistro-pakshi",
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
@@ -1903,6 +1904,15 @@ dependencies = [
  "serde",
  "serde_json",
  "teistro-calendar",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-pakshi"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
  "teistro-core",
 ]
 
