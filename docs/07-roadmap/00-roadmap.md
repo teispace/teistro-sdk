@@ -977,6 +977,27 @@ read:
 Research, source-reading and drafts run as two or three parallel agents;
 every build and test runs one at a time.
 
+### The plan to the release candidate (2026-10-09)
+
+The maintainer asked for a dated plan on 2026-10-09. Each week ends with
+its work merged through one PR whose fast-check and dispatched verify are
+green. Research runs ahead of the build on two or three read-only agents;
+cargo, javac and the bindings' tests stay one chain at a time.
+
+| week | the release candidate (Track A) | the modules the reviewers read (Track B, C) |
+|---|---|---|
+| 10–16 Oct | `SIZES.md` (`generated-pages.md` step 4); `CONFORMANCE.md`'s recorded half and the entry and tag checks (steps 2 and 3); Java step 10's pages | rectification step 6 (the `BASELINE` stages, from a black-box export) |
+| 17–23 Oct | the JPL recording and `ACCURACY.md`'s Horizons and CSPICE rows (step 5); a release run end to end with nothing published | rectification steps 7 and 8 (`TATTVA`, the façade's section and every binding); research steps 1 to 3 |
+| 24–30 Oct | the docs site's guides with executed examples; the install check after publishing | research steps 4 to 7; prashna's remaining Tajika links; Track C's Saravali readings |
+| 31 Oct–6 Nov | the hardening pass: every gate, the parity checklist, sizes and the bench read against their budgets, every module's design page against what shipped | the pakshi and Lal Kitab pipelines and gates, their content handed to readers who can vet it; the MCP server (Q35) |
+| 7–13 Nov | **the release candidate**: version, changelog, tag on a rehearsal run | the maintainer's review, then the astrologers' and researchers' |
+
+What only the maintainer can do, wanted before the release run: the
+Central namespace's DNS record, the release PGP key and its fingerprint in
+`SECURITY.md`, and the read-only token that lets a verify row build the
+Teimeris adapter (step 8 above). The release candidate ships without any of
+them that are missing, and says so in its notes.
+
 8. **A real plugin in CI.** No workflow loads an adapter, so every
    binding's plugin test skips there and passes only where a contributor
    names one with `TEISTRO_TEIMERIS_ADAPTER`. Teimeris is a private
