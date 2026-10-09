@@ -280,7 +280,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 304,
+    "ts_chart_request": 312,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -310,7 +310,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 176,
+    "ts_chart_request": 184,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -730,6 +730,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("matching_json", ctypes.c_char_p),
         ("prashna_json", ctypes.c_char_p),
         ("remedies_json", ctypes.c_char_p),
+        ("rectification_json", ctypes.c_char_p),
     ]
 
 
@@ -2707,6 +2708,25 @@ class ChartRequest:
     Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
     """
 
+    rectification_json: Optional[str] = None
+    """Every chart read as a birth time to rectify, the chart's instant
+    the time on record, as a JSON object, every member optional:
+    `purify` (`minutes` either side of the chart's instant, more than
+    none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+    vv. 67–78), `conception` (the pranapada's house, the nisheka and
+    the conception Moon, with its rules), `circumstance` (`facts` the
+    family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+    and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+    (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+    to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+    Each chart's readings come back in the `rectification` section,
+    one member for each reading asked. Null for none, which costs
+    nothing (`03-design/rectification.md`). Refusals are named from
+    the record every binding calls `rectification`, as
+    `rectification.purify.minutes`.
+    Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2817,6 +2837,9 @@ class ChartRequest:
         _remedies_json = None if self.remedies_json is None else self.remedies_json.encode("utf-8")
         owned.append(_remedies_json)
         raw.remedies_json = _remedies_json
+        _rectification_json = None if self.rectification_json is None else self.rectification_json.encode("utf-8")
+        owned.append(_rectification_json)
+        raw.rectification_json = _rectification_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2877,6 +2900,7 @@ class ChartRequest:
             matching_json=_text(raw.matching_json),
             prashna_json=_text(raw.prashna_json),
             remedies_json=_text(raw.remedies_json),
+            rectification_json=_text(raw.rectification_json),
         )
 
 

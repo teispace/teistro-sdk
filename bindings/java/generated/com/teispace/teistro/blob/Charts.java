@@ -151,6 +151,7 @@ public final class Charts {
     private final String avakahadaSyllables;
     private final String prashna;
     private final String remedies;
+    private final String rectification;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -292,6 +293,7 @@ public final class Charts {
         this.avakahadaSyllables = blob.text(119, "avakahada_syllables");
         this.prashna = blob.text(120, "prashna");
         this.remedies = blob.text(121, "remedies");
+        this.rectification = blob.text(122, "rectification");
     }
 
     /**
@@ -1536,6 +1538,15 @@ public final class Charts {
      */
     public String remedies() {
         return remedies;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: an array with one entry per chart, each with a member for every reading the record asked and none for one it did not. `purified` is what the purifier of BPHS ch. 2 vv. 67-78 leaves standing of the window around the chart's instant, `{intervals, removed, edges, grid}`: each interval `{from, to, verdict}` with the clauses that held, each removed run naming the clause that failed. `conception` is `{birth, pranapadaHouse, nisheka, moon}` at the chart's instant (BPHS ch. 3 vv. 25-29, *Brihat Jataka* IV.21). `circumstance` is `{sky, father, presentation, lamp, attending, weights}` (*Brihat Jataka* ch. V), each fact given one weight. `baseline` is the baseline engine's unsourced cascade around the chart's instant, `{window, sunrise, intervals, intervalWidthMinutes, resolutionMinutes, suggested, concentration, candidates, stages, eventsUsed, eventsHeldOut, holdOut}`. Instants are Julian days UTC. Empty when `rectification_json` asked for none.
+     *
+     * @return the rectification
+     */
+    public String rectification() {
+        return rectification;
     }
 
 

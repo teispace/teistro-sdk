@@ -102,6 +102,8 @@ mod rashifal_area;
 #[cfg(feature = "rashifal")]
 mod rashifal_request;
 #[cfg(feature = "rectification")]
+mod rectification_request;
+#[cfg(feature = "rectification")]
 mod rectify;
 #[cfg(feature = "remedies")]
 mod remedy_request;
@@ -275,6 +277,10 @@ pub use teistro_gochar::sade_sati;
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 #[cfg(feature = "prashna")]
 pub use crate::prashna_request::PrashnaRequest;
+#[cfg(feature = "rectification")]
+pub use crate::rectification_request::{
+    BaselineAsked, CircumstanceAsked, Purify, Rectification, RectificationRequest,
+};
 #[cfg(feature = "remedies")]
 pub use crate::remedy_request::RemedyRequest;
 // The essential dignities of the Hellenistic and later Western tradition:

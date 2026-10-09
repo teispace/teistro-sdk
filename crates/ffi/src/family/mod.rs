@@ -19,6 +19,8 @@ pub(crate) mod muhurta;
 #[cfg(feature = "chart")]
 pub(crate) mod prashna;
 #[cfg(feature = "chart")]
+pub(crate) mod rectification;
+#[cfg(feature = "chart")]
 pub(crate) mod remedies;
 #[cfg(feature = "chart")]
 pub(crate) mod svg;

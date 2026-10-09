@@ -4872,6 +4872,9 @@ pub struct Composed<'a> {
     /// Every chart's remedies, as canonical JSON (`remedies.md`); empty
     /// when none were asked for.
     pub remedies: &'a str,
+    /// Every chart read as a birth time to rectify, as canonical JSON
+    /// (`rectification.md`); empty when none was asked for.
+    pub rectification: &'a str,
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -4880,8 +4883,8 @@ pub struct Composed<'a> {
 
 impl Composed<'_> {
     /// Writes the sections the composers answered as text, each as it
-    /// came: the drawings, the rules, the plans, KP, prashna and the
-    /// remedies. The
+    /// came: the drawings, the rules, the plans, KP, prashna, the
+    /// remedies and the rectification. The
     /// writer takes sections in any order, so these need not sit among
     /// the columns they follow in the schema.
     fn write_texts(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -4892,6 +4895,7 @@ impl Composed<'_> {
             ("kp", self.kp),
             ("prashna", self.prashna),
             ("remedies", self.remedies),
+            ("rectification", self.rectification),
         ] {
             writer.bytes(name, text.as_bytes())?;
         }
@@ -5741,17 +5745,27 @@ fn hits_of(
 struct ChartReadings {
     prashna: String,
     remedies: String,
+    rectification: String,
 }
 
 impl ChartReadings {
+    /// `clock` is the request's own, which a rectification reads its
+    /// civil day on.
     fn of(
         sdk: &teistro::Context,
         documents: &[Document],
         records: &AskedRecords,
+        clock: UtcOffset,
     ) -> Result<Self, Error> {
         Ok(Self {
             prashna: crate::family::prashna::json(sdk, documents, records.prashna.as_ref())?,
             remedies: crate::family::remedies::json(sdk, documents, records.remedies.as_ref())?,
+            rectification: crate::family::rectification::json(
+                sdk,
+                documents,
+                records.rectification.as_ref(),
+                clock,
+            )?,
         })
     }
 }
@@ -6200,6 +6214,7 @@ struct AskedRecords {
     matching: Option<teistro::PartnerMatching>,
     prashna: Option<crate::family::prashna::Request>,
     remedies: Option<crate::family::remedies::Request>,
+    rectification: Option<crate::family::rectification::Request>,
 }
 
 impl AskedRecords {
@@ -6265,6 +6280,7 @@ impl AskedRecords {
                     .transpose()?,
                 prashna: crate::family::prashna::request_of(asked.prashna_json)?,
                 remedies: crate::family::remedies::request_of(asked.remedies_json)?,
+                rectification: crate::family::rectification::request_of(asked.rectification_json)?,
             })
             .and_then(AskedRecords::one_table)
         }
@@ -6460,7 +6476,7 @@ pub unsafe extern "C" fn ts_chart_found(
         let western =
             crate::family::western::Tables::of(ctx.sdk(), &founded.value, &records.western, clock)?;
         let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
-        let readings = ChartReadings::of(ctx.sdk(), &founded.value, &records)?;
+        let readings = ChartReadings::of(ctx.sdk(), &founded.value, &records, clock)?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -6497,6 +6513,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 matchings: &matchings,
                 prashna: &readings.prashna,
                 remedies: &readings.remedies,
+                rectification: &readings.rectification,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

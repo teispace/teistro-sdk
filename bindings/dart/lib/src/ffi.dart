@@ -1308,6 +1308,24 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
   external ffi.Pointer<ffi.Char> remediesJson;
 
+  /// Every chart read as a birth time to rectify, the chart's instant
+  /// the time on record, as a JSON object, every member optional:
+  /// `purify` (`minutes` either side of the chart's instant, more than
+  /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+  /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+  /// the conception Moon, with its rules), `circumstance` (`facts` the
+  /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+  /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+  /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+  /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+  /// Each chart's readings come back in the `rectification` section,
+  /// one member for each reading asked. Null for none, which costs
+  /// nothing (`03-design/rectification.md`). Refusals are named from
+  /// the record every binding calls `rectification`, as
+  /// `rectification.purify.minutes`.
+  /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+  external ffi.Pointer<ffi.Char> rectificationJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3252,7 +3270,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3706,6 +3724,24 @@ final class ChartRequest {
   /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
   final String? remediesJson;
 
+  /// Every chart read as a birth time to rectify, the chart's instant
+  /// the time on record, as a JSON object, every member optional:
+  /// `purify` (`minutes` either side of the chart's instant, more than
+  /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+  /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+  /// the conception Moon, with its rules), `circumstance` (`facts` the
+  /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+  /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+  /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+  /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+  /// Each chart's readings come back in the `rectification` section,
+  /// one member for each reading asked. Null for none, which costs
+  /// nothing (`03-design/rectification.md`). Refusals are named from
+  /// the record every binding calls `rectification`, as
+  /// `rectification.purify.minutes`.
+  /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+  final String? rectificationJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3817,6 +3853,9 @@ final class ChartRequest {
     raw.remediesJson = remediesJson == null
         ? ffi.nullptr
         : remediesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.rectificationJson = rectificationJson == null
+        ? ffi.nullptr
+        : rectificationJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3914,6 +3953,9 @@ final class ChartRequest {
         remediesJson: raw.remediesJson == ffi.nullptr
             ? null
             : raw.remediesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        rectificationJson: raw.rectificationJson == ffi.nullptr
+            ? null
+            : raw.rectificationJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

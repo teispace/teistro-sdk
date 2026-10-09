@@ -56,6 +56,7 @@ import com.teispace.teistro.ffi.Native;
  * @param matchingJson Every chart matched with one partner's birth by the Ashta Koota of *Muhurta Chintamani* VI.21–34, the ten considerations and the Kuja dosha, as a JSON object: `partner`, `{"instant": jd, "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`, founded once under the context's sidereal profile; `partnerRole`, `"BRIDE"` or `"GROOM"`, every chart standing on the other side; and `rules`, every field optional: `equalVarna` (`WHOLE` or `HALF`), `devaBride` (`FOUR` or `THREE`), `bhakootLift` (`ANY_ONE` or `GARGA`) and `nadiDosha` (`ANY` or `MIDDLE_ONLY`); `porutham`, the ten considerations of *Kalaprakasika* XIII, every field optional: `twoSignStar` (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond` (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or `ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from` (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in `matchings`, `matching_kootas`, `poruthams`, `porutham_rows` and `kujas`, with every dosha the three report gathered in `marriage_doshas` and `marriage_dosha_rows`. Null for none, which costs nothing (`03-design/matching.md`). Refusals are named from the record every binding calls `matching`, as `matching.partnerRole`. Example: {"partner":{"instant":2447892.5,"place":{"latitude":27.7172,"longitude":85.324,"altitude":1400}},"partnerRole":"BRIDE"}. May be null.
  * @param prashnaJson Every chart read as a prashna, the chart of the moment a question was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as a JSON object, every member optional: `question` (`house`, the matter's house 1 to 12, which the verdict's I.3 clauses and the Tajika links read; `number`, the querent's 1 to 108, read only by the baseline engine's unsourced rule, C340) and `rules` (`pisces`, `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one asks for the `shadbala` sections too. Each chart's reading comes back in the `prashna` section. Null for none, which costs nothing (`03-design/prashna.md`). Refusals are named from the record every binding calls `prashna`, as `prashna.question.house`. Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
  * @param remediesJson Every chart's remedies, as BPHS, *Laghu Parashari* and *Yājñavalkya* prescribe them, as a JSON object, every member optional: `at` (the Julian day UTC whose running Vimśottarī mahādaśā and antardaśā name subjects and bring the antardaśā's printed śānti; none reads no daśā) and `rules` (`functional` `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts' own by default). A record with `at` asks for the Vimśottarī daśā too. Each chart's remedies come back in the `remedies` section. Null for none, which costs nothing (`03-design/remedies.md`). Refusals are named from the record every binding calls `remedies`, as `remedies.rules.devata`. Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
+ * @param rectificationJson Every chart read as a birth time to rectify, the chart's instant the time on record, as a JSON object, every member optional: `purify` (`minutes` either side of the chart's instant, more than none and at most 1080, and `rules`, the purifier of BPHS ch. 2 vv. 67–78), `conception` (the pranapada's house, the nisheka and the conception Moon, with its rules), `circumstance` (`facts` the family remembers, `fatherPresent`, `presentation`, `oil`, `wick` and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline` (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1 to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`). Each chart's readings come back in the `rectification` section, one member for each reading asked. Null for none, which costs nothing (`03-design/rectification.md`). Refusals are named from the record every binding calls `rectification`, as `rectification.purify.minutes`. Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
  */
 @SuppressWarnings("unused")
 public record ChartRequest(
@@ -92,7 +93,8 @@ public record ChartRequest(
         String harmonicJson,
         String matchingJson,
         String prashnaJson,
-        String remediesJson) {
+        String remediesJson,
+        String rectificationJson) {
     /** The value, checked: what may not be absent is present, and what is mutable is copied. */
     public ChartRequest {
         Objects.requireNonNull(kind, "kind");
@@ -177,6 +179,7 @@ public record ChartRequest(
         Native.TsChartRequest.MATCHING_JSON.set(raw, 0L, Values.cString(arena, matchingJson));
         Native.TsChartRequest.PRASHNA_JSON.set(raw, 0L, Values.cString(arena, prashnaJson));
         Native.TsChartRequest.REMEDIES_JSON.set(raw, 0L, Values.cString(arena, remediesJson));
+        Native.TsChartRequest.RECTIFICATION_JSON.set(raw, 0L, Values.cString(arena, rectificationJson));
     }
 
     /** This value as a fresh C struct in {@code arena}, ready to be passed by pointer. */
@@ -222,7 +225,8 @@ public record ChartRequest(
             Values.text((MemorySegment) Native.TsChartRequest.HARMONIC_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.MATCHING_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.PRASHNA_JSON.get(raw, 0L), true),
-            Values.text((MemorySegment) Native.TsChartRequest.REMEDIES_JSON.get(raw, 0L), true));
+            Values.text((MemorySegment) Native.TsChartRequest.REMEDIES_JSON.get(raw, 0L), true),
+            Values.text((MemorySegment) Native.TsChartRequest.RECTIFICATION_JSON.get(raw, 0L), true));
     }
 
 }

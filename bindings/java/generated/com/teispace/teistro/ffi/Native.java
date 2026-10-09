@@ -1974,11 +1974,12 @@ public final class Native {
             ADDRESS.withName("harmonic_json"),
             ADDRESS.withName("matching_json"),
             ADDRESS.withName("prashna_json"),
-            ADDRESS.withName("remedies_json")
+            ADDRESS.withName("remedies_json"),
+            ADDRESS.withName("rectification_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 304;
+        public static final long SIZE = 312;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2668,6 +2669,29 @@ public final class Native {
 
         /** The handle that reads and writes `remedies_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle REMEDIES_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("remedies_json"));
+
+        /**
+         * The offset of `rectification_json`. Every chart read as a birth time to rectify, the chart's instant
+         * the time on record, as a JSON object, every member optional:
+         * `purify` (`minutes` either side of the chart's instant, more than
+         * none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+         * vv. 67–78), `conception` (the pranapada's house, the nisheka and
+         * the conception Moon, with its rules), `circumstance` (`facts` the
+         * family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+         * and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+         * (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+         * to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+         * Each chart's readings come back in the `rectification` section,
+         * one member for each reading asked. Null for none, which costs
+         * nothing (`03-design/rectification.md`). Refusals are named from
+         * the record every binding calls `rectification`, as
+         * `rectification.purify.minutes`.
+         * Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+         */
+        public static final long RECTIFICATION_JSON_OFFSET = 304;
+
+        /** The handle that reads and writes `rectification_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle RECTIFICATION_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("rectification_json"));
 
     }
 

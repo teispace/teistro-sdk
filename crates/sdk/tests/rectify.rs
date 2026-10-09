@@ -289,6 +289,130 @@ mod baseline {
             .value
     }
 
+    /// The record a binding sends answers what the façade's own calls
+    /// answer around the chart's instant, every reading to the bit.
+    #[test]
+    fn the_record_reads_what_the_facade_reads_around_the_chart() {
+        use teistro::rectification::{CircumstanceRules, ConceptionRules, Facts, Rules, Window};
+        use teistro::{BaselineAsked, CircumstanceAsked, Purify, RectificationRequest};
+
+        let sdk = sdk();
+        let at = JulianDay::literal(TRUE_JD);
+        let document = sdk
+            .chart()
+            .reading(at, &ChartRequest::at(pokhara(), OFFSET))
+            .unwrap()
+            .value;
+        let facts = Facts {
+            father_present: Some(false),
+            ..Facts::default()
+        };
+        let asked = RectificationRequest {
+            purify: Some(Purify {
+                minutes: 30.0,
+                rules: Rules::default(),
+            }),
+            conception: Some(ConceptionRules::default()),
+            circumstance: Some(CircumstanceAsked {
+                facts,
+                rules: CircumstanceRules::default(),
+            }),
+            baseline: Some(BaselineAsked {
+                uncertainty_minutes: 60.0,
+                accuracy: Accuracy::Approximate,
+                events: events(&sdk),
+                sex: Some(Sex::Male),
+                coverage: 0.8,
+                dasha: baseline_dasha_rules(),
+            }),
+        };
+        let read = sdk
+            .chart()
+            .rectification(&document, OFFSET, &asked)
+            .unwrap();
+        let half = 30.0 * MINUTE;
+        let window = Window::between(
+            JulianDay::literal(TRUE_JD - half),
+            JulianDay::literal(TRUE_JD + half),
+        )
+        .unwrap();
+        let place = pokhara();
+        let chart = sdk.chart();
+        assert_eq!(
+            read.purified.unwrap(),
+            chart
+                .rectify(window, &place, OFFSET, &Rules::default())
+                .unwrap()
+                .value
+        );
+        assert_eq!(
+            read.conception.unwrap(),
+            chart
+                .conception(at, &place, OFFSET, &ConceptionRules::default())
+                .unwrap()
+                .value
+        );
+        assert_eq!(
+            read.circumstance.unwrap(),
+            chart
+                .circumstance(at, &place, OFFSET, &facts, &CircumstanceRules::default())
+                .unwrap()
+                .value
+        );
+        let baseline = asked.baseline.as_ref().unwrap().at(at);
+        assert_eq!(read.baseline.unwrap(), run(&sdk, &baseline));
+        // A reading not asked for is not read.
+        let none = sdk
+            .chart()
+            .rectification(&document, OFFSET, &RectificationRequest::default())
+            .unwrap();
+        assert!(none.purified.is_none() && none.baseline.is_none());
+    }
+
+    /// Every refusal names the field the binding sent, under the member
+    /// that asked, never the kernel's own name for it.
+    #[test]
+    fn a_refused_record_names_the_field_it_sent() {
+        use teistro::RectificationRequest;
+
+        let sdk = sdk();
+        let document = sdk
+            .chart()
+            .reading(
+                JulianDay::literal(TRUE_JD),
+                &ChartRequest::at(pokhara(), OFFSET),
+            )
+            .unwrap()
+            .value;
+        let refused = |json: &str| {
+            let asked = RectificationRequest::from_json(json).unwrap();
+            let error = sdk
+                .chart()
+                .rectification(&document, OFFSET, &asked)
+                .unwrap_err();
+            error.field().unwrap().to_owned()
+        };
+        assert_eq!(
+            refused(r#"{"purify": {"minutes": 0}}"#),
+            "rectification.purify.minutes"
+        );
+        assert_eq!(
+            refused(r#"{"purify": {"minutes": 1200}}"#),
+            "rectification.purify.minutes"
+        );
+        assert_eq!(
+            refused(r#"{"purify": {"minutes": 30, "rules": {"seedMinutes": 0}}}"#),
+            "rectification.purify.rules.seedMinutes"
+        );
+        assert_eq!(
+            refused(r#"{"baseline": {"uncertaintyMinutes": 0}}"#),
+            "rectification.baseline.uncertaintyMinutes"
+        );
+        let typo =
+            RectificationRequest::from_json(r#"{"baseline": {"uncertainty": 60}}"#).unwrap_err();
+        assert_eq!(typo.field(), Some("rectification.baseline.uncertainty"));
+    }
+
     fn stage(
         answer: &BaselineAnswer,
         which: BaselineStage,
