@@ -49,7 +49,7 @@ pub const PROFILE: &str = "conformance-baseline";
 const CHARTS: &str = "baseline/charts";
 
 /// The report format this writes, as the corpus names it.
-const REPORT_SCHEMA: &str = "teistro-conformance/report/1";
+pub(crate) const REPORT_SCHEMA: &str = "teistro-conformance/report/1";
 
 /// The one central tolerance file, as the corpus writes it.
 #[derive(Clone, Debug, Deserialize)]
@@ -198,6 +198,11 @@ impl Corpus {
         })
     }
 
+    /// A file of the corpus, by its path under the root.
+    pub(crate) fn path(&self, relative: &str) -> PathBuf {
+        self.root.join(relative)
+    }
+
     /// The recorded charts, in name order.
     ///
     /// # Errors
@@ -275,8 +280,10 @@ pub struct Implementation {
     pub provider_class: String,
     /// The platform, as the Rust target names it.
     pub platform: String,
-    /// The hash of the settings the charts were founded under.
-    pub settings_hash: String,
+    /// The hash of the settings the charts were founded under; `None` when
+    /// the provider was asked directly, through no context.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub settings_hash: Option<String>,
 }
 
 /// A fixture's outcome, as the corpus's report spells it.
@@ -331,6 +338,22 @@ pub struct Counts {
     pub failed: usize,
     /// Skipped.
     pub skipped: usize,
+}
+
+impl Counts {
+    /// How many of the results came out each way.
+    #[must_use]
+    pub fn of(results: &[FixtureResult]) -> Counts {
+        let mut counts = Counts::default();
+        for result in results {
+            match result.outcome {
+                Outcome::Pass => counts.passed += 1,
+                Outcome::Fail => counts.failed += 1,
+                Outcome::Skip => counts.skipped += 1,
+            }
+        }
+        counts
+    }
 }
 
 /// One implementation's score against one version of the corpus, in the
@@ -791,14 +814,7 @@ pub fn run(corpus: &Corpus, open: Open<'_>, class: &str) -> Result<CorpusReport,
         .into_iter()
         .map(|(name, chart)| compare(&sdk, &corpus.tolerances, class, &name, &chart))
         .collect();
-    let mut counts = Counts::default();
-    for result in &results {
-        match result.outcome {
-            Outcome::Pass => counts.passed += 1,
-            Outcome::Fail => counts.failed += 1,
-            Outcome::Skip => counts.skipped += 1,
-        }
-    }
+    let counts = Counts::of(&results);
     Ok(CorpusReport {
         schema: REPORT_SCHEMA,
         corpus: CorpusId {
@@ -811,7 +827,7 @@ pub fn run(corpus: &Corpus, open: Open<'_>, class: &str) -> Result<CorpusReport,
             binding: "rust",
             provider_class: class.to_owned(),
             platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
-            settings_hash: sdk.settings_hash().to_string(),
+            settings_hash: Some(sdk.settings_hash().to_string()),
         },
         results,
         counts,

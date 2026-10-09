@@ -10,7 +10,7 @@
 //! records nothing, so an unexplained miss never reaches the page as a
 //! number: the gate fails instead. Every corpus section is scored or
 //! declared unscored here with its reason, both ways. Every entry a score
-//! names is a `KNOWN` divergence or cites a page that exists, and the
+//! names is a `KNOWN` divergence (the charts' or DE440's) or cites a page that exists, and the
 //! corpus the scores were made against is the tagged release its index
 //! names.
 //!
@@ -27,7 +27,7 @@ use std::process::Command;
 
 use serde::Deserialize;
 
-use teistro_ephemeris_kit::corpus::KNOWN;
+use teistro_ephemeris_kit::{corpus, jpl};
 
 use crate::generated::{Output, check, write};
 
@@ -344,7 +344,11 @@ fn mismatches(corpus: &Corpus, scores: &[Score]) -> Vec<String> {
 /// page, `(page.md)` or `(page.md, ANCHOR)`: the page must be one file
 /// under `docs`, and the anchor (a crux, a finding, a rank) a word on it.
 fn uncited(docs: &[(String, String)], entry: &str) -> Option<String> {
-    if KNOWN.iter().any(|divergence| divergence.name == entry) {
+    if corpus::KNOWN
+        .iter()
+        .chain(&jpl::KNOWN)
+        .any(|divergence| divergence.name == entry)
+    {
         return None;
     }
     let Some(cited) = entry
@@ -592,7 +596,8 @@ mod tests {
             ("twice.md".to_owned(), String::new()),
             ("twice.md".to_owned(), String::new()),
         ];
-        assert_eq!(uncited(&docs, KNOWN[0].name), None);
+        assert_eq!(uncited(&docs, corpus::KNOWN[0].name), None);
+        assert_eq!(uncited(&docs, jpl::KNOWN[0].name), None);
         assert_eq!(uncited(&docs, "a reading (one.md)"), None);
         assert_eq!(uncited(&docs, "a reading (one.md, R2)"), None);
         assert_eq!(uncited(&docs, "a reading (one.md, C12)"), None);

@@ -23,6 +23,11 @@ calls `runner::run` (`adapters/ephemeris-teimeris/rust`), then
   provider, under the band its class is given, in the corpus's own report
   format, every miss one of `corpus::KNOWN` and every entry of it used.
 
+`jpl` asks the provider directly, not through the façade: its geometric
+positions against DE440's own (the corpus's `jpl/` recording), each body's
+direction and distance under its class's `jpl.geometric.*` band, every
+miss one of `jpl::KNOWN` and every entry of it used.
+
 ```sh
 cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml \
   --bin teistro-ephemeris-teimeris-kit -- \
