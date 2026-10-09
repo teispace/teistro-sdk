@@ -12,7 +12,9 @@
             "entry": "delta-t-beyond-the-table",
             "count": 6
           }
-        ]
+        ],
+        "commit": "476e92d0d7026f6fe983f987ce349dd9d7252453",
+        "run": "37872437188"
       }
     ],
     "full": [
@@ -37,7 +39,9 @@
             "entry": "full-tier-truncation",
             "count": 47
           }
-        ]
+        ],
+        "commit": "476e92d0d7026f6fe983f987ce349dd9d7252453",
+        "run": "37872437188"
       }
     ]
   }

@@ -13,7 +13,7 @@ across sections, since a yoga decision and a longitude are not one unit
 (`03-design/generated-pages.md` §2.1).
 
 The default tier's positions are scored live; the other built-in tiers are
-recorded from verify's tier jobs (`compact` by hand, outside CI, `full` by hand, outside CI), and verify holds each later run to
+recorded from verify's tier jobs (`compact` from run `37872437188` at commit `476e92d0d702`, `full` from run `37872437188` at commit `476e92d0d702`), and verify holds each later run to
 the record exactly.
 
 | section | rank | reading | compared | agree | explained |
