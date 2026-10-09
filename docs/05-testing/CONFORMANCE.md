@@ -3,7 +3,7 @@
 Status: `generated`, by `cargo xtask conformance` from the crates' corpus tests
 and `fixtures/corpus.json`, held by `cargo xtask check-conformance`; do not edit.
 
-The SDK against the conformance corpus 0.11.0 (released 2026-09-15,
+The SDK against the conformance corpus 0.12.0 (released 2026-10-09,
 https://github.com/teispace/teistro-conformance), one section per corpus directory. Each row is one test's comparisons under one reading:
 **compared** counts every comparison the test attempted, **explained** the
 misses a named entry accounts for, listed below with its count, and
@@ -13,7 +13,7 @@ across sections, since a yoga decision and a longitude are not one unit
 (`03-design/generated-pages.md` §2.1).
 
 The default tier's positions are scored live; the other built-in tiers are
-recorded from verify's tier jobs (`compact` from run `37872437188` at commit `476e92d0d702`, `full` from run `37872437188` at commit `476e92d0d702`), and verify holds each later run to
+recorded from verify's tier jobs (`compact` from run `37891440602` at commit `2636120dead2`, `full` from run `37891440602` at commit `2636120dead2`), and verify holds each later run to
 the record exactly.
 
 | section | rank | reading | compared | agree | explained |
@@ -38,6 +38,9 @@ the record exactly.
 | `official` | 1 | the Surya Siddhanta's Moon with the committee's bija, against its printed Moon and tithi ends | 12 | 12 | 0 |
 | `official` | 1 | the Surya Siddhanta's Saturn and node, against the committee's printed ones | 8 | 0 | 8 |
 | `official` | 1 | the Surya Siddhanta's Sun, against the committee's printed Sun | 2 | 2 | 0 |
+| `jpl` | 1 | geometric positions over the built-in compact tier | 2680 | 2533 | 147 |
+| `jpl` | 1 | geometric positions over the built-in full tier | 2680 | 2149 | 531 |
+| `jpl` | 1 | geometric positions over the built-in standard tier | 2680 | 2350 | 330 |
 
 ## Explained misses
 
@@ -51,6 +54,12 @@ the record exactly.
 - `baseline/doshas`, the SDK's rules for the seventeen the engine computes in code: the seven grahas the nodes caught, named (doshas-measured.md) — 4
 - `pyjhora/vimshottari`, four year lengths, each start within its year's drift from the kernel's: the written balance's day, begun or whole (dasha-kernels.md) — 137
 - `official`, the Surya Siddhanta's Saturn and node, against the committee's printed ones: the committee's star planets are modern (bikram-sambat.md, R2) — 8
+- `jpl`, geometric positions over the built-in compact tier: vsop87-radius-vectors — 21
+- `jpl`, geometric positions over the built-in compact tier: pluto-table-truncation — 126
+- `jpl`, geometric positions over the built-in full tier: vsop87-radius-vectors — 448
+- `jpl`, geometric positions over the built-in full tier: full-tier-theory-drift — 83
+- `jpl`, geometric positions over the built-in standard tier: vsop87-radius-vectors — 225
+- `jpl`, geometric positions over the built-in standard tier: pluto-table-truncation — 105
 
 ## Not scored here
 

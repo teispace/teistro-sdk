@@ -1,6 +1,6 @@
 {
   "schema": "teistro-conformance-record/1",
-  "corpus": "0.11.0",
+  "corpus": "0.12.0",
   "tiers": {
     "compact": [
       {
@@ -13,8 +13,25 @@
             "count": 6
           }
         ],
-        "commit": "476e92d0d7026f6fe983f987ce349dd9d7252453",
-        "run": "37872437188"
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      },
+      {
+        "section": "jpl",
+        "reading": "geometric positions over the built-in compact tier",
+        "compared": 2680,
+        "explained": [
+          {
+            "entry": "vsop87-radius-vectors",
+            "count": 21
+          },
+          {
+            "entry": "pluto-table-truncation",
+            "count": 126
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
       }
     ],
     "full": [
@@ -40,8 +57,25 @@
             "count": 47
           }
         ],
-        "commit": "476e92d0d7026f6fe983f987ce349dd9d7252453",
-        "run": "37872437188"
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
+      },
+      {
+        "section": "jpl",
+        "reading": "geometric positions over the built-in full tier",
+        "compared": 2680,
+        "explained": [
+          {
+            "entry": "vsop87-radius-vectors",
+            "count": 448
+          },
+          {
+            "entry": "full-tier-theory-drift",
+            "count": 83
+          }
+        ],
+        "commit": "2636120dead264394759193df0a6221ae9be705e",
+        "run": "37891440602"
       }
     ]
   }
