@@ -335,6 +335,19 @@ re-checks.
 3. **`CONFORMANCE.md`, recorded half**: verify uploads the tier reports,
    `conformance --from`, the exact live comparison in verify. Then the
    dated same-ephemeris and native-frame columns from a run by hand.
+   **Built** (2026-10-09), through the score lines rather than the kit's
+   reports, so a recorded tier is scored by the same `Tally` as a live
+   one: verify's tier jobs set `TEISTRO_CONFORMANCE_DIR` and upload
+   `conformance-<tier>`, each line carrying the commit and run that wrote
+   it; `conformance --from DIR` keeps the compact and full tiers in
+   `docs/05-testing/conformance.json` with the corpus version, and
+   verify's `conformance` job runs `check-conformance --from DIR`, which
+   holds every tier to the record exactly and uploads the record the run
+   would write when it fails. `check-conformance` refuses a record of
+   another corpus or missing a tier, and checks the recorded entries as it
+   checks the live ones. The record was seeded by hand and is replaced by
+   the first verify run's. The same-ephemeris and native-frame columns
+   are still to do.
 4. **`SIZES.md`**: `sizes.json` absorbing `bindings/wasm/size.json`
    (`check-wasm` reading it), verify's `sizes-*` uploads and the `sizes`
    job, `sizes --from`, `check-sizes`. Then the release's attached exact

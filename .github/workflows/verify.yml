@@ -217,6 +217,33 @@ jobs:
             docs/05-testing/sizes.json
             docs/05-testing/SIZES.md
 
+  # The tiers a default build does not compile are scored here and
+  # recorded in docs/05-testing/conformance.json; a corpus report is
+  # deterministic, so a run must match the record exactly.
+  conformance:
+    needs: [tiers]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: conformance-*
+          path: target/conformance-run
+      - name: Every recorded tier's corpus score, against the record
+        run: cargo xtask check-conformance --from target/conformance-run
+      - name: The record this run would write
+        if: failure()
+        run: cargo xtask conformance --from target/conformance-run
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-record
+          path: docs/05-testing/conformance.json
+
   # A slow body's crossing search strides by the shortest run between its
   # stations, a table; this holds the table to every body's stations over
   # the built-in ephemeris's whole coverage, sampled daily, and every
@@ -258,9 +285,19 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: The provider kit and the crate's own tests at this tier
+        env:
+          TEISTRO_CONFORMANCE_DIR: ${{ github.workspace }}/target/conformance-tier
         run: >
+          mkdir -p target/conformance-tier &&
           cargo test -p teistro-ephemeris-builtin
           --no-default-features --features ${{ matrix.tier }}
+      # The tier's corpus score, which the `conformance` job holds to the
+      # record (03-design/generated-pages.md §2.3).
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conformance-${{ matrix.tier }}
+          path: target/conformance-tier/scores.jsonl
+          if-no-files-found: error
       - name: The boundary carries this tier too
         run: >
           cargo test -p teistro-ffi
