@@ -12,9 +12,15 @@ cannot be regenerated with one: **unexplained misses: 0**. There is no total
 across sections, since a yoga decision and a longitude are not one unit
 (`03-design/generated-pages.md` §2.1).
 
+The default tier's positions are scored live; the other built-in tiers are
+recorded from verify's tier jobs (`compact` by hand, outside CI, `full` by hand, outside CI), and verify holds each later run to
+the record exactly.
+
 | section | rank | reading | compared | agree | explained |
 |---|---|---|---|---|---|
 | `baseline` | 2 | Vimshottari under the engine's reading | 73573 | 73573 | 0 |
+| `baseline` | 2 | positions over the built-in compact tier | 2420 | 2414 | 6 |
+| `baseline` | 2 | positions over the built-in full tier | 2420 | 2272 | 148 |
 | `baseline` | 2 | positions over the built-in standard tier | 2420 | 2359 | 61 |
 | `baseline/dasha-systems` | 2 | the engine's reading | 212688 | 212688 | 0 |
 | `baseline/rashi-dashas` | 2 | the engine's reading | 300486 | 300486 | 0 |
@@ -35,6 +41,11 @@ across sections, since a yoga decision and a longitude are not one unit
 
 ## Explained misses
 
+- `baseline`, positions over the built-in compact tier: delta-t-beyond-the-table — 6
+- `baseline`, positions over the built-in full tier: delta-t-beyond-the-table — 46
+- `baseline`, positions over the built-in full tier: delta-t-before-the-table — 6
+- `baseline`, positions over the built-in full tier: moon-topocentric-speed — 49
+- `baseline`, positions over the built-in full tier: full-tier-truncation — 47
 - `baseline`, positions over the built-in standard tier: delta-t-beyond-the-table — 40
 - `baseline`, positions over the built-in standard tier: moon-topocentric-speed — 21
 - `baseline/doshas`, the SDK's rules for the seventeen the engine computes in code: the seven grahas the nodes caught, named (doshas-measured.md) — 4

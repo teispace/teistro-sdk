@@ -1,0 +1,44 @@
+{
+  "schema": "teistro-conformance-record/1",
+  "corpus": "0.11.0",
+  "tiers": {
+    "compact": [
+      {
+        "section": "baseline",
+        "reading": "positions over the built-in compact tier",
+        "compared": 2420,
+        "explained": [
+          {
+            "entry": "delta-t-beyond-the-table",
+            "count": 6
+          }
+        ]
+      }
+    ],
+    "full": [
+      {
+        "section": "baseline",
+        "reading": "positions over the built-in full tier",
+        "compared": 2420,
+        "explained": [
+          {
+            "entry": "delta-t-beyond-the-table",
+            "count": 46
+          },
+          {
+            "entry": "delta-t-before-the-table",
+            "count": 6
+          },
+          {
+            "entry": "moon-topocentric-speed",
+            "count": 49
+          },
+          {
+            "entry": "full-tier-truncation",
+            "count": 47
+          }
+        ]
+      }
+    ]
+  }
+}

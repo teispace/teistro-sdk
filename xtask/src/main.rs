@@ -574,18 +574,33 @@ fn generated_page(command: &str) -> Option<i32> {
     })
 }
 
+/// A pass that does something else when given arguments: `rule-doc` then
+/// prints the passages rather than writing the page, and `conformance
+/// --from DIR` records verify's tier runs while `check-conformance --from
+/// DIR` holds a run to the record.
+fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
+    if args.len() < 2 {
+        return None;
+    }
+    match command {
+        "rule-doc" => Some(rule_doc::print(
+            &repo_root(),
+            args.get(1).map(String::as_str),
+        )),
+        "conformance" | "check-conformance" => {
+            Some(conformance::recorded(&repo_root(), command, args))
+        }
+        _ => None,
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let Some(command) = args.first().map(String::as_str) else {
         std::process::exit(usage());
     };
-    // A pass that also answers a question: with an argument, `rule-doc`
-    // prints the passages rather than writing the page.
-    if command == "rule-doc" && args.len() > 1 {
-        std::process::exit(rule_doc::print(
-            &repo_root(),
-            args.get(1).map(String::as_str),
-        ));
+    if let Some(code) = pass_with_arguments(command, &args) {
+        std::process::exit(code);
     }
     if let Some(code) = generated_page(command) {
         std::process::exit(skip::verdict(code));
@@ -704,6 +719,7 @@ fn usage() -> i32 {
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
+         conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
