@@ -2516,6 +2516,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   the share each predicate is expected at and its rank among them. Every
   predicate is named, and the names answer with it. **Numbers:** none
   move.
+- **`sdk.research()`** (`03-design/research.md` steps 3 to 5): the
+  studies over a batch of births. `counts` and `compare` read every rule
+  of a set on every chart, a place at a time, into the kernel's matrix;
+  a birth with a time uncertainty is read at both edges and a rule that
+  changes there is unstable, never decided. `timed` reads when a dasha's
+  periods deliver each rule at the subjects' events, against events
+  shuffled by date or by age, and `expected` reads a sample against its
+  own recombined population. Each answer's input hash is the study's
+  pre-registration, and the thread count is not in it.
 - **Python request knobs are `Literal`s.** A rectification, prashna,
   remedies or dasha-definition knob that took a `str` takes its members,
   so mypy refuses a misspelt one before the boundary does.

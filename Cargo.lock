@@ -1593,6 +1593,7 @@ dependencies = [
  "teistro-rectification",
  "teistro-remedies",
  "teistro-render-svg",
+ "teistro-research",
  "teistro-rules",
  "teistro-serial",
  "teistro-siddhanta",

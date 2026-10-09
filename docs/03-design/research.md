@@ -451,11 +451,16 @@ uses fixed seeds, so the counts are exact and also golden.
    intervals, max-T, Holm, BH, BY, effect sizes. Tests 3, 6 (thread
    counts), 7. The lint changes (§2.2), proved red. **Built** 2026-10-09.
 3. **`sdk.research().counts` and `compare`** over documents and births,
-   with refusals and tests 1, 2, 8, 9. Add to `surface-areas.md`.
+   with refusals and tests 1, 2, 8, 9. Add to `surface-areas.md` with the
+   boundary (step 6), whose module the page's table names. **Built**
+   2026-10-09 over births (`crates/sdk/tests/research.rs`); a batch a
+   polar birth spoils is read again a chart at a time, and a batch that is
+   refused names the birth that refused it.
 4. **`timed`**: dasha delivery first (no sky per pair), then transits
    under the event-date shuffle, then the age shuffle under `max_pairs`.
-   Test 5.
-5. **`expected`** with `Recombine`. Test 4.
+   Test 5. **Built** 2026-10-09 for dasha delivery under both shuffles;
+   transits wait for a consumer.
+5. **`expected`** with `Recombine`. Test 4. **Built** 2026-10-09.
 6. **The boundary** (`research_json`), the bindings, parity, and a page in
    the docs site's guides with an executed example of a two-group study.
 7. Cruxes for the conventions a reader could argue with: the p-value

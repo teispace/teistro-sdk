@@ -56,6 +56,8 @@ mod scale;
 pub use area::MuhurtaDays;
 #[cfg(feature = "numerology")]
 pub use area::NumerologyArea;
+#[cfg(feature = "research")]
+pub use area::ResearchArea;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, CalendarArea, EngineArea, FestivalDays, FrameArea,
     IntlArea, KeysArea, TimeArea,
@@ -410,6 +412,16 @@ pub use teistro_matching::{
 // table, which reads no sky (`03-design/numerology.md`).
 #[cfg(feature = "numerology")]
 pub use teistro_numerology as numerology;
+/// Studies over a batch of births (`03-design/research.md`): the
+/// kernel's statistics, which read no sky, and the façade's studies,
+/// which found the charts they are read on.
+#[cfg(feature = "research")]
+pub mod research {
+    pub use crate::area::research::{
+        Birth, EventShuffle, EventStudy, Holds, MAX_UNCERTAINTY_MINUTES, Recombine, Study, Subject,
+    };
+    pub use teistro_research::*;
+}
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).
 #[cfg(feature = "prashna")]
