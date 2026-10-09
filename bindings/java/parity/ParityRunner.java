@@ -737,6 +737,44 @@ public final class ParityRunner {
     }
 
     /**
+     * The Pancha Pakshi requests every runner sends, at Madras: a native by
+     * birth star in the dark half under Pulippani's lengths and relations
+     * over two days, and a bird named outright under the defaults for one.
+     */
+    private static void putPakshi(Context geo) {
+        Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
+        List<List<PakshiDay>> asked = List.of(
+                geo.almanac().pakshi(date(1984, 10, 30), date(1984, 10, 31), madras, 19_800,
+                        new PakshiNative.Star(Nakshatra.UTTARA_ASHADHA, Paksha.KRISHNA, "BY_PAKSHA"),
+                        map("subs", "PULIPPANI", "relations", "PULIPPANI")),
+                geo.almanac().pakshi(date(1991, 5, 21), null, madras, 19_800, PakshiNative.bird("OWL")));
+        for (int r = 0; r < asked.size(); r += 1) {
+            List<PakshiDay> days = asked.get(r);
+            for (int n = 0; n < days.size(); n += 1) {
+                PakshiDay one = days.get(n);
+                String key = "pakshi-" + r + "-" + n;
+                PakshiDay.Reading read = one.reading();
+                if (read == null) {
+                    put(key, ymd(one.date()) + " none");
+                    continue;
+                }
+                PakshiDay.Bounds day = read.day();
+                put(key, ymd(one.date()) + " " + day.vara().fullKey() + " " + day.paksha().fullKey() + " "
+                        + number(day.sunrise()) + " " + number(day.sunset()) + " " + number(day.nextSunrise()) + " "
+                        + read.bird() + " " + read.deathBird() + " " + lower(read.deadToday()) + " "
+                        + String.join(",", read.eaters()));
+                for (int k = 0; k < read.yamas().size(); k += 1) {
+                    PakshiDay.Yama yama = read.yamas().get(k);
+                    put(key + "-yama-" + k, yama.half() + " " + yama.yama() + " " + number(yama.span().fromJd()) + " "
+                            + number(yama.span().toJd()) + " " + yama.activity() + " " + yama.quality() + " "
+                            + join(",", yama.subs(), s -> s.activity() + ":" + s.owner() + ":" + s.share() + ":"
+                                    + s.ownerIs() + ":" + number(s.span().toJd())));
+                }
+            }
+        }
+    }
+
+    /**
      * The rashifal batch every runner sends: a week read at sunrise with the
      * baseline's weekly scores, and a day read at 06:00 reporting only Mars's
      * and Saturn's events.
@@ -1168,6 +1206,7 @@ public final class ParityRunner {
                 charts(ctx, geo, place);
                 almanac(geo, place);
                 putRashifal(geo, place);
+                putPakshi(geo);
             }
 
             // ── The eclipses ──────────────────────────────────────────────
@@ -1243,8 +1282,11 @@ public final class ParityRunner {
             surface("chart.layout", () -> ctx.chart().layout(""));
             surface("chart.found", () -> ctx.chart().found(0, place, 0, ChartOptions.none()));
             surface("chart.found_many", () -> ctx.chart().foundMany(new double[] {0}, place, 0, ChartOptions.none()));
+            surface("chart.rashifal", () -> ctx.chart().rashifal(null));
+            surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
+            surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("engine.names", () -> ctx.ephemeris().names());
             surface("engine.signature", () -> ctx.ephemeris().signature(""));
             surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));

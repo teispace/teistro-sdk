@@ -1833,6 +1833,8 @@ typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsPakshiDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsRashifalNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsRashifalDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsEphemerisManifestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
@@ -1896,6 +1898,7 @@ final class TeistroLibrary {
         ts_panchanga_days = library.lookupFunction<TsPanchangaDaysNative, TsPanchangaDaysDart>('ts_panchanga_days'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
+        ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
         ts_ephemeris_manifest = library.lookupFunction<TsEphemerisManifestNative, TsEphemerisManifestDart>('ts_ephemeris_manifest'),
         ts_ephemeris_call = library.lookupFunction<TsEphemerisCallNative, TsEphemerisCallDart>('ts_ephemeris_call'),
@@ -2172,6 +2175,26 @@ final class TeistroLibrary {
   /// no letter, or a date the calendar does not have is `INVALID_ARG`,
   /// named under `numerology`.
   final TsNumerologyProfileDart ts_numerology_profile;
+
+  /// Reads a native's bird over each civil day of a range at a place and
+  /// answers with an array of `{date, reading}` as canonical JSON, one per
+  /// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+  /// with every sub-period's activity, owner, span and how the native
+  /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+  /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+  /// a day the Sun does not both rise and set.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+  /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+  /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+  /// place, the offset and `native` optional. A key it does not read, a
+  /// place or offset out of range or a native that is neither is
+  /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `pakshi` family out.
+  final TsPakshiDart ts_pakshi;
 
   /// Reads periods of civil days at a place for each of the twelve signs and
   /// answers with an array of `{period, baseline}` as canonical JSON: the
@@ -5121,6 +5144,35 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_numerology_profile(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Reads a native's bird over each civil day of a range at a place and
+  /// answers with an array of `{date, reading}` as canonical JSON, one per
+  /// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+  /// with every sub-period's activity, owner, span and how the native
+  /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+  /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+  /// a day the Sun does not both rise and set.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+  /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+  /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+  /// place, the offset and `native` optional. A key it does not read, a
+  /// place or offset out of range or a native that is neither is
+  /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+  /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+  /// `pakshi` family out.
+  String pakshi(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_pakshi(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

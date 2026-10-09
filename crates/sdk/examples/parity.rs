@@ -771,6 +771,7 @@ fn the_surface(report: &mut Report) {
         ("(root).settings_json", "present"),
         ("almanac.day", "present"),
         ("almanac.of", "present"),
+        ("almanac.pakshi", "present"),
         ("calendar.convert", "present"),
         ("calendar.date_of", "present"),
         ("calendar.fixed_of", "present"),
@@ -780,6 +781,8 @@ fn the_surface(report: &mut Report) {
         ("chart.layout", "present"),
         ("chart.found", "present"),
         ("chart.found_many", "present"),
+        ("chart.rashifal", "present"),
+        ("chart.rashifal_many", "present"),
         ("engine.call", "present"),
         ("engine.call_json", "present"),
         ("engine.manifest", "present"),
@@ -6266,6 +6269,86 @@ fn the_rashifal(report: &mut Report, geo: &Context) {
     }
 }
 
+/// The Pancha Pakshi requests every runner sends, at Madras: a native by
+/// birth star in the dark half under Pulippani's lengths and relations over
+/// two days, and a bird named outright under the defaults for one.
+const PAKSHI_JSON: [&str; 2] = [
+    r#"{"calendar":"GREGORIAN","first":{"year":1984,"month":10,"day":30},"last":{"year":1984,"month":10,"day":31},"latitudeDeg":13.0827,"longitudeDeg":80.2707,"altitudeM":6,"utcOffsetSeconds":19800,"native":{"nakshatra":"nakshatra.UTTARA_ASHADHA","paksha":"paksha.KRISHNA","rule":"BY_PAKSHA"},"rules":{"subs":"PULIPPANI","relations":"PULIPPANI"}}"#,
+    r#"{"calendar":"GREGORIAN","first":{"year":1991,"month":5,"day":21},"latitudeDeg":13.0827,"longitudeDeg":80.2707,"altitudeM":6,"utcOffsetSeconds":19800,"native":{"bird":"OWL"}}"#,
+];
+
+/// Each Pancha Pakshi day as the other runners print it: the day's bounds,
+/// weekday, paksha and birds, and each yama with its sub-periods.
+fn the_pakshi(report: &mut Report, geo: &Context) {
+    for (r, json) in PAKSHI_JSON.iter().enumerate() {
+        let asked = teistro::PakshiRequest::from_json(json).expect("a pakshi request");
+        let days = geo
+            .almanac()
+            .pakshi_request(&asked)
+            .expect("the test provider")
+            .value;
+        for (n, one) in days.iter().enumerate() {
+            let key = format!("pakshi-{r}-{n}");
+            let civil = format!("{}-{}-{}", one.date.year, one.date.month, one.date.day);
+            let Some(read) = &one.reading else {
+                put(report, &key, format!("{civil} none"));
+                continue;
+            };
+            let day = &read.day;
+            put(
+                report,
+                &key,
+                format!(
+                    "{civil} {} {} {} {} {} {} {} {} {}",
+                    day.vara.full_key(),
+                    day.paksha.full_key(),
+                    number(day.sunrise),
+                    number(day.sunset),
+                    number(day.next_sunrise),
+                    wire_key(&read.bird),
+                    wire_key(&read.death_bird),
+                    read.dead_today,
+                    read.eaters
+                        .iter()
+                        .map(wire_key)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ),
+            );
+            for (k, yama) in read.yamas.iter().enumerate() {
+                let subs: Vec<String> = yama
+                    .subs
+                    .iter()
+                    .map(|sub| {
+                        format!(
+                            "{}:{}:{}:{}:{}",
+                            wire_key(&sub.sub.activity),
+                            wire_key(&sub.sub.owner),
+                            sub.sub.share,
+                            wire_key(&sub.owner_is),
+                            number(sub.span.to)
+                        )
+                    })
+                    .collect();
+                put(
+                    report,
+                    &format!("{key}-yama-{k}"),
+                    format!(
+                        "{} {} {} {} {} {} {}",
+                        wire_key(&yama.half),
+                        yama.yama,
+                        number(yama.span.from),
+                        number(yama.span.to),
+                        wire_key(&yama.activity),
+                        wire_key(&yama.quality),
+                        subs.join(",")
+                    ),
+                );
+            }
+        }
+    }
+}
+
 fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 25);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 27);
@@ -6404,6 +6487,7 @@ fn main() {
     an_almanac(&mut report, &geo, &place, offset);
     a_muhurta(&mut report, &geo, &place, offset);
     the_rashifal(&mut report, &geo);
+    the_pakshi(&mut report, &geo);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);

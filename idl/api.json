@@ -25,6 +25,7 @@
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
     "crates/ffi/src/numerology.rs",
+    "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs"
@@ -15399,6 +15400,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/numerology.rs"
+    },
+    {
+      "name": "ts_pakshi",
+      "doc": "Reads a native's bird over each civil day of a range at a place and\nanswers with an array of `{date, reading}` as canonical JSON, one per\nday: `reading` the day's ten yamas from the almanac's sunrise, sunset\nand next sunrise, each `{half, yama, span, activity, quality, subs}`\nwith every sub-period's activity, owner, span and how the native\nregards its owner, beside the day's `{sunrise, sunset, nextSunrise,\nvara, paksha}`, the bird, its death bird and the first eaters; null on\na day the Sun does not both rise and set.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"native\", \"rules\"}`:\nthe days as `{\"year\", \"month\", \"day\"}`, `native` either `{\"bird\"}` or\n`{\"nakshatra\", \"paksha\", \"rule\"}`, and everything but `first`, the\nplace, the offset and `native` optional. A key it does not read, a\nplace or offset out of range or a native that is neither is\n`INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`pakshi` family out.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/pakshi.rs"
     },
     {
       "name": "ts_rashifal",

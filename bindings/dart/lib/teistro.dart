@@ -1000,6 +1000,49 @@ final class AlmanacArea extends _Area {
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
   ).at(0);
+
+  /// A native's bird read over every day from [from] to [to] (the first
+  /// when null) under Pancha Pakshi (`03-design/pakshi.md`): each day's
+  /// ten yamas from the almanac's own sunrise, sunset and next sunrise,
+  /// with the bird's activity and its timed sub-periods. A day the Sun
+  /// does not both rise and set has a null [PakshiDay.reading].
+  ///
+  /// ```dart
+  /// final days = ctx.almanac.pakshi(
+  ///   from: date, place: madras, utcOffsetSeconds: 19800,
+  ///   native: const PakshiNative.star(Nakshatra.uttaraAshadha, Paksha.shukla),
+  /// );
+  /// final second = days.first.reading?.yamas[1].activity; // sleeping
+  /// ```
+  List<PakshiDay> pakshi({
+    required CalendarDate from,
+    CalendarDate? to,
+    required Observer place,
+    required int utcOffsetSeconds,
+    required PakshiNative native,
+    PakshiRules rules = const PakshiRules(),
+  }) => List<PakshiDay>.unmodifiable([
+    for (final raw
+        in jsonDecode(
+              _context._guarded(
+                () => _context._inner.pakshi(
+                  jsonEncode(<String, Object?>{
+                    'calendar': from.calendar.key,
+                    'first': _dayParts(from),
+                    if (to != null) 'last': _dayParts(to),
+                    'latitudeDeg': place.latitudeDeg,
+                    'longitudeDeg': place.longitudeDeg,
+                    'altitudeM': place.altitudeM,
+                    'utcOffsetSeconds': utcOffsetSeconds,
+                    'native': native._record,
+                    'rules': rules._record,
+                  }),
+                ),
+              ),
+            )
+            as List<Object?>)
+      _pakshiDay(raw! as Map<String, Object?>),
+  ]);
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star
@@ -18126,6 +18169,363 @@ final class LalKitab extends _Value {
 
   @override
   List<Object?> get _fields => [reading, cycle, periods, year];
+}
+
+/// The five birds of Pancha Pakshi, in their order (`03-design/pakshi.md`).
+enum PakshiBird implements _Keyed {
+  /// The vulture (*vallūṟu*, Ayyar's hawk).
+  vulture('VULTURE'),
+  owl('OWL'),
+  crow('CROW'),
+  cock('COCK'),
+  peacock('PEACOCK');
+
+  const PakshiBird(this.key);
+
+  @override
+  final String key;
+}
+
+/// What a bird does in a yama or a sub-period.
+enum PakshiActivity implements _Keyed {
+  eating('EATING'),
+  walking('WALKING'),
+  ruling('RULING'),
+  sleeping('SLEEPING'),
+  dying('DYING');
+
+  const PakshiActivity(this.key);
+
+  @override
+  final String key;
+}
+
+/// How an activity is judged: ruling and eating good, walking middling,
+/// sleeping and dying bad.
+enum PakshiQuality implements _Keyed {
+  good('GOOD'),
+  middling('MIDDLING'),
+  bad('BAD');
+
+  const PakshiQuality(this.key);
+
+  @override
+  final String key;
+}
+
+/// The day's half a yama falls in.
+enum PakshiHalf implements _Keyed {
+  day('DAY'),
+  night('NIGHT');
+
+  const PakshiHalf(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a native regards a sub-period's owner (P6).
+enum PakshiRelation implements _Keyed {
+  friend('FRIEND'),
+  enemy('ENEMY'),
+  neutral('NEUTRAL'),
+
+  /// The native's own sub-period, which neither scheme's lists name (P12).
+  own('OWN');
+
+  const PakshiRelation(this.key);
+
+  @override
+  final String key;
+}
+
+/// How the dark half assigns the birth birds (P1).
+enum PakshiBirthRule implements _Keyed {
+  /// The dark half reverses the birds over the same groups; the default.
+  byPaksha('BY_PAKSHA'),
+
+  /// One table whatever the paksha, as the public-domain texts give it.
+  single('SINGLE');
+
+  const PakshiBirthRule(this.key);
+
+  @override
+  final String key;
+}
+
+/// How a half is cut into yamas (P3).
+enum PakshiClock implements _Keyed {
+  /// A fifth of the real day and a fifth of the real night; the default.
+  stretched('STRETCHED'),
+
+  /// Six nazhigai each from sunrise, whatever the real sunset.
+  nazhigai('NAZHIGAI');
+
+  const PakshiClock(this.key);
+
+  @override
+  final String key;
+}
+
+/// How long the sub-periods run (P4).
+enum PakshiSubLengths implements _Keyed {
+  /// Agastya's, one length per activity; the default.
+  agastya('AGASTYA'),
+
+  /// Pulippani's, per half.
+  pulippani('PULIPPANI');
+
+  const PakshiSubLengths(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whose friends and enemies (P6).
+enum PakshiRelations implements _Keyed {
+  /// Agastya's directed lists; the default.
+  agastya('AGASTYA'),
+
+  /// Pulippani's neighbour cycles.
+  pulippani('PULIPPANI');
+
+  const PakshiRelations(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whose bird a reading follows: the bird itself, or the one a birth star
+/// and paksha give under a [PakshiBirthRule].
+sealed class PakshiNative {
+  /// The bird named outright.
+  const factory PakshiNative.bird(PakshiBird bird) = PakshiBirdNative;
+
+  /// The bird of a birth star in a paksha.
+  const factory PakshiNative.star(
+    Nakshatra nakshatra,
+    Paksha paksha, {
+    PakshiBirthRule rule,
+  }) = PakshiStarNative;
+
+  Map<String, Object?> get _record;
+}
+
+/// A native named by its bird.
+final class PakshiBirdNative implements PakshiNative {
+  const PakshiBirdNative(this.bird);
+
+  final PakshiBird bird;
+
+  @override
+  Map<String, Object?> get _record => {'bird': bird.key};
+}
+
+/// A native by birth star and paksha.
+final class PakshiStarNative implements PakshiNative {
+  const PakshiStarNative(
+    this.nakshatra,
+    this.paksha, {
+    this.rule = PakshiBirthRule.byPaksha,
+  });
+
+  final Nakshatra nakshatra;
+  final Paksha paksha;
+  final PakshiBirthRule rule;
+
+  @override
+  Map<String, Object?> get _record => {
+    'nakshatra': nakshatra.fullKey,
+    'paksha': paksha.fullKey,
+    'rule': rule.key,
+  };
+}
+
+/// What the days are read under, the texts' defaults by default.
+final class PakshiRules extends _Value {
+  const PakshiRules({
+    this.clock = PakshiClock.stretched,
+    this.subs = PakshiSubLengths.agastya,
+    this.relations = PakshiRelations.agastya,
+  });
+
+  final PakshiClock clock;
+  final PakshiSubLengths subs;
+  final PakshiRelations relations;
+
+  Map<String, Object?> get _record => {
+    'clock': clock.key,
+    'subs': subs.key,
+    'relations': relations.key,
+  };
+
+  @override
+  List<Object?> get _fields => [clock, subs, relations];
+}
+
+/// A span of time, Julian days (UTC).
+final class PakshiSpan extends _Value {
+  const PakshiSpan({required this.from, required this.to});
+
+  final double from;
+  final double to;
+
+  @override
+  List<Object?> get _fields => [from, to];
+}
+
+/// A sub-period: its activity, the bird whose main activity it is, its
+/// share of the yama in 144ths, how the native regards that bird, and when.
+final class PakshiSub extends _Value {
+  const PakshiSub({
+    required this.activity,
+    required this.owner,
+    required this.share,
+    required this.ownerIs,
+    required this.span,
+  });
+
+  final PakshiActivity activity;
+  final PakshiBird owner;
+  final int share;
+  final PakshiRelation ownerIs;
+  final PakshiSpan span;
+
+  @override
+  List<Object?> get _fields => [activity, owner, share, ownerIs, span];
+}
+
+/// One yama: its half, its place in the half (1 to 5), when, the native
+/// bird's activity and how it is judged, and its sub-periods in order.
+final class PakshiYama extends _Value {
+  const PakshiYama({
+    required this.half,
+    required this.yama,
+    required this.span,
+    required this.activity,
+    required this.quality,
+    required this.subs,
+  });
+
+  final PakshiHalf half;
+  final int yama;
+  final PakshiSpan span;
+  final PakshiActivity activity;
+  final PakshiQuality quality;
+  final List<PakshiSub> subs;
+
+  @override
+  List<Object?> get _fields => [half, yama, span, activity, quality, subs];
+}
+
+/// A day as Pancha Pakshi reads it: its sunrise, sunset and next sunrise,
+/// the weekday of its sunrise (P9) and the paksha then (P2).
+final class PakshiDayBounds extends _Value {
+  const PakshiDayBounds({
+    required this.sunrise,
+    required this.sunset,
+    required this.nextSunrise,
+    required this.vara,
+    required this.paksha,
+  });
+
+  final double sunrise;
+  final double sunset;
+  final double nextSunrise;
+  final Vara vara;
+  final Paksha paksha;
+
+  @override
+  List<Object?> get _fields => [sunrise, sunset, nextSunrise, vara, paksha];
+}
+
+/// A native's bird over one day: the day, the bird, the bird dead the
+/// whole day and night beside the yamas (P10), whether that is the
+/// native's, the first eaters of the day and the night, and the ten yamas.
+final class PakshiReading extends _Value {
+  const PakshiReading({
+    required this.day,
+    required this.bird,
+    required this.deathBird,
+    required this.deadToday,
+    required this.eaters,
+    required this.yamas,
+  });
+
+  final PakshiDayBounds day;
+  final PakshiBird bird;
+  final PakshiBird deathBird;
+  final bool deadToday;
+  final List<PakshiBird> eaters;
+  final List<PakshiYama> yamas;
+
+  @override
+  List<Object?> get _fields => [day, bird, deathBird, deadToday, eaters, yamas];
+}
+
+/// One civil day and its reading; [reading] is null on a day the Sun does
+/// not both rise and set.
+final class PakshiDay extends _Value {
+  const PakshiDay({required this.date, required this.reading});
+
+  final CalendarDate date;
+  final PakshiReading? reading;
+
+  @override
+  List<Object?> get _fields => [date, reading];
+}
+
+/// One day of `ts_pakshi`'s answer, its keys made members.
+PakshiDay _pakshiDay(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  PakshiBird bird(Object? key) => _keyedIn(PakshiBird.values, key);
+  PakshiSpan span(Object? value) => PakshiSpan(
+    from: (at(value)['from']! as num).toDouble(),
+    to: (at(value)['to']! as num).toDouble(),
+  );
+  final reading = raw['reading'] as Map<String, Object?>?;
+  if (reading == null) {
+    return PakshiDay(date: _serdeDate(at(raw['date'])), reading: null);
+  }
+  final day = at(reading['day']);
+  return PakshiDay(
+    date: _serdeDate(at(raw['date'])),
+    reading: PakshiReading(
+      day: PakshiDayBounds(
+        sunrise: (day['sunrise']! as num).toDouble(),
+        sunset: (day['sunset']! as num).toDouble(),
+        nextSunrise: (day['nextSunrise']! as num).toDouble(),
+        vara: Vara.byKey(day['vara']! as String) ?? Vara.unknown,
+        paksha: Paksha.byKey(day['paksha']! as String) ?? Paksha.unknown,
+      ),
+      bird: bird(reading['bird']),
+      deathBird: bird(reading['deathBird']),
+      deadToday: reading['deadToday']! as bool,
+      eaters: List<PakshiBird>.unmodifiable([
+        for (final key in reading['eaters']! as List<Object?>) bird(key),
+      ]),
+      yamas: List<PakshiYama>.unmodifiable([
+        for (final yama in (reading['yamas']! as List<Object?>).map(at))
+          PakshiYama(
+            half: _keyedIn(PakshiHalf.values, yama['half']),
+            yama: yama['yama']! as int,
+            span: span(yama['span']),
+            activity: _keyedIn(PakshiActivity.values, yama['activity']),
+            quality: _keyedIn(PakshiQuality.values, yama['quality']),
+            subs: List<PakshiSub>.unmodifiable([
+              for (final sub in (yama['subs']! as List<Object?>).map(at))
+                PakshiSub(
+                  activity: _keyedIn(PakshiActivity.values, sub['activity']),
+                  owner: bird(sub['owner']),
+                  share: sub['share']! as int,
+                  ownerIs: _keyedIn(PakshiRelation.values, sub['ownerIs']),
+                  span: span(sub['span']),
+                ),
+            ]),
+          ),
+      ]),
+    ),
+  );
 }
 
 /// A chart's remedies: whom to propitiate, why and how, and the chosen

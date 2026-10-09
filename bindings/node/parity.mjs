@@ -1744,6 +1744,46 @@ for (const [name, rules] of [
     });
   });
 }
+
+// The Pancha Pakshi requests every runner sends, at Madras: a native by
+// birth star in the dark half under Pulippani's lengths and relations over
+// two days, and a bird named outright under the defaults for one.
+{
+  const madras = { latitude: 13.0827, longitude: 80.2707, altitude: 6 };
+  const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
+  const asked = [
+    {
+      from: gregorian(1984, 10, 30),
+      to: gregorian(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.KRISHNA', rule: 'BY_PAKSHA' },
+      rules: { subs: 'PULIPPANI', relations: 'PULIPPANI' },
+    },
+    { from: gregorian(1991, 5, 21), place: madras, utcOffsetSeconds: 19800, native: { bird: 'OWL' } },
+  ];
+  asked.forEach((request, r) => {
+    geo.almanac.pakshi(request).forEach(({ date: civil, reading }, n) => {
+      const key = `pakshi-${r}-${n}`;
+      if (reading === null) {
+        put(key, `${ymd(civil)} none`);
+        return;
+      }
+      const { day } = reading;
+      put(
+        key,
+        `${ymd(civil)} ${day.vara} ${day.paksha} ${number(day.sunrise)} ${number(day.sunset)} ${number(day.nextSunrise)} ${reading.bird} ${reading.deathBird} ${reading.deadToday} ${reading.eaters.join(',')}`,
+      );
+      reading.yamas.forEach((yama, k) => {
+        const subs = yama.subs.map((s) => `${s.activity}:${s.owner}:${s.share}:${s.ownerIs}:${number(s.span.to)}`);
+        put(
+          `${key}-yama-${k}`,
+          `${yama.half} ${yama.yama} ${number(yama.span.from)} ${number(yama.span.to)} ${yama.activity} ${yama.quality} ${subs.join(',')}`,
+        );
+      });
+    });
+  });
+}
 geo.dispose();
 
 // ── The eclipses ───────────────────────────────────────────────────────
@@ -1834,8 +1874,11 @@ for (const [path, member] of [
   ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
   ['chart.found_many', shape.chart.foundMany],
+  ['chart.rashifal', shape.chart.rashifal],
+  ['chart.rashifal_many', shape.chart.rashifalMany],
   ['almanac.of', shape.almanac.of],
   ['almanac.day', shape.almanac.day],
+  ['almanac.pakshi', shape.almanac.pakshi],
   ['engine.names', shape.engine.names],
   ['engine.signature', shape.engine.signature],
   ['engine.call', shape.engine.call],

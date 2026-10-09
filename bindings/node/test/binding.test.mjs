@@ -4084,6 +4084,55 @@ test('a chart carries its prashna', () => {
  * when asked, and a bad year refused by its record's name
  * (`03-design/lalkitab.md`).
  */
+/**
+ * Pancha Pakshi crosses as days, each its yamas over the almanac's own
+ * sunrise, the weekday and paksha by full key and the birds bare; a day
+ * the Sun does not both rise and set has none, and a native that is both
+ * a bird and a star is refused by name (`03-design/pakshi.md`).
+ */
+test('an almanac reads a native\'s bird over its days', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const madras = { latitude: 13.0827, longitude: 80.2707, altitude: 6 };
+  const days = ctx.almanac.pakshi({
+    from: date('calendar.GREGORIAN', 1984, 10, 30),
+    to: date('calendar.GREGORIAN', 1984, 10, 31),
+    place: madras,
+    utcOffsetSeconds: 19800,
+    native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+  });
+  assert.equal(days.length, 2);
+  const [tuesday, wednesday] = days.map((d) => d.reading);
+  assert.equal(tuesday.day.nextSunrise, wednesday.day.sunrise, 'one day runs into the next');
+  assert.deepEqual([wednesday.day.vara, wednesday.day.paksha], ['vara.BUDHAVARA', 'paksha.SHUKLA']);
+  assert.equal(wednesday.bird, 'COCK');
+  // PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+  assert.deepEqual(wednesday.yamas.slice(1, 3).map((y) => y.activity), ['SLEEPING', 'DYING']);
+  assert.equal(wednesday.yamas.length, 10);
+  assert.equal(wednesday.yamas[0].subs[0].ownerIs, 'OWN', "the native's own sub-period");
+  assert.equal(days[1].date.day, 31);
+  assert.ok(Object.isFrozen(wednesday.yamas[0].subs), 'frozen to its leaves');
+
+  const polar = context({ testProvider: false, ephemeris: 'BUILTIN', settings: { day: { polar_day_policy: 'NEAREST_EVENT' } } });
+  const [midsummer] = polar.almanac.pakshi({
+    from: date('calendar.GREGORIAN', 2024, 6, 21),
+    place: { latitude: 69.6492, longitude: 18.9553 },
+    utcOffsetSeconds: 7200,
+    native: { bird: 'OWL' },
+  });
+  assert.equal(midsummer.reading, null, 'no sunset, no yamas');
+
+  assert.throws(
+    () =>
+      ctx.almanac.pakshi({
+        from: date('calendar.GREGORIAN', 1984, 10, 31),
+        place: madras,
+        utcOffsetSeconds: 19800,
+        native: { bird: 'OWL', nakshatra: 'nakshatra.BHARANI', paksha: 'paksha.SHUKLA' },
+      }),
+    (error) => error.field === 'pakshi.native.bird',
+  );
+});
+
 test('a chart carries its Lal Kitab', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };

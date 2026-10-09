@@ -331,6 +331,9 @@ pub enum Relation {
     Enemy,
     /// Neither.
     Neutral,
+    /// The bird itself: the native's own sub-period, which neither
+    /// scheme's lists name.
+    Own,
 }
 
 /// Whose friends and enemies (crux P6).
@@ -348,12 +351,12 @@ pub enum Relations {
     Pulippani,
 }
 
-/// How `of` regards `to`; a bird is its own friend.
+/// How `of` regards `to`; [`Relation::Own`] when they are one bird.
 #[must_use]
 pub fn relation(of: Bird, to: Bird, paksha: Paksha, scheme: Relations) -> Relation {
     use Bird::{Cock as K, Crow as C, Owl as O, Peacock as P, Vulture as V};
     if of == to {
-        return Relation::Friend;
+        return Relation::Own;
     }
     match scheme {
         Relations::Agastya => {

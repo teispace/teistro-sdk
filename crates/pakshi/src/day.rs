@@ -191,7 +191,7 @@ pub fn read_day(day: &Day, bird: Bird, rules: &Rules) -> Reading {
     let yamas = [Half::Day, Half::Night]
         .into_iter()
         .flat_map(|half| (0..5_u8).map(move |yama| (half, yama)))
-        .map(|(half, yama)| yama_of(day, bird, rules, half, yama))
+        .map(|(half, yama)| yama_of(day, bird, *rules, half, yama))
         .collect();
     let dead = death_bird(day.paksha, day.vara);
     Reading {
@@ -205,7 +205,7 @@ pub fn read_day(day: &Day, bird: Bird, rules: &Rules) -> Reading {
 }
 
 /// One yama of a native's day.
-fn yama_of(day: &Day, bird: Bird, rules: &Rules, half: Half, yama: u8) -> Yama {
+fn yama_of(day: &Day, bird: Bird, rules: Rules, half: Half, yama: u8) -> Yama {
     let (start, end) = day.bounds(half, rules.clock);
     let length = (end - start) / 5.0;
     let from = start + length * f64::from(yama);

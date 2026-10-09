@@ -4448,6 +4448,61 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('an almanac reads a native\'s bird over its days', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final madras = Observer(
+      latitudeDeg: Latitude(13.0827),
+      longitudeDeg: Longitude(80.2707),
+      altitudeM: Altitude(6),
+    );
+    final days = ctx.almanac.pakshi(
+      from: gregorian(1984, 10, 30),
+      to: gregorian(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.star(Nakshatra.uttaraAshadha, Paksha.shukla),
+    );
+    expect(days, hasLength(2));
+    final tuesday = days[0].reading!;
+    final wednesday = days[1].reading!;
+    expect(tuesday.day.nextSunrise, wednesday.day.sunrise);
+    expect(
+      (wednesday.day.vara, wednesday.day.paksha),
+      (Vara.budhavara, Paksha.shukla),
+    );
+    expect(wednesday.bird, PakshiBird.cock);
+    // PUL p. vii: the cock sleeps in the day's second yama and dies from
+    // the third.
+    expect(
+      [for (final y in wednesday.yamas.sublist(1, 3)) y.activity],
+      [PakshiActivity.sleeping, PakshiActivity.dying],
+    );
+    expect(wednesday.yamas.first.subs.first.ownerIs, PakshiRelation.own);
+    expect(days[1].date.day, 31);
+
+    final polar = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      settings: {
+        'day': {'polar_day_policy': 'NEAREST_EVENT'},
+      },
+    );
+    final midsummer = polar.almanac.pakshi(
+      from: gregorian(2024, 6, 21),
+      place: Observer(
+        latitudeDeg: Latitude(69.6492),
+        longitudeDeg: Longitude(18.9553),
+        altitudeM: Altitude(0),
+      ),
+      utcOffsetSeconds: 7200,
+      native: const PakshiNative.bird(PakshiBird.owl),
+    );
+    expect(midsummer.single.reading, isNull, reason: 'no sunset, no yamas');
+    polar.dispose();
+    ctx.dispose();
+  });
+
   test('a chart carries its Lal Kitab', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

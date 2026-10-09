@@ -60,6 +60,7 @@ pub mod naam;
 #[cfg(not(feature = "chart"))]
 pub use family::chart as naam;
 pub mod numerology;
+pub mod pakshi;
 pub mod panchanga;
 pub mod positions;
 pub mod provider;

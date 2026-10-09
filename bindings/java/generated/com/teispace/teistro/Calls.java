@@ -616,6 +616,38 @@ final class Calls {
     }
 
     /**
+     * `ts_pakshi`: Reads a native's bird over each civil day of a range at a place and
+     * answers with an array of `{date, reading}` as canonical JSON, one per
+     * day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+     * and next sunrise, each `{half, yama, span, activity, quality, subs}`
+     * with every sub-period's activity, owner, span and how the native
+     * regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+     * vara, paksha}`, the bird, its death bird and the first eaters; null on
+     * a day the Sun does not both rise and set.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+     * the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+     * `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+     * place, the offset and `native` optional. A key it does not read, a
+     * place or offset out of range or a native that is neither is
+     * `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `pakshi` family out.
+     */
+    static String pakshi(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_pakshi.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_rashifal`: Reads periods of civil days at a place for each of the twelve signs and
      * answers with an array of `{period, baseline}` as canonical JSON: the
      * sky at the reference day's sunrise (or a clock time), each sign's

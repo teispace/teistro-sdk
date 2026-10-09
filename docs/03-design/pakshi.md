@@ -2,8 +2,9 @@
 
 Status: `draft`, 2026-10-09. Track B of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `pakshi` row. The
-kernel, `crates/pakshi`, and the façade are built; the boundary and the
-bindings are the next step (§7).
+kernel, `crates/pakshi`, the façade and the boundary are built, and the
+reading crosses to every binding; names in every strict locale are the
+next step (§7).
 
 ## 1. Sources
 
@@ -84,7 +85,9 @@ the owl counts the vulture a friend, the vulture the owl an enemy (AG
 p51, p40 v. 13). PUL makes each bird the friend of its neighbours round a
 cycle, V–O–C–K–P in the bright half and V–C–O–K–P in the dark (pp. 48,
 121; its bright entry for the cock is a slip, which the symmetry shows).
-The two are different relations and are never mixed (P6). The birds'
+The two are different relations and are never mixed (P6). Neither
+list names a bird's relation to itself, so the native's own sub-period
+is reported as its own, not as a friend's (P12). The birds'
 natural strengths are the crow's whole, the vulture's three quarters,
 the owl's half, the cock's quarter and the peacock's eighth (AG p40).
 
@@ -157,6 +160,7 @@ from the almanac.
 |---|---|
 | `birth_bird(nakshatra, paksha, BirthBird)` | the native's bird |
 | `tables::{activity, first_eater, sequence, subs, death_bird, relation}` | the rules, each cited |
+| `AlmanacArea::pakshi_days` / `ts_pakshi` | a range of days at a place, each a `PakshiDay` of its date and its reading, none on a polar day |
 | `read_day(&Day, Bird, &Rules) -> Reading` | the ten yamas as instants, each with the bird's activity, its quality and its timed sub-periods with their owners and how the native regards them; the death bird and the first eaters |
 | `now(&Reading, instant)` | the yama and sub-period running then |
 | `Rules` | `clock` (P3), `subs` (P4), `relations` (P6) |
@@ -165,12 +169,22 @@ from the almanac.
    examples as tests. **Built 2026-10-09.**
 2. The façade: the native's bird from a chart's Moon and paksha, and a
    day's reading at a place from the almanac's sunrise, sunset and tithi.
-   **Built 2026-10-09** as `AlmanacArea::pakshi(date, place, offset,
-   bird, &Rules)` and `ChartArea::pakshi_bird(document, BirthBird)`; a
-   day the Sun does not both rise and set is refused as `UNSUPPORTED`,
-   and the bird is held to the almanac's own nakshatra and tithi at the
-   birth.
-3. The boundary (JSON), the bindings and parity, and a guide.
+   **Built 2026-10-09** as `AlmanacArea::pakshi_days(first, last, place,
+   offset, native, &Rules)` over a range, `AlmanacArea::pakshi` for one
+   day and `ChartArea::pakshi_native(document, BirthBird)`. A native is a
+   `PakshiNative`, the bird itself or a birth star and paksha, so a
+   binding needs no chart to name one. A day the Sun does not both rise
+   and set has no reading in a range and is refused as `UNSUPPORTED`
+   alone, and the native is held to the almanac's own nakshatra and tithi
+   at the birth.
+3. The boundary (JSON), the bindings and parity, and a guide. **Built
+   2026-10-09**: `ts_pakshi` takes the range, the place, the native and
+   the rules as JSON and answers each day, and Node, Python, Dart and
+   Java read it into their own types, the weekday and paksha as
+   catalogue members and the birds as the system's own words. Six
+   runners agree value for value on a dark-half native under Pulippani's
+   lengths and relations and on a bird under the defaults. The guide is
+   this page and each binding's documented `almanac.pakshi`.
 4. Names for the birds and activities in every strict locale, vetted
    first; the catalogue kinds come with them.
 
@@ -188,4 +202,5 @@ from the almanac.
 | P8 | the activities' weights | not scored: the activity and its quality are reported | AY and PUL weigh differently; clauses, not a score |
 | P9 | the weekday of a night | the weekday of the sunrise that began it | PUL p. 17; the Tamil day runs from sunrise |
 | P10 | a death day against the tables | both reported | the texts give them as separate rules |
+| P12 | the native's own sub-period | reported as `OWN` | neither scheme lists a bird among its own friends or enemies |
 | P11 | the name, sign and tithi birds | not in v1; `BirthBird` is an enum, so each can be added | named in AG and AG07, not yet read closely enough |

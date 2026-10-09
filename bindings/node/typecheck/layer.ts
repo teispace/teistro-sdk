@@ -118,6 +118,12 @@ import type {
   RemedyRequest,
   LalKitab,
   LalKitabRequest,
+  PakshiActivity,
+  PakshiBird,
+  PakshiDay,
+  PakshiRelation,
+  PakshiRequest,
+  PakshiSpan,
   Rectification,
   RectificationRequest,
   BaselineNote,
@@ -142,7 +148,7 @@ import type {
   Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Ayanamsha, Gana, Graha, Masa, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
+import type { Ayanamsha, Gana, Graha, Masa, Paksha, Saham, SahamStrong, SahamWeak, Vara } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { decodeProvenance, returnsRequest } from '../lib/index.js';
 
@@ -956,6 +962,29 @@ function theRectification(ctx: Context): string {
 void theRectification;
 
 // Lal Kitab read all the way down, and a request in every field.
+// Pancha Pakshi read all the way down, from a native by star.
+function thePakshi(ctx: Context): string {
+  const asked: PakshiRequest = {
+    from: someDate,
+    place: { latitude: 13.0827, longitude: 80.2707 },
+    utcOffsetSeconds: 19800,
+    native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA', rule: 'SINGLE' },
+    rules: { clock: 'NAZHIGAI', subs: 'PULIPPANI', relations: 'AGASTYA' },
+  };
+  const days: readonly PakshiDay[] = ctx.almanac.pakshi(asked);
+  const read = days[0]?.reading;
+  if (read === null || read === undefined) return 'none';
+  const vara: Vara = read.day.vara;
+  const paksha: Paksha = read.day.paksha;
+  const bird: PakshiBird = read.deathBird;
+  const sub = read.yamas[0]?.subs[0];
+  const activity: PakshiActivity | undefined = sub?.activity;
+  const relation: PakshiRelation | undefined = sub?.ownerIs;
+  const span: PakshiSpan | undefined = sub?.span;
+  return `${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
+}
+void thePakshi;
+
 function theLalKitab(ctx: Context): string {
   const asked: LalKitabRequest = {
     cycle: { planet: 'graha.VENUS', year: 17 },

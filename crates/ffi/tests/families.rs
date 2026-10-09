@@ -161,11 +161,16 @@ fn every_chart_family_answers_in_its_build_and_is_refused_without_it() {
 #[test]
 fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
     let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
-    let entries: [(&str, bool, JsonEntry); 2] = [
+    let entries: [(&str, bool, JsonEntry); 3] = [
         (
             "numerology",
             cfg!(feature = "numerology"),
             teistro_ffi::numerology::ts_numerology_profile,
+        ),
+        (
+            "pakshi",
+            cfg!(feature = "pakshi"),
+            teistro_ffi::pakshi::ts_pakshi,
         ),
         (
             "rashifal",

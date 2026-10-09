@@ -3769,6 +3769,7 @@ public final class Native {
         "ts_panchanga_days",
         "ts_naam_milan",
         "ts_numerology_profile",
+        "ts_pakshi",
         "ts_rashifal",
         "ts_ephemeris_manifest",
         "ts_ephemeris_call",
@@ -4135,6 +4136,28 @@ public final class Native {
     public final MethodHandle ts_numerology_profile;
 
     /**
+     * Reads a native's bird over each civil day of a range at a place and
+     * answers with an array of `{date, reading}` as canonical JSON, one per
+     * day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+     * and next sunrise, each `{half, yama, span, activity, quality, subs}`
+     * with every sub-period's activity, owner, span and how the native
+     * regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+     * vara, paksha}`, the bird, its death bird and the first eaters; null on
+     * a day the Sun does not both rise and set.
+     *
+     * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+     * the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+     * `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+     * place, the offset and `native` optional. A key it does not read, a
+     * place or offset out of range or a native that is neither is
+     * `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+     * without an ephemeris is `CAPABILITY`, as is a build that leaves the
+     * `pakshi` family out.
+     */
+    public final MethodHandle ts_pakshi;
+
+    /**
      * Reads periods of civil days at a place for each of the twelve signs and
      * answers with an array of `{period, baseline}` as canonical JSON: the
      * sky at the reference day's sunrise (or a clock time), each sign's
@@ -4275,6 +4298,7 @@ public final class Native {
         ts_panchanga_days = linker.downcallHandle(symbols.find("ts_panchanga_days").orElseThrow(() -> missing("ts_panchanga_days")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_rashifal = linker.downcallHandle(symbols.find("ts_rashifal").orElseThrow(() -> missing("ts_rashifal")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_ephemeris_manifest = linker.downcallHandle(symbols.find("ts_ephemeris_manifest").orElseThrow(() -> missing("ts_ephemeris_manifest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_ephemeris_call = linker.downcallHandle(symbols.find("ts_ephemeris_call").orElseThrow(() -> missing("ts_ephemeris_call")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

@@ -2529,10 +2529,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   `teistro-pakshi` reads the five birds' activities by yama as one rule
   held to every cell of the printed tables, with the sub-periods, the
   death birds, the relations and the native's bird from the birth star.
-  `sdk.almanac().pakshi(date, place, offset, bird, &rules)` reads a day
-  over the almanac's sunrise, sunset and tithi, and
-  `sdk.chart().pakshi_bird(document, rule)` a native's bird.
-  **Numbers:** none move.
+  `sdk.almanac().pakshi_days(first, last, place, offset, native, &rules)`
+  reads a range over the almanac's sunrise, sunset and tithi, a native
+  named by its bird or by birth star and paksha, and
+  `sdk.chart().pakshi_native(document, rule)` a chart's native. `ts_pakshi`
+  carries it to Node, Python, Dart and Java as `almanac.pakshi`, and
+  every runner agrees value for value. A bird's own sub-period is
+  reported as `OWN`, which no source calls a friend. **Numbers:** none
+  move.
 - **Lal Kitab in every binding** (`03-design/lalkitab.md` steps 2 and
   3). `sdk.chart().lalkitab(document, &request)` reads a chart's teva,
   its 35-year cycle and, for a named year, its ruler, thirds and annual

@@ -16,10 +16,13 @@ use crate::{
     birth_bird, now, read_day,
 };
 
+/// One of Ayyar's tables: a paksha and a half, the weekday groups' columns,
+/// and each bird's row of activities over the five yamas.
+type Table = (Paksha, Half, [&'static [Vara]; 5], [[&'static str; 5]; 5]);
+
 /// Ayyar's four tables as `pakshi.md` §2.7 transcribes them, his one slip
-/// corrected (crux P7): per half, the weekday groups' columns and each
-/// bird's row of activities over the five yamas.
-const TABLES: [(Paksha, Half, [&[Vara]; 5], [[&str; 5]; 5]); 4] = {
+/// corrected (crux P7).
+const TABLES: [Table; 4] = {
     use Vara::{
         Budhavara as Wed, Guruvara as Thu, Mangalavara as Tue, Ravivara as Sun, Shanivara as Sat,
         Shukravara as Fri, Somavara as Mon,
@@ -261,7 +264,7 @@ fn a_yamas_sub_periods_start_at_the_natives_own_and_are_owned_by_the_doers() {
     assert_eq!(first.sub.activity, Activity::Walking);
     assert!((first.span.from - clock(10, 48)).abs() < 1e-9);
     assert!((first.span.to - clock(11, 24)).abs() < 1e-9);
-    assert_eq!(first.owner_is, Relation::Friend, "a bird is its own friend");
+    assert_eq!(first.owner_is, Relation::Own, "the native's own sub-period");
 }
 
 #[test]
@@ -281,11 +284,11 @@ fn every_sub_period_scheme_fills_its_yama() {
 
 #[test]
 fn the_death_birds_and_relations_are_the_printed_ones() {
+    use Bird::{Cock as K, Crow as C, Owl as O, Peacock as P, Vulture as V};
     let bright: Vec<Bird> = Vara::ALL
         .into_iter()
         .map(|vara| death_bird(Paksha::Shukla, vara))
         .collect();
-    use Bird::{Cock as K, Crow as C, Owl as O, Peacock as P, Vulture as V};
     assert_eq!(bright, [O, C, K, P, V, O, V]);
     let dark: Vec<Bird> = Vara::ALL
         .into_iter()
@@ -307,11 +310,14 @@ fn the_death_birds_and_relations_are_the_printed_ones() {
         for of in Bird::ALL {
             let friends = Bird::ALL
                 .into_iter()
-                .filter(|to| {
-                    *to != of && relation(of, *to, paksha, Relations::Pulippani) == Relation::Friend
-                })
+                .filter(|to| relation(of, *to, paksha, Relations::Pulippani) == Relation::Friend)
                 .count();
             assert_eq!(friends, 2);
+            assert_eq!(
+                relation(of, of, paksha, Relations::Pulippani),
+                Relation::Own
+            );
+            assert_eq!(relation(of, of, paksha, Relations::Agastya), Relation::Own);
             for to in Bird::ALL {
                 assert_eq!(
                     relation(of, to, paksha, Relations::Pulippani),
