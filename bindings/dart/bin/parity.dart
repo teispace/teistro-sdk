@@ -2684,6 +2684,69 @@ void main() {
       }
     }
   }
+
+  // The Pancha Pakshi requests every runner sends, at Madras: a native by
+  // birth star in the dark half under Pulippani's lengths and relations
+  // over two days, and a bird named outright under the defaults for one.
+  final madras = Observer(
+    latitudeDeg: Latitude(13.0827),
+    longitudeDeg: Longitude(80.2707),
+    altitudeM: Altitude(6),
+  );
+  final pakshi = [
+    geo.almanac.pakshi(
+      from: Calendar.gregorian.date(1984, 10, 30),
+      to: Calendar.gregorian.date(1984, 10, 31),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.star(
+        Nakshatra.uttaraAshadha,
+        Paksha.krishna,
+        rule: PakshiBirthRule.byPaksha,
+      ),
+      rules: const PakshiRules(
+        subs: PakshiSubLengths.pulippani,
+        relations: PakshiRelations.pulippani,
+      ),
+    ),
+    geo.almanac.pakshi(
+      from: Calendar.gregorian.date(1991, 5, 21),
+      place: madras,
+      utcOffsetSeconds: 19800,
+      native: const PakshiNative.bird(PakshiBird.owl),
+    ),
+  ];
+  for (final (r, days) in pakshi.indexed) {
+    for (final (n, one) in days.indexed) {
+      final key = 'pakshi-$r-$n';
+      final read = one.reading;
+      if (read == null) {
+        put(key, '${ymd(one.date)} none');
+        continue;
+      }
+      final day = read.day;
+      put(
+        key,
+        '${ymd(one.date)} ${day.vara.fullKey} ${day.paksha.fullKey} '
+        '${number(day.sunrise)} ${number(day.sunset)} ${number(day.nextSunrise)} '
+        '${read.bird.key} ${read.deathBird.key} ${read.deadToday} '
+        '${read.eaters.map((b) => b.key).join(',')}',
+      );
+      for (final (k, yama) in read.yamas.indexed) {
+        final subs = yama.subs.map(
+          (s) =>
+              '${s.activity.key}:${s.owner.key}:${s.share}:${s.ownerIs.key}:'
+              '${number(s.span.to)}',
+        );
+        put(
+          '$key-yama-$k',
+          '${yama.half.key} ${yama.yama} ${number(yama.span.from)} '
+              '${number(yama.span.to)} ${yama.activity.key} ${yama.quality.key} '
+              '${subs.join(',')}',
+        );
+      }
+    }
+  }
   geo.dispose();
 
   // ── The eclipses ─────────────────────────────────────────────────────
@@ -2826,8 +2889,11 @@ void main() {
     ('chart.layout', ctx.chart.layout),
     ('chart.found', ctx.chart.found),
     ('chart.found_many', ctx.chart.foundMany),
+    ('chart.rashifal', ctx.chart.rashifal),
+    ('chart.rashifal_many', ctx.chart.rashifalMany),
     ('almanac.of', ctx.almanac.of),
     ('almanac.day', ctx.almanac.day),
+    ('almanac.pakshi', ctx.almanac.pakshi),
     ('engine.names', ctx.engine.names),
     ('engine.signature', ctx.engine.signature),
     ('engine.call', ctx.engine.call),

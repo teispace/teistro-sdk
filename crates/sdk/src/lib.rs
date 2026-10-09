@@ -42,6 +42,8 @@
 //! that marshalling and nothing else.
 
 mod area;
+#[cfg(any(feature = "pakshi", feature = "rashifal"))]
+mod asked;
 #[cfg(feature = "western")]
 mod composites;
 mod context;
@@ -442,6 +444,8 @@ pub use teistro_rectification as rectification;
 pub use teistro_lalkitab as lalkitab;
 // Pancha Pakshi: the five birds' activities by yama and sub-period, the
 // death birds and the relations (`03-design/pakshi.md`).
+#[cfg(feature = "pakshi")]
+pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS

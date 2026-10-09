@@ -757,6 +757,19 @@ __all__ = [
     "LalKitabStart",
     "LalKitabPeriod",
     "LalKitabYear",
+    # Pancha Pakshi: a native's bird over days at a place.
+    "PakshiActivity",
+    "PakshiBird",
+    "PakshiBirdNative",
+    "PakshiDay",
+    "PakshiDayBounds",
+    "PakshiReading",
+    "PakshiRelation",
+    "PakshiRules",
+    "PakshiSpan",
+    "PakshiStarNative",
+    "PakshiSub",
+    "PakshiYama",
     # Rectification: a chart read as a birth time to rectify.
     "RectificationRequest",
     "PurifyRequest",
@@ -2142,6 +2155,52 @@ class AlmanacArea(_Area):
             place=place,
             utc_offset_seconds=utc_offset_seconds,
         ).at(0)
+
+    def pakshi(
+        self,
+        *,
+        from_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        native: Union[PakshiBirdNative, PakshiStarNative],
+        to_date: Optional[CalendarDate] = None,
+        rules: Optional[PakshiRules] = None,
+    ) -> List[PakshiDay]:
+        """A native's bird read over every day from `from_date` to
+        `to_date` (the first when left out) under Pancha Pakshi
+        (`03-design/pakshi.md`): each day's ten yamas from the almanac's
+        own sunrise, sunset and next sunrise, with the bird's activity and
+        its timed sub-periods. A day the Sun does not both rise and set has
+        no reading. A native that is both a bird and a star, or neither, is
+        refused as `pakshi.native.bird` or `pakshi.native.nakshatra`.
+
+        >>> # days = ctx.almanac.pakshi(from_date=date, place=madras, utc_offset_seconds=19800,
+        >>> #     native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA})
+        """
+
+        def parts(day: CalendarDate) -> Dict[str, int]:
+            return {"year": day.year, "month": day.month, "day": day.day}
+
+        if not isinstance(native, Mapping):
+            raise TeistroError(
+                Status.INVALID_ARG, "native is {'bird': ...} or {'nakshatra': ..., 'paksha': ...}", field="native"
+            )
+        whose = {key: _member_key(value) if key in ("nakshatra", "paksha") else value for key, value in native.items()}
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": parts(from_date),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "native": whose,
+        }
+        if to_date is not None:
+            asked["last"] = parts(to_date)
+        if rules is not None:
+            asked["rules"] = dict(rules)
+        answered = self._context._through_provider(lambda: self._context.inner.pakshi(json.dumps(asked)))
+        return [_pakshi_day(one) for one in json.loads(answered)]
 
 
 class MatchingArea(_Area):
@@ -8181,6 +8240,111 @@ class Remedies:
     ishta_devata: IshtaDevatas
 
 
+PakshiBird = Literal["VULTURE", "OWL", "CROW", "COCK", "PEACOCK"]
+"""The five birds of Pancha Pakshi, in their order (`03-design/pakshi.md`)."""
+
+PakshiActivity = Literal["EATING", "WALKING", "RULING", "SLEEPING", "DYING"]
+"""What a bird does in a yama or a sub-period."""
+
+PakshiRelation = Literal["FRIEND", "ENEMY", "NEUTRAL", "OWN"]
+"""How a native regards a sub-period's owner; `OWN` for its own (P12)."""
+
+
+class PakshiBirdNative(TypedDict):
+    """A native named by the bird itself."""
+
+    bird: PakshiBird
+
+
+class PakshiStarNative(TypedDict, total=False):
+    """A native by birth star and paksha (each a member or its key, such as
+    `"nakshatra.BHARANI"`), the bird under `rule`: `"BY_PAKSHA"` (the dark
+    half reverses the birds, the default) or `"SINGLE"` (P1)."""
+
+    nakshatra: Union[Nakshatra, str]
+    paksha: Union[Paksha, str]
+    rule: Literal["BY_PAKSHA", "SINGLE"]
+
+
+class PakshiRules(TypedDict, total=False):
+    """What the days are read under, each the texts' default when left
+    out: `clock` (P3), `subs` (P4) and `relations` (P6)."""
+
+    clock: Literal["STRETCHED", "NAZHIGAI"]
+    subs: Literal["AGASTYA", "PULIPPANI"]
+    relations: Literal["AGASTYA", "PULIPPANI"]
+
+
+@dataclass(frozen=True)
+class PakshiSpan:
+    """A span of time, Julian days (UTC)."""
+
+    from_: float
+    to: float
+
+
+@dataclass(frozen=True)
+class PakshiSub:
+    """A sub-period: its activity, the bird whose main activity it is, its
+    share of the yama in 144ths, how the native regards that bird, and
+    when."""
+
+    activity: PakshiActivity
+    owner: PakshiBird
+    share: int
+    owner_is: PakshiRelation
+    span: PakshiSpan
+
+
+@dataclass(frozen=True)
+class PakshiYama:
+    """One yama: its half, its place in the half (1 to 5), when, the native
+    bird's activity and how it is judged, and its sub-periods in order."""
+
+    half: Literal["DAY", "NIGHT"]
+    yama: int
+    span: PakshiSpan
+    activity: PakshiActivity
+    quality: Literal["GOOD", "MIDDLING", "BAD"]
+    subs: Tuple[PakshiSub, ...]
+
+
+@dataclass(frozen=True)
+class PakshiDayBounds:
+    """A day as Pancha Pakshi reads it: its sunrise, sunset and next
+    sunrise, the weekday of its sunrise (P9) and the paksha then (P2)."""
+
+    sunrise: float
+    sunset: float
+    next_sunrise: float
+    vara: Vara
+    paksha: Paksha
+
+
+@dataclass(frozen=True)
+class PakshiReading:
+    """A native's bird over one day: the day, the bird, the bird dead the
+    whole day and night beside the yamas (P10), whether that is the
+    native's, the first eaters of the day and the night, and the ten
+    yamas."""
+
+    day: PakshiDayBounds
+    bird: PakshiBird
+    death_bird: PakshiBird
+    dead_today: bool
+    eaters: Tuple[PakshiBird, PakshiBird]
+    yamas: Tuple[PakshiYama, ...]
+
+
+@dataclass(frozen=True)
+class PakshiDay:
+    """One civil day and its reading; `reading` is `None` on a day the Sun
+    does not both rise and set."""
+
+    date: CalendarDate
+    reading: Optional[PakshiReading]
+
+
 class LalKitabCycle(TypedDict):
     """Where the 35-year cycle starts: a graha (a `Graha` or its key, such
     as `"graha.VENUS"`) and the year of life, from 1, its period begins."""
@@ -10429,6 +10593,56 @@ def _lalkitab(raw: Mapping[str, Any]) -> LalKitab:
             LalKitabPeriod(planet=graha(p["planet"]), from_year=p["from"], to_year=p["to"]) for p in raw["periods"]
         ),
         year=None if raw["year"] is None else year_of(raw["year"]),
+    )
+
+
+def _pakshi_day(raw: Mapping[str, Any]) -> PakshiDay:
+    """One day of `ts_pakshi`'s answer, its catalogue keys made members and
+    Pancha Pakshi's own words kept as the library spells them."""
+
+    def span(one: Mapping[str, Any]) -> PakshiSpan:
+        return PakshiSpan(from_=one["from"], to=one["to"])
+
+    reading = raw["reading"]
+    if reading is None:
+        return PakshiDay(date=_serde_date(raw["date"]), reading=None)
+    day = reading["day"]
+    first, second = reading["eaters"]
+    return PakshiDay(
+        date=_serde_date(raw["date"]),
+        reading=PakshiReading(
+            day=PakshiDayBounds(
+                sunrise=day["sunrise"],
+                sunset=day["sunset"],
+                next_sunrise=day["nextSunrise"],
+                vara=_member(Vara, day["vara"]),
+                paksha=_member(Paksha, day["paksha"]),
+            ),
+            bird=reading["bird"],
+            death_bird=reading["deathBird"],
+            dead_today=reading["deadToday"],
+            eaters=(first, second),
+            yamas=tuple(
+                PakshiYama(
+                    half=yama["half"],
+                    yama=yama["yama"],
+                    span=span(yama["span"]),
+                    activity=yama["activity"],
+                    quality=yama["quality"],
+                    subs=tuple(
+                        PakshiSub(
+                            activity=sub["activity"],
+                            owner=sub["owner"],
+                            share=sub["share"],
+                            owner_is=sub["ownerIs"],
+                            span=span(sub["span"]),
+                        )
+                        for sub in yama["subs"]
+                    ),
+                )
+                for yama in reading["yamas"]
+            ),
+        ),
     )
 
 

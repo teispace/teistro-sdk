@@ -1495,6 +1495,52 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
             self.assertEqual(refused.exception.field, "prashna.question.house")
 
+    def test_an_almanac_reads_a_natives_bird_over_its_days(self) -> None:
+        """Pancha Pakshi crosses as days, each its yamas over the almanac's
+        own sunrise, the weekday and paksha made members and the birds as
+        the library spells them; a polar day has none, and a native that is
+        both a bird and a star is refused by name (`03-design/pakshi.md`)."""
+        from teistro import Nakshatra, Paksha, TeistroError, Vara, date
+
+        madras = Observer(latitude_deg=Latitude(13.0827), longitude_deg=Longitude(80.2707), altitude_m=Altitude(6))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            days = ctx.almanac.pakshi(
+                from_date=date(Calendar.GREGORIAN, 1984, 10, 30),
+                to_date=date(Calendar.GREGORIAN, 1984, 10, 31),
+                place=madras,
+                utc_offset_seconds=19800,
+                native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA},
+            )
+            self.assertEqual(len(days), 2)
+            tuesday, wednesday = (day.reading for day in days)
+            assert tuesday is not None and wednesday is not None
+            self.assertEqual(tuesday.day.next_sunrise, wednesday.day.sunrise)
+            self.assertEqual((wednesday.day.vara, wednesday.day.paksha), (Vara.BUDHAVARA, Paksha.SHUKLA))
+            self.assertEqual(wednesday.bird, "COCK")
+            # PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+            self.assertEqual([y.activity for y in wednesday.yamas[1:3]], ["SLEEPING", "DYING"])
+            self.assertEqual(wednesday.yamas[0].subs[0].owner_is, "OWN")
+            self.assertEqual(days[1].date.day, 31)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.pakshi(
+                    from_date=date(Calendar.GREGORIAN, 1984, 10, 31),
+                    place=madras,
+                    utc_offset_seconds=19800,
+                    native={"bird": "OWL", "nakshatra": "nakshatra.BHARANI", "paksha": "paksha.SHUKLA"},  # type: ignore[arg-type]
+                )
+            self.assertEqual(refused.exception.field, "pakshi.native.bird")
+        tromso = Observer(latitude_deg=Latitude(69.6492), longitude_deg=Longitude(18.9553), altitude_m=Altitude(0))
+        with self.teistro.context(
+            profile=PROFILE, ephemeris=Ephemeris.BUILTIN, settings={"day": {"polar_day_policy": "NEAREST_EVENT"}}
+        ) as polar:
+            (midsummer,) = polar.almanac.pakshi(
+                from_date=date(Calendar.GREGORIAN, 2024, 6, 21),
+                place=tromso,
+                utc_offset_seconds=7200,
+                native={"bird": "OWL"},
+            )
+            self.assertIsNone(midsummer.reading)
+
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from
         the book's general start unless asked, the year and its annual teva

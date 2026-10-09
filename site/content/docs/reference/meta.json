@@ -1,5 +1,5 @@
 {
   "title": "Reference",
   "description": "Every entry point of the C ABI, generated from the API description.",
-  "pages": ["index", "library", "string", "blob", "context", "key", "frame", "calendar", "chart", "time", "intl", "positions", "panchanga", "naam", "numerology", "rashifal", "ephemeris", "provider", "---Shapes---", "types", "enums"]
+  "pages": ["index", "library", "string", "blob", "context", "key", "frame", "calendar", "chart", "time", "intl", "positions", "panchanga", "naam", "numerology", "pakshi", "rashifal", "ephemeris", "provider", "---Shapes---", "types", "enums"]
 }

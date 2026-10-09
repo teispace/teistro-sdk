@@ -1,5 +1,8 @@
 package com.teispace.teistro;
 
+import java.util.List;
+import java.util.Map;
+
 import com.teispace.teistro.blob.Panchanga;
 import com.teispace.teistro.ffi.Native;
 
@@ -107,5 +110,48 @@ public final class AlmanacArea {
      */
     public AlmanacDay day(CalendarDate date, Observer place, int utcOffsetSeconds) {
         return of(date, date, place, utcOffsetSeconds).at(0);
+    }
+
+    /**
+     * A native's bird read over every day from {@code from} to {@code to} under Pancha Pakshi
+     * ({@code 03-design/pakshi.md}), under the texts' default rules: each day's ten yamas from the
+     * almanac's own sunrise, sunset and next sunrise, with the bird's activity and its timed
+     * sub-periods. A day the Sun does not both rise and set has a null reading.
+     *
+     * <pre>{@code
+     * List<PakshiDay> days = sky.almanac().pakshi(date, date, madras, 19_800,
+     *         PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param whose the native, by bird or by birth star and paksha
+     * @return one entry a day, in order
+     */
+    public List<PakshiDay> pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+            PakshiNative whose) {
+        return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, null);
+    }
+
+    /**
+     * As {@link #pakshi(CalendarDate, CalendarDate, Observer, int, PakshiNative)}, under {@code rules}:
+     * {@code clock} ({@code STRETCHED} or {@code NAZHIGAI}), {@code subs} and {@code relations}
+     * ({@code AGASTYA} or {@code PULIPPANI}), each optional, as
+     * {@code Map.of("subs", "PULIPPANI")}; a key it does not read is refused as
+     * {@code pakshi.rules.<key>}.
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param whose the native, by bird or by birth star and paksha
+     * @param rules what the days are read under
+     * @return one entry a day, in order
+     */
+    public List<PakshiDay> pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+            PakshiNative whose, Map<String, ?> rules) {
+        return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, rules);
     }
 }

@@ -406,6 +406,37 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac reads a native's bird over its days", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
+                CalendarDate tuesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 30, Resolution.DEFINED, 0, 0);
+                CalendarDate wednesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 31, Resolution.DEFINED, 0, 0);
+                List<PakshiDay> days = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
+                        PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+                same(2, days.size(), "two days");
+                PakshiDay.Reading first = days.get(0).reading();
+                PakshiDay.Reading second = days.get(1).reading();
+                same(first.day().nextSunrise(), second.day().sunrise(), "one day runs into the next");
+                same(Vara.BUDHAVARA, second.day().vara(), "a Wednesday");
+                same(Paksha.SHUKLA, second.day().paksha(), "in the bright half");
+                same("COCK", second.bird(), "Uttara Ashadha's bird");
+                // PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
+                same(List.of("SLEEPING", "DYING"),
+                        List.of(second.yamas().get(1).activity(), second.yamas().get(2).activity()), "the activities");
+                same("OWN", second.yamas().get(0).subs().get(0).ownerIs(), "the native's own sub-period");
+                TeistroException refused = refusal(() -> sky.almanac().pakshi(wednesday, null, madras, 19_800,
+                        PakshiNative.bird("OWL"), Map.of("clock", "SUNDIAL")));
+                same("pakshi.rules.clock", refused.field(), "named by its record");
+            }
+            try (Context polar = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN)
+                    .settingsJson("{\"day\": {\"polar_day_policy\": \"NEAREST_EVENT\"}}").build())) {
+                Observer tromso = new Observer(new Longitude(18.9553), new Latitude(69.6492), new Altitude(0));
+                CalendarDate midsummer = new CalendarDate(Calendar.GREGORIAN, null, 2024, 0, 6, 21, Resolution.DEFINED, 0, 0);
+                List<PakshiDay> days = polar.almanac().pakshi(midsummer, null, tromso, 7_200, PakshiNative.bird("OWL"));
+                check(days.get(0).reading() == null, "no sunset, no yamas");
+            }
+        });
+
         tests.put("a chart carries its Lal Kitab", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));

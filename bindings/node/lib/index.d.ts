@@ -6179,6 +6179,93 @@ export interface MuhurtaAnswer {
 }
 
 /** What `Context.almanacDay` needs: one day at one place. */
+/** The five birds of Pancha Pakshi, in their order. */
+export type PakshiBird = 'VULTURE' | 'OWL' | 'CROW' | 'COCK' | 'PEACOCK';
+
+/** What a bird does in a yama or a sub-period. */
+export type PakshiActivity = 'EATING' | 'WALKING' | 'RULING' | 'SLEEPING' | 'DYING';
+
+/** How a native regards a sub-period's owner; `OWN` for its own sub-period (P12). */
+export type PakshiRelation = 'FRIEND' | 'ENEMY' | 'NEUTRAL' | 'OWN';
+
+/** A span of time, Julian days (UTC). */
+export interface PakshiSpan {
+  readonly from: number;
+  readonly to: number;
+}
+
+/** Days of a native's bird at a place (`03-design/pakshi.md`). */
+export interface PakshiRequest {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, both ends included; `from` when left out. */
+  readonly to?: CalendarDate;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The bird itself, or the birth star and paksha that give it under `rule` (P1). */
+  readonly native:
+    | { readonly bird: PakshiBird }
+    | {
+        readonly nakshatra: Nakshatra;
+        readonly paksha: Paksha;
+        /** `BY_PAKSHA` (the dark half reverses the birds, the default) or `SINGLE` (one table). */
+        readonly rule?: 'BY_PAKSHA' | 'SINGLE';
+      };
+  /** What the days are read under, each the texts' default when left out. */
+  readonly rules?: {
+    /** How a half is cut into yamas (P3). */
+    readonly clock?: 'STRETCHED' | 'NAZHIGAI';
+    /** How long the sub-periods run (P4). */
+    readonly subs?: 'AGASTYA' | 'PULIPPANI';
+    /** Whose friends and enemies (P6). */
+    readonly relations?: 'AGASTYA' | 'PULIPPANI';
+  };
+}
+
+/** One day of a native's bird. */
+export interface PakshiDay {
+  /** The civil day. */
+  readonly date: CalendarDate;
+  /** Its reading; `null` on a day the Sun does not both rise and set. */
+  readonly reading: {
+    readonly day: {
+      readonly sunrise: number;
+      readonly sunset: number;
+      readonly nextSunrise: number;
+      /** The weekday of its sunrise (P9). */
+      readonly vara: Vara;
+      /** The paksha at its sunrise (P2). */
+      readonly paksha: Paksha;
+    };
+    readonly bird: PakshiBird;
+    /** The bird dead the whole day and night, reported beside the yamas (P10). */
+    readonly deathBird: PakshiBird;
+    readonly deadToday: boolean;
+    /** The birds eating in the first yama of the day and of the night. */
+    readonly eaters: readonly PakshiBird[];
+    /** The ten yamas, the day's five and then the night's. */
+    readonly yamas: readonly {
+      readonly half: 'DAY' | 'NIGHT';
+      /** Which yama of the half, 1 to 5. */
+      readonly yama: number;
+      readonly span: PakshiSpan;
+      readonly activity: PakshiActivity;
+      readonly quality: 'GOOD' | 'MIDDLING' | 'BAD';
+      readonly subs: readonly {
+        readonly activity: PakshiActivity;
+        /** The bird whose main activity it is. */
+        readonly owner: PakshiBird;
+        /** Its share of the yama, in 144ths. */
+        readonly share: number;
+        readonly ownerIs: PakshiRelation;
+        readonly span: PakshiSpan;
+      }[];
+    }[];
+  } | null;
+}
+
 export interface AlmanacDayRequest extends Omit<AlmanacRequest, 'from' | 'to'> {
   /** The day. */
   readonly date: CalendarDate;
@@ -6814,6 +6901,20 @@ export declare class AlmanacArea {
   of(request: AlmanacRequest): Almanac;
   /** The almanac of one day, which is the range of one unwrapped. */
   day(request: AlmanacDayRequest): AlmanacDay;
+  /**
+   * A native's bird read over every day of a range under Pancha Pakshi
+   * (`03-design/pakshi.md`). A day the Sun does not both rise and set has
+   * a `null` reading.
+   *
+   * @example
+   * const days = ctx.almanac.pakshi({
+   *   from: date('calendar.GREGORIAN', 1984, 10, 31),
+   *   place: { latitude: 13.0827, longitude: 80.2707, altitude: 6 },
+   *   utcOffsetSeconds: 19800,
+   *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+   * });
+   */
+  pakshi(request: PakshiRequest): readonly PakshiDay[];
 }
 
 /**

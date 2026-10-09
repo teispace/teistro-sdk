@@ -3943,6 +3943,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_numerology_profile.restype = ctypes.c_int32
+        self.ts_pakshi: Any = library.ts_pakshi
+        self.ts_pakshi.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_pakshi.restype = ctypes.c_int32
         self.ts_rashifal: Any = library.ts_rashifal
         self.ts_rashifal.argtypes = [
             ctypes.POINTER(_Context),
@@ -4674,6 +4681,41 @@ class TeistroContext:
         owned.append(_request_json)
         _out_json = _StringStruct()
         status = Status(self._lib.ts_numerology_profile(
+            self._raw,
+            _request_json,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
+
+    def pakshi(self, request_json: str) -> str:
+        """Reads a native's bird over each civil day of a range at a place and
+        answers with an array of `{date, reading}` as canonical JSON, one per
+        day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+        and next sunrise, each `{half, yama, span, activity, quality, subs}`
+        with every sub-period's activity, owner, span and how the native
+        regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+        vara, paksha}`, the bird, its death bird and the first eaters; null on
+        a day the Sun does not both rise and set.
+
+        `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+        the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+        `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+        place, the offset and `native` optional. A key it does not read, a
+        place or offset out of range or a native that is neither is
+        `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+        without an ephemeris is `CAPABILITY`, as is a build that leaves the
+        `pakshi` family out.
+        """
+        owned: list[Any] = []
+        _request_json = request_json.encode("utf-8")
+        owned.append(_request_json)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_pakshi(
             self._raw,
             _request_json,
             ctypes.byref(_out_json),

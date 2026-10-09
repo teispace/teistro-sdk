@@ -6205,6 +6205,81 @@ export class AlmanacArea extends Area {
   day(request) {
     return this.of({ ...request, from: request.date, to: request.date }).at(0);
   }
+
+  /**
+   * A native's bird read over every day of a range under Pancha Pakshi
+   * (`03-design/pakshi.md`): each day's ten yamas from the almanac's own
+   * sunrise, sunset and next sunrise, each with the bird's activity and
+   * its timed sub-periods, the day's weekday that of its sunrise and its
+   * paksha the one at its sunrise. A day the Sun does not both rise and
+   * set has a `null` reading.
+   *
+   * @example
+   * const days = ctx.almanac.pakshi({
+   *   from: date(1984, 10, 31),
+   *   place: { latitude: 13.0827, longitude: 80.2707, altitude: 6 },
+   *   utcOffsetSeconds: 19800,
+   *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
+   * });
+   * const second = days[0].reading.yamas[1].activity; // 'SLEEPING'
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, as `date(...)` builds one
+   * @param {object} [request.to] the last day, both ends included; `from` when left out
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} request.native `{ bird }`, or `{ nakshatra, paksha, rule }` with `rule` optional
+   * @param {object} [request.rules] `{ clock, subs, relations }`, each optional
+   * @returns {object[]}
+   */
+  pakshi(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('pakshi: expected a request, e.g. { from, place, utcOffsetSeconds, native }');
+    }
+    const day = (given, what) => ({
+      year: finite(given?.year, `${what}.year`),
+      month: finite(given?.month, `${what}.month`),
+      day: finite(given?.day, `${what}.day`),
+    });
+    // Everything else crosses as written, so a key the SDK does not read is
+    // refused by name there rather than dropped here.
+    const { from: given, to, place: where, utcOffsetSeconds, ...rest } = request;
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      ...rest,
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    const days = JSON.parse(run(this, (inner) => inner.pakshi(JSON.stringify(asked))));
+    return deepFreeze(days.map(pakshiDayFrom));
+  }
+}
+
+/**
+ * One day of `ts_pakshi`'s answer, its catalogue members by their full
+ * keys as the rest of the layer answers; the birds, activities and
+ * relations are Pancha Pakshi's own words and stay bare.
+ *
+ * @param {{ date: object, reading: object | null }} answer
+ * @returns {object}
+ */
+function pakshiDayFrom({ date: civil, reading }) {
+  return {
+    date: dateFrom({ ...civil, calendar: `calendar.${civil.calendar}` }),
+    reading:
+      reading === null
+        ? null
+        : {
+            ...reading,
+            day: { ...reading.day, vara: `vara.${reading.day.vara}`, paksha: `paksha.${reading.day.paksha}` },
+          },
+  };
 }
 
 export class Context {

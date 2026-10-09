@@ -717,6 +717,44 @@ def put_rashifal(geo: Context, place: Observer) -> None:
                 )
 
 
+def put_pakshi(geo: Context) -> None:
+    """The Pancha Pakshi requests every runner sends, at Madras: a native by
+    birth star in the dark half under Pulippani's lengths and relations
+    over two days, and a bird named outright under the defaults for one."""
+    madras = Observer(latitude_deg=Latitude(13.0827), longitude_deg=Longitude(80.2707), altitude_m=Altitude(6))
+    asked: list[dict[str, Any]] = [
+        {
+            "from_date": date(Calendar.GREGORIAN, 1984, 10, 30),
+            "to_date": date(Calendar.GREGORIAN, 1984, 10, 31),
+            "native": {"nakshatra": "nakshatra.UTTARA_ASHADHA", "paksha": "paksha.KRISHNA", "rule": "BY_PAKSHA"},
+            "rules": {"subs": "PULIPPANI", "relations": "PULIPPANI"},
+        },
+        {"from_date": date(Calendar.GREGORIAN, 1991, 5, 21), "native": {"bird": "OWL"}},
+    ]
+    for r, request in enumerate(asked):
+        for n, one in enumerate(geo.almanac.pakshi(place=madras, utc_offset_seconds=19800, **request)):
+            key = f"pakshi-{r}-{n}"
+            civil = f"{one.date.year}-{one.date.month}-{one.date.day}"
+            read = one.reading
+            if read is None:
+                put(key, f"{civil} none")
+                continue
+            day = read.day
+            put(
+                key,
+                f"{civil} {day.vara.full_key} {day.paksha.full_key} {number(day.sunrise)} {number(day.sunset)} "
+                f"{number(day.next_sunrise)} {read.bird} {read.death_bird} {str(read.dead_today).lower()} {','.join(read.eaters)}",
+            )
+            for k, yama in enumerate(read.yamas):
+                subs = ",".join(
+                    f"{s.activity}:{s.owner}:{s.share}:{s.owner_is}:{number(s.span.to)}" for s in yama.subs
+                )
+                put(
+                    f"{key}-yama-{k}",
+                    f"{yama.half} {yama.yama} {number(yama.span.from_)} {number(yama.span.to)} {yama.activity} {yama.quality} {subs}",
+                )
+
+
 def put_naam(ctx: Context) -> None:
     """Two pairs of names, as every runner asks them: a Devanagari pair
     whose groom's syllable is Abhijit's, placed in Shravana, and an IAST
@@ -2337,6 +2375,7 @@ def main() -> None:
         )
 
         put_rashifal(geo, place)
+        put_pakshi(geo)
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
@@ -2451,8 +2490,11 @@ def main() -> None:
         ("chart.layout", ctx.chart.layout),
         ("chart.found", ctx.chart.found),
         ("chart.found_many", ctx.chart.found_many),
+        ("chart.rashifal", ctx.chart.rashifal),
+        ("chart.rashifal_many", ctx.chart.rashifal_many),
         ("almanac.of", ctx.almanac.of),
         ("almanac.day", ctx.almanac.day),
+        ("almanac.pakshi", ctx.almanac.pakshi),
         ("engine.names", ctx.engine.names),
         ("engine.signature", ctx.engine.signature),
         ("engine.call", ctx.engine.call),

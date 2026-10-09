@@ -4309,6 +4309,39 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Reads a native's bird over each civil day of a range at a place and
+    /// answers with an array of `{date, reading}` as canonical JSON, one per
+    /// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+    /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
+    /// with every sub-period's activity, owner, span and how the native
+    /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
+    /// vara, paksha}`, the bird, its death bird and the first eaters; null on
+    /// a day the Sun does not both rise and set.
+    ///
+    /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+    /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
+    /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
+    /// place, the offset and `native` optional. A key it does not read, a
+    /// place or offset out of range or a native that is neither is
+    /// `INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context
+    /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+    /// `pakshi` family out.
+    #[napi]
+    pub fn pakshi(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::pakshi::ts_pakshi(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Reads periods of civil days at a place for each of the twelve signs and
     /// answers with an array of `{period, baseline}` as canonical JSON: the
     /// sky at the reference day's sunrise (or a clock time), each sign's

@@ -9671,6 +9671,84 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
     }
 }
 
+fn pakshi_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status =
+        unsafe { teistro_ffi::pakshi::ts_pakshi(ctx.handle, request.as_ptr(), &raw mut json) };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// Days of a native's bird cross as the façade reads them, one entry per
+/// day, and a refusal is named under `pakshi` (`03-design/pakshi.md`).
+#[test]
+fn pakshi_days_cross_as_the_facade_reads_them() {
+    let days = r#"{"first": {"year": 1984, "month": 10, "day": 30},
+        "last": {"year": 1984, "month": 11, "day": 1},
+        "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
+        "utcOffsetSeconds": 19800,
+        "native": {"nakshatra": "nakshatra.UTTARA_ASHADHA", "paksha": "paksha.SHUKLA"}}"#;
+    assert_eq!(
+        pakshi_json(&Ctx::defaults(), days).unwrap_err(),
+        Status::Capability
+    );
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed = pakshi_json(&ctx, days).unwrap();
+    let facade = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let kernel = facade
+        .almanac()
+        .pakshi_request(&teistro::PakshiRequest::from_json(days).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        teistro_core::envelope::canonical_json(&kernel.value)
+    );
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert_eq!(read.as_array().map(Vec::len), Some(3));
+    let wednesday = &read[1]["reading"];
+    assert_eq!(wednesday["bird"], serde_json::json!("COCK"));
+    assert_eq!(wednesday["yamas"].as_array().map(Vec::len), Some(10));
+    assert_eq!(
+        wednesday["yamas"][1]["activity"],
+        serde_json::json!("SLEEPING")
+    );
+    for (request, field) in [
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL", "nakshatra": "BHARANI", "paksha": "SHUKLA"}}"#,
+            "pakshi.native.bird",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"nakshatra": "BHARANI"}}"#,
+            "pakshi.native.paksha",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 95, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL"}}"#,
+            "pakshi.latitudeDeg",
+        ),
+        (
+            r#"{"first": {"year": 1984, "month": 10, "day": 31}, "latitudeDeg": 13, "longitudeDeg": 80, "utcOffsetSeconds": 19800, "native": {"bird": "OWL"}, "rules": {"clock": "SUNDIAL"}}"#,
+            "pakshi.rules.clock",
+        ),
+    ] {
+        assert_eq!(
+            pakshi_json(&ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// A chart request's `rectification` record answers the `rectification`
 /// section, the façade's own readings around each chart's instant on the
 /// request's clock, spelled as the section's description says; none
