@@ -569,14 +569,16 @@ pub struct EventStudy<'s> {
 
 impl<'s> EventStudy<'s> {
     /// A study of when each rule is delivered by `dasha`'s periods down to
-    /// the antardasha, events shuffled among the subjects by date, a rule
-    /// counting while it stands.
+    /// the antardasha under the null `shuffle` keeps, a rule counting while
+    /// it stands. The shuffle has no default: the two keep different
+    /// margins, and a dasha reads the age that a date shuffle moves (C364).
     #[must_use]
     pub fn new(
         subjects: &'s [Subject],
         request: &'s ChartRequest,
         rules: &'s RuleSet,
         dasha: DashaSystem,
+        shuffle: EventShuffle,
     ) -> EventStudy<'s> {
         EventStudy {
             subjects,
@@ -584,7 +586,7 @@ impl<'s> EventStudy<'s> {
             rules,
             dasha,
             depth: Depth::try_new(2).unwrap_or(Depth::MIN),
-            shuffle: EventShuffle::EventDates,
+            shuffle,
             holds: Holds::Standing,
         }
     }

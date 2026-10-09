@@ -2535,6 +2535,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   finite number. **Numbers:** a recombined study whose replicates share
   one value reads them with no spread, where the last bit of their mean
   had read as one.
+- **A timed study names its shuffle** (`03-design/research.md` step 7,
+  C362 to C365). `EventStudy::new` takes the `EventShuffle`, and the
+  record and every binding require it, where it had defaulted to the
+  date shuffle that moves the age a dasha reads. **Numbers:** a refusal
+  of too few permutations hints the fewest its own check accepts, where
+  for some alphas and families it had named a count the check refused.
 - **Pancha Pakshi** (`03-design/pakshi.md` steps 1 and 2).
   `teistro-pakshi` reads the five birds' activities by yama as one rule
   held to every cell of the printed tables, with the sub-periods, the

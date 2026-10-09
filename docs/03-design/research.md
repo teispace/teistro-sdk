@@ -390,10 +390,12 @@ a hint where one helps:
 - under `EventDates` with `Refuse`, a shuffled pairing that would put an
   event before a birth, and no permutation possible (`after_birth`);
 - `max_pairs` exceeded (`max_pairs`, with the pair count it would need);
-- a uniform expectation asked for a predicate that reads the clock time
-  (a house, a lagna, a sector), on `expected`: refused with the hint to
-  use `Recombine`. A predicate on signs alone may still use it, because
-  the Sun's sign is the date;
+- a uniform expectation, which is not offered at all, so `expected`
+  takes only the recombined control (C365). The sketch allowed one for a
+  predicate on signs alone, but births are seasonal and the Sun's stay in
+  a sign is unequal, so no predicate on a chart has one;
+- a timed study that names no `shuffle` (`research.shuffle`): neither is a
+  default (C364);
 - a shuffle version the build does not carry (`shuffle_version`).
 
 ## 3. Tests
@@ -482,7 +484,17 @@ uses fixed seeds, so the counts are exact and also golden.
    share with no spread.
 7. Cruxes for the conventions a reader could argue with: the p-value
    formula, max-T as the default family correction, the two event
-   shuffles, and the refusal of a uniform expectation.
+   shuffles, and the refusal of a uniform expectation. **Built**
+   2026-10-09 as C362 to C365. **Found** writing them against the code:
+   a timed study's shuffle defaulted to `EVENT_DATES`, against §2.5 and
+   the worst choice for a dasha, which reads the age a date shuffle
+   moves, so it is now required in the façade, the record and every
+   binding; and the hint on a refusal of too few permutations was
+   computed apart from the check it answered, so for some families it
+   named a count the check refused (alpha 0.3 over three rules) or one
+   more than the fewest it takes (0.01 over 73). The check and its hint
+   now read Bonferroni's own arithmetic, and a test walks the boundary
+   over a grid of alphas and family sizes.
 
 ## Sources
 

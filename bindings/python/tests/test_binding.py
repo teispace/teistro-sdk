@@ -1586,6 +1586,7 @@ class AnEngine(WithLibrary):
                     subjects=[],
                     rules={"shipped": ["YOGAS"]},
                     dasha=DashaSystem.VIMSHOTTARI,
+                    shuffle="AGES_AT_EVENT",
                     test={"seed": 1, "permutations": 19},
                 )
             self.assertEqual(refused.exception.field, "research.subjects")

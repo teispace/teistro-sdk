@@ -4194,8 +4194,8 @@ public final class Native {
      * `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
      * request's rules are, and what the study reads: `births` and `design`
      * (and a `test` for `COMPARE`); `births`, `control` and an optional
-     * `test` for `EXPECTED`; `subjects`, `dasha`, `test` and optionally
-     * `depth`, `shuffle` and `strata` for `TIMED`. A birth is `{instant,
+     * `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
+     * optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
      * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
      * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
      * number or a decimal string. A key it does not read, a field the study

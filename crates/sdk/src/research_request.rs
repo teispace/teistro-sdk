@@ -228,7 +228,7 @@ impl ResearchRequest {
     /// and what the study reads. `COUNTS` and `COMPARE` read `births` and
     /// `design`, `COMPARE` a `test` as well; `EXPECTED` reads `births`,
     /// `control` and an optional `test`; `TIMED` reads `subjects`, `dasha`,
-    /// a `test` and optionally `depth`, `shuffle` and `strata`. A birth is
+    /// `shuffle`, a `test` and optionally `depth` and `strata`. A birth is
     /// `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
     /// uncertaintyMinutes}`, the instant a Julian day in UTC and the last
     /// and the altitude optional, and a subject `{birth, event}`. A seed is
@@ -374,7 +374,7 @@ impl RequestAsked {
                 .map_err(|why| Error::invalid_arg(why.to_string()).with_field("dasha"))?,
                 depth: Depth::try_new(self.depth.unwrap_or(2))
                     .map_err(|why| Error::from(why).with_field("depth"))?,
-                shuffle: self.shuffle.unwrap_or(EventShuffle::EventDates),
+                shuffle: needed(self.shuffle, "shuffle", self.name())?,
                 strata: self.strata.clone(),
                 test: self.test()?,
             },
@@ -451,9 +451,8 @@ impl ResearchArea<'_> {
                 test,
             } => {
                 let request = template(subjects.first().map(|s| &s.birth), "subjects")?;
-                let events = EventStudy::new(subjects, &request, &asked.rules, *dasha)
+                let events = EventStudy::new(subjects, &request, &asked.rules, *dasha, *shuffle)
                     .to_depth(*depth)
-                    .shuffled(*shuffle)
                     .holding(asked.holds);
                 self.timed(events, strata.as_deref(), test)
                     .map(ResearchAnswer::Tested)

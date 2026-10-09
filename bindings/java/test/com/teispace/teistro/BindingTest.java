@@ -468,7 +468,8 @@ public final class BindingTest {
                 }
                 check(!tested.provenance().inputHash().equals(table.provenance().inputHash()), "another study");
                 TeistroException refused = refusal(() -> sky.research().timed(List.of(), yogas,
-                        DashaSystem.VIMSHOTTARI, Map.of("seed", 1, "permutations", 19), null));
+                        DashaSystem.VIMSHOTTARI, ResearchEventShuffle.AGES_AT_EVENT,
+                        Map.of("seed", 1, "permutations", 19), null));
                 same("research.subjects", refused.field(), "named by its record");
             }
         });
