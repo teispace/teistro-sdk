@@ -2525,6 +2525,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   shuffled by date or by age, and `expected` reads a sample against its
   own recombined population. Each answer's input hash is the study's
   pre-registration, and the thread count is not in it.
+- **Lal Kitab in every binding** (`03-design/lalkitab.md` steps 2 and
+  3). `sdk.chart().lalkitab(document, &request)` reads a chart's teva,
+  its 35-year cycle and, for a named year, its ruler, thirds and annual
+  teva from a varshphal list the reader supplies. The `lalkitab` request
+  and section cross to Node, Python, Dart and Java, each with its own
+  types, and every runner agrees value for value. A cycle's planet takes
+  the full key or the bare one. **Numbers:** none move.
 - **The Lal Kitab kernel** (`03-design/lalkitab.md` step 1).
   `teistro-lalkitab` reads the 1952 edition's computable parts, each table
   cited to its page and written as the book's rule where it states one: a

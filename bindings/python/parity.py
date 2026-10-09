@@ -229,6 +229,47 @@ def listed_or_dash(items: Iterable[str]) -> str:
     return ",".join(items) or "-"
 
 
+def put_lalkitab(at: str, lk: Any) -> None:
+    """A chart's Lal Kitab, each row under `at`."""
+
+    def keys(grahas: Iterable[Any]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    def piped(grahas: Iterable[Any]) -> str:
+        return "|".join(g.full_key for g in grahas)
+
+    flags = lk.reading.flags
+    year = lk.year
+    assert year is not None and year.annual is not None
+    put(
+        at,
+        f"{lk.cycle.planet.full_key}:{lk.cycle.year} {year.year}:{year.ruler.full_key} {keys(year.thirds)}"
+        f" {str(flags.ratandha).lower()} {str(flags.nabalig).lower()} {keys(flags.dharmi)}"
+        f" {listed_or_dash(piped(pair) for pair in flags.sathi)}",
+    )
+    for p in lk.reading.planets:
+        put(
+            f"{at}-planet-{p.graha.full_key}",
+            f"{p.house} {listed_or_dash(p.dignities)} {listed_or_dash(f'{o.owner.full_key}:{o.regard}' for o in p.owners)}"
+            f" {str(p.awake).lower()} {str(p.kayam).lower()}"
+            f" {listed_or_dash(f'{c.to}:{c.strength}:{piped(c.onto)}' for c in p.casts)}",
+        )
+    for h in lk.reading.houses:
+        put(
+            f"{at}-house-{h.house}",
+            f"{keys(h.occupants)} {listed_or_dash(f'{look.from_house}:{look.strength}' for look in h.looked_at_by)}"
+            f" {str(h.awake).lower()} {h.waker.full_key}",
+        )
+    masnui = listed_or_dash(f"{piped(m.pair)}:{m.house}:{m.counts_as}" for m in lk.reading.masnui)
+    rinas = listed_or_dash(
+        f"{d.rin}:{d.of.full_key}:{'|'.join(f'{e.enemy.full_key}@{e.house}' for e in d.seated)}" for d in lk.reading.rinas
+    )
+    pitri = listed_or_dash(f"{q.ninth.full_key}:{q.mercury}" for q in lk.reading.pitri)
+    put(f"{at}-debts", f"{masnui} {rinas} {pitri}")
+    put(f"{at}-periods", listed_or_dash(f"{p.planet.full_key}:{p.from_year}-{p.to_year}" for p in lk.periods))
+    put(f"{at}-annual", listed_or_dash(f"{p.graha.full_key}:{p.house}" for p in year.annual.planets))
+
+
 def put_remedies(at: str, rm: Any) -> None:
     """A chart's remedies, each row under `at`."""
 
@@ -1038,6 +1079,13 @@ def main() -> None:
             perfection={"house": 7, "rules": {"horizonDays": 120}},
             prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
+            # A varshphal list with the book's structure and none of its
+            # numbers: year y sends natal house h to h + y - 1, round the twelve.
+            lalkitab={
+                "cycle": {"planet": "graha.VENUS", "year": 17},
+                "year": 43,
+                "varshphal": {"rows": [[(h + y) % 12 + 1 for h in range(12)] for y in range(120)]},
+            },
             rectification=RECTIFICATION,
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
@@ -1679,6 +1727,9 @@ def main() -> None:
             rm = chart.remedies
             assert rm is not None
             put_remedies(f"chart-{i}-remedies", rm)
+            lk = chart.lalkitab
+            assert lk is not None
+            put_lalkitab(f"chart-{i}-lalkitab", lk)
             rc = chart.rectification
             assert rc is not None
             put_rectification(f"chart-{i}-rectification", rc)

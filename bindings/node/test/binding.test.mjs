@@ -4079,6 +4079,46 @@ test('a chart carries its prashna', () => {
 });
 
 /**
+ * Lal Kitab crosses whole: grahas as full keys, the cycle from the
+ * book's general start unless asked, the year and its annual teva only
+ * when asked, and a bad year refused by its record's name
+ * (`03-design/lalkitab.md`).
+ */
+test('a chart carries its Lal Kitab', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const instant = 2447995.4895833335;
+  assert.equal(ctx.chart.found({ instant, ...at }).lalkitab, null);
+
+  const plain = ctx.chart.found({ instant, ...at, lalkitab: {} }).lalkitab;
+  assert.deepEqual(plain.cycle, { planet: 'graha.SATURN', year: 1 });
+  assert.equal(plain.year, null, 'no year asked, none read');
+  assert.equal(plain.reading.planets.length, 9);
+  assert.equal(plain.reading.houses.length, 12);
+  assert.ok(plain.reading.planets.every((p) => p.graha.startsWith('graha.') && p.house >= 1 && p.house <= 12));
+  assert.equal(plain.periods[0].from, 1);
+  assert.equal(plain.periods.at(-1).to, 120);
+  assert.ok(Object.isFrozen(plain.reading.planets), 'frozen to its leaves');
+
+  const rows = Array.from({ length: 120 }, (_, y) => Array.from({ length: 12 }, (_, h) => ((h + y) % 12) + 1));
+  const read = ctx.chart.found({
+    instant,
+    ...at,
+    lalkitab: { cycle: { planet: 'graha.VENUS', year: 17 }, year: 43, varshphal: { rows } },
+  }).lalkitab;
+  assert.equal(read.year.ruler, 'graha.JUPITER', 'Venus from the 17th year gives the 43rd to Jupiter');
+  assert.deepEqual(read.year.thirds, ['graha.KETU', 'graha.JUPITER', 'graha.SUN']);
+  read.reading.planets.forEach((natal, n) =>
+    assert.equal(read.year.annual.planets[n].house, ((natal.house + 41) % 12) + 1, 'the list moves each house 42 on'),
+  );
+
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, lalkitab: { year: 121 } }),
+    (error) => error.field === 'lalkitab.year',
+  );
+});
+
+/**
  * Remedies cross whole: every catalogue key in full, the antardaśā's śānti
  * only once `at` asks for the running periods (the request asks for the
  * Vimśottarī daśā itself), and a bad rule refused by its record's name

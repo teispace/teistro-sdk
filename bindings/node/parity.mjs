@@ -371,6 +371,13 @@ const charts = geo.chart.foundMany({
   perfection: { house: 7, rules: { horizonDays: 120 } },
   prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
+  // A varshphal list with the book's structure and none of its numbers:
+  // year y sends natal house h to h + y − 1, round the twelve.
+  lalkitab: {
+    cycle: { planet: 'graha.VENUS', year: 17 },
+    year: 43,
+    varshphal: { rows: Array.from({ length: 120 }, (_, y) => Array.from({ length: 12 }, (_, h) => ((h + y) % 12) + 1)) },
+  },
   rectification: {
     purify: { minutes: 20 },
     conception: {},
@@ -1075,6 +1082,30 @@ for (const chart of charts) {
       `${one.twelfth.sign} ${devotions(one.twelfth.devotions)} ${list(one.twelfth.minor)} ${one.sign} ${one.house} ${devotions(one.joined)}`,
     );
   }
+  const lk = chart.lalkitab;
+  const lkFlags = lk.reading.flags;
+  put(
+    `chart-${i}-lalkitab`,
+    `${lk.cycle.planet}:${lk.cycle.year} ${lk.year.year}:${lk.year.ruler} ${list(lk.year.thirds)} ${lkFlags.ratandha} ${lkFlags.nabalig} ${list(lkFlags.dharmi)} ${list(lkFlags.sathi.map((pair) => pair.join('|')))}`,
+  );
+  lk.reading.planets.forEach((p) =>
+    put(
+      `chart-${i}-lalkitab-planet-${p.graha}`,
+      `${p.house} ${list(p.dignities)} ${list(p.owners.map((o) => `${o.owner}:${o.regard}`))} ${p.awake} ${p.kayam} ${list(p.casts.map((c) => `${c.to}:${c.strength}:${c.onto.join('|')}`))}`,
+    ),
+  );
+  lk.reading.houses.forEach((h) =>
+    put(
+      `chart-${i}-lalkitab-house-${h.house}`,
+      `${list(h.occupants)} ${list(h.lookedAtBy.map((l) => `${l.from}:${l.strength}`))} ${h.awake} ${h.waker}`,
+    ),
+  );
+  put(
+    `chart-${i}-lalkitab-debts`,
+    `${list(lk.reading.masnui.map((m) => `${m.pair.join('|')}:${m.house}:${m.countsAs}`))} ${list(lk.reading.rinas.map((r) => `${r.rin}:${r.of}:${r.seated.map((s) => `${s.enemy}@${s.house}`).join('|')}`))} ${list(lk.reading.pitri.map((p) => `${p.ninth}:${p.mercury}`))}`,
+  );
+  put(`chart-${i}-lalkitab-periods`, list(lk.periods.map((p) => `${p.planet}:${p.from}-${p.to}`)));
+  put(`chart-${i}-lalkitab-annual`, list(lk.year.annual.planets.map((p) => `${p.graha}:${p.house}`)));
   const { progressed: pg, directed: dr, contacts } = chart.progressions;
   put(
     `chart-${i}-progressed`,

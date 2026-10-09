@@ -1892,6 +1892,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_perfection(report, geo, index, document);
     the_prashna(report, geo, index, document);
     the_remedies(report, geo, index, document);
+    the_lalkitab(report, geo, index, document);
 }
 
 /// The prashna every runner asks for: the seventh house, a querent's
@@ -2443,6 +2444,168 @@ fn the_remedies(report: &mut Report, sdk: &Context, index: usize, document: &tei
         );
     }
     remedies_rites(report, &key, &read);
+}
+
+/// The Lal Kitab every runner asks for: the cycle from Venus in the 17th
+/// year, the 43rd year read, and a varshphal list with the book's
+/// structure and none of its numbers, year `y` sending natal house `h` to
+/// `h + y − 1` round the twelve.
+fn lalkitab_request() -> teistro::LalKitabRequest {
+    let rows = (0..120_u8)
+        .map(|year| {
+            core::array::from_fn(|column| {
+                (u8::try_from(column).expect("twelve columns") + year) % 12 + 1
+            })
+        })
+        .collect();
+    teistro::LalKitabRequest {
+        cycle: teistro::lalkitab::CycleStart::new(Graha::Venus, 17).expect("a valid start"),
+        year: Some(43),
+        varshphal: Some(teistro::VarshphalRows { rows }),
+    }
+}
+
+/// Lal Kitab as every runner prints it: the cycle, the year and the flags
+/// in one row, then each planet, each house, the pairs and debts, the
+/// periods and the annual teva's houses.
+fn the_lalkitab(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let read = sdk
+        .chart()
+        .lalkitab(document, &lalkitab_request())
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-lalkitab{what}");
+    let reading = &read.reading;
+    let flags = &reading.flags;
+    let year = read.year.as_ref().expect("a year was asked");
+    put(
+        report,
+        &key(""),
+        format!(
+            "{}:{} {}:{} {} {} {} {} {}",
+            read.cycle.planet.full_key(),
+            read.cycle.year,
+            year.year,
+            year.ruler.full_key(),
+            full_keys(&year.thirds),
+            flags.ratandha,
+            flags.nabalig,
+            full_keys(&flags.dharmi),
+            dashed(
+                flags
+                    .sathi
+                    .iter()
+                    .map(|[a, b]| format!("{}|{}", a.full_key(), b.full_key()))
+            )
+        ),
+    );
+    the_teva(report, &key, reading);
+    put(
+        report,
+        &key("-periods"),
+        dashed(
+            read.periods.iter().map(|period| {
+                format!("{}:{}-{}", period.planet.full_key(), period.from, period.to)
+            }),
+        ),
+    );
+    let annual = year.annual.as_ref().expect("a list was sent");
+    put(
+        report,
+        &key("-annual"),
+        dashed(
+            annual
+                .planets
+                .iter()
+                .map(|planet| format!("{}:{}", planet.graha.full_key(), planet.house)),
+        ),
+    );
+}
+
+/// The rows a Lal Kitab reading prints: each planet, each house and the
+/// debts, each under `key`.
+fn the_teva(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    reading: &teistro::lalkitab::Reading,
+) {
+    for planet in &reading.planets {
+        put(
+            report,
+            &key(&format!("-planet-{}", planet.graha.full_key())),
+            format!(
+                "{} {} {} {} {} {}",
+                planet.house,
+                dashed(planet.dignities.iter().map(wire_key)),
+                dashed(planet.owners.iter().map(|owner| format!(
+                    "{}:{}",
+                    owner.owner.full_key(),
+                    wire_key(&owner.regard)
+                ))),
+                planet.awake,
+                planet.kayam,
+                dashed(planet.casts.iter().map(|cast| format!(
+                    "{}:{}:{}",
+                    cast.to,
+                    wire_key(&cast.strength),
+                    pipe(&cast.onto)
+                )))
+            ),
+        );
+    }
+    for house in &reading.houses {
+        put(
+            report,
+            &key(&format!("-house-{}", house.house)),
+            format!(
+                "{} {} {} {}",
+                full_keys(&house.occupants),
+                dashed(house.looked_at_by.iter().map(|look| format!(
+                    "{}:{}",
+                    look.from,
+                    wire_key(&look.strength)
+                ))),
+                house.awake,
+                house.waker.full_key()
+            ),
+        );
+    }
+    put(
+        report,
+        &key("-debts"),
+        format!(
+            "{} {} {}",
+            dashed(reading.masnui.iter().map(|formed| format!(
+                "{}:{}:{}",
+                pipe(&formed.pair),
+                formed.house,
+                wire_key(&formed.counts_as)
+            ))),
+            dashed(reading.rinas.iter().map(|debt| format!(
+                "{}:{}:{}",
+                wire_key(&debt.rin),
+                debt.of.full_key(),
+                debt.seated
+                    .iter()
+                    .map(|seat| format!("{}@{}", seat.enemy.full_key(), seat.house))
+                    .collect::<Vec<_>>()
+                    .join("|")
+            ))),
+            dashed(reading.pitri.iter().map(|state| format!(
+                "{}:{}",
+                state.ninth.full_key(),
+                state.mercury
+            )))
+        ),
+    );
+}
+
+/// Grahas' full keys joined by `|`, empty for none.
+fn pipe(grahas: &[Graha]) -> String {
+    grahas
+        .iter()
+        .map(|graha| graha.full_key())
+        .collect::<Vec<_>>()
+        .join("|")
 }
 
 /// Each śānti and the ishṭa-devatā, as every runner prints them.

@@ -280,7 +280,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 312,
+    "ts_chart_request": 320,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -731,6 +731,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("prashna_json", ctypes.c_char_p),
         ("remedies_json", ctypes.c_char_p),
         ("rectification_json", ctypes.c_char_p),
+        ("lalkitab_json", ctypes.c_char_p),
     ]
 
 
@@ -2727,6 +2728,21 @@ class ChartRequest:
     Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
     """
 
+    lalkitab_json: Optional[str] = None
+    """Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+    object, every member optional: `cycle` (`{planet, year}`, where the
+    35-year cycle starts, the book's general table from Saturn in the
+    first year when left out), `year` (a year of life from 1, the year
+    from birth to the first birthday, to read its ruler, its thirds and
+    its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+    annual teva is read from, which the SDK does not ship and checks
+    row by row). Each chart's reading comes back in the `lalkitab`
+    section. Null for none, which costs nothing
+    (`03-design/lalkitab.md`). Refusals are named from the record every
+    binding calls `lalkitab`, as `lalkitab.cycle.year`.
+    Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2840,6 +2856,9 @@ class ChartRequest:
         _rectification_json = None if self.rectification_json is None else self.rectification_json.encode("utf-8")
         owned.append(_rectification_json)
         raw.rectification_json = _rectification_json
+        _lalkitab_json = None if self.lalkitab_json is None else self.lalkitab_json.encode("utf-8")
+        owned.append(_lalkitab_json)
+        raw.lalkitab_json = _lalkitab_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2901,6 +2920,7 @@ class ChartRequest:
             prashna_json=_text(raw.prashna_json),
             remedies_json=_text(raw.remedies_json),
             rectification_json=_text(raw.rectification_json),
+            lalkitab_json=_text(raw.lalkitab_json),
         )
 
 

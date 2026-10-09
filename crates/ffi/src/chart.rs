@@ -4872,6 +4872,9 @@ pub struct Composed<'a> {
     /// Every chart's remedies, as canonical JSON (`remedies.md`); empty
     /// when none were asked for.
     pub remedies: &'a str,
+    /// Every chart read as Lal Kitab reads it, as canonical JSON
+    /// (`lalkitab.md`); empty when none was asked for.
+    pub lalkitab: &'a str,
     /// Every chart read as a birth time to rectify, as canonical JSON
     /// (`rectification.md`); empty when none was asked for.
     pub rectification: &'a str,
@@ -4884,7 +4887,7 @@ pub struct Composed<'a> {
 impl Composed<'_> {
     /// Writes the sections the composers answered as text, each as it
     /// came: the drawings, the rules, the plans, KP, prashna, the
-    /// remedies and the rectification. The
+    /// remedies, Lal Kitab and the rectification. The
     /// writer takes sections in any order, so these need not sit among
     /// the columns they follow in the schema.
     fn write_texts(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -4895,6 +4898,7 @@ impl Composed<'_> {
             ("kp", self.kp),
             ("prashna", self.prashna),
             ("remedies", self.remedies),
+            ("lalkitab", self.lalkitab),
             ("rectification", self.rectification),
         ] {
             writer.bytes(name, text.as_bytes())?;
@@ -5745,6 +5749,7 @@ fn hits_of(
 struct ChartReadings {
     prashna: String,
     remedies: String,
+    lalkitab: String,
     rectification: String,
 }
 
@@ -5760,6 +5765,7 @@ impl ChartReadings {
         Ok(Self {
             prashna: crate::family::prashna::json(sdk, documents, records.prashna.as_ref())?,
             remedies: crate::family::remedies::json(sdk, documents, records.remedies.as_ref())?,
+            lalkitab: crate::family::lalkitab::json(sdk, documents, records.lalkitab.as_ref())?,
             rectification: crate::family::rectification::json(
                 sdk,
                 documents,
@@ -6214,6 +6220,7 @@ struct AskedRecords {
     matching: Option<teistro::PartnerMatching>,
     prashna: Option<crate::family::prashna::Request>,
     remedies: Option<crate::family::remedies::Request>,
+    lalkitab: Option<crate::family::lalkitab::Request>,
     rectification: Option<crate::family::rectification::Request>,
 }
 
@@ -6280,6 +6287,7 @@ impl AskedRecords {
                     .transpose()?,
                 prashna: crate::family::prashna::request_of(asked.prashna_json)?,
                 remedies: crate::family::remedies::request_of(asked.remedies_json)?,
+                lalkitab: crate::family::lalkitab::request_of(asked.lalkitab_json)?,
                 rectification: crate::family::rectification::request_of(asked.rectification_json)?,
             })
             .and_then(AskedRecords::one_table)
@@ -6513,6 +6521,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 matchings: &matchings,
                 prashna: &readings.prashna,
                 remedies: &readings.remedies,
+                lalkitab: &readings.lalkitab,
                 rectification: &readings.rectification,
                 hashes: &hashes,
             },

@@ -1495,6 +1495,40 @@ class AnEngine(WithLibrary):
                 ctx.chart.found(instant=instant, prashna={"question": {"house": 13}}, **at)
             self.assertEqual(refused.exception.field, "prashna.question.house")
 
+    def test_a_chart_carries_its_lalkitab(self) -> None:
+        """Lal Kitab crosses whole, its grahas made members, the cycle from
+        the book's general start unless asked, the year and its annual teva
+        only when asked, and a bad year refused by its record's name
+        (`03-design/lalkitab.md`)."""
+        from teistro import TeistroError
+
+        observer = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        instant = 2447995.4895833335
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=instant, **at).lalkitab)
+            plain = ctx.chart.found(instant=instant, lalkitab={}, **at).lalkitab
+            assert plain is not None
+            self.assertEqual((plain.cycle.planet, plain.cycle.year), (Graha.SATURN, 1))
+            self.assertIsNone(plain.year)
+            self.assertEqual(len(plain.reading.planets), 9)
+            self.assertTrue(all(isinstance(p.graha, Graha) and 1 <= p.house <= 12 for p in plain.reading.planets))
+            self.assertEqual((plain.periods[0].from_year, plain.periods[-1].to_year), (1, 120))
+            rows = [[(h + y) % 12 + 1 for h in range(12)] for y in range(120)]
+            read = ctx.chart.found(
+                instant=instant,
+                lalkitab={"cycle": {"planet": Graha.VENUS, "year": 17}, "year": 43, "varshphal": {"rows": rows}},
+                **at,
+            ).lalkitab
+            assert read is not None and read.year is not None and read.year.annual is not None
+            self.assertEqual(read.year.ruler, Graha.JUPITER)
+            self.assertEqual(read.year.thirds, (Graha.KETU, Graha.JUPITER, Graha.SUN))
+            for natal, moved in zip(read.reading.planets, read.year.annual.planets):
+                self.assertEqual(moved.house, (natal.house + 41) % 12 + 1)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, lalkitab={"year": 121}, **at)
+            self.assertEqual(refused.exception.field, "lalkitab.year")
+
     def test_a_chart_carries_its_remedies(self) -> None:
         """Remedies cross whole, their keys made members, the antardaśā's
         śānti only once `at` asks for the running periods (the request asks

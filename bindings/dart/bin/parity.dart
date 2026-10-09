@@ -152,7 +152,54 @@ void putMatter(String at, TajikaMatter m) {
   put('$at-held', m.held.map(heldSaid).join(' '));
 }
 
-/// The items joined by commas, or `-`.
+/// A chart's Lal Kitab, each row under [at].
+void putLalKitab(String at, LalKitab lk) {
+  String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
+  String piped(Iterable<Graha> grahas) =>
+      grahas.map((g) => g.fullKey).join('|');
+  final reading = lk.reading;
+  final flags = reading.flags;
+  final year = lk.year!;
+  put(
+    at,
+    '${lk.cycle.planet.fullKey}:${lk.cycle.year} '
+    '${year.year}:${year.ruler.fullKey} ${keys(year.thirds)} '
+    '${flags.ratandha} ${flags.nabalig} ${keys(flags.dharmi)} '
+    '${joined(flags.sathi.map(piped))}',
+  );
+  for (final p in reading.planets) {
+    put(
+      '$at-planet-${p.graha.fullKey}',
+      '${p.house} ${joined(p.dignities.map((d) => d.key))} '
+          '${joined(p.owners.map((o) => '${o.owner.fullKey}:${o.regard.key}'))} '
+          '${p.awake} ${p.kayam} '
+          '${joined(p.casts.map((c) => '${c.to}:${c.strength.key}:${piped(c.onto)}'))}',
+    );
+  }
+  for (final h in reading.houses) {
+    put(
+      '$at-house-${h.house}',
+      '${keys(h.occupants)} '
+          '${joined(h.lookedAtBy.map((l) => '${l.from}:${l.strength.key}'))} '
+          '${h.awake} ${h.waker.fullKey}',
+    );
+  }
+  put(
+    '$at-debts',
+    '${joined(reading.masnui.map((m) => '${piped(m.pair)}:${m.house}:${m.countsAs.key}'))} '
+        '${joined(reading.rinas.map((r) => '${r.rin.key}:${r.of.fullKey}:${r.seated.map((s) => '${s.enemy.fullKey}@${s.house}').join('|')}'))} '
+        '${joined(reading.pitri.map((p) => '${p.ninth.fullKey}:${p.mercury}'))}',
+  );
+  put(
+    '$at-periods',
+    joined(lk.periods.map((p) => '${p.planet.fullKey}:${p.from}-${p.to}')),
+  );
+  put(
+    '$at-annual',
+    joined(year.annual!.planets.map((p) => '${p.graha.fullKey}:${p.house}')),
+  );
+}
+
 /// A chart's remedies, each row under [at].
 void putRemedies(String at, Remedies rm) {
   String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
@@ -1063,6 +1110,16 @@ void main() {
       at: 2460676.5,
       rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
     ),
+    // A varshphal list with the book's structure and none of its numbers:
+    // year y sends natal house h to h + y − 1, round the twelve.
+    lalkitab: LalKitabRequest(
+      cycle: const LalKitabCycle(planet: Graha.venus, year: 17),
+      year: 43,
+      varshphal: [
+        for (var y = 0; y < 120; y++)
+          [for (var h = 0; h < 12; h++) (h + y) % 12 + 1],
+      ],
+    ),
     rectification: rectificationAsked,
     westernAspects: const WesternAspectRequest(
       aspects: [
@@ -1827,6 +1884,7 @@ void main() {
           'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
     );
     putRemedies('chart-$i-remedies', chart.remedies!);
+    putLalKitab('chart-$i-lalkitab', chart.lalkitab!);
     putRectification('chart-$i-rectification', chart.rectification!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;

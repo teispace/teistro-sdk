@@ -2751,6 +2751,97 @@ export interface PrashnaScore {
   readonly applyingTo: Graha | null;
 }
 
+/** Lal Kitab to read in every chart, every member optional (`03-design/lalkitab.md`). */
+export interface LalKitabRequest {
+  /** Where the 35-year cycle starts; the book's general table (Saturn from the first year) when left out. */
+  readonly cycle?: { readonly planet: Graha; readonly year: number };
+  /** The year of life to read, from 1 (birth to the first birthday); none when left out. */
+  readonly year?: number;
+  /** The 120-year varshphal list the year's annual teva is read from, row `y − 1` for year `y`; the SDK does not ship the book's. */
+  readonly varshphal?: { readonly rows: readonly (readonly number[])[] };
+}
+
+/** How strongly one house looks at another. */
+export type LalKitabStrength = 'QUARTER' | 'HALF' | 'FULL';
+
+/** What a teva says (`03-design/lalkitab.md` §3). */
+export interface LalKitabReading {
+  readonly planets: readonly {
+    readonly graha: Graha;
+    /** Its house, 1 to 12, the whole-sign house from the lagna. */
+    readonly house: number;
+    readonly dignities: readonly ('PAKKA' | 'EXALTED' | 'DEBILITATED' | 'OWN')[];
+    /** The house's owners and how this planet regards each (1952 p. 31). */
+    readonly owners: readonly { readonly owner: Graha; readonly regard: 'FRIEND' | 'EQUAL' | 'ENEMY' }[];
+    readonly awake: boolean;
+    /** In a dignity, alone in its house and looked at from no occupied house. */
+    readonly kayam: boolean;
+    /** The aspects it casts, forward only. */
+    readonly casts: readonly { readonly to: number; readonly strength: LalKitabStrength; readonly onto: readonly Graha[] }[];
+  }[];
+  readonly houses: readonly {
+    readonly house: number;
+    readonly occupants: readonly Graha[];
+    /** The occupied houses that look at it. */
+    readonly lookedAtBy: readonly { readonly from: number; readonly strength: LalKitabStrength }[];
+    /** Occupied, or looked at from an occupied house. */
+    readonly awake: boolean;
+    /** The planet whose presence wakes it (1952 p. 98). */
+    readonly waker: Graha;
+  }[];
+  /** The artificial planets pairs in one house make (1952 p. 27). */
+  readonly masnui: readonly {
+    readonly pair: readonly Graha[];
+    readonly house: number;
+    readonly countsAs:
+      | 'JUPITER'
+      | 'SUN'
+      | 'MOON'
+      | 'VENUS'
+      | 'MARS_BENEFIC'
+      | 'MARS_MALEFIC'
+      | 'MERCURY'
+      | 'SATURN_LIKE_KETU'
+      | 'SATURN_LIKE_RAHU'
+      | 'RAHU_EXALTED'
+      | 'RAHU_DEBILITATED'
+      | 'KETU_EXALTED'
+      | 'KETU_DEBILITATED';
+  }[];
+  /** The debts the teva carries (1952 p. 125). */
+  readonly rinas: readonly {
+    readonly rin: 'PITRI' | 'SWA' | 'MATRI' | 'STRI' | 'RISHTEDARI' | 'BHAGINI' | 'ZALIMANA' | 'AJANMA' | 'DAIVI';
+    readonly of: Graha;
+    readonly seated: readonly { readonly enemy: Graha; readonly house: number }[];
+  }[];
+  /** The ancestors' debt's first state: a planet in 9 with Mercury in its root (1952 p. 128). */
+  readonly pitri: readonly { readonly ninth: Graha; readonly mercury: number }[];
+  readonly flags: {
+    readonly ratandha: boolean;
+    readonly nabalig: boolean;
+    readonly dharmi: readonly Graha[];
+    readonly sathi: readonly (readonly Graha[])[];
+  };
+}
+
+/** A chart read as Lal Kitab reads it (`03-design/lalkitab.md`). */
+export interface LalKitab {
+  readonly reading: LalKitabReading;
+  /** Where the cycle was started. */
+  readonly cycle: { readonly planet: Graha; readonly year: number };
+  /** The 35-year cycle's periods over years 1 to 120 of life, both ends included. */
+  readonly periods: readonly { readonly planet: Graha; readonly from: number; readonly to: number }[];
+  /** The year asked for; `null` unless the request named one. */
+  readonly year: {
+    readonly year: number;
+    readonly ruler: Graha;
+    /** The planets of months 1–4, 5–8 and 9–12 (1952 p. 34). */
+    readonly thirds: readonly Graha[];
+    /** The annual teva's reading; `null` without a `varshphal` list. */
+    readonly annual: LalKitabReading | null;
+  } | null;
+}
+
 /** Remedies to read in every chart, every member optional (`03-design/remedies.md`). */
 export interface RemedyRequest {
   /** The instant, a Julian day in UT, whose running Vimśottarī periods are read; none when left out. */
@@ -4953,6 +5044,12 @@ export declare class Chart {
    */
   readonly remedies: Remedies | null;
   /**
+   * The chart read as Lal Kitab reads it: the teva's reading, the 35-year
+   * cycle and the year asked for; `null` unless `lalkitab` asked
+   * (`03-design/lalkitab.md`).
+   */
+  readonly lalkitab: LalKitab | null;
+  /**
    * The chart read as a birth time to rectify: the purifier's runs, the
    * conception, the circumstances and the baseline's cascade, each `null`
    * unless asked; the whole `null` unless `rectification` asked
@@ -6173,6 +6270,12 @@ export interface ChartRequest {
    * rules with no periods running.
    */
   readonly remedies?: RemedyRequest;
+  /**
+   * Lal Kitab to read in every chart, read back as each chart's
+   * `lalkitab` (`03-design/lalkitab.md`). None by default; `{}` reads the
+   * teva and the general cycle with no year.
+   */
+  readonly lalkitab?: LalKitabRequest;
   /**
    * A birth time to rectify, read around every chart's instant and read
    * back as each chart's `rectification` (`03-design/rectification.md`).
