@@ -49,6 +49,7 @@ members = [
     "crates/idl",
     "crates/sdk",
     "crates/ffi",
+    "crates/mcp",
     "bindings/node/native",
     "bindings/wasm/native",
     # Spike 2 (spikes/README.md): built and linted like the rest, never published.

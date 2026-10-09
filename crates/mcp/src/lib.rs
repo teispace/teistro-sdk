@@ -1,0 +1,414 @@
+//! The Teistro SDK as tools an agent calls: a Model Context Protocol
+//! server answering every record entry point of the Rust façade
+//! (`03-design/mcp-server.md`).
+//!
+//! The server is **dual-era** (D1). A request carrying the modern
+//! revision's `_meta` (`io.modelcontextprotocol/protocolVersion` naming
+//! [`MODERN`]) is served statelessly; `initialize` selects the handshake
+//! revision, [`LEGACY`], for the rest of the process. Either way a tool is
+//! a record the façade already reads (D3), answered as the envelope the
+//! bindings read (D4) under the profile, settings and locale the call
+//! names (D5), and a refusal is a tool error naming its field (D7).
+//!
+//! [`Server::handle`] takes one JSON-RPC message and gives the reply, so
+//! the transport is the caller's: the binary speaks stdio, and the same
+//! server answers any transport that delivers a message at a time.
+//!
+//! ```
+//! use teistro_mcp::{Engine, Server};
+//!
+//! let mut server = Server::new(Engine::None);
+//! let reply = server
+//!     .handle(r#"{"jsonrpc":"2.0","id":1,"method":"server/discover"}"#)
+//!     .expect("a request is answered");
+//! assert!(reply.contains(r#""supportedVersions":["2026-07-28","2025-11-25"]"#));
+//! ```
+
+use std::collections::HashMap;
+use std::collections::hash_map::Entry;
+
+use serde_json::{Map, Value, json};
+use teistro::records::{Answered, Record};
+use teistro::{Context, Ephemeris, Error};
+use teistro_core::envelope::canonical_json;
+use teistro_core::settings::DEFAULT_PROFILE;
+
+mod tools;
+
+/// The stateless revision the server speaks.
+pub const MODERN: &str = "2026-07-28";
+/// The handshake revision the server speaks after `initialize`.
+pub const LEGACY: &str = "2025-11-25";
+/// Every revision the server speaks, newest first.
+pub const SUPPORTED: [&str; 2] = [MODERN, LEGACY];
+
+const VERSION_META: &str = "io.modelcontextprotocol/protocolVersion";
+const SERVER_INFO_META: &str = "io.modelcontextprotocol/serverInfo";
+
+/// How long a client may keep the tool list: it changes only with the
+/// binary, so a day.
+const LIST_TTL_MS: u64 = 86_400_000;
+
+/// The contexts kept before the cache starts again. A context is the
+/// profile resolved and the locale engine loaded, which is what a call
+/// would otherwise pay each time; an agent asks under a handful of
+/// settings, so a small bound keeps every one it uses.
+const CONTEXTS: usize = 16;
+
+const PARSE_ERROR: i64 = -32_700;
+const INVALID_REQUEST: i64 = -32_600;
+const METHOD_NOT_FOUND: i64 = -32_601;
+const INVALID_PARAMS: i64 = -32_602;
+const UNSUPPORTED_VERSION: i64 = -32_022;
+
+const INSTRUCTIONS: &str = "Every tool computes; nothing is recalled. An answer is \
+`{value, provenance}`: the provenance names the settings hash, the input hash and every \
+convention applied, so a number quoted from it can be reproduced. Each call names its own \
+`profile`, `settings` (a patch over the profile) and `locale`; `settings.describe` answers \
+the profiles and every setting with its documentation. A refusal is a tool error naming the \
+field, the accepted range and a hint: fix that field and call again.";
+
+/// The ephemeris every context computes with, chosen on the server's
+/// command line and never by a tool argument (D6).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Engine {
+    /// The analytic ephemeris the SDK carries.
+    Builtin,
+    /// The Surya Siddhanta's own astronomy.
+    SuryaSiddhanta,
+    /// None: calendars and numerology answer, a position refuses.
+    None,
+}
+
+impl Engine {
+    /// The names [`Engine::from_name`] reads, as every binding names them.
+    pub const NAMES: [&'static str; 3] = ["BUILTIN", "SURYA_SIDDHANTA", "NONE"];
+
+    /// The engine called `name`.
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Engine> {
+        match name {
+            "BUILTIN" => Some(Engine::Builtin),
+            "SURYA_SIDDHANTA" => Some(Engine::SuryaSiddhanta),
+            "NONE" => Some(Engine::None),
+            _ => None,
+        }
+    }
+
+    fn entry(self) -> Ephemeris {
+        match self {
+            Engine::Builtin => Ephemeris::Builtin,
+            Engine::SuryaSiddhanta => Ephemeris::SuryaSiddhanta,
+            Engine::None => Ephemeris::None,
+        }
+    }
+}
+
+/// Which revision a request is answered under.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Era {
+    Modern,
+    Legacy,
+}
+
+/// A failure of the protocol itself, answered as a JSON-RPC error.
+#[derive(Debug)]
+struct Fault {
+    code: i64,
+    message: String,
+    data: Option<Value>,
+}
+
+impl Fault {
+    fn new(code: i64, message: impl Into<String>) -> Fault {
+        Fault {
+            code,
+            message: message.into(),
+            data: None,
+        }
+    }
+}
+
+/// What a context is built from: the profile, the canonical settings
+/// patch and the locale tag, empty where the call named none.
+type ContextKey = (String, String, String);
+
+/// The server: the engine it was started with, whether `initialize` chose
+/// the handshake revision, and the contexts it has built.
+///
+/// The contexts are a cache and not state: no answer depends on what was
+/// asked before (D5).
+pub struct Server {
+    engine: Engine,
+    legacy: bool,
+    contexts: HashMap<ContextKey, Context>,
+}
+
+impl core::fmt::Debug for Server {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Server")
+            .field("engine", &self.engine)
+            .field("legacy", &self.legacy)
+            .field("contexts", &self.contexts.len())
+            .finish()
+    }
+}
+
+impl Server {
+    /// A server computing with `engine`.
+    #[must_use]
+    pub fn new(engine: Engine) -> Server {
+        Server {
+            engine,
+            legacy: false,
+            contexts: HashMap::new(),
+        }
+    }
+
+    /// The reply to one JSON-RPC message, or `None` for a notification.
+    pub fn handle(&mut self, message: &str) -> Option<String> {
+        let message: Value = match serde_json::from_str(message) {
+            Ok(message) => message,
+            Err(why) => {
+                return Some(failure(
+                    &Value::Null,
+                    &Fault::new(PARSE_ERROR, format!("the message is not JSON: {why}")),
+                ));
+            }
+        };
+        let Some(object) = message.as_object() else {
+            return Some(failure(
+                &Value::Null,
+                &Fault::new(
+                    INVALID_REQUEST,
+                    "a message is one JSON object; batches are not part of the protocol",
+                ),
+            ));
+        };
+        let id = object.get("id");
+        let Some(method) = object.get("method").and_then(Value::as_str) else {
+            // A response to a request the server never sends, or nothing.
+            return id.map(|id| {
+                failure(
+                    id,
+                    &Fault::new(INVALID_REQUEST, "a request names its `method`"),
+                )
+            });
+        };
+        let empty = Value::Object(Map::new());
+        let params = object.get("params").unwrap_or(&empty);
+        // A notification asks for nothing back: `initialized` and
+        // `cancelled` change nothing here, and every call finishes before
+        // the next message is read.
+        let id = id?;
+        Some(match self.request(method, params) {
+            Ok(result) => success(id, &result),
+            Err(fault) => failure(id, &fault),
+        })
+    }
+
+    fn request(&mut self, method: &str, params: &Value) -> Result<Value, Fault> {
+        match method {
+            "initialize" => Ok(self.initialize()),
+            "ping" => Ok(json!({})),
+            "server/discover" => Ok(discover()),
+            "tools/list" => {
+                let era = self.era(params)?;
+                let mut list = tools::list();
+                if era == Era::Modern {
+                    list.insert(String::from("ttlMs"), json!(LIST_TTL_MS));
+                    list.insert(String::from("cacheScope"), json!("public"));
+                }
+                Ok(complete(era, list))
+            }
+            "tools/call" => {
+                let era = self.era(params)?;
+                Ok(complete(era, self.call(params)?))
+            }
+            _ => Err(Fault::new(
+                METHOD_NOT_FOUND,
+                format!(
+                    "no method `{method}`: the server answers `server/discover`, `tools/list` \
+                     and `tools/call`, and `initialize` and `ping` under {LEGACY}"
+                ),
+            )),
+        }
+    }
+
+    /// The handshake: the legacy revision, for the rest of the process.
+    fn initialize(&mut self) -> Value {
+        self.legacy = true;
+        json!({
+            "protocolVersion": LEGACY,
+            "capabilities": { "tools": { "listChanged": false } },
+            "serverInfo": server_info(),
+            "instructions": INSTRUCTIONS,
+        })
+    }
+
+    /// The revision a request is answered under: the one its `_meta`
+    /// names, or the handshake's once `initialize` chose it.
+    fn era(&self, params: &Value) -> Result<Era, Fault> {
+        let requested = params
+            .get("_meta")
+            .and_then(|meta| meta.get(VERSION_META))
+            .and_then(Value::as_str);
+        match requested {
+            Some(MODERN) => Ok(Era::Modern),
+            Some(LEGACY) => Ok(Era::Legacy),
+            None if self.legacy => Ok(Era::Legacy),
+            _ => Err(Fault {
+                code: UNSUPPORTED_VERSION,
+                message: match requested {
+                    Some(version) => format!("the server does not speak revision {version}"),
+                    None => format!(
+                        "the request names no revision: send `_meta.{VERSION_META}`, or \
+                         `initialize` first"
+                    ),
+                },
+                data: Some(json!({ "supported": SUPPORTED, "requested": requested })),
+            }),
+        }
+    }
+
+    fn call(&mut self, params: &Value) -> Result<Map<String, Value>, Fault> {
+        let name = params
+            .get("name")
+            .and_then(Value::as_str)
+            .ok_or_else(|| Fault::new(INVALID_PARAMS, "`tools/call` names its tool in `name`"))?;
+        let empty = Map::new();
+        let arguments = match params.get("arguments") {
+            None | Some(Value::Null) => &empty,
+            Some(Value::Object(arguments)) => arguments,
+            Some(_) => return Err(Fault::new(INVALID_PARAMS, "`arguments` is an object")),
+        };
+        let outcome = if name == tools::DESCRIBE {
+            tools::describe(arguments)
+        } else {
+            let record = teistro::records::record(name).ok_or_else(|| {
+                Fault::new(
+                    INVALID_PARAMS,
+                    format!("no tool `{name}`: `tools/list` names every one"),
+                )
+            })?;
+            self.answer(record, arguments)
+        };
+        Ok(match outcome {
+            Ok(structured) => tool_result(structured, false),
+            Err(refusal) => tool_result(refused(&refusal), true),
+        })
+    }
+
+    /// A record tool's answer: the arguments read, the context they name,
+    /// and the record answered under it as the envelope.
+    fn answer(&mut self, record: Record, arguments: &Map<String, Value>) -> Result<Value, Error> {
+        let asked = tools::Arguments::read(arguments)?;
+        let context = self.context(&asked)?;
+        envelope(record.answer(context, &asked.request)?)
+    }
+
+    fn context(&mut self, asked: &tools::Arguments) -> Result<&Context, Error> {
+        let key: ContextKey = (
+            asked
+                .profile
+                .clone()
+                .unwrap_or_else(|| DEFAULT_PROFILE.to_owned()),
+            asked.settings.clone().unwrap_or_default(),
+            asked.locale.clone().unwrap_or_default(),
+        );
+        if !self.contexts.contains_key(&key) && self.contexts.len() >= CONTEXTS {
+            self.contexts.clear();
+        }
+        Ok(match self.contexts.entry(key) {
+            Entry::Occupied(entry) => entry.into_mut(),
+            Entry::Vacant(entry) => {
+                let (profile, settings, locale) = entry.key();
+                let mut builder = Context::builder()
+                    .profile(profile.as_str())
+                    .ephemeris([self.engine.entry()]);
+                if !settings.is_empty() {
+                    builder = builder.settings_json(settings.as_str());
+                }
+                if !locale.is_empty() {
+                    builder = builder.locale(locale.as_str());
+                }
+                entry.insert(builder.build()?)
+            }
+        })
+    }
+}
+
+/// The modern revision's discovery answer.
+fn discover() -> Value {
+    json!({
+        "resultType": "complete",
+        "supportedVersions": SUPPORTED,
+        "capabilities": { "tools": { "listChanged": false } },
+        "instructions": INSTRUCTIONS,
+        "ttlMs": LIST_TTL_MS,
+        "cacheScope": "public",
+        "_meta": { SERVER_INFO_META: server_info() },
+    })
+}
+
+fn server_info() -> Value {
+    json!({
+        "name": env!("CARGO_PKG_NAME"),
+        "title": "Teistro",
+        "version": env!("CARGO_PKG_VERSION"),
+    })
+}
+
+/// A result as its revision writes it: the modern one marks it complete.
+fn complete(era: Era, mut result: Map<String, Value>) -> Value {
+    if era == Era::Modern {
+        result.insert(String::from("resultType"), json!("complete"));
+    }
+    Value::Object(result)
+}
+
+/// An answer as the bindings read it: `{value, provenance}`, the
+/// provenance absent where the area seals none.
+fn envelope(answered: Answered) -> Result<Value, Error> {
+    let mut envelope = Map::new();
+    envelope.insert(String::from("value"), answered.value);
+    if let Some(provenance) = answered.provenance {
+        let provenance = serde_json::to_value(provenance)
+            .map_err(|why| Error::internal(format!("a provenance serde cannot write: {why}")))?;
+        envelope.insert(String::from("provenance"), provenance);
+    }
+    Ok(Value::Object(envelope))
+}
+
+/// A refusal as structured content: the SDK's own error record, its
+/// status, field, message and hint (D7).
+fn refused(refusal: &Error) -> Value {
+    serde_json::to_value(refusal).unwrap_or_else(|_| json!({ "message": refusal.to_string() }))
+}
+
+/// A tool's result: the structured content, and the same JSON as text for
+/// a client that reads only text.
+fn tool_result(structured: Value, is_error: bool) -> Map<String, Value> {
+    let mut result = Map::new();
+    result.insert(
+        String::from("content"),
+        json!([{ "type": "text", "text": canonical_json(&structured) }]),
+    );
+    result.insert(String::from("structuredContent"), structured);
+    result.insert(String::from("isError"), json!(is_error));
+    result
+}
+
+fn success(id: &Value, result: &Value) -> String {
+    json!({ "jsonrpc": "2.0", "id": id, "result": result }).to_string()
+}
+
+fn failure(id: &Value, fault: &Fault) -> String {
+    let mut error = Map::new();
+    error.insert(String::from("code"), json!(fault.code));
+    error.insert(String::from("message"), json!(fault.message));
+    if let Some(data) = &fault.data {
+        error.insert(String::from("data"), data.clone());
+    }
+    json!({ "jsonrpc": "2.0", "id": id, "error": error }).to_string()
+}

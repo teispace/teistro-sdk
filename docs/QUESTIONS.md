@@ -64,7 +64,7 @@ private channel beside it — a reporter who would rather stay on GitHub,
 or who does not want to write from an identifiable address, should not
 have to.
 
-## Q35. An MCP server, so an agent can compute rather than guess: `deferred`
+## Q35. An MCP server, so an agent can compute rather than guess: `decided`
 
 Raised by the maintainer 2026-09-09 and **deferred by them to the end of
 the plan**, to be discussed before anything is built. Recorded now so the
@@ -112,6 +112,21 @@ interpretation needs Phase 6, passthrough needs B1–B3); and whether the
 generator lands early — because a generated surface grows itself as the
 SDK grows — with only the packaged, signed, install-checked server in
 Phase 9.
+
+**Decided 2026-10-10**, by the maintainer handing it over to be
+researched and settled (`03-design/mcp-server.md`). A local stdio binary,
+`teistro-mcp`, speaking both the stateless 2026-07-28 revision and the
+2025-11-25 handshake. It calls the Rust façade and not the C ABI, so the
+"sixth emitter" above is the right shape only for a server in another
+language. A tool is a request record the façade already reads, listed
+once in `teistro::records` and described by its boundary function's
+documentation in `idl/api.json`. Every answer is the provenance envelope,
+each call names its profile, settings patch and locale, and
+`settings.describe` answers the patch's JSON Schema. The ephemeris comes
+from the command line and never from an argument, and a refusal is a
+tool error naming its field. Step 1, the record tools, is built; the
+chart and almanac tools wait on the chart's composition moving into the
+façade (step 2), and the signed package on Phase 9.
 
 ## Q40. Whether a modern engine's overrides reach a chart's day and zodiac: `decided`
 

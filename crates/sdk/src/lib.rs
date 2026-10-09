@@ -117,6 +117,9 @@ mod rectify;
 mod remedy_request;
 #[cfg(feature = "research")]
 mod research_request;
+// The record entry points: every area a binding reaches with one JSON
+// record, by name (`03-design/mcp-server.md` D3).
+pub mod records;
 #[cfg(feature = "chart")]
 mod returns;
 #[cfg(feature = "chart")]
