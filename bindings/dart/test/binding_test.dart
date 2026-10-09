@@ -4448,6 +4448,75 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its Lal Kitab', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    LalKitab? found(LalKitabRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              lalkitab: asked,
+            )
+            .lalkitab;
+    expect(found(null), isNull);
+
+    final plain = found(const LalKitabRequest())!;
+    expect(
+      plain.cycle,
+      const LalKitabCycle(planet: Graha.saturn, year: 1),
+      reason: 'the book\'s general table',
+    );
+    expect(plain.year, isNull);
+    expect(plain.reading.planets, hasLength(9));
+    expect(
+      plain.reading.planets.every(
+        (p) => p.graha != Graha.unknown && p.house >= 1 && p.house <= 12,
+      ),
+      isTrue,
+    );
+    expect((plain.periods.first.from, plain.periods.last.to), (1, 120));
+
+    final rows = [
+      for (var y = 0; y < 120; y++)
+        [for (var h = 0; h < 12; h++) (h + y) % 12 + 1],
+    ];
+    final read =
+        found(
+          LalKitabRequest(
+            cycle: const LalKitabCycle(planet: Graha.venus, year: 17),
+            year: 43,
+            varshphal: rows,
+          ),
+        )!;
+    final year = read.year!;
+    expect(year.ruler, Graha.jupiter);
+    expect(year.thirds, [Graha.ketu, Graha.jupiter, Graha.sun]);
+    final annual = year.annual!;
+    for (final (n, natal) in read.reading.planets.indexed) {
+      expect(annual.planets[n].house, (natal.house + 41) % 12 + 1);
+    }
+    expect(
+      () => found(const LalKitabRequest(year: 121)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'lalkitab.year',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its remedies', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

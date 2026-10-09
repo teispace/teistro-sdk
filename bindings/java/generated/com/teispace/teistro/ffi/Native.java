@@ -1975,11 +1975,12 @@ public final class Native {
             ADDRESS.withName("matching_json"),
             ADDRESS.withName("prashna_json"),
             ADDRESS.withName("remedies_json"),
-            ADDRESS.withName("rectification_json")
+            ADDRESS.withName("rectification_json"),
+            ADDRESS.withName("lalkitab_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 312;
+        public static final long SIZE = 320;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2692,6 +2693,25 @@ public final class Native {
 
         /** The handle that reads and writes `rectification_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle RECTIFICATION_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("rectification_json"));
+
+        /**
+         * The offset of `lalkitab_json`. Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+         * object, every member optional: `cycle` (`{planet, year}`, where the
+         * 35-year cycle starts, the book's general table from Saturn in the
+         * first year when left out), `year` (a year of life from 1, the year
+         * from birth to the first birthday, to read its ruler, its thirds and
+         * its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+         * annual teva is read from, which the SDK does not ship and checks
+         * row by row). Each chart's reading comes back in the `lalkitab`
+         * section. Null for none, which costs nothing
+         * (`03-design/lalkitab.md`). Refusals are named from the record every
+         * binding calls `lalkitab`, as `lalkitab.cycle.year`.
+         * Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+         */
+        public static final long LALKITAB_JSON_OFFSET = 312;
+
+        /** The handle that reads and writes `lalkitab_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle LALKITAB_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("lalkitab_json"));
 
     }
 

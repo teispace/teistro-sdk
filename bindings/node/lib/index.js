@@ -1078,6 +1078,20 @@ export class Chart {
   }
 
   /**
+   * The chart read as Lal Kitab reads it (`lalkitab: { year: 30 }`): the
+   * teva's reading — each planet's house, dignities, sleep and aspects,
+   * each house, the masnui pairs, the debts and the flags — the 35-year
+   * cycle's periods, and the year asked for with its ruler, its thirds and,
+   * given a `varshphal` list, the annual teva's reading. `null` unless
+   * asked (`03-design/lalkitab.md`).
+   *
+   * @returns {object|null}
+   */
+  get lalkitab() {
+    return lalkitabsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The chart read as a birth time to rectify (`rectification: { purify:
    * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
    * minutes either side, the conception the birth counts back to, *Brihat
@@ -2676,6 +2690,11 @@ export class ChartArea extends Area {
           request.remedies,
           'remedies',
           "a remedies request record, e.g. { at: 2460676.5 } or { rules: { shanti: { rik: 'YAJNAVALKYA' } } }",
+        ),
+        lalkitabJson: recordJson(
+          request.lalkitab,
+          'lalkitab',
+          "a Lal Kitab request record, e.g. { year: 30 } or { cycle: { planet: 'graha.VENUS', year: 17 } }",
         ),
         rectificationJson: recordJson(
           request.rectification,
@@ -4976,6 +4995,61 @@ function rectificationFrom({ purified = null, conception = null, circumstance = 
             stages: baseline.stages.map((stage) => ({ ...stage, notes: stage.notes.map(note) })),
           },
     svarodaya: svarodaya === null ? null : { ...svarodaya, at: { ...svarodaya.at, tithi: `tithi.${svarodaya.at.tithi}` } },
+  };
+}
+
+/** Each batch's Lal Kitab readings, parsed once however many charts read them. */
+const LALKITAB = new WeakMap();
+
+/**
+ * Every chart's Lal Kitab in a batch: the `lalkitab` section's JSON, one
+ * entry a chart, grahas as full keys (`03-design/lalkitab.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function lalkitabsOf(batch) {
+  return sectionOf(LALKITAB, batch, 'lalkitab', lalkitabFrom);
+}
+
+/** A teva's reading as the boundary writes it, its grahas made full keys. */
+function tevaFrom({ planets, houses, masnui, rinas, pitri, flags }) {
+  const graha = (key) => `graha.${key}`;
+  return {
+    planets: planets.map((one) => ({
+      ...one,
+      graha: graha(one.graha),
+      owners: one.owners.map((owner) => ({ ...owner, owner: graha(owner.owner) })),
+      casts: one.casts.map((cast) => ({ ...cast, onto: cast.onto.map(graha) })),
+    })),
+    houses: houses.map((one) => ({ ...one, occupants: one.occupants.map(graha), waker: graha(one.waker) })),
+    masnui: masnui.map((one) => ({ ...one, pair: one.pair.map(graha) })),
+    rinas: rinas.map((debt) => ({
+      ...debt,
+      of: graha(debt.of),
+      seated: debt.seated.map((seat) => ({ ...seat, enemy: graha(seat.enemy) })),
+    })),
+    pitri: pitri.map((state) => ({ ...state, ninth: graha(state.ninth) })),
+    flags: { ...flags, dharmi: flags.dharmi.map(graha), sathi: flags.sathi.map((pair) => pair.map(graha)) },
+  };
+}
+
+/** A chart's Lal Kitab as the boundary writes it, its grahas made full keys. */
+function lalkitabFrom({ reading, cycle, periods, year }) {
+  const graha = (key) => `graha.${key}`;
+  return {
+    reading: tevaFrom(reading),
+    cycle: { ...cycle, planet: graha(cycle.planet) },
+    periods: periods.map((period) => ({ ...period, planet: graha(period.planet) })),
+    year:
+      year === null
+        ? null
+        : {
+            ...year,
+            ruler: graha(year.ruler),
+            thirds: year.thirds.map(graha),
+            annual: year.annual === null ? null : tevaFrom(year.annual),
+          },
   };
 }
 

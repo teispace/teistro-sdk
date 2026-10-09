@@ -15,6 +15,8 @@ use teistro_core::error::{Error, Status};
 pub mod chart;
 #[cfg(feature = "chart")]
 pub(crate) mod kp;
+#[cfg(feature = "chart")]
+pub(crate) mod lalkitab;
 pub(crate) mod muhurta;
 #[cfg(feature = "chart")]
 pub(crate) mod prashna;

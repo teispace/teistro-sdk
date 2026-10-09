@@ -5196,6 +5196,7 @@ final class Charts {
     required this.prashna,
     required this.remedies,
     required this.rectification,
+    required this.lalkitab,
   });
 
   /// What kind of chart these are.
@@ -5608,6 +5609,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each with a member for every reading the record asked and none for one it did not. `purified` is what the purifier of BPHS ch. 2 vv. 67-78 leaves standing of the window around the chart's instant, `{intervals, removed, edges, grid}`: each interval `{from, to, verdict}` with the clauses that held, each removed run naming the clause that failed. `conception` is `{birth, pranapadaHouse, nisheka, moon}` at the chart's instant (BPHS ch. 3 vv. 25-29, *Brihat Jataka* IV.21). `circumstance` is `{sky, father, presentation, lamp, attending, weights}` (*Brihat Jataka* ch. V), each fact given one weight. `baseline` is the baseline engine's unsourced cascade around the chart's instant, `{window, sunrise, intervals, intervalWidthMinutes, resolutionMinutes, suggested, concentration, candidates, stages, eventsUsed, eventsHeldOut, holdOut}`. `svarodaya` is the Shiva Svarodaya's nadi and tattva, `{at, runs}`: `at` the reading at the chart's instant `{sunrise, nextSunrise, tithi, sunriseNadi, run, junctions}` and `runs` every run `{from, to, nadi, turn, tattva, sex}` of the window around it, a report the text does not make at a birth. Instants are Julian days UTC. Empty when `rectification_json` asked for none.
   final String rectification;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.
+  final String lalkitab;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -5737,6 +5741,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atPrashna = blob.section(120, 'prashna');
   final atRemedies = blob.section(121, 'remedies');
   final atRectification = blob.section(122, 'rectification');
+  final atLalkitab = blob.section(123, 'lalkitab');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -10237,6 +10242,7 @@ Charts decodeCharts(Uint8List bytes) {
     prashna: blob.text(atPrashna),
     remedies: blob.text(atRemedies),
     rectification: blob.text(atRectification),
+    lalkitab: blob.text(atLalkitab),
   );
 }
 

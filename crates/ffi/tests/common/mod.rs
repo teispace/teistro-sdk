@@ -274,6 +274,7 @@ pub(crate) fn chart_request(
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
             rectification_json: ptr::null(),
+            lalkitab_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     )

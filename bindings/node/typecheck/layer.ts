@@ -116,6 +116,8 @@ import type {
   Devotion,
   Remedies,
   RemedyRequest,
+  LalKitab,
+  LalKitabRequest,
   Rectification,
   RectificationRequest,
   BaselineNote,
@@ -952,6 +954,47 @@ function theRectification(ctx: Context): string {
 }
 
 void theRectification;
+
+// Lal Kitab read all the way down, and a request in every field.
+function theLalKitab(ctx: Context): string {
+  const asked: LalKitabRequest = {
+    cycle: { planet: 'graha.VENUS', year: 17 },
+    year: 43,
+    varshphal: { rows: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] },
+  };
+  const read: LalKitab | null = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    lalkitab: asked,
+  }).lalkitab;
+  if (read === null) return 'none';
+  const teva = (r: LalKitab['reading']) => [
+    ...r.planets.map(
+      (p) =>
+        `${p.graha} ${p.house} ${p.dignities.join()} ${p.owners.map((o) => `${o.owner}:${o.regard}`).join()} ${p.awake} ${p.kayam} ${p.casts.map((c) => `${c.to}:${c.strength}:${c.onto.join('|')}`).join()}`,
+    ),
+    ...r.houses.map(
+      (h) => `${h.house} ${h.occupants.join()} ${h.lookedAtBy.map((l) => `${l.from}:${l.strength}`).join()} ${h.awake} ${h.waker}`,
+    ),
+    ...r.masnui.map((m) => `${m.pair.join()} ${m.house} ${m.countsAs}`),
+    ...r.rinas.map((d) => `${d.rin} ${d.of} ${d.seated.map((s) => `${s.enemy}@${s.house}`).join()}`),
+    ...r.pitri.map((s) => `${s.ninth} ${s.mercury}`),
+    `${r.flags.ratandha} ${r.flags.nabalig} ${r.flags.dharmi.join()} ${r.flags.sathi.map((pair) => pair.join('|')).join()}`,
+  ];
+  const year = read.year === null ? [] : [`${read.year.year} ${read.year.ruler} ${read.year.thirds.join()}`, ...(read.year.annual === null ? [] : teva(read.year.annual))];
+  // @ts-expect-error a cycle starts at a planet and a year
+  const wrong: LalKitabRequest = { cycle: { planet: 'graha.VENUS' } };
+  return [
+    ...teva(read.reading),
+    `${read.cycle.planet} ${read.cycle.year}`,
+    ...read.periods.map((p) => `${p.planet}:${p.from}-${p.to}`),
+    ...year,
+    String(wrong),
+  ].join();
+}
+
+void theLalKitab;
 
 // Remedies read all the way down, and a request in every field.
 function theRemedies(ctx: Context): string {

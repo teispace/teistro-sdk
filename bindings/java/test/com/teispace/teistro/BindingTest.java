@@ -406,6 +406,44 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a chart carries its Lal Kitab", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                double instant = 2_447_995.489_583_333_5;
+                check(sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder().build()).lalkitab()
+                        .isEmpty(), "none unless asked");
+                LalKitab plain = sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().lalkitab(Map.of()).build()).lalkitab().orElseThrow();
+                same(new LalKitab.Cycle(Graha.SATURN, 1), plain.cycle(), "the book's general table");
+                check(plain.year() == null, "no year unless asked");
+                same(9, plain.reading().planets().size(), "nine planets");
+                same(1, plain.periods().get(0).from(), "the cycle from the first year");
+                same(120, plain.periods().get(plain.periods().size() - 1).to(), "to the 120th");
+                List<List<Integer>> rows = new ArrayList<>();
+                for (int y = 0; y < 120; y++) {
+                    List<Integer> row = new ArrayList<>();
+                    for (int h = 0; h < 12; h++) {
+                        row.add((h + y) % 12 + 1);
+                    }
+                    rows.add(row);
+                }
+                LalKitab read = sky.chart().found(instant, kathmandu, 20_700, ChartOptions.builder()
+                        .lalkitab(Map.of("cycle", Map.of("planet", Graha.VENUS, "year", 17), "year", 43,
+                                "varshphal", Map.of("rows", rows)))
+                        .build()).lalkitab().orElseThrow();
+                same(Graha.JUPITER, read.year().ruler(), "the year's ruler");
+                same(List.of(Graha.KETU, Graha.JUPITER, Graha.SUN), read.year().thirds(), "its thirds");
+                List<LalKitab.Planet> natal = read.reading().planets();
+                List<LalKitab.Planet> moved = read.year().annual().planets();
+                for (int n = 0; n < natal.size(); n++) {
+                    same((natal.get(n).house() + 41) % 12 + 1, moved.get(n).house(), "the annual teva's house");
+                }
+                TeistroException refused = refusal(() -> sky.chart().found(instant, kathmandu, 20_700,
+                        ChartOptions.builder().lalkitab(Map.of("year", 121)).build()));
+                same("lalkitab.year", refused.field(), "named by its record");
+            }
+        });
+
         tests.put("every reading a chart was asked for reads back", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

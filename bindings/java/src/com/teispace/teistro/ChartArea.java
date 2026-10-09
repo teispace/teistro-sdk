@@ -24,7 +24,8 @@ public final class ChartArea {
             "sade_sati_json", "kp_json", "dignities_json", "fortitudes_json", "lots_json",
             "considerations_json", "perfection_json", "progressions_json", "western_aspects_json",
             "synastry_json", "parallels_json", "antiscia_json", "midpoints_json", "western_houses_json",
-            "harmonic_json", "matching_json", "prashna_json", "remedies_json", "rectification_json");
+            "harmonic_json", "matching_json", "prashna_json", "remedies_json", "rectification_json",
+            "lalkitab_json");
 
     private final Context context;
 
@@ -93,7 +94,8 @@ public final class ChartArea {
                 readings.get(5), readings.get(6), readings.get(7), readings.get(8), readings.get(9),
                 readings.get(10), readings.get(11), readings.get(12), readings.get(13), readings.get(14),
                 readings.get(15), readings.get(16), readings.get(17), readings.get(18), readings.get(19),
-                readings.get(20), readings.get(21), readings.get(22), readings.get(23), readings.get(24));
+                readings.get(20), readings.get(21), readings.get(22), readings.get(23), readings.get(24),
+                readings.get(25));
     }
 
     /**

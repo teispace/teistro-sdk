@@ -738,6 +738,25 @@ __all__ = [
     "AmatyaDevatas",
     "IshtaDevata",
     "Devotion",
+    # Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle.
+    "LalKitabRequest",
+    "LalKitabCycle",
+    "VarshphalRows",
+    "LalKitab",
+    "LalKitabReading",
+    "LalKitabPlanet",
+    "LalKitabOwner",
+    "LalKitabCast",
+    "LalKitabHouse",
+    "LalKitabLook",
+    "LalKitabMasnui",
+    "LalKitabDebt",
+    "LalKitabSeat",
+    "PitriState",
+    "LalKitabFlags",
+    "LalKitabStart",
+    "LalKitabPeriod",
+    "LalKitabYear",
     # Rectification: a chart read as a birth time to rectify.
     "RectificationRequest",
     "PurifyRequest",
@@ -1808,6 +1827,7 @@ class ChartArea(_Area):
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
+        lalkitab: Optional[LalKitabRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -1868,6 +1888,7 @@ class ChartArea(_Area):
             matching=matching,
             prashna=prashna,
             remedies=remedies,
+            lalkitab=lalkitab,
             rectification=rectification,
             aspects=aspects,
             points=points,
@@ -1918,6 +1939,7 @@ class ChartArea(_Area):
         matching: Optional[MatchingRequest] = None,
         prashna: Optional[PrashnaRequest] = None,
         remedies: Optional[RemedyRequest] = None,
+        lalkitab: Optional[LalKitabRequest] = None,
         rectification: Optional[RectificationRequest] = None,
         aspects: bool = False,
         points: bool = False,
@@ -2005,6 +2027,7 @@ class ChartArea(_Area):
             matching_json=_matching_json(matching),
             prashna_json=_record_json(prashna, "prashna", "{'question': {'house': 7}}"),
             remedies_json=_record_json(remedies, "remedies", "{'at': 2460676.5}"),
+            lalkitab_json=_lalkitab_json(lalkitab),
             rectification_json=_record_json(rectification, "rectification", "{'purify': {'minutes': 30}}"),
         )
         return ChartBatch(
@@ -8158,6 +8181,194 @@ class Remedies:
     ishta_devata: IshtaDevatas
 
 
+class LalKitabCycle(TypedDict):
+    """Where the 35-year cycle starts: a graha (a `Graha` or its key, such
+    as `"graha.VENUS"`) and the year of life, from 1, its period begins."""
+
+    planet: Union[Graha, str]
+    year: int
+
+
+class VarshphalRows(TypedDict):
+    """A varshphal list as a reader writes it: 120 rows, row `y − 1` for year
+    of life `y`, its entry `h − 1` the house natal house `h` reaches that
+    year. The SDK does not ship the book's list (`03-design/lalkitab.md`
+    §3.6) and refuses one that is not a permutation a row and a Latin
+    square every twelve years."""
+
+    rows: Sequence[Sequence[int]]
+
+
+class LalKitabRequest(TypedDict, total=False):
+    """Lal Kitab to read in every chart of a request
+    (`03-design/lalkitab.md`), every field optional: the cycle's start (the
+    book's general table, Saturn from the first year, when left out), a
+    year of life to read, and the list its annual teva is read from.
+
+    >>> asked: LalKitabRequest = {"cycle": {"planet": "graha.VENUS", "year": 17}, "year": 43}
+    """
+
+    cycle: LalKitabCycle
+    year: int
+    varshphal: VarshphalRows
+
+
+@dataclass(frozen=True)
+class LalKitabOwner:
+    """An owner of a planet's house and how the planet regards it (1952
+    p. 31): `FRIEND`, `EQUAL` or `ENEMY`."""
+
+    owner: Graha
+    regard: str
+
+
+@dataclass(frozen=True)
+class LalKitabCast:
+    """An aspect a planet casts, forward only: the house, its strength
+    (`QUARTER`, `HALF` or `FULL`) and the planets it falls on."""
+
+    to: int
+    strength: str
+    onto: Tuple[Graha, ...]
+
+
+@dataclass(frozen=True)
+class LalKitabPlanet:
+    """One planet of a teva."""
+
+    graha: Graha
+    house: int
+    """Its whole-sign house from the lagna, 1 to 12."""
+    dignities: Tuple[str, ...]
+    """Among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`."""
+    owners: Tuple[LalKitabOwner, ...]
+    awake: bool
+    kayam: bool
+    """In a dignity, alone in its house, and looked at from no occupied
+    house."""
+    casts: Tuple[LalKitabCast, ...]
+
+
+@dataclass(frozen=True)
+class LalKitabLook:
+    """An occupied house looking at another, and how hard."""
+
+    from_house: int
+    strength: str
+
+
+@dataclass(frozen=True)
+class LalKitabHouse:
+    """One house of a teva."""
+
+    house: int
+    occupants: Tuple[Graha, ...]
+    looked_at_by: Tuple[LalKitabLook, ...]
+    awake: bool
+    """Occupied, or looked at from an occupied house."""
+    waker: Graha
+    """The planet whose presence wakes it (1952 p. 98)."""
+
+
+@dataclass(frozen=True)
+class LalKitabMasnui:
+    """An artificial planet a pair in one house makes (1952 p. 27), by what
+    it counts as (`JUPITER`, `MARS_MALEFIC`, …)."""
+
+    pair: Tuple[Graha, Graha]
+    house: int
+    counts_as: str
+
+
+@dataclass(frozen=True)
+class LalKitabSeat:
+    """An enemy seated in a planet's house."""
+
+    enemy: Graha
+    house: int
+
+
+@dataclass(frozen=True)
+class LalKitabDebt:
+    """A debt (*rin*, 1952 p. 125): which (`PITRI`, `MATRI`, …), whose, and
+    the enemies seated that raise it."""
+
+    rin: str
+    of: Graha
+    seated: Tuple[LalKitabSeat, ...]
+
+
+@dataclass(frozen=True)
+class PitriState:
+    """The ancestors' debt's first state (1952 p. 128): the planet in the
+    ninth house and Mercury's house, its root."""
+
+    ninth: Graha
+    mercury: int
+
+
+@dataclass(frozen=True)
+class LalKitabFlags:
+    """The teva's own conditions."""
+
+    ratandha: bool
+    nabalig: bool
+    dharmi: Tuple[Graha, ...]
+    sathi: Tuple[Tuple[Graha, Graha], ...]
+
+
+@dataclass(frozen=True)
+class LalKitabReading:
+    """What a teva says (`03-design/lalkitab.md` §3)."""
+
+    planets: Tuple[LalKitabPlanet, ...]
+    houses: Tuple[LalKitabHouse, ...]
+    masnui: Tuple[LalKitabMasnui, ...]
+    rinas: Tuple[LalKitabDebt, ...]
+    pitri: Tuple[PitriState, ...]
+    flags: LalKitabFlags
+
+
+@dataclass(frozen=True)
+class LalKitabStart:
+    """Where a life's 35-year cycle was started."""
+
+    planet: Graha
+    year: int
+
+
+@dataclass(frozen=True)
+class LalKitabPeriod:
+    """A planet's period of the cycle, years of life, both ends included."""
+
+    planet: Graha
+    from_year: int
+    to_year: int
+
+
+@dataclass(frozen=True)
+class LalKitabYear:
+    """One year of life: its ruler, the planets of its thirds (1952 p. 34),
+    and the annual teva's reading when a list was sent."""
+
+    year: int
+    ruler: Graha
+    thirds: Tuple[Graha, Graha, Graha]
+    annual: Optional[LalKitabReading]
+
+
+@dataclass(frozen=True)
+class LalKitab:
+    """A chart read as Lal Kitab reads it (`03-design/lalkitab.md`)."""
+
+    reading: LalKitabReading
+    cycle: LalKitabStart
+    periods: Tuple[LalKitabPeriod, ...]
+    """The cycle's periods over years 1 to 120 of life."""
+    year: Optional[LalKitabYear]
+    """The year asked for; `None` unless the request named one."""
+
+
 PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
 """What the native is, which decides the houses that purify, a
 `PurifierRules` `native`."""
@@ -10138,6 +10349,103 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
     )
 
 
+def _lalkitab(raw: Mapping[str, Any]) -> LalKitab:
+    """A chart's Lal Kitab from the `lalkitab` section's JSON, its grahas
+    made members."""
+
+    def graha(key: str) -> Graha:
+        found: Graha = _member(Graha, key)
+        return found
+
+    def grahas(keys: Any) -> Tuple[Graha, ...]:
+        return tuple(graha(key) for key in keys)
+
+    def pair(keys: Any) -> Tuple[Graha, Graha]:
+        first, second = keys
+        return (graha(first), graha(second))
+
+    def teva(one: Mapping[str, Any]) -> LalKitabReading:
+        flags = one["flags"]
+        return LalKitabReading(
+            planets=tuple(
+                LalKitabPlanet(
+                    graha=graha(p["graha"]),
+                    house=p["house"],
+                    dignities=tuple(p["dignities"]),
+                    owners=tuple(LalKitabOwner(owner=graha(o["owner"]), regard=o["regard"]) for o in p["owners"]),
+                    awake=p["awake"],
+                    kayam=p["kayam"],
+                    casts=tuple(
+                        LalKitabCast(to=c["to"], strength=c["strength"], onto=grahas(c["onto"])) for c in p["casts"]
+                    ),
+                )
+                for p in one["planets"]
+            ),
+            houses=tuple(
+                LalKitabHouse(
+                    house=h["house"],
+                    occupants=grahas(h["occupants"]),
+                    looked_at_by=tuple(
+                        LalKitabLook(from_house=look["from"], strength=look["strength"]) for look in h["lookedAtBy"]
+                    ),
+                    awake=h["awake"],
+                    waker=graha(h["waker"]),
+                )
+                for h in one["houses"]
+            ),
+            masnui=tuple(
+                LalKitabMasnui(pair=pair(m["pair"]), house=m["house"], counts_as=m["countsAs"]) for m in one["masnui"]
+            ),
+            rinas=tuple(
+                LalKitabDebt(
+                    rin=d["rin"],
+                    of=graha(d["of"]),
+                    seated=tuple(LalKitabSeat(enemy=graha(e["enemy"]), house=e["house"]) for e in d["seated"]),
+                )
+                for d in one["rinas"]
+            ),
+            pitri=tuple(PitriState(ninth=graha(q["ninth"]), mercury=q["mercury"]) for q in one["pitri"]),
+            flags=LalKitabFlags(
+                ratandha=flags["ratandha"],
+                nabalig=flags["nabalig"],
+                dharmi=grahas(flags["dharmi"]),
+                sathi=tuple(pair(two) for two in flags["sathi"]),
+            ),
+        )
+
+    def year_of(one: Mapping[str, Any]) -> LalKitabYear:
+        first, second, third = one["thirds"]
+        return LalKitabYear(
+            year=one["year"],
+            ruler=graha(one["ruler"]),
+            thirds=(graha(first), graha(second), graha(third)),
+            annual=None if one["annual"] is None else teva(one["annual"]),
+        )
+
+    return LalKitab(
+        reading=teva(raw["reading"]),
+        cycle=LalKitabStart(planet=graha(raw["cycle"]["planet"]), year=raw["cycle"]["year"]),
+        periods=tuple(
+            LalKitabPeriod(planet=graha(p["planet"]), from_year=p["from"], to_year=p["to"]) for p in raw["periods"]
+        ),
+        year=None if raw["year"] is None else year_of(raw["year"]),
+    )
+
+
+def _lalkitab_json(asked: Optional[LalKitabRequest]) -> Optional[str]:
+    """A Lal Kitab request written down, its cycle's graha as the key the
+    boundary reads; nothing where none was given."""
+    if asked is None:
+        return None
+    if not isinstance(asked, Mapping):
+        return _record_json(asked, "lalkitab", "{'year': 30}")
+    record: dict[str, Any] = dict(asked)
+    cycle = record.get("cycle")
+    if isinstance(cycle, Mapping):
+        record["cycle"] = {**cycle, "planet": _member_key(cycle.get("planet"))}
+    return json.dumps(record)
+
+
 def _remedies(raw: Mapping[str, Any]) -> Remedies:
     """A chart's remedies from the `remedies` section's JSON, its keys made
     members."""
@@ -12111,6 +12419,14 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def lalkitab(self) -> Optional[LalKitab]:
+        """The chart read as Lal Kitab reads it: the teva's reading, the
+        35-year cycle's periods and the year asked for. `None` unless
+        `lalkitab=` asked (`03-design/lalkitab.md`)."""
+        parsed = self.batch._lalkitabs
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def rectification(self) -> Optional[Rectification]:
         """The chart read as a birth time to rectify, its instant the time on
         record: what the purifier of BPHS ch. 2 vv. 67–78 leaves standing of
@@ -12774,6 +13090,13 @@ class ChartBatch:
         for."""
         text = self.decoded.remedies
         return [_remedies(raw) for raw in json.loads(text)] if text else []
+
+    @cached_property
+    def _lalkitabs(self) -> list[LalKitab]:
+        """Every chart's Lal Kitab, parsed once; empty when none was asked
+        for."""
+        text = self.decoded.lalkitab
+        return [_lalkitab(raw) for raw in json.loads(text)] if text else []
 
     @cached_property
     def _rectifications(self) -> list[Rectification]:

@@ -57,6 +57,7 @@ import com.teispace.teistro.ffi.Native;
  * @param prashnaJson Every chart read as a prashna, the chart of the moment a question was asked, as *Shatpanchashika* and Tajika Nilakanthi print it, as a JSON object, every member optional: `question` (`house`, the matter's house 1 to 12, which the verdict's I.3 clauses and the Tajika links read; `number`, the querent's 1 to 108, read only by the baseline engine's unsourced rule, C340) and `rules` (`pisces`, `timing`, `mook`, `moon` `{kshina}` and `score`, the texts' own by default). A prashna reads the seven's Shadbala, so asking for one asks for the `shadbala` sections too. Each chart's reading comes back in the `prashna` section. Null for none, which costs nothing (`03-design/prashna.md`). Refusals are named from the record every binding calls `prashna`, as `prashna.question.house`. Example: {"question":{"house":7},"rules":{"mook":"MOON_HOUSE"}}. May be null.
  * @param remediesJson Every chart's remedies, as BPHS, *Laghu Parashari* and *Yājñavalkya* prescribe them, as a JSON object, every member optional: `at` (the Julian day UTC whose running Vimśottarī mahādaśā and antardaśā name subjects and bring the antardaśā's printed śānti; none reads no daśā) and `rules` (`functional` `{scheme}`, `shanti` `{rik}`, `devata` `{sunWithKetu}`, the texts' own by default). A record with `at` asks for the Vimśottarī daśā too. Each chart's remedies come back in the `remedies` section. Null for none, which costs nothing (`03-design/remedies.md`). Refusals are named from the record every binding calls `remedies`, as `remedies.rules.devata`. Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
  * @param rectificationJson Every chart read as a birth time to rectify, the chart's instant the time on record, as a JSON object, every member optional: `purify` (`minutes` either side of the chart's instant, more than none and at most 1080, and `rules`, the purifier of BPHS ch. 2 vv. 67–78), `conception` (the pranapada's house, the nisheka and the conception Moon, with its rules), `circumstance` (`facts` the family remembers, `fatherPresent`, `presentation`, `oil`, `wick` and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline` (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1 to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`). Each chart's readings come back in the `rectification` section, one member for each reading asked. Null for none, which costs nothing (`03-design/rectification.md`). Refusals are named from the record every binding calls `rectification`, as `rectification.purify.minutes`. Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+ * @param lalkitabJson Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON object, every member optional: `cycle` (`{planet, year}`, where the 35-year cycle starts, the book's general table from Saturn in the first year when left out), `year` (a year of life from 1, the year from birth to the first birthday, to read its ruler, its thirds and its annual teva) and `varshphal` (`{rows}`, the 120-year list the annual teva is read from, which the SDK does not ship and checks row by row). Each chart's reading comes back in the `lalkitab` section. Null for none, which costs nothing (`03-design/lalkitab.md`). Refusals are named from the record every binding calls `lalkitab`, as `lalkitab.cycle.year`. Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
  */
 @SuppressWarnings("unused")
 public record ChartRequest(
@@ -94,7 +95,8 @@ public record ChartRequest(
         String matchingJson,
         String prashnaJson,
         String remediesJson,
-        String rectificationJson) {
+        String rectificationJson,
+        String lalkitabJson) {
     /** The value, checked: what may not be absent is present, and what is mutable is copied. */
     public ChartRequest {
         Objects.requireNonNull(kind, "kind");
@@ -180,6 +182,7 @@ public record ChartRequest(
         Native.TsChartRequest.PRASHNA_JSON.set(raw, 0L, Values.cString(arena, prashnaJson));
         Native.TsChartRequest.REMEDIES_JSON.set(raw, 0L, Values.cString(arena, remediesJson));
         Native.TsChartRequest.RECTIFICATION_JSON.set(raw, 0L, Values.cString(arena, rectificationJson));
+        Native.TsChartRequest.LALKITAB_JSON.set(raw, 0L, Values.cString(arena, lalkitabJson));
     }
 
     /** This value as a fresh C struct in {@code arena}, ready to be passed by pointer. */
@@ -226,7 +229,8 @@ public record ChartRequest(
             Values.text((MemorySegment) Native.TsChartRequest.MATCHING_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.PRASHNA_JSON.get(raw, 0L), true),
             Values.text((MemorySegment) Native.TsChartRequest.REMEDIES_JSON.get(raw, 0L), true),
-            Values.text((MemorySegment) Native.TsChartRequest.RECTIFICATION_JSON.get(raw, 0L), true));
+            Values.text((MemorySegment) Native.TsChartRequest.RECTIFICATION_JSON.get(raw, 0L), true),
+            Values.text((MemorySegment) Native.TsChartRequest.LALKITAB_JSON.get(raw, 0L), true));
     }
 
 }

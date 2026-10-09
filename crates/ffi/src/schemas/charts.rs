@@ -378,6 +378,7 @@ pub fn charts() -> BlobSchema {
             chart_prashna_section(120),
             chart_remedies_section(121),
             chart_rectification_section(122),
+            chart_lalkitab_section(123),
         ])
         .collect(),
     }
@@ -2130,6 +2131,15 @@ fn chart_remedies_section(id: u32) -> SectionSchema {
         id,
         "remedies",
         "UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, functional, subjects, shantis, ishtaDevata}` (`03-design/remedies.md`). `rules` is `{functional, shanti, devata}`, every member filled. `functional` is the lagna's natures under *Laghu Parashari*: `{lagna, scheme, rows, yogakarakas, marakas, badhaka}`, each of the seven's row `{graha, houses, clauses, nature}` with every clause `{kind, house}` that made it, and `badhaka` `{house, lord}`. `subjects` is `{subjects, antardasha}`: each graha with at least one reason, `{graha, reasons}`, ranked by nothing (C351), and `antardasha` the running Vimshottari antardasha's printed shanti `{shanti, holds}`, `shanti` being `{mahadasha, antardasha, chapter, verses, page, conditions, remedies}` and `holds` each condition true, false or null where the verse leaves it open, the whole null unless the record named `at`. `shantis` is each subject's graha-shanti, `{graha, image, rik, japaThousands, samidh, food, dakshina, gem, substance, direction, mandala}`. `ishtaDevata` is `{atmakaraka, karakamsha, inRasi, inNavamsha}`, each chart's `{rules, sign, devotions, minor}`: every graha in the 12th from the karakamsha as `{graha, deities, verse, withKetu}`, and Saturn or Venus there in a malefic's sign (C354 to C356). Empty when `remedies_json` asked for none.",
+    )
+}
+
+/// Every chart read as Lal Kitab reads it (`03-design/lalkitab.md`).
+fn chart_lalkitab_section(id: u32) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "lalkitab",
+        "UTF-8 JSON, canonical: an array with one entry per chart, each `{reading, cycle, periods, year}` (`03-design/lalkitab.md`). `reading` is the teva's: `planets`, each `{graha, house, dignities, owners, awake, kayam, casts}` with `dignities` among `PAKKA`, `EXALTED`, `DEBILITATED` and `OWN`, `owners` each `{owner, regard}` (`FRIEND`, `EQUAL` or `ENEMY`) and `casts` each aspect `{to, strength, onto}` (`QUARTER`, `HALF` or `FULL`); `houses`, each `{house, occupants, lookedAtBy, awake, waker}` with `lookedAtBy` each `{from, strength}`; `masnui`, each pair in one house `{pair, house, countsAs}`; `rinas`, each debt `{rin, of, seated}` with `seated` each `{enemy, house}`; `pitri`, the ancestors' debt's first state `{ninth, mercury}`; and `flags` `{ratandha, nabalig, dharmi, sathi}`. `cycle` is the 35-year cycle's start `{planet, year}` and `periods` its periods `{planet, from, to}` over years 1 to 120 of life. `year` is `{year, ruler, thirds, annual}`, `annual` the annual teva's reading in the same shape when the record sent a `varshphal` list, otherwise null; `year` itself is null unless the record named one. Grahas are bare catalogue keys. Empty when `lalkitab_json` asked for none.",
     )
 }
 

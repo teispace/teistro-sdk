@@ -3,8 +3,9 @@
 Status: `draft`, 2026-10-09. Track B of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `lalkitab` row ("facts
 only, cited by edition: the books are likely in copyright to 2042"). The
-kernel, `crates/lalkitab`, is built; the façade, the boundary and the
-bindings are the next steps (§7).
+kernel, `crates/lalkitab`, the façade and the boundary are built, and the
+reading crosses to every binding; a second reading against the Urdu is
+the next step (§7).
 
 ## 1. The source and what may ship
 
@@ -249,7 +250,13 @@ measured.
    and none of its numbers. **Built 2026-10-09.**
 2. The façade: `sdk.lalkitab()` reading a chart's lagna and grahas into a
    teva, its reading, its cycle and, with a supplied list, its annual
-   teva.
-3. The boundary (JSON), the bindings and parity, and a guide.
+   teva. **Built 2026-10-09** as `ChartArea::lalkitab(document,
+   &LalKitabRequest)`, its refusals named under `lalkitab`.
+3. The boundary (JSON), the bindings and parity, and a guide. **Built
+   2026-10-09**: the `lalkitab_json` record and section 123 cross to Node,
+   Python, Dart and Java, each with its own types, and six runners agree
+   value for value on a rotation varshphal list with the book's structure
+   and none of its numbers. The guide is this page and each binding's
+   documented accessor.
 4. A second reading of LK-C6's remarks, LK-C8's tables and the debt's
    second state, against the Urdu.

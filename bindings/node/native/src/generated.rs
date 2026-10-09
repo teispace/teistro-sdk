@@ -2230,6 +2230,19 @@ pub struct ChartRequest {
     /// `rectification.purify.minutes`.
     /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
     pub rectification_json: Option<String>,
+    /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+    /// object, every member optional: `cycle` (`{planet, year}`, where the
+    /// 35-year cycle starts, the book's general table from Saturn in the
+    /// first year when left out), `year` (a year of life from 1, the year
+    /// from birth to the first birthday, to read its ruler, its thirds and
+    /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+    /// annual teva is read from, which the SDK does not ship and checks
+    /// row by row). Each chart's reading comes back in the `lalkitab`
+    /// section. Null for none, which costs nothing
+    /// (`03-design/lalkitab.md`). Refusals are named from the record every
+    /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+    /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+    pub lalkitab_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2270,6 +2283,7 @@ pub struct HeldChartRequest {
     prashna_json: Option<std::ffi::CString>,
     remedies_json: Option<std::ffi::CString>,
     rectification_json: Option<std::ffi::CString>,
+    lalkitab_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2377,6 +2391,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             rectification_json: self
                 .rectification_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            lalkitab_json: self
+                .lalkitab_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2526,6 +2544,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            lalkitab_json: self
+                .lalkitab_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2584,6 +2607,7 @@ impl ChartRequest {
             prashna_json: unsafe { lent_text(raw.prashna_json) },
             remedies_json: unsafe { lent_text(raw.remedies_json) },
             rectification_json: unsafe { lent_text(raw.rectification_json) },
+            lalkitab_json: unsafe { lent_text(raw.lalkitab_json) },
         }
     }
 }

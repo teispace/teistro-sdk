@@ -691,6 +691,7 @@ final class ChartArea extends _Area {
     MatchingRequest? matching,
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
+    LalKitabRequest? lalkitab,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -737,6 +738,7 @@ final class ChartArea extends _Area {
     matching: matching,
     prashna: prashna,
     remedies: remedies,
+    lalkitab: lalkitab,
     rectification: rectification,
     aspects: aspects,
     points: points,
@@ -803,6 +805,7 @@ final class ChartArea extends _Area {
     MatchingRequest? matching,
     PrashnaRequest? prashna,
     RemedyRequest? remedies,
+    LalKitabRequest? lalkitab,
     RectificationRequest? rectification,
     bool aspects = false,
     bool points = false,
@@ -874,6 +877,7 @@ final class ChartArea extends _Area {
             prashnaJson: prashna?._json,
             remediesJson: remedies?._json,
             rectificationJson: rectification?._json,
+            lalkitabJson: lalkitab?._json,
           ),
         ),
       ),
@@ -14006,6 +14010,147 @@ Prashna _prashna(Map<String, Object?> raw) {
   );
 }
 
+/// Each batch's Lal Kitab, parsed once however many charts read it.
+final Expando<List<LalKitab>> _lalkitabs = Expando<List<LalKitab>>('lalkitab');
+
+List<LalKitab> _lalkitabsOf(Charts batch) =>
+    _lalkitabs[batch] ??= [
+      for (final raw in _sectionOf(batch.lalkitab)) _lalkitabFrom(raw),
+    ];
+
+/// A teva's reading from the `lalkitab` section's JSON.
+LalKitabReading _lalkitabReadingFrom(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  Iterable<Map<String, Object?>> rows(Object? value) =>
+      (value! as List<Object?>).map(at);
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  List<Graha> grahas(Object? keys) => List<Graha>.unmodifiable([
+    for (final key in keys! as List<Object?>) graha(key),
+  ]);
+  LalKitabStrength strength(Object? key) =>
+      _keyedIn(LalKitabStrength.values, key);
+  final flags = at(raw['flags']);
+  return LalKitabReading(
+    planets: List<LalKitabPlanet>.unmodifiable([
+      for (final one in rows(raw['planets']))
+        LalKitabPlanet(
+          graha: graha(one['graha']),
+          house: one['house']! as int,
+          dignities: List<LalKitabDignity>.unmodifiable([
+            for (final key in one['dignities']! as List<Object?>)
+              _keyedIn(LalKitabDignity.values, key),
+          ]),
+          owners: List<LalKitabOwner>.unmodifiable([
+            for (final owner in rows(one['owners']))
+              LalKitabOwner(
+                owner: graha(owner['owner']),
+                regard: _keyedIn(LalKitabRegard.values, owner['regard']),
+              ),
+          ]),
+          awake: one['awake']! as bool,
+          kayam: one['kayam']! as bool,
+          casts: List<LalKitabCast>.unmodifiable([
+            for (final cast in rows(one['casts']))
+              LalKitabCast(
+                to: cast['to']! as int,
+                strength: strength(cast['strength']),
+                onto: grahas(cast['onto']),
+              ),
+          ]),
+        ),
+    ]),
+    houses: List<LalKitabHouse>.unmodifiable([
+      for (final one in rows(raw['houses']))
+        LalKitabHouse(
+          house: one['house']! as int,
+          occupants: grahas(one['occupants']),
+          lookedAtBy: List<LalKitabLook>.unmodifiable([
+            for (final look in rows(one['lookedAtBy']))
+              LalKitabLook(
+                from: look['from']! as int,
+                strength: strength(look['strength']),
+              ),
+          ]),
+          awake: one['awake']! as bool,
+          waker: graha(one['waker']),
+        ),
+    ]),
+    masnui: List<LalKitabPair>.unmodifiable([
+      for (final one in rows(raw['masnui']))
+        LalKitabPair(
+          pair: grahas(one['pair']),
+          house: one['house']! as int,
+          countsAs: _keyedIn(LalKitabMasnui.values, one['countsAs']),
+        ),
+    ]),
+    rinas: List<LalKitabDebt>.unmodifiable([
+      for (final one in rows(raw['rinas']))
+        LalKitabDebt(
+          rin: _keyedIn(LalKitabRin.values, one['rin']),
+          of: graha(one['of']),
+          seated: List<LalKitabSeat>.unmodifiable([
+            for (final seat in rows(one['seated']))
+              LalKitabSeat(
+                enemy: graha(seat['enemy']),
+                house: seat['house']! as int,
+              ),
+          ]),
+        ),
+    ]),
+    pitri: List<LalKitabPitri>.unmodifiable([
+      for (final one in rows(raw['pitri']))
+        LalKitabPitri(
+          ninth: graha(one['ninth']),
+          mercury: one['mercury']! as int,
+        ),
+    ]),
+    flags: LalKitabFlags(
+      ratandha: flags['ratandha']! as bool,
+      nabalig: flags['nabalig']! as bool,
+      dharmi: grahas(flags['dharmi']),
+      sathi: List<List<Graha>>.unmodifiable([
+        for (final pair in flags['sathi']! as List<Object?>) grahas(pair),
+      ]),
+    ),
+  );
+}
+
+/// A chart's Lal Kitab from the `lalkitab` section's JSON, its keys made
+/// members.
+LalKitab _lalkitabFrom(Map<String, Object?> raw) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  Graha graha(Object? key) => Graha.byKey(key! as String) ?? Graha.unknown;
+  final cycle = at(raw['cycle']);
+  final year = raw['year'] as Map<String, Object?>?;
+  final annual = year?['annual'] as Map<String, Object?>?;
+  return LalKitab(
+    reading: _lalkitabReadingFrom(at(raw['reading'])),
+    cycle: LalKitabCycle(
+      planet: graha(cycle['planet']),
+      year: cycle['year']! as int,
+    ),
+    periods: List<LalKitabPeriod>.unmodifiable([
+      for (final one in (raw['periods']! as List<Object?>).map(at))
+        LalKitabPeriod(
+          planet: graha(one['planet']),
+          from: one['from']! as int,
+          to: one['to']! as int,
+        ),
+    ]),
+    year:
+        year == null
+            ? null
+            : LalKitabYear(
+              year: year['year']! as int,
+              ruler: graha(year['ruler']),
+              thirds: List<Graha>.unmodifiable([
+                for (final key in year['thirds']! as List<Object?>) graha(key),
+              ]),
+              annual: annual == null ? null : _lalkitabReadingFrom(annual),
+            ),
+  );
+}
+
 /// Each batch's remedies, parsed once however many charts read them.
 final Expando<List<Remedies>> _remedies = Expando<List<Remedies>>('remedies');
 
@@ -17570,6 +17715,417 @@ final class IshtaDevatas extends _Value {
     inNavamsha,
     amatya,
   ];
+}
+
+/// Where Lal Kitab's 35-year cycle starts: [planet] rules the native's
+/// [year] of life (`03-design/lalkitab.md` §4).
+final class LalKitabCycle extends _Value {
+  const LalKitabCycle({required this.planet, required this.year});
+
+  final Graha planet;
+
+  /// The year of life it rules, from 1.
+  final int year;
+
+  Map<String, Object?> get _record => {'planet': planet.fullKey, 'year': year};
+
+  @override
+  List<Object?> get _fields => [planet, year];
+}
+
+/// Lal Kitab to read in every chart of a request, the 1952 edition
+/// (`03-design/lalkitab.md`), every member optional.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */
+///     lalkitab: const LalKitabRequest(year: 30));
+/// final ruler = chart.lalkitab?.year?.ruler;
+/// ```
+final class LalKitabRequest {
+  const LalKitabRequest({this.cycle, this.year, this.varshphal});
+
+  /// Where the cycle starts; the book's general table, Saturn from the
+  /// first year, when null.
+  final LalKitabCycle? cycle;
+
+  /// The year of life to read, from 1 (birth to the first birthday); none
+  /// when null, and refused by `lalkitab.year` outside 1 to 120.
+  final int? year;
+
+  /// The 120-year varshphal list the year's annual teva is read from, row
+  /// `y − 1` for year `y` and each row the house every natal house moves
+  /// to; the SDK does not ship the book's, and checks each row.
+  final List<List<int>>? varshphal;
+
+  String get _json => jsonEncode(<String, Object?>{
+    if (cycle case final cycle?) 'cycle': cycle._record,
+    if (year case final year?) 'year': year,
+    if (varshphal case final rows?) 'varshphal': {'rows': rows},
+  });
+}
+
+/// What makes a planet strong in its house (1952 pp. 29–31).
+enum LalKitabDignity implements _Keyed {
+  /// Its permanent house (*pakka ghar*).
+  pakka('PAKKA'),
+
+  /// Its house of exaltation.
+  exalted('EXALTED'),
+
+  /// Its house of debilitation.
+  debilitated('DEBILITATED'),
+
+  /// A house it owns.
+  own('OWN');
+
+  const LalKitabDignity(this.key);
+
+  @override
+  final String key;
+}
+
+/// How one planet regards another (1952 p. 31), one way.
+enum LalKitabRegard implements _Keyed {
+  friend('FRIEND'),
+  equal('EQUAL'),
+  enemy('ENEMY');
+
+  const LalKitabRegard(this.key);
+
+  @override
+  final String key;
+}
+
+/// How strongly one house looks at another (1952 p. 22).
+enum LalKitabStrength implements _Keyed {
+  quarter('QUARTER'),
+  half('HALF'),
+  full('FULL');
+
+  const LalKitabStrength(this.key);
+
+  @override
+  final String key;
+}
+
+/// The artificial planet two planets in one house make (1952 p. 27).
+enum LalKitabMasnui implements _Keyed {
+  jupiter('JUPITER'),
+  sun('SUN'),
+  moon('MOON'),
+  venus('VENUS'),
+
+  /// A benefic (*nek*) Mars.
+  marsBenefic('MARS_BENEFIC'),
+
+  /// A malefic (*bad*) Mars.
+  marsMalefic('MARS_MALEFIC'),
+  mercury('MERCURY'),
+
+  /// A Saturn of Ketu's nature.
+  saturnLikeKetu('SATURN_LIKE_KETU'),
+
+  /// A Saturn of Rahu's nature.
+  saturnLikeRahu('SATURN_LIKE_RAHU'),
+  rahuExalted('RAHU_EXALTED'),
+  rahuDebilitated('RAHU_DEBILITATED'),
+  ketuExalted('KETU_EXALTED'),
+  ketuDebilitated('KETU_DEBILITATED');
+
+  const LalKitabMasnui(this.key);
+
+  @override
+  final String key;
+}
+
+/// The nine debts (*rin*, 1952 p. 125).
+enum LalKitabRin implements _Keyed {
+  /// The ancestors' debt (Jupiter's houses).
+  pitri('PITRI'),
+  swa('SWA'),
+  matri('MATRI'),
+  stri('STRI'),
+  rishtedari('RISHTEDARI'),
+  bhagini('BHAGINI'),
+  zalimana('ZALIMANA'),
+  ajanma('AJANMA'),
+  daivi('DAIVI');
+
+  const LalKitabRin(this.key);
+
+  @override
+  final String key;
+}
+
+/// One owner of a planet's house and how the planet regards it.
+final class LalKitabOwner extends _Value {
+  const LalKitabOwner({required this.owner, required this.regard});
+
+  final Graha owner;
+  final LalKitabRegard regard;
+
+  @override
+  List<Object?> get _fields => [owner, regard];
+}
+
+/// An aspect a planet casts, forward only: the house it looks at, how
+/// strongly, and the planets there.
+final class LalKitabCast extends _Value {
+  const LalKitabCast({
+    required this.to,
+    required this.strength,
+    required this.onto,
+  });
+
+  final int to;
+  final LalKitabStrength strength;
+  final List<Graha> onto;
+
+  @override
+  List<Object?> get _fields => [to, strength, onto];
+}
+
+/// One planet in the teva.
+final class LalKitabPlanet extends _Value {
+  const LalKitabPlanet({
+    required this.graha,
+    required this.house,
+    required this.dignities,
+    required this.owners,
+    required this.awake,
+    required this.kayam,
+    required this.casts,
+  });
+
+  final Graha graha;
+
+  /// Its house, 1 to 12, the whole-sign house from the lagna.
+  final int house;
+  final List<LalKitabDignity> dignities;
+
+  /// The house's owners and how this planet regards each (1952 p. 31).
+  final List<LalKitabOwner> owners;
+  final bool awake;
+
+  /// In a dignity, alone in its house and looked at from no occupied
+  /// house.
+  final bool kayam;
+  final List<LalKitabCast> casts;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    house,
+    dignities,
+    owners,
+    awake,
+    kayam,
+    casts,
+  ];
+}
+
+/// An occupied house that looks at another, and how strongly.
+final class LalKitabLook extends _Value {
+  const LalKitabLook({required this.from, required this.strength});
+
+  final int from;
+  final LalKitabStrength strength;
+
+  @override
+  List<Object?> get _fields => [from, strength];
+}
+
+/// One house of the teva.
+final class LalKitabHouse extends _Value {
+  const LalKitabHouse({
+    required this.house,
+    required this.occupants,
+    required this.lookedAtBy,
+    required this.awake,
+    required this.waker,
+  });
+
+  final int house;
+  final List<Graha> occupants;
+
+  /// The occupied houses that look at it.
+  final List<LalKitabLook> lookedAtBy;
+
+  /// Occupied, or looked at from an occupied house.
+  final bool awake;
+
+  /// The planet whose presence wakes it (1952 p. 98).
+  final Graha waker;
+
+  @override
+  List<Object?> get _fields => [house, occupants, lookedAtBy, awake, waker];
+}
+
+/// A pair in one house and the artificial planet it makes.
+final class LalKitabPair extends _Value {
+  const LalKitabPair({
+    required this.pair,
+    required this.house,
+    required this.countsAs,
+  });
+
+  final List<Graha> pair;
+  final int house;
+  final LalKitabMasnui countsAs;
+
+  @override
+  List<Object?> get _fields => [pair, house, countsAs];
+}
+
+/// An enemy seated in one of the indebted planet's houses.
+final class LalKitabSeat extends _Value {
+  const LalKitabSeat({required this.enemy, required this.house});
+
+  final Graha enemy;
+  final int house;
+
+  @override
+  List<Object?> get _fields => [enemy, house];
+}
+
+/// A debt the teva carries (1952 p. 125).
+final class LalKitabDebt extends _Value {
+  const LalKitabDebt({
+    required this.rin,
+    required this.of,
+    required this.seated,
+  });
+
+  final LalKitabRin rin;
+
+  /// The planet whose houses its enemies sit in.
+  final Graha of;
+  final List<LalKitabSeat> seated;
+
+  @override
+  List<Object?> get _fields => [rin, of, seated];
+}
+
+/// The ancestors' debt's first state: a planet in 9 with Mercury in its
+/// root (1952 p. 128).
+final class LalKitabPitri extends _Value {
+  const LalKitabPitri({required this.ninth, required this.mercury});
+
+  final Graha ninth;
+
+  /// Mercury's house.
+  final int mercury;
+
+  @override
+  List<Object?> get _fields => [ninth, mercury];
+}
+
+/// The teva's named conditions.
+final class LalKitabFlags extends _Value {
+  const LalKitabFlags({
+    required this.ratandha,
+    required this.nabalig,
+    required this.dharmi,
+    required this.sathi,
+  });
+
+  final bool ratandha;
+  final bool nabalig;
+  final List<Graha> dharmi;
+
+  /// Each pair of companion planets.
+  final List<List<Graha>> sathi;
+
+  @override
+  List<Object?> get _fields => [ratandha, nabalig, dharmi, sathi];
+}
+
+/// What a teva says (`03-design/lalkitab.md` §3).
+final class LalKitabReading extends _Value {
+  const LalKitabReading({
+    required this.planets,
+    required this.houses,
+    required this.masnui,
+    required this.rinas,
+    required this.pitri,
+    required this.flags,
+  });
+
+  final List<LalKitabPlanet> planets;
+  final List<LalKitabHouse> houses;
+
+  /// The artificial planets pairs in one house make (1952 p. 27).
+  final List<LalKitabPair> masnui;
+
+  /// The debts the teva carries (1952 p. 125).
+  final List<LalKitabDebt> rinas;
+  final List<LalKitabPitri> pitri;
+  final LalKitabFlags flags;
+
+  @override
+  List<Object?> get _fields => [planets, houses, masnui, rinas, pitri, flags];
+}
+
+/// One period of the 35-year cycle, both years of life included.
+final class LalKitabPeriod extends _Value {
+  const LalKitabPeriod({
+    required this.planet,
+    required this.from,
+    required this.to,
+  });
+
+  final Graha planet;
+  final int from;
+  final int to;
+
+  @override
+  List<Object?> get _fields => [planet, from, to];
+}
+
+/// The year of life asked for.
+final class LalKitabYear extends _Value {
+  const LalKitabYear({
+    required this.year,
+    required this.ruler,
+    required this.thirds,
+    required this.annual,
+  });
+
+  final int year;
+  final Graha ruler;
+
+  /// The planets of months 1–4, 5–8 and 9–12 (1952 p. 34).
+  final List<Graha> thirds;
+
+  /// The annual teva's reading; null without [LalKitabRequest.varshphal].
+  final LalKitabReading? annual;
+
+  @override
+  List<Object?> get _fields => [year, ruler, thirds, annual];
+}
+
+/// A chart read as Lal Kitab reads it (`03-design/lalkitab.md`).
+final class LalKitab extends _Value {
+  const LalKitab({
+    required this.reading,
+    required this.cycle,
+    required this.periods,
+    required this.year,
+  });
+
+  final LalKitabReading reading;
+
+  /// Where the cycle was started.
+  final LalKitabCycle cycle;
+
+  /// The cycle's periods over years 1 to 120 of life.
+  final List<LalKitabPeriod> periods;
+
+  /// The year asked for; null unless [LalKitabRequest.year] named one.
+  final LalKitabYear? year;
+
+  @override
+  List<Object?> get _fields => [reading, cycle, periods, year];
 }
 
 /// A chart's remedies: whom to propitiate, why and how, and the chosen
@@ -21139,6 +21695,16 @@ final class Chart {
   /// (`03-design/remedies.md`).
   Remedies? get remedies {
     final all = _remediesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The chart read as Lal Kitab reads it, the 1952 edition: the teva's
+  /// planets, houses, artificial planets, debts and conditions, the
+  /// 35-year cycle's periods and, under [LalKitabRequest.year], that
+  /// year's ruler, thirds and annual teva. Null unless `lalkitab` asked
+  /// for it (`03-design/lalkitab.md`).
+  LalKitab? get lalkitab {
+    final all = _lalkitabsOf(batch);
     return index < all.length ? all[index] : null;
   }
 

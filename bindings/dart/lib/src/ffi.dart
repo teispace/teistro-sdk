@@ -1326,6 +1326,20 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
   external ffi.Pointer<ffi.Char> rectificationJson;
 
+  /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+  /// object, every member optional: `cycle` (`{planet, year}`, where the
+  /// 35-year cycle starts, the book's general table from Saturn in the
+  /// first year when left out), `year` (a year of life from 1, the year
+  /// from birth to the first birthday, to read its ruler, its thirds and
+  /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+  /// annual teva is read from, which the SDK does not ship and checks
+  /// row by row). Each chart's reading comes back in the `lalkitab`
+  /// section. Null for none, which costs nothing
+  /// (`03-design/lalkitab.md`). Refusals are named from the record every
+  /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+  /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+  external ffi.Pointer<ffi.Char> lalkitabJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -3270,7 +3284,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3742,6 +3756,20 @@ final class ChartRequest {
   /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
   final String? rectificationJson;
 
+  /// Every chart read as Lal Kitab reads it (the 1952 edition), as a JSON
+  /// object, every member optional: `cycle` (`{planet, year}`, where the
+  /// 35-year cycle starts, the book's general table from Saturn in the
+  /// first year when left out), `year` (a year of life from 1, the year
+  /// from birth to the first birthday, to read its ruler, its thirds and
+  /// its annual teva) and `varshphal` (`{rows}`, the 120-year list the
+  /// annual teva is read from, which the SDK does not ship and checks
+  /// row by row). Each chart's reading comes back in the `lalkitab`
+  /// section. Null for none, which costs nothing
+  /// (`03-design/lalkitab.md`). Refusals are named from the record every
+  /// binding calls `lalkitab`, as `lalkitab.cycle.year`.
+  /// Example: {"cycle":{"planet":"VENUS","year":17},"year":30}. May be null.
+  final String? lalkitabJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3856,6 +3884,9 @@ final class ChartRequest {
     raw.rectificationJson = rectificationJson == null
         ? ffi.nullptr
         : rectificationJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.lalkitabJson = lalkitabJson == null
+        ? ffi.nullptr
+        : lalkitabJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3956,6 +3987,9 @@ final class ChartRequest {
         rectificationJson: raw.rectificationJson == ffi.nullptr
             ? null
             : raw.rectificationJson.cast<pkg_ffi.Utf8>().toDartString(),
+        lalkitabJson: raw.lalkitabJson == ffi.nullptr
+            ? null
+            : raw.lalkitabJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

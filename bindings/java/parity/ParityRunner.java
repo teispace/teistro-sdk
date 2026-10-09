@@ -313,6 +313,19 @@ public final class ParityRunner {
         throw new IllegalStateException("expected a JSON list, found " + value);
     }
 
+    /** The rotation varshphal list: row {@code y} sends house {@code h} to {@code (h + y) % 12 + 1}. */
+    private static List<List<Integer>> varshphalRotation() {
+        List<List<Integer>> rows = new ArrayList<>();
+        for (int y = 0; y < 120; y++) {
+            List<Integer> row = new ArrayList<>();
+            for (int h = 0; h < 12; h++) {
+                row.add((h + y) % 12 + 1);
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+
     /** A request object, its fields in the order written. */
     private static Map<String, Object> map(Object... fields) {
         Map<String, Object> out = new LinkedHashMap<>();
@@ -454,6 +467,42 @@ public final class ParityRunner {
     private static String devotionsSaid(List<Devotion> devotions) {
         return orDash(join(",", devotions, d -> d.graha().fullKey() + ":" + String.join("|", d.deities()) + ":"
                 + d.verse() + ":" + lower(d.withKetu())));
+    }
+
+    /** Grahas by their full keys joined by {@code |}, empty for none. */
+    private static String piped(List<Graha> grahas) {
+        return join("|", grahas, Graha::fullKey);
+    }
+
+    /** A chart's Lal Kitab, each row under {@code at}. */
+    private static void putLalKitab(String at, LalKitab lk) {
+        LalKitab.Reading reading = lk.reading();
+        LalKitab.Flags flags = reading.flags();
+        LalKitab.Year year = lk.year();
+        put(at, lk.cycle().planet().fullKey() + ":" + lk.cycle().year() + " " + year.year() + ":"
+                + year.ruler().fullKey() + " " + grahaKeys(year.thirds()) + " " + lower(flags.ratandha()) + " "
+                + lower(flags.nabalig()) + " " + grahaKeys(flags.dharmi()) + " "
+                + orDash(join(",", flags.sathi(), ParityRunner::piped)));
+        for (LalKitab.Planet p : reading.planets()) {
+            put(at + "-planet-" + p.graha().fullKey(), p.house() + " " + orDash(String.join(",", p.dignities()))
+                    + " " + orDash(join(",", p.owners(), o -> o.owner().fullKey() + ":" + o.regard())) + " "
+                    + lower(p.awake()) + " " + lower(p.kayam()) + " "
+                    + orDash(join(",", p.casts(), c -> c.to() + ":" + c.strength() + ":" + piped(c.onto()))));
+        }
+        for (LalKitab.House h : reading.houses()) {
+            put(at + "-house-" + h.house(), grahaKeys(h.occupants()) + " "
+                    + orDash(join(",", h.lookedAtBy(), l -> l.from() + ":" + l.strength())) + " "
+                    + lower(h.awake()) + " " + h.waker().fullKey());
+        }
+        put(at + "-debts", orDash(join(",", reading.masnui(), m -> piped(m.pair()) + ":" + m.house() + ":"
+                + m.countsAs())) + " "
+                + orDash(join(",", reading.rinas(), r -> r.rin() + ":" + r.of().fullKey() + ":"
+                        + join("|", r.seated(), s -> s.enemy().fullKey() + "@" + s.house())))
+                + " " + orDash(join(",", reading.pitri(), p -> p.ninth().fullKey() + ":" + p.mercury())));
+        put(at + "-periods", orDash(join(",", lk.periods(), p -> p.planet().fullKey() + ":" + p.from() + "-"
+                + p.to())));
+        put(at + "-annual", orDash(join(",", year.annual().planets(), p -> p.graha().fullKey() + ":"
+                + p.house())));
     }
 
     /** A chart's remedies, each row under {@code at}. */
@@ -1267,6 +1316,10 @@ public final class ParityRunner {
                 .perfection(map("house", 7, "rules", map("horizonDays", 120)))
                 .prashna(map("question", map("house", 7, "number", 14), "rules", map("score", "BASELINE")))
                 .remedies(map("at", 2460676.5, "rules", map("shanti", map("rik", "YAJNAVALKYA"))))
+                // A varshphal list with the book's structure and none of its numbers:
+                // year y sends natal house h to h + y - 1, round the twelve.
+                .lalkitab(map("cycle", map("planet", "graha.VENUS", "year", 17), "year", 43,
+                        "varshphal", map("rows", varshphalRotation())))
                 .rectification(map("purify", map("minutes", 20), "conception", map(),
                         "circumstance", map("facts", map("fatherPresent", false)),
                         "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
@@ -1789,6 +1842,7 @@ public final class ParityRunner {
         perfection(c, chart.perfection().orElseThrow());
         prashna(c, chart.prashna().orElseThrow());
         putRemedies(c + "-remedies", chart.remedies().orElseThrow());
+        putLalKitab(c + "-lalkitab", chart.lalkitab().orElseThrow());
         rectification(c + "-rectification", chart.rectification().orElseThrow());
         progressions(c, chart.progressions().orElseThrow());
         List<WesternAspectRow> westernAspects = chart.westernAspects().orElseThrow();
