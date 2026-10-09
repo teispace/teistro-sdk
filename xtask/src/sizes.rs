@@ -79,12 +79,17 @@ pub(crate) enum Artefact {
 }
 
 impl Artefact {
-    /// Whether a gzipped figure is measured: only where the artefact is
-    /// not already compressed.
+    /// Whether a gzipped figure is measured: where the artefact is not
+    /// already compressed, and the C bundle, which is a gzipped tarball and
+    /// so has only that figure.
     const fn gzipped(self) -> bool {
         matches!(
             self,
-            Artefact::Library | Artefact::Addon | Artefact::Module | Artefact::Glue
+            Artefact::Library
+                | Artefact::CBundle
+                | Artefact::Addon
+                | Artefact::Module
+                | Artefact::Glue
         )
     }
 
@@ -113,14 +118,24 @@ pub(crate) struct Row {
 
 impl Row {
     /// A row, measured from the bytes it has: raw where the artefact counts
-    /// raw, gzipped where it counts gzipped.
+    /// raw, gzipped where it counts gzipped, and the C bundle's bytes as
+    /// they are, since they are already gzipped.
     fn of(subject: impl Into<String>, artefact: Artefact, bytes: &[u8]) -> Row {
+        let gzip = match artefact {
+            Artefact::CBundle => len(bytes.len()),
+            _ => len(gzip_best(bytes).len()),
+        };
         Row {
             subject: subject.into(),
             artefact,
             raw: artefact.raw().then(|| len(bytes.len())),
-            gzip: artefact.gzipped().then(|| len(gzip_best(bytes).len())),
+            gzip: artefact.gzipped().then_some(gzip),
         }
+    }
+
+    /// Whether it carries exactly the figures its artefact measures.
+    fn measured(&self) -> bool {
+        self.raw.is_some() == self.artefact.raw() && self.gzip.is_some() == self.artefact.gzipped()
     }
 
     fn key(&self) -> (String, Artefact) {
@@ -718,7 +733,7 @@ fn complete(record: &Record) -> i32 {
             );
             failures += 1;
         }
-        if row.raw.is_some() != row.artefact.raw() || row.gzip.is_some() != row.artefact.gzipped() {
+        if !row.measured() {
             println!(
                 "FAIL  {RECORD}'s {:?} for {} carries the wrong figures",
                 row.artefact, row.subject
@@ -1020,5 +1035,20 @@ mod tests {
         assert!(row.raw.is_some() && row.gzip.is_some());
         let row = Row::of("linux-x64", Artefact::Wheel, &[0; 64]);
         assert!(row.raw.is_some() && row.gzip.is_none());
+        // The C bundle is a gzipped tarball: its one figure is its size.
+        let row = Row::of("linux-x64", Artefact::CBundle, &[0; 64]);
+        assert_eq!((row.raw, row.gzip), (None, Some(64)));
+        for artefact in [
+            Artefact::Library,
+            Artefact::CBundle,
+            Artefact::Addon,
+            Artefact::Wheel,
+            Artefact::Jar,
+            Artefact::Module,
+            Artefact::Glue,
+            Artefact::Bundle,
+        ] {
+            assert!(Row::of("s", artefact, &[0; 64]).measured(), "{artefact:?}");
+        }
     }
 }
