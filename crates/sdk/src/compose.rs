@@ -70,6 +70,63 @@ pub struct ChartRecords {
     /// request's own clock.
     #[cfg(feature = "rectification")]
     pub rectification: Option<crate::RectificationRequest>,
+    /// The annual charts every birth founds, on the request's own clock.
+    #[cfg(feature = "tajika")]
+    pub varsha: Option<crate::VarshaRequest>,
+    /// The Western tables.
+    #[cfg(feature = "western")]
+    pub western: WesternRecords,
+}
+
+/// The Western records a chart request carries, each optional.
+#[cfg(feature = "western")]
+#[derive(Clone, Debug, Default)]
+pub struct WesternRecords {
+    /// Progressions and directions, read against the request's own place,
+    /// clock and kind.
+    pub progressions: Option<crate::ProgressionsRequest>,
+    /// Each chart's own Western aspects.
+    pub aspects: Option<crate::AspectRequest>,
+    /// A partner every chart is read against: the synastry, its composite
+    /// and its Davison chart.
+    pub synastry: Option<crate::PartnerSynastry>,
+    /// The declinations and the parallels among the planets.
+    pub parallels: Option<crate::ParallelRequest>,
+    /// The antiscia.
+    pub antiscia: Option<crate::AntisciaRequest>,
+    /// The midpoints.
+    pub midpoints: Option<crate::MidpointRequest>,
+    /// The Western houses.
+    pub houses: Option<crate::HouseRequest>,
+    /// The harmonic chart.
+    pub harmonic: Option<crate::HarmonicRequest>,
+}
+
+/// The Western tables a batch was asked for, a row a chart, each empty
+/// when its record was not sent.
+#[cfg(feature = "western")]
+#[derive(Clone, Debug, Default)]
+pub struct WesternTables {
+    /// Every chart's progressions and directions.
+    pub progressions: Vec<crate::Progressions>,
+    /// Every chart's own aspects.
+    pub aspects: Vec<Vec<crate::WesternAspectRow>>,
+    /// Every chart read against the partner.
+    pub synastry: Vec<crate::PartnerReading>,
+    /// Every chart's declinations.
+    pub declinations: Vec<crate::Declinations>,
+    /// The parallels among each chart's planets.
+    pub parallels: Vec<Vec<crate::ParallelRow>>,
+    /// Every chart's antiscia.
+    pub antiscia: Vec<crate::Antiscia>,
+    /// Every chart's midpoints.
+    pub midpoints: Vec<Vec<crate::MidpointRow>>,
+    /// Every chart's Davison chart with the partner.
+    pub davisons: Vec<crate::Partner>,
+    /// Every chart's Western houses.
+    pub houses: Vec<crate::WesternHouses>,
+    /// Every chart's harmonic chart.
+    pub harmonics: Vec<crate::HarmonicChart>,
 }
 
 impl ChartRecords {
@@ -195,6 +252,12 @@ pub struct Composed<'r> {
     /// Every chart's rectification.
     #[cfg(feature = "rectification")]
     pub rectification: Vec<crate::Rectification>,
+    /// Every chart's annual charts.
+    #[cfg(feature = "tajika")]
+    pub varsha: Vec<crate::Varsha>,
+    /// The Western tables.
+    #[cfg(feature = "western")]
+    pub western: WesternTables,
 }
 
 impl ChartArea<'_> {
@@ -248,10 +311,7 @@ impl ChartArea<'_> {
             plans,
             sade_sati,
             gochar: self.transits_of(documents, records.gochar.as_ref())?,
-            hits: match &records.hits {
-                Some(asked) if !documents.is_empty() => self.hits_many(documents, asked)?.value,
-                _ => Vec::new(),
-            },
+            hits: self.hits_of(documents, records.hits.as_ref())?,
             dignities: each(documents, records.dignities.as_ref(), |document, asked| {
                 self.dignities(document, asked)
             })?,
@@ -268,12 +328,7 @@ impl ChartArea<'_> {
                 records.perfection.as_ref(),
                 &fortitudes,
             )?,
-            matchings: match &records.matching {
-                Some(asked) => self
-                    .matching_with(documents, asked)
-                    .map_err(|error| error.under("matching"))?,
-                None => Vec::new(),
-            },
+            matchings: self.matchings_of(documents, records.matching.as_ref())?,
             #[cfg(feature = "svg")]
             svgs: each(documents, records.theme.as_ref(), |document, theme| {
                 (0..document.drawings.len())
@@ -308,9 +363,134 @@ impl ChartArea<'_> {
                 records.rectification.as_ref(),
                 |document, asked| self.rectification(document, request.offset(), asked),
             )?,
+            #[cfg(feature = "tajika")]
+            varsha: chart_by_chart(
+                documents,
+                records.varsha.as_ref(),
+                None,
+                |document, asked| self.varsha(document, request.offset(), asked),
+            )?,
+            #[cfg(feature = "western")]
+            western: self.western_of(documents, &records.western, request)?,
             fortitudes,
             founded: Envelope::new(founded, read.provenance),
         })
+    }
+
+    /// Every Western table `records` asks of `documents`; a refusal is
+    /// named under its record's root, and one read chart by chart says
+    /// which chart.
+    #[cfg(feature = "western")]
+    fn western_of(
+        self,
+        documents: &[Document],
+        records: &WesternRecords,
+        request: &ChartRequest,
+    ) -> Result<WesternTables, Error> {
+        // Progressions read against the request's own place, clock and
+        // kind, not the sections its records widened it by.
+        let base = ChartRequest::at(*request.place(), request.offset()).with_kind(request.kind());
+        let (declinations, parallels) = match &records.parallels {
+            None => (Vec::new(), Vec::new()),
+            Some(asked) => documents
+                .iter()
+                .enumerate()
+                .map(|(at, document)| {
+                    let refused =
+                        |error: Error| error.under("parallels").with_hint(format!("chart {at}"));
+                    let declined = self.declinations(document).map_err(refused)?;
+                    let parallels =
+                        crate::western::parallels(&declined.grahas, asked).map_err(refused)?;
+                    Ok((declined, parallels))
+                })
+                .collect::<Result<Vec<_>, Error>>()?
+                .into_iter()
+                .unzip(),
+        };
+        Ok(WesternTables {
+            progressions: chart_by_chart(
+                documents,
+                records.progressions.as_ref(),
+                None,
+                |document, asked| self.progressions(document, asked, &base),
+            )?,
+            aspects: chart_by_chart(
+                documents,
+                records.aspects.as_ref(),
+                Some("westernAspects"),
+                |document, asked| self.western_aspects(document, asked),
+            )?,
+            synastry: match &records.synastry {
+                Some(asked) => self
+                    .synastry_with(documents, asked)
+                    .map_err(|error| error.under("synastry"))?,
+                None => Vec::new(),
+            },
+            declinations,
+            parallels,
+            antiscia: chart_by_chart(
+                documents,
+                records.antiscia.as_ref(),
+                Some("antiscia"),
+                |document, asked| self.antiscia(document, asked),
+            )?,
+            midpoints: chart_by_chart(
+                documents,
+                records.midpoints.as_ref(),
+                Some("midpoints"),
+                |document, asked| self.midpoints(document, asked),
+            )?,
+            davisons: records
+                .synastry
+                .as_ref()
+                .map(|asked| asked.davisons(documents, request.offset()))
+                .transpose()
+                .map_err(|error| error.under("synastry"))?
+                .flatten()
+                .unwrap_or_default(),
+            houses: chart_by_chart(
+                documents,
+                records.houses.as_ref(),
+                Some("westernHouses"),
+                |document, asked| self.western_houses(document, asked),
+            )?,
+            harmonics: chart_by_chart(
+                documents,
+                records.harmonic.as_ref(),
+                Some("harmonic"),
+                |document, asked| self.harmonic(document, asked),
+            )?,
+        })
+    }
+
+    /// Every chart's hit list in **one batch**, which scans the sky once
+    /// for every chart; a batch of none asks nothing, which the search
+    /// would refuse by `natals`.
+    fn hits_of(
+        self,
+        documents: &[Document],
+        asked: Option<&HitRequest>,
+    ) -> Result<Vec<Vec<Hit>>, Error> {
+        match asked {
+            Some(asked) if !documents.is_empty() => Ok(self.hits_many(documents, asked)?.value),
+            _ => Ok(Vec::new()),
+        }
+    }
+
+    /// Every chart matched with the partner, the partner founded once; a
+    /// refusal is named under `matching`.
+    fn matchings_of(
+        self,
+        documents: &[Document],
+        asked: Option<&PartnerMatching>,
+    ) -> Result<Vec<Matched>, Error> {
+        asked.map_or_else(
+            || Ok(Vec::new()),
+            |asked| {
+                self.matching_with(documents, asked)
+                    .map_err(|error| error.under("matching"))
+            },
+        )
     }
 
     /// Every chart's transits: one batch a chart, which places the grahas
@@ -394,6 +574,34 @@ impl ChartArea<'_> {
             .map(|(document, fortitudes)| read(document, fortitudes))
             .collect()
     }
+}
+
+/// `read` over every document, or nothing when no record asked; a
+/// refusal is named under the record's `root`, where one is given, and
+/// says which chart it was refused for.
+#[cfg(any(feature = "tajika", feature = "western"))]
+fn chart_by_chart<A, T>(
+    documents: &[Document],
+    asked: Option<&A>,
+    root: Option<&'static str>,
+    read: impl Fn(&Document, &A) -> Result<T, Error>,
+) -> Result<Vec<T>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            read(document, asked).map_err(|error| {
+                let error = match root {
+                    Some(root) => error.under(root),
+                    None => error,
+                };
+                error.with_hint(format!("chart {at}"))
+            })
+        })
+        .collect()
 }
 
 /// `read` over every document, or nothing when no record asked.

@@ -10,7 +10,7 @@
 mod years;
 
 #[cfg(feature = "tajika")]
-pub(crate) use years::{PraveshaColumns, praveshas_of};
+pub(crate) use years::PraveshaColumns;
 
 super::record!(
     "tajika",
@@ -75,23 +75,5 @@ impl PraveshaColumns {
         writer: &mut teistro_idl::blob::Writer<'_>,
     ) -> Result<(), teistro_idl::blob::BlobError> {
         SECTIONS.iter().try_for_each(|name| writer.empty(name))
-    }
-}
-
-/// No years in a build without Tajika, which holds no varsha record.
-#[cfg(not(feature = "tajika"))]
-#[allow(
-    clippy::unnecessary_wraps,
-    reason = "the signature of the build with Tajika"
-)]
-pub(crate) fn praveshas_of(
-    _sdk: &teistro::Context,
-    _documents: &[teistro_serial::Document],
-    _birth_clock: teistro::UtcOffset,
-    asked: Option<&Request>,
-) -> Result<Vec<Varsha>, teistro_core::error::Error> {
-    match asked {
-        None => Ok(Vec::new()),
-        Some(never) => match *never {},
     }
 }

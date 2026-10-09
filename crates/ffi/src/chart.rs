@@ -6003,12 +6003,7 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
 /// and checked by the façade's own reader before anything is founded, so a
 /// bad record is refused before a chart is paid for, and each refusal is
 /// named from the record's root as every binding writes it.
-struct AskedRecords {
-    varsha: Option<crate::family::tajika::Request>,
-    western: crate::family::western::Records,
-    /// The records the façade composes itself ([`teistro::ChartArea::compose`]).
-    composed: ChartRecords,
-}
+struct AskedRecords;
 
 impl AskedRecords {
     /// Every record `asked` carries.
@@ -6016,7 +6011,7 @@ impl AskedRecords {
     /// # Safety
     ///
     /// Each of `asked`'s record fields null or a NUL-terminated string.
-    unsafe fn of(asked: &TsChartRequest) -> Result<AskedRecords, Error> {
+    unsafe fn of(asked: &TsChartRequest) -> Result<ChartRecords, Error> {
         // SAFETY: the caller's contract, for every field read below. The
         // theme names its fields from its own root, `theme.style.ink`,
         // which is what every binding calls it, so its refusal stands.
@@ -6029,6 +6024,7 @@ impl AskedRecords {
             let remedies = crate::family::remedies::request_of(asked.remedies_json)?;
             let lalkitab = crate::family::lalkitab::request_of(asked.lalkitab_json)?;
             let rectification = crate::family::rectification::request_of(asked.rectification_json)?;
+            let varsha = crate::family::tajika::request_of(asked.varsha_json)?;
             #[cfg(not(feature = "svg"))]
             let _ = theme;
             #[cfg(not(feature = "kp"))]
@@ -6041,6 +6037,8 @@ impl AskedRecords {
             let _ = lalkitab;
             #[cfg(not(feature = "rectification"))]
             let _ = rectification;
+            #[cfg(not(feature = "tajika"))]
+            let _ = varsha;
             let composed = ChartRecords {
                 rules: rule_set_of(asked.rules_json)?,
                 plans: plan_request_of(asked.interpret_json)?,
@@ -6067,12 +6065,14 @@ impl AskedRecords {
                 lalkitab,
                 #[cfg(feature = "rectification")]
                 rectification,
+                #[cfg(feature = "tajika")]
+                varsha,
+                #[cfg(feature = "western")]
+                western: crate::family::western::records_of(asked)?,
             };
-            Ok(AskedRecords {
-                varsha: crate::family::tajika::request_of(asked.varsha_json)?,
-                western: crate::family::western::Records::of(asked)?,
-                composed: composed.checked()?,
-            })
+            #[cfg(not(feature = "western"))]
+            let crate::family::western::Records = crate::family::western::records_of(asked)?;
+            composed.checked()
         }
     }
 }
@@ -6153,45 +6153,36 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: the entry point's contract — each record null, or a
         // NUL-terminated string.
         let records = unsafe { AskedRecords::of(&asked) }?;
-        let composed = ctx
-            .sdk()
-            .chart()
-            .compose(&instants, &request, &records.composed)?;
+        let composed = ctx.sdk().chart().compose(&instants, &request, &records)?;
         let founded = &composed.founded;
         // What every chart answers by rule and says, canonical JSON; each
         // empty when the request asked for none.
-        let rules_json = if records.composed.rules.is_some() {
+        let rules_json = if records.rules.is_some() {
             teistro_core::envelope::canonical_json(&composed.readings)
         } else {
             String::new()
         };
-        let plans_json = if records.composed.plans.asks_for_something() {
+        let plans_json = if records.plans.asks_for_something() {
             teistro_core::envelope::canonical_json(&composed.plans)
         } else {
             String::new()
         };
-        let svgs = section!("svg", records.composed.theme, composed.svgs);
-        let praveshas = crate::family::tajika::praveshas_of(
-            ctx.sdk(),
-            &founded.value,
-            request.offset(),
-            records.varsha.as_ref(),
-        )?;
-        let kp = section!("kp", records.composed.kp, composed.kp);
-        let progressions = crate::family::western::progressions_of(
-            ctx.sdk(),
-            &founded.value,
-            records.western.progressions.as_ref(),
-            &ChartRequest::at(place, clock).with_kind(kind),
-        )?;
-        let western =
-            crate::family::western::Tables::of(ctx.sdk(), &founded.value, &records.western, clock)?;
-        let prashna = section!("prashna", records.composed.prashna, composed.prashna);
-        let remedies = section!("remedies", records.composed.remedies, composed.remedies);
-        let lalkitab = section!("lalkitab", records.composed.lalkitab, composed.lalkitab);
+        let svgs = section!("svg", records.theme, composed.svgs);
+        #[cfg(feature = "tajika")]
+        let praveshas = composed.varsha.as_slice();
+        #[cfg(not(feature = "tajika"))]
+        let praveshas: &[crate::family::tajika::Varsha] = &[];
+        let kp = section!("kp", records.kp, composed.kp);
+        #[cfg(feature = "western")]
+        let western = &composed.western;
+        #[cfg(not(feature = "western"))]
+        let western = &crate::family::western::Tables::default();
+        let prashna = section!("prashna", records.prashna, composed.prashna);
+        let remedies = section!("remedies", records.remedies, composed.remedies);
+        let lalkitab = section!("lalkitab", records.lalkitab, composed.lalkitab);
         let rectification = section!(
             "rectification",
-            records.composed.rectification,
+            records.rectification,
             composed.rectification
         );
         let encoded = encode(
@@ -6203,10 +6194,9 @@ pub unsafe extern "C" fn ts_chart_found(
                 svgs: &svgs,
                 rules: &rules_json,
                 plans: &plans_json,
-                praveshas: &praveshas,
+                praveshas,
                 gochar: &composed.gochar,
                 gochar_instants: records
-                    .composed
                     .gochar
                     .as_ref()
                     .map_or(&[], teistro::GocharRequest::instants),
@@ -6218,7 +6208,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 lots: &composed.lots,
                 considerations: &composed.considerations,
                 perfections: &composed.perfections,
-                progressions: &progressions,
+                progressions: &western.progressions,
                 western_aspects: &western.aspects,
                 synastry: &western.synastry,
                 declinations: &western.declinations,

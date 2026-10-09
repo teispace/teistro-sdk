@@ -11,9 +11,9 @@
 
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRecords, ChartRequest, ConsiderationRules, Context, DignityRequest, Ephemeris,
-    FortitudeRequest, FortuneRule, KpRequest, Lot, LotRequest, PerfectionRequest, PrashnaRequest,
-    UtcOffset,
+    AntisciaRequest, ChartRecords, ChartRequest, ConsiderationRules, Context, DignityRequest,
+    Ephemeris, FortitudeRequest, FortuneRule, KpRequest, Lot, LotRequest, PerfectionRequest,
+    PrashnaRequest, UtcOffset, VarshaRequest, WesternRecords,
 };
 
 fn context() -> Context {
@@ -160,4 +160,40 @@ fn the_records_widen_the_request_by_what_they_read_off_the_charts() {
         request.with_shadbala(),
         "a prashna weighs the seven by their Shadbala"
     );
+}
+
+#[test]
+fn the_annual_charts_and_the_western_tables_are_the_calls_they_compose() {
+    let sdk = context();
+    let request = kathmandu();
+    let records = ChartRecords {
+        varsha: Some(VarshaRequest::from_json(r#"{"through": 2}"#).unwrap()),
+        western: WesternRecords {
+            antiscia: Some(AntisciaRequest::default()),
+            ..WesternRecords::default()
+        },
+        ..ChartRecords::default()
+    };
+    let composed = sdk
+        .chart()
+        .compose(&instants(), &request, &records)
+        .unwrap();
+    for (at, document) in composed.founded.value.iter().enumerate() {
+        let direct = sdk
+            .chart()
+            .varsha(document, request.offset(), records.varsha.as_ref().unwrap())
+            .unwrap();
+        assert_eq!(
+            format!("{:?}", composed.varsha[at]),
+            format!("{direct:?}"),
+            "the annual charts are read on the request's own clock"
+        );
+        assert_eq!(
+            composed.western.antiscia[at],
+            sdk.chart()
+                .antiscia(document, &AntisciaRequest::default())
+                .unwrap()
+        );
+    }
+    assert!(composed.western.aspects.is_empty() && composed.western.davisons.is_empty());
 }
