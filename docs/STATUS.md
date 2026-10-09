@@ -1052,8 +1052,9 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the completion plan** (`07-roadmap/00-roadmap.md`, "Completion
-   plan"): Track A's release blockers first, Phase 8's modules beside them.
+0. **Next: the dated plan** (`07-roadmap/00-roadmap.md`, "The plan to the
+   release candidate"), week by week: `SIZES.md` and rectification step 6
+   first. Track A's release blockers first, Phase 8's modules beside them.
    BPHS ch. 9's last buildable evils shipped (vv. 12, 15 to 20, ch. 10
    v. 6); v. 13 waits on the twilight and the Moon's hora. The maintainer
    owns printed copies of Santhanam's BPHS and Saravali and Kapoor's

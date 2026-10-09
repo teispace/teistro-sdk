@@ -2440,6 +2440,33 @@ the astronomical numbers do not move. Nothing else computes yet.
   print what the other bindings' print, the provider example among
   them: an `EphemerisProvider` written in Java answers the SDK through
   FFM upcalls, and what it throws reaches the caller as itself.
+- **The Java package, for Maven Central** (`03-design/java-binding.md`
+  steps 7 to 9). `cargo xtask package stage` writes Maven's repository
+  layout: a jar carrying every platform's library, a classifier jar per
+  platform, the sources and javadoc jars and the POM, each with its
+  checksums, the same bytes from two stagings of one commit. The loader
+  takes the jar's own library for the host, caches it where only its
+  owner may write and checks its hash on every load. `check-package`
+  installs it on the module path and through Maven, and refuses a
+  tampered cache and a wrong checksum. `cargo xtask publish maven` signs,
+  bundles and uploads. The Teimeris adapter has a Java package of its
+  own, with the engine's façade generated for Java.
+- **Rectification's reports beside the purifier** (`03-design/rectification.md`
+  steps 4 and 5, X10 to X19). `sdk.chart().conception` reads the
+  pranapada's house, the conception instant BPHS counts back to with its
+  lagna judged, and the birth Moon *Brihat Jataka* IV.21 foretells from
+  it, with Jha's two worked examples as tests. `sdk.chart().circumstance`
+  reads what *Brihat Jataka* ch. V says the birth moment shows (the
+  father away, the presentation, the lamp, the women attending), each
+  weighed against the facts a family gives. Both report and weigh; none
+  bars.
+- **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
+  artefact weighs, raw and gzipped, recorded from the verify run that
+  built it: each platform's library, C bundle, Node addon, wheel and jar,
+  each wasm module and its glue, and every bundle. Verify fails when a
+  run moves any figure more than 2% from the record or leaves one out.
+  The wasm budgets moved into the record from `bindings/wasm/size.json`,
+  with a history row for each move in place of the prose log.
   **Numbers:** none move.
 - **JSON is parsed once** (`03-design/wasm-profiles.md` step 4).
   `teistro_core::strict` parses text into a value and reads every type
