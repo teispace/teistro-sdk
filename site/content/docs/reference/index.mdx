@@ -128,13 +128,13 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
 | entry point | what it does |
 |---|---|
-| [`ts_pakshi`](pakshi/ts_pakshi) | Reads a native's bird over each civil day of a range at a place and answers with an array of `{date, reading}` as canonical JSON, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset and next sunrise, each `{half, yama, span, activity, quality, subs}` with every sub-period's activity, owner, span and how the native regards its owner, beside the day's `{sunrise, sunset, nextSunrise, vara, paksha}`, the bird, its death bird and the first eaters; null on a day the Sun does not both rise and set. |
+| [`ts_pakshi`](pakshi/ts_pakshi) | Reads a native's bird over each civil day of a range at a place and answers with `{value, provenance}` as canonical JSON, `value` an array of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset and next sunrise, each `{half, yama, span, activity, quality, subs}` with every sub-period's activity, owner, span and how the native regards its owner, beside the day's `{sunrise, sunset, nextSunrise, vara, paksha}`, the bird, its death bird and the first eaters; null on a day the Sun does not both rise and set. |
 
 ### Rashifal
 
 | entry point | what it does |
 |---|---|
-| [`ts_rashifal`](rashifal/ts_rashifal) | Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. |
+| [`ts_rashifal`](rashifal/ts_rashifal) | Reads periods of civil days at a place for each of the twelve signs and answers with `{value, provenance}` as canonical JSON, `value` an array of `{period, baseline}`, one per period: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. |
 
 ### Research
 

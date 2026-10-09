@@ -2180,8 +2180,8 @@ final class TeistroLibrary {
   final TsNumerologyProfileDart ts_numerology_profile;
 
   /// Reads a native's bird over each civil day of a range at a place and
-  /// answers with an array of `{date, reading}` as canonical JSON, one per
-  /// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
   /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
   /// with every sub-period's activity, owner, span and how the native
   /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
@@ -2200,7 +2200,8 @@ final class TeistroLibrary {
   final TsPakshiDart ts_pakshi;
 
   /// Reads periods of civil days at a place for each of the twelve signs and
-  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{period, baseline}`, one per period: the
   /// sky at the reference day's sunrise (or a clock time), each sign's
   /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
   /// and station of the period counted from each sign; `baseline` the
@@ -5179,8 +5180,8 @@ final class TeistroContext implements ffi.Finalizable {
   }
 
   /// Reads a native's bird over each civil day of a range at a place and
-  /// answers with an array of `{date, reading}` as canonical JSON, one per
-  /// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
   /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
   /// with every sub-period's activity, owner, span and how the native
   /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
@@ -5208,7 +5209,8 @@ final class TeistroContext implements ffi.Finalizable {
   }
 
   /// Reads periods of civil days at a place for each of the twelve signs and
-  /// answers with an array of `{period, baseline}` as canonical JSON: the
+  /// answers with `{value, provenance}` as canonical JSON, `value` an array
+  /// of `{period, baseline}`, one per period: the
   /// sky at the reference day's sunrise (or a clock time), each sign's
   /// gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
   /// and station of the period counted from each sign; `baseline` the

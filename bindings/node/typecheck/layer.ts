@@ -34,6 +34,8 @@ import type {
   NumerologyProfile,
   NumerologyRules,
   RashifalAnswer,
+  RashifalAnswers,
+  RashifalSealed,
   RashifalRequest,
   BaselineScore,
   NameSyllable,
@@ -121,6 +123,7 @@ import type {
   PakshiActivity,
   PakshiBird,
   PakshiDay,
+  PakshiDays,
   PakshiRelation,
   PakshiRequest,
   PakshiSpan,
@@ -975,7 +978,9 @@ function thePakshi(ctx: Context): string {
     native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA', rule: 'SINGLE' },
     rules: { clock: 'NAZHIGAI', subs: 'PULIPPANI', relations: 'AGASTYA' },
   };
-  const days: readonly PakshiDay[] = ctx.almanac.pakshi(asked);
+  const sealed: PakshiDays = ctx.almanac.pakshi(asked);
+  const hash: string = sealed.provenance.inputHash;
+  const days: readonly PakshiDay[] = sealed.value;
   const read = days[0]?.reading;
   if (read === null || read === undefined) return 'none';
   const vara: Vara = read.day.vara;
@@ -985,7 +990,7 @@ function thePakshi(ctx: Context): string {
   const activity: PakshiActivity | undefined = sub?.activity;
   const relation: PakshiRelation | undefined = sub?.ownerIs;
   const span: PakshiSpan | undefined = sub?.span;
-  return `${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
+  return `${hash} ${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
 }
 void thePakshi;
 
@@ -1639,7 +1644,9 @@ function theRashifal(ctx: Context): string {
   };
   // @ts-expect-error a snapshot's clock needs its minute
   const misread: RashifalRequest = { ...week, snapshot: { at: 'CLOCK', hour: 6 } };
-  const read: RashifalAnswer = ctx.chart.rashifal(week, 'WEEKLY');
+  const read: RashifalSealed = ctx.chart.rashifal(week, 'WEEKLY');
+  const answer: RashifalAnswer = read;
+  const many: RashifalAnswers = ctx.chart.rashifalMany([week]);
   const leo = read.period.readings[4];
   const first = leo?.events[0];
   const event = first?.event.hit.event;
@@ -1654,7 +1661,10 @@ function theRashifal(ctx: Context): string {
     score?.areas[0]?.area ?? 'NONE',
     score?.keyInfluences[0]?.graha ?? 'NONE',
     score?.lucky.day ?? 'NONE',
-    ctx.chart.rashifalMany([week]).length,
+    many.value.length,
+    many.provenance.inputHash,
+    answer.baseline?.length ?? 0,
+    read.provenance.inputHash,
     String(misread),
   ].join();
 }

@@ -411,8 +411,10 @@ public final class BindingTest {
                 Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
                 CalendarDate tuesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 30, Resolution.DEFINED, 0, 0);
                 CalendarDate wednesday = new CalendarDate(Calendar.GREGORIAN, null, 1984, 0, 10, 31, Resolution.DEFINED, 0, 0);
-                List<PakshiDay> days = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
+                PakshiDays sealed = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
                         PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+                check(!sealed.provenance().inputHash().isEmpty(), "the request is sealed");
+                List<PakshiDay> days = sealed.value();
                 same(2, days.size(), "two days");
                 PakshiDay.Reading first = days.get(0).reading();
                 PakshiDay.Reading second = days.get(1).reading();
@@ -432,7 +434,8 @@ public final class BindingTest {
                     .settingsJson("{\"day\": {\"polar_day_policy\": \"NEAREST_EVENT\"}}").build())) {
                 Observer tromso = new Observer(new Longitude(18.9553), new Latitude(69.6492), new Altitude(0));
                 CalendarDate midsummer = new CalendarDate(Calendar.GREGORIAN, null, 2024, 0, 6, 21, Resolution.DEFINED, 0, 0);
-                List<PakshiDay> days = polar.almanac().pakshi(midsummer, null, tromso, 7_200, PakshiNative.bird("OWL"));
+                List<PakshiDay> days = polar.almanac().pakshi(midsummer, null, tromso, 7_200, PakshiNative.bird("OWL"))
+                        .value();
                 check(days.get(0).reading() == null, "no sunset, no yamas");
             }
         });
@@ -660,8 +663,13 @@ public final class BindingTest {
                         sky.calendar().dateOf(first.calendar(), sky.calendar().fixedOf(first) + 6), kathmandu, 20_700);
                 same(7, week.size(), "a day per date");
                 check(!week.get(0).tithi().isEmpty(), "the tithis");
-                RashifalAnswer read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
+                RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
+                check(!read.provenance().inputHash().isEmpty(), "the request is sealed");
+                same(read.provenance().inputHash(),
+                        sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
+                                .provenance().inputHash(),
+                        "a batch of one seals as the one does");
                 same(Status.UNSUPPORTED, refusal(() -> sky.ephemeris().names()).status(),
                         "the built-in engine describes no operations of its own");
             }

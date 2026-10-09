@@ -1365,6 +1365,7 @@ class AnEngine(WithLibrary):
         }
         with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
             read = ctx.chart.rashifal(week, "WEEKLY")
+            self.assertIsInstance(read.provenance.input_hash, str, "the request is sealed")
             period = read.period
             self.assertEqual((period.reference.calendar, period.reference.day), (Calendar.GREGORIAN, 7))
             self.assertEqual((len(period.transits), len(period.retrograde)), (9, 9))
@@ -1388,7 +1389,10 @@ class AnEngine(WithLibrary):
             # 06:00 at +05:45 is 00:15 UTC on the reference day.
             six = ctx.chart.rashifal({**week, "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0}})
             self.assertAlmostEqual(six.period.instant, 2461320.5 + 15 / 1440, delta=1e-9)
-            self.assertEqual(ctx.chart.rashifal_many([week]), [ctx.chart.rashifal(week)])
+            many = ctx.chart.rashifal_many([week])
+            alone = ctx.chart.rashifal(week)
+            self.assertEqual((many.value[0].period, many.value[0].baseline), (alone.period, alone.baseline))
+            self.assertEqual(many.provenance, alone.provenance)
             only_mars = ctx.chart.rashifal({**week, "events": [Graha.MARS]})
             self.assertTrue(all(e.hit.graha is Graha.MARS for r in only_mars.period.readings for e in r.events))
 
@@ -1511,8 +1515,9 @@ class AnEngine(WithLibrary):
                 utc_offset_seconds=19800,
                 native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA},
             )
-            self.assertEqual(len(days), 2)
-            tuesday, wednesday = (day.reading for day in days)
+            self.assertIsInstance(days.provenance.input_hash, str, "the request is sealed")
+            self.assertEqual(len(days.value), 2)
+            tuesday, wednesday = (day.reading for day in days.value)
             assert tuesday is not None and wednesday is not None
             self.assertEqual(tuesday.day.next_sunrise, wednesday.day.sunrise)
             self.assertEqual((wednesday.day.vara, wednesday.day.paksha), (Vara.BUDHAVARA, Paksha.SHUKLA))
@@ -1520,7 +1525,7 @@ class AnEngine(WithLibrary):
             # PUL p. vii: the cock sleeps in the day's second yama and dies from the third.
             self.assertEqual([y.activity for y in wednesday.yamas[1:3]], ["SLEEPING", "DYING"])
             self.assertEqual(wednesday.yamas[0].subs[0].owner_is, "OWN")
-            self.assertEqual(days[1].date.day, 31)
+            self.assertEqual(days.value[1].date.day, 31)
             with self.assertRaises(TeistroError) as refused:
                 ctx.almanac.pakshi(
                     from_date=date(Calendar.GREGORIAN, 1984, 10, 31),
@@ -1538,7 +1543,7 @@ class AnEngine(WithLibrary):
                 place=tromso,
                 utc_offset_seconds=7200,
                 native={"bird": "OWL"},
-            )
+            ).value
             self.assertIsNone(midsummer.reading)
 
     def test_a_study_counts_and_tests_its_rules_over_a_batch_of_births(self) -> None:

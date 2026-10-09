@@ -806,13 +806,14 @@ public final class ParityRunner {
      */
     private static void putPakshi(Context geo) {
         Observer madras = new Observer(new Longitude(80.2707), new Latitude(13.0827), new Altitude(6));
-        List<List<PakshiDay>> asked = List.of(
+        List<PakshiDays> asked = List.of(
                 geo.almanac().pakshi(date(1984, 10, 30), date(1984, 10, 31), madras, 19_800,
                         new PakshiNative.Star(Nakshatra.UTTARA_ASHADHA, Paksha.KRISHNA, "BY_PAKSHA"),
                         map("subs", "PULIPPANI", "relations", "PULIPPANI")),
                 geo.almanac().pakshi(date(1991, 5, 21), null, madras, 19_800, PakshiNative.bird("OWL")));
         for (int r = 0; r < asked.size(); r += 1) {
-            List<PakshiDay> days = asked.get(r);
+            put("pakshi-" + r + "-hash", asked.get(r).provenance().inputHash());
+            List<PakshiDay> days = asked.get(r).value();
             for (int n = 0; n < days.size(); n += 1) {
                 PakshiDay one = days.get(n);
                 String key = "pakshi-" + r + "-" + n;
@@ -846,7 +847,9 @@ public final class ParityRunner {
         RashifalRequest week = new RashifalRequest(date(2024, 6, 17), date(2024, 6, 23), place, 20700, null, null, null);
         RashifalRequest oneDay = new RashifalRequest(date(2024, 6, 17), null, place, 20700,
                 map("at", "CLOCK", "hour", 6, "minute", 0), List.of(Graha.MARS, Graha.SATURN), null);
-        List<RashifalAnswer> answers = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
+        RashifalAnswers sealed = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
+        put("rashifal-hash", sealed.provenance().inputHash());
+        List<RashifalAnswer> answers = sealed.value();
         for (int n = 0; n < answers.size(); n += 1) {
             RashifalAnswer answer = answers.get(n);
             RashifalPeriod period = answer.period();

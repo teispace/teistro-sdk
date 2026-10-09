@@ -119,8 +119,9 @@ public final class AlmanacArea {
      * sub-periods. A day the Sun does not both rise and set has a null reading.
      *
      * <pre>{@code
-     * List<PakshiDay> days = sky.almanac().pakshi(date, date, madras, 19_800,
+     * PakshiDays days = sky.almanac().pakshi(date, date, madras, 19_800,
      *         PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+     * PakshiDay.Yama second = days.value().get(0).reading().yamas().get(1);
      * }</pre>
      *
      * @param from the first day
@@ -128,9 +129,9 @@ public final class AlmanacArea {
      * @param place where
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
      * @param whose the native, by bird or by birth star and paksha
-     * @return one entry a day, in order
+     * @return one entry a day, in order, with the provenance that sealed the request
      */
-    public List<PakshiDay> pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+    public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
             PakshiNative whose) {
         return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, null);
     }
@@ -148,9 +149,9 @@ public final class AlmanacArea {
      * @param utcOffsetSeconds the local clock's offset from UTC, east positive
      * @param whose the native, by bird or by birth star and paksha
      * @param rules what the days are read under
-     * @return one entry a day, in order
+     * @return one entry a day, in order, with the provenance that sealed the request
      */
-    public List<PakshiDay> pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
+    public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
             PakshiNative whose, Map<String, ?> rules) {
         return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, rules);
     }

@@ -1,10 +1,11 @@
 package com.teispace.teistro;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.teispace.teistro.record.Provenance;
 
 /**
  * The rashifal: one period of civil days at a place read for each of the
@@ -26,10 +27,11 @@ final class RashifalReads {
      * @param context the context to read it under
      * @param request the period
      * @param baseline the baseline period to score; may be null for none
-     * @return the answer
+     * @return the answer, with what sealed it
      */
-    static RashifalAnswer rashifal(Context context, RashifalRequest request, String baseline) {
-        return rashifalMany(context, List.of(request), baseline).get(0);
+    static RashifalSealed rashifal(Context context, RashifalRequest request, String baseline) {
+        RashifalAnswers many = rashifalMany(context, List.of(request), baseline);
+        return new RashifalSealed(many.value().get(0), many.provenance());
     }
 
     /**
@@ -38,9 +40,9 @@ final class RashifalReads {
      * @param context the context to read them under
      * @param requests the periods
      * @param baseline the baseline period to score; may be null for none
-     * @return one answer a period, in their order
+     * @return one answer a period, in their order, with the batch's provenance
      */
-    static List<RashifalAnswer> rashifalMany(Context context, List<RashifalRequest> requests, String baseline) {
+    static RashifalAnswers rashifalMany(Context context, List<RashifalRequest> requests, String baseline) {
         if (requests == null) {
             throw Reads.invalid("requests is a list of rashifal periods, such as "
                     + "List.of(RashifalRequest.of(date, place, 20_700))", "requests");
@@ -56,11 +58,9 @@ final class RashifalReads {
         }
         String json = Json.write(asked);
         String answered = context.locked((lib, raw) -> Calls.rashifal(lib, raw, json));
-        List<RashifalAnswer> out = new ArrayList<>();
-        for (Object one : Reads.array(Json.read(answered))) {
-            out.add(answer(Reads.object(one)));
-        }
-        return Collections.unmodifiableList(out);
+        Map<?, ?> envelope = Reads.object(Json.read(answered));
+        return new RashifalAnswers(Reads.each(envelope, "value", one -> answer(Reads.object(one))),
+                Provenance.of(Reads.field(envelope, "provenance")));
     }
 
     private static Map<String, Integer> parts(CalendarDate date) {

@@ -899,20 +899,27 @@ final class ChartArea extends _Area {
   ///   baseline: BaselinePeriod.weekly,
   /// );
   /// final leo = week.period.readings[Rashi.leo.id];
+  /// final sealed = week.provenance.inputHash;
   /// ```
-  RashifalAnswer rashifal(
-    RashifalRequest request, {
-    BaselinePeriod? baseline,
-  }) => rashifalMany([request], baseline: baseline).single;
+  RashifalSealed rashifal(RashifalRequest request, {BaselinePeriod? baseline}) {
+    final many = rashifalMany([request], baseline: baseline);
+    final one = many.value.single;
+    return RashifalSealed(
+      period: one.period,
+      baseline: one.baseline,
+      provenance: many.provenance,
+    );
+  }
 
   /// Many periods, each read as [rashifal] reads it alone, under one
-  /// founder.
-  List<RashifalAnswer> rashifalMany(
+  /// founder, as the envelope: the answers in the requests' order and the
+  /// batch's provenance.
+  RashifalAnswers rashifalMany(
     List<RashifalRequest> requests, {
     BaselinePeriod? baseline,
-  }) => List<RashifalAnswer>.unmodifiable([
-    for (final raw
-        in jsonDecode(
+  }) {
+    final envelope =
+        jsonDecode(
               _context._guarded(
                 () => _context._inner.rashifal(
                   jsonEncode(<String, Object?>{
@@ -922,9 +929,17 @@ final class ChartArea extends _Area {
                 ),
               ),
             )
-            as List<Object?>)
-      _rashifalAnswer(raw! as Map<String, Object?>),
-  ]);
+            as Map<String, Object?>;
+    return RashifalAnswers(
+      value: List.unmodifiable([
+        for (final raw in envelope['value']! as List<Object?>)
+          _rashifalAnswer(raw! as Map<String, Object?>),
+      ]),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
 }
 
 /// `sdk.almanac` — a day, or a run of days, with its limbs.
@@ -1005,25 +1020,27 @@ final class AlmanacArea extends _Area {
   /// when null) under Pancha Pakshi (`03-design/pakshi.md`): each day's
   /// ten yamas from the almanac's own sunrise, sunset and next sunrise,
   /// with the bird's activity and its timed sub-periods. A day the Sun
-  /// does not both rise and set has a null [PakshiDay.reading].
+  /// does not both rise and set has a null [PakshiDay.reading]. The
+  /// answer is the envelope: the days, and the provenance that sealed the
+  /// request.
   ///
   /// ```dart
   /// final days = ctx.almanac.pakshi(
   ///   from: date, place: madras, utcOffsetSeconds: 19800,
   ///   native: const PakshiNative.star(Nakshatra.uttaraAshadha, Paksha.shukla),
   /// );
-  /// final second = days.first.reading?.yamas[1].activity; // sleeping
+  /// final second = days.value.first.reading?.yamas[1].activity; // sleeping
   /// ```
-  List<PakshiDay> pakshi({
+  PakshiDays pakshi({
     required CalendarDate from,
     CalendarDate? to,
     required Observer place,
     required int utcOffsetSeconds,
     required PakshiNative native,
     PakshiRules rules = const PakshiRules(),
-  }) => List<PakshiDay>.unmodifiable([
-    for (final raw
-        in jsonDecode(
+  }) {
+    final envelope =
+        jsonDecode(
               _context._guarded(
                 () => _context._inner.pakshi(
                   jsonEncode(<String, Object?>{
@@ -1040,9 +1057,17 @@ final class AlmanacArea extends _Area {
                 ),
               ),
             )
-            as List<Object?>)
-      _pakshiDay(raw! as Map<String, Object?>),
-  ]);
+            as Map<String, Object?>;
+    return PakshiDays(
+      value: List.unmodifiable([
+        for (final raw in envelope['value']! as List<Object?>)
+          _pakshiDay(raw! as Map<String, Object?>),
+      ]),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star
@@ -2873,6 +2898,30 @@ final class RashifalAnswer {
 
   /// Aries to Pisces; null unless a baseline period was asked.
   final List<BaselineScore>? baseline;
+}
+
+/// One period's answer as [ChartArea.rashifal] hands it out, with what
+/// sealed it.
+final class RashifalSealed extends RashifalAnswer {
+  const RashifalSealed({
+    required super.period,
+    required super.baseline,
+    required this.provenance,
+  });
+
+  /// What computed it, and under what; `inputHash` seals the request.
+  final Provenance provenance;
+}
+
+/// Many periods' answers, in the requests' order, under one provenance.
+final class RashifalAnswers {
+  const RashifalAnswers({required this.value, required this.provenance});
+
+  /// The answers.
+  final List<RashifalAnswer> value;
+
+  /// What computed them, and under what; `inputHash` seals the request.
+  final Provenance provenance;
 }
 
 /// A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1).
@@ -18590,6 +18639,17 @@ final class PakshiReading extends _Value {
 
   @override
   List<Object?> get _fields => [day, bird, deathBird, deadToday, eaters, yamas];
+}
+
+/// A native's bird over a range of days.
+final class PakshiDays {
+  const PakshiDays({required this.value, required this.provenance});
+
+  /// The days, in order.
+  final List<PakshiDay> value;
+
+  /// What computed them, and under what; `inputHash` seals the request.
+  final Provenance provenance;
 }
 
 /// One civil day and its reading; [reading] is null on a day the Sun does

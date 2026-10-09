@@ -4464,9 +4464,14 @@ void _engineTests() {
       utcOffsetSeconds: 19800,
       native: const PakshiNative.star(Nakshatra.uttaraAshadha, Paksha.shukla),
     );
-    expect(days, hasLength(2));
-    final tuesday = days[0].reading!;
-    final wednesday = days[1].reading!;
+    expect(
+      days.provenance.inputHash,
+      isNotEmpty,
+      reason: 'the request is sealed',
+    );
+    expect(days.value, hasLength(2));
+    final tuesday = days.value[0].reading!;
+    final wednesday = days.value[1].reading!;
     expect(tuesday.day.nextSunrise, wednesday.day.sunrise);
     expect(
       (wednesday.day.vara, wednesday.day.paksha),
@@ -4480,7 +4485,7 @@ void _engineTests() {
       [PakshiActivity.sleeping, PakshiActivity.dying],
     );
     expect(wednesday.yamas.first.subs.first.ownerIs, PakshiRelation.own);
-    expect(days[1].date.day, 31);
+    expect(days.value[1].date.day, 31);
 
     final polar = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
@@ -4498,7 +4503,11 @@ void _engineTests() {
       utcOffsetSeconds: 7200,
       native: const PakshiNative.bird(PakshiBird.owl),
     );
-    expect(midsummer.single.reading, isNull, reason: 'no sunset, no yamas');
+    expect(
+      midsummer.value.single.reading,
+      isNull,
+      reason: 'no sunset, no yamas',
+    );
     polar.dispose();
     ctx.dispose();
   });
@@ -6314,6 +6323,11 @@ void _engineTests() {
     );
 
     final read = ctx.chart.rashifal(week, baseline: BaselinePeriod.weekly);
+    expect(
+      read.provenance.inputHash,
+      isNotEmpty,
+      reason: 'the request is sealed',
+    );
     final period = read.period;
     expect(
       [period.reference.calendar, period.reference.day],
@@ -6352,8 +6366,13 @@ void _engineTests() {
       for (final r in mars.period.readings)
         for (final e in r.events) e.hit.graha,
     ], everyElement(Graha.mars));
-    final [alone] = ctx.chart.rashifalMany([week]);
+    final many = ctx.chart.rashifalMany([week]);
+    final [alone] = many.value;
     expect(alone.period.instant, period.instant);
+    expect(
+      many.provenance.inputHash,
+      ctx.chart.rashifal(week).provenance.inputHash,
+    );
 
     for (final (request, field) in [
       (

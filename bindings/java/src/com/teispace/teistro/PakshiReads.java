@@ -1,10 +1,10 @@
 package com.teispace.teistro;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.teispace.teistro.record.Provenance;
 
 /**
  * Pancha Pakshi's days, the request written as {@code ts_pakshi} reads it and the answer read with its
@@ -35,7 +35,7 @@ final class PakshiReads {
         return out;
     }
 
-    static List<PakshiDay> pakshi(Context context, CalendarDate from, CalendarDate to, Observer place,
+    static PakshiDays pakshi(Context context, CalendarDate from, CalendarDate to, Observer place,
             int utcOffsetSeconds, PakshiNative whose, Map<String, ?> rules) {
         if (from == null) {
             throw Reads.invalid("from is a CalendarDate", "from");
@@ -62,11 +62,9 @@ final class PakshiReads {
         }
         String json = Json.write(asked);
         String answered = context.locked((lib, raw) -> Calls.pakshi(lib, raw, json));
-        List<PakshiDay> out = new ArrayList<>();
-        for (Object one : Reads.array(Json.read(answered))) {
-            out.add(day(Reads.object(one)));
-        }
-        return Collections.unmodifiableList(out);
+        Map<?, ?> envelope = Reads.object(Json.read(answered));
+        return new PakshiDays(Reads.each(envelope, "value", one -> day(Reads.object(one))),
+                Provenance.of(Reads.field(envelope, "provenance")));
     }
 
     private static PakshiDay day(Map<?, ?> raw) {

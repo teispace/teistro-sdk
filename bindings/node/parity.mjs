@@ -1718,7 +1718,9 @@ for (const [name, rules] of [
   const day = { first: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700, snapshot: { at: 'CLOCK', hour: 6, minute: 0 }, events: ['MARS', 'SATURN'] };
   const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
   const bare = (key) => key.slice(key.indexOf('.') + 1);
-  geo.chart.rashifalMany([week, day], 'WEEKLY').forEach(({ period, baseline }, n) => {
+  const sealed = geo.chart.rashifalMany([week, day], 'WEEKLY');
+  put('rashifal-hash', sealed.provenance.inputHash);
+  sealed.value.forEach(({ period, baseline }, n) => {
     const key = (what) => `rashifal-${n}${what}`;
     put(key('-period'), `${ymd(period.first)} ${ymd(period.last)} ${ymd(period.reference)} ${number(period.instant)}`);
     put(key('-panchanga'), `${period.panchanga.tithi} ${period.panchanga.yoga} ${period.panchanga.muhurtaYogas}`);
@@ -1763,7 +1765,9 @@ for (const [name, rules] of [
     { from: gregorian(1991, 5, 21), place: madras, utcOffsetSeconds: 19800, native: { bird: 'OWL' } },
   ];
   asked.forEach((request, r) => {
-    geo.almanac.pakshi(request).forEach(({ date: civil, reading }, n) => {
+    const sealed = geo.almanac.pakshi(request);
+    put(`pakshi-${r}-hash`, sealed.provenance.inputHash);
+    sealed.value.forEach(({ date: civil, reading }, n) => {
       const key = `pakshi-${r}-${n}`;
       if (reading === null) {
         put(key, `${ymd(civil)} none`);

@@ -2625,7 +2625,8 @@ void main() {
       events: const [Graha.mars, Graha.saturn],
     ),
   ], baseline: BaselinePeriod.weekly);
-  for (final (n, answer) in rashifal.indexed) {
+  put('rashifal-hash', rashifal.provenance.inputHash);
+  for (final (n, answer) in rashifal.value.indexed) {
     final period = answer.period;
     put(
       'rashifal-$n-period',
@@ -2717,7 +2718,8 @@ void main() {
     ),
   ];
   for (final (r, days) in pakshi.indexed) {
-    for (final (n, one) in days.indexed) {
+    put('pakshi-$r-hash', days.provenance.inputHash);
+    for (final (n, one) in days.value.indexed) {
       final key = 'pakshi-$r-$n';
       final read = one.reading;
       if (read == null) {

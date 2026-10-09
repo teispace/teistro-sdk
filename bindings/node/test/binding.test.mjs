@@ -4093,7 +4093,7 @@ test('a chart carries its prashna', () => {
 test('an almanac reads a native\'s bird over its days', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const madras = { latitude: 13.0827, longitude: 80.2707, altitude: 6 };
-  const days = ctx.almanac.pakshi({
+  const { value: days, provenance } = ctx.almanac.pakshi({
     from: date('calendar.GREGORIAN', 1984, 10, 30),
     to: date('calendar.GREGORIAN', 1984, 10, 31),
     place: madras,
@@ -4101,6 +4101,7 @@ test('an almanac reads a native\'s bird over its days', () => {
     native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
   });
   assert.equal(days.length, 2);
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
   const [tuesday, wednesday] = days.map((d) => d.reading);
   assert.equal(tuesday.day.nextSunrise, wednesday.day.sunrise, 'one day runs into the next');
   assert.deepEqual([wednesday.day.vara, wednesday.day.paksha], ['vara.BUDHAVARA', 'paksha.SHUKLA']);
@@ -4118,7 +4119,7 @@ test('an almanac reads a native\'s bird over its days', () => {
     place: { latitude: 69.6492, longitude: 18.9553 },
     utcOffsetSeconds: 7200,
     native: { bird: 'OWL' },
-  });
+  }).value;
   assert.equal(midsummer.reading, null, 'no sunset, no yamas');
 
   assert.throws(
@@ -4284,6 +4285,7 @@ test('a rashifal period is read for each of the twelve signs', () => {
   const read = ctx.chart.rashifal(week, 'WEEKLY');
   assert.ok(Object.isFrozen(read) && Object.isFrozen(read.period.readings[0].gochar.grahas[0]), 'frozen');
   const { period } = read;
+  assert.equal(typeof read.provenance.inputHash, 'string', 'the request is sealed');
   assert.deepEqual([period.reference.calendar, period.reference.day], ['calendar.GREGORIAN', 7]);
   assert.equal(period.transits.length, 9);
   assert.equal(period.retrograde.length, 9);
@@ -4314,8 +4316,8 @@ test('a rashifal period is read for each of the twelve signs', () => {
   const six = ctx.chart.rashifal({ ...week, snapshot: { at: 'CLOCK', hour: 6, minute: 0 } });
   assert.ok(Math.abs(six.period.instant - (2461320.5 + 15 / 1440)) < 1e-9);
   // A batch reads each period as it reads alone.
-  const [alone] = ctx.chart.rashifalMany([week]);
-  assert.deepEqual(alone, ctx.chart.rashifal(week));
+  const { value: [alone], provenance } = ctx.chart.rashifalMany([week]);
+  assert.deepEqual({ ...alone, provenance }, ctx.chart.rashifal(week));
 
   for (const [request, field] of [
     [{ ...week, last: gregorian(3) }, 'rashifal.periods[0].last'],
