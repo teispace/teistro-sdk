@@ -30,7 +30,7 @@ fn study(charts: usize, cases: usize, predicates: usize, seed: u64) -> (Matrix, 
                 }
             })
             .collect();
-        matrix.push(&cells).unwrap();
+        matrix.push(format!("p{j}"), &cells).unwrap();
     }
     let groups = (0..charts).map(|i| u16::from(i < cases)).collect();
     (matrix, Design::new(groups))
@@ -209,8 +209,8 @@ fn max_t_uses_the_family_s_dependence() {
         });
     }
     let mut twice = Matrix::new(40);
-    twice.push(&cells).unwrap();
-    twice.push(&cells).unwrap();
+    twice.push("once", &cells).unwrap();
+    twice.push("again", &cells).unwrap();
     let tested = compare(&twice, &design, &case_test(1, 4_999)).unwrap();
     for row in &tested.rows {
         assert_eq!(row.p.value, base);
@@ -223,14 +223,17 @@ fn max_t_uses_the_family_s_dependence() {
 fn an_unreadable_chart_leaves_the_denominator() {
     let mut matrix = Matrix::new(6);
     matrix
-        .push(&[
-            Cell::Present,
-            Cell::Unreadable,
-            Cell::Unstable,
-            Cell::Absent,
-            Cell::Present,
-            Cell::Absent,
-        ])
+        .push(
+            "edge",
+            &[
+                Cell::Present,
+                Cell::Unreadable,
+                Cell::Unstable,
+                Cell::Absent,
+                Cell::Present,
+                Cell::Absent,
+            ],
+        )
         .unwrap();
     let design = Design::new(vec![1, 1, 1, 0, 0, 0]);
     let tested = compare(&matrix, &design, &case_test(4, 999)).unwrap();
@@ -332,7 +335,7 @@ fn every_refusal_names_its_field() {
     assert_eq!(error.hint(), Some("at least 59 permutations"));
     let mut wide = Matrix::new(10);
     assert_eq!(
-        wide.push(&[Cell::Present; 3]).unwrap_err().field(),
+        wide.push("short", &[Cell::Present; 3]).unwrap_err().field(),
         Some("predicates[0]")
     );
 }
@@ -353,4 +356,196 @@ fn a_chi_square_reads_every_group() {
         assert!(row.effect.is_none() && row.exact.is_none());
         assert!(row.adjusted.max_t >= row.p.value);
     }
+}
+
+#[test]
+fn counts_and_rows_carry_their_predicates_names() {
+    let (matrix, design) = study(12, 5, 3, 9);
+    let counted = counts(&matrix, &design).unwrap();
+    let names: Vec<&str> = counted
+        .rows
+        .iter()
+        .map(|row| row.predicate.as_str())
+        .collect();
+    assert_eq!(names, ["p0", "p1", "p2"]);
+    for row in &counted.rows {
+        let total: u32 = row.counts.iter().map(|c| c.present + c.absent).sum();
+        assert_eq!(total, 12);
+    }
+    let tested = compare(&matrix, &design, &case_test(1, 99)).unwrap();
+    assert_eq!(tested.rows[2].predicate, "p2");
+    assert_eq!(tested.rows[2].counts, counted.rows[2].counts);
+    let mut twice = Matrix::new(2);
+    twice.push("same", &[Cell::Present, Cell::Absent]).unwrap();
+    let error = twice
+        .push("same", &[Cell::Present, Cell::Absent])
+        .unwrap_err();
+    assert_eq!(error.field(), Some("predicates[1]"));
+}
+
+/// An event study over `n` subjects, one predicate holding at each
+/// subject's own event with probability `own` and elsewhere with `base`.
+fn events(n: usize, own: f64, base: f64, seed: u64) -> PairMatrix {
+    let mut rng = SplitMix64::new(seed);
+    let mut draws: Vec<bool> = Vec::with_capacity(n * n);
+    for i in 0..n {
+        for j in 0..n {
+            let share = if i == j { own } else { base };
+            draws.push((rng.next_u64() as f64 / u64::MAX as f64) < share);
+        }
+    }
+    let mut matrix = PairMatrix::new(n).unwrap();
+    matrix
+        .push("delivers", |i, j| {
+            if draws[i * n + j] {
+                Cell::Present
+            } else {
+                Cell::Absent
+            }
+        })
+        .unwrap();
+    matrix
+}
+
+#[test]
+fn a_planted_delivery_is_found_and_a_null_is_not() {
+    // Test 5's kernel half.
+    let mut test = EventTest::new(5, 1_999);
+    test.alternative = Alternative::Greater;
+    let planted = timed(&events(120, 0.6, 0.3, 1), None, &test).unwrap();
+    let row = &planted.rows[0];
+    assert!(row.p.value < 0.001, "{row:?}");
+    let expected = row.expected.unwrap();
+    assert!(expected.ratio.unwrap() > 1.5);
+    assert!((expected.expected - 0.3).abs() < 0.03);
+    let null = timed(&events(120, 0.3, 0.3, 2), None, &test).unwrap();
+    assert!(null.rows[0].p.value > 0.01, "{:?}", null.rows[0]);
+}
+
+#[test]
+fn a_pairing_before_a_birth_is_refused_or_never_drawn() {
+    let n = 30;
+    let mut matrix = PairMatrix::new(n).unwrap();
+    // Subjects 0 to 9 were born after events 20 to 29.
+    for i in 0..10 {
+        for j in 20..n {
+            matrix.forbid(i, j);
+        }
+    }
+    // A predicate present exactly on the forbidden pairs.
+    matrix
+        .push("forbidden", |i, j| {
+            if i < 10 && j >= 20 {
+                Cell::Present
+            } else {
+                Cell::Absent
+            }
+        })
+        .unwrap();
+    let mut test = EventTest::new(3, 499);
+    let error = timed(&matrix, None, &test).unwrap_err();
+    assert_eq!(error.field(), Some("afterBirth"));
+    test.after_birth = AfterBirth::RestrictPairings;
+    test.alternative = Alternative::Less;
+    // Never drawn: every permuted count is zero, as the observed one is,
+    // so every permutation reaches it.
+    let tested = timed(&matrix, None, &test).unwrap();
+    assert_eq!(tested.rows[0].p.exceed, 499);
+    // Where no pairing is possible, rejection gives up and says so.
+    let mut stuck = PairMatrix::new(3).unwrap();
+    stuck.forbid(0, 1);
+    stuck.forbid(0, 2);
+    stuck.forbid(1, 2);
+    stuck.forbid(1, 0);
+    stuck.push("any", |_, _| Cell::Absent).unwrap();
+    // Only the identity remains, which a shuffle draws a sixth of the time.
+    assert!(timed(&stuck, None, &test).is_ok());
+}
+
+#[test]
+fn an_event_study_is_the_same_at_every_thread_count() {
+    let matrix = events(64, 0.5, 0.4, 3);
+    let strata: Vec<u32> = (0..64).map(|i| i % 3).collect();
+    let mut test = EventTest::new(8, 1_001);
+    let one = timed(&matrix, Some(&strata), &test).unwrap();
+    test.parallelism = Parallelism::Threads(NonZeroU16::new(5).unwrap());
+    assert_eq!(one, timed(&matrix, Some(&strata), &test).unwrap());
+    assert_eq!(
+        timed(&matrix, Some(&[0; 3]), &test).unwrap_err().field(),
+        Some("strata")
+    );
+    let singletons: Vec<u32> = (0..64).collect();
+    assert_eq!(
+        timed(&matrix, Some(&singletons), &test)
+            .unwrap_err()
+            .field(),
+        Some("strata")
+    );
+    assert_eq!(PairMatrix::new(1).unwrap_err().field(), Some("subjects"));
+}
+
+#[test]
+fn a_sample_is_read_against_its_own_replicates() {
+    // Twenty replicates whose share of predicate 0 wanders about 0.3, an
+    // observed 0.6 beyond all of them, and predicate 1 at their mean.
+    let mut rng = SplitMix64::new(4);
+    let replicates: Vec<Vec<(u32, u32)>> = (0..199)
+        .map(|_| {
+            let wander = u32::try_from(rng.below(21)).unwrap();
+            vec![(20 + wander, 100), (50, 100)]
+        })
+        .collect();
+    let names = vec!["rare".to_owned(), "even".to_owned()];
+    let observed = [
+        GroupCount {
+            present: 60,
+            absent: 40,
+            unreadable: 2,
+            unstable: 1,
+        },
+        GroupCount {
+            present: 50,
+            absent: 50,
+            unreadable: 0,
+            unstable: 0,
+        },
+    ];
+    let test = ReplicateTest {
+        alternative: Alternative::Greater,
+        ..ReplicateTest::default()
+    };
+    let tested = replicated(&names, &observed, &replicates, &test).unwrap();
+    let rare = &tested.rows[0];
+    assert_eq!(rare.p.exceed, 0);
+    assert_eq!(rare.p.value, 1.0 / 200.0);
+    let expectation = rare.expected.unwrap();
+    assert!((expectation.expected - 0.3).abs() < 0.01);
+    assert!((expectation.ratio.unwrap() - 2.0).abs() < 0.1);
+    // Every replicate equals the observed share, so every one reaches it.
+    assert_eq!(tested.rows[1].p.exceed, 199);
+    assert_eq!(tested.rows[1].observed, 0.0);
+    assert_eq!(rare.counts[0].unstable, 1);
+    // Refusals name their fields.
+    let field = |replicates: &[Vec<(u32, u32)>], names: &[String]| {
+        replicated(names, &observed, replicates, &test)
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    assert_eq!(field(&[], &names).as_deref(), Some("replicates"));
+    assert_eq!(
+        field(&[vec![(1, 2)]], &names).as_deref(),
+        Some("replicates[0]")
+    );
+    assert_eq!(
+        field(&replicates, &names[..1]).as_deref(),
+        Some("predicates")
+    );
+    // Ten replicates cannot reach 0.05 over a family of two.
+    let strict = ReplicateTest {
+        alpha: Some(0.05),
+        ..test
+    };
+    let short = replicated(&names, &observed, &replicates[..10], &strict).unwrap_err();
+    assert_eq!(short.field(), Some("replicates"));
 }

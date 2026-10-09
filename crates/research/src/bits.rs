@@ -30,6 +30,13 @@ impl Bits {
         }
     }
 
+    /// Takes `index` out.
+    pub(crate) fn remove(&mut self, index: usize) {
+        if let Some(word) = self.words.get_mut(index / 64) {
+            *word &= !(1 << (index % 64));
+        }
+    }
+
     pub(crate) fn contains(&self, index: usize) -> bool {
         self.words
             .get(index / 64)
@@ -38,6 +45,13 @@ impl Bits {
 
     pub(crate) fn clear(&mut self) {
         self.words.fill(0);
+    }
+
+    /// Keeps only the members `other` also has.
+    pub(crate) fn intersect(&mut self, other: &Bits) {
+        for (a, b) in self.words.iter_mut().zip(&other.words) {
+            *a &= b;
+        }
     }
 
     /// How many members the set has.
@@ -77,6 +91,8 @@ pub enum Cell {
 /// One predicate's cells over the batch.
 #[derive(Clone, Debug)]
 pub(crate) struct Column {
+    /// The predicate's name, which its answer row carries.
+    pub(crate) name: String,
     pub(crate) present: Bits,
     pub(crate) readable: Bits,
     pub(crate) unstable: Bits,
@@ -93,7 +109,7 @@ pub(crate) struct Column {
 /// use teistro_research::{Cell, Matrix};
 ///
 /// let mut matrix = Matrix::new(3);
-/// matrix.push(&[Cell::Present, Cell::Absent, Cell::Unreadable])?;
+/// matrix.push("yoga.gaja-kesari", &[Cell::Present, Cell::Absent, Cell::Unreadable])?;
 /// assert_eq!(matrix.predicates(), 1);
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
@@ -125,13 +141,21 @@ impl Matrix {
         self.columns.len()
     }
 
-    /// Adds one predicate's column, a cell per chart in the batch's order.
+    /// Adds one predicate's column under `name`, a cell per chart in the
+    /// batch's order.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `predicates`, when the column is not one cell per
-    /// chart.
-    pub fn push(&mut self, cells: &[Cell]) -> Result<(), Error> {
+    /// `INVALID_ARG` on `predicates[i]` when the column is not one cell
+    /// per chart, and when its name is one an earlier predicate has.
+    pub fn push(&mut self, name: impl Into<String>, cells: &[Cell]) -> Result<(), Error> {
+        let name = name.into();
+        if self.columns.iter().any(|column| column.name == name) {
+            return Err(Error::invalid_arg(format!(
+                "predicate `{name}` is named twice; a family names each predicate once"
+            ))
+            .with_field(format!("predicates[{}]", self.columns.len())));
+        }
         if cells.len() != self.charts {
             return Err(Error::invalid_arg(format!(
                 "predicate {} has {} cells for {} charts; a column carries one cell per chart",
@@ -156,6 +180,7 @@ impl Matrix {
             }
         }
         self.columns.push(Column {
+            name,
             present_total: present.count(),
             readable_total: readable.count(),
             present,

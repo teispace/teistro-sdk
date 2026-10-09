@@ -9,6 +9,8 @@
 
 use std::collections::BTreeMap;
 
+use teistro_core::error::Error;
+
 use crate::bits::{Bits, Column, Matrix};
 use crate::rng::SplitMix64;
 use crate::{Alternative, Contrast, Parallelism};
@@ -56,8 +58,18 @@ impl<'a> Layout<'a> {
     }
 
     /// Writes permutation `k`'s labels into `labels`.
-    fn permute(&self, seed: u64, k: u64, labels: &mut [u16], scratch: &mut Vec<u16>) {
-        let mut rng = SplitMix64::for_permutation(seed, k);
+    pub(crate) fn permute(&self, seed: u64, k: u64, labels: &mut [u16], scratch: &mut Vec<u16>) {
+        self.permute_with(&mut SplitMix64::for_permutation(seed, k), labels, scratch);
+    }
+
+    /// Writes the next draw of `rng`'s labels into `labels`: a rejected
+    /// draw is followed by the same stream's next one.
+    pub(crate) fn permute_with(
+        &self,
+        rng: &mut SplitMix64,
+        labels: &mut [u16],
+        scratch: &mut Vec<u16>,
+    ) {
         if self.strata.len() == 1 {
             labels.copy_from_slice(self.groups);
             rng.shuffle(labels);
@@ -198,6 +210,65 @@ pub(crate) fn observed(layout: &Layout<'_>, matrix: &Matrix, statistic: &Statist
     out
 }
 
+/// A design's family of statistics under each permutation: what the
+/// counting loop asks of a group test and an event study alike.
+pub(crate) trait Permuted: Sync {
+    /// What one thread reuses from permutation to permutation.
+    type Scratch;
+
+    /// A fresh scratch.
+    fn scratch(&self) -> Self::Scratch;
+
+    /// Every predicate's statistic under permutation `k`, into `out`.
+    ///
+    /// # Errors
+    ///
+    /// Whatever stops permutation `k` being drawn (a restricted pairing
+    /// that rejection cannot meet).
+    fn read(&self, k: u64, scratch: &mut Self::Scratch, out: &mut [f64]) -> Result<(), Error>;
+}
+
+/// The labels of a group test, permuted inside their strata, and the
+/// statistic read off them.
+pub(crate) struct Labelled<'a> {
+    pub(crate) layout: &'a Layout<'a>,
+    pub(crate) matrix: &'a Matrix,
+    pub(crate) statistic: &'a Statistic,
+    pub(crate) seed: u64,
+}
+
+/// A group test's scratch: the permuted labels, the stratum buffer, the
+/// group masks and the shares.
+pub(crate) struct LabelScratch {
+    labels: Vec<u16>,
+    stratum: Vec<u16>,
+    masks: Vec<Bits>,
+    shares: Vec<Share>,
+}
+
+impl Permuted for Labelled<'_> {
+    type Scratch = LabelScratch;
+
+    fn scratch(&self) -> LabelScratch {
+        let charts = self.matrix.charts();
+        LabelScratch {
+            labels: vec![0; charts],
+            stratum: Vec::new(),
+            masks: masks_for(self.statistic.contrast, self.layout.group_count, charts),
+            shares: Vec::new(),
+        }
+    }
+
+    fn read(&self, k: u64, scratch: &mut LabelScratch, out: &mut [f64]) -> Result<(), Error> {
+        self.layout
+            .permute(self.seed, k, &mut scratch.labels, &mut scratch.stratum);
+        fill_masks(&scratch.labels, &mut scratch.masks);
+        self.statistic
+            .read(&scratch.masks, self.matrix, out, &mut scratch.shares);
+        Ok(())
+    }
+}
+
 /// What the permutations counted: per predicate, how many reached its
 /// observed statistic, and per rank of the step-down order, how many
 /// reached that rank's observed statistic with the running maximum over
@@ -234,71 +305,81 @@ pub(crate) fn step_down_order(observed: &[f64]) -> Vec<usize> {
     order.into_iter().map(|(index, _)| index).collect()
 }
 
+/// The observed family a count compares against.
+pub(crate) struct Family<'a> {
+    pub(crate) observed: &'a [f64],
+    pub(crate) order: &'a [usize],
+    /// The observed statistics in the step-down order.
+    pub(crate) ordered: Vec<f64>,
+}
+
+impl<'a> Family<'a> {
+    pub(crate) fn new(observed: &'a [f64], order: &'a [usize]) -> Family<'a> {
+        Family {
+            observed,
+            order,
+            ordered: order
+                .iter()
+                .filter_map(|&j| observed.get(j).copied())
+                .collect(),
+        }
+    }
+}
+
 /// Counts permutations `range` (Westfall and Young, *Resampling-Based
 /// Multiple Testing*, 1993, algorithm 4.1 for max-T).
-fn count_range(run: &Run<'_>, range: std::ops::Range<u64>) -> Counted {
-    let predicates = run.matrix.predicates();
-    let charts = run.matrix.charts();
+fn count_range<P: Permuted>(
+    permuted: &P,
+    family: &Family<'_>,
+    range: std::ops::Range<u64>,
+) -> Result<Counted, Error> {
+    let predicates = family.observed.len();
     let mut counted = Counted::zero(predicates);
-    let mut labels = vec![0_u16; charts];
-    let mut scratch = Vec::new();
-    let mut masks = masks_for(run.statistic.contrast, run.layout.group_count, charts);
+    let mut scratch = permuted.scratch();
     let mut stats = vec![0.0; predicates];
-    let mut shares = Vec::new();
     for k in range {
-        run.layout.permute(run.seed, k, &mut labels, &mut scratch);
-        fill_masks(&labels, &mut masks);
-        run.statistic
-            .read(&masks, run.matrix, &mut stats, &mut shares);
-        for ((slot, &stat), &obs) in counted.exceed.iter_mut().zip(&stats).zip(run.observed) {
+        permuted.read(k, &mut scratch, &mut stats)?;
+        for ((slot, &stat), &obs) in counted.exceed.iter_mut().zip(&stats).zip(family.observed) {
             *slot += u64::from(reaches(stat, obs));
         }
         let mut running = f64::NEG_INFINITY;
         for ((slot, &j), &obs) in counted
             .step_down
             .iter_mut()
-            .zip(run.order)
-            .zip(&run.ordered)
+            .zip(family.order)
+            .zip(&family.ordered)
             .rev()
         {
             running = running.max(stats.get(j).copied().unwrap_or(f64::NEG_INFINITY));
             *slot += u64::from(reaches(running, obs));
         }
     }
-    counted
+    Ok(counted)
 }
 
-/// One test's inputs to the permutations.
-pub(crate) struct Run<'a> {
-    pub(crate) layout: &'a Layout<'a>,
-    pub(crate) matrix: &'a Matrix,
-    pub(crate) statistic: &'a Statistic,
-    pub(crate) observed: &'a [f64],
-    pub(crate) order: &'a [usize],
-    /// The observed statistics in the step-down order.
-    pub(crate) ordered: Vec<f64>,
-    pub(crate) seed: u64,
-    pub(crate) permutations: u32,
-}
-
-/// Counts every permutation, split into contiguous ranges over the
-/// threads `parallelism` names. A thread the platform cannot start (wasm
-/// has none) runs its range on the calling thread instead, which by
-/// construction counts the same.
-pub(crate) fn count(run: &Run<'_>, parallelism: Parallelism) -> Counted {
-    let m = u64::from(run.permutations);
+/// Counts permutations `0..permutations`, split into contiguous ranges
+/// over the threads `parallelism` names. A thread the platform cannot
+/// start (wasm has none) runs its range on the calling thread instead,
+/// which by construction counts the same; and when ranges fail, the
+/// lowest one's error is the answer, whatever the thread count.
+pub(crate) fn count<P: Permuted>(
+    permuted: &P,
+    family: &Family<'_>,
+    permutations: u32,
+    parallelism: Parallelism,
+) -> Result<Counted, Error> {
+    let m = u64::from(permutations);
     let threads = match parallelism {
         Parallelism::One => 1,
         Parallelism::Threads(n) => u64::from(n.get()).min(m.max(1)),
     };
     if threads <= 1 {
-        return count_range(run, 0..m);
+        return count_range(permuted, family, 0..m);
     }
     let ranges: Vec<std::ops::Range<u64>> = (0..threads)
         .map(|t| (m * t / threads)..(m * (t + 1) / threads))
         .collect();
-    let mut total = Counted::zero(run.matrix.predicates());
-    std::thread::scope(|scope| {
+    let parts: Vec<Result<Counted, Error>> = std::thread::scope(|scope| {
         let handles: Vec<_> = ranges
             .iter()
             .map(|range| {
@@ -306,21 +387,25 @@ pub(crate) fn count(run: &Run<'_>, parallelism: Parallelism) -> Counted {
                 std::thread::Builder::new()
                     .spawn_scoped(scope, {
                         let range = range.clone();
-                        move || count_range(run, range)
+                        move || count_range(permuted, family, range)
                     })
                     .map_err(|_| range)
             })
             .collect();
-        for handle in handles {
-            let part = match handle {
+        handles
+            .into_iter()
+            .map(|handle| match handle {
                 Ok(handle) => match handle.join() {
                     Ok(part) => part,
                     Err(panic) => std::panic::resume_unwind(panic),
                 },
-                Err(range) => count_range(run, range),
-            };
-            total.add(&part);
-        }
+                Err(range) => count_range(permuted, family, range),
+            })
+            .collect()
     });
-    total
+    let mut total = Counted::zero(family.observed.len());
+    for part in parts {
+        total.add(&part?);
+    }
+    Ok(total)
 }
