@@ -182,7 +182,11 @@ jobs:
           node-version: "22"
       - name: The wasm package passes the Node suite unchanged, and in a browser as in Node
         run: cargo xtask check-wasm
-      - uses: actions/upload-artifact@v4
+      # Uploaded when the budget fails too: a module over its budget is
+      # what `cargo xtask sizes --from DIR --why SENTENCE` moves it with,
+      # and a run that kept it back would leave nothing to record.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
         with:
           name: sizes-wasm
           path: target/sizes/
@@ -195,6 +199,10 @@ jobs:
   # `cargo xtask sizes --from DIR` from the same fragments.
   sizes:
     needs: [bindings, musl, wasm]
+    # Run after a failed budget as well, so the record that would move it
+    # is written; an artefact a failed job never measured is refused as
+    # missing, so this cannot pass on part of a run.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
