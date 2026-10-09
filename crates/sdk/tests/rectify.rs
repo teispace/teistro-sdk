@@ -330,6 +330,10 @@ mod baseline {
             .chart()
             .rectification(&document, OFFSET, &asked)
             .unwrap();
+        // Every key a binding reads is camelCase, a tagged note's own
+        // fields included.
+        let snake = snake_keys(&serde_json::to_value(&read).unwrap());
+        assert!(snake.is_empty(), "snake_case keys on the wire: {snake:?}");
         let half = 30.0 * MINUTE;
         let window = Window::between(
             JulianDay::literal(TRUE_JD - half),
@@ -367,6 +371,21 @@ mod baseline {
             .rectification(&document, OFFSET, &RectificationRequest::default())
             .unwrap();
         assert!(none.purified.is_none() && none.baseline.is_none());
+    }
+
+    /// The keys anywhere in an answer that are not camelCase.
+    fn snake_keys(value: &serde_json::Value) -> Vec<String> {
+        match value {
+            serde_json::Value::Object(map) => map
+                .iter()
+                .flat_map(|(key, inner)| {
+                    let own = key.contains('_').then(|| key.clone());
+                    own.into_iter().chain(snake_keys(inner))
+                })
+                .collect(),
+            serde_json::Value::Array(items) => items.iter().flat_map(snake_keys).collect(),
+            _ => Vec::new(),
+        }
     }
 
     /// Every refusal names the field the binding sent, under the member
