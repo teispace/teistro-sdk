@@ -325,8 +325,13 @@ re-checks.
    fast-check. Positions over the default tier.
    **Done** (2026-10-08), through the crates' tests rather than the
    passes (§2.3); `baseline/names.json` and `teimeris` are declared
-   unscored with their reasons. Not built yet: the check that each named
-   entry exists, and the corpus tag against the submodule's pin.
+   unscored with their reasons. **Then built** (2026-10-09): each entry a
+   score names is a `KNOWN` divergence (`teistro_ephemeris_kit::corpus`)
+   or ends by citing its page, `(page.md)` or `(page.md, ANCHOR)`, which
+   must be one file under `docs` naming the anchor as a word; and the
+   submodule's commit must be the one the corpus repository's tag for
+   `corpus.json`'s version points at, read with `git ls-remote`, so a pin
+   between releases fails as a stale one does.
 3. **`CONFORMANCE.md`, recorded half**: verify uploads the tier reports,
    `conformance --from`, the exact live comparison in verify. Then the
    dated same-ephemeris and native-frame columns from a run by hand.

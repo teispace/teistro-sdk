@@ -29,6 +29,7 @@ teistro-astro = { path = "../crates/astro", features = ["schema"] }
 teistro-calendar = { path = "../crates/calendar" }
 teistro-chart = { path = "../crates/chart" }
 teistro-core = { path = "../crates/core" }
+teistro-ephemeris-kit = { path = "../crates/ephemeris-kit" }
 teistro-strength = { path = "../crates/strength" }
 teistro-ffi = { path = "../crates/ffi" }
 teistro-hellenistic = { path = "../crates/hellenistic" }
