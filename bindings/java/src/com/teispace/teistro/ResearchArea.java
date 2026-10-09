@@ -13,8 +13,8 @@ import java.util.Map;
  * <p>The records cross as {@link Json#write} writes them: {@code rules} as a chart request's rules,
  * {@code design} as {@code {groups, strata}}, and each test and control as the design page names
  * them, a seed a {@code Long} or, past {@code Long.MAX_VALUE}, a {@code BigInteger}. {@code options}
- * adds {@code holds} ({@code "STANDING"} or {@code "FORMED"}) and, for an event study, {@code depth},
- * {@code shuffle} and {@code strata}; it may be null.
+ * adds {@code holds} ({@code "STANDING"} or {@code "FORMED"}) and, for an event study, {@code depth}
+ * and {@code strata}; it may be null.
  *
  * <pre>{@code
  * ResearchTested tested = sky.research().compare(births, Map.of("shipped", List.of("YOGAS")),
@@ -103,19 +103,23 @@ public final class ResearchArea {
      * @param subjects the subjects
      * @param rules the rules, as a chart request's rules record
      * @param dasha the dasha whose periods deliver
+     * @param shuffle what the null keeps; there is no default
      * @param test {@code {seed, permutations, alternative, afterBirth, level, alpha, parallelism}}
-     * @param options {@code holds}, {@code depth} (2 when left out), {@code shuffle}
-     *     ({@code "EVENT_DATES"} or {@code "AGES_AT_EVENT"}) and {@code strata}; may be null
+     * @param options {@code holds}, {@code depth} (2 when left out) and {@code strata}; may be null
      * @return the rows
      * @throws TeistroException naming the field, as {@code research.subjects}
      */
     public ResearchTested timed(List<ResearchSubject> subjects, Map<String, ?> rules, DashaSystem dasha,
-            Map<String, ?> test, Map<String, ?> options) {
+            ResearchEventShuffle shuffle, Map<String, ?> test, Map<String, ?> options) {
         if (dasha == null) {
             throw Reads.invalid("dasha is a DashaSystem, such as DashaSystem.VIMSHOTTARI", "dasha");
         }
+        if (shuffle == null) {
+            throw Reads.invalid("shuffle is a ResearchEventShuffle, such as AGES_AT_EVENT", "shuffle");
+        }
         return ResearchReads.tested(ResearchReads.run(context, "TIMED", rules,
-                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha.fullKey(), "test", test),
+                fields("subjects", ResearchReads.subjects(subjects), "dasha", dasha.fullKey(), "shuffle",
+                        shuffle.key(), "test", test),
                 options));
     }
 }

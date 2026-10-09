@@ -2565,15 +2565,18 @@ class ResearchArea(_Area):
         subjects: Sequence[ResearchSubject],
         rules: RuleRequest,
         dasha: Union[DashaSystem, str],
+        shuffle: Literal["EVENT_DATES", "AGES_AT_EVENT"],
         test: ResearchEventTest,
         depth: Optional[int] = None,
-        shuffle: Optional[Literal["EVENT_DATES", "AGES_AT_EVENT"]] = None,
         strata: Optional[Sequence[int]] = None,
         holds: Optional[Literal["STANDING", "FORMED"]] = None,
     ) -> ResearchTested:
         """Whether each rule is delivered by `dasha`'s running periods, to
         `depth` (2 when left out), at the subjects' own events more (or
-        less) often than at events shuffled among them."""
+        less) often than at events shuffled among them: by date
+        (`EVENT_DATES`, the calendar of events kept) or by age
+        (`AGES_AT_EVENT`, each person's age at the event kept). The shuffle
+        has no default."""
         return _research_tested(
             self._run(
                 "TIMED",

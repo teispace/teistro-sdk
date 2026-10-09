@@ -378,8 +378,13 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
     let set = yogas();
     let request = template();
     let subjects = subjects(12, 7, 30, 5, 15);
-    let study = EventStudy::new(&subjects, &request, &set, DashaSystem::Vimshottari)
-        .shuffled(EventShuffle::AgesAtEvent);
+    let study = EventStudy::new(
+        &subjects,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::AgesAtEvent,
+    );
     let mut test = EventTest::new(3, 199);
     let one = sdk.research().timed(study, None, &test).unwrap();
     assert_eq!(one.value.rows.len(), set.rules().len());
@@ -425,7 +430,13 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
     // An event before its own birth is refused by its subject.
     let mut early = subjects.clone();
     early[4].event = JulianDay::<Utc>::literal(early[4].birth.instant.get() - 1.0);
-    let study = EventStudy::new(&early, &request, &set, DashaSystem::Vimshottari);
+    let study = EventStudy::new(
+        &early,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::AgesAtEvent,
+    );
     let error = sdk.research().timed(study, None, &test).unwrap_err();
     assert_eq!(error.field(), Some("subjects[4].event"));
 }
@@ -569,9 +580,14 @@ fn a_study_sent_as_a_record_answers_as_the_call_does() {
             "test": {"seed": 3, "permutations": 99}}),
     )
     .unwrap();
-    let study = EventStudy::new(&lives, &request, &set, DashaSystem::Vimshottari)
-        .to_depth(Depth::MIN)
-        .shuffled(EventShuffle::AgesAtEvent);
+    let study = EventStudy::new(
+        &lives,
+        &request,
+        &set,
+        DashaSystem::Vimshottari,
+        EventShuffle::AgesAtEvent,
+    )
+    .to_depth(Depth::MIN);
     let direct = sdk
         .research()
         .timed(study, None, &EventTest::new(3, 99))
@@ -634,6 +650,12 @@ fn a_record_is_refused_where_it_stands() {
     assert_eq!(no_contrast.field(), Some("research.test"));
     let timed = serde_json::json!({"study": "TIMED", "rules": {"shipped": ["YOGAS"]},
         "subjects": [{"birth": base["births"][0], "event": 2_460_000.5}],
-        "dasha": "VIMSHOTTARI", "depth": 7, "test": {"seed": 1, "permutations": 9}});
-    assert_eq!(refused(timed).field(), Some("research.depth"));
+        "dasha": "VIMSHOTTARI", "depth": 7, "shuffle": "EVENT_DATES",
+        "test": {"seed": 1, "permutations": 9}});
+    assert_eq!(refused(timed.clone()).field(), Some("research.depth"));
+    // A timed study names its null; neither shuffle is a default (C364).
+    let mut unshuffled = timed;
+    unshuffled["depth"] = serde_json::json!(2);
+    unshuffled.as_object_mut().unwrap().remove("shuffle");
+    assert_eq!(refused(unshuffled).field(), Some("research.shuffle"));
 }

@@ -769,7 +769,7 @@ public final class ParityRunner {
             subjects.add(new ResearchSubject(birth, birth.instant() + 9000.5 + 211 * i));
         }
         putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
-                map("seed", 3, "permutations", 49), map("shuffle", "AGES_AT_EVENT")));
+                ResearchEventShuffle.AGES_AT_EVENT, map("seed", 3, "permutations", 49), null));
     }
 
     private static String groupsOf(List<ResearchCounts.Group> counts) {
@@ -1354,7 +1354,8 @@ public final class ParityRunner {
             surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), Map.of(), null));
             surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), Map.of(), Map.of(), null));
             surface("research.expected", () -> ctx.research().expected(List.of(), Map.of(), Map.of(), null, null));
-            surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI, Map.of(), null));
+            surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI,
+                    ResearchEventShuffle.AGES_AT_EVENT, Map.of(), null));
             surface("engine.names", () -> ctx.ephemeris().names());
             surface("engine.signature", () -> ctx.ephemeris().signature(""));
             surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));

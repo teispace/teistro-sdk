@@ -6207,7 +6207,7 @@ export class ResearchArea extends Area {
    * subjects' own events more (or less) often than at events shuffled
    * among them.
    *
-   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism }`; and optionally `depth` (2), `shuffle` (`'EVENT_DATES'` or `'AGES_AT_EVENT'`) and `strata`
+   * @param {object} request the `subjects`, each `{ birth, event }` with the event a Julian day in UTC; `rules`; `dasha`, a dasha system's key; `shuffle`, `'EVENT_DATES'` or `'AGES_AT_EVENT'`, which has no default because the two keep different margins; `test` `{ seed, permutations, alternative, afterBirth, level, alpha, parallelism }`; and optionally `depth` (2) and `strata`
    * @returns {object}
    */
   timed(request) {

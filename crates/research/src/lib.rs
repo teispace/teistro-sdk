@@ -478,18 +478,22 @@ pub(crate) fn check_permutations(
                 format!("alpha is inside (0, 1), not {alpha}"),
             ));
         }
-        #[allow(clippy::cast_precision_loss)]
-        let bonferroni = alpha / family as f64;
-        let resolution = 1.0 / (f64::from(permutations) + 1.0);
-        if resolution > bonferroni {
-            let needed = (1.0 / bonferroni).ceil() - 1.0;
+        if !reaches_alpha(u64::from(permutations), family, alpha) {
+            #[allow(
+                clippy::cast_precision_loss,
+                reason = "a family is a request's rules, far inside f64's exact integers"
+            )]
+            let bonferroni = alpha / family as f64;
             return Err(refuse(
                 "permutations",
                 format!(
                     "{permutations} permutations cannot reach a p-value under alpha / {family} = {bonferroni}, the strictest threshold the answer reports"
                 ),
             )
-            .with_hint(format!("at least {needed} permutations")));
+            .with_hint(format!(
+                "at least {} permutations",
+                least_reaching(family, alpha)
+            )));
         }
     }
     Ok(())
@@ -599,6 +603,40 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
         resolution: p_value(0, u64::from(test.permutations)),
         shuffle: test.shuffle,
     })
+}
+
+/// Whether `permutations` can put the smallest p-value they give,
+/// `1/(m + 1)`, at or under `alpha` once Bonferroni adjusts it over
+/// `family`: the same arithmetic the answer's `underAlpha.bonferroni`
+/// reads, so a count this accepts always can, and one it refuses never
+/// can.
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "a family is a request's rules, far inside f64's exact integers"
+)]
+pub(crate) fn reaches_alpha(permutations: u64, family: usize, alpha: f64) -> bool {
+    correct::bonferroni_one(p_value(0, permutations), family as f64) <= alpha
+}
+
+/// The fewest permutations [`reaches_alpha`] accepts, found from
+/// `⌈M/alpha⌉ − 1` and stepped to the boundary the rounding puts it at,
+/// since the estimate can sit one either side.
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "the estimate is a positive integer-valued float, clamped before the cast"
+)]
+pub(crate) fn least_reaching(family: usize, alpha: f64) -> u64 {
+    let estimate = ((family as f64 / alpha).ceil() - 1.0).clamp(1.0, 1e15);
+    let mut least = estimate as u64;
+    while least > 1 && reaches_alpha(least - 1, family, alpha) {
+        least -= 1;
+    }
+    while !reaches_alpha(least, family, alpha) {
+        least += 1;
+    }
+    least
 }
 
 /// `(b + 1)/(m + 1)`.

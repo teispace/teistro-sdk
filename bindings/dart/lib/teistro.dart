@@ -1220,14 +1220,15 @@ final class ResearchArea extends _Area {
 
   /// Whether each rule is delivered by [dasha]'s running periods, read to
   /// [depth] (1 to 6), at the subjects' own events more (or less) often
-  /// than at events shuffled among them.
+  /// than at events shuffled among them under [shuffle], which has no
+  /// default because the two keep different margins.
   ResearchTested timed({
     required List<ResearchSubject> subjects,
     required RuleRequest rules,
     required DashaSystem dasha,
+    required ResearchEventShuffle shuffle,
     required ResearchEventTest test,
     int depth = 2,
-    ResearchEventShuffle shuffle = ResearchEventShuffle.eventDates,
     List<int>? strata,
     ResearchHolds holds = ResearchHolds.standing,
   }) => _researchTested(

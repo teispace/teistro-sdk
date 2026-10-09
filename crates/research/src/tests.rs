@@ -556,3 +556,29 @@ fn a_sample_is_read_against_its_own_replicates() {
     let short = replicated(&names, &observed, &replicates[..10], &strict).unwrap_err();
     assert_eq!(short.field(), Some("replicates"));
 }
+
+#[test]
+fn the_hint_is_the_fewest_permutations_the_check_accepts() {
+    // The float estimate ⌈M/alpha⌉ − 1 sits one either side of the
+    // boundary for some pairs (alpha 0.3 over three, 0.01 over 73): the
+    // hint is stepped onto it, so it is accepted and one fewer is not.
+    for alpha in [0.3, 0.2, 0.15, 0.1, 0.07, 0.05, 0.025, 0.01, 0.005, 0.001] {
+        for family in 1..400 {
+            let least = crate::least_reaching(family, alpha);
+            assert!(
+                crate::reaches_alpha(least, family, alpha),
+                "{alpha} {family}"
+            );
+            assert!(
+                least == 1 || !crate::reaches_alpha(least - 1, family, alpha),
+                "{alpha} {family}"
+            );
+        }
+    }
+    // And the refusal's hint is what the guard then takes.
+    assert_eq!(crate::least_reaching(3, 0.3), 10);
+    assert!(crate::check_permutations(10, 0.95, Some(0.3), 3).is_ok());
+    let refused = crate::check_permutations(9, 0.95, Some(0.3), 3).unwrap_err();
+    assert_eq!(refused.hint(), Some("at least 10 permutations"));
+    assert_eq!(crate::least_reaching(73, 0.01), 7299);
+}

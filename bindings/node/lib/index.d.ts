@@ -7138,7 +7138,8 @@ export declare class ResearchArea {
       readonly dasha: DashaSystem | DashaKey;
       /** 1 (the mahadasha) to 6; 2 when left out. */
       readonly depth?: number;
-      readonly shuffle?: 'EVENT_DATES' | 'AGES_AT_EVENT';
+      /** What the null keeps: the calendar of events, or each person's age at the event. No default. */
+      readonly shuffle: 'EVENT_DATES' | 'AGES_AT_EVENT';
       readonly strata?: readonly number[];
       readonly test: ResearchEventTest;
     },

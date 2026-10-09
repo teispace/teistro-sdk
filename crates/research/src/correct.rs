@@ -27,7 +27,12 @@ fn size(p: &[f64]) -> f64 {
 /// reported as the bound Holm improves on.
 pub(crate) fn bonferroni(p: &[f64]) -> Vec<f64> {
     let m = size(p);
-    p.iter().map(|p| (p * m).min(1.0)).collect()
+    p.iter().map(|&p| bonferroni_one(p, m)).collect()
+}
+
+/// One p-value's Bonferroni adjustment over a family of `m`.
+pub(crate) fn bonferroni_one(p: f64, m: f64) -> f64 {
+    (p * m).min(1.0)
 }
 
 /// Holm's step-down (*Scand. J. Statist.* 6, 1979): the `i`th smallest

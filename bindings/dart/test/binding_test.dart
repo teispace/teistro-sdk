@@ -4563,6 +4563,7 @@ void _engineTests() {
         subjects: const [],
         rules: yogas,
         dasha: DashaSystem.vimshottari,
+        shuffle: ResearchEventShuffle.agesAtEvent,
         test: ResearchEventTest(seed: BigInt.one, permutations: 19),
       ),
       throwsA(
