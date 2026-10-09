@@ -1008,24 +1008,29 @@ fn reachable(root: &Path) -> Result<BTreeSet<String>, String> {
     // when both are re-exported -- the reader's own bug, found by the
     // claim it was written to make.
     for statement in text.split(';') {
-        let Some(rest) = statement
-            .split("\npub use ")
-            .nth(1)
-            .or_else(|| statement.strip_prefix("pub use "))
-        else {
+        // A `pub use` opens a line, at the root or indented inside an
+        // inline `pub mod` (`pub mod research { pub use …; }`), whose items
+        // are as reachable as the root's, one module down.
+        let Some(rest) = use_of(statement) else {
             continue;
         };
         let path = rest.replace('\n', " ").trim().to_owned();
         let path = path.as_str();
         // A whole crate re-exported under a module's name
-        // (`pub use teistro_muhurta as muhurta`): its root's own names are
-        // reachable as `teistro::muhurta::<Name>`, and only those -- a
-        // name in one of its modules the root does not re-export is not.
-        if let Some((krate, _)) = path.split_once(" as ") {
-            if !krate.contains("::") {
-                names.extend(crate_root_items(root, krate.trim())?);
-                continue;
-            }
+        // (`pub use teistro_muhurta as muhurta`), or all of a crate's root
+        // into one (`pub use teistro_research::*` inside `pub mod
+        // research`): its root's own names are reachable, and only those
+        // -- a name in one of its modules the root does not re-export is
+        // not.
+        let whole = path
+            .split_once(" as ")
+            .map(|(krate, _)| krate)
+            .or_else(|| path.strip_suffix("::*"))
+            .map(str::trim)
+            .filter(|krate| !krate.contains("::"));
+        if let Some(krate) = whole {
+            names.extend(crate_root_items(root, krate)?);
+            continue;
         }
         for item in items_of(path) {
             if item.starts_with(|letter: char| letter.is_ascii_uppercase()) {
@@ -1041,6 +1046,20 @@ fn reachable(root: &Path) -> Result<BTreeSet<String>, String> {
         }
     }
     Ok(names)
+}
+
+/// The path of the `pub use` a statement ends in, when one opens a line of
+/// it, indented or not.
+fn use_of(statement: &str) -> Option<&str> {
+    statement
+        .match_indices("pub use ")
+        .filter(|(at, _)| {
+            let before = statement.get(..*at).unwrap_or_default();
+            let line = before.rsplit('\n').next().unwrap_or_default();
+            line.trim().is_empty()
+        })
+        .last()
+        .and_then(|(at, opening)| statement.get(at + opening.len()..))
 }
 
 /// The names a crate's root makes public: what its `lib.rs` declares
@@ -1075,8 +1094,28 @@ fn crate_root_items(root: &Path, krate: &str) -> Result<BTreeSet<String>, String
 /// The public item names a source declares at the start of a line.
 fn declared(text: &str) -> BTreeSet<String> {
     let mut names = BTreeSet::new();
+    // A type a declaring macro makes (`bounded_int!(/// doc \n Depth, u8,
+    // …)`): its name is the invocation's first token after the docs.
+    let mut in_macro = false;
     for line in text.lines() {
         let trimmed = line.trim();
+        if in_macro && !trimmed.starts_with("///") {
+            in_macro = false;
+            let name: String = trimmed
+                .chars()
+                .take_while(|letter| letter.is_alphanumeric() || *letter == '_')
+                .collect();
+            if name.starts_with(|letter: char| letter.is_ascii_uppercase())
+                && trimmed
+                    .get(name.len()..)
+                    .is_some_and(|after| after.starts_with(','))
+            {
+                names.insert(name);
+            }
+        }
+        if trimmed.ends_with("!(") && !trimmed.starts_with("//") {
+            in_macro = true;
+        }
         for shape in [
             "pub struct ",
             "pub enum ",
