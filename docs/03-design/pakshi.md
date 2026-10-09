@@ -3,8 +3,8 @@
 Status: `draft`, 2026-10-09. Track B of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `pakshi` row. The
 kernel, `crates/pakshi`, the façade and the boundary are built, and the
-reading crosses to every binding; names in every strict locale are the
-next step (§7).
+reading crosses to every binding; names in every strict locale wait on a
+vetted table (§7 step 4, P13).
 
 ## 1. Sources
 
@@ -186,7 +186,14 @@ from the almanac.
    lengths and relations and on a bird under the defaults. The guide is
    this page and each binding's documented `almanac.pakshi`.
 4. Names for the birds and activities in every strict locale, vetted
-   first; the catalogue kinds come with them.
+   first; the catalogue kinds come with them. **Waiting** on a vetted
+   table (P13): the system is Tamil, the Nepali committee's almanac does
+   not print it, and no Nepali or Hindi print of it has been read, so a
+   strict `ne-Deva-NP`, which must name whatever `en-Latn` names, has
+   nothing to name them from. Until a table is vetted the birds and
+   activities cross as their keys, which a message selects on with
+   `.match` (Q38), and no kind is spent on a vocabulary no locale can
+   say.
 
 ## 8. Cruxes
 
@@ -203,4 +210,5 @@ from the almanac.
 | P9 | the weekday of a night | the weekday of the sunrise that began it | PUL p. 17; the Tamil day runs from sunrise |
 | P10 | a death day against the tables | both reported | the texts give them as separate rules |
 | P12 | the native's own sub-period | reported as `OWN` | neither scheme lists a bird among its own friends or enemies |
+| P13 | the birds' and activities' names in the strict locales | wait for a vetted table; no catalogue kind until then | Q38 gives a value a kind when a consumer must name it, and the names are what is missing: a Nepali table drafted here would be a guess shipped as a translation (`hand-the-work-out`) |
 | P11 | the name, sign and tithi birds | not in v1; `BirthBird` is an enum, so each can be added | named in AG and AG07, not yet read closely enough |
