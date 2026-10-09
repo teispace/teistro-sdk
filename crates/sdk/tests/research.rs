@@ -14,7 +14,7 @@
 use std::num::NonZeroU16;
 
 use teistro::catalogue::DashaSystem;
-use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::research::{
     AfterBirth, Birth, Contrast, Design, EventShuffle, EventStudy, EventTest, GroupTest, Holds,
     Parallelism, Recombine, ReplicateTest, SplitMix64, Study, Subject,
@@ -138,7 +138,11 @@ fn a_rule_on_a_point_is_unreadable_on_a_day_with_no_sunrise() {
     let set = RuleRequest::shipped([ShippedRules::Nabhasas, ShippedRules::Readings])
         .rule_set()
         .unwrap();
-    let Some(on_points) = set.rules().iter().position(teistro::rules::Rule::reads_points) else {
+    let Some(on_points) = set
+        .rules()
+        .iter()
+        .position(teistro::rules::Rule::reads_points)
+    else {
         panic!("a shipped set the test can use names a point");
     };
     let tromso = place(69.6492, 18.9553);
@@ -389,6 +393,10 @@ fn an_event_study_shuffles_ages_or_dates_and_refuses_a_pairing_before_a_birth() 
     let three = sdk.research().timed(study, None, &test).unwrap();
     assert_eq!(one.value, three.value);
     assert_eq!(one.provenance.input_hash, three.provenance.input_hash);
+    // Read to the mahadasha alone, the study is another registration.
+    let shallow = study.to_depth(Depth::MIN);
+    let mahadashas = sdk.research().timed(shallow, None, &test).unwrap();
+    assert_ne!(mahadashas.provenance.input_hash, one.provenance.input_hash);
     // Births up to thirty years apart and events at 5 to 15: some date
     // shuffles put an event before a birth, which is refused unless
     // restricted.
