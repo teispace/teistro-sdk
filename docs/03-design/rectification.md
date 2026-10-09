@@ -1,8 +1,10 @@
 # Rectification: the birth time narrowed by the verses that test it (the `rectification` module)
 
-Status: steps 3 and 4 `built` (`crates/rectification`: the purifier and the
+Status: steps 3 to 6 `built` (`crates/rectification`: the purifier and the
 façade's `ChartArea::rectify`, 2026-10-08; the conception reports and
-`ChartArea::conception`, 2026-10-09); steps 5 onwards open. The sources are read on
+`ChartArea::conception`, the circumstances and `ChartArea::circumstance`, the
+baseline cascade and `ChartArea::rectify_baseline`, 2026-10-09); steps 7 and
+8 open. The sources are read on
 their pages ([`rectification-sources.md`](rectification-sources.md)); the cruxes
 are numbered X1 onwards and take C-numbers when they enter the register.
 Each was decided on 2026-10-08 as its recommendation reads, on the
@@ -25,8 +27,9 @@ The texts test a birth time in two ways, and the module keeps them apart:
 
 The baseline engine's cascade is neither. It scores candidates against dated
 life events by dasha boundaries under a tattva prior. No text read gives
-either stage, so they ship as rank 2 `BASELINE` stages, reached only when
-asked, as C89's precedent requires.
+either stage, so they ship at rank 2 as a call of their own
+(`ChartArea::rectify_baseline`), reached only when asked, as C89's
+precedent requires (X20).
 
 ## What the sources decide
 
@@ -188,7 +191,7 @@ pub trait Stage {
 | `CONCEPTION_MOON` | BJ IV.21 on `NISHEKA`'s instant | weight | the conception Moon's dvadashamsha, the candidate Moon, day or night |
 | `CIRCUMSTANCE` | BJ V.1–2, 17, 18, 22 | weights over the facts given; skipped clause by clause where a fact is absent | aspects, house occupancy, the Moon's and the lagna's degree |
 | `TATTVA` | Shiva Svarodaya vv. 59, 61–64, 193 | weight, **off by default** | sunrise, tithi, sex |
-| `BASELINE_TATTVA`, `BASELINE_EVENTS`, `BASELINE_PRIOR` | the baseline engine | rank 2, marked unsourced, reached only when asked | sex, dated events, reported time |
+| `PRIOR`, `DASHA_BOUNDARY` (`BaselineStage`) | the baseline engine | rank 2, marked unsourced, a call of its own (`rectify_baseline`, X20) | sex, dated events, reported time |
 
 **The knobs** (`Stages`, one per crux):
 
@@ -206,12 +209,15 @@ pub trait Stage {
   `EITHER_SIDE` (X17); `presentationBy` `RISING_SIGN` (default) or
   `LAGNA_LORD_MOTION` (X18); `betweenBy` `DEGREE` (default) or `SIGN`, and
   `outside` `VISIBLE` (default, V.22) or `INVISIBLE` (X19);
-- `tattva`: `OFF` (default), `SVARODAYA`, `BASELINE` (X12);
+- `tattva`: `OFF` (default), `SVARODAYA` (X12; the baseline's cycle is
+  read inside `rectify_baseline`'s prior);
 - `seed_step`: the grid step that seeds edge finding and the baseline
   comparison (X15).
 
-`Stages::baseline()` sets every `BASELINE` value at once, for a migrating
-consumer.
+A migrating consumer calls `rectify_baseline` with a `BaselineRequest`
+(the reported time, its uncertainty and accuracy, the sex, the dated
+events, the coverage and the dasha rules) under a context whose frame is the
+baseline's; nothing in `Stages` reaches it.
 
 **Reuse:**
 
@@ -230,8 +236,9 @@ consumer.
 - a window that is empty, reversed or longer than a day and a half (the
   bound `points::lagna::LONGEST_HOURS` already sets);
 - a fact of the wrong kind for its clause;
-- `TATTVA` without a sex, `BASELINE_EVENTS` without events, a stage whose
-  sections the chart did not carry.
+- `TATTVA` without a sex, a stage whose sections the chart did not carry;
+- for `rectify_baseline`, an uncertainty outside 1 to 720 minutes, a
+  coverage outside 0.5 to 0.99, and an event ending before it begins.
 
 Each names its field under `rectification`.
 
@@ -419,8 +426,9 @@ inference.
 - **Decided:** `TATTVA` off by default; `SVARODAYA` builds v. 193's
   durations inside v. 62's nadi turns from the tithi-run start of vv. 61 and
   64, with v. 59's sex by nadi, labelled as an application the text does not
-  make; `BASELINE` reproduces the baseline's cycle as rank 2 with its own
-  citation. Confirm with the maintainer which Svarodaya the roadmap meant.
+  make; the baseline's cycle is reproduced as rank 2 inside
+  `rectify_baseline`'s prior (X20, X24). Confirm with the maintainer which
+  Svarodaya the roadmap meant.
 
 **X13. Kunda.** The ×81 check is widely taught and attributed to Prasna
 Marga; it was not found on a public-domain page.
@@ -428,9 +436,9 @@ Marga; it was not found on a public-domain page.
 
 **X14. Life events.** Fitting dasha boundaries to dated events is the
 baseline's main discriminator and has no classical text.
-- **Decided:** `BASELINE_EVENTS` and `BASELINE_PRIOR` at rank 2, with the
-  baseline's interval assembly reproduced only under `Stages::baseline()`;
-  the classical default never sums likelihoods across stages.
+- **Decided:** the baseline's `DASHA_BOUNDARY` and `PRIOR` at rank 2, with
+  its interval assembly, reproduced only by `rectify_baseline` (X20); the
+  classical `narrow` never sums likelihoods across stages.
 
 **X15. Grid against edges.** The classical stages are piecewise constant, so
 exact clause edges give exact intervals; the baseline answers on a refined
@@ -484,6 +492,70 @@ its own sign, which the verse does not say.
   minutes apart; each is read as the nearest of the gloss's three points
   (a sign's start, middle and end), so the levels change at 7.5° and 22.5°.
 
+**X20. One call, not stages.** The design first put the baseline's stages
+under `narrow` behind `Stages::baseline()`. Built, they share nothing with
+it: the baseline sums log-likelihoods on a grid it refines three times by
+posterior mass and answers the cells that carry a coverage of it, where
+`narrow` cuts the window at clause edges, never sums, and answers what no
+bar removed. One request type serving both would carry fields each side
+ignores.
+- **Decided:** `teistro_rectification::baseline::rectify` and
+  `ChartArea::rectify_baseline`, with their own request and answer and no
+  `Stages` member; the two answers are read side by side, never combined.
+
+**X21. The first mahadasha's sub-periods.** The baseline squeezes the
+balance of the birth mahadasha's antardashas in proportion, so all nine
+fit inside the remainder, where the classical count runs them from the
+start and cuts the elapsed part.
+- **Decided:** reproduced through the dasha crate, not copied:
+  `baseline_dasha_rules()` is Vimshottari with `BirthPeriod::Compressed`,
+  spatial balance, Julian years and the cycle ending at its end, and is the
+  request's default; any other `teistro_dasha::Rules` may be passed, so the
+  classical cut is one field away.
+
+**X22. Which periods an event is fitted to.** The baseline descends from
+the mahadashas into the one period that best signifies the event at each
+level, never the others overlapping it, and reads three levels only once
+the grid step is two minutes or less.
+- **Decided:** reproduced as is, since both choices move every score; the
+  answer reports each pass's resolution, so the depth is visible.
+
+**X23. Intervals from a grid.** Each pass's grid is built segment by
+segment, half-open, with points two segments share kept twice; the
+answer's intervals are runs of consecutive grid *index*, so two cells
+either side of a gap between segments make one interval, and its end is
+the last cell plus one step. With no prior and no event the posterior is
+flat and the mode is the first cell, the window's start.
+- **Decided:** reproduced as is, under the black-box run (X26); the answer
+  carries the resolution and the concentration (one less the posterior's
+  effective share of the candidates), so a flat answer reads as one.
+
+**X24. The sex and the tattva cycle.** The baseline does not veto a
+candidate whose tattva gives the other sex: it lowers it by 2.5 nepers. Its
+cycle counts from the sunrise of the reported time's civil date and is not
+re-anchored, so a birth before that sunrise reads negative minutes and the
+reversed turns.
+- **Decided:** reproduced as is (`Note::TattvaSex` reports when it moved
+  anything); the sunrise is the SDK's own, which the black-box run holds to
+  three seconds of the baseline's.
+
+**X25. The frame.** The baseline's candidate charts are geocentric, with the
+true node and Lahiri; the SDK's chart crossing is the context's.
+- **Decided:** `rectify_baseline` reads the context's frame, so a
+  consumer's own settings apply; the black-box run pins the baseline's
+  (`conformance-baseline` with a geocentric centre and the true node).
+
+**X26. The black-box run.** The acceptance below asked for each interval
+within one cell of the baseline's final step.
+- **Measured** (2026-10-09): the baseline engine run over eight cases
+  (Pokhara with no events, every accuracy, both sexes, an uncertainty from
+  an hour to twenty hours, five dated events; Kathmandu at dawn and New York
+  with loose, ranged and held-out events). The SDK answers the same
+  intervals, mode and top candidates to a second, the same posterior
+  probabilities and concentration to a millionth and the same hold-out
+  verdicts; its sunrise is within two seconds. The cases and answers are
+  `crates/sdk/tests/rectify.rs`'s `CASES`.
+
 ## Acceptance
 
 - Every clause in an answer names its verse and print.
@@ -505,9 +577,9 @@ its own sign, which the verse does not say.
 - Every stage that ran and distinguished nothing is reported flat.
 - **The black-box baseline run:** the baseline engine's rectification
   exported once over its regression cases (window, place, sex, events, and
-  its intervals); `Stages::baseline()` reproduces each interval's ends
-  within one cell of the baseline's final grid step, every difference
-  counted on a generated page.
+  its intervals); `rectify_baseline` reproduces each interval's ends
+  within one cell of the baseline's final grid step. **Held** to a second
+  over every case, with no difference to count (X26).
 - The measured page reports, over the corpus, the share of each day each
   bar removes and how many trusted times survive it (X8).
 
@@ -545,6 +617,14 @@ its own sign, which the verse does not say.
    Moon on the lagna with no one between), and the façade's read-back holds
    every placement and the lord's motion to the candidate's chart.
 6. **The `BASELINE` stages and the black-box export**, then the parity page.
+   **Built** (2026-10-09): `crates/rectification/src/baseline.rs` and
+   `ChartArea::rectify_baseline`, a call of its own (X20). The kernel tests
+   hold the tattva cycle (its weekday starts, the reversed turns, the
+   female share of an hour and a half), the grid's half-open segments, the
+   runs by index, the likelihood's floor and the refusals; the façade's
+   tests hold the black-box run (X26), a reported time that is the true one
+   staying inside the answer, and events that narrow it. With nothing to
+   differ, the parity page is the test's table.
 7. **`TATTVA` under `SVARODAYA`**, opt-in, after X12 is answered.
 8. **The façade and every binding**, on prashna's pattern: a request member,
    one section, parity across the runners.

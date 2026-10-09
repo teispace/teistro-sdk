@@ -446,10 +446,10 @@ pub fn circumstance(
     rules: CircumstanceRules,
 ) -> Result<Circumstance, Error> {
     let lagna_deg = sky.ascendant_deg(at)?;
-    let mut grahas_deg = [0.0; 7];
-    for (deg, graha) in grahas_deg.iter_mut().zip(SEVEN) {
-        *deg = sky.graha_deg(graha, at)?;
-    }
+    let grahas_deg: [f64; 7] = sky
+        .grahas_deg(&SEVEN, at)?
+        .try_into()
+        .map_err(|_| Error::internal("seven grahas asked, and not seven answered"))?;
     let lord = Rashi::of_longitude(lagna_deg).attributes().lord;
     let lord_retrograde = match rules.presentation_by {
         PresentationBy::LagnaLordMotion => sky.graha_speed_deg(lord, at)? < 0.0,

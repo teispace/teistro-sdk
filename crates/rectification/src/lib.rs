@@ -48,6 +48,7 @@
 
 #![doc(html_no_source)]
 
+pub mod baseline;
 pub mod circumstance;
 pub mod conception;
 mod edges;
@@ -62,6 +63,10 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
+pub use baseline::{
+    Accuracy, BaselineAnswer, BaselineRequest, BaselineStage, Confidence, DatePrecision, EventKind,
+    HoldOut, LifeEvent, Note, Ranked, Sex, StageOutcome, Tattva,
+};
 pub use circumstance::{
     Attendants, Attending, BetweenBy, BirthSky, Circumstance, CircumstanceRules, Facts, Father,
     Indication, Lamp, Level, MoonSees, OutsideHalf, Presentation, PresentationBy,
