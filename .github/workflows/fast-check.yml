@@ -153,6 +153,8 @@ jobs:
         run: cargo xtask check-dasha-coverage
       - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
         run: cargo xtask check-muntha
+      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
+        run: cargo xtask check-research
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
       - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)

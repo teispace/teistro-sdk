@@ -113,6 +113,11 @@
 //! - `terms` and `check-terms`: the terms of the signs — the Egyptian,
 //!   Chaldean and Ptolemaic systems of the *Tetrabiblos* and Lilly's table,
 //!   each held to its own printing, its stated totals and its rule.
+//! - `research` and `check-research`: whether a study's numbers mean what
+//!   they say — each correction's error rate on null labellings, what each
+//!   finds of a planted effect, the Gauquelin artefact a uniform expectation
+//!   makes of early-morning births, and null event studies under each
+//!   shuffle.
 //! - `sect` and `check-sect`: when a chart is diurnal — Valens's horizon
 //!   against the chart's apparent sunrise and sunset and the recorded day
 //!   birth, the minutes they part bisected at every birth's place.
@@ -315,6 +320,7 @@ mod reception;
 mod rectification;
 mod release;
 mod render;
+mod research;
 mod ritu;
 mod rule_doc;
 mod rules_corpus;
@@ -391,6 +397,7 @@ const PASSES: &[Pass] = &[
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
     ("rashifal", rashifal::generate, rashifal::check_generated),
+    ("research", research::generate, research::check_generated),
     ("kp", kp::generate, kp::check_generated),
     ("muhurta", muhurta::generate, muhurta::check_generated),
     ("festival", festival::generate, festival::check_generated),

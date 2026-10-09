@@ -450,6 +450,17 @@ uses fixed seeds, so the counts are exact and also golden.
    (test 4) and the two event shuffles (test 5). It runs over a seeded
    synthetic batch of founded births, priced on CI before it is merged
    (`price-a-pass-on-ci`). The figures this page leaves out live there.
+   **Built** 2026-10-10, last rather than first, because it measures the
+   module through its public calls. Every correction holds the familywise
+   rate under the complete null, max-T nearest the level; the
+   permutation p's interval covers the exact p; the recombined control
+   finds nothing in an early-morning sample a uniform expectation reads
+   as beyond chance; and neither shuffle rejects a null event study more
+   often than its level. **Found** writing it: the rising Sun alone, the
+   sector the claim first named, did not reach the threshold at the
+   sample's size, and the culminating Sun, which the early hours empty,
+   did; the claim is now the family's, which is the look-elsewhere effect
+   §1.5 is about, met by the page that measures it.
 2. **`crates/research`**: generator, shuffle, bitset engine, p-values and
    intervals, max-T, Holm, BH, BY, effect sizes. Tests 3, 6 (thread
    counts), 7. The lint changes (§2.2), proved red. **Built** 2026-10-09.
