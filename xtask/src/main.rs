@@ -329,6 +329,7 @@ mod sect;
 mod serial;
 mod shadbala;
 mod site;
+mod sizes;
 mod skip;
 mod state;
 mod state_readings;
@@ -623,6 +624,7 @@ fn main() {
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),
+        Some(command @ ("sizes" | "check-sizes")) => sizes::command(&repo_root(), command, &args),
         Some("check-site") => site::check(&repo_root()),
         Some("check-tag") => match args.as_slice() {
             [_, tag] => release::check_tag(&repo_root(), tag),
@@ -702,7 +704,7 @@ fn usage() -> i32 {
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | \
-         check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \

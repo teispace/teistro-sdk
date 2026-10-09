@@ -335,6 +335,16 @@ re-checks.
    job, `sizes --from`, `check-sizes`. Then the release's attached exact
    page. Add wasm profile rows as each profile is staged
    (`wasm-profiles.md` step 3).
+   **Built** (2026-10-09): `xtask/src/sizes.rs`. `check-package` and
+   `check-wasm` each write the fragment of what they built to
+   `target/sizes/`, and verify uploads every row's. Verify's `sizes` job
+   runs `check-sizes --from` over them, which is the live-versus-record
+   gate in one place rather than on each row, and uploads the record the
+   run would write when it fails. `sizes --measure` and `sizes --render`
+   re-measure this machine and re-render after a budget is edited. **Not
+   recorded:** the npm packages' `.tgz`, which staging never packs (the
+   addon is recorded raw and gzipped instead), and the Dart and Node
+   root archives; the release's exact attached page is still to build.
 5. **The JPL recording** in the corpus repo (licence check, recorder
    script, a corpus release and tag), then the submodule bump, the astro
    tests and the ACCURACY rows. This is the largest piece and the only one

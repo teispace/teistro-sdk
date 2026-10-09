@@ -44,9 +44,11 @@
 //!    [`SHAKEN_MOST`] bytes; each also bundles the entry and each
 //!    profile's subpath, which must ship their own module and no other,
 //!    so the first measurement is known to be able to see one.
-//! 7. **Each module held to its size budget** (`bindings/wasm/size.json`), both ways:
+//! 7. **Each module held to its size budget** (`docs/05-testing/sizes.json`), both ways:
 //!    over it fails, and so does more than 5% under it, since a budget
-//!    that loose would let the saving go unnoticed.
+//!    that loose would let the saving go unnoticed. What it measured,
+//!    the modules, their glue and every bundle, is written as this run's
+//!    sizes fragment for `SIZES.md` (`xtask/src/sizes.rs`).
 //!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
@@ -63,6 +65,7 @@ use serde_json::{Value, json};
 use crate::binding::{blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
 use crate::sbom;
+use crate::sizes::{self, Allowed, Artefact, Row};
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
@@ -112,16 +115,16 @@ const LEGAL: [&str; 2] = ["LICENSE", "NOTICE"];
 /// A profile's module, shipped beside the full one under a subpath of its
 /// own (`03-design/wasm-profiles.md`): the same layer over a module built
 /// with fewer families.
-struct Profile {
+pub(crate) struct Profile {
     /// The subpath, the directory under `wasm/` the module is bound into,
     /// and the wasm crate's feature that builds it.
-    name: &'static str,
+    pub(crate) name: &'static str,
 }
 
 /// The profiles the package ships beside its full module. `panchanga` is
 /// the calendars, the almanac and the muhurta search: what a patro needs,
 /// at three fifths of the full module gzipped.
-const PROFILES: [Profile; 1] = [Profile { name: "panchanga" }];
+pub(crate) const PROFILES: [Profile; 1] = [Profile { name: "panchanga" }];
 
 impl Profile {
     /// The import the profile's entry reads its native half from.
@@ -545,9 +548,9 @@ fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
 /// `/catalogue` ships no module and stays under [`SHAKEN_MOST`]; the
 /// entry ships the full module, and each profile's subpath its own module
 /// and nothing else, told apart by what the emitted modules weigh.
-fn shaken(root: &Path, staged: &Path) -> Result<(), ()> {
+fn shaken(root: &Path, staged: &Path, measured: &mut Vec<Row>) -> Result<(), ()> {
     let dir = root.join(BUNDLERS);
-    for bundler in ["esbuild", "vite", "webpack"] {
+    for bundler in sizes::BUNDLERS {
         if pinned_npm_tool(&dir, bundler).is_none() {
             crate::skip::skip(format_args!(
                 "the tree-shaking check: the pinned {bundler} is not installed and could not be (needs `npm`)"
@@ -594,6 +597,12 @@ fn shaken(root: &Path, staged: &Path) -> Result<(), ()> {
             .as_array()
             .map(|paths| paths.iter().filter_map(Value::as_str).collect())
             .unwrap_or_default();
+        measured.push(Row {
+            subject: sizes::bundle_subject(bundler, entry),
+            artefact: Artefact::Bundle,
+            raw: Some(bytes),
+            gzip: None,
+        });
         let wanted = modules
             .iter()
             .find(|(name, _, _)| name == entry)
@@ -748,6 +757,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     }
     let staged = root.join(STAGED);
     let tests = staged.join("test");
+    let mut bundles = Vec::new();
     let outcome = stage(root, &staged)
         .and_then(|()| blob_fixtures(root, &root.join(FIXTURES)))
         .and_then(|()| {
@@ -775,7 +785,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             browser(root, &staged, &node)
                 .and_then(|()| consumer(root, &staged))
                 .and_then(|()| workerd(root, &node))
-                .and_then(|()| shaken(root, &staged))
+                .and_then(|()| shaken(root, &staged, &mut bundles))
         });
     // The suite was copied in to run from inside the package; it is not
     // part of what a consumer installs.
@@ -783,16 +793,12 @@ pub(crate) fn check(root: &Path) -> i32 {
     if outcome.is_err() {
         return 1;
     }
-    i32::from(size(root, &staged).is_err())
+    let held = size(root, &staged);
+    let mut rows = sizes::wasm_rows(&staged);
+    rows.append(&mut bundles);
+    let recorded = sizes::write_fragment(root, "wasm", rows);
+    i32::from(held.is_err() || recorded.is_err())
 }
-
-/// The budget file: what the shipped module may weigh.
-const BUDGET: &str = "bindings/wasm/size.json";
-
-/// How far under its budget a module may fall before the budget is too
-/// loose to protect anything: 5%, which a toolchain's own drift stays
-/// inside and a real saving does not.
-const SLACK: f64 = 0.95;
 
 /// A size as a reader reads it: megabytes to two places.
 fn megabytes(bytes: u64) -> String {
@@ -800,24 +806,21 @@ fn megabytes(bytes: u64) -> String {
     format!("{}.{:02} MB", hundredths / 100, hundredths % 100)
 }
 
-/// Each shipped module held to its budget: the full one to the budget
-/// file's own `bytes` and `gzip`, each profile's to the object under its
-/// name.
+/// Each shipped module held to the budget the sizes record sets it: the
+/// full one, then each profile's.
 fn size(root: &Path, staged: &Path) -> Result<(), ()> {
-    let budget: Value = fs::read_to_string(root.join(BUDGET))
-        .ok()
-        .and_then(|text| serde_json::from_str(&text).ok())
-        .ok_or_else(|| println!("FAIL  {BUDGET} is missing or not JSON"))?;
     let wasm = staged.join("wasm");
-    let mut failed = held_to_budget("the module", &wasm, &budget, BUDGET).is_err();
-    for profile in &PROFILES {
-        failed |= held_to_budget(
-            &format!("the `{}` module", profile.name),
-            &wasm.join(profile.name),
-            &budget[profile.name],
-            &format!("{BUDGET}'s `{}`", profile.name),
-        )
-        .is_err();
+    let mut failed = false;
+    for subject in std::iter::once(sizes::FULL).chain(PROFILES.iter().map(|p| p.name)) {
+        let (module, bound) = if subject == sizes::FULL {
+            (String::from("the module"), wasm.clone())
+        } else {
+            (format!("the `{subject}` module"), wasm.join(subject))
+        };
+        failed |= sizes::budget(root, subject, Artefact::Module)
+            .map_err(|why| println!("FAIL  {why}"))
+            .and_then(|allowed| held_to_budget(&module, &bound, allowed, subject))
+            .is_err();
     }
     if failed { Err(()) } else { Ok(()) }
 }
@@ -826,42 +829,30 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
 /// more than 5% under it is a budget that no longer protects the saving,
 /// so the gate says what to write instead. Gzip is the proxy for what a
 /// browser downloads; the raw size is what it compiles.
-fn held_to_budget(module: &str, bound: &Path, budget: &Value, at: &str) -> Result<(), ()> {
-    use std::io::Write as _;
+fn held_to_budget(module: &str, bound: &Path, allowed: Allowed, subject: &str) -> Result<(), ()> {
     let bytes = fs::read(bound.join("teistro_wasm_bg.wasm"))
         .map_err(|e| println!("FAIL  {module} could not be read: {e}"))?;
-    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
-    let gzip = encoder
-        .write_all(&bytes)
-        .and_then(|()| encoder.finish())
-        .map_err(|e| println!("FAIL  {module} could not be compressed: {e}"))?;
+    let gzip = sizes::gzip_best(&bytes);
     let mut failed = false;
-    for (name, measured) in [("bytes", bytes.len()), ("gzip", gzip.len())] {
+    for (name, measured, allowed) in [
+        ("raw", bytes.len(), allowed.raw),
+        ("gzip", gzip.len(), allowed.gzip),
+    ] {
         let measured = u64::try_from(measured).unwrap_or(u64::MAX);
-        let Some(allowed) = budget[name].as_u64().filter(|allowed| *allowed > 0) else {
-            println!("FAIL  {at} sets no `{name}`; {module} measures {measured}");
-            failed = true;
-            continue;
-        };
-        #[allow(
-            clippy::cast_precision_loss,
-            reason = "a ratio of two sizes under a gigabyte, read to a percent"
-        )]
-        let ratio = measured as f64 / allowed as f64;
-        // The budget to write: 2% over what was measured, to the next
-        // ten kilobytes, so a toolchain's drift does not fail the next run.
-        let suggested = (measured + measured / 50).div_ceil(10_000) * 10_000;
+        let ratio = sizes::ratio(measured, allowed);
+        let suggested = sizes::suggested(measured);
+        let at = format!("`{subject}`'s `{name}` in {}", sizes::RECORD);
         if measured > allowed {
             println!(
-                "FAIL  {module}'s {name} is {} ({measured}), over its budget of {} by {:.1}%; if the growth is wanted, set `{name}` in {at} to {suggested}",
+                "FAIL  {module}'s {name} is {} ({measured}), over its budget of {} by {:.1}%; if the growth is wanted, set {at} to {suggested}, or re-record with `cargo xtask sizes --from DIR --why SENTENCE`",
                 megabytes(measured),
                 megabytes(allowed),
                 (ratio - 1.0) * 100.0
             );
             failed = true;
-        } else if ratio < SLACK {
+        } else if ratio < sizes::SLACK {
             println!(
-                "FAIL  {module}'s {name} is {} ({measured}), {:.1}% under its budget of {}; lower `{name}` in {at} to {suggested} so the saving is kept",
+                "FAIL  {module}'s {name} is {} ({measured}), {:.1}% under its budget of {}; lower {at} to {suggested} so the saving is kept",
                 megabytes(measured),
                 (1.0 - ratio) * 100.0,
                 megabytes(allowed)

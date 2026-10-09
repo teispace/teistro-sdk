@@ -102,9 +102,10 @@ The module carries the `compact` tier of
 the built-in ephemeris, which is one arcminute and what ADR-0029 names for
 a browser. It is built for size (fat LTO, `opt-level = "s"`, measured to
 be as fast as the release build) and ships without its debug names.
-`bindings/wasm/size.json` holds its budget and the `panchanga` module's,
-each with what it last measured, and `check-wasm` fails the build if
-either grows. For the arcsecond tiers, bring a provider.
+`docs/05-testing/sizes.json` holds its budget and the `panchanga`
+module's, `check-wasm` fails the build if either grows, and
+`docs/05-testing/SIZES.md` lists what each module and every other
+artefact last measured. For the arcsecond tiers, bring a provider.
 
 ## Checked
 

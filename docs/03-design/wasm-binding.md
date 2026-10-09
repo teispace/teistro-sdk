@@ -321,7 +321,7 @@ Rejected:
    smaller. **From 8.6 MB to 4.77 MB, 1.95 MB to 1.33 MB gzipped**, the
    `compact` tier ADR-0029 names for a browser.
 
-   `bindings/wasm/size.json` is the budget, held both ways: over it fails,
+   The budget (`docs/05-testing/sizes.json` since 2026-10-09, `bindings/wasm/size.json` before) is held both ways: over it fails,
    and so does more than 5% under it, with the value to write, because a
    budget that loose would let the saving go unnoticed. One module, not
    one per profile: ADR-0005's profiles (`panchanga`, `kundali`, …) are

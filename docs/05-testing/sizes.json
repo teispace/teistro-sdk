@@ -1,0 +1,20 @@
+{
+  "schema": "teistro-sizes/1",
+  "why": "A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fails, and so does more than 5% under it. Each budget is 2% over the module measured on CI's Linux runner, to the next ten kilobytes, and moves only through `cargo xtask sizes --from DIR --why SENTENCE`, which adds a row here saying what moved it; the figures before this record began are in the history of `bindings/wasm/size.json`.",
+  "rows": [],
+  "budgets": [
+    {
+      "subject": "full",
+      "artefact": "module",
+      "raw": 7370000,
+      "gzip": 1960000
+    },
+    {
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 3440000,
+      "gzip": 1100000
+    }
+  ],
+  "history": []
+}

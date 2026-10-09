@@ -53,7 +53,13 @@ pub(crate) fn check(root: &Path) -> i32 {
         crate::java_consumer::check(root, &dist, &check, &platform, &version),
         adapter_consumer(root, &dist, &check, &platform),
     ];
-    let failed = outcomes.iter().filter(|outcome| outcome.is_err()).count();
+    let recorded = crate::sizes::write_fragment(
+        root,
+        &platform.name(),
+        crate::sizes::platform_rows(root, &platform, &version),
+    );
+    let failed =
+        outcomes.iter().filter(|outcome| outcome.is_err()).count() + usize::from(recorded.is_err());
     println!(
         "{} packages installed and run for {}: {failed} failure(s)",
         outcomes.len(),
