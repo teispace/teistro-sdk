@@ -2525,6 +2525,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   shuffled by date or by age, and `expected` reads a sample against its
   own recombined population. Each answer's input hash is the study's
   pre-registration, and the thread count is not in it.
+- **The Lal Kitab kernel** (`03-design/lalkitab.md` step 1).
+  `teistro-lalkitab` reads the 1952 edition's computable parts, each table
+  cited to its page and written as the book's rule where it states one: a
+  teva as whole-sign houses from the lagna, each planet's dignities (the
+  exaltations read off the catalogue's signs, debilitation the seventh
+  from them), its owners and directed regard, sleep and waking, kayam,
+  the forward aspects and the yog drishti rule, masnui pairs, the nine
+  debts and the ancestors' first state, the teva's flags, and the
+  35-year cycle from the general start or a reader's. The annual list is
+  in copyright, so a reader supplies it and the crate checks it, each row
+  a permutation and each twelve-year block a Latin square. **Numbers:**
+  none move.
 - **Python request knobs are `Literal`s.** A rectification, prashna,
   remedies or dasha-definition knob that took a `str` takes its members,
   so mypy refuses a misspelt one before the boundary does.

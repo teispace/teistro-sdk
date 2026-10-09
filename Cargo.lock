@@ -1582,6 +1582,7 @@ dependencies = [
  "teistro-interpret",
  "teistro-intl",
  "teistro-kp",
+ "teistro-lalkitab",
  "teistro-matching",
  "teistro-muhurta",
  "teistro-numerology",
@@ -1844,6 +1845,15 @@ dependencies = [
  "teistro-aspect",
  "teistro-core",
  "teistro-dasha",
+]
+
+[[package]]
+name = "teistro-lalkitab"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "teistro-core",
 ]
 
 [[package]]

@@ -61,10 +61,11 @@ libloading = "0.8"
 default = ["builtin-standard", "full"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "chart", "kp", "muhurta", "numerology", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["teistro/full", "chart", "kp", "lalkitab", "muhurta", "numerology", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area, and the document reader only it uses.
 chart = ["teistro/chart", "dep:teistro-serial"]
 kp = ["chart", "teistro/kp"]
+lalkitab = ["chart", "teistro/lalkitab"]
 muhurta = ["teistro/muhurta"]
 numerology = ["teistro/numerology"]
 prashna = ["chart", "teistro/prashna"]
