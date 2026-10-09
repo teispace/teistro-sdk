@@ -165,9 +165,9 @@ public final class ChartArea {
      * One period read for each of the twelve signs.
      *
      * @param request the period, its place and what to read
-     * @return the reading
+     * @return the reading, with what sealed it
      */
-    public RashifalAnswer rashifal(RashifalRequest request) {
+    public RashifalSealed rashifal(RashifalRequest request) {
         return RashifalReads.rashifal(context, request, null);
     }
 
@@ -177,9 +177,9 @@ public final class ChartArea {
      *
      * @param request the period, its place and what to read
      * @param baseline the baseline's name
-     * @return the reading
+     * @return the reading, with what sealed it
      */
-    public RashifalAnswer rashifal(RashifalRequest request, String baseline) {
+    public RashifalSealed rashifal(RashifalRequest request, String baseline) {
         return RashifalReads.rashifal(context, request, baseline);
     }
 
@@ -188,9 +188,9 @@ public final class ChartArea {
      *
      * @param requests the periods
      * @param baseline the baseline's name, or null for none
-     * @return one reading per request, in order
+     * @return one reading per request, in order, with the batch's provenance
      */
-    public List<RashifalAnswer> rashifalMany(List<RashifalRequest> requests, String baseline) {
+    public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline) {
         return RashifalReads.rashifalMany(context, requests, baseline);
     }
 }

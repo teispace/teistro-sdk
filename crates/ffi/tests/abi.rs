@@ -9623,11 +9623,12 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
         .chart()
         .rashifal_answers(&teistro::RashifalBatch::from_json(&request).unwrap())
         .unwrap();
-    assert_eq!(
-        crossed,
-        teistro_core::envelope::canonical_json(&kernel.value)
-    );
+    // The envelope, as research's crosses: the provenance seals the
+    // request, so a binding can quote what produced a reading.
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
     let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert!(read["provenance"]["input_hash"].is_string());
+    let read = &read["value"];
     let period = &read[0]["period"];
     assert_eq!(period["reference"]["day"], serde_json::json!(7));
     assert_eq!(period["readings"].as_array().map(Vec::len), Some(12));
@@ -9636,7 +9637,7 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
     // No baseline asked, none answered.
     let plain = rashifal_json(&ctx, &format!(r#"{{"periods": [{week}]}}"#)).unwrap();
     let read: serde_json::Value = serde_json::from_str(&plain).unwrap();
-    assert_eq!(read[0].get("baseline"), None);
+    assert_eq!(read["value"][0].get("baseline"), None);
 
     for (request, field) in [
         (r#"{"periods": []}"#, "rashifal.periods"),
@@ -9693,11 +9694,12 @@ fn pakshi_days_cross_as_the_facade_reads_them() {
         .almanac()
         .pakshi_request(&teistro::PakshiRequest::from_json(days).unwrap())
         .unwrap();
-    assert_eq!(
-        crossed,
-        teistro_core::envelope::canonical_json(&kernel.value)
-    );
+    // The envelope, as research's crosses: the provenance seals the
+    // request, so a binding can quote what produced a reading.
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
     let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert!(read["provenance"]["input_hash"].is_string());
+    let read = &read["value"];
     assert_eq!(read.as_array().map(Vec::len), Some(3));
     let wednesday = &read[1]["reading"];
     assert_eq!(wednesday["bird"], serde_json::json!("COCK"));

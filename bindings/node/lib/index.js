@@ -2737,22 +2737,25 @@ export class ChartArea extends Area {
    *   utcOffsetSeconds: 20700,
    * }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   * const sealed = week.provenance.inputHash;
    *
    * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds`, and optionally `snapshot`, `events` and `spells`
    * @param {string} [baseline] `'DAILY'`, `'WEEKLY'`, `'MONTHLY'` or `'YEARLY'`, for the baseline engine's score
-   * @returns {object}
+   * @returns {object} the period's answer with its `provenance` beside it
    */
   rashifal(request, baseline) {
-    const [one] = this.rashifalMany([request], baseline);
-    return one;
+    const { value: [one], provenance } = this.rashifalMany([request], baseline);
+    return Object.freeze({ ...one, provenance });
   }
 
   /**
-   * Many periods, each read as `rashifal` reads it alone, under one founder.
+   * Many periods, each read as `rashifal` reads it alone, under one founder,
+   * as the envelope: `value` the answers in the requests' order, and the
+   * batch's `provenance`.
    *
    * @param {object[]} requests
    * @param {string} [baseline]
-   * @returns {object[]}
+   * @returns {{ value: object[], provenance: object }}
    */
   rashifalMany(requests, baseline) {
     if (!Array.isArray(requests)) {
@@ -2760,8 +2763,13 @@ export class ChartArea extends Area {
     }
     const asked = { periods: requests.map(rashifalPeriodAsked) };
     if (baseline !== undefined && baseline !== null) asked.baseline = baseline;
-    const answers = JSON.parse(run(this, (inner) => inner.rashifal(JSON.stringify(asked))));
-    return deepFreeze(answers.map(rashifalAnswerFrom));
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.rashifal(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      value: value.map(rashifalAnswerFrom),
+      provenance: decodeProvenance(provenance),
+    });
   }
 }
 
@@ -6342,7 +6350,8 @@ export class AlmanacArea extends Area {
    * sunrise, sunset and next sunrise, each with the bird's activity and
    * its timed sub-periods, the day's weekday that of its sunrise and its
    * paksha the one at its sunrise. A day the Sun does not both rise and
-   * set has a `null` reading.
+   * set has a `null` reading. The answer is the envelope: `value` the
+   * days in order, and the `provenance` that sealed the request.
    *
    * @example
    * const days = ctx.almanac.pakshi({
@@ -6351,7 +6360,7 @@ export class AlmanacArea extends Area {
    *   utcOffsetSeconds: 19800,
    *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
    * });
-   * const second = days[0].reading.yamas[1].activity; // 'SLEEPING'
+   * const second = days.value[0].reading.yamas[1].activity; // 'SLEEPING'
    *
    * @param {object} request
    * @param {object} request.from the first day, as `date(...)` builds one
@@ -6360,7 +6369,7 @@ export class AlmanacArea extends Area {
    * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
    * @param {object} request.native `{ bird }`, or `{ nakshatra, paksha, rule }` with `rule` optional
    * @param {object} [request.rules] `{ clock, subs, relations }`, each optional
-   * @returns {object[]}
+   * @returns {{ value: object[], provenance: object }}
    */
   pakshi(request) {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
@@ -6386,8 +6395,10 @@ export class AlmanacArea extends Area {
     };
     if (from.calendar !== undefined) asked.calendar = from.calendar;
     if (to !== undefined && to !== null) asked.last = day(to, 'to');
-    const days = JSON.parse(run(this, (inner) => inner.pakshi(JSON.stringify(asked))));
-    return deepFreeze(days.map(pakshiDayFrom));
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.pakshi(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value: value.map(pakshiDayFrom), provenance: decodeProvenance(provenance) });
   }
 }
 

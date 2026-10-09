@@ -964,6 +964,19 @@ export interface RashifalAnswer {
   readonly baseline: readonly BaselineScore[] | null;
 }
 
+/** One period's answer as `rashifal` hands it out, with what sealed it. */
+export interface RashifalSealed extends RashifalAnswer {
+  /** What computed it, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
+/** Many periods' answers, in the requests' order, under one provenance. */
+export interface RashifalAnswers {
+  readonly value: readonly RashifalAnswer[];
+  /** What computed them, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
 /**
  * The transit hit list to search against every chart of a request; every
  * field but the window is optional, and an absent one is the default.
@@ -6224,6 +6237,14 @@ export interface PakshiRequest {
   };
 }
 
+/** A native's bird over a range of days. */
+export interface PakshiDays {
+  /** The days, in order. */
+  readonly value: readonly PakshiDay[];
+  /** What computed them, and under what; `inputHash` seals the request. */
+  readonly provenance: Provenance;
+}
+
 /** One day of a native's bird. */
 export interface PakshiDay {
   /** The civil day. */
@@ -6879,10 +6900,11 @@ export declare class ChartArea {
    * @example
    * const week = ctx.chart.rashifal({ first, last, place, utcOffsetSeconds: 20700 }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
+   * const sealed = week.provenance.inputHash;
    */
-  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalAnswer;
+  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalSealed;
   /** Many periods, each read as `rashifal` reads it alone, under one founder. */
-  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswer[];
+  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswers;
 }
 
 /**
@@ -6904,7 +6926,8 @@ export declare class AlmanacArea {
   /**
    * A native's bird read over every day of a range under Pancha Pakshi
    * (`03-design/pakshi.md`). A day the Sun does not both rise and set has
-   * a `null` reading.
+   * a `null` reading. The answer is the envelope: the days, and the
+   * provenance that sealed the request.
    *
    * @example
    * const days = ctx.almanac.pakshi({
@@ -6914,7 +6937,7 @@ export declare class AlmanacArea {
    *   native: { nakshatra: 'nakshatra.UTTARA_ASHADHA', paksha: 'paksha.SHUKLA' },
    * });
    */
-  pakshi(request: PakshiRequest): readonly PakshiDay[];
+  pakshi(request: PakshiRequest): PakshiDays;
 }
 
 /**

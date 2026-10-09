@@ -3,7 +3,8 @@
 //!
 //! A day's answer is its ten yamas, each with its sub-periods, nested
 //! records rather than columns, so it crosses as the JSON the façade's
-//! `PakshiDay` serialises to: every binding parses it into its own types.
+//! envelope of `PakshiDay`s serialises to, provenance and all: every
+//! binding parses it into its own types.
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
@@ -19,8 +20,8 @@ use crate::string::TsString;
 use crate::support::with_context;
 
 /// Reads a native's bird over each civil day of a range at a place and
-/// answers with an array of `{date, reading}` as canonical JSON, one per
-/// day: `reading` the day's ten yamas from the almanac's sunrise, sunset
+/// answers with `{value, provenance}` as canonical JSON, `value` an array
+/// of `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset
 /// and next sunrise, each `{half, yama, span, activity, quality, subs}`
 /// with every sub-period's activity, owner, span and how the native
 /// regards its owner, beside the day's `{sunrise, sunset, nextSunrise,
@@ -54,7 +55,7 @@ pub unsafe extern "C" fn ts_pakshi(
                 crate::support::text(request_json, "request_json")
             }?)?;
             let days = ctx.sdk().almanac().pakshi_request(&asked)?;
-            let json = TsString::from_string(teistro_core::envelope::canonical_json(&days.value));
+            let json = TsString::from_string(teistro_core::envelope::canonical_json(&days));
             // SAFETY: the entry point's contract.
             unsafe { crate::support::write_plain(out_json, "out_json", json) }
         })

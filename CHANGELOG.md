@@ -2546,6 +2546,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Pancha Pakshi and rashifal answer with their provenance.**
+  `ts_pakshi` and `ts_rashifal` now send `{value, provenance}` across
+  the boundary, as `ts_research` does. Before, they sent the value alone,
+  so a binding could not quote what had sealed its request. In every
+  binding, `almanac.pakshi` and `chart.rashifalMany` answer the envelope
+  (`value` and `provenance`, as an almanac's years do), and
+  `chart.rashifal` answers its period with the provenance beside it. Each
+  parity runner prints both input hashes, and they agree. **Numbers:**
+  none move; the answers' shape changes.
 - **`teistro-mcp`, the SDK as tools an agent calls**
   (`03-design/mcp-server.md` step 1). This is a Model Context Protocol
   server over stdio. It speaks the stateless 2026-07-28 revision and,

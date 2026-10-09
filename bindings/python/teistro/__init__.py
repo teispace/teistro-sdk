@@ -762,6 +762,7 @@ __all__ = [
     "PakshiBird",
     "PakshiBirdNative",
     "PakshiDay",
+    "PakshiDays",
     "PakshiDayBounds",
     "PakshiReading",
     "PakshiRelation",
@@ -881,6 +882,8 @@ __all__ = [
     "LuckyElements",
     "BaselineScore",
     "RashifalAnswer",
+    "RashifalAnswers",
+    "RashifalSealed",
     "GocharReference",
     "GocharRules",
     "GrahaGochar",
@@ -2068,7 +2071,7 @@ class ChartArea(_Area):
         )
 
 
-    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalAnswer":
+    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalSealed":
         """One period of civil days at a place read for each of the twelve
         signs (`03-design/rashifal.md`): the sky at sunrise on the middle
         day, or at `snapshot`'s clock time; each sign's gochar from
@@ -2079,14 +2082,18 @@ class ChartArea(_Area):
 
         >>> # week = ctx.chart.rashifal({"first": first, "last": last, "place": place, "utcOffsetSeconds": 20700}, "WEEKLY")
         >>> # leo = next(r for r in week.period.readings if r.rashi is Rashi.LEO)
+        >>> # sealed = week.provenance.input_hash
         """
-        return self.rashifal_many([request], baseline)[0]
+        many = self.rashifal_many([request], baseline)
+        one = many.value[0]
+        return RashifalSealed(period=one.period, baseline=one.baseline, provenance=many.provenance)
 
     def rashifal_many(
         self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None
-    ) -> List["RashifalAnswer"]:
+    ) -> "RashifalAnswers":
         """Many periods, each read as `rashifal` reads it alone, under one
-        founder."""
+        founder, as the envelope: the answers in the requests' order and the
+        batch's provenance."""
         if isinstance(requests, Mapping) or not isinstance(requests, Sequence):
             raise TeistroError(
                 Status.INVALID_ARG,
@@ -2097,7 +2104,11 @@ class ChartArea(_Area):
         if baseline is not None:
             asked["baseline"] = baseline
         answered = self._context._through_provider(lambda: self._context.inner.rashifal(json.dumps(asked)))
-        return [_rashifal_answer(one) for one in json.loads(answered)]
+        envelope = json.loads(answered)
+        return RashifalAnswers(
+            value=tuple(_rashifal_answer(one) for one in envelope["value"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
 
 class AlmanacArea(_Area):
     """`sdk.almanac` — a day, or a run of days, with its limbs.
@@ -2184,14 +2195,16 @@ class AlmanacArea(_Area):
         native: Union[PakshiBirdNative, PakshiStarNative],
         to_date: Optional[CalendarDate] = None,
         rules: Optional[PakshiRules] = None,
-    ) -> List[PakshiDay]:
+    ) -> "PakshiDays":
         """A native's bird read over every day from `from_date` to
         `to_date` (the first when left out) under Pancha Pakshi
         (`03-design/pakshi.md`): each day's ten yamas from the almanac's
         own sunrise, sunset and next sunrise, with the bird's activity and
         its timed sub-periods. A day the Sun does not both rise and set has
         no reading. A native that is both a bird and a star, or neither, is
-        refused as `pakshi.native.bird` or `pakshi.native.nakshatra`.
+        refused as `pakshi.native.bird` or `pakshi.native.nakshatra`. The
+        answer is the envelope: the days, and the provenance that sealed the
+        request.
 
         >>> # days = ctx.almanac.pakshi(from_date=date, place=madras, utc_offset_seconds=19800,
         >>> #     native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA})
@@ -2219,7 +2232,11 @@ class AlmanacArea(_Area):
         if rules is not None:
             asked["rules"] = dict(rules)
         answered = self._context._through_provider(lambda: self._context.inner.pakshi(json.dumps(asked)))
-        return [_pakshi_day(one) for one in json.loads(answered)]
+        envelope = json.loads(answered)
+        return PakshiDays(
+            value=tuple(_pakshi_day(one) for one in envelope["value"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
 
 
 class MatchingArea(_Area):
@@ -7073,6 +7090,23 @@ class RashifalAnswer:
 
 
 @dataclass(frozen=True)
+class RashifalSealed(RashifalAnswer):
+    """One period's answer as `rashifal` hands it out, with what sealed it."""
+
+    provenance: Provenance
+    """What computed it, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
+class RashifalAnswers:
+    """Many periods' answers, in the requests' order, under one provenance."""
+
+    value: Tuple[RashifalAnswer, ...]
+    provenance: Provenance
+    """What computed them, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
 class Karakamsha:
     """A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1)."""
 
@@ -8687,6 +8721,19 @@ class PakshiReading:
     dead_today: bool
     eaters: Tuple[PakshiBird, PakshiBird]
     yamas: Tuple[PakshiYama, ...]
+
+
+@dataclass(frozen=True)
+class PakshiDays:
+    """A native's bird over a range of days.
+
+    >>> # days = ctx.almanac.pakshi(...)
+    >>> # second = days.value[0].reading.yamas[1].activity
+    """
+
+    value: Tuple["PakshiDay", ...]
+    provenance: Provenance
+    """What computed them, and under what; `input_hash` seals the request."""
 
 
 @dataclass(frozen=True)

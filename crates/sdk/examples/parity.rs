@@ -6227,11 +6227,16 @@ const RASHIFAL_JSON: &str = r#"{"periods":[{"calendar":"GREGORIAN","first":{"yea
 /// sign's Saturn, verdicts, events and baseline score.
 fn the_rashifal(report: &mut Report, geo: &Context) {
     let batch = teistro::RashifalBatch::from_json(RASHIFAL_JSON).expect("a rashifal batch");
-    let answers = geo
+    let sealed = geo
         .chart()
         .rashifal_answers(&batch)
-        .expect("the test provider")
-        .value;
+        .expect("the test provider");
+    put(
+        report,
+        "rashifal-hash",
+        sealed.provenance.input_hash.to_string(),
+    );
+    let answers = sealed.value;
     let day = |date: &teistro::CalendarDate| format!("{}-{}-{}", date.year, date.month, date.day);
     for (n, answer) in answers.iter().enumerate() {
         let period = &answer.period;
@@ -6407,12 +6412,16 @@ fn the_research(report: &mut Report, geo: &Context) {
 fn the_pakshi(report: &mut Report, geo: &Context) {
     for (r, json) in PAKSHI_JSON.iter().enumerate() {
         let asked = teistro::PakshiRequest::from_json(json).expect("a pakshi request");
-        let days = geo
+        let sealed = geo
             .almanac()
             .pakshi_request(&asked)
-            .expect("the test provider")
-            .value;
-        for (n, one) in days.iter().enumerate() {
+            .expect("the test provider");
+        put(
+            report,
+            &format!("pakshi-{r}-hash"),
+            sealed.provenance.input_hash.to_string(),
+        );
+        for (n, one) in sealed.value.iter().enumerate() {
             let key = format!("pakshi-{r}-{n}");
             let civil = format!("{}-{}-{}", one.date.year, one.date.month, one.date.day);
             let Some(read) = &one.reading else {

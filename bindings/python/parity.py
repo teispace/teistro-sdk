@@ -691,7 +691,9 @@ def put_rashifal(geo: Context, place: Observer) -> None:
     def ymd(day: CalendarDate) -> str:
         return f"{day.year}-{day.month}-{day.day}"
 
-    for n, answer in enumerate(geo.chart.rashifal_many([week, one_day], "WEEKLY")):
+    sealed = geo.chart.rashifal_many([week, one_day], "WEEKLY")
+    put("rashifal-hash", sealed.provenance.input_hash)
+    for n, answer in enumerate(sealed.value):
         period = answer.period
         put(
             f"rashifal-{n}-period",
@@ -739,7 +741,9 @@ def put_pakshi(geo: Context) -> None:
         {"from_date": date(Calendar.GREGORIAN, 1991, 5, 21), "native": {"bird": "OWL"}},
     ]
     for r, request in enumerate(asked):
-        for n, one in enumerate(geo.almanac.pakshi(place=madras, utc_offset_seconds=19800, **request)):
+        days = geo.almanac.pakshi(place=madras, utc_offset_seconds=19800, **request)
+        put(f"pakshi-{r}-hash", days.provenance.input_hash)
+        for n, one in enumerate(days.value):
             key = f"pakshi-{r}-{n}"
             civil = f"{one.date.year}-{one.date.month}-{one.date.day}"
             read = one.reading
