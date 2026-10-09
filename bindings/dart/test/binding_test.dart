@@ -4517,6 +4517,107 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its rectification', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const instant = 2447995.4895833335;
+    Rectification? found(RectificationRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              rectification: asked,
+            )
+            .rectification;
+    expect(found(null), isNull);
+
+    const purifyOnly = RectificationRequest(purify: PurifyRequest(minutes: 20));
+    final purified = found(purifyOnly)!;
+    expect(purified.conception, isNull, reason: 'only what was asked');
+    expect(purified.circumstance, isNull);
+    expect(purified.baseline, isNull);
+    final standing = purified.purified!;
+    final runs = [...standing.intervals, ...standing.removed];
+    expect(runs, isNotEmpty);
+    expect(standing.grid.cells, greaterThan(0));
+    for (final clause in runs.expand((run) => run.verdict.clauses)) {
+      expect(clause.sign, isNot(Rashi.unknown));
+      expect(clause.lagna, isNot(Rashi.unknown));
+    }
+
+    const asked = RectificationRequest(
+      purify: PurifyRequest(minutes: 20),
+      conception: ConceptionRules(),
+      circumstance: CircumstanceRequest(
+        facts: BirthFacts(fatherPresent: false),
+      ),
+      baseline: BaselineRectificationRequest(
+        uncertaintyMinutes: 30,
+        sex: Sex.male,
+        events: [
+          LifeEvent(kind: LifeEventKind.marriage, on: instant + 25 * 365.25),
+          LifeEvent(
+            kind: LifeEventKind.accident,
+            on: instant + 30 * 365.25,
+            heldOut: true,
+          ),
+        ],
+      ),
+    );
+    final read = found(asked)!;
+    final moon = read.conception!.moon;
+    expect(moon.moonSign, isNot(Rashi.unknown));
+    expect(moon.rising, isNot(Rashi.unknown));
+    expect(moon.predicted.sign, isNot(Rashi.unknown));
+    expect(moon.moonNakshatra, isNot(Nakshatra.unknown));
+    expect(read.conception!.pranapadaHouse.house, inInclusiveRange(1, 12));
+    final circumstance = read.circumstance!;
+    expect(circumstance.sky.grahasDeg, hasLength(7), reason: 'Sun to Saturn');
+    expect(circumstance.presentation.lord, isNot(Graha.unknown));
+    expect(circumstance.presentation.rising, isNot(Rising.unknown));
+    expect(circumstance.attending.between, isNot(contains(Graha.unknown)));
+    final indications = [for (final w in circumstance.weights) w.indication];
+    expect(indications, [CircumstanceIndication.father]);
+    final baseline = read.baseline!;
+    expect(baseline.candidates, isNotEmpty);
+    expect(baseline.candidates.first.lagna, isNot(Rashi.unknown));
+    expect(baseline.candidates.first.lagnaNakshatra, isNot(Nakshatra.unknown));
+    expect(baseline.window.from, lessThan(baseline.window.to));
+    expect(baseline.eventsUsed, 1);
+    expect(baseline.eventsHeldOut, 1);
+    expect(baseline.holdOut, hasLength(1));
+    final notes = [for (final stage in baseline.stages) ...stage.notes];
+    final sexes = notes.whereType<TattvaSexNote>();
+    expect([for (final note in sexes) note.sex], [Sex.male]);
+    final reported = notes.whereType<ReportedTimeNote>();
+    expect([for (final note in reported) note.uncertaintyMinutes], [30]);
+    final fits = notes.whereType<EventFitNote>().toList();
+    expect(fits, hasLength(1), reason: 'the event held out is not fitted');
+    expect(fits.first.event, 0);
+    expect(fits.first.id, isNull);
+    expect(fits.first.eventKind, LifeEventKind.marriage);
+    expect(fits.first.lords, isNot(contains(Graha.unknown)));
+    const none = RectificationRequest(purify: PurifyRequest(minutes: 0));
+    expect(
+      () => found(none),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rectification.purify.minutes',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its KP reading', () {
     final ctx = teistro.context(
       profile: 'kp-default',

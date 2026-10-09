@@ -371,6 +371,19 @@ const charts = geo.chart.foundMany({
   perfection: { house: 7, rules: { horizonDays: 120 } },
   prashna: { question: { house: 7, number: 14 }, rules: { score: 'BASELINE' } },
   remedies: { at: 2460676.5, rules: { shanti: { rik: 'YAJNAVALKYA' } } },
+  rectification: {
+    purify: { minutes: 20 },
+    conception: {},
+    circumstance: { facts: { fatherPresent: false } },
+    baseline: {
+      uncertaintyMinutes: 30,
+      sex: 'MALE',
+      events: [
+        { kind: 'MARRIAGE', on: 2469000.5 },
+        { kind: 'ACCIDENT', on: 2471000.5, heldOut: true },
+      ],
+    },
+  },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
     orbs: {
@@ -462,6 +475,79 @@ function matterSaid(at, m) {
   put(`${at}-pair`, m.between === null ? '-' : pairSaid(m.between));
   put(`${at}-unanswered`, m.unanswered.join(','));
   put(`${at}-held`, m.held.map(heldSaid).join(' '));
+}
+
+/**
+ * A chart read as a birth time to rectify, as every runner prints it under
+ * `prefix`: the purifier's runs, the conception, the circumstances and the
+ * baseline's cascade.
+ */
+function putRectification(prefix, read) {
+  const list = (values) => values.join(',') || '-';
+  const some = (value) => (value === null ? '-' : `${value}`);
+  const verdict = (one) =>
+    `${one.pure} ${list(one.clauses.map((c) => `${c.purifier}:${c.reference}:${c.sign}:${c.lagna}:${c.house}:${c.held}:${c.counted}`))}`;
+  const { purified, conception, circumstance, baseline } = read;
+  put(
+    `${prefix}-purified`,
+    `${purified.grid.cells} ${number(purified.grid.stepDays)} ${purified.intervals.length} ${purified.removed.length} ${list(purified.edges.map(number))}`,
+  );
+  [...purified.intervals, ...purified.removed].forEach((run, k) =>
+    put(`${prefix}-purified-${k}`, `${number(run.from)} ${number(run.to)} ${verdict(run.verdict)}`),
+  );
+  const { pranapadaHouse, nisheka, moon } = conception;
+  const { written } = nisheka.count.span;
+  put(
+    `${prefix}-conception`,
+    `${number(conception.birth)} ${pranapadaHouse.house} ${pranapadaHouse.auspicious} ${number(nisheka.count.instant)} ${written.months}:${written.days}:${written.ghatis}:${written.palas} ${number(nisheka.lagnaDeg)} ${verdict(nisheka.verdict)}`,
+  );
+  put(
+    `${prefix}-conception-moon`,
+    `${moon.predicted.dvadashamsha} ${moon.predicted.sign} ${some(moon.predicted.nakshatra)} ${moon.moonSign} ${some(moon.moonNakshatra)} ${moon.signAgrees} ${some(moon.nakshatraAgrees)} ${moon.rising} ${moon.predictedPart} ${moon.bornByDay} ${moon.partAgrees} ${number(moon.risenFraction)} ${number(moon.elapsedFraction)} ${number(pranapadaHouse.pranapadaDeg)}`,
+  );
+  const { father, presentation, lamp, attending } = circumstance;
+  put(
+    `${prefix}-circumstance`,
+    `${father.moonAspect} ${father.unseen} ${father.saturnRising} ${father.marsSetting} ${father.moonHemmed} ${father.away} ${some(father.whereabouts)} ${father.sunHouse} ${circumstance.sky.lordRetrograde}`,
+  );
+  put(
+    `${prefix}-circumstance-birth`,
+    `${presentation.by} ${presentation.rising} ${presentation.lord} ${presentation.lordRetrograde} ${presentation.foretold} ${number(lamp.oil)}:${lamp.oilLevel} ${number(lamp.wick)}:${lamp.wickLevel} ${list(attending.between)} ${list(attending.visible)} ${attending.inside} ${attending.outside}`,
+  );
+  put(`${prefix}-circumstance-weights`, list(circumstance.weights.map((w) => `${w.indication}:${w.agrees}`)));
+  put(
+    `${prefix}-baseline`,
+    `${number(baseline.window.from)} ${number(baseline.window.to)} ${number(baseline.sunrise)} ${list(baseline.intervals.map((at) => `${number(at.from)}:${number(at.to)}`))} ${number(baseline.intervalWidthMinutes)} ${number(baseline.resolutionMinutes)} ${number(baseline.suggested)} ${number(baseline.concentration)} ${baseline.candidates.length} ${baseline.eventsUsed} ${baseline.eventsHeldOut}`,
+  );
+  const note = (one) => {
+    switch (one.kind) {
+      case 'TATTVA_SEX':
+        return `TATTVA_SEX:${one.sex}:${number(one.admittedMinutes)}:${one.penalised}:${one.of}`;
+      case 'REPORTED_TIME':
+        return `REPORTED_TIME:${one.accuracy}:${number(one.uncertaintyMinutes)}`;
+      case 'EVENT_FIT':
+        return `EVENT_FIT:${one.event}:${some(one.id)}:${one.eventKind}:${list(one.lords)}:${number(one.contribution)}`;
+    }
+  };
+  baseline.stages.forEach((stage, k) =>
+    put(
+      `${prefix}-baseline-stage-${k}`,
+      `${stage.stage} ${stage.applied} ${stage.flat} ${number(stage.resolutionMinutes)} ${list(stage.notes.map(note))}`,
+    ),
+  );
+  const [best] = baseline.candidates;
+  if (best !== undefined) {
+    put(
+      `${prefix}-baseline-best`,
+      `${number(best.at)} ${number(best.probability)} ${number(best.logPosterior)} ${best.lagna} ${best.lagnaNakshatra}`,
+    );
+  }
+  baseline.holdOut.forEach((held, k) =>
+    put(
+      `${prefix}-baseline-held-${k}`,
+      `${held.event} ${held.kind} ${number(held.scoreAtFit)} ${number(held.baseline)} ${held.supported}`,
+    ),
+  );
 }
 
 /** An Ashta Koota as every runner prints it, under `prefix`. */
@@ -1065,6 +1151,7 @@ for (const chart of charts) {
       `${at.first} ${at.second} ${at.middle} ${at.far ? 1 : 0} ${number(at.distanceDeg)} ${number(at.fromAxisDeg)} ${number(at.orbDeg)}`,
     ),
   );
+  putRectification(`chart-${i}-rectification`, chart.rectification);
   putAshta(`chart-${i}`, chart.matching);
   putPorutham(`chart-${i}`, chart.porutham);
   const mars = chart.kuja;

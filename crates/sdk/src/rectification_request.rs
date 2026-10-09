@@ -10,6 +10,9 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::settings::{
+    AfterCycle, AshtottariGrouping, Balance, BirthPeriod, SeedOverflow, YearLength,
+};
 use teistro_core::time::UtcOffset;
 use teistro_rectification::baseline::{
     Accuracy, BaselineAnswer, BaselineRequest, LifeEvent, Sex, baseline_dasha_rules,
@@ -68,9 +71,63 @@ pub struct BaselineAsked {
     /// The share of the posterior the intervals hold, 0.5 to 0.99.
     #[serde(default = "default_coverage")]
     pub coverage: f64,
-    /// The dasha the event fit reads.
-    #[serde(default = "baseline_dasha_rules")]
-    pub dasha: teistro_dasha::Rules,
+    /// The dasha the event fit reads, the baseline engine's where left
+    /// out.
+    #[serde(default)]
+    pub dasha: DashaAsked,
+}
+
+/// The dasha the baseline's event fit reads: each member the baseline
+/// engine's own ([`baseline_dasha_rules`]) where left out, so a request
+/// names only what it changes.
+///
+/// ```
+/// use teistro::DashaAsked;
+/// use teistro::settings::{BirthPeriod, YearLength};
+///
+/// let asked: DashaAsked = serde_json::from_str(r#"{"yearLength": "SAVANA_360"}"#)?;
+/// let rules = asked.rules();
+/// assert_eq!(rules.year_length, YearLength::Savana360);
+/// assert_eq!(rules.birth_period, BirthPeriod::Compressed);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default, deny_unknown_fields)]
+pub struct DashaAsked {
+    /// How the balance is measured.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub balance: Option<Balance>,
+    /// The length of a year.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub year_length: Option<YearLength>,
+    /// How the birth period is divided among its sub-periods.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub birth_period: Option<BirthPeriod>,
+    /// What is answered past the end of the cycle.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub after_cycle: Option<AfterCycle>,
+    /// What a seed outside a conditional cycle does.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub seed_overflow: Option<SeedOverflow>,
+    /// How Ashtottari's lords share the nakshatras.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ashtottari_grouping: Option<AshtottariGrouping>,
+}
+
+impl DashaAsked {
+    /// The rules asked for, the baseline engine's in each member left out.
+    #[must_use]
+    pub fn rules(&self) -> teistro_dasha::Rules {
+        let own = baseline_dasha_rules();
+        teistro_dasha::Rules {
+            balance: self.balance.unwrap_or(own.balance),
+            year_length: self.year_length.unwrap_or(own.year_length),
+            birth_period: self.birth_period.unwrap_or(own.birth_period),
+            after_cycle: self.after_cycle.unwrap_or(own.after_cycle),
+            seed_overflow: self.seed_overflow.unwrap_or(own.seed_overflow),
+            ashtottari_grouping: self.ashtottari_grouping.unwrap_or(own.ashtottari_grouping),
+        }
+    }
 }
 
 fn default_coverage() -> f64 {
@@ -88,7 +145,7 @@ impl BaselineAsked {
             events: self.events.clone(),
             sex: self.sex,
             coverage: self.coverage,
-            dasha: self.dasha,
+            dasha: self.dasha.rules(),
         }
     }
 }

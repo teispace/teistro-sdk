@@ -982,13 +982,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     the_plans(report, &geo, &read.value, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
         one_document(report, &geo, index, document);
-        the_progressions(report, &geo, index, document, &bare);
-        the_western_aspects(report, &geo, index, document);
-        the_parallels(report, &geo, index, document);
-        the_antiscia(report, &geo, index, document);
-        the_western_houses(report, &geo, index, document);
-        the_harmonic(report, &geo, index, document);
-        the_midpoints(report, &geo, index, document);
+        one_document_beside(report, &geo, index, document, &bare, offset);
     }
     the_partners(report, &geo, &read.value, offset);
     // **One call, as the other three make one.** The foundations are the
@@ -1856,6 +1850,27 @@ fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teist
 
 /// Everything one chart of the batch prints, in the order the other three
 /// print it.
+/// What a chart answers beside its own sections: the Western readings,
+/// which a progression needs the bare foundation for, and the
+/// rectification, which reads the request's clock.
+fn one_document_beside(
+    report: &mut Report,
+    geo: &Context,
+    index: usize,
+    document: &teistro::Document,
+    bare: &ChartRequest,
+    offset: UtcOffset,
+) {
+    the_progressions(report, geo, index, document, bare);
+    the_western_aspects(report, geo, index, document);
+    the_parallels(report, geo, index, document);
+    the_antiscia(report, geo, index, document);
+    the_western_houses(report, geo, index, document);
+    the_harmonic(report, geo, index, document);
+    the_midpoints(report, geo, index, document);
+    the_rectification(report, geo, index, document, offset);
+}
+
 fn one_document(report: &mut Report, geo: &Context, index: usize, document: &teistro::Document) {
     the_drawings(report, geo, index, document);
     one_varga_chart(report, index, document);
@@ -2002,6 +2017,314 @@ fn prashna_beside(
                 ),
             );
         }
+    }
+}
+
+/// The rectification every runner asks for: twenty minutes either side
+/// purified, the conception and the circumstances at the chart's
+/// instant, and the baseline's cascade over half an hour with a marriage
+/// in the fit and an accident held out.
+const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]}}"#;
+
+/// A chart read as a birth time to rectify, as the other three print it:
+/// the purifier's runs and the clauses each held, the conception's
+/// answers, the circumstances and their weights, and the baseline's
+/// interval, stages and best candidate.
+fn the_rectification(
+    report: &mut Report,
+    sdk: &Context,
+    index: usize,
+    document: &teistro::Document,
+    offset: UtcOffset,
+) {
+    let asked =
+        teistro::RectificationRequest::from_json(RECTIFICATION_JSON).expect("a valid request");
+    let read = sdk
+        .chart()
+        .rectification(document, offset, &asked)
+        .expect("the test provider");
+    let key = |what: &str| format!("chart-{index}-rectification{what}");
+    let verdict = |verdict: &teistro::rectification::Verdict| {
+        format!(
+            "{} {}",
+            verdict.pure,
+            dashed(verdict.clauses.iter().map(|clause| format!(
+                "{}:{}:{}:{}:{}:{}:{}",
+                wire_key(&clause.purifier),
+                wire_key(&clause.reference),
+                clause.sign.full_key(),
+                clause.lagna.full_key(),
+                clause.house,
+                clause.held,
+                clause.counted
+            )))
+        )
+    };
+    let purified = read.purified.as_ref().expect("asked for");
+    put(
+        report,
+        &key("-purified"),
+        format!(
+            "{} {} {} {} {}",
+            purified.grid.cells,
+            number(purified.grid.step_days),
+            purified.intervals.len(),
+            purified.removed.len(),
+            dashed(purified.edges.iter().map(|edge| number(edge.get())))
+        ),
+    );
+    for (k, run) in purified
+        .intervals
+        .iter()
+        .chain(&purified.removed)
+        .enumerate()
+    {
+        put(
+            report,
+            &key(&format!("-purified-{k}")),
+            format!(
+                "{} {} {}",
+                number(run.from.get()),
+                number(run.to.get()),
+                verdict(&run.verdict)
+            ),
+        );
+    }
+    rectification_conception(
+        report,
+        &key,
+        &verdict,
+        read.conception.as_ref().expect("asked for"),
+    );
+    rectification_circumstance(report, &key, read.circumstance.as_ref().expect("asked for"));
+    rectification_baseline(report, &key, read.baseline.as_ref().expect("asked for"));
+}
+
+/// The conception reports at a chart's instant, as the other three print
+/// them.
+fn rectification_conception(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    verdict: &dyn Fn(&teistro::rectification::Verdict) -> String,
+    conception: &teistro::rectification::Conception,
+) {
+    let pranapada = &conception.pranapada_house;
+    let nisheka = &conception.nisheka;
+    let written = &nisheka.count.span.written;
+    put(
+        report,
+        &key("-conception"),
+        format!(
+            "{} {} {} {} {}:{}:{}:{} {} {}",
+            number(conception.birth.get()),
+            pranapada.house,
+            pranapada.auspicious,
+            number(nisheka.count.instant.get()),
+            written.months,
+            written.days,
+            written.ghatis,
+            written.palas,
+            number(nisheka.lagna_deg),
+            verdict(&nisheka.verdict)
+        ),
+    );
+    let moon = &conception.moon;
+    let nakshatra = |nakshatra: Option<teistro::catalogue::Nakshatra>| {
+        nakshatra.map_or("-", |nakshatra| nakshatra.full_key())
+    };
+    put(
+        report,
+        &key("-conception-moon"),
+        format!(
+            "{} {} {} {} {} {} {} {} {} {} {} {} {} {}",
+            moon.predicted.dvadashamsha,
+            moon.predicted.sign.full_key(),
+            nakshatra(moon.predicted.nakshatra),
+            moon.moon_sign.full_key(),
+            nakshatra(moon.moon_nakshatra),
+            moon.sign_agrees,
+            moon.nakshatra_agrees
+                .map_or_else(|| String::from("-"), |agrees| agrees.to_string()),
+            moon.rising.full_key(),
+            wire_key(&moon.predicted_part),
+            moon.born_by_day,
+            moon.part_agrees,
+            number(moon.risen_fraction),
+            number(moon.elapsed_fraction),
+            number(conception.pranapada_house.pranapada_deg)
+        ),
+    );
+}
+
+/// The circumstances at a chart's instant, as the other three print them.
+fn rectification_circumstance(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::rectification::Circumstance,
+) {
+    let father = &read.father;
+    let presentation = &read.presentation;
+    let lamp = &read.lamp;
+    let attending = &read.attending;
+    put(
+        report,
+        &key("-circumstance"),
+        format!(
+            "{} {} {} {} {} {} {} {} {}",
+            wire_key(&father.moon_aspect),
+            father.unseen,
+            father.saturn_rising,
+            father.mars_setting,
+            father.moon_hemmed,
+            father.away,
+            father
+                .whereabouts
+                .map_or_else(|| String::from("-"), |whereabouts| wire_key(&whereabouts)),
+            father.sun_house,
+            read.sky.lord_retrograde
+        ),
+    );
+    put(
+        report,
+        &key("-circumstance-birth"),
+        format!(
+            "{} {} {} {} {} {}:{} {}:{} {} {} {} {}",
+            wire_key(&presentation.by),
+            wire_key(&presentation.rising),
+            presentation.lord.full_key(),
+            presentation.lord_retrograde,
+            wire_key(&presentation.foretold),
+            number(lamp.oil),
+            wire_key(&lamp.oil_level),
+            number(lamp.wick),
+            wire_key(&lamp.wick_level),
+            full_keys(&attending.between),
+            full_keys(&attending.visible),
+            attending.inside,
+            attending.outside
+        ),
+    );
+    put(
+        report,
+        &key("-circumstance-weights"),
+        dashed(
+            read.weights
+                .iter()
+                .map(|weight| format!("{}:{}", wire_key(&weight.indication), weight.agrees)),
+        ),
+    );
+}
+
+/// The baseline's cascade around a chart's instant, as the other three
+/// print it: the answer, each stage and what it says it did, the best
+/// candidate and each held-out event.
+fn rectification_baseline(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::rectification::baseline::BaselineAnswer,
+) {
+    put(
+        report,
+        &key("-baseline"),
+        format!(
+            "{} {} {} {} {} {} {} {} {} {} {}",
+            number(read.window.from.get()),
+            number(read.window.to.get()),
+            number(read.sunrise.get()),
+            dashed(read.intervals.iter().map(|interval| format!(
+                "{}:{}",
+                number(interval.from.get()),
+                number(interval.to.get())
+            ))),
+            number(read.interval_width_minutes),
+            number(read.resolution_minutes),
+            number(read.suggested.get()),
+            number(read.concentration),
+            read.candidates.len(),
+            read.events_used,
+            read.events_held_out
+        ),
+    );
+    for (k, stage) in read.stages.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-baseline-stage-{k}")),
+            format!(
+                "{} {} {} {} {}",
+                wire_key(&stage.stage),
+                stage.applied,
+                stage.flat,
+                number(stage.resolution_minutes),
+                dashed(stage.notes.iter().map(baseline_note))
+            ),
+        );
+    }
+    if let Some(best) = read.candidates.first() {
+        put(
+            report,
+            &key("-baseline-best"),
+            format!(
+                "{} {} {} {} {}",
+                number(best.at.get()),
+                number(best.probability),
+                number(best.log_posterior),
+                best.lagna.full_key(),
+                best.lagna_nakshatra.full_key()
+            ),
+        );
+    }
+    for (k, held) in read.hold_out.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-baseline-held-{k}")),
+            format!(
+                "{} {} {} {} {}",
+                held.event,
+                wire_key(&held.kind),
+                number(held.score_at_fit),
+                number(held.baseline),
+                held.supported
+            ),
+        );
+    }
+}
+
+/// One stage note as every runner spells it: its kind, then its fields in
+/// declaration order, colon-joined.
+fn baseline_note(note: &teistro::rectification::baseline::Note) -> String {
+    use teistro::rectification::baseline::Note;
+    match note {
+        Note::TattvaSex {
+            sex,
+            admitted_minutes,
+            penalised,
+            of,
+        } => format!(
+            "TATTVA_SEX:{}:{}:{penalised}:{of}",
+            wire_key(sex),
+            number(*admitted_minutes)
+        ),
+        Note::ReportedTime {
+            accuracy,
+            uncertainty_minutes,
+        } => format!(
+            "REPORTED_TIME:{}:{}",
+            wire_key(accuracy),
+            number(*uncertainty_minutes)
+        ),
+        Note::EventFit {
+            event,
+            id,
+            event_kind,
+            lords,
+            contribution,
+        } => format!(
+            "EVENT_FIT:{event}:{}:{}:{}:{}",
+            id.as_deref().unwrap_or("-"),
+            wire_key(event_kind),
+            full_keys(lords),
+            number(*contribution)
+        ),
     }
 }
 

@@ -224,6 +224,156 @@ void putRemedies(String at, Remedies rm) {
   }
 }
 
+/// The rectification every runner asks of each chart.
+const rectificationAsked = RectificationRequest(
+  purify: PurifyRequest(minutes: 20),
+  conception: ConceptionRules(),
+  circumstance: CircumstanceRequest(facts: BirthFacts(fatherPresent: false)),
+  baseline: BaselineRectificationRequest(
+    uncertaintyMinutes: 30,
+    sex: Sex.male,
+    events: [
+      LifeEvent(kind: LifeEventKind.marriage, on: 2469000.5),
+      LifeEvent(kind: LifeEventKind.accident, on: 2471000.5, heldOut: true),
+    ],
+  ),
+);
+
+/// A purifier's verdict and each clause it judged, colon-joined.
+String verdictSaid(PurifierVerdict verdict) {
+  final clauses = joined(
+    verdict.clauses.map(
+      (c) =>
+          '${c.purifier.key}:${c.reference.key}:${c.sign.fullKey}:'
+          '${c.lagna.fullKey}:${c.house}:${c.held}:${c.counted}',
+    ),
+  );
+  return '${verdict.pure} $clauses';
+}
+
+/// One stage note as every runner spells it: its kind, then its fields in
+/// declaration order, colon-joined.
+String noteSaid(StageNote note) => [
+  note.kind,
+  ...switch (note) {
+    TattvaSexNote n => [
+      n.sex.key,
+      number(n.admittedMinutes),
+      '${n.penalised}',
+      '${n.of}',
+    ],
+    ReportedTimeNote n => [n.accuracy.key, number(n.uncertaintyMinutes)],
+    EventFitNote n => [
+      '${n.event}',
+      n.id ?? '-',
+      n.eventKind.key,
+      joined(n.lords.map((g) => g.fullKey)),
+      number(n.contribution),
+    ],
+  },
+].join(':');
+
+/// A chart read as a birth time to rectify, each row under [at]: the
+/// purifier's runs and the clauses each held, the conception's answers,
+/// the circumstances and their weights, and the baseline's interval,
+/// stages and best candidate.
+void putRectification(String at, Rectification rc) {
+  String keys(Iterable<Graha> grahas) => joined(grahas.map((g) => g.fullKey));
+  final pu = rc.purified!;
+  put(
+    '$at-purified',
+    '${pu.grid.cells} ${number(pu.grid.stepDays)} ${pu.intervals.length} '
+        '${pu.removed.length} ${joined(pu.edges.map(number))}',
+  );
+  for (final (k, run) in [...pu.intervals, ...pu.removed].indexed) {
+    put(
+      '$at-purified-$k',
+      '${number(run.from)} ${number(run.to)} ${verdictSaid(run.verdict)}',
+    );
+  }
+  final co = rc.conception!;
+  final pp = co.pranapadaHouse;
+  final ns = co.nisheka;
+  final wr = ns.count.span.written;
+  put(
+    '$at-conception',
+    '${number(co.birth)} ${pp.house} ${pp.auspicious} '
+        '${number(ns.count.instant)} '
+        '${wr.months}:${wr.days}:${wr.ghatis}:${wr.palas} '
+        '${number(ns.lagnaDeg)} ${verdictSaid(ns.verdict)}',
+  );
+  final mo = co.moon;
+  put(
+    '$at-conception-moon',
+    '${mo.predicted.dvadashamsha} ${mo.predicted.sign.fullKey} '
+        '${mo.predicted.nakshatra?.fullKey ?? '-'} ${mo.moonSign.fullKey} '
+        '${mo.moonNakshatra?.fullKey ?? '-'} ${mo.signAgrees} '
+        '${mo.nakshatraAgrees ?? '-'} ${mo.rising.fullKey} '
+        '${mo.predictedPart.key} ${mo.bornByDay} ${mo.partAgrees} '
+        '${number(mo.risenFraction)} ${number(mo.elapsedFraction)} '
+        '${number(pp.pranapadaDeg)}',
+  );
+  final ci = rc.circumstance!;
+  final fa = ci.father;
+  put(
+    '$at-circumstance',
+    '${fa.moonAspect.key} ${fa.unseen} ${fa.saturnRising} ${fa.marsSetting} '
+        '${fa.moonHemmed} ${fa.away} ${fa.whereabouts?.key ?? '-'} '
+        '${fa.sunHouse} ${ci.sky.lordRetrograde}',
+  );
+  final pr = ci.presentation;
+  final lp = ci.lamp;
+  final ad = ci.attending;
+  put(
+    '$at-circumstance-birth',
+    '${pr.by.key} ${pr.rising.key} ${pr.lord.fullKey} ${pr.lordRetrograde} '
+        '${pr.foretold.key} ${number(lp.oil)}:${lp.oilLevel.key} '
+        '${number(lp.wick)}:${lp.wickLevel.key} ${keys(ad.between)} '
+        '${keys(ad.visible)} ${ad.inside} ${ad.outside}',
+  );
+  put(
+    '$at-circumstance-weights',
+    joined(ci.weights.map((w) => '${w.indication.key}:${w.agrees}')),
+  );
+  final bl = rc.baseline!;
+  final spans = joined(
+    bl.intervals.map((iv) => '${number(iv.from)}:${number(iv.to)}'),
+  );
+  put(
+    '$at-baseline',
+    '${number(bl.window.from)} ${number(bl.window.to)} '
+        '${number(bl.sunrise)} '
+        '$spans '
+        '${number(bl.intervalWidthMinutes)} ${number(bl.resolutionMinutes)} '
+        '${number(bl.suggested)} ${number(bl.concentration)} '
+        '${bl.candidates.length} ${bl.eventsUsed} ${bl.eventsHeldOut}',
+  );
+  for (final (k, stage) in bl.stages.indexed) {
+    put(
+      '$at-baseline-stage-$k',
+      '${stage.stage.key} ${stage.applied} ${stage.flat} '
+          '${number(stage.resolutionMinutes)} '
+          '${joined(stage.notes.map(noteSaid))}',
+    );
+  }
+  if (bl.candidates.isNotEmpty) {
+    final best = bl.candidates.first;
+    put(
+      '$at-baseline-best',
+      '${number(best.at)} ${number(best.probability)} '
+          '${number(best.logPosterior)} ${best.lagna.fullKey} '
+          '${best.lagnaNakshatra.fullKey}',
+    );
+  }
+  for (final (k, held) in bl.holdOut.indexed) {
+    put(
+      '$at-baseline-held-$k',
+      '${held.event} ${held.kind.key} ${number(held.scoreAtFit)} '
+          '${number(held.baseline)} ${held.supported}',
+    );
+  }
+}
+
 /// Devotions as `graha:deity|deity:verse:withKetu`, joined by commas.
 String devotionsSaid(List<Devotion> devotions) => joined(
   devotions.map(
@@ -894,6 +1044,7 @@ void main() {
       at: 2460676.5,
       rules: RemedyRules(shanti: ShantiRules(rik: RikSource.yajnavalkya)),
     ),
+    rectification: rectificationAsked,
     westernAspects: const WesternAspectRequest(
       aspects: [
         WesternAspect.conjunction,
@@ -1657,6 +1808,7 @@ void main() {
           'C:${joined(links.states!.combust.map((g) => g.fullKey))}',
     );
     putRemedies('chart-$i-remedies', chart.remedies!);
+    putRectification('chart-$i-rectification', chart.rectification!);
     final pr = chart.progressions!;
     final pg = pr.progressed!;
     final dr = pr.directed!;

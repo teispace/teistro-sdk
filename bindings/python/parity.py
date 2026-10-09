@@ -84,6 +84,12 @@ from teistro import (
     EssentialDignity,
     Perfection,
     PlanItem,
+    PurifierVerdict,
+    Rectification,
+    RectificationRequest,
+    ReportedTimeNote,
+    StageNote,
+    TattvaSexNote,
     Scale,
     Teistro,
     TeistroError,
@@ -271,6 +277,123 @@ def put_remedies(at: str, rm: Any) -> None:
             f"{reading.twelfth.sign.full_key} {devotions_said(reading.twelfth.devotions)}"
             f" {keys(reading.twelfth.minor)} {reading.sign.full_key} {reading.house}"
             f" {devotions_said(reading.joined)}",
+        )
+
+
+def lower(flag: bool) -> str:
+    """A flag as every runner writes it."""
+    return "true" if flag else "false"
+
+
+RECTIFICATION: RectificationRequest = {
+    "purify": {"minutes": 20},
+    "conception": {},
+    "circumstance": {"facts": {"fatherPresent": False}},
+    "baseline": {
+        "uncertaintyMinutes": 30,
+        "sex": "MALE",
+        "events": [{"kind": "MARRIAGE", "on": 2469000.5}, {"kind": "ACCIDENT", "on": 2471000.5, "heldOut": True}],
+    },
+}
+"""The rectification every runner asks of each chart."""
+
+
+def verdict_said(verdict: PurifierVerdict) -> str:
+    """A purifier's verdict and each clause it judged, colon-joined."""
+    clauses = listed_or_dash(
+        f"{c.purifier}:{c.reference}:{c.sign.full_key}:{c.lagna.full_key}:{c.house}"
+        f":{lower(c.held)}:{lower(c.counted)}"
+        for c in verdict.clauses
+    )
+    return f"{lower(verdict.pure)} {clauses}"
+
+
+def note_said(note: StageNote) -> str:
+    """One stage note as every runner spells it: its kind, then its fields
+    in declaration order, colon-joined."""
+    if isinstance(note, TattvaSexNote):
+        return f"{note.kind}:{note.sex}:{number(note.admitted_minutes)}:{note.penalised}:{note.of}"
+    if isinstance(note, ReportedTimeNote):
+        return f"{note.kind}:{note.accuracy}:{number(note.uncertainty_minutes)}"
+    named = "-" if note.id is None else note.id
+    lords = listed_or_dash(g.full_key for g in note.lords)
+    return f"{note.kind}:{note.event}:{named}:{note.event_kind}:{lords}:{number(note.contribution)}"
+
+
+def put_rectification(at: str, rc: Rectification) -> None:
+    """A chart read as a birth time to rectify, each row under `at`: the
+    purifier's runs and the clauses each held, the conception's answers,
+    the circumstances and their weights, and the baseline's interval,
+    stages and best candidate."""
+
+    def keys(grahas: Iterable[Graha]) -> str:
+        return listed_or_dash(g.full_key for g in grahas)
+
+    pu, co, ci, bl = rc.purified, rc.conception, rc.circumstance, rc.baseline
+    assert pu is not None and co is not None and ci is not None and bl is not None
+    put(
+        f"{at}-purified",
+        f"{pu.grid.cells} {number(pu.grid.step_days)} {len(pu.intervals)} {len(pu.removed)}"
+        f" {listed_or_dash(number(edge) for edge in pu.edges)}",
+    )
+    for k, run in enumerate(pu.intervals + pu.removed):
+        put(f"{at}-purified-{k}", f"{number(run.from_jd)} {number(run.to_jd)} {verdict_said(run.verdict)}")
+    pp, ns = co.pranapada_house, co.nisheka
+    wr = ns.count.span.written
+    put(
+        f"{at}-conception",
+        f"{number(co.birth)} {pp.house} {lower(pp.auspicious)} {number(ns.count.instant)}"
+        f" {wr.months}:{wr.days}:{wr.ghatis}:{wr.palas} {number(ns.lagna_deg)} {verdict_said(ns.verdict)}",
+    )
+    mo = co.moon
+    agrees = "-" if mo.nakshatra_agrees is None else lower(mo.nakshatra_agrees)
+    put(
+        f"{at}-conception-moon",
+        f"{mo.predicted.dvadashamsha} {mo.predicted.sign.full_key}"
+        f" {mo.predicted.nakshatra.full_key if mo.predicted.nakshatra is not None else '-'}"
+        f" {mo.moon_sign.full_key} {mo.moon_nakshatra.full_key if mo.moon_nakshatra is not None else '-'}"
+        f" {lower(mo.sign_agrees)} {agrees} {mo.rising.full_key} {mo.predicted_part} {lower(mo.born_by_day)}"
+        f" {lower(mo.part_agrees)} {number(mo.risen_fraction)} {number(mo.elapsed_fraction)}"
+        f" {number(pp.pranapada_deg)}",
+    )
+    fa, pr, lp, ad = ci.father, ci.presentation, ci.lamp, ci.attending
+    put(
+        f"{at}-circumstance",
+        f"{fa.moon_aspect} {lower(fa.unseen)} {lower(fa.saturn_rising)} {lower(fa.mars_setting)}"
+        f" {lower(fa.moon_hemmed)} {lower(fa.away)} {fa.whereabouts or '-'} {fa.sun_house}"
+        f" {lower(ci.sky.lord_retrograde)}",
+    )
+    put(
+        f"{at}-circumstance-birth",
+        f"{pr.by} {pr.rising} {pr.lord.full_key} {lower(pr.lord_retrograde)} {pr.foretold}"
+        f" {number(lp.oil)}:{lp.oil_level} {number(lp.wick)}:{lp.wick_level}"
+        f" {keys(ad.between)} {keys(ad.visible)} {ad.inside} {ad.outside}",
+    )
+    put(f"{at}-circumstance-weights", listed_or_dash(f"{w.indication}:{lower(w.agrees)}" for w in ci.weights))
+    put(
+        f"{at}-baseline",
+        f"{number(bl.window.from_jd)} {number(bl.window.to_jd)} {number(bl.sunrise)}"
+        f" {listed_or_dash(f'{number(iv.from_jd)}:{number(iv.to_jd)}' for iv in bl.intervals)}"
+        f" {number(bl.interval_width_minutes)} {number(bl.resolution_minutes)} {number(bl.suggested)}"
+        f" {number(bl.concentration)} {len(bl.candidates)} {bl.events_used} {bl.events_held_out}",
+    )
+    for k, stage in enumerate(bl.stages):
+        put(
+            f"{at}-baseline-stage-{k}",
+            f"{stage.stage} {lower(stage.applied)} {lower(stage.flat)} {number(stage.resolution_minutes)}"
+            f" {listed_or_dash(note_said(note) for note in stage.notes)}",
+        )
+    if bl.candidates:
+        best = bl.candidates[0]
+        put(
+            f"{at}-baseline-best",
+            f"{number(best.at)} {number(best.probability)} {number(best.log_posterior)}"
+            f" {best.lagna.full_key} {best.lagna_nakshatra.full_key}",
+        )
+    for k, held in enumerate(bl.hold_out):
+        put(
+            f"{at}-baseline-held-{k}",
+            f"{held.event} {held.kind} {number(held.score_at_fit)} {number(held.baseline)} {lower(held.supported)}",
         )
 
 
@@ -897,6 +1020,7 @@ def main() -> None:
             perfection={"house": 7, "rules": {"horizonDays": 120}},
             prashna={"question": {"house": 7, "number": 14}, "rules": {"score": "BASELINE"}},
             remedies={"at": 2460676.5, "rules": {"shanti": {"rik": "YAJNAVALKYA"}}},
+            rectification=RECTIFICATION,
             western_aspects={
                 "aspects": ["CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"],
                 "orbs": {
@@ -1502,9 +1626,6 @@ def main() -> None:
             def joined(items: Iterable[str]) -> str:
                 return ",".join(items) or "-"
 
-            def lower(flag: bool) -> str:
-                return str(flag).lower()
-
             rq = pq.rules
             put(
                 f"chart-{i}-prashna",
@@ -1540,6 +1661,9 @@ def main() -> None:
             rm = chart.remedies
             assert rm is not None
             put_remedies(f"chart-{i}-remedies", rm)
+            rc = chart.rectification
+            assert rc is not None
+            put_rectification(f"chart-{i}-rectification", rc)
             pr = chart.progressions
             assert pr is not None and pr.progressed is not None and pr.directed is not None
             assert pr.contacts is not None

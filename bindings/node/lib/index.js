@@ -1078,6 +1078,21 @@ export class Chart {
   }
 
   /**
+   * The chart read as a birth time to rectify (`rectification: { purify:
+   * { minutes: 30 } }`): what BPHS ch. 2's purifier leaves standing of the
+   * minutes either side, the conception the birth counts back to, *Brihat
+   * Jataka* ch. V's circumstances set against the family's facts, and the
+   * baseline engine's cascade over the dated events. Each member `null`
+   * unless asked; the whole `null` unless `rectification` asked
+   * (`03-design/rectification.md`).
+   *
+   * @returns {object|null}
+   */
+  get rectification() {
+    return rectificationsOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The seven planets' essential dignities (`dignities: { sectRule, rules,
    * scores }`), with the chart's sect and everything that made them;
    * `null` unless asked for (`03-design/essential-dignities.md`).
@@ -2661,6 +2676,11 @@ export class ChartArea extends Area {
           request.remedies,
           'remedies',
           "a remedies request record, e.g. { at: 2460676.5 } or { rules: { shanti: { rik: 'YAJNAVALKYA' } } }",
+        ),
+        rectificationJson: recordJson(
+          request.rectification,
+          'rectification',
+          "a rectification request record, e.g. { purify: { minutes: 30 } } or { baseline: { uncertaintyMinutes: 60, sex: 'MALE' } }",
         ),
         matchingJson: recordJson(
           request.matching,
@@ -4877,6 +4897,84 @@ function prashnaFrom(read) {
     links: links === null ? null : yogasFrom(links),
     score: score === null ? null : { ...score, applyingTo: graha(score.applyingTo) },
     numberSign: numberSign === null ? null : `rashi.${numberSign}`,
+  };
+}
+
+/** Each batch's rectifications, parsed once however many charts read them. */
+const RECTIFICATIONS = new WeakMap();
+
+/**
+ * Every chart's rectification in a batch: the `rectification` section's
+ * JSON, one entry a chart, catalogue keys in full and a member not asked
+ * for `null` (`03-design/rectification.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function rectificationsOf(batch) {
+  return sectionOf(RECTIFICATIONS, batch, 'rectification', rectificationFrom);
+}
+
+/**
+ * A chart's rectification as the boundary's JSON writes it, its bare keys
+ * made full and its members left out `null`.
+ */
+function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null }) {
+  const graha = (key) => `graha.${key}`;
+  const rashi = (key) => `rashi.${key}`;
+  const nakshatra = (key) => (key === null ? null : `nakshatra.${key}`);
+  const verdict = ({ clauses, pure }) => ({
+    clauses: clauses.map((clause) => ({ ...clause, sign: rashi(clause.sign), lagna: rashi(clause.lagna) })),
+    pure,
+  });
+  const run = (one) => ({ ...one, verdict: verdict(one.verdict) });
+  // An event's `id` is left out of the JSON when the request gave none.
+  const note = (one) =>
+    one.kind === 'EVENT_FIT' ? { ...one, id: one.id ?? null, lords: one.lords.map(graha) } : one;
+  return {
+    purified: purified === null ? null : { ...purified, intervals: purified.intervals.map(run), removed: purified.removed.map(run) },
+    conception:
+      conception === null
+        ? null
+        : {
+            ...conception,
+            nisheka: { ...conception.nisheka, verdict: verdict(conception.nisheka.verdict) },
+            moon: {
+              ...conception.moon,
+              predicted: {
+                ...conception.moon.predicted,
+                sign: rashi(conception.moon.predicted.sign),
+                nakshatra: nakshatra(conception.moon.predicted.nakshatra),
+              },
+              moonSign: rashi(conception.moon.moonSign),
+              moonNakshatra: nakshatra(conception.moon.moonNakshatra),
+              rising: rashi(conception.moon.rising),
+            },
+          },
+    circumstance:
+      circumstance === null
+        ? null
+        : {
+            ...circumstance,
+            presentation: { ...circumstance.presentation, lord: graha(circumstance.presentation.lord) },
+            attending: {
+              ...circumstance.attending,
+              between: circumstance.attending.between.map(graha),
+              visible: circumstance.attending.visible.map(graha),
+            },
+          },
+    baseline:
+      baseline === null
+        ? null
+        : {
+            ...baseline,
+            candidates: baseline.candidates.map((one) => ({
+              ...one,
+              lagna: rashi(one.lagna),
+              lagnaNakshatra: nakshatra(one.lagnaNakshatra),
+            })),
+            stages: baseline.stages.map((stage) => ({ ...stage, notes: stage.notes.map(note) })),
+          },
   };
 }
 

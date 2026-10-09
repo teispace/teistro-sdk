@@ -447,8 +447,8 @@ public final class BindingTest {
                     check(chart.antiscia().isPresent(), "the antiscia");
                     check(chart.midpoints().isPresent(), "the midpoints");
                     check(chart.parallels().isPresent(), "the parallels");
-                    check(chart.prashna().isEmpty() && chart.matching().isEmpty() && chart.synastry().isEmpty(),
-                            "what was not asked is empty");
+                    check(chart.prashna().isEmpty() && chart.matching().isEmpty() && chart.synastry().isEmpty()
+                            && chart.rectification().isEmpty(), "what was not asked is empty");
                     check(chart.hits().isEmpty() && chart.gochar().isEmpty() && chart.drawings().isEmpty(),
                             "and every list not asked for is empty");
                     same(chart.states(), chart.states(), "read twice, the same");
@@ -465,6 +465,62 @@ public final class BindingTest {
                 Chart chart = sky.chart().found(2_447_995.489_583_333_5, kathmandu, 20_700,
                         ChartOptions.builder().kp(Map.of()).build());
                 check(chart.kp().isPresent(), "the KP reading");
+            }
+        });
+
+        tests.put("a chart read as a birth time to rectify carries each reading asked, and only those", () -> {
+            try (Context sky = context(teistro)) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Map<String, Object> asked = Map.of(
+                        "purify", Map.of("minutes", 20),
+                        "conception", Map.of(),
+                        "circumstance", Map.of("facts", Map.of("fatherPresent", false)),
+                        "baseline", Map.of("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
+                                Map.of("kind", "MARRIAGE", "on", 2_469_000.5),
+                                Map.of("kind", "ACCIDENT", "on", 2_471_000.5, "heldOut", true))));
+                Rectification read = sky.chart().found(2_460_482.5, kathmandu, 20_700,
+                        ChartOptions.builder().rectification(asked).build()).rectification().orElseThrow();
+                Purified purified = read.purified().orElseThrow();
+                check(!purified.intervals().isEmpty(), "the purifier leaves a run standing");
+                Purified.Clause clause = purified.intervals().get(0).verdict().clauses().get(0);
+                same("PRANAPADA", clause.purifier(), "the pranapada judged first");
+                check(clause.sign().fullKey().startsWith("rashi."), "a clause's sign is a rashi");
+                Conception conception = read.conception().orElseThrow();
+                check(conception.moon().moonSign().fullKey().startsWith("rashi."), "the Moon's sign is a rashi");
+                check(conception.moon().predicted().nakshatra().isPresent(),
+                        "the default count predicts a nakshatra");
+                Circumstance circumstance = read.circumstance().orElseThrow();
+                same(7, circumstance.sky().grahasDeg().size(), "the seven grahas' longitudes");
+                check(circumstance.presentation().lord().fullKey().startsWith("graha."), "the lagna's lord");
+                same("FATHER", circumstance.weights().get(0).indication(), "the one fact given, weighed");
+                BaselineRectification baseline = read.baseline().orElseThrow();
+                check(baseline.candidates().get(0).lagnaNakshatra().fullKey().startsWith("nakshatra."),
+                        "a candidate's nakshatra");
+                same(1, baseline.holdOut().size(), "the held-out event, tested");
+                List<String> kinds = new ArrayList<>();
+                for (BaselineRectification.Stage stage : baseline.stages()) {
+                    for (BaselineNote note : stage.notes()) {
+                        switch (note) {
+                            case BaselineNote.TattvaSex sex -> same("MALE", sex.sex(), "the sex asked");
+                            case BaselineNote.ReportedTime time ->
+                                    same(30.0, time.uncertaintyMinutes(), "the uncertainty asked");
+                            case BaselineNote.EventFit fit -> {
+                                check(fit.id().isEmpty(), "an event given no name has none");
+                                check(fit.lords().stream().allMatch(g -> g.fullKey().startsWith("graha.")),
+                                        "the period lords are grahas");
+                            }
+                        }
+                        kinds.add(note.kind());
+                    }
+                }
+                same(List.of("TATTVA_SEX", "REPORTED_TIME", "EVENT_FIT"), kinds, "a note of each kind");
+
+                Rectification alone = sky.chart().found(2_460_482.5, kathmandu, 20_700,
+                        ChartOptions.builder().rectification(Map.of("purify", Map.of("minutes", 20))).build())
+                        .rectification().orElseThrow();
+                check(alone.purified().isPresent(), "the purifier asked");
+                check(alone.conception().isEmpty() && alone.circumstance().isEmpty() && alone.baseline().isEmpty(),
+                        "what was not asked is empty");
             }
         });
 

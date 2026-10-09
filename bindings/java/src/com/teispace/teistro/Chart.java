@@ -296,6 +296,16 @@ public final class Chart {
     }
 
     /**
+     * The rectification readings, when they were asked for: each member
+     * empty unless the request named it.
+     *
+     * @return the readings, empty when they were not asked for
+     */
+    public Optional<Rectification> rectification() {
+        return KpReads.rectification(this);
+    }
+
+    /**
      * The Ashta Koota against the partner, when one was named.
      *
      * @return the reading, empty when it was not asked for
