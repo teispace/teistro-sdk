@@ -231,6 +231,10 @@ name = "lalkitab"
 required-features = ["builtin-ephemeris", "lalkitab"]
 
 [[test]]
+name = "compose"
+required-features = ["builtin-ephemeris", "kp", "prashna"]
+
+[[test]]
 name = "pakshi"
 required-features = ["builtin-ephemeris", "pakshi"]
 

@@ -2546,6 +2546,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **`sdk.chart().compose`** (`03-design/mcp-server.md` step 2). A chart
+  request with its records (`ChartRecords`) is composed in one call
+  answering every section the records ask for (`Composed`), where the C
+  boundary had composed the sections itself. The boundary now encodes
+  what the façade answers. **Numbers:** none move; the blob is byte for
+  byte the same.
 - **Pancha Pakshi and rashifal answer with their provenance.**
   `ts_pakshi` and `ts_rashifal` now send `{value, provenance}` across
   the boundary, as `ts_research` does. Before, they sent the value alone,

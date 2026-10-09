@@ -29,12 +29,12 @@
 use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
-use teistro::{ChartRequest, PlanInputs, PlanRequest, RuleRequest, RuleSet};
+use teistro::{ChartRecords, ChartRequest, PlanRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, DashaSystem, Kind, Varga};
-use teistro_core::envelope::{Envelope, Provenance};
+use teistro_core::catalogue::{ChartKind, Kind, Varga};
+use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -5725,57 +5725,6 @@ unsafe fn hit_request_of(hits_json: *const c_char) -> Result<Option<teistro::Hit
         .transpose()
 }
 
-/// Every chart's hit list, empty when none was asked for: **one batch**
-/// through the façade ([`teistro::ChartArea::hits_many`]), which scans the
-/// sky once for every chart of the request. A batch of none asks the
-/// façade nothing, which would refuse it by `natals`: the boundary answers
-/// an empty batch with an empty blob.
-fn hits_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::HitRequest>,
-) -> Result<Vec<Vec<teistro::Hit>>, Error> {
-    match asked {
-        Some(asked) if !documents.is_empty() => sdk
-            .chart()
-            .hits_many(documents, asked)
-            .map(|found| found.value),
-        _ => Ok(Vec::new()),
-    }
-}
-
-/// The sections the façade answers a chart at a time from a record of its
-/// own, each the canonical JSON [`each_json`](crate::family::each_json) writes.
-struct ChartReadings {
-    prashna: String,
-    remedies: String,
-    lalkitab: String,
-    rectification: String,
-}
-
-impl ChartReadings {
-    /// `clock` is the request's own, which a rectification reads its
-    /// civil day on.
-    fn of(
-        sdk: &teistro::Context,
-        documents: &[Document],
-        records: &AskedRecords,
-        clock: UtcOffset,
-    ) -> Result<Self, Error> {
-        Ok(Self {
-            prashna: crate::family::prashna::json(sdk, documents, records.prashna.as_ref())?,
-            remedies: crate::family::remedies::json(sdk, documents, records.remedies.as_ref())?,
-            lalkitab: crate::family::lalkitab::json(sdk, documents, records.lalkitab.as_ref())?,
-            rectification: crate::family::rectification::json(
-                sdk,
-                documents,
-                records.rectification.as_ref(),
-                clock,
-            )?,
-        })
-    }
-}
-
 /// The dignities a request's `dignities_json` asks for, none for null; the
 /// crate reads the record ([`teistro::DignityRequest::from_json`]), naming
 /// a refusal from its root, `dignities.rules.terms`.
@@ -5839,24 +5788,6 @@ unsafe fn consideration_rules_of(
         .transpose()
 }
 
-/// Every chart matched with the record's partner, the partner founded once
-/// (`matching.md`); none when the record was null. A refusal is named under
-/// `matching`.
-fn matchings_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::PartnerMatching>,
-) -> Result<Vec<teistro::Matched>, Error> {
-    asked.map_or_else(
-        || Ok(Vec::new()),
-        |asked| {
-            sdk.chart()
-                .matching_with(documents, asked)
-                .map_err(|error| error.under("matching"))
-        },
-    )
-}
-
 /// The perfection a request's `perfection_json` asks for, none for null;
 /// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
 /// naming a refusal from its root, `perfection.quesited`.
@@ -5871,112 +5802,6 @@ unsafe fn perfection_request_of(
     unsafe { optional_text(perfection_json, "perfection_json") }?
         .map(teistro::PerfectionRequest::from_json)
         .transpose()
-}
-
-/// Every chart's perfection, none when none was asked for: weighed on the
-/// fortitudes the request asked for, and Lilly's when it asked for none.
-fn perfections_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<teistro::PerfectionRequest>,
-    fortitudes: &[teistro::Fortitudes],
-) -> Result<Vec<(teistro::Matter, teistro::PerfectionRules)>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    let read = |document: &Document, fortitudes: &teistro::Fortitudes| {
-        sdk.chart()
-            .perfection_in(document, fortitudes, &asked)
-            .map(|matter| (matter, asked.rules))
-    };
-    if fortitudes.is_empty() {
-        let lilly = teistro::FortitudeRequest::default();
-        return documents
-            .iter()
-            .map(|document| read(document, &sdk.chart().fortitudes(document, &lilly)?))
-            .collect();
-    }
-    documents
-        .iter()
-        .zip(fortitudes)
-        .map(|(document, fortitudes)| read(document, fortitudes))
-        .collect()
-}
-
-/// Every chart's considerations, none when none was asked for: read from
-/// the fortitudes the request asked for, and Lilly's when it asked for
-/// none, so no chart's fortitudes are read twice.
-fn considerations_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<teistro::ConsiderationRules>,
-    fortitudes: &[teistro::Fortitudes],
-) -> Result<Vec<teistro::Considerations>, Error> {
-    let Some(rules) = asked else {
-        return Ok(Vec::new());
-    };
-    if fortitudes.is_empty() {
-        let lilly = teistro::FortitudeRequest::default();
-        return documents
-            .iter()
-            .map(|document| sdk.chart().considerations(document, &lilly, rules))
-            .collect();
-    }
-    documents
-        .iter()
-        .zip(fortitudes)
-        .map(|(document, read)| {
-            teistro::hellenistic::considerations(read, document.foundation.timing.hora.lord, rules)
-        })
-        .collect()
-}
-
-/// Every chart's fourteen lots, none when none was asked for.
-fn lots_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<teistro::LotRequest>,
-) -> Result<Vec<teistro::LotReading>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .map(|document| {
-            sdk.chart()
-                .lots_with_request(document, &teistro::Lot::ALL, asked)
-        })
-        .collect()
-}
-
-/// Every chart's accidental fortitudes, none when none was asked for.
-fn fortitudes_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::FortitudeRequest>,
-) -> Result<Vec<teistro::Fortitudes>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .map(|document| sdk.chart().fortitudes(document, asked))
-        .collect()
-}
-
-/// Every chart's essential dignities, none when none was asked for.
-fn dignities_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::DignityRequest>,
-) -> Result<Vec<teistro::Dignities>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .map(|document| sdk.chart().dignities(document, asked))
-        .collect()
 }
 
 /// The Sade Sati a request's `sade_sati_json` asks for, none for null; the
@@ -6160,30 +5985,6 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
     Ok((place, kind, clock))
 }
 
-/// Every chart's transits, empty when none were asked for: one batch per
-/// chart through the façade ([`teistro::ChartArea::gochar`]), which places
-/// the grahas at every instant in one request; a refusal says which chart
-/// of the batch it was refused for.
-fn gochar_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::GocharRequest>,
-) -> Result<Vec<Vec<teistro::gochar::GocharReading>>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .gochar(document, asked)
-                .map(|read| read.value)
-                .map_err(|error| error.with_hint(format!("chart {at}")))
-        })
-        .collect()
-}
-
 /// The rule set a request's `rules_json` names, or none for null; a refusal is
 /// named from the request's root, `rules.rules[0]`.
 ///
@@ -6203,189 +6004,101 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
 /// bad record is refused before a chart is paid for, and each refusal is
 /// named from the record's root as every binding writes it.
 struct AskedRecords {
-    theme: Option<crate::family::svg::Request>,
-    rules: Option<RuleSet>,
-    plans: PlanRequest,
     varsha: Option<crate::family::tajika::Request>,
-    gochar: Option<teistro::GocharRequest>,
-    hits: Option<teistro::HitRequest>,
-    sade_sati: Option<teistro::SadeSatiRequest>,
-    kp: Option<crate::family::kp::Request>,
-    dignities: Option<teistro::DignityRequest>,
-    fortitudes: Option<teistro::FortitudeRequest>,
-    lots: Option<teistro::LotRequest>,
-    considerations: Option<teistro::ConsiderationRules>,
-    perfection: Option<teistro::PerfectionRequest>,
     western: crate::family::western::Records,
-    matching: Option<teistro::PartnerMatching>,
-    prashna: Option<crate::family::prashna::Request>,
-    remedies: Option<crate::family::remedies::Request>,
-    lalkitab: Option<crate::family::lalkitab::Request>,
-    rectification: Option<crate::family::rectification::Request>,
+    /// The records the façade composes itself ([`teistro::ChartArea::compose`]).
+    composed: ChartRecords,
 }
 
 impl AskedRecords {
-    /// The chart request with what these records need of the charts
-    /// themselves: the lots a chart reports are the lots its time lords
-    /// release from, so one `lots` record sets both; a prashna weighs the
-    /// seven by their Shadbala, so one `prashna` record asks for it; and a
-    /// remedy read at an instant reads the Vimśottarī daśā running then.
-    fn widen(&self, request: ChartRequest) -> ChartRequest {
-        let request = match self.lots {
-            Some(rules) => request.with_lot_rules(rules),
-            None => request,
-        };
-        let request = if self.prashna.is_some() {
-            request.with_shadbala()
-        } else {
-            request
-        };
-        let vimshottari = KeyId::from(DashaSystem::Vimshottari);
-        if crate::family::remedies::at_an_instant(self.remedies.as_ref())
-            && !request.dashas().contains(&vimshottari)
-        {
-            let dashas: Vec<_> = request
-                .dashas()
-                .iter()
-                .copied()
-                .chain([vimshottari])
-                .collect();
-            request.with_dashas(dashas)
-        } else {
-            request
-        }
-    }
-
-    /// Every record `asked` carries; `clock` is the request's own, which a
-    /// KP record naming none takes.
+    /// Every record `asked` carries.
     ///
     /// # Safety
     ///
     /// Each of `asked`'s record fields null or a NUL-terminated string.
-    unsafe fn of(asked: &TsChartRequest, clock: UtcOffset) -> Result<AskedRecords, Error> {
+    unsafe fn of(asked: &TsChartRequest) -> Result<AskedRecords, Error> {
         // SAFETY: the caller's contract, for every field read below. The
         // theme names its fields from its own root, `theme.style.ink`,
         // which is what every binding calls it, so its refusal stands.
         unsafe {
-            Ok(AskedRecords {
-                theme: crate::family::svg::request_of(asked.theme_json)?,
+            // A family this build leaves out reads its record only to refuse
+            // one that was sent, so what it reads is always none.
+            let theme = crate::family::svg::request_of(asked.theme_json)?;
+            let kp = crate::family::kp::request_of(asked.kp_json)?;
+            let prashna = crate::family::prashna::request_of(asked.prashna_json)?;
+            let remedies = crate::family::remedies::request_of(asked.remedies_json)?;
+            let lalkitab = crate::family::lalkitab::request_of(asked.lalkitab_json)?;
+            let rectification = crate::family::rectification::request_of(asked.rectification_json)?;
+            #[cfg(not(feature = "svg"))]
+            let _ = theme;
+            #[cfg(not(feature = "kp"))]
+            let _ = kp;
+            #[cfg(not(feature = "prashna"))]
+            let _ = prashna;
+            #[cfg(not(feature = "remedies"))]
+            let _ = remedies;
+            #[cfg(not(feature = "lalkitab"))]
+            let _ = lalkitab;
+            #[cfg(not(feature = "rectification"))]
+            let _ = rectification;
+            let composed = ChartRecords {
                 rules: rule_set_of(asked.rules_json)?,
                 plans: plan_request_of(asked.interpret_json)?,
-                varsha: crate::family::tajika::request_of(asked.varsha_json)?,
+                sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
                 gochar: gochar_request_of(asked.gochar_json)?,
                 hits: hit_request_of(asked.hits_json)?,
-                sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
-                kp: crate::family::kp::request_of(asked.kp_json, clock)?,
                 dignities: dignity_request_of(asked.dignities_json)?,
                 fortitudes: fortitude_request_of(asked.fortitudes_json)?,
                 lots: lot_request_of(asked.lots_json)?,
                 considerations: consideration_rules_of(asked.considerations_json)?,
                 perfection: perfection_request_of(asked.perfection_json)?,
-                western: crate::family::western::Records::of(asked)?,
                 matching: optional_text(asked.matching_json, "matching_json")?
                     .map(teistro::PartnerMatching::from_json)
                     .transpose()?,
-                prashna: crate::family::prashna::request_of(asked.prashna_json)?,
-                remedies: crate::family::remedies::request_of(asked.remedies_json)?,
-                lalkitab: crate::family::lalkitab::request_of(asked.lalkitab_json)?,
-                rectification: crate::family::rectification::request_of(asked.rectification_json)?,
+                #[cfg(feature = "svg")]
+                theme,
+                #[cfg(feature = "kp")]
+                kp,
+                #[cfg(feature = "prashna")]
+                prashna,
+                #[cfg(feature = "remedies")]
+                remedies,
+                #[cfg(feature = "lalkitab")]
+                lalkitab,
+                #[cfg(feature = "rectification")]
+                rectification,
+            };
+            Ok(AskedRecords {
+                varsha: crate::family::tajika::request_of(asked.varsha_json)?,
+                western: crate::family::western::Records::of(asked)?,
+                composed: composed.checked()?,
             })
-            .and_then(AskedRecords::one_table)
         }
     }
-
-    /// The record with one request for the essential dignities: the
-    /// fortitudes carry their own, so a `dignities` record beside them is
-    /// refused rather than one of the two silently winning.
-    fn one_table(self) -> Result<AskedRecords, Error> {
-        if self.dignities.is_some() && self.fortitudes.is_some() {
-            return Err(Error::invalid_arg(
-                "the essential dignities asked for twice, by `dignities` and by `fortitudes`",
-            )
-            .with_field("dignities")
-            .with_hint(
-                "the fortitudes answer the essential dignities too: put this record under `fortitudes.dignities` and drop `dignities`",
-            ));
-        }
-        Ok(self)
-    }
 }
 
-/// What a chart request asks for beside its charts, as the façade takes it.
-fn plan_inputs<'r>(
-    rules: Option<&'r RuleSet>,
-    sade_sati: Option<&'r teistro::SadeSatiRequest>,
-) -> PlanInputs<'r> {
-    let inputs = PlanInputs::from(rules);
-    match sade_sati {
-        Some(window) => inputs.with_sade_sati(window),
-        None => inputs,
-    }
-}
-
-/// What [`read_charts`] answers, ready to encode.
-struct ReadCharts {
-    /// The documents, the batch's provenance sealed over the list.
-    founded: Envelope<Vec<Document>>,
-    /// Each chart's own content hash, in the batch's order.
-    hashes: Vec<teistro::Hash>,
-    /// What every chart answered by rule, canonical JSON; empty for none.
-    rules: String,
-    /// What every chart has to say, canonical JSON; empty for none.
-    plans: String,
-    /// Every chart's Sade Sati report, empty when no window was asked for.
-    sade_sati: Vec<teistro::sade_sati::Report>,
-}
-
-/// The charts a request asks for, each chart's own content hash, the
-/// canonical JSON of what they answer by rule and of the plans they were
-/// asked to say — each empty when the request asked for none — and each
-/// chart's Sade Sati report.
-///
-/// The reading, the searching and the composing are the façade's
-/// ([`teistro::ChartArea::interpreted`]), so a plan is composed in one place
-/// for Rust and every binding, and Saturn is scanned once for the reports
-/// the blob carries and the plan that says them; this only encodes what it
-/// answered.
-fn read_charts(
-    sdk: &teistro::Context,
-    instants: &[JulianDay<Utc>],
-    request: &ChartRequest,
-    inputs: PlanInputs<'_>,
-    asked: PlanRequest,
-) -> Result<ReadCharts, Error> {
-    let rules = inputs.rules;
-    let read = sdk.chart().interpreted(instants, request, inputs, asked)?;
-    let hashes = read.value.iter().map(|chart| chart.content_hash).collect();
-    let rules_json = if rules.is_some() {
-        let readings: Vec<_> = read
-            .value
-            .iter()
-            .filter_map(|chart| chart.reading.as_ref())
-            .collect();
-        teistro_core::envelope::canonical_json(&readings)
+/// A section's canonical JSON: one answer a chart when its record was
+/// sent, and nothing at all when it was not.
+#[allow(dead_code, reason = "a build with no family section writes none")]
+fn section<T: serde::Serialize>(asked: bool, answers: &[T]) -> String {
+    if asked {
+        teistro_core::envelope::canonical_json(&answers)
     } else {
         String::new()
-    };
-    let plans_json = if asked.asks_for_something() {
-        let plans: Vec<_> = read.value.iter().map(|chart| &chart.plans).collect();
-        teistro_core::envelope::canonical_json(&plans)
-    } else {
-        String::new()
-    };
-    let mut documents = Vec::with_capacity(read.value.len());
-    let mut sade_sati = Vec::new();
-    for chart in read.value {
-        documents.push(chart.document);
-        sade_sati.extend(chart.sade_sati);
     }
-    Ok(ReadCharts {
-        founded: Envelope::new(documents, read.provenance),
-        hashes,
-        rules: rules_json,
-        plans: plans_json,
-        sade_sati,
-    })
+}
+
+/// The section of `$family` from the composed `$answers`, sent when the
+/// record `$record` was; nothing in a build without the family, which no
+/// request can ask for.
+macro_rules! section {
+    ($family:literal, $record:expr, $answers:expr) => {{
+        #[cfg(feature = $family)]
+        let json = section($record.is_some(), &$answers);
+        #[cfg(not(feature = $family))]
+        let json = String::new();
+        json
+    }};
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -6439,42 +6152,32 @@ pub unsafe extern "C" fn ts_chart_found(
         // but encode what it was given.
         // SAFETY: the entry point's contract — each record null, or a
         // NUL-terminated string.
-        let records = unsafe { AskedRecords::of(&asked, clock) }?;
-        let request = records.widen(request);
-        let ReadCharts {
-            founded,
-            hashes,
-            rules: rules_json,
-            plans: plans_json,
-            sade_sati,
-        } = read_charts(
-            ctx.sdk(),
-            &instants,
-            &request,
-            plan_inputs(records.rules.as_ref(), records.sade_sati.as_ref()),
-            records.plans,
-        )?;
-        let svgs = crate::family::svg::json(ctx.sdk(), &founded.value, records.theme.as_ref())?;
+        let records = unsafe { AskedRecords::of(&asked) }?;
+        let composed = ctx
+            .sdk()
+            .chart()
+            .compose(&instants, &request, &records.composed)?;
+        let founded = &composed.founded;
+        // What every chart answers by rule and says, canonical JSON; each
+        // empty when the request asked for none.
+        let rules_json = if records.composed.rules.is_some() {
+            teistro_core::envelope::canonical_json(&composed.readings)
+        } else {
+            String::new()
+        };
+        let plans_json = if records.composed.plans.asks_for_something() {
+            teistro_core::envelope::canonical_json(&composed.plans)
+        } else {
+            String::new()
+        };
+        let svgs = section!("svg", records.composed.theme, composed.svgs);
         let praveshas = crate::family::tajika::praveshas_of(
             ctx.sdk(),
             &founded.value,
             request.offset(),
             records.varsha.as_ref(),
         )?;
-        let transits = gochar_of(ctx.sdk(), &founded.value, records.gochar.as_ref())?;
-        let hits = hits_of(ctx.sdk(), &founded.value, records.hits.as_ref())?;
-        let kp = crate::family::kp::json(ctx.sdk(), &founded.value, records.kp.as_ref())?;
-        let dignities = dignities_of(ctx.sdk(), &founded.value, records.dignities.as_ref())?;
-        let fortitudes = fortitudes_of(ctx.sdk(), &founded.value, records.fortitudes.as_ref())?;
-        let lots = lots_of(ctx.sdk(), &founded.value, records.lots)?;
-        let considerations = considerations_of(
-            ctx.sdk(),
-            &founded.value,
-            records.considerations,
-            &fortitudes,
-        )?;
-        let perfections =
-            perfections_of(ctx.sdk(), &founded.value, records.perfection, &fortitudes)?;
+        let kp = section!("kp", records.composed.kp, composed.kp);
         let progressions = crate::family::western::progressions_of(
             ctx.sdk(),
             &founded.value,
@@ -6483,8 +6186,14 @@ pub unsafe extern "C" fn ts_chart_found(
         )?;
         let western =
             crate::family::western::Tables::of(ctx.sdk(), &founded.value, &records.western, clock)?;
-        let matchings = matchings_of(ctx.sdk(), &founded.value, records.matching.as_ref())?;
-        let readings = ChartReadings::of(ctx.sdk(), &founded.value, &records, clock)?;
+        let prashna = section!("prashna", records.composed.prashna, composed.prashna);
+        let remedies = section!("remedies", records.composed.remedies, composed.remedies);
+        let lalkitab = section!("lalkitab", records.composed.lalkitab, composed.lalkitab);
+        let rectification = section!(
+            "rectification",
+            records.composed.rectification,
+            composed.rectification
+        );
         let encoded = encode(
             &founded.value,
             &place,
@@ -6495,19 +6204,20 @@ pub unsafe extern "C" fn ts_chart_found(
                 rules: &rules_json,
                 plans: &plans_json,
                 praveshas: &praveshas,
-                gochar: &transits,
+                gochar: &composed.gochar,
                 gochar_instants: records
+                    .composed
                     .gochar
                     .as_ref()
                     .map_or(&[], teistro::GocharRequest::instants),
-                hits: &hits,
-                sade_sati: &sade_sati,
+                hits: &composed.hits,
+                sade_sati: &composed.sade_sati,
                 kp: &kp,
-                dignities: &dignities,
-                fortitudes: &fortitudes,
-                lots: &lots,
-                considerations: &considerations,
-                perfections: &perfections,
+                dignities: &composed.dignities,
+                fortitudes: &composed.fortitudes,
+                lots: &composed.lots,
+                considerations: &composed.considerations,
+                perfections: &composed.perfections,
                 progressions: &progressions,
                 western_aspects: &western.aspects,
                 synastry: &western.synastry,
@@ -6518,12 +6228,12 @@ pub unsafe extern "C" fn ts_chart_found(
                 davisons: &western.davisons,
                 western_houses: &western.houses,
                 harmonics: &western.harmonics,
-                matchings: &matchings,
-                prashna: &readings.prashna,
-                remedies: &readings.remedies,
-                lalkitab: &readings.lalkitab,
-                rectification: &readings.rectification,
-                hashes: &hashes,
+                matchings: &composed.matchings,
+                prashna: &prashna,
+                remedies: &remedies,
+                lalkitab: &lalkitab,
+                rectification: &rectification,
+                hashes: &composed.hashes,
             },
             ctx.sdk().dashas(),
         )?;
