@@ -21,6 +21,7 @@ use teistro_gochar::sade_sati::{self, Phase};
 use teistro_gochar::{GocharReading, GocharRules, Reference, Transit, gochar, good_house};
 
 pub mod baseline;
+pub use baseline::{BaselineScore, Period};
 
 #[cfg(test)]
 mod tests;
