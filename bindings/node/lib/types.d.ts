@@ -1195,6 +1195,26 @@ export interface ChartRequest {
    * @nullable
    */
   readonly remediesJson?: string;
+  /**
+   * Every chart read as a birth time to rectify, the chart's instant
+   * the time on record, as a JSON object, every member optional:
+   * `purify` (`minutes` either side of the chart's instant, more than
+   * none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+   * vv. 67–78), `conception` (the pranapada's house, the nisheka and
+   * the conception Moon, with its rules), `circumstance` (`facts` the
+   * family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+   * and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+   * (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+   * to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+   * Each chart's readings come back in the `rectification` section,
+   * one member for each reading asked. Null for none, which costs
+   * nothing (`03-design/rectification.md`). Refusals are named from
+   * the record every binding calls `rectification`, as
+   * `rectification.purify.minutes`.
+   * @example {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}
+   * @nullable
+   */
+  readonly rectificationJson?: string;
 }
 
 /**

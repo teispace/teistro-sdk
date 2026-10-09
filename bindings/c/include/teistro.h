@@ -8219,6 +8219,25 @@ struct ts_chart_request {
      * Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
      */
     const char * remedies_json;
+    /**
+     * Every chart read as a birth time to rectify, the chart's instant
+     * the time on record, as a JSON object, every member optional:
+     * `purify` (`minutes` either side of the chart's instant, more than
+     * none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+     * vv. 67–78), `conception` (the pranapada's house, the nisheka and
+     * the conception Moon, with its rules), `circumstance` (`facts` the
+     * family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+     * and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+     * (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+     * to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+     * Each chart's readings come back in the `rectification` section,
+     * one member for each reading asked. Null for none, which costs
+     * nothing (`03-design/rectification.md`). Refusals are named from
+     * the record every binding calls `rectification`, as
+     * `rectification.purify.minutes`.
+     * Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+     */
+    const char * rectification_json;
 };
 
 /**
@@ -9212,7 +9231,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 304, "ts_chart_request is 304 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 312, "ts_chart_request is 312 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

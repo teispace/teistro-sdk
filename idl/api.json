@@ -12487,6 +12487,21 @@
             "example": "{\"at\":2460676.5,\"rules\":{\"shanti\":{\"rik\":\"YAJNAVALKYA\"}}}",
             "nullable": true
           }
+        },
+        {
+          "name": "rectification_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Every chart read as a birth time to rectify, the chart's instant\nthe time on record, as a JSON object, every member optional:\n`purify` (`minutes` either side of the chart's instant, more than\nnone and at most 1080, and `rules`, the purifier of BPHS ch. 2\nvv. 67–78), `conception` (the pranapada's house, the nisheka and\nthe conception Moon, with its rules), `circumstance` (`facts` the\nfamily remembers, `fatherPresent`, `presentation`, `oil`, `wick`\nand `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`\n(the baseline engine's unsourced cascade: `uncertaintyMinutes` 1\nto 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).\nEach chart's readings come back in the `rectification` section,\none member for each reading asked. Null for none, which costs\nnothing (`03-design/rectification.md`). Refusals are named from\nthe record every binding calls `rectification`, as\n`rectification.purify.minutes`.",
+          "meta": {
+            "example": "{\"purify\":{\"minutes\":30},\"circumstance\":{\"facts\":{\"fatherPresent\":false}}}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart_request.rs"
@@ -21311,6 +21326,13 @@
           "id": 121,
           "name": "remedies",
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each `{rules, functional, subjects, shantis, ishtaDevata}` (`03-design/remedies.md`). `rules` is `{functional, shanti, devata}`, every member filled. `functional` is the lagna's natures under *Laghu Parashari*: `{lagna, scheme, rows, yogakarakas, marakas, badhaka}`, each of the seven's row `{graha, houses, clauses, nature}` with every clause `{kind, house}` that made it, and `badhaka` `{house, lord}`. `subjects` is `{subjects, antardasha}`: each graha with at least one reason, `{graha, reasons}`, ranked by nothing (C351), and `antardasha` the running Vimshottari antardasha's printed shanti `{shanti, holds}`, `shanti` being `{mahadasha, antardasha, chapter, verses, page, conditions, remedies}` and `holds` each condition true, false or null where the verse leaves it open, the whole null unless the record named `at`. `shantis` is each subject's graha-shanti, `{graha, image, rik, japaThousands, samidh, food, dakshina, gem, substance, direction, mandala}`. `ishtaDevata` is `{atmakaraka, karakamsha, inRasi, inNavamsha}`, each chart's `{rules, sign, devotions, minor}`: every graha in the 12th from the karakamsha as `{graha, deities, verse, withKetu}`, and Saturn or Venus there in a malefic's sign (C354 to C356). Empty when `remedies_json` asked for none.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 122,
+          "name": "rectification",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each with a member for every reading the record asked and none for one it did not. `purified` is what the purifier of BPHS ch. 2 vv. 67-78 leaves standing of the window around the chart's instant, `{intervals, removed, edges, grid}`: each interval `{from, to, verdict}` with the clauses that held, each removed run naming the clause that failed. `conception` is `{birth, pranapadaHouse, nisheka, moon}` at the chart's instant (BPHS ch. 3 vv. 25-29, *Brihat Jataka* IV.21). `circumstance` is `{sky, father, presentation, lamp, attending, weights}` (*Brihat Jataka* ch. V), each fact given one weight. `baseline` is the baseline engine's unsourced cascade around the chart's instant, `{window, sunrise, intervals, intervalWidthMinutes, resolutionMinutes, suggested, concentration, candidates, stages, eventsUsed, eventsHeldOut, holdOut}`. Instants are Julian days UTC. Empty when `rectification_json` asked for none.",
           "kind": "bytes",
           "fields": []
         }

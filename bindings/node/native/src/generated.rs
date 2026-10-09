@@ -2213,6 +2213,23 @@ pub struct ChartRequest {
     /// as `remedies.rules.devata`.
     /// Example: {"at":2460676.5,"rules":{"shanti":{"rik":"YAJNAVALKYA"}}}. May be null.
     pub remedies_json: Option<String>,
+    /// Every chart read as a birth time to rectify, the chart's instant
+    /// the time on record, as a JSON object, every member optional:
+    /// `purify` (`minutes` either side of the chart's instant, more than
+    /// none and at most 1080, and `rules`, the purifier of BPHS ch. 2
+    /// vv. 67–78), `conception` (the pranapada's house, the nisheka and
+    /// the conception Moon, with its rules), `circumstance` (`facts` the
+    /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
+    /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
+    /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
+    /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+    /// Each chart's readings come back in the `rectification` section,
+    /// one member for each reading asked. Null for none, which costs
+    /// nothing (`03-design/rectification.md`). Refusals are named from
+    /// the record every binding calls `rectification`, as
+    /// `rectification.purify.minutes`.
+    /// Example: {"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}. May be null.
+    pub rectification_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2252,6 +2269,7 @@ pub struct HeldChartRequest {
     matching_json: Option<std::ffi::CString>,
     prashna_json: Option<std::ffi::CString>,
     remedies_json: Option<std::ffi::CString>,
+    rectification_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2355,6 +2373,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             remedies_json: self
                 .remedies_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            rectification_json: self
+                .rectification_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2499,6 +2521,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            rectification_json: self
+                .rectification_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2556,6 +2583,7 @@ impl ChartRequest {
             matching_json: unsafe { lent_text(raw.matching_json) },
             prashna_json: unsafe { lent_text(raw.prashna_json) },
             remedies_json: unsafe { lent_text(raw.remedies_json) },
+            rectification_json: unsafe { lent_text(raw.rectification_json) },
         }
     }
 }

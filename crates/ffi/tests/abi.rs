@@ -1330,6 +1330,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1484,6 +1485,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1636,6 +1638,7 @@ fn a_chart_request_answers_the_transits() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1860,6 +1863,7 @@ fn a_chart_request_answers_the_hit_list() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2037,6 +2041,7 @@ fn a_chart_request_answers_sade_sati() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2302,6 +2307,7 @@ fn a_chart_request_answers_the_dignities() {
                 matching_json: ptr::null(),
                 prashna_json: ptr::null(),
                 remedies_json: ptr::null(),
+                rectification_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         )
@@ -2584,6 +2590,7 @@ fn a_chart_request_answers_the_fortitudes() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3894,6 +3901,7 @@ fn a_chart_request_answers_kp() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4097,6 +4105,7 @@ fn a_batch_of_none_asking_for_the_searches_is_empty() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4212,6 +4221,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4356,6 +4366,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -4505,6 +4516,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5285,6 +5297,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5402,6 +5415,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5588,6 +5602,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             matching_json: ptr::null(),
             prashna_json: ptr::null(),
             remedies_json: ptr::null(),
+            rectification_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -5878,6 +5893,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 matching_json: ptr::null(),
                 prashna_json: ptr::null(),
                 remedies_json: ptr::null(),
+                rectification_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
@@ -9535,4 +9551,116 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+}
+
+/// A chart request's `rectification` record answers the `rectification`
+/// section, the façade's own readings around each chart's instant on the
+/// request's clock, spelled as the section's description says; none
+/// asked is an empty section, and a refusal names the field under
+/// `rectification` (`03-design/rectification.md`, step 8).
+#[test]
+fn a_chart_request_answers_rectification() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_451_779.135_417];
+    let base = chart_request(&births, (28.2096, 83.9856), 20_700);
+    let text = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE"}}"#;
+    let json = CString::new(text).unwrap();
+    let blob = |asked: &TsChartRequest| chart_blob(&ctx, asked);
+    let section = |asked: &TsChartRequest| {
+        let bytes =
+            blob(asked).unwrap_or_else(|status| panic!("{status:?}: {:?}", ctx.last_error()));
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        String::from_utf8(reader.bytes("rectification").unwrap().to_vec()).unwrap()
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&section(&TsChartRequest {
+        rectification_json: json.as_ptr(),
+        ..base
+    }))
+    .unwrap();
+
+    // The façade's own readings, over the same chart on the same clock.
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(28.2096, 83.9856, 0.0).unwrap();
+    let clock = teistro::UtcOffset::try_from_seconds(20_700).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(place, clock),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::RectificationRequest::from_json(text).unwrap();
+    let expected: Vec<teistro::Rectification> = natal
+        .iter()
+        .map(|document| sdk.chart().rectification(document, clock, &asked).unwrap())
+        .collect();
+    let canonical: serde_json::Value =
+        serde_json::from_str(&teistro_core::envelope::canonical_json(&expected)).unwrap();
+    assert_eq!(crossed, canonical);
+
+    // Spelled as the section says, member for member.
+    let keys = |value: &serde_json::Value| {
+        let mut keys: Vec<String> = value.as_object().unwrap().keys().cloned().collect();
+        keys.sort();
+        keys
+    };
+    let one = &crossed[0];
+    assert_eq!(
+        keys(one),
+        ["baseline", "circumstance", "conception", "purified"]
+    );
+    assert_eq!(
+        keys(&one["purified"]),
+        ["edges", "grid", "intervals", "removed"]
+    );
+    assert_eq!(
+        keys(&one["conception"]),
+        ["birth", "moon", "nisheka", "pranapadaHouse"]
+    );
+    assert_eq!(
+        keys(&one["circumstance"]),
+        [
+            "attending",
+            "father",
+            "lamp",
+            "presentation",
+            "sky",
+            "weights"
+        ]
+    );
+    assert_eq!(
+        keys(&one["baseline"]),
+        [
+            "candidates",
+            "concentration",
+            "eventsHeldOut",
+            "eventsUsed",
+            "holdOut",
+            "intervalWidthMinutes",
+            "intervals",
+            "resolutionMinutes",
+            "stages",
+            "suggested",
+            "sunrise",
+            "window"
+        ]
+    );
+
+    // None asked is an empty section, and a refusal names its field.
+    assert_eq!(section(&base), "");
+    let refused = CString::new(r#"{"purify":{"minutes":0}}"#).unwrap();
+    assert!(
+        blob(&TsChartRequest {
+            rectification_json: refused.as_ptr(),
+            ..base
+        })
+        .is_err()
+    );
+    let (_, _, field, _, _) = ctx.last_error();
+    assert_eq!(field.as_deref(), Some("rectification.purify.minutes"));
 }
