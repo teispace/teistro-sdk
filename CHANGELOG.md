@@ -2546,6 +2546,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **`teistro-mcp`, the SDK as tools an agent calls**
+  (`03-design/mcp-server.md` step 1). This is a Model Context Protocol
+  server over stdio. It speaks the stateless 2026-07-28 revision and,
+  after `initialize`, the 2025-11-25 handshake. Its tools are research,
+  Pancha Pakshi, rashifal, numerology and naam milan, each the record its
+  binding already sends. Every answer is the provenance envelope, and
+  `settings.describe` answers the profiles and the settings patch's JSON
+  Schema. A refusal is a tool error naming the field to fix. The
+  ephemeris is chosen on the command line, never by an argument.
+  `teistro::records` lists the façade's record entry points once, for the
+  server and any other caller. **Numbers:** none move.
 - **Pancha Pakshi** (`03-design/pakshi.md` steps 1 and 2).
   `teistro-pakshi` reads the five birds' activities by yama as one rule
   held to every cell of the printed tables, with the sub-periods, the

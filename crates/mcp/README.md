@@ -1,0 +1,30 @@
+# teistro-mcp
+
+The Teistro SDK as tools an agent calls: a Model Context Protocol server
+over stdio (`docs/03-design/mcp-server.md`). A model asked for a
+nakshatra answers from memory with no ayanamsha named; a tool answers
+with the settings hash, the input hash and every convention applied.
+
+```sh
+teistro-mcp                       # the built-in ephemeris
+teistro-mcp --ephemeris SURYA_SIDDHANTA
+```
+
+A host starts it as a child process and speaks either revision:
+
+- **2026-07-28**, stateless: each request carries
+  `_meta["io.modelcontextprotocol/protocolVersion"]`, and
+  `server/discover` answers the revisions, the capabilities and the
+  server's identity;
+- **2025-11-25**, after `initialize`, for the rest of the process.
+
+Each record tool takes `{request, profile, settings, locale}`. `request`
+is the record its binding sends, refused by the same reader under the
+same field names; `settings` is a patch over the profile, and
+`settings.describe` answers its JSON Schema with every knob's
+documentation. An answer is `{value, provenance}`. A refusal is a tool
+error whose structured content is the SDK's error record, naming the
+field, the range and a hint.
+
+Nothing reaches the file system or the network: the ephemeris is chosen
+on the command line and never by a tool argument.

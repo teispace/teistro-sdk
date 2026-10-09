@@ -1868,6 +1868,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-mcp"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-muhurta"
 version = "0.0.0"
 dependencies = [
