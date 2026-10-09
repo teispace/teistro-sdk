@@ -10,7 +10,7 @@
 mod tables;
 
 #[cfg(feature = "western")]
-pub(crate) use tables::{Columns, Tables, progressions_of};
+pub(crate) use tables::Columns;
 
 use super::{answer, record};
 
@@ -79,47 +79,64 @@ record!(
     teistro::HarmonicRequest
 );
 
-/// The Western records a chart request sends, each read by the façade's
-/// own reader and refused, naming its root, by a build without the family.
-#[derive(Default)]
-#[cfg_attr(
-    not(feature = "western"),
-    allow(dead_code, reason = "a build without the family holds none to read")
-)]
-pub(crate) struct Records {
-    pub(crate) progressions: Option<ProgressionsRequest>,
-    pub(crate) western_aspects: Option<AspectRequest>,
-    pub(crate) synastry: Option<SynastryRequest>,
-    pub(crate) parallels: Option<ParallelRequest>,
-    pub(crate) antiscia: Option<AntisciaRequest>,
-    pub(crate) midpoints: Option<MidpointRequest>,
-    pub(crate) western_houses: Option<HouseRequest>,
-    pub(crate) harmonic: Option<HarmonicRequest>,
-}
+/// The Western records a chart request sends: the façade's own
+/// ([`teistro::WesternRecords`]), or none in a build without the family.
+#[cfg(feature = "western")]
+pub(crate) type Records = teistro::WesternRecords;
 
-impl Records {
-    /// Every Western record `asked` sends.
-    ///
-    /// # Safety
-    ///
-    /// Each of `asked`'s Western fields null or a NUL-terminated string.
-    pub(crate) unsafe fn of(
-        asked: &crate::chart::TsChartRequest,
-    ) -> Result<Records, teistro_core::error::Error> {
-        // SAFETY: the caller's contract, for every field read below.
-        unsafe {
-            Ok(Records {
-                progressions: progressions_request_of(asked.progressions_json)?,
-                western_aspects: aspects_request_of(asked.western_aspects_json)?,
-                synastry: synastry_request_of(asked.synastry_json)?,
-                parallels: parallels_request_of(asked.parallels_json)?,
-                antiscia: antiscia_request_of(asked.antiscia_json)?,
-                midpoints: midpoints_request_of(asked.midpoints_json)?,
-                western_houses: houses_request_of(asked.western_houses_json)?,
-                harmonic: harmonic_request_of(asked.harmonic_json)?,
-            })
-        }
-    }
+/// No Western record can be held by a build without the family.
+#[cfg(not(feature = "western"))]
+#[derive(Default)]
+pub(crate) struct Records;
+
+/// Every Western record `asked` sends, each read by the façade's own
+/// reader and refused, naming its root, by a build without the family.
+///
+/// # Safety
+///
+/// Each of `asked`'s Western fields null or a NUL-terminated string.
+pub(crate) unsafe fn records_of(
+    asked: &crate::chart::TsChartRequest,
+) -> Result<Records, teistro_core::error::Error> {
+    // SAFETY: the caller's contract, for every field read below.
+    let (progressions, aspects, synastry, parallels, antiscia, midpoints, houses, harmonic) = unsafe {
+        (
+            progressions_request_of(asked.progressions_json)?,
+            aspects_request_of(asked.western_aspects_json)?,
+            synastry_request_of(asked.synastry_json)?,
+            parallels_request_of(asked.parallels_json)?,
+            antiscia_request_of(asked.antiscia_json)?,
+            midpoints_request_of(asked.midpoints_json)?,
+            houses_request_of(asked.western_houses_json)?,
+            harmonic_request_of(asked.harmonic_json)?,
+        )
+    };
+    #[cfg(feature = "western")]
+    let records = Records {
+        progressions,
+        aspects,
+        synastry,
+        parallels,
+        antiscia,
+        midpoints,
+        houses,
+        harmonic,
+    };
+    #[cfg(not(feature = "western"))]
+    let records = {
+        let _ = (
+            progressions,
+            aspects,
+            synastry,
+            parallels,
+            antiscia,
+            midpoints,
+            houses,
+            harmonic,
+        );
+        Records
+    };
+    Ok(records)
 }
 
 answer!("western", Progressions, teistro::Progressions);
@@ -173,11 +190,13 @@ const SECTIONS: [&str; 33] = [
     "harmonic_rows",
 ];
 
-/// The Western tables of a build without the family: none, since no
-/// request can hold a Western record.
+/// The Western tables of a build without the family, in the shape the
+/// façade's [`teistro::WesternTables`] has: none, since no request can hold
+/// a Western record.
 #[cfg(not(feature = "western"))]
 #[derive(Default)]
 pub(crate) struct Tables {
+    pub(crate) progressions: Vec<Progressions>,
     pub(crate) aspects: Vec<AspectRows>,
     pub(crate) synastry: Vec<PartnerReading>,
     pub(crate) declinations: Vec<Declinations>,
@@ -187,40 +206,6 @@ pub(crate) struct Tables {
     pub(crate) davisons: Vec<teistro::Partner>,
     pub(crate) houses: Vec<WesternHouses>,
     pub(crate) harmonics: Vec<HarmonicChart>,
-}
-
-#[cfg(not(feature = "western"))]
-impl Tables {
-    #[allow(
-        clippy::unnecessary_wraps,
-        reason = "the signature of the build with the family"
-    )]
-    pub(crate) fn of(
-        _sdk: &teistro::Context,
-        _documents: &[teistro_serial::Document],
-        _records: &Records,
-        _clock: teistro_core::time::UtcOffset,
-    ) -> Result<Tables, teistro_core::error::Error> {
-        Ok(Tables::default())
-    }
-}
-
-/// No progressions in a build without the family.
-#[cfg(not(feature = "western"))]
-#[allow(
-    clippy::unnecessary_wraps,
-    reason = "the signature of the build with the family"
-)]
-pub(crate) fn progressions_of(
-    _sdk: &teistro::Context,
-    _documents: &[teistro_serial::Document],
-    asked: Option<&ProgressionsRequest>,
-    _request: &teistro::ChartRequest,
-) -> Result<Vec<Progressions>, teistro_core::error::Error> {
-    match asked {
-        None => Ok(Vec::new()),
-        Some(never) => match *never {},
-    }
 }
 
 /// The Western sections of a build without the family, every one empty.

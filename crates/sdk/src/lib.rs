@@ -236,6 +236,8 @@ pub use crate::plan_request::{PlanInputs, PlanRequest};
 // (`03-design/mcp-server.md`, step 2).
 #[cfg(feature = "chart")]
 pub use crate::compose::{ChartRecords, Composed};
+#[cfg(feature = "western")]
+pub use crate::compose::{WesternRecords, WesternTables};
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]

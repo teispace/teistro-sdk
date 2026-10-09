@@ -3,11 +3,8 @@
 //! parallels, the antiscia, the midpoints, the houses, the harmonic chart
 //! and the progressions.
 
-use teistro::ChartRequest;
 use teistro_core::error::Error;
-use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{ColumnData, Writer};
-use teistro_serial::Document;
 
 use crate::chart::{Composed, TsMotion, TsWesternAspect, no_code, one_a_chart, point_cells};
 
@@ -1036,136 +1033,6 @@ impl ProgressionColumns {
     }
 }
 
-/// Every chart's progressions, none when none was asked for: each birth
-/// read through the request, its progressed chart founded by `request`.
-///
-/// `request` is the batch's **foundation only** (its place, clock and
-/// kind): the boundary writes a progressed chart's grahas and angles and
-/// nothing else, so founding it with every section the batch asked for
-/// would compute drawings, strengths and dashas no column carries, twice
-/// per birth (the progressed chart and the solar arc's).
-pub(crate) fn progressions_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&super::ProgressionsRequest>,
-    request: &ChartRequest,
-) -> Result<Vec<teistro::Progressions>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .progressions(document, asked, request)
-                .map_err(|error| error.with_hint(format!("chart {at}")))
-        })
-        .collect()
-}
-
-/// The Western tables a batch was asked for, read once: each chart's own
-/// aspects, its synastry with the record's partner, its declinations with
-/// the parallels among its planets, its antiscia and its equal distances.
-/// Each is empty when its record was null.
-pub(crate) struct Tables {
-    pub(crate) aspects: Vec<Vec<teistro::WesternAspectRow>>,
-    pub(crate) synastry: Vec<teistro::PartnerReading>,
-    pub(crate) declinations: Vec<teistro::Declinations>,
-    pub(crate) parallels: Vec<Vec<teistro::ParallelRow>>,
-    pub(crate) antiscia: Vec<teistro::Antiscia>,
-    pub(crate) midpoints: Vec<Vec<teistro::MidpointRow>>,
-    pub(crate) davisons: Vec<teistro::Partner>,
-    pub(crate) houses: Vec<teistro::WesternHouses>,
-    pub(crate) harmonics: Vec<teistro::HarmonicChart>,
-}
-
-impl Tables {
-    /// Every table `records` asks of `documents`; a refusal is named under
-    /// its record's root, and one read chart by chart says which chart.
-    /// `clock` is the batch's, which a Davison birth reads the charts on.
-    pub(crate) fn of(
-        sdk: &teistro::Context,
-        documents: &[Document],
-        records: &super::Records,
-        clock: UtcOffset,
-    ) -> Result<Tables, Error> {
-        let each = |root: &'static str| {
-            move |at: usize, error: Error| error.under(root).with_hint(format!("chart {at}"))
-        };
-        let aspects = chart_by_chart(
-            records.western_aspects.as_ref(),
-            documents,
-            "westernAspects",
-            |document, asked| sdk.chart().western_aspects(document, asked),
-        )?;
-        let synastry = records.synastry.as_ref().map_or_else(
-            || Ok(Vec::new()),
-            |asked| {
-                sdk.chart()
-                    .synastry_with(documents, asked)
-                    .map_err(|error| error.under("synastry"))
-            },
-        )?;
-        let (declinations, parallels) = match &records.parallels {
-            None => (Vec::new(), Vec::new()),
-            Some(asked) => documents
-                .iter()
-                .enumerate()
-                .map(|(at, document)| {
-                    let declined = sdk
-                        .chart()
-                        .declinations(document)
-                        .map_err(|error| each("parallels")(at, error))?;
-                    let parallels = teistro::western::parallels(&declined.grahas, asked)
-                        .map_err(|error| each("parallels")(at, error))?;
-                    Ok((declined, parallels))
-                })
-                .collect::<Result<Vec<_>, Error>>()?
-                .into_iter()
-                .unzip(),
-        };
-        Ok(Tables {
-            aspects,
-            synastry,
-            declinations,
-            parallels,
-            antiscia: chart_by_chart(
-                records.antiscia.as_ref(),
-                documents,
-                "antiscia",
-                |document, asked| sdk.chart().antiscia(document, asked),
-            )?,
-            midpoints: chart_by_chart(
-                records.midpoints.as_ref(),
-                documents,
-                "midpoints",
-                |document, asked| sdk.chart().midpoints(document, asked),
-            )?,
-            davisons: records
-                .synastry
-                .as_ref()
-                .map(|asked| asked.davisons(documents, clock))
-                .transpose()
-                .map_err(|error| error.under("synastry"))?
-                .flatten()
-                .unwrap_or_default(),
-            houses: chart_by_chart(
-                records.western_houses.as_ref(),
-                documents,
-                "westernHouses",
-                |document, asked| sdk.chart().western_houses(document, asked),
-            )?,
-            harmonics: chart_by_chart(
-                records.harmonic.as_ref(),
-                documents,
-                "harmonic",
-                |document, asked| sdk.chart().harmonic(document, asked),
-            )?,
-        })
-    }
-}
-
 /// Every Western section a batch writes: the progressions, and the tables
 /// written together since their sections stand together, each chart's own
 /// beside each chart's with the record's partner.
@@ -1216,26 +1083,4 @@ impl Columns {
         self.reflected.write_cusps(writer)?;
         self.harmonics.write(writer)
     }
-}
-
-/// One table a chart, each read by `read` under the asked record, or none
-/// when it was null; a refusal is named under the record's `root` and says
-/// which chart.
-fn chart_by_chart<A, T>(
-    asked: Option<&A>,
-    documents: &[Document],
-    root: &'static str,
-    read: impl Fn(&Document, &A) -> Result<T, Error>,
-) -> Result<Vec<T>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            read(document, asked)
-                .map_err(|error| error.under(root).with_hint(format!("chart {at}")))
-        })
-        .collect()
 }

@@ -3,7 +3,6 @@
 
 use teistro_core::error::{Error, Status};
 use teistro_idl::blob::{ColumnData, Writer};
-use teistro_serial::Document;
 
 use crate::chart::{
     PeriodColumns, TsAffliction, TsHarshaGrade, TsSaham, TsSahamStrong, TsSahamWeak,
@@ -731,30 +730,6 @@ impl PraveshaColumns {
             .write(writer, "natal_sahams", "natal_saham_seven")?;
         self.annual.dashas.write(writer)
     }
-}
-
-/// Every chart's annual charts, empty when none were asked for.
-///
-/// Composed by the façade ([`teistro::ChartArea::varsha`]), one birth at a
-/// time; a refusal says which chart of the batch it was refused for.
-pub(crate) fn praveshas_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    birth_clock: teistro::UtcOffset,
-    asked: Option<&super::Request>,
-) -> Result<Vec<teistro::Varsha>, Error> {
-    let Some(asked) = asked else {
-        return Ok(Vec::new());
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            sdk.chart()
-                .varsha(document, birth_clock, asked)
-                .map_err(|error| error.with_hint(format!("chart {at}")))
-        })
-        .collect()
 }
 
 impl From<teistro::TajikaDrishti> for TsTajikaDrishti {
