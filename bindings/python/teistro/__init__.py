@@ -698,7 +698,12 @@ __all__ = [
     "PrashnaRequest",
     "PrashnaQuestion",
     "PrashnaRules",
+    "PiscesRising",
+    "TimingRule",
+    "MookRule",
+    "ScoreRule",
     "PrashnaMoonRules",
+    "KshinaRule",
     "Prashna",
     "PrashnaVerdict",
     "PrashnaClause",
@@ -713,8 +718,11 @@ __all__ = [
     "RemedyRequest",
     "RemedyRules",
     "FunctionalRules",
+    "FunctionalScheme",
     "ShantiRules",
+    "RikSource",
     "DevataRules",
+    "SunWithKetu",
     "Remedies",
     "Functional",
     "FunctionalRow",
@@ -734,17 +742,47 @@ __all__ = [
     "RectificationRequest",
     "PurifyRequest",
     "PurifierRules",
+    "PurifierNative",
+    "GulikaExtension",
+    "PurifyAs",
+    "PranapadaRule",
+    "GulikaAt",
     "ConceptionRules",
     "PranapadaHouseRules",
+    "HouseCount",
     "NishekaRules",
+    "NishekaMonth",
+    "NishekaMandi",
+    "NinthBhava",
+    "SaturnTerm",
+    "InvisibleHalf",
     "ConceptionMoonRules",
+    "ConceptionCount",
+    "ConceptionRising",
+    "ConceptionPisces",
     "CircumstanceRequest",
     "BirthFacts",
+    "BirthPresentation",
+    "LampLevel",
     "AttendantFacts",
     "CircumstanceRules",
+    "MoonSees",
+    "SunFallen",
+    "PresentationBy",
+    "BetweenBy",
+    "OutsideHalf",
     "BaselineRectificationRequest",
+    "BirthTimeAccuracy",
+    "NativeSex",
     "BaselineDashaRules",
+    "DashaYearLength",
+    "AfterCycle",
+    "SeedOverflow",
+    "AshtottariGrouping",
     "LifeEventRequest",
+    "LifeEventKind",
+    "DatePrecision",
+    "EventConfidence",
     "Rectification",
     "Purified",
     "PurifierRun",
@@ -873,11 +911,14 @@ __all__ = [
     "TajikaRelation",
     "AnnualDasha",
     "AnnualDashaRules",
+    "BalanceMeasure",
+    "BirthPeriod",
     "AnnualDashaShare",
     "DashaRing",
     "YearOfDays",
     "RashiDashaDefinition",
     "UduDashaDefinition",
+    "UduCount",
     "DashaLord",
     "Sayanadi",
     "Lajjitadi",
@@ -7309,6 +7350,16 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     theirs by default."""
 
 
+BalanceMeasure = Literal["SPATIAL", "TEMPORAL"]
+"""How a dasha's balance is measured: by the elapsed arc of the seed span,
+or by the elapsed time."""
+
+BirthPeriod = Literal["COMPRESSED", "ELAPSED"]
+"""How a dasha's birth period is divided among its sub-periods: each its
+share of the balance the birth period runs for, or of the whole period,
+which began before birth."""
+
+
 class AnnualDashaRules(TypedDict, total=False):
     """Where the sources differ on an annual dasha, each a named reading
     (`03-design/annual-dashas.md`).
@@ -7328,12 +7379,12 @@ class AnnualDashaRules(TypedDict, total=False):
     remained of the birth Moon's nakshatra, the source's own; the Moon's at
     the return; or none."""
 
-    measure: Literal["SPATIAL", "TEMPORAL"]
+    measure: BalanceMeasure
     """How the balance is measured, by arc or by time; absent, each
     balance's source's own: by arc for the birth Moon, by time for the Moon
     at the return."""
 
-    birth_period: Literal["COMPRESSED", "ELAPSED"]
+    birth_period: BirthPeriod
     """How the first lord's two pieces are divided among sub-lords, as the
     natal birth period's; `"COMPRESSED"` by default."""
 
@@ -7696,12 +7747,30 @@ class PrashnaQuestion(TypedDict, total=False):
     number: int
 
 
+KshinaRule = Literal["DARK_EIGHTH_TO_BRIGHT_EIGHTH", "DARK_ELEVENTH_TO_NEW_MOON"]
+"""When the Moon is kshina, a `PrashnaMoonRules` `kshina`."""
+
+
 class PrashnaMoonRules(TypedDict, total=False):
     """How the Moon's weaknesses are read (Samjna Tantra vv. 73–74, C352):
     `kshina`, `DARK_EIGHTH_TO_BRIGHT_EIGHTH` (the gloss's, the default) or
     `DARK_ELEVENTH_TO_NEW_MOON` (its "some say")."""
 
-    kshina: str
+    kshina: KshinaRule
+
+
+PiscesRising = Literal["BOTH_WAYS", "SHIRSHODAYA"]
+"""How Pisces rises, a `PrashnaRules` `pisces`."""
+
+TimingRule = Literal["STRONGEST_GRAHA", "FIRST_OCCUPIED", "MOON_DAYS", "BASELINE"]
+"""Which rule times the matter, a `PrashnaRules` `timing`."""
+
+MookRule = Literal["SHATPANCHASHIKA", "MOON_HOUSE", "BASELINE"]
+"""Which rule reads an unspoken question, a `PrashnaRules` `mook`."""
+
+ScoreRule = Literal["OFF", "BASELINE"]
+"""Whether the baseline engine's points come beside the clauses, a
+`PrashnaRules` `score`."""
 
 
 class PrashnaRules(TypedDict, total=False):
@@ -7711,11 +7780,11 @@ class PrashnaRules(TypedDict, total=False):
     `BASELINE`), `mook` (`SHATPANCHASHIKA`, `MOON_HOUSE` or `BASELINE`),
     `moon` and `score` (`OFF` or `BASELINE`)."""
 
-    pisces: str
-    timing: str
-    mook: str
+    pisces: PiscesRising
+    timing: TimingRule
+    mook: MookRule
     moon: PrashnaMoonRules
-    score: str
+    score: ScoreRule
 
 
 class PrashnaRequest(TypedDict, total=False):
@@ -7851,26 +7920,39 @@ class Prashna:
     """The sign of the querent's number; `None` unless one was given."""
 
 
+FunctionalScheme = Literal["LAGHU_PARASHARI", "BASELINE"]
+"""Which scheme judges the grahas' functional natures, a `FunctionalRules`
+`scheme`."""
+
+
 class FunctionalRules(TypedDict, total=False):
     """Which scheme judges the grahas' functional natures: `scheme`,
     `LAGHU_PARASHARI` (the default) or the baseline engine's unsourced
     `BASELINE` (C331)."""
 
-    scheme: str
+    scheme: FunctionalScheme
+
+
+RikSource = Literal["BPHS", "YAJNAVALKYA"]
+"""Which text's ṛk Rahu's śānti gives, a `ShantiRules` `rik`."""
 
 
 class ShantiRules(TypedDict, total=False):
     """Which text's ṛk Rahu's śānti gives: `rik`, `BPHS` (the default) or
     `YAJNAVALKYA`."""
 
-    rik: str
+    rik: RikSource
+
+
+SunWithKetu = Literal["SHIVA", "SURYA"]
+"""Whom the Sun with Ketu is devoted to, a `DevataRules` `sunWithKetu`."""
 
 
 class DevataRules(TypedDict, total=False):
     """Whom the Sun with Ketu is devoted to: `sunWithKetu`, `SHIVA` (the
     default) or `SURYA` (C354)."""
 
-    sunWithKetu: str
+    sunWithKetu: SunWithKetu
 
 
 class RemedyRules(TypedDict, total=False):
@@ -8076,6 +8158,27 @@ class Remedies:
     ishta_devata: IshtaDevatas
 
 
+PurifierNative = Literal["HUMAN", "BEAST", "BIRD", "CREEPER"]
+"""What the native is, which decides the houses that purify, a
+`PurifierRules` `native`."""
+
+GulikaExtension = Literal["WHEN_TWO_FAIL", "ALWAYS", "NEVER"]
+"""When Gulika's extension (v. 76) is counted: when neither the pranapada
+nor the Moon holds, at every instant, or never, a `PurifierRules`
+`gulikaExtension`."""
+
+PurifyAs = Literal["BAR", "WEIGHT"]
+"""Whether a lagna no purifier holds is removed or only weighed, a
+`PurifierRules` `purifyAs`."""
+
+PranapadaRule = Literal["VERSE", "PRINTED_EXAMPLE", "SDK_POINT"]
+"""How the pranapada is reckoned, a `PurifierRules` `pranapadaRule` and a
+`PranapadaHouseRules` `pranapada`."""
+
+GulikaAt = Literal["END", "START"]
+"""Which end of Saturn's eighth is Gulika, a `PurifierRules` `gulikaAt`."""
+
+
 class PurifierRules(TypedDict, total=False):
     """The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78), the texts'
     own by default: `native` (`HUMAN`, `BEAST`, `BIRD` or `CREEPER`, which
@@ -8085,14 +8188,14 @@ class PurifierRules(TypedDict, total=False):
     `PRINTED_EXAMPLE` or `SDK_POINT`), `gulikaAt` (`END` or `START`) and
     `seedMinutes`, the step every change is found between."""
 
-    native: str
+    native: PurifierNative
     pranapada: bool
     gulika: bool
     moon: bool
-    gulikaExtension: str
-    purifyAs: str
-    pranapadaRule: str
-    gulikaAt: str
+    gulikaExtension: GulikaExtension
+    purifyAs: PurifyAs
+    pranapadaRule: PranapadaRule
+    gulikaAt: GulikaAt
     seedMinutes: float
 
 
@@ -8104,14 +8207,39 @@ class PurifyRequest(TypedDict, total=False):
     rules: PurifierRules
 
 
+HouseCount = Literal["SIGN", "SRIPATI_BHAVA"]
+"""How the pranapada's house is counted from the lagna, by sign or by
+Sripati's bhava, a `PranapadaHouseRules` `count`."""
+
+
 class PranapadaHouseRules(TypedDict, total=False):
     """How the pranapada's house is judged (Jha's print ch. 3 vv. 71–74):
     `pranapada` (a `PurifierRules` `pranapadaRule`), `count` (`SIGN` or
     `SRIPATI_BHAVA`) and `firstAuspicious`, whether the 1st is."""
 
-    pranapada: str
-    count: str
+    pranapada: PranapadaRule
+    count: HouseCount
     firstAuspicious: bool
+
+
+NishekaMonth = Literal["THIRTY_DAYS", "SOLAR", "SYNODIC"]
+"""The month a sign is read as, a `NishekaRules` `month`."""
+
+NishekaMandi = Literal["START", "END"]
+"""Which end of Saturn's eighth Mandi is, for the conception, a
+`NishekaRules` `mandiAt`."""
+
+NinthBhava = Literal["SRIPATI", "WHOLE_SIGN", "EQUAL"]
+"""Which point the nisheka measures to as the 9th bhava, a `NishekaRules`
+`ninth`."""
+
+SaturnTerm = Literal["LONGITUDE", "BHAVA_MADHYA"]
+"""Which point of Saturn the nisheka measures from: his longitude, or the
+mid-point of his bhava, a `NishekaRules` `saturn`."""
+
+InvisibleHalf = Literal["BY_LONGITUDE", "BY_SIGN"]
+"""How the invisible half is read: the half-circle ahead of the lagna's
+degree, or the 1st to the 6th signs, a `NishekaRules` `invisibleHalf`."""
 
 
 class NishekaRules(TypedDict, total=False):
@@ -8120,11 +8248,23 @@ class NishekaRules(TypedDict, total=False):
     `ninth` (`SRIPATI`, `WHOLE_SIGN` or `EQUAL`), `saturn` (`LONGITUDE` or
     `BHAVA_MADHYA`) and `invisibleHalf` (`BY_LONGITUDE` or `BY_SIGN`)."""
 
-    month: str
-    mandiAt: str
-    ninth: str
-    saturn: str
-    invisibleHalf: str
+    month: NishekaMonth
+    mandiAt: NishekaMandi
+    ninth: NinthBhava
+    saturn: SaturnTerm
+    invisibleHalf: InvisibleHalf
+
+
+ConceptionCount = Literal["NEXT_AFTER_DVADASHAMSHA", "FROM_MOON_SIGN", "FROM_ARIES"]
+"""The count to the birth Moon's sign, a `ConceptionMoonRules` `count`."""
+
+ConceptionRising = Literal["SIGN", "NAVAMSHA"]
+"""What of the conception's rising point is classed as a day or a night
+sign, a `ConceptionMoonRules` `rising`."""
+
+ConceptionPisces = Literal["EITHER", "DAY"]
+"""What Pisces is: strong by day or by night, so either, or a day sign, a
+`ConceptionMoonRules` `pisces`."""
 
 
 class ConceptionMoonRules(TypedDict, total=False):
@@ -8132,9 +8272,9 @@ class ConceptionMoonRules(TypedDict, total=False):
     `FROM_MOON_SIGN` or `FROM_ARIES`), `rising` (`SIGN` or `NAVAMSHA`) and
     `pisces` (`EITHER` or `DAY`)."""
 
-    count: str
-    rising: str
-    pisces: str
+    count: ConceptionCount
+    rising: ConceptionRising
+    pisces: ConceptionPisces
 
 
 class ConceptionRules(TypedDict, total=False):
@@ -8157,6 +8297,14 @@ class AttendantFacts(TypedDict, total=False):
     outside: int
 
 
+BirthPresentation = Literal["HEAD", "FEET", "HANDS"]
+"""What came first at the birth, a `BirthFacts` `presentation`."""
+
+LampLevel = Literal["FULL", "HALF", "SPENT"]
+"""How much of the lamp's oil or wick was left, a `BirthFacts` `oil` and
+`wick`."""
+
+
 class BirthFacts(TypedDict, total=False):
     """What the family remembers of the birth, every fact optional; a clause
     whose fact is absent is reported and not weighed: `fatherPresent`
@@ -8164,10 +8312,31 @@ class BirthFacts(TypedDict, total=False):
     `wick` (`FULL`, `HALF` or `SPENT`, V.18) and `attendants` (V.22)."""
 
     fatherPresent: bool
-    presentation: str
-    oil: str
-    wick: str
+    presentation: BirthPresentation
+    oil: LampLevel
+    wick: LampLevel
     attendants: AttendantFacts
+
+
+MoonSees = Literal["ANY_ASPECT", "FULL"]
+"""What the Moon's seeing the lagna asks of her aspect: any aspect, or only
+the full one, a `CircumstanceRules` `moonSees`."""
+
+SunFallen = Literal["NINTH_OR_EIGHTH", "EITHER_SIDE"]
+"""Which houses are fallen from the 10th for the Sun: the 9th or the 8th,
+or either side, a `CircumstanceRules` `sunFallen`."""
+
+PresentationBy = Literal["RISING_SIGN", "LAGNA_LORD_MOTION"]
+"""Which reading of the presentation is asked: as the rising sign rises, or
+by the lagna lord's motion, a `CircumstanceRules` `presentationBy`."""
+
+BetweenBy = Literal["DEGREE", "SIGN"]
+"""How the grahas between the lagna and the Moon are counted, by degree or
+by sign, a `CircumstanceRules` `betweenBy`."""
+
+OutsideHalf = Literal["VISIBLE", "INVISIBLE"]
+"""Which half of the attendants is outside the room, a `CircumstanceRules`
+`outside`."""
 
 
 class CircumstanceRules(TypedDict, total=False):
@@ -8177,11 +8346,11 @@ class CircumstanceRules(TypedDict, total=False):
     `LAGNA_LORD_MOTION`), `betweenBy` (`DEGREE` or `SIGN`) and `outside`
     (`VISIBLE` or `INVISIBLE`)."""
 
-    moonSees: str
-    sunFallen: str
-    presentationBy: str
-    betweenBy: str
-    outside: str
+    moonSees: MoonSees
+    sunFallen: SunFallen
+    presentationBy: PresentationBy
+    betweenBy: BetweenBy
+    outside: OutsideHalf
 
 
 class CircumstanceRequest(TypedDict, total=False):
@@ -8190,6 +8359,40 @@ class CircumstanceRequest(TypedDict, total=False):
 
     facts: BirthFacts
     rules: CircumstanceRules
+
+
+LifeEventKind = Literal[
+    "MARRIAGE",
+    "ENGAGEMENT",
+    "CHILD_BIRTH",
+    "MISCARRIAGE",
+    "FIRST_JOB",
+    "JOB_CHANGE",
+    "JOB_LOSS",
+    "PROMOTION",
+    "BUSINESS_START",
+    "EDUCATION",
+    "RELOCATION",
+    "FOREIGN_TRAVEL",
+    "PROPERTY",
+    "VEHICLE",
+    "SURGERY",
+    "ACCIDENT",
+    "ILLNESS",
+    "DEATH_IN_FAMILY",
+    "LITIGATION",
+    "SPIRITUAL_INITIATION",
+    "OTHER",
+]
+"""What happened, a `LifeEventRequest` `kind`."""
+
+DatePrecision = Literal["DAY", "MONTH", "YEAR"]
+"""How finely a life event's date is known, a `LifeEventRequest`
+`precision`."""
+
+EventConfidence = Literal["CERTAIN", "PROBABLE", "UNCERTAIN"]
+"""How sure the family is of a life event, a `LifeEventRequest`
+`confidence`."""
 
 
 class LifeEventRequest(TypedDict, total=False):
@@ -8201,12 +8404,28 @@ class LifeEventRequest(TypedDict, total=False):
     `heldOut`, kept out of the fit and tested against it afterwards."""
 
     id: str
-    kind: Required[str]
+    kind: Required[LifeEventKind]
     on: Required[float]
     until: float
-    precision: str
-    confidence: str
+    precision: DatePrecision
+    confidence: EventConfidence
     heldOut: bool
+
+
+DashaYearLength = Literal["JULIAN_365_25", "SAVANA_360", "SIDEREAL", "TROPICAL", "LUNAR", "NAKSHATRA_324"]
+"""The length of a dasha year: 365.25 days, 360, the sidereal or tropical
+year, twelve lunar months, or 324 days."""
+
+AfterCycle = Literal["END", "REPEAT"]
+"""What a dasha answers past the end of its cycle: no period, or the cycle
+again from its first lord."""
+
+SeedOverflow = Literal["WRAP_TO_START", "REJECT"]
+"""What a seed outside a conditional dasha's cycle does: wrap to the start,
+flagged, or refuse."""
+
+AshtottariGrouping = Literal["THREE_EACH", "FOUR_AND_THREE"]
+"""How Ashtottari's eight lords share the nakshatras (crux C5)."""
 
 
 class BaselineDashaRules(TypedDict, total=False):
@@ -8218,12 +8437,21 @@ class BaselineDashaRules(TypedDict, total=False):
     (`WRAP_TO_START` or `REJECT`) and `ashtottariGrouping` (`THREE_EACH` or
     `FOUR_AND_THREE`)."""
 
-    balance: str
-    yearLength: str
-    birthPeriod: str
-    afterCycle: str
-    seedOverflow: str
-    ashtottariGrouping: str
+    balance: BalanceMeasure
+    yearLength: DashaYearLength
+    birthPeriod: BirthPeriod
+    afterCycle: AfterCycle
+    seedOverflow: SeedOverflow
+    ashtottariGrouping: AshtottariGrouping
+
+
+BirthTimeAccuracy = Literal["EXACT", "APPROXIMATE", "RECTIFIED", "UNKNOWN"]
+"""How far a birth time on record is trusted, a
+`BaselineRectificationRequest` `accuracy`."""
+
+NativeSex = Literal["MALE", "FEMALE"]
+"""The child's sex, which the baseline's tattva prior reads, a
+`BaselineRectificationRequest` `sex`."""
 
 
 class BaselineRectificationRequest(TypedDict, total=False):
@@ -8235,9 +8463,9 @@ class BaselineRectificationRequest(TypedDict, total=False):
     intervals hold, 0.5 to 0.99; and the `dasha` the event fit reads."""
 
     uncertaintyMinutes: Required[float]
-    accuracy: str
+    accuracy: BirthTimeAccuracy
     events: Sequence[LifeEventRequest]
-    sex: str
+    sex: NativeSex
     coverage: float
     dasha: BaselineDashaRules
 
@@ -9005,6 +9233,11 @@ class DashaLord(TypedDict):
     years: int
 
 
+UduCount = Literal["FROM_REFERENCE", "TO_REFERENCE"]
+"""Which way a nakshatra-seeded system counts from its reference nakshatra
+to the seed, an `UduDashaDefinition` `count`."""
+
+
 class _UduDashaDefinitionRequired(TypedDict):
     kernel: Literal["UDU"]
     key: str
@@ -9027,14 +9260,14 @@ class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
     """
 
     sources: List[str]
-    count: str
+    count: UduCount
     span: int
     groups: List[int]
     wheel: Literal["NAKSHATRAS", "WITH_ABHIJIT"]
     offset: int
     repeats: bool
     scale: Dict[str, int]
-    year_length: str
+    year_length: DashaYearLength
     depth: int
 
 
@@ -9063,7 +9296,7 @@ class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
     length: Union[Literal["COUNT_TO_LORD", "COUNT_TO_LORD_BY_DIGNITY"], Dict[str, object]]
     named_lord: Literal["STRONGER", "FIRST"]
     stronger_of: List[int]
-    year_length: str
+    year_length: DashaYearLength
     depth: int
 
 

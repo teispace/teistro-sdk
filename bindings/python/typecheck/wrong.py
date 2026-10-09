@@ -9,7 +9,15 @@ This is the Python half of Phase 1's exit criterion: a swapped latitude
 and longitude does not compile.
 """
 
-from teistro import Body, Calendar, Observer, Teistro, date, local_mean_zone
+from teistro import (
+    Body,
+    Calendar,
+    LifeEventRequest,
+    Observer,
+    Teistro,
+    date,
+    local_mean_zone,
+)
 from teistro._ffi import Altitude, Latitude, Longitude
 
 teistro = Teistro.open()
@@ -47,3 +55,8 @@ with teistro.context() as other:
 # expect: "Context" has no attribute "calender"
 with teistro.context() as misspelt:
     misspelt.calender.is_leap(Calendar.GREGORIAN, 2024)
+
+# A request knob names its members, so a misspelt one is an error here
+# rather than a refusal from the boundary at run time.
+# expect: Incompatible types (expression has type "Literal['MARIAGE']", TypedDict item "kind" has type
+marriage: LifeEventRequest = {"kind": "MARIAGE", "on": 2469000.5}
