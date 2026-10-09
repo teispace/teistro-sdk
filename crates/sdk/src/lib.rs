@@ -79,6 +79,8 @@ mod hit_request;
 mod ishta_devata;
 #[cfg(feature = "kp")]
 mod kp_request;
+#[cfg(feature = "lalkitab")]
+mod lalkitab_request;
 #[cfg(feature = "chart")]
 mod matching_chart;
 #[cfg(feature = "western")]
@@ -277,6 +279,8 @@ pub use teistro_gochar::sade_sati;
 // KP: a chart as the KP Readers read it (`03-design/kp.md`).
 #[cfg(feature = "kp")]
 pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
+#[cfg(feature = "lalkitab")]
+pub use crate::lalkitab_request::{LalKitabRequest, VarshphalRows};
 #[cfg(feature = "prashna")]
 pub use crate::prashna_request::PrashnaRequest;
 #[cfg(feature = "rectification")]
@@ -430,6 +434,10 @@ pub use teistro_prashna as prashna;
 // birth time leave standing (`03-design/rectification.md`).
 #[cfg(feature = "rectification")]
 pub use teistro_rectification as rectification;
+// Lal Kitab: the 1952 edition's teva, its reading and the 35-year cycle
+// (`03-design/lalkitab.md`).
+#[cfg(feature = "lalkitab")]
+pub use teistro_lalkitab as lalkitab;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 #[cfg(feature = "remedies")]
