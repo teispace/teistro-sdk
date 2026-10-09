@@ -1977,6 +1977,7 @@ dependencies = [
  "serde_json",
  "teistro-aspect",
  "teistro-core",
+ "teistro-dasha",
  "teistro-points",
  "teistro-vargas",
 ]
@@ -2564,6 +2565,7 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-ephemeris-builtin",
+ "teistro-ephemeris-kit",
  "teistro-ffi",
  "teistro-hellenistic",
  "teistro-houses",

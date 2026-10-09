@@ -2460,6 +2460,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   father away, the presentation, the lamp, the women attending), each
   weighed against the facts a family gives. Both report and weigh; none
   bars.
+- **The baseline engine's rectification, reproduced**
+  (`03-design/rectification.md` step 6, X20 to X26).
+  `sdk.chart().rectify_baseline` ranks the minutes around a reported time
+  by a prior on the report and the tattva of the child's sex, and by how
+  well each candidate's Vimshottari periods fit dated life events, on a
+  grid refined three times; it answers the intervals carrying a chosen
+  share of the posterior, the mode, the likeliest candidates and whether
+  each held-out event is supported. Rank 2 and unsourced, a call of its
+  own beside the verses' `rectify`. Run beside the baseline engine on
+  shared cases, it answers the same intervals to a second.
 - **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
   artefact weighs, raw and gzipped, recorded from the verify run that
   built it: each platform's library, C bundle, Node addon, wheel and jar,

@@ -21,6 +21,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::EphemerisProvider;
+use teistro_rectification::baseline::{self, BaselineAnswer, BaselineRequest};
 use teistro_rectification::{
     Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, ConceptionSky, Day,
     Facts, Rules, Sky, Window, circumstance, conception, narrow,
@@ -179,6 +180,57 @@ impl ChartArea<'_> {
         })
     }
 
+    /// The baseline engine's rectification, reproduced
+    /// (`03-design/rectification.md`, step 6): a posterior over a grid of
+    /// candidate times, from a prior on the reported time and the tattva
+    /// of the child's sex, and from how well each candidate's Vimshottari
+    /// periods fit dated life events.
+    ///
+    /// **Rank 2, and unsourced**: no text gives either stage. It is never
+    /// combined with [`ChartArea::rectify`]'s verses, which remove times
+    /// where this only ranks them, so a consumer reads the two side by
+    /// side. The sky is this context's, so a context under the baseline's
+    /// profile reproduces the baseline's charts.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # use teistro::rectification::{BaselineRequest, EventKind, LifeEvent};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let place: Place = todo!();
+    /// let mut request = BaselineRequest::around(JulianDay::literal(2_451_779.1354), 60.0);
+    /// request.events.push(LifeEvent::on(EventKind::Marriage, JulianDay::literal(2_459_000.5)));
+    /// let answer = sdk.chart().rectify_baseline(&place, UtcOffset::literal(5, 45, 0), &request)?.value;
+    /// for interval in &answer.intervals {
+    ///     println!("{} to {}", interval.from.get(), interval.to.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`BaselineRequest::check`] refuses, a context with no
+    /// ephemeris, and whatever founding a chart at a candidate refuses.
+    pub fn rectify_baseline(
+        self,
+        place: &Place,
+        offset: UtcOffset,
+        request: &BaselineRequest,
+    ) -> Result<Envelope<BaselineAnswer>, Error> {
+        request.check()?;
+        let minutes = offset.seconds().div_euclid(60);
+        let input = BaselineInput {
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            request,
+        };
+        self.over_sky(request.reported, place, offset, &input, |sky| {
+            baseline::rectify(sky, request, minutes)
+        })
+    }
+
     /// Runs `read` over the sky of the chart founded at `founded_at`,
     /// sealing its answer under that chart's provenance and `input`'s hash.
     fn over_sky<T: Serialize, I: Serialize>(
@@ -231,6 +283,15 @@ struct ConceptionInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     rules: &'r ConceptionRules,
+}
+
+/// What a baseline rectification was asked, which its input hash seals.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BaselineInput<'r> {
+    place: Place,
+    utc_offset_seconds: i32,
+    request: &'r BaselineRequest,
 }
 
 /// What a circumstance report was asked, which its input hash seals.
@@ -352,6 +413,17 @@ impl ConceptionSky for ChartSky<'_, '_> {
             .founder
             .angles_at(at, &self.place, &self.zodiac)?
             .midheaven_deg)
+    }
+
+    fn grahas_deg(&self, grahas: &[Graha], at: JulianDay<Utc>) -> Result<Vec<f64>, Error> {
+        let read = self
+            .founder
+            .longitudes_in(at, &self.place, &self.zodiac, grahas)?;
+        if read.len() == grahas.len() {
+            Ok(read)
+        } else {
+            Err(Error::internal("grahas asked, and not as many answered"))
+        }
     }
 }
 

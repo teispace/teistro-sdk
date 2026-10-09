@@ -2,13 +2,17 @@
 //! the charts it stands for (`docs/03-design/rectification.md`).
 
 #![allow(
+    clippy::indexing_slicing,
     clippy::unwrap_used,
-    reason = "tests fail by panicking on what they asked for"
+    reason = "tests fail by panicking on what they asked for and index what they built"
 )]
 
 use teistro::catalogue::{Graha, Point, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::rectification::{GulikaAt, PranapadaRule, Purifier, Reference, Rules, Window};
+use teistro::rectification::{
+    Accuracy, Confidence, DatePrecision, EventKind, GulikaAt, LifeEvent, PranapadaRule, Purifier,
+    Reference, Rules, Sex, Window,
+};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 /// A moment at Kathmandu, 14 April 1990, the corpus's first.
@@ -243,4 +247,649 @@ fn the_circumstances_are_what_the_candidates_chart_says() {
     assert!(close(read.lamp.oil, 1.0 - moon.rem_euclid(30.0) / 30.0));
     // Two facts given, two weighed, in the order the clauses run.
     assert_eq!(read.weights.len(), 2);
+}
+
+// ── step 6: the baseline engine's rectification, reproduced ────────────
+
+mod baseline {
+    use teistro::catalogue::Graha;
+    use teistro::dasha::{Birth, Dasha, Timeline, VIMSHOTTARI};
+    use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    use teistro::rectification::baseline::{
+        BaselineAnswer, BaselineRequest, Candidate, NINE, baseline_dasha_rules, signifier_score,
+    };
+    use teistro::rectification::{Accuracy, BaselineStage, EventKind, LifeEvent, Note, Sex};
+    use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+
+    /// The baseline's own fixture: Pokhara, the true birth at this instant.
+    const TRUE_JD: f64 = 2_451_779.135_417;
+    const OFFSET: UtcOffset = UtcOffset::literal(5, 45, 0);
+    const MINUTE: f64 = 1.0 / 1440.0;
+    const YEAR: f64 = 365.25;
+
+    fn sdk() -> Context {
+        Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .unwrap()
+    }
+
+    fn pokhara() -> Place {
+        Place::new(
+            Latitude::literal(28.2096),
+            Longitude::literal(83.9856),
+            Altitude::literal(0.0),
+        )
+    }
+
+    fn run(sdk: &Context, request: &BaselineRequest) -> BaselineAnswer {
+        sdk.chart()
+            .rectify_baseline(&pokhara(), OFFSET, request)
+            .unwrap()
+            .value
+    }
+
+    fn stage(
+        answer: &BaselineAnswer,
+        which: BaselineStage,
+    ) -> &teistro::rectification::StageOutcome {
+        answer.stages.iter().find(|s| s.stage == which).unwrap()
+    }
+
+    fn width(answer: &BaselineAnswer) -> f64 {
+        answer.interval_width_minutes
+    }
+
+    /// The baseline spec's events: for each kind, the antardasha wholly
+    /// between 18 and 45 years that the true chart's lords fit best, the
+    /// event at its middle.
+    fn events(sdk: &Context) -> Vec<LifeEvent> {
+        let document = sdk
+            .chart()
+            .reading(
+                JulianDay::literal(TRUE_JD),
+                &ChartRequest::at(pokhara(), OFFSET),
+            )
+            .unwrap()
+            .value;
+        let foundation = &document.foundation;
+        let mut grahas_deg = [0.0; 9];
+        for (deg, graha) in grahas_deg.iter_mut().zip(NINE) {
+            *deg = foundation.graha(graha).unwrap().longitude_deg;
+        }
+        let at_birth = Candidate {
+            at: TRUE_JD,
+            lagna_deg: foundation.lagna_deg,
+            grahas_deg,
+            weekday: 0,
+        };
+        let moon = foundation.graha(Graha::Moon).unwrap().longitude_deg;
+        let dasha = Dasha::new(
+            &VIMSHOTTARI,
+            &Birth {
+                instant: JulianDay::literal(TRUE_JD),
+                moon: teistro::Nas::from_degrees(
+                    teistro::quantity::Degrees::try_new(moon).unwrap(),
+                ),
+                moon_span: None,
+            },
+            baseline_dasha_rules(),
+        )
+        .unwrap();
+        let (from, to) = (TRUE_JD + 18.0 * YEAR, TRUE_JD + 45.0 * YEAR);
+        let mut events = Vec::new();
+        for kind in [
+            EventKind::Marriage,
+            EventKind::ChildBirth,
+            EventKind::FirstJob,
+            EventKind::Property,
+            EventKind::JobChange,
+        ] {
+            let mut best: Option<(f64, f64)> = None;
+            for maha in dasha.mahadashas() {
+                for antar in dasha.children(&maha) {
+                    let (a, b) = (antar.interval.from.get(), antar.interval.to.get());
+                    if a < from || b > to {
+                        continue;
+                    }
+                    let score = signifier_score(antar.lord, kind, &at_birth);
+                    if best.is_none_or(|(s, _)| score > s) {
+                        best = Some((score, f64::midpoint(a, b)));
+                    }
+                }
+            }
+            if let Some((score, middle)) = best.filter(|(s, _)| *s > 0.0) {
+                assert!(score > 0.0);
+                events.push(LifeEvent::on(kind, JulianDay::literal(middle)));
+            }
+        }
+        assert!(events.len() >= 3, "{} events", events.len());
+        events
+    }
+
+    #[test]
+    fn with_no_evidence_the_reported_time_is_the_mode() {
+        let sdk = sdk();
+        let answer = run(
+            &sdk,
+            &BaselineRequest::around(JulianDay::literal(TRUE_JD), 120.0),
+        );
+        let offset = (answer.suggested.get() - TRUE_JD) / MINUTE;
+        assert!(offset.abs() < 0.5, "{offset}");
+        assert!(width(&answer) > 30.0);
+        assert!(!stage(&answer, BaselineStage::DashaBoundary).applied);
+        let unknown = run(
+            &sdk,
+            &BaselineRequest {
+                accuracy: Accuracy::Unknown,
+                ..BaselineRequest::around(JulianDay::literal(TRUE_JD), 120.0)
+            },
+        );
+        assert!(unknown.concentration < 0.2, "{}", unknown.concentration);
+    }
+
+    #[test]
+    fn events_narrow_the_window_onto_the_true_time() {
+        let sdk = sdk();
+        let request = BaselineRequest {
+            events: events(&sdk),
+            ..BaselineRequest::around(JulianDay::literal(TRUE_JD), 60.0)
+        };
+        let answer = run(&sdk, &request);
+        assert!(
+            answer
+                .intervals
+                .iter()
+                .any(|i| i.from.get() <= TRUE_JD && TRUE_JD <= i.to.get()),
+            "{:?}",
+            answer.intervals
+        );
+        assert!(width(&answer) < 120.0);
+        let fit = stage(&answer, BaselineStage::DashaBoundary);
+        assert!(fit.applied && !fit.flat && !fit.notes.is_empty());
+        assert!(width(&answer) >= answer.resolution_minutes);
+        // No evidence is wider and less concentrated.
+        let bare = run(
+            &sdk,
+            &BaselineRequest::around(JulianDay::literal(TRUE_JD), 60.0),
+        );
+        assert!(width(&bare) > width(&answer));
+        assert!(bare.concentration < answer.concentration);
+        // The candidates come most probable first.
+        assert!(
+            answer
+                .candidates
+                .windows(2)
+                .all(|pair| pair[0].probability >= pair[1].probability)
+        );
+        // Dated to the year, the same events concentrate less.
+        let yearly = BaselineRequest {
+            events: request
+                .events
+                .iter()
+                .cloned()
+                .map(|e| LifeEvent {
+                    precision: teistro::rectification::DatePrecision::Year,
+                    ..e
+                })
+                .collect(),
+            ..request.clone()
+        };
+        assert!(run(&sdk, &yearly).concentration < answer.concentration);
+    }
+
+    #[test]
+    fn a_held_out_event_is_tested_and_not_fitted() {
+        let sdk = sdk();
+        let mut events = events(&sdk);
+        events[0].held_out = true;
+        let n = events.len();
+        let answer = run(
+            &sdk,
+            &BaselineRequest {
+                events,
+                ..BaselineRequest::around(JulianDay::literal(TRUE_JD), 60.0)
+            },
+        );
+        assert_eq!(answer.hold_out.len(), 1);
+        let held = &answer.hold_out[0];
+        assert_eq!(held.event, 0);
+        assert!((0.0..=1.0).contains(&held.score_at_fit));
+        assert!((0.0..=1.0).contains(&held.baseline));
+        assert_eq!(held.supported, held.score_at_fit > held.baseline + 0.05);
+        assert_eq!((answer.events_held_out, answer.events_used), (1, n - 1));
+    }
+
+    #[test]
+    fn a_sex_given_adds_the_tattva_prior_and_none_does_not() {
+        let sdk = sdk();
+        let around = BaselineRequest::around(JulianDay::literal(TRUE_JD), 45.0);
+        let with = run(
+            &sdk,
+            &BaselineRequest {
+                sex: Some(Sex::Female),
+                ..around.clone()
+            },
+        );
+        let tattva = |answer: &BaselineAnswer| {
+            stage(answer, BaselineStage::Prior)
+                .notes
+                .iter()
+                .any(|n| matches!(n, Note::TattvaSex { .. }))
+        };
+        assert!(tattva(&with));
+        let without = run(&sdk, &around);
+        assert!(!tattva(&without));
+        let window = without.window;
+        assert!(((window.to.get() - window.from.get()) / MINUTE - 90.0).abs() < 1e-6);
+        // The sunrise counted from opens the reported time's civil day.
+        assert!(without.sunrise.get() < TRUE_JD && TRUE_JD - without.sunrise.get() < 1.0);
+    }
+}
+
+// The record below keeps the baseline engine's digits as it printed them.
+#[allow(
+    clippy::unreadable_literal,
+    reason = "the baseline engine's own digits"
+)]
+mod record {
+    use super::*;
+
+    /// An event as the black-box run gave it: kind, `on`, `until`, precision,
+    /// confidence, held out.
+    type Event = (EventKind, f64, Option<f64>, DatePrecision, Confidence, bool);
+
+    const FIVE: &[Event] = &[
+        (
+            EventKind::Marriage,
+            2459000.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            false,
+        ),
+        (
+            EventKind::ChildBirth,
+            2459600.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            false,
+        ),
+        (
+            EventKind::FirstJob,
+            2457000.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            false,
+        ),
+        (
+            EventKind::Property,
+            2460000.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            false,
+        ),
+        (
+            EventKind::JobChange,
+            2458500.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            false,
+        ),
+    ];
+
+    const LOOSE: &[Event] = &[
+        (
+            EventKind::Education,
+            2452000.5,
+            None,
+            DatePrecision::Year,
+            Confidence::Probable,
+            false,
+        ),
+        (
+            EventKind::Marriage,
+            2455000.5,
+            None,
+            DatePrecision::Month,
+            Confidence::Certain,
+            false,
+        ),
+        (
+            EventKind::Relocation,
+            2456000.5,
+            Some(2456090.5),
+            DatePrecision::Day,
+            Confidence::Uncertain,
+            false,
+        ),
+        (
+            EventKind::Accident,
+            2457500.5,
+            None,
+            DatePrecision::Day,
+            Confidence::Certain,
+            true,
+        ),
+    ];
+
+    /// A case the baseline engine was run over, and what it answered.
+    struct Case {
+        id: &'static str,
+        place: (f64, f64),
+        offset_minutes: i32,
+        reported: f64,
+        uncertainty_minutes: f64,
+        accuracy: Accuracy,
+        sex: Option<Sex>,
+        events: &'static [Event],
+        coverage: f64,
+        sunrise: f64,
+        intervals: &'static [(f64, f64)],
+        suggested: f64,
+        concentration: f64,
+        /// The five likeliest candidates, instant and probability.
+        top: [(f64, f64); 5],
+        /// Each held-out event's score at the fit, its mean over the spread,
+        /// and whether the fit supports it.
+        hold_out: &'static [(f64, f64, bool)],
+    }
+
+    /// The baseline engine's rectification over these cases, recorded
+    /// black-box on 2026-10-09: geocentric, true node, Lahiri, its own sunrise.
+    const CASES: &[Case] = &[
+        Case {
+            id: "pokhara-60",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 60.0,
+            accuracy: Accuracy::Approximate,
+            sex: None,
+            events: &[],
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[(2451779.1121531134, 2451779.158680891)],
+            suggested: 2451779.1354170023,
+            concentration: 0.15550111982769366,
+            top: [
+                (2451779.1354170023, 0.00749705339585412),
+                (2451779.13506978, 0.007495803991223697),
+                (2451779.1357642245, 0.007495803991223697),
+                (2451779.134722558, 0.007492057026494003),
+                (2451779.1361114467, 0.007492057026494003),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "pokhara-120-exact",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 120.0,
+            accuracy: Accuracy::Exact,
+            sex: None,
+            events: &[],
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[(2451779.1048614467, 2451779.1666670023)],
+            suggested: 2451779.1354170023,
+            concentration: 0.40585040020326124,
+            top: [
+                (2451779.1354170023, 0.011522607221010927),
+                (2451779.134722558, 0.01151780713532835),
+                (2451779.1361114467, 0.01151780713532835),
+                (2451779.136805891, 0.011503418872662041),
+                (2451779.134028113, 0.011503418859805969),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "pokhara-60-unknown-female",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 60.0,
+            accuracy: Accuracy::Unknown,
+            sex: Some(Sex::Female),
+            events: &[],
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[
+                (2451779.094097558, 2451779.1107642245),
+                (2451779.1357642245, 2451779.1493058912),
+            ],
+            suggested: 2451779.094097558,
+            concentration: 0.4090953950954336,
+            top: [
+                (2451779.094097558, 0.009274696493328722),
+                (2451779.09444478, 0.009274696493328722),
+                (2451779.0947920023, 0.009274696493328722),
+                (2451779.0951392245, 0.009274696493328722),
+                (2451779.0954864467, 0.009274696493328722),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "pokhara-60-five",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 60.0,
+            accuracy: Accuracy::Approximate,
+            sex: None,
+            events: FIVE,
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[
+                (2451779.1104170023, 2451779.1166670024),
+                (2451779.1201392245, 2451779.1361114467),
+            ],
+            suggested: 2451779.1149308914,
+            concentration: 0.6004527160047173,
+            top: [
+                (2451779.1149308914, 0.027488797277321564),
+                (2451779.114583669, 0.026948973783003975),
+                (2451779.114236447, 0.026410946197760396),
+                (2451779.113889225, 0.025875033712165613),
+                (2451779.1135420026, 0.025341546999319432),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "pokhara-240-five-male",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 240.0,
+            accuracy: Accuracy::Rectified,
+            sex: Some(Sex::Male),
+            events: FIVE,
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[
+                (2451779.0243058912, 2451779.027083669),
+                (2451779.0694447802, 2451779.0854170024),
+                (2451779.1111114467, 2451779.1166670024),
+            ],
+            suggested: 2451779.084722558,
+            concentration: 0.7671989644251387,
+            top: [
+                (2451779.084722558, 0.0797399172415232),
+                (2451779.0840281136, 0.07933394838783003),
+                (2451779.083333669, 0.07892456532517407),
+                (2451779.082639225, 0.07851184238180985),
+                (2451779.0819447804, 0.07809585419384964),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "pokhara-600-five",
+            place: (28.2096, 83.9856),
+            offset_minutes: 345,
+            reported: 2451779.135417,
+            uncertainty_minutes: 600.0,
+            accuracy: Accuracy::Unknown,
+            sex: None,
+            events: FIVE,
+            coverage: 0.8,
+            sunrise: 2451778.498226405,
+            intervals: &[
+                (2451778.7927086693, 2451778.800347558),
+                (2451778.8010420026, 2451778.8121531135),
+                (2451778.834375336, 2451778.839236447),
+            ],
+            suggested: 2451778.7927086693,
+            concentration: 0.6979691152903194,
+            top: [
+                (2451778.7927086693, 0.08291844532798923),
+                (2451778.7934031137, 0.08291844532798923),
+                (2451778.794097558, 0.08291844532798923),
+                (2451778.7947920025, 0.08291844532798923),
+                (2451778.795486447, 0.08291844532798923),
+            ],
+            hold_out: &[],
+        },
+        Case {
+            id: "kathmandu-dawn-90-loose-female",
+            place: (27.7172, 85.324),
+            offset_minutes: 345,
+            reported: 2447995.4895833335,
+            uncertainty_minutes: 90.0,
+            accuracy: Accuracy::Approximate,
+            sex: Some(Sex::Female),
+            events: LOOSE,
+            coverage: 0.8,
+            sunrise: 2447995.497036061,
+            intervals: &[(2447995.48125, 2447995.497916667)],
+            suggested: 2447995.4895833335,
+            concentration: 0.8062464656006367,
+            top: [
+                (2447995.4895833335, 0.02595337244223534),
+                (2447995.4890625, 0.02594904724112068),
+                (2447995.490104167, 0.02594904724112068),
+                (2447995.488541667, 0.025936075962136405),
+                (2447995.490625, 0.025936075962136405),
+            ],
+            hold_out: &[(0.3725806451612903, 0.1977150537634409, true)],
+        },
+        Case {
+            id: "new-york-30-loose",
+            place: (40.7128, -74.006),
+            offset_minutes: -300,
+            reported: 2451560.85,
+            uncertainty_minutes: 30.0,
+            accuracy: Accuracy::Exact,
+            sex: None,
+            events: LOOSE,
+            coverage: 0.9,
+            sunrise: 2451561.012070737,
+            intervals: &[(2451560.839409722, 2451560.8598958333)],
+            suggested: 2451560.85,
+            concentration: 0.38544276415530776,
+            top: [
+                (2451560.85, 0.011179137875616222),
+                (2451560.849826389, 0.011174480872332937),
+                (2451560.850173611, 0.011174480872332937),
+                (2451560.849652778, 0.011160521499332351),
+                (2451560.8503472223, 0.011160521499332351),
+            ],
+            hold_out: &[(0.5806451612903226, 0.6096774193548387, false)],
+        },
+    ];
+
+    /// The SDK's reproduction answers what the baseline engine answered, case
+    /// by case: the same intervals and mode to a second, the same posterior to
+    /// a millionth, the same hold-out verdicts, and its own sunrise within
+    /// three seconds of the engine's.
+    #[test]
+    fn the_baseline_engines_rectification_is_reproduced() {
+        use teistro::rectification::baseline::BaselineRequest;
+
+        const SECOND: f64 = 1.0 / 86_400.0;
+        let sdk = Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .profile("conformance-baseline")
+            .settings_json(r#"{"frame": {"centre": "GEOCENTRIC", "node": "TRUE"}}"#)
+            .build()
+            .unwrap();
+        let near = |a: JulianDay<Utc>, b: f64, within: f64| (a.get() - b).abs() <= within;
+        for case in CASES {
+            let id = case.id;
+            let events = case
+                .events
+                .iter()
+                .enumerate()
+                .map(
+                    |(i, &(kind, on, until, precision, confidence, held_out))| LifeEvent {
+                        id: Some(format!("e{i}")),
+                        kind,
+                        on: JulianDay::literal(on),
+                        until: until.map(JulianDay::literal),
+                        precision,
+                        confidence,
+                        held_out,
+                    },
+                )
+                .collect();
+            let request = BaselineRequest {
+                accuracy: case.accuracy,
+                events,
+                sex: case.sex,
+                coverage: case.coverage,
+                ..BaselineRequest::around(
+                    JulianDay::literal(case.reported),
+                    case.uncertainty_minutes,
+                )
+            };
+            let place = Place::new(
+                Latitude::literal(case.place.0),
+                Longitude::literal(case.place.1),
+                Altitude::literal(0.0),
+            );
+            let offset = UtcOffset::try_from_seconds(case.offset_minutes * 60).unwrap();
+            let ours = sdk
+                .chart()
+                .rectify_baseline(&place, offset, &request)
+                .unwrap()
+                .value;
+            assert!(
+                near(ours.sunrise, case.sunrise, 3.0 * SECOND),
+                "{id}: sunrise"
+            );
+            assert_eq!(
+                ours.intervals.len(),
+                case.intervals.len(),
+                "{id}: intervals"
+            );
+            for (mine, &(from, to)) in ours.intervals.iter().zip(case.intervals) {
+                assert!(
+                    near(mine.from, from, SECOND) && near(mine.to, to, SECOND),
+                    "{id}: {mine:?}"
+                );
+            }
+            assert!(near(ours.suggested, case.suggested, SECOND), "{id}: mode");
+            assert!(
+                (ours.concentration - case.concentration).abs() < 1e-6,
+                "{id}: concentration"
+            );
+            for (mine, &(at, probability)) in ours.candidates.iter().zip(&case.top) {
+                assert!(near(mine.at, at, SECOND), "{id}: {mine:?}");
+                assert!(
+                    (mine.probability - probability).abs() < 1e-6,
+                    "{id}: {mine:?}"
+                );
+            }
+            assert_eq!(ours.hold_out.len(), case.hold_out.len(), "{id}: hold-out");
+            for (mine, &(fit, spread, supported)) in ours.hold_out.iter().zip(case.hold_out) {
+                assert!((mine.score_at_fit - fit).abs() < 1e-9, "{id}: {mine:?}");
+                assert!((mine.baseline - spread).abs() < 1e-9, "{id}: {mine:?}");
+                assert_eq!(mine.supported, supported, "{id}: {mine:?}");
+            }
+        }
+    }
 }
