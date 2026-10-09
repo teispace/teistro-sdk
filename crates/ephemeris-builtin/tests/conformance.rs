@@ -124,3 +124,52 @@ fn a_chart_over_the_built_in_ephemeris_is_its_native_positions_under_sdk_only() 
     println!("{}", check.detail);
     assert!(check.passed, "{}", check.detail);
 }
+
+/// The tier's geometric positions against DE440's own, CSPICE's states over
+/// NAIF's kernel (evidence rank 1), under the band the corpus gives the
+/// tier's class: what the tier's theory misses the modern ephemeris by,
+/// with no light time, aberration or Delta T between them. Every miss is a
+/// measured divergence from DE440 and every one that applies explains one.
+#[test]
+fn the_built_in_ephemeris_holds_to_de440_within_its_tiers_band() {
+    use teistro_ephemeris_kit::corpus::Corpus;
+    use teistro_ephemeris_kit::jpl;
+
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures");
+    let corpus = Corpus::open(&root).unwrap_or_else(|why| panic!("{why}"));
+    let class = format!("builtin-{TIER_NAME}");
+    let run =
+        jpl::geometric(&corpus, &Builtin::new(), &class).unwrap_or_else(|why| panic!("{why}"));
+    for worst in run.report.worst() {
+        println!(
+            "{}: {:e} against {:e} at {}",
+            worst.field, worst.difference, worst.tolerance, worst.fixture
+        );
+    }
+    println!("outside the tier's range: {} instants", run.outside.len());
+    let target = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/kit");
+    run.report
+        .write(&target, &format!("jpl-{TIER_NAME}"))
+        .unwrap_or_else(|why| panic!("{why}"));
+    let judged = run.report.against(&jpl::KNOWN);
+    assert!(
+        judged.holds(),
+        "the {TIER_NAME} tier against DE440:\nunexplained: {:#?}\nidle: {:#?}",
+        judged.unexplained,
+        judged
+            .idle
+            .iter()
+            .map(|divergence| divergence.name)
+            .collect::<Vec<_>>()
+    );
+    let mut tally = Tally::new(
+        "jpl",
+        format!("geometric positions over the built-in {TIER_NAME} tier"),
+    );
+    let fields = run.report.results.iter().flat_map(|result| &result.fields);
+    tally.agreed(fields.filter(|field| field.within).count());
+    for (divergence, count) in judged.explained_by {
+        tally.explained(divergence.name, count);
+    }
+    tally.record();
+}

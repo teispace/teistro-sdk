@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+The conformance corpus moves to 0.12.0, which adds JPL's DE440 itself
+(CSPICE's geometric states, evidence rank 1), and every built-in tier is
+now scored against it (`kit::jpl`). No SDK number moved. The run measured
+what the corpus's charts could not: away from 2000 the full tier's
+theories drift from DE440, to about 3″ for the Moon and Mars and 7″ for
+Neptune by 2400, and VSOP87's distances for Uranus and Neptune are tens of
+thousands of kilometres off; each is a named, measured divergence.
+
 **Numbers:** the reference engine's own corrections moved what the SDK is
 measured against, not what it computes. All six findings the SDK filed
 against Teimeris were fixed upstream and the recorded tables were taken

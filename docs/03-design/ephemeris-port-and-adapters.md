@@ -399,6 +399,25 @@ one tier per verify job); Teimeris, the corpus's own ephemeris, by hand
 founds the charts over its native frame alone, which measures the SDK's
 completion rather than the engine's.
 
+**The DE440 check: geometric positions against JPL's own ephemeris.**
+`kit::jpl` asks a provider for geocentric geometric positions on the
+J2000 ecliptic at every instant of the corpus's `jpl/` recording (CSPICE
+over NAIF's DE440, evidence rank 1) that it covers, each TDB stamp turned
+to TT by the two leading terms of TDB − TT, and compares each body's
+direction and distance under the `jpl.geometric.*` bands of its class.
+The geometric rung has no light time, aberration, deflection or Delta T
+in it, so what it measures is the provider's theory alone. Its own
+`KNOWN` is held both ways like the charts'. Run first over the built-in
+tiers it found that the full tier is not the arcsecond its class
+promises away from 2000: ELP2000-82B and VSOP87 as published drift from
+DE440, the Moon and Mars to about 3″ and Neptune to about 7″ by 2400, and
+the standard tier misses by the same, so the drift is the theories' and
+not their truncation. VSOP87's radius vectors part from DE440's by
+hundreds of kilometres for Mars to Saturn and tens of thousands for
+Uranus and Neptune. Each is a measured entry there, scoped to the tiers
+it holds in; the reference tier (a DE440 refit, ADR-0021) is what closes
+them.
+
 Run first, the check failed all 55 charts at every tier, and the tier
 made no difference to most of what failed — a residual that does not
 scale with what should scale it is a different kind of term. What it

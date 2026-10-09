@@ -6,7 +6,9 @@
 //! façade, because what they measure is a chart and not a position:
 //! [`corpus`], a provider against the conformance corpus's recorded charts
 //! under its class's band, and [`sdk_only`], that under the `sdk-only`
-//! policy a chart is its provider's native positions and nothing else.
+//! policy a chart is its provider's native positions and nothing else. One
+//! is made against JPL directly: [`jpl`], a provider's geometric positions
+//! against DE440's own, CSPICE's states over NAIF's kernel.
 //!
 //! ```
 //! use teistro_ephemeris_kit::kit::{self, Bounds};
@@ -18,6 +20,7 @@
 
 pub mod bench;
 pub mod corpus;
+pub mod jpl;
 pub mod kit;
 pub mod runner;
 pub mod sdk_only;
