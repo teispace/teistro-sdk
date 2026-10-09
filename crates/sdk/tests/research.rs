@@ -19,7 +19,10 @@ use teistro::research::{
     AfterBirth, Birth, Contrast, Design, EventShuffle, EventStudy, EventTest, GroupTest, Holds,
     Parallelism, Recombine, ReplicateTest, SplitMix64, Study, Subject,
 };
-use teistro::{ChartRequest, Context, Ephemeris, RuleRequest, ShippedRules, UtcOffset};
+use teistro::{
+    ChartRequest, Context, Ephemeris, ResearchAnswer, ResearchRequest, RuleRequest, ShippedRules,
+    UtcOffset,
+};
 
 fn sdk() -> Context {
     Context::builder()
@@ -487,4 +490,150 @@ fn a_birth_the_ephemeris_cannot_reach_is_named() {
             .is_some_and(|hint| hint.starts_with("births[3]")),
         "{error:?}"
     );
+}
+
+/// A birth as a binding writes it.
+fn birth_json(birth: &Birth) -> serde_json::Value {
+    serde_json::json!({
+        "instant": birth.instant.get(),
+        "latitudeDeg": birth.place.latitude.get(),
+        "longitudeDeg": birth.place.longitude.get(),
+        "utcOffsetSeconds": birth.offset.seconds(),
+        "uncertaintyMinutes": birth.uncertainty_minutes,
+    })
+}
+
+fn sent(sdk: &Context, request: &serde_json::Value) -> Result<ResearchAnswer, teistro::Error> {
+    sdk.research()
+        .request(&ResearchRequest::from_json(&request.to_string())?)
+}
+
+#[test]
+fn a_study_sent_as_a_record_answers_as_the_call_does() {
+    let sdk = sdk();
+    let set = yogas();
+    let request = template();
+    let births = births(12, 9);
+    let design = Design::new((0..12).map(|i| u16::from(i < 4)).collect());
+    let study = Study::new(&births, &request, &set).holding(Holds::Formed);
+    let listed: Vec<serde_json::Value> = births.iter().map(birth_json).collect();
+    let rules = serde_json::json!({"shipped": ["YOGAS"]});
+
+    let counted = sent(
+        &sdk,
+        &serde_json::json!({"study": "COUNTS", "rules": rules, "holds": "FORMED",
+            "births": listed, "design": {"groups": design.groups}}),
+    )
+    .unwrap();
+    let direct = sdk.research().counts(study, &design).unwrap();
+    assert_eq!(counted, ResearchAnswer::Counts(direct));
+
+    let test = GroupTest::new(11, 199, Contrast::CaseVsRest { case: 1 });
+    let compared = sent(
+        &sdk,
+        &serde_json::json!({"study": "COMPARE", "rules": rules, "holds": "FORMED",
+            "births": listed, "design": {"groups": design.groups},
+            "test": {"seed": "11", "permutations": 199,
+                     "contrast": {"kind": "CASE_VS_REST", "case": 1}}}),
+    )
+    .unwrap();
+    let direct = sdk.research().compare(study, &design, &test).unwrap();
+    assert_eq!(compared, ResearchAnswer::Tested(direct));
+
+    let control = Recombine {
+        seed: 4,
+        replicates: 9,
+        strata: None,
+    };
+    let expected = sent(
+        &sdk,
+        &serde_json::json!({"study": "EXPECTED", "rules": rules, "holds": "FORMED",
+            "births": listed, "control": {"seed": 4, "replicates": 9}}),
+    )
+    .unwrap();
+    let direct = sdk
+        .research()
+        .expected(study, &control, &ReplicateTest::default())
+        .unwrap();
+    assert_eq!(expected, ResearchAnswer::Tested(direct));
+
+    let lives = subjects(10, 7, 10, 20, 30);
+    let events: Vec<serde_json::Value> = lives
+        .iter()
+        .map(|s| serde_json::json!({"birth": birth_json(&s.birth), "event": s.event.get()}))
+        .collect();
+    let timed = sent(
+        &sdk,
+        &serde_json::json!({"study": "TIMED", "rules": rules, "subjects": events,
+            "dasha": "dasha_system.VIMSHOTTARI", "depth": 1, "shuffle": "AGES_AT_EVENT",
+            "test": {"seed": 3, "permutations": 99}}),
+    )
+    .unwrap();
+    let study = EventStudy::new(&lives, &request, &set, DashaSystem::Vimshottari)
+        .to_depth(Depth::MIN)
+        .shuffled(EventShuffle::AgesAtEvent);
+    let direct = sdk
+        .research()
+        .timed(study, None, &EventTest::new(3, 99))
+        .unwrap();
+    assert_eq!(timed, ResearchAnswer::Tested(direct));
+}
+
+#[test]
+fn a_record_is_refused_where_it_stands() {
+    let sdk = sdk();
+    let births: Vec<serde_json::Value> = births(4, 2).iter().map(birth_json).collect();
+    let refused = |request: serde_json::Value| sent(&sdk, &request).unwrap_err();
+    let base = serde_json::json!({"study": "COUNTS", "rules": {"shipped": ["YOGAS"]},
+        "births": births, "design": {"groups": [0, 0, 1, 1]}});
+    let with = |field: &str, value: serde_json::Value| {
+        let mut request = base.clone();
+        request[field] = value;
+        request
+    };
+    let without = |field: &str| {
+        let mut request = base.clone();
+        request.as_object_mut().unwrap().remove(field);
+        request
+    };
+    for (request, field) in [
+        (without("design"), "research.design"),
+        (without("births"), "research.births"),
+        (with("births", serde_json::json!([])), "research.births"),
+        (with("test", serde_json::json!({})), "research.test"),
+        (with("depth", serde_json::json!(2)), "research.depth"),
+        (with("study", serde_json::json!("SURVEY")), "research.study"),
+        (
+            with("rules", serde_json::json!({"shipped": ["NONE"]})),
+            "research.rules.shipped[0]",
+        ),
+        (with("holds", serde_json::json!("ALWAYS")), "research.holds"),
+        (with("unasked", serde_json::json!(1)), "research.unasked"),
+    ] {
+        assert_eq!(refused(request).field(), Some(field), "{field}");
+    }
+    let mut far = base.clone();
+    far["births"][2]["latitudeDeg"] = serde_json::json!(91.0);
+    assert_eq!(refused(far).field(), Some("research.births[2].latitudeDeg"));
+    let mut late = base.clone();
+    late["births"][1]["uncertaintyMinutes"] = serde_json::json!(721.0);
+    assert_eq!(
+        refused(late).field(),
+        Some("births[1].uncertaintyMinutes"),
+        "a façade refusal names the field the façade does",
+    );
+    let compare = |test: serde_json::Value| {
+        let mut request = with("study", serde_json::json!("COMPARE"));
+        request["test"] = test;
+        refused(request)
+    };
+    let bad_seed = compare(serde_json::json!({"seed": "-1", "permutations": 9,
+        "contrast": {"kind": "ANY_DIFFERENCE"}}));
+    assert_eq!(bad_seed.field(), Some("research.test.seed"));
+    let no_contrast = compare(serde_json::json!({"seed": 1, "permutations": 9}));
+    assert_eq!(no_contrast.field(), Some("research.test"));
+    let timed = serde_json::json!({"study": "TIMED", "rules": {"shipped": ["YOGAS"]},
+        "subjects": [{"birth": base["births"][0], "event": 2_460_000.5}],
+        "dasha": "VIMSHOTTARI", "depth": 7, "test": {"seed": 1, "permutations": 9}});
+    assert_eq!(refused(timed).field(), Some("research.depth"));
 }

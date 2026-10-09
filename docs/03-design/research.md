@@ -4,8 +4,9 @@ Status: `draft`, 2026-10-08. Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
 `01-research/feature-universe/14-remedies-numerology-misc.md`, "Research and
-statistics". The kernel, `crates/research`, is built (step 2 of the order of
-work, 2026-10-09); the façade is not. Every figure this page would otherwise
+statistics". The kernel, `crates/research`, the façade and the boundary are
+built, and every binding carries the four studies (steps 2 to 6 of the order
+of work, 2026-10-09). Every figure this page would otherwise
 state belongs on a generated `research-measured.md` (order of work, step 1).
 
 ## 1. What credible astrological statistics looks like
@@ -463,6 +464,22 @@ uses fixed seeds, so the counts are exact and also golden.
 5. **`expected`** with `Recombine`. Test 4. **Built** 2026-10-09.
 6. **The boundary** (`research_json`), the bindings, parity, and a page in
    the docs site's guides with an executed example of a two-group study.
+   **Built** 2026-10-09 as one entry point, `ts_research`, whose record
+   names the study (`COUNTS`, `COMPARE`, `EXPECTED` or `TIMED`) and is
+   read by `ResearchRequest::from_json`, refusing a field the study does
+   not read by name. The answer crosses as the envelope, so the input
+   hash reaches every binding, and a seed may be a decimal string because
+   a JavaScript number does not hold every 64-bit seed. Node, Python,
+   Dart and Java carry `research.counts`, `compare`, `expected` and
+   `timed`, six runners agree value for value and on the input hash, and
+   `research` is the fourteenth shared example, a two-group study over
+   labels that mean nothing; the site's guide is `research.mdx`.
+   **Found** building it: a recombined sample beyond replicates that all
+   agree published its ranking sentinel, `f64::MAX`, as the statistic,
+   so `observed` is now absent there; and the replicates' mean of equal
+   shares did not return the share to the bit, which read as a spread of
+   1e-17 and a statistic of 1e15, so equal shares are now taken as the
+   share with no spread.
 7. Cruxes for the conventions a reader could argue with: the p-value
    formula, max-T as the default family correction, the two event
    shuffles, and the refusal of a uniform expectation.

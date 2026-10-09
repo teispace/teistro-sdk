@@ -803,6 +803,10 @@ fn the_surface(report: &mut Report) {
         ("keys.name", "present"),
         ("matching.naam", "present"),
         ("numerology.profile", "present"),
+        ("research.compare", "present"),
+        ("research.counts", "present"),
+        ("research.expected", "present"),
+        ("research.timed", "present"),
         ("time.civil_of", "present"),
         ("time.convert", "present"),
         ("time.delta_t", "present"),
@@ -6277,6 +6281,127 @@ const PAKSHI_JSON: [&str; 2] = [
     r#"{"calendar":"GREGORIAN","first":{"year":1991,"month":5,"day":21},"latitudeDeg":13.0827,"longitudeDeg":80.2707,"altitudeM":6,"utcOffsetSeconds":19800,"native":{"bird":"OWL"}}"#,
 ];
 
+/// The studies every runner sends (`03-design/research.md`): eight births
+/// at Kathmandu a few years apart, the shipped yogas as the predicates,
+/// compared by alternate labels, read against their own recombined
+/// population, and each delivered by the Vimshottari at an event of its
+/// life under the age shuffle. Sent as the record a binding writes.
+fn research_studies() -> [(&'static str, serde_json::Value); 4] {
+    let births: Vec<serde_json::Value> = (0..8_u32)
+        .map(|i| {
+            serde_json::json!({
+                "instant": 2_447_000.25 + 977.3 * f64::from(i),
+                "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20_700,
+            })
+        })
+        .collect();
+    let subjects: Vec<serde_json::Value> = births
+        .iter()
+        .zip(0_u32..)
+        .map(|(birth, i)| {
+            let at = birth["instant"].as_f64().unwrap_or_default();
+            serde_json::json!({"birth": birth, "event": at + 9000.5 + 211.0 * f64::from(i)})
+        })
+        .collect();
+    let groups: Vec<u32> = (0..8).map(|i| i % 2).collect();
+    let rules = serde_json::json!({"shipped": ["YOGAS"]});
+    [
+        (
+            "counts",
+            serde_json::json!({"study": "COUNTS", "rules": rules, "holds": "FORMED",
+            "births": births, "design": {"groups": groups}}),
+        ),
+        (
+            "compare",
+            serde_json::json!({"study": "COMPARE", "rules": rules, "births": births,
+            "design": {"groups": groups},
+            "test": {"seed": 5, "permutations": 199,
+                     "contrast": {"kind": "CASE_VS_REST", "case": 1}, "alpha": 0.05}}),
+        ),
+        (
+            "expected",
+            serde_json::json!({"study": "EXPECTED", "rules": rules, "births": births,
+            "control": {"seed": 4, "replicates": 3}}),
+        ),
+        (
+            "timed",
+            serde_json::json!({"study": "TIMED", "rules": rules, "subjects": subjects,
+            "dasha": "dasha_system.VIMSHOTTARI", "shuffle": "AGES_AT_EVENT",
+            "test": {"seed": 3, "permutations": 49}}),
+        ),
+    ]
+}
+
+/// Each study's answer as the other runners print it.
+fn the_research(report: &mut Report, geo: &Context) {
+    use teistro::ResearchAnswer;
+    let counted = |counts: &[teistro::research::GroupCount]| {
+        counts
+            .iter()
+            .map(|c| format!("{}:{}:{}:{}", c.present, c.absent, c.unreadable, c.unstable))
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let optional = |value: Option<f64>| value.map_or_else(|| "none".to_owned(), number);
+    for (name, study) in research_studies() {
+        let asked = teistro::ResearchRequest::from_json(&study.to_string()).expect("a study");
+        match geo.research().request(&asked).expect("the test provider") {
+            ResearchAnswer::Counts(table) => {
+                put(
+                    report,
+                    &format!("research-{name}-hash"),
+                    table.provenance.input_hash.to_string(),
+                );
+                for (k, row) in table.value.rows.iter().enumerate() {
+                    put(
+                        report,
+                        &format!("research-{name}-row-{k}"),
+                        format!("{} {}", row.predicate, counted(&row.counts)),
+                    );
+                }
+            }
+            ResearchAnswer::Tested(tested) => {
+                put(
+                    report,
+                    &format!("research-{name}-hash"),
+                    tested.provenance.input_hash.to_string(),
+                );
+                let value = &tested.value;
+                put(
+                    report,
+                    &format!("research-{name}-test"),
+                    format!(
+                        "{} {} {}",
+                        value.permutations,
+                        number(value.resolution),
+                        value.shuffle.name()
+                    ),
+                );
+                for (k, r) in value.rows.iter().enumerate() {
+                    put(
+                        report,
+                        &format!("research-{name}-row-{k}"),
+                        format!(
+                            "{} {} {} {} {} {} {} {} {} {} {}",
+                            r.predicate,
+                            counted(&r.counts),
+                            optional(r.observed),
+                            r.p.exceed,
+                            number(r.p.value),
+                            number(r.adjusted.max_t),
+                            number(r.adjusted.holm),
+                            number(r.adjusted.bh),
+                            optional(r.exact),
+                            optional(r.effect.map(|e| e.risk_difference.estimate)),
+                            optional(r.expected.map(|e| e.expected)),
+                        ),
+                    );
+                }
+            }
+        }
+    }
+}
+
 /// Each Pancha Pakshi day as the other runners print it: the day's bounds,
 /// weekday, paksha and birds, and each yama with its sub-periods.
 fn the_pakshi(report: &mut Report, geo: &Context) {
@@ -6488,6 +6613,7 @@ fn main() {
     a_muhurta(&mut report, &geo, &place, offset);
     the_rashifal(&mut report, &geo);
     the_pakshi(&mut report, &geo);
+    the_research(&mut report, &geo);
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);

@@ -71,20 +71,33 @@ impl Moments {
                 .filter_map(|replicate| replicate.get(j))
                 .filter_map(|&(present, read)| share(present, read))
                 .collect();
-            if shares.is_empty() {
+            let Some(&first) = shares.first() else {
                 continue;
-            }
-            #[allow(clippy::cast_precision_loss)]
-            let count = shares.len() as f64;
-            let centre = shares.iter().sum::<f64>() / count;
-            let variance = shares
-                .iter()
-                .map(|s| (s - centre) * (s - centre))
-                .sum::<f64>()
-                / count;
+            };
+            // Replicates that all agree have that share and no spread. A
+            // sum of equal shares divided back does not always return the
+            // share to the bit, and the last bit of a mean left over would
+            // read as a spread of 1e-17 and a statistic of 1e15.
+            #[allow(
+                clippy::float_cmp,
+                reason = "the same division of counts, so equal shares are equal to the bit"
+            )]
+            let (centre, deviation) = if shares.iter().all(|&s| s == first) {
+                (first, 0.0)
+            } else {
+                #[allow(clippy::cast_precision_loss)]
+                let count = shares.len() as f64;
+                let centre = shares.iter().sum::<f64>() / count;
+                let variance = shares
+                    .iter()
+                    .map(|s| (s - centre) * (s - centre))
+                    .sum::<f64>()
+                    / count;
+                (centre, variance.sqrt())
+            };
             if let (Some(m), Some(s)) = (mean.get_mut(j), spread.get_mut(j)) {
                 *m = centre;
-                *s = variance.sqrt();
+                *s = deviation;
             }
         }
         Moments { mean, spread }
@@ -228,7 +241,9 @@ pub fn replicated(
             PredicateRow {
                 predicate: name.clone(),
                 counts: vec![counts],
-                observed: statistic,
+                // Past every replicate is what the ranking needs and
+                // not a number a reader can use.
+                observed: (statistic.abs() < f64::MAX).then_some(statistic),
                 p: assessed.p,
                 exact: None,
                 adjusted: assessed.adjusted,

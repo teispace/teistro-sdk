@@ -1,0 +1,64 @@
+---
+title: A study over many births
+description: sdk.research — counts and permutation tests, every rule a predicate, the family corrected and the study registered by its hash.
+---
+
+`sdk.research` asks whether a rule holds more often in one group of
+births than in another, or than chance allows, without letting a study
+find what is not there. A study names its **births**, its **rules** (each
+one a predicate, read once on every chart), its **labels** and its
+**test**, and the answer comes back per rule, never as one verdict.
+
+```js
+const tested = ctx.research.compare({
+  births,
+  rules: { shipped: ['YOGAS'] },
+  design: { groups: births.map((_, i) => (i < 16 ? 1 : 0)) },
+  test: { seed: 2026, permutations: 999, contrast: { kind: 'CASE_VS_REST', case: 1 }, alpha: 0.05 },
+});
+console.log(`registered as ${tested.provenance.inputHash}`);
+const best = tested.rows.reduce((kept, row) => (row.p.value < kept.p.value ? row : kept));
+console.log(best.predicate, best.p.value, best.adjusted.maxT);
+```
+
+This is the shared example `research`, executed in every binding by
+`cargo xtask check-parity`, which holds that Node, Python, Dart, Rust and
+Java print the same lines. Its labels mean nothing, which is the case a
+study's corrections exist for: run it and see what the smallest raw p
+becomes once the family is accounted for.
+
+## The four studies
+
+| operation | the question | the null |
+|---|---|---|
+| `counts` | how often each rule holds in each group | none: the first table, with the unreadable and the unstable counted apart |
+| `compare` | is a rule commoner among the cases than among the rest, or does its share differ between any of the groups | the labels permuted, inside strata when the design has them |
+| `expected` | is a rule commoner in this sample than in its own population | the sample refounded with clock times shuffled among its births, date and place kept (Gauquelin's control) |
+| `timed` | is a rule delivered by a dasha at the subjects' own events more often than chance | events shuffled among the subjects, by date or by age |
+
+## What keeps a study honest
+
+- **The study is registered before it is read.** The answer's
+  `provenance.inputHash` seals the births, the rules, the labels and the
+  test, and is the same in every binding. Publish it before the data are
+  collected; anyone can rerun the study and get the same hash and the
+  same rows.
+- **Every rule is one family.** Each row carries its raw p and the
+  family's max-T, Holm, Bonferroni, Benjamini–Hochberg and
+  Benjamini–Yekutieli adjustments. Max-T uses the rules' real dependence
+  from the same permutations.
+- **The permutations are fixed in the request.** There is no adaptive
+  mode, so a study cannot draw until it likes the answer, and the
+  answer's `resolution`, `1/(m + 1)`, is the smallest p the request can
+  say. An `alpha` the permutations cannot reach over the family is
+  refused rather than answered.
+- **A chart a rule cannot be read on is not counted absent.** A birth
+  whose recorded time is uncertain is read at both edges, and a rule that
+  differs between them is counted unstable and left out of the
+  denominator.
+- **A seed is a whole 64-bit number** in every binding: a `bigint` in
+  Node, a `BigInt` in Dart and a `BigInteger` in Java past what a plain
+  number holds.
+
+The design, the tests the module is held to, and the sources are in
+`03-design/research.md`.

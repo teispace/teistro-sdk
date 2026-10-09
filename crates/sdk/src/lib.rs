@@ -42,7 +42,7 @@
 //! that marshalling and nothing else.
 
 mod area;
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
+#[cfg(any(feature = "pakshi", feature = "rashifal", feature = "research"))]
 mod asked;
 #[cfg(feature = "western")]
 mod composites;
@@ -115,6 +115,8 @@ mod rectification_request;
 mod rectify;
 #[cfg(feature = "remedies")]
 mod remedy_request;
+#[cfg(feature = "research")]
+mod research_request;
 #[cfg(feature = "chart")]
 mod returns;
 #[cfg(feature = "chart")]
@@ -446,6 +448,8 @@ pub use teistro_lalkitab as lalkitab;
 // death birds and the relations (`03-design/pakshi.md`).
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
+#[cfg(feature = "research")]
+pub use crate::research_request::{ResearchAnswer, ResearchRequest, ResearchStudy};
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS

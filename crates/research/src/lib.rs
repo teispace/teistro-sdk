@@ -306,8 +306,11 @@ pub struct PredicateRow {
     pub predicate: String,
     /// Its charts in each group, groups in index order.
     pub counts: Vec<GroupCount>,
-    /// The test statistic under the observed labels.
-    pub observed: f64,
+    /// The test statistic under the observed labels; none when it is
+    /// unbounded, which is a recombined sample whose replicates all agree
+    /// and which lies beyond them. The p-value still ranks it beyond every
+    /// replicate.
+    pub observed: Option<f64>,
     /// The permutation p-value.
     pub p: PValue,
     /// The exact p of the same statistic, from the hypergeometric: given
@@ -712,7 +715,7 @@ impl RowContext<'_> {
         PredicateRow {
             predicate: column.name.clone(),
             counts,
-            observed,
+            observed: Some(observed),
             p: assessed.p,
             exact,
             adjusted: assessed.adjusted,

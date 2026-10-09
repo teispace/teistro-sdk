@@ -22,6 +22,13 @@ import json
 
 from teistro import (
     AshtaKoota,
+    ResearchBirth,
+    ResearchCountRow,
+    ResearchCounts,
+    ResearchRow,
+    ResearchSubject,
+    ResearchTested,
+    RuleRequest,
     Context,
     NaamRules,
     NumerologyRules,
@@ -753,6 +760,62 @@ def put_pakshi(geo: Context) -> None:
                     f"{key}-yama-{k}",
                     f"{yama.half} {yama.yama} {number(yama.span.from_)} {number(yama.span.to)} {yama.activity} {yama.quality} {subs}",
                 )
+
+
+def put_research(geo: Context) -> None:
+    """The studies every runner sends (`03-design/research.md`): eight
+    births at Kathmandu a few years apart, the shipped yogas as the
+    predicates, compared by alternate labels, read against their own
+    recombined population, and each delivered by the Vimshottari at an
+    event of its life under the age shuffle."""
+    kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0))
+    births = [ResearchBirth(instant=2447000.25 + 977.3 * i, place=kathmandu, utc_offset_seconds=20700) for i in range(8)]
+    rules: RuleRequest = {"shipped": ["YOGAS"]}
+    groups = [i % 2 for i in range(8)]
+
+    def optional(value: float | None) -> str:
+        return "none" if value is None else number(value)
+
+    def row(r: ResearchCountRow | ResearchRow) -> str:
+        counts = ",".join(f"{c.present}:{c.absent}:{c.unreadable}:{c.unstable}" for c in r.counts)
+        if isinstance(r, ResearchCountRow):
+            return f"{r.predicate} {counts}"
+        return (
+            f"{r.predicate} {counts} {optional(r.observed)} {r.p.exceed} {number(r.p.value)} {number(r.adjusted.max_t)} "
+            f"{number(r.adjusted.holm)} {number(r.adjusted.bh)} {optional(r.exact)} "
+            f"{optional(None if r.effect is None else r.effect.risk_difference.estimate)} "
+            f"{optional(None if r.expected is None else r.expected.expected)}"
+        )
+
+    def put_study(name: str, answer: ResearchCounts | ResearchTested) -> None:
+        put(f"research-{name}-hash", answer.provenance.input_hash)
+        if isinstance(answer, ResearchTested):
+            put(f"research-{name}-test", f"{answer.permutations} {number(answer.resolution)} {answer.shuffle}")
+        rows: Sequence[ResearchCountRow | ResearchRow] = answer.rows
+        for k, one in enumerate(rows):
+            put(f"research-{name}-row-{k}", row(one))
+
+    put_study("counts", geo.research.counts(births=births, rules=rules, holds="FORMED", design={"groups": groups}))
+    put_study(
+        "compare",
+        geo.research.compare(
+            births=births,
+            rules=rules,
+            design={"groups": groups},
+            test={"seed": 5, "permutations": 199, "contrast": {"kind": "CASE_VS_REST", "case": 1}, "alpha": 0.05},
+        ),
+    )
+    put_study("expected", geo.research.expected(births=births, rules=rules, control={"seed": 4, "replicates": 3}))
+    put_study(
+        "timed",
+        geo.research.timed(
+            subjects=[ResearchSubject(birth=b, event=b.instant + 9000.5 + 211 * i) for i, b in enumerate(births)],
+            rules=rules,
+            dasha="dasha_system.VIMSHOTTARI",
+            shuffle="AGES_AT_EVENT",
+            test={"seed": 3, "permutations": 49},
+        ),
+    )
 
 
 def put_naam(ctx: Context) -> None:
@@ -2376,6 +2439,7 @@ def main() -> None:
 
         put_rashifal(geo, place)
         put_pakshi(geo)
+        put_research(geo)
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
@@ -2495,6 +2559,10 @@ def main() -> None:
         ("almanac.of", ctx.almanac.of),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
+        ("research.counts", ctx.research.counts),
+        ("research.compare", ctx.research.compare),
+        ("research.expected", ctx.research.expected),
+        ("research.timed", ctx.research.timed),
         ("engine.names", ctx.engine.names),
         ("engine.signature", ctx.engine.signature),
         ("engine.call", ctx.engine.call),

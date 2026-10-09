@@ -4387,6 +4387,45 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Runs a study over a batch of births and answers with `{value,
+    /// provenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`
+    /// study, each row `{predicate, counts}` with every group's `{present,
+    /// absent, unreadable, unstable}`; for any other study it is `{rows,
+    /// permutations, resolution, shuffle}`, each row adding `observed`, `p`
+    /// (`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,
+    /// bonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last
+    /// four only where they apply. `provenance.input_hash` seals the study
+    /// and is what a study publishes before its data are collected.
+    ///
+    /// `request_json` is `{"study", "rules", "holds", ...}`: `study` one of
+    /// `COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart
+    /// request's rules are, and what the study reads: `births` and `design`
+    /// (and a `test` for `COMPARE`); `births`, `control` and an optional
+    /// `test` for `EXPECTED`; `subjects`, `dasha`, `test` and optionally
+    /// `depth`, `shuffle` and `strata` for `TIMED`. A birth is `{instant,
+    /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
+    /// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+    /// number or a decimal string. A key it does not read, a field the study
+    /// does not read or misses, or a value out of range is `INVALID_ARG`,
+    /// named under `research`, as `research.test.seed`; what the study
+    /// refuses once it runs is named as the façade names it. A context
+    /// without an ephemeris is `CAPABILITY`, as is a build that leaves the
+    /// `research` family out.
+    #[wasm_bindgen(js_name = research)]
+    pub fn research(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::research::ts_research(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// What the context's engine says it offers beyond this library's own
     /// operations: its manifest, as the engine wrote it.
     ///

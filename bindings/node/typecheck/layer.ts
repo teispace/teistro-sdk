@@ -124,6 +124,10 @@ import type {
   PakshiRelation,
   PakshiRequest,
   PakshiSpan,
+  ResearchBirth,
+  ResearchCounts,
+  ResearchRow,
+  ResearchTested,
   Rectification,
   RectificationRequest,
   BaselineNote,
@@ -984,6 +988,35 @@ function thePakshi(ctx: Context): string {
   return `${vara} ${paksha} ${bird} ${activity} ${relation} ${span?.to} ${read.yamas[0]?.quality} ${read.yamas[0]?.half}`;
 }
 void thePakshi;
+
+function theResearch(ctx: Context): string {
+  const births: readonly ResearchBirth[] = [
+    { instant: 2447000.25, place: { latitude: 27.7, longitude: 85.3 }, utcOffsetSeconds: 20700, uncertaintyMinutes: 10 },
+    { instant: 2448000.25, place: { latitude: 27.7, longitude: 85.3, altitude: 1400 }, utcOffsetSeconds: 20700 },
+  ];
+  const rules = { shipped: ['YOGAS'] as const };
+  const counted: ResearchCounts = ctx.research.counts({ births, rules, holds: 'FORMED', design: { groups: [0, 1] } });
+  const tested: ResearchTested = ctx.research.compare({
+    births,
+    rules,
+    design: { groups: [0, 1], strata: [0, 0] },
+    test: { seed: 1n, permutations: 9, contrast: { kind: 'ANY_DIFFERENCE' }, alternative: 'GREATER', parallelism: { THREADS: 2 } },
+  });
+  const expected = ctx.research.expected({ births, rules, control: { seed: 2, replicates: 3 }, test: { alpha: 0.05 } });
+  const timed = ctx.research.timed({
+    subjects: births.map((birth) => ({ birth, event: birth.instant + 9000 })),
+    rules,
+    dasha: 'dasha_system.VIMSHOTTARI',
+    depth: 1,
+    shuffle: 'AGES_AT_EVENT',
+    strata: [0, 0],
+    test: { seed: 3, permutations: 9, afterBirth: 'RESTRICT_PAIRINGS' },
+  });
+  const row: ResearchRow | undefined = tested.rows[0];
+  const ratio = row?.effect?.riskRatio?.estimate ?? row?.expected?.ratio;
+  return `${counted.rows[0]?.counts[0]?.unstable} ${row?.p.exceed} ${row?.adjusted.by} ${ratio} ${row?.underAlpha?.raw} ${expected.shuffle} ${timed.provenance.inputHash}`;
+}
+void theResearch;
 
 function theLalKitab(ctx: Context): string {
   const asked: LalKitabRequest = {

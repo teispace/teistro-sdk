@@ -737,6 +737,69 @@ public final class ParityRunner {
     }
 
     /**
+     * The studies every runner sends ({@code 03-design/research.md}): eight births at Kathmandu a few
+     * years apart, the shipped yogas as the predicates, compared by alternate labels, read against their
+     * own recombined population, and each delivered by the Vimshottari at an event of its life under
+     * the age shuffle.
+     */
+    private static void putResearch(Context geo) {
+        Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(0));
+        List<ResearchBirth> births = new ArrayList<>();
+        List<Integer> groups = new ArrayList<>();
+        for (int i = 0; i < 8; i += 1) {
+            births.add(new ResearchBirth(2447000.25 + 977.3 * i, kathmandu, 20_700));
+            groups.add(i % 2);
+        }
+        Map<String, Object> yogas = map("shipped", List.of("YOGAS"));
+        Map<String, Object> design = map("groups", groups);
+        ResearchCounts table = geo.research().counts(births, yogas, design, map("holds", "FORMED"));
+        put("research-counts-hash", table.provenance().inputHash());
+        for (int k = 0; k < table.rows().size(); k += 1) {
+            ResearchCounts.Row row = table.rows().get(k);
+            put("research-counts-row-" + k, row.predicate() + " " + groupsOf(row.counts()));
+        }
+        putTested("compare", geo.research().compare(births, yogas, design,
+                map("seed", 5, "permutations", 199, "contrast", map("kind", "CASE_VS_REST", "case", 1),
+                        "alpha", 0.05),
+                null));
+        putTested("expected", geo.research().expected(births, yogas, map("seed", 4, "replicates", 3), null, null));
+        List<ResearchSubject> subjects = new ArrayList<>();
+        for (int i = 0; i < births.size(); i += 1) {
+            ResearchBirth birth = births.get(i);
+            subjects.add(new ResearchSubject(birth, birth.instant() + 9000.5 + 211 * i));
+        }
+        putTested("timed", geo.research().timed(subjects, yogas, DashaSystem.VIMSHOTTARI,
+                map("seed", 3, "permutations", 49), map("shuffle", "AGES_AT_EVENT")));
+    }
+
+    private static String groupsOf(List<ResearchCounts.Group> counts) {
+        List<String> out = new ArrayList<>();
+        for (ResearchCounts.Group c : counts) {
+            out.add(c.present() + ":" + c.absent() + ":" + c.unreadable() + ":" + c.unstable());
+        }
+        return String.join(",", out);
+    }
+
+    private static String optional(Double value) {
+        return value == null ? "none" : number(value.doubleValue());
+    }
+
+    private static void putTested(String name, ResearchTested answer) {
+        put("research-" + name + "-hash", answer.provenance().inputHash());
+        put("research-" + name + "-test",
+                answer.permutations() + " " + number(answer.resolution()) + " " + answer.shuffle());
+        for (int k = 0; k < answer.rows().size(); k += 1) {
+            ResearchTested.Row r = answer.rows().get(k);
+            put("research-" + name + "-row-" + k, r.predicate() + " " + groupsOf(r.counts()) + " "
+                    + optional(r.observed()) + " " + r.p().exceed() + " " + number(r.p().value()) + " "
+                    + number(r.adjusted().maxT()) + " " + number(r.adjusted().holm()) + " "
+                    + number(r.adjusted().bh()) + " " + optional(r.exact()) + " "
+                    + optional(r.effect() == null ? null : r.effect().riskDifference().estimate()) + " "
+                    + optional(r.expected() == null ? null : r.expected().expected()));
+        }
+    }
+
+    /**
      * The Pancha Pakshi requests every runner sends, at Madras: a native by
      * birth star in the dark half under Pulippani's lengths and relations
      * over two days, and a bird named outright under the defaults for one.
@@ -1207,6 +1270,7 @@ public final class ParityRunner {
                 almanac(geo, place);
                 putRashifal(geo, place);
                 putPakshi(geo);
+                putResearch(geo);
             }
 
             // ── The eclipses ──────────────────────────────────────────────
@@ -1287,6 +1351,10 @@ public final class ParityRunner {
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
+            surface("research.counts", () -> ctx.research().counts(List.of(), Map.of(), Map.of(), null));
+            surface("research.compare", () -> ctx.research().compare(List.of(), Map.of(), Map.of(), Map.of(), null));
+            surface("research.expected", () -> ctx.research().expected(List.of(), Map.of(), Map.of(), null, null));
+            surface("research.timed", () -> ctx.research().timed(List.of(), Map.of(), DashaSystem.VIMSHOTTARI, Map.of(), null));
             surface("engine.names", () -> ctx.ephemeris().names());
             surface("engine.signature", () -> ctx.ephemeris().signature(""));
             surface("engine.call", () -> ctx.ephemeris().call("", Map.of()));

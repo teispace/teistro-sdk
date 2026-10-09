@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 52 entry points over 27 structs and 157 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 53 entry points over 27 structs and 157 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -136,6 +136,12 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_rashifal`](rashifal/ts_rashifal) | Reads periods of civil days at a place for each of the twelve signs and answers with an array of `{period, baseline}` as canonical JSON: the sky at the reference day's sunrise (or a clock time), each sign's gochar from Phaladeepika ch. |
 
+### Research
+
+| entry point | what it does |
+|---|---|
+| [`ts_research`](research/ts_research) | Runs a study over a batch of births and answers with `{value, provenance}` as canonical JSON. |
+
 ### Ephemeris
 
 | entry point | what it does |
@@ -183,5 +189,6 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/numerology.rs`
 - `crates/ffi/src/pakshi.rs`
 - `crates/ffi/src/rashifal.rs`
+- `crates/ffi/src/research.rs`
 - `crates/ffi/src/ephemeris.rs`
 - `crates/ffi/src/provider.rs`

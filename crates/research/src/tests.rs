@@ -352,7 +352,7 @@ fn a_chi_square_reads_every_group() {
     .unwrap();
     for row in &tested.rows {
         assert_eq!(row.counts.len(), 3);
-        assert!(row.observed >= 0.0);
+        assert!(row.observed.is_some_and(|observed| observed >= 0.0));
         assert!(row.effect.is_none() && row.exact.is_none());
         assert!(row.adjusted.max_t >= row.p.value);
     }
@@ -523,7 +523,14 @@ fn a_sample_is_read_against_its_own_replicates() {
     assert!((expectation.ratio.unwrap() - 2.0).abs() < 0.1);
     // Every replicate equals the observed share, so every one reaches it.
     assert_eq!(tested.rows[1].p.exceed, 199);
-    assert_eq!(tested.rows[1].observed, 0.0);
+    assert_eq!(tested.rows[1].observed, Some(0.0));
+    // Replicates that all agree, a sample beyond them: no finite statistic
+    // says how far, and the p-value still ranks it past every one.
+    let agreeing: Vec<Vec<(u32, u32)>> = (0..19).map(|_| vec![(20, 100), (50, 100)]).collect();
+    let beyond = replicated(&names, &observed, &agreeing, &test).unwrap();
+    assert_eq!(beyond.rows[0].observed, None);
+    assert_eq!(beyond.rows[0].p.exceed, 0);
+    assert_eq!(beyond.rows[1].observed, Some(0.0));
     assert_eq!(rare.counts[0].unstable, 1);
     // Refusals name their fields.
     let field = |replicates: &[Vec<(u32, u32)>], names: &[String]| {

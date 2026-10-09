@@ -1541,6 +1541,55 @@ class AnEngine(WithLibrary):
             )
             self.assertIsNone(midsummer.reading)
 
+    def test_a_study_counts_and_tests_its_rules_over_a_batch_of_births(self) -> None:
+        """A study crosses with its provenance, whose input hash is its
+        pre-registration; a seed past what a JavaScript number holds is the
+        same seed here, and a field the study does not read is refused by
+        name (`03-design/research.md`)."""
+        from teistro import DashaSystem, ResearchBirth, ResearchCountRow, ResearchDesign, ResearchRow, TeistroError
+
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0))
+        births = [ResearchBirth(instant=2447000.25 + 977.3 * i, place=kathmandu, utc_offset_seconds=20700) for i in range(6)]
+        design: ResearchDesign = {"groups": [0, 1, 0, 1, 0, 1]}
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            counted = ctx.research.counts(births=births, rules={"shipped": ["YOGAS"]}, design=design)
+            self.assertGreater(len(counted.rows), 0)
+            for row in counted.rows:
+                self.assertIsInstance(row, ResearchCountRow)
+                for group in row.counts:
+                    self.assertEqual(group.present + group.absent + group.unreadable + group.unstable, 3, row.predicate)
+            contrast = {"kind": "CASE_VS_REST", "case": 1}
+            tested = ctx.research.compare(
+                births=births,
+                rules={"shipped": ["YOGAS"]},
+                design=design,
+                test={"seed": 2**64 - 1, "permutations": 199, "contrast": contrast, "alpha": 0.05},
+            )
+            self.assertEqual(tested.permutations, 199)
+            self.assertEqual(tested.resolution, 1 / 200)
+            for one in tested.rows:
+                self.assertIsInstance(one, ResearchRow)
+                self.assertGreaterEqual(one.p.value, tested.resolution)
+                self.assertGreaterEqual(one.adjusted.max_t, one.p.value)
+                self.assertIsNotNone(one.under_alpha)
+            self.assertNotEqual(tested.provenance.input_hash, counted.provenance.input_hash)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.compare(
+                    births=births,
+                    rules={"shipped": ["YOGAS"]},
+                    design=design,
+                    test={"seed": 1, "permutations": 19},
+                )
+            self.assertEqual(refused.exception.field, "research.test")
+            with self.assertRaises(TeistroError) as refused:
+                ctx.research.timed(
+                    subjects=[],
+                    rules={"shipped": ["YOGAS"]},
+                    dasha=DashaSystem.VIMSHOTTARI,
+                    test={"seed": 1, "permutations": 19},
+                )
+            self.assertEqual(refused.exception.field, "research.subjects")
+
     def test_a_chart_carries_its_lalkitab(self) -> None:
         """Lal Kitab crosses whole, its grahas made members, the cycle from
         the book's general start unless asked, the year and its annual teva

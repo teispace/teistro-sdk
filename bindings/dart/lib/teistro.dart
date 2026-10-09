@@ -1143,6 +1143,131 @@ final class NumerologyArea extends _Area {
   );
 }
 
+/// `sdk.research` — counts and permutation tests over a batch of births
+/// (`03-design/research.md`). Every rule of the request is a predicate,
+/// read once on every chart, and the predicates are one family for the
+/// corrections. A study's provenance seals it: its
+/// [Provenance.inputHash] is the pre-registration a study publishes
+/// before its data are collected.
+final class ResearchArea extends _Area {
+  const ResearchArea._(super.context);
+
+  /// How often each rule holds in each group, the charts it cannot be read
+  /// on and those it is unstable on counted apart. No null and no shuffle.
+  ///
+  /// ```dart
+  /// final table = sdk.research.counts(
+  ///   births: births,
+  ///   rules: const RuleRequest(shipped: [ShippedRules.yogas]),
+  ///   design: ResearchDesign(groups: [for (var i = 0; i < births.length; i++) i % 2]),
+  /// );
+  /// ```
+  ResearchCounts counts({
+    required List<ResearchBirth> births,
+    required RuleRequest rules,
+    required ResearchDesign design,
+    ResearchHolds holds = ResearchHolds.standing,
+  }) {
+    final answer = _run('COUNTS', rules, holds, <String, Object?>{
+      'births': [for (final birth in births) birth._record],
+      'design': design._record,
+    });
+    final value = answer['value']! as Map<String, Object?>;
+    return ResearchCounts(
+      rows: List.unmodifiable([
+        for (final raw in value['rows']! as List<Object?>)
+          _researchCountRow(raw! as Map<String, Object?>),
+      ]),
+      provenance: Provenance.fromJson(
+        answer['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+
+  /// Whether the design's groups differ on each rule, the labels permuted
+  /// (within strata when the design has them), with the family's
+  /// corrections and the effect sizes.
+  ResearchTested compare({
+    required List<ResearchBirth> births,
+    required RuleRequest rules,
+    required ResearchDesign design,
+    required ResearchGroupTest test,
+    ResearchHolds holds = ResearchHolds.standing,
+  }) => _researchTested(
+    _run('COMPARE', rules, holds, <String, Object?>{
+      'births': [for (final birth in births) birth._record],
+      'design': design._record,
+      'test': test._record,
+    }),
+  );
+
+  /// Whether each rule is commoner (or rarer) in this sample than in its
+  /// own recombined population: the sample refounded with clock times
+  /// shuffled among its births, date and place kept.
+  ResearchTested expected({
+    required List<ResearchBirth> births,
+    required RuleRequest rules,
+    required ResearchControl control,
+    ResearchReplicateTest test = const ResearchReplicateTest(),
+    ResearchHolds holds = ResearchHolds.standing,
+  }) => _researchTested(
+    _run('EXPECTED', rules, holds, <String, Object?>{
+      'births': [for (final birth in births) birth._record],
+      'control': control._record,
+      'test': test._record,
+    }),
+  );
+
+  /// Whether each rule is delivered by [dasha]'s running periods, read to
+  /// [depth] (1 to 6), at the subjects' own events more (or less) often
+  /// than at events shuffled among them.
+  ResearchTested timed({
+    required List<ResearchSubject> subjects,
+    required RuleRequest rules,
+    required DashaSystem dasha,
+    required ResearchEventTest test,
+    int depth = 2,
+    ResearchEventShuffle shuffle = ResearchEventShuffle.eventDates,
+    List<int>? strata,
+    ResearchHolds holds = ResearchHolds.standing,
+  }) => _researchTested(
+    _run('TIMED', rules, holds, <String, Object?>{
+      'subjects': [
+        for (final subject in subjects)
+          <String, Object?>{
+            'birth': subject.birth._record,
+            'event': subject.event,
+          },
+      ],
+      'dasha': dasha.fullKey,
+      'depth': depth,
+      'shuffle': shuffle.key,
+      if (strata case final strata?) 'strata': strata,
+      'test': test._record,
+    }),
+  );
+
+  Map<String, Object?> _run(
+    String study,
+    RuleRequest rules,
+    ResearchHolds holds,
+    Map<String, Object?> fields,
+  ) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.research(
+                jsonEncode(<String, Object?>{
+                  'study': study,
+                  'rules': jsonDecode(rules._json),
+                  'holds': holds.key,
+                  ...fields,
+                }),
+              ),
+            ),
+          )
+          as Map<String, Object?>;
+}
+
 /// A context: settings, a locale and an ephemeris, with the calls that use
 /// them. Built by [Teistro.context].
 ///
@@ -1237,6 +1362,9 @@ final class Context {
 
   /// What a name and a birth date say under numerology's two systems.
   late final NumerologyArea numerology = NumerologyArea._(this);
+
+  /// Counts and permutation tests over a batch of births.
+  late final ResearchArea research = ResearchArea._(this);
 
   /// The id of the profile the settings came from.
   String get profile => _inner.profile();
@@ -18476,6 +18604,605 @@ final class PakshiDay extends _Value {
 }
 
 /// One day of `ts_pakshi`'s answer, its keys made members.
+/// When a rule counts as holding on a chart: standing (formed, and its
+/// cancellations do not undo it) or merely formed.
+enum ResearchHolds {
+  standing('STANDING'),
+  formed('FORMED');
+
+  const ResearchHolds(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// The direction a test looks in, declared before the data.
+enum ResearchAlternative {
+  greater('GREATER'),
+  less('LESS'),
+  twoSided('TWO_SIDED');
+
+  const ResearchAlternative(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// What the shuffled-event null keeps: the calendar of events, or each
+/// person's age at the event.
+enum ResearchEventShuffle {
+  eventDates('EVENT_DATES'),
+  agesAtEvent('AGES_AT_EVENT');
+
+  const ResearchEventShuffle(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// One birth of a study: its [instant], a Julian day in UTC, where, under
+/// which clock, and how far either side its recorded time may be wrong, 0
+/// to 720 minutes. A rule whose answer differs at either edge is counted
+/// unstable on the chart.
+final class ResearchBirth extends _Value {
+  const ResearchBirth({
+    required this.instant,
+    required this.place,
+    required this.utcOffsetSeconds,
+    this.uncertaintyMinutes = 0,
+  });
+
+  final double instant;
+  final Observer place;
+  final int utcOffsetSeconds;
+  final double uncertaintyMinutes;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'instant': instant,
+    'latitudeDeg': place.latitudeDeg,
+    'longitudeDeg': place.longitudeDeg,
+    'altitudeM': place.altitudeM,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    'uncertaintyMinutes': uncertaintyMinutes,
+  };
+
+  @override
+  List<Object?> get _fields => [
+    instant,
+    place,
+    utcOffsetSeconds,
+    uncertaintyMinutes,
+  ];
+}
+
+/// One subject of an event study: a birth and when the event of its life
+/// happened, a Julian day in UTC.
+final class ResearchSubject extends _Value {
+  const ResearchSubject({required this.birth, required this.event});
+
+  final ResearchBirth birth;
+  final double event;
+
+  @override
+  List<Object?> get _fields => [birth, event];
+}
+
+/// Who is in which group, one label per birth, and the strata the labels
+/// move within.
+final class ResearchDesign extends _Value {
+  const ResearchDesign({required this.groups, this.strata});
+
+  final List<int> groups;
+  final List<int>? strata;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'groups': groups,
+    if (strata case final strata?) 'strata': strata,
+  };
+
+  @override
+  List<Object?> get _fields => [groups, strata];
+}
+
+/// What a design's groups are compared by.
+sealed class ResearchContrast {
+  const ResearchContrast();
+
+  /// One group, the cases, against every other chart.
+  const factory ResearchContrast.caseVsRest(int cases) = _CaseVsRest;
+
+  /// Whether the share differs between any of the groups.
+  static const ResearchContrast anyDifference = _AnyDifference();
+
+  Map<String, Object?> get _record;
+}
+
+final class _CaseVsRest extends ResearchContrast {
+  const _CaseVsRest(this.cases);
+
+  final int cases;
+
+  @override
+  Map<String, Object?> get _record => <String, Object?>{
+    'kind': 'CASE_VS_REST',
+    'case': cases,
+  };
+}
+
+final class _AnyDifference extends ResearchContrast {
+  const _AnyDifference();
+
+  @override
+  Map<String, Object?> get _record => const <String, Object?>{
+    'kind': 'ANY_DIFFERENCE',
+  };
+}
+
+/// A seed as the boundary reads it: a decimal string, which carries every
+/// 64-bit seed exactly.
+String _seed(BigInt seed) => seed.toString();
+
+/// A permutation test of a design's groups: a [seed], 1 to 10 000 000
+/// [permutations] fixed in the request, and what is compared. Every
+/// interval is at [level]; [alpha], when given, asks which methods put each
+/// row under it; [threads] count the permutations, the same bits for each.
+final class ResearchGroupTest extends _Value {
+  const ResearchGroupTest({
+    required this.seed,
+    required this.permutations,
+    required this.contrast,
+    this.alternative = ResearchAlternative.twoSided,
+    this.level = 0.95,
+    this.alpha,
+    this.threads,
+  });
+
+  final BigInt seed;
+  final int permutations;
+  final ResearchContrast contrast;
+  final ResearchAlternative alternative;
+  final double level;
+  final double? alpha;
+  final int? threads;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'seed': _seed(seed),
+    'permutations': permutations,
+    'contrast': contrast._record,
+    'alternative': alternative.key,
+    'level': level,
+    if (alpha case final alpha?) 'alpha': alpha,
+    if (threads case final threads?)
+      'parallelism': <String, Object?>{'THREADS': threads},
+  };
+
+  @override
+  List<Object?> get _fields => [
+    seed,
+    permutations,
+    contrast,
+    alternative,
+    level,
+    alpha,
+    threads,
+  ];
+}
+
+/// A test of events against the shuffled-event null. With
+/// [restrictPairings], a permutation draws only pairings that keep every
+/// event after its birth; without, a study in which any would not is
+/// refused.
+final class ResearchEventTest extends _Value {
+  const ResearchEventTest({
+    required this.seed,
+    required this.permutations,
+    this.alternative = ResearchAlternative.twoSided,
+    this.restrictPairings = false,
+    this.level = 0.95,
+    this.alpha,
+    this.threads,
+  });
+
+  final BigInt seed;
+  final int permutations;
+  final ResearchAlternative alternative;
+  final bool restrictPairings;
+  final double level;
+  final double? alpha;
+  final int? threads;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'seed': _seed(seed),
+    'permutations': permutations,
+    'alternative': alternative.key,
+    'afterBirth': restrictPairings ? 'RESTRICT_PAIRINGS' : 'REFUSE',
+    'level': level,
+    if (alpha case final alpha?) 'alpha': alpha,
+    if (threads case final threads?)
+      'parallelism': <String, Object?>{'THREADS': threads},
+  };
+
+  @override
+  List<Object?> get _fields => [
+    seed,
+    permutations,
+    alternative,
+    restrictPairings,
+    level,
+    alpha,
+    threads,
+  ];
+}
+
+/// Gauquelin's control: the sample refounded [replicates] times (1 to
+/// 100 000) from [seed], clock times moving only inside [strata] when
+/// given.
+final class ResearchControl extends _Value {
+  const ResearchControl({
+    required this.seed,
+    required this.replicates,
+    this.strata,
+  });
+
+  final BigInt seed;
+  final int replicates;
+  final List<int>? strata;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'seed': _seed(seed),
+    'replicates': replicates,
+    if (strata case final strata?) 'strata': strata,
+  };
+
+  @override
+  List<Object?> get _fields => [seed, replicates, strata];
+}
+
+/// How a sample is read against its replicates.
+final class ResearchReplicateTest extends _Value {
+  const ResearchReplicateTest({
+    this.alternative = ResearchAlternative.twoSided,
+    this.level = 0.95,
+    this.alpha,
+  });
+
+  final ResearchAlternative alternative;
+  final double level;
+  final double? alpha;
+
+  Map<String, Object?> get _record => <String, Object?>{
+    'alternative': alternative.key,
+    'level': level,
+    if (alpha case final alpha?) 'alpha': alpha,
+  };
+
+  @override
+  List<Object?> get _fields => [alternative, level, alpha];
+}
+
+/// A predicate's charts in one group: read and holding, read and not, not
+/// read, and unstable inside the time uncertainty; the last two are left
+/// out of every denominator.
+final class ResearchGroupCount extends _Value {
+  const ResearchGroupCount({
+    required this.present,
+    required this.absent,
+    required this.unreadable,
+    required this.unstable,
+  });
+
+  final int present;
+  final int absent;
+  final int unreadable;
+  final int unstable;
+
+  @override
+  List<Object?> get _fields => [present, absent, unreadable, unstable];
+}
+
+/// An estimate with its interval at the test's level.
+final class ResearchInterval extends _Value {
+  const ResearchInterval({
+    required this.estimate,
+    required this.low,
+    required this.high,
+  });
+
+  final double estimate;
+  final double low;
+  final double high;
+
+  @override
+  List<Object?> get _fields => [estimate, low, high];
+}
+
+/// `(exceed + 1)/(m + 1)`, never zero, with its Clopper–Pearson interval.
+final class ResearchPValue extends _Value {
+  const ResearchPValue({
+    required this.exceed,
+    required this.value,
+    required this.low,
+    required this.high,
+  });
+
+  final int exceed;
+  final double value;
+  final double low;
+  final double high;
+
+  @override
+  List<Object?> get _fields => [exceed, value, low, high];
+}
+
+/// The family's adjusted p-values: max-T, Holm, Bonferroni,
+/// Benjamini–Hochberg and Benjamini–Yekutieli.
+final class ResearchAdjusted extends _Value {
+  const ResearchAdjusted({
+    required this.maxT,
+    required this.holm,
+    required this.bonferroni,
+    required this.bh,
+    required this.by,
+  });
+
+  final double maxT;
+  final double holm;
+  final double bonferroni;
+  final double bh;
+  final double by;
+
+  @override
+  List<Object?> get _fields => [maxT, holm, bonferroni, bh, by];
+}
+
+/// The cases against the rest: each group's share, their difference and
+/// ratio with intervals, the odds ratio and Cohen's *h*. The ratio and the
+/// odds are null where a cell is empty.
+final class ResearchEffect extends _Value {
+  const ResearchEffect({
+    required this.riskCase,
+    required this.riskRest,
+    required this.riskDifference,
+    required this.riskRatio,
+    required this.oddsRatio,
+    required this.cohenH,
+  });
+
+  final ResearchInterval riskCase;
+  final ResearchInterval riskRest;
+  final ResearchInterval riskDifference;
+  final ResearchInterval? riskRatio;
+  final double? oddsRatio;
+  final double cohenH;
+
+  @override
+  List<Object?> get _fields => [
+    riskCase,
+    riskRest,
+    riskDifference,
+    riskRatio,
+    oddsRatio,
+    cohenH,
+  ];
+}
+
+/// A one-group study's share against the share its null expects, and their
+/// ratio where anything is expected.
+final class ResearchExpectation extends _Value {
+  const ResearchExpectation({
+    required this.observed,
+    required this.expected,
+    required this.ratio,
+  });
+
+  final double observed;
+  final double expected;
+  final double? ratio;
+
+  @override
+  List<Object?> get _fields => [observed, expected, ratio];
+}
+
+/// Which methods put a predicate at or under the caller's alpha.
+final class ResearchUnderAlpha extends _Value {
+  const ResearchUnderAlpha({
+    required this.raw,
+    required this.maxT,
+    required this.holm,
+    required this.bonferroni,
+    required this.bh,
+    required this.by,
+  });
+
+  final bool raw;
+  final bool maxT;
+  final bool holm;
+  final bool bonferroni;
+  final bool bh;
+  final bool by;
+
+  @override
+  List<Object?> get _fields => [raw, maxT, holm, bonferroni, bh, by];
+}
+
+/// One predicate's charts in each group, groups in index order.
+final class ResearchCountRow extends _Value {
+  const ResearchCountRow({required this.predicate, required this.counts});
+
+  final String predicate;
+  final List<ResearchGroupCount> counts;
+
+  @override
+  List<Object?> get _fields => [predicate, counts];
+}
+
+/// One predicate's row of a test. [exact], [effect], [expected] and
+/// [underAlpha] are null where they do not apply.
+final class ResearchRow extends _Value {
+  const ResearchRow({
+    required this.predicate,
+    required this.counts,
+    required this.observed,
+    required this.p,
+    required this.exact,
+    required this.adjusted,
+    required this.effect,
+    required this.expected,
+    required this.underAlpha,
+  });
+
+  final String predicate;
+  final List<ResearchGroupCount> counts;
+
+  /// The statistic under the observed labels; null when it is unbounded, a
+  /// recombined sample beyond replicates that all agree.
+  final double? observed;
+  final ResearchPValue p;
+  final double? exact;
+  final ResearchAdjusted adjusted;
+  final ResearchEffect? effect;
+  final ResearchExpectation? expected;
+  final ResearchUnderAlpha? underAlpha;
+
+  @override
+  List<Object?> get _fields => [
+    predicate,
+    counts,
+    observed,
+    p,
+    exact,
+    adjusted,
+    effect,
+    expected,
+    underAlpha,
+  ];
+}
+
+/// A study's counts, with the provenance whose [Provenance.inputHash] is
+/// its pre-registration.
+final class ResearchCounts {
+  const ResearchCounts({required this.rows, required this.provenance});
+
+  final List<ResearchCountRow> rows;
+  final Provenance provenance;
+}
+
+/// A test's rows, per predicate and never a single verdict: how many
+/// permutations, the smallest p-value they can give, and the generator and
+/// shuffle that drew them, so a reader can rerun the study.
+final class ResearchTested {
+  const ResearchTested({
+    required this.rows,
+    required this.permutations,
+    required this.resolution,
+    required this.shuffle,
+    required this.provenance,
+  });
+
+  final List<ResearchRow> rows;
+  final int permutations;
+  final double resolution;
+  final String shuffle;
+  final Provenance provenance;
+}
+
+List<ResearchGroupCount> _researchGroups(Object? raw) => List.unmodifiable([
+  for (final one in raw! as List<Object?>)
+    if (one case final Map<String, Object?> c)
+      ResearchGroupCount(
+        present: c['present']! as int,
+        absent: c['absent']! as int,
+        unreadable: c['unreadable']! as int,
+        unstable: c['unstable']! as int,
+      ),
+]);
+
+ResearchCountRow _researchCountRow(Map<String, Object?> raw) =>
+    ResearchCountRow(
+      predicate: raw['predicate']! as String,
+      counts: _researchGroups(raw['counts']),
+    );
+
+ResearchTested _researchTested(Map<String, Object?> answer) {
+  Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
+  double? maybe(Object? value) => value == null ? null : _real(value);
+  ResearchInterval interval(Object? value) => ResearchInterval(
+    estimate: _real(at(value)['estimate']),
+    low: _real(at(value)['low']),
+    high: _real(at(value)['high']),
+  );
+  ResearchRow row(Map<String, Object?> raw) {
+    final p = at(raw['p']);
+    final adjusted = at(raw['adjusted']);
+    final effect = raw['effect'] as Map<String, Object?>?;
+    final expected = raw['expected'] as Map<String, Object?>?;
+    final under = raw['underAlpha'] as Map<String, Object?>?;
+    return ResearchRow(
+      predicate: raw['predicate']! as String,
+      counts: _researchGroups(raw['counts']),
+      observed: maybe(raw['observed']),
+      p: ResearchPValue(
+        exceed: p['exceed']! as int,
+        value: _real(p['value']),
+        low: _real(p['low']),
+        high: _real(p['high']),
+      ),
+      exact: maybe(raw['exact']),
+      adjusted: ResearchAdjusted(
+        maxT: _real(adjusted['maxT']),
+        holm: _real(adjusted['holm']),
+        bonferroni: _real(adjusted['bonferroni']),
+        bh: _real(adjusted['bh']),
+        by: _real(adjusted['by']),
+      ),
+      effect:
+          effect == null
+              ? null
+              : ResearchEffect(
+                riskCase: interval(effect['riskCase']),
+                riskRest: interval(effect['riskRest']),
+                riskDifference: interval(effect['riskDifference']),
+                riskRatio:
+                    effect['riskRatio'] == null
+                        ? null
+                        : interval(effect['riskRatio']),
+                oddsRatio: maybe(effect['oddsRatio']),
+                cohenH: _real(effect['cohenH']),
+              ),
+      expected:
+          expected == null
+              ? null
+              : ResearchExpectation(
+                observed: _real(expected['observed']),
+                expected: _real(expected['expected']),
+                ratio: maybe(expected['ratio']),
+              ),
+      underAlpha:
+          under == null
+              ? null
+              : ResearchUnderAlpha(
+                raw: under['raw']! as bool,
+                maxT: under['maxT']! as bool,
+                holm: under['holm']! as bool,
+                bonferroni: under['bonferroni']! as bool,
+                bh: under['bh']! as bool,
+                by: under['by']! as bool,
+              ),
+    );
+  }
+
+  final value = at(answer['value']);
+  return ResearchTested(
+    rows: List.unmodifiable([
+      for (final raw in value['rows']! as List<Object?>) row(at(raw)),
+    ]),
+    permutations: value['permutations']! as int,
+    resolution: _real(value['resolution']),
+    shuffle: value['shuffle']! as String,
+    provenance: Provenance.fromJson(at(answer['provenance'])),
+  );
+}
+
 PakshiDay _pakshiDay(Map<String, Object?> raw) {
   Map<String, Object?> at(Object? value) => value! as Map<String, Object?>;
   PakshiBird bird(Object? key) => _keyedIn(PakshiBird.values, key);

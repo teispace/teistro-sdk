@@ -20,7 +20,7 @@
               an adapter a checkout does not have"
 )]
 
-use core::ffi::CStr;
+use core::ffi::{CStr, c_char};
 use core::ptr;
 use std::ffi::CString;
 
@@ -9149,13 +9149,15 @@ fn two_names_cross_as_the_kernel_matches_them() {
     }
 }
 
-fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+/// An entry point that reads a JSON request and answers JSON.
+type JsonEntry = unsafe extern "C" fn(*const TsContext, *const c_char, *mut TsString) -> Status;
+
+/// What a JSON entry point answers, or the status it refuses with.
+fn entry_json(entry: JsonEntry, ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut json = TsString::empty();
     // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status = unsafe {
-        teistro_ffi::numerology::ts_numerology_profile(ctx.handle, request.as_ptr(), &raw mut json)
-    };
+    let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut json) };
     if status == Status::Ok {
         Ok(owned(json))
     } else {
@@ -9163,6 +9165,10 @@ fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
         unsafe { ts_string_free(&raw mut json) };
         Err(status)
     }
+}
+
+fn numerology_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    entry_json(teistro_ffi::numerology::ts_numerology_profile, ctx, request)
 }
 
 /// A name and a date cross as the façade reads them, the profile as its
@@ -9590,18 +9596,7 @@ fn a_chart_request_answers_lalkitab() {
 }
 
 fn rashifal_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
-    let request = CString::new(request).unwrap();
-    let mut json = TsString::empty();
-    // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status =
-        unsafe { teistro_ffi::rashifal::ts_rashifal(ctx.handle, request.as_ptr(), &raw mut json) };
-    if status == Status::Ok {
-        Ok(owned(json))
-    } else {
-        // SAFETY: the empty descriptor a refusal leaves.
-        unsafe { ts_string_free(&raw mut json) };
-        Err(status)
-    }
+    entry_json(teistro_ffi::rashifal::ts_rashifal, ctx, request)
 }
 
 /// A week at Kathmandu crosses as the façade reads it, each period as its
@@ -9672,18 +9667,7 @@ fn a_rashifal_crosses_as_the_facade_reads_it() {
 }
 
 fn pakshi_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
-    let request = CString::new(request).unwrap();
-    let mut json = TsString::empty();
-    // SAFETY: a live context, a NUL-terminated request and a valid slot.
-    let status =
-        unsafe { teistro_ffi::pakshi::ts_pakshi(ctx.handle, request.as_ptr(), &raw mut json) };
-    if status == Status::Ok {
-        Ok(owned(json))
-    } else {
-        // SAFETY: the empty descriptor a refusal leaves.
-        unsafe { ts_string_free(&raw mut json) };
-        Err(status)
-    }
+    entry_json(teistro_ffi::pakshi::ts_pakshi, ctx, request)
 }
 
 /// Days of a native's bird cross as the façade reads them, one entry per
@@ -9747,6 +9731,70 @@ fn pakshi_days_cross_as_the_facade_reads_them() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+}
+
+/// A study crosses as the façade answers it, its envelope whole so the
+/// input hash a study publishes reaches the binding, and a refusal is
+/// named under `research` (`03-design/research.md`).
+#[test]
+fn a_study_crosses_as_the_facade_answers_it() {
+    let births: Vec<String> = (0..8)
+        .map(|i| {
+            format!(
+                r#"{{"instant": {}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}}"#,
+                2_447_000.25 + 977.3 * f64::from(i)
+            )
+        })
+        .collect();
+    let study = format!(
+        r#"{{"study": "COMPARE", "rules": {{"shipped": ["YOGAS"]}}, "births": [{}],
+            "design": {{"groups": [0, 1, 0, 1, 0, 1, 0, 1]}},
+            "test": {{"seed": 5, "permutations": 99, "contrast": {{"kind": "CASE_VS_REST", "case": 1}}}}}}"#,
+        births.join(", ")
+    );
+    assert_eq!(
+        research_json(&Ctx::defaults(), &study).unwrap_err(),
+        Status::Capability
+    );
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed = research_json(&ctx, &study).unwrap();
+    let facade = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let answer = facade
+        .research()
+        .request(&teistro::ResearchRequest::from_json(&study).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&answer));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert_eq!(read["value"]["permutations"], serde_json::json!(99));
+    assert!(read["provenance"]["input_hash"].is_string());
+    for (request, field) in [
+        (
+            study.replace(r#""seed": 5"#, r#""seed": "five""#),
+            "research.test.seed",
+        ),
+        (
+            study.replace(r#""study": "COMPARE""#, r#""study": "COUNTS""#),
+            "research.test",
+        ),
+        (
+            study.replace("27.7172", "97.7"),
+            "research.births[0].latitudeDeg",
+        ),
+    ] {
+        assert_eq!(
+            research_json(&ctx, &request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
+fn research_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    entry_json(teistro_ffi::research::ts_research, ctx, request)
 }
 
 /// A chart request's `rectification` record answers the `rectification`

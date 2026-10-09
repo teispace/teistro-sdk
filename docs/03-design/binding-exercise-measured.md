@@ -20,17 +20,17 @@ is therefore one nothing touches.
 
 | surface | declares | exercised | untouched |
 |---|---:|---:|---:|
-| Node | 38 | 38 | 0 |
-| Dart | 29 | 28 | 1 |
+| Node | 42 | 40 | 2 |
+| Dart | 33 | 31 | 2 |
 | Rust | 128 | 128 | 0 |
-| Python | 168 | 166 | 2 |
+| Python | 169 | 167 | 2 |
 
-**3 members nothing names**, of 363 members the four surfaces declare.
+**6 members nothing names**, of 372 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
-- **Node**: every member is touched.
-- **Dart**: `callJson`
+- **Node**: `expected`, `timed`
+- **Dart**: `callJson`, `expected`
 - **Rust**: every member is touched.
 - **Python**: `call_json`, `manifest_json`
 

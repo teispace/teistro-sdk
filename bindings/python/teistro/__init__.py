@@ -770,6 +770,25 @@ __all__ = [
     "PakshiStarNative",
     "PakshiSub",
     "PakshiYama",
+    # Research: counts and permutation tests over a batch of births.
+    "ResearchAdjusted",
+    "ResearchBirth",
+    "ResearchControl",
+    "ResearchCountRow",
+    "ResearchCounts",
+    "ResearchDesign",
+    "ResearchEffect",
+    "ResearchEventTest",
+    "ResearchExpectation",
+    "ResearchGroupCount",
+    "ResearchGroupTest",
+    "ResearchInterval",
+    "ResearchPValue",
+    "ResearchReplicateTest",
+    "ResearchRow",
+    "ResearchSubject",
+    "ResearchTested",
+    "ResearchUnderAlpha",
     # Rectification: a chart read as a birth time to rectify.
     "RectificationRequest",
     "PurifyRequest",
@@ -2277,6 +2296,332 @@ class NumerologyArea(_Area):
             request["rules"] = json.loads(written)
         return NumerologyProfile._of(json.loads(self._context.inner.numerology_profile(json.dumps(request))))
 
+@dataclass(frozen=True)
+class ResearchBirth:
+    """One birth of a study (`03-design/research.md`): its instant, a Julian
+    day in UTC, where, under which clock, and how far either side its
+    recorded time may be wrong, 0 to 720 minutes. A rule whose answer
+    differs at either edge is counted unstable on the chart."""
+
+    instant: float
+    place: Observer
+    utc_offset_seconds: int
+    uncertainty_minutes: float = 0.0
+
+
+@dataclass(frozen=True)
+class ResearchSubject:
+    """One subject of an event study: a birth and when the event of its
+    life happened, a Julian day in UTC."""
+
+    birth: ResearchBirth
+    event: float
+
+
+class ResearchDesign(TypedDict, total=False):
+    """Who is in which group, one label per birth, and the strata the labels
+    move within."""
+
+    groups: Sequence[int]
+    strata: Sequence[int]
+
+
+class ResearchGroupTest(TypedDict, total=False):
+    """A permutation test of a design's groups: `seed`, `permutations` (1 to
+    10 000 000) and `contrast` (`{"kind": "CASE_VS_REST", "case": 1}` or
+    `{"kind": "ANY_DIFFERENCE"}`) required; `alternative`, `level`, `alpha`
+    and `parallelism` optional."""
+
+    seed: int
+    permutations: int
+    contrast: Mapping[str, Any]
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    level: float
+    alpha: float
+    parallelism: Union[Literal["ONE"], Mapping[str, int]]
+
+
+class ResearchEventTest(TypedDict, total=False):
+    """A test of events against the shuffled-event null: `seed` and
+    `permutations` required, `afterBirth` `"REFUSE"` (the default) or
+    `"RESTRICT_PAIRINGS"`."""
+
+    seed: int
+    permutations: int
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    afterBirth: Literal["REFUSE", "RESTRICT_PAIRINGS"]
+    level: float
+    alpha: float
+    parallelism: Union[Literal["ONE"], Mapping[str, int]]
+
+
+class ResearchControl(TypedDict, total=False):
+    """Gauquelin's control: the sample refounded `replicates` times (1 to
+    100 000) from `seed`, clock times moving only inside `strata` when
+    given."""
+
+    seed: int
+    replicates: int
+    strata: Sequence[int]
+
+
+class ResearchReplicateTest(TypedDict, total=False):
+    """How a sample is read against its replicates, every member optional."""
+
+    alternative: Literal["GREATER", "LESS", "TWO_SIDED"]
+    level: float
+    alpha: float
+
+
+@dataclass(frozen=True)
+class ResearchGroupCount:
+    """A predicate's charts in one group: read and holding, read and not,
+    not read, and unstable inside the time uncertainty; the last two are
+    left out of every denominator."""
+
+    present: int
+    absent: int
+    unreadable: int
+    unstable: int
+
+
+@dataclass(frozen=True)
+class ResearchInterval:
+    """An estimate with its interval at the test's level."""
+
+    estimate: float
+    low: float
+    high: float
+
+
+@dataclass(frozen=True)
+class ResearchPValue:
+    """`(exceed + 1)/(m + 1)`, never zero, with its Clopper–Pearson
+    interval."""
+
+    exceed: int
+    value: float
+    low: float
+    high: float
+
+
+@dataclass(frozen=True)
+class ResearchAdjusted:
+    """The family's adjusted p-values: max-T, Holm, Bonferroni,
+    Benjamini–Hochberg and Benjamini–Yekutieli."""
+
+    max_t: float
+    holm: float
+    bonferroni: float
+    bh: float
+    by: float
+
+
+@dataclass(frozen=True)
+class ResearchEffect:
+    """The cases against the rest: each group's share, their difference and
+    ratio with intervals, the odds ratio and Cohen's *h*. The ratio and the
+    odds are `None` where a cell is empty."""
+
+    risk_case: ResearchInterval
+    risk_rest: ResearchInterval
+    risk_difference: ResearchInterval
+    risk_ratio: Optional[ResearchInterval]
+    odds_ratio: Optional[float]
+    cohen_h: float
+
+
+@dataclass(frozen=True)
+class ResearchExpectation:
+    """A one-group study's share against the share its null expects, and
+    their ratio where anything is expected."""
+
+    observed: float
+    expected: float
+    ratio: Optional[float]
+
+
+@dataclass(frozen=True)
+class ResearchUnderAlpha:
+    """Which methods put a predicate at or under the caller's alpha."""
+
+    raw: bool
+    max_t: bool
+    holm: bool
+    bonferroni: bool
+    bh: bool
+    by: bool
+
+
+@dataclass(frozen=True)
+class ResearchCountRow:
+    """One predicate's charts in each group, groups in index order."""
+
+    predicate: str
+    counts: Tuple[ResearchGroupCount, ...]
+
+
+@dataclass(frozen=True)
+class ResearchRow:
+    """One predicate's row of a test. `exact`, `effect`, `expected` and
+    `under_alpha` are `None` where they do not apply."""
+
+    predicate: str
+    counts: Tuple[ResearchGroupCount, ...]
+    observed: Optional[float]
+    """The statistic under the observed labels; `None` when it is
+    unbounded, a recombined sample beyond replicates that all agree."""
+    p: ResearchPValue
+    exact: Optional[float]
+    adjusted: ResearchAdjusted
+    effect: Optional[ResearchEffect]
+    expected: Optional[ResearchExpectation]
+    under_alpha: Optional[ResearchUnderAlpha]
+
+
+@dataclass(frozen=True)
+class ResearchCounts:
+    """A study's counts, with the provenance whose `input_hash` is its
+    pre-registration."""
+
+    rows: Tuple[ResearchCountRow, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class ResearchTested:
+    """A test's rows, per predicate and never a single verdict: how many
+    permutations, the smallest p-value they can give, and the generator
+    and shuffle that drew them, so a reader can rerun the study."""
+
+    rows: Tuple[ResearchRow, ...]
+    permutations: int
+    resolution: float
+    shuffle: str
+    provenance: Provenance
+
+
+class ResearchArea(_Area):
+    """`sdk.research` — counts and permutation tests over a batch of births
+    (`03-design/research.md`). Every rule of `rules` is a predicate, read
+    once on every chart, and the predicates are one family for the
+    corrections. A study's provenance seals it: its `input_hash` is the
+    pre-registration a study publishes before its data are collected."""
+
+    def counts(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        design: ResearchDesign,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchCounts:
+        """How often each rule holds in each group, the charts it cannot be
+        read on and those it is unstable on counted apart.
+
+        >>> # table = ctx.research.counts(births=births, rules={"shipped": ["YOGAS"]},
+        >>> #     design={"groups": [i % 2 for i in range(len(births))]})
+        """
+        answer = self._run("COUNTS", rules, holds, births=births, design=design)
+        return ResearchCounts(
+            rows=tuple(
+                ResearchCountRow(predicate=row["predicate"], counts=_research_counts(row["counts"]))
+                for row in answer["value"]["rows"]
+            ),
+            provenance=decode_provenance(answer["provenance"]),
+        )
+
+    def compare(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        design: ResearchDesign,
+        test: ResearchGroupTest,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether the design's groups differ on each rule, the labels
+        permuted (within strata when the design has them), with the
+        family's corrections and the effect sizes."""
+        return _research_tested(self._run("COMPARE", rules, holds, births=births, design=design, test=test))
+
+    def expected(
+        self,
+        *,
+        births: Sequence[ResearchBirth],
+        rules: RuleRequest,
+        control: ResearchControl,
+        test: Optional[ResearchReplicateTest] = None,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether each rule is commoner (or rarer) in this sample than in
+        its own recombined population: the sample refounded with clock
+        times shuffled among its births, date and place kept."""
+        return _research_tested(self._run("EXPECTED", rules, holds, births=births, control=control, test=test))
+
+    def timed(
+        self,
+        *,
+        subjects: Sequence[ResearchSubject],
+        rules: RuleRequest,
+        dasha: Union[DashaSystem, str],
+        test: ResearchEventTest,
+        depth: Optional[int] = None,
+        shuffle: Optional[Literal["EVENT_DATES", "AGES_AT_EVENT"]] = None,
+        strata: Optional[Sequence[int]] = None,
+        holds: Optional[Literal["STANDING", "FORMED"]] = None,
+    ) -> ResearchTested:
+        """Whether each rule is delivered by `dasha`'s running periods, to
+        `depth` (2 when left out), at the subjects' own events more (or
+        less) often than at events shuffled among them."""
+        return _research_tested(
+            self._run(
+                "TIMED",
+                rules,
+                holds,
+                subjects=subjects,
+                dasha=_member_key(dasha),
+                test=test,
+                depth=depth,
+                shuffle=shuffle,
+                strata=None if strata is None else list(strata),
+            )
+        )
+
+    def _run(self, study: str, rules: RuleRequest, holds: Optional[str], **fields: Any) -> Dict[str, Any]:
+        """The study's answer: every field given crosses, and one the study
+        does not read is refused by name there rather than dropped here."""
+
+        def birth(given: ResearchBirth) -> Dict[str, Any]:
+            return {
+                "instant": given.instant,
+                "latitudeDeg": given.place.latitude_deg,
+                "longitudeDeg": given.place.longitude_deg,
+                "altitudeM": given.place.altitude_m,
+                "utcOffsetSeconds": given.utc_offset_seconds,
+                "uncertaintyMinutes": given.uncertainty_minutes,
+            }
+
+        written = _rules_json(rules)
+        asked: Dict[str, Any] = {"study": study, "rules": {} if written is None else json.loads(written)}
+        if holds is not None:
+            asked["holds"] = holds
+        for name, value in fields.items():
+            if value is None:
+                continue
+            if name == "births":
+                asked[name] = [birth(one) for one in value]
+            elif name == "subjects":
+                asked[name] = [{"birth": birth(one.birth), "event": one.event} for one in value]
+            elif name in ("design", "test", "control"):
+                asked[name] = json.loads(_record_json(value, name, "{'seed': 1, 'permutations': 999}") or "{}")
+            else:
+                asked[name] = value
+        answered = self._context._through_provider(lambda: self._context.inner.research(json.dumps(asked)))
+        decoded: Dict[str, Any] = json.loads(answered)
+        return decoded
+
+
 class Context:
     """A context, and everything a consumer asks of one.
 
@@ -2366,6 +2711,11 @@ class Context:
     def numerology(self) -> NumerologyArea:
         """What a name and a birth date say under numerology's two systems."""
         return NumerologyArea(self)
+
+    @cached_property
+    def research(self) -> ResearchArea:
+        """Counts and permutation tests over a batch of births."""
+        return ResearchArea(self)
 
     # ── The context itself ────────────────────────────────────────────
 
@@ -10593,6 +10943,78 @@ def _lalkitab(raw: Mapping[str, Any]) -> LalKitab:
             LalKitabPeriod(planet=graha(p["planet"]), from_year=p["from"], to_year=p["to"]) for p in raw["periods"]
         ),
         year=None if raw["year"] is None else year_of(raw["year"]),
+    )
+
+
+def _research_counts(raw: Sequence[Mapping[str, Any]]) -> Tuple[ResearchGroupCount, ...]:
+    """A row's charts in each group."""
+    return tuple(
+        ResearchGroupCount(present=c["present"], absent=c["absent"], unreadable=c["unreadable"], unstable=c["unstable"])
+        for c in raw
+    )
+
+
+def _research_tested(answer: Mapping[str, Any]) -> ResearchTested:
+    """A test's answer from `ts_research`, the provenance decoded as every
+    other one is."""
+
+    def interval(raw: Mapping[str, Any]) -> ResearchInterval:
+        return ResearchInterval(estimate=raw["estimate"], low=raw["low"], high=raw["high"])
+
+    def effect(raw: Optional[Mapping[str, Any]]) -> Optional[ResearchEffect]:
+        if raw is None:
+            return None
+        ratio = raw["riskRatio"]
+        return ResearchEffect(
+            risk_case=interval(raw["riskCase"]),
+            risk_rest=interval(raw["riskRest"]),
+            risk_difference=interval(raw["riskDifference"]),
+            risk_ratio=None if ratio is None else interval(ratio),
+            odds_ratio=raw["oddsRatio"],
+            cohen_h=raw["cohenH"],
+        )
+
+    def row(raw: Mapping[str, Any]) -> ResearchRow:
+        p, adjusted = raw["p"], raw["adjusted"]
+        expected, under = raw.get("expected"), raw.get("underAlpha")
+        return ResearchRow(
+            predicate=raw["predicate"],
+            counts=_research_counts(raw["counts"]),
+            observed=raw["observed"],
+            p=ResearchPValue(exceed=p["exceed"], value=p["value"], low=p["low"], high=p["high"]),
+            exact=raw.get("exact"),
+            adjusted=ResearchAdjusted(
+                max_t=adjusted["maxT"],
+                holm=adjusted["holm"],
+                bonferroni=adjusted["bonferroni"],
+                bh=adjusted["bh"],
+                by=adjusted["by"],
+            ),
+            effect=effect(raw.get("effect")),
+            expected=None
+            if expected is None
+            else ResearchExpectation(
+                observed=expected["observed"], expected=expected["expected"], ratio=expected.get("ratio")
+            ),
+            under_alpha=None
+            if under is None
+            else ResearchUnderAlpha(
+                raw=under["raw"],
+                max_t=under["maxT"],
+                holm=under["holm"],
+                bonferroni=under["bonferroni"],
+                bh=under["bh"],
+                by=under["by"],
+            ),
+        )
+
+    value = answer["value"]
+    return ResearchTested(
+        rows=tuple(row(one) for one in value["rows"]),
+        permutations=value["permutations"],
+        resolution=value["resolution"],
+        shuffle=value["shuffle"],
+        provenance=decode_provenance(answer["provenance"]),
     )
 
 

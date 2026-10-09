@@ -1784,6 +1784,56 @@ for (const [name, rules] of [
     });
   });
 }
+
+// The studies every runner sends (`03-design/research.md`): eight births
+// at Kathmandu a few years apart, the shipped yogas as the predicates,
+// compared by alternate labels, read against their own recombined
+// population, and each delivered by the Vimshottari at an event of its
+// life under the age shuffle.
+{
+  const kathmandu = { latitude: 27.7172, longitude: 85.324 };
+  const births = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({
+    instant: 2447000.25 + 977.3 * i,
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+  }));
+  const rules = { shipped: ['YOGAS'] };
+  const row = (r) => {
+    const counts = r.counts.map((c) => `${c.present}:${c.absent}:${c.unreadable}:${c.unstable}`).join(',');
+    if (r.p === undefined) return `${r.predicate} ${counts}`;
+    const optional = (value) => (value === undefined || value === null ? 'none' : number(value));
+    return `${r.predicate} ${counts} ${optional(r.observed)} ${r.p.exceed} ${number(r.p.value)} ${number(r.adjusted.maxT)} ${number(r.adjusted.holm)} ${number(r.adjusted.bh)} ${optional(r.exact)} ${optional(r.effect?.riskDifference.estimate)} ${optional(r.expected?.expected)}`;
+  };
+  const putStudy = (name, answer) => {
+    put(`research-${name}-hash`, answer.provenance.inputHash);
+    if (answer.permutations !== undefined) {
+      put(`research-${name}-test`, `${answer.permutations} ${number(answer.resolution)} ${answer.shuffle}`);
+    }
+    answer.rows.forEach((r, k) => put(`research-${name}-row-${k}`, row(r)));
+  };
+  const groups = births.map((_, i) => i % 2);
+  putStudy('counts', geo.research.counts({ births, rules, holds: 'FORMED', design: { groups } }));
+  putStudy(
+    'compare',
+    geo.research.compare({
+      births,
+      rules,
+      design: { groups },
+      test: { seed: 5, permutations: 199, contrast: { kind: 'CASE_VS_REST', case: 1 }, alpha: 0.05 },
+    }),
+  );
+  putStudy('expected', geo.research.expected({ births, rules, control: { seed: 4, replicates: 3 } }));
+  putStudy(
+    'timed',
+    geo.research.timed({
+      subjects: births.map((birth, i) => ({ birth, event: birth.instant + 9000.5 + 211 * i })),
+      rules,
+      dasha: 'dasha_system.VIMSHOTTARI',
+      shuffle: 'AGES_AT_EVENT',
+      test: { seed: 3, permutations: 49 },
+    }),
+  );
+}
 geo.dispose();
 
 // ── The eclipses ───────────────────────────────────────────────────────
@@ -1879,6 +1929,10 @@ for (const [path, member] of [
   ['almanac.of', shape.almanac.of],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
+  ['research.counts', shape.research.counts],
+  ['research.compare', shape.research.compare],
+  ['research.expected', shape.research.expected],
+  ['research.timed', shape.research.timed],
   ['engine.names', shape.engine.names],
   ['engine.signature', shape.engine.signature],
   ['engine.call', shape.engine.call],

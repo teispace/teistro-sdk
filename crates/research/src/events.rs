@@ -340,7 +340,7 @@ fn diagonal_row(
     PredicateRow {
         predicate: column.name.clone(),
         counts: vec![count],
-        observed,
+        observed: Some(observed),
         p: assessed.p,
         exact: None,
         adjusted: assessed.adjusted,

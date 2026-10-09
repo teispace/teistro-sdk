@@ -2525,6 +2525,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   shuffled by date or by age, and `expected` reads a sample against its
   own recombined population. Each answer's input hash is the study's
   pre-registration, and the thread count is not in it.
+- **Research in every binding** (`03-design/research.md` step 6).
+  `ts_research` takes one record naming the study and answers the
+  envelope, so Node, Python, Dart and Java carry `research.counts`,
+  `compare`, `expected` and `timed` with the study's input hash, and
+  every runner agrees value for value. A seed may be sent as a decimal
+  string. A row's `observed` is absent where the statistic is unbounded,
+  a sample beyond replicates that all agree, rather than the largest
+  finite number. **Numbers:** a recombined study whose replicates share
+  one value reads them with no spread, where the last bit of their mean
+  had read as one.
 - **Pancha Pakshi** (`03-design/pakshi.md` steps 1 and 2).
   `teistro-pakshi` reads the five birds' activities by yama as one rule
   held to every cell of the printed tables, with the sub-periods, the
