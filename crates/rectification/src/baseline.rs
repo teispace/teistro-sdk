@@ -736,7 +736,11 @@ pub enum BaselineStage {
 /// What a stage says it did.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(
+    tag = "kind",
+    rename_all = "SCREAMING_SNAKE_CASE",
+    rename_all_fields = "camelCase"
+)]
 pub enum Note {
     /// The tattva prior: how many candidates a tattva of the other sex
     /// penalised.
