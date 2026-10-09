@@ -152,6 +152,13 @@ moves the cache off a shared or `noexec` temporary directory, and
 `-Dteistro.platform` names the platform to load where detection reads
 the host wrongly.
 
+<Callout>
+  Run with `-Dstdout.encoding=UTF-8` whenever you print what the SDK
+  returns. `System.out` writes the console's encoding, and on Windows that
+  is a code page with neither Devanagari nor the degree sign, so each
+  prints as `?`.
+</Callout>
+
 ## C, and everything that speaks C
 
 A release attaches one bundle per platform,

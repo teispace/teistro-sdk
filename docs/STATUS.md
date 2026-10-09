@@ -4,7 +4,11 @@ The living tracker. Read this first in any session; update it before ending
 one. It answers four questions: what is done, what is being done now, what
 comes next, and what happened in each session.
 
-**Project phase:** the work is in **Phase 6**, rules and interpretation.
+**Project phase:** the work is on the **completion plan**
+(`07-roadmap/00-roadmap.md`, "The plan to the release candidate"): Phase 9's
+release engineering, Phase 8's applications and the research tracks run
+together towards a release candidate in the week of 7 November 2026. It
+said "Phase 6" here until 2026-10-09, after Phases 7 and 8 had begun.
 Phase 0 exited 2026-09-05, Phase 1, Foundation, on 2026-09-06 and Phase 2,
 the astronomy layer, on 2026-09-05; Phase 3, the built-in ephemeris, has
 nothing left in it (item 3 below); Phase 4's chart core and Phase 5's

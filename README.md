@@ -17,9 +17,11 @@ that anyone can add a language to without touching the core, and held to
 measured claims: every accuracy and performance number in the
 documentation is produced by a gate.
 
-The project is in Phase 0, discovery and decisions. There is no code yet;
-everything that exists is in `docs/`, which is organised as a map. Start at
-[`docs/README.md`](docs/README.md).
+The SDK is built and heading for its first release; nothing is published
+yet. It is reached from Rust, C, Node, Dart, Python, Java and WebAssembly,
+and the documentation in `docs/` is organised as a map. Start at
+[`docs/README.md`](docs/README.md), and for installing,
+[`site/content/docs/install.mdx`](site/content/docs/install.mdx).
 
 | if you want to know | read |
 |---|---|
@@ -35,9 +37,10 @@ everything that exists is in `docs/`, which is organised as a map. Start at
 
 | | |
 |---|---|
-| phase | 0, discovery and decisions |
-| decided | Rust core with a C ABI and Rust-only tooling; generated, type-safe bindings with a parity gate; v1.0 is parity with the baseline engine; Apache-2.0 with a clean-room policy and a licence allow list; built-in ephemeris with a reference-accuracy path; SDK-owned astronomy layer; exact classification and dasha arithmetic; kernel-and-table designs for dashas, vargas, balas and rules; evidence ranks; a calculation version; a determinism contract with a CC0 conformance repository; Teistro Intl; a gated quality bar |
-| next | the Phase 0 spikes: golden-vector export, binding toolchain (C ABI plus IDL against Diplomat), ephemeris port, Teistro Intl |
+| stage | before the first release: version `0.0.0`, every package marked unpublishable until a release is cut |
+| built | the astronomy layer and the built-in ephemeris; charts, vargas, houses, balas and dashas; the panchanga, the Bikram Sambat calendar, festivals and muhurta; rules for yogas and doshas; matching; Tajika annual charts and prashna; KP; the Hellenistic and Western techniques; rectification; interpretation in English and Nepali through Teistro Intl |
+| held by | generated pages a gate keeps true: [`ACCURACY.md`](docs/05-testing/ACCURACY.md), [`CONFORMANCE.md`](docs/05-testing/CONFORMANCE.md), [`SIZES.md`](docs/05-testing/SIZES.md), and one scenario compared value by value across every binding |
+| next | the dated plan to the release candidate in [`docs/07-roadmap/`](docs/07-roadmap/00-roadmap.md), then review by the maintainer, astrologers and researchers |
 
 ## Licence
 

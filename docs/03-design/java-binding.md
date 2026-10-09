@@ -715,6 +715,15 @@ un-publish, `03-release-process.md`, "Withdrawing").
     sbt (only Maven gated, and said so); the site's guides; the build
     matrix and release-process pages' rows; `binding-surface-measured.md`
     swept for its per-target counts.
+    **Built 2026-10-09:** the README gained what Python's has: the
+    examples and how they are held, the tropical frame, the encoding flag,
+    the checked quantity records and the refusal's accessors, the
+    ephemeris chain with the Teimeris adapter, a provider of your own and
+    the tests. The site's install guide gained the encoding note, and its
+    index names Java among the languages a provider is written in. The
+    build matrix and release-process pages already had their rows, and
+    `check-surface` holds `binding-surface-measured.md`, which already
+    counts Java.
 
 ## 14. Open questions
 
