@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 /// and the two surfaces (`ffi`, the C boundary, and `sdk`, the Rust
 /// façade) are held to the compiler's lints alone — a surface composes
 /// what these compute and rounds nothing itself.
-const COMPUTATION: [&str; 8] = [
+const COMPUTATION: [&str; 9] = [
     "core",
     "calendar",
     "time",
@@ -37,6 +37,7 @@ const COMPUTATION: [&str; 8] = [
     "port-ephemeris",
     "port-timezone",
     "intl",
+    "research",
 ];
 
 /// The crates that may hold `unsafe` code, and so may downgrade the
@@ -2590,6 +2591,14 @@ pub(crate) fn check(root: &Path) -> i32 {
             "env::var",
             "env::args",
             "std::process::id",
+            // A study's p-value is part of its answer, so its randomness
+            // is the seeded generator `teistro-research` writes, never the
+            // process's (`03-design/research.md` §2.2).
+            "thread_rng",
+            "OsRng",
+            "getrandom",
+            "rand::random",
+            "RandomState",
         ],
         &mut outcome,
     );

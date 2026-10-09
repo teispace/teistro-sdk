@@ -2490,6 +2490,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   mistranslates two verses. The rectification record's `svarodaya`
   member asks for both around a chart, in every binding. A report, never
   a bar: no verse reads either at a birth.
+- **The research kernel** (`03-design/research.md` step 2).
+  `teistro-research` permutes a study's labels over a chart-by-predicate
+  matrix, within strata when the design has them, and answers each
+  predicate's permutation p-value `(b + 1)/(m + 1)` with its
+  Clopper–Pearson interval, the exact hypergeometric p where it applies,
+  the family's max-T, Holm, Bonferroni, BH and BY, and the effect sizes
+  with their intervals. Unreadable and unstable charts leave a
+  predicate's denominator and are counted apart. The generator and the
+  shuffle are written in the crate and versioned (`research/shuffle/1`),
+  so a request gives the same bits at any thread count. `ambient-input`
+  now refuses the process's randomness. `teistro_core::math` gains
+  `ln_gamma` and `erfc`. **Numbers:** none move.
+- **Python request knobs are `Literal`s.** A rectification, prashna,
+  remedies or dasha-definition knob that took a `str` takes its members,
+  so mypy refuses a misspelt one before the boundary does.
 - **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
   artefact weighs, raw and gzipped, recorded from the verify run that
   built it: each platform's library, C bundle, Node addon, wheel and jar,

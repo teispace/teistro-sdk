@@ -2006,6 +2006,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-research"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-rules"
 version = "0.0.0"
 dependencies = [

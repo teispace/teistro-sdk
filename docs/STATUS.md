@@ -1057,8 +1057,12 @@ provider's DUT1).
 ## How to resume
 
 0. **Next: the dated plan** (`07-roadmap/00-roadmap.md`, "The plan to the
-   release candidate"), week by week: `SIZES.md` and rectification step 6
-   first. Track A's release blockers first, Phase 8's modules beside them.
+   release candidate"), week by week. Week one's items and rectification
+   steps 7 and 8 are built; next are the JPL recording's CSPICE half
+   (corpus v0.12.0, the Horizons half withheld until JPL's permission is
+   asked for, which is the maintainer's to send), `ACCURACY.md`'s rows
+   over it, and a release run end to end with nothing published. Track
+   A's release blockers first, Phase 8's modules beside them.
    BPHS ch. 9's last buildable evils shipped (vv. 12, 15 to 20, ch. 10
    v. 6); v. 13 waits on the twilight and the Moon's hora. The maintainer
    owns printed copies of Santhanam's BPHS and Saravali and Kapoor's
@@ -2973,6 +2977,7 @@ provider's DUT1).
    | `western` | the measures of progressions and directions: a `Progression` is a `Rate` (a day for a year, for a synodic month, a month for a year, or any spans) and a `YearMeasure` (tropical, Julian, or Leo's rule by sidereal time at noon in closed form), answered both ways by `sky_at` and `life_at`; `ArcMeasure` turns Ptolemy's and Naibod's arcs into years and back. Held to Leo's *The Progressed Horoscope* (`western-progressions.md`, C236–C238) |
    | `matching` | two births compared through the Moon of each: a `Native` is her nakshatra, pada, sign and navamsha, and `ashta_koota` reads *Muhurta Chintamani*'s eight kootas worth 36 with *Daivajna-manohara*'s points, each koota reporting what it read and Bhakoot's five exceptions as clauses; no ephemeris, no chart, no instant (`matching.md`, C259–C266) |
    | `numerology` | a name and a civil date read under Balliett's letter cycle and Cheiro's Chaldean table, every reduction kept step by step, with the baseline engine's readings as `BASELINE` values of the same rules |
+   | `research` | the statistics under a study of chart batches, with no sky: permutation tests of a chart-by-predicate matrix under a seeded, versioned shuffle (SplitMix64 per permutation, Fisher–Yates with Lemire), within strata, at any thread count to the same bits; p-values with Clopper–Pearson intervals, max-T, Holm, Bonferroni, BH and BY, effect sizes with their intervals |
    | `remedies` | a lagna's functional natures after *Laghu Parashari* and BPHS ch. 13, every clause with its verse, and each graha's graha-śānti from BPHS ch. 84 and *Yājñavalkya*, the baseline engine's reading as a `BASELINE` scheme |
    | `rashifal` | one period read for each of the twelve signs: Phaladeepika ch. 26's gochar from each, Saturn's standing through the Sade Sati kernel, and the period's ingresses and stations counted from each; the baseline engine's 0–100 score as a `BASELINE` reading |
    | `prashna` | a query chart read as *Shatpanchashika* prints it: the verdict as clauses for or against with I.4's three outcomes, change by the lagna's modality, timing from the strongest graha's house (II.14–15) or V.5 or II.17, and the person an unspoken question is about (VII.7–8); the baseline engine's timing as an unsourced `BASELINE` rule |

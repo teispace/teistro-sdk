@@ -33,6 +33,7 @@ members = [
     "crates/western",
     "crates/matching",
     "crates/numerology",
+    "crates/research",
     "crates/prashna",
     "crates/remedies",
     "crates/rashifal",

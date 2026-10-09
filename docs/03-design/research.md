@@ -4,7 +4,8 @@ Status: `draft`, 2026-10-08. Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
 `01-research/feature-universe/14-remedies-numerology-misc.md`, "Research and
-statistics". Nothing here is built. Every figure this page would otherwise
+statistics". The kernel, `crates/research`, is built (step 2 of the order of
+work, 2026-10-09); the façade is not. Every figure this page would otherwise
 state belongs on a generated `research-measured.md` (order of work, step 1).
 
 ## 1. What credible astrological statistics looks like
@@ -274,10 +275,9 @@ pub struct Birth { pub instant: JulianDay<Utc>, pub place: Place, pub offset: Ut
 pub struct GroupTest {
     pub seed: u64,                         // required: no default seed
     pub permutations: u32,
-    pub contrast: Contrast,                // CaseVsRest(GroupId) | Pairwise | AnyDifference
-    pub statistic: Statistic,              // Count | RiskDifference | ChiSquare
+    pub contrast: Contrast,                // CaseVsRest { case } | AnyDifference
     pub alternative: Alternative,          // Greater | Less | TwoSided
-    pub corrections: Corrections,          // MaxT, Holm, Bh, By: all on by default
+    pub level: f64,                        // every interval's confidence, 0.95
     pub alpha: Option<f64>,                // only to list which fall under it
     pub parallelism: Parallelism,
     pub shuffle_version: ShuffleVersion,   // research/shuffle/1
@@ -297,7 +297,6 @@ pub struct EventTest {
     pub shuffle: EventShuffle,             // EventDates | AgesAtEvent
     pub after_birth: AfterBirth,           // Refuse | RestrictPairings
     pub max_pairs: u64,
-    pub corrections: Corrections,
     pub parallelism: Parallelism,
 }
 
@@ -333,9 +332,9 @@ the request names) or a gochar condition at the event's instant.
 |---|---|---|
 | `seed` | none: required | a default seed hides that one was chosen |
 | `permutations` | none: required | it sets the resolution, and the resolution bounds the corrections |
-| `statistic` | `Count` | chi-square for more than two groups |
+| `contrast` | none: required | one group against the rest, or any difference among several |
 | `alternative` | `TwoSided` | a directional hypothesis must be declared, not chosen after |
-| `corrections` | all four | a reader of a published table should not have to ask |
+| `level` | 0.95 | the confidence of every interval; the p-value's and the effects' alike |
 | `strata` | none | exchangeability by decade, region or sex is the study's claim |
 | `EventShuffle` | none: required | §1.4: the two keep different margins |
 | `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so |
@@ -343,6 +342,29 @@ the request names) or a gochar condition at the event's instant.
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
 | `parallelism` | `One` | the answer is the same either way |
 | `max_pairs` | a fixed cap | event studies' cost is chosen, not met |
+
+**Decided when the kernel was built (2026-10-09).** Three knobs of the
+sketch were dropped, and the reasons are kept here:
+
+- **No `statistic` knob.** A case-against-rest test ranks by the case count
+  standardised under the hypergeometric that holds the margins,
+  `(a − n₁P/R)/sd`. Given the cases read, a count and a risk difference are
+  monotone in each other, so they give the same test, and the standardised
+  form puts predicates of different prevalence on one scale. Max-T needs
+  that scale: on raw counts a common predicate would dominate the family's
+  maximum. `AnyDifference` is Pearson's chi-square, which is already
+  standardised and has no direction, so a direction asked of it is refused.
+  The counts and the risk difference are in every row's effect.
+- **No `corrections` knob.** Every row carries all five: max-T, Holm,
+  Bonferroni, BH and BY. They cost nothing beside the permutations, and a
+  reader of a published table should not have to ask for one.
+- **No `Pairwise` contrast yet.** Each pair of groups is its own reference
+  set, so it is a family of tests over sub-batches rather than one
+  permutation of the whole. It comes later as its own contrast.
+
+The exact p (§1.2) is the hypergeometric of the *same* statistic, so it is
+offered only where the case count is the whole story: two groups, no
+strata, and a predicate read on every chart.
 
 ### 2.6 What it refuses
 
@@ -427,7 +449,7 @@ uses fixed seeds, so the counts are exact and also golden.
    (`price-a-pass-on-ci`). The figures this page leaves out live there.
 2. **`crates/research`**: generator, shuffle, bitset engine, p-values and
    intervals, max-T, Holm, BH, BY, effect sizes. Tests 3, 6 (thread
-   counts), 7. The lint changes (§2.2), proved red.
+   counts), 7. The lint changes (§2.2), proved red. **Built** 2026-10-09.
 3. **`sdk.research().counts` and `compare`** over documents and births,
    with refusals and tests 1, 2, 8, 9. Add to `surface-areas.md`.
 4. **`timed`**: dasha delivery first (no sky per pair), then transits
