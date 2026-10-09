@@ -6,16 +6,18 @@
 //! glibc on Linux, the CRT on Windows, and a WASI libc or a Rust port in
 //! wasm32. They are faithful to about an ulp, and **they are not the same
 //! ulp**. Measured over two million inputs each, Apple's library differs
-//! from the others in every one of the thirteen functions the SDK calls,
-//! and the scenario's `astro` and `houses` sections differ in 2 015 of
-//! their values between Linux and macOS and in 5 193 between macOS and
-//! wasm32 — by a relative 8e-14 at worst, which no reader can see and
-//! which still breaks a byte-identical document.
+//! from the others in every one of the thirteen functions the SDK called
+//! when it was measured, and the scenario's `astro` and `houses` sections
+//! differ in 2 015 of their values between Linux and macOS and in 5 193
+//! between macOS and wasm32 — by a relative 8e-14 at worst, which no
+//! reader can see and which still breaks a byte-identical document.
 //!
 //! These are the `libm` crate's, a pure-Rust port of musl's, compiled the
 //! same way on every target, so they give the same bits everywhere; the
 //! same measurement found them identical natively and in wasm32 for all
-//! thirteen. A lint refuses the `f64` methods in every library crate
+//! thirteen. `ln_gamma` and `erfc`, which the research statistics added
+//! later, are the same port's and were not in that measurement. A lint
+//! refuses the `f64` methods in every library crate
 //! (`uses-one-libm`), so a new call cannot quietly reach the platform's.
 //!
 //! What is not here needs nothing: `sqrt`, `mul_add`, `abs`, `floor`,
@@ -100,6 +102,24 @@ pub fn exp(x: f64) -> f64 {
 #[must_use]
 pub fn ln(x: f64) -> f64 {
     libm::log(x)
+}
+
+/// The natural logarithm of the gamma function's magnitude, |Γ(x)|; at a
+/// whole number `n + 1` it is ln n!. The research statistics' binomial
+/// coefficients and beta function are built from it.
+#[inline]
+#[must_use]
+pub fn ln_gamma(x: f64) -> f64 {
+    libm::lgamma(x)
+}
+
+/// The complementary error function, 1 − erf(x), accurate in the tail
+/// where 1 − erf(x) would round to zero; the normal distribution's tail
+/// is ½·erfc(x/√2).
+#[inline]
+#[must_use]
+pub fn erfc(x: f64) -> f64 {
+    libm::erfc(x)
 }
 
 /// The base-10 logarithm of `x`.
