@@ -9,7 +9,10 @@
 //! A test fails on any miss no named entry explains, and a failed test
 //! records nothing, so an unexplained miss never reaches the page as a
 //! number: the gate fails instead. Every corpus section is scored or
-//! declared unscored here with its reason, both ways.
+//! declared unscored here with its reason, both ways. Every entry a score
+//! names is a `KNOWN` divergence or cites a page that exists, and the
+//! corpus the scores were made against is the tagged release its index
+//! names.
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
@@ -17,6 +20,8 @@ use std::path::Path;
 use std::process::Command;
 
 use serde::Deserialize;
+
+use teistro_ephemeris_kit::corpus::KNOWN;
 
 use crate::generated::{Output, check, write};
 
@@ -148,6 +153,103 @@ fn mismatches(corpus: &Corpus, scores: &[Score]) -> Vec<String> {
     found
 }
 
+/// What an explained entry fails to name, if anything. An entry is a
+/// `KNOWN` divergence by its name, or a reading that ends by citing its
+/// page, `(page.md)` or `(page.md, ANCHOR)`: the page must be one file
+/// under `docs`, and the anchor (a crux, a finding, a rank) a word on it.
+fn uncited(docs: &[(String, String)], entry: &str) -> Option<String> {
+    if KNOWN.iter().any(|divergence| divergence.name == entry) {
+        return None;
+    }
+    let Some(cited) = entry
+        .strip_suffix(')')
+        .and_then(|rest| rest.rsplit_once('('))
+        .map(|(_, cited)| cited)
+    else {
+        return Some(format!(
+            "{entry:?}: neither a `KNOWN` divergence nor a reading citing its page"
+        ));
+    };
+    let (page, anchor) = cited
+        .split_once(", ")
+        .map_or((cited, None), |(page, anchor)| (page, Some(anchor)));
+    let found: Vec<&(String, String)> = docs.iter().filter(|(name, _)| name == page).collect();
+    let [(_, text)] = found.as_slice() else {
+        return Some(format!(
+            "{entry:?}: cites `{page}`, which is {} pages under docs, not one",
+            found.len()
+        ));
+    };
+    let word = |word: &str| {
+        text.split(|c: char| !c.is_ascii_alphanumeric())
+            .any(|w| w == word)
+    };
+    match anchor {
+        Some(anchor) if !word(anchor) => Some(format!("{entry:?}: `{page}` never names {anchor}")),
+        _ => None,
+    }
+}
+
+/// Every markdown page under `docs`, by file name.
+fn pages(root: &Path) -> Vec<(String, String)> {
+    let mut found = Vec::new();
+    let mut stack = vec![root.join("docs")];
+    while let Some(dir) = stack.pop() {
+        for entry in std::fs::read_dir(&dir).expect("the docs tree").flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.extension().is_some_and(|e| e == "md") {
+                let name = entry.file_name().to_string_lossy().into_owned();
+                found.push((name, std::fs::read_to_string(&path).expect("a page")));
+            }
+        }
+    }
+    found
+}
+
+/// Whether the submodule is pinned at the tag `corpus.json` names, read
+/// from the corpus repository itself, so a corpus pinned between releases
+/// or a bumped index with a stale pin fails.
+fn untagged(root: &Path, corpus: &Corpus) -> Option<String> {
+    let git = |args: &[&str]| {
+        Command::new("git")
+            .args(args)
+            .current_dir(root)
+            .output()
+            .ok()
+            .filter(|out| out.status.success())
+            .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
+    };
+    let pinned = git(&["-C", "fixtures", "rev-parse", "HEAD"])?
+        .trim()
+        .to_owned();
+    let tag = format!("refs/tags/v{}", corpus.version);
+    let peeled = format!("{tag}^{{}}");
+    let Some(listed) = git(&["ls-remote", &corpus.repository, &tag, &peeled]) else {
+        return Some(format!(
+            "{CORPUS}: could not list {tag} in {}, so the pin is unchecked",
+            corpus.repository
+        ));
+    };
+    let commit = |name: &str| {
+        listed.lines().find_map(|line| {
+            let (commit, named) = line.split_once('\t')?;
+            (named == name).then_some(commit)
+        })
+    };
+    match commit(&peeled).or_else(|| commit(&tag)) {
+        Some(commit) if commit == pinned => None,
+        Some(commit) => Some(format!(
+            "fixtures is pinned at {pinned}, and {tag} is {commit}"
+        )),
+        None => Some(format!(
+            "{CORPUS} names {}, and {} has no tag {tag}",
+            corpus.version, corpus.repository
+        )),
+    }
+}
+
 fn render(corpus: &Corpus, scores: &[Score]) -> String {
     let mut by_section: BTreeMap<&str, Vec<&Score>> = BTreeMap::new();
     for score in scores {
@@ -226,7 +328,15 @@ fn outputs(root: &Path) -> Vec<Output> {
     )
     .expect("a valid corpus index");
     let scores = measure(root);
-    let found = mismatches(&corpus, &scores);
+    let docs = pages(root);
+    let mut found = mismatches(&corpus, &scores);
+    found.extend(
+        scores
+            .iter()
+            .flat_map(|score| &score.explained)
+            .filter_map(|explained| uncited(&docs, &explained.entry)),
+    );
+    found.extend(untagged(root, &corpus));
     assert!(
         found.is_empty(),
         "the scores against the corpus:\n{}",
@@ -261,6 +371,30 @@ mod tests {
                     evidence_rank: 2,
                 })
                 .collect(),
+        }
+    }
+
+    #[test]
+    fn an_entry_is_known_or_cites_a_page_that_names_it() {
+        let docs = vec![
+            ("one.md".to_owned(), "R2: the committee's (C12).".to_owned()),
+            ("twice.md".to_owned(), String::new()),
+            ("twice.md".to_owned(), String::new()),
+        ];
+        assert_eq!(uncited(&docs, KNOWN[0].name), None);
+        assert_eq!(uncited(&docs, "a reading (one.md)"), None);
+        assert_eq!(uncited(&docs, "a reading (one.md, R2)"), None);
+        assert_eq!(uncited(&docs, "a reading (one.md, C12)"), None);
+        let refused = [
+            "an unnamed reading",
+            "a reading (gone.md)",
+            "a reading (twice.md)",
+            "a reading (one.md, R3)",
+            // A word inside another is not the word.
+            "a reading (one.md, C1)",
+        ];
+        for entry in refused {
+            assert!(uncited(&docs, entry).is_some(), "{entry}");
         }
     }
 
