@@ -68,6 +68,8 @@ pub use area::{
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
 #[cfg(feature = "western")]
 mod antiscia;
+#[cfg(feature = "chart")]
+mod compose;
 #[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
@@ -230,6 +232,10 @@ pub use teistro_render_svg as render_svg;
 // without building it (`03-design/dasha-kernels.md`).
 #[cfg(feature = "chart")]
 pub use crate::plan_request::{PlanInputs, PlanRequest};
+// A chart request composed whole, its records read beside it
+// (`03-design/mcp-server.md`, step 2).
+#[cfg(feature = "chart")]
+pub use crate::compose::{ChartRecords, Composed};
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]

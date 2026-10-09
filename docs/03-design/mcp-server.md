@@ -118,6 +118,20 @@ JSON, the boundary reads its C request into the same record, and both
 the boundary and the server call it, which removes the copy the
 boundary keeps today.
 
+**Built so far (2026-10-10).** `teistro::ChartRecords` holds the
+records a chart request carries beside its sections, each read by its
+own reader. `ChartArea::compose` founds the charts, widens the request
+by what the records read off them, and answers every section as
+`Composed`. Today that covers the rules and plans, Sade Sati, transits,
+hits, dignities, fortitudes, lots, considerations, perfection,
+matching, SVG, KP, prashna, remedies, Lal Kitab and rectification. The
+boundary reads its C strings into the records and encodes what
+`compose` answers, so its own section composition is gone; the blob did
+not move a byte, which the ABI and parity suites hold. Two sections are
+still composed at the boundary: the annual charts (`varsha`) and the
+Western tables, both mixed with their encoders. They move next. After
+them come a chart record read from JSON and `chart.found`.
+
 ## 4. What is not a tool
 
 The lifetime plumbing (`ts_context_new`, the frees, `last_error`), the
