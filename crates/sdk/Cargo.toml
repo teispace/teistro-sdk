@@ -26,6 +26,7 @@ teistro-dasha = { path = "../dasha", optional = true }
 teistro-hellenistic = { path = "../hellenistic", optional = true }
 teistro-matching = { path = "../matching", optional = true }
 teistro-lalkitab = { path = "../lalkitab", optional = true }
+teistro-pakshi = { path = "../pakshi", optional = true }
 teistro-numerology = { path = "../numerology", optional = true }
 teistro-research = { path = "../research", optional = true }
 teistro-prashna = { path = "../prashna", optional = true }
@@ -75,7 +76,7 @@ default = ["builtin-standard", "full"]
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -92,6 +93,7 @@ kp = ["chart", "dep:teistro-kp"]
 lalkitab = ["chart", "dep:teistro-lalkitab"]
 muhurta = ["dep:teistro-muhurta"]
 numerology = ["dep:teistro-numerology"]
+pakshi = ["chart", "dep:teistro-pakshi"]
 prashna = ["chart", "dep:teistro-prashna"]
 rectification = ["chart", "dep:teistro-rectification"]
 rashifal = ["chart", "dep:teistro-rashifal"]
@@ -227,6 +229,10 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "lalkitab"
 required-features = ["builtin-ephemeris", "lalkitab"]
+
+[[test]]
+name = "pakshi"
+required-features = ["builtin-ephemeris", "pakshi"]
 
 [[test]]
 name = "remedies"

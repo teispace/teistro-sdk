@@ -34,6 +34,7 @@ members = [
     "crates/matching",
     "crates/numerology",
     "crates/lalkitab",
+    "crates/pakshi",
     "crates/research",
     "crates/prashna",
     "crates/remedies",

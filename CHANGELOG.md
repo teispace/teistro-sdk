@@ -2525,6 +2525,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   shuffled by date or by age, and `expected` reads a sample against its
   own recombined population. Each answer's input hash is the study's
   pre-registration, and the thread count is not in it.
+- **Pancha Pakshi** (`03-design/pakshi.md` steps 1 and 2).
+  `teistro-pakshi` reads the five birds' activities by yama as one rule
+  held to every cell of the printed tables, with the sub-periods, the
+  death birds, the relations and the native's bird from the birth star.
+  `sdk.almanac().pakshi(date, place, offset, bird, &rules)` reads a day
+  over the almanac's sunrise, sunset and tithi, and
+  `sdk.chart().pakshi_bird(document, rule)` a native's bird.
+  **Numbers:** none move.
 - **Lal Kitab in every binding** (`03-design/lalkitab.md` steps 2 and
   3). `sdk.chart().lalkitab(document, &request)` reads a chart's teva,
   its 35-year cycle and, for a named year, its ruler, thirds and annual

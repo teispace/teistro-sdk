@@ -91,6 +91,8 @@ mod muhurta_request;
 mod naam_request;
 #[cfg(feature = "numerology")]
 mod numerology_request;
+#[cfg(feature = "pakshi")]
+mod pakshi_request;
 #[cfg(feature = "chart")]
 mod partner;
 #[cfg(feature = "chart")]
@@ -438,6 +440,10 @@ pub use teistro_rectification as rectification;
 // (`03-design/lalkitab.md`).
 #[cfg(feature = "lalkitab")]
 pub use teistro_lalkitab as lalkitab;
+// Pancha Pakshi: the five birds' activities by yama and sub-period, the
+// death birds and the relations (`03-design/pakshi.md`).
+#[cfg(feature = "pakshi")]
+pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS
 // ch. 13 (`03-design/remedies.md`).
 #[cfg(feature = "remedies")]
