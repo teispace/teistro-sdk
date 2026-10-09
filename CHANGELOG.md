@@ -2509,7 +2509,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   shuffle are written in the crate and versioned (`research/shuffle/1`),
   so a request gives the same bits at any thread count. `ambient-input`
   now refuses the process's randomness. `teistro_core::math` gains
-  `ln_gamma` and `erfc`. **Numbers:** none move.
+  `ln_gamma` and `erfc`. Two more nulls read the same engine: `timed`
+  shuffles events among lives (each subject read at every subject's event,
+  pairings that would put an event before a birth refused or drawn around),
+  and `replicated` reads a sample against its own recombined replicates,
+  the share each predicate is expected at and its rank among them. Every
+  predicate is named, and the names answer with it. **Numbers:** none
+  move.
 - **Python request knobs are `Literal`s.** A rectification, prashna,
   remedies or dasha-definition knob that took a `str` takes its members,
   so mypy refuses a misspelt one before the boundary does.

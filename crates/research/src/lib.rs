@@ -18,7 +18,7 @@
 //!     .iter()
 //!     .map(|&holds| if holds == 1 { Cell::Present } else { Cell::Absent })
 //!     .collect();
-//! matrix.push(&cells)?;
+//! matrix.push("holds", &cells)?;
 //! let design = Design::new(vec![1, 1, 1, 1, 1, 0, 0, 0, 0, 0]);
 //! let test = GroupTest::new(8, 9_999, Contrast::CaseVsRest { case: 1 });
 //! let tested = compare(&matrix, &design, &test)?;
@@ -43,6 +43,8 @@ mod bits;
 mod correct;
 mod effect;
 mod engine;
+mod events;
+mod recombined;
 mod rng;
 mod special;
 #[cfg(test)]
@@ -50,6 +52,8 @@ mod tests;
 
 pub use bits::{Cell, Matrix};
 pub use effect::{Effect, Interval};
+pub use events::{AfterBirth, EventTest, MAX_ATTEMPTS, MAX_SUBJECTS, PairMatrix, timed};
+pub use recombined::{MAX_REPLICATES, ReplicateTest, replicated};
 pub use rng::{ShuffleVersion, SplitMix64, stream_seed};
 
 use engine::Layout;
@@ -180,7 +184,7 @@ pub struct GroupTest {
     pub shuffle: ShuffleVersion,
 }
 
-const fn default_level() -> f64 {
+pub(crate) const fn default_level() -> f64 {
     0.95
 }
 
@@ -255,6 +259,21 @@ pub struct Adjusted {
     pub by: f64,
 }
 
+/// A one-group design's share against what its null expects.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Expectation {
+    /// The share of the study's own pairs (or charts) the predicate holds
+    /// on, over those it was read on.
+    pub observed: f64,
+    /// The share the null expects.
+    pub expected: f64,
+    /// Observed over expected, the ratio Gauquelin's literature quotes;
+    /// absent when nothing is expected.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ratio: Option<f64>,
+}
+
 /// Which methods put a predicate at or under the caller's alpha.
 #[allow(
     clippy::struct_excessive_bools,
@@ -283,6 +302,8 @@ pub struct UnderAlpha {
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PredicateRow {
+    /// The predicate, by the name its column was added under.
+    pub predicate: String,
     /// Its charts in each group, groups in index order.
     pub counts: Vec<GroupCount>,
     /// The test statistic under the observed labels.
@@ -300,6 +321,11 @@ pub struct PredicateRow {
     /// groups both have a chart the predicate was read on.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub effect: Option<Effect>,
+    /// The share observed against the share the null expects, for a
+    /// one-group design: an event study, or a sample against its own
+    /// recombined population.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected: Option<Expectation>,
     /// Which methods put it under the caller's alpha, when one was given.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub under_alpha: Option<UnderAlpha>,
@@ -414,25 +440,35 @@ fn check_test(matrix: &Matrix, test: &GroupTest, group_count: u16) -> Result<(),
         }
         _ => {}
     }
-    if test.permutations == 0 || test.permutations > MAX_PERMUTATIONS {
+    check_permutations(
+        test.permutations,
+        test.level,
+        test.alpha,
+        matrix.predicates(),
+    )
+}
+
+/// Checks a test's permutations, interval level and alpha against a
+/// family of `family` predicates.
+pub(crate) fn check_permutations(
+    permutations: u32,
+    level: f64,
+    alpha: Option<f64>,
+    family: usize,
+) -> Result<(), Error> {
+    if permutations == 0 || permutations > MAX_PERMUTATIONS {
         return Err(refuse(
             "permutations",
-            format!(
-                "{} permutations is outside 1 to {MAX_PERMUTATIONS}",
-                test.permutations
-            ),
+            format!("{permutations} permutations is outside 1 to {MAX_PERMUTATIONS}"),
         ));
     }
-    if !(test.level > 0.0 && test.level < 1.0) {
+    if !(level > 0.0 && level < 1.0) {
         return Err(refuse(
             "level",
-            format!(
-                "an interval's confidence is inside (0, 1), not {}",
-                test.level
-            ),
+            format!("an interval's confidence is inside (0, 1), not {level}"),
         ));
     }
-    if let Some(alpha) = test.alpha {
+    if let Some(alpha) = alpha {
         if !(alpha > 0.0 && alpha < 1.0) {
             return Err(refuse(
                 "alpha",
@@ -440,16 +476,14 @@ fn check_test(matrix: &Matrix, test: &GroupTest, group_count: u16) -> Result<(),
             ));
         }
         #[allow(clippy::cast_precision_loss)]
-        let bonferroni = alpha / matrix.predicates() as f64;
-        let resolution = 1.0 / (f64::from(test.permutations) + 1.0);
+        let bonferroni = alpha / family as f64;
+        let resolution = 1.0 / (f64::from(permutations) + 1.0);
         if resolution > bonferroni {
             let needed = (1.0 / bonferroni).ceil() - 1.0;
             return Err(refuse(
                 "permutations",
                 format!(
-                    "{} permutations cannot reach a p-value under alpha / {} = {bonferroni}, the strictest threshold the answer reports",
-                    test.permutations,
-                    matrix.predicates()
+                    "{permutations} permutations cannot reach a p-value under alpha / {family} = {bonferroni}, the strictest threshold the answer reports"
                 ),
             )
             .with_hint(format!("at least {needed} permutations")));
@@ -528,46 +562,19 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
     };
     let observed = engine::observed(&layout, matrix, &statistic);
     let order = engine::step_down_order(&observed);
-    let run = engine::Run {
+    let labelled = engine::Labelled {
         layout: &layout,
         matrix,
         statistic: &statistic,
-        observed: &observed,
-        ordered: order
-            .iter()
-            .filter_map(|&j| observed.get(j).copied())
-            .collect(),
-        order: &order,
         seed: test.seed,
-        permutations: test.permutations,
     };
-    let counted = engine::count(&run, test.parallelism);
-    let m = u64::from(test.permutations);
-    let raw: Vec<f64> = counted.exceed.iter().map(|&b| p_value(b, m)).collect();
-    let mut running: f64 = 0.0;
-    let max_t = correct::in_request_order(
-        order
-            .iter()
-            .zip(&counted.step_down)
-            .map(|(&j, &b)| {
-                running = running.max(p_value(b, m));
-                (j, running)
-            })
-            .collect(),
-    );
-    let adjusted = max_t
-        .into_iter()
-        .zip(correct::holm(&raw))
-        .zip(correct::bonferroni(&raw))
-        .zip(correct::benjamini_hochberg(&raw))
-        .zip(correct::benjamini_yekutieli(&raw))
-        .map(|((((max_t, holm), bonferroni), bh), by)| Adjusted {
-            max_t,
-            holm,
-            bonferroni,
-            bh,
-            by,
-        });
+    let counted = engine::count(
+        &labelled,
+        &engine::Family::new(&observed, &order),
+        test.permutations,
+        test.parallelism,
+    )?;
+    let assessed = assess(&counted, &order, test.permutations, test.level, test.alpha);
     let context = RowContext {
         design,
         group_count,
@@ -580,17 +587,13 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
         .columns
         .iter()
         .zip(&observed)
-        .zip(&counted.exceed)
-        .zip(raw)
-        .zip(adjusted)
-        .map(|((((column, &observed), &exceed), raw), adjusted)| {
-            context.row(column, observed, exceed, raw, adjusted)
-        })
+        .zip(assessed)
+        .map(|((column, &observed), assessed)| context.row(column, observed, assessed))
         .collect();
     Ok(Tested {
         rows,
         permutations: test.permutations,
-        resolution: p_value(0, m),
+        resolution: p_value(0, u64::from(test.permutations)),
         shuffle: test.shuffle,
     })
 }
@@ -602,6 +605,75 @@ pub fn compare(matrix: &Matrix, design: &Design, test: &GroupTest) -> Result<Tes
 )]
 fn p_value(b: u64, m: u64) -> f64 {
     (b as f64 + 1.0) / (m as f64 + 1.0)
+}
+
+/// One predicate's p-value, adjusted p-values and verdicts by alpha.
+#[derive(Clone, Copy)]
+pub(crate) struct Assessed {
+    pub(crate) p: PValue,
+    pub(crate) adjusted: Adjusted,
+    pub(crate) under_alpha: Option<UnderAlpha>,
+}
+
+/// Every predicate's p-value with its Monte Carlo interval, and the
+/// family's corrections, from what the permutations counted.
+pub(crate) fn assess(
+    counted: &engine::Counted,
+    order: &[usize],
+    permutations: u32,
+    level: f64,
+    alpha: Option<f64>,
+) -> Vec<Assessed> {
+    let m = u64::from(permutations);
+    let raw: Vec<f64> = counted.exceed.iter().map(|&b| p_value(b, m)).collect();
+    let mut running: f64 = 0.0;
+    let max_t = correct::in_request_order(
+        order
+            .iter()
+            .zip(&counted.step_down)
+            .map(|(&j, &b)| {
+                running = running.max(p_value(b, m));
+                (j, running)
+            })
+            .collect(),
+    );
+    max_t
+        .into_iter()
+        .zip(correct::holm(&raw))
+        .zip(correct::bonferroni(&raw))
+        .zip(correct::benjamini_hochberg(&raw))
+        .zip(correct::benjamini_yekutieli(&raw))
+        .zip(raw.iter().zip(&counted.exceed))
+        .map(
+            |(((((max_t, holm), bonferroni), bh), by), (&value, &exceed))| {
+                let (low, high) = special::clopper_pearson(exceed, m, level);
+                let adjusted = Adjusted {
+                    max_t,
+                    holm,
+                    bonferroni,
+                    bh,
+                    by,
+                };
+                Assessed {
+                    p: PValue {
+                        exceed,
+                        value,
+                        low,
+                        high,
+                    },
+                    adjusted,
+                    under_alpha: alpha.map(|alpha| UnderAlpha {
+                        raw: value <= alpha,
+                        max_t: max_t <= alpha,
+                        holm: holm <= alpha,
+                        bonferroni: bonferroni <= alpha,
+                        bh: bh <= alpha,
+                        by: by <= alpha,
+                    }),
+                }
+            },
+        )
+        .collect()
 }
 
 /// What every row of one test reads besides its own column.
@@ -616,17 +688,8 @@ struct RowContext<'a> {
 }
 
 impl RowContext<'_> {
-    fn row(
-        &self,
-        column: &bits::Column,
-        observed: f64,
-        exceed: u64,
-        raw: f64,
-        adjusted: Adjusted,
-    ) -> PredicateRow {
+    fn row(&self, column: &bits::Column, observed: f64, assessed: Assessed) -> PredicateRow {
         let counts = group_counts(column, &self.design.groups, self.group_count);
-        let (low, high) =
-            special::clopper_pearson(exceed, u64::from(self.test.permutations), self.test.level);
         let (exact, effect) = match self.test.contrast {
             Contrast::CaseVsRest { case } => {
                 let case_count = counts.get(usize::from(case)).copied().unwrap_or_default();
@@ -647,26 +710,77 @@ impl RowContext<'_> {
             Contrast::AnyDifference => (None, None),
         };
         PredicateRow {
+            predicate: column.name.clone(),
             counts,
             observed,
-            p: PValue {
-                exceed,
-                value: raw,
-                low,
-                high,
-            },
+            p: assessed.p,
             exact,
-            adjusted,
+            adjusted: assessed.adjusted,
             effect,
-            under_alpha: self.test.alpha.map(|alpha| UnderAlpha {
-                raw: raw <= alpha,
-                max_t: adjusted.max_t <= alpha,
-                holm: adjusted.holm <= alpha,
-                bonferroni: adjusted.bonferroni <= alpha,
-                bh: adjusted.bh <= alpha,
-                by: adjusted.by <= alpha,
-            }),
+            expected: None,
+            under_alpha: assessed.under_alpha,
         }
+    }
+}
+
+/// How often one predicate holds in each group.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct CountRow {
+    /// The predicate, by its column's name.
+    pub predicate: String,
+    /// Its charts in each group, groups in index order.
+    pub counts: Vec<GroupCount>,
+}
+
+/// How often every predicate holds in each group: a study's first table,
+/// with no null and no shuffle.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Counts {
+    /// One row per predicate, in the matrix's order.
+    pub rows: Vec<CountRow>,
+}
+
+/// How often each predicate holds in each of the design's groups, with
+/// the charts it could not be read on and those it is unstable on
+/// counted apart.
+///
+/// # Errors
+///
+/// As [`compare`] refuses a design: fewer than two charts, labels or
+/// strata not one per chart, a group with no chart or one label for every
+/// chart (`groups`), strata in which no label can move (`strata`), no
+/// predicate (`predicates`).
+pub fn counts(matrix: &Matrix, design: &Design) -> Result<Counts, Error> {
+    let group_count = check_design(matrix, design)?;
+    Ok(Counts {
+        rows: matrix
+            .columns
+            .iter()
+            .map(|column| CountRow {
+                predicate: column.name.clone(),
+                counts: group_counts(column, &design.groups, group_count),
+            })
+            .collect(),
+    })
+}
+
+impl Matrix {
+    /// Every predicate's cells over the whole batch, as one group: what a
+    /// one-group design counts.
+    #[must_use]
+    pub fn tallies(&self) -> Vec<GroupCount> {
+        let one = vec![0; self.charts()];
+        self.columns
+            .iter()
+            .map(|column| {
+                group_counts(column, &one, 1)
+                    .first()
+                    .copied()
+                    .unwrap_or_default()
+            })
+            .collect()
     }
 }
 
