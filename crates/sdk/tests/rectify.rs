@@ -65,6 +65,59 @@ fn point(document: &Document, point: Point) -> Rashi {
         .sign
 }
 
+/// The Svarodaya is counted in the almanac's own day: its sunrise, and the
+/// nadi the almanac's tithi at that sunrise starts (v. 62); a window's runs
+/// tile it, and each is what the reading at its middle says.
+#[test]
+fn the_svarodaya_is_counted_in_the_almanacs_day() {
+    use teistro::CalendarDate;
+    use teistro::catalogue::Calendar;
+    use teistro::rectification::svarodaya::Nadi;
+
+    let sdk = sdk();
+    let place = kathmandu();
+    let at = JulianDay::literal(MOMENT);
+    let read = sdk.chart().svarodaya(at, &place, OFFSET).unwrap().value;
+    // 05:15 on the 14th is before its sunrise: the night of the 13th (X9).
+    let date = CalendarDate::defined(Calendar::Gregorian, 1990, 4, 13);
+    let day = sdk
+        .almanac()
+        .of(&date, &date, &place, OFFSET)
+        .unwrap()
+        .value
+        .remove(0);
+    assert_eq!(read.sunrise, day.day.sunrise);
+    let tithi = day.tithi_at(day.day.sunrise).unwrap().member;
+    assert_eq!(read.tithi, tithi);
+    assert_eq!(read.sunrise_nadi, Nadi::at_sunrise(tithi));
+    assert!(read.run.from.get() <= MOMENT && MOMENT < read.run.to.get());
+
+    let window = window(3.0);
+    let runs = sdk
+        .chart()
+        .svarodaya_runs(window, &place, OFFSET)
+        .unwrap()
+        .value;
+    assert_eq!(runs[0].from, window.from);
+    assert_eq!(runs[runs.len() - 1].to, window.to);
+    for pair in runs.windows(2) {
+        assert_eq!(pair[0].to, pair[1].from);
+    }
+    for run in &runs {
+        let middle = JulianDay::literal(f64::midpoint(run.from.get(), run.to.get()));
+        let there = sdk
+            .chart()
+            .svarodaya(middle, &place, OFFSET)
+            .unwrap()
+            .value
+            .run;
+        assert_eq!(
+            (there.nadi, there.tattva, there.turn),
+            (run.nadi, run.tattva, run.turn)
+        );
+    }
+}
+
 #[test]
 fn every_clause_is_what_the_chart_of_its_instant_says() {
     // The SDK's own points, so each clause has a chart value to meet.
