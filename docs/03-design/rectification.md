@@ -117,15 +117,18 @@ navamsha.
 
 ### The tattvas (Shiva Svarodaya)
 
-- **v. 193** gives the durations: earth 50 palas, water 40, fire 30, air 20,
-  ether 10, an hour together, which is v. 62's span for one nadi's turn.
-- Which nadi rises at sunrise goes by the tithi in runs of three days
-  (vv. 61, 64), and the Moon's nadi is female, the Sun's male (v. 59).
-- **No verse applies a tattva to the birth moment.** The sex rules read a
-  tattva at a question about a pregnancy (1899 v. 294) or at conception
-  (v. 299), and the two disagree about water.
-- vv. 63 and 70 give other, equal durations, so the text is not one rule
-  (X12).
+- **v. 193** (1899 v. 197) gives the durations: earth 50 palas, water 40,
+  fire 30, air 20, ether 10, two and a half ghatis together, which is one
+  nadi's turn (1899 v. 63).
+- Which nadi rises at sunrise goes by the tithi in runs of three days from
+  pratipada (1899 v. 62), the tattvas rise in each turn in the order air,
+  fire, earth, water with ether at the junction (vv. 71, 72, 154), and the
+  Moon's nadi is female, the Sun's male (v. 60).
+- **No verse applies a nadi or a tattva to the birth moment.** The sex
+  rules read a tattva at a question about a pregnancy (1899 v. 294) or at
+  conception (v. 299), and the two disagree about water.
+- Rama Prasad's "a ghari each" and "five gharis each" mistranslate 1899
+  vv. 64 and 72, so the text is one rule (X12).
 
 ## The surface
 
@@ -417,18 +420,29 @@ from Aries; and the rising sign or navamsha.
   (`pisces`, `EITHER` by default); the rising fraction is measured in rising
   time, as both translators do, and reported, never weighed.
 
-**X12. The tattvas.** v. 193's durations sum to v. 62's hour; vv. 63 and 70
-give other spans; the sex rules belong to questions and conception and
-disagree; the baseline's cycle (unequal minutes on 90, a weekday-lord start,
-alternating direction, its own sex map) is a modern exposition. Whether the
-roadmap's "Svarodaya v. 193" means the Shiva Svarodaya is itself an
-inference.
-- **Decided:** `TATTVA` off by default; `SVARODAYA` builds v. 193's
-  durations inside v. 62's nadi turns from the tithi-run start of vv. 61 and
-  64, with v. 59's sex by nadi, labelled as an application the text does not
-  make; the baseline's cycle is reproduced as rank 2 inside
-  `rectify_baseline`'s prior (X20, X24). Confirm with the maintainer which
-  Svarodaya the roadmap meant.
+**X12. The tattvas.** Read in the 1899 Sanskrit and checked against the
+1919 and 1931 prints (`rectification-sources.md` §3), the Shiva Svarodaya
+is one rule: a nadi's turn is two and a half ghatis, twenty-four turns
+through day and night from the sunrise (1899 vv. 62–63); inside each turn
+the five tattvas rise afresh in the order air, fire, earth, water (vv. 71,
+72) at v. 197's palas (air 20, fire 30, earth 50, water 40), and ether's
+10 flow at the junction (v. 154). Rama Prasad's "a ghari each" and "five
+gharis each" (his vv. 63, 70) mistranslate vv. 64 and 72, which put all
+five within the turn. The sex rules belong to questions and conception and
+disagree on water; no verse reads a nadi or a tattva at a birth. The
+baseline's cycle (unequal minutes on 90, a weekday-lord start,
+alternating direction, its own sex map) is a modern exposition.
+- **Decided:** "Svarodaya v. 193" is the Shiva Svarodaya in Rama Prasad's
+  numbering, the durations verse; no other Svarodaya has one. `TATTVA` is
+  off by default; `SVARODAYA` reads the nadi at sunrise from the tithi
+  then (v. 62), runs the turns on from it through the sixty ghatis of the
+  sunrise-to-sunrise day (v. 63), places the tattvas in each turn in
+  v. 71's order with ether last, at the junction, and reports the nadi,
+  the tattva and the sex v. 60 gives the nadi, **labelled an application
+  the text does not make**, a report and never a bar. The sushumna is the
+  junction itself and is reported as an instant, not a span. The
+  baseline's cycle stays rank 2 inside `rectify_baseline`'s prior (X20,
+  X24).
 
 **X13. Kunda.** The ×81 check is widely taught and attributed to Prasna
 Marga; it was not found on a public-domain page.
@@ -625,6 +639,6 @@ within one cell of the baseline's final step.
    tests hold the black-box run (X26), a reported time that is the true one
    staying inside the answer, and events that narrow it. With nothing to
    differ, the parity page is the test's table.
-7. **`TATTVA` under `SVARODAYA`**, opt-in, after X12 is answered.
+7. **`TATTVA` under `SVARODAYA`**, opt-in. X12 is decided (2026-10-09).
 8. **The façade and every binding**, on prashna's pattern: a request member,
    one section, parity across the runners.

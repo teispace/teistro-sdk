@@ -176,29 +176,47 @@ Iyer 1885 numbering; each is a clause a family could confirm or deny.
 | print | IA identifier | status |
 |---|---|---|
 | Rama Prasad, *The Science of Breath and the Philosophy of the Tattvas*, 2nd ed., Theosophical Publishing Society, London **1894** (translation of the Shiva Svarodaya) | `rama-prasad-sb` | PD; v. 193 on p. 217 (OCR) |
-| *Shiva Svarodaya* with Hindi translation, Khemraj Shrikrishnadas, Bombay **1899** | `ShivaSvarodayaWithHindiTranslation1899KhemrajShriKrishnaDas` | PD; Sanskrit; the same verse is **v. 197**, p. 48 (OCR) |
+| *Shiva Svarodaya* with Hindi translation, Khemraj Shrikrishnadas, Bombay **1899** | `ShivaSvarodayaWithHindiTranslation1899KhemrajShriKrishnaDas` | PD; Sanskrit; the same verse is **v. 197**, p. 48; every verse below checked on the page images |
+| *Shiv Svarodaya* with Ramdhin Sharma's *bhāṣā-ṭīkā*, Jagadishvar, **1919** | `wtGS_shiv-svarodaya-with-bhasha-tika-of-ramdhin-sharma-by-vraj-vallabh-hari-prasad-1919-jagadishvar-` | PD; the 1899 numbering; cross-check |
+| *Shiv Svarodaya* with Murlidhar's *bhāṣā-ṭīkā*, Bhargav Bhushan Press, **1931** | `evxR_shiv-svarodaya-with-bhasha-tika-of-murlidhar-1931-bhargav-bhushan-press` | PD; the 1899 numbering; cross-check |
 
-"Svarodaya v. 193" is taken to be the **Shiva Svarodaya in Rama Prasad's
-numbering**; it is the verse the tattva stage needs. (Narapati's
-*Svarodaya*, already used for naam milan, was not checked for a v. 193 on
-birth time; X12 records the identification.)
+"Svarodaya v. 193" is the **Shiva Svarodaya in Rama Prasad's numbering**:
+it is the durations verse the tattva stage needs, and no other Svarodaya
+was found with a v. 193 on the tattvas (X12). The Sanskrit prints agree
+with one another; where Rama Prasad's English differs from them, the
+Sanskrit is read.
 
-| v. (RP / 1899) | key terms | paraphrase |
+| v. (1899 / RP) | key terms | paraphrase |
 |---|---|---|
-| 193 / 197 | *pṛthvyāḥ palāni pañcāśac catvāriṃśat tathāmbhasaḥ / agnes triṃśat punar vāyor viṃśatir nabhaso daśa* | earth 50 palas, water 40, fire 30, air 20, ether 10: together 150 palas, two and a half ghatis, one hour |
-| 62 / — | | each nadi (Moon, Sun) runs two and a half ghatis, in turn through the sixty ghatis of a day: the same span as v. 193's sum |
-| 61, 64 / — | | which nadi rises at sunrise goes by the tithi, in runs of three days, the Moon's first in the bright fortnight and the Sun's in the dark |
-| 63 / — | | "a ghati each" for the five tattvas: **contradicts** v. 193's unequal palas |
-| 70 / — | | "five ghatis each": contradicts both |
-| 59 / — | *candraḥ strī, sūryaḥ pumān* | the Moon's nadi is female, the Sun's male |
-| 180 / — | | Jupiter earth; Moon and Venus water; Sun and Mars fire; the nodes and Saturn air; Mercury ether (RP says Varahamihira agrees) |
-| — / 293, 295 | | at a question about a pregnancy: the Moon's nadi a girl, the Sun's a boy, the middle (sushumna) neither |
-| — / 294 | *pṛthvyāṃ putro jale putraḥ kanyakā tu prabhañjane / tejasi garbhapātaḥ syān nabhasy api napuṃsakaḥ* | by the tattva at the question: earth or water a son, air a daughter, fire a miscarriage, ether neither (the Hindi gloss misreads earth as a daughter) |
-| — / 299 | | at conception: earth a son, water a daughter: **contradicts v. 294 on water** |
+| 197 / 193 | *pṛthvyāḥ palāni pañcāśac catvāriṃśat tathāmbhasaḥ / agnes triṃśat punar vāyor viṃśatir nabhaso daśa* | earth 50 palas, water 40, fire 30, air 20, ether 10: together 150 palas, two and a half ghatis |
+| 63 / 62 | | each nadi (Moon, Sun) runs two and a half ghatis, in turn through the sixty ghatis of day and night: twenty-four turns, with no new start at sunset |
+| 62 / 61 | *ādau candraḥ site pakṣe bhāskaro … pratipattaḥ … trīṇi trīṇi* | which nadi rises at sunrise goes by the tithi, from pratipada in runs of three days: the Moon's first in the bright fortnight, the Sun's in the dark |
+| 65 / 64 | | the left nadi (the Moon's) in the bright fortnight, the right in the dark |
+| 64 / 63 | *vaheyus tad-ghaṭī-madhye pañca tattvāni* | the five tattvas flow **within** that turn of two and a half ghatis; Rama Prasad's "a ghari each" mistranslates it |
+| 72 / 70 | *sārdha-dvighaṭike pañca krameṇaiva udayanti* | the five rise in order within the two and a half ghatis, in each nadi's turn afresh; Rama Prasad's "five gharis each" mistranslates it |
+| 71 / 152 | | the order: air, fire, earth, water |
+| 154 / 151 | *nabho vahati saṅkrame* | ether flows at the junction of the turns |
+| 132, 154 / 129, 151 | | the sushumna, both nadis at once, is a moment (*kṣaṇa*) at the junction, given no span |
+| 60 / 59 | *candraḥ strī, sūryaḥ pumān* | the Moon's nadi is female, the Sun's male |
+| 184 / 180 | | Mercury earth; Moon and Venus water; Sun and Mars fire; Rahu and Saturn air; Jupiter ether. Rama Prasad swaps Jupiter and Mercury, and the Sanskrit names no Ketu |
+| 293, 295 / — | | at a question about a pregnancy: the Moon's nadi a girl, the Sun's a boy, the sushumna neither |
+| 294 / — | *pṛthvyāṃ putro jale putraḥ kanyakā tu prabhañjane / tejasi garbhapātaḥ syān nabhasy api napuṃsakaḥ* | by the tattva at the question: earth or water a son, air a daughter, fire a miscarriage, ether neither (the Hindi gloss misreads earth as a daughter) |
+| 299 / — | | at conception: earth a son, water a daughter: **contradicts v. 294 on water** |
 
-Rama Prasad's translation leaves out the pregnancy verses. **No verse found
-applies a tattva to the moment of birth**; every sex rule is about a question
-or a conception.
+So the text is one rule: two and a half ghatis a nadi, the five tattvas
+inside each turn in the order air, fire, earth, water with ether at the
+junction, at v. 197's palas. Rama Prasad's translation leaves out the
+pregnancy verses (1899 vv. 286–300). **No verse found applies a nadi or a
+tattva to the moment of birth** (the prints searched for *janma*,
+*prasava*, *prasūta*, *sūti*, *garbha*, *putra* and *kanyā*; v. 106's
+*janma-mokṣe* is a list of activities); every sex rule is about a
+question or a conception.
+
+Rama Prasad's numbers against the 1899 print: 59→60 (p. 14); 61–64→62–65
+(pp. 15–16); 65→68; 68, 69→69, 70; 152→71 (p. 17); 70–72→72–74; 76,
+77→78, 80; 78–82→82–86; 103→106; 121–128→124–131; 129, 130→133, 132;
+141–151→145–155; 153→156; 178–180→182–184 (pp. 44–45); 193→197 (p. 48);
+223→229 (p. 56). He has no 1899 vv. 79, 81 or about 246–300.
 
 ## 4. Methods not located on a public-domain page
 
