@@ -477,7 +477,8 @@ public final class BindingTest {
                         "circumstance", Map.of("facts", Map.of("fatherPresent", false)),
                         "baseline", Map.of("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
                                 Map.of("kind", "MARRIAGE", "on", 2_469_000.5),
-                                Map.of("kind", "ACCIDENT", "on", 2_471_000.5, "heldOut", true))));
+                                Map.of("kind", "ACCIDENT", "on", 2_471_000.5, "heldOut", true))),
+                        "svarodaya", Map.of("minutes", 20));
                 Rectification read = sky.chart().found(2_460_482.5, kathmandu, 20_700,
                         ChartOptions.builder().rectification(asked).build()).rectification().orElseThrow();
                 Purified purified = read.purified().orElseThrow();
@@ -514,12 +515,28 @@ public final class BindingTest {
                     }
                 }
                 same(List.of("TATTVA_SEX", "REPORTED_TIME", "EVENT_FIT"), kinds, "a note of each kind");
+                SvarodayaAround svarodaya = read.svarodaya().orElseThrow();
+                List<SvarodayaAround.Run> runs = svarodaya.runs();
+                check(!runs.isEmpty(), "the window's runs");
+                check(Math.abs(runs.get(0).from() - (2_460_482.5 - 20.0 / 1440.0)) < 1e-9,
+                        "the runs start at the window's start");
+                check(Math.abs(runs.get(runs.size() - 1).to() - (2_460_482.5 + 20.0 / 1440.0)) < 1e-9,
+                        "and end at its end");
+                for (int k = 1; k < runs.size(); k += 1) {
+                    same(runs.get(k - 1).to(), runs.get(k).from(), "each run starts where the last ended");
+                }
+                SvarodayaAround.Run now = svarodaya.at().run();
+                check(now.from() <= 2_460_482.5 && 2_460_482.5 < now.to(), "the chart's instant falls in its run");
+                check(svarodaya.at().tithi().fullKey().startsWith("tithi."), "the sunrise's tithi is a tithi");
+                same(now.nadi().equals("MOON") ? Sex.FEMALE : Sex.MALE, now.sex(), "the nadi gives the sex");
+                same(2, svarodaya.at().junctions().size(), "the turn's two junctions");
 
                 Rectification alone = sky.chart().found(2_460_482.5, kathmandu, 20_700,
                         ChartOptions.builder().rectification(Map.of("purify", Map.of("minutes", 20))).build())
                         .rectification().orElseThrow();
                 check(alone.purified().isPresent(), "the purifier asked");
-                check(alone.conception().isEmpty() && alone.circumstance().isEmpty() && alone.baseline().isEmpty(),
+                check(alone.conception().isEmpty() && alone.circumstance().isEmpty() && alone.baseline().isEmpty()
+                        && alone.svarodaya().isEmpty(),
                         "what was not asked is empty");
             }
         });

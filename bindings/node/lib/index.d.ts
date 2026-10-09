@@ -2862,6 +2862,20 @@ export interface RectificationRequest {
   };
   /** The baseline engine's cascade around the chart's instant. */
   readonly baseline?: BaselineRectificationRequest;
+  /** The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant, at most 1080: a report the text does not make at a birth. */
+  readonly svarodaya?: { readonly minutes: number };
+}
+
+/** One stretch of a day under one nadi and one tattva (Shiva Svarodaya, 1899 vv. 62–63, 71–72, 154, 197). */
+export interface SvarodayaRun extends Interval {
+  /** The Moon's (left, female) or the Sun's (right, male), v. 60. */
+  readonly nadi: 'MOON' | 'SUN';
+  /** Its turn of two and a half ghatis in the day, 0 the one rising at sunrise, to 23. */
+  readonly turn: number;
+  /** In each turn air, fire, earth and water, then ether at the junction. */
+  readonly tattva: 'PRITHVI' | 'JALA' | 'AGNI' | 'VAYU' | 'AKASHA';
+  /** The sex v. 60 gives the nadi. */
+  readonly sex: 'MALE' | 'FEMALE';
 }
 
 /** The purifier's readings, one knob per crux (`03-design/rectification.md`). */
@@ -3249,6 +3263,23 @@ export interface Rectification {
       readonly baseline: number;
       readonly supported: boolean;
     }[];
+  } | null;
+  /** The Shiva Svarodaya around the chart's instant: a report, never a bar. */
+  readonly svarodaya: {
+    /** The reading at the chart's instant. */
+    readonly at: {
+      /** The sunrise the turns are counted from, a Julian day (UTC). */
+      readonly sunrise: number;
+      readonly nextSunrise: number;
+      /** The tithi at that sunrise, which gives its nadi (v. 62). */
+      readonly tithi: Tithi;
+      readonly sunriseNadi: 'MOON' | 'SUN';
+      readonly run: SvarodayaRun;
+      /** The turn's start and end, where the sushumna flows for a moment. */
+      readonly junctions: readonly [number, number];
+    };
+    /** Every run inside the window, in order and clipped to it. */
+    readonly runs: readonly SvarodayaRun[];
   } | null;
 }
 

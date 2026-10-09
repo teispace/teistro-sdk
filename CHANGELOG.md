@@ -2487,8 +2487,9 @@ the astronomical numbers do not move. Nothing else computes yet.
   its turn of two and a half ghatis, and the tattva flowing in it in the
   order air, fire, earth, water, with ether at the junction, at the
   verse's palas, read in the 1899 Sanskrit where Rama Prasad's English
-  mistranslates two verses. A report, never a bar: no verse reads either
-  at a birth.
+  mistranslates two verses. The rectification record's `svarodaya`
+  member asks for both around a chart, in every binding. A report, never
+  a bar: no verse reads either at a birth.
 - **`SIZES.md`** (`03-design/generated-pages.md` §1). What every shipped
   artefact weighs, raw and gzipped, recorded from the verify run that
   built it: each platform's library, C bundle, Node addon, wheel and jar,

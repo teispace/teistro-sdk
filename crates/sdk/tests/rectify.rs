@@ -347,7 +347,10 @@ mod baseline {
     #[test]
     fn the_record_reads_what_the_facade_reads_around_the_chart() {
         use teistro::rectification::{CircumstanceRules, ConceptionRules, Facts, Rules, Window};
-        use teistro::{BaselineAsked, CircumstanceAsked, DashaAsked, Purify, RectificationRequest};
+        use teistro::{
+            BaselineAsked, CircumstanceAsked, DashaAsked, Purify, RectificationRequest,
+            SvarodayaAsked,
+        };
 
         let sdk = sdk();
         let at = JulianDay::literal(TRUE_JD);
@@ -378,6 +381,7 @@ mod baseline {
                 coverage: 0.8,
                 dasha: DashaAsked::default(),
             }),
+            svarodaya: Some(SvarodayaAsked { minutes: 30.0 }),
         };
         // A dasha left out is the baseline engine's own.
         assert_eq!(DashaAsked::default().rules(), baseline_dasha_rules());
@@ -417,6 +421,15 @@ mod baseline {
                 .circumstance(at, &place, OFFSET, &facts, &CircumstanceRules::default())
                 .unwrap()
                 .value
+        );
+        let svarodaya = read.svarodaya.unwrap();
+        assert_eq!(
+            svarodaya.at,
+            chart.svarodaya(at, &place, OFFSET).unwrap().value
+        );
+        assert_eq!(
+            svarodaya.runs,
+            chart.svarodaya_runs(window, &place, OFFSET).unwrap().value
         );
         let baseline = asked.baseline.as_ref().unwrap().at(at);
         assert_eq!(read.baseline.unwrap(), run(&sdk, &baseline));
@@ -481,6 +494,10 @@ mod baseline {
         assert_eq!(
             refused(r#"{"baseline": {"uncertaintyMinutes": 0}}"#),
             "rectification.baseline.uncertaintyMinutes"
+        );
+        assert_eq!(
+            refused(r#"{"svarodaya": {"minutes": 1200}}"#),
+            "rectification.svarodaya.minutes"
         );
         let typo =
             RectificationRequest::from_json(r#"{"baseline": {"uncertainty": 60}}"#).unwrap_err();

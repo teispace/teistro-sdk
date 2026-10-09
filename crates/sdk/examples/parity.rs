@@ -2023,8 +2023,9 @@ fn prashna_beside(
 /// The rectification every runner asks for: twenty minutes either side
 /// purified, the conception and the circumstances at the chart's
 /// instant, and the baseline's cascade over half an hour with a marriage
-/// in the fit and an accident held out.
-const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]}}"#;
+/// in the fit and an accident held out, and the Svarodaya's runs over
+/// twenty minutes either side.
+const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]},"svarodaya":{"minutes":20}}"#;
 
 /// A chart read as a birth time to rectify, as the other three print it:
 /// the purifier's runs and the clauses each held, the conception's
@@ -2098,6 +2099,7 @@ fn the_rectification(
     );
     rectification_circumstance(report, &key, read.circumstance.as_ref().expect("asked for"));
     rectification_baseline(report, &key, read.baseline.as_ref().expect("asked for"));
+    rectification_svarodaya(report, &key, read.svarodaya.as_ref().expect("asked for"));
 }
 
 /// The conception reports at a chart's instant, as the other three print
@@ -2286,6 +2288,45 @@ fn rectification_baseline(
                 held.supported
             ),
         );
+    }
+}
+
+/// The Shiva Svarodaya around a chart's instant, as the other three print
+/// it: the day and the reading at the instant, then every run.
+fn rectification_svarodaya(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::SvarodayaAround,
+) {
+    let run = |run: &teistro::rectification::SvarodayaRun| {
+        format!(
+            "{} {} {} {} {} {}",
+            number(run.from.get()),
+            number(run.to.get()),
+            wire_key(&run.nadi),
+            run.turn,
+            wire_key(&run.tattva),
+            wire_key(&run.sex)
+        )
+    };
+    let at = &read.at;
+    put(
+        report,
+        &key("-svarodaya"),
+        format!(
+            "{} {} {} {} {}:{} {}",
+            number(at.sunrise.get()),
+            number(at.next_sunrise.get()),
+            at.tithi.full_key(),
+            wire_key(&at.sunrise_nadi),
+            number(at.junctions[0].get()),
+            number(at.junctions[1].get()),
+            read.runs.len()
+        ),
+    );
+    put(report, &key("-svarodaya-at"), run(&at.run));
+    for (k, one) in read.runs.iter().enumerate() {
+        put(report, &key(&format!("-svarodaya-{k}")), run(one));
     }
 }
 

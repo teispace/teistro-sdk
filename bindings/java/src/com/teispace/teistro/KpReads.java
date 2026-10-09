@@ -406,8 +406,8 @@ final class KpReads {
      * The chart read as a birth time to rectify, the chart's instant the time
      * on record: what the purifier of BPHS ch. 2 leaves standing of the
      * window, the conception reports, <i>Brihat Jataka</i> ch. V's
-     * circumstances and the baseline engine's cascade, each only where the
-     * request asked for it. Empty unless {@code rectification} asked for it
+     * circumstances, the baseline engine's cascade and the Shiva Svarodaya's
+     * nadi and tattva, each only where the request asked for it. Empty unless {@code rectification} asked for it
      * ({@code 03-design/rectification.md}). Ports {@code Chart.rectification}.
      */
     static Optional<Rectification> rectification(Chart chart) {
@@ -637,6 +637,33 @@ final class KpReads {
                 held);
     }
 
+    private static SvarodayaAround.Run svarodayaRun(Object raw) {
+        return new SvarodayaAround.Run(
+                JsonRead.decimal(at(raw, "from")),
+                JsonRead.decimal(at(raw, "to")),
+                JsonRead.text(at(raw, "nadi")),
+                JsonRead.integer(at(raw, "turn")),
+                JsonRead.text(at(raw, "tattva")),
+                JsonRead.member(Sex::byKey, "Sex", at(raw, "sex")));
+    }
+
+    private static SvarodayaAround svarodaya(Object raw) {
+        Object reading = at(raw, "at");
+        List<SvarodayaAround.Run> runs = new ArrayList<>();
+        for (Object one : JsonRead.list(at(raw, "runs"))) {
+            runs.add(svarodayaRun(one));
+        }
+        return new SvarodayaAround(
+                new SvarodayaAround.Reading(
+                        JsonRead.decimal(at(reading, "sunrise")),
+                        JsonRead.decimal(at(reading, "nextSunrise")),
+                        JsonRead.member(Tithi::byKey, "Tithi", at(reading, "tithi")),
+                        JsonRead.text(at(reading, "sunriseNadi")),
+                        svarodayaRun(at(reading, "run")),
+                        decimals(at(reading, "junctions"))),
+                runs);
+    }
+
     /**
      * A chart's rectification from the {@code rectification} section's JSON,
      * its keys made members and each reading not asked for empty.
@@ -646,6 +673,7 @@ final class KpReads {
                 Optional.ofNullable(absent(raw, "purified")).map(KpReads::purified),
                 Optional.ofNullable(absent(raw, "conception")).map(KpReads::conception),
                 Optional.ofNullable(absent(raw, "circumstance")).map(KpReads::circumstance),
-                Optional.ofNullable(absent(raw, "baseline")).map(KpReads::baseline));
+                Optional.ofNullable(absent(raw, "baseline")).map(KpReads::baseline),
+                Optional.ofNullable(absent(raw, "svarodaya")).map(KpReads::svarodaya));
     }
 }

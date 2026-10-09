@@ -646,8 +646,9 @@ within one cell of the baseline's final step.
    three-day runs over all thirty tithis, a day tiled by twenty-four turns
    of v. 197's five, ether closing each turn, and the rival "a ghari each"
    reading refused at half an hour into a turn; the façade's test holds the
-   day and the tithi at its sunrise to the almanac's. The record member
-   and the bindings' readers follow on step 8's pattern.
+   day and the tithi at its sunrise to the almanac's. The record's
+   `svarodaya` member (`{minutes}`) answers the reading at the chart's
+   instant and every run of the window, in every binding.
 8. **The façade and every binding**, on prashna's pattern: a request member,
    one section, parity across the runners. **Built** (2026-10-09): the
    `rectification` record (`purify`, `conception`, `circumstance`,

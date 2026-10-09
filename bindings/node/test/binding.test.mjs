@@ -4248,6 +4248,11 @@ test('a chart carries its rectification', () => {
   assert.equal(baseline.eventsHeldOut, 1);
   assert.equal(baseline.holdOut[0].kind, 'ACCIDENT');
 
+  const { svarodaya } = ctx.chart.found({ instant, ...at, rectification: { svarodaya: { minutes: 20 } } }).rectification;
+  assert.ok(svarodaya.at.tithi.startsWith('tithi.'));
+  assert.ok(svarodaya.runs.slice(1).every((run, k) => run.from === svarodaya.runs[k].to), 'the runs tile the window');
+  assert.ok(svarodaya.at.run.from <= instant && instant < svarodaya.at.run.to);
+
   assert.throws(
     () => ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 0 } } }),
     (error) => error.field === 'rectification.purify.minutes',

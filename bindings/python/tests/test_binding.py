@@ -1566,6 +1566,7 @@ class AnEngine(WithLibrary):
             self.assertIsNone(purified.conception)
             self.assertIsNone(purified.circumstance)
             self.assertIsNone(purified.baseline)
+            self.assertIsNone(purified.svarodaya)
             runs = purified.purified.intervals + purified.purified.removed
             self.assertTrue(runs)
             self.assertGreater(purified.purified.grid.cells, 0)
@@ -1619,6 +1620,22 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, rectification={"purify": {"minutes": 0}}, **at)
             self.assertEqual(refused.exception.field, "rectification.purify.minutes")
+            told = ctx.chart.found(instant=instant, rectification={"svarodaya": {"minutes": 20}}, **at).rectification
+            assert told is not None and told.svarodaya is not None
+            self.assertIsNone(told.purified)
+            sv = told.svarodaya
+            self.assertIsInstance(sv.at.tithi, Tithi)
+            self.assertTrue(sv.runs)
+            self.assertAlmostEqual(sv.runs[0].from_jd, instant - 20 / 1440, delta=1e-6)
+            self.assertAlmostEqual(sv.runs[-1].to_jd, instant + 20 / 1440, delta=1e-6)
+            for one, after in zip(sv.runs, sv.runs[1:]):
+                self.assertEqual(one.to_jd, after.from_jd, "the runs tile the window")
+            self.assertLessEqual(sv.at.run.from_jd, instant)
+            self.assertLess(instant, sv.at.run.to_jd)
+            self.assertEqual(sv.at.run.sex, "FEMALE" if sv.at.run.nadi == "MOON" else "MALE")
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, rectification={"svarodaya": {"minutes": 0}}, **at)
+            self.assertEqual(refused.exception.field, "rectification.svarodaya.minutes")
 
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each

@@ -901,6 +901,7 @@ function theRectification(ctx: Context): string {
       coverage: 0.9,
       dasha: { yearLength: 'SAVANA_360', birthPeriod: 'ELAPSED' },
     },
+    svarodaya: { minutes: 20 },
   };
   const read: Rectification | null = ctx.chart.found({
     instant: 2451545,
@@ -943,7 +944,11 @@ function theRectification(ctx: Context): string {
         `${baseline.stages.flatMap((stage) => stage.notes.map(said)).join()} ${baseline.holdOut.map((h) => h.kind).join()}`;
   // @ts-expect-error the window is a number of minutes
   const wrong: RectificationRequest = { purify: { minutes: '30' } };
-  return [runs, conceived, born, cascade, String(wrong)].join();
+  const breath =
+    read.svarodaya === null
+      ? '-'
+      : `${read.svarodaya.at.tithi} ${read.svarodaya.at.run.nadi} ${read.svarodaya.runs.map((r) => `${r.tattva} ${r.sex}`).join()}`;
+  return [runs, conceived, born, cascade, breath, String(wrong)].join();
 }
 
 void theRectification;
