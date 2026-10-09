@@ -38,7 +38,8 @@ pub const MAX_UNCERTAINTY_MINUTES: f64 = 720.0;
 ///
 /// ```
 /// use teistro::research::Birth;
-/// use teistro::{Altitude, JulianDay, Latitude, Longitude, Place, Utc, UtcOffset};
+/// use teistro::UtcOffset;
+/// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 ///
 /// let kathmandu = Place::new(
 ///     Latitude::try_new(27.7172)?,
