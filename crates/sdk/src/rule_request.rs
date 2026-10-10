@@ -294,8 +294,9 @@ impl RuleRequest {
     ///
     /// `INVALID_ARG` for JSON that is not a request, naming the field.
     pub fn from_json(text: &str) -> Result<RuleRequest, Error> {
-        let mut value: serde_json::Value = serde_json::from_str(text)
-            .map_err(|err| Error::invalid_arg(format!("the rule request is not JSON: {err}")))?;
+        // Parsed strictly, as every record is, so a key given twice is
+        // refused by its path rather than the last one silently kept.
+        let mut value = teistro_core::strict::parse(text, "")?;
         // Each rule is read on its own, so a refusal names which one.
         let rules = match value
             .as_object_mut()

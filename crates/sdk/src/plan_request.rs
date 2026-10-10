@@ -306,7 +306,10 @@ impl PlanRequest {
     /// member silently composing nothing is the dead end a typo deserves to
     /// be caught by.
     pub fn from_json(text: &str) -> Result<PlanRequest, Error> {
-        serde_json::from_str(text).map_err(|err| {
+        // Parsed strictly, as every record is, so a key given twice is
+        // refused by its path rather than the last one silently kept.
+        let value = teistro_core::strict::parse(text, "")?;
+        serde_json::from_value(value).map_err(|err| {
             Error::invalid_arg(format!("the plan request does not read: {err}")).with_hint(format!(
                 "an object of `{}`",
                 PlanRequest::MEMBERS.join("`, `")

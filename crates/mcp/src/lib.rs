@@ -26,12 +26,14 @@
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::sync::Arc;
 
 use serde_json::{Map, Value, json};
 use teistro::records::{Answered, Record};
 use teistro::{Context, Ephemeris, Error};
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::DEFAULT_PROFILE;
+use teistro_core::strict;
 use teistro_port_ephemeris::EphemerisProvider;
 #[cfg(not(target_family = "wasm"))]
 pub use teistro_port_ephemeris::load::Adapter;
@@ -43,9 +45,11 @@ mod prompts;
 mod resources;
 mod schemas;
 mod tools;
+mod watch;
 
 pub use limits::Limits;
 pub use schemas::Detail;
+pub use watch::{Interrupt, Notify};
 
 /// The stateless revision the server speaks.
 pub const MODERN: &str = "2026-07-28";
@@ -56,6 +60,9 @@ pub const SUPPORTED: [&str; 2] = [MODERN, LEGACY];
 
 const VERSION_META: &str = "io.modelcontextprotocol/protocolVersion";
 const SERVER_INFO_META: &str = "io.modelcontextprotocol/serverInfo";
+const CAPABILITIES_META: &str = "io.modelcontextprotocol/clientCapabilities";
+/// Where a request carries the token its progress is reported under.
+const PROGRESS_META: &str = "progressToken";
 
 /// How long a client may keep a list or a resource: each changes only with the
 /// binary, so a day.
@@ -134,6 +141,37 @@ struct Fault {
     data: Option<Value>,
 }
 
+/// The reply to a message the strict reader refused: not JSON, answered
+/// with a null id; or a key given twice, answered under the id a lenient
+/// reading finds (none for a notification) and naming the key's path.
+fn unreadable(message: &[u8], twice: Option<&Error>) -> Option<String> {
+    let lenient = match serde_json::from_slice::<Value>(message) {
+        Ok(lenient) => lenient,
+        Err(why) => {
+            return Some(failure(
+                &Value::Null,
+                &Fault::new(PARSE_ERROR, format!("the message is not JSON: {why}")),
+            ));
+        }
+    };
+    let field = twice.and_then(Error::field).unwrap_or_default();
+    let code = if field.starts_with("params") {
+        INVALID_PARAMS
+    } else {
+        INVALID_REQUEST
+    };
+    let fault = Fault {
+        code,
+        message: format!("`{field}` is given twice; give each key once"),
+        data: Some(json!({ "field": field })),
+    };
+    match lenient.get("id") {
+        Some(id) => Some(failure(id, &fault)),
+        None if lenient.get("method").is_some() => None,
+        None => Some(failure(&Value::Null, &fault)),
+    }
+}
+
 impl Fault {
     fn new(code: i64, message: impl Into<String>) -> Fault {
         Fault {
@@ -173,6 +211,9 @@ pub struct Server {
     legacy: bool,
     detail: Detail,
     limits: Limits,
+    /// What a transport cancels a running call through, and what the
+    /// engine's watch reads.
+    watch: Arc<watch::Shared>,
     /// The tool list, built on the first `tools/list`: it changes only
     /// with the binary and the engine, both fixed for the process.
     listed: Option<Map<String, Value>>,
@@ -187,6 +228,7 @@ impl core::fmt::Debug for Server {
             .field("legacy", &self.legacy)
             .field("detail", &self.detail)
             .field("limits", &self.limits)
+            .field("watch", &self.watch)
             .field("listed", &self.listed.is_some())
             .field("contexts", &self.contexts.len())
             .finish()
@@ -203,6 +245,7 @@ impl Server {
             legacy: false,
             detail: Detail::Lean,
             limits: Limits::default(),
+            watch: watch::Shared::new(),
             listed: None,
             contexts: HashMap::new(),
         }
@@ -225,6 +268,23 @@ impl Server {
     #[must_use]
     pub fn with_limits(self, limits: Limits) -> Server {
         Server { limits, ..self }
+    }
+
+    /// The same server, sending each progress notification to `notify`
+    /// as a line of JSON while a call carrying a `progressToken` runs.
+    /// Without one, a token is accepted and nothing is sent.
+    #[must_use]
+    pub fn with_notify(self, notify: impl Fn(String) + Send + Sync + 'static) -> Server {
+        self.watch.set_notify(Arc::new(notify));
+        self
+    }
+
+    /// A handle that cancels a request while the server computes it, for
+    /// the thread a transport reads its input on. A
+    /// `notifications/cancelled` the server itself reads does the same.
+    #[must_use]
+    pub fn interrupt(&self) -> Interrupt {
+        self.watch.interrupt()
     }
 
     /// A server computing with the engine `open` gives first and
@@ -299,14 +359,15 @@ impl Server {
                 },
             ));
         }
-        let message: Value = match serde_json::from_slice(message) {
+        // Read strictly: a key given twice is one a lenient reader would
+        // silently take the last of, so the server and its caller would
+        // read two different requests.
+        let read = std::str::from_utf8(message)
+            .map_err(|_| None)
+            .and_then(|text| strict::parse(text, "").map_err(Some));
+        let message = match read {
             Ok(message) => message,
-            Err(why) => {
-                return Some(failure(
-                    &Value::Null,
-                    &Fault::new(PARSE_ERROR, format!("the message is not JSON: {why}")),
-                ));
-            }
+            Err(twice) => return unreadable(message, twice.as_ref()),
         };
         let Some(object) = message.as_object() else {
             return Some(failure(
@@ -329,14 +390,28 @@ impl Server {
         };
         let empty = Value::Object(Map::new());
         let params = object.get("params").unwrap_or(&empty);
-        // A notification asks for nothing back: `initialized` and
-        // `cancelled` change nothing here, and every call finishes before
-        // the next message is read.
-        let id = id?;
-        Some(match self.request(method, params) {
+        // A notification asks for nothing back; a cancellation read here
+        // is of a request not yet begun, or of one a transport's own
+        // thread has already stopped.
+        let Some(id) = id else {
+            if method == "notifications/cancelled" {
+                if let Some(request) = params.get("requestId") {
+                    self.watch.interrupt().cancel(request);
+                }
+            }
+            return None;
+        };
+        let token = params.get("_meta").and_then(|meta| meta.get(PROGRESS_META));
+        if let watch::Begun::Cancelled = self.watch.begin(id, token) {
+            return None;
+        }
+        let reply = match self.request(method, params) {
             Ok(result) => success(id, &result),
             Err(fault) => failure(id, &fault),
-        })
+        };
+        // A cancelled call's answer is not sent: its caller has stopped
+        // listening for it.
+        (!self.watch.end()).then_some(reply)
     }
 
     fn request(&mut self, method: &str, params: &Value) -> Result<Value, Fault> {
@@ -456,19 +531,44 @@ impl Server {
             .and_then(|meta| meta.get(VERSION_META))
             .and_then(Value::as_str);
         match requested {
-            Some(MODERN) => Ok(Era::Modern),
+            Some(MODERN) => {
+                // The revision requires every request to declare what its
+                // client can do, and the server relies on nothing it does
+                // not declare.
+                let declared = params
+                    .get("_meta")
+                    .and_then(|meta| meta.get(CAPABILITIES_META))
+                    .is_some_and(Value::is_object);
+                if declared {
+                    Ok(Era::Modern)
+                } else {
+                    Err(Fault {
+                        code: INVALID_PARAMS,
+                        message: format!(
+                            "a {MODERN} request declares its client's capabilities in \
+                             `_meta.{CAPABILITIES_META}`, `{{}}` for none"
+                        ),
+                        data: Some(json!({ "field": format!("_meta.{CAPABILITIES_META}") })),
+                    })
+                }
+            }
             Some(LEGACY) => Ok(Era::Legacy),
             None if self.legacy => Ok(Era::Legacy),
-            _ => Err(Fault {
+            None => Err(Fault {
+                code: INVALID_PARAMS,
+                message: format!(
+                    "the request names no revision: send `_meta.{VERSION_META}`, or \
+                     `initialize` first"
+                ),
+                data: Some(json!({
+                    "field": format!("_meta.{VERSION_META}"),
+                    "supported": SUPPORTED,
+                })),
+            }),
+            Some(version) => Err(Fault {
                 code: UNSUPPORTED_VERSION,
-                message: match requested {
-                    Some(version) => format!("the server does not speak revision {version}"),
-                    None => format!(
-                        "the request names no revision: send `_meta.{VERSION_META}`, or \
-                         `initialize` first"
-                    ),
-                },
-                data: Some(json!({ "supported": SUPPORTED, "requested": requested })),
+                message: format!("the server does not speak revision {version}"),
+                data: Some(json!({ "supported": SUPPORTED, "requested": version })),
             }),
         }
     }
@@ -575,9 +675,13 @@ impl Server {
                 if self.engine != Engine::None || chain.is_empty() {
                     chain.push(self.engine.entry());
                 }
+                let watch = Arc::clone(&self.watch);
                 let mut builder = Context::builder()
                     .profile(profile.as_str())
-                    .ephemeris(chain);
+                    .ephemeris(chain)
+                    .wrapping(move |opened| -> Box<dyn EphemerisProvider> {
+                        Box::new(watch::Watched::new(opened, watch))
+                    });
                 if !settings.is_empty() {
                     builder = builder.settings_json(settings.as_str());
                 }
@@ -650,6 +754,14 @@ fn first_page(params: &Value) -> Result<(), Fault> {
 fn complete(era: Era, mut result: Map<String, Value>) -> Value {
     if era == Era::Modern {
         result.insert(String::from("resultType"), json!("complete"));
+        // Every modern result says which server answered it, since no
+        // handshake said so first.
+        if let Value::Object(meta) = result
+            .entry(String::from("_meta"))
+            .or_insert_with(|| Value::Object(Map::new()))
+        {
+            meta.entry(SERVER_INFO_META).or_insert_with(server_info);
+        }
     }
     Value::Object(result)
 }

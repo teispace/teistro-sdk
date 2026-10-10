@@ -18,7 +18,8 @@ use serde_json::{Value, json};
 use teistro_mcp::{Engine, Limits, Server};
 
 fn meta() -> Value {
-    json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28" })
+    json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientCapabilities": {} })
 }
 
 fn ask(server: &mut Server, method: &str, mut params: Value) -> Value {

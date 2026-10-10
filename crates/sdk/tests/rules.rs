@@ -720,6 +720,9 @@ fn a_rule_request_names_a_set_by_its_key() {
         assert_eq!(request.shipped, [set]);
     }
     let engine = RuleRequest::from_json(r#"{"readings": "RECORDING_ENGINE"}"#).unwrap();
+    let twice = RuleRequest::from_json(r#"{"readings": "RECORDING_ENGINE", "readings": "NONE"}"#)
+        .unwrap_err();
+    assert_eq!(twice.field(), Some("readings"), "{twice}");
     assert_eq!(engine.readings, RuleReadings::RecordingEngine);
     let old = RuleRequest::from_json(r#"{"shipped": ["nabhasas"]}"#).unwrap_err();
     assert!(old.message.contains("NABHASAS"), "{}", old.message);
