@@ -60,7 +60,6 @@ pub struct Answered {
 }
 
 impl Answered {
-    #[cfg(any(feature = "pakshi", feature = "rashifal", feature = "research"))]
     fn sealed<T: serde::Serialize>(answer: Envelope<T>) -> Result<Answered, Error> {
         Ok(Answered {
             value: written(&answer.value)?,
@@ -174,8 +173,57 @@ pub fn records() -> Vec<Record> {
         },
     ];
     all.extend(time_records());
+    all.extend(engine_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The engine passthrough (ADR-0030): what the engine says it offers,
+/// and one of its own operations called by name. Each answer is sealed
+/// with a provenance naming the engine, because nothing of the SDK
+/// computed it.
+fn engine_records() -> [Record; 2] {
+    [
+        Record {
+            name: "engine.call",
+            boundary: "ts_ephemeris_call",
+            title: "One of the engine's own operations, called by name",
+            reads: Some(crate::EngineCall::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::EngineCall::from_json(json)?;
+                let arguments = serde_json::Value::Object(asked.arguments.clone());
+                let value = context.engine().call(&asked.name, &arguments)?;
+                engine_answer(context, &asked, &asked.name, value)
+            },
+        },
+        Record {
+            name: "engine.manifest",
+            boundary: "ts_ephemeris_manifest",
+            title: "Everything the engine offers of its own, with each operation's parameters",
+            reads: Some(crate::ManifestRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::ManifestRequest::from_json(json)?;
+                let manifest = context.engine().manifest()?;
+                engine_answer(context, &asked, "manifest", written(&manifest)?)
+            },
+        },
+    ]
+}
+
+/// An engine's answer sealed: the request's hash, and the engine's
+/// identity with the operation as its one step.
+fn engine_answer<T: serde::Serialize>(
+    context: &Context,
+    asked: &T,
+    step: &str,
+    value: serde_json::Value,
+) -> Result<Answered, Error> {
+    let provenance = context.stamped(
+        teistro_core::envelope::content_hash(asked),
+        teistro_port_ephemeris::Frame::CANONICAL,
+        vec![format!("engine.{step}")],
+    );
+    Answered::sealed(Envelope::sealing(value, provenance))
 }
 
 /// The clock and calendar records: what `TimeArea` and `CalendarArea`

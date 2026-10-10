@@ -189,16 +189,6 @@ c_struct!(TsContextOptions, TsError);
 pub struct TsContext {
     inner: teistro::Context,
     scratch: RefCell<Scratch>,
-    /// A reference that keeps a loaded adapter's library in memory for
-    /// as long as this context might call into it (ADR-0029).
-    ///
-    /// **Declared last on purpose**: fields drop in declaration order, so
-    /// `provider` — whose vtable is a table of function pointers into
-    /// that library — is gone before the library can be unloaded.
-    ///
-    /// Absent on wasm, which has no loader.
-    #[cfg(not(target_family = "wasm"))]
-    loaded: Option<crate::provider::Keepalive>,
 }
 
 impl core::fmt::Debug for TsContext {
@@ -461,18 +451,7 @@ impl TsContext {
         Ok(TsContext {
             inner,
             scratch: RefCell::new(Scratch::default()),
-            #[cfg(not(target_family = "wasm"))]
-            loaded: None,
         })
-    }
-
-    /// The same context, keeping a loaded adapter's library alive for as
-    /// long as it lives (ADR-0029).
-    #[cfg(not(target_family = "wasm"))]
-    #[must_use]
-    pub(crate) fn keeping(mut self, loaded: crate::provider::Keepalive) -> TsContext {
-        self.loaded = Some(loaded);
-        self
     }
 
     /// The SDK's own context, for what a binding reaches through this

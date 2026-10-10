@@ -14,8 +14,10 @@ use teistro_siddhanta::{ModernSunrise, SiddhantaProvider};
 /// **Values, not paths.** ADR-0029 gives a Rust consumer the adapters as
 /// `rlib`s and says they link directly rather than paying for a loader,
 /// so an engine arrives here as a provider a consumer constructed, not
-/// as a shared library to open. `ts_provider_load` stays a boundary
-/// concern for consumers who are not in Rust.
+/// as a shared library to open. A program that must open one by path,
+/// as the C boundary and the agent server do, uses the port's
+/// `load::Adapter` (feature `load`) and hands its provider here as
+/// [`Ephemeris::Provider`].
 pub enum Ephemeris {
     /// No ephemeris. Calendars, times and messages compute; a position
     /// refuses by capability, naming the option.

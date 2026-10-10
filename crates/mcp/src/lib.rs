@@ -32,6 +32,10 @@ use teistro::records::{Answered, Record};
 use teistro::{Context, Ephemeris, Error};
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::DEFAULT_PROFILE;
+use teistro_port_ephemeris::EphemerisProvider;
+#[cfg(not(target_family = "wasm"))]
+pub use teistro_port_ephemeris::load::Adapter;
+use teistro_port_ephemeris::native::NativeFunction;
 
 mod tools;
 
@@ -133,13 +137,28 @@ impl Fault {
 /// patch and the locale tag, empty where the call named none.
 type ContextKey = (String, String, String);
 
-/// The server: the engine it was started with, whether `initialize` chose
-/// the handshake revision, and the contexts it has built.
+/// Opens the engine a context computes with first: one provider per
+/// context, all over the one engine.
+pub type OpenEngine = Box<dyn Fn() -> Result<Box<dyn EphemerisProvider>, Error> + Send + Sync>;
+
+/// The engine ahead of the server's own, and the operations of its own
+/// its manifest named when the server started: each is a tool,
+/// `engine.<name>` (ADR-0030).
+struct Plugin {
+    name: String,
+    open: OpenEngine,
+    operations: Vec<NativeFunction>,
+}
+
+/// The server: the engine it was started with, the adapter loaded ahead
+/// of it, whether `initialize` chose the handshake revision, and the
+/// contexts it has built.
 ///
 /// The contexts are a cache and not state: no answer depends on what was
 /// asked before (D5).
 pub struct Server {
     engine: Engine,
+    plugin: Option<Plugin>,
     legacy: bool,
     contexts: HashMap<ContextKey, Context>,
 }
@@ -148,6 +167,7 @@ impl core::fmt::Debug for Server {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Server")
             .field("engine", &self.engine)
+            .field("plugin", &self.plugin.as_ref().map(|p| p.name.as_str()))
             .field("legacy", &self.legacy)
             .field("contexts", &self.contexts.len())
             .finish()
@@ -160,9 +180,58 @@ impl Server {
     pub fn new(engine: Engine) -> Server {
         Server {
             engine,
+            plugin: None,
             legacy: false,
             contexts: HashMap::new(),
         }
+    }
+
+    /// A server computing with the engine `open` gives first and
+    /// `fallback` where it does not answer, the chain every binding
+    /// builds (ADR-0029): a loaded adapter ([`Server::with_plugin`]) or
+    /// a provider a program embedding the server brings. Each operation
+    /// of the engine's own is listed as a tool, `engine.<name>`, with its
+    /// parameters as the input schema; one whose name an SDK tool already
+    /// holds is reached through `engine.call` instead.
+    ///
+    /// # Errors
+    ///
+    /// `open`'s own refusal, or a manifest the engine wrote that does not
+    /// parse.
+    pub fn with_engine(fallback: Engine, open: OpenEngine) -> Result<Server, Error> {
+        let provider = open()?;
+        let name = provider.capabilities().identity.name;
+        let operations = match provider.native() {
+            Some(native) => native.manifest()?.functions,
+            None => Vec::new(),
+        };
+        Ok(Server {
+            plugin: Some(Plugin {
+                name,
+                open,
+                operations: tools::reachable(operations),
+            }),
+            ..Server::new(fallback)
+        })
+    }
+
+    /// A server computing with the engine in `adapter` first and
+    /// `fallback` behind it: [`Server::with_engine`] over the adapter's
+    /// providers.
+    ///
+    /// # Errors
+    ///
+    /// A vtable the adapter wrote that does not bind, or a manifest the
+    /// engine wrote that does not parse.
+    #[cfg(not(target_family = "wasm"))]
+    pub fn with_plugin(fallback: Engine, adapter: Adapter) -> Result<Server, Error> {
+        Server::with_engine(
+            fallback,
+            Box::new(move || {
+                let provider: Box<dyn EphemerisProvider> = Box::new(adapter.provider()?);
+                Ok(provider)
+            }),
+        )
     }
 
     /// The reply to one JSON-RPC message, or `None` for a notification.
@@ -214,7 +283,7 @@ impl Server {
             "server/discover" => Ok(discover()),
             "tools/list" => {
                 let era = self.era(params)?;
-                let mut list = tools::list();
+                let mut list = tools::list(self.operations());
                 if era == Era::Modern {
                     list.insert(String::from("ttlMs"), json!(LIST_TTL_MS));
                     list.insert(String::from("cacheScope"), json!("public"));
@@ -284,6 +353,9 @@ impl Server {
         };
         let outcome = if name == tools::DESCRIBE {
             tools::describe(arguments)
+        } else if let Some(operation) = self.operation(name) {
+            let request = json!({ "name": operation, "arguments": arguments }).to_string();
+            self.engine_answer(request)
         } else {
             let record = teistro::records::record(name).ok_or_else(|| {
                 Fault::new(
@@ -307,6 +379,38 @@ impl Server {
         envelope(record.answer(context, &asked.request)?)
     }
 
+    /// The engine's own operations listed as tools; none without a
+    /// plugin.
+    fn operations(&self) -> &[NativeFunction] {
+        self.plugin
+            .as_ref()
+            .map_or(&[], |plugin| plugin.operations.as_slice())
+    }
+
+    /// The engine operation the tool `name` calls, if it is one.
+    fn operation(&self, name: &str) -> Option<String> {
+        let wanted = name.strip_prefix(tools::ENGINE_PREFIX)?;
+        self.operations()
+            .iter()
+            .find(|operation| operation.name == wanted)
+            .map(|operation| operation.name.clone())
+    }
+
+    /// An `engine.<name>` tool's answer: `engine.call` under the default
+    /// context, the tool's arguments being the operation's own.
+    fn engine_answer(&mut self, request: String) -> Result<Value, Error> {
+        let record = teistro::records::record("engine.call")
+            .ok_or_else(|| Error::internal("this build carries no `engine.call`"))?;
+        let asked = tools::Arguments {
+            request,
+            profile: None,
+            settings: None,
+            locale: None,
+        };
+        let context = self.context(&asked)?;
+        envelope(record.answer(context, &asked.request)?)
+    }
+
     fn context(&mut self, asked: &tools::Arguments) -> Result<&Context, Error> {
         let key: ContextKey = (
             asked
@@ -323,9 +427,16 @@ impl Server {
             Entry::Occupied(entry) => entry.into_mut(),
             Entry::Vacant(entry) => {
                 let (profile, settings, locale) = entry.key();
+                let mut chain = Vec::with_capacity(2);
+                if let Some(plugin) = &self.plugin {
+                    chain.push(Ephemeris::Provider((plugin.open)()?));
+                }
+                if self.engine != Engine::None || chain.is_empty() {
+                    chain.push(self.engine.entry());
+                }
                 let mut builder = Context::builder()
                     .profile(profile.as_str())
-                    .ephemeris([self.engine.entry()]);
+                    .ephemeris(chain);
                 if !settings.is_empty() {
                     builder = builder.settings_json(settings.as_str());
                 }

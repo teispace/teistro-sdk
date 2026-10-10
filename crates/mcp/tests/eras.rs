@@ -225,3 +225,48 @@ fn the_command_line_refuses_an_unknown_ephemeris() {
     assert_eq!(out.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&out.stderr).contains("BUILTIN, SURYA_SIDDHANTA, NONE"));
 }
+
+#[test]
+fn the_command_line_loads_a_plugin_and_lists_its_operations() {
+    let path = teistro_test_adapter::library().unwrap();
+    let path = path.to_string_lossy();
+    let replies = session(
+        &[
+            "--plugin",
+            &path,
+            "--plugin-config",
+            "{}",
+            "--ephemeris",
+            "NONE",
+        ],
+        &[
+            json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"_meta": meta(),
+                "name": "engine.tp_echo", "arguments": {"value": 7}}}),
+        ],
+    );
+    let result = &replies[0]["result"];
+    assert_eq!(result["isError"], false, "{result}");
+    assert_eq!(result["structuredContent"]["value"]["value"], 7.0);
+    assert_eq!(
+        result["structuredContent"]["provenance"]["provider"]["name"],
+        "test-provider"
+    );
+}
+
+#[test]
+fn the_command_line_refuses_a_plugin_it_cannot_load() {
+    let out = Command::new(env!("CARGO_BIN_EXE_teistro-mcp"))
+        .args(["--plugin", "/nowhere/libnothing.so"])
+        .stdin(Stdio::null())
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("/nowhere/libnothing.so"));
+
+    let out = Command::new(env!("CARGO_BIN_EXE_teistro-mcp"))
+        .args(["--plugin-config", "{}"])
+        .stdin(Stdio::null())
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(2), "a configuration with no plugin");
+}

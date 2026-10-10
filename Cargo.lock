@@ -1721,7 +1721,6 @@ dependencies = [
 name = "teistro-ffi"
 version = "0.0.0"
 dependencies = [
- "libloading",
  "serde",
  "serde_json",
  "teistro",
@@ -1738,6 +1737,7 @@ dependencies = [
  "teistro-port-ephemeris",
  "teistro-serial",
  "teistro-state",
+ "teistro-test-adapter",
  "teistro-time",
  "teistro-vargas",
 ]
@@ -1876,6 +1876,8 @@ dependencies = [
  "serde_json",
  "teistro",
  "teistro-core",
+ "teistro-port-ephemeris",
+ "teistro-test-adapter",
 ]
 
 [[package]]
@@ -1960,11 +1962,13 @@ dependencies = [
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [
+ "libloading",
  "schemars",
  "serde",
  "serde_json",
  "sha2",
  "teistro-core",
+ "teistro-test-adapter",
 ]
 
 [[package]]
@@ -2216,6 +2220,13 @@ dependencies = [
  "teistro-ephemeris-builtin",
  "teistro-port-ephemeris",
  "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-test-adapter"
+version = "0.0.0"
+dependencies = [
+ "teistro-port-ephemeris",
 ]
 
 [[package]]

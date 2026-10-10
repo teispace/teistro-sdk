@@ -47,6 +47,7 @@ mod asked;
 mod composites;
 mod context;
 mod days_request;
+mod engine_request;
 mod ephemeris;
 #[cfg(feature = "chart")]
 mod reading;
@@ -276,6 +277,7 @@ pub use crate::festival_request::{FestivalPack, FestivalRequest};
 // A range of days and what is asked beside them, read whole from JSON
 // (`03-design/mcp-server.md`, step 2).
 pub use crate::days_request::DaysRequest;
+pub use crate::engine_request::{EngineCall, ManifestRequest};
 // A civil time, an instant, a scale and a date, each read whole from JSON
 // (`03-design/mcp-server.md`, step 3).
 #[cfg(feature = "muhurta")]

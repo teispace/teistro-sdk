@@ -47,10 +47,12 @@ const COMPUTATION: [&str; 9] = [
 /// published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 7] = [
+const UNSAFE_CRATES: [&str; 9] = [
     "crates/port-ephemeris",
     "crates/ffi",
+    "crates/mcp",
     "crates/test-allocator",
+    "crates/test-adapter",
     "bindings/node/native",
     "bindings/wasm/native",
     // The adapters call a C engine directly. They are outside the
