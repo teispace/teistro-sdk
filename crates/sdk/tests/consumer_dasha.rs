@@ -274,3 +274,34 @@ fn a_definition_is_refused_by_its_place_and_field_and_an_unregistered_id_by_its_
     assert_eq!(error.field(), Some("dashas[0]"));
     assert!(error.hint().unwrap_or_default().contains("VIMSHOTTARI"));
 }
+
+/// **A JSON chart request reaches a registered system by its key**, bare
+/// or full, in the order asked, once resolved through the context that
+/// registered it; a context that registered nothing refuses it by its
+/// place.
+#[test]
+fn a_json_chart_request_names_a_registered_system_by_its_key() {
+    let sdk = context(true);
+    let id = sdk.keys().id("dasha_system.ACME_VIMSHOTTARI").unwrap();
+    for key in ["ACME_VIMSHOTTARI", "dasha_system.ACME_VIMSHOTTARI"] {
+        let found = teistro::FoundRequest::from_json(&format!(
+            r#"{{"instant": {BIRTH}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+                "altitudeM": 1400, "utcOffsetSeconds": 20700,
+                "dashas": ["VIMSHOTTARI", "{key}"]}}"#
+        ))
+        .unwrap();
+        let resolved = found.resolved(sdk.keys()).unwrap();
+        assert_eq!(
+            resolved.request,
+            request().with_dashas([DashaSystem::Vimshottari.key_id(), id]),
+            "{key}"
+        );
+    }
+    let found = teistro::FoundRequest::from_json(&format!(
+        r#"{{"instant": {BIRTH}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+            "utcOffsetSeconds": 20700, "dashas": ["VIMSHOTTARI", "ACME_VIMSHOTTARI"]}}"#
+    ))
+    .unwrap();
+    let refused = found.resolved(context(false).keys()).unwrap_err();
+    assert_eq!(refused.field(), Some("dashas[1]"), "{refused}");
+}

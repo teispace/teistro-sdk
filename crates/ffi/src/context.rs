@@ -407,13 +407,14 @@ impl TsContext {
             building = building.locale(tag);
         }
         if let Some(json) = texts.layouts_json {
-            for layout in layouts_of(json)? {
+            for layout in teistro::registrations::layouts_from_json(json, "options.layouts_json")? {
                 building = building.layout(layout);
             }
         }
         if let Some(json) = texts.dashas_json {
             #[cfg(feature = "chart")]
-            for definition in dashas_of(json)? {
+            for definition in teistro::registrations::dashas_from_json(json, "options.dashas_json")?
+            {
                 building = building.dasha_system(definition);
             }
             // A dasha system is the chart area's, so a build without it
@@ -692,36 +693,6 @@ pub struct OptionTexts<'a> {
     pub layouts_json: Option<&'a str>,
     /// A JSON array of the consumer's own dasha system definitions.
     pub dashas_json: Option<&'a str>,
-}
-
-/// A consumer's layout rows, each read strictly and checked by the rules a
-/// shipped row passes, refused by its place in the array
-/// (`03-design/chart-geometry.md` §7f).
-fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
-    const ROOT: &str = "options.layouts_json";
-    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
-    rows.into_iter()
-        .enumerate()
-        .map(|(index, row)| {
-            let at = format!("{ROOT}[{index}]");
-            let layout: teistro::Layout = teistro_core::strict::read_value(&row, &at)?;
-            layout.validate().map_err(|error| error.under(&at))?;
-            Ok(layout)
-        })
-        .collect()
-}
-
-/// A consumer's dasha system definitions, each read strictly; the context's
-/// registry checks each by the rules a shipped row passes and names it by
-/// its place.
-#[cfg(feature = "chart")]
-fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::DashaDefinition>, Error> {
-    const ROOT: &str = "options.dashas_json";
-    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
-    rows.into_iter()
-        .enumerate()
-        .map(|(index, row)| teistro_core::strict::read_value(&row, &format!("{ROOT}[{index}]")))
-        .collect()
 }
 
 /// The strings an options record carries, checked and borrowed, for the

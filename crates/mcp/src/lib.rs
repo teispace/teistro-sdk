@@ -213,6 +213,51 @@ struct Pack {
     loaded: Loaded,
 }
 
+/// What the operator adds to every context the server builds: its own
+/// layouts and dasha systems, registered, and its packs, loaded after.
+#[derive(Default)]
+struct Own {
+    layouts: Vec<teistro::Layout>,
+    dashas: Vec<teistro::DashaDefinition>,
+    packs: Vec<Pack>,
+}
+
+impl Own {
+    /// A context built by `builder` with everything added in order: the
+    /// one place the order lives.
+    fn building(&self, builder: teistro::ContextBuilder) -> Result<Context, Error> {
+        let builder = self
+            .layouts
+            .iter()
+            .fold(builder, |builder, layout| builder.layout(layout.clone()));
+        let builder = self.dashas.iter().fold(builder, |builder, definition| {
+            builder.dasha_system(definition.clone())
+        });
+        let context = builder.build()?;
+        for pack in &self.packs {
+            context.intl().load_pack(&pack.bytes)?;
+        }
+        Ok(context)
+    }
+
+    /// What `settings.describe` says the operator added.
+    fn described(&self) -> tools::Added<'_> {
+        tools::Added {
+            packs: self.packs.iter().map(|pack| &pack.loaded).collect(),
+            layouts: self
+                .layouts
+                .iter()
+                .map(|layout| layout.key.as_str())
+                .collect(),
+            dashas: self
+                .dashas
+                .iter()
+                .map(teistro::DashaDefinition::key)
+                .collect(),
+        }
+    }
+}
+
 /// The server: the engine it was started with, the adapter loaded ahead
 /// of it, whether `initialize` chose the handshake revision, and the
 /// contexts it has built.
@@ -231,8 +276,8 @@ pub struct Server {
     /// The tool list, built on the first `tools/list`: it changes only
     /// with the binary and the engine, both fixed for the process.
     listed: Option<Map<String, Value>>,
-    /// The packs every context loads, in the order given.
-    packs: Vec<Pack>,
+    /// The layouts, dasha systems and packs every context adds.
+    own: Own,
     /// The tools of the embedding program's own.
     tools: Vec<Tool>,
     contexts: HashMap<ContextKey, Context>,
@@ -248,7 +293,9 @@ impl core::fmt::Debug for Server {
             .field("limits", &self.limits)
             .field("watch", &self.watch)
             .field("listed", &self.listed.is_some())
-            .field("packs", &self.packs.len())
+            .field("layouts", &self.own.layouts.len())
+            .field("dashas", &self.own.dashas.len())
+            .field("packs", &self.own.packs.len())
             .field("tools", &self.tools)
             .field("contexts", &self.contexts.len())
             .finish()
@@ -267,7 +314,7 @@ impl Server {
             limits: Limits::default(),
             watch: watch::Shared::new(),
             listed: None,
-            packs: Vec::new(),
+            own: Own::default(),
             tools: Vec::new(),
             contexts: HashMap::new(),
         }
@@ -323,9 +370,9 @@ impl Server {
     /// loaded yet.
     pub fn with_pack(mut self, bytes: impl Into<Arc<[u8]>>) -> Result<Server, Error> {
         let bytes = bytes.into();
-        let probe = loading(Context::builder(), &self.packs)?;
+        let probe = self.own.building(Context::builder())?;
         let loaded = probe.intl().load_pack(&bytes)?;
-        self.packs.push(Pack { bytes, loaded });
+        self.own.packs.push(Pack { bytes, loaded });
         // A context built before the pack would answer without it.
         self.contexts.clear();
         Ok(self)
@@ -334,7 +381,64 @@ impl Server {
     /// What each pack reported when it was loaded, in the order given.
     #[must_use]
     pub fn packs(&self) -> Vec<&Loaded> {
-        self.packs.iter().map(|pack| &pack.loaded).collect()
+        self.own.packs.iter().map(|pack| &pack.loaded).collect()
+    }
+
+    /// The same server, every context it builds drawing in `layout` too
+    /// ([`teistro::ContextBuilder::layout`]): a regional chart the SDK does
+    /// not ship, which `chart.found` draws when a request names its key
+    /// (`chart_layout.ACME_ODIA`, or bare).
+    ///
+    /// Checked now, by building a context with it and every registration
+    /// before it, so a layout the registry refuses fails the server's
+    /// start rather than a call.
+    ///
+    /// ```
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// let mut layout = teistro::Layouts::new().get("EAST_INDIAN").cloned().expect("shipped");
+    /// layout.key = String::from("ACME_ODIA");
+    /// let server = Server::new(Engine::None).with_layout(layout)?;
+    /// # let _ = server;
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What the context's builder refuses, naming the layout by its place
+    /// among the server's (`layouts[1].shape`): a row the shipped rules
+    /// refuse, or a key the SDK ships or was given before.
+    pub fn with_layout(mut self, layout: teistro::Layout) -> Result<Server, Error> {
+        self.own.layouts.push(layout);
+        self.registered()
+    }
+
+    /// The same server, every context it builds reading `definition` too
+    /// ([`teistro::ContextBuilder::dasha_system`]): a dasha system of the
+    /// operator's own, which `chart.found` computes when a request names
+    /// its key (`dasha_system.ACME_SAPTAKA`, or bare).
+    ///
+    /// Checked now, as [`Server::with_layout`] checks a layout.
+    ///
+    /// # Errors
+    ///
+    /// What the context's builder refuses, naming the system by its place
+    /// among the server's (`dashas[0].span`): a definition the shipped
+    /// rules refuse, or a key the catalogue has or was given before.
+    pub fn with_dasha_system(
+        mut self,
+        definition: impl Into<teistro::DashaDefinition>,
+    ) -> Result<Server, Error> {
+        self.own.dashas.push(definition.into());
+        self.registered()
+    }
+
+    /// The server once a context builds with what it registers, every
+    /// cached context dropped since none was built with the latest.
+    fn registered(mut self) -> Result<Server, Error> {
+        self.own.building(Context::builder())?;
+        self.contexts.clear();
+        Ok(self)
     }
 
     /// The same server, its tool list stating each record's schema in
@@ -696,8 +800,7 @@ impl Server {
             Some(_) => return Err(Fault::new(INVALID_PARAMS, "`arguments` is an object")),
         };
         let outcome = if name == tools::DESCRIBE {
-            let packs: Vec<Loaded> = self.packs.iter().map(|pack| pack.loaded.clone()).collect();
-            tools::describe(arguments, &packs)
+            tools::describe(arguments, &self.own.described())
         } else if name == schemas::DESCRIBE {
             schemas::describe(arguments)
         } else if let Some(at) = self.tools.iter().position(|tool| tool.name == name) {
@@ -834,7 +937,7 @@ impl Server {
                     builder = builder.settings_json(settings.as_str());
                 }
                 // The locale after the packs, since a pack may bring it.
-                let context = loading(builder, &self.packs)?;
+                let context = self.own.building(builder)?;
                 if !locale.is_empty() {
                     context.intl().set_locale(locale.as_str())?;
                 }
@@ -996,16 +1099,6 @@ fn tool_result(structured: Value, is_error: bool) -> Map<String, Value> {
 
 fn success(id: &Value, result: &Value) -> String {
     json!({ "jsonrpc": "2.0", "id": id, "result": result }).to_string()
-}
-
-/// A context built by `builder` with `packs` loaded in order: the one
-/// place the order of loading lives.
-fn loading(builder: teistro::ContextBuilder, packs: &[Pack]) -> Result<Context, Error> {
-    let context = builder.build()?;
-    for pack in packs {
-        context.intl().load_pack(&pack.bytes)?;
-    }
-    Ok(context)
 }
 
 /// A refusal and its code.

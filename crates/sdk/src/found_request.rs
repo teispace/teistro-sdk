@@ -6,13 +6,14 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use teistro_core::catalogue::{ChartKind, ChartLayout, DashaSystem, Varga};
+use teistro_core::catalogue::{Catalogued, ChartKind, ChartLayout, DashaSystem, Varga};
 use teistro_core::error::Error;
+use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::strict;
 
 use crate::asked::{offset_of, place_of};
-use crate::{ChartRecords, ChartRequest};
+use crate::{ChartRecords, ChartRequest, KeysArea};
 
 /// A section a chart request asks for by a `true` flag, and the request
 /// that reads it.
@@ -58,12 +59,24 @@ pub struct FoundRequest {
     pub request: ChartRequest,
     /// The records beside the sections, checked together.
     pub records: ChartRecords,
+    /// The dashas and drawings as asked, kept while one names a member no
+    /// catalogue has, for [`FoundRequest::resolved`] to read through a
+    /// context's registries.
+    unresolved: Option<Unresolved>,
+}
+
+/// The members a request asked for, in the order asked, where one of
+/// them is a name only a context's registry can resolve.
+#[derive(Clone, Debug)]
+struct Unresolved {
+    dashas: Vec<Keyed<DashaSystem>>,
+    drawings: Vec<(Keyed<ChartLayout>, Varga)>,
 }
 
 impl FoundRequest {
     /// What a JSON chart request is, for a caller choosing it by name (the
     /// agent server's `chart.found`).
-    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`), and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent.";
+    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent.";
 
     /// The sections beside the foundation a request asks for by a `true`
     /// flag, by the flag every binding writes (`shadbala`, `bhavaBala`).
@@ -84,8 +97,11 @@ impl FoundRequest {
     /// ([`ChartRecords::NAMES`]). A refusal names the field as written,
     /// a record's from the record's own root (`kp.clock`).
     ///
-    /// A dasha system is a catalogued one: a context's registered systems
-    /// are reached through [`ChartRequest::with_dashas`].
+    /// A dasha system or a drawing's layout may also be one a context
+    /// registered (`dasha_system.ACME_SAPTAKA` or `ACME_SAPTAKA`): only the
+    /// context knows it, so such a request is [`FoundRequest::resolved`]
+    /// before it is composed, and until then its `request` asks for no
+    /// dashas or drawings at all.
     ///
     /// # Errors
     ///
@@ -125,22 +141,184 @@ impl FoundRequest {
             Some(kind) => at.with_kind(kind),
             None => at,
         };
-        let request = sections.into_iter().fold(at, |request, add| add(request));
+        let request = sections
+            .into_iter()
+            .fold(at, |request, add| add(request))
+            .with_vargas(asked.vargas);
+        let drawings: Vec<(Keyed<ChartLayout>, Varga)> = asked
+            .drawings
+            .into_iter()
+            .map(|drawing| (drawing.layout, drawing.varga))
+            .collect();
+        let catalogued = asked.dashas.iter().all(Keyed::is_catalogued)
+            && drawings.iter().all(|(layout, _)| layout.is_catalogued());
+        let (request, unresolved) = if catalogued {
+            let request = request
+                .with_dashas(asked.dashas.iter().filter_map(Keyed::catalogued))
+                .with_drawings(
+                    drawings
+                        .iter()
+                        .filter_map(|(layout, varga)| Some((layout.catalogued()?, *varga))),
+                );
+            (request, None)
+        } else {
+            let unresolved = Unresolved {
+                dashas: asked.dashas,
+                drawings,
+            };
+            (request, Some(unresolved))
+        };
         Ok(FoundRequest {
             instants,
-            request: request
-                .with_vargas(asked.vargas)
-                .with_dashas(asked.dashas)
-                .with_drawings(
-                    asked
-                        .drawings
-                        .into_iter()
-                        .map(|drawing| (drawing.layout, drawing.varga)),
-                ),
+            request,
             records: records.checked()?,
+            unresolved,
+        })
+    }
+
+    /// The request with every dasha system and layout a context registered
+    /// read through `keys` ([`Context::keys`](crate::Context::keys)), in the
+    /// order asked; a request naming only catalogued members comes back as
+    /// it was.
+    ///
+    /// ```
+    /// use teistro::{Context, FoundRequest};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let found = FoundRequest::from_json(
+    ///     r#"{"instant": 2447000.25, "latitudeDeg": 27.7, "longitudeDeg": 85.3,
+    ///         "utcOffsetSeconds": 20700, "dashas": ["ACME_SAPTAKA"]}"#,
+    /// )?;
+    /// let refused = found.resolved(sdk.keys()).unwrap_err();
+    /// assert_eq!(refused.field(), Some("dashas[0]"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming the place asked (`dashas[1]`,
+    /// `drawings[0].layout`) for a key neither the catalogue nor the
+    /// context's registry has, or a key of another kind.
+    pub fn resolved(self, keys: KeysArea<'_>) -> Result<FoundRequest, Error> {
+        let Some(unresolved) = self.unresolved else {
+            return Ok(self);
+        };
+        let dashas = unresolved
+            .dashas
+            .iter()
+            .enumerate()
+            .map(|(at, system)| system.id(keys, || format!("dashas[{at}]")))
+            .collect::<Result<Vec<_>, _>>()?;
+        let drawings = unresolved
+            .drawings
+            .iter()
+            .enumerate()
+            .map(|(at, (layout, varga))| {
+                Ok((
+                    layout.id(keys, || format!("drawings[{at}].layout"))?,
+                    *varga,
+                ))
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(FoundRequest {
+            request: self.request.with_dashas(dashas).with_drawings(drawings),
+            unresolved: None,
+            ..self
         })
     }
 }
+
+/// A member asked for by its key: a catalogued one, bare or full, or a
+/// name only a context's registry can resolve.
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Keyed<T> {
+    Catalogued(T),
+    Named(String),
+}
+
+impl<T: Catalogued> Keyed<T> {
+    fn is_catalogued(&self) -> bool {
+        matches!(self, Keyed::Catalogued(_))
+    }
+
+    fn catalogued(&self) -> Option<T> {
+        match self {
+            Keyed::Catalogued(member) => Some(*member),
+            Keyed::Named(_) => None,
+        }
+    }
+
+    /// The member's id: a catalogued one's own, or the one `keys` gives a
+    /// registered key, refused at `field` for a key of another kind or
+    /// one nobody has.
+    fn id(&self, keys: KeysArea<'_>, field: impl Fn() -> String) -> Result<KeyId, Error> {
+        let name = match self {
+            Keyed::Catalogued(member) => return Ok(member.key_id()),
+            Keyed::Named(name) => name,
+        };
+        let kind = T::KIND.name();
+        let full = match name.split_once('.') {
+            None => format!("{kind}.{name}"),
+            Some((asked, _)) if asked == kind => name.clone(),
+            Some((asked, _)) => {
+                return Err(
+                    Error::invalid_arg(format!("`{name}` is a `{asked}`, not a `{kind}`"))
+                        .with_field(field())
+                        .with_hint(format!("name a `{kind}` here, bare or as `{kind}.KEY`")),
+                );
+            }
+        };
+        keys.id(&full).map_err(|refusal| {
+            let hint = refusal.hint().map_or_else(
+                || format!("a catalogued `{kind}`, or one the context registered"),
+                str::to_owned,
+            );
+            refusal.with_field(field()).with_hint(hint)
+        })
+    }
+}
+
+impl<T: Catalogued> Serialize for Keyed<T> {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Keyed::Catalogued(member) => serializer.serialize_str(member.key()),
+            Keyed::Named(name) => serializer.serialize_str(name),
+        }
+    }
+}
+
+impl<'de, T: Catalogued> Deserialize<'de> for Keyed<T> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        Ok(T::from_either_key(&key)
+            .map_or_else(|_| Keyed::Named(key.into_owned()), Keyed::Catalogued))
+    }
+}
+
+/// The catalogue's keys, or a key a context registered: what the reader
+/// above accepts, and never less.
+#[cfg(feature = "schema")]
+impl<T: Catalogued + schemars::JsonSchema> schemars::JsonSchema for Keyed<T> {
+    fn inline_schema() -> bool {
+        true
+    }
+
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Owned(format!("Keyed{}", T::schema_name()))
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({ "anyOf": [
+            generator.subschema_for::<T>(),
+            { "type": "string", "pattern": REGISTERED_KEY,
+              "description": "a member the context registered, by its key, bare or full" },
+        ] })
+    }
+}
+
+/// A key a context may register, bare or under its kind.
+#[cfg(feature = "schema")]
+const REGISTERED_KEY: &str = "^([a-z_]+\\.)?[A-Z][A-Z0-9_]*$";
 
 /// The record's schema: the request as [`Asked`] reads it, each section
 /// a flag beside it, and each record by its own reader's schema.
@@ -177,7 +355,7 @@ pub(crate) struct Asked {
     #[serde(default)]
     vargas: Vec<Varga>,
     #[serde(default)]
-    dashas: Vec<DashaSystem>,
+    dashas: Vec<Keyed<DashaSystem>>,
     #[serde(default)]
     drawings: Vec<DrawingAsked>,
 }
@@ -187,7 +365,7 @@ pub(crate) struct Asked {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 struct DrawingAsked {
-    layout: ChartLayout,
+    layout: Keyed<ChartLayout>,
     varga: Varga,
 }
 

@@ -15,7 +15,8 @@ or Streamable HTTP
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
-                   [--max-days N] [--pack PATH]...
+                   [--max-days N] [--pack PATH]... [--layouts PATH]...
+                   [--dashas PATH]...
                    [--http ADDRESS [--http-workers N] [--http-rate N]
                                    [--allow-origin ORIGIN]...]
 
@@ -31,6 +32,12 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          into every context, in the order given; a locale it
                          brings is one a call may name. Read and verified at
                          start; repeatable
+  --layouts PATH         a JSON array of chart layouts of the operator's own,
+                         each drawn when a request names its key; checked at
+                         start by the rules a shipped layout passes; repeatable
+  --dashas PATH          a JSON array of dasha system definitions of the
+                         operator's own, each computed when a request names
+                         its key; checked at start; repeatable
   --schemas DETAIL       how much schema the tool list states: lean (the
                          default; the records a request carries by name are
                          answered by `schema.describe`, and no answer schema
@@ -67,8 +74,42 @@ struct Options {
     limits: Limits,
     /// The address `--http` serves at, and how.
     http: Option<(String, Http)>,
-    /// Each `--pack` by its path, read.
+    /// The files the operator adds to every context.
+    added: Added,
+}
+
+/// The files the operator adds to every context, each by its path, read
+/// once at start: every worker's server is built from the same contents
+/// and none reads the disk again.
+#[derive(Default)]
+struct Added {
     packs: Vec<(String, Arc<[u8]>)>,
+    layouts: Vec<(String, Vec<teistro::Layout>)>,
+    dashas: Vec<(String, Vec<teistro::DashaDefinition>)>,
+}
+
+impl Added {
+    /// Reads the file `option` names at `path`, or says why not.
+    fn read(&mut self, option: &str, path: Option<String>) -> Result<(), String> {
+        let path = path.ok_or_else(|| format!("`{option}` takes a path"))?;
+        let why = |why: &dyn std::fmt::Display| format!("{option} {path}: {why}");
+        if option == "--pack" {
+            let bytes = std::fs::read(&path).map_err(|e| why(&e))?;
+            self.packs.push((path, Arc::from(bytes)));
+            return Ok(());
+        }
+        let text = std::fs::read_to_string(&path).map_err(|e| why(&e))?;
+        if option == "--layouts" {
+            let read =
+                teistro::registrations::layouts_from_json(&text, option).map_err(|e| why(&e))?;
+            self.layouts.push((path, read));
+        } else {
+            let read =
+                teistro::registrations::dashas_from_json(&text, option).map_err(|e| why(&e))?;
+            self.dashas.push((path, read));
+        }
+        Ok(())
+    }
 }
 
 fn main() -> ExitCode {
@@ -244,11 +285,34 @@ fn server(options: &Options) -> Result<Server, teistro::Error> {
     let mut server = engine(options)?
         .with_detail(options.detail)
         .with_limits(options.limits);
-    for (path, bytes) in &options.packs {
+    for (path, bytes) in &options.added.packs {
         server = server.with_pack(Arc::clone(bytes)).map_err(|refusal| {
             teistro::Error::new(teistro::Status::Pack, format!("--pack {path}: {refusal}"))
                 .with_field("bytes")
         })?;
+    }
+    // The file's path before the registry's refusal, which names the row
+    // by its place among the server's (`dashas[0].span`).
+    let from = |option: &str, path: &str| {
+        let prefix = format!("{option} {path}: ");
+        move |mut refusal: teistro::Error| {
+            refusal.message.insert_str(0, &prefix);
+            refusal
+        }
+    };
+    for (path, layouts) in &options.added.layouts {
+        for layout in layouts {
+            server = server
+                .with_layout(layout.clone())
+                .map_err(from("--layouts", path))?;
+        }
+    }
+    for (path, dashas) in &options.added.dashas {
+        for definition in dashas {
+            server = server
+                .with_dasha_system(definition.clone())
+                .map_err(from("--dashas", path))?;
+        }
     }
     Ok(server)
 }
@@ -278,7 +342,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let mut limits = Limits::default();
     let (mut address, mut workers, mut origins) = (None, None, Vec::new());
     let mut rate = None;
-    let mut packs = Vec::new();
+    let mut added = Added::default();
     let mut stdout = std::io::stdout();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -330,13 +394,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
                         .ok_or_else(|| format!("`--http-workers` takes a count, not `{count}`"))?,
                 );
             }
-            "--pack" => {
-                let path = args.next().ok_or("`--pack` takes a path")?;
-                // Read once, here: every worker's server is built from
-                // the same bytes and none reads the disk again.
-                let bytes = std::fs::read(&path).map_err(|why| format!("--pack {path}: {why}"))?;
-                packs.push((path, Arc::<[u8]>::from(bytes)));
-            }
+            "--pack" | "--layouts" | "--dashas" => added.read(&arg, args.next())?,
             "--http-rate" => rate = Some(bound::<u32>(&arg, args.next())?),
             "--allow-origin" => {
                 origins.push(args.next().ok_or("`--allow-origin` takes an origin")?);
@@ -370,7 +428,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
         detail,
         limits,
         http,
-        packs,
+        added,
     }))
 }
 

@@ -222,7 +222,14 @@ fn describe_tool() -> Value {
 }
 
 /// `settings.describe`'s answer.
-pub(crate) fn describe(arguments: &Map<String, Value>, packs: &[Loaded]) -> Result<Value, Error> {
+/// What the operator added to every context, for `settings.describe`.
+pub(crate) struct Added<'a> {
+    pub(crate) packs: Vec<&'a Loaded>,
+    pub(crate) layouts: Vec<&'a str>,
+    pub(crate) dashas: Vec<&'a str>,
+}
+
+pub(crate) fn describe(arguments: &Map<String, Value>, added: &Added<'_>) -> Result<Value, Error> {
     if let Some(key) = arguments.keys().next() {
         return Err(
             Error::invalid_arg(format!("`{DESCRIBE}` reads no argument"))
@@ -235,7 +242,8 @@ pub(crate) fn describe(arguments: &Map<String, Value>, packs: &[Loaded]) -> Resu
         .collect::<Result<Vec<Value>, Error>>()?;
     // What the operator loaded into every context, so a model can tell a
     // reading a pack supplies from the SDK's own.
-    let packs: Vec<Value> = packs
+    let packs: Vec<Value> = added
+        .packs
         .iter()
         .map(|loaded| {
             json!({
@@ -251,6 +259,11 @@ pub(crate) fn describe(arguments: &Map<String, Value>, packs: &[Loaded]) -> Resu
         "profiles": profiles,
         "settings": settings_schema()?,
         "packs": packs,
+        // The members a request may name beside the catalogue's.
+        "registered": {
+            "dashaSystems": added.dashas,
+            "chartLayouts": added.layouts,
+        },
     }))
 }
 

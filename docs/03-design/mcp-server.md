@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 and P10 built, P7 and P9 open, §6 step 5 (packaging) not built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) not built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -455,11 +455,25 @@ the tool's result with `isError`, and a handler that panics is the
 tool's `INTERNAL` refusal while the server answers the next call.
 Gated in `tests/packs.rs` and `tests/extend.rs`.
 
-Not built: a registered dasha system or layout named in a request. The
-JSON readers take catalogue members, so a registered key is refused
-before any context sees it; the registration readers sit in the C
-boundary and move into the façade first, as the chart's composition
-did.
+*Built: registered keys.* `Server::with_layout` and
+`Server::with_dasha_system` (and `--layouts PATH` and `--dashas PATH`,
+each a JSON array as the C options take it, repeatable) register a
+layout or a dasha system in every context the server builds; each is
+checked at start by building a context with it, so a row the registry
+refuses fails the start, and `settings.describe` lists them under
+`registered`. A chart request names one by its key, bare or full, beside
+the catalogue's members: `FoundRequest::from_json` keeps a key no
+catalogue has, and `FoundRequest::resolved` reads it through the
+context's registries in the order asked, refusing by its place
+(`dashas[1]`, `drawings[0].layout`) a key nobody registered or one of
+another kind. `chart.found`'s schema takes either, as its reader does.
+The JSON readers of both registrations moved from the C boundary into
+the façade (`teistro::registrations`), where the boundary and the
+binary read them alike. Gated in `tests/registered.rs`, a registered
+system checked period for period against its catalogued twin.
+`ResearchRequest`'s dasha stays catalogue-only until the research area
+takes a key id, and a varsha's dashas are Tajika systems with kernels of
+their own.
 
 **P10. Quick by construction.** A context is built once per profile,
 settings and locale, the settings keyed by their canonical JSON so two

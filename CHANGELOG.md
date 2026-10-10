@@ -2564,6 +2564,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   answer stamped through a context, and every interpreted chart, now
   names the packs loaded in `provenance.packs`, which was declared and
   never filled. **Numbers:** none move.
+- **Registered dasha systems and layouts by key, in a chart request.**
+  `FoundRequest` reads a key no catalogue has and
+  `FoundRequest::resolved` reads it through a context's registries, so
+  `ts_chart_found`, every binding's chart request and the agent server's
+  `chart.found` reach a consumer's own system or layout by its key, bare
+  or full, refused by its place when nobody registered it. The
+  registration readers moved into the façade
+  (`teistro::registrations`); the agent server registers through
+  `Server::with_layout`, `Server::with_dasha_system`, `--layouts` and
+  `--dashas`, and `settings.describe` lists them. **Numbers:** none move.
 - **The 2026-07-28 revision's remaining rules.** `server/discover`
   names its revision like every request; a null id, or one that is
   neither a string nor an integer, is `-32600`; `subscriptions/listen`
