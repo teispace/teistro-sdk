@@ -123,7 +123,10 @@ server serves the same way with `teistro_mcp::http::serve`.
 
 `--pack PATH` (repeatable) loads an interpretation or locale pack into
 every context, and every answer's provenance names the packs that shaped
-its words. A program embedding the server adds tools of its own:
+its words. `--layouts PATH` and `--dashas PATH` (each a JSON array,
+repeatable) register chart layouts and dasha systems of the operator's
+own, which a chart request then names by key like the catalogue's;
+`settings.describe` lists them. A program embedding the server adds tools of its own:
 
 ```rust
 use serde_json::json;

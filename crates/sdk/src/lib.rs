@@ -126,6 +126,8 @@ mod research_request;
 // The record entry points: every area a binding reaches with one JSON
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
+// A consumer's own layouts and dasha systems, read from JSON.
+pub mod registrations;
 #[cfg(feature = "chart")]
 mod returns;
 #[cfg(feature = "chart")]

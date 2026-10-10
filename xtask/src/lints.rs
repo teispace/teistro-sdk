@@ -2688,9 +2688,17 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
         .iter()
         .filter_map(|file| std::fs::read_to_string(root.join(file)).ok())
         .collect();
+    // The reader itself, called or passed as a function, and never a
+    // longer name it begins (`from_json_in`), which would pass for it.
     let reached = |name: &str| {
         let call = format!("{name}::from_json");
-        through.iter().any(|text| text.contains(&call))
+        through.iter().any(|text| {
+            text.match_indices(&call).any(|(at, _)| {
+                !text.get(at + call.len()..).is_some_and(|rest| {
+                    rest.starts_with(|next: char| next.is_ascii_alphanumeric() || next == '_')
+                })
+            })
+        })
     };
     let Ok(crates) = std::fs::read_dir(root.join("crates")) else {
         return;

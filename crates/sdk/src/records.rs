@@ -265,7 +265,7 @@ pub fn records() -> Vec<Record> {
             title: "Found charts and read every table asked of them",
             reads: Some(crate::FoundRequest::DESCRIPTION),
             run: |context, json| {
-                let found = crate::FoundRequest::from_json(json)?;
+                let found = crate::FoundRequest::from_json(json)?.resolved(context.keys())?;
                 let composed =
                     context
                         .chart()
