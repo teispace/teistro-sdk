@@ -23,18 +23,18 @@ Three files are living documents and are updated in every working session:
 | [`00-vision/`](00-vision/) | what Teistro SDK is, the principles it holds to, and the scope of the first version | drafted |
 | [`01-research/`](01-research/README.md) | the astrology feature universe across traditions, the competitive landscape, the baseline engine, the platform research (language, bindings, ephemeris abstraction, localization, calendars, modularity, performance, security, testing, docs, CI/CD, licensing), and the verification-cruxes register | drafted; the register is living |
 | [`02-architecture/`](02-architecture/00-overview.md) | the shape: layers, modules, ports, data model, API conventions, bindings, extensibility, performance and security architecture | draft, pending decisions |
-| [`03-design/`](03-design/README.md) | per-module detailed designs; five written in Phase 0 (exact arithmetic, dasha kernels, varga kernel, strength schemes, rules engine) | five drafted, the rest planned |
+| [`03-design/`](03-design/README.md) | per-module detailed designs, one page per module written before its code, and the generated pages that measure them | living; each page states its own status, and [`03-design/README.md`](03-design/README.md) indexes them |
 | [`04-implementation/`](04-implementation/README.md) | repository layout, coding standards, build system | planned |
-| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding), the golden-vector corpus and the test and conformance plans | quality bar accepted; golden vectors drafted (115 baseline fixtures in `fixtures/`); other plans planned |
-| [`06-cicd/`](06-cicd/README.md) | pipelines, release engineering, packaging per binding | planned |
+| [`05-testing/`](05-testing/README.md) | the quality bar (accepted, binding), the golden-vector corpus and the test and conformance plans | quality bar accepted; golden vectors drafted (the baseline fixtures in `fixtures/`); other plans planned |
+| [`06-cicd/`](06-cicd/README.md) | pipelines, release engineering, packaging per binding | built |
 | [`07-roadmap/`](07-roadmap/00-roadmap.md) | phases, milestones, deliverables and exit criteria | drafted |
-| [`08-decisions/`](08-decisions/README.md) | ADRs | proposed |
+| [`08-decisions/`](08-decisions/README.md) | ADRs | accepted; the index lists each |
 | [`09-guidelines/`](09-guidelines/README.md) | how to write docs here, add a language, a module, a calendar; commit conventions; session continuity | drafted |
 
 ## Conventions for these documents
 
 - Every page states its **status** at the top: `research`, `draft`,
-  `proposed`, `accepted`, `planned`, `generated`. A page that claims a number
+  `proposed`, `accepted`, `planned`, `building`, `built`, `generated`. A page that claims a number
   says where the number came from.
 - British spelling, as in Teimeris (`behaviour`, `optimise`, `licence` the
   noun). See `09-guidelines/01-docs-style.md`.

@@ -1,8 +1,15 @@
 # The chart foundation
 
-Status: `draft`, written 2026-09-07 as the first design of Phase 4 and
+Status: `built`, written 2026-09-07 as the first design of Phase 4 and
 revised the same day when `crates/chart` built the first two of its
-modules against the corpus. After
+modules against the corpus. `crates/chart` builds it: `ChartDay`,
+`Bhavas` and `Placement`, the ishtakaal and the hora (`BirthTiming`),
+and `ChartFoundation` behind `found` and `found_one`. Two parts landed
+elsewhere: the abda lord of §7 is not in the foundation but read by the
+Shadbala under `strength.kaala_lords`, which answers §16's first
+question, and the mixed-chart axis of §10 is `teistro_vargas::chart::Axis`,
+set on the varga request. A composite is a view over two founded charts
+([`western-composites.md`](western-composites.md)). Written after
 the bhava chalit falsification pass
 ([`chart-bhava-chalit.md`](chart-bhava-chalit.md)) which decided what a
 house placement has to carry. Derives from
@@ -13,7 +20,7 @@ reads), [`astro-house-systems.md`](astro-house-systems.md) (the cusps),
 [`time-and-timezone.md`](time-and-timezone.md) (the day and its arcs) and
 [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md) (where
 the positions come from). The rank-2 reference is the conformance
-corpus's `foundation` section on all 55 charts.
+corpus's `foundation` section on every chart it records.
 
 ## 1. Purpose and scope
 
@@ -139,9 +146,9 @@ first; a module that wants the anchor asks for the second and says so.
 ## 5. A house placement carries the method that produced it
 
 The falsification pass measured what happens when it does not. Over the
-55 charts, the four named bhava chalit methods put a graha in a different
-house between 10% and 51% of the time depending on the pair; the two a
-Jyotisha application actually chooses between disagree on 21.8% of
+corpus's charts, the four named bhava chalit methods put a graha in a different
+house between 10% and 51% of the time depending on the pair; the two an
+application actually chooses between disagree on 21.8% of
 placements, and 37.2% beyond 30° of latitude. Two of them — Sripati and
 Porphyry — are the *same cusps* read two ways and disagree half the time.
 
@@ -231,7 +238,7 @@ of it is recomputed here:
 wrong to put them here.** They read like the elapsed and total of the
 day's part and they are not: bhabhoga is the duration of the *Moon's
 traversal of its nakshatra* and bhayat the elapsed part of it at birth.
-The corpus settles it — over all 55 charts they reproduce
+The corpus settles it — over every chart it records they reproduce
 `dashas.methods.temporal.nakshatra_span` to within 0.39 minutes, which is
 the ghati-pala rounding, and they are nowhere near the length of the
 night. So they belong to `dasha`, which is the only module that needs

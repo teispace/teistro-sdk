@@ -1,6 +1,7 @@
 # Jaimini significators: the karakamsha, the Brahma graha and the Sthira dasa
 
-Status: `draft`, 2026-09-26; §5 steps 1 to 4 and 6 **built** the same day; step 5 waits on a verse.
+Status: `built`, 2026-09-26: §5 steps 1 to 4 and 6 built; step 5, the Sudasa,
+is not built and waits on a verse, not on this page.
 Written from the texts and a measurement before any code; the building is
 expected to correct it.
 
@@ -140,14 +141,14 @@ about a third chart-query field for **periods**, and this is not one.
    readings of its houses, through `sdk.chart().jaimini`. At the
    boundary it waits on step 6.
 2. **The Brahma graha** under both rules: **done**, measured over the
-   corpus's births in `jaimini-measured.md` (the verses find none on 32
-   of 55).
+   corpus's births in `jaimini-measured.md`, which counts the charts the
+   verses find none on.
 3. **The Sthira dasa**: **done**. `Start::Brahma` and `Order::Forward`
    in the sign-based kernel; `start_sign` is fallible, so a Sthira dasa
    over a chart with no Brahma is refused on `jaimini.brahma` with the
    note's rule named, never started from the lagna. The coverage page's
-   stated row, and its registrable entry, are gone; this build computes
-   23 of the catalogue's 40. The corpus does not record Sthira, and the
+   stated row, and its registrable entry, are gone; that page counts what
+   this build computes against what the catalogue names. The corpus does not record Sthira, and the
    dasha tests list it as the one shipped row unrecorded, both ways.
    Its antardashas follow the row's order: forward from their own sign,
    equal, as the mahadashas are, where every other sign-based row runs
@@ -212,12 +213,12 @@ about a third chart-query field for **periods**, and this is not one.
    knob distinctly, since a knob's crossing needs a wildcard. Each binding
    mirrors the Rust type — `karakamsha {atmakaraka, sign, inRasi,
    inNavamsha}`, `brahma {rule, countedFrom, qualified, graha, passedFrom,
-   none}` — and the parity gate compares both across Rust, Node, Python and
-   Dart.
+   none}` — and the parity gate compares both in every runner.
 
 ## 6. Not decided here
 
-Rudra and Maheshwara, the sthira karakas and the graha arudhas are the
-rest of the roadmap's Jaimini list. PyJHora answers each, and each is
-its own reading of BPHS or the Jaimini Sutras; they are taken after
+Rudra and Maheshwara and the sthira karakas are the rest of the
+roadmap's Jaimini list; the graha arudhas, once among them, are built
+([`graha-arudhas.md`](graha-arudhas.md)). PyJHora answers each, and each
+is its own reading of BPHS or the Jaimini Sutras; they are taken after
 these, with the same method.
