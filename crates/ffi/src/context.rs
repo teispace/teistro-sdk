@@ -431,7 +431,7 @@ impl TsContext {
             #[cfg(not(feature = "chart"))]
             {
                 let _ = json;
-                return Err(crate::family::left_out("chart").with_field("options.dashas_json"));
+                return Err(Error::left_out("chart").with_field("options.dashas_json"));
             }
         }
         // One entry, never a chain: a C caller names one ephemeris and

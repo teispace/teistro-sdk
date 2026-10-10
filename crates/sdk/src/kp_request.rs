@@ -143,8 +143,9 @@ impl KpRequest {
         ))
         .with_field("frame.ayanamsha")
         .with_hint(
-            "found the chart under the kp-default profile, or ask \
-             KpRequest::new().under_any_ayanamsha() to read it as it is",
+            "found the chart under the kp-default profile, or read it as it is: \
+             `\"anyAyanamsha\": true` in the `kp` record, \
+             `KpRequest::new().under_any_ayanamsha()` in Rust",
         ))
     }
 }

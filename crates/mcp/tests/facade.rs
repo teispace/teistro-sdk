@@ -23,6 +23,13 @@ fn examples() -> Vec<(&'static str, Value)> {
             "altitudeM": 1400, "utcOffsetSeconds": 20700, "uncertaintyMinutes": 0})
     };
     vec![
+        (
+            "chart.found",
+            json!({"instants": [2_447_000.25, 2_447_365.75], "latitudeDeg": 27.7172,
+                "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+                "vargas": ["D9"], "shadbala": true, "fortitudes": {}, "lots": {},
+                "kp": {"anyAyanamsha": true}, "antiscia": {}, "varsha": {"through": 1}}),
+        ),
         ("matching.naam", json!({"bride": "सीता", "groom": "राम"})),
         (
             "numerology.profile",
@@ -112,7 +119,10 @@ fn a_tool_answers_as_the_facade_does() {
 #[test]
 fn a_tool_reads_the_settings_and_the_locale_it_names() {
     let mut server = Server::new(Engine::Builtin);
-    let (name, request) = examples().remove(2);
+    let (name, request) = examples()
+        .into_iter()
+        .find(|(name, _)| *name == "almanac.pakshi")
+        .unwrap();
     let centred = |server: &mut Server, centre: &str| {
         let result = call(
             server,
@@ -191,4 +201,23 @@ fn settings_describe_answers_the_profiles_and_the_patch_schema() {
     );
     assert_eq!(refused["isError"], true);
     assert_eq!(refused["structuredContent"]["field"], "arguments.profile");
+}
+
+#[test]
+fn a_chart_request_answers_its_charts_and_a_row_a_chart_of_each_table_asked() {
+    let mut server = Server::new(Engine::Builtin);
+    let (name, request) = examples()
+        .into_iter()
+        .find(|(name, _)| *name == "chart.found")
+        .unwrap();
+    let result = call(&mut server, name, &json!({"request": request}));
+    let value = &result["structuredContent"]["value"];
+    assert_eq!(value["charts"].as_array().unwrap().len(), 2);
+    for asked in ["fortitudes", "lots", "kp", "varsha"] {
+        assert_eq!(value[asked].as_array().unwrap().len(), 2, "{asked}");
+    }
+    assert_eq!(value["western"]["antiscia"].as_array().unwrap().len(), 2);
+    assert_eq!(value["gochar"], json!([]));
+    let input_hash = &result["structuredContent"]["provenance"]["input_hash"];
+    assert!(input_hash.is_string(), "{input_hash}");
 }

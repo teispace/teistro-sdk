@@ -131,14 +131,14 @@ later. Counting the derives over the layer's own source:
 | crate | types that serialise | types that read back |
 |---|---|---|
 | `serial` | 2 | 2 |
-| `chart` | 12 | 10 |
+| `chart` | 13 | 10 |
 | `panchanga` | 39 | 40 |
 | `vargas` | 11 | 8 |
 | `state` | 12 | 12 |
 | `aspect` | 8 | 8 |
 | `points` | 4 | 4 |
 | `houses` | 5 | 5 |
-| **total** | **93** | **89** |
+| **total** | **94** | **89** |
 
 The five that do not derive it are the five that **cannot**, and they
 are all one shape: a value whose identity is a shipped constant, holding

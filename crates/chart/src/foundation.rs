@@ -72,7 +72,8 @@ use crate::zodiac::{ChartZodiac, request_of};
 
 /// A chart's angles at an instant, in its own zodiac, with the obliquity of
 /// the date they were built on.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct ChartAngles {
     /// The ascendant, degrees.
     pub ascendant_deg: f64,

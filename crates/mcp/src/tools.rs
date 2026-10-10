@@ -83,18 +83,22 @@ fn record_tool(record: &Record) -> Value {
 
 /// A record's description: its title, then what its boundary function's
 /// documentation says of the record it reads, from the paragraph naming
-/// `request_json` on, the argument here being `request`.
+/// `request_json` on, the argument here being `request`; or the record's
+/// own description, where the boundary function takes a C request.
 ///
 /// The paragraphs before it describe the answer as the boundary hands it
 /// over, a blob in some areas; the answer here is the envelope, which the
 /// tool's result says.
 pub(crate) fn description(record: &Record) -> String {
     let doc = boundary_doc(record.boundary).unwrap_or_default();
-    let read = doc
-        .find("`request_json` is")
-        .and_then(|at| doc.get(at..))
-        .unwrap_or(doc)
-        .replace("`request_json`", "`request`");
+    let read = match record.reads {
+        Some(reads) => reads.to_owned(),
+        None => doc
+            .find("`request_json` is")
+            .and_then(|at| doc.get(at..))
+            .unwrap_or(doc)
+            .replace("`request_json`", "`request`"),
+    };
     format!(
         "{}. Answers `{{value, provenance}}`.\n\n{}",
         record.title,

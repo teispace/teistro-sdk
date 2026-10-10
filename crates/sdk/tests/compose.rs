@@ -9,11 +9,12 @@
     reason = "tests fail by panicking and index what they found"
 )]
 
+use teistro::catalogue::{DashaSystem, Varga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
     AntisciaRequest, ChartRecords, ChartRequest, ConsiderationRules, Context, DignityRequest,
-    Ephemeris, FortitudeRequest, FortuneRule, KpRequest, Lot, LotRequest, PerfectionRequest,
-    PrashnaRequest, UtcOffset, VarshaRequest, WesternRecords,
+    Ephemeris, FortitudeRequest, FortuneRule, FoundRequest, KpRequest, Lot, LotRequest,
+    PerfectionRequest, PrashnaRequest, UtcOffset, VarshaRequest, WesternRecords,
 };
 
 fn context() -> Context {
@@ -196,4 +197,113 @@ fn the_annual_charts_and_the_western_tables_are_the_calls_they_compose() {
         );
     }
     assert!(composed.western.aspects.is_empty() && composed.western.davisons.is_empty());
+}
+
+#[test]
+fn every_record_name_reads_its_record() {
+    // A record each family reads from nothing at all, or the least it
+    // needs; a name the table drops is "no chart record is named".
+    let least = |name: &str| match name {
+        "gochar" => r#"{"instants": [2460676.5]}"#,
+        "hits" | "sadeSati" => r#"{"from": 2460676.5, "to": 2460680.5}"#,
+        "perfection" => r#"{"querent": "VENUS", "quesited": "MARS"}"#,
+        _ => "{}",
+    };
+    for name in ChartRecords::NAMES {
+        let mut records = ChartRecords::default();
+        if let Err(refused) = records.read(name, least(name)) {
+            assert!(
+                !refused.to_string().contains("no chart record is named"),
+                "{name} is in NAMES and not read: {refused}"
+            );
+        }
+    }
+    let refused = ChartRecords::default().read("lot", "{}").unwrap_err();
+    assert_eq!(refused.field(), Some("lot"));
+    assert!(refused.hint().unwrap().contains("lots"));
+}
+
+#[test]
+fn a_record_refusal_is_named_from_its_root() {
+    let refused = ChartRecords::default()
+        .read("gochar", r#"{"instants": []}"#)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("gochar.instants"));
+    let refused = ChartRecords::default()
+        .read("interpret", r#"{"readingz": true}"#)
+        .unwrap_err();
+    assert!(
+        refused.field().unwrap().starts_with("interpret"),
+        "{refused}"
+    );
+}
+
+#[test]
+fn a_json_chart_request_composes_as_the_request_it_spells() {
+    let sdk = context();
+    let found = FoundRequest::from_json(
+        r#"{"instants": [2447000.25, 2447365.75], "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+            "vargas": ["varga.D9", "D10"], "dashas": ["VIMSHOTTARI"], "shadbala": true,
+            "jaimini": false, "fortitudes": {}, "lots": {}}"#,
+    )
+    .unwrap();
+    assert_eq!(found.instants, instants());
+    let request = kathmandu()
+        .with_vargas([Varga::D9, Varga::D10])
+        .with_dashas([DashaSystem::Vimshottari])
+        .with_shadbala();
+    assert_eq!(found.request, request);
+    let composed = sdk
+        .chart()
+        .compose(&found.instants, &found.request, &found.records)
+        .unwrap();
+    let records = ChartRecords {
+        fortitudes: Some(FortitudeRequest::default()),
+        lots: Some(LotRequest::default()),
+        ..ChartRecords::default()
+    };
+    let built = sdk
+        .chart()
+        .compose(&instants(), &request, &records)
+        .unwrap();
+    assert_eq!(
+        composed.founded.provenance.input_hash,
+        built.founded.provenance.input_hash
+    );
+    assert_eq!(composed.fortitudes, built.fortitudes);
+    assert_eq!(composed.lots, built.lots);
+}
+
+#[test]
+fn a_json_chart_request_refuses_by_the_field_written() {
+    let base = r#""latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700"#;
+    let refused = |extra: &str| {
+        FoundRequest::from_json(&format!("{{{base}{extra}}}"))
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    assert_eq!(refused(""), Some("instant".to_owned()));
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "instants": [2447000.25]"#),
+        Some("instants".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "shadbala": "yes""#),
+        Some("shadbala".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "vargaz": []"#),
+        Some("vargaz".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "kp": {"clok": 0}"#),
+        Some("kp.clok".to_owned())
+    );
+    assert_eq!(
+        refused(r#", "instant": 2447000.25, "dignities": {}, "fortitudes": {}"#),
+        Some("dignities".to_owned())
+    );
+    assert!(FoundRequest::from_json("[]").is_err());
 }

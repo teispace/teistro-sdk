@@ -19,7 +19,7 @@ use crate::{
     ChartArea, ChartRequest, ConsiderationRules, Considerations, Dignities, DignityRequest,
     FortitudeRequest, Fortitudes, GocharRequest, Hit, HitRequest, Lot, LotReading, LotRequest,
     Matched, Matter, PartnerMatching, PerfectionRequest, PerfectionRules, PlanInputs, PlanRequest,
-    Plans, RuleSet, RulesReading, SadeSatiRequest,
+    Plans, RuleRequest, RuleSet, RulesReading, SadeSatiRequest,
 };
 
 /// The records a chart request carries beside its sections, each read and
@@ -105,7 +105,7 @@ pub struct WesternRecords {
 /// The Western tables a batch was asked for, a row a chart, each empty
 /// when its record was not sent.
 #[cfg(feature = "western")]
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, serde::Serialize)]
 pub struct WesternTables {
     /// Every chart's progressions and directions.
     pub progressions: Vec<crate::Progressions>,
@@ -130,6 +130,151 @@ pub struct WesternTables {
 }
 
 impl ChartRecords {
+    /// The records a chart request names, as every binding writes them:
+    /// the key in a JSON chart request ([`FoundRequest`](crate::FoundRequest))
+    /// and the name [`ChartRecords::read`] takes.
+    pub const NAMES: [&'static str; 26] = [
+        "theme",
+        "rules",
+        "interpret",
+        "varsha",
+        "gochar",
+        "hits",
+        "sadeSati",
+        "kp",
+        "prashna",
+        "remedies",
+        "lalkitab",
+        "rectification",
+        "dignities",
+        "fortitudes",
+        "lots",
+        "considerations",
+        "perfection",
+        "progressions",
+        "westernAspects",
+        "synastry",
+        "parallels",
+        "antiscia",
+        "midpoints",
+        "westernHouses",
+        "harmonic",
+        "matching",
+    ];
+
+    /// The records with `name`'s read from `json` by its own reader, which
+    /// names a refusal from the record's root (`kp.clock`): the one place
+    /// a record's name meets its reader, for the boundary's C fields and a
+    /// JSON chart request alike.
+    ///
+    /// ```
+    /// use teistro::ChartRecords;
+    ///
+    /// let mut records = ChartRecords::default();
+    /// records.read("lots", "{}")?;
+    /// assert!(records.lots.is_some());
+    /// let typo = records.read("lot", "{}").unwrap_err();
+    /// assert_eq!(typo.field(), Some("lot"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for a name not in [`ChartRecords::NAMES`] or a record
+    /// its reader refuses; `CAPABILITY` for a record of a family this
+    /// build leaves out.
+    pub fn read(&mut self, name: &str, json: &str) -> Result<(), Error> {
+        /// The record of a family, read in a build with it and refused in
+        /// one without it.
+        macro_rules! family {
+            ($family:literal, $($slot:ident).+, $reader:path) => {{
+                #[cfg(feature = $family)]
+                {
+                    self.$($slot).+ = Some($reader(json)?);
+                }
+                #[cfg(not(feature = $family))]
+                return Err(Error::left_out($family).with_field(name));
+            }};
+        }
+        match name {
+            "rules" => {
+                self.rules = Some(
+                    RuleRequest::from_json(json)
+                        .and_then(|request| request.rule_set())
+                        .map_err(|error| error.under(name))?,
+                );
+            }
+            "interpret" => {
+                self.plans = PlanRequest::from_json(json).map_err(|error| error.under(name))?;
+            }
+            "sadeSati" => self.sade_sati = Some(SadeSatiRequest::from_json(json)?),
+            "gochar" => self.gochar = Some(GocharRequest::from_json(json)?),
+            "hits" => self.hits = Some(HitRequest::from_json(json)?),
+            "dignities" => self.dignities = Some(DignityRequest::from_json(json)?),
+            "fortitudes" => self.fortitudes = Some(FortitudeRequest::from_json(json)?),
+            "lots" => self.lots = Some(LotRequest::from_json(json)?),
+            "considerations" => self.considerations = Some(ConsiderationRules::from_json(json)?),
+            "perfection" => self.perfection = Some(PerfectionRequest::from_json(json)?),
+            "matching" => self.matching = Some(PartnerMatching::from_json(json)?),
+            "theme" => family!("svg", theme, teistro_render_svg::Theme::from_json),
+            "kp" => family!("kp", kp, crate::KpRequest::from_json),
+            "prashna" => family!("prashna", prashna, crate::PrashnaRequest::from_json),
+            "remedies" => family!("remedies", remedies, crate::RemedyRequest::from_json),
+            "lalkitab" => family!("lalkitab", lalkitab, crate::LalKitabRequest::from_json),
+            "rectification" => family!(
+                "rectification",
+                rectification,
+                crate::RectificationRequest::from_json
+            ),
+            "varsha" => family!("tajika", varsha, crate::VarshaRequest::from_json),
+            "progressions" => family!(
+                "western",
+                western.progressions,
+                crate::ProgressionsRequest::from_json
+            ),
+            "westernAspects" => {
+                family!("western", western.aspects, crate::AspectRequest::from_json);
+            }
+            "synastry" => family!(
+                "western",
+                western.synastry,
+                crate::PartnerSynastry::from_json
+            ),
+            "parallels" => family!(
+                "western",
+                western.parallels,
+                crate::ParallelRequest::from_json
+            ),
+            "antiscia" => family!(
+                "western",
+                western.antiscia,
+                crate::AntisciaRequest::from_json
+            ),
+            "midpoints" => family!(
+                "western",
+                western.midpoints,
+                crate::MidpointRequest::from_json
+            ),
+            "westernHouses" => family!("western", western.houses, crate::HouseRequest::from_json),
+            "harmonic" => family!(
+                "western",
+                western.harmonic,
+                crate::HarmonicRequest::from_json
+            ),
+            _ => {
+                return Err(
+                    Error::invalid_arg(format!("no chart record is named `{name}`"))
+                        .with_field(name)
+                        .with_hint(format!(
+                            "the records are {}",
+                            ChartRecords::NAMES.join(", ")
+                        )),
+                );
+            }
+        }
+        Ok(())
+    }
+
     /// The records, refused where two of them ask for one table: the
     /// fortitudes carry their own essential dignities, so a `dignities`
     /// record beside them is refused rather than one of the two silently
@@ -205,9 +350,12 @@ impl ChartRecords {
 /// A chart request composed: the charts, what they answer by rule and
 /// say, and each section its records asked for, a row a chart in the
 /// batch's order, empty where none was asked.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct Composed<'r> {
-    /// The documents, the batch's provenance sealed over the list.
+    /// The documents, the batch's provenance sealed over the list. Its
+    /// JSON is the documents alone, as `charts`: the provenance is the
+    /// whole answer's.
+    #[serde(rename = "charts", serialize_with = "documents")]
     pub founded: Envelope<Vec<Document>>,
     /// Each chart's own content hash, in the batch's order.
     pub hashes: Vec<Hash>,
@@ -579,6 +727,14 @@ impl ChartArea<'_> {
 /// `read` over every document, or nothing when no record asked; a
 /// refusal is named under the record's `root`, where one is given, and
 /// says which chart it was refused for.
+/// The documents of a sealed batch, without the seal.
+fn documents<S: serde::Serializer>(
+    founded: &Envelope<Vec<Document>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    serde::Serialize::serialize(&founded.value, serializer)
+}
+
 #[cfg(any(feature = "tajika", feature = "western"))]
 fn chart_by_chart<A, T>(
     documents: &[Document],
