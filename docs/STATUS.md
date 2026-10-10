@@ -1056,11 +1056,12 @@ provider's DUT1).
 0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
-   1. **The MCP server, in progress** (`03-design/mcp-server.md`): its
-      conformance gaps against the MCP specification, and §7's P9
-      (`--pack`, `Server::with_tool`). P7's tasks wait on a study
-      measured to outlast a client's timeout. Step 1 below says what is
-      built.
+   1. **The MCP server's last pieces** (`03-design/mcp-server.md`): a
+      registered dasha system or layout named in a request (the
+      registration readers move from the boundary into the façade
+      first), and the binary packaged with the release (§6 step 5).
+      P7's tasks wait on a study measured to outlast a client's timeout.
+      Step 1 below says what is built.
    2. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
       are in the corpus (v0.12.0) and every built-in tier is scored
       against them (`05-testing/CONFORMANCE.md`, the `jpl` rows);
