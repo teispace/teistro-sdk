@@ -53,6 +53,9 @@ const DIST: &str = "target/dist";
 /// file is.
 const ADDON_FILE: &str = "teistro.node";
 
+/// The agent server's program, as Cargo names its binary target.
+const MCP_PROGRAM: &str = "teistro-mcp";
+
 /// The files every package carries whatever else is in it.
 const LEGAL: [&str; 2] = ["LICENSE", "NOTICE"];
 
@@ -113,8 +116,8 @@ fn shipped() -> String {
     format!("the SDK ships {}", names.join(", "))
 }
 
-/// Builds the library and the addon for a target, and returns the
-/// directory Cargo wrote them to.
+/// Builds the library, the addon and the agent server for a target, and
+/// returns the directory Cargo wrote them to.
 ///
 /// The target is always named, even when it is the host, so that the
 /// output directory is the same shape on every runner and a cross-built
@@ -158,11 +161,13 @@ fn compile(root: &Path, platform: &Platform) -> Result<PathBuf, ()> {
                 "teistro-ffi",
                 "-p",
                 "teistro-node",
+                "-p",
+                "teistro-mcp",
             ])
             .current_dir(root),
         "",
         &format!(
-            "the library and the addon did not build for {}{hint} (every row builds through \
+            "the library, the addon and the agent server did not build for {}{hint} (every row builds through \
              cargo-auditable: `cargo install --locked cargo-auditable@{auditable}`)",
             platform.triple
         ),
@@ -185,14 +190,17 @@ fn stage_platform(
     fs::create_dir_all(dist)?;
     let shared = built.join(platform.shared(LIBRARY_STEM));
     let addon = built.join(platform.shared(ADDON_STEM));
-    crate::floor::check(platform, &[&shared, &addon]).map_err(io::Error::other)?;
-    sbom::embedded(&[&shared, &addon]).map_err(io::Error::other)?;
+    let server = built.join(platform.program(MCP_PROGRAM));
+    crate::floor::check(platform, &[&shared, &addon, &server]).map_err(io::Error::other)?;
+    sbom::embedded(&[&shared, &addon, &server]).map_err(io::Error::other)?;
     let library_bill = bill(root, dist, platform, version, "teistro-ffi", "library")?;
     let addon_bill = bill(root, dist, platform, version, ADDON_PACKAGE, "addon")?;
+    let server_bill = bill(root, dist, platform, version, MCP_PROGRAM, "mcp")?;
 
     let library = gzipped_library(dist, platform, version, &shared)?;
     let bundle = c_bundle(root, dist, platform, version, built, &library_bill)?;
     let package = npm_platform_package(root, dist, platform, version, &addon, &addon_bill)?;
+    let mcp = mcp_archive(root, dist, platform, version, &server, &server_bill)?;
 
     let manifest = json!({
         "schema": SCHEMA,
@@ -203,12 +211,13 @@ fn stage_platform(
         // Dart installer checks after it has unpacked the download.
         "library": entry(&shared, &platform.shared(LIBRARY_STEM))?,
         "addon": entry(&addon, ADDON_FILE)?,
-        "archives": [library, bundle],
+        "archives": [library, bundle, mcp],
         "npm": package,
         // What each file is made of, beside the files (`xtask/src/sbom.rs`).
         "sboms": [
             entry(&library_bill, &file_name(&library_bill))?,
             entry(&addon_bill, &file_name(&addon_bill))?,
+            entry(&server_bill, &file_name(&server_bill))?,
         ],
     });
     let path = dist.join(manifest_name(version, &platform.name()));
@@ -321,15 +330,69 @@ fn c_bundle(
     entry(&path, &name)
 }
 
+/// The agent server's archive (`03-design/mcp-server.md` §6 step 5): the
+/// program, its README, the terms and its bill, under one directory so it
+/// unpacks to a place of its own. A `.tar.gz` on every platform, as the C
+/// bundle is.
+fn mcp_archive(
+    root: &Path,
+    dist: &Path,
+    platform: &Platform,
+    version: &str,
+    server: &Path,
+    bill: &Path,
+) -> io::Result<Value> {
+    let name = mcp_archive_name(version, &platform.name());
+    let path = dist.join(&name);
+    let encoder = GzEncoder::new(File::create(&path)?, Compression::best());
+    let mut archive = tar::Builder::new(encoder);
+    append_mode(
+        &mut archive,
+        &format!("{MCP_PROGRAM}/{}", platform.program(MCP_PROGRAM)),
+        server,
+        0o755,
+    )?;
+    append(
+        &mut archive,
+        &format!("{MCP_PROGRAM}/README.md"),
+        &root.join("crates/mcp/README.md"),
+    )?;
+    for legal in LEGAL {
+        append(
+            &mut archive,
+            &format!("{MCP_PROGRAM}/{legal}"),
+            &root.join(legal),
+        )?;
+    }
+    append(&mut archive, &format!("{MCP_PROGRAM}/{}", sbom::FILE), bill)?;
+    archive.into_inner()?.finish()?;
+    entry(&path, &name)
+}
+
+/// The agent server's archive's file name, which `check-package` unpacks.
+pub(crate) fn mcp_archive_name(version: &str, platform: &str) -> String {
+    format!("{MCP_PROGRAM}-{version}-{platform}.tar.gz")
+}
+
 /// Appends one file under a name, with the header fields a build machine
 /// would otherwise vary: no owner, no modification time, one mode. Two
 /// runs of the same source produce the same archive.
 fn append<W: io::Write>(archive: &mut tar::Builder<W>, name: &str, from: &Path) -> io::Result<()> {
+    append_mode(archive, name, from, 0o644)
+}
+
+/// [`append`], with the mode a program needs to run once unpacked.
+fn append_mode<W: io::Write>(
+    archive: &mut tar::Builder<W>,
+    name: &str,
+    from: &Path,
+    mode: u32,
+) -> io::Result<()> {
     let data = fs::read(from)
         .map_err(|err| io::Error::other(format!("cannot read {}: {err}", from.display())))?;
     let mut header = tar::Header::new_gnu();
     header.set_size(data.len() as u64);
-    header.set_mode(0o644);
+    header.set_mode(mode);
     header.set_mtime(0);
     header.set_uid(0);
     header.set_gid(0);

@@ -292,6 +292,9 @@ pub(crate) fn platform_rows(root: &Path, platform: &Platform, version: &str) -> 
                 archives
                     .iter()
                     .filter_map(|a| Some((a["file"].as_str()?, a["bytes"].as_u64()?)))
+                    // The library and the C bundle; the agent server's
+                    // archive is a program, not a size a binding pays.
+                    .filter(|(file, _)| !file.starts_with("teistro-mcp-"))
                     .find(|(file, _)| {
                         file.ends_with(suffix) && !(suffix == ".gz" && file.ends_with(".tar.gz"))
                     })

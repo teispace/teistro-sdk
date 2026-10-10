@@ -52,6 +52,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         python_consumer(root, &dist, &check, &platform, &version),
         crate::java_consumer::check(root, &dist, &check, &platform, &version),
         adapter_consumer(root, &dist, &check, &platform),
+        mcp_consumer(&dist, &check, &platform, &version),
     ];
     let recorded = crate::sizes::write_fragment(
         root,
@@ -175,6 +176,133 @@ fn unpack(archive: &Path, into: &Path) -> std::io::Result<()> {
     fs::create_dir_all(into)?;
     let file = fs::File::open(archive)?;
     tar::Archive::new(flate2::read::GzDecoder::new(file)).unpack(into)
+}
+
+// ── the agent server ───────────────────────────────────────────────────────
+
+/// Unpacks the agent server's archive and runs the program from there, as
+/// a host configured with its path would: its version, then one session
+/// under each revision it speaks, each answer held to its shape. A musl
+/// row runs it inside Alpine, which proves the static build.
+fn mcp_consumer(dist: &Path, check: &Path, platform: &Platform, version: &str) -> Result<(), ()> {
+    let into = check.join("mcp");
+    unpack(
+        &dist.join(package::mcp_archive_name(version, &platform.name())),
+        &into,
+    )
+    .map_err(|err| println!("FAIL  the agent server's archive did not unpack: {err}"))?;
+    let unpacked = into.join("teistro-mcp");
+    let program = unpacked.join(platform.program("teistro-mcp"));
+    for expected in ["README.md", "LICENSE", "NOTICE", crate::sbom::FILE] {
+        if !unpacked.join(expected).is_file() {
+            println!("FAIL  the agent server's archive carries no {expected}");
+            return Err(());
+        }
+    }
+    let shown = Command::new(&program)
+        .arg("--version")
+        .output()
+        .map_err(|err| println!("FAIL  {} did not run: {err}", program.display()))?;
+    let shown = String::from_utf8_lossy(&shown.stdout).into_owned();
+    for said in [
+        format!("teistro-mcp {version}"),
+        String::from("2026-07-28"),
+        String::from("2025-11-25"),
+    ] {
+        if !shown.contains(&said) {
+            println!("FAIL  `teistro-mcp --version` does not say {said}: {shown}");
+            return Err(());
+        }
+    }
+    let meta = serde_json::json!({ "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                                   "io.modelcontextprotocol/clientCapabilities": {} });
+    let convert = serde_json::json!({ "name": "time.convert",
+        "arguments": { "request": { "jd": 2_451_545.0, "from": "UTC", "to": "TT" } } });
+    let mut call = convert.clone();
+    call["_meta"] = meta.clone();
+    let modern = session(
+        &program,
+        &[
+            serde_json::json!({ "jsonrpc": "2.0", "id": 1, "method": "server/discover", "params": { "_meta": meta } }),
+            serde_json::json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": { "_meta": meta } }),
+            serde_json::json!({ "jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": call }),
+        ],
+    )?;
+    let legacy = session(
+        &program,
+        &[
+            serde_json::json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                "protocolVersion": "2025-11-25", "capabilities": {},
+                "clientInfo": { "name": "check-package", "version": version } } }),
+            serde_json::json!({ "jsonrpc": "2.0", "method": "notifications/initialized" }),
+            serde_json::json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": convert }),
+        ],
+    )?;
+    let listed = modern
+        .get(1)
+        .and_then(|reply| reply["result"]["tools"].as_array())
+        .is_some_and(|tools| tools.iter().any(|tool| tool["name"] == "time.convert"));
+    let held = [
+        (
+            "discovery names the revision",
+            modern.first().is_some_and(|r| r["result"].is_object()),
+        ),
+        ("the list names `time.convert`", listed),
+        (
+            "a modern call answers",
+            modern
+                .get(2)
+                .is_some_and(|r| r["result"]["isError"] == false),
+        ),
+        (
+            "the handshake agrees the revision",
+            legacy
+                .first()
+                .is_some_and(|r| r["result"]["protocolVersion"] == "2025-11-25"),
+        ),
+        (
+            "a legacy call answers",
+            legacy
+                .get(1)
+                .is_some_and(|r| r["result"]["isError"] == false),
+        ),
+    ];
+    for (what, holds) in held {
+        if !holds {
+            println!("FAIL  the unpacked agent server: {what} ({modern:?} {legacy:?})");
+            return Err(());
+        }
+    }
+    println!("ok    the agent server unpacked and answered under both revisions");
+    Ok(())
+}
+
+/// The replies `program` writes to `messages` over stdio, in order.
+fn session(program: &Path, messages: &[serde_json::Value]) -> Result<Vec<serde_json::Value>, ()> {
+    use std::io::Write as _;
+    let mut child = Command::new(program)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::inherit())
+        .spawn()
+        .map_err(|err| println!("FAIL  {} did not start: {err}", program.display()))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        for message in messages {
+            writeln!(stdin, "{message}")
+                .map_err(|err| println!("FAIL  the agent server read nothing: {err}"))?;
+        }
+    }
+    let output = child
+        .wait_with_output()
+        .map_err(|err| println!("FAIL  the agent server did not finish: {err}"))?;
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| {
+            serde_json::from_str(line).map_err(|err| {
+                println!("FAIL  the agent server wrote a line that is not JSON ({err}): {line}");
+            })
+        })
+        .collect()
 }
 
 // ── Node ───────────────────────────────────────────────────────────────────

@@ -249,6 +249,16 @@ impl Platform {
         }
     }
 
+    /// The file name Cargo gives a program built from `name`: `name.exe`
+    /// on Windows.
+    pub(crate) fn program(&self, name: &str) -> String {
+        if self.is_windows() {
+            format!("{name}.exe")
+        } else {
+            name.to_string()
+        }
+    }
+
     /// The file name Cargo gives a static library built from `stem`.
     pub(crate) fn static_library(&self, stem: &str) -> String {
         if self.is_windows() {
