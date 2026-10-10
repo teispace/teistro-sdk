@@ -32,7 +32,7 @@ use std::sync::Arc;
 
 use serde_json::{Map, Value, json};
 use teistro::records::{Answered, Record};
-use teistro::{Context, Ephemeris, Error};
+use teistro::{Context, Ephemeris, Error, Loaded};
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::DEFAULT_PROFILE;
 use teistro_core::strict;
@@ -48,11 +48,13 @@ mod limits;
 mod prompts;
 mod resources;
 mod schemas;
+mod tool;
 mod tools;
 mod watch;
 
 pub use limits::Limits;
 pub use schemas::Detail;
+pub use tool::{Call, Handler, Tool};
 pub use watch::{Interrupt, Notify};
 
 /// The stateless revision the server speaks.
@@ -204,6 +206,13 @@ struct Plugin {
     operations: Vec<NativeFunction>,
 }
 
+/// A pack loaded into every context the server builds: its bytes, and
+/// what its first load reported.
+struct Pack {
+    bytes: Arc<[u8]>,
+    loaded: Loaded,
+}
+
 /// The server: the engine it was started with, the adapter loaded ahead
 /// of it, whether `initialize` chose the handshake revision, and the
 /// contexts it has built.
@@ -222,6 +231,10 @@ pub struct Server {
     /// The tool list, built on the first `tools/list`: it changes only
     /// with the binary and the engine, both fixed for the process.
     listed: Option<Map<String, Value>>,
+    /// The packs every context loads, in the order given.
+    packs: Vec<Pack>,
+    /// The tools of the embedding program's own.
+    tools: Vec<Tool>,
     contexts: HashMap<ContextKey, Context>,
 }
 
@@ -235,6 +248,8 @@ impl core::fmt::Debug for Server {
             .field("limits", &self.limits)
             .field("watch", &self.watch)
             .field("listed", &self.listed.is_some())
+            .field("packs", &self.packs.len())
+            .field("tools", &self.tools)
             .field("contexts", &self.contexts.len())
             .finish()
     }
@@ -252,8 +267,74 @@ impl Server {
             limits: Limits::default(),
             watch: watch::Shared::new(),
             listed: None,
+            packs: Vec::new(),
+            tools: Vec::new(),
             contexts: HashMap::new(),
         }
+    }
+
+    /// The same server, `tool` listed and answered beside the SDK's
+    /// records, in name order, under both revisions and both transports.
+    /// A refusal is the tool's result with `isError`, as a record's is;
+    /// the request bounds ([`Limits`]) hold for its arguments too.
+    ///
+    /// Call it after [`Server::with_engine`] or [`Server::with_plugin`],
+    /// which build a server afresh.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `tool.name` for a name outside the protocol's
+    /// rules, one already listed, or one under a namespace the SDK lists
+    /// tools in (`chart.`, `engine.`, …), so an SDK upgrade can never
+    /// quietly shadow a program's tool; naming the schema for one that is
+    /// not an object schema, or that declares a context argument of a
+    /// tool in context.
+    pub fn with_tool(mut self, tool: Tool) -> Result<Server, Error> {
+        let detail = self.detail;
+        let operations = self.plugin.as_ref().map_or(&[][..], |p| &p.operations);
+        let sdk: Vec<String> = tools::list(operations, &[], detail)
+            .get("tools")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|listed| listed.get("name").and_then(Value::as_str))
+            .map(str::to_owned)
+            .collect();
+        tool.check(&sdk, &self.tools)?;
+        self.tools.push(tool);
+        self.listed = None;
+        Ok(self)
+    }
+
+    /// The same server, `bytes` loaded into every context it builds after
+    /// the packs given before it, as `sdk.intl().load_pack` loads one: its
+    /// entries laid over what stands, a later pack over an earlier one,
+    /// and a locale it brings one a call may name. Every answer's
+    /// provenance names the packs that shaped its words.
+    ///
+    /// The bytes are verified now, by loading them after the packs before
+    /// them, so a file that is not a pack fails the server's start rather
+    /// than a call.
+    ///
+    /// # Errors
+    ///
+    /// `PACK` naming `bytes`: bytes that are not a pack, a pack built for
+    /// another catalogue, or one without metadata for a locale nothing
+    /// loaded yet.
+    pub fn with_pack(mut self, bytes: impl Into<Arc<[u8]>>) -> Result<Server, Error> {
+        let bytes = bytes.into();
+        let probe = loading(Context::builder(), &self.packs)?;
+        let loaded = probe.intl().load_pack(&bytes)?;
+        self.packs.push(Pack { bytes, loaded });
+        // A context built before the pack would answer without it.
+        self.contexts.clear();
+        Ok(self)
+    }
+
+    /// What each pack reported when it was loaded, in the order given.
+    #[must_use]
+    pub fn packs(&self) -> Vec<&Loaded> {
+        self.packs.iter().map(|pack| &pack.loaded).collect()
     }
 
     /// The same server, its tool list stating each record's schema in
@@ -456,7 +537,7 @@ impl Server {
                 let operations = self.plugin.as_ref().map_or(&[][..], |p| &p.operations);
                 let list = self
                     .listed
-                    .get_or_insert_with(|| tools::list(operations, detail))
+                    .get_or_insert_with(|| tools::list(operations, &self.tools, detail))
                     .clone();
                 Ok(complete(era, self.cacheable(era, list)))
             }
@@ -615,9 +696,15 @@ impl Server {
             Some(_) => return Err(Fault::new(INVALID_PARAMS, "`arguments` is an object")),
         };
         let outcome = if name == tools::DESCRIBE {
-            tools::describe(arguments)
+            let packs: Vec<Loaded> = self.packs.iter().map(|pack| pack.loaded.clone()).collect();
+            tools::describe(arguments, &packs)
         } else if name == schemas::DESCRIBE {
             schemas::describe(arguments)
+        } else if let Some(at) = self.tools.iter().position(|tool| tool.name == name) {
+            if let Err(refusal) = self.limits.check_fields(arguments) {
+                return Ok(tool_result(refused(&refusal), true));
+            }
+            self.own(at, arguments)
         } else if let Some(operation) = self.operation(name) {
             if let Err(refusal) = self.limits.check_fields(arguments) {
                 return Ok(tool_result(refused(&refusal), true));
@@ -636,6 +723,37 @@ impl Server {
         Ok(match outcome {
             Ok(structured) => tool_result(structured, false),
             Err(refusal) => tool_result(refused(&refusal), true),
+        })
+    }
+
+    /// A tool of the program's own answered: in the context its scope
+    /// names when it reads one. A panic inside its handler is the tool's
+    /// failure, and the contexts it unwound through are not reused.
+    fn own(&mut self, at: usize, arguments: &Map<String, Value>) -> Result<Value, Error> {
+        let Some(tool) = self.tools.get(at).cloned() else {
+            return Err(Error::internal("a tool the server lists is gone"));
+        };
+        let watch = Arc::clone(&self.watch);
+        let (context, rest) = if tool.context {
+            let (scope, rest) = tools::Arguments::scope(arguments)?;
+            (Some(self.context(&scope)?), rest)
+        } else {
+            (None, arguments.clone())
+        };
+        let call = Call {
+            name: &tool.name,
+            arguments: &rest,
+            context,
+            watch: &watch,
+        };
+        let answered =
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| (tool.handler)(&call)));
+        answered.unwrap_or_else(|_| {
+            self.contexts.clear();
+            Err(Error::internal(format!(
+                "the tool `{}` failed inside",
+                tool.name
+            )))
         })
     }
 
@@ -715,10 +833,12 @@ impl Server {
                 if !settings.is_empty() {
                     builder = builder.settings_json(settings.as_str());
                 }
+                // The locale after the packs, since a pack may bring it.
+                let context = loading(builder, &self.packs)?;
                 if !locale.is_empty() {
-                    builder = builder.locale(locale.as_str());
+                    context.intl().set_locale(locale.as_str())?;
                 }
-                entry.insert(builder.build()?)
+                entry.insert(context)
             }
         })
     }
@@ -876,6 +996,16 @@ fn tool_result(structured: Value, is_error: bool) -> Map<String, Value> {
 
 fn success(id: &Value, result: &Value) -> String {
     json!({ "jsonrpc": "2.0", "id": id, "result": result }).to_string()
+}
+
+/// A context built by `builder` with `packs` loaded in order: the one
+/// place the order of loading lives.
+fn loading(builder: teistro::ContextBuilder, packs: &[Pack]) -> Result<Context, Error> {
+    let context = builder.build()?;
+    for pack in packs {
+        context.intl().load_pack(&pack.bytes)?;
+    }
+    Ok(context)
 }
 
 /// A refusal and its code.

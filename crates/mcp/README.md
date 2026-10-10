@@ -114,5 +114,30 @@ of its own. It checks no credentials: bind it to loopback, or put
 whatever authorizes callers in front of it. A program embedding the
 server serves the same way with `teistro_mcp::http::serve`.
 
-No tool reaches the file system or the network: the ephemeris and the
-plugin are chosen on the command line and never by a tool argument.
+`--pack PATH` (repeatable) loads an interpretation or locale pack into
+every context, and every answer's provenance names the packs that shaped
+its words. A program embedding the server adds tools of its own:
+
+```rust
+use serde_json::json;
+use teistro_mcp::{Engine, Server, Tool};
+
+let tool = Tool::new(
+    "acme.greet",
+    "Greets a querent by name.",
+    json!({ "type": "object", "properties": { "name": { "type": "string" } } }),
+    |call| Ok(json!({ "greeting": call.argument::<String>("name")? })),
+)
+.read_only();
+let server = Server::new(Engine::Builtin).with_tool(tool)?;
+# Ok::<(), teistro::Error>(())
+```
+
+A name under a namespace the SDK lists tools in (`chart.`, `engine.`, …)
+is refused, so an SDK upgrade never shadows a program's tool; a tool
+made `in_context` reads `profile`, `settings` and `locale` and reaches
+that context through `Call::context`.
+
+No tool reaches the file system or the network: the ephemeris, the
+plugin and the packs are chosen on the command line and never by a tool
+argument.

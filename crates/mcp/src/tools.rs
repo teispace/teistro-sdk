@@ -3,8 +3,8 @@
 //! `schema.describe`.
 
 use serde_json::{Map, Value, json};
-use teistro::Error;
 use teistro::records::Record;
+use teistro::{Error, Loaded};
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::{DEFAULT_PROFILE, Profile, SHIPPED_PROFILES, SettingsPatch};
 use teistro_port_ephemeris::native::{NativeFunction, NativeParam, Role};
@@ -22,10 +22,17 @@ pub(crate) const ENGINE_PREFIX: &str = "engine.";
 /// The arguments a record tool reads beside its record.
 const ARGUMENTS: [&str; 4] = ["request", "profile", "settings", "locale"];
 
+/// The arguments naming the context a call computes under.
+pub(crate) const SCOPE: [&str; 3] = ["profile", "settings", "locale"];
+
 /// Every tool, in name order: the records, `settings.describe`,
 /// `schema.describe`, and the engine's own `operations`, each record's
 /// schemas stated in `detail`.
-pub(crate) fn list(operations: &[NativeFunction], detail: Detail) -> Map<String, Value> {
+pub(crate) fn list(
+    operations: &[NativeFunction],
+    own: &[crate::Tool],
+    detail: Detail,
+) -> Map<String, Value> {
     let mut tools: Vec<(String, Value)> = teistro::records::records()
         .iter()
         .map(|record| (record.name.to_owned(), record_tool(record, detail)))
@@ -36,6 +43,10 @@ pub(crate) fn list(operations: &[NativeFunction], detail: Detail) -> Map<String,
         let tool = engine_tool(operation);
         (format!("{ENGINE_PREFIX}{}", operation.name), tool)
     }));
+    tools.extend(
+        own.iter()
+            .map(|tool| (tool.name.clone(), tool.listed(detail))),
+    );
     tools.sort_by(|(a, _), (b, _)| a.cmp(b));
     let mut list = Map::new();
     list.insert(
@@ -211,7 +222,7 @@ fn describe_tool() -> Value {
 }
 
 /// `settings.describe`'s answer.
-pub(crate) fn describe(arguments: &Map<String, Value>) -> Result<Value, Error> {
+pub(crate) fn describe(arguments: &Map<String, Value>, packs: &[Loaded]) -> Result<Value, Error> {
     if let Some(key) = arguments.keys().next() {
         return Err(
             Error::invalid_arg(format!("`{DESCRIBE}` reads no argument"))
@@ -222,10 +233,24 @@ pub(crate) fn describe(arguments: &Map<String, Value>) -> Result<Value, Error> {
         .iter()
         .filter_map(|id| profile(id))
         .collect::<Result<Vec<Value>, Error>>()?;
+    // What the operator loaded into every context, so a model can tell a
+    // reading a pack supplies from the SDK's own.
+    let packs: Vec<Value> = packs
+        .iter()
+        .map(|loaded| {
+            json!({
+                "locale": loaded.locale,
+                "namespaces": loaded.namespaces,
+                "entries": loaded.entries,
+                "sha256": loaded.sha256,
+            })
+        })
+        .collect();
     Ok(json!({
         "defaultProfile": DEFAULT_PROFILE,
         "profiles": profiles,
         "settings": settings_schema()?,
+        "packs": packs,
     }))
 }
 
@@ -266,6 +291,25 @@ pub(crate) struct Arguments {
 }
 
 impl Arguments {
+    /// A tool's own arguments with the context they name split off: the
+    /// scope as a record tool's would read, and the rest.
+    pub(crate) fn scope(
+        arguments: &Map<String, Value>,
+    ) -> Result<(Arguments, Map<String, Value>), Error> {
+        let scope = Arguments {
+            request: String::new(),
+            profile: text(arguments, "profile")?,
+            settings: arguments.get("settings").map(canonical_json),
+            locale: text(arguments, "locale")?,
+        };
+        let rest = arguments
+            .iter()
+            .filter(|(key, _)| !SCOPE.contains(&key.as_str()))
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect();
+        Ok((scope, rest))
+    }
+
     pub(crate) fn read(arguments: &Map<String, Value>) -> Result<Arguments, Error> {
         if let Some(key) = arguments
             .keys()

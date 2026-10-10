@@ -2556,6 +2556,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   carries. A modern MCP request missing its revision or its client's
   capabilities is `-32602` naming the field, and every modern result
   names the server. **Numbers:** none move.
+- **Packs and a program's own tools in the agent server.**
+  `teistro-mcp --pack PATH` and `Server::with_pack` load a pack into
+  every context, verified at start and listed by `settings.describe`;
+  `Server::with_tool` serves a program's own tools beside the records,
+  refusing a name the SDK holds or a namespace it lists under. Every
+  answer stamped through a context, and every interpreted chart, now
+  names the packs loaded in `provenance.packs`, which was declared and
+  never filled. **Numbers:** none move.
 - **The 2026-07-28 revision's remaining rules.** `server/discover`
   names its revision like every request; a null id, or one that is
   neither a string nor an integer, is `-32600`; `subscriptions/listen`

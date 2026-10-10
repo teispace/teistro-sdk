@@ -99,10 +99,22 @@ pub(crate) fn input(record: &Record) -> Value {
         }
         None => json!({ "type": "object", "description": described }),
     };
+    let mut properties = Map::new();
+    properties.insert(String::from("request"), request);
+    properties.extend(scope_properties());
     let schema = json!({
         "type": "object",
-        "properties": {
-            "request": request,
+        "properties": properties,
+        "required": ["request"],
+        "additionalProperties": false,
+    });
+    rooted(schema, &mut generator)
+}
+
+/// The arguments naming the context a call computes under, as every tool
+/// reading one states them: `profile`, `settings` and `locale`.
+pub(crate) fn scope_properties() -> Map<String, Value> {
+    let properties = json!({
             "profile": {
                 "type": "string",
                 "enum": SHIPPED_PROFILES,
@@ -118,11 +130,8 @@ pub(crate) fn input(record: &Record) -> Value {
                 "type": "string",
                 "description": "The locale a message renders in, as a BCP 47 tag.",
             },
-        },
-        "required": ["request"],
-        "additionalProperties": false,
     });
-    rooted(schema, &mut generator)
+    properties.as_object().cloned().unwrap_or_default()
 }
 
 /// A record tool's structured content, the envelope: `value` the

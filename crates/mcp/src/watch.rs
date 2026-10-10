@@ -159,6 +159,11 @@ impl Shared {
         calls.cancelled.push_back(id);
     }
 
+    /// Whether the running call is to stop.
+    pub(crate) fn stopping(&self) -> bool {
+        self.stop.load(Ordering::Relaxed)
+    }
+
     /// The call `id` begins, heard by `token` when it carries one.
     pub(crate) fn begin(&self, id: &Value, token: Option<&Value>) -> Begun {
         let id = id.to_string();
