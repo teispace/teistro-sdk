@@ -20,10 +20,10 @@ under it is a generated page's rather than a claim's.
 
 Phase 1's every criterion is held by a gate rather than by a claim
 (`07-roadmap/00-roadmap.md`): one scenario through every binding value by
-value, 100,236 values identical across two architectures, the conformance
-kit against the Teimeris adapter, a swapped latitude and longitude
-refused in all three languages, and all four packages installed into
-throwaway projects and run before they can be published.
+value, the hash matrix failing on any platform that differs, the
+conformance kit against the Teimeris adapter, a swapped latitude and
+longitude refused by the bindings' type checks, and every package
+installed into a throwaway project and run before it can be published.
 
 Phase 2 met its exit criteria
 on 2026-09-05: the accuracy document (`05-testing/ACCURACY.md`,
@@ -33,23 +33,20 @@ sunrise for a Nepali place without a provider override. Of the
 deliverables it deferred, **the completion's centre step was built on
 2026-09-09** — it turned out to need nothing of Phase 3 — and the
 corrections and equinox steps, and a heliocentric or barycentric centre,
-still wait for the built-in ephemeris; eclipses wait for v1.x. Phase 1, Foundation, remains open:
-`core`, the ports, `time`, `calendar`, the test provider, the Teimeris
-adapter, the conformance kit, the `intl` engine and CLI, and the `ffi`
-crate with the API description and the C header (its first generator)
-exist, as do the Node and Dart generators and bindings with the parity
-gate, the determinism lints and the counting allocator, the
-cross-architecture hash matrix, the packaging with its release matrix, and
-the documentation site with its generated reference, the
-instruction-count benchmarks and the conformance repository. Every
-deliverable of Phase 1 is built and every exit criterion is met; the
-phase's exit review is the next step (`07-roadmap/00-roadmap.md`). Phase 0 exited on 2026-09-05 (decisions
-made, four spikes measured, repository live).
+still wait for the built-in ephemeris. Eclipses, which it also
+deferred, are built (`03-design/eclipses.md`). Phase 1, Foundation, exited
+on 2026-09-06 with every deliverable built and every exit criterion met.
+Phase 0 exited on 2026-09-05 (decisions made, spikes measured, repository
+live).
 **Repository:** https://github.com/teispace/teistro-sdk (public,
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-25 (**what a binding hands back is typed, and its own**: a result's provenance and a positions result's steps are records described once in `idl/api.json`, read from serde's own schema, and typed and decoded alike in every binding; a chart or day handed out alone carries its own content hash, from one serialisation that seals the batch too; and building it found every rules batch sealed with the hash of the empty string, because two varga schemes serde could not write were swallowed by the canonical writer. Before it, **the year's chart in one Rust call, and the corpus examples in every binding**: `sdk.chart().varsha` composes the annual chart once, in the façade, from the `VarshaRequest` every binding writes, and the boundary only encodes it; Rust's `annual_chart` and the bindings' `phala` and `readings` complete the shared examples, 13 printing alike in four languages with nothing excused; and writing them found `phala` asked for alone saying half a chart, because it was never given the panchanga it says. Before it, **one spelling of a key and of a field in every binding**: `idl/api.json` records every member's key, `SCREAMING_SNAKE_CASE`, and a test holds each boundary enum's keys to its Rust type's serde; the Tajika crate and the provenance record joined the SDK's one spelling, a completion step is `positions:NATIVE` everywhere, and a refusal names the record the caller wrote (`varsha.through`), so five of the eight excused example differences are gone. Before it, **one `LocalDay` in every binding's chart and almanac**, whose date is the one `calendar.convert` takes; building it fixed Python's reading of a calendar with no era, made a chart in a polar day refuse by naming its policy, and gave Node's declarations the eight helpers they lacked, now gated both ways. Before it, **the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
+**Last updated:** 2026-10-11 (**the MCP server, built to §7's P8**:
+every tool states its record and its answer, resources, completions and
+prompts, limits, cancellation and progress, and Streamable HTTP
+(`03-design/mcp-server.md`); the session log holds every session since
+2026-09-25, which this line does not retell. Before them, **what a binding hands back is typed, and its own**: a result's provenance and a positions result's steps are records described once in `idl/api.json`, read from serde's own schema, and typed and decoded alike in every binding; a chart or day handed out alone carries its own content hash, from one serialisation that seals the batch too; and building it found every rules batch sealed with the hash of the empty string, because two varga schemes serde could not write were swallowed by the canonical writer. Before it, **the year's chart in one Rust call, and the corpus examples in every binding**: `sdk.chart().varsha` composes the annual chart once, in the façade, from the `VarshaRequest` every binding writes, and the boundary only encodes it; Rust's `annual_chart` and the bindings' `phala` and `readings` complete the shared examples, 13 printing alike in four languages with nothing excused; and writing them found `phala` asked for alone saying half a chart, because it was never given the panchanga it says. Before it, **one spelling of a key and of a field in every binding**: `idl/api.json` records every member's key, `SCREAMING_SNAKE_CASE`, and a test holds each boundary enum's keys to its Rust type's serde; the Tajika crate and the provenance record joined the SDK's one spelling, a completion step is `positions:NATIVE` everywhere, and a refusal names the record the caller wrote (`varsha.through`), so five of the eight excused example differences are gone. Before it, **one `LocalDay` in every binding's chart and almanac**, whose date is the one `calendar.convert` takes; building it fixed Python's reading of a calendar with no era, made a chart in a polar day refuse by naming its policy, and gave Node's declarations the eight helpers they lacked, now gated both ways. Before it, **the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
 the birth's own sahams cross to all four bindings**: every saham carries
 its clauses as bits over two generated enums and seven rows of facts, every
 founded year its Harsha bala, and every chart its own sahams, which now
@@ -1056,168 +1053,68 @@ provider's DUT1).
 
 ## How to resume
 
-0. **Next: the dated plan** (`07-roadmap/00-roadmap.md`, "The plan to the
-   release candidate"), week by week. Week one's items and rectification
-   steps 7 and 8 are built; next are the JPL recording's CSPICE half
-   (corpus v0.12.0, the Horizons half withheld until JPL's permission is
-   asked for, which is the maintainer's to send), `ACCURACY.md`'s rows
-   over it, and a release run end to end with nothing published. Track
-   A's release blockers first, Phase 8's modules beside them.
-   BPHS ch. 9's last buildable evils shipped (vv. 12, 15 to 20, ch. 10
-   v. 6); v. 13 waits on the twilight and the Moon's hora. The maintainer
-   owns printed copies of Santhanam's BPHS and Saravali and Kapoor's
-   Phaladeepika, so they may be read; the repository gets citations and
-   paraphrase only, and the Sanskrit wins. The arishta corpus is read
-   end to end: BPHS chs. 9 and 10, *Brihat Jataka* ch. 6, *Saravali*
-   chs. 10 to 12 and *Jataka Parijata* ch. 4 (C319), each verse against
-   its page, with what the language cannot say recorded in the notes.
-   *Jataka Parijata*'s scan lacks pp. 214, 215, 230 and 231 (vv. 71 to
-   73, 100 to 104); a Sanskrit print on the Internet Archive
-   (`in.ernet.dli.2015.312156`) may carry them. Pick the next item
-   from `04-yogas-doshas.md` and the roadmap, and research it first. Merge the longevity stack (#296 to #300) as its
-   CI goes green. *Jataka Parijata*'s spans of life are read end to end:
-   ch. 5's eight spans, v. 33's choice, v. 34's solar years, Jeevasarman's
-   span (C316), and ch. 10's ashtakavarga spans with Balabhadra's
-   reductions (C317), the lagna's ashtakavarga, v. 49's clauses and
-   v. 50's span (C318). Left unread on purpose: v. 47, which states no
-   amount. C6 was read in
-   *Jataka Parijata* chs. 17 and 18 and stays open: no dasha year is
-   stated, and Dasayus's 360-day years under v. 34 (C315) are recorded
-   on C6 as evidence, not a decision. Every
-   span v. 33 names is built, each with its solar years: the two
-   ashtakavarga spans (C311 to C314), Chakrayus (C310), Dasayus (C309),
-   v. 33's choice (C308) and Rasmi (C305 to C307); all 53 corpus charts
-   name a computed span.
-   The avakahada is built in every binding (`matching.md`, C297 to C301):
-   `chart.avakahada` holds the Moon's nakshatra and pada, the sign, both
-   lords, varna, yoni, gana and nadi, and `birth_syllable`, the birth
-   pada's own cell spelled as *Muhurta Chintamani* p. 173 prints it and
-   in IAST. The catalogue's pada syllables now spell the page.
-   Naam milan is built in every binding (`matching.md`, C291 to C296):
-   `sdk.matching.naam(bride, groom, rules)`, its own area since it reads
-   no sky, answered as the `naam` blob whose Ashta Koota and ten
-   considerations cross in the chart's own shapes and decoders, with
-   parity across the five runners.
-   Naam milan is built in the kernel and the SDK: the śatapada cakra as
-   *Narapati Jayacharya Svarodaya*'s rule, which reproduces *Muhurta
-   Chintamani*'s printed table cell for cell; the first akshara in
-   Devanagari or declared IAST, never a guessed English spelling;
-   Abhijit's syllables answered as Abhijit and placed by a knob; VI.35's
-   varga koota as facts; and both name stars read by every koota.
-   The recommendation bands the roadmap lists (`10-matching.md`, P0) are
-   the baseline engine's six (30, 25, 21, 18, 14) and no text read gives
-   them; *Muhurta Chintamani* states each koota's points and bars a
-   shared nadi "with every other point", so a band waits on a rank 1
-   source and is not shipped as classical.
-   The marriage doshas are one list in every binding (`matching.md`,
-   C289, C290): what the three readings report, with their lifts, and
-   no severity.
-   The Kuja dosha is built in every binding (`matching.md`, C285 to
-   C288): *Manasagari*'s jāyābhāva v. 4, read on the 1904 print's page
-   image, Mars's house from the lagna, the Moon and Venus on both sides
-   as fact, the verse's five from the lagna by default, and nothing
-   lifted. The gana, maitri and nadi doshas carry VI.33 and VI.36's
-   lifts as clauses (C283, C284).
-   The ten considerations are built in every binding (`matching.md`,
-   C267 to C282): Kalaprakasika XIII on its own tables, each agreeing or
-   not with its clauses, the count of those that agree and of the chief
-   five, and the p. 76 exception; `chart.porutham` in every binding,
-   asked by the same `matching_json`. `matching-measured.md` measures
-   the Ashta Koota over every pair of the 108 padas.
-   The Ashta Koota is built in every binding (`matching.md`, C259 to
-   C266): *Muhurta Chintamani* VI.21–34 with *Daivajna-manohara*'s
-   points, every disputed reading a `KootaRules` knob with the verse's
-   own as the default, a batch matched with one partner's birth through
-   `matching_json`, and `chart.matching` in every binding, with parity.
-   With the returns built, the roadmap's `western` list is complete. The `hellenistic` list's last item, Ibn
-   Ezra's weights, waits on a rank 1 reading that is legitimately open:
-   the 1939 translation and Sela's editions are in copyright, and no open
-   scan was found on 2026-10-04.
-   The returns are built in every binding (`western-returns.md`, C255 to
-   C258): the Moon's return to her own radical longitude after Morin,
-   Richelieu's 1642 figure recast to the degree of every cusp, the
-   question asked as the hit list it already was, through a constructor
-   in each binding, and the Sun's return read back as the Tajika pravesha
-   to the second.
-   The harmonics are built in every binding (`western-harmonics.md`,
-   C252 to C254): Addey's multiplied chart, its meetings within 12° and
-   its equal houses, Churchill's 9th harmonic read as he read it and a
-   sidereal 9th harmonic read back as the navamsa, crossing as
-   `chart.harmonic`, with parity.
-   The Western houses are built in every binding (`western-houses.md`,
-   C249 to C251): Placidus unless asked, Leo's p. 150 figure to half a
-   degree at every printed cusp, the ascendant's reach one sidereal hour
-   above it, a composite's cusps and the antiscia upon a cusp's very
-   degree, crossing as `chart.westernHouses`, with parity;
-   `western-houses-measured.md` reads 53 births.
-   The equal distances across two charts are built in every binding
-   (`western-midpoints.md`, decision 9): a synastry's `midpoints` reads
-   one chart's pairs against the other's planets, both ways, and crosses
-   as `chart.synastryMidpoints`, with parity; George V and Queen Mary
-   hold ten within 1° of the recast, her Venus on his Sun and Neptune
-   the closest.
-   The composite and Davison charts are built in every binding
-   (`western-composites.md`, C247, C248): `sdk.chart().composite` and
-   `Partner::davison` hold a recast of George V and Queen Mary,
-   `composites-measured.md` reads all 1485 pairs of the corpus's births
-   (the lagna turned in 72), and a synastry's `composite` and `davison`
-   cross as `chart.synastryComposite` and `chart.synastryDavison`, with
-   parity.
-   Leo's equal distances are built in every binding
-   (`western-midpoints.md`, C245, C246): `sdk.chart().midpoints` holds
-   his p. 47 example on the far point and George V's recast, and
-   `midpoints-measured.md` counts 120 over 55 births under the default,
-   a third on the far point.
-   The declinations and parallels are built in every binding
-   (`western-declinations.md`, all five steps): `sdk.chart().declinations`
-   and `sdk.chart().parallels` agree with a recast of George V to 0.01°,
-   `declinations-measured.md` counts 217 parallels over 55 births, 79 of
-   them contrary (C243), a `parallels` record crosses as
-   `chart.declinations` and `chart.parallels`, and a synastry's
-   `parallels` reads the parallels across two charts
-   (`sdk.chart().synastry_parallels`, `chart.synastryParallels`), George
-   V against Queen Mary held to the recast, with parity. The antiscia
-   are built in every binding (`western-antiscia.md`, C244):
-   `sdk.chart().antiscia` returns Lilly's p. 181 table to the minute,
-   his figure holds the one pair he reads under the moieties, and an
-   `antiscia` record crosses as `chart.antiscia`, with parity, and a
-   synastry's `antiscia` reads them across two charts
-   (`sdk.chart().synastry_antiscia`, `chart.synastryAntiscia`), George V
-   against Queen Mary held to the recast. Synastry is built end
-   to end (`western-synastry.md`): a `synastry` record on the chart
-   request names the partner, the SDK founds it once and reads every
-   chart of the batch against it, and every binding reads
-   `chart.synastry`, with parity. `synastry-measured.md`
-   reads all 1485 pairs of the corpus's births both ways, and the two
-   zodiacs part on 1.2% of contacts under ten years apart and 42.6% a
-   century or more apart (C241). `sdk.chart().synastry` reads every point
-   of one chart against every point of the other on the aspect table's
-   own engine, the lagna standing as a planet in Leo's orbs (C242), and
-   George V and Queen Mary (Leo, p. 130) agree with a Moshier recast to
-   0.01°. The Western
-   aspects are built end to end (`western-aspects.md` steps 1 to 3):
-   `sdk.chart().western_aspects` reads Leo's nine under his orbs or
-   Lilly's five under his moieties (C240), Edward VII's four aspects
-   are a test, `western-aspects-measured.md` measures where the models
-   part, and a `westernAspects` record crosses to every binding as
-   `chart.westernAspects`, with parity. The outer planets
-   are built to the boundary (`western-outer-planets.md` steps 2 to 4:
-   `with_outer_planets`, held in `outer-planets-measured.md`, C239
-   measured under an arcsecond; the hit list, the contacts and the later
-   charts read the three, and Leo's quincunx Uranus of April 1907 is a
-   test; `TS_CHART_OUTER` and section 81 carry them to every binding as
-   `chart.outer`, with parity). Their wheel (step 5) waits on vetted
-   names for the three in every strict locale. Progressions are
-   built end to end (`western-progressions.md`, and
-   `progressed-angles-measured.md` gives C237 its size). The year measure (C236), the progressed
-   angles (C237) and the tertiary month (C238) ship as knobs. Contacts to
-   the radical midheaven and the parallels are not covered.
-   Lilly's perfection reads six of his figures as he judged them (pp.
-   177, 238, 385, 389, 437, 452). A collection and a frustration in one of
-   his own figures are still untested, as none of those read names one,
-   and C235 is open. C230 stands at seven recast figures.
-   Ibn Ezra's almuten weights wait on a rank 1 reading, and C208 waits
-   on the Greek.
+0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
+   "The plan to the release candidate"; Track A's release blockers first,
+   the modules the reviewers read beside them):
+   1. **The MCP server, in progress** (`03-design/mcp-server.md`): its
+      conformance gaps against the MCP specification, and §7's P9
+      (`--pack`, `Server::with_tool`). P7's tasks wait on a study
+      measured to outlast a client's timeout. Step 1 below says what is
+      built.
+   2. **`ACCURACY.md`'s rows over the JPL recording.** The CSPICE states
+      are in the corpus (v0.12.0) and every built-in tier is scored
+      against them (`05-testing/CONFORMANCE.md`, the `jpl` rows);
+      `ACCURACY.md` has no row for them yet. The Horizons half is
+      withheld until JPL's permission is asked for, which is the
+      maintainer's to send.
+   3. **A release rehearsal**: one release run end to end with nothing
+      published.
+   4. **The Java binding's typed records** (`03-design/java-binding.md`).
+   5. **The Flutter build-hook package**, which carries the library into
+      an Android or iOS build.
+   6. **The docs site's guides with executed examples**, beside the
+      roadmap's install check after publishing.
+   7. **Track B and C modules** (the roadmap's tables): research steps 4
+      to 7, prashna's remaining Tajika links, Saravali's readings, and
+      the pakshi and Lal Kitab pipelines with their content handed to
+      readers who can vet it. Pick the next item from
+      `04-yogas-doshas.md` and the roadmap, and research it first.
+   8. **The hardening pass**: every gate, the parity checklist, sizes and
+      the bench read against their budgets, every module's design page
+      against what shipped, and the rows `05-testing/01-quality-bar.md`
+      marks as not yet enforced.
+   9. **The release candidate**: version, changelog, and a tag on a
+      rehearsal run.
+
+   What only the maintainer can do, wanted before the release run: the
+   Central namespace's DNS record, the release PGP key and its
+   fingerprint in `SECURITY.md`, and the read-only token that lets a
+   verify row build the Teimeris adapter. The release candidate ships
+   without any of them that are missing, and says so in its notes.
+
+   Open threads in the texts, for whoever picks up Track C. The
+   maintainer owns printed copies of Santhanam's BPHS and Saravali and
+   Kapoor's Phaladeepika, so they may be read; the repository gets
+   citations and paraphrase only, and the Sanskrit wins.
+   - BPHS ch. 9 v. 13 waits on the twilight and the Moon's hora.
+   - *Jataka Parijata*'s scan lacks pp. 214, 215, 230 and 231 (vv. 71 to
+     73, 100 to 104); a Sanskrit print on the Internet Archive
+     (`in.ernet.dli.2015.312156`) may carry them. Its ch. 5 v. 47 is left
+     unread on purpose, as it states no amount.
+   - C6 stays open: *Jataka Parijata* chs. 17 and 18 state no dasha year,
+     and Dasayus's 360-day years under v. 34 (C315) are recorded on C6 as
+     evidence, not a decision.
+   - The matching recommendation bands (`10-matching.md`, P0) are the
+     baseline engine's and no text read gives them, so a band waits on a
+     rank 1 source and is not shipped as classical.
+   - Ibn Ezra's almuten weights wait on a rank 1 reading that is
+     legitimately open; C208 waits on the Greek.
+   - The outer planets' wheel (`western-outer-planets.md` step 5) waits
+     on vetted names for the three in every strict locale.
+   - Progressions do not cover contacts to the radical midheaven or the
+     parallels.
+   - Lilly's collection and frustration are untested in his own figures,
+     C235 is open, and C230 rests on recast figures.
 
 1. Read this file, then [`QUESTIONS.md`](QUESTIONS.md), which is the
    authority on what is open — this step names the open questions and
@@ -1256,13 +1153,13 @@ provider's DUT1).
      || { echo "== $g"; echo "$out" | tail -5; }; done; echo swept'
    ```
 
-   The second is `verify.yml`'s, and **seven of its nine run on this
-   machine**: `check-node`, `check-dart`, `check-python`, `check-rust`,
+   The second is `verify.yml`'s, and these of its gates run on this
+   machine: `check-node`, `check-dart`, `check-python`, `check-rust`,
    `check-parity`, `check-site` and `check-versions`. Dart needs its
    toolchain on the path (`PATH="$HOME/Development/flutter/bin:$PATH"`).
-   Only `check-c` and `check-package` cannot, and they fail at link time
-   on a macOS SDK `tapi` error that is environmental — CI is the authority
-   for those two. Run the verify-runnable set before pushing anything that
+   `check-c` and `check-package` cannot: they fail at link time on a
+   macOS SDK `tapi` error that is environmental, and CI is the authority
+   for them. Run the verify-runnable set before pushing anything that
    touches a binding: both of 2026-09-22's red verify runs — a generated
    `StateKey` nothing declared, and a duplicate `final weighed` in the
    Dart test — were catchable here in seconds instead of forty minutes on
@@ -1276,8 +1173,7 @@ provider's DUT1).
    maintainer, and entered in `05-testing/02-engine-findings.md` with
    the bound the SDK holds it at meanwhile (the maintainer's rule,
    2026-09-05).
-3. **Phase 3, the built-in ephemeris — milestone M3 — is all but
-   closed** ([`07-roadmap/00-roadmap.md`](07-roadmap/00-roadmap.md); the
+3. **Phase 3, the built-in ephemeris — milestone M3 — is closed** ([`07-roadmap/00-roadmap.md`](07-roadmap/00-roadmap.md); the
    tier ladder is
    [ADR-0021](08-decisions/adr-0021-reference-ephemeris-path.md)). Every
    body is built — VSOP87's planets, ELP2000-82B's Moon with its bija,
@@ -3030,7 +2926,7 @@ provider's DUT1).
    `version X` (the one version), `gen ffi|intl|catalogue|calendars|time`.
 
    The corpus is a **submodule** at `fixtures/`
-   (`teispace/teistro-conformance`, pinned to `v0.11.0` as this was written;
+   (`teispace/teistro-conformance`, pinned to `v0.12.0` as this was written;
    `git submodule status` is the authority, not this line): clone with
    `--recurse-submodules`, or `git submodule update --init`.
    `check-fixtures` refuses a checkout without it.
@@ -3801,560 +3697,54 @@ on pub.dev (checked 2026-09-07).
 
 ## Next
 
-1. Phase 2's astronomy as above (it is "Now"): a chart founded on a
-   classical astronomy (`03-design/classical-chart.md`, measured by
-   `classical-chart-measured.md`). Built 2026-09-26: over
-   `Ephemeris::SuryaSiddhanta` every part of the chart is the text's to
-   the last bit — zodiac, nine grahas, Lagna, midheaven, the day and its
-   horas — through the port's `angles` override, the nine house systems
-   built from two angles (the other thirteen refused), the `deviation`
-   stamp and `sdk.chart().angles`; and every binding opens it by name
-   (`'SURYA_SIDDHANTA'`), which the parity gate compares; and the
-   `surya-siddhanta` profile asks for it, a modern engine under it
-   refused at the context. Left of this item: whether a **modern**
-   provider's overrides should reach the chart layer, measured and put
-   to the maintainer as Q40. The settable atmosphere for the rise and set solver
+The order is How to resume's step 0, which follows the roadmap's dated
+plan; it is not repeated here. What follows is what is left beside it,
+each item with the page or the decision it waits on. Done items are not
+kept here: the session log records them.
+
+1. **The horizon.** The settable atmosphere for the rise and set solver
    (C34) is built (`03-design/horizon-atmosphere.md`); the dip of a
    raised horizon waits for a consumer who asks.
-2. The bindings' remaining work. Built: the Dart binding from the same
-   description with its own provider and finaliser, the typed intl
-   accessors in each, the build handshake, the parity gate — which
-   counts its own values rather than having a number written here, the
-   count having outlived two bindings — and the packaging — every platform
-   and every package at one version, each installed into a throwaway project and run by
-   `check-package` before it can be published, and a rendered message's
-   **parts** at the boundary with a `MessagePart` in each binding, which
-   is what a rich renderer is written against. Left: a
-   Flutter plugin that carries the library into an Android or iOS build,
-   which belongs with the mobile targets. The wasm binding from the same
-   description is built (item 8a). The **Python binding is built** (`bindings/python`), so
-   the parity gate compares its report beside the other bindings' and the
-   packaging gate installs its package with theirs.
-2a. ~~A `RashiDefinition` beside `UduDefinition`~~ — **done**
-   (2026-09-22). A consumer registers a dasha system of either kernel now,
-   and `dasha-coverage-measured.md` counts the change: 5 of the
-   twenty-two are supplyable today where 3 were, and 17 by nobody where 19
-   were. What is left is rows neither kernel expresses — a karakamsha
-   start, a seed that is not a nakshatra, periods the chart supplies, a
-   composition of systems — rather than rows nobody has written down.
-2b. **Tajika, after the office-bearers** (`03-design/muntha.md`, "The
-   order of work"). The Muntha crosses every binding; all five
-   office-bearers are built in Rust, from a birth chart and an annual chart
-   **the caller has founded**, and reproduce the source's worked year end
-   to end, and they **cross** every binding, each year's chart cast where
-   `varsha_json.place` says. The **Panchavargiya bala** is built and exact
-   (`03-design/panchavargiya.md`), reproducing all 49 figures of the
-   source's tabulated chart, and the **lord of the year** with it
-   (`03-design/varshesha.md`, C106), reproducing the source's own worked
-   year, and both **cross**: each year's chart answers its lord, the step
-   that chose it and every claim it was chosen over. The **Tajika
-   aspects** are built too (`03-design/tajika-aspects.md`): the orbs, the
-   mean of a pair, the Ithasala in **all three of Table X-3's kinds**,
-   Ishrafa, and the pairs that make one cross. The design page's step 1
-   is **done** (2026-09-23): C110's degree on Ishrafa and C111's
-   *Bhavishyat* are corrected, the missing `Poorna` is built, and the
-   band the two corrections opened between them ships as a reading
-   (`SubDegree`, crux C112) rather than a silent choice, because
-   `muntha-measured.md` §9 counts **934 of 29 166 aspecting pairs** in
-   it. Step 2 is **done** too (2026-09-23): the **lagnesha and karyesha**
-   pair and the four yogas that need only the aspects — Ithasala,
-   Ishrafa, **Nakta** and **Yamaya** — answer through
-   `sdk.chart().tajika_yogas(&annual, house)`, which takes a **matter**
-   because fourteen of the sixteen are judgements about that pair and not
-   facts about a chart. Steps 3 to 5 are **done** too (2026-09-23):
-   the strength floors (C116), retrograde and combustion
-   (`AnnualStates`), and the projection into the next sign (C120) built
-   every yoga but **Kuttha**, and **Kuttha is built** (2026-09-24) now
-   that the *Tajika Nilakanthi*'s commentary names Tajika's benefics
-   (C117, closed), so all sixteen answer; a call without `AnnualStates`
-   still lists the four that read them, `holds` answering `None` rather
-   than `false`. The count is generated in
-   `muntha-measured.md` §10, not written here. They **cross** every
-   binding (2026-09-23): `varsha_json.matters` names the houses asked
-   about, or `"all"`, and `varsha_json.yogas` carries the `YogaRules`;
-   each year's chart answers one matter per house asked, its held yogas
-   and their legs, and `unanswered` as a bit set. The **sahams** are
-   built (2026-09-23, `03-design/tajika-sahams.md`): the source's
-   forty-one as a table of `a − b + c` formulas, a caller's own through
-   the same evaluator, and three readings as rules, measured in
-   `muntha-measured.md` §14, and cross to every binding as
-   `varsha_json.sahams` and `sahamRules`. The **Harsha bala** is built
-   (2026-09-24, `03-design/tajika-harsha.md`), measured in §15, and so
-   is a **saham's strength**, clause by clause
-   (`03-design/tajika-saham-strength.md`, §16), and all three cross to
-   every binding with the birth chart's own sahams. The year lord's
-   **Moon readings** are built (2026-09-24, `03-design/varshesha.md`,
-   §18), with the *Tajika Nilakanthi*'s chain beside Charak's. The
-   **annual dashas** are built in Rust (2026-09-24,
-   `03-design/annual-dashas.md`, §19): the Mudda, the Varsha Yogini and
-   the Patyayini, on one year kernel, with the clock (C122) and the
-   balance (C123) as readings, and they **cross** every binding
-   (2026-09-24): `varsha_json.dashas` names the systems, full key or
-   bare, `varsha_json.dashaRules` carries the readings, and each year's
-   chart answers its dashas, their rings and their periods in three
-   ragged sections. The "four" this item used to promise were three:
-   Charak's chapter V names those three, and Varsha Narayana is in no
-   book read. With that, every step of this item is built and crosses.
-2c. ~~The shared examples, printed alike~~ — **done** (2026-09-24).
-   All eleven print the same lines in Node, Python and Dart, and
-   `check-parity` holds it: the same names in each binding, both ways,
-   and the same output from each (`xtask/src/examples.rs`, proved red
-   by a misspelt key and a removed file). A language's own type is
-   asserted in the example and never printed, so there is no list of
-   permitted differences. **Three of the seven differences were the
-   SDK's, not the examples'**: a provider written in a binding refused
-   a whole batch for one instant outside its coverage, with a different
-   error type in each language, where a native provider refused one
-   cell (the port now reckons coverage per cell for every provider);
-   Python's package left 48 catalogue kinds out of its root or its
-   `__all__`, `ProviderCode` among them; and only Node exposed a chart's
-   ishtakaal, which is now `ChartTiming` in all three. Looking for why
-   found a fourth: Node's hand-written `VarsheshaChosen` shadowed the
-   catalogue's and lacked the Moon's three steps, which
-   `layer-does-not-shadow-a-kind` now refuses in every binding.
-2d. ~~The Rust façade's examples, printed alike~~ — **done**
-   (2026-09-24). `check-parity` compares four sets, the Rust façade's
-   `crates/sdk/examples` beside the three bindings', and ten of the
-   eleven names are shared. Measured before: **one** of Rust's ten
-   printed what the bindings print. Asking why the rest did not found
-   the SDK's own differences again, six of them:
-   - A **Rust** provider was asked for instants outside its coverage
-     and had to mark them itself, where a foreign one was not. The
-     port now validates a request and reckons its coverage for every
-     provider through one function (`ask_positions`), which `Completion`
-     calls, so no provider is asked for a body it did not declare or an
-     instant it does not have. The foreign adapter's own check is gone.
-   - A Rust grid of positions carried **no provenance**. `positions`
-     now answers in an envelope stamped by `Context::positions_provenance`,
-     which the C boundary calls too, so `provenance-fnv` left the parity
-     gate's list of Rust absences (nine became eight).
-   - The **plans** a chart is asked to say were composed only at the C
-     boundary, so a Rust consumer assembled sections and composers by
-     hand. `ChartArea::interpreted` founds, reads and composes in one
-     call; `PlanRequest::sections` and `InterpretArea::plans` are its
-     parts, and the boundary only encodes what it answers.
-   - The bindings' `birth_chart` asked for raw positions, which bypass
-     the profile's **topocentric** Moon: it printed 8.4455° where the
-     chart the same SDK founds says 9.1738°. It founds the chart now, in
-     all four.
-   - No binding could say **which ayanamsha** a chart applied: the blob
-     carried it and no layer read it. `Chart.ayanamsha` and
-     `ayanamshaCustom` in all three, on the chart, because Dart's
-     generated `Charts.ayanamsha` is the raw id and would win over an
-     extension of the same name.
-   - Two docs of one function disagreed with the value: Python's
-     `julian_day_of_fixed` said noon and Rust's `jd_of_fixed` local
-     time; both say the UTC midnight the C description says.
-   What is left is `EXCUSED` in `xtask/src/examples.rs`, eight entries
-   each naming the item below that removes it, refused both ways and
-   printed on every run.
-2e. ~~One day record in every binding's chart and almanac~~ — **done**
-   (2026-09-24). `chart.day` and an almanac day's `day` are one
-   `LocalDay` in Node, Python and Dart: the civil date as the
-   `CalendarDate` `calendar.convert` returns (so it goes straight back
-   into it), the weekday, the sunrise, sunset and next sunrise, `polar`
-   (`null`, or `{kind, policy}` as Rust's `DayState` has it) and the
-   sunrise convention or its custom altitude. Python's and Dart's
-   flattened `vara`, `sunrise`, `sunset` and a second `hora_lord` beside
-   `timing.hora_lord` are gone, so a day is read one way everywhere. The
-   parity runners read the layer through one helper for both days, and
-   the comparison gained seven values a day. Building it found three
-   more:
-   - Python's generated reader built `Era(0xFFFF)` for a calendar with
-     no era, where Node and Dart read none, and its writer wrote `None`
-     as `0` — which is `era.VIKRAMA`, and for `Frame.ayanamsha`
-     Lahiri. The emitters now share one `NO_MEMBER` sentinel, generated
-     once into each binding and read back as `None`/`null`.
-   - A chart founded in a polar day under `NEAREST_EVENT` — the default
-     — was handed a day weeks away and refused later, by the ghati
-     reckoning, naming only the instant. `chart_day` now refuses where it
-     chooses the day, naming `day.polar_day_policy` and the policy that
-     holds it (`CIVIL_MIDNIGHT`), tested in the chart crate and in all
-     three bindings at Tromsø's midsummer.
-   - The façade could not name the type of `chart.day.day`: `LocalDay`,
-     `DayState`, `PolarKind` and `ChartDay` are re-exported now.
-   - **Node's declarations lacked eight of its exports** — `date`, `at`,
-     `whenUnknown`, `ianaZone`, `fixedZone`, `localMeanZone`, `messages`
-     and `entityForms`, every helper the README teaches — so a strict
-     TypeScript consumer could import none of them; and declared eight
-     area classes and two decoders the module did not export, and hid the
-     catalogue's `MoonEvent` value behind the record's interface. Found
-     because an example read a field the declarations no longer had and
-     no type-check reads the `.mjs` examples. `typecheck/surface.mjs`
-     now measures the module's own exports both ways as well as every
-     class's members, and the areas are exported and measured on real
-     instances (their `_run` helper moved off them, into a module
-     `WeakMap`): 273 exports and 16 classes, both directions.
-2f. ~~One spelling of a key, and of a field, in every binding~~ — **done**
-   (2026-09-25). A closed enum's key was its variant in kebab case in the
-   three bindings and `SCREAMING_SNAKE_CASE` in serde, the C constants, a
-   stored document and a settings patch, so a binding read
-   `TIME_UNKNOWN_FALLBACK` in a stored chart and handed back
-   `time-unknown-fallback`. Now there is one spelling, and it is recorded
-   rather than inferred:
-   - `idl/api.json` gives **every** enum member its key (`EnumValue.key`
-     is no longer optional): the extractor writes a closed enum's variant
-     in `SCREAMING_SNAKE_CASE`, and the generators read it with no
-     fallback — `names::kebab` is gone, and `c_enum_member` and
-     `member_value` take the key and nothing else. The C header came out
-     byte-identical, which is the proof the C names were already this.
-   - `crates/ffi/tests/keys.rs` holds **every closed enum's keys to its
-     Rust type's serde**: each key read through the type's deserializer
-     (a tagged enum's with a sample of its fields), serialised back to the
-     same word, and followed through the boundary's own conversion to the
-     id the description gives it, so every member is reached. Five enums
-     no Rust type serialises are excused by name, and the list fails both
-     ways. Proved red by putting `Saham`'s kebab serde back. Writing it
-     added the `From` impls four enums were built without
-     (`TsResolution`, `TsDst`, `TsChosen`, `TsYogaCause`), which removed
-     four inline matches.
-   - **The Tajika crate spelt its words lowercase** (`punya`,
-     `madhya_bali`, `either_lord`) where the rest of the SDK and the same
-     request's `dashas: ['MUDDA']` did not; its 28 enums serialise
-     `SCREAMING_SNAKE_CASE` now, the year clock's own variant included
-     (`{"DAYS": 360}`). So did the provenance record's
-     `CalendarResolution`, `Confidence` and `Severity`, which put two
-     conventions in every stored document: `schema-measured.md`'s claim
-     "one casing convention covers every enum in a document" was
-     **falsified** and now **holds**, and its section names each
-     minority type rather than asserting one. No pack, fixture or stored
-     document carried the old spellings, and the SDK is 0.0.0.
-   - A completion step was `positions:Native` on a chart (a `{:?}`) and
-     `positions:NATIVE` on a positions result: `Step::key` spells both,
-     and the stored stack-agreement tables were respelt.
-   - A refusal inside a JSON argument names **the record the caller
-     wrote**, `interpret.readings`, `varsha.through`, `rules.rules[0]`,
-     `settings.frame.zodiacs`, not the C argument (`interpret_json`);
-     only a refusal of the argument itself (not UTF-8) names that. The
-     three hand-written re-rooting blocks are `Error::under`, which core
-     already had, and the façade roots the plans' own refusal at
-     `interpret` too, so Rust says the field the bindings say — the
-     boundary's duplicate of that check is gone.
-   - `ephemeris: 'BUILTIN'` in every binding, like every other key; the
-     boundary's second copy of the "no ephemeris" refusal is gone, the
-     boundary calling the façade's `Ephemeris::missing`.
-   - The hand-typed unions that restated a generated one (`Balance`,
-     `MoonEvent`, `Ephemeris`) now name it, and the Rust parity runner and
-     examples print serde's spelling through one `wire_key` rather than a
-     kebab-cased `Debug`.
-   Five of `EXCUSED` are gone; three remain, all 2g's.
-2g. ~~The year's chart in one Rust call, and the corpus examples in
-   every binding~~ — **done** (2026-09-25). The annual chart was composed
-   in `crates/ffi/src/chart.rs` and nowhere else, so Rust had the parts
-   and not the call. Now:
-   - `teistro::VarshaRequest` is the record Rust and every binding write
-     as `varsha`, with `VarshaRequest::from_json` (the boundary's reader,
-     moved) and `check` naming a refusal under `varsha` as the bindings
-     do; `sdk.chart().varsha(&birth, clock, &request)` answers a `Varsha`
-     — its `VarshaYear`s, each with its `AnnualChart` where the request
-     named an `AnnualPlace`, and the birth's own sahams. `Asked<T>` is
-     public over a sealed `Askable`, and the request has a builder
-     (`VarshaRequest::through(40).at(AnnualPlace::Birth).with_sahams(Asked::All)`).
-     The boundary reads the text with the façade's reader and maps
-     `varsha` over its batch, adding which chart a refusal was for; about
-     640 lines left `crates/ffi`. The saham refusal's example still said
-     `"punya"`, which 2f's respelling missed; it says `"PUNYA"`.
-   - `annual_chart.rs` is Rust's eleventh shared example and prints what
-     the three print, line for line. Printing it needed a key for six
-     Tajika enums (`YearYoga`, `Saham`, `StrongClause`, `WeakClause`,
-     `Chosen`, `Reading`), each a `const fn key()` held to serde by
-     `crates/tajika/tests/keys.rs`, plus `Reading::ALL` and
-     `PeriodRow::level`.
-   - `phala` and `readings` in the three bindings. The packs are built,
-     not committed, so the example gate builds both corpora into
-     `target/packs` once a run, with the file-name rule
-     `teistro-intl build` uses (`teistro_intl::pack::file_name`, now one
-     function), and names the directory in `TEISTRO_PACKS`; Rust's two
-     read those files too, rather than building packs in the process, so
-     all four load the bytes a consumer would. A passage is cut by
-     characters in every binding (`Array.from`, `runes`), not UTF-16
-     units, or a Devanagari line would differ.
-   - **What writing them found: `phala` asked for alone said half the
-     chart.** It says each limb of the panchanga, and `PlanRequest::sections`
-     gave it the states and not the panchanga, so a chart asked for its
-     phala and nothing else said the nine grahas and the lagna and fell
-     silent on the day — 10 subjects of 20, indistinguishable from a
-     corpus with no words for the rest. A probe that asked for rules
-     beside it printed twenty, because the rules had asked for the
-     section; Rust's example, over a bare reading, printed ten.
-     `phala` now asks for the panchanga, and `sdk.interpret().phala`
-     refuses a document without one by `panchanga` rather than saying it
-     by halves; held by `a_phala_asked_for_alone_says_the_day_as_well`,
-     proved red.
-   - Stale prose the move exposed: the three bindings' `annual_chart`
-     headers and README rows said the boundary answers the instant and
-     not the chart, and spelt the readings lowercase; three READMEs said
-     dashas do not cross.
-   `EXCUSED` is empty; the machinery stays, so a difference found later
-   is a defect or an entry naming what removes it.
-2h. ~~What a binding hands back is typed, and its own~~ — **done**
-   (2026-09-25). A result's provenance was an untyped map in all three
-   bindings, so were a positions result's steps in Python and Dart, and a
-   binding's `found(one)` chart carried its batch's content hash. Now:
-   - **The records are described once.** `idl/api.json` gains `records`:
-     `Provenance`, `Step` and the twelve records they reach, read from
-     serde's own schema of the Rust types (schemars, which the document
-     schema already reads) by `teistro_idl::records::from_schema`, which
-     reads a closed subset and refuses anything else by its path; fields
-     in name order, so the file cannot move with a build's
-     `preserve_order`. `emit::records` renders them as typed values with a
-     decoder in each language — an interface and `decodeProvenance`, a
-     frozen dataclass and `decode_provenance`, a class and
-     `Provenance.fromJson` — each refusing a key the SDK does not write.
-     Each binding's `provenance` is the record (`settingsHash`,
-     `settings_hash`), and `provenanceJson` keeps the canonical text to
-     store; the blob section is named `provenance_json` for it. A record
-     name that would shadow a Python builtin stops the generator, which
-     is why the warning's schema is `ProvenanceWarning`.
-   - **A member of a batch carries its own hash.** `content_hashes`
-     writes each item once and streams the same bytes into the list's
-     hash, so a batch's hash and every member's cost one serialisation;
-     every façade call now seals once (`readings_with_rules` and the
-     one-of calls each serialised twice), `Interpreted` carries its
-     chart's hash, `almanac().of_each` its days', and the charts and
-     panchanga blobs a `content_hashes` section a binding's single chart
-     and day stamp themselves from. `crates/sdk/tests/sealing.rs` holds
-     each to the hash the one-of call seals; the parity runners print
-     `chart-{i}-content-hash` and `day-{i}-content-hash`, so four
-     languages agree on them.
-   - **What building it found: every rules batch was sealed with the hash
-     of nothing.** Two varga schemes were tagged newtypes holding a list
-     (`Map::Listed`, `Spans::Degrees`), which serde cannot write, and the
-     canonical writer turned the error into `""` — so every document
-     carrying them hashed as SHA-256 of the empty string, and the
-     document schema described a shape serde never wrote. They are struct
-     variants now; the port's `Quantity` crosses through a wire mirror
-     with the same fix and keeps its sixty call sites; the writer stops on
-     such a value in a debug build; and the widest document the SDK
-     produces is held to serialise whole. `serialised-type-describes-itself`
-     learned the `#[serde(into)]` form rather than excusing it.
-   - Also: the ephemeris example's "N bytes of canonical JSON" was true
-     only in Rust (the bindings re-encoded a parsed map), so all four print
-     the content hash; `your_own_ephemeris` prints the provider stamp's
-     fields rather than a serialisation of it; Node's `Chart.steps` doc
-     described the positions' shape.
-2i. ~~The request vocabularies that are still lowercase~~ — **done**
-   (2026-09-25). Measured against what a consumer reads back, every one
-   was carried by an answer or a stored document: a layout row is what
-   `sdk.chart.layout` answers, a drawing's outline steps come back in
-   every chart, and a consumer's dasha definition is held in the document
-   (its schema listed `arudha_lagna` and `udu` beside 571 keys). So all
-   were respelt as keys, request and answer alike:
-   - a rule request's `shipped` (`'NABHASAS'`) and `readings`
-     (`'RECORDING_ENGINE'`); `ShippedRules::key` is the one list, and
-     `rule-doc-measured.md` names the sets through it;
-   - a theme's `body_form` and `cell_label`, and the shipped themes, now
-     typed as `ShippedTheme` (`'LIGHT'`, `'DARK'`) with the refusal's
-     hint built from `ShippedTheme::ALL`;
-   - a layout's `kind`, `direction` and `counts_from`, a cell's `holds`
-     and an outline step's `kind` (`'ARC'`);
-   - a dasha definition's `kernel`, and a sign-based one's `start`,
-     `order`, `length` and `named_lord` (`{"BY_MODALITY": {…}}`).
-   **The sentinels stay lowercase, deliberately.** A key is
-   `[A-Z][A-Z0-9_]*`, so `'all'`, `'birth'` and a binding's `'unknown'`
-   can never collide with a member, now or after the catalogue grows —
-   `ffi-abi-and-api-description.md` §3.7 records the rule and why.
-   What the measuring found besides:
-   - `RashiDefinition` was **camel-cased** (`namedLord`, `yearLength`)
-     beside the seeded row's snake case, while Node, Python and Dart each
-     declared `year_length`, which the boundary's strict reader refused: a
-     sign-based system's own year was offered by every binding and usable
-     by none. Its fields are the document's snake case now, and a camel
-     field is refused by its path in all four languages.
-   - Python's unions were half-respelt by 2f's regex sweep
-     (`"LAGNA" | "arudha_lagna"`, `"HOUSE"` among lowercase members).
-   - Python and Dart decoded an outline step or a layout shape they did
-     not know as a line, an arc or a grid; each now refuses it. Dart's
-     sign-based definition took bare strings and is typed (`RashiStart`,
-     `RashiOrder`, `RashiNamedLord`, a sealed `RashiLength`).
-   - `schema-measured.md` §8 counted `rename_all` in a hand-kept list of
-     crates and missed `teistro-dasha` and `teistro-geometry`, whose
-     lowercase words were in every document it claimed held one
-     convention. It now reads the document schema's own `enum`s and
-     `const`s (571 words, 0 not keys).
-   - The lint `a-word-is-spelt-as-a-key` refuses a serde enum spelt any
-     other way unless `SPELT_OTHERWISE` names where and why, and that list
-     fails both ways (proved red both ways). The exceptions are formats
-     that are not the SDK's words:
-     - the rule format, kebab case throughout, whose `NodeSide` still
-       says `'rahu'` where every other record says `'RAHU'`; it is a
-       language of its own, and whether to respell it is a separate
-       decision;
-     - the API description's model;
-     - a pack's CLDR fields;
-     - an engine manifest.
-3. ~~Spike 3's remaining consequences: the kit's corpus checks and the
-   `sdk-only` cross-provider byte-identity check~~ — **done**
-   (2026-09-25). Both go through the façade, because what they measure
-   is a chart, and every kit binary runs them (`runner::charts`):
-   - **`kit::sdk_only`**: under `sdk-only` a chart is its provider's
-     native positions and nothing else, byte for byte against the same
-     provider reduced to its native frame (`NativeFrameOnly`), provenance
-     included; under `prefer-native` the report says where the overrides
-     part them, so a pass is not vacuous. Holds over the test provider,
-     one declaring four hostile overrides, the built-in and the Surya
-     Siddhanta provider. It found **`prefer-native` refusing a whole
-     chart** when a provider declared the ayanamsha override without
-     listing the member asked for; the choice is now per member.
-   - **`kit::corpus`**: the corpus's 55 recorded charts founded under
-     `conformance-baseline` over the provider, every position compared
-     under `tolerances.json`'s band for its class, reported in the
-     corpus's own format; `corpus::KNOWN` lists the six ways the SDK
-     parts from corpus 0.11.0, each measured, and the list is held both
-     ways. CI runs it per tier; Teimeris by hand (`--corpus fixtures
-     --class same-ephemeris`, and `--native-frame-only` to measure the
-     SDK's completion from its positions).
-   - **What the first run found**, all 55 charts failing at every tier
-     and mostly not scaling with the tier: a sidereal chart's speeds were
-     the tropical rate; Ketu had no distance; the built-in's nodes came
-     back 0.017° off the ecliptic of date in 1800; the light time kept
-     the geometric distance (1e-4 AU); the centre step, told the native
-     frame after the corrections had run, dropped the diurnal aberration
-     (±5e-4 °/day in every speed); and a speed carried through the
-     completion missed each step's own rate (7e-4 °/day in Mercury at a
-     station) — a reported speed is now the derivative of the completed
-     places, which a search does not pay for. After them: compact 53 of
-     55, standard 32, full 1, Teimeris 50; what is left is the engine's
-     topocentric Moon speed (not the derivative of its own places), the
-     full tier's outer distances against a band of 1e-6 AU, and Delta T
-     before 1880 and after the table (§9a of
-     `03-design/ephemeris-port-and-adapters.md`).
-3a. **The corpus's provisional bands, measured.** `tolerances.json`
-   calls its bands provisional until a harness measures them, and 3 is
-   that harness. Two are tighter than any implementation's own
-   consistency: the Moon's topocentric speed (the recording engine's is
-   1.1e-3 to 1.6e-3 °/day from the derivative of its own places) and the
-   full tier's distances (4e-6 AU, 0.09″ at Saturn). Settling them is a
-   corpus release, which needs the maintainer's yes; until then
-   `corpus::KNOWN` carries both, each with its measurement.
-3b. **The Teimeris adapter as the Teimeris package's own crate.** Moving
+2. **The bindings.** The Flutter build-hook package (step 0's item 5) is
+   the one binding deliverable left for the release; Java's typed
+   records are step 0's item 4.
+3. **The dasha systems neither kernel expresses.** A consumer registers a
+   system of either kernel (`RashiDefinition` beside `UduDefinition`), so
+   what is left is rows neither kernel can hold: a karakamsha start, a
+   seed that is not a nakshatra, periods the chart supplies, a
+   composition of systems (`dasha-coverage-measured.md`).
+4. **The corpus's provisional bands, measured.** `tolerances.json`
+   calls its bands provisional until a harness measures them, and the
+   kit's corpus check is that harness. Two are tighter than any
+   implementation's own consistency: the Moon's topocentric speed (the
+   recording engine's is 1.1e-3 to 1.6e-3 °/day from the derivative of
+   its own places) and the full tier's distances (4e-6 AU, 0.09″ at
+   Saturn). Settling them is a corpus release, which needs the
+   maintainer's yes; until then `corpus::KNOWN` carries both, each with
+   its measurement.
+5. **The Teimeris adapter as the Teimeris package's own crate.** Moving
    `adapters/ephemeris-teimeris/rust` into the engine's repository is the
    same question as publishing the adapter packages — an Apache-2.0
    source linking AGPL code, with the licence decision open — so it waits
    on the maintainer rather than being done here.
-4. ~~Spike 4's consequences in Phase 1~~ — **done** (2026-09-25). Of the
-   three this item listed, one had been done since 2026-09-06 and the
-   item never said so: a locale states its own parts of the day
-   (`_meta.json`'s `dayPeriods`). The other two:
-   - **An instant read in a zone.** A value may be an instant
-     (`{"$instant": jd}`), and `:date`, `:time` and `:datetime` read it in
-     the zone `timeZone` names: UTC, an offset, an IANA name, or a
-     variable given at render time. The zone moves the instant, and it is
-     then a civil value, so the calendar conversion and the patterns
-     apply unchanged. The engine takes a zone database through the
-     `port-timezone` trait rather than carrying one; the context gives it
-     the embedded database its own resolutions use. A function naming a
-     zone types its value as an instant in every binding, and
-     `sdk.calendar.datetime.inZone` is the shipped message for it, tested
-     through Node, Python, Dart and Rust with Kathmandu and New York's
-     daylight saving. The name is MF2's `timeZone`, not the `zone` this
-     item used, because a translator reads the specification. Building it
-     found two defects:
-     - a day fraction put 07:00 at 06:59, so the clock now counts whole
-       milliseconds;
-     - `Function::option` answered only literals, so a zone given as a
-       variable was not seen; `has_option` answers both.
-     Python gained `message_warnings`, the list Node and Dart already
-     read.
-   - **Precedence, decided and held.** The build first, then every pack
-     in the order it was loaded, then the overrides, which stand even over
-     a pack loaded after them. Where a pack came from is not a rule,
-     because a binding hands the engine bytes either way.
-5. ~~Before Phase 1 exits: create `teispace/teistro-conformance`~~ —
-   **done**. The repository exists under CC0-1.0 and `fixtures/` is a
-   submodule of it, pinned to `v0.11.0` (ADR-0022). This item outlived
-   the work by several releases.
-7. Close the cruxes that block Phase 5 by reading the texts; tradition
-   reviewers as they appear. **Four of the six closed** (2026-09-25). They
-   were read in BPHS ch. 46 and ch. 27, in R. Santhanam's translation and
-   Girish Chand Sharma's, both with the Sanskrit:
-   - **C1.** Shashtihayani's lords are ten years and six, sixty in all. The
-     verse says दशा दश दशाब्दकाः, and the translation's own worked example
-     contradicts its English "13".
-   - **C3.** Ashtottari applies with Rahu in a kendra or trikona from the
-     lagna's lord and not in the lagna (v. 17), or for a day birth in the
-     dark fortnight or a night birth in the bright one (v. 23).
-   - **C5.** The text's Ashtottari has no seed outside its cycle. It counts
-     four and three alternately from Ardra over the twenty-eight with
-     Abhijit, and the translation's note 2 is the worked check.
-   - **C8.** The Sun needs 390 virupas, 6.5 rupas. Raman's 5.0 is Sripati's,
-     and both were already built.
-
-   What they built:
-   - a wheel of 28 with Abhijit, cut exactly: Uttarashadha keeps three
-     padas, and Shravana's first fifteenth goes to Abhijit;
-   - per-lord groups in the K-udu kernel;
-   - `SHASHTIHAYANI`, computed at last;
-   - Ashtottari as the text counts it, under `dasha.ashtottari_grouping`.
-     It is the root profile's choice; the conformance profile keeps the
-     recording engine's three each;
-   - a temporal balance read across the Moon's own segment of the wheel,
-     searched at its own bounds;
-   - the same wheel and groups for a consumer's definition, in every
-     binding.
-
-   **Still open:**
+6. **The cruxes still open from BPHS ch. 46 and ch. 27:**
    - **C6**, which year each dasha counts. BPHS states none for the
-     nakshatra dashas; the translation's savana note concerns the longevity
-     periods.
+     nakshatra dashas; the translation's savana note concerns the
+     longevity periods.
    - **C2**, Narayana's antardasha tables. Jaimini's question, which BPHS
      does not name.
-8. ~~The rest of Phase 1's test-only infrastructure~~ — **done**, and
-   this item outlived the work. The instruction-count benchmarks run on
-   every pull request under callgrind (`benchmarks.yml`, `cargo xtask
-   bench`), not `iai-callgrind`, and the docs site with its generated
-   reference is built and gated (`site/`, `check-site`). On 2026-09-25 the
-   benchmark gate learned the one thing it lacked, a reviewed way to
-   accept a cost a change means to pay: an `Instruction-cost` trailer on
-   the pull request's own commits, held both ways.
-8a. **The wasm binding** (`03-design/wasm-binding.md`), Phase 5's last
-   deliverable. Its first step is **built**: one `libm` on every target.
-   The whole scenario ran in wasm32 and differed from native only in the
-   last place of the platform's maths library, as macOS already differed
-   from Linux in a nightly that reported it and did not fail. Through
-   `teistro_core::math` native and wasm32 agree on all 481 539 values, the
-   `uses-one-libm` lint holds every crate to it, and the hash matrix fails
-   on macOS and gains Windows and wasm32. Step 2 is **built** too: the
-   plugin loader is compiled out on wasm, the description marks its three
-   functions `native_only` (read off the file's `cfg`, any other `cfg` on
-   an export refused), and the fast check lints every library but the
-   napi addon for `wasm32-unknown-unknown`. Steps 4 and 6 are **built**:
-   the glue emitter has a wasm-bindgen backend beside napi's (napi's
-   output byte-identical through the change), `bindings/wasm/native` is
-   the crate, and the host provider's policy is shared by both bindings
-   from `teistro_port_ephemeris::host`. `cargo xtask check-wasm` (verify's
-   `wasm` job) runs **the whole Node binding suite unchanged** against the
-   wasm module. Step 5 is **built** too: `index.js` takes its native
-   object from the package's `#native` import, the napi loader is
-   `lib/addon.js`, and `@teistro/sdk-wasm` is staged from the same
-   `lib/` with a node and a web loader and a manifest derived from the
-   Node one. `check-wasm` runs the Node suite unchanged through the
-   staged package's own loader (70 of 70) and loads it in headless
-   Chrome, whose answer must equal Node's to the bit. Step 7 is **built**:
-   the wasm runner joins `check-parity`, and the module — now truly the
-   `compact` tier, which **no build had been able to select** until the
-   façade's base feature stopped pulling in `standard` (ADR-0028 amended,
-   `crates/ffi/tests/tier.rs`) — ships from a size-measured `wasm` profile
-   without its name section: 8.6 MB to 4.77 MB, 1.33 MB gzipped, held to
-   `docs/05-testing/sizes.json`'s budget both ways. What is left is in the design
-   page's §7: ADR-0005's module profiles and the edge hosts no check runs
-   yet; `wasm-opt` was measured and declined, since it grows the gzipped
-   module 6%. **Cloudflare Workers are built** (step 8): a `workerd`
-   condition first in `#native` imports the module precompiled, and
-   `check-wasm` bundles the installed package with a pinned Wrangler and
-   runs it in workerd, held to Node bit for bit; without the condition
-   the Worker dies at start (`Invalid URL string`), proved. Wrangler
-   needs Node 22 and Node 20 was out of support, so the packages' floor
-   is 22, held to every workflow by `node-is-tested-at-its-floor`.
-   `@teistro/sdk-wasm` is
-   **released with the others** (maintainer, 2026-09-25): the release's
-   `wasm` job stages and checks it, `package stage` refuses a release
-   without it, and `publish` sends it with the platform packages.
-9. A second baseline export (the same script, more sections) for the
-   seventeen other dasha systems, aspects, yogas and doshas, strengths,
-   Ashtakavarga, the Jaimini slice, KP and milan, once the design pages
-   say what each fixture must carry; and the harness itself in Phase 1
-   (`05-testing/01-golden-vectors.md`).
+7. **The other edge runtimes for the wasm package**
+   (`03-design/wasm-binding.md` §7). Cloudflare Workers are built and
+   checked; Vercel's Edge runtime, Next.js's edge routes, Deno Deploy and
+   Netlify's edge functions are unchecked and so not claimed, each a
+   loader condition and a `check-wasm` step when a consumer needs it.
+   The module profiles are built (`03-design/wasm-profiles.md`).
+8. **The rest of the second baseline export.** The dasha systems, the
+   rashi dashas, Kalachakra, the yogas and doshas, Shadbala, Bhava bala,
+   Ashtakavarga and Vimshopaka are exported (`fixtures/baseline/`) and
+   scored (`05-testing/CONFORMANCE.md`); aspects, the Jaimini slice, KP
+   and milan are not, and wait until their design pages say what each
+   fixture must carry (`05-testing/01-golden-vectors.md`).
 
 ## Session log
 
