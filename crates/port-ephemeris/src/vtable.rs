@@ -11,9 +11,11 @@
 
 #![allow(unsafe_code, reason = "the C boundary of the port")]
 
+use core::any::Any;
 use core::ffi::{CStr, c_char, c_void};
 use core::ptr;
 use std::ffi::CString;
+use std::sync::Arc;
 
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
@@ -622,6 +624,30 @@ pub struct ProviderVtable {
     pub native_call: Option<NativeCallFn>,
 }
 
+impl ProviderVtable {
+    /// A vtable with nothing in it: zero size, zero version, every
+    /// function null.
+    ///
+    /// What a loader hands an adapter's `open` to fill. Zeroed rather
+    /// than plausible, so an adapter that answers success without writing
+    /// is refused by [`VtableProvider::bind`] for its size and version
+    /// rather than reached through a null pointer.
+    pub const EMPTY: ProviderVtable = ProviderVtable {
+        struct_size: 0,
+        abi_version: 0,
+        capabilities: None,
+        positions: None,
+        obliquity: None,
+        delta_t: None,
+        ayanamsha: None,
+        dut1: None,
+        horizon_event: None,
+        crossings: None,
+        native_manifest: None,
+        native_call: None,
+    };
+}
+
 #[allow(
     clippy::cast_possible_truncation,
     reason = "guarded by the comparison above it"
@@ -664,6 +690,10 @@ pub struct VtableProvider {
     vtable: ProviderVtable,
     user_data: *mut c_void,
     capabilities: Capabilities,
+    /// Whatever keeps the code behind `vtable` alive, such as a loaded
+    /// library (the `load` module's `Adapter`). Never read: holding it is the
+    /// point, and it is the last field so it outlives the rest.
+    keep: Option<Arc<dyn Any + Send + Sync>>,
 }
 
 // SAFETY: the vtable's functions are required by `bind`'s contract to be
@@ -751,7 +781,18 @@ impl VtableProvider {
             vtable,
             user_data,
             capabilities,
+            keep: None,
         })
+    }
+
+    /// The same provider, holding `owner` for as long as it lives: what
+    /// keeps the vtable's code and `user_data` valid, carried with the
+    /// provider rather than beside it, so no holder can drop one before
+    /// the other.
+    #[must_use]
+    pub fn keeping(mut self, owner: Arc<dyn Any + Send + Sync>) -> VtableProvider {
+        self.keep = Some(owner);
+        self
     }
 }
 

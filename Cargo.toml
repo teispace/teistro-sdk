@@ -46,6 +46,7 @@ members = [
     "crates/scenario",
     "crates/intl",
     "crates/test-allocator",
+    "crates/test-adapter",
     "crates/idl",
     "crates/sdk",
     "crates/ffi",

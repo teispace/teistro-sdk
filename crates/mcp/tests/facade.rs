@@ -13,7 +13,59 @@
 
 use serde_json::{Value, json};
 use teistro::{Context, Ephemeris};
-use teistro_mcp::{Engine, Server};
+use teistro_mcp::{Adapter, Engine, Server};
+
+/// The engine passthrough's tools ask an engine with operations of its
+/// own, which the built-in is not: they run over the test adapter.
+fn asks_an_engine(name: &str) -> bool {
+    name.starts_with("engine.")
+}
+
+/// The in-repo test adapter, loaded.
+fn test_adapter() -> Adapter {
+    let path = teistro_test_adapter::library().unwrap();
+    // SAFETY: the library is this workspace's own test adapter.
+    #[allow(unsafe_code, reason = "loading the workspace's own test adapter")]
+    unsafe { Adapter::load(&path.to_string_lossy(), None) }.unwrap()
+}
+
+/// A server over the test adapter with the built-in behind it, and a
+/// context built the same way for the façade's side.
+fn over_the_test_adapter() -> (Server, Context) {
+    let adapter = test_adapter();
+    let context = Context::builder()
+        .ephemeris([
+            Ephemeris::Provider(Box::new(adapter.provider().unwrap())),
+            Ephemeris::Builtin,
+        ])
+        .build()
+        .unwrap();
+    (
+        Server::with_plugin(Engine::Builtin, adapter).unwrap(),
+        context,
+    )
+}
+
+/// That the tool `name` answers `request` as the façade answers it under
+/// `context`: the value, and the provenance where it seals one.
+fn answers_as_the_facade(name: &str, result: &Value, context: &Context, request: &Value) {
+    assert_eq!(result["isError"], false, "{name}: {result}");
+    let answered = teistro::records::record(name)
+        .unwrap()
+        .answer(context, &request.to_string())
+        .unwrap();
+    let structured = &result["structuredContent"];
+    assert_eq!(structured["value"], answered.value, "{name}");
+    match answered.provenance {
+        Some(provenance) => {
+            assert_eq!(
+                structured["provenance"],
+                serde_json::to_value(provenance).unwrap()
+            );
+        }
+        None => assert!(structured.get("provenance").is_none(), "{name}"),
+    }
+}
 
 /// One record of each tool's, the examples its area's own documentation
 /// and tests send.
@@ -59,6 +111,11 @@ fn examples() -> Vec<(&'static str, Value)> {
             "calendar.convert",
             json!({"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}),
         ),
+        (
+            "engine.call",
+            json!({"name": "tp_sum", "arguments": {"values": [1, 2.5]}}),
+        ),
+        ("engine.manifest", json!({})),
         (
             "numerology.profile",
             json!({"name": "Henry Elder", "date": {"year": 1872, "month": 1, "day": 17},
@@ -119,29 +176,79 @@ fn a_tool_answers_as_the_facade_does() {
         }
         let context = builder.build().unwrap();
         for (name, request) in examples() {
+            if asks_an_engine(name) {
+                continue;
+            }
             let mut arguments = json!({"request": request});
             if let Some(profile) = profile {
                 arguments["profile"] = json!(profile);
             }
             let result = call(&mut server, name, &arguments);
-            assert_eq!(result["isError"], false, "{name}: {result}");
-            let answered = teistro::records::record(name)
-                .unwrap()
-                .answer(&context, &request.to_string())
-                .unwrap();
-            let structured = &result["structuredContent"];
-            assert_eq!(structured["value"], answered.value, "{name}");
-            match answered.provenance {
-                Some(provenance) => {
-                    assert_eq!(
-                        structured["provenance"],
-                        serde_json::to_value(provenance).unwrap()
-                    );
-                }
-                None => assert!(structured.get("provenance").is_none(), "{name}"),
-            }
+            answers_as_the_facade(name, &result, &context, &request);
         }
     }
+}
+
+#[test]
+fn an_engine_tool_answers_as_the_facade_does_over_a_loaded_adapter() {
+    let (mut server, context) = over_the_test_adapter();
+    for (name, request) in examples() {
+        if asks_an_engine(name) {
+            let result = call(&mut server, name, &json!({"request": request}));
+            answers_as_the_facade(name, &result, &context, &request);
+        }
+    }
+    // An operation's own tool is `engine.call` with its arguments.
+    let arguments = json!({"values": [1, 2.5]});
+    let result = call(&mut server, "engine.tp_sum", &arguments);
+    let request = json!({"name": "tp_sum", "arguments": arguments});
+    answers_as_the_facade("engine.call", &result, &context, &request);
+    assert_eq!(result["structuredContent"]["value"]["total"], 3.5);
+    // And the SDK's own tools compute on the adapter's sky.
+    let found = call(
+        &mut server,
+        "chart.found",
+        &json!({"request": examples()[0].1}),
+    );
+    assert_eq!(found["isError"], false, "{found}");
+}
+
+#[test]
+fn each_operation_of_a_loaded_engine_is_a_tool_with_its_parameters() {
+    let (mut server, _) = over_the_test_adapter();
+    let reply = server
+        .handle(
+            &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+            .to_string(),
+        )
+        .unwrap();
+    let reply: Value = serde_json::from_str(&reply).unwrap();
+    let tools = reply["result"]["tools"].as_array().unwrap();
+    let sum = tools
+        .iter()
+        .find(|tool| tool["name"] == "engine.tp_sum")
+        .unwrap();
+    let properties = sum["inputSchema"]["properties"].as_object().unwrap();
+    let mut names: Vec<&str> = properties.keys().map(String::as_str).collect();
+    names.sort_unstable();
+    assert_eq!(
+        names,
+        ["count", "values"],
+        "the out parameter is the engine's to fill"
+    );
+    assert_eq!(properties["values"]["type"], "array");
+    assert!(tools.iter().any(|tool| tool["name"] == "engine.tp_echo"));
+
+    // Without a plugin, no engine operation is a tool.
+    let reply = Server::new(Engine::Builtin)
+        .handle(
+            &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+            .to_string(),
+        )
+        .unwrap();
+    assert!(!reply.contains("engine.tp_"));
 }
 
 #[test]

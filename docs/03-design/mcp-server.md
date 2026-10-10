@@ -82,9 +82,9 @@ the same schema.
 
 **D6. Nothing reaches the file system or the network.** A provider
 plugin is a library the process loads, so it is chosen by the server's
-command line (`--ephemeris`), never by a tool argument: an argument
-naming a path would let a model load code. The built-in ephemeris is
-the default. Every tool is annotated read-only, idempotent and closed
+command line (`--plugin PATH`, with `--ephemeris` the fallback behind
+it), never by a tool argument: an argument naming a path would let a
+model load code. The built-in ephemeris is the default. Every tool is annotated read-only, idempotent and closed
 world.
 
 **D7. A refusal is a tool error the model can correct.** The SDK's
@@ -110,7 +110,8 @@ the protocol's own failures.
 | `time.civil` | `CivilRequest`: an instant, a zone and a calendar | step 3, built |
 | `time.convert` | `ScaleRequest`: an instant and two scales | step 3, built |
 | `calendar.convert` | `CalendarRequest`: a date and the calendar wanted | step 3, built |
-| `engine.manifest`, `engine.call` | the engine passthrough (ADR-0029) | step 3 |
+| `engine.manifest`, `engine.call` | `ManifestRequest`, `EngineCall`: the engine passthrough (ADR-0030) | step 3, built |
+| `engine.<name>` | one per operation a `--plugin` engine's manifest lists | step 3, built |
 
 Step 2 needs the chart's composition in the façade. Today
 `ts_chart_found` composes a chart's families inside the boundary crate
@@ -161,9 +162,20 @@ it, and a scale by its key. They answer without an envelope, as
 numerology does, because each answer already names what produced it:
 the zone resolution carries the database's version and what each policy
 did, and a conversion carries the Delta T with its model and source.
-The engine passthrough is next: the plugin loader moves out of the C
-boundary into the port, so the SDK, the boundary and this server load
-an adapter the same way, and `--plugin` names one.
+The engine passthrough has one loader. `load::Adapter` in the port
+(feature `load`, native only) opens an adapter, and each provider it
+binds holds the library open itself, so the C boundary lost its
+separate keep-alive slot and a handle and its contexts drop in any
+order. `ts_provider_load` and `--plugin` both call it. The server
+computes with the plugin first and `--ephemeris` behind it, lists each
+operation the engine's manifest names as `engine.<name>` with its
+supplied parameters as the input schema (an out parameter is the
+engine's to fill; a name an SDK tool holds stays reachable through
+`engine.call`), and seals every engine answer with a provenance naming
+the engine and the operation as its step. `crates/test-adapter` is the
+analytic test provider as a real shared library, so the loader, the
+boundary and the server each load one on every push, where before only
+a machine with Teimeris built did.
 
 ## 4. What is not a tool
 
@@ -265,9 +277,9 @@ validated, bound to loopback unless told otherwise, and authorization
 left to the host in front of it (the server holds no secret).
 
 **P9. Extended where the SDK is.** The server reaches what a context
-registers, not only what ships: a provider plugin by `--ephemeris`, an
-interpretation pack by `--pack`, a plugin's own functions through
-`engine.call` (step 3), and a context's registered dasha systems and
+registers, not only what ships: a provider plugin by `--plugin`, an
+interpretation pack by `--pack`, a plugin's own functions as tools of
+their own and through `engine.call` (step 3, built), and a context's registered dasha systems and
 layouts by their keys. A program embedding `teistro_mcp::Server` adds
 tools of its own beside the records (`Server::with_tool`), answered and
 listed as the SDK's are, so a product built on the SDK serves its own

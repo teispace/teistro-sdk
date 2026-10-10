@@ -1,0 +1,45 @@
+[package]
+name = "teistro-test-adapter"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The analytic test provider as a loadable adapter, so the loader, the C boundary and the agent server are tested against a real shared library"
+# Never published: the SDK's own test scaffolding, as `test-allocator`
+# is.
+publish = false
+
+# `cdylib` is the adapter a loader opens; `rlib` is what lets a test
+# crate name this one as a dev-dependency, which is how cargo is made to
+# build the shared library before the tests that open it.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
+# `export_provider!` writes the three plugin entry points, which are
+# `no_mangle` C functions: unsafe attributes and blocks expanded here.
+# So this crate denies rather than forbids, and allows it in `lib.rs`
+# with the reason; the rest of the workspace table is kept. It is
+# test-only and never published.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+dbg_macro = "warn"
+indexing_slicing = "warn"
+missing_docs_in_private_items = "warn"

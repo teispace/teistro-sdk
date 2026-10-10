@@ -22,6 +22,8 @@
 //! - [`provider`]: the trait, the request, and the validation every
 //!   request passes first;
 //! - [`vtable`]: the same contract as a `#[repr(C)]` vtable, both ways;
+//! - `load` (feature `load`, native only): an adapter opened from its
+//!   shared library, the one loader every caller shares;
 //! - [`sefile`]: the `.se1` file family both licensed engines read;
 //! - [`test_provider`]: the analytic provider the SDK is built and tested
 //!   against with no engine present.
@@ -49,6 +51,8 @@ pub mod error;
 pub mod frame;
 pub mod horizon;
 pub mod host;
+#[cfg(feature = "load")]
+pub mod load;
 pub mod native;
 pub mod plugin;
 pub mod provider;

@@ -8,6 +8,7 @@ with the settings hash, the input hash and every convention applied.
 ```sh
 teistro-mcp                       # the built-in ephemeris
 teistro-mcp --ephemeris SURYA_SIDDHANTA
+teistro-mcp --plugin /opt/adapters/libteimeris_teistro.so   # a real engine, the built-in behind it
 ```
 
 A host starts it as a child process and speaks either revision:
@@ -44,5 +45,13 @@ resolve a civil time in a zone to an instant, read an instant on a
 zone's clock, carry an instant between UT1, TT and UTC with what was
 applied, and write a date in another calendar with its weekday.
 
-Nothing reaches the file system or the network: the ephemeris is chosen
-on the command line and never by a tool argument.
+`--plugin PATH` loads an engine's adapter (`--plugin-config JSON` for
+its own options) and computes with it first, the `--ephemeris` engine
+behind it. `engine.manifest` answers what the engine offers,
+`engine.call` calls one of its operations by name, and each operation
+is also a tool of its own, `engine.<name>`, whose arguments are its
+parameters. Every engine answer is sealed with a provenance naming the
+engine.
+
+Nothing reaches the file system or the network: the ephemeris and the
+plugin are chosen on the command line and never by a tool argument.

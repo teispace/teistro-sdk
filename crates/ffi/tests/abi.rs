@@ -323,6 +323,62 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
         return;
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    let (manifest, said) = a_loaded_engine_answers(
+        &path,
+        279.0..=282.0,
+        "tm_delta_t",
+        r#"{"jd_ut1": 2451545.0}"#,
+    );
+    assert!(
+        !manifest.contains("tm_context_close"),
+        "the manifest lists not what the adapter owns"
+    );
+    assert!(
+        said.contains("out_seconds"),
+        "the engine's out-parameter comes back under its own name: {said}"
+    );
+}
+
+/// The same seam over the in-repo test adapter, so it runs on every push
+/// and not only where an engine was built: a real shared library opened
+/// by path, a context over it, and its own operation called by name.
+#[test]
+fn the_test_adapter_is_loaded_and_answers_by_name() {
+    let path = teistro_test_adapter::library().unwrap();
+    let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
+    // The analytic model's Sun, not the sky's: the adapter must give
+    // exactly what the provider gives in process.
+    let jds = [2_451_545.0];
+    let request = teistro_port_ephemeris::PositionRequest::new(
+        &jds,
+        TimeScale::Tt,
+        &[Body::Sun],
+        Frame::CANONICAL,
+    );
+    let sun = teistro_port_ephemeris::EphemerisProvider::positions(
+        &teistro_port_ephemeris::TestProvider::new(),
+        &request,
+    )
+    .unwrap()
+    .at(0, 0)
+    .unwrap()
+    .lon;
+    let (manifest, said) =
+        a_loaded_engine_answers(&path, sun..=sun, "tp_sum", r#"{"values": [1, 2]}"#);
+    assert!(manifest.contains("tp_echo"), "{manifest}");
+    assert!(said.contains("\"total\":3.0"), "{said}");
+}
+
+/// Loads the adapter at `path`, founds a context on it and frees the
+/// handle first, computes the Sun at J2000 through it, and calls the
+/// engine's own `function` by name: the whole seam at the boundary. The
+/// manifest and the answer come back for the caller's own assertions.
+fn a_loaded_engine_answers(
+    path: &CStr,
+    sun_at_j2000: core::ops::RangeInclusive<f64>,
+    function: &str,
+    arguments: &str,
+) -> (String, String) {
     let mut provider: *mut TsProvider = ptr::null_mut();
     let mut error = blank_error();
     // SAFETY: a live path and writable slots.
@@ -388,7 +444,7 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     let reader = Reader::parse(&bytes, &schema).unwrap();
     let sun = reader.column("cells", "lon").unwrap()[0].as_f64();
     assert!(
-        (279.0..282.0).contains(&sun),
+        sun_at_j2000.contains(&sun),
         "the engine put the Sun at {sun} degrees at J2000"
     );
     // **The whole chain**: a consumer's binding, this library, an adapter
@@ -408,16 +464,12 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     unsafe { ts_string_free(&raw mut json) };
     let manifest = String::from_utf8(manifest).expect("the manifest is text");
     assert!(
-        manifest.contains("tm_delta_t"),
+        manifest.contains(function),
         "the manifest lists what can be called"
     );
-    assert!(
-        !manifest.contains("tm_context_close"),
-        "and not what the adapter owns"
-    );
 
-    let name = CString::new("tm_delta_t").unwrap();
-    let arguments = CString::new(r#"{"jd_ut1": 2451545.0}"#).unwrap();
+    let name = CString::new(function).unwrap();
+    let arguments = CString::new(arguments).unwrap();
     let mut answer = TsString::empty();
     // SAFETY: a live context, live strings and a writable slot.
     assert_eq!(
@@ -430,13 +482,10 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     // SAFETY: a descriptor the library wrote.
     unsafe { ts_string_free(&raw mut answer) };
     let said = String::from_utf8(said).expect("the answer is text");
-    assert!(
-        said.contains("out_seconds"),
-        "the engine's out-parameter comes back under its own name: {said}"
-    );
 
     // SAFETY: a live context, freed once.
     unsafe { ts_context_free(context) };
+    (manifest, said)
 }
 
 /// **Phase 3's promise at the boundary a consumer actually crosses.**

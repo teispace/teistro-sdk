@@ -1225,9 +1225,10 @@ provider's DUT1).
    `open-question-is-named` now refuses both mistakes. The MCP server
    (`03-design/mcp-server.md`) has its first step built and its second's
    two tools, `chart.found` and `almanac.days`, and the third gate; step
-   3's time and calendar tools are built, the engine passthrough is next
-   (the plugin loader moved into the port, `--plugin`), then §7, the rest
-   of the protocol.
+   3 is built (the time and calendar tools, and the engine passthrough
+   over one loader in the port with `--plugin` and a tool per engine
+   operation). Next is §7, the rest of the protocol, typed schemas
+   first (P1).
    A question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.
@@ -2996,6 +2997,7 @@ provider's DUT1).
    | `ephemeris-kit` | the provider conformance kit |
    | `scenario` | the fixed scenario the hash matrix and the benchmarks share |
    | `test-allocator` | the counting allocator |
+   | `test-adapter` | the analytic test provider as a loadable adapter, so every push opens a real shared library |
 
    **The gates are not listed here.** They were, and the list went stale
    by some thirty entries while nobody noticed, which is the shape this
@@ -4776,3 +4778,4 @@ on pub.dev (checked 2026-09-07).
 | 2026-10-10 | **A chart request read from JSON, and `chart.found`** (`mcp-server.md` step 2). `ChartRecords::read` and `ChartRecords::NAMES` are the one table of the records a chart request carries and their readers; the boundary reads its C fields through it, so its per-record readers and six record-only family modules are gone, and a left-out family's refusal is `Error::left_out` in the core. `FoundRequest::from_json` reads the whole request as the other records are spelt; `chart.found` answers its charts and every table a row a chart, held against the façade's own answer. `Composed` serialises. **Next:** `almanac.days` (the panchanga request from JSON), then the third gate. |
 | 2026-10-10 | **A range of days read from JSON, and `almanac.days`** (`mcp-server.md` step 2). `DaysRequest::from_json` reads the range, the place and clock, the `muhurta` and `festivals` records and the section flags, refused by the field written. `AlmanacAnswer::sections` writes each section beside the days in full and seals it over what it writes; `ts_panchanga_days` encodes those sections, so its own writer and the muhurta module's are gone, and the blob is unchanged. `almanac.days` answers the days, their hashes and each section asked. Writing the tests found a missing field at an empty root refused with no field named; `strict` now names it by its key. The third gate is the `every-reader-reaches-a-tool` lint: every JSON record reader in the SDK's crates is reached by a tool, carried inside a record that is, or listed with why, both ways. The design page plans the rest of the 2026-07-28 revision (§7). **Next:** step 3, time, calendar and the engine passthrough. |
 | 2026-10-10 | **Time and calendar tools** (`mcp-server.md` step 3). `ResolveRequest`, `CivilRequest`, `ScaleRequest` and `CalendarRequest` read from JSON, a zone as `ZoneSpec` serialises and a scale by its key; the agent server answers `time.resolve`, `time.civil`, `time.convert` and `calendar.convert`, a civil time resolved and read back on the same clock in the tests. **Next:** the engine passthrough, with the plugin loader moved from the boundary into the port. |
+| 2026-10-10 | **The engine passthrough, and one loader** (`mcp-server.md` step 3). The adapter loader moved from the C boundary into the port as `load::Adapter` (feature `load`), and each provider it binds holds the library open itself (`VtableProvider::keeping`), so the boundary's separate keep-alive slot is gone. `crates/test-adapter` is the analytic test provider exported as a real shared library: the port, `ts_provider_load` and the agent server each load it on every push, where before only a machine with Teimeris built ever opened an adapter. `EngineCall` and `ManifestRequest` read from JSON; `engine.call` and `engine.manifest` answer sealed with the engine and the operation in the provenance; `teistro-mcp --plugin PATH` computes with the adapter first and the `--ephemeris` engine behind it, and lists each operation of the engine's own as `engine.<name>` with its parameters as the input schema. **Next:** §7, typed input and output schemas first. |

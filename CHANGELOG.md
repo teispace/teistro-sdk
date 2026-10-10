@@ -2546,6 +2546,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **The engine passthrough, and one adapter loader.** The port's
+  `load::Adapter` (feature `load`, native only) opens an adapter, and
+  every provider it binds keeps the library loaded
+  (`VtableProvider::keeping`); `ts_provider_load` now calls it.
+  `ProviderVtable::EMPTY` is the zeroed vtable a loader hands `open`.
+  `EngineCall` and `ManifestRequest` read the passthrough from JSON, and
+  `engine.call` and `engine.manifest` are records, sealed with the
+  engine named. `teistro-mcp --plugin PATH [--plugin-config JSON]`
+  loads an engine ahead of `--ephemeris` and lists each of its own
+  operations as a tool, `engine.<name>`. `crates/test-adapter` is the
+  analytic test provider as a loadable library, so every push loads a
+  real adapter. **Numbers:** none move.
 - **Time and calendar records, and their tools.** `ResolveRequest`,
   `CivilRequest`, `ScaleRequest` and `CalendarRequest` read a civil time
   in a zone, an instant on a zone's clock, an instant between scales and
