@@ -1,6 +1,6 @@
 # wasm profiles: one module per profile
 
-Status: `draft`, 2026-10-08. Track A item 5 of the completion plan
+Status: `built`, 2026-10-08 (every step of the order of work built). Track A item 5 of the completion plan
 (`07-roadmap/00-roadmap.md`), and ADR-0005's "wasm ships per-profile
 binaries". Measured before designed, because the profiles' worth rests on
 how much of the module each crate takes, and nothing had measured it.

@@ -1,7 +1,7 @@
 # The Java binding
 
-Status: `draft`, written 2026-10-08, before any code, as every binding
-page is. It derives from
+Status: `building`, §13 steps 0 to 7, 9 and 10 built, step 8 (Central)
+open; written 2026-10-08, before any code, as every binding page is. It derives from
 [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md) (the
 ABI, the description, the result blob, the error record),
 [`python-binding.md`](python-binding.md) (the binding nearest in shape:
@@ -600,8 +600,8 @@ un-publish, `03-release-process.md`, "Withdrawing").
    lock, its cleaner, a constructor's owned record read and freed, and a
    method's record read under the lock; `profile`, `settingsJson`,
    `settingsHash`, `keyId` and `keyName`; `Json`, a strict reader. The
-   tests, with no framework, run as `check-java` in verify on every row
-   but the two musl ones: the struct sizes, a refusal after a refusal, a
+   tests, with no framework, run as `check-java` in verify on every row,
+   the musl ones in Alpine included: the struct sizes, a refusal after a refusal, a
    refused constructor, a closed context. **Then:** the calendar, time,
    keys, frame and intl areas over `Calls`, each call under the context's
    lock, and the library's own calls on `Teistro`; tested by a round trip
@@ -631,7 +631,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    compiled from the unnamed module at release 22 with every lint an
    error, so an example reaches only what the module exports.
    `check-java` runs them and `check-parity` compares them line for line
-   with the other four sets. `Civil` gives Java Python's `date`, `at` and `iana_zone`, and
+   with the other sets. `Civil` gives Java Python's `date`, `at` and `iana_zone`, and
    `positions` answers a `PositionGrid` read cell by cell, as Python's
    does. The module's sources reach `javac` through an argument file:
    passed one by one they outgrew a Windows command line.

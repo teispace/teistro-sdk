@@ -131,11 +131,12 @@ validates itself.
 
 Deferred by decision, each where it was decided: a Flutter plugin that
 carries the library into an Android or iOS build, with the mobile
-targets in v1.x; a musl row in the platform table, which is two rows and
-an apt step whenever an Alpine consumer asks; runners per binding
+targets in v1.x; runners per binding
 emitting the conformance report schema, which waits for the report to
 have been emitted once; versioned and Nepali documentation, which waits
 for a second release and for enough guides to be worth translating.
+The musl rows, once deferred here, were built in Alpine on 2026-10-08
+(Track A below).
 
 Built beyond the list: the determinism lints and the counting allocator,
 the instruction-count benchmarks against a pull request's own base
@@ -989,7 +990,7 @@ cargo, javac and the bindings' tests stay one chain at a time.
 | 10–16 Oct | `SIZES.md` (`generated-pages.md` step 4); `CONFORMANCE.md`'s recorded half and the entry and tag checks (steps 2 and 3); Java step 10's pages | rectification step 6 (the `BASELINE` stages, from a black-box export) |
 | 17–23 Oct | the JPL recording and `ACCURACY.md`'s Horizons and CSPICE rows (step 5); a release run end to end with nothing published | rectification steps 7 and 8 (`TATTVA`, the façade's section and every binding); research steps 1 to 3 |
 | 24–30 Oct | the docs site's guides with executed examples; the install check after publishing | research steps 4 to 7; prashna's remaining Tajika links; Track C's Saravali readings |
-| 31 Oct–6 Nov | the hardening pass: every gate, the parity checklist, sizes and the bench read against their budgets, every module's design page against what shipped | the pakshi and Lal Kitab pipelines and gates, their content handed to readers who can vet it; the MCP server (Q35) |
+| 31 Oct–6 Nov | the hardening pass: every gate, the parity checklist, sizes and the bench read against their budgets, every module's design page against what shipped | the pakshi and Lal Kitab pipelines and gates, their content handed to readers who can vet it; the MCP server's P7–P9 and packaging |
 | 7–13 Nov | **the release candidate**: version, changelog, tag on a rehearsal run | the maintainer's review, then the astrologers' and researchers' |
 
 What only the maintainer can do, wanted before the release run: the
@@ -1038,8 +1039,10 @@ each difference counted on a generated page (the C89 and C289 precedent).
 
 ### Track D: the MCP server (Q35), last
 
-It is decided to build it after Track A step 3, as a thin server over the
-Rust façade. The design stays in Q35.
+It was decided to build it after Track A step 3, as a thin server over the
+Rust façade. The design is [`03-design/mcp-server.md`](../03-design/mcp-server.md),
+which decided Q35; the server is `crates/mcp`, and what is built and what
+is open is that page's order of work.
 
 ### Estimate
 
@@ -1070,11 +1073,11 @@ Western foundations and Hellenistic time lords **left this list on
 
 ## Deferred, to be discussed before it is placed
 
-**An MCP server**, so an agent computes with the SDK rather than guessing
-at the domain — raised 2026-09-09 and deferred by the maintainer to the
-end of the plan. The analysis, why it is cheap here, the two hard parts
-and what has to be settled are in `QUESTIONS.md`, Q35. It is not placed
-in a phase until that discussion happens.
+Nothing stands here now. **An MCP server**, raised 2026-09-09 and deferred
+by the maintainer to the end of the plan, was decided and placed as
+Track D: its design is
+[`03-design/mcp-server.md`](../03-design/mcp-server.md) and the server is
+`crates/mcp`.
 
 ## v2
 

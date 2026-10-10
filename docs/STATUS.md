@@ -3777,8 +3777,7 @@ Carried forward, each from the phase that deferred it:
   for the rise and set solver (C34); cusp speeds and house positions,
   which Phase 4 is what needs them.
 - Phase 1's deferrals: a Flutter plugin carrying the library into an
-  Android or iOS build (with the mobile targets, v1.x); a musl row in the
-  platform table; runners per binding emitting the conformance report
+  Android or iOS build (with the mobile targets, v1.x); runners per binding emitting the conformance report
   schema; versioned and Nepali documentation
   (`06-cicd/05-docs-deploy.md`).
 - Teistro Intl's remainder: the composite provider's precedence with the
@@ -3816,19 +3815,16 @@ on pub.dev (checked 2026-09-07).
    description with its own provider and finaliser, the typed intl
    accessors in each, the build handshake, the parity gate — which
    counts its own values rather than having a number written here, the
-   count having outlived two bindings — and the packaging — five platforms, four packages, one
-   version, each installed into a throwaway project and run by
+   count having outlived two bindings — and the packaging — every platform
+   and every package at one version, each installed into a throwaway project and run by
    `check-package` before it can be published, and a rendered message's
    **parts** at the boundary with a `MessagePart` in each binding, which
-   is what a rich renderer is written against. Left: a musl row in the
-   platform table; a
+   is what a rich renderer is written against. Left: a
    Flutter plugin that carries the library into an Android or iOS build,
    which belongs with the mobile targets. The wasm binding from the same
    description is built (item 8a). The **Python binding is built** (`bindings/python`), so
-   the parity gate now compares three reports rather than two and the
-   packaging gate installs four packages rather than three; per-platform
-   wheels remain, and are a change to the release matrix rather than to
-   the binding.
+   the parity gate compares its report beside the other bindings' and the
+   packaging gate installs its package with theirs.
 2a. ~~A `RashiDefinition` beside `UduDefinition`~~ — **done**
    (2026-09-22). A consumer registers a dasha system of either kernel now,
    and `dasha-coverage-measured.md` counts the change: 5 of the
@@ -4335,7 +4331,7 @@ on pub.dev (checked 2026-09-07).
    façade's base feature stopped pulling in `standard` (ADR-0028 amended,
    `crates/ffi/tests/tier.rs`) — ships from a size-measured `wasm` profile
    without its name section: 8.6 MB to 4.77 MB, 1.33 MB gzipped, held to
-   `bindings/wasm/size.json` both ways. What is left is in the design
+   `docs/05-testing/sizes.json`'s budget both ways. What is left is in the design
    page's §7: ADR-0005's module profiles and the edge hosts no check runs
    yet; `wasm-opt` was measured and declined, since it grows the gzipped
    module 6%. **Cloudflare Workers are built** (step 8): a `workerd`

@@ -29,7 +29,7 @@ the per-class reports. Neither page exists yet.
   into `target/dist/manifest.json`. `check-package` (`consumer.rs`)
   runs `package::build` and `package::stage --partial` on every verify
   bindings row. `check-wasm` measures the staged module raw and
-  gzip-best against `bindings/wasm/size.json`, both ways.
+  gzip-best against its budget in `docs/05-testing/sizes.json`, both ways.
 - **The corpus is already scored.** `crates/ephemeris-kit/src/corpus.rs`
   writes a `CorpusReport` in the corpus's report format, judged against
   the exhaustive `KNOWN` divergences (which fail both ways).

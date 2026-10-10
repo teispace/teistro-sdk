@@ -1,6 +1,7 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 7 **built** 2026-09-30, step 5 for marriage alone; the eclipse blackouts (§4.1.1) built 2026-10-01. Written from
+Status: `built`, 2026-09-30; §6 steps 1 to 7 built 2026-09-30, the eclipse
+blackouts (§4.1.1) and step 8, the rites beyond marriage (§4.6), 2026-10-01. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`

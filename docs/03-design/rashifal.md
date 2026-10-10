@@ -1,6 +1,6 @@
 # Rashifal: a period read for each sign (the `rashifal` module)
 
-Status: `draft`, 2026-10-08; step 1 (the kernel) **built** the same day.
+Status: `built`, 2026-10-08; every step of the order of work built.
 Written from the text and from the baseline engine's code before any of
 this module's code; the building is expected to correct it.
 

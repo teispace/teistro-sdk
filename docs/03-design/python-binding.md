@@ -1,6 +1,6 @@
 # The Python binding
 
-Status: `designed`, written 2026-09-08 from the falsification pass in
+Status: `built`, written 2026-09-08 from the falsification pass in
 [`binding-surface-measured.md`](binding-surface-measured.md). Derives
 from [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md)
 (the ABI, the description and the result blob), ADR-0004 (one
@@ -271,9 +271,11 @@ all of them.
 `hashlib` is in the standard library, so unlike the Dart package this one
 needs no digest of its own.
 
-Per-platform wheels are the more idiomatic Python answer and are an open
-question (§14), not a different design: they fill the same `_lib/`
-directory the loader already searches.
+Per-platform wheels, the more idiomatic Python answer, shipped on
+2026-10-08 (`xtask/src/wheel.rs`): `package stage` writes a wheel per
+platform carrying its library in the same `_lib/` directory the loader
+already searches, pip picks the host's, and `teistro-install` is the
+fallback for a host no wheel fits.
 
 ## 13. Tests and the gate
 
@@ -313,10 +315,8 @@ both.
 
 ## 14. Open questions
 
-- **Per-platform wheels.** They would make `pip install teistro` enough
-  on its own. They need five wheels in the release matrix and a PyPI
-  account, both of which belong to the release rather than to the
-  binding, and they change nothing here but where `_lib/` is filled from.
+- ~~**Per-platform wheels.**~~ **Shipped** 2026-10-08 (§12): `pip install
+  teistro` is enough on its own on every platform the release builds.
 - **A `numpy` extra.** A decoded column is already a buffer numpy wraps
   without copying. An optional `teistro[numpy]` that returned arrays
   directly would save the caller one call and add a dependency; worth

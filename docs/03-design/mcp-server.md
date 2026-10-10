@@ -1,6 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
-Status: `decided`, 2026-10-10; step 1 built. Closes Q35 (`QUESTIONS.md`), which the
+Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6
+built, P7 to P9 open. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -113,14 +114,14 @@ the protocol's own failures.
 | `engine.manifest`, `engine.call` | `ManifestRequest`, `EngineCall`: the engine passthrough (ADR-0030) | step 3, built |
 | `engine.<name>` | one per operation a `--plugin` engine's manifest lists | step 3, built |
 
-Step 2 needs the chart's composition in the façade. Today
-`ts_chart_found` composes a chart's families inside the boundary crate
-(`crates/ffi/src/chart.rs`), beside the blob it encodes; a `chart.found`
-tool written now would be a second copy of that composition. The
-composition moves into `teistro` behind a chart record that reads from
+Step 2 needed the chart's composition in the façade. Until it was built,
+`ts_chart_found` composed a chart's families inside the boundary crate
+(`crates/ffi/src/chart.rs`), beside the blob it encodes, so a `chart.found`
+tool would have been a second copy of that composition. The
+composition moved into `teistro` behind a chart record that reads from
 JSON, the boundary reads its C request into the same record, and both
-the boundary and the server call it, which removes the copy the
-boundary keeps today.
+the boundary and the server call it, which removed the copy the
+boundary kept.
 
 **Built so far (2026-10-10).** `teistro::ChartRecords` holds the
 records a chart request carries beside its sections, each read by its
@@ -347,13 +348,18 @@ so the same dispatcher answers HTTP POST: `Mcp-Method`/`Mcp-Name`
 headers checked against the body (`HeaderMismatchError`), `Origin`
 validated, bound to loopback unless told otherwise, and authorization
 left to the host in front of it (the server holds no secret).
+`teistro::Context` is neither `Send` nor `Sync`, so a concurrent HTTP
+transport builds a context per worker thread.
 
-**P9. Extended where the SDK is.** The server reaches what a context
+**P9. Extended where the SDK is.** Designed, not built: a provider
+plugin and `engine.call` are reached today (step 3), and the rest of
+this paragraph is the design. The server reaches what a context
 registers, not only what ships: a provider plugin by `--plugin`, an
-interpretation pack by `--pack`, a plugin's own functions as tools of
+interpretation pack by `--pack` (not yet an option), a plugin's own functions as tools of
 their own and through `engine.call` (step 3, built), and a context's registered dasha systems and
 layouts by their keys. A program embedding `teistro_mcp::Server` adds
-tools of its own beside the records (`Server::with_tool`), answered and
+tools of its own beside the records (`Server::with_tool`, not yet
+written), answered and
 listed as the SDK's are, so a product built on the SDK serves its own
 operations without forking the server. A new SDK record is one row in
 `teistro::records`, and the server lists it with nothing else changed.
