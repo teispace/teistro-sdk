@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
-P8 to P10 built, P7 open, §6 step 5 (packaging) not built. Closes Q35 (`QUESTIONS.md`), which the
+P8 to P10 built, P7 open, §6 step 5 (packaging) building: the archives and their install check built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -220,6 +220,18 @@ dasha system of one's own are context configuration, reached through
 5. Packaging with the release (Phase 9): the binary in the release
    assets, signed, with an install check and a page in the site's
    guides.
+
+   *Built: the archives.* Each platform row of the release builds
+   `teistro-mcp` through cargo-auditable beside the library, holds it to
+   the row's glibc floor, and writes
+   `teistro-mcp-{version}-{platform}.tar.gz` (the program, its README,
+   the terms and its bill), recorded in the platform's manifest, so
+   `checksums.txt`, the build attestation and the release upload cover
+   it as they cover every archive. `check-package` unpacks it and runs
+   the program from there: its version, then one stdio session under
+   each revision, each answer held to its shape; the musl rows run it
+   in Alpine. Not built: the npm wrapper, the registry's `server.json`,
+   the `.mcpb` bundle and the guide.
 
 ## 7. The rest of the protocol
 

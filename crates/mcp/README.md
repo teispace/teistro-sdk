@@ -5,11 +5,22 @@ over stdio or Streamable HTTP (`docs/03-design/mcp-server.md`). A model asked fo
 nakshatra answers from memory with no ayanamsha named; a tool answers
 with the settings hash, the input hash and every convention applied.
 
-The binary is not yet in the release assets (the design page's §6 step
-5). Install it from a checkout:
+Each release carries the binary for every platform the SDK ships, as
+`teistro-mcp-{version}-{platform}.tar.gz` beside its digest in
+`checksums.txt`, its bill of materials and its build attestation
+(`gh attestation verify <file> --repo teispace/teistro-sdk`). Unpack it
+and point the host at `teistro-mcp/teistro-mcp`. Or build it from a
+tagged checkout:
 
 ```sh
-cargo install --path crates/mcp
+cargo install --git https://github.com/teispace/teistro-sdk --tag vX.Y.Z teistro-mcp
+```
+
+A host's configuration names the program and its options:
+
+```json
+{ "mcpServers": { "teistro": { "command": "/opt/teistro-mcp/teistro-mcp",
+                               "args": ["--pack", "/opt/packs/readings.tpack"] } } }
 ```
 
 ```sh

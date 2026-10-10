@@ -2564,6 +2564,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   answer stamped through a context, and every interpreted chart, now
   names the packs loaded in `provenance.packs`, which was declared and
   never filled. **Numbers:** none move.
+- **The agent server in the release.** Every platform's release assets
+  carry `teistro-mcp-{version}-{platform}.tar.gz`, built through
+  cargo-auditable, held to the row's glibc floor, digested, attested and
+  checked by unpacking it and running a session under each revision.
 - **Registered dasha systems and layouts by key, in a chart request.**
   `FoundRequest` reads a key no catalogue has and
   `FoundRequest::resolved` reads it through a context's registries, so
