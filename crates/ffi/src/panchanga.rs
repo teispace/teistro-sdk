@@ -766,17 +766,19 @@ pub unsafe extern "C" fn ts_panchanga_days(
             beside = beside.with_nepal_sambat();
         }
         // The façade founds the days once for everything asked beside them.
-        let mut answered = ctx
+        let answered = ctx
             .sdk()
             .almanac()
             .asked(&from, &to, &place, clock, &beside)?;
-        let muhurta = crate::family::muhurta::json(&mut answered)?;
-        let festivals = written(answered.festivals, teistro::festival::Observances::in_full)?;
-        let years = written(answered.years, |years| teistro::LunarYear::in_full(years))?;
-        let eclipses = written(answered.eclipses, teistro::EclipsesHere::in_full)?;
-        let nepal_sambat = written(answered.nepal_sambat, |value| {
-            teistro::NepalSambatDate::in_full(value)
-        })?;
+        // Each section written and sealed by the façade's one writer,
+        // which the agent server's `almanac.days` answers with too.
+        let sections = answered.sections()?;
+        let json = |section: &Option<teistro::Envelope<serde_json::Value>>| {
+            section
+                .as_ref()
+                .map(teistro_core::envelope::canonical_json)
+                .unwrap_or_default()
+        };
         let encoded = encode(
             &answered.days.value,
             &place,
@@ -784,37 +786,16 @@ pub unsafe extern "C" fn ts_panchanga_days(
             &answered.days.provenance,
             &answered.day_hashes,
             &Beside {
-                muhurta: &muhurta,
-                festivals: &festivals,
-                years: &years,
-                eclipses: &eclipses,
-                nepal_sambat: &nepal_sambat,
+                muhurta: &json(&sections.muhurta),
+                festivals: &json(&sections.festivals),
+                years: &json(&sections.years),
+                eclipses: &json(&sections.eclipses),
+                nepal_sambat: &json(&sections.nepal_sambat),
             },
         )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
-}
-
-/// An answer as the canonical JSON a section carries: the envelope
-/// `{value, provenance}`, the value's catalogue members already written
-/// in full and the envelope **sealed over that value**, so its content
-/// hash is the hash of what a binding holds
-/// (`03-design/muhurta-at-the-boundary.md` §4).
-fn section(value: serde_json::Value, provenance: Provenance) -> String {
-    teistro_core::envelope::canonical_json(&teistro::Envelope::sealing(value, provenance))
-}
-
-/// A section answered beside the days as its canonical JSON, its members
-/// written in full by `in_full`, or empty when it was not asked for.
-pub(crate) fn written<T>(
-    answer: Option<teistro::Envelope<T>>,
-    in_full: impl FnOnce(&T) -> Result<serde_json::Value, Error>,
-) -> Result<String, Error> {
-    answer.map_or_else(
-        || Ok(String::new()),
-        |answer| Ok(section(in_full(&answer.value)?, answer.provenance)),
-    )
 }
 
 #[cfg(test)]

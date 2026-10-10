@@ -30,6 +30,15 @@ fn examples() -> Vec<(&'static str, Value)> {
                 "vargas": ["D9"], "shadbala": true, "fortitudes": {}, "lots": {},
                 "kp": {"anyAyanamsha": true}, "antiscia": {}, "varsha": {"through": 1}}),
         ),
+        (
+            "almanac.days",
+            json!({"first": {"year": 2026, "month": 10, "day": 10},
+                "last": {"year": 2026, "month": 10, "day": 12},
+                "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+                "utcOffsetSeconds": 20700, "muhurta": {"rules": "RAMAN_MARRIAGE"},
+                "festivals": {"rules": "DHARMASINDHU"}, "years": true, "eclipses": true,
+                "nepalSambat": true}),
+        ),
         ("matching.naam", json!({"bride": "सीता", "groom": "राम"})),
         (
             "numerology.profile",
@@ -220,4 +229,33 @@ fn a_chart_request_answers_its_charts_and_a_row_a_chart_of_each_table_asked() {
     assert_eq!(value["gochar"], json!([]));
     let input_hash = &result["structuredContent"]["provenance"]["input_hash"];
     assert!(input_hash.is_string(), "{input_hash}");
+}
+
+#[test]
+fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals_it() {
+    let mut server = Server::new(Engine::Builtin);
+    let (name, request) = examples()
+        .into_iter()
+        .find(|(name, _)| *name == "almanac.days")
+        .unwrap();
+    let result = call(&mut server, name, &json!({"request": request}));
+    let value = &result["structuredContent"]["value"];
+    assert_eq!(value["days"].as_array().unwrap().len(), 3);
+    assert_eq!(value["dayHashes"].as_array().unwrap().len(), 3);
+    for section in ["muhurta", "festivals", "years", "eclipses", "nepalSambat"] {
+        let hash = &value[section]["provenance"]["content_hash"];
+        assert!(hash.is_string(), "{section}: {hash}");
+    }
+    // A section not asked is left out rather than answered empty.
+    let mut plain = request.clone();
+    for asked in ["muhurta", "festivals", "years", "eclipses", "nepalSambat"] {
+        plain.as_object_mut().unwrap().remove(asked);
+    }
+    let result = call(&mut server, name, &json!({"request": plain}));
+    let keys: Vec<&String> = result["structuredContent"]["value"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .collect();
+    assert_eq!(keys, ["days", "dayHashes"]);
 }

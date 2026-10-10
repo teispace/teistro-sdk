@@ -3,18 +3,14 @@
 //! `longitudeDeg` and `altitudeM`, and an offset in seconds, each refused
 //! by its own field.
 
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
 use serde::{Deserialize, Serialize};
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
 use teistro_calendar::CalendarDate;
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::time::UtcOffset;
 
 /// A civil day as a request names it.
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct DayAsked {
     pub(crate) year: i32,
@@ -22,7 +18,6 @@ pub(crate) struct DayAsked {
     pub(crate) day: u8,
 }
 
-#[cfg(any(feature = "pakshi", feature = "rashifal"))]
 impl DayAsked {
     /// The date in `calendar`.
     pub(crate) fn in_calendar(self, calendar: Calendar) -> CalendarDate {

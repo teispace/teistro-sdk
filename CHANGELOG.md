@@ -2546,6 +2546,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **A range of days read from JSON, and `almanac.days`.**
+  `DaysRequest::from_json` reads a range of days, the place and clock,
+  a `muhurta` search, a `festivals` reckoning and the section flags.
+  `AlmanacAnswer::sections` writes every section asked beside the days
+  as a binding holds it, sealed over what it writes; the C boundary and
+  the agent server's `almanac.days` share it. A strict reader at the
+  empty root now names a missing field by its key. **Numbers:** none
+  move.
 - **A chart request read from JSON, and `chart.found`**
   (`03-design/mcp-server.md` step 2). `teistro::FoundRequest::from_json`
   reads a whole chart request: the births, the place and clock, the

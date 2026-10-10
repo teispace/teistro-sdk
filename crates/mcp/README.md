@@ -32,5 +32,12 @@ record for each table read off the charts, under the names every
 binding writes (`kp`, `fortitudes`, `varsha`, …). It answers the chart
 documents as `charts` and each table with a row a chart.
 
+`almanac.days` takes a range of days: `first` and optional `last`, the
+place and clock, and beside them a `muhurta` search, a `festivals`
+reckoning, and `true` flags for the lunar `years`, the `eclipses` and
+each day's `nepalSambat` date. It answers every day's panchanga, the
+days' own hashes, and each section asked as its own
+`{value, provenance}`.
+
 Nothing reaches the file system or the network: the ephemeris is chosen
 on the command line and never by a tool argument.

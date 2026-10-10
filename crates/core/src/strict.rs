@@ -243,13 +243,26 @@ fn under(root: &str, path: &str) -> String {
     }
 }
 
-/// The refusal of a value that is not what `at` reads; at the root of an
-/// empty root it names no field, since there is none to name.
+/// The refusal of a value that is not what `at` reads. At an empty root a
+/// missing field is named by its own key, the one thing a caller writing
+/// the record can add; anything else there names no field, since there is
+/// none to name.
 fn not_json(at: &str, err: &serde_json::Error) -> Error {
     if at.is_empty() {
-        return Error::invalid_arg(format!("it is not one: {err}"));
+        let message = err.to_string();
+        return match missing(&message) {
+            Some(key) => Error::invalid_arg(format!("`{key}` is missing"))
+                .with_field(key.to_owned())
+                .with_hint(String::from("the record needs this field")),
+            None => Error::invalid_arg(format!("it is not one: {message}")),
+        };
     }
     Error::invalid_arg(format!("`{at}` is not one: {err}")).with_field(at.to_owned())
+}
+
+/// The key serde's "missing field `key`" names, if that is the message.
+fn missing(message: &str) -> Option<&str> {
+    message.strip_prefix("missing field `")?.split('`').next()
 }
 
 #[cfg(test)]
@@ -339,6 +352,11 @@ mod tests {
         let own = deserialize_str::<Ring>(r#"{"inner": []}"#, "").unwrap_err();
         assert_eq!(own.field(), Some("inner"));
         assert_eq!(deserialize_str::<Ring>("[]", "").unwrap_err().field(), None);
+        // At the empty root a missing field is named by its own key.
+        assert_eq!(
+            deserialize_str::<Ring>("{}", "").unwrap_err().field(),
+            Some("inner")
+        );
         // Text after the value is refused, as `serde_json::from_str` does.
         assert_eq!(
             deserialize_str::<Ring>(r#"{"inner": 1} {}"#, "ring")

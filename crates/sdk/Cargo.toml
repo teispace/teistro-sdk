@@ -135,6 +135,10 @@ name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "days_request"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "festival"
 required-features = ["builtin-ephemeris"]
 

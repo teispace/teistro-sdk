@@ -87,13 +87,6 @@ impl Answered {
     }
 }
 
-#[cfg(any(
-    feature = "chart",
-    feature = "numerology",
-    feature = "pakshi",
-    feature = "rashifal",
-    feature = "research"
-))]
 fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
     serde_json::to_value(value)
         .map_err(|why| Error::internal(format!("an answer serde cannot write: {why}")))
@@ -110,6 +103,13 @@ pub fn records() -> Vec<Record> {
             title: "Match two names by their first syllables",
             reads: None,
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
+        },
+        Record {
+            name: "almanac.days",
+            boundary: "ts_panchanga_days",
+            title: "Every day of a range at a place, and what is asked beside them",
+            reads: Some(crate::DaysRequest::DESCRIPTION),
+            run: days,
         },
         #[cfg(feature = "chart")]
         Record {
@@ -182,4 +182,29 @@ pub fn records() -> Vec<Record> {
 #[must_use]
 pub fn record(name: &str) -> Option<Record> {
     records().into_iter().find(|record| record.name == name)
+}
+
+/// `almanac.days`: the range's days founded once, with their own hashes
+/// and every section asked beside them, each sealed as the boundary seals
+/// it ([`AlmanacAnswer::sections`](crate::AlmanacAnswer::sections)); the
+/// days' provenance is the answer's.
+fn days(context: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = crate::DaysRequest::from_json(json)?;
+    let answer = context.almanac().asked(
+        &asked.first,
+        &asked.last,
+        &asked.place,
+        asked.offset,
+        &asked.beside,
+    )?;
+    let mut value = serde_json::Map::new();
+    value.insert(String::from("days"), written(&answer.days.value)?);
+    value.insert(String::from("dayHashes"), written(&answer.day_hashes)?);
+    if let serde_json::Value::Object(sections) = written(&answer.sections()?)? {
+        value.extend(sections);
+    }
+    Ok(Answered {
+        value: serde_json::Value::Object(value),
+        provenance: Some(answer.days.provenance),
+    })
 }

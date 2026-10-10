@@ -2541,8 +2541,141 @@ fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The files an agent-server tool reads its request through: a tool's
+/// own record (`teistro::records`), the records a chart request or a
+/// range of days carries, and the server's own arguments.
+const READ_THROUGH: [&str; 6] = [
+    "crates/sdk/src/records.rs",
+    "crates/sdk/src/compose.rs",
+    "crates/sdk/src/found_request.rs",
+    "crates/sdk/src/days_request.rs",
+    "crates/mcp/src/lib.rs",
+    "crates/mcp/src/tools.rs",
+];
+
+/// The JSON readers no tool reads, each with why: what the third gate
+/// allows, so that a reader nobody reaches is a decision written down
+/// and not an omission.
+const NOT_A_TOOL: [(&str, &str); 2] = [
+    (
+        "Settings",
+        "a resolved settings record; a call names its settings as a patch over a profile (`mcp-server.md` D5)",
+    ),
+    (
+        "Tolerances",
+        "the ephemeris kit's corpus tolerances, a development tool's file and no request",
+    ),
+];
+
+/// The JSON readers a tool reaches inside another record rather than by
+/// their own call, each with the record that carries it; the carrier must
+/// itself be reached.
+const CARRIED: [(&str, &str); 2] = [
+    ("PerfectionRules", "PerfectionRequest"),
+    ("SynastryRequest", "PartnerSynastry"),
+];
+
+/// Every JSON record reader in the SDK's crates — an `impl T` holding
+/// `pub fn from_json` — is reached by an agent-server tool, called from
+/// one of [`READ_THROUGH`], carried inside a record that is
+/// ([`CARRIED`]), or is listed in [`NOT_A_TOOL`] with why; and a listed
+/// type is neither reached by its own call nor gone (`03-design/mcp-server.md`
+/// §5, the third gate). So a request record added to the SDK cannot
+/// silently be one the agent server does not take.
+fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "every-reader-reaches-a-tool";
+    let through: Vec<String> = READ_THROUGH
+        .iter()
+        .filter_map(|file| std::fs::read_to_string(root.join(file)).ok())
+        .collect();
+    let reached = |name: &str| {
+        let call = format!("{name}::from_json");
+        through.iter().any(|text| text.contains(&call))
+    };
+    let Ok(crates) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut crates: Vec<PathBuf> = crates.flatten().map(|entry| entry.path()).collect();
+    crates.sort();
+    let mut readers: Vec<String> = Vec::new();
+    for krate in crates {
+        // The boundary and the server read through the façade's readers
+        // and declare none of their own.
+        if krate.ends_with("ffi") || krate.ends_with("mcp") {
+            continue;
+        }
+        for path in sources(&krate.join("src")) {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            let shown = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .display()
+                .to_string();
+            let mut owner: Option<&str> = None;
+            for (index, line) in text.lines().enumerate() {
+                if let Some(rest) = line.strip_prefix("impl ") {
+                    owner = rest.split([' ', '<', '{']).next();
+                }
+                if !line.trim_start().starts_with("pub fn from_json(") {
+                    continue;
+                }
+                let Some(name) = owner else {
+                    continue;
+                };
+                readers.push(name.to_owned());
+                let carried = CARRIED
+                    .iter()
+                    .find(|(listed, _)| *listed == name)
+                    .map(|(_, carrier)| *carrier);
+                let listed =
+                    carried.is_some() || NOT_A_TOOL.iter().any(|(listed, _)| *listed == name);
+                if let Some(carrier) = carried.filter(|carrier| !reached(carrier)) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!("`{name}` is carried by `{carrier}`, which no tool reads"),
+                        rule: RULE,
+                    });
+                }
+                if !listed && !reached(name) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!(
+                            "`{name}::from_json` is a record no agent-server tool reads; reach it from a tool or list it in `NOT_A_TOOL` with why"
+                        ),
+                        rule: RULE,
+                    });
+                }
+                if listed && reached(name) {
+                    outcome.failures.push(Finding {
+                        file: shown.clone(),
+                        line: index + 1,
+                        text: format!(
+                            "`{name}` is listed as reached no other way and a tool reads it"
+                        ),
+                        rule: RULE,
+                    });
+                }
+            }
+        }
+    }
+    for listed in CARRIED.iter().chain(&NOT_A_TOOL).map(|(listed, _)| *listed) {
+        if !readers.iter().any(|name| name == listed) {
+            outcome.failures.push(Finding {
+                file: String::from("xtask/src/lints.rs"),
+                line: 1,
+                text: format!("`{listed}` is listed and has no `from_json` any more"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 26] = [
+const RULES: [&str; 27] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -2561,6 +2694,7 @@ const RULES: [&str; 26] = [
     "a-tier-turns-on-its-base",
     "families-are-forwarded",
     "serialised-type-describes-itself",
+    "every-reader-reaches-a-tool",
     "a-word-is-spelt-as-a-key",
     "every-predicate-is-listed",
     "composer-reaches-every-binding",
@@ -2630,6 +2764,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     node_is_tested_at_its_floor(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
+    every_reader_reaches_a_tool(root, &mut outcome);
     words_are_spelt_as_keys(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);

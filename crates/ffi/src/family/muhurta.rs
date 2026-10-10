@@ -1,12 +1,12 @@
 //! The muhurta search at the boundary
 //! (`03-design/muhurta-at-the-boundary.md`): a panchanga request's
-//! `muhurta_json` record and the `muhurta` section it answers.
+//! `muhurta_json` record, refused by a build without the search. The
+//! `muhurta` section it answers is written by the façade
+//! (`AlmanacAnswer::sections`).
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
-
-use teistro_core::error::Error;
 
 super::record!(
     "muhurta",
@@ -39,22 +39,4 @@ pub(crate) fn asking(
         None => beside,
         Some(never) => match never {},
     }
-}
-
-/// The `muhurta` section: the search's answer in full, empty when none
-/// was asked for.
-#[cfg(feature = "muhurta")]
-pub(crate) fn json(answered: &mut teistro::AlmanacAnswer) -> Result<String, Error> {
-    crate::panchanga::written(answered.muhurta.take(), teistro::muhurta::spelling::in_full)
-}
-
-/// The `muhurta` section of a build without the search, which no request
-/// can ask for.
-#[cfg(not(feature = "muhurta"))]
-#[allow(
-    clippy::unnecessary_wraps,
-    reason = "the signature of the build with the search"
-)]
-pub(crate) fn json(_answered: &mut teistro::AlmanacAnswer) -> Result<String, Error> {
-    Ok(String::new())
 }
