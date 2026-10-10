@@ -627,6 +627,7 @@ fn remembering(
 /// changes the answer, named rather than numbered, so the hash is the
 /// same whichever binding asked.
 #[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct RequestRecord<'a> {
     scale: &'static str,
     frame: String,

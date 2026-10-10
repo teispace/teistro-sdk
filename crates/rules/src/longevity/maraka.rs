@@ -43,6 +43,7 @@ const NINE: [Graha; 9] = [
 
 /// Why a graha is a maraka.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[repr(u8)]
 pub enum Reason {
@@ -156,6 +157,7 @@ impl Reason {
 
 /// What a maraka's periods bring, as the verses grade it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Brings {
     /// Illness, misery and difficulty equal to death, not death.
@@ -210,6 +212,22 @@ impl Reasons {
     }
 }
 
+/// The reasons, each once.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Reasons {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("MarakaReasons")
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "array",
+            "items": generator.subschema_for::<Reason>(),
+            "uniqueItems": true,
+        })
+    }
+}
+
 impl Serialize for Reasons {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.collect_seq(self.iter())
@@ -218,6 +236,7 @@ impl Serialize for Reasons {
 
 /// Every graha's reasons for being a maraka on a chart.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Marakas {
     /// Each graha's reasons, in [`Body::ALL`]'s order of the nine.
     by_graha: [Reasons; 9],
@@ -245,6 +264,7 @@ impl Marakas {
 /// How a period is to be presented: always as a vulnerability to be read with
 /// the span of life, never as a date. A consumer rendering one honours it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Presentation {
     /// A period of vulnerability, to be read with the span of life.
@@ -253,6 +273,7 @@ pub enum Presentation {
 
 /// What the running periods of a dasha are, as marakas.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Vulnerability {
     /// The reasons of each running level's lord, from the mahadasha down.
     pub levels: [Reasons; Levels::MAX],

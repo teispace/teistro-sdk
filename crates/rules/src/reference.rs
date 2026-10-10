@@ -258,6 +258,7 @@ pub enum BodySubject {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Class {
     /// The benefics, under the readings.
@@ -289,6 +290,28 @@ impl From<BodyRef> for BodySubject {
 impl From<Body> for BodySubject {
     fn from(body: Body) -> BodySubject {
         BodySubject::Ref(BodyRef::Body(body))
+    }
+}
+
+/// A reference as the rule language writes it, which the reader checks
+/// shape by shape: a key, a house's number, or an object of one or two
+/// named parts. The schema says the shapes and leaves the parts to the
+/// reader, so it is never stricter than it.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for BodySubject {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("BodySubject")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A body: a key, `self`, `ANY_BENEFIC`-style any-of, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "integer", "minimum": 1, "maximum": 12 },
+                { "type": "object", "minProperties": 1, "maxProperties": 2 },
+            ],
+        })
     }
 }
 
@@ -399,6 +422,28 @@ impl core::fmt::Display for SignRef {
 
 // ---- Writing ---------------------------------------------------------------
 
+/// A reference as the rule language writes it, which the reader checks
+/// shape by shape: a key, a house's number, or an object of one or two
+/// named parts. The schema says the shapes and leaves the parts to the
+/// reader, so it is never stricter than it.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for BodyRef {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("BodyRef")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A body: a key, `self`, or {lordOf}, {exaltedIn}, {karaka, scheme}.",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "integer", "minimum": 1, "maximum": 12 },
+                { "type": "object", "minProperties": 1, "maxProperties": 2 },
+            ],
+        })
+    }
+}
+
 impl Serialize for BodyRef {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
@@ -424,6 +469,28 @@ impl Serialize for BodyRef {
                 map.end()
             }
         }
+    }
+}
+
+/// A reference as the rule language writes it, which the reader checks
+/// shape by shape: a key, a house's number, or an object of one or two
+/// named parts. The schema says the shapes and leaves the parts to the
+/// reader, so it is never stricter than it.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for SignRef {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("SignRef")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A sign: a body's key, a house's number, `UPAPADA`, or {arudha}, {navamsha}, {badhakaOf}, {point}.",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "integer", "minimum": 1, "maximum": 12 },
+                { "type": "object", "minProperties": 1, "maxProperties": 2 },
+            ],
+        })
     }
 }
 
@@ -470,6 +537,28 @@ impl Serialize for SignRef {
                 map.end()
             }
         }
+    }
+}
+
+/// A reference as the rule language writes it, which the reader checks
+/// shape by shape: a key, a house's number, or an object of one or two
+/// named parts. The schema says the shapes and leaves the parts to the
+/// reader, so it is never stricter than it.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Subject {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Subject")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A sign or any-of subject: as a sign reference, or `ANY_BENEFIC`-style any-of.",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "integer", "minimum": 1, "maximum": 12 },
+                { "type": "object", "minProperties": 1, "maxProperties": 2 },
+            ],
+        })
     }
 }
 

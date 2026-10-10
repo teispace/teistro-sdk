@@ -30,6 +30,7 @@ pub const ASCENDANT_REACH_DEG: f64 = 15.0;
 
 /// What a chart's Western houses are asked with.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct HouseRequest {
     /// The division to read, or the module's own when `None`: the
@@ -77,6 +78,7 @@ const ROOT: &str = "westernHouses";
 
 /// Where a planet is counted.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct HousePlacement {
     /// Which planet.
@@ -92,6 +94,7 @@ pub struct HousePlacement {
 /// What a chart's houses are read on: the cusps, the ascendant and the
 /// limit of its reach, all in the chart's zodiac.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct HouseFrame {
     /// The twelve cusps, first to twelfth, degrees.
@@ -105,6 +108,7 @@ pub struct HouseFrame {
 
 /// A chart's Western houses.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct WesternHouses {
     /// The division the cusps are of: the one asked, or the one a polar

@@ -42,6 +42,7 @@ pub const MAX_PARALLEL_ORB_DEG: f64 = 10.0;
 
 /// A body as the parallels read it: its distance from the equator.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Declined {
     /// Which.
@@ -64,6 +65,7 @@ impl Declined {
 /// What the parallels are asked: how close two distances from the equator
 /// must stand.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct ParallelRequest {
     /// The orb, degrees: Leo's 1° unless a caller says otherwise.
@@ -130,6 +132,7 @@ impl ParallelRequest {
 
 /// One pair of bodies the same distance from the equator, within the orb.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct ParallelRow {
     /// The first body, in the order the bodies were given.

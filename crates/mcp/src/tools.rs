@@ -1,5 +1,6 @@
 //! The tool list: every record entry point of the façade, described by
-//! its boundary function's documentation, and `settings.describe`.
+//! its boundary function's documentation, `settings.describe` and
+//! `schema.describe`.
 
 use serde_json::{Map, Value, json};
 use teistro::Error;
@@ -7,6 +8,8 @@ use teistro::records::Record;
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::{DEFAULT_PROFILE, Profile, SHIPPED_PROFILES, SettingsPatch};
 use teistro_port_ephemeris::native::{NativeFunction, NativeParam, Role};
+
+use crate::{Detail, schemas};
 
 include!(concat!(env!("OUT_DIR"), "/boundary_docs.rs"));
 
@@ -19,14 +22,16 @@ pub(crate) const ENGINE_PREFIX: &str = "engine.";
 /// The arguments a record tool reads beside its record.
 const ARGUMENTS: [&str; 4] = ["request", "profile", "settings", "locale"];
 
-/// Every tool, in name order: the records, `settings.describe`, and the
-/// engine's own `operations`.
-pub(crate) fn list(operations: &[NativeFunction]) -> Map<String, Value> {
+/// Every tool, in name order: the records, `settings.describe`,
+/// `schema.describe`, and the engine's own `operations`, each record's
+/// schemas stated in `detail`.
+pub(crate) fn list(operations: &[NativeFunction], detail: Detail) -> Map<String, Value> {
     let mut tools: Vec<(String, Value)> = teistro::records::records()
         .iter()
-        .map(|record| (record.name.to_owned(), record_tool(record)))
+        .map(|record| (record.name.to_owned(), record_tool(record, detail)))
         .collect();
     tools.push((DESCRIBE.to_owned(), describe_tool()));
+    tools.push((schemas::DESCRIBE.to_owned(), schemas::describe_tool()));
     tools.extend(operations.iter().map(|operation| {
         let tool = engine_tool(operation);
         (format!("{ENGINE_PREFIX}{}", operation.name), tool)
@@ -42,7 +47,7 @@ pub(crate) fn list(operations: &[NativeFunction]) -> Map<String, Value> {
 
 /// Every tool computes and changes nothing, so a host may call one
 /// without asking and again with the same answer.
-fn annotations(title: &str) -> Value {
+pub(crate) fn annotations(title: &str) -> Value {
     json!({
         "title": title,
         "readOnlyHint": true,
@@ -52,42 +57,22 @@ fn annotations(title: &str) -> Value {
     })
 }
 
-fn record_tool(record: &Record) -> Value {
-    json!({
+fn record_tool(record: &Record, detail: Detail) -> Value {
+    let input = schemas::input(record);
+    let tool = json!({
         "name": record.name,
         "title": record.title,
         "description": description(record),
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "request": {
-                    "type": "object",
-                    "description": format!(
-                        "The record `{}` reads, as the tool's description gives it.",
-                        record.boundary
-                    ),
-                },
-                "profile": {
-                    "type": "string",
-                    "enum": SHIPPED_PROFILES,
-                    "default": DEFAULT_PROFILE,
-                    "description": "The shipped profile the settings resolve from.",
-                },
-                "settings": {
-                    "type": "object",
-                    "description": "A patch over the profile, every group and knob optional; \
-                                    `settings.describe` answers its JSON Schema.",
-                },
-                "locale": {
-                    "type": "string",
-                    "description": "The locale a message renders in, as a BCP 47 tag.",
-                },
-            },
-            "required": ["request"],
-            "additionalProperties": false,
+        "inputSchema": match detail {
+            Detail::Full => input,
+            Detail::Lean => schemas::lean(input, record),
         },
         "annotations": annotations(record.title),
-    })
+    });
+    match (detail, schemas::output(record)) {
+        (Detail::Full, Some(output)) => schemas::with(tool, "outputSchema", output),
+        _ => tool,
+    }
 }
 
 /// The operations that can be tools of their own: each whose tool name
@@ -233,9 +218,7 @@ pub(crate) fn describe(arguments: &Map<String, Value>) -> Result<Value, Error> {
             }))
         })
         .collect::<Result<Vec<Value>, Error>>()?;
-    let schema = schemars::generate::SchemaSettings::draft2020_12()
-        .into_generator()
-        .into_root_schema_for::<SettingsPatch>();
+    let schema = schemas::generator().into_root_schema_for::<SettingsPatch>();
     Ok(json!({
         "defaultProfile": DEFAULT_PROFILE,
         "profiles": profiles,

@@ -31,6 +31,7 @@ const RECTIFICATION: &str = "rectification";
 
 /// The purifier over the minutes either side of the chart's instant.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Purify {
     /// How far either side of the chart's instant the window runs,
@@ -45,6 +46,7 @@ pub struct Purify {
 /// What the family remembers of the birth, and the readings it is
 /// weighed under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct CircumstanceAsked {
     /// The facts given; one left out is read and not weighed.
@@ -56,6 +58,7 @@ pub struct CircumstanceAsked {
 /// The baseline engine's cascade around the chart's instant: everything
 /// [`BaselineRequest`] takes but the reported time, which is the chart's.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BaselineAsked {
     /// The window's half-width, minutes, 1 to 720.
@@ -93,6 +96,7 @@ pub struct BaselineAsked {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct DashaAsked {
     /// How the balance is measured.
@@ -154,6 +158,7 @@ impl BaselineAsked {
 /// The Shiva Svarodaya's nadis and tattvas over the minutes either side
 /// of the chart's instant.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SvarodayaAsked {
     /// How far either side of the chart's instant the window runs,
@@ -164,6 +169,7 @@ pub struct SvarodayaAsked {
 /// The Shiva Svarodaya around a chart's instant: the reading at it and
 /// every run of the window.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct SvarodayaAround {
     /// The nadi and the tattva at the chart's instant.
@@ -185,6 +191,7 @@ pub struct SvarodayaAround {
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct RectificationRequest {
     /// The purifier of BPHS ch. 2 vv. 67–78 over a window around the
@@ -233,6 +240,7 @@ impl RectificationRequest {
 
 /// A chart's rectification: each reading the request asked for.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Rectification {
     /// What the purifier leaves standing of the window.

@@ -13,7 +13,7 @@
 
 use serde_json::{Value, json};
 use teistro::{Context, Ephemeris};
-use teistro_mcp::{Adapter, Engine, Server};
+use teistro_mcp::{Adapter, Detail, Engine, Server};
 
 /// The engine passthrough's tools ask an engine with operations of its
 /// own, which the built-in is not: they run over the test adapter.
@@ -298,7 +298,7 @@ fn every_record_tool_is_described_by_its_boundary_function() {
         let description = tool["description"].as_str().unwrap();
         assert_eq!(tool["annotations"]["readOnlyHint"], true);
         assert_eq!(tool["inputSchema"]["type"], "object");
-        if tool["name"] != "settings.describe" {
+        if !tool["name"].as_str().unwrap().ends_with(".describe") {
             assert!(
                 description.contains("`request` is"),
                 "{}: {description}",
@@ -424,4 +424,253 @@ fn a_civil_time_resolves_and_reads_back_on_the_same_clock() {
         converted["structuredContent"]["value"]["weekday"],
         json!("SATURDAY")
     );
+}
+
+/// Every tool the server lists, by name.
+fn listed(server: &mut Server) -> Vec<Value> {
+    let reply = server
+        .handle(
+            &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}})
+            .to_string(),
+        )
+        .unwrap();
+    let reply: Value = serde_json::from_str(&reply).unwrap();
+    reply["result"]["tools"].as_array().unwrap().clone()
+}
+
+/// That `instance` holds to `schema`, a whole JSON Schema 2020-12.
+fn holds(schema: &Value, instance: &Value) -> Result<(), String> {
+    let mut schemas = boon::Schemas::new();
+    let mut compiler = boon::Compiler::new();
+    compiler
+        .add_resource("urn:teistro:tool", schema.clone())
+        .map_err(|error| format!("{error:#}"))?;
+    let index = compiler
+        .compile("urn:teistro:tool", &mut schemas)
+        .map_err(|error| format!("the schema does not compile: {error:#}"))?;
+    schemas
+        .validate(instance, index)
+        .map_err(|error| format!("{error:#}"))
+}
+
+/// **What a schema says, the tool takes and answers** (P1): every
+/// example's arguments hold to its tool's `inputSchema`, and its answer
+/// to the `outputSchema`, over the built-in and over a loaded adapter,
+/// in full and in the lean list a model reads.
+#[test]
+fn every_example_and_its_answer_hold_to_the_tools_schemas() {
+    let (plugged, _) = over_the_test_adapter();
+    let mut plugged = plugged.with_detail(Detail::Full);
+    let mut builtin = Server::new(Engine::Builtin).with_detail(Detail::Full);
+    let lean = listed(&mut Server::new(Engine::Builtin));
+    for (name, request) in examples() {
+        let server = if asks_an_engine(name) {
+            &mut plugged
+        } else {
+            &mut builtin
+        };
+        let tool = listed(server)
+            .into_iter()
+            .find(|tool| tool["name"] == name)
+            .unwrap();
+        let arguments = json!({"request": request});
+        holds(&tool["inputSchema"], &arguments)
+            .unwrap_or_else(|why| panic!("{name}'s arguments: {why}"));
+        let leaner = lean.iter().find(|tool| tool["name"] == name).unwrap();
+        holds(&leaner["inputSchema"], &arguments)
+            .unwrap_or_else(|why| panic!("{name}'s arguments, lean: {why}"));
+        let result = call(server, name, &arguments);
+        assert_eq!(result["isError"], false, "{name}: {result}");
+        if let Some(output) = tool.get("outputSchema") {
+            holds(output, &result["structuredContent"])
+                .unwrap_or_else(|why| panic!("{name}'s answer: {why}"));
+        }
+    }
+}
+
+/// Every tool states its answer and its record, every part of the record
+/// included: a part whose reader reads no single type says so in its
+/// schema, and none is left.
+#[test]
+fn every_tool_states_its_schemas_and_the_unstated_parts_are_exactly_these() {
+    let tools = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
+    let mut unstated: Vec<String> = Vec::new();
+    for tool in &tools {
+        let name = tool["name"].as_str().unwrap();
+        if name.ends_with(".describe") {
+            continue;
+        }
+        assert!(
+            tool.get("outputSchema").is_some(),
+            "{name} states no answer"
+        );
+        let request = &tool["inputSchema"]["properties"]["request"];
+        assert!(
+            request.get("$ref").is_some() || request.get("properties").is_some(),
+            "{name} states no record: {request}"
+        );
+        let text = tool["inputSchema"].to_string();
+        for (at, _) in text.match_indices(": its schema is not stated yet") {
+            let named = &text[..at];
+            let start = named.rfind("The `").unwrap() + "The `".len();
+            let end = named[start..].find('`').unwrap() + start;
+            unstated.push(format!("{name}:{}", &named[start..end]));
+        }
+    }
+    assert_eq!(unstated, Vec::<String>::new());
+}
+
+/// **What a chart record's reader takes, `chart.found`'s schema takes**
+/// (P1, "never stricter than the reader"): each record by its name, at
+/// the least its reader needs and, where the record has more to say, in
+/// full, read by the record's own reader and held to the tool's schema.
+#[test]
+fn every_chart_record_the_reader_takes_the_schema_takes() {
+    use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    use teistro::{ChartRecords, Partner, UtcOffset};
+
+    let partner = serde_json::to_value(Partner {
+        instant: JulianDay::<Utc>::try_new(2_447_892.5).unwrap(),
+        place: Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        ),
+        utc_offset: UtcOffset::try_from_seconds(20_700).unwrap(),
+    })
+    .unwrap();
+    let least = |name: &str| match name {
+        "gochar" => json!({"instants": [2_460_676.5]}),
+        "hits" | "sadeSati" => json!({"from": 2_460_676.5, "to": 2_460_680.5}),
+        "perfection" => json!({"querent": "VENUS", "quesited": "MARS"}),
+        "synastry" => json!({"partner": partner}),
+        "matching" => json!({"partner": partner, "partnerRole": "BRIDE"}),
+        "varsha" => json!({"through": 1}),
+        "progressions" => json!({"at": 2_460_676.5}),
+        "harmonic" => json!({"number": 5}),
+        _ => json!({}),
+    };
+    let full = [
+        (
+            "synastry",
+            json!({"partner": partner, "davison": true, "lagna": false}),
+        ),
+        (
+            "matching",
+            json!({"partner": partner, "partnerRole": "GROOM"}),
+        ),
+        (
+            "varsha",
+            json!({"through": 2, "place": "birth", "matters": [1, 7], "sahams": "all"}),
+        ),
+        ("theme", json!({"extends": "DARK", "style": {}})),
+        ("interpret", json!({"placements": true})),
+        ("kp", json!({"clock": 20_700})),
+    ];
+    let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
+    let tool = listed(&mut server)
+        .into_iter()
+        .find(|tool| tool["name"] == "chart.found")
+        .unwrap();
+    let records = ChartRecords::NAMES
+        .iter()
+        .map(|name| (*name, least(name)))
+        .chain(full);
+    for (name, record) in records {
+        ChartRecords::default()
+            .read(name, &record.to_string())
+            .unwrap_or_else(|why| panic!("{name}'s reader refuses {record}: {why}"));
+        let mut request = examples()[0].1.clone();
+        request[name] = record.clone();
+        holds(&tool["inputSchema"], &json!({"request": request}))
+            .unwrap_or_else(|why| panic!("{name}: the reader takes {record}, the schema: {why}"));
+        let part = call(
+            &mut server,
+            "schema.describe",
+            &json!({"tool": "chart.found", "part": name}),
+        );
+        holds(&part["structuredContent"]["schema"], &record)
+            .unwrap_or_else(|why| panic!("{name}: the reader takes {record}, its part: {why}"));
+    }
+}
+
+/// **A lean list is one a model can read** (P1): no answer schema, each
+/// record a request carries by name one line naming `schema.describe`,
+/// every definition kept reached, and the whole a small fraction of the
+/// full list.
+#[test]
+fn the_lean_list_names_each_part_and_keeps_only_what_it_reaches() {
+    let lean = listed(&mut Server::new(Engine::Builtin));
+    let full = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
+    for tool in &lean {
+        let name = tool["name"].as_str().unwrap();
+        assert!(
+            tool.get("outputSchema").is_none(),
+            "{name} lists its answer"
+        );
+        let schema = &tool["inputSchema"];
+        let text = schema.to_string();
+        for (defined, _) in schema["$defs"].as_object().into_iter().flatten() {
+            assert!(
+                text.contains(&format!("\"#/$defs/{defined}\"")),
+                "{name} keeps `{defined}`, which nothing reaches"
+            );
+        }
+    }
+    let found = lean
+        .iter()
+        .find(|tool| tool["name"] == "chart.found")
+        .unwrap();
+    let kp = &found["inputSchema"]["properties"]["request"]["properties"]["kp"];
+    assert!(
+        kp["description"]
+            .as_str()
+            .unwrap()
+            .contains("schema.describe"),
+        "{kp}"
+    );
+    let size = |tools: &[Value]| Value::Array(tools.to_vec()).to_string().len();
+    let (lean, full) = (size(&lean), size(&full));
+    assert!(lean * 4 < full, "lean {lean} bytes, full {full}");
+}
+
+/// **`schema.describe` answers what the full list states** (P1), and
+/// refuses a tool or a part by the field that names it.
+#[test]
+fn schema_describe_answers_the_full_schemas_and_refuses_by_field() {
+    let mut server = Server::new(Engine::Builtin);
+    let full = listed(&mut Server::new(Engine::Builtin).with_detail(Detail::Full));
+    for tool in full
+        .iter()
+        .filter(|tool| !tool["name"].as_str().unwrap().ends_with(".describe"))
+    {
+        let name = &tool["name"];
+        let described = call(&mut server, "schema.describe", &json!({"tool": name}));
+        assert_eq!(described["isError"], false, "{name}: {described}");
+        let described = &described["structuredContent"];
+        assert_eq!(described["input"], tool["inputSchema"], "{name}");
+        assert_eq!(described["output"], tool["outputSchema"], "{name}");
+    }
+    for (arguments, field) in [
+        (json!({}), "arguments.tool"),
+        (json!({"tool": "chart.nothing"}), "arguments.tool"),
+        (
+            json!({"tool": "chart.found", "part": "nothing"}),
+            "arguments.part",
+        ),
+        (
+            json!({"tool": "matching.naam", "part": "kp"}),
+            "arguments.part",
+        ),
+        (json!({"tool": "chart.found", "part": 1}), "arguments.part"),
+        (json!({"tool": "chart.found", "also": 1}), "arguments.also"),
+    ] {
+        let refused = call(&mut server, "schema.describe", &arguments);
+        assert_eq!(refused["isError"], true, "{arguments}: {refused}");
+        assert_eq!(
+            refused["structuredContent"]["field"], field,
+            "{arguments}: {refused}"
+        );
+    }
 }

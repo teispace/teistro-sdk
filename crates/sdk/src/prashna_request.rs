@@ -48,6 +48,7 @@ const SEVEN: [Graha; 7] = [
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 pub struct PrashnaRequest {
     /// What was asked: the house the matter belongs to and the querent's

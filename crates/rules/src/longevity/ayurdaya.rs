@@ -49,6 +49,7 @@ const BENEFICS: [Graha; 4] = [Graha::Moon, Graha::Mercury, Graha::Jupiter, Graha
 
 /// Which span.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Method {
     /// From each graha's distance to its deep exaltation.
@@ -80,6 +81,7 @@ impl Method {
 
 /// How several reductions on one graha combine.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Combine {
     /// Only the largest is taken, as the translator's notes to vv. 4 to 15
@@ -92,6 +94,7 @@ pub enum Combine {
 
 /// How Nisargayu's listed years are given.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Nisarga {
     /// As Pindayu gives its years: full at deep exaltation, half at deep
@@ -106,6 +109,7 @@ pub enum Nisarga {
 
 /// Which graha keeps all its years in an enemy's sign (C302).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum EnemyExempt {
     /// A retrograde graha, as BPHS reads it and *Jataka Parijata* ch. 5
@@ -119,6 +123,7 @@ pub enum EnemyExempt {
 
 /// Whose enmity takes a third in an enemy's sign (C303).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Enmity {
     /// The sign's lord a natural enemy, as the catalogue lists them.
@@ -133,6 +138,7 @@ pub enum Enmity {
 
 /// Whose years a malefic rising in the lagna diminishes (C304).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum RisingTakes {
     /// Each malefic's own.
@@ -161,6 +167,7 @@ pub enum RisingTakes {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct AyurdayaRules {
     /// How reductions combine.
@@ -195,6 +202,7 @@ impl AyurdayaRules {
 
 /// Who gives years.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Giver {
     /// A graha.
@@ -205,6 +213,7 @@ pub enum Giver {
 
 /// What each reduction takes from a graha, in years.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Reductions {
     /// Astangata harana: half, combust.
     pub combustion: f64,
@@ -218,6 +227,7 @@ pub struct Reductions {
 
 /// What one giver gives.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Contribution {
     /// Who.
     pub giver: Giver,
@@ -231,6 +241,7 @@ pub struct Contribution {
 
 /// One span.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Span {
     /// Which method.
     pub method: Method,
@@ -242,6 +253,7 @@ pub struct Span {
 
 /// The three spans of a chart.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Ayurdaya {
     /// Pindayu.
     pub pindayu: Span,

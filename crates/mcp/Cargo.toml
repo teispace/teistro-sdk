@@ -17,7 +17,7 @@ name = "teistro-mcp"
 path = "src/main.rs"
 
 [dependencies]
-teistro = { path = "../sdk" }
+teistro = { path = "../sdk", features = ["schema"] }
 teistro-core = { path = "../core", features = ["schema"] }
 teistro-port-ephemeris = { path = "../port-ephemeris", features = ["load"] }
 serde = "1"
@@ -25,6 +25,7 @@ serde_json = "1"
 schemars = "1.2"
 
 [dev-dependencies]
+boon = "0.6"
 teistro-test-adapter = { path = "../test-adapter" }
 
 [build-dependencies]

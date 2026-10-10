@@ -167,12 +167,17 @@ pub const KEYS: [&str; 70] = [
 
 /// One thing to say: a message key and the slots it is said with.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Item {
     /// The message, as `sdk.reason.grahaInRashi`.
     pub key: String,
     /// Its slots, in the order a message names them being irrelevant: the
     /// map is ordered, so a plan is the same bytes every time.
+    #[cfg_attr(
+        feature = "schema",
+        schemars(with = "std::collections::BTreeMap<String, serde_json::Value>")
+    )]
     pub params: Params,
 }
 
@@ -217,6 +222,7 @@ impl Item {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct Plan {
     /// The items, in the order they are said.

@@ -25,6 +25,119 @@ pub struct Record {
     /// describes a C request rather than a JSON record.
     pub reads: Option<&'static str>,
     run: fn(&Context, &str) -> Result<Answered, Error>,
+    #[cfg_attr(
+        not(feature = "schema"),
+        expect(dead_code, reason = "read only by the `schema` feature's methods")
+    )]
+    schemas: Schemas,
+}
+
+/// Writes one type's JSON Schema into a generator, answering the
+/// reference to it.
+#[cfg(feature = "schema")]
+type SchemaFn = fn(&mut schemars::SchemaGenerator) -> schemars::Schema;
+
+/// A record's request and answer as JSON Schema, each derived from the
+/// type serde reads or writes; empty without the `schema` feature, and
+/// either one absent where its type does not carry one yet.
+#[derive(Clone, Copy, Default)]
+struct Schemas {
+    #[cfg(feature = "schema")]
+    request: Option<SchemaFn>,
+    #[cfg(feature = "schema")]
+    answer: Option<SchemaFn>,
+    /// The records the request carries inside it by name, each read by
+    /// its own reader: what a caller may ask the schema of one at a time.
+    #[cfg(feature = "schema")]
+    parts: &'static [&'static str],
+}
+
+/// What a record's schema says of a part whose reader reads no single
+/// type yet: an object, which the reader checks; never stricter than it.
+#[cfg(feature = "schema")]
+pub(crate) const UNSTATED: &str = "its schema is not stated yet; the record's own reader checks it";
+
+/// A part whose schema is not stated yet, by the name it is written under.
+#[cfg(feature = "schema")]
+pub(crate) fn unstated(name: &str) -> schemars::Schema {
+    let said = format!("The `{name}` record: {UNSTATED}.");
+    schemars::json_schema!({ "type": "object", "description": said })
+}
+
+/// A theme as a record writes it: a shipped theme to start from and the
+/// changes laid over it, each group naming only what it changes, so no
+/// part is required.
+#[cfg(all(feature = "schema", feature = "svg"))]
+pub(crate) struct ThemePatch;
+
+#[cfg(all(feature = "schema", feature = "svg"))]
+impl schemars::JsonSchema for ThemePatch {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("ThemePatch")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "object",
+            "properties": {
+                "extends": {
+                    "type": "string",
+                    "description": "The shipped theme the changes are laid over; the light one when left out.",
+                },
+                "style": { "type": "object", "description": "The style's changes." },
+                "content": { "type": "object", "description": "The content's changes." },
+            },
+        })
+    }
+}
+
+/// `T`'s schema, inlined, with `extra`'s parts beside its own: the shape
+/// of a reader that takes those parts out by name and reads the rest as
+/// `T`, so the whole is as strict as `T` and no stricter.
+#[cfg(feature = "schema")]
+pub(crate) fn beside<T: schemars::JsonSchema>(
+    generator: &mut schemars::SchemaGenerator,
+    extra: Vec<(&str, schemars::Schema)>,
+) -> schemars::Schema {
+    let mut schema = T::json_schema(generator);
+    if let Some(properties) = schema
+        .get_mut("properties")
+        .and_then(serde_json::Value::as_object_mut)
+    {
+        for (name, part) in extra {
+            properties.insert(name.to_owned(), part.to_value());
+        }
+    }
+    schema
+}
+
+/// The schemas of a record whose request reader reads `$request` and
+/// whose answer serde writes from `$answer`; `schemas!()` for one whose
+/// types carry none yet.
+macro_rules! schemas {
+    () => {
+        Schemas::default()
+    };
+    (fn $request:path => $answer:ty, parts: $parts:expr) => {
+        Schemas {
+            #[cfg(feature = "schema")]
+            request: Some($request),
+            #[cfg(feature = "schema")]
+            answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
+            #[cfg(feature = "schema")]
+            parts: &$parts,
+        }
+    };
+    ($request:ty => $answer:ty) => {
+        Schemas {
+            #[cfg(feature = "schema")]
+            request: Some(schemars::SchemaGenerator::subschema_for::<$request>),
+            #[cfg(feature = "schema")]
+            answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
+            #[cfg(feature = "schema")]
+            parts: &[],
+        }
+    };
 }
 
 impl core::fmt::Debug for Record {
@@ -45,6 +158,40 @@ impl Record {
     /// whatever the area refuses once it runs.
     pub fn answer(&self, context: &Context, json: &str) -> Result<Answered, Error> {
         (self.run)(context, json)
+    }
+
+    /// The record's request as JSON Schema, written into `generator`:
+    /// the reference to it, its definitions left in the generator. Never
+    /// stricter than the reader, because it is derived from the type the
+    /// reader deserialises. `None` where that type carries no schema yet.
+    #[cfg(feature = "schema")]
+    #[must_use]
+    pub fn request_schema(
+        &self,
+        generator: &mut schemars::SchemaGenerator,
+    ) -> Option<schemars::Schema> {
+        self.schemas.request.map(|schema| schema(generator))
+    }
+
+    /// The records the request carries inside it by name, each read by
+    /// its own reader (`chart.found`'s `kp`, `almanac.days`'s `muhurta`):
+    /// the parts a caller may ask the schema of one at a time, where the
+    /// whole would be more than a tool list should carry.
+    #[cfg(feature = "schema")]
+    #[must_use]
+    pub fn parts(&self) -> &'static [&'static str] {
+        self.schemas.parts
+    }
+
+    /// The record's answer value as JSON Schema, as
+    /// [`Record::request_schema`] writes the request's.
+    #[cfg(feature = "schema")]
+    #[must_use]
+    pub fn answer_schema(
+        &self,
+        generator: &mut schemars::SchemaGenerator,
+    ) -> Option<schemars::Schema> {
+        self.schemas.answer.map(|schema| schema(generator))
     }
 }
 
@@ -101,6 +248,7 @@ pub fn records() -> Vec<Record> {
             title: "Match two names by their first syllables",
             reads: None,
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
+            schemas: schemas!(crate::NaamRequest => crate::NaamMilan),
         },
         Record {
             name: "almanac.days",
@@ -108,6 +256,7 @@ pub fn records() -> Vec<Record> {
             title: "Every day of a range at a place, and what is asked beside them",
             reads: Some(crate::DaysRequest::DESCRIPTION),
             run: days,
+            schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
         },
         #[cfg(feature = "chart")]
         Record {
@@ -126,6 +275,7 @@ pub fn records() -> Vec<Record> {
                     provenance: Some(composed.founded.provenance.clone()),
                 })
             },
+            schemas: schemas!(fn crate::found_request::schema => crate::Composed<'static>, parts: crate::ChartRecords::NAMES),
         },
         #[cfg(feature = "numerology")]
         Record {
@@ -134,6 +284,7 @@ pub fn records() -> Vec<Record> {
             title: "A name and a birth date read under numerology",
             reads: None,
             run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
+            schemas: schemas!(crate::NumerologyRequest => teistro_numerology::Profile),
         },
         #[cfg(feature = "pakshi")]
         Record {
@@ -145,6 +296,7 @@ pub fn records() -> Vec<Record> {
                 let asked = crate::PakshiRequest::from_json(json)?;
                 Answered::sealed(context.almanac().pakshi_request(&asked)?)
             },
+            schemas: schemas!(crate::pakshi_request::RequestAsked => Vec<crate::PakshiDay>),
         },
         #[cfg(feature = "rashifal")]
         Record {
@@ -156,6 +308,7 @@ pub fn records() -> Vec<Record> {
                 let asked = crate::RashifalBatch::from_json(json)?;
                 Answered::sealed(context.chart().rashifal_answers(&asked)?)
             },
+            schemas: schemas!(crate::rashifal_request::BatchAsked => Vec<crate::RashifalAnswer>),
         },
         #[cfg(feature = "research")]
         Record {
@@ -170,6 +323,7 @@ pub fn records() -> Vec<Record> {
                     crate::ResearchAnswer::Tested(tested) => Answered::sealed(tested),
                 }
             },
+            schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
     all.extend(time_records());
@@ -195,6 +349,7 @@ fn engine_records() -> [Record; 2] {
                 let value = context.engine().call(&asked.name, &arguments)?;
                 engine_answer(context, &asked, &asked.name, value)
             },
+            schemas: schemas!(crate::EngineCall => serde_json::Value),
         },
         Record {
             name: "engine.manifest",
@@ -206,6 +361,7 @@ fn engine_records() -> [Record; 2] {
                 let manifest = context.engine().manifest()?;
                 engine_answer(context, &asked, "manifest", written(&manifest)?)
             },
+            schemas: schemas!(crate::ManifestRequest => crate::NativeManifest),
         },
     ]
 }
@@ -239,6 +395,7 @@ fn time_records() -> [Record; 4] {
                 let asked = crate::ResolveRequest::from_json(json)?;
                 Answered::plain(&context.time().resolve(&asked.civil, &asked.zone)?)
             },
+            schemas: schemas!(crate::time_request::ResolveAsked => crate::Resolved),
         },
         Record {
             name: "time.civil",
@@ -253,6 +410,7 @@ fn time_records() -> [Record; 4] {
                         .civil_of(asked.instant, &asked.zone, asked.calendar)?;
                 Answered::plain(&crate::CivilReading { civil, zone })
             },
+            schemas: schemas!(crate::time_request::CivilAsked => crate::CivilReading),
         },
         Record {
             name: "time.convert",
@@ -263,6 +421,7 @@ fn time_records() -> [Record; 4] {
                 let asked = crate::ScaleRequest::from_json(json)?;
                 Answered::plain(&context.time().convert(asked.jd, asked.from, asked.to)?)
             },
+            schemas: schemas!(crate::ScaleRequest => crate::scale::Conversion),
         },
         Record {
             name: "calendar.convert",
@@ -276,6 +435,7 @@ fn time_records() -> [Record; 4] {
                 let weekday = calendars.weekday_of(&date)?;
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
+            schemas: schemas!(crate::time_request::CalendarAsked => crate::CalendarReading),
         },
     ]
 }
@@ -299,14 +459,13 @@ fn days(context: &Context, json: &str) -> Result<Answered, Error> {
         asked.offset,
         &asked.beside,
     )?;
-    let mut value = serde_json::Map::new();
-    value.insert(String::from("days"), written(&answer.days.value)?);
-    value.insert(String::from("dayHashes"), written(&answer.day_hashes)?);
-    if let serde_json::Value::Object(sections) = written(&answer.sections()?)? {
-        value.extend(sections);
-    }
+    let value = written(&crate::days_request::DaysWritten {
+        days: &answer.days.value,
+        day_hashes: &answer.day_hashes,
+        sections: answer.sections()?,
+    })?;
     Ok(Answered {
-        value: serde_json::Value::Object(value),
+        value,
         provenance: Some(answer.days.provenance),
     })
 }

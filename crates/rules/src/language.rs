@@ -89,6 +89,21 @@ impl Body {
     }
 }
 
+/// A graha's key or `LAGNA`, as the reader below takes it.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Body {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("RuleBody")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "description": "A graha's key (`SUN`, `graha.SUN`, …) or `LAGNA`.",
+        })
+    }
+}
+
 impl Serialize for Body {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(self.key())
@@ -145,6 +160,23 @@ const KARAKAS: [(&str, CharaKaraka); 8] = [
     ("PiK", CharaKaraka::Pitrikaraka),
 ];
 
+/// A chara karaka by its abbreviation.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Karaka {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Karaka")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let abbreviations: Vec<&str> = KARAKAS.iter().map(|(a, _)| *a).collect();
+        schemars::json_schema!({
+            "type": "string",
+            "enum": abbreviations,
+            "description": "A chara karaka, by its abbreviation.",
+        })
+    }
+}
+
 impl Serialize for Karaka {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(self.abbreviation())
@@ -188,6 +220,7 @@ impl Karaka {
 
 /// Which chara karaka scheme a rule reads: seven grahas, or eight with Rahu.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
 pub enum KarakaScheme {
     /// The Sun to Saturn.
@@ -314,6 +347,7 @@ pub const KINDS: [&str; 64] = [
 
 /// A condition: a predicate over the chart, or a combination of conditions.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
     tag = "type",
     rename_all = "kebab-case",
@@ -588,6 +622,7 @@ pub enum Condition {
     PanchangaPaksha {
         /// Which, `shukla` or `krishna`.
         #[serde(with = "paksha")]
+        #[cfg_attr(feature = "schema", schemars(with = "String"))]
         paksha: Paksha,
     },
     /// The birth weekday is one of these.
@@ -830,6 +865,7 @@ pub enum Condition {
 
 /// A natural relationship between two grahas.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Relation {
     /// A friend.
@@ -861,6 +897,7 @@ impl Relation {
 /// Where an intervention comes from, and what obstructs it (BPHS ch. 31
 /// v. 9's table: 4 2 11 5 over 10 12 3 9).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum ArgalaPlace {
     /// The second, obstructed from the twelfth.
@@ -891,6 +928,7 @@ pub const SELF: &str = "SELF";
 
 /// Which node's side the seven stand on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum NodeSide {
     /// Between Rahu and Ketu in the zodiac's own direction: the ascending arc.
@@ -901,6 +939,7 @@ pub enum NodeSide {
 
 /// A nakshatra's pada, 1 to 4.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
 pub struct Pada(u8);
 
@@ -941,6 +980,7 @@ impl From<Pada> for u8 {
 
 /// Which end of a limb a condition measures.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum Edge {
     /// Its beginning: so many ghatikas after it started.
@@ -951,6 +991,7 @@ pub enum Edge {
 
 /// Which eclipse.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum EclipseKind {
     /// Of the Sun.
@@ -1201,6 +1242,7 @@ impl Condition {
 /// text or a faithful translation, 2 an implementation, 3 a secondary source,
 /// 4 nothing found.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(try_from = "u8", into = "u8")]
 pub struct EvidenceRank(u8);
 
@@ -1241,6 +1283,7 @@ impl From<EvidenceRank> for u8 {
 
 /// Where a rule or a table comes from.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Source {
     /// The text.

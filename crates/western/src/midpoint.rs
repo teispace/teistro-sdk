@@ -24,6 +24,7 @@ pub const MAX_MIDPOINT_ORB_DEG: f64 = MAX_PARALLEL_ORB_DEG;
 /// What the equal distances are asked: how far from the axis a planet may
 /// stand.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields, default)]
 pub struct MidpointRequest {
     /// The orb from the nearer point of the axis, degrees:
@@ -94,6 +95,7 @@ impl MidpointRequest {
 /// A planet equally distant from two others, within the orb of the axis
 /// through their midpoint.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct MidpointRow {
     /// The earlier planet of the pair, in the order given.
@@ -169,6 +171,7 @@ pub fn midpoints(
 /// the orb of the axis through the midpoint of two of the other's
 /// (`03-design/western-midpoints.md`, decision 9).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct SynastryMidpointRow {
     /// The earlier planet of the pair, in the order its chart gives them.

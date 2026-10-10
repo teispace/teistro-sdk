@@ -37,7 +37,10 @@ use teistro_port_ephemeris::EphemerisProvider;
 pub use teistro_port_ephemeris::load::Adapter;
 use teistro_port_ephemeris::native::NativeFunction;
 
+mod schemas;
 mod tools;
+
+pub use schemas::Detail;
 
 /// The stateless revision the server speaks.
 pub const MODERN: &str = "2026-07-28";
@@ -160,6 +163,10 @@ pub struct Server {
     engine: Engine,
     plugin: Option<Plugin>,
     legacy: bool,
+    detail: Detail,
+    /// The tool list, built on the first `tools/list`: it changes only
+    /// with the binary and the engine, both fixed for the process.
+    listed: Option<Map<String, Value>>,
     contexts: HashMap<ContextKey, Context>,
 }
 
@@ -169,6 +176,8 @@ impl core::fmt::Debug for Server {
             .field("engine", &self.engine)
             .field("plugin", &self.plugin.as_ref().map(|p| p.name.as_str()))
             .field("legacy", &self.legacy)
+            .field("detail", &self.detail)
+            .field("listed", &self.listed.is_some())
             .field("contexts", &self.contexts.len())
             .finish()
     }
@@ -182,7 +191,21 @@ impl Server {
             engine,
             plugin: None,
             legacy: false,
+            detail: Detail::Lean,
+            listed: None,
             contexts: HashMap::new(),
+        }
+    }
+
+    /// The same server, its tool list stating each record's schema in
+    /// `detail`: [`Detail::Lean`] unless a client validating structured
+    /// content asks for [`Detail::Full`].
+    #[must_use]
+    pub fn with_detail(self, detail: Detail) -> Server {
+        Server {
+            detail,
+            listed: None,
+            ..self
         }
     }
 
@@ -283,7 +306,12 @@ impl Server {
             "server/discover" => Ok(discover()),
             "tools/list" => {
                 let era = self.era(params)?;
-                let mut list = tools::list(self.operations());
+                let detail = self.detail;
+                let operations = self.plugin.as_ref().map_or(&[][..], |p| &p.operations);
+                let mut list = self
+                    .listed
+                    .get_or_insert_with(|| tools::list(operations, detail))
+                    .clone();
                 if era == Era::Modern {
                     list.insert(String::from("ttlMs"), json!(LIST_TTL_MS));
                     list.insert(String::from("cacheScope"), json!("public"));
@@ -353,6 +381,8 @@ impl Server {
         };
         let outcome = if name == tools::DESCRIBE {
             tools::describe(arguments)
+        } else if name == schemas::DESCRIBE {
+            schemas::describe(arguments)
         } else if let Some(operation) = self.operation(name) {
             let request = json!({ "name": operation, "arguments": arguments }).to_string();
             self.engine_answer(request)

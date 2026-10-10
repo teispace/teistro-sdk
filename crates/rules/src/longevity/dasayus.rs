@@ -20,6 +20,7 @@ use teistro_dasha::{VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS};
 
 /// The span the dashas give from birth.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Dasayus {
     /// The lord of the Moon's nakshatra, whose dasha runs at birth.
     pub first_lord: Graha,

@@ -2546,6 +2546,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Typed tool schemas.** Every `teistro-mcp` record tool states its
+  record's JSON Schema 2020-12 as `inputSchema` and its envelope as
+  `outputSchema`, derived from the reader's and answer's types through a
+  new `schema` feature on `teistro` (and on `teistro-western`,
+  `teistro-kp`, `teistro-rules` and `teistro-interpret`). The list is
+  lean by default, each record a request carries by name answered by a
+  new `schema.describe` tool; `--schemas full` lists everything inline.
+  `CivilTime`'s schema no longer requires `nanos`, which its reader
+  never did. **Numbers:** none move.
 - **The engine passthrough, and one adapter loader.** The port's
   `load::Adapter` (feature `load`, native only) opens an adapter, and
   every provider it binds keeps the library loaded

@@ -1566,6 +1566,7 @@ checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 name = "teistro"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -1802,6 +1803,7 @@ dependencies = [
 name = "teistro-interpret"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -1841,6 +1843,7 @@ dependencies = [
 name = "teistro-kp"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -1871,6 +1874,7 @@ dependencies = [
 name = "teistro-mcp"
 version = "0.0.0"
 dependencies = [
+ "boon",
  "schemars",
  "serde",
  "serde_json",
@@ -2056,6 +2060,7 @@ name = "teistro-rules"
 version = "0.0.0"
 dependencies = [
  "criterion",
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",
@@ -2285,6 +2290,7 @@ dependencies = [
 name = "teistro-western"
 version = "0.0.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "teistro-aspect",

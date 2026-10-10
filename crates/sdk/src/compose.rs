@@ -106,6 +106,7 @@ pub struct WesternRecords {
 /// when its record was not sent.
 #[cfg(feature = "western")]
 #[derive(Clone, Debug, Default, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct WesternTables {
     /// Every chart's progressions and directions.
     pub progressions: Vec<crate::Progressions>,
@@ -275,6 +276,68 @@ impl ChartRecords {
         Ok(())
     }
 
+    /// The record `name`'s JSON Schema, from the type its reader in
+    /// [`ChartRecords::read`] reads, so never stricter than it; `None` for
+    /// a record whose reader reads no single type yet, or whose family
+    /// this build leaves out. The agent server's tests list each `None`.
+    #[cfg(feature = "schema")]
+    pub(crate) fn schema(
+        name: &str,
+        generator: &mut schemars::SchemaGenerator,
+    ) -> Option<schemars::Schema> {
+        /// The schema of a record a family reads, `None` without it.
+        macro_rules! family {
+            ($family:literal, $wire:ty) => {{
+                #[cfg(feature = $family)]
+                {
+                    Some(generator.subschema_for::<$wire>())
+                }
+                #[cfg(not(feature = $family))]
+                {
+                    None
+                }
+            }};
+        }
+        match name {
+            "rules" => Some(generator.subschema_for::<RuleRequest>()),
+            "interpret" => Some(generator.subschema_for::<PlanRequest>()),
+            "theme" => family!("svg", crate::records::ThemePatch),
+            "varsha" => family!("tajika", crate::VarshaRequest),
+            "synastry" => {
+                #[cfg(feature = "western")]
+                {
+                    Some(crate::western_aspects::synastry_schema(generator))
+                }
+                #[cfg(not(feature = "western"))]
+                {
+                    None
+                }
+            }
+            "sadeSati" => Some(generator.subschema_for::<crate::sade_sati_request::Asked>()),
+            "gochar" => Some(generator.subschema_for::<crate::gochar_request::Asked>()),
+            "hits" => Some(generator.subschema_for::<crate::hit_request::Asked>()),
+            "dignities" => Some(generator.subschema_for::<DignityRequest>()),
+            "fortitudes" => Some(generator.subschema_for::<FortitudeRequest>()),
+            "lots" => Some(generator.subschema_for::<LotRequest>()),
+            "considerations" => Some(generator.subschema_for::<ConsiderationRules>()),
+            "perfection" => Some(generator.subschema_for::<PerfectionRequest>()),
+            "matching" => Some(generator.subschema_for::<PartnerMatching>()),
+            "kp" => family!("kp", crate::kp_request::Asked),
+            "prashna" => family!("prashna", crate::PrashnaRequest),
+            "remedies" => family!("remedies", crate::RemedyRequest),
+            "lalkitab" => family!("lalkitab", crate::LalKitabRequest),
+            "rectification" => family!("rectification", crate::RectificationRequest),
+            "progressions" => family!("western", crate::progressions_request::Asked),
+            "westernAspects" => family!("western", crate::AspectRequest),
+            "parallels" => family!("western", crate::ParallelRequest),
+            "antiscia" => family!("western", crate::AntisciaRequest),
+            "midpoints" => family!("western", crate::MidpointRequest),
+            "westernHouses" => family!("western", crate::HouseRequest),
+            "harmonic" => family!("western", crate::HarmonicRequest),
+            _ => None,
+        }
+    }
+
     /// The records, refused where two of them ask for one table: the
     /// fortitudes carry their own essential dignities, so a `dignities`
     /// record beside them is refused rather than one of the two silently
@@ -351,11 +414,13 @@ impl ChartRecords {
 /// say, and each section its records asked for, a row a chart in the
 /// batch's order, empty where none was asked.
 #[derive(Clone, Debug, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Composed<'r> {
     /// The documents, the batch's provenance sealed over the list. Its
     /// JSON is the documents alone, as `charts`: the provenance is the
     /// whole answer's.
     #[serde(rename = "charts", serialize_with = "documents")]
+    #[cfg_attr(feature = "schema", schemars(with = "Vec<Document>"))]
     pub founded: Envelope<Vec<Document>>,
     /// Each chart's own content hash, in the batch's order.
     pub hashes: Vec<Hash>,

@@ -17,6 +17,7 @@ use teistro_muhurta::{ActivityRules, Native, Ranking, Request};
 /// An activity the SDK ships the rules of, which a request may name
 /// rather than spell out.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Activity {
     /// A marriage by Raman's *Muhurtha* ([`ActivityRules::raman_marriage`]).
@@ -103,6 +104,7 @@ const ASTA: [(&str, Criterion); 3] = [
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct MuhurtaRequest {
     rules: ActivityRules,
@@ -318,8 +320,9 @@ fn named<T: Copy>(name: &str, names: &[(&str, T)], field: &str) -> Result<T, Err
 /// because each is a name or a value and the refusal should say which
 /// field was wrong rather than that no shape matched.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct Asked {
+pub(crate) struct Asked {
     rules: Value,
     #[serde(default)]
     native: Option<Native>,

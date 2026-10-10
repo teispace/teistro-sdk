@@ -23,6 +23,7 @@ const MATCHING: &str = "matching";
 /// the side the partner stands on, every chart of the batch on the other,
 /// and the rules of each system.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct PartnerMatching {
     /// Whose birth every chart is matched with.
@@ -45,6 +46,7 @@ pub struct PartnerMatching {
 
 /// One chart matched with a partner under both systems.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Matched {
     /// The North's eight kootas, out of 36.

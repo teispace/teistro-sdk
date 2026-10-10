@@ -25,6 +25,7 @@ pub const SIDEREAL_MONTH_DAYS: f64 = 27.321_661_5;
 /// One span of time a rate is stated in, spelled `"DAY"`, `"YEAR"` or
 /// `{"DAYS": 2.5}` in a request.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Span {
     /// A day.
@@ -55,6 +56,7 @@ impl Span {
 /// A rate: one `sky` span of the ephemeris measures one `life` span of the
 /// native's life, spelled `{"sky": "DAY", "life": "YEAR"}` in a request.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Rate {
     /// The span of the sky's time.
     pub sky: Span,
@@ -97,6 +99,7 @@ impl Default for Rate {
 
 /// How long a year of life is, against the calendar (C236).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum YearMeasure {
     /// The mean tropical year, [`TROPICAL_YEAR_DAYS`]: what the mean Sun

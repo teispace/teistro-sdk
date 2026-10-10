@@ -83,6 +83,7 @@ pub struct ResearchRequest {
 /// What a study answers: the counts, or a test's rows, each with the
 /// study's provenance, whose input hash is its pre-registration.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(untagged)]
 pub enum ResearchAnswer {
     /// A `COUNTS` study's table.
@@ -91,8 +92,21 @@ pub enum ResearchAnswer {
     Tested(Envelope<Tested>),
 }
 
+/// What a study's value is, for its schema: the counts or a test's rows.
+#[cfg(feature = "schema")]
+#[derive(schemars::JsonSchema)]
+#[schemars(untagged)]
+#[allow(dead_code, reason = "a schema's shape, never built")]
+pub(crate) enum Studied {
+    /// A `COUNTS` study's table.
+    Counts(Counts),
+    /// Any other study's rows.
+    Tested(Tested),
+}
+
 /// The four studies, as a request names them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum StudyKind {
     Counts,
@@ -103,6 +117,7 @@ enum StudyKind {
 
 /// A birth as a binding writes it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct BirthAsked {
     instant: f64,
@@ -117,6 +132,7 @@ struct BirthAsked {
 
 /// A subject as a binding writes it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct SubjectAsked {
     birth: BirthAsked,
@@ -127,8 +143,9 @@ struct SubjectAsked {
 /// JSON until the study is known, because each is read by the reader the
 /// study gives it.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct RequestAsked {
+pub(crate) struct RequestAsked {
     study: StudyKind,
     #[serde(default)]
     births: Option<Vec<BirthAsked>>,

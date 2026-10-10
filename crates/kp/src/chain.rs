@@ -22,6 +22,7 @@ pub const MAX_LEVELS: usize = 9;
 /// the level exactly when [`Span::contains`] says it is. `end` wraps to 0°
 /// for the last part of Revati.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Span {
     /// The first longitude inside the level.
     pub start: Nas,
@@ -59,6 +60,7 @@ impl Span {
 
 /// One level of a longitude's chain: its lord and the arc it spans.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Level {
     /// The Vimshottari lord ruling the level.
     pub lord: Graha,
@@ -80,6 +82,7 @@ impl Level {
 /// A longitude's lords as KP reads them: the sign's, the star's, the
 /// sub's and the sub-sub's.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[non_exhaustive]
 pub struct Lords {
@@ -142,6 +145,22 @@ impl<const N: usize> Chain<N> {
     )]
     pub const fn deepest(&self) -> Level {
         self.levels[N - 1]
+    }
+}
+
+/// The levels in order, the star's first: at most `N`.
+#[cfg(feature = "schema")]
+impl<const N: usize> schemars::JsonSchema for Chain<N> {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Owned(format!("Chain{N}"))
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "array",
+            "items": generator.subschema_for::<Level>(),
+            "maxItems": N,
+        })
     }
 }
 

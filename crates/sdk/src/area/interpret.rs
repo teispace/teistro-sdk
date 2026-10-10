@@ -476,6 +476,7 @@ impl<'a> InterpretArea<'a> {
 /// nothing to say is present and empty, which is an answer
 /// (`03-design/plans-at-the-boundary.md` §4).
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Plans {
     /// Where each graha stands and who shares a sign.
     #[serde(skip_serializing_if = "Option::is_none")]

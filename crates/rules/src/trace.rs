@@ -67,6 +67,7 @@ use crate::table::{SignDegree, TableKey};
 
 /// A reference resolved while a condition was checked.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(
     tag = "kind",
     rename_all = "camelCase",
@@ -115,10 +116,12 @@ pub enum Resolved {
 
 /// One condition as it was checked.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Step<'c> {
     /// The condition.
     #[serde(rename = "type", serialize_with = "kind")]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub condition: &'c Condition,
     /// Whether it held.
     pub held: bool,
@@ -132,10 +135,12 @@ pub struct Step<'c> {
 
 /// A rule's answer and how it was reached.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Explanation<'c> {
     /// The rule.
     #[serde(serialize_with = "key")]
+    #[cfg_attr(feature = "schema", schemars(with = "String"))]
     pub rule: &'c Rule,
     /// The answer, as [`Evaluator::evaluate`](crate::Evaluator::evaluate)
     /// gives it.

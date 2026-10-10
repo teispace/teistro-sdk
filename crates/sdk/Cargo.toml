@@ -17,6 +17,7 @@ publish = false
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+schemars = { version = "1.2", optional = true }
 teistro-aspect = { path = "../aspect" }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
@@ -102,6 +103,48 @@ research = ["chart", "dep:teistro-research"]
 svg = ["chart", "dep:teistro-render-svg"]
 tajika = ["chart", "dep:teistro-tajika"]
 western = ["chart", "dep:teistro-western"]
+# Each record's request and answer as JSON Schema, derived by schemars
+# from the types serde reads and writes (`03-design/mcp-server.md` §7,
+# P1): what the agent server's tools state. A family left out of the
+# build contributes nothing (`?`).
+schema = [
+    "dep:schemars",
+    "teistro-aspect/schema",
+    "teistro-astro/schema",
+    "teistro-calendar/schema",
+    "teistro-chart/schema",
+    "teistro-core/schema",
+    "teistro-geometry/schema",
+    "teistro-houses/schema",
+    "teistro-panchanga/schema",
+    "teistro-points/schema",
+    "teistro-port-ephemeris/schema",
+    "teistro-siddhanta/schema",
+    "teistro-state/schema",
+    "teistro-time/schema",
+    "teistro-vargas/schema",
+    "teistro-dasha?/schema",
+    "teistro-gochar?/schema",
+    "teistro-hellenistic?/schema",
+    "teistro-interpret?/schema",
+    "teistro-kp?/schema",
+    "teistro-lalkitab?/schema",
+    "teistro-matching?/schema",
+    "teistro-muhurta?/schema",
+    "teistro-numerology?/schema",
+    "teistro-pakshi?/schema",
+    "teistro-prashna?/schema",
+    "teistro-rashifal?/schema",
+    "teistro-rectification?/schema",
+    "teistro-remedies?/schema",
+    "teistro-render-svg?/schema",
+    "teistro-research?/schema",
+    "teistro-rules?/schema",
+    "teistro-serial?/schema",
+    "teistro-strength?/schema",
+    "teistro-tajika?/schema",
+    "teistro-western?/schema",
+]
 builtin-ephemeris = ["dep:teistro-ephemeris-builtin"]
 builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]

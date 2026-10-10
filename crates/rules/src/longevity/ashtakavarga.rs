@@ -78,6 +78,7 @@ const SOLAR_YEAR: f64 = 365.0;
 
 /// Which table the signs are measured by (C311).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum SignMeasures {
     /// *Jataka Parijata*'s, Virgo 5.
@@ -100,6 +101,7 @@ impl SignMeasures {
 
 /// How a graha's pinda becomes years (C312).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum Divisor {
     /// Over 30, twelves cast out (vv. 44 and 45).
@@ -112,6 +114,7 @@ pub enum Divisor {
 
 /// How each graha's ashtakavarga years are reduced (C317).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum AshtakaReductions {
     /// v. 46: twice at exaltation, half at debilitation or eclipsed, in
@@ -127,6 +130,7 @@ pub enum AshtakaReductions {
 
 /// Which bindus v. 50's span counts in the seven's signs (C318).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum OccupiedBindus {
     /// After the trine and single-lord reductions (vv. 39 to 42), which
@@ -180,6 +184,7 @@ pub fn lagna_bindus(signs: &[Rashi; 7], lagna: Rashi) -> [u8; 12] {
 
 /// The choices the ashtakavarga spans are read under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct AshtakavargaAyusRules {
     /// Which sign measures.
@@ -220,6 +225,7 @@ impl From<&AshtakavargaReading> for Bindus {
 
 /// One graha's years from its ashtakavarga, step by step.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakaGiver {
     /// Which graha.
     pub graha: Graha,
@@ -242,6 +248,7 @@ pub struct AshtakaGiver {
 
 /// The lagna's years from its own ashtakavarga (v. 48), as a graha's are.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct LagnaAshtaka {
     /// Its bindus by sign, Aries to Pisces, before the reductions.
     pub bindus: [u8; 12],
@@ -255,6 +262,7 @@ pub struct LagnaAshtaka {
 
 /// When v. 49 calls for the ashtakavarga span, clause by clause.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalledFor {
     /// The Moon outside the kendras with another graha in her sign.
     pub moon_joined_outside_a_kendra: bool,
@@ -265,6 +273,7 @@ pub struct CalledFor {
 
 /// The ashtakavarga spans of a chart.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct AshtakavargaAyus {
     /// The seven, the Sun to Saturn.
     pub grahas: [AshtakaGiver; 7],

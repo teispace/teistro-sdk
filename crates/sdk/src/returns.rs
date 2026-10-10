@@ -13,6 +13,7 @@ use crate::hit_request::HitRequest;
 
 /// One return: a graha back on the longitude it held at birth.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BodyReturn {
     /// Whose return.
     pub graha: Graha,

@@ -5,11 +5,12 @@
 use std::io::{BufRead as _, Write as _};
 use std::process::ExitCode;
 
-use teistro_mcp::{Adapter, Engine, LEGACY, MODERN, Server};
+use teistro_mcp::{Adapter, Detail, Engine, LEGACY, MODERN, Server};
 
 const USAGE: &str = "teistro-mcp: the Teistro SDK as Model Context Protocol tools, over stdio
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
+                   [--schemas DETAIL]
 
   --ephemeris NAME       the ephemeris every tool computes with: BUILTIN (the
                          default), SURYA_SIDDHANTA or NONE; with a plugin, the
@@ -18,6 +19,11 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          ships, computed with first; its own operations become
                          tools named `engine.<name>`
   --plugin-config JSON   the adapter's own options
+  --schemas DETAIL       how much schema the tool list states: lean (the
+                         default; the records a request carries by name are
+                         answered by `schema.describe`, and no answer schema
+                         is listed) or full (everything, for a client that
+                         validates structured content)
   --help                 this text
   --version              the server's version and the revisions it speaks
 ";
@@ -27,6 +33,7 @@ struct Options {
     engine: Engine,
     plugin: Option<String>,
     plugin_config: Option<String>,
+    detail: Detail,
 }
 
 fn main() -> ExitCode {
@@ -75,7 +82,7 @@ fn main() -> ExitCode {
 /// when there is one.
 fn server(options: &Options) -> Result<Server, teistro::Error> {
     let Some(path) = &options.plugin else {
-        return Ok(Server::new(options.engine));
+        return Ok(Server::new(options.engine).with_detail(options.detail));
     };
     #[allow(
         unsafe_code,
@@ -84,7 +91,7 @@ fn server(options: &Options) -> Result<Server, teistro::Error> {
     // SAFETY: the operator named this library on the server's own command
     // line, which is the trust the binary itself runs with.
     let adapter = unsafe { Adapter::load(path, options.plugin_config.as_deref()) }?;
-    Server::with_plugin(options.engine, adapter)
+    Ok(Server::with_plugin(options.engine, adapter)?.with_detail(options.detail))
 }
 
 /// The options the command line names, `None` when it asked only for
@@ -92,6 +99,7 @@ fn server(options: &Options) -> Result<Server, teistro::Error> {
 fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, String> {
     let mut engine = Engine::Builtin;
     let (mut plugin, mut plugin_config) = (None, None);
+    let mut detail = Detail::default();
     let mut stdout = std::io::stdout();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -120,6 +128,15 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
             "--plugin-config" => {
                 plugin_config = Some(args.next().ok_or("`--plugin-config` takes JSON")?);
             }
+            "--schemas" => {
+                let name = args.next().ok_or("`--schemas` takes a detail")?;
+                detail = Detail::from_name(&name).ok_or_else(|| {
+                    format!(
+                        "no schema detail `{name}`; the details are {}",
+                        Detail::NAMES.join(", ")
+                    )
+                })?;
+            }
             _ => return Err(format!("no option `{arg}`")),
         }
     }
@@ -130,5 +147,6 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
         engine,
         plugin,
         plugin_config,
+        detail,
     }))
 }

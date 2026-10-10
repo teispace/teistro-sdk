@@ -15,6 +15,7 @@ use crate::asked::{DayAsked, offset_of, place_of};
 
 /// The instant a period's sky is read at (C358).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "at", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Snapshot {
     /// Sunrise at the place on the reference day, as the context reckons
@@ -224,6 +225,7 @@ impl RashifalRequest {
 
 /// One period read for each of the twelve signs.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct RashifalPeriod {
     /// The period's first day.
@@ -276,6 +278,7 @@ const RASHIFAL: &str = "rashifal";
 /// is: the days, the place and the offset, and optionally the snapshot,
 /// the grahas whose events are reported and Saturn's spells.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 struct PeriodAsked {
     #[serde(default)]
@@ -299,8 +302,9 @@ struct PeriodAsked {
 /// Many periods as a binding writes them, and the period the baseline
 /// engine's score is read for, when it is asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct BatchAsked {
+pub(crate) struct BatchAsked {
     periods: Vec<PeriodAsked>,
     #[serde(default)]
     baseline: Option<Period>,
@@ -402,6 +406,7 @@ impl PeriodAsked {
 /// baseline engine's score of each sign, Aries to Pisces, when it was
 /// asked.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct RashifalAnswer {
     /// The period read.

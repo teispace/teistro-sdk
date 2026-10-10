@@ -114,10 +114,39 @@ fn with_muhurta(_beside: AlmanacRequest, _json: &str) -> Result<AlmanacRequest, 
     Err(Error::left_out(MUHURTA).with_field(MUHURTA))
 }
 
+/// The records a range of days carries inside it by name.
+#[cfg(feature = "schema")]
+pub(crate) const PARTS: [&str; 2] = [MUHURTA, FESTIVALS];
+
+/// What `almanac.days` answers: the days, their own hashes, and each
+/// section asked beside them, laid flat.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct DaysWritten<'a> {
+    pub(crate) days: &'a [teistro_panchanga::Panchanga],
+    pub(crate) day_hashes: &'a [teistro_core::envelope::Hash],
+    #[serde(flatten)]
+    pub(crate) sections: crate::AlmanacSections,
+}
+
+/// The record's schema: the request as [`Asked`] reads it, with the
+/// muhurta search and the festival reckoning beside it.
+#[cfg(feature = "schema")]
+pub(crate) fn schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    #[cfg(feature = "muhurta")]
+    let muhurta = generator.subschema_for::<crate::muhurta_request::Asked>();
+    #[cfg(not(feature = "muhurta"))]
+    let muhurta = crate::records::unstated(MUHURTA);
+    let festivals = generator.subschema_for::<crate::festival_request::Asked>();
+    crate::records::beside::<Asked>(generator, vec![(MUHURTA, muhurta), (FESTIVALS, festivals)])
+}
+
 /// The request as a binding writes it, the records taken out.
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct Asked {
+pub(crate) struct Asked {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     calendar: Option<Calendar>,
     first: DayAsked,

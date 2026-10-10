@@ -2010,6 +2010,7 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
         let described = |name: &str| {
             files.iter().any(|(_, text)| {
                 text.contains(&format!("impl schemars::JsonSchema for {name} "))
+                    || text.contains(&format!("schemars::JsonSchema for {name}<"))
                     || text.contains(&format!("hand_schema!({name},"))
             })
         };
@@ -2064,6 +2065,9 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                         rule: RULE,
                     });
                 }
+                if carries {
+                    written_through_states_its_schema(&lines, index, &shown, outcome);
+                }
             }
             for found in hand_impl.captures_iter(text) {
                 let name = &found[1];
@@ -2084,6 +2088,55 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                 });
             }
         }
+    }
+}
+
+/// A field of a schema-deriving item that serde writes or reads through
+/// a function (`with`, `serialize_with`, `deserialize_with`) states what
+/// that function writes (`schemars(with = …)` or `schemars(schema_with =
+/// …)`) within the attributes beside it: schemars sees only the field's
+/// own type, so `charts` was described as an envelope where it is written
+/// as the list alone, and every rule reference as a rule where it is
+/// written as its key.
+fn written_through_states_its_schema(
+    lines: &[&str],
+    item: usize,
+    shown: &str,
+    outcome: &mut Outcome,
+) {
+    let Some(head) = lines.get(item) else {
+        return;
+    };
+    let indent = head.len() - head.trim_start().len();
+    let close = format!("{}}}", " ".repeat(indent));
+    let mut at = item + 1;
+    while let Some(line) = lines.get(at) {
+        if *line == close || line.trim_end() == format!("{close};") {
+            break;
+        }
+        let trimmed = line.trim_start();
+        let through = trimmed.starts_with("#[serde(")
+            && ["with = \"", "serialize_with = \"", "deserialize_with = \""]
+                .iter()
+                .any(|form| trimmed.contains(form));
+        if through {
+            let stated = (at.saturating_sub(3)..at + 4)
+                .filter_map(|near| lines.get(near))
+                .any(|near| {
+                    near.contains("schemars(with") || near.contains("schemars(schema_with")
+                });
+            if !stated {
+                outcome.failures.push(Finding {
+                    file: shown.to_owned(),
+                    line: at + 1,
+                    text: String::from(
+                        "writes a field through a function with no `schemars(with = …)` saying what it writes",
+                    ),
+                    rule: "serialised-type-describes-itself",
+                });
+            }
+        }
+        at += 1;
     }
 }
 

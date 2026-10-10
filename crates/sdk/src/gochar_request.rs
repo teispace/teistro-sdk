@@ -130,7 +130,8 @@ const GOCHAR: &str = "gochar";
 
 /// [`GocharRequest`] as the bindings write it.
 #[derive(Serialize, Deserialize)]
-struct Asked {
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub(crate) struct Asked {
     instants: Vec<f64>,
     #[serde(default)]
     from: GocharFrom,
