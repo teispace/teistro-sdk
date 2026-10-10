@@ -553,7 +553,7 @@ impl<'de> Deserialize<'de> for AnnualPlace {
 
 /// One birth's answer to a [`VarshaRequest`]: its years, and its own
 /// sahams.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, serde::Serialize)]
 pub struct Varsha {
     /// The years, each with its chart when a place was asked for.
     pub years: Vec<VarshaYear>,
@@ -571,7 +571,7 @@ pub struct Varsha {
 /// the office-bearers are read from the birth and the chart founded at
 /// that instant, so a second pass to fetch either would be a second chance
 /// to disagree about which year it is (`03-design/muntha.md`).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct VarshaYear {
     /// The instant, and which year of the birth it opens.
     pub pravesha: Pravesha,
@@ -584,7 +584,7 @@ pub struct VarshaYear {
 
 /// What a year's own chart says, for the office-bearers and whoever reads
 /// the chart after them.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct AnnualChart {
     /// The annual chart's lagna, sidereal degrees.
     pub lagna_deg: f64,

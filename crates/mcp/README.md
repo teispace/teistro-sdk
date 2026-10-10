@@ -26,5 +26,11 @@ documentation. An answer is `{value, provenance}`. A refusal is a tool
 error whose structured content is the SDK's error record, naming the
 field, the range and a hint.
 
+`chart.found` takes a whole chart request: the births (`instant` or
+`instants`), the place and clock, the sections as `true` flags, and a
+record for each table read off the charts, under the names every
+binding writes (`kp`, `fortitudes`, `varsha`, …). It answers the chart
+documents as `charts` and each table with a row a chart.
+
 Nothing reaches the file system or the network: the ephemeris is chosen
 on the command line and never by a tool argument.

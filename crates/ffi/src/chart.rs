@@ -29,7 +29,7 @@
 use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
-use teistro::{ChartRecords, ChartRequest, PlanRequest, RuleRequest, RuleSet};
+use teistro::{ChartRecords, ChartRequest};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::foundation::ChartFoundation;
@@ -5088,32 +5088,6 @@ pub unsafe extern "C" fn ts_chart_layout_row(
     })
 }
 
-/// The name a refusal gives a chart request's plans: the record every
-/// binding and the façade call `interpret`, not the C argument
-/// (`interpret_json`) that carries it, so a caller reads back the field
-/// they wrote (`interpret.readings`). Only a C caller can hand the
-/// argument itself something unreadable, and that refusal names it.
-const INTERPRET: &str = "interpret";
-
-/// The name a refusal gives a chart request's rule set, as [`INTERPRET`]
-/// (`rules.rules[0]`, not `rules_json.rules[0]`).
-const RULES: &str = "rules";
-
-/// The plans a request's `interpret_json` asks for, none of them for null; a
-/// refusal is named from the request's root, `interpret.readings`.
-///
-/// # Safety
-///
-/// `interpret_json` null or a NUL-terminated string.
-unsafe fn plan_request_of(interpret_json: *const c_char) -> Result<PlanRequest, Error> {
-    // SAFETY: the caller's contract.
-    let text = unsafe { optional_text(interpret_json, "interpret_json") }?;
-    let Some(text) = text else {
-        return Ok(PlanRequest::default());
-    };
-    PlanRequest::from_json(text).map_err(|error| error.under(INTERPRET))
-}
-
 /// Which step of the year lord's chain decided it
 /// (`03-design/varshesha.md`).
 ///
@@ -5695,132 +5669,6 @@ pub enum TsAffliction {
     UnderMalefic = 4,
 }
 
-/// The transits a request's `gochar_json` asks for, none for null; the
-/// façade reads and checks the record ([`teistro::GocharRequest::from_json`]),
-/// naming a refusal from its root, `gochar.instants`.
-///
-/// # Safety
-///
-/// `gochar_json` null or a NUL-terminated string.
-unsafe fn gochar_request_of(
-    gochar_json: *const c_char,
-) -> Result<Option<teistro::GocharRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(gochar_json, "gochar_json") }?
-        .map(teistro::GocharRequest::from_json)
-        .transpose()
-}
-
-/// The hit list a request's `hits_json` asks for, none for null; the
-/// façade reads and checks the record ([`teistro::HitRequest::from_json`]),
-/// naming a refusal from its root, `hits.to`.
-///
-/// # Safety
-///
-/// `hits_json` null or a NUL-terminated string.
-unsafe fn hit_request_of(hits_json: *const c_char) -> Result<Option<teistro::HitRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(hits_json, "hits_json") }?
-        .map(teistro::HitRequest::from_json)
-        .transpose()
-}
-
-/// The dignities a request's `dignities_json` asks for, none for null; the
-/// crate reads the record ([`teistro::DignityRequest::from_json`]), naming
-/// a refusal from its root, `dignities.rules.terms`.
-///
-/// # Safety
-///
-/// `dignities_json` null or a NUL-terminated string.
-unsafe fn dignity_request_of(
-    dignities_json: *const c_char,
-) -> Result<Option<teistro::DignityRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(dignities_json, "dignities_json") }?
-        .map(teistro::DignityRequest::from_json)
-        .transpose()
-}
-
-/// The fortitudes a request's `fortitudes_json` asks for, none for null;
-/// the crate reads the record ([`teistro::FortitudeRequest::from_json`]),
-/// naming a refusal from its root, `fortitudes.rules.beamsDeg`.
-///
-/// # Safety
-///
-/// `fortitudes_json` null or a NUL-terminated string.
-unsafe fn fortitude_request_of(
-    fortitudes_json: *const c_char,
-) -> Result<Option<teistro::FortitudeRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(fortitudes_json, "fortitudes_json") }?
-        .map(teistro::FortitudeRequest::from_json)
-        .transpose()
-}
-
-/// The lots a request's `lots_json` asks for, none for null; the crate
-/// reads the record ([`teistro::LotRequest::from_json`]), naming a
-/// refusal from its root, `lots.fortune`.
-///
-/// # Safety
-///
-/// `lots_json` null or a NUL-terminated string.
-unsafe fn lot_request_of(lots_json: *const c_char) -> Result<Option<teistro::LotRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(lots_json, "lots_json") }?
-        .map(teistro::LotRequest::from_json)
-        .transpose()
-}
-
-/// The considerations a request's `considerations_json` asks for, none
-/// for null; the crate reads the record
-/// ([`teistro::ConsiderationRules::from_json`]), naming a refusal from
-/// its root, `considerations.moonLateFromDeg`.
-///
-/// # Safety
-///
-/// `considerations_json` null or a NUL-terminated string.
-unsafe fn consideration_rules_of(
-    considerations_json: *const c_char,
-) -> Result<Option<teistro::ConsiderationRules>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(considerations_json, "considerations_json") }?
-        .map(teistro::ConsiderationRules::from_json)
-        .transpose()
-}
-
-/// The perfection a request's `perfection_json` asks for, none for null;
-/// the crate reads the record ([`teistro::PerfectionRequest::from_json`]),
-/// naming a refusal from its root, `perfection.quesited`.
-///
-/// # Safety
-///
-/// `perfection_json` null or a NUL-terminated string.
-unsafe fn perfection_request_of(
-    perfection_json: *const c_char,
-) -> Result<Option<teistro::PerfectionRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(perfection_json, "perfection_json") }?
-        .map(teistro::PerfectionRequest::from_json)
-        .transpose()
-}
-
-/// The Sade Sati a request's `sade_sati_json` asks for, none for null; the
-/// façade reads and checks the record
-/// ([`teistro::SadeSatiRequest::from_json`]), naming a refusal from its
-/// root, `sadeSati.to`.
-///
-/// # Safety
-///
-/// `sade_sati_json` null or a NUL-terminated string.
-unsafe fn sade_sati_request_of(
-    sade_sati_json: *const c_char,
-) -> Result<Option<teistro::SadeSatiRequest>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(sade_sati_json, "sade_sati_json") }?
-        .map(teistro::SadeSatiRequest::from_json)
-        .transpose()
-}
-
 impl GrahaColumns {
     /// The grahas, charts outermost, in the order `grahas` declares them.
     fn write(
@@ -5985,24 +5833,11 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
     Ok((place, kind, clock))
 }
 
-/// The rule set a request's `rules_json` names, or none for null; a refusal is
-/// named from the request's root, `rules.rules[0]`.
-///
-/// # Safety
-///
-/// `rules_json` null or a NUL-terminated string.
-unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe { optional_text(rules_json, "rules_json") }?
-        .map(|text| RuleRequest::from_json(text).and_then(|request| request.rule_set()))
-        .transpose()
-        .map_err(|error| error.under(RULES))
-}
-
 /// The JSON records a chart request carries beside its sections, each read
-/// and checked by the façade's own reader before anything is founded, so a
-/// bad record is refused before a chart is paid for, and each refusal is
-/// named from the record's root as every binding writes it.
+/// and checked by the façade's own reader ([`ChartRecords::read`]) before
+/// anything is founded, so a bad record is refused before a chart is paid
+/// for, and each refusal is named from the record's root as every binding
+/// writes it.
 struct AskedRecords;
 
 impl AskedRecords {
@@ -6012,68 +5847,61 @@ impl AskedRecords {
     ///
     /// Each of `asked`'s record fields null or a NUL-terminated string.
     unsafe fn of(asked: &TsChartRequest) -> Result<ChartRecords, Error> {
-        // SAFETY: the caller's contract, for every field read below. The
-        // theme names its fields from its own root, `theme.style.ink`,
-        // which is what every binding calls it, so its refusal stands.
-        unsafe {
-            // A family this build leaves out reads its record only to refuse
-            // one that was sent, so what it reads is always none.
-            let theme = crate::family::svg::request_of(asked.theme_json)?;
-            let kp = crate::family::kp::request_of(asked.kp_json)?;
-            let prashna = crate::family::prashna::request_of(asked.prashna_json)?;
-            let remedies = crate::family::remedies::request_of(asked.remedies_json)?;
-            let lalkitab = crate::family::lalkitab::request_of(asked.lalkitab_json)?;
-            let rectification = crate::family::rectification::request_of(asked.rectification_json)?;
-            let varsha = crate::family::tajika::request_of(asked.varsha_json)?;
-            #[cfg(not(feature = "svg"))]
-            let _ = theme;
-            #[cfg(not(feature = "kp"))]
-            let _ = kp;
-            #[cfg(not(feature = "prashna"))]
-            let _ = prashna;
-            #[cfg(not(feature = "remedies"))]
-            let _ = remedies;
-            #[cfg(not(feature = "lalkitab"))]
-            let _ = lalkitab;
-            #[cfg(not(feature = "rectification"))]
-            let _ = rectification;
-            #[cfg(not(feature = "tajika"))]
-            let _ = varsha;
-            let composed = ChartRecords {
-                rules: rule_set_of(asked.rules_json)?,
-                plans: plan_request_of(asked.interpret_json)?,
-                sade_sati: sade_sati_request_of(asked.sade_sati_json)?,
-                gochar: gochar_request_of(asked.gochar_json)?,
-                hits: hit_request_of(asked.hits_json)?,
-                dignities: dignity_request_of(asked.dignities_json)?,
-                fortitudes: fortitude_request_of(asked.fortitudes_json)?,
-                lots: lot_request_of(asked.lots_json)?,
-                considerations: consideration_rules_of(asked.considerations_json)?,
-                perfection: perfection_request_of(asked.perfection_json)?,
-                matching: optional_text(asked.matching_json, "matching_json")?
-                    .map(teistro::PartnerMatching::from_json)
-                    .transpose()?,
-                #[cfg(feature = "svg")]
-                theme,
-                #[cfg(feature = "kp")]
-                kp,
-                #[cfg(feature = "prashna")]
-                prashna,
-                #[cfg(feature = "remedies")]
-                remedies,
-                #[cfg(feature = "lalkitab")]
-                lalkitab,
-                #[cfg(feature = "rectification")]
-                rectification,
-                #[cfg(feature = "tajika")]
-                varsha,
-                #[cfg(feature = "western")]
-                western: crate::family::western::records_of(asked)?,
-            };
-            #[cfg(not(feature = "western"))]
-            let crate::family::western::Records = crate::family::western::records_of(asked)?;
-            composed.checked()
+        // Each record by the name the façade reads it under, beside the
+        // field that carries it; a field missing here is a record the
+        // boundary drops, which `tests/abi.rs` sends every one of.
+        let fields: [(&str, *const c_char, &str); ChartRecords::NAMES.len()] = [
+            ("theme", asked.theme_json, "theme_json"),
+            ("rules", asked.rules_json, "rules_json"),
+            ("interpret", asked.interpret_json, "interpret_json"),
+            ("varsha", asked.varsha_json, "varsha_json"),
+            ("gochar", asked.gochar_json, "gochar_json"),
+            ("hits", asked.hits_json, "hits_json"),
+            ("sadeSati", asked.sade_sati_json, "sade_sati_json"),
+            ("kp", asked.kp_json, "kp_json"),
+            ("prashna", asked.prashna_json, "prashna_json"),
+            ("remedies", asked.remedies_json, "remedies_json"),
+            ("lalkitab", asked.lalkitab_json, "lalkitab_json"),
+            (
+                "rectification",
+                asked.rectification_json,
+                "rectification_json",
+            ),
+            ("dignities", asked.dignities_json, "dignities_json"),
+            ("fortitudes", asked.fortitudes_json, "fortitudes_json"),
+            ("lots", asked.lots_json, "lots_json"),
+            (
+                "considerations",
+                asked.considerations_json,
+                "considerations_json",
+            ),
+            ("perfection", asked.perfection_json, "perfection_json"),
+            ("progressions", asked.progressions_json, "progressions_json"),
+            (
+                "westernAspects",
+                asked.western_aspects_json,
+                "western_aspects_json",
+            ),
+            ("synastry", asked.synastry_json, "synastry_json"),
+            ("parallels", asked.parallels_json, "parallels_json"),
+            ("antiscia", asked.antiscia_json, "antiscia_json"),
+            ("midpoints", asked.midpoints_json, "midpoints_json"),
+            (
+                "westernHouses",
+                asked.western_houses_json,
+                "western_houses_json",
+            ),
+            ("harmonic", asked.harmonic_json, "harmonic_json"),
+            ("matching", asked.matching_json, "matching_json"),
+        ];
+        let mut records = ChartRecords::default();
+        for (name, text, field) in fields {
+            // SAFETY: the caller's contract, for every field above.
+            if let Some(text) = unsafe { optional_text(text, field) }? {
+                records.read(name, text)?;
+            }
         }
+        records.checked()
     }
 }
 

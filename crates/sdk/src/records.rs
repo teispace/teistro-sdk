@@ -21,6 +21,9 @@ pub struct Record {
     pub boundary: &'static str,
     /// A title for a person choosing it.
     pub title: &'static str,
+    /// What the record is, where the boundary function's documentation
+    /// describes a C request rather than a JSON record.
+    pub reads: Option<&'static str>,
     run: fn(&Context, &str) -> Result<Answered, Error>,
 }
 
@@ -105,13 +108,33 @@ pub fn records() -> Vec<Record> {
             name: "matching.naam",
             boundary: "ts_naam_milan",
             title: "Match two names by their first syllables",
+            reads: None,
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
+        },
+        #[cfg(feature = "chart")]
+        Record {
+            name: "chart.found",
+            boundary: "ts_chart_found",
+            title: "Found charts and read every table asked of them",
+            reads: Some(crate::FoundRequest::DESCRIPTION),
+            run: |context, json| {
+                let found = crate::FoundRequest::from_json(json)?;
+                let composed =
+                    context
+                        .chart()
+                        .compose(&found.instants, &found.request, &found.records)?;
+                Ok(Answered {
+                    value: written(&composed)?,
+                    provenance: Some(composed.founded.provenance.clone()),
+                })
+            },
         },
         #[cfg(feature = "numerology")]
         Record {
             name: "numerology.profile",
             boundary: "ts_numerology_profile",
             title: "A name and a birth date read under numerology",
+            reads: None,
             run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
         },
         #[cfg(feature = "pakshi")]
@@ -119,6 +142,7 @@ pub fn records() -> Vec<Record> {
             name: "almanac.pakshi",
             boundary: "ts_pakshi",
             title: "A native's bird over days, by Pancha Pakshi",
+            reads: None,
             run: |context, json| {
                 let asked = crate::PakshiRequest::from_json(json)?;
                 Answered::sealed(context.almanac().pakshi_request(&asked)?)
@@ -129,6 +153,7 @@ pub fn records() -> Vec<Record> {
             name: "chart.rashifal",
             boundary: "ts_rashifal",
             title: "A period read for each of the twelve signs",
+            reads: None,
             run: |context, json| {
                 let asked = crate::RashifalBatch::from_json(json)?;
                 Answered::sealed(context.chart().rashifal_answers(&asked)?)
@@ -139,6 +164,7 @@ pub fn records() -> Vec<Record> {
             name: "research.study",
             boundary: "ts_research",
             title: "Count or test rules over a batch of births",
+            reads: None,
             run: |context, json| {
                 let asked = crate::ResearchRequest::from_json(json)?;
                 match context.research().request(&asked)? {

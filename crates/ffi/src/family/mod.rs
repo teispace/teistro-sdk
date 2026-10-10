@@ -7,25 +7,13 @@
 
 use core::ffi::c_char;
 
-use teistro_core::error::{Error, Status};
+use teistro_core::error::Error;
 
 // The families read off a chart, which a build without the chart area
 // has no chart to read them off.
 #[cfg(not(feature = "chart"))]
 pub mod chart;
-#[cfg(feature = "chart")]
-pub(crate) mod kp;
-#[cfg(feature = "chart")]
-pub(crate) mod lalkitab;
 pub(crate) mod muhurta;
-#[cfg(feature = "chart")]
-pub(crate) mod prashna;
-#[cfg(feature = "chart")]
-pub(crate) mod rectification;
-#[cfg(feature = "chart")]
-pub(crate) mod remedies;
-#[cfg(feature = "chart")]
-pub(crate) mod svg;
 #[cfg(feature = "chart")]
 pub(crate) mod tajika;
 #[cfg(feature = "chart")]
@@ -42,20 +30,6 @@ pub(crate) mod western;
 )]
 pub enum Absent {}
 
-/// The refusal a call into `family` answers in a build without it.
-#[cold]
-#[must_use]
-#[allow(dead_code, reason = "a build with every family refuses none")]
-pub(crate) fn left_out(family: &str) -> Error {
-    Error::new(
-        Status::Capability,
-        format!("this build leaves out the `{family}` module family"),
-    )
-    .with_hint(format!(
-        "use a build with `{family}`: the default `full` build has every family, and the wasm module's is `@teistro/sdk-wasm` rather than a profile's subpath"
-    ))
-}
-
 /// A left-out family's record read from a request: none when the field is
 /// null, and the family's refusal naming `record`, the field every binding
 /// writes, when it was sent.
@@ -68,7 +42,7 @@ pub(crate) fn refused_if_sent(
     if text.is_null() {
         Ok(None)
     } else {
-        Err(left_out(family).with_field(record))
+        Err(Error::left_out(family).with_field(record))
     }
 }
 
@@ -82,7 +56,7 @@ macro_rules! in_family {
         #[cfg(not(feature = $family))]
         let answer = {
             $(let _ = &$used;)*
-            Err($crate::family::left_out($family))
+            Err(teistro_core::error::Error::left_out($family))
         };
         answer
     }};
@@ -145,15 +119,5 @@ macro_rules! record {
 }
 
 #[cfg(feature = "chart")]
-/// A family a chart request asks for by one JSON record and the façade
-/// answers a chart at a time ([`teistro::ChartArea::compose`]): the
-/// [`record!`] items, under the names every such family uses.
-macro_rules! chart_record {
-    ($family:literal, $field:literal, $record:literal, $request:ty) => {
-        $crate::family::record!($family, $field, $record, Request, request_of, $request);
-    };
-}
-
-#[cfg(feature = "chart")]
-pub(crate) use {answer, chart_record};
+pub(crate) use answer;
 pub(crate) use {in_family, record};

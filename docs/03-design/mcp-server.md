@@ -104,7 +104,7 @@ the protocol's own failures.
 | `numerology.profile` | `NumerologyRequest` | step 1, built |
 | `matching.naam` | `NaamRequest` | step 1, built |
 | `settings.describe` | none: the knobs and the profiles | step 1, built |
-| `chart.found` | a chart record: when, where, the sections and each family's record | step 2 |
+| `chart.found` | `FoundRequest`: when, where, the sections and each family's record | step 2, built |
 | `almanac.days` | a panchanga record | step 2 |
 | `time.resolve`, `calendar.convert` | a civil time and zone; a date | step 3 |
 | `engine.manifest`, `engine.call` | the engine passthrough (ADR-0029) | step 3 |
@@ -128,8 +128,19 @@ matching, SVG, KP, prashna, remedies, Lal Kitab, rectification, the
 annual charts (`varsha`) and the Western tables. The boundary reads its
 C strings into the records and encodes what `compose` answers, so it
 composes no section of its own; the blob did not move a byte, which the
-ABI and parity suites hold. Next come a chart record read from JSON and
-`chart.found`.
+ABI and parity suites hold.
+
+`ChartRecords::read` is the one place a record's name meets its reader:
+`ChartRecords::NAMES` lists the names every binding writes, and the
+boundary reads each C field through it, so a record's reader is named
+once. `teistro::FoundRequest` reads a whole chart request from JSON,
+spelt as the other request records are: `instant` or `instants`, the
+place and clock, the catalogue keys, a `true` flag for each section and
+each record by its name. `chart.found` is that record: it answers the
+chart documents as `charts` and each table a row a chart, with the
+batch's provenance as the answer's. Next comes `almanac.days`, which
+needs the panchanga request read from JSON the same way, and then the
+third gate.
 
 ## 4. What is not a tool
 
@@ -161,9 +172,92 @@ dasha system of one's own are context configuration, reached through
 2. The chart record in the façade, the boundary moved onto it, and
    `chart.found` and `almanac.days`; the third gate.
 3. Time, calendar and the engine passthrough.
-4. Packaging with the release (Phase 9): the binary in the release
+4. The rest of the protocol (§7): each tool's schemas first, then
+   resources, completions and prompts, the limits, progress and
+   cancellation, and the HTTP transport.
+5. Packaging with the release (Phase 9): the binary in the release
    assets, signed, with an install check and a page in the site's
    guides.
+
+## 7. The rest of the protocol
+
+Tools are where the protocol starts, not where the server stops. Each
+of the 2026-07-28 revision's features (§1 sources, its changelog) is
+taken up below or declined with its reason, so the server tracks the
+revision rather than a subset of it.
+
+**P1. Each tool states its record and its answer.** A tool's
+`inputSchema` gives `request` the record's own JSON Schema, derived by
+schemars from the reader's types (a `schema` feature on `teistro`, as
+the chart document's types carry one), and its `outputSchema` gives the
+envelope with the answer's schema where the answer's types carry one.
+The schema is never stricter than the reader (`document-schema.md`'s
+rule): a gate sends every tool's example through both and holds that
+what the reader takes the schema takes. A model then fills fields it
+reads rather than fields it guesses from prose.
+
+**P2. Resources for what an agent reads rather than computes.** The
+catalogue (`teistro://catalogue/{kind}`, a resource template), the
+shipped profiles and the settings schema (`teistro://profiles/{id}`,
+`teistro://settings/schema`), and the chart document's JSON Schema.
+Each is a `CacheableResult` with `ttlMs` and `cacheScope: "public"`:
+nothing in them varies by caller.
+
+**P3. Completions.** `completion/complete` answers a resource
+template's `{kind}` and `{id}` and a prompt's arguments from the
+catalogue and the profiles, so a client offers the keys the reader
+takes.
+
+**P4. Prompts as worked requests.** A prompt is a request the SDK
+answers well, written out: a birth chart with its sections, a day's
+panchanga at a place, a match between two births. Its arguments are
+the fields a person supplies (date, time, place); its messages name
+the tool and the record, so an agent learns the record from one that
+works.
+
+**P5. Limits.** A request's text, a batch's length and a range of days
+are bounded, and the bound is a refusal naming the field and the
+limit, not a slow answer: a server a model drives must not be made to
+compute a century of days by one typo.
+
+**P6. Cancellation and progress.** `notifications/cancelled` stops a
+batch between items, and a call carrying a `progressToken` hears
+`notifications/progress` per item on its own response stream.
+
+**P7. Long work as a task.** A research study over a large corpus is
+the case for the `io.modelcontextprotocol/tasks` extension: the call
+answers a task handle, `tasks/get` polls it. Taken up when a study is
+measured to outlast a client's timeout, not before.
+
+**P8. Streamable HTTP, stateless.** The modern revision has no session,
+so the same dispatcher answers HTTP POST: `Mcp-Method`/`Mcp-Name`
+headers checked against the body (`HeaderMismatchError`), `Origin`
+validated, bound to loopback unless told otherwise, and authorization
+left to the host in front of it (the server holds no secret).
+
+**P9. Extended where the SDK is.** The server reaches what a context
+registers, not only what ships: a provider plugin by `--ephemeris`, an
+interpretation pack by `--pack`, a plugin's own functions through
+`engine.call` (step 3), and a context's registered dasha systems and
+layouts by their keys. A program embedding `teistro_mcp::Server` adds
+tools of its own beside the records (`Server::with_tool`), answered and
+listed as the SDK's are, so a product built on the SDK serves its own
+operations without forking the server. A new SDK record is one row in
+`teistro::records`, and the server lists it with nothing else changed.
+
+**P10. Quick by construction.** A context is built once per profile,
+settings and locale, the settings keyed by their canonical JSON so two
+spellings of one patch share it, and the cache is bounded. A tool list
+and every resource is computed once per process. A batch is one call
+(a grid is one request, `count-the-cost-the-resource-pays`), so an
+agent asking for a year of charts pays for founding them, not for
+thousands of round trips.
+
+**Declined.** Sampling, roots and logging are deprecated in this
+revision; the server needs none (D6: it reads no file the model
+names). `input_required` (multi round-trip) has no use while every
+request is complete in one record: a missing field is a refusal the
+model corrects (D7), which costs one round trip either way.
 
 ## Sources
 

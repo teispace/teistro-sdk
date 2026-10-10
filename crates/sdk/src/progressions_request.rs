@@ -63,7 +63,7 @@ pub struct ContactWindow {
 }
 
 /// One birth's progressions, each `None` where the request asked for none.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
 pub struct Progressions {
     /// The progressed chart at the request's `at`.
     pub progressed: Option<Progressed>,

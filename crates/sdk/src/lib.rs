@@ -42,7 +42,12 @@
 //! that marshalling and nothing else.
 
 mod area;
-#[cfg(any(feature = "pakshi", feature = "rashifal", feature = "research"))]
+#[cfg(any(
+    feature = "chart",
+    feature = "pakshi",
+    feature = "rashifal",
+    feature = "research"
+))]
 mod asked;
 #[cfg(feature = "western")]
 mod composites;
@@ -73,6 +78,8 @@ mod compose;
 #[cfg(feature = "western")]
 mod declinations;
 mod festival_request;
+#[cfg(feature = "chart")]
+mod found_request;
 #[cfg(feature = "chart")]
 mod gochar_request;
 #[cfg(feature = "western")]
@@ -238,6 +245,8 @@ pub use crate::plan_request::{PlanInputs, PlanRequest};
 pub use crate::compose::{ChartRecords, Composed};
 #[cfg(feature = "western")]
 pub use crate::compose::{WesternRecords, WesternTables};
+#[cfg(feature = "chart")]
+pub use crate::found_request::FoundRequest;
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]

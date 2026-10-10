@@ -1,6 +1,6 @@
 //! Tajika at the boundary (`03-design/annual-chart.md`,
-//! `03-design/tajika-sahams.md`): a chart request's `varsha_json` record,
-//! the years it founds and the sections they fill.
+//! `03-design/tajika-sahams.md`): the years a chart request's
+//! `varsha_json` record founds and the sections they fill.
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
@@ -11,15 +11,6 @@ mod years;
 
 #[cfg(feature = "tajika")]
 pub(crate) use years::PraveshaColumns;
-
-super::record!(
-    "tajika",
-    "varsha_json",
-    "varsha",
-    Request,
-    request_of,
-    teistro::VarshaRequest
-);
 
 super::answer!("tajika", Varsha, teistro::Varsha);
 

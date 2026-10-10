@@ -1,6 +1,6 @@
 //! The Western family at the boundary (`03-design/western-aspects.md` and
-//! the pages beside it): a chart request's eight Western records, the
-//! tables they ask for, and the sections those fill.
+//! the pages beside it): the tables a chart request's Western records
+//! ask for, and the sections those fill.
 #![allow(
     unsafe_code,
     reason = "the C boundary: every block carries a SAFETY comment"
@@ -12,132 +12,7 @@ mod tables;
 #[cfg(feature = "western")]
 pub(crate) use tables::Columns;
 
-use super::{answer, record};
-
-record!(
-    "western",
-    "progressions_json",
-    "progressions",
-    ProgressionsRequest,
-    progressions_request_of,
-    teistro::ProgressionsRequest
-);
-record!(
-    "western",
-    "western_aspects_json",
-    "westernAspects",
-    AspectRequest,
-    aspects_request_of,
-    teistro::AspectRequest
-);
-record!(
-    "western",
-    "synastry_json",
-    "synastry",
-    SynastryRequest,
-    synastry_request_of,
-    teistro::PartnerSynastry
-);
-record!(
-    "western",
-    "parallels_json",
-    "parallels",
-    ParallelRequest,
-    parallels_request_of,
-    teistro::ParallelRequest
-);
-record!(
-    "western",
-    "antiscia_json",
-    "antiscia",
-    AntisciaRequest,
-    antiscia_request_of,
-    teistro::AntisciaRequest
-);
-record!(
-    "western",
-    "midpoints_json",
-    "midpoints",
-    MidpointRequest,
-    midpoints_request_of,
-    teistro::MidpointRequest
-);
-record!(
-    "western",
-    "western_houses_json",
-    "westernHouses",
-    HouseRequest,
-    houses_request_of,
-    teistro::HouseRequest
-);
-record!(
-    "western",
-    "harmonic_json",
-    "harmonic",
-    HarmonicRequest,
-    harmonic_request_of,
-    teistro::HarmonicRequest
-);
-
-/// The Western records a chart request sends: the façade's own
-/// ([`teistro::WesternRecords`]), or none in a build without the family.
-#[cfg(feature = "western")]
-pub(crate) type Records = teistro::WesternRecords;
-
-/// No Western record can be held by a build without the family.
-#[cfg(not(feature = "western"))]
-#[derive(Default)]
-pub(crate) struct Records;
-
-/// Every Western record `asked` sends, each read by the façade's own
-/// reader and refused, naming its root, by a build without the family.
-///
-/// # Safety
-///
-/// Each of `asked`'s Western fields null or a NUL-terminated string.
-pub(crate) unsafe fn records_of(
-    asked: &crate::chart::TsChartRequest,
-) -> Result<Records, teistro_core::error::Error> {
-    // SAFETY: the caller's contract, for every field read below.
-    let (progressions, aspects, synastry, parallels, antiscia, midpoints, houses, harmonic) = unsafe {
-        (
-            progressions_request_of(asked.progressions_json)?,
-            aspects_request_of(asked.western_aspects_json)?,
-            synastry_request_of(asked.synastry_json)?,
-            parallels_request_of(asked.parallels_json)?,
-            antiscia_request_of(asked.antiscia_json)?,
-            midpoints_request_of(asked.midpoints_json)?,
-            houses_request_of(asked.western_houses_json)?,
-            harmonic_request_of(asked.harmonic_json)?,
-        )
-    };
-    #[cfg(feature = "western")]
-    let records = Records {
-        progressions,
-        aspects,
-        synastry,
-        parallels,
-        antiscia,
-        midpoints,
-        houses,
-        harmonic,
-    };
-    #[cfg(not(feature = "western"))]
-    let records = {
-        let _ = (
-            progressions,
-            aspects,
-            synastry,
-            parallels,
-            antiscia,
-            midpoints,
-            houses,
-            harmonic,
-        );
-        Records
-    };
-    Ok(records)
-}
+use super::answer;
 
 answer!("western", Progressions, teistro::Progressions);
 answer!("western", AspectRows, Vec<teistro::WesternAspectRow>);

@@ -2546,6 +2546,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **A chart request read from JSON, and `chart.found`**
+  (`03-design/mcp-server.md` step 2). `teistro::FoundRequest::from_json`
+  reads a whole chart request: the births, the place and clock, the
+  catalogue keys, a `true` flag for each section and each record by the
+  name every binding writes. `ChartRecords::read` is the one table of
+  those names and their readers, and the C boundary reads its fields
+  through it. The agent server's `chart.found` takes the record and
+  answers the chart documents as `charts` with a row a chart of each
+  table. `Composed` serialises, with the annual charts and the
+  progressions it carries. A KP refusal of a chart's ayanamsha now hints
+  the record's `anyAyanamsha` as well as the Rust call. **Numbers:**
+  none move.
 - **`sdk.chart().compose`** (`03-design/mcp-server.md` step 2). A chart
   request with its records (`ChartRecords`) is composed in one call
   answering every section the records ask for (`Composed`), where the C
