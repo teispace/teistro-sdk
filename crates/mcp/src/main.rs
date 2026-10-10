@@ -16,7 +16,8 @@ or Streamable HTTP
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
                    [--max-days N]
-                   [--http ADDRESS [--http-workers N] [--allow-origin ORIGIN]...]
+                   [--http ADDRESS [--http-workers N] [--http-rate N]
+                                   [--allow-origin ORIGIN]...]
 
   --ephemeris NAME       the ephemeris every tool computes with: BUILTIN (the
                          default), SURYA_SIDDHANTA or NONE; with a plugin, the
@@ -43,6 +44,9 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          2026-07-28 revision, stateless; authorization is left
                          to whatever stands in front
   --http-workers N       the calls answered at once over HTTP, 4 unless told
+  --http-rate N          the messages a second one peer address may send, 50
+                         unless told, with a burst of twice that; past it a
+                         message is 429 (`none` leaves it to a proxy in front)
   --allow-origin ORIGIN  a browser origin that may call beside the loopback
                          ones, as the browser sends it; repeatable
   --help                 this text
@@ -255,6 +259,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let mut detail = Detail::default();
     let mut limits = Limits::default();
     let (mut address, mut workers, mut origins) = (None, None, Vec::new());
+    let mut rate = None;
     let mut stdout = std::io::stdout();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -306,6 +311,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
                         .ok_or_else(|| format!("`--http-workers` takes a count, not `{count}`"))?,
                 );
             }
+            "--http-rate" => rate = Some(bound::<u32>(&arg, args.next())?),
             "--allow-origin" => {
                 origins.push(args.next().ok_or("`--allow-origin` takes an origin")?);
             }
@@ -315,9 +321,9 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     if plugin_config.is_some() && plugin.is_none() {
         return Err(String::from("`--plugin-config` configures a `--plugin`"));
     }
-    if address.is_none() && (workers.is_some() || !origins.is_empty()) {
+    if address.is_none() && (workers.is_some() || rate.is_some() || !origins.is_empty()) {
         return Err(String::from(
-            "`--http-workers` and `--allow-origin` configure `--http`",
+            "`--http-workers`, `--http-rate` and `--allow-origin` configure `--http`",
         ));
     }
     let http = address.map(|address| {
@@ -326,6 +332,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
             workers: workers.unwrap_or(shipped.workers),
             origins,
             message_bytes: limits.message_bytes,
+            rate: rate.unwrap_or(shipped.rate),
             ..shipped
         };
         (address, http)

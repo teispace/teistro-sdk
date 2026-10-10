@@ -362,8 +362,24 @@ begins is spent on it once.
 **Conformance.** Read against the revision's own pages: a modern request
 missing its revision or its client's capabilities is `-32602` naming the
 `_meta` field (an unknown revision stays `-32022`), and every modern
-result carries `_meta["io.modelcontextprotocol/serverInfo"]`. Gated in
-`tests/eras.rs`.
+result carries `_meta["io.modelcontextprotocol/serverInfo"]`, with the
+server's description and website. `server/discover` names its revision
+as every request does, a request whose id is null or neither a string
+nor an integer is `-32600`, and `subscriptions/listen` is acknowledged
+first with an empty filter, since nothing the server lists changes
+while it runs, then closed gracefully under the request's id (over HTTP,
+both on one event stream). A plugin operation whose name the revision's
+tool-name rule refuses is reached through `engine.call` only, and the
+lists' cache lifetime falls from a day to an hour once a plugin is
+loaded. Gated in `tests/eras.rs`.
+
+Two of the revision's recommendations are declined on purpose. The
+stdio transport answers every request it read before its input closed
+rather than stopping the running one, since a host that pipes its
+requests and closes its end is waiting for the answers. And the HTTP
+transport implements no authorization: it checks no credentials,
+warns when bound beyond loopback, and leaves callers to whatever stands
+in front.
 
 **P7. Long work as a task.** A research study over a large corpus is
 the case for the `io.modelcontextprotocol/tasks` extension: the call
@@ -392,7 +408,11 @@ unknown method `404`, a foreign `Origin` `403`, `GET` and `DELETE` `405`
 the message bound `413` unread. A call carrying a `progressToken`
 answers as an event stream, its progress first and its answer last,
 with `X-Accel-Buffering: no` so a proxy does not hold it; any other
-answers as JSON. A worker watches the connection while its call
+answers as JSON. Each peer address may send fifty messages a second
+with a burst of twice that unless `--http-rate` says otherwise, counted
+once a message is read so its `429` reaches the peer; an `Mcp-Name` in
+the revision's `=?base64?…?=` form is decoded before it is compared. A
+worker watches the connection while its call
 computes and stops the call through the same watch as P6 when the peer
 closes, and a closure after the answer cancels nothing later. Gated in
 `tests/http.rs` through the binary on a loopback port, each check shown

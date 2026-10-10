@@ -107,8 +107,9 @@ each message is a POST to `/mcp`, answered as JSON, or as an event stream
 with its progress first when it carries a `progressToken`; closing the
 connection cancels the call. `MCP-Protocol-Version`, `Mcp-Method` and
 `Mcp-Name` are checked against the body (`-32020` when they disagree),
-a browser's `Origin` must be a loopback one or one named by
-`--allow-origin`, and each of `--http-workers` threads keeps a server
+a Base64-encoded `Mcp-Name` is decoded first, a browser's `Origin` must
+be a loopback one or one named by `--allow-origin`, each peer address is
+held to `--http-rate` messages a second (`429` past it), and each of `--http-workers` threads keeps a server
 of its own. It checks no credentials: bind it to loopback, or put
 whatever authorizes callers in front of it. A program embedding the
 server serves the same way with `teistro_mcp::http::serve`.

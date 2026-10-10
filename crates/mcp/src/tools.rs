@@ -84,9 +84,21 @@ pub(crate) fn reachable(operations: Vec<NativeFunction>) -> Vec<NativeFunction> 
         .into_iter()
         .filter(|operation| {
             let name = format!("{ENGINE_PREFIX}{}", operation.name);
-            name != DESCRIBE && records.iter().all(|record| record.name != name)
+            named_as_the_protocol_allows(&name)
+                && name != DESCRIBE
+                && records.iter().all(|record| record.name != name)
         })
         .collect()
+}
+
+/// Whether `name` is a tool name as the revision spells one: at most 128
+/// letters, digits, `_`, `-` and `.`. An operation the engine names
+/// otherwise is still reached through `engine.call`.
+pub(crate) fn named_as_the_protocol_allows(name: &str) -> bool {
+    (1..=128).contains(&name.len())
+        && name
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b'.'))
 }
 
 /// An engine operation as a tool: its parameters the engine's own, as

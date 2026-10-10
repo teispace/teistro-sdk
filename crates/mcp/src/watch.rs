@@ -134,6 +134,14 @@ impl Shared {
         }
     }
 
+    /// Sends `notification` through the transport's sink, if it has one.
+    pub(crate) fn say(&self, notification: String) {
+        let notify = locked(&self.notify).clone();
+        if let Some(notify) = notify {
+            notify(notification);
+        }
+    }
+
     pub(crate) fn set_notify(&self, notify: Notify) {
         *locked(&self.notify) = Some(notify);
     }

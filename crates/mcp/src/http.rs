@@ -15,12 +15,13 @@
 //! thread builds a server of its own and keeps its contexts.
 
 use core::fmt::Write as _;
+use std::collections::HashMap;
 use std::io::{BufRead as _, BufReader, Read as _, Write as _};
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, TcpListener, TcpStream};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError, mpsc};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
@@ -60,17 +61,22 @@ pub struct Http {
     pub origins: Vec<String>,
     /// The most bytes one message carries, as [`crate::Limits`] bound it.
     pub message_bytes: Option<usize>,
+    /// The most messages one peer address sends a second, sustained,
+    /// with twice as many allowed in a burst; past it a message is `429`.
+    /// `None` leaves the rate to whatever stands in front.
+    pub rate: Option<u32>,
 }
 
 impl Default for Http {
-    /// `/mcp`, four workers, loopback origins only, and the shipped
-    /// message bound.
+    /// `/mcp`, four workers, loopback origins only, the shipped message
+    /// bound, and fifty messages a second from each peer.
     fn default() -> Http {
         Http {
             path: String::from("/mcp"),
             workers: 4,
             origins: Vec::new(),
             message_bytes: crate::Limits::default().message_bytes,
+            rate: Some(50),
         }
     }
 }
@@ -87,15 +93,17 @@ pub fn serve(listener: &TcpListener, http: &Http, make: &Arc<MakeServer>) -> std
     let workers = http.workers.max(1);
     let (send, connections) = mpsc::sync_channel::<TcpStream>(workers.saturating_mul(16));
     let connections = Arc::new(Mutex::new(connections));
+    let buckets = Arc::new(Mutex::new(Buckets::default()));
     let (ready, started) = mpsc::channel();
     for _ in 0..workers {
-        let (make, connections, ready, http) = (
+        let (make, connections, ready, http, buckets) = (
             Arc::clone(make),
             Arc::clone(&connections),
             ready.clone(),
             http.clone(),
+            Arc::clone(&buckets),
         );
-        std::thread::spawn(move || work(&*make, &connections, &ready, &http));
+        std::thread::spawn(move || work(&*make, &connections, &ready, &http, &buckets));
     }
     drop(ready);
     for outcome in started.iter().take(workers) {
@@ -126,6 +134,38 @@ pub fn serve(listener: &TcpListener, http: &Http, make: &Arc<MakeServer>) -> std
     Ok(())
 }
 
+/// Each peer address's token bucket: what it may still send, and when
+/// that was last counted.
+#[derive(Default)]
+struct Buckets {
+    peers: HashMap<IpAddr, (f64, Instant)>,
+}
+
+impl Buckets {
+    /// The peers remembered before the idle ones are forgotten.
+    const REMEMBERED: usize = 4_096;
+
+    /// Whether `peer` may send a message at `now`, `rate` a second with a
+    /// burst of twice that, spending one when it may.
+    fn take(&mut self, peer: IpAddr, rate: u32, now: Instant) -> bool {
+        let rate = f64::from(rate.max(1));
+        let burst = rate * 2.0;
+        if self.peers.len() >= Self::REMEMBERED {
+            self.peers
+                .retain(|_, (_, last)| now.duration_since(*last).as_secs_f64() * rate < burst);
+        }
+        let (tokens, last) = self.peers.entry(peer).or_insert((burst, now));
+        *tokens = (*tokens + now.duration_since(*last).as_secs_f64() * rate).min(burst);
+        *last = now;
+        if *tokens >= 1.0 {
+            *tokens -= 1.0;
+            true
+        } else {
+            false
+        }
+    }
+}
+
 type Sink = Arc<Mutex<Option<TcpStream>>>;
 
 fn locked<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -150,6 +190,7 @@ fn work(
     connections: &Mutex<mpsc::Receiver<TcpStream>>,
     ready: &mpsc::Sender<Result<(), String>>,
     http: &Http,
+    buckets: &Mutex<Buckets>,
 ) {
     let sink: Sink = Arc::new(Mutex::new(None));
     let mut server = match built(make, &sink) {
@@ -167,7 +208,7 @@ fn work(
         // A panic answering one connection closes it and costs the
         // worker its contexts, not the worker.
         let answered = catch_unwind(AssertUnwindSafe(|| {
-            exchange(&mut server, &sink, &stream, http);
+            exchange(&mut server, &sink, &stream, http, buckets);
         }));
         *locked(&sink) = None;
         linger(&stream);
@@ -345,13 +386,61 @@ fn agree(head: &Head, body: &Value) -> Result<(), Fault> {
     let name = params
         .and_then(|params| params.get(field))
         .and_then(Value::as_str);
-    if head.one("mcp-name") != name {
+    let header = head.one("mcp-name").map(decoded);
+    if header.as_deref() != name {
         return Err(mismatch(
             format!("`Mcp-Name` names the body's `params.{field}`"),
             "Mcp-Name",
         ));
     }
     Ok(())
+}
+
+/// A header value as the revision encodes one it cannot send raw,
+/// `=?base64?…?=`, decoded; any other value as it stands, and an
+/// encoding that does not decode as itself, so it disagrees with the
+/// body it should name.
+fn decoded(value: &str) -> std::borrow::Cow<'_, str> {
+    value
+        .strip_prefix("=?base64?")
+        .and_then(|rest| rest.strip_suffix("?="))
+        .and_then(base64)
+        .and_then(|bytes| String::from_utf8(bytes).ok())
+        .map_or(std::borrow::Cow::Borrowed(value), std::borrow::Cow::Owned)
+}
+
+/// Standard Base64 with its padding, as RFC 4648 §4 writes it.
+fn base64(text: &str) -> Option<Vec<u8>> {
+    let sextet = |byte: u8| -> Option<u32> {
+        Some(u32::from(match byte {
+            b'A'..=b'Z' => byte - b'A',
+            b'a'..=b'z' => byte - b'a' + 26,
+            b'0'..=b'9' => byte - b'0' + 52,
+            b'+' => 62,
+            b'/' => 63,
+            _ => return None,
+        }))
+    };
+    let bytes = text.as_bytes();
+    if bytes.len() % 4 != 0 {
+        return None;
+    }
+    let mut out = Vec::with_capacity(bytes.len() / 4 * 3);
+    for (at, quad) in bytes.chunks(4).enumerate() {
+        let last = at + 1 == bytes.len() / 4;
+        let padding = quad.iter().rev().take_while(|byte| **byte == b'=').count();
+        if padding > 2 || (padding > 0 && !last) {
+            return None;
+        }
+        let mut word = 0_u32;
+        for byte in quad.get(..4 - padding)? {
+            word = word << 6 | sextet(*byte)?;
+        }
+        word <<= 6 * u32::try_from(padding).ok()?;
+        let [_, high, middle, low] = word.to_be_bytes();
+        out.extend_from_slice([high, middle, low].get(..3 - padding)?);
+    }
+    Some(out)
 }
 
 /// The HTTP status a JSON-RPC reply is sent under.
@@ -375,6 +464,7 @@ fn reason(status: u16) -> &'static str {
         411 => "Length Required",
         413 => "Content Too Large",
         415 => "Unsupported Media Type",
+        429 => "Too Many Requests",
         431 => "Request Header Fields Too Large",
         501 => "Not Implemented",
         503 => "Service Unavailable",
@@ -495,13 +585,26 @@ fn received(stream: &TcpStream, http: &Http) -> Result<(Head, Vec<u8>), Turned> 
 }
 
 /// One connection's request and its answer.
-fn exchange(server: &mut Server, sink: &Sink, stream: &TcpStream, http: &Http) {
+fn exchange(
+    server: &mut Server,
+    sink: &Sink,
+    stream: &TcpStream,
+    http: &Http,
+    buckets: &Mutex<Buckets>,
+) {
     let _ = stream.set_read_timeout(Some(PATIENCE));
     let _ = stream.set_write_timeout(Some(PATIENCE));
     let (head, message) = match received(stream, http) {
         Ok(received) => received,
         Err(turned) => return turned.write(stream),
     };
+    // Counted once the message is read, so the refusal reaches the peer.
+    if let (Some(rate), Ok(peer)) = (http.rate, stream.peer_addr()) {
+        if !locked(buckets).take(peer.ip(), rate, Instant::now()) {
+            let wait = [("Retry-After", "1")];
+            return plain(stream, 429, "too many messages; slow down", &wait);
+        }
+    }
     let body: Value = serde_json::from_slice(&message).unwrap_or(Value::Null);
     if body.is_object() {
         if let Err(fault) = agree(&head, &body) {
@@ -520,7 +623,10 @@ fn exchange(server: &mut Server, sink: &Sink, stream: &TcpStream, http: &Http) {
         .get("params")
         .and_then(|params| params.get("_meta"))
         .is_some_and(|meta| meta.get(PROGRESS_META).is_some());
-    let streamed = progress && accepts(&head, "text/event-stream");
+    // A subscription's acknowledgment goes before its closure, so it is
+    // a stream too.
+    let listening = body.get("method").and_then(Value::as_str) == Some("subscriptions/listen");
+    let streamed = (progress || listening) && accepts(&head, "text/event-stream");
     if streamed {
         let mut writer = stream;
         let opened = writer
@@ -623,6 +729,29 @@ mod tests {
         }
         let long = format!("POST /mcp HTTP/1.1\r\nX: {}\r\n\r\n", "a".repeat(20_000));
         assert!(matches!(head(&long), Err(Refusal(431, _))));
+    }
+
+    #[test]
+    fn a_peer_past_its_rate_waits_and_another_peer_does_not() {
+        let mut buckets = Buckets::default();
+        let (one, two) = (IpAddr::from([127, 0, 0, 1]), IpAddr::from([127, 0, 0, 2]));
+        let start = Instant::now();
+        assert!((0..4).all(|_| buckets.take(one, 2, start)));
+        assert!(!buckets.take(one, 2, start), "a burst is twice the rate");
+        assert!(buckets.take(two, 2, start));
+        assert!(buckets.take(one, 2, start + Duration::from_millis(500)));
+        assert!(!buckets.take(one, 2, start + Duration::from_millis(500)));
+    }
+
+    #[test]
+    fn an_encoded_name_is_decoded_and_a_broken_one_kept() {
+        assert_eq!(decoded("chart.found"), "chart.found");
+        assert_eq!(decoded("=?base64?Y2hhcnQuZm91bmQ=?="), "chart.found");
+        assert_eq!(decoded("=?base64?YQ==?="), "a");
+        assert_eq!(decoded("=?base64?YWI=?="), "ab");
+        for broken in ["=?base64?Y2h?=", "=?base64?Y=Q=?=", "=?base64?****?="] {
+            assert_eq!(decoded(broken), broken);
+        }
     }
 
     #[test]

@@ -340,3 +340,49 @@ fn a_key_given_twice_is_refused_naming_its_path() {
     assert_eq!(broken["error"]["code"], -32_700, "{broken}");
     assert_eq!(broken["id"], Value::Null);
 }
+
+/// **What the revision requires of every request** (2026-07-28,
+/// `basic/index`): `server/discover` names its revision like any other
+/// request, an id is a string or an integer and never null, and a
+/// subscription is acknowledged first, honouring no notification type
+/// since nothing the server lists changes, then closed gracefully, both
+/// under the request's id.
+#[test]
+fn discovery_ids_and_subscriptions_are_held_to_the_revision() {
+    let replies = session(
+        &["--ephemeris", "NONE"],
+        &[
+            json!({"jsonrpc": "2.0", "id": 1, "method": "server/discover"}),
+            json!({"jsonrpc": "2.0", "id": 2, "method": "server/discover",
+                   "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "1999-01-01",
+                                        "io.modelcontextprotocol/clientCapabilities": {}}}}),
+            json!({"jsonrpc": "2.0", "id": null, "method": "tools/list", "params": {"_meta": meta()}}),
+            json!({"jsonrpc": "2.0", "id": 1.5, "method": "tools/list", "params": {"_meta": meta()}}),
+            json!({"jsonrpc": "2.0", "id": "watch", "method": "subscriptions/listen",
+                   "params": {"_meta": meta(), "notifications": {"toolsListChanged": true}}}),
+        ],
+    );
+    assert_eq!(replies[0]["error"]["code"], -32_602, "{}", replies[0]);
+    assert_eq!(replies[1]["error"]["code"], -32_022, "{}", replies[1]);
+    for reply in &replies[2..4] {
+        assert_eq!(reply["id"], Value::Null, "{reply}");
+        assert_eq!(reply["error"]["code"], -32_600, "{reply}");
+    }
+    let (acknowledged, closed) = (&replies[4], &replies[5]);
+    assert_eq!(
+        acknowledged["method"], "notifications/subscriptions/acknowledged",
+        "{acknowledged}"
+    );
+    assert_eq!(
+        acknowledged["params"]["_meta"]["io.modelcontextprotocol/subscriptionId"],
+        "watch"
+    );
+    assert_eq!(acknowledged["params"]["notifications"], json!({}));
+    assert_eq!(closed["id"], "watch", "{closed}");
+    assert_eq!(closed["result"]["resultType"], "complete");
+    assert_eq!(
+        closed["result"]["_meta"]["io.modelcontextprotocol/subscriptionId"],
+        "watch"
+    );
+    assert_eq!(replies.len(), 6);
+}
