@@ -99,7 +99,8 @@ one.
 4. **The gates.**
    - fast-check builds each profile for `wasm32-unknown-unknown`,
      because a configuration no gate builds is already broken.
-   - `size.json` gains a budget per profile, held both ways like the
+   - `docs/05-testing/sizes.json` (the wasm budget's home since
+     2026-10-09) gains a budget per profile, held both ways like the
      full one.
    - `check-wasm` runs a profile probe through the staged package. Each
      profile's calendar and almanac answers must equal the full

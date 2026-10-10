@@ -1,6 +1,7 @@
 # `research`: statistics over chart batches
 
-Status: `built`, 2026-10-10 (drafted 2026-10-08; every step of §4 built).
+Status: `built`, 2026-10-10 (drafted 2026-10-08; every step of §4 built,
+step 4 for dasha delivery alone: transits wait for a consumer).
 Track B row 7 of the completion plan
 (`07-roadmap/00-roadmap.md`), the module catalogue's `research` row
 ("batch computation, statistics, rule search over sets") and
@@ -138,7 +139,7 @@ astrologically true.
 | optional stopping on subjects: add charts until significant | invisible to a single call. The request hash in the envelope is a **pre-registration**: publish the hash of the request (predicates, seed, permutations, shuffle, strata) before collecting the data |
 | seed shopping: rerun with seeds until one is significant | the seed is in the request hash; the measured page shows that the p-value's Monte Carlo interval is the honest spread |
 | uniform expectation for a clock-dependent predicate | refused (§2.6); the recombined control is the answer |
-| birth times rounded to the hour or misreported | a `time_uncertainty` knob re-evaluates each chart at the edges of its recorded uncertainty. A predicate that flips inside the uncertainty is counted as **unstable** and reported per predicate. It is not silently decided |
+| birth times rounded to the hour or misreported | a per-birth uncertainty (`uncertaintyMinutes`, `Birth::uncertain_by`) re-evaluates each chart at the edges of its recorded uncertainty. A predicate that flips inside the uncertainty is counted as **unstable** and reported per predicate. It is not silently decided |
 | a predicate that cannot be evaluated on some charts (a special lagna on a polar day) | counted as unreadable per predicate and excluded from that predicate's denominator, never counted as absent (`a-fall-through-is-an-answer`) |
 | mixed settings across the batch | refused: every chart must carry one settings hash |
 
@@ -206,9 +207,10 @@ Event studies precompute an `N × N` matrix (chart *i* at event *j*'s
 instant, or at `birth_i + age_j`), and a permutation sums along it in
 O(N). Under the event-date shuffle, a transit predicate asks the sky only
 at the N distinct event instants, in one batched request. Under the
-age shuffle there are N² instants. The request carries `max_pairs` and is
-refused above it, naming the field, so that cost is chosen rather than
-met.
+age shuffle there are N² instants. The request was to carry `max_pairs` and
+be refused above it, naming the field, so that cost is chosen rather than
+met. Designed, not built: transits are not built, and dasha delivery asks
+no sky per pair, so no request carries the cap yet.
 
 ### 2.4 API sketch
 
@@ -252,7 +254,8 @@ impl<'a> ResearchArea<'a> {
     pub fn timed(
         self,
         batch: &EventBatch,
-        predicates: &EventPredicates,
+        study: EventStudy<'_>,                // built name; `EventPredicates` was the sketch's
+        strata: Option<&[u32]>,
         test: &EventTest,
     ) -> Result<Envelope<Tested>, Error>;
 }
@@ -267,12 +270,12 @@ impl Batch {
 impl BatchBuilder {
     pub fn groups(self, groups: &[GroupId]) -> Self;           // one per chart
     pub fn strata(self, strata: &[StratumKey]) -> Self;        // optional
-    pub fn time_uncertainty(self, minutes: &[u32]) -> Self;    // optional, per chart
     pub fn build(self) -> Result<Batch, Error>;
 }
 
 /// One birth: where and when, under its local clock.
 pub struct Birth { pub instant: JulianDay<Utc>, pub place: Place, pub offset: UtcOffset }
+// built: `Birth::uncertain_by(minutes)` sets each birth's own uncertainty
 
 pub struct GroupTest {
     pub seed: u64,                         // required: no default seed
@@ -282,7 +285,7 @@ pub struct GroupTest {
     pub level: f64,                        // every interval's confidence, 0.95
     pub alpha: Option<f64>,                // only to list which fall under it
     pub parallelism: Parallelism,
-    pub shuffle_version: ShuffleVersion,   // research/shuffle/1
+    pub shuffle: ShuffleVersion,           // research/shuffle/1
 }
 
 pub struct Recombine {
@@ -298,7 +301,7 @@ pub struct EventTest {
     pub permutations: u32,
     pub shuffle: EventShuffle,             // EventDates | AgesAtEvent
     pub after_birth: AfterBirth,           // Refuse | RestrictPairings
-    pub max_pairs: u64,
+    // `max_pairs: u64`: designed, not built (§2.3)
     pub parallelism: Parallelism,
 }
 
@@ -324,9 +327,10 @@ pub struct PredicateRow {
 A predicate is a `Rule` (`teistro_rules::Condition` and its
 cancellations), so a study uses the shipped sets (`ShippedRules::Yogas`, …)
 or writes its own in the same language, and `RuleRequest::rule_set`
-validates it as it does for a reading. An `EventPredicates` is a rule set
-read through its `Timing` (delivery in the running periods of the systems
-the request names) or a gochar condition at the event's instant.
+validates it as it does for a reading. An event study (`EventStudy`,
+`crates/sdk/src/area/research.rs`) reads its rule set through its delivery
+in the running periods of the dasha the study names; a gochar condition at
+the event's instant is designed, not built.
 
 ### 2.5 The knobs
 
@@ -340,10 +344,10 @@ the request names) or a gochar condition at the event's instant.
 | `strata` | none | exchangeability by decade, region or sex is the study's claim |
 | `EventShuffle` | none: required | §1.4: the two keep different margins |
 | `after_birth` | `Refuse` | `RestrictPairings` permutes only among people born before the event, which changes the reference set; the answer says so |
-| `time_uncertainty` | 0 | rounded hours are the field's commonest data error |
+| `uncertaintyMinutes` (per birth) | 0 | rounded hours are the field's commonest data error |
 | `Readings` | the rule set's own | the predicate's meaning is part of the request |
 | `parallelism` | `One` | the answer is the same either way |
-| `max_pairs` | a fixed cap | event studies' cost is chosen, not met |
+| `max_pairs` | a fixed cap | event studies' cost is chosen, not met; designed, not built (§2.3) |
 
 **Decided when the kernel was built (2026-10-09).** Three knobs of the
 sketch were dropped, and the reasons are kept here:
@@ -390,14 +394,15 @@ a hint where one helps:
 - every stratum a singleton, so nothing can move (`strata`);
 - under `EventDates` with `Refuse`, a shuffled pairing that would put an
   event before a birth, and no permutation possible (`after_birth`);
-- `max_pairs` exceeded (`max_pairs`, with the pair count it would need);
+- `max_pairs` exceeded (`max_pairs`, with the pair count it would need):
+  designed, not built, with the cap;
 - a uniform expectation, which is not offered at all, so `expected`
   takes only the recombined control (C365). The sketch allowed one for a
   predicate on signs alone, but births are seasonal and the Sun's stay in
   a sign is unequal, so no predicate on a chart has one;
 - a timed study that names no `shuffle` (`research.shuffle`): neither is a
   default (C364);
-- a shuffle version the build does not carry (`shuffle_version`).
+- a shuffle version the build does not carry (`shuffle`).
 
 ## 3. Tests
 
@@ -472,7 +477,8 @@ uses fixed seeds, so the counts are exact and also golden.
    polar birth spoils is read again a chart at a time, and a batch that is
    refused names the birth that refused it.
 4. **`timed`**: dasha delivery first (no sky per pair), then transits
-   under the event-date shuffle, then the age shuffle under `max_pairs`.
+   under the event-date shuffle, then the age shuffle under `max_pairs`
+   (the cap not built).
    Test 5. **Built** 2026-10-09 for dasha delivery under both shuffles;
    transits wait for a consumer.
 5. **`expected`** with `Recombine`. Test 4. **Built** 2026-10-09.
@@ -485,8 +491,8 @@ uses fixed seeds, so the counts are exact and also golden.
    hash reaches every binding, and a seed may be a decimal string because
    a JavaScript number does not hold every 64-bit seed. Node, Python,
    Dart and Java carry `research.counts`, `compare`, `expected` and
-   `timed`, six runners agree value for value and on the input hash, and
-   `research` is the fourteenth shared example, a two-group study over
+   `timed`, every runner agrees value for value and on the input hash, and
+   `research` is a shared example, a two-group study over
    labels that mean nothing; the site's guide is `research.mdx`.
    **Found** building it: a recombined sample beyond replicates that all
    agree published its ranking sentinel, `f64::MAX`, as the statistic,

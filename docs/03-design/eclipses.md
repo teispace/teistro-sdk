@@ -74,8 +74,8 @@ choices are the caller's, and each is reported on the answer:
 
 ## 3. The data model
 
-- `LunarKind`: `PENUMBRAL`, `PARTIAL` or `TOTAL`.
-- `SolarKind`: `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`. A hybrid is
+- `LunarEclipseKind`: `PENUMBRAL`, `PARTIAL` or `TOTAL`.
+- `SolarEclipseKind`: `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`. A hybrid is
   annular at the path's ends and total in its middle.
 - **`LunarEclipse`**:
   - `greatest`, a UT1 instant;
@@ -421,7 +421,7 @@ second is how a false positive, a full moon read as a penumbral
 eclipse, would be caught.
 
 **Unit tests** (`crates/ephemeris-builtin/tests/eclipses.rs`, and the
-geometry's own in `crates/astro/src/eclipse.rs`):
+geometry's own in `crates/astro/src/eclipse/`):
 
 - a known pair: the total lunar eclipse of 2025-09-07 and the total
   solar eclipse of 2024-04-08, each with its kind and its time to the

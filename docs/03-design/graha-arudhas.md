@@ -7,7 +7,7 @@ correct it, and did once (§4).
 Derives from the roadmap's Phase 7 list of what is left of `jaimini` (the
 graha arudhas), and from `jaimini-significators.md`, whose reading this
 extends: the arudhas are one value a graha, so they cross as two more
-columns of the `jaimini_houses` section rather than a section of their own.
+columns of the `jaimini_grahas` section rather than a section of their own.
 
 ## 1. What the text says
 

@@ -153,7 +153,7 @@ form called `forms` would shadow the map in three languages at once.
 `Loaded` and `ts_intl_loaded` report the two outcomes apart — `replaced`
 for an entry that kept nothing of what stood, `merged` for a record that
 kept something — so what was applied is a number a consumer can read, in
-Rust and in all three bindings. The `merged` count took the `reserved`
+Rust and in every binding. The `merged` count took the `reserved`
 word the boundary struct already held, so no ABI grew.
 
 **A consumer that does mean to replace a record whole** ships every form it

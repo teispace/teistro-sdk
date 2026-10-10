@@ -66,7 +66,13 @@ same ground (C320 to C328).
 | `almanac` | `of`, `day` | `panchanga` |
 | `matching` | `naam` | `naam` |
 | `numerology` | `profile` | `numerology` |
+| `research` | `counts`, `compare`, `expected`, `timed` | `research` |
 | `engine` | `manifestJson`, `manifest`, `names`, `signature`, `call`, `callJson` | `ephemeris` |
+
+The measured page ([`surface-areas-measured.md`](surface-areas-measured.md))
+is the authority on the bindings' areas; this table is kept beside it. The
+Rust façade also has `Context::interpret()`, which the bindings reach as a
+member of the chart request (`interpret_json`) rather than as an area.
 
 Four names change, and each is a word the namespace now carries:
 `convertTime` → `time.convert`, `canonicalFrame` → `frame.canonical`,
@@ -144,7 +150,7 @@ ADR-0030: "Each is built once when the context is, holds the context, and
 is frozen. Nothing allocates per call, and a consumer may destructure one
 and keep it."
 
-That is a requirement on all four bindings and it is what makes the areas
+That is a requirement on every binding and it is what makes the areas
 worth having rather than merely tidy:
 
 ```js
@@ -259,10 +265,10 @@ to make is kept here.
 
 The sixth was added after the other five and was **born red**, which is
 why it is there. Step 4 gave `check-parity` the grouping, and that gate
-compares what the three runners *print*; the list of canonical paths is
-written out once per runner, in three languages, so three runners that
+compares what the runners *print*; the list of canonical paths is
+written out once per runner, in each runner's language, so runners that
 all miss the same new operation agree perfectly and the gate is silent.
-The measured page reads all three lists against the layer's own
+The measured page reads every runner's list against the layer's own
 declarations instead — and found `(root).engine`, the accessor a
 consumer reads to reach the engine at all, listed by none of them.
 

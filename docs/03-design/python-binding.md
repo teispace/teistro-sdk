@@ -58,8 +58,8 @@ with**. The C header asserts all 25 struct sizes at compile time
 | `teistro/_install.py`, the `teistro-install` command | the installer: where a prebuilt library comes from, the digest it must have, and where it is written | by hand |
 | `teistro/_prebuilt.py` | the release the installer fetches from and the digest of each platform's library; empty in a checkout, written when a release is staged | the release |
 | `tests/` | the surface end to end, the decoders against blobs the library produced, and the sizes against the library that was built | by hand |
-| `example/teistro_example.py` | the code the README shows, run by the gate so the two cannot drift | by hand |
-| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the other two | by hand |
+| `example/*.py` | the shared examples, one program per name every binding carries, run by `check-python` and compared line for line by `check-parity`; no gate runs the code the README shows | by hand |
+| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with every other runner's | by hand |
 | `typecheck/wrong.py` | the usages that must not type-check, each with the error it must raise | by hand |
 
 The generator lays the generated files out, so `check-ffi` can
@@ -323,5 +323,4 @@ both.
   measuring against a real workload before it is decided.
 - **Async.** The core is synchronous and single-threaded per context.
   An `asyncio` wrapper that ran a context on a thread would be a
-  convenience over `ContextPool`, which the Node binding has and this one
-  does not yet.
+  convenience over a `ContextPool`, which no binding has yet.

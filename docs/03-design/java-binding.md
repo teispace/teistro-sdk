@@ -1,7 +1,9 @@
 # The Java binding
 
 Status: `building`, §13 steps 0 to 7, 9 and 10 built, step 8 (Central)
-open; written 2026-10-08, before any code, as every binding page is. It derives from
+open, and three checks this page designs not built: the wrong-usage
+compile (§11 step 5), the create-use-drop leak check (§11) and a test run
+on JDK 22 (§11, CI); written 2026-10-08, before any code, as every binding page is. It derives from
 [`ffi-abi-and-api-description.md`](ffi-abi-and-api-description.md) (the
 ABI, the description, the result blob, the error record),
 [`python-binding.md`](python-binding.md) (the binding nearest in shape:
@@ -120,14 +122,14 @@ module of the same name.
 | records | the JSON records of `api.records` (`crates/idl/src/emit/records.rs`) as Java records, read by the binding's own JSON reader | the generator |
 | `Messages` | the typed message and entity accessors, from `cargo xtask gen intl` (`crates/intl/src/generate.rs` gains a Java target, `xtask/src/intl.rs` its output path) | the generator |
 | `Teistro`, `Context`, the areas | the layer a consumer uses (§6) | by hand |
-| `NativeLibrary` | the loader and the build handshake (§8) | by hand |
+| `Teistro.open()` | the loader and the build handshake (§8), in `Teistro.java` | by hand |
 | `Json` | a small JSON reader and writer: the JDK through 25 ships none, and a dependency for it would be the binding's first | by hand |
 | `EphemerisProvider`, `HostProvider` | the port adapter over upcall stubs (§10) | by hand |
 | `module-info.java` | exports `com.teispace.teistro` and `com.teispace.teistro.ffi` | by hand |
 | `test/` | the surface, the decoders against `target/tsrb`, the layouts against the library, the loader's refusals, the provider | by hand |
 | `example/*.java` | the shared examples (§11) | by hand |
 | `parity/ParityRunner.java` | this binding's report for `check-parity` (not `Parity`, which the catalogue spells as an enum) | by hand |
-| `typecheck/Wrong.java` | the usages that must not compile, each with the error it must raise | by hand |
+| `typecheck/Wrong.java` | the usages that must not compile, each with the error it must raise: designed, not built | by hand |
 
 The raw layer is **exported**, as Dart exposes `TeistroLibrary`
 (`bindings/dart/lib/teistro.dart`): a consumer may call an entry point the
@@ -298,8 +300,11 @@ siblings.
 - **Little-endian named**, because the blob is little-endian by
   definition and a native-order layout would be right only by coincidence.
 
-A column is a typed view (`DoubleColumn`, `IntColumn` …) with `get(i)`,
-`size()` and `toArray()`. The decoder reads the layout version first and
+A column section is a class in `com.teispace.teistro.blob` (`MatchingKootas`
+and the rest) with `length()` and a getter per column taking the row,
+each index checked; the separate column views first sketched here
+(`DoubleColumn`, `IntColumn`, with `get(i)`, `size()` and `toArray()`)
+were designed, not built. The decoder reads the layout version first and
 refuses another, finds a section by id so an appended section is
 skipped, and checks every offset against the length before it reads, as
 the reference `Reader` does. One copy rather than none is Python's trade
@@ -449,8 +454,11 @@ checks neither (`ffi-abi-and-api-description.md`, the table there).
 5. `typecheck/Wrong.java` compiled alone: every `// expect:` line must be
    reported and no error unexpected (`xtask/src/dart_binding.rs`,
    `wrong_usages`), the Java half of "a swapped latitude and longitude
-   does not compile";
-6. `javadoc -Xdoclint:all -Werror` over the exported packages.
+   does not compile". **Designed, not built:** `check-java` has no
+   wrong-usage step and `bindings/java` has no `typecheck/`;
+6. `javadoc -Xdoclint:all -Werror` over the exported packages. Built in
+   packaging rather than here: it runs in `xtask/src/java_package.rs`,
+   reached from `check-package`, not from `check-java`.
 
 Java is run through **one command builder** that sets
 `-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8` and
@@ -468,9 +476,10 @@ trips and `UNKNOWN`; the loader's refusals (a missing explicit path, a
 wrong build, a missing platform); a provider answering a real grid and one
 that throws; and the quality bar's leak check, 10,000 create-use-drop
 cycles with a flat RSS curve, which `05-testing/01-quality-bar.md` already
-names for Java.
+names for Java. The leak check is designed, not built: the nearest test
+binds and releases two hundred providers (§13 step 5).
 
-**Parity.** `bindings/java/parity/Parity.java` walks the scenario of
+**Parity.** `bindings/java/parity/ParityRunner.java` walks the scenario of
 `bindings/python/parity.py` and prints the same `key<TAB>value` lines;
 `xtask/src/parity.rs` gains it as one more runner, compared against the
 first report like the rest. The shared examples (`bindings/*/example/`)
@@ -480,8 +489,9 @@ Node's own suite.
 
 **CI.** In `.github/workflows/verify.yml`'s `bindings` matrix, every row
 gains `actions/setup-java` (Temurin 25) and a `check-java` step before
-`check-parity`. The `linux-x64` row also installs JDK 22 and runs the
-tests on it, so the floor is run, not only compiled. The musl rows run
+`check-parity`. A `linux-x64` run of the tests on JDK 22, so the floor is
+run and not only compiled, is designed, not built: every row installs
+JDK 25 alone, and the floor is held by compiling with `--release 22`. The musl rows run
 inside Alpine (`xtask/alpine.sh`), whose own OpenJDK packages are measured
 in step 0 before the row is promised; a row without a JDK is excused at
 the point it is made, as Dart is on musl
@@ -564,7 +574,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    from a release run's `target/dist`.
 1. **The emitter.** `crates/idl/src/emit/java.rs` and
    `reserved::JAVA`; `xtask/src/ffi.rs` writes its files and prunes
-   strays under `bindings/java/src/main/java/com/teispace/teistro/` as it
+   strays under `bindings/java/generated/com/teispace/teistro/` as it
    prunes the reference; `check-ffi` holds them. Constants, enums,
    layouts, handles, value records, brands, the exception, the decoders.
    **Begun 2026-10-08:** the constants, the enums with `Member` and
@@ -586,12 +596,12 @@ un-publish, `03-release-process.md`, "Withdrawing").
    enum's: a class per schema, a record per shared shape, and a class
    per column section whose getters read a row from the copy `Calls`
    took of the library's bytes, every offset checked before it is read.
-2. **The first slice, end to end.** `NativeLibrary` from
+2. **The first slice, end to end.** The loader (built as `Teistro.open()`) from
    `TEISTRO_LIBRARY` and `target/release` only, the handshake,
    `Teistro`, `Context` with `calendar().convert`, `time().resolve`,
    `intl().render` and `positions`, enough to print the C smoke test's four
    facts; one refusal raised with its field and hint, and one after
-   another; `check-java` steps 1 to 3 and 5. This proves the generated
+   another; `check-java` steps 1 to 3 and 5 (step 5 not built). This proves the generated
    layer, the struct handshake, an owned string, a blob, the error record
    and the build refusal in one program, and is the smallest thing that
    does.
@@ -610,7 +620,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    sent. **Then** `positions` and `intl().render` over the decoders,
    with a JSON writer beside the reader; a blob cut short, of another
    magic, version, schema or length is refused rather than misread.
-3. **The areas**, to `surface-areas.md`'s table, and `Parity.java`;
+3. **The areas**, to `surface-areas.md`'s table, and `ParityRunner.java`;
    `check-parity` gains Java.
    **Begun 2026-10-08:** a founded chart's every reading, Vedic and
    Western, as a typed record read from its batch's sections and parsed
@@ -636,7 +646,7 @@ un-publish, `03-release-process.md`, "Withdrawing").
    does. The module's sources reach `javac` through an argument file:
    passed one by one they outgrew a Windows command line.
 5. **The provider, plugins and the engine**, with the throwing-provider
-   test and the leak check.
+   test and the leak check (the leak check not built).
    **Begun 2026-10-08:** `EphemerisProvider`, Python's contract with
    its defaults, bound by `HostProvider`: two upcall stubs and the
    capabilities described once, in a shared arena the context closes

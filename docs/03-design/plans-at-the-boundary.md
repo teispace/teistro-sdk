@@ -13,8 +13,8 @@ one [`rules-at-the-boundary.md`](rules-at-the-boundary.md) laid.
 The composers turn a chart's answers into a narrative plan, and `sdk.intl`
 renders that plan in any locale the engine carries. Both halves already
 cross the boundary — the chart does, the renderer does — and the half
-between them does not, so Node, Dart and Python can compute a chart and can
-render a message, and cannot get from one to the other.
+between them did not, so the bindings could compute a chart and could
+render a message, and could not get from one to the other.
 
 In scope: how a plan is asked for, what comes back, what a binding does with
 it, errors, cost, and the gates.
@@ -30,7 +30,7 @@ and a **rendered** plan at the boundary, which §7 declines with a reason.
   reason the crossing is cheap, and it was not true a day ago: `Value` wrote
   a shape of its own until the parameters at the boundary and the slots in a
   plan were unified on the boundary's `$`-tagged JSON
-  (`teistro_intl::wire`). All three bindings' `render(key, params)` take a
+  (`teistro_intl::wire`). Every binding's `render(key, params)` takes a
   plain map and `JSON.stringify` it, so an item parsed out of the blob hands
   straight back with **no conversion** — `sdk.intl.render(item.key,
   item.params)` in JavaScript, in Python and in Dart alike.
@@ -185,8 +185,8 @@ that were asked for.
   chart with both corpora loaded and requires **every key** to be
   emitted. *Can it be asked for* and *does it ever say anything* are two
   questions, and each needs its own check.
-- **The four parity runners print each chart's rendered lines** in
-  `en-Latn`, so `check-parity` holds Rust, Node, Dart and Python to the same
+- **Every parity runner prints each chart's rendered lines** in
+  `en-Latn`, so `check-parity` holds every runner to the same
   sentences. This is the first parity over **text**, and it exercises the
   composers, the wire shape and the locale engine in one comparison.
 

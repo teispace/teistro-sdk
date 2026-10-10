@@ -139,8 +139,8 @@ a field of its own (`lagna_sunrise_jd`), and for `c001` it is the
 previous day's sunrise, following §3.
 
 The foundation therefore carries both, named so that neither can be
-mistaken for the other: `lagna` (at the instant) and `day_lagna` (at the
-sunrise that opened the arc). A caller who wants "the lagna" gets the
+mistaken for the other: `lagna_deg` (at the instant) and `day_lagna_deg`
+(at the sunrise that opened the arc). A caller who wants "the lagna" gets the
 first; a module that wants the anchor asks for the second and says so.
 
 ## 5. A house placement carries the method that produced it

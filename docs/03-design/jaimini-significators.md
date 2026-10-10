@@ -204,7 +204,8 @@ about a third chart-query field for **periods**, and this is not one.
    computes one otherwise, the states once for both the karakas and the
    chart Brahma is read in. At the C boundary it is `TS_CHART_JAIMINI`
    (bit 2048) and two sections: `jaimini`, a row a chart, and
-   `jaimini_houses`, a row a graha. `qualified` crosses as a nine-graha
+   `jaimini_grahas` (named `jaimini_houses` until it was renamed before any
+   release, `graha-arudhas.md`), a row a graha. `qualified` crosses as a nine-graha
    bit set, lossless only because every rule lists it in the catalogue's
    order and once each, which a test holds over every lagna, rule and
    co-lordship; the Brahma graha and why there is none cross as one code,

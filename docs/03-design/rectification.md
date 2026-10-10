@@ -197,31 +197,40 @@ pub trait Stage {
 | `TATTVA` | Shiva Svarodaya vv. 59, 61–64, 193 | weight, **off by default** | sunrise, tithi, sex |
 | `PRIOR`, `DASHA_BOUNDARY` (`BaselineStage`) | the baseline engine | rank 2, marked unsourced, a call of its own (`rectify_baseline`, X20) | sex, dated events, reported time |
 
-**The knobs** (`Stages`, one per crux):
+The sketch above is the design's; the built request is
+`RectificationRequest` (`crates/sdk/src/rectification_request.rs`), a
+section per report (`purify`, `conception`, `circumstance`, `baseline`,
+`svarodaya`), each present only when asked. The designed `Stages` type was
+not built.
 
-- `purifiers`: which of pranapada, Gulika and the Moon may purify (all, by
-  default) and whether Gulika's v. 76 extension applies (yes);
-- `purify_as`: `BAR` (default) or `WEIGHT`;
-- `pranapada`: `VERSE` (default), `PRINTED_EXAMPLE`, `SDK_POINT` (X2, X3);
-- `gulika_at`: `END` (default, the gloss) or `START` (the SDK's point) (X5);
-- `degree_agreement`: `OFF`, `SAME_DEGREE`, `WITHIN(orb)` (X4);
-- `conception_count`: `NEXT_AFTER_DVADASHAMSHA` (default, Bhattotpala),
-  `FROM_MOON_SIGN`, `FROM_ARIES`; `conception_rising`: `SIGN` or `NAVAMSHA`
-  (X11);
-- `circumstance` (`CircumstanceRules`): `moonSees` `ANY_ASPECT` (default)
-  or `FULL` (X16); `sunFallen` `NINTH_OR_EIGHTH` (default) or
-  `EITHER_SIDE` (X17); `presentationBy` `RISING_SIGN` (default) or
-  `LAGNA_LORD_MOTION` (X18); `betweenBy` `DEGREE` (default) or `SIGN`, and
-  `outside` `VISIBLE` (default, V.22) or `INVISIBLE` (X19);
-- `tattva`: `OFF` (default), `SVARODAYA` (X12; the baseline's cycle is
-  read inside `rectify_baseline`'s prior);
-- `seed_step`: the grid step that seeds edge finding and the baseline
-  comparison (X15).
+**The knobs**, one per crux, on each report's own rules:
+
+- the purifier's `Rules` (`crates/rectification/src/lib.rs`): `pranapada`,
+  `gulika` and `moon`, whether each may purify (all, by default), and
+  `gulikaExtension`, whether Gulika's v. 76 extension applies (yes);
+  `purifyAs`: `BAR` (default) or `WEIGHT`; `pranapadaRule`: `VERSE`
+  (default), `PRINTED_EXAMPLE`, `SDK_POINT` (X2, X3); `gulikaAt`: `END`
+  (default, the gloss) or `START` (the SDK's point) (X5); `seedMinutes`:
+  the grid step that seeds edge finding (X15);
+- a degree-agreement knob (`OFF`, `SAME_DEGREE`, `WITHIN(orb)`, X4):
+  designed, not built;
+- `ConceptionMoonRules` (`crates/rectification/src/conception.rs`, inside
+  `ConceptionRules`): `count`, `NEXT_AFTER_DVADASHAMSHA` (default,
+  Bhattotpala), `FROM_MOON_SIGN` or `FROM_ARIES`; `rising`, `SIGN` or
+  `NAVAMSHA` (X11);
+- `CircumstanceRules` (`crates/rectification/src/circumstance.rs`):
+  `moonSees` `ANY_ASPECT` (default) or `FULL` (X16); `sunFallen`
+  `NINTH_OR_EIGHTH` (default) or `EITHER_SIDE` (X17); `presentationBy`
+  `RISING_SIGN` (default) or `LAGNA_LORD_MOTION` (X18); `betweenBy`
+  `DEGREE` (default) or `SIGN`, and `outside` `VISIBLE` (default, V.22) or
+  `INVISIBLE` (X19);
+- the tattva: off unless the request carries a `svarodaya` section (X12;
+  the baseline's cycle is read inside `rectify_baseline`'s prior).
 
 A migrating consumer calls `rectify_baseline` with a `BaselineRequest`
 (the reported time, its uncertainty and accuracy, the sex, the dated
 events, the coverage and the dasha rules) under a context whose frame is the
-baseline's; nothing in `Stages` reaches it.
+baseline's; nothing in the purifier's `Rules` reaches it.
 
 **Reuse:**
 
@@ -295,8 +304,8 @@ answer.
 navamsha, or within an orb. The example's 4° against the Sun's 4°28′ and its
 "but not everywhere" suggest a tolerance, not equality.
 - **Decided:** report the separation of the lagna's and the pranapada's
-  degrees in the sign as a fact; `degree_agreement: OFF` by default, so no
-  invented orb shapes an interval. Revisit with a second worked example.
+  degrees in the sign as a fact; agreement off by default, so no
+  invented orb shapes an interval. The knob is designed, not built. Revisit with a second worked example.
 
 **X5. Gulika's instant.** The gloss's multipliers put it at the end of
 Saturn's eighth; the SDK's `Gulika` is the start, settled against the
@@ -574,7 +583,9 @@ within one cell of the baseline's final step.
 ## Acceptance
 
 - Every clause in an answer names its verse and print.
-- `Stages::default()` reaches no `BASELINE` value, a test asserts so.
+- No default reaches a `BASELINE` value: the baseline is a call of its
+  own (X20), and the designed `Stages` type it was to be held by was not
+  built.
 - **The printed examples pass as printed:**
   - BPHS ch. 2 gloss, p. 12: a day of 33;14 ghatis, a Wednesday, gives a
     Gulika time of 16;37 under `END`, and the multiplier table reproduces cell
@@ -656,6 +667,6 @@ within one cell of the baseline's final step.
    `baseline`, its `dasha` a partial override of the baseline's own) on
    `ts_chart_request`, section 122, and `chart.rectification` in Node,
    Python, Dart and Java, every catalogue key in full and a member not
-   asked for none. The six runners agree value for value on both parity
+   asked for none. Every runner agrees value for value on both parity
    charts, and the record's test refuses any key on the wire that is not
    camelCase, which caught the stage notes' own fields.

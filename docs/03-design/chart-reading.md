@@ -204,7 +204,7 @@ the accessors over the new sections. The parity runner gains the
 sections' values, which is what holds the four to one answer; the
 examples gain a ninth scenario, which is what holds the four to one
 *shape* — and `check-areas` holds the operation itself to being listed
-by all four runners.
+by every runner.
 
 ## 7. Order of work
 
@@ -329,8 +329,8 @@ by all four runners.
 3. ~~**The ergonomic layers**, one per binding.~~ **Done**, all four for
    all five sections.
 4. ~~**Parity and the examples**~~ **Done**: the sections' values
-   compared across four runners, 1 757 values, and a ninth example,
-   `chart_reading`, in each binding, whose four outputs are identical
+   compared across every runner, and a shared example,
+   `chart_reading`, in each binding, whose outputs are identical
    line for line. Writing it found three shape gaps no value gate
    could: Node nested a divisional placement's sign beside the graha
    where the other three nest it under `at`; Node's declarations lacked

@@ -91,9 +91,13 @@ under his orbs.
    a gap against an angle and says which way it moves. The new code
    only chooses each angle's orb. The engine stays the single place
    where a separation is measured.
-6. **A chart section like the rest.** `ChartRequest::with_western_aspects`
-   takes the request, and the document carries the rows. The boundary
-   and the bindings follow as one step, with parity.
+6. **A chart section like the rest.** In Rust the aspects are read after
+   founding, by `sdk.chart().western_aspects(&chart, &AspectRequest)`
+   (`crates/sdk/src/western_aspects.rs`); the document does not carry
+   them, and the designed `ChartRequest::with_western_aspects` was not
+   built. At the boundary the chart request carries `western_aspects_json`
+   and the batch answers the `western_aspects` section. The boundary and
+   the bindings follow as one step, with parity.
 
 ## What building it found
 
@@ -139,10 +143,10 @@ under his orbs.
    `AspectRequest::from_json`, refused under `westernAspects`. Sections
    82 (`western_aspects`, a count a chart) and 83
    (`western_aspect_rows`, ragged by it) carry the rows, the aspect as
-   `TsWesternAspect`. Node, Python and Dart read `chart.westernAspects`
+   `TsWesternAspect`. Every binding reads `chart.westernAspects`
    (`western_aspects` in Python). Dart types the model as `OrbModel`
    with `leo`, `lilly`, `moieties` and `byAspect`, and
    `WesternAspectRequest.lilly` is Lilly's reading. The parity runners
    ask six aspects under moieties over the ten planets, so a model
-   other than the default and a non-Ptolemaic aspect both cross; the
-   five bindings agree on all 17169 values.
+   other than the default and a non-Ptolemaic aspect both cross, and
+   every runner agrees on every value.

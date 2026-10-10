@@ -243,10 +243,10 @@ back as a request unchanged. Node's types make that a compile error
 (`terms: 'TABLE'` is not a `DignityRequest`), and the boundary refuses it
 by `dignities.rules.terms.TABLE`.
 
-Node, Python and Dart each rebuild Rust's `Dignities`, with the planet
+Every binding rebuilds Rust's `Dignities`, with the planet
 as a catalogue member and `peregrine` beside the flags. Parity asks every
 runner for a request with each knob turned from its default (`DAYLIGHT`,
-`EGYPTIAN`, `PTOLEMY`, a peregrine score of 0), and the five runners agree
+`EGYPTIAN`, `PTOLEMY`, a peregrine score of 0), and every runner agrees
 on every value. The ABI test holds every cell to the façade's own answer
 to the bit, and the keys test holds the four enums to serde's spelling.
 

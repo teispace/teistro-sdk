@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
-Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6
-and P8 built, P7 and P9 open. Closes Q35 (`QUESTIONS.md`), which the
+Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6,
+P8 and P10 built, P7 and P9 open, §6 step 5 (packaging) not built. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 

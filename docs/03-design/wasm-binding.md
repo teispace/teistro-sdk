@@ -1,10 +1,11 @@
 # The wasm binding
 
 Status: **built**, 2026-09-25: steps 1 to 7, step 3 answered by step 1.
-The package is released with the others. What remains is ADR-0005's
-module profiles, which no binding has yet (§7).
+The package is released with the others. ADR-0005's module profiles are
+built since, on their own page ([`wasm-profiles.md`](wasm-profiles.md),
+2026-10-08: the `panchanga` module beside the full one).
 
-The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
+A binding the order names (ADR-0004: Node native, wasm, Dart,
 Python) and the last deliverable of Phase 5's list
 (`07-roadmap/00-roadmap.md`: "wasm binding and the wasm column of the
 determinism matrix"). Written 2026-09-25 from measurements, before any
@@ -324,9 +325,9 @@ Rejected:
    The budget (`docs/05-testing/sizes.json` since 2026-10-09, `bindings/wasm/size.json` before) is held both ways: over it fails,
    and so does more than 5% under it, with the value to write, because a
    budget that loose would let the saving go unnoticed. One module, not
-   one per profile: ADR-0005's profiles (`panchanga`, `kundali`, …) are
-   module families no binding has yet, so the gate has one entry and the
-   file names the module it measures, ready for the rest.
+   one per profile, as written on 2026-09-25: ADR-0005's profiles were
+   then module families no binding had. They are built since
+   ([`wasm-profiles.md`](wasm-profiles.md)), with a budget per profile.
 
 8. **Edge runtimes: Cloudflare Workers, built** (2026-09-26).
    **Researched first.** A Worker compiles no WebAssembly at run time —
@@ -368,9 +369,8 @@ Rejected:
 
 ## 7. What is left
 
-- **ADR-0005's module profiles**, for every binding at once; the wasm
-  package then ships one module per profile and the size file gains an
-  entry each.
+- **ADR-0005's module profiles**: built since, on
+  [`wasm-profiles.md`](wasm-profiles.md).
 - **`wasm-opt`** (Binaryen) is **measured and declined** (2026-09-25,
   version 133, on the 4,760,590-byte compact module). It takes 6–7% off
   the raw module and makes the **gzipped** one 6–7% larger, which is what

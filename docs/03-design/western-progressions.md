@@ -154,9 +154,12 @@ The calls:
 
 The arithmetic goes in its own functions, so a consumer can use one
 without the others:
-- `progressed_instant(birth, at, rate, measure)`;
-- `life_at(birth, instant, rate, measure)`, the inverse;
-- `arc_to_years` and `years_to_arc` for each arc measure.
+- `Progression::sky_at(&self, birth, life)`, the sky's instant for a
+  moment of the life, the rate and measure held on the `Progression`
+  (`crates/western/src/progression.rs`);
+- `Progression::life_at(&self, birth, sky)`, the inverse;
+- `ArcMeasure::years(self, degrees)` and `ArcMeasure::degrees(self, years)`
+  for each arc measure (`crates/western/src/arc.rs`).
 
 ### Across the boundary (step 5)
 

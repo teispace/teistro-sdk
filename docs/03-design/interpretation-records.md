@@ -323,7 +323,7 @@ A generated page, `interpretation-records-measured.md`, held by
   2 665, so storing both would double the corpus in the repository to save
   3%, and everything generated here is regenerated and gated rather than
   stored. The binding surface needs nothing further — `loadPack` is
-  already on the C boundary and in all three bindings, and `readings.rs`
+  already on the C boundary and in every binding, and `readings.rs`
   runs the whole path end to end. What is left is which release artefact
   or companion package carries them, which belongs with Phase 9's release
   pipeline and not here.

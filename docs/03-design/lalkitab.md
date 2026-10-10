@@ -254,7 +254,7 @@ measured.
    &LalKitabRequest)`, its refusals named under `lalkitab`.
 3. The boundary (JSON), the bindings and parity, and a guide. **Built
    2026-10-09**: the `lalkitab_json` record and section 123 cross to Node,
-   Python, Dart and Java, each with its own types, and six runners agree
+   Python, Dart and Java, each with its own types, and every runner agrees
    value for value on a rotation varshphal list with the book's structure
    and none of its numbers. The guide is this page and each binding's
    documented accessor.
