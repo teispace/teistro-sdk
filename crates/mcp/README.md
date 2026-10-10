@@ -1,7 +1,7 @@
 # teistro-mcp
 
 The Teistro SDK as tools an agent calls: a Model Context Protocol server
-over stdio (`docs/03-design/mcp-server.md`). A model asked for a
+over stdio or Streamable HTTP (`docs/03-design/mcp-server.md`). A model asked for a
 nakshatra answers from memory with no ayanamsha named; a tool answers
 with the settings hash, the input hash and every convention applied.
 
@@ -9,6 +9,7 @@ with the settings hash, the input hash and every convention applied.
 teistro-mcp                       # the built-in ephemeris
 teistro-mcp --ephemeris SURYA_SIDDHANTA
 teistro-mcp --plugin /opt/adapters/libteimeris_teistro.so   # a real engine, the built-in behind it
+teistro-mcp --http 127.0.0.1:8080                            # Streamable HTTP at /mcp
 ```
 
 A host starts it as a child process and speaks either revision:
@@ -101,5 +102,16 @@ let server = Server::new(Engine::Builtin)
     .with_limits(Limits { days: Some(732), ..Limits::default() });
 ```
 
-Nothing reaches the file system or the network: the ephemeris and the
+Over HTTP (`--http ADDRESS`) the server answers 2026-07-28 statelessly:
+each message is a POST to `/mcp`, answered as JSON, or as an event stream
+with its progress first when it carries a `progressToken`; closing the
+connection cancels the call. `MCP-Protocol-Version`, `Mcp-Method` and
+`Mcp-Name` are checked against the body (`-32020` when they disagree),
+a browser's `Origin` must be a loopback one or one named by
+`--allow-origin`, and each of `--http-workers` threads keeps a server
+of its own. It checks no credentials: bind it to loopback, or put
+whatever authorizes callers in front of it. A program embedding the
+server serves the same way with `teistro_mcp::http::serve`.
+
+No tool reaches the file system or the network: the ephemeris and the
 plugin are chosen on the command line and never by a tool argument.

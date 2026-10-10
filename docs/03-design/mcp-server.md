@@ -1,7 +1,7 @@
 # `teistro-mcp`: the SDK as tools an agent calls
 
 Status: `building`, decided 2026-10-10; §6 steps 1 to 3 and §7 P1 to P6
-built, P7 to P9 open. Closes Q35 (`QUESTIONS.md`), which the
+and P8 built, P7 and P9 open. Closes Q35 (`QUESTIONS.md`), which the
 maintainer deferred to the end of the plan and then handed over to be
 researched and decided (2026-10-07). The order of work is §6.
 
@@ -377,6 +377,26 @@ validated, bound to loopback unless told otherwise, and authorization
 left to the host in front of it (the server holds no secret).
 `teistro::Context` is neither `Send` nor `Sync`, so a concurrent HTTP
 transport builds a context per worker thread.
+
+*Built.* `--http ADDRESS` serves `/mcp` from `teistro_mcp::http::serve`
+on the standard library's sockets alone, so the transport adds no
+dependency to audit. Each worker thread builds a server of its own and
+answers one connection at a time; a connection the workers cannot take
+is `503`. A POST carries one message: the revision header must be
+2026-07-28 (another is `-32022`) and agree with the body, and
+`Mcp-Method` and, for `tools/call`, `prompts/get` and `resources/read`,
+`Mcp-Name` must say what the body does, or the request is `-32020`
+under `400` before anything is computed. A notification is `202`, an
+unknown method `404`, a foreign `Origin` `403`, `GET` and `DELETE` `405`
+(a stateless server opens no stream and keeps no session), a body past
+the message bound `413` unread. A call carrying a `progressToken`
+answers as an event stream, its progress first and its answer last,
+with `X-Accel-Buffering: no` so a proxy does not hold it; any other
+answers as JSON. A worker watches the connection while its call
+computes and stops the call through the same watch as P6 when the peer
+closes, and a closure after the answer cancels nothing later. Gated in
+`tests/http.rs` through the binary on a loopback port, each check shown
+red by breaking it.
 
 **P9. Extended where the SDK is.** Designed, not built: a provider
 plugin and `engine.call` are reached today (step 3), and the rest of

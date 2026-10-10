@@ -55,6 +55,18 @@ impl Interrupt {
     pub fn cancel(&self, id: &Value) {
         self.shared.cancel(id);
     }
+
+    /// Stops the request `id` if it is the one running, and otherwise
+    /// changes nothing: what a closed connection does, which may close
+    /// after its call has answered.
+    #[cfg(not(target_family = "wasm"))]
+    pub(crate) fn stop_running(&self, id: &Value) {
+        let id = id.to_string();
+        let calls = locked(&self.shared.calls);
+        if calls.running.as_deref() == Some(id.as_str()) {
+            self.shared.stop.store(true, Ordering::Relaxed);
+        }
+    }
 }
 
 /// What the server, its watch and its transport share.

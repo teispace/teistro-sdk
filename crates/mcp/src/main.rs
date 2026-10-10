@@ -1,17 +1,22 @@
 //! `teistro-mcp`: the server over stdio, one JSON-RPC message a line in
-//! and one reply a line out; anything it logs goes to stderr
-//! (`03-design/mcp-server.md`).
+//! and one reply a line out, or over Streamable HTTP with `--http`;
+//! anything it logs goes to stderr (`03-design/mcp-server.md`).
 
 use std::io::{BufRead, Write as _};
+use std::net::TcpListener;
 use std::process::ExitCode;
+use std::sync::Arc;
 
+use teistro_mcp::http::{self, Http, MakeServer};
 use teistro_mcp::{Adapter, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server};
 
 const USAGE: &str = "teistro-mcp: the Teistro SDK as Model Context Protocol tools, over stdio
+or Streamable HTTP
 
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
                    [--max-days N]
+                   [--http ADDRESS [--http-workers N] [--allow-origin ORIGIN]...]
 
   --ephemeris NAME       the ephemeris every tool computes with: BUILTIN (the
                          default), SURYA_SIDDHANTA or NONE; with a plugin, the
@@ -33,6 +38,13 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          told
                          (each takes `none` to bound nothing; a request past
                          a bound is refused naming its field and the bound)
+  --http ADDRESS         serve Streamable HTTP at http://ADDRESS/mcp rather
+                         than stdio (`127.0.0.1:8080`, or port 0 for any): the
+                         2026-07-28 revision, stateless; authorization is left
+                         to whatever stands in front
+  --http-workers N       the calls answered at once over HTTP, 4 unless told
+  --allow-origin ORIGIN  a browser origin that may call beside the loopback
+                         ones, as the browser sends it; repeatable
   --help                 this text
   --version              the server's version and the revisions it speaks
 ";
@@ -44,6 +56,8 @@ struct Options {
     plugin_config: Option<String>,
     detail: Detail,
     limits: Limits,
+    /// The address `--http` serves at, and how.
+    http: Option<(String, Http)>,
 }
 
 fn main() -> ExitCode {
@@ -56,6 +70,9 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
+    if let Some((address, http)) = options.http.clone() {
+        return serve_http(options, &address, &http);
+    }
     let server = match server(&options) {
         Ok(server) => server,
         Err(why) => {
@@ -178,6 +195,38 @@ fn read_line(
     }
 }
 
+/// Serves HTTP at `address` until the listener fails; the first line on
+/// stderr names the endpoint, port and all.
+fn serve_http(options: Options, address: &str, http: &Http) -> ExitCode {
+    let mut stderr = std::io::stderr();
+    let listener = match TcpListener::bind(address) {
+        Ok(listener) => listener,
+        Err(why) => {
+            let _ = writeln!(stderr, "teistro-mcp: --http {address}: {why}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let bound = listener.local_addr();
+    let shown = bound
+        .as_ref()
+        .map_or_else(|_| address.to_owned(), ToString::to_string);
+    let _ = writeln!(stderr, "teistro-mcp: serving http://{shown}{}", http.path);
+    if !bound.is_ok_and(|bound| bound.ip().is_loopback()) {
+        let _ = writeln!(
+            stderr,
+            "teistro-mcp: listening beyond loopback; the server checks no credentials"
+        );
+    }
+    let make: Arc<MakeServer> = Arc::new(move || server(&options));
+    match http::serve(&listener, http, &make) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(why) => {
+            let _ = writeln!(stderr, "teistro-mcp: {why}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
 /// The server the options name: the plugin loaded ahead of the engine
 /// when there is one.
 fn server(options: &Options) -> Result<Server, teistro::Error> {
@@ -205,6 +254,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let (mut plugin, mut plugin_config) = (None, None);
     let mut detail = Detail::default();
     let mut limits = Limits::default();
+    let (mut address, mut workers, mut origins) = (None, None, Vec::new());
     let mut stdout = std::io::stdout();
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -245,18 +295,48 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
             "--max-message-bytes" => limits.message_bytes = bound(&arg, args.next())?,
             "--max-items" => limits.items = bound(&arg, args.next())?,
             "--max-days" => limits.days = bound(&arg, args.next())?,
+            "--http" => address = Some(args.next().ok_or("`--http` takes an address")?),
+            "--http-workers" => {
+                let count = args.next().ok_or("`--http-workers` takes a count")?;
+                workers = Some(
+                    count
+                        .parse::<usize>()
+                        .ok()
+                        .filter(|count| *count > 0)
+                        .ok_or_else(|| format!("`--http-workers` takes a count, not `{count}`"))?,
+                );
+            }
+            "--allow-origin" => {
+                origins.push(args.next().ok_or("`--allow-origin` takes an origin")?);
+            }
             _ => return Err(format!("no option `{arg}`")),
         }
     }
     if plugin_config.is_some() && plugin.is_none() {
         return Err(String::from("`--plugin-config` configures a `--plugin`"));
     }
+    if address.is_none() && (workers.is_some() || !origins.is_empty()) {
+        return Err(String::from(
+            "`--http-workers` and `--allow-origin` configure `--http`",
+        ));
+    }
+    let http = address.map(|address| {
+        let shipped = Http::default();
+        let http = Http {
+            workers: workers.unwrap_or(shipped.workers),
+            origins,
+            message_bytes: limits.message_bytes,
+            ..shipped
+        };
+        (address, http)
+    });
     Ok(Some(Options {
         engine,
         plugin,
         plugin_config,
         detail,
         limits,
+        http,
     }))
 }
 

@@ -2556,6 +2556,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   carries. A modern MCP request missing its revision or its client's
   capabilities is `-32602` naming the field, and every modern result
   names the server. **Numbers:** none move.
+- **Streamable HTTP.** `teistro-mcp --http ADDRESS` serves the
+  2026-07-28 revision statelessly at `/mcp`: the revision, method and
+  name headers are checked against the body, a browser origin must be a
+  loopback one or named by `--allow-origin`, a call carrying a
+  `progressToken` answers as an event stream, and closing the
+  connection cancels its call. Each of `--http-workers` threads keeps a
+  server of its own; `teistro_mcp::http::serve` does the same for an
+  embedding program. **Numbers:** none move.
 - **Cancellation and progress.** `teistro-mcp` reads stdin on its own
   thread, so `notifications/cancelled` stops a running call at its next
   engine request and the call is not answered; a call carrying a

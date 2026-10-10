@@ -40,6 +40,8 @@ pub use teistro_port_ephemeris::load::Adapter;
 use teistro_port_ephemeris::native::NativeFunction;
 
 mod completion;
+#[cfg(not(target_family = "wasm"))]
+pub mod http;
 mod limits;
 mod prompts;
 mod resources;
@@ -144,11 +146,11 @@ struct Fault {
 /// The reply to a message the strict reader refused: not JSON, answered
 /// with a null id; or a key given twice, answered under the id a lenient
 /// reading finds (none for a notification) and naming the key's path.
-fn unreadable(message: &[u8], twice: Option<&Error>) -> Option<String> {
+fn unreadable(message: &[u8], twice: Option<&Error>) -> Option<(String, Option<i64>)> {
     let lenient = match serde_json::from_slice::<Value>(message) {
         Ok(lenient) => lenient,
         Err(why) => {
-            return Some(failure(
+            return Some(coded(
                 &Value::Null,
                 &Fault::new(PARSE_ERROR, format!("the message is not JSON: {why}")),
             ));
@@ -166,9 +168,9 @@ fn unreadable(message: &[u8], twice: Option<&Error>) -> Option<String> {
         data: Some(json!({ "field": field })),
     };
     match lenient.get("id") {
-        Some(id) => Some(failure(id, &fault)),
+        Some(id) => Some(coded(id, &fault)),
         None if lenient.get("method").is_some() => None,
-        None => Some(failure(&Value::Null, &fault)),
+        None => Some(coded(&Value::Null, &fault)),
     }
 }
 
@@ -345,12 +347,18 @@ impl Server {
     /// refused unread, so a transport may stop reading one a byte past
     /// it.
     pub fn handle_bytes(&mut self, message: &[u8]) -> Option<String> {
+        self.handle_coded(message).map(|(reply, _)| reply)
+    }
+
+    /// [`Server::handle_bytes`], with the code of the error the reply
+    /// carries, which an HTTP transport answers under its own status.
+    pub(crate) fn handle_coded(&mut self, message: &[u8]) -> Option<(String, Option<i64>)> {
         if let Some(most) = self
             .limits
             .message_bytes
             .filter(|most| message.len() > *most)
         {
-            return Some(failure(
+            return Some(coded(
                 &Value::Null,
                 &Fault {
                     code: INVALID_REQUEST,
@@ -370,7 +378,7 @@ impl Server {
             Err(twice) => return unreadable(message, twice.as_ref()),
         };
         let Some(object) = message.as_object() else {
-            return Some(failure(
+            return Some(coded(
                 &Value::Null,
                 &Fault::new(
                     INVALID_REQUEST,
@@ -382,7 +390,7 @@ impl Server {
         let Some(method) = object.get("method").and_then(Value::as_str) else {
             // A response to a request the server never sends, or nothing.
             return id.map(|id| {
-                failure(
+                coded(
                     id,
                     &Fault::new(INVALID_REQUEST, "a request names its `method`"),
                 )
@@ -406,8 +414,8 @@ impl Server {
             return None;
         }
         let reply = match self.request(method, params) {
-            Ok(result) => success(id, &result),
-            Err(fault) => failure(id, &fault),
+            Ok(result) => (success(id, &result), None),
+            Err(fault) => coded(id, &fault),
         };
         // A cancelled call's answer is not sent: its caller has stopped
         // listening for it.
@@ -800,6 +808,11 @@ fn tool_result(structured: Value, is_error: bool) -> Map<String, Value> {
 
 fn success(id: &Value, result: &Value) -> String {
     json!({ "jsonrpc": "2.0", "id": id, "result": result }).to_string()
+}
+
+/// A refusal and its code.
+fn coded(id: &Value, fault: &Fault) -> (String, Option<i64>) {
+    (failure(id, fault), Some(fault.code))
 }
 
 fn failure(id: &Value, fault: &Fault) -> String {
