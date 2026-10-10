@@ -105,7 +105,7 @@ the protocol's own failures.
 | `matching.naam` | `NaamRequest` | step 1, built |
 | `settings.describe` | none: the knobs and the profiles | step 1, built |
 | `chart.found` | `FoundRequest`: when, where, the sections and each family's record | step 2, built |
-| `almanac.days` | a panchanga record | step 2 |
+| `almanac.days` | `DaysRequest`: a range of days, the place and clock, and what is asked beside them | step 2, built |
 | `time.resolve`, `calendar.convert` | a civil time and zone; a date | step 3 |
 | `engine.manifest`, `engine.call` | the engine passthrough (ADR-0029) | step 3 |
 
@@ -138,9 +138,19 @@ spelt as the other request records are: `instant` or `instants`, the
 place and clock, the catalogue keys, a `true` flag for each section and
 each record by its name. `chart.found` is that record: it answers the
 chart documents as `charts` and each table a row a chart, with the
-batch's provenance as the answer's. Next comes `almanac.days`, which
-needs the panchanga request read from JSON the same way, and then the
-third gate.
+batch's provenance as the answer's.
+
+`teistro::DaysRequest` reads a range of days the same way: `first` and
+optional `last` in a `calendar`, the place and clock, a `muhurta` and a
+`festivals` record by their names, and `true` flags for the lunar
+`years`, the `eclipses` and each day's `nepalSambat` date.
+`AlmanacAnswer::sections` writes every section asked beside the days in
+full and seals each over what it writes; the boundary's
+`ts_panchanga_days` encodes those sections and `almanac.days` answers
+them, so the two share one writer. `almanac.days` answers the days,
+their own hashes and each section as its own `{value, provenance}`,
+with the days' provenance as the answer's; a section not asked is left
+out. The third gate holds the table (§5); next comes step 3.
 
 ## 4. What is not a tool
 
@@ -161,9 +171,15 @@ dasha system of one's own are context configuration, reached through
   record the shared example of its area sends, and its structured
   content is compared with the façade's own answer to the bit, input
   hash included.
-- **The tool table and the façade agree.** Every request type with a
-  `from_json` is either a tool or listed as not yet one with the step
-  that makes it one, both ways, as `UNNAMED` holds the catalogue.
+- **The tool table and the façade agree.** Every JSON record reader in
+  the SDK's crates (an `impl T` holding `pub fn from_json`) is reached by
+  a tool: called where a tool reads its request (`teistro::records`, a
+  chart request's records, a range of days, the server's arguments),
+  carried inside a record that is, or listed as no tool's with why. Both
+  ways: a listed type a tool reads by its own call, or one with no
+  reader any more, fails. Built as the `every-reader-reaches-a-tool`
+  lint, which found two readers carried rather than called on its first
+  run and was shown red by dropping the days request from its list.
 
 ## 6. Order of work
 

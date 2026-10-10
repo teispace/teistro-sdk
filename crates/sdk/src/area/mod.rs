@@ -84,7 +84,7 @@ pub(crate) fn drik_sun<'p>(
 
 #[cfg(feature = "muhurta")]
 pub use almanac::MuhurtaDays;
-pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, FestivalDays};
+pub use almanac::{AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, FestivalDays};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};

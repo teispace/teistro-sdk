@@ -42,16 +42,11 @@
 //! that marshalling and nothing else.
 
 mod area;
-#[cfg(any(
-    feature = "chart",
-    feature = "pakshi",
-    feature = "rashifal",
-    feature = "research"
-))]
 mod asked;
 #[cfg(feature = "western")]
 mod composites;
 mod context;
+mod days_request;
 mod ephemeris;
 #[cfg(feature = "chart")]
 mod reading;
@@ -66,8 +61,8 @@ pub use area::NumerologyArea;
 #[cfg(feature = "research")]
 pub use area::ResearchArea;
 pub use area::{
-    AlmanacAnswer, AlmanacArea, AlmanacRequest, CalendarArea, EngineArea, FestivalDays, FrameArea,
-    IntlArea, KeysArea, TimeArea,
+    AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, EngineArea,
+    FestivalDays, FrameArea, IntlArea, KeysArea, TimeArea,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
@@ -277,6 +272,9 @@ pub use crate::sade_sati_request::SadeSatiRequest;
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
 pub use crate::festival_request::{FestivalPack, FestivalRequest};
+// A range of days and what is asked beside them, read whole from JSON
+// (`03-design/mcp-server.md`, step 2).
+pub use crate::days_request::DaysRequest;
 #[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
 pub use teistro_astro::visibility::Criterion;

@@ -611,6 +611,72 @@ pub struct AlmanacAnswer {
     pub nepal_sambat: Option<Envelope<Vec<NepalSambatDate>>>,
 }
 
+/// What was asked beside a range's days, each section written as a
+/// binding holds it: its catalogue members in full and its envelope
+/// sealed over that value, so its content hash is the hash of what a
+/// binding reads (`03-design/muhurta-at-the-boundary.md` §4). What
+/// [`AlmanacAnswer::sections`] gives; a section not asked is `None`.
+#[derive(Clone, Debug, Default, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlmanacSections {
+    /// The muhurta search's answer.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub muhurta: Option<Envelope<serde_json::Value>>,
+    /// The observances.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub festivals: Option<Envelope<serde_json::Value>>,
+    /// The lunar years.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub years: Option<Envelope<serde_json::Value>>,
+    /// The eclipses and the place's view of each.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eclipses: Option<Envelope<serde_json::Value>>,
+    /// Each day's Nepal Sambat date.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub nepal_sambat: Option<Envelope<serde_json::Value>>,
+}
+
+impl AlmanacAnswer {
+    /// The sections answered beside the days, each written in full and
+    /// sealed over what is written: the one writer the C boundary's
+    /// blob and the agent server's `almanac.days` share.
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` if a section does not serialise, which a value the
+    /// façade built cannot do.
+    pub fn sections(&self) -> Result<AlmanacSections, Error> {
+        Ok(AlmanacSections {
+            #[cfg(feature = "muhurta")]
+            muhurta: sealed(self.muhurta.as_ref(), teistro_muhurta::spelling::in_full)?,
+            #[cfg(not(feature = "muhurta"))]
+            muhurta: None,
+            festivals: sealed(self.festivals.as_ref(), Observances::in_full)?,
+            years: sealed(self.years.as_ref(), |years| LunarYear::in_full(years))?,
+            eclipses: sealed(self.eclipses.as_ref(), EclipsesHere::in_full)?,
+            nepal_sambat: sealed(self.nepal_sambat.as_ref(), |dates| {
+                NepalSambatDate::in_full(dates)
+            })?,
+        })
+    }
+}
+
+/// A section written by `in_full` and sealed over what it wrote, or
+/// `None` when it was not asked.
+fn sealed<T>(
+    answer: Option<&Envelope<T>>,
+    in_full: impl FnOnce(&T) -> Result<serde_json::Value, Error>,
+) -> Result<Option<Envelope<serde_json::Value>>, Error> {
+    answer
+        .map(|answer| {
+            Ok(Envelope::sealing(
+                in_full(&answer.value)?,
+                answer.provenance.clone(),
+            ))
+        })
+        .transpose()
+}
+
 /// A festival reckoning's answer beside the range's days: what
 /// [`AlmanacArea::festivals_with_days`] gives.
 #[derive(Clone, Debug, PartialEq)]
