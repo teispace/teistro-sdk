@@ -1138,10 +1138,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     };
     // The step itself, to the next heading: a log row naming a question
     // is a record of the past and not an orientation for a reader.
-    let resume = status
-        .split_once(RESUME)
-        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
-        .unwrap_or_default();
+    let resume = section_of(&status, RESUME);
     if resume.is_empty() {
         outcome.failures.push(Finding {
             file: tracker.to_owned(),
@@ -1153,10 +1150,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     }
     // Both lists of what is left to do: a decided question belongs in
     // neither, and an open one must be named in the first.
-    let next = status
-        .split_once(NEXT)
-        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
-        .unwrap_or_default();
+    let next = section_of(&status, NEXT);
     for (at, line) in questions.lines().enumerate() {
         let Some(rest) = line.strip_prefix("## ") else {
             continue;
@@ -1171,7 +1165,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
         // decided it — the second put there by the very step that
         // requires an open one to be named, which is why both directions
         // belong in one rule.
-        if line.ends_with(": `open`") && !resume.contains(number) {
+        if line.ends_with(": `open`") && !names_question(resume, number) {
             outcome.failures.push(Finding {
                 file: register.to_owned(),
                 line: at + 1,
@@ -1182,7 +1176,7 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
             });
         }
         for (list, heading) in [(resume, RESUME), (next, NEXT)] {
-            if line.ends_with(": `decided`") && list.contains(number) {
+            if line.ends_with(": `decided`") && names_question(list, number) {
                 outcome.failures.push(Finding {
                     file: register.to_owned(),
                     line: at + 1,
@@ -1207,6 +1201,57 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
             });
         }
     }
+}
+
+/// The text under a heading: from the line after it to the next line that
+/// opens a `## ` heading, or the empty string when no line is the heading.
+///
+/// The heading is matched as a **line** and never as a substring. The
+/// resume step itself says a decided question "may not be named in this
+/// step or in `## Next`", so the first `## Next` in the tracker is a
+/// mention, and reading from there checked the tail of the step in place
+/// of the list it names. A heading may carry more words after a space.
+fn section_of<'a>(text: &'a str, heading: &str) -> &'a str {
+    let mut lines = text.split_inclusive('\n');
+    let mut start = 0;
+    let mut found = false;
+    for line in lines.by_ref() {
+        start += line.len();
+        found = line
+            .trim_end_matches(['\n', '\r'])
+            .strip_prefix(heading)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with(' '));
+        if found {
+            break;
+        }
+    }
+    if !found {
+        return "";
+    }
+    let mut end = start;
+    for line in lines {
+        if line.starts_with("## ") {
+            break;
+        }
+        end += line.len();
+    }
+    text.get(start..end).unwrap_or_default()
+}
+
+/// Whether a text names a question (`Q24`) as a whole token: not preceded
+/// by a letter or digit, and not followed by another digit.
+///
+/// A substring test reads `Q4` in `Q40`, so a decided `Q4` would be held
+/// against a list that names only `Q40`, and an open `Q4` would count as
+/// named by it.
+fn names_question(text: &str, id: &str) -> bool {
+    text.match_indices(id).any(|(at, _)| {
+        let before = text.get(..at).and_then(|head| head.chars().next_back());
+        let after = text
+            .get(at + id.len()..)
+            .and_then(|tail| tail.chars().next());
+        !before.is_some_and(char::is_alphanumeric) && !after.is_some_and(|c| c.is_ascii_digit())
+    })
 }
 
 /// The tracker's table of what is built, and where its rows come from.
@@ -2858,7 +2903,10 @@ pub(crate) fn check(root: &Path) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use super::{declaration_of, gate_declared_by, gate_run_by};
+    use super::{
+        NEXT, Outcome, REGISTER, RESUME, declaration_of, gate_declared_by, gate_run_by,
+        names_question, open_questions_are_named, section_of,
+    };
 
     /// The shape of a `group!` body, which is what the rule reads.
     const SOURCE: &str = "group!(
@@ -2956,6 +3004,84 @@ mod tests {
             None
         );
         assert_eq!(gate_declared_by("    let name = Some(\"check-x\");"), None);
+    }
+
+    /// A tracker whose resume step mentions the other heading in prose
+    /// before the heading itself, as the real one does.
+    const TRACKER: &str = "# Status\n\n## How to resume\n\n\
+        1. A decided question may not be named here or in `## Next`.\n\n\
+        ## Next\n\n1. The item.\n\n## Session log\n\n| Q4 |\n";
+
+    #[test]
+    fn a_section_starts_at_its_heading_line_and_not_at_a_mention() {
+        // A substring search reads from the mention and returns the tail
+        // of the resume step, which names no item at all.
+        assert_eq!(section_of(TRACKER, NEXT), "\n1. The item.\n\n");
+        assert_eq!(
+            section_of(TRACKER, RESUME),
+            "\n1. A decided question may not be named here or in `## Next`.\n\n"
+        );
+        // A heading may carry words after a space, and nothing else.
+        assert_eq!(section_of("## Next (dated)\nx\n", NEXT), "x\n");
+        assert_eq!(section_of("## Nextly\nx\n", NEXT), "");
+        assert_eq!(section_of("no heading\n", NEXT), "");
+    }
+
+    #[test]
+    fn a_question_is_named_as_a_whole_token() {
+        for named in ["Q4", "Q4.", "(Q4)", "`Q4`", "see Q4, then"] {
+            assert!(names_question(named, "Q4"), "{named}");
+        }
+        // `Q4` is a prefix of `Q40`: a substring test would call it named.
+        for not_named in ["Q40", "Q41 and Q400", "SQ4", "aQ4", ""] {
+            assert!(!names_question(not_named, "Q4"), "{not_named}");
+        }
+    }
+
+    /// A register and a tracker, written under a fresh directory, and the
+    /// rule run over them.
+    #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+    fn question_findings(tag: &str, questions: &str, status: &str) -> Vec<String> {
+        let root =
+            std::env::temp_dir().join(format!("teistro-questions-{}-{tag}", std::process::id()));
+        let (register, tracker) = REGISTER;
+        std::fs::create_dir_all(root.join("docs")).unwrap();
+        std::fs::write(root.join(register), questions).unwrap();
+        std::fs::write(root.join(tracker), status).unwrap();
+        let mut outcome = Outcome::default();
+        open_questions_are_named(&root, &mut outcome);
+        std::fs::remove_dir_all(&root).unwrap();
+        outcome.failures.into_iter().map(|f| f.text).collect()
+    }
+
+    #[test]
+    fn a_decided_question_is_not_read_inside_a_longer_id() {
+        // `Q4` is decided and `Q41` open; the lists name `Q41` and `Q40`
+        // and never `Q4`, which a substring test read in both.
+        let found = question_findings(
+            "token",
+            "## Q4. Settled: `decided`\n\n## Q41. Live: `open`\n",
+            "## How to resume\n\n1. Q41 is open, and Q40 is another matter.\n\n\
+             ## Next\n\n1. Q40.\n\n## Session log\n",
+        );
+        assert!(found.is_empty(), "{found:?}");
+    }
+
+    #[test]
+    fn a_decided_question_under_the_next_heading_is_found_past_a_mention() {
+        // The first `## Next` is in the resume step's prose; a reader that
+        // starts there checks the step's tail and misses the list.
+        let found = question_findings(
+            "next",
+            "## Q4. Settled: `decided`\n\n## Q7. Live: `open`\n",
+            "## How to resume\n\n1. Q7 is open; a decided one may not be in `## Next`.\n\n\
+             ## Next\n\n1. Still on (Q4).\n\n## Session log\n",
+        );
+        assert_eq!(
+            found,
+            ["`Q4` is decided and docs/STATUS.md's `## Next` still names it"],
+            "{found:?}"
+        );
     }
 }
 
