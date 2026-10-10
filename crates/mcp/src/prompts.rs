@@ -11,7 +11,7 @@ use serde_json::{Map, Value, json};
 use teistro::Error;
 use teistro::quantity::Place;
 
-use crate::resources;
+use crate::{Limits, resources};
 
 /// The arguments a person gave, each trimmed.
 type Given = BTreeMap<String, String>;
@@ -143,6 +143,8 @@ struct Prompt {
 struct Written {
     tool: &'static str,
     request: Value,
+    /// The argument a refusal under the server's limits names.
+    limited: &'static str,
     asks: String,
     reads: &'static str,
 }
@@ -245,7 +247,11 @@ pub(crate) fn list() -> Map<String, Value> {
 
 /// `prompts/get`'s answer: the prompt `params` names, written from its
 /// arguments, each record asked through `ask`.
-pub(crate) fn get(params: &Value, ask: &mut Ask<'_>) -> Result<Map<String, Value>, Refused> {
+pub(crate) fn get(
+    params: &Value,
+    ask: &mut Ask<'_>,
+    limits: &Limits,
+) -> Result<Map<String, Value>, Refused> {
     let name = params.get("name").and_then(Value::as_str).ok_or(Refused {
         message: String::from("`prompts/get` names its prompt in `name`"),
         argument: None,
@@ -292,6 +298,9 @@ pub(crate) fn get(params: &Value, ask: &mut Ask<'_>) -> Result<Map<String, Value
         ));
     }
     let written = (prompt.write)(&given, ask)?;
+    limits
+        .check(&written.request)
+        .map_err(|why| Refused::of(written.limited, why.to_string()))?;
     let call = json!({ "request": written.request });
     let text = format!(
         "{} Call the tool `{}` with these arguments; its own reader has read and checked \
@@ -534,6 +543,7 @@ fn birth_chart(given: &Given, ask: &mut Ask<'_>) -> Result<Written, Refused> {
     Ok(Written {
         tool: "chart.found",
         request,
+        limited: "sections",
         asks: format!(
             "Found the birth chart for {} at {} ({}), at {latitude}° {longitude}°. The civil \
              time resolved through `time.resolve` to the UTC Julian day {instant}, the clock \
@@ -576,6 +586,7 @@ fn day_panchanga(given: &Given, ask: &mut Ask<'_>) -> Result<Written, Refused> {
     Ok(Written {
         tool: "almanac.days",
         request,
+        limited: "last",
         asks: format!(
             "Read the panchanga from {}{} at {latitude}° {longitude}°, on a clock {offset} \
              seconds from UTC (the offset `time.resolve` gives {} at noon).",
@@ -642,6 +653,7 @@ fn matching(given: &Given, ask: &mut Ask<'_>) -> Result<Written, Refused> {
     Ok(Written {
         tool: "chart.found",
         request,
+        limited: "brideDate",
         asks: String::from(
             "Read the match between these two births: the groom's chart founded with the \
              bride's as its partner, each civil time resolved through `time.resolve`.",

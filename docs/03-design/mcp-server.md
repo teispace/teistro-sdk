@@ -314,6 +314,25 @@ are bounded, and the bound is a refusal naming the field and the
 limit, not a slow answer: a server a model drives must not be made to
 compute a century of days by one typo.
 
+*Built.* `Limits` bounds a message's bytes (`--max-message-bytes`),
+the members of any array in a record (`--max-items`) and the days a
+record's ranges span (`--max-days`), summed over every object holding
+`first` and `last` as dates; each is `None`, or `none` on the command
+line, for unbounded, and `Limits::default` states the shipped bounds.
+They were chosen by timing the release binary: the shipped batch is
+found in seconds and the shipped year of days in well under a minute,
+where a century of days would take the better part of half an hour. A
+window of life (progressions' `from` and `to`)
+is not a range of days and is not counted, since it spans decades by
+design. A record past a bound is a `LIMIT` naming the field by its path
+(`periods[1].last`, `instants`), the bound and the option; a prompt
+writes no such call and names its own argument. The transport stops
+reading a line a byte past the message bound and refuses it with a null
+id, then reads the next. Gated: each record reading days answers at the
+bound and is refused a day past it, the ranges are summed, a window of
+life passes, an array is named by its path, and a line past the bound
+is refused while the next one answers.
+
 **P6. Cancellation and progress.** `notifications/cancelled` stops a
 batch between items, and a call carrying a `progressToken` hears
 `notifications/progress` per item on its own response stream.

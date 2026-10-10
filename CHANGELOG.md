@@ -2546,6 +2546,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   date shuffle that moves the age a dasha reads. **Numbers:** a refusal
   of too few permutations hints the fewest its own check accepts, where
   for some alphas and families it had named a count the check refused.
+- **Limits.** `teistro-mcp` bounds a message's bytes, any array's
+  members and the days a record's ranges span, and refuses a request
+  past one as `LIMIT` naming the field, the bound and the option moving
+  it (`--max-message-bytes`, `--max-items`, `--max-days`, each taking
+  `none`); `Server::with_limits` sets them for a program embedding the
+  server, and `Server::handle_bytes` reads a message as a transport's
+  bytes. **Numbers:** none move.
 - **Resources, completions and prompts.** `teistro-mcp` serves the
   catalogue a kind at a time, the shipped profiles, the settings and
   document schemas and each tool's schemas as resources, completes a
