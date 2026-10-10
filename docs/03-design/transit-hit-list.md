@@ -164,10 +164,10 @@ after stands in the sign the event says it left and entered.
    with **one `hits_many` over the request's charts**, so a batch of
    charts pays for the sky once. Section 56, `hits`, is ragged by
    `cast.hit_count`: an event's `kind` says which of `into`, `motion`,
-   `to_lagna`, `to_graha`, `angle` and `phase` mean something. Node,
-   Python and Dart read it back as the Rust `Hit`, an event tagged by its
+   `to_lagna`, `to_graha`, `angle` and `phase` mean something. Every
+   binding reads it back as the Rust `Hit`, an event tagged by its
    kind with only its own fields; parity prints every hit of two months
-   across all five runners. A request takes what an answer gives: a graha
+   across every runner. A request takes what an answer gives: a graha
    bare or full (`"SUN"`, `"graha.SUN"`), a point bare or as an aspect's
    `to`, and the refusals name the field the caller wrote, `hits.orbDeg`
    and not the builder's `orb_deg`. Building it found the catalogue's

@@ -175,7 +175,7 @@ consumer must name one in a request.
    start sign reaches it before 52 calendar years (Libra's, the latest).
 4. **Done.** The boundary comes with the dasha sections, and every parity
    runner asks for `RELEASING_FORTUNE` and `PROFECTION`, one of each
-   kernel, so five bindings agree on their periods. The names wait on a
+   kernel, so every runner agrees on their periods. The names wait on a
    vetted Nepali and Hindi rendering, so the three are on
    `xtask/src/intl.rs`'s unnamed list.
 5. **Done.** The knobs: the request's lot rules releasing reads

@@ -133,8 +133,9 @@ but the measured page states them per body instead of one figure.
    progressed chart accept the three where the birth carries them.
    Leo's Uranus contact on p. 41 becomes a test. **Built.**
 4. The boundary and every binding, with the parity gate: `outerPlanets`
-   in Node and Dart, `outer_planets` in Python, read back as
-   `chart.outer`, and `chart-{i}-outer-{j}` in all four runners.
+   in Node and Dart, `outer_planets` in Python and each binding's own
+   spelling elsewhere, read back as `chart.outer`, and
+   `chart-{i}-outer-{j}` in every runner.
    **Built.**
 5. The wheel draws them (`render-svg.md`, "Outer planets on the
    wheel"). **Waits on names.** A wheel labels a body by its locale

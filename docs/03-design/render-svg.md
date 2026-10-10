@@ -249,8 +249,8 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
   Each reads the SVG back as `drawing.svg`. The Node test sets every field
   a record can name, so a key the SDK does not read fails a test rather
   than a consumer.
-- **Parity covers the bytes.** The four runners ask for the dark theme and
-  print each drawing's SVG, and they agree on every one.
+- **Parity covers the bytes.** Every runner asks for the dark theme and
+  prints each drawing's SVG, and they agree on every one.
 - **Building found a defect in Node's error path, older than this work.**
   The layer read the context's last error for any exception its call
   threw, so an argument it refused itself, before the library was reached,

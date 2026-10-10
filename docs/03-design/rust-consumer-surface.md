@@ -277,7 +277,7 @@ principle:
 - **A Rust parity runner**, and it cannot have the same key set as the
   other bindings'. That is not a gap in it; it is §6 arriving in the gate.
 
-  The three runners print ~674 keys, and among them are `abi`,
+  The binding runners print their keys, and among them are `abi`,
   `build-sdk`, `build-commit`, `build-target` and the result blobs'
   sections and hashes. A Rust consumer has **none of those**: Cargo
   resolved the versions, `Drop` freed the memory, and the crates handed
@@ -523,13 +523,13 @@ principle:
    - Four signature types were not re-exported (§7), so §7's third
      property exists because of this step.
    - **An almanac's provenance named no provider.** The chart foundation
-     stamps it and the almanac did not, in all four bindings, because
+     stamps it and the almanac did not, in every binding then built, because
      nothing had ever printed the field. `flags_used` there is empty and
      **not** a guess: the chart passes the completion's steps, and this
      path reaches its positions through `FrameLongitudes`, which keeps
      no step list, so there is nothing to vouch for.
    - **A `--no-default-features` build of the façade failed**, and had
-     always failed, on the seven examples and `tests/surface.rs` that
+     always failed, on the examples and `tests/surface.rs` that
      name `Ephemeris::Builtin` — a variant that exists only under
      `builtin-ephemeris`. Nobody saw it because nothing had ever built
      this crate without its default: the tier matrix builds

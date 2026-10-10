@@ -112,9 +112,10 @@ A new **`xtask/src/sizes.rs`**:
   compares (everywhere, in fast-check). It then re-measures whatever
   artefacts exist under `target/dist`, so it is live in verify and release.
 
-**Budgets move into the record.** `bindings/wasm/size.json` holds
-today's budget and, in its `why`, every past re-measure as prose figures
-(the very form that rots). The design folds it into `sizes.json`:
+**Budgets move into the record.** `bindings/wasm/size.json` held the
+budget and, in its `why`, every past re-measure as prose figures (the very
+form that rots). The design folds it into `sizes.json`, which was built
+on 2026-10-09 (step 4), and `bindings/wasm/size.json` is gone:
 
 - `budget: {raw, gzip}` per budgeted artefact, under the file's existing
   rule (2% over, to the next ten kilobytes, held both ways);

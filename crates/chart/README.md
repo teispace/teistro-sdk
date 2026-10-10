@@ -97,7 +97,8 @@ Delta T model and the leap-second table, and a hash of what was asked. A
 batch carries one stamp, because everything in it was founded under the
 same settings by the same provider.
 
-## Still to come
+## Where the day's limbs are
 
-The panchanga day's limbs, which are the `panchanga` module and its own
-design page, and what the corpus's largest unread section is waiting for.
+The panchanga day's limbs are not in this crate: they are the
+`teistro-panchanga` crate (`crates/panchanga`), designed on
+`docs/03-design/panchanga-day.md`.

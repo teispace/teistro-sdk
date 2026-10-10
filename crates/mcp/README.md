@@ -5,6 +5,13 @@ over stdio or Streamable HTTP (`docs/03-design/mcp-server.md`). A model asked fo
 nakshatra answers from memory with no ayanamsha named; a tool answers
 with the settings hash, the input hash and every convention applied.
 
+The binary is not yet in the release assets (the design page's §6 step
+5). Install it from a checkout:
+
+```sh
+cargo install --path crates/mcp
+```
+
 ```sh
 teistro-mcp                       # the built-in ephemeris
 teistro-mcp --ephemeris SURYA_SIDDHANTA

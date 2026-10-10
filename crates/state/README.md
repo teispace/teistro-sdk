@@ -63,18 +63,20 @@ inside:
 
 The default profile names the first (ADR-0024, "the texts as read"), so
 **under it no body is ever deeply combust**. Over the corpus that is one
-change in the conservative direction: the same sixty-six bodies burn,
-and the thirty-six the recording engine calls deeply combust come back
-merely combust. `Combustion::orbs` reports the orbs a reading was judged
+change in the conservative direction: the same bodies burn, and those
+the recording engine calls deeply combust come back merely combust. `Combustion::orbs` reports the orbs a reading was judged
 against, and whether there was a deeper one at all.
 
 ## What it will not answer
 
-Six avasthas are not decidable from a founded chart, and the crate
-returns nothing where it cannot decide rather than a plausible guess.
-They are the ones whose definitions read "or aspected by": the deeptadi
-below its top three, and three of the six lajjitadi, which
-`Lajjitadi::undecided` names on every reading. They wait on `aspect`.
+Some avasthas are not decidable from a founded chart, and the crate
+returns nothing where it cannot decide rather than a plausible guess:
+the deeptadi below its top three, and part of the lajjitadi. A reading's
+`Lajjitadi` carries three lists: `holding`, the states that hold;
+`ruled_out`, those whose necessary condition fails, so they certainly do
+not; and `undecided`, those whose necessary condition holds and which
+nothing in the chart narrows further. The aspect pass found that a
+drishti does not decide them (`docs/03-design/state-and-avasthas.md`).
 
 The same reasoning shapes `boundary`: it reports the **distance** to the
 nearest sign, nakshatra and pada edge and ships no threshold. A constant

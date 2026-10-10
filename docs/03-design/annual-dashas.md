@@ -150,17 +150,17 @@ The sources define the unit and leave the calendar open:
   then dates each period by **adding its days to the Sun's degree** and
   reading the calendar off the Sun.
 
-So three readings, one knob, `clock`:
+So three readings, one knob, `clock`, spelt as the wire spells them (`YearClock`, `crates/tajika/src/annual_dasha.rs`):
 
 | clock | a unit of the year is | needs | whose |
 |---|---|---|---|
-| `sun_degrees` (default) | the Sun's motion through 1/360 of its circle from where it stood at the return | the Sun over the year | Charak's definition; the Nilakanthi's worked dating |
-| `even` | an equal 1/360 of the time from this return to the next | the next return | Charak's "spread proportionately" |
-| `days(n)` | `n / 360` civil days from the return | nothing | Charak's printed durations (`days(360)` Mudda and Yogini, `days(365)` Patyayini) |
+| `SUN_DEGREES` (default) | the Sun's motion through 1/360 of its circle from where it stood at the return | the Sun over the year | Charak's definition; the Nilakanthi's worked dating |
+| `EVEN` | an equal 1/360 of the time from this return to the next | the next return | Charak's "spread proportionately" |
+| `{"DAYS": n}` | `n / 360` civil days from the return | nothing | Charak's printed durations (`{"DAYS": 360}` Mudda and Yogini, `{"DAYS": 365}` Patyayini) |
 
 **The default is the Sun's degree** because both books define the day
 that way, and it alone ends the year *on* the next return by
-construction. `even` ends there too. Between the returns it drifts from the Sun by the
+construction. `EVEN` ends there too. Between the returns it drifts from the Sun by the
 equation of centre at the boundary less its value at the return. That
 can reach twice the equation's 1.92°, so about **3.9 days** when a year
 opens near one extreme. The thirtieth year of the SDK's own test birth
@@ -192,7 +192,7 @@ search for each crossing, in both zodiacs, geocentric and topocentric,
 the knots stand within **0.04 ms** (a unit test holds them to a tenth of
 the tolerance). The first build searched for each of the 360 crossings;
 this reads the Sun about a quarter as often and in four requests rather
-than about 4 000. An `even` clock has one knot, so it skips the fit and is
+than about 4 000. An `EVEN` clock has one knot, so it skips the fit and is
 corrected from the mean motion.
 
 **What Charak's printed dates can settle: nothing to the day.** His
@@ -320,11 +320,11 @@ decoder in every binding, with one column more: the Patyayini runs **one
 sign among seven planets**, so a year's period says row by row whether it
 is a sign's, where a birth dasha is all signs' or none and says it once.
 
-Node, Python and Dart answer an `AnnualDasha` with the natal `Dasha`'s
-periods and `at(jd)`, its ring as shares, and `firstLord`. The four
-parity runners print every dasha of 24 years under the sources' readings
+Every binding answers an `AnnualDasha` with the natal `Dasha`'s
+periods and `at(jd)`, its ring as shares, and `firstLord`. Every
+parity runner prints every dasha of 24 years under the sources' readings
 and under a rival clock, balance and birth period three levels deep, and
-agree value for value.
+the runners agree value for value.
 
 ## Not built, and why
 
@@ -342,7 +342,7 @@ agree value for value.
 ## Order of work
 
 Steps 1 to 6 are built (2026-09-24). What the first five changed:
-- The `even` clock's gap from the Sun's is up to **3.90 days**, not two:
+- The `EVEN` clock's gap from the Sun's is up to **3.90 days**, not two:
   the equation of centre is counted twice.
 - The batch call exists because three systems of one year would
   otherwise read the same Sun three times.
@@ -363,7 +363,7 @@ Steps 1 to 6 are built (2026-09-24). What the first five changed:
    Nilakanthi's Jupiter. The two printed formulas are checked against
    the seat rule for every nakshatra and 0–199 years.
 3. The Sun-degree clock through its knots, fitted and then corrected
-   against the Sun, and `even` through the next return.
+   against the Sun, and `EVEN` through the next return.
 4. `sdk.chart().annual_dasha` and `annual_dashas`, the natal refusal's
    new hint, and the coverage page's three rows moved from excused to
    computed.

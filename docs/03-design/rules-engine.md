@@ -1,6 +1,6 @@
 # The rules engine
 
-Status: `building`, 2026-09-15 (drafted 2026-09-04; the first slice, references, the trace, tables and cancellation built). The design of the rules kernel (ADR-0017)
+Status: `building`, 2026-10-07 (drafted 2026-09-04; the first slice, references, the trace, tables and cancellation built 2026-09-15, and the later work each section dates since). The design of the rules kernel (ADR-0017)
 before any rule data is authored: the baseline engine's predicate algebra
 plus the four capabilities its own dosha detectors had to bypass it for.
 Phase 6, with the `Ref` and `RuleResult` changes landing before the
@@ -140,10 +140,12 @@ C81, the text's "consider the stronger" not built). A chart now carries each
 body's navamsha, which the corpus's reader computes and holds to the recorded
 D9 on all 930 bodies. Writing that check found that the recording engine's
 `is_vargottama` is never true for the lagna, though two recorded lagnas stand
-in their own navamsha. Still to come as references: the graha padas, the
-stronger of two lords, `Badhaka`, `Yogi` and `AvaYogi`, and the special
-lagnas, upagrahas, sphutas and sahams, which need the chart to carry points
-the façade already computes.
+in their own navamsha. Built since as references (`crates/rules/src/reference.rs`):
+`Badhaka`, written `{"badhakaOf": 1}`, and `{"point": "GULIKA"}`, a point the
+chart carries (an upagraha, a special lagna, a sphuta); `Yogi` and `AvaYogi`
+are `Point` members, so they read through it where the chart carries them.
+Still to come as references: the graha padas, the stronger of two lords, and
+the sahams.
 
 ### Table lookups over cited tables
 
@@ -165,7 +167,7 @@ is data with a `Source` and a key, and a rule names its table by that key.
 `Tables::check` refuses a rule naming a table the set lacks, or a table of the
 other kind, before evaluation. The evaluator reads the set it is given
 (`with_tables`), and the chart carries the tithi when a rule needs one
-(`Rule::reads_tithi`).
+(`Rule::reads_panchanga`).
 
 The SDK ships four tables in `crates/rules/tables/classical.json`:
 

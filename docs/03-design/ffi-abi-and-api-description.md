@@ -424,7 +424,8 @@ marks a swapped pair `@ts-expect-error`, so the check fails if the
 surface ever stops refusing it, and `bindings/dart/typecheck/wrong.dart`
 is analysed on its own and must report every error it expects. That is
 Phase 1's exit criterion, "a swapped latitude and longitude does not
-compile in Rust or type-check in TypeScript", in the two bindings.
+compile in Rust or type-check in TypeScript", in the bindings then built
+(Node and Dart).
 
 ### The build handshake
 
@@ -680,7 +681,7 @@ yet.
   a refusal's status, detail and hint, a rendered message hashed, the
   frame and its round trip, every cell of a two-by-three grid, the
   completion's steps, and the provenance hashed. Nothing in the gate says
-  what a value should be: the point is that the two bindings agree with
+  what a value should be: the point is that the bindings agree with
   each other, so a fact written into it could only weaken it. Two numbers
   are compared as numbers within 2e-9, which is one in the last place
   both reports print and no more, so a tenth of a second in a Julian day
@@ -699,10 +700,12 @@ the engine's English sentences, as the engine defines them.
 
 - Rich renderers: `ts_intl_render` hands back the plain text; the parts
   (text and markup) wait for a serialisation the bindings agree on.
-- The two bindings' packaging: the prebuilt libraries per platform, the
-  manifests and the publishing, which wait on the release matrix. The
-  loader's half of it, the build handshake, is built (§5).
-- The wasm and Python bindings, from the same description.
+- The bindings' packaging: the prebuilt libraries per platform, the
+  manifests and the publishing, which waited on the release matrix. The
+  loader's half of it, the build handshake, is built (§5); the rest is
+  built since (`cargo xtask check-package`, `06-cicd/03-release-process.md`).
+- The wasm and Python bindings, from the same description: built since
+  (`bindings/`).
 - A host-language provider is bound through the port's vtable with the
   same contract as a native one (callable from any thread); the bindings
   that register isolate-local callbacks keep one context per isolate.

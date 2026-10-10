@@ -1,8 +1,10 @@
 # Prashna: the query chart read as Shatpanchashika and the Tajika print it (the `prashna` module)
 
-Status: step 1 `built` (`crates/prashna`), 2026-10-07: the verdict,
-change, timing and the unspoken question. Steps 2 to 4 are designed and
-not built.
+Status: steps 1, 3 and 4 `built` (`crates/prashna`, 2026-10-07: the
+verdict, change, timing and the unspoken question; the `BASELINE` values;
+the façade and every binding), step 2 partly built (the Tajika links and
+the Moon; the akṣara-lagna and the six points open, C353). The
+`SHADVARGA` rising varga is designed, not built (C336).
 
 A prashna is a chart cast for the moment a question is asked. Casting it
 is already done: the chart kind `PRASHNA` exists, and the chart is an
@@ -196,13 +198,15 @@ let reading = sdk.prashna().read(&chart, &PrashnaQuestion {
 `PrashnaRules` holds one knob per crux:
 
 - `pisces`: `BOTH_WAYS` (default) or `SHIRSHODAYA`;
-- `rising_varga`: `NAVAMSHA` (default) or `SHADVARGA` (C336);
+- `rising_varga`: `NAVAMSHA` (default) or `SHADVARGA` (C336): designed,
+  not built; the rising varga is the navāṁśa's lord;
 - `timing`: `STRONGEST_GRAHA` (default), `FIRST_OCCUPIED`, `MOON_DAYS`
   or `BASELINE`;
 - `mook`: `SHATPANCHASHIKA` (default), `MOON_HOUSE` or `BASELINE`;
 - `score`: `OFF` by default, `BASELINE` adds the baseline's points
   beside the clauses and never replaces them;
-- `moon_benefic`: Tajika's existing knob, reused.
+- `moon`: `MoonRules`, Tajika's reading of the Moon's weaknesses
+  (Samjna Tantra vv. 73–74), reused.
 
 `PrashnaRules::baseline()` sets every `BASELINE` value at once.
 
@@ -243,7 +247,8 @@ Each names its field under `prashna`.
      a special aspect included. The test that found Mars aspecting a
      Gemini lagna's 7th from Taurus holds this.
    - The rising varga is the navāṁśa's lord. The `SHADVARGA` knob, the
-     baseline's score and Tajika's Moon knob come with steps 2 and 3.
+     baseline's score and Tajika's Moon knob came with steps 2 and 3;
+     the `SHADVARGA` knob did not, and is open under C336.
 2. **The Tajika links**, partly built. When a house is asked,
    `Prashna::links` holds `crates/tajika`'s sixteen yogas judged between
    the lagna lord and the lord of that house, with each graha's
@@ -282,7 +287,7 @@ Each names its field under `prashna`.
    binding will send, refusals named under `prashna`. Every binding is
    built on KP's pattern: a `prashna_json` member of the chart request,
    which also asks for the Shadbala, and section 120 `prashna`, canonical
-   JSON with one reading a chart. Node, Python and Dart read it as
+   JSON with one reading a chart. Every binding reads it as
    `chart.prashna`, with the links in a year's matter's shape.
 
 ## Acceptance

@@ -63,8 +63,8 @@ by default.
 - **Facts, not a reading.** The answer is numbers and the arithmetic
   that made them. Meanings are interpretation records, keyed by
   number and system.
-- **A civil date, never an instant.** `CivilDate` in the Gregorian
-  calendar. The baseline's host-zone `getDate()` cannot occur.
+- **A civil date, never an instant.** `BirthDate`, a date in the
+  Gregorian calendar (`crates/numerology/src/lib.rs`). The baseline's host-zone `getDate()` cannot occur.
 - **Latin letters only, refused otherwise** (C326). Case is folded; a
   character outside A–Z, a diacritic included (é), is refused with its
   place, because neither table says what é is worth and folding it to e

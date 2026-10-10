@@ -20,8 +20,8 @@ compiler to run and no wheel per interpreter version.
 | `teistro/_install.py` | the installer: where a prebuilt library comes from, the digest it must have, and where it is written | by hand |
 | `teistro/_prebuilt.py` | the release the installer fetches from and the digest of each platform's library; empty in a checkout, written when a release is staged | the release |
 | `tests/` | the surface end to end, the decoders against blobs the library produced, and every struct's size against the library that was built | by hand |
-| `example/teistro_example.py` | the code this README shows, run by the gate so the two cannot drift | by hand |
-| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with the Node and Dart bindings' | by hand |
+| `example/*.py` | the shared examples, one program per name every binding carries, run by `check-python` and compared line for line by `check-parity`; no gate runs the code this README shows | by hand |
+| `parity.py` | this binding's half of the parity report, which `cargo xtask check-parity` compares with every other runner's | by hand |
 | `typecheck/wrong.py` | the usages that must not type-check, each with the error it must raise | by hand |
 
 ## Installing it

@@ -18,7 +18,7 @@ result blobs they answer with, so that a binding can show a chart.
 It is Phase 4's own exit condition: *the baseline engine's foundation and
 daily panchanga golden vectors reproduced within tolerance **in three
 bindings** on both providers*. Nothing above `positions` crosses today,
-which is why each binding's six examples stop where they do and why the
+which is why each binding's examples stop where they do and why the
 parity gate compares 103 values rather than a chart.
 
 It is not: the divisional charts, the planetary state, the aspects, the
@@ -568,7 +568,7 @@ five rather than describing part of one.
   answers whether the locale or its fallbacks hold a *message*; there is
   no non-throwing way to ask the same of an **entity**. The almanac
   example needs one, because a pack names most of the catalogue and not
-  all of it, so all three bindings catch the refusal instead. Catching an
+  all of it, so every binding then built caught the refusal instead. Catching an
   exception to ask a question is the shape of a missing accessor.
 - **Two catalogue kinds have no name in any locale.** `masa` and
   `direction` are absent from all five entity packs the SDK ships

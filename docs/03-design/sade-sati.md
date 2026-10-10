@@ -202,8 +202,8 @@ longitudes, and reckons the houses itself rather than through the SDK's
    periods, its Sade Satis first and then its smaller spells, which is
    all a binding needs to rebuild the Rust `Report`, since a Sade Sati's
    houses (12, 1, 2) and a smaller spell's (3 to 11) never overlap. An
-   absent bound is NaN, as the balance's span is. Node, Python and Dart
-   rebuild `{ reference, reckoning, sadeSati: [{ phases }], spells }`,
+   absent bound is NaN, as the balance's span is. Every binding
+   rebuilds `{ reference, reckoning, sadeSati: [{ phases }], spells }`,
    Dart with value equality so a period found twice compares equal;
    parity agrees on every visit of ten years in every runner, and the ABI
    test holds each cell to the façade's own report, to the bit.
